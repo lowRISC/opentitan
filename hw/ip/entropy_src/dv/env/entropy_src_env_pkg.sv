@@ -14,8 +14,6 @@ package entropy_src_env_pkg;
   import entropy_src_ral_pkg::*;
   import push_pull_agent_pkg::*;
 
-  parameter int  FIPS_CSRNG_BUS_WIDTH = entropy_src_pkg::FIPS_BUS_WIDTH + entropy_src_pkg::CSRNG_BUS_WIDTH;
-
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -33,7 +31,7 @@ package entropy_src_env_pkg;
                                                  32'h9124836c,
                                                  32'hb5a7efd9,
                                                  32'h124836cb};
-  parameter string                LIST_OF_ALERTS[] = {"es_alert_count_met"};
+  parameter string                LIST_OF_ALERTS[] = {"recov_alert_count_met"};
   parameter uint                  NUM_ALERTS = 1;
 
   // types

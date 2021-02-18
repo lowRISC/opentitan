@@ -22,7 +22,7 @@ import tlgen
 from reggen import gen_dv, gen_rtl, validate
 from topgen import amend_clocks, get_hjsonobj_xbars
 from topgen import intermodule as im
-from topgen import merge_top, search_ips, validate_top
+from topgen import merge_top, search_ips, check_flash, validate_top
 from topgen.c import TopGenC
 
 # Common header for generated files
@@ -288,7 +288,49 @@ def generate_plic(top, out_path):
         fout.write(genhdr + gencmd + out)
 
 
-def generate_pinmux_and_padctrl(top, out_path):
+# returns the dedicated pin positions of a particular module
+# For example, if a module is connected to 6:1 of the dio connections,
+# [6, 1] will be returned.
+def _calc_dio_pin_pos(top, mname):
+    dios = top["pinmux"]["dio"]
+
+    last_index = dios.index(dios[-1])
+    bit_pos = []
+    first_index = False
+
+    for dio in dios:
+        if dio['module_name'] == mname and not first_index:
+            bit_pos.append(last_index - dios.index(dio))
+            first_index = True
+        elif first_index and dio['module_name'] != mname:
+            bit_pos.append(last_index - dios.index(dio) - 1)
+
+    # The last one, need to insert last element if only the msb
+    # position is found
+    if len(bit_pos) == 1:
+        bit_pos.append(0)
+
+    log.debug("bit pos {}".format(bit_pos))
+    return bit_pos
+
+
+def _find_dio_pin_pos(top, sname):
+    dios = top["pinmux"]["dio"]
+
+    last_index = dios.index(dios[-1])
+    bit_pos = -1
+
+    for dio in dios:
+        if dio['name'] == sname:
+            bit_pos = last_index - dios.index(dio)
+
+    if bit_pos < 0:
+        log.error("Could not find bit position of {} in dios".format(sname))
+
+    return bit_pos
+
+
+def generate_pinmux(top, out_path):
     topname = top["name"]
     # MIO Pads
     n_mio_pads = top["pinmux"]["num_mio"]
@@ -329,7 +371,6 @@ def generate_pinmux_and_padctrl(top, out_path):
     # Validation ensures that the width field is present.
     num_mio_inputs = sum([x["width"] for x in top["pinmux"]["inputs"]])
     num_mio_outputs = sum([x["width"] for x in top["pinmux"]["outputs"]])
-    num_mio_inouts = sum([x["width"] for x in top["pinmux"]["inouts"]])
 
     num_dio_inputs = sum([
         x["width"] if x["type"] == "input" else 0 for x in top["pinmux"]["dio"]
@@ -342,11 +383,14 @@ def generate_pinmux_and_padctrl(top, out_path):
         x["width"] if x["type"] == "inout" else 0 for x in top["pinmux"]["dio"]
     ])
 
-    n_mio_periph_in = num_mio_inouts + num_mio_inputs
-    n_mio_periph_out = num_mio_inouts + num_mio_outputs
+    n_mio_periph_in = num_mio_inputs
+    n_mio_periph_out = num_mio_outputs
     n_dio_periph_in = num_dio_inouts + num_dio_inputs
     n_dio_periph_out = num_dio_inouts + num_dio_outputs
     n_dio_pads = num_dio_inouts + num_dio_inputs + num_dio_outputs
+
+    # TODO: derive this value
+    attr_dw = 10
 
     if n_dio_pads <= 0:
         # TODO: add support for no DIO case
@@ -354,13 +398,21 @@ def generate_pinmux_and_padctrl(top, out_path):
                   "without DIOs.")
         return
 
+    # find the start and end pin positions for usbdev
+    usb_pin_pos = _calc_dio_pin_pos(top, "usbdev")
+    usb_start_pos = usb_pin_pos[-1]
+    n_usb_pins = usb_pin_pos[0] - usb_pin_pos[-1] + 1
+    usb_dp_sel = _find_dio_pin_pos(top, "usbdev_dp")
+    usb_dn_sel = _find_dio_pin_pos(top, "usbdev_dn")
+    usb_dp_pull_sel = _find_dio_pin_pos(top, "usbdev_dp_pullup")
+    usb_dn_pull_sel = _find_dio_pin_pos(top, "usbdev_dn_pullup")
+
     log.info("Generating pinmux with following info from hjson:")
     log.info("num_mio_inputs:  %d" % num_mio_inputs)
     log.info("num_mio_outputs: %d" % num_mio_outputs)
-    log.info("num_mio_inouts:  %d" % num_mio_inouts)
     log.info("num_dio_inputs:  %d" % num_dio_inputs)
     log.info("num_dio_outputs: %d" % num_dio_outputs)
-    log.info("num_dio_inouts:  %d" % num_dio_inouts)
+    log.info("attr_dw:         %d" % attr_dw)
     log.info("num_wkup_detect: %d" % num_wkup_detect)
     log.info("wkup_cnt_width:  %d" % wkup_cnt_width)
     log.info("This translates to:")
@@ -369,6 +421,8 @@ def generate_pinmux_and_padctrl(top, out_path):
     log.info("n_dio_periph_in:  %d" % n_dio_periph_in)
     log.info("n_dio_periph_out: %d" % n_dio_periph_out)
     log.info("n_dio_pads:       %d" % n_dio_pads)
+    log.info("usb_start_pos:    %d" % usb_start_pos)
+    log.info("n_usb_pins:       %d" % n_usb_pins)
 
     # Target path
     #   rtl: pinmux_reg_pkg.sv & pinmux_reg_top.sv
@@ -407,56 +461,22 @@ def generate_pinmux_and_padctrl(top, out_path):
                 n_dio_periph_in=n_dio_pads,
                 n_dio_periph_out=n_dio_pads,
                 n_dio_pads=n_dio_pads,
+                attr_dw=attr_dw,
                 n_wkup_detect=num_wkup_detect,
-                wkup_cnt_width=wkup_cnt_width)
+                wkup_cnt_width=wkup_cnt_width,
+                usb_start_pos=usb_start_pos,
+                n_usb_pins=n_usb_pins,
+                usb_dp_sel=usb_dp_sel,
+                usb_dn_sel=usb_dn_sel,
+                usb_dp_pull_sel=usb_dp_pull_sel,
+                usb_dn_pull_sel=usb_dn_pull_sel
+            )
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
         log.info("PINMUX HJSON: %s" % out)
 
     if out == "":
         log.error("Cannot generate pinmux HJSON")
-        return
-
-    with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
-        fout.write(genhdr + gencmd + out)
-
-    hjson_obj = hjson.loads(out,
-                            use_decimal=True,
-                            object_pairs_hook=validate.checking_dict)
-    validate.validate(hjson_obj)
-    gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
-
-    # Target path
-    #   rtl: padctrl_reg_pkg.sv & padctrl_reg_top.sv
-    #   data: padctrl.hjson
-    rtl_path = out_path / 'ip/padctrl/rtl/autogen'
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    data_path = out_path / 'ip/padctrl/data/autogen'
-    data_path.mkdir(parents=True, exist_ok=True)
-
-    # Template path
-    tpl_path = Path(
-        __file__).resolve().parent / '../hw/ip/padctrl/data/padctrl.hjson.tpl'
-
-    # Generate register package and RTLs
-    gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
-              "-o hw/top_{topname}/\n\n".format(topname=topname))
-
-    hjson_gen_path = data_path / "padctrl.hjson"
-
-    out = StringIO()
-    with tpl_path.open(mode='r', encoding='UTF-8') as fin:
-        hjson_tpl = Template(fin.read())
-        try:
-            out = hjson_tpl.render(n_mio_pads=n_mio_pads,
-                                   n_dio_pads=n_dio_pads,
-                                   attr_dw=10)
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-        log.info("PADCTRL HJSON: %s" % out)
-
-    if out == "":
-        log.error("Cannot generate padctrl HJSON")
         return
 
     with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
@@ -606,7 +626,9 @@ def generate_pwrmgr(top, out_path):
     with hjson_tpl_path.open(mode='r', encoding='UTF-8') as fin:
         hjson_tpl = Template(fin.read())
         try:
-            out = hjson_tpl.render(NumWkups=n_wkups, NumRstReqs=n_rstreqs)
+            out = hjson_tpl.render(NumWkups=n_wkups,
+                                   Wkups=top["wakeups"],
+                                   NumRstReqs=n_rstreqs)
 
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
@@ -838,6 +860,161 @@ def generate_top_ral(top, ip_objs, dv_base_prefix, out_path):
     gen_dv.gen_ral(top_block, dv_base_prefix, str(out_path))
 
 
+def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
+    # Create generated list
+    # These modules are generated through topgen
+    generated_list = [
+        module['type'] for module in topcfg['module']
+        if 'generated' in module and module['generated'] == 'true'
+    ]
+    log.info("Filtered list is {}".format(generated_list))
+
+    # These modules are NOT generated but belong to a specific top
+    # and therefore not part of "hw/ip"
+    top_only_list = [
+        module['type'] for module in topcfg['module']
+        if 'top_only' in module and module['top_only'] == 'true'
+    ]
+    log.info("Filtered list is {}".format(top_only_list))
+
+    topname = topcfg["name"]
+
+    # Sweep the IP directory and gather the config files
+    ip_dir = Path(__file__).parents[1] / 'hw/ip'
+    ips = search_ips(ip_dir)
+
+    # exclude filtered IPs (to use top_${topname} one) and
+    exclude_list = generated_list + top_only_list
+    ips = [x for x in ips if not x.parents[1].name in exclude_list]
+
+    # Hack alert
+    # Generate clkmgr.hjson here so that it can be included below
+    # Unlike other generated hjsons, clkmgr thankfully does not require
+    # ip.hjson information.  All the information is embedded within
+    # the top hjson file
+    amend_clocks(topcfg)
+    generate_clkmgr(topcfg, cfg_path, out_path)
+
+    # It may require two passes to check if the module is needed.
+    # TODO: first run of topgen will fail due to the absent of rv_plic.
+    # It needs to run up to amend_interrupt in merge_top function
+    # then creates rv_plic.hjson then run xbar generation.
+    hjson_dir = Path(args.topcfg).parent
+
+    for ip in generated_list:
+        # For modules that are generated prior to gathering, we need to take it from
+        # the output path.  For modules not generated before, it may exist in a
+        # pre-defined area already.
+        log.info("Appending {}".format(ip))
+        if ip == 'clkmgr' or (pass_idx > 0):
+            ip_hjson = Path(out_path) / "ip/{}/data/autogen/{}.hjson".format(
+                ip, ip)
+        else:
+            ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
+                ip, ip)
+        ips.append(ip_hjson)
+
+    for ip in top_only_list:
+        log.info("Appending {}".format(ip))
+        ip_hjson = hjson_dir.parent / "ip/{}/data/{}.hjson".format(ip, ip)
+        ips.append(ip_hjson)
+
+    # load Hjson and pass validate from reggen
+    try:
+        ip_objs = []
+        for x in ips:
+            # Skip if it is not in the module list
+            if x.stem not in [ip["type"] for ip in topcfg["module"]]:
+                log.info("Skip module %s as it isn't in the top module list" %
+                         x.stem)
+                continue
+
+            # The auto-generated hjson might not yet exist. It will be created
+            # later, see generate_{ip_name}() calls below. For the initial
+            # validation, use the template in hw/ip/{ip_name}/data .
+            if x.stem in generated_list and not x.is_file():
+                hjson_file = ip_dir / "{}/data/{}.hjson".format(x.stem, x.stem)
+                log.info(
+                    "Auto-generated hjson %s does not yet exist. " % str(x) +
+                    "Falling back to template %s for initial validation." %
+                    str(hjson_file))
+            else:
+                hjson_file = x
+
+            obj = hjson.load(hjson_file.open('r'),
+                             use_decimal=True,
+                             object_pairs_hook=OrderedDict)
+            if validate.validate(obj) != 0:
+                log.info("Parsing IP %s configuration failed. Skip" % x)
+                continue
+            ip_objs.append(obj)
+
+    except ValueError:
+        raise SystemExit(sys.exc_info()[1])
+
+    # Read the crossbars under the top directory
+    xbar_objs = get_hjsonobj_xbars(hjson_dir)
+
+    log.info("Detected crossbars: %s" %
+             (", ".join([x["name"] for x in xbar_objs])))
+
+    # If specified, override the seed for random netlist constant computation.
+    if args.rnd_cnst_seed:
+        log.warning('Commandline override of rnd_cnst_seed with {}.'.format(
+            args.rnd_cnst_seed))
+        topcfg['rnd_cnst_seed'] = args.rnd_cnst_seed
+    # Otherwise, we either take it from the top_{topname}.hjson if present, or
+    # randomly generate a new seed if not.
+    else:
+        random.seed()
+        new_seed = random.getrandbits(64)
+        if topcfg.setdefault('rnd_cnst_seed', new_seed) == new_seed:
+            log.warning(
+                'No rnd_cnst_seed specified, setting to {}.'.format(new_seed))
+
+    topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
+    if error != 0:
+        raise SystemExit("Error occured while validating top.hjson")
+
+    completecfg = merge_top(topcfg, ip_objs, xbar_objs)
+
+    # Generate flash controller and flash memory
+    generate_flash(topcfg, out_path)
+
+    # Generate PLIC
+    if not args.no_plic and \
+       not args.alert_handler_only and \
+       not args.xbar_only:
+        generate_plic(completecfg, out_path)
+        if args.plic_only:
+            sys.exit()
+
+    # Generate Alert Handler
+    if not args.xbar_only:
+        generate_alert_handler(completecfg, out_path)
+        if args.alert_handler_only:
+            sys.exit()
+
+    # Generate Pinmux
+    generate_pinmux(completecfg, out_path)
+
+    # Generate Pwrmgr
+    generate_pwrmgr(completecfg, out_path)
+
+    # Generate rstmgr
+    generate_rstmgr(completecfg, out_path)
+
+    # Generate top only modules
+    # These modules are not templated, but are not in hw/ip
+    generate_top_only(top_only_list, out_path, topname)
+
+    if pass_idx > 0 and args.top_ral:
+        generate_top_ral(completecfg, ip_objs, args.dv_base_prefix, out_path)
+        sys.exit()
+
+    return completecfg
+
+
 def main():
     parser = argparse.ArgumentParser(prog="topgen")
     parser.add_argument('--topcfg',
@@ -951,153 +1128,39 @@ def main():
     except ValueError:
         raise SystemExit(sys.exc_info()[1])
 
-    # Create generated list
-    # These modules are generated through topgen
-    generated_list = [
-        module['type'] for module in topcfg['module']
-        if 'generated' in module and module['generated'] == 'true'
-    ]
-    log.info("Filtered list is {}".format(generated_list))
-
-    # These modules are NOT generated but belong to a specific top
-    # and therefore not part of "hw/ip"
-    top_only_list = [
-        module['type'] for module in topcfg['module']
-        if 'top_only' in module and module['top_only'] == 'true'
-    ]
-    log.info("Filtered list is {}".format(top_only_list))
+    # TODO, long term, the levels of dependency should be automatically determined instead
+    # of hardcoded.  The following are a few examples:
+    # Example 1: pinmux depends on amending all modules before calculating the correct number of
+    #            pins.
+    #            This would be 1 level of dependency and require 2 passes.
+    # Example 2: pinmux depends on amending all modules, and pwrmgr depends on pinmux generation to
+    #            know correct number of wakeups.  This would be 2 levels of dependency and require 3
+    #            passes.
+    #
+    # How does mulit-pass work?
+    # In example 1, the first pass gathers all modules and merges them.  However, the merge process
+    # uses a stale pinmux.  The correct pinmux is then generated using the merged configuration. The
+    # second pass now merges all the correct modules (including the generated pinmux) and creates
+    # the final merged config.
+    #
+    # In example 2, the first pass gathers all modules and merges them.  However, the merge process
+    # uses a stale pinmux and pwrmgr. The correct pinmux is then generated using the merged
+    # configuration.  However, since pwrmgr is dependent on this new pinmux, it is still generated
+    # incorrectly.  The second pass merge now has an updated pinmux but stale pwrmgr.  The correct
+    # pwrmgr can now be generated.  The final pass then merges all the correct modules and creates
+    # the final configuration.
+    #
+    # This fix is related to #2083
+    process_dependencies = 1
+    for pass_idx in range(process_dependencies + 1):
+        log.debug("Generation pass {}".format(pass_idx))
+        if pass_idx < process_dependencies:
+            cfg_copy = deepcopy(topcfg)
+            _process_top(cfg_copy, args, cfg_path, out_path, pass_idx)
+        else:
+            completecfg = _process_top(topcfg, args, cfg_path, out_path, pass_idx)
 
     topname = topcfg["name"]
-
-    # Sweep the IP directory and gather the config files
-    ip_dir = Path(__file__).parents[1] / 'hw/ip'
-    ips = search_ips(ip_dir)
-
-    # exclude filtered IPs (to use top_${topname} one) and
-    exclude_list = generated_list + top_only_list
-    ips = [x for x in ips if not x.parents[1].name in exclude_list]
-
-    # Hack alert
-    # Generate clkmgr.hjson here so that it can be included below
-    # Unlike other generated hjsons, clkmgr thankfully does not require
-    # ip.hjson information.  All the information is embedded within
-    # the top hjson file
-    amend_clocks(topcfg)
-    generate_clkmgr(topcfg, cfg_path, out_path)
-
-    # It may require two passes to check if the module is needed.
-    # TODO: first run of topgen will fail due to the absent of rv_plic.
-    # It needs to run up to amend_interrupt in merge_top function
-    # then creates rv_plic.hjson then run xbar generation.
-    hjson_dir = Path(args.topcfg).parent
-
-    for ip in generated_list:
-        log.info("Appending {}".format(ip))
-        if ip == 'clkmgr':
-            ip_hjson = Path(out_path) / "ip/{}/data/autogen/{}.hjson".format(
-                ip, ip)
-        else:
-            ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
-                ip, ip)
-        ips.append(ip_hjson)
-
-    for ip in top_only_list:
-        log.info("Appending {}".format(ip))
-        ip_hjson = hjson_dir.parent / "ip/{}/data/{}.hjson".format(ip, ip)
-        ips.append(ip_hjson)
-
-    # load Hjson and pass validate from reggen
-    try:
-        ip_objs = []
-        for x in ips:
-            # Skip if it is not in the module list
-            if x.stem not in [ip["type"] for ip in topcfg["module"]]:
-                log.info("Skip module %s as it isn't in the top module list" %
-                         x.stem)
-                continue
-
-            # The auto-generated hjson might not yet exist. It will be created
-            # later, see generate_{ip_name}() calls below. For the initial
-            # validation, use the template in hw/ip/{ip_name}/data .
-            if x.stem in generated_list and not x.is_file():
-                hjson_file = ip_dir / "{}/data/{}.hjson".format(x.stem, x.stem)
-                log.info(
-                    "Auto-generated hjson %s does not yet exist. " % str(x) +
-                    "Falling back to template %s for initial validation." %
-                    str(hjson_file))
-            else:
-                hjson_file = x
-
-            obj = hjson.load(hjson_file.open('r'),
-                             use_decimal=True,
-                             object_pairs_hook=OrderedDict)
-            if validate.validate(obj) != 0:
-                log.info("Parsing IP %s configuration failed. Skip" % x)
-                continue
-            ip_objs.append(obj)
-
-    except ValueError:
-        raise SystemExit(sys.exc_info()[1])
-
-    # Read the crossbars under the top directory
-    xbar_objs = get_hjsonobj_xbars(hjson_dir)
-
-    log.info("Detected crossbars: %s" %
-             (", ".join([x["name"] for x in xbar_objs])))
-
-    # If specified, override the seed for random netlist constant computation.
-    if args.rnd_cnst_seed:
-        log.warning('Commandline override of rnd_cnst_seed with {}.'.format(
-            args.rnd_cnst_seed))
-        topcfg['rnd_cnst_seed'] = args.rnd_cnst_seed
-    # Otherwise, we either take it from the top_{topname}.hjson if present, or
-    # randomly generate a new seed if not.
-    else:
-        random.seed()
-        new_seed = random.getrandbits(64)
-        if topcfg.setdefault('rnd_cnst_seed', new_seed) == new_seed:
-            log.warning(
-                'No rnd_cnst_seed specified, setting to {}.'.format(new_seed))
-
-    topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
-    if error != 0:
-        raise SystemExit("Error occured while validating top.hjson")
-
-    completecfg = merge_top(topcfg, ip_objs, xbar_objs)
-
-    if args.top_ral:
-        generate_top_ral(completecfg, ip_objs, args.dv_base_prefix, out_path)
-        sys.exit()
-
-    # Generate PLIC
-    if not args.no_plic and \
-       not args.alert_handler_only and \
-       not args.xbar_only:
-        generate_plic(completecfg, out_path)
-        if args.plic_only:
-            sys.exit()
-
-    # Generate Alert Handler
-    if not args.xbar_only:
-        generate_alert_handler(completecfg, out_path)
-        if args.alert_handler_only:
-            sys.exit()
-
-    # Generate Pinmux
-    generate_pinmux_and_padctrl(completecfg, out_path)
-
-    # Generate Pwrmgr
-    generate_pwrmgr(completecfg, out_path)
-
-    # Generate rstmgr
-    generate_rstmgr(completecfg, out_path)
-
-    # Generate flash
-    generate_flash(completecfg, out_path)
-
-    # Generate top only modules
-    # These modules are not templated, but are not in hw/ip
-    generate_top_only(top_only_list, out_path, topname)
 
     # Generate xbars
     if not args.no_xbar or args.xbar_only:

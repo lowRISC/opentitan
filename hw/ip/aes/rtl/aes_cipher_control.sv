@@ -8,9 +8,10 @@
 
 `include "prim_assert.sv"
 
-module aes_cipher_control
+module aes_cipher_control import aes_pkg::*;
 #(
-  parameter bit Masking = 0
+  parameter bit         Masking  = 0,
+  parameter sbox_impl_e SBoxImpl = SBoxImplLut
 ) (
   input  logic                    clk_i,
   input  logic                    rst_ni,
@@ -35,6 +36,7 @@ module aes_cipher_control
   output logic                    key_clear_o,
   input  logic                    data_out_clear_i,
   output logic                    data_out_clear_o,
+  input  logic                    mux_sel_err_i,
   output logic                    alert_o,
 
   // Control signals for masking PRNG
@@ -64,8 +66,6 @@ module aes_cipher_control
   output aes_pkg::key_words_sel_e key_words_sel_o,
   output aes_pkg::round_key_sel_e round_key_sel_o
 );
-
-  import aes_pkg::*;
 
   // Types
   // $ ./sparse-fsm-encode.py -d 3 -m 7 -n 6 \
@@ -98,14 +98,19 @@ module aes_cipher_control
   aes_cipher_ctrl_e aes_cipher_ctrl_ns, aes_cipher_ctrl_cs;
 
   // Signals
-  logic [3:0] round_d, round_q;
+  logic [3:0] rnd_ctr_d, rnd_ctr_q;
+  logic [3:0] rnd_ctr_rem_d, rnd_ctr_rem_q;
+  logic [3:0] rnd_ctr_sum;
   logic [3:0] num_rounds_d, num_rounds_q;
   logic [3:0] num_rounds_regular;
+  logic       rnd_ctr_parity, rnd_ctr_parity_d, rnd_ctr_parity_q;
+  logic       rnd_ctr_err, rnd_ctr_err_sum, rnd_ctr_err_parity;
   logic       crypt_d, crypt_q;
   logic       dec_key_gen_d, dec_key_gen_q;
   logic       key_clear_d, key_clear_q;
   logic       data_out_clear_d, data_out_clear_q;
   logic       prng_reseed_done_d, prng_reseed_done_q;
+  logic       advance;
 
   // cfg_valid_i is used for gating assertions only.
   logic       unused_cfg_valid;
@@ -142,13 +147,15 @@ module aes_cipher_control
 
     // FSM
     aes_cipher_ctrl_ns   = aes_cipher_ctrl_cs;
-    round_d              = round_q;
     num_rounds_d         = num_rounds_q;
+    rnd_ctr_d            = rnd_ctr_q;
+    rnd_ctr_rem_d        = rnd_ctr_rem_q;
     crypt_d              = crypt_q;
     dec_key_gen_d        = dec_key_gen_q;
     key_clear_d          = key_clear_q;
     data_out_clear_d     = data_out_clear_q;
     prng_reseed_done_d   = prng_reseed_done_q | prng_reseed_ack_i;
+    advance              = 1'b0;
 
     // Alert
     alert_o              = 1'b0;
@@ -176,27 +183,28 @@ module aes_cipher_control
             dec_key_gen_d =  dec_key_gen_i;
 
             // Load input data to state
-            state_sel_o = dec_key_gen_d ? STATE_CLEAR : STATE_INIT;
+            state_sel_o = dec_key_gen_i ? STATE_CLEAR : STATE_INIT;
             state_we_o  = 1'b1;
 
             // Make the masking PRNG advance. The current pseudo-random data is used to mask the
             // input data.
-            prng_update_o = dec_key_gen_d ? 1'b0 : Masking;
+            prng_update_o = dec_key_gen_i ? 1'b0 : Masking;
 
             // Init key expand
             key_expand_clear_o = 1'b1;
 
             // Load full key
-            key_full_sel_o = dec_key_gen_d ? KEY_FULL_ENC_INIT :
+            key_full_sel_o = dec_key_gen_i ? KEY_FULL_ENC_INIT :
                         (op_i == CIPH_FWD) ? KEY_FULL_ENC_INIT :
                                              KEY_FULL_DEC_INIT;
             key_full_we_o  = 1'b1;
 
-            // Load num_rounds, clear round
-            round_d      = '0;
+            // Load num_rounds, initialize round counters.
             num_rounds_d = (key_len_i == AES_128) ? 4'd10 :
                            (key_len_i == AES_192) ? 4'd12 :
                                                     4'd14;
+            rnd_ctr_rem_d      = num_rounds_d;
+            rnd_ctr_d          = '0;
             aes_cipher_ctrl_ns = INIT;
           end
         end
@@ -218,22 +226,26 @@ module aes_cipher_control
         prng_reseed_done_d = 1'b0;
 
         // AES-256 has two round keys available right from beginning. Pseudo-random data is
-        // required by KeyExpand only, and only if it is actually advancing.
+        // required by KeyExpand only.
         if (key_len_i != AES_256) begin
           // Advance in sync with KeyExpand. Based on the S-Box implementation, it can take
-          // multiple cycles to finish. Wait for handshake.
+          // multiple cycles to finish. Wait for handshake. The DOM S-Boxes take fresh PRD
+          // in every cycle except the last.
+          advance         = key_expand_out_req_i;
+          prng_update_o   = (SBoxImpl == SBoxImplDom) ? ~advance : Masking;
           key_expand_en_o = 1'b1;
-          if (key_expand_out_req_i) begin
+          if (advance) begin
             key_expand_out_ack_o = 1'b1;
             state_we_o           = ~dec_key_gen_q;
             key_full_we_o        = 1'b1;
-            round_d              = round_q + 4'b0001;
-            prng_update_o        = Masking;
+            rnd_ctr_d            = rnd_ctr_q     + 4'b0001;
+            rnd_ctr_rem_d        = rnd_ctr_rem_q - 4'b0001;
             aes_cipher_ctrl_ns   = ROUND;
           end
         end else begin
           state_we_o         = ~dec_key_gen_q;
-          round_d            = round_q + 4'b0001;
+          rnd_ctr_d          = rnd_ctr_q     + 4'b0001;
+          rnd_ctr_rem_d      = rnd_ctr_rem_q - 4'b0001;
           aes_cipher_ctrl_ns = ROUND;
         end
       end
@@ -256,10 +268,13 @@ module aes_cipher_control
         round_key_sel_o = (op_i == CIPH_FWD) ? ROUND_KEY_DIRECT : ROUND_KEY_MIXED;
 
         // Advance in sync with SubBytes and KeyExpand. Based on the S-Box implementation, both can
-        // take multiple cycles to finish. Wait for handshake.
+        // take multiple cycles to finish. Wait for handshake. Make the masking PRNG advance every
+        // cycle. The DOM S-Boxes take fresh PRD in every cycle except the last.
+        advance         = (dec_key_gen_q | sub_bytes_out_req_i) & key_expand_out_req_i;
+        prng_update_o   = (SBoxImpl == SBoxImplDom) ? ~advance : Masking;
         sub_bytes_en_o  = ~dec_key_gen_q;
         key_expand_en_o = 1'b1;
-        if ((dec_key_gen_q || sub_bytes_out_req_i) && key_expand_out_req_i) begin
+        if (advance) begin
           sub_bytes_out_ack_o  = ~dec_key_gen_q;
           key_expand_out_ack_o = 1'b1;
 
@@ -267,15 +282,11 @@ module aes_cipher_control
           key_full_we_o = 1'b1;
 
           // Update round
-          round_d = round_q + 4'b0001;
-
-          // Make the masking PRNG advance once per round only. Updating it while waiting for key
-          // expand would cause the SBoxes to be re-evaluated, thereby creating additional SCA
-          // leakage.
-          prng_update_o = Masking;
+          rnd_ctr_d     = rnd_ctr_q     + 4'b0001;
+          rnd_ctr_rem_d = rnd_ctr_rem_q - 4'b0001;
 
           // Are we doing the last regular round?
-          if (round_q == num_rounds_regular) begin
+          if (rnd_ctr_q == num_rounds_regular) begin
             aes_cipher_ctrl_ns = FINISH;
 
             if (dec_key_gen_q) begin
@@ -292,7 +303,7 @@ module aes_cipher_control
                 aes_cipher_ctrl_ns = IDLE;
               end
             end
-          end // round_q
+          end // rnd_ctr_q
         end // SubBytes/KeyExpand REQ/ACK
       end
 
@@ -310,23 +321,30 @@ module aes_cipher_control
         // Skip mix_columns
         add_rk_sel_o = ADD_RK_FINAL;
 
+        // Once we're done, we won't need the state anymore. We actually clear it when progressing
+        // to the next state.
+        state_sel_o = STATE_CLEAR;
+
         // Advance in sync with SubBytes. Based on the S-Box implementation, it can take multiple
         // cycles to finish. Only indicate that we are done if:
-        // - we have valid output (SubBytes finished), and
-        // - the masking PRNG has been reseeded (if masking is used).
+        // - we have valid output (SubBytes finished),
+        // - the masking PRNG has been reseeded (if masking is used), and
+        // - all mux selector signals are valid (don't release data in that case of errors).
         // Perform both handshakes simultaneously.
+        advance        = dec_key_gen_q | sub_bytes_out_req_i;
         sub_bytes_en_o = ~dec_key_gen_q;
-        out_valid_o    = (dec_key_gen_q | sub_bytes_out_req_i) & (Masking == prng_reseed_done_q);
+        out_valid_o    = advance & (Masking == prng_reseed_done_q) & ~mux_sel_err_i;
+        // When using DOM S-Boxes, make the masking PRNG advance every cycle until the output is
+        // ready. For other S-Boxes, make it advance once only. Updating it while being stalled
+        // would cause non-DOM S-Boxes to be re-evaluated, thereby creating additional SCA leakage.
+        prng_update_o  = (SBoxImpl == SBoxImplDom) ? ~advance                  :
+                          Masking                  ? out_valid_o & out_ready_i : 1'b0;
         if (out_valid_o && out_ready_i) begin
           sub_bytes_out_ack_o = ~dec_key_gen_q;
 
-          // We don't need the state anymore, clear it.
+          // Clear the state.
           state_we_o          = 1'b1;
-          state_sel_o         = STATE_CLEAR;
           crypt_d             = 1'b0;
-          // Make the masking PRNG advance once only. Updating it while being stalled would
-          // cause the SBoxes to be re-evaluated, thereby creating additional SCA leakage.
-          prng_update_o       = Masking;
           // If we were generating the decryption key and didn't get the handshake in the last
           // regular round, we should clear dec_key_gen now.
           dec_key_gen_d       = 1'b0;
@@ -371,10 +389,15 @@ module aes_cipher_control
 
       // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
       default: begin
-        alert_o            = 1'b1;
         aes_cipher_ctrl_ns = ERROR;
       end
     endcase
+
+    // Unconditionally jump into the terminal error state in case a mux selector signal becomes
+    // invalid or in case we have detected a fault in the round counter.
+    if (mux_sel_err_i || rnd_ctr_err) begin
+      aes_cipher_ctrl_ns = ERROR;
+    end
   end
 
   // This primitive is used to place a size-only constraint on the
@@ -393,7 +416,6 @@ module aes_cipher_control
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_fsm
     if (!rst_ni) begin
-      round_q            <= '0;
       num_rounds_q       <= '0;
       crypt_q            <= 1'b0;
       dec_key_gen_q      <= 1'b0;
@@ -401,7 +423,6 @@ module aes_cipher_control
       data_out_clear_q   <= 1'b0;
       prng_reseed_done_q <= 1'b0;
     end else begin
-      round_q            <= round_d;
       num_rounds_q       <= num_rounds_d;
       crypt_q            <= crypt_d;
       dec_key_gen_q      <= dec_key_gen_d;
@@ -416,13 +437,69 @@ module aes_cipher_control
 
   // Use separate signal for key expand operation, forward round.
   assign key_expand_op_o    = (dec_key_gen_d || dec_key_gen_q) ? CIPH_FWD : op_i;
-  assign key_expand_round_o = round_q;
+  assign key_expand_round_o = rnd_ctr_q;
 
   // Let the main controller know whate we are doing.
   assign crypt_o          = crypt_q;
   assign dec_key_gen_o    = dec_key_gen_q;
   assign key_clear_o      = key_clear_q;
   assign data_out_clear_o = data_out_clear_q;
+
+  //////////////////////////////
+  // Round Counter Protection //
+  //////////////////////////////
+  // To protect the round counter against fault injection, we use two counters:
+  // - rnd_ctr_d/q counts the executed rounds. It is initialized to 0 and counts up.
+  // - rnd_ctr_rem_d/q counts the remaining rounds. It is initialized to num_rounds_q and counts
+  //   down.
+  // In addition, we use one parity bit for the rnd_ctr_d/q counter.
+  //
+  // An alert is signaled and the FSM goes into the terminal error state if
+  // i) the sum of the counters doesn't add up, i.e. rnd_ctr_q + rnd_ctr_rem_q != num_rounds_q, or
+  // ii) the parity information is incorrect.
+
+  // The following primitives are used to place size-only constraints on the
+  // flops in order to prevent optimizations on the protected round counter.
+  prim_flop #(
+    .Width(4),
+    .ResetValue('0)
+  ) u_rnd_ctr_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( rnd_ctr_d ),
+    .q_o ( rnd_ctr_q )
+  );
+
+  prim_flop #(
+    .Width(4),
+    .ResetValue('0)
+  ) u_rnd_ctr_rem_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( rnd_ctr_rem_d ),
+    .q_o ( rnd_ctr_rem_q )
+  );
+
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_rnd_ctr_par_reg (
+    .clk_i,
+    .rst_ni,
+    .d_i ( rnd_ctr_parity_d ),
+    .q_o ( rnd_ctr_parity_q )
+  );
+
+  // Generate parity bits and sum.
+  assign rnd_ctr_parity_d = ^rnd_ctr_d;
+  assign rnd_ctr_parity   = ^rnd_ctr_q;
+  assign rnd_ctr_sum      = rnd_ctr_q + rnd_ctr_rem_q;
+
+  // Detect faults.
+  assign rnd_ctr_err_sum    = (rnd_ctr_sum != num_rounds_q)        ? 1'b1 : 1'b0;
+  assign rnd_ctr_err_parity = (rnd_ctr_parity != rnd_ctr_parity_q) ? 1'b1 : 1'b0;
+
+  assign rnd_ctr_err = rnd_ctr_err_sum | rnd_ctr_err_parity;
 
   ////////////////
   // Assertions //

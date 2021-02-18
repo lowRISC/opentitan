@@ -4,14 +4,10 @@
 //
 // Serial Peripheral Interface (SPI) Device module.
 //
-//
 
 `include "prim_assert.sv"
 
-module spi_device #(
-  parameter int SramAw = 9, // 2kB, SRAM Width is DW
-  parameter int SramDw = 32
-) (
+module spi_device (
   input clk_i,
   input rst_ni,
 
@@ -22,9 +18,9 @@ module spi_device #(
   // SPI Interface
   input              cio_sck_i,
   input              cio_csb_i,
-  output logic       cio_sdo_o,
-  output logic       cio_sdo_en_o,
-  input              cio_sdi_i,
+  output logic [3:0] cio_sd_o,
+  output logic [3:0] cio_sd_en_o,
+  input        [3:0] cio_sd_i,
 
   // Interrupts
   output logic intr_rxf_o,         // RX FIFO Full
@@ -34,7 +30,8 @@ module spi_device #(
   output logic intr_rxoverflow_o,  // RX Async FIFO Overflow
   output logic intr_txunderflow_o, // TX Async FIFO Underflow
 
-  input scanmode_i
+  input scan_rst_ni,
+  input lc_ctrl_pkg::lc_tx_t scanmode_i
 );
 
   import spi_device_pkg::*;
@@ -141,6 +138,17 @@ module spi_device #(
 
   logic [AsFifoDepthW-1:0] as_txfifo_depth, as_rxfifo_depth;
 
+  // SPI S2P signals
+  // io_mode: Determine s2p/p2s behavior. As of now, only fwmode exists.
+  // TODO: Add FlashMode IO, passthrough IO
+  io_mode_e    io_mode, fw_io_mode;
+  logic        s2p_data_valid;
+  spi_byte_t   s2p_data;
+  logic [11:0] s2p_bitcnt;
+
+  logic        p2s_valid;
+  spi_byte_t   p2s_data;
+  logic        p2s_sent;
 
   //////////////////////////////////////////////////////////////////////
   // Connect phase (between control signals above and register module //
@@ -313,8 +321,24 @@ module spi_device #(
   //  doesn't exist until it transmits data through SDI
   logic sck_n;
   logic rst_spi_n;
+  lc_ctrl_pkg::lc_tx_t [ScanModeUseLast-1:0] scanmode;
 
-  prim_clock_inv u_clk_spi (.clk_i(cio_sck_i), .clk_no(sck_n), .scanmode_i);
+  prim_lc_sync #(
+    .NumCopies(int'(ScanModeUseLast)),
+    .AsyncOn(0)
+  ) u_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(scanmode)
+  );
+
+  prim_clock_inv u_clk_spi (
+    .clk_i(cio_sck_i),
+    .clk_no(sck_n),
+    .scanmode_i(scanmode[ClkInvSel] == lc_ctrl_pkg::On)
+  );
+
   assign clk_spi_in  = (cpha ^ cpol) ? sck_n    : cio_sck_i   ;
   assign clk_spi_out = (cpha ^ cpol) ? cio_sck_i    : sck_n   ;
 
@@ -327,26 +351,110 @@ module spi_device #(
     .clk_o (clk_spi_out_buf)
   );
 
-  assign rst_spi_n = (scanmode_i) ? rst_ni : rst_ni & ~cio_csb_i;
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_csb_rst_scan_mux (
+    .clk0_i(rst_ni & ~cio_csb_i),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode[CsbRstMuxSel] == lc_ctrl_pkg::On),
+    .clk_o(rst_spi_n)
+  );
 
-  assign rst_txfifo_n = (scanmode_i) ? rst_ni : rst_ni & ~rst_txfifo_reg;
-  assign rst_rxfifo_n = (scanmode_i) ? rst_ni : rst_ni & ~rst_rxfifo_reg;
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_tx_rst_scan_mux (
+    .clk0_i(rst_ni & ~rst_txfifo_reg),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode[TxRstMuxSel] == lc_ctrl_pkg::On),
+    .clk_o(rst_txfifo_n)
+  );
 
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_rx_rst_scan_mux (
+    .clk0_i(rst_ni & ~rst_rxfifo_reg),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode[RxRstMuxSel] == lc_ctrl_pkg::On),
+    .clk_o(rst_rxfifo_n)
+  );
+
+  //////////////////////////////
+  // SPI_DEVICE mode selector //
+  //////////////////////////////
+  // This logic chooses appropriate signals based on input SPI_DEVICE mode.
+  // e.g) If FwMode is selected. all data connected to spi_fwmode logic
+
+  // Assume spi_mode does not change dynamically
+
+  // io_mode to spi_s2p
+  always_comb begin
+    io_mode = SingleIO;
+
+    unique case (spi_mode)
+      FwMode: begin
+        io_mode = fw_io_mode;
+      end
+
+      FlashMode: begin
+        // TODO: Revise when implementing FlashMode
+        io_mode = SingleIO;
+      end
+
+      PassThrough: begin
+        // TODO: Revise when implementing PassThrough
+        io_mode = SingleIO;
+      end
+
+      default: begin
+        io_mode = SingleIO;
+      end
+    endcase
+  end
+  `ASSERT_KNOWN(SpiModeKnown_A, spi_mode)
+
+
+
+  ////////////////////////////
+  // SPI Serial to Parallel //
+  ////////////////////////////
+
+  spi_s2p u_s2p (
+    .clk_i        (clk_spi_in_buf),
+    .rst_ni       (rst_spi_n),
+
+    // SPI interface
+    .s_i          (cio_sd_i),
+
+    .data_valid_o (s2p_data_valid),
+    .data_o       (s2p_data      ),
+    .bitcnt_o     (s2p_bitcnt    ),
+
+    // Config (changed dynamically)
+    .order_i      (rxorder),
+    .io_mode_i    (io_mode)
+  );
+
+  spi_p2s u_p2s (
+    .clk_i        (clk_spi_out_buf),
+    .rst_ni       (rst_spi_n),
+
+    .data_valid_i (p2s_valid),
+    .data_i       (p2s_data),
+    .data_sent_o  (p2s_sent),
+
+    .csb_i        (cio_csb_i),
+    .s_en_o       (cio_sd_en_o),
+    .s_o          (cio_sd_o),
+
+    .cpha_i       (cpha),
+    .order_i      (txorder),
+    .io_mode_i    (io_mode)
+  );
 
   /////////////
   // FW Mode //
   /////////////
   spi_fwmode u_fwmode (
-    .clk_in_i     (clk_spi_in_buf),
-    .rst_in_ni    (rst_spi_n),
-
-    .clk_out_i    (clk_spi_out_buf),
-    .rst_out_ni   (rst_spi_n),
-
-    .cpha_i        (cpha),
-    .cfg_rxorder_i (rxorder),
-    .cfg_txorder_i (txorder),
-
     .mode_i        (spi_mode),
 
     .rx_wvalid_o   (rxf_wvalid),
@@ -360,11 +468,17 @@ module spi_device #(
     .rx_overflow_o  (rxf_overflow),
     .tx_underflow_o (txf_underflow),
 
-    // SPI signal
-    .csb_i         (cio_csb_i),
-    .sdi_i         (cio_sdi_i),
-    .sdo_o         (cio_sdo_o),
-    .sdo_oe_o      (cio_sdo_en_o)
+    // Input from S2P
+    .rx_data_valid_i (s2p_data_valid),
+    .rx_data_i       (s2p_data),
+
+    // Output to S2P (mode select)
+    .io_mode_o       (fw_io_mode),
+
+    // P2S
+    .tx_wvalid_o (p2s_valid),
+    .tx_data_o   (p2s_data),
+    .tx_wready_i (p2s_sent)
   );
 
   // FIFO: Connecting FwMode to SRAM CTRLs
@@ -512,23 +626,23 @@ module spi_device #(
     .clk_i,
     .rst_ni,
 
-    .tl_i (tl_sram_h2d [0]),
-    .tl_o (tl_sram_d2h [0]),
-
-    .req_o    (mem_a_req),
-    .gnt_i    (mem_a_req),  //Always grant when request
-    .we_o     (mem_a_write),
-    .addr_o   (mem_a_addr),
-    .wdata_o  (mem_a_wdata),
-    .wmask_o  (),           // Not used
-    .rdata_i  (mem_a_rdata),
-    .rvalid_i (mem_a_rvalid),
-    .rerror_i (mem_a_rerror)
+    .tl_i        (tl_sram_h2d [0]),
+    .tl_o        (tl_sram_d2h [0]),
+    .en_ifetch_i (tlul_pkg::InstrDis),
+    .req_o       (mem_a_req),
+    .gnt_i       (mem_a_req),  //Always grant when request
+    .we_o        (mem_a_write),
+    .addr_o      (mem_a_addr),
+    .wdata_o     (mem_a_wdata),
+    .wmask_o     (),           // Not used
+    .rdata_i     (mem_a_rdata),
+    .rvalid_i    (mem_a_rvalid),
+    .rerror_i    (mem_a_rerror)
   );
 
   // SRAM Wrapper
   prim_ram_2p_adv #(
-    .Depth (512),
+    .Depth (SramDepth),
     .Width (SramDw),    // 32 x 512 --> 2kB
     .DataBitsPerMask (8),
     .CfgW  (8),
@@ -580,7 +694,7 @@ module spi_device #(
 
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
-  `ASSERT_KNOWN(CioSdoEnOKnown, cio_sdo_en_o)
+  `ASSERT_KNOWN(CioSdoEnOKnown, cio_sd_en_o)
 
   `ASSERT_KNOWN(IntrRxfOKnown,         intr_rxf_o        )
   `ASSERT_KNOWN(IntrRxlvlOKnown,       intr_rxlvl_o      )

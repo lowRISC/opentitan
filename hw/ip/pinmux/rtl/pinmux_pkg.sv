@@ -6,20 +6,12 @@ package pinmux_pkg;
 
   // Wakeup Detector Modes
   typedef enum logic [2:0] {
-    Disabled  = 3'b000,
+    Posedge   = 3'b000,
     Negedge   = 3'b001,
-    Posedge   = 3'b010,
-    Edge      = 3'b011,
-    LowTimed  = 3'b100,
-    HighTimed = 3'b101
+    Edge      = 3'b010,
+    HighTimed = 3'b011,
+    LowTimed  = 3'b100
   } wkup_mode_e;
-
-  // Number of IO power OK signals
-  parameter int NIOPokSignals = 2;
-
-  typedef struct packed {
-    logic [NIOPokSignals-1:0] domain;
-  } io_pok_req_t;
 
   // DFT Test Mode straps
   parameter int NDFTStraps  = 2;

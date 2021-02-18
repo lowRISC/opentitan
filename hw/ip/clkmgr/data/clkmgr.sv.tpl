@@ -41,7 +41,7 @@ module clkmgr import clkmgr_pkg::*; (
   output pwrmgr_pkg::pwr_clk_rsp_t pwr_o,
 
   // dft interface
-  input scanmode_i,
+  input lc_ctrl_pkg::lc_tx_t scanmode_i,
 
   // idle hints
   input [${len(hint_clks)-1}:0] idle_i,
@@ -49,6 +49,9 @@ module clkmgr import clkmgr_pkg::*; (
   // clock bypass control
   input lc_ctrl_pkg::lc_tx_t ast_clk_bypass_ack_i,
   output lc_ctrl_pkg::lc_tx_t lc_clk_bypass_ack_o,
+
+  // jittery enable
+  output logic jitter_en_o,
 
   // clock output interface
 % for intf in export_clks:
@@ -94,6 +97,18 @@ module clkmgr import clkmgr_pkg::*; (
 % endfor
 
 % for src in div_srcs:
+
+  lc_ctrl_pkg::lc_tx_t ${src['name']}_div_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_${src['name']}_div_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(${src['name']}_div_scanmode)
+  );
+
   prim_clock_div #(
     .Divisor(${src['div']})
   ) u_${src['name']}_div (
@@ -101,7 +116,7 @@ module clkmgr import clkmgr_pkg::*; (
     .rst_ni(rst_${src['src']}_ni),
     .step_down_req_i(step_down_req == lc_ctrl_pkg::On),
     .step_down_ack_o(step_down_acks[${loop.index}]),
-    .test_en_i(scanmode_i),
+    .test_en_i(${src['name']}_div_scanmode == lc_ctrl_pkg::On),
     .clk_o(clk_${src['name']}_i)
   );
 % endfor
@@ -143,10 +158,21 @@ module clkmgr import clkmgr_pkg::*; (
 % endfor
 
 % for src in rg_srcs:
+  lc_ctrl_pkg::lc_tx_t ${src}_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_${src}_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(${src}_scanmode)
+  );
+
   prim_clock_gating_sync u_${src}_cg (
     .clk_i(clk_${src}_i),
     .rst_ni(rst_${src}_ni),
-    .test_en_i(scanmode_i),
+    .test_en_i(${src}_scanmode == lc_ctrl_pkg::On),
     .async_en_i(pwr_i.ip_clk_en),
     .en_o(clk_${src}_en),
     .clk_o(clk_${src}_root)
@@ -240,12 +266,23 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(${k}_sw_en)
   );
 
+  lc_ctrl_pkg::lc_tx_t ${k}_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_${k}_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(${k}_scanmode)
+  );
+
   prim_clock_gating #(
     .NoFpgaGate(1'b1)
   ) u_${k}_cg (
     .clk_i(clk_${v}_root),
     .en_i(${k}_sw_en & clk_${v}_en),
-    .test_en_i(scanmode_i),
+    .test_en_i(${k}_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.${k})
   );
 
@@ -274,12 +311,23 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(${k}_hint)
   );
 
+  lc_ctrl_pkg::lc_tx_t ${k}_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_${k}_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(${k}_scanmode)
+  );
+
   prim_clock_gating #(
     .NoFpgaGate(1'b1)
   ) u_${k}_cg (
     .clk_i(clk_${v["src"]}_root),
     .en_i(${k}_en & clk_${v["src"]}_en),
-    .test_en_i(scanmode_i),
+    .test_en_i(${k}_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.${k})
   );
 
@@ -290,6 +338,8 @@ module clkmgr import clkmgr_pkg::*; (
   assign hw2reg.clk_hints_status.${k}_val.de = 1'b1;
   assign hw2reg.clk_hints_status.${k}_val.d = ${k}_en;
 % endfor
+
+  assign jitter_en_o = reg2hw.jitter_enable.q;
 
   ////////////////////////////////////////////////////
   // Exported clocks

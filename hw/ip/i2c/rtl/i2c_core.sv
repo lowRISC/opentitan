@@ -30,7 +30,8 @@ module  i2c_core (
   output logic                     intr_tx_nonempty_o,
   output logic                     intr_tx_overflow_o,
   output logic                     intr_acq_overflow_o,
-  output logic                     intr_ack_stop_o
+  output logic                     intr_ack_stop_o,
+  output logic                     intr_host_timeout_o
 );
 
   logic [15:0] thigh;
@@ -45,6 +46,11 @@ module  i2c_core (
   logic [15:0] t_buf;
   logic [30:0] stretch_timeout;
   logic        timeout_enable;
+  logic        stretch_en_addr;
+  logic        stretch_en_tx;
+  logic        stretch_en_acq;
+  logic        stretch_stop;
+  logic [31:0] host_timeout;
 
   logic scl_out_fsm;
   logic sda_out_fsm;
@@ -64,6 +70,7 @@ module  i2c_core (
   logic event_tx_overflow;
   logic event_acq_overflow;
   logic event_ack_stop;
+  logic event_host_timeout;
 
   logic [15:0] scl_rx_val;
   logic [15:0] sda_rx_val;
@@ -196,6 +203,11 @@ module  i2c_core (
   assign t_buf           = reg2hw.timing4.t_buf.q;
   assign stretch_timeout = reg2hw.timeout_ctrl.val.q;
   assign timeout_enable  = reg2hw.timeout_ctrl.en.q;
+  assign stretch_en_addr = reg2hw.stretch_ctrl.enableaddr.q;
+  assign stretch_en_tx   = reg2hw.stretch_ctrl.enabletx.q;
+  assign stretch_en_acq  = reg2hw.stretch_ctrl.enableacq.q;
+  assign stretch_stop    = reg2hw.stretch_ctrl.stop.q;
+  assign host_timeout    = reg2hw.host_timeout_ctrl.q;
 
   assign i2c_fifo_rxrst   = reg2hw.fifo_ctrl.rxrst.q & reg2hw.fifo_ctrl.rxrst.qe;
   assign i2c_fifo_fmtrst  = reg2hw.fifo_ctrl.fmtrst.q & reg2hw.fifo_ctrl.fmtrst.qe;
@@ -286,7 +298,8 @@ module  i2c_core (
     .depth_o (fmt_fifo_depth),
     .rvalid_o(fmt_fifo_rvalid),
     .rready_i(fmt_fifo_rready),
-    .rdata_o (fmt_fifo_rdata)
+    .rdata_o (fmt_fifo_rdata),
+    .full_o  ()
   );
 
   assign rx_fifo_rready = reg2hw.rdata.re;
@@ -305,7 +318,8 @@ module  i2c_core (
     .depth_o (rx_fifo_depth),
     .rvalid_o(rx_fifo_rvalid),
     .rready_i(rx_fifo_rready),
-    .rdata_o (rx_fifo_rdata)
+    .rdata_o (rx_fifo_rdata),
+    .full_o  ()
   );
 
   // Target TX and ACQ FIFOs
@@ -329,7 +343,8 @@ module  i2c_core (
     .depth_o (tx_fifo_depth),
     .rvalid_o(tx_fifo_rvalid),
     .rready_i(tx_fifo_rready),
-    .rdata_o (tx_fifo_rdata)
+    .rdata_o (tx_fifo_rdata),
+    .full_o  ()
   );
 
   assign acq_fifo_rready = reg2hw.acqdata.abyte.re & reg2hw.acqdata.signal.re;
@@ -348,7 +363,8 @@ module  i2c_core (
     .depth_o (acq_fifo_depth),
     .rvalid_o(acq_fifo_rvalid),
     .rready_i(acq_fifo_rready),
-    .rdata_o (acq_fifo_rdata)
+    .rdata_o (acq_fifo_rdata),
+    .full_o  ()
   );
 
   i2c_fsm u_i2c_fsm (
@@ -384,6 +400,7 @@ module  i2c_core (
     .tx_fifo_rready_o        (tx_fifo_rready),
     .tx_fifo_rdata_i         (tx_fifo_rdata),
 
+    .acq_fifo_wready_i       (acq_fifo_wready),
     .acq_fifo_wvalid_o       (acq_fifo_wvalid),
     .acq_fifo_wdata_o        (acq_fifo_wdata),
 
@@ -402,6 +419,11 @@ module  i2c_core (
     .t_buf_i                 (t_buf),
     .stretch_timeout_i       (stretch_timeout),
     .timeout_enable_i        (timeout_enable),
+    .stretch_en_addr_i       (stretch_en_addr),
+    .stretch_en_tx_i         (stretch_en_tx),
+    .stretch_en_acq_i        (stretch_en_acq),
+    .stretch_stop_i          (stretch_stop),
+    .host_timeout_i          (host_timeout),
 
     .target_address0_i       (target_address0),
     .target_mask0_i          (target_mask0),
@@ -416,7 +438,8 @@ module  i2c_core (
     .event_trans_complete_o  (event_trans_complete),
     .event_tx_empty_o        (event_tx_empty),
     .event_tx_nonempty_o     (event_tx_nonempty),
-    .event_ack_stop_o        (event_ack_stop)
+    .event_ack_stop_o        (event_ack_stop),
+    .event_host_timeout_o    (event_host_timeout)
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_fmt_watermark (
@@ -612,6 +635,19 @@ module  i2c_core (
     .hw2reg_intr_state_de_o (hw2reg.intr_state.ack_stop.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.ack_stop.d),
     .intr_o                 (intr_ack_stop_o)
+  );
+
+  prim_intr_hw #(.Width(1)) intr_hw_host_timeout (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (event_host_timeout),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.host_timeout.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.host_timeout.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.host_timeout.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.host_timeout.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.host_timeout.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.host_timeout.d),
+    .intr_o                 (intr_host_timeout_o)
   );
 
 endmodule

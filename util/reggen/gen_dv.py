@@ -10,7 +10,7 @@ from mako import exceptions
 from mako.template import Template
 from pkg_resources import resource_filename
 
-from .field_enums import HwAccess, SwRdAccess, SwWrAccess
+from .access import HwAccess, SwRdAccess, SwWrAccess
 from .gen_rtl import json_to_reg
 
 
@@ -21,7 +21,7 @@ def bcname(b):
 
 def rcname(b, r):
     '''Get the name of the dv_base_reg subclass for this register'''
-    return b.name + "_reg_" + r.name
+    return b.name + "_reg_" + r.name.lower()
 
 
 def mcname(b, m):
@@ -60,9 +60,11 @@ def gen_ral(block, dv_base_prefix, outdir):
                                       SwWrAccess=SwWrAccess)
     except:  # noqa: E722
         log.error(exceptions.text_error_template().render())
-        sys.exit(1)
+        return 1
 
     # Dump to output file
     dest_path = '{}/{}_ral_pkg.sv'.format(outdir, block.name)
     with open(dest_path, 'w') as fout:
         fout.write(to_write)
+
+    return 0

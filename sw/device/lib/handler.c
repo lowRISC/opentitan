@@ -18,7 +18,7 @@ static uint32_t get_mtval(void) {
 
 /**
  * Default Error Handling
- * @param error message supplied by caller
+ * @param msg error message supplied by caller
  * TODO - this will be soon by a real print formatting
  */
 static void print_exc_msg(const char *msg) {

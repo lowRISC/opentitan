@@ -13,7 +13,7 @@ filesets:
       - lowrisc:dv:crypto_dpi_present
     files:
       - otp_ctrl_env_pkg.sv
-      - otp_ctrl_output_data_if.sv
+      - otp_ctrl_if.sv
       - otp_ctrl_env_cfg.sv: {is_include_file: true}
       - otp_ctrl_env_cov.sv: {is_include_file: true}
       - otp_ctrl_virtual_sequencer.sv: {is_include_file: true}
@@ -24,9 +24,14 @@ filesets:
       - seq_lib/otp_ctrl_common_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_wake_up_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/otp_ctrl_partition_walk_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_lc_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_dai_lock_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_dai_errs_vseq.sv: {is_include_file: true}
+      - seq_lib/otp_ctrl_macro_errs_vseq.sv: {is_include_file: true}
+      - seq_lib/otp_ctrl_parallel_base_vseq.sv: {is_include_file: true}
+      - seq_lib/otp_ctrl_regwen_vseq.sv: {is_include_file: true}
+      - seq_lib/otp_ctrl_parallel_key_req_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

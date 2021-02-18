@@ -9,6 +9,9 @@ package otbn_reg_pkg;
   // Param list
   parameter int NumAlerts = 2;
 
+  // Address width within the block
+  parameter int BlockAw = 16;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -33,18 +36,12 @@ package otbn_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } recoverable;
+    } recov;
   } otbn_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-      logic        qe;
-    } start;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } dummy;
+    logic        q;
+    logic        qe;
   } otbn_reg2hw_cmd_reg_t;
 
   typedef struct packed {
@@ -58,18 +55,43 @@ package otbn_reg_pkg;
   } otbn_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        d;
-    } busy;
-    struct packed {
-      logic        d;
-    } dummy;
+    logic        d;
   } otbn_hw2reg_status_reg_t;
 
   typedef struct packed {
-    logic [31:0] d;
-    logic        de;
-  } otbn_hw2reg_err_code_reg_t;
+    struct packed {
+      logic        d;
+      logic        de;
+    } bad_data_addr;
+    struct packed {
+      logic        d;
+      logic        de;
+    } bad_insn_addr;
+    struct packed {
+      logic        d;
+      logic        de;
+    } call_stack;
+    struct packed {
+      logic        d;
+      logic        de;
+    } illegal_insn;
+    struct packed {
+      logic        d;
+      logic        de;
+    } loop;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fatal_imem;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fatal_dmem;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fatal_reg;
+  } otbn_hw2reg_err_bits_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -91,11 +113,11 @@ package otbn_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    otbn_reg2hw_intr_state_reg_t intr_state; // [43:43]
-    otbn_reg2hw_intr_enable_reg_t intr_enable; // [42:42]
-    otbn_reg2hw_intr_test_reg_t intr_test; // [41:40]
-    otbn_reg2hw_alert_test_reg_t alert_test; // [39:36]
-    otbn_reg2hw_cmd_reg_t cmd; // [35:32]
+    otbn_reg2hw_intr_state_reg_t intr_state; // [41:41]
+    otbn_reg2hw_intr_enable_reg_t intr_enable; // [40:40]
+    otbn_reg2hw_intr_test_reg_t intr_test; // [39:38]
+    otbn_reg2hw_alert_test_reg_t alert_test; // [37:34]
+    otbn_reg2hw_cmd_reg_t cmd; // [33:32]
     otbn_reg2hw_start_addr_reg_t start_addr; // [31:0]
   } otbn_reg2hw_t;
 
@@ -103,28 +125,37 @@ package otbn_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [42:41]
-    otbn_hw2reg_status_reg_t status; // [40:39]
-    otbn_hw2reg_err_code_reg_t err_code; // [38:6]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [24:23]
+    otbn_hw2reg_status_reg_t status; // [22:22]
+    otbn_hw2reg_err_bits_reg_t err_bits; // [21:6]
     otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [5:0]
   } otbn_hw2reg_t;
 
   // Register Address
-  parameter logic [15:0] OTBN_INTR_STATE_OFFSET = 16'h 0;
-  parameter logic [15:0] OTBN_INTR_ENABLE_OFFSET = 16'h 4;
-  parameter logic [15:0] OTBN_INTR_TEST_OFFSET = 16'h 8;
-  parameter logic [15:0] OTBN_ALERT_TEST_OFFSET = 16'h c;
-  parameter logic [15:0] OTBN_CMD_OFFSET = 16'h 10;
-  parameter logic [15:0] OTBN_STATUS_OFFSET = 16'h 14;
-  parameter logic [15:0] OTBN_ERR_CODE_OFFSET = 16'h 18;
-  parameter logic [15:0] OTBN_START_ADDR_OFFSET = 16'h 1c;
-  parameter logic [15:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 20;
+  parameter logic [BlockAw-1:0] OTBN_INTR_STATE_OFFSET = 16'h 0;
+  parameter logic [BlockAw-1:0] OTBN_INTR_ENABLE_OFFSET = 16'h 4;
+  parameter logic [BlockAw-1:0] OTBN_INTR_TEST_OFFSET = 16'h 8;
+  parameter logic [BlockAw-1:0] OTBN_ALERT_TEST_OFFSET = 16'h c;
+  parameter logic [BlockAw-1:0] OTBN_CMD_OFFSET = 16'h 10;
+  parameter logic [BlockAw-1:0] OTBN_STATUS_OFFSET = 16'h 14;
+  parameter logic [BlockAw-1:0] OTBN_ERR_BITS_OFFSET = 16'h 18;
+  parameter logic [BlockAw-1:0] OTBN_START_ADDR_OFFSET = 16'h 1c;
+  parameter logic [BlockAw-1:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 20;
+
+  // Reset values for hwext registers and their fields
+  parameter logic [0:0] OTBN_INTR_TEST_RESVAL = 1'h 0;
+  parameter logic [0:0] OTBN_INTR_TEST_DONE_RESVAL = 1'h 0;
+  parameter logic [1:0] OTBN_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [0:0] OTBN_ALERT_TEST_FATAL_RESVAL = 1'h 0;
+  parameter logic [0:0] OTBN_ALERT_TEST_RECOV_RESVAL = 1'h 0;
+  parameter logic [0:0] OTBN_CMD_RESVAL = 1'h 0;
+  parameter logic [0:0] OTBN_STATUS_RESVAL = 1'h 0;
 
   // Window parameter
-  parameter logic [15:0] OTBN_IMEM_OFFSET = 16'h 4000;
-  parameter logic [15:0] OTBN_IMEM_SIZE   = 16'h 1000;
-  parameter logic [15:0] OTBN_DMEM_OFFSET = 16'h 8000;
-  parameter logic [15:0] OTBN_DMEM_SIZE   = 16'h 1000;
+  parameter logic [BlockAw-1:0] OTBN_IMEM_OFFSET = 16'h 4000;
+  parameter logic [BlockAw-1:0] OTBN_IMEM_SIZE   = 16'h 1000;
+  parameter logic [BlockAw-1:0] OTBN_DMEM_OFFSET = 16'h 8000;
+  parameter logic [BlockAw-1:0] OTBN_DMEM_SIZE   = 16'h 1000;
 
   // Register Index
   typedef enum int {
@@ -134,7 +165,7 @@ package otbn_reg_pkg;
     OTBN_ALERT_TEST,
     OTBN_CMD,
     OTBN_STATUS,
-    OTBN_ERR_CODE,
+    OTBN_ERR_BITS,
     OTBN_START_ADDR,
     OTBN_FATAL_ALERT_CAUSE
   } otbn_id_e;
@@ -147,7 +178,7 @@ package otbn_reg_pkg;
     4'b 0001, // index[3] OTBN_ALERT_TEST
     4'b 0001, // index[4] OTBN_CMD
     4'b 0001, // index[5] OTBN_STATUS
-    4'b 1111, // index[6] OTBN_ERR_CODE
+    4'b 0001, // index[6] OTBN_ERR_BITS
     4'b 1111, // index[7] OTBN_START_ADDR
     4'b 0001  // index[8] OTBN_FATAL_ALERT_CAUSE
   };

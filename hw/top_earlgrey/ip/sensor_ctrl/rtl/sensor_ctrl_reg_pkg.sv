@@ -17,6 +17,9 @@ package sensor_ctrl_reg_pkg;
   parameter int LsSel = 5;
   parameter int OtSel = 6;
 
+  // Address width within the block
+  parameter int BlockAw = 5;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -24,31 +27,31 @@ package sensor_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } as;
+    } recov_as;
     struct packed {
       logic        q;
       logic        qe;
-    } cg;
+    } recov_cg;
     struct packed {
       logic        q;
       logic        qe;
-    } gd;
+    } recov_gd;
     struct packed {
       logic        q;
       logic        qe;
-    } ts_hi;
+    } recov_ts_hi;
     struct packed {
       logic        q;
       logic        qe;
-    } ts_lo;
+    } recov_ts_lo;
     struct packed {
       logic        q;
       logic        qe;
-    } ls;
+    } recov_ls;
     struct packed {
       logic        q;
       logic        qe;
-    } ot;
+    } recov_ot;
   } sensor_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -95,13 +98,22 @@ package sensor_ctrl_reg_pkg;
   } sensor_ctrl_hw2reg_t;
 
   // Register Address
-  parameter logic [4:0] SENSOR_CTRL_ALERT_TEST_OFFSET = 5'h 0;
-  parameter logic [4:0] SENSOR_CTRL_CFG_REGWEN_OFFSET = 5'h 4;
-  parameter logic [4:0] SENSOR_CTRL_ACK_MODE_OFFSET = 5'h 8;
-  parameter logic [4:0] SENSOR_CTRL_ALERT_TRIG_OFFSET = 5'h c;
-  parameter logic [4:0] SENSOR_CTRL_ALERT_STATE_OFFSET = 5'h 10;
-  parameter logic [4:0] SENSOR_CTRL_STATUS_OFFSET = 5'h 14;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_ALERT_TEST_OFFSET = 5'h 0;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_CFG_REGWEN_OFFSET = 5'h 4;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_ACK_MODE_OFFSET = 5'h 8;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_ALERT_TRIG_OFFSET = 5'h c;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_ALERT_STATE_OFFSET = 5'h 10;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_STATUS_OFFSET = 5'h 14;
 
+  // Reset values for hwext registers and their fields
+  parameter logic [6:0] SENSOR_CTRL_ALERT_TEST_RESVAL = 7'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_AS_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_CG_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_GD_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_TS_HI_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_TS_LO_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_LS_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_OT_RESVAL = 1'h 0;
 
   // Register Index
   typedef enum int {

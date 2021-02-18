@@ -6,6 +6,9 @@
 
 package trial1_reg_pkg;
 
+  // Address width within the block
+  parameter int BlockAw = 10;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -259,27 +262,32 @@ package trial1_reg_pkg;
   } trial1_hw2reg_t;
 
   // Register Address
-  parameter logic [9:0] TRIAL1_RWTYPE0_OFFSET = 10'h 0;
-  parameter logic [9:0] TRIAL1_RWTYPE1_OFFSET = 10'h 4;
-  parameter logic [9:0] TRIAL1_RWTYPE2_OFFSET = 10'h 8;
-  parameter logic [9:0] TRIAL1_RWTYPE3_OFFSET = 10'h c;
-  parameter logic [9:0] TRIAL1_RWTYPE4_OFFSET = 10'h 200;
-  parameter logic [9:0] TRIAL1_ROTYPE0_OFFSET = 10'h 204;
-  parameter logic [9:0] TRIAL1_W1CTYPE0_OFFSET = 10'h 208;
-  parameter logic [9:0] TRIAL1_W1CTYPE1_OFFSET = 10'h 20c;
-  parameter logic [9:0] TRIAL1_W1CTYPE2_OFFSET = 10'h 210;
-  parameter logic [9:0] TRIAL1_W1STYPE2_OFFSET = 10'h 214;
-  parameter logic [9:0] TRIAL1_W0CTYPE2_OFFSET = 10'h 218;
-  parameter logic [9:0] TRIAL1_R0W1CTYPE2_OFFSET = 10'h 21c;
-  parameter logic [9:0] TRIAL1_RCTYPE0_OFFSET = 10'h 220;
-  parameter logic [9:0] TRIAL1_WOTYPE0_OFFSET = 10'h 224;
-  parameter logic [9:0] TRIAL1_MIXTYPE0_OFFSET = 10'h 228;
-  parameter logic [9:0] TRIAL1_RWTYPE5_OFFSET = 10'h 22c;
-  parameter logic [9:0] TRIAL1_RWTYPE6_OFFSET = 10'h 230;
-  parameter logic [9:0] TRIAL1_ROTYPE1_OFFSET = 10'h 234;
-  parameter logic [9:0] TRIAL1_ROTYPE2_OFFSET = 10'h 238;
-  parameter logic [9:0] TRIAL1_RWTYPE7_OFFSET = 10'h 23c;
+  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE0_OFFSET = 10'h 0;
+  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE1_OFFSET = 10'h 4;
+  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE2_OFFSET = 10'h 8;
+  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE3_OFFSET = 10'h c;
+  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE4_OFFSET = 10'h 200;
+  parameter logic [BlockAw-1:0] TRIAL1_ROTYPE0_OFFSET = 10'h 204;
+  parameter logic [BlockAw-1:0] TRIAL1_W1CTYPE0_OFFSET = 10'h 208;
+  parameter logic [BlockAw-1:0] TRIAL1_W1CTYPE1_OFFSET = 10'h 20c;
+  parameter logic [BlockAw-1:0] TRIAL1_W1CTYPE2_OFFSET = 10'h 210;
+  parameter logic [BlockAw-1:0] TRIAL1_W1STYPE2_OFFSET = 10'h 214;
+  parameter logic [BlockAw-1:0] TRIAL1_W0CTYPE2_OFFSET = 10'h 218;
+  parameter logic [BlockAw-1:0] TRIAL1_R0W1CTYPE2_OFFSET = 10'h 21c;
+  parameter logic [BlockAw-1:0] TRIAL1_RCTYPE0_OFFSET = 10'h 220;
+  parameter logic [BlockAw-1:0] TRIAL1_WOTYPE0_OFFSET = 10'h 224;
+  parameter logic [BlockAw-1:0] TRIAL1_MIXTYPE0_OFFSET = 10'h 228;
+  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE5_OFFSET = 10'h 22c;
+  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE6_OFFSET = 10'h 230;
+  parameter logic [BlockAw-1:0] TRIAL1_ROTYPE1_OFFSET = 10'h 234;
+  parameter logic [BlockAw-1:0] TRIAL1_ROTYPE2_OFFSET = 10'h 238;
+  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE7_OFFSET = 10'h 23c;
 
+  // Reset values for hwext registers and their fields
+  parameter logic [31:0] TRIAL1_RWTYPE6_RESVAL = 32'h c8c8c8c8;
+  parameter logic [31:0] TRIAL1_RWTYPE6_RWTYPE6_RESVAL = 32'h c8c8c8c8;
+  parameter logic [31:0] TRIAL1_ROTYPE1_RESVAL = 32'h 66aa66aa;
+  parameter logic [31:0] TRIAL1_ROTYPE1_ROTYPE1_RESVAL = 32'h 66aa66aa;
 
   // Register Index
   typedef enum int {

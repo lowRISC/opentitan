@@ -11,21 +11,23 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
   `uvm_object_new
 
-  bit do_lc_trans;
   bit collect_used_addr = 1;
 
+  rand bit                           do_req_keys, do_lc_trans;
   rand bit                           access_locked_parts;
   rand bit [TL_AW-1:0]               dai_addr;
   rand bit [TL_DW-1:0]               wdata0, wdata1;
   rand int                           num_dai_op;
   rand otp_ctrl_part_pkg::part_idx_e part_idx;
+  rand bit                           check_regwen_val, check_trigger_regwen_val;
+  rand bit [TL_DW-1:0]               check_timeout_val;
+  rand bit [1:0]                     check_trigger_val;
+  rand bit [TL_DW-1:0]               ecc_err_mask;
 
   constraint no_access_err_c {access_locked_parts == 0;}
 
   // LC partition does not allow DAI access
-  constraint partition_index_c {
-    part_idx inside {[CreatorSwCfgIdx:Secret2Idx]};
-  }
+  constraint partition_index_c {part_idx inside {[CreatorSwCfgIdx:Secret2Idx]};}
 
   constraint dai_wr_legal_addr_c {
     if (part_idx == CreatorSwCfgIdx) dai_addr inside `PART_ADDR_RANGE(CreatorSwCfgIdx);
@@ -48,9 +50,19 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
     num_dai_op inside {[1:50]};
   }
 
+  constraint regwens_c {
+    check_regwen_val         dist {1 :/ 1, 0 :/ 9};
+    check_trigger_regwen_val dist {1 :/ 1, 0 :/ 9};
+  }
+
+  constraint check_timeout_val_c {
+    check_timeout_val inside {0, [100_000:'1]};
+  }
+
+  constraint ecc_err_c {ecc_err_mask == 0;}
+
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
-    cfg.lc_creator_seed_sw_rw_en_vif.drive(lc_ctrl_pkg::On);
     csr_wr(ral.intr_enable, en_intr);
   endtask
 
@@ -74,15 +86,19 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       end
       do_otp_ctrl_init = 0;
 
-      // get otbn keys
-      req_otbn_key();
+      `DV_CHECK_RANDOMIZE_FATAL(this)
+      // set consistency and integrity checks
+      csr_wr(ral.check_regwen, check_regwen_val);
+      csr_wr(ral.check_trigger_regwen, check_trigger_regwen_val);
+      csr_wr(ral.check_timeout, check_timeout_val);
+      trigger_checks(.val(check_trigger_val), .wait_done(1));
 
-      // get flash addr and data
-      req_flash_addr_key();
-      req_flash_data_key();
-
-      // get sram keys
-      req_all_sram_keys();
+      if (do_req_keys) begin
+        req_otbn_key();
+        req_flash_addr_key();
+        req_flash_data_key();
+        req_all_sram_keys();
+      end
 
       for (int i = 0; i < num_dai_op; i++) begin
         bit [TL_DW-1:0] rdata0, rdata1;
@@ -101,11 +117,11 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
         if ($urandom_range(0, 1)) begin
           // OTP read via DAI, check data in scb
-          dai_rd(dai_addr, rdata0, rdata1);
+          dai_rd(dai_addr, ecc_err_mask, rdata0, rdata1);
         end
 
         // if write sw partitions, check tlul window
-        if (part_idx inside {CreatorSwCfgIdx, OwnerSwCfgIdx} && ($urandom_range(0, 1))) begin
+        if (is_sw_part(dai_addr) && ($urandom_range(0, 1))) begin
           uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
 
           // random issue reset, OTP content should not be cleared
@@ -113,7 +129,13 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
           tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1));
         end
 
+        if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(tlul_val));
         if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
+      end
+
+      if (do_lc_trans) begin
+        req_lc_transition();
+        req_lc_token();
       end
 
       // lock digests
@@ -129,11 +151,6 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
       // read and check digest in scb
       rd_digests();
-
-      if (do_lc_trans) begin
-        req_lc_transition();
-        req_lc_token();
-      end
     end
 
   endtask : body

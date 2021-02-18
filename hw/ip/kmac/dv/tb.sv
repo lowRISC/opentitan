@@ -18,8 +18,6 @@ module tb;
   wire devmode;
   wire idle;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
-  // Interrupt wires
-  wire intr_kmac_done, intr_kmac_fifo_empty, intr_kmac_err;
   // keymgr/kmac sideload wires
   keymgr_pkg::hw_key_req_t kmac_sideload_key;
   // keymgr kdf interface wires
@@ -58,31 +56,23 @@ module tb;
     .keymgr_kdf_i         ('0                       ),
 
     // Interrupts
-    .intr_kmac_done_o     (intr_kmac_done           ),
-    .intr_fifo_empty_o    (intr_kmac_fifo_empty     ),
-    .intr_kmac_err_o      (intr_kmac_err            ),
+    .intr_kmac_done_o     (interrupts[KmacDone]     ),
+    .intr_fifo_empty_o    (interrupts[KmacFifoEmpty]),
+    .intr_kmac_err_o      (interrupts[KmacErr]      ),
 
     // Idle interface
     .idle_o               (idle                     ),
 
-    // TODO: hook up interfaces for:
-    //
-    // 1) KDF
-    // 2) csrng/edn
-
-    // edn
+    // EDN interface
     .clk_edn_i                  (edn_clk    ),
     .rst_edn_ni                 (edn_rst_n  ),
     .entropy_o                  (edn_if.req ),
     .entropy_i                  ({edn_if.ack, edn_if.d_data})
+
+    // TODO: hook up interfaces for:
+    //
+    // 1) KDF
   );
-
-  // Interface assignments
-
-  // Interrupt interface
-  assign interrupts[KmacDone]       = intr_kmac_done;
-  assign interrupts[KmacFifoEmpty]  = intr_kmac_fifo_empty;
-  assign interrupts[KmacErr]        = intr_kmac_done;
 
   initial begin
     // drive clk and rst_n from clk_if

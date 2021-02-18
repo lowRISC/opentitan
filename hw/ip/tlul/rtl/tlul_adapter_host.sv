@@ -21,7 +21,7 @@
 
 `include "prim_assert.sv"
 
-module tlul_adapter_host #(
+module tlul_adapter_host import tlul_pkg::*; #(
   parameter int unsigned MAX_REQS = 2
 ) (
   input clk_i,
@@ -33,13 +33,14 @@ module tlul_adapter_host #(
   input  logic                       we_i,
   input  logic [top_pkg::TL_DW-1:0]  wdata_i,
   input  logic [top_pkg::TL_DBW-1:0] be_i,
+  input  tl_type_e                   type_i,
 
   output logic                       valid_o,
   output logic [top_pkg::TL_DW-1:0]  rdata_o,
   output logic                       err_o,
 
-  output tlul_pkg::tl_h2d_t          tl_o,
-  input  tlul_pkg::tl_d2h_t          tl_i
+  output tl_h2d_t                    tl_o,
+  input  tl_d2h_t                    tl_i
 );
   localparam int WordSize = $clog2(top_pkg::TL_DBW);
 
@@ -50,6 +51,7 @@ module tlul_adapter_host #(
     assign tl_source = '0;
   end else begin : g_multiple_reqs
     localparam int ReqNumW  = $clog2(MAX_REQS);
+    localparam int unsigned MaxSource = MAX_REQS - 1;
 
     logic [ReqNumW-1:0] source_d;
     logic [ReqNumW-1:0] source_q;
@@ -66,7 +68,7 @@ module tlul_adapter_host #(
       source_d = source_q;
 
       if (req_i && gnt_o) begin
-        if (source_q == MAX_REQS - 1) begin
+        if (source_q == MaxSource[ReqNumW-1:0]) begin
           source_d = '0;
         end else  begin
           source_d = source_q + 1;
@@ -83,16 +85,16 @@ module tlul_adapter_host #(
 
   assign tl_o = '{
     a_valid:   req_i,
-    a_opcode:  (~we_i) ? tlul_pkg::Get           :
-               (&be_i) ? tlul_pkg::PutFullData   :
-                         tlul_pkg::PutPartialData,
+    a_opcode:  (~we_i) ? Get           :
+               (&be_i) ? PutFullData   :
+                         PutPartialData,
     a_param:   3'h0,
     a_size:    top_pkg::TL_SZW'(WordSize),
     a_mask:    tl_be,
     a_source:  tl_source,
     a_address: {addr_i[31:WordSize], {WordSize{1'b0}}},
     a_data:    wdata_i,
-    a_user:    '{default:'0},
+    a_user:    '{parity_en: '0, parity: '0, tl_type: type_i},
 
     d_ready:   1'b1
   };
@@ -102,6 +104,16 @@ module tlul_adapter_host #(
   assign valid_o = tl_i.d_valid;
   assign rdata_o = tl_i.d_data;
   assign err_o   = tl_i.d_error;
+
+  // Addresses are assumed to be word-aligned, and the bottom bits are ignored
+  logic unused_addr_bottom_bits;
+  assign unused_addr_bottom_bits = ^addr_i[WordSize-1:0];
+
+  // Explicitly ignore unused fields of tl_i
+  logic unused_tl_i_fields;
+  assign unused_tl_i_fields = ^{tl_i.d_opcode, tl_i.d_param,
+                                tl_i.d_size, tl_i.d_source, tl_i.d_sink,
+                                tl_i.d_user};
 
 `ifdef INC_ASSERT
   localparam int OutstandingReqCntW =

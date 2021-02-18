@@ -104,15 +104,16 @@ module otbn_mac_bignum
   assign operation_flags_en_o.L = operation_i.shift_acc ? ~operation_i.wr_hw_sel_upper :
                                                           1'b1;
 
-  // For .SO M is taken from the top-bit of shifted out half-word, otherwise it is taken from the top-bit
-  // of the full result.
+  // For .SO M is taken from the top-bit of shifted out half-word, otherwise it is taken from the
+  // top-bit of the full result.
   assign operation_flags_o.M    = operation_i.shift_acc ? adder_result[WLEN/2-1] :
                                                           adder_result[WLEN-1];
   // M is always updated for .WO, and for .SO when writing to the upper half-word.
   assign operation_flags_en_o.M = operation_i.shift_acc ? operation_i.wr_hw_sel_upper :
                                                           1'b1;
 
-  // For .SO Z is calculated from the shifted out half-word, otherwise it is calculated on the full result.
+  // For .SO Z is calculated from the shifted out half-word, otherwise it is calculated on the full
+  // result.
   assign operation_flags_o.Z    = operation_i.shift_acc ? adder_result_hw_is_zero[0] :
                                                           &adder_result_hw_is_zero;
 

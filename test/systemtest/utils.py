@@ -364,7 +364,11 @@ def dump_temp_files(tmp_path):
             "^^^^^^^^^^^^^^^^^^^^ {} ^^^^^^^^^^^^^^^^^^^^\n".format(f))
 
 
-def load_sw_over_spi(tmp_path, spiflash_path, sw_test_bin, spiflash_args=[]):
+def load_sw_over_spi(tmp_path,
+                     spiflash_path,
+                     sw_test_bin,
+                     spiflash_args=[],
+                     timeout=600):
     """ Use the spiflash utility to load software onto a device. """
 
     log.info("Flashing device software from {} over SPI".format(
@@ -373,7 +377,7 @@ def load_sw_over_spi(tmp_path, spiflash_path, sw_test_bin, spiflash_args=[]):
     cmd_flash = [spiflash_path, '--input', sw_test_bin] + spiflash_args
     p_flash = Process(cmd_flash, logdir=tmp_path, cwd=tmp_path)
     p_flash.run()
-    p_flash.proc.wait(timeout=600)
+    p_flash.proc.wait(timeout=timeout)
     assert p_flash.proc.returncode == 0
 
     log.info("Device software flashed.")
@@ -425,6 +429,7 @@ def find_in_files(file_objects,
         for file_object in file_objects:
             file_object.seek(0)
 
+    end_loop = False
     while True:
         for file_object in file_objects:
             for line in file_object:
@@ -432,12 +437,17 @@ def find_in_files(file_objects,
                 if m is not None:
                     return m
 
+        if end_loop:
+            break
+
         if timeout is not None and time.time() >= t_end:
             raise subprocess.TimeoutExpired(None, timeout)
 
+        # The wait function returns True to indicate that no more data will be
+        # produced (e.g. because the producing process terminated). But we still
+        # need to check one last time if the already produced data is matching
+        # the `pattern`.
         end_loop = wait_func()
-        if end_loop:
-            break
 
     return None
 
@@ -487,6 +497,20 @@ def filter_remove_device_sw_log_prefix(line):
 
     # See base_log_internal_core() in lib/base/log.c for the format description.
     pattern = r'^[IWEF?]\d{5} [a-zA-Z0-9\.-_]+:\d+\] '
+    if isinstance(line, bytes):
+        return re.sub(bytes(pattern, encoding='utf-8'), b'', line)
+    else:
+        return re.sub(pattern, '', line)
+
+
+def filter_remove_sw_test_status_log_prefix(line):
+    """
+    Remove the logging prefix produced by the sw_test_status DV component.
+    """
+
+    # Example of a full prefix to be matched:
+    # 1629002: (../src/lowrisc_dv_sw_test_status_0/sw_test_status_if.sv:42) [TOP.top_earlgrey_verilator.u_sw_test_status_if]
+    pattern = r'\d+: \(.+/sw_test_status_if\.sv:\d+\) \[TOP\..+\] '
     if isinstance(line, bytes):
         return re.sub(bytes(pattern, encoding='utf-8'), b'', line)
     else:

@@ -7,15 +7,12 @@
 """
 
 import logging as log
-import operator
-import sys
 
 from mako import exceptions
 from mako.template import Template
 from pkg_resources import resource_filename
 
-from .data import *
-from .field_enums import HwAccess, SwAccess, SwRdAccess, SwWrAccess
+from .access import HwAccess, SwRdAccess, SwWrAccess
 from .gen_rtl import json_to_reg
 
 
@@ -48,5 +45,8 @@ def gen_assertion(block, outdir):
                                    HwAccess=HwAccess,
                                    SwRdAccess=SwRdAccess,
                                    SwWrAccess=SwWrAccess))
-        except:
+        except:  # noqa: 722
             log.error(exceptions.text_error_template().render())
+            return 1
+
+    return 0

@@ -1,0 +1,12 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# An example custom configuration that generates lots of loops (100
+# times as many as the default config)
+
+inherit: base
+
+gen-weights:
+  Loop: 100
+

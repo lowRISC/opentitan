@@ -6,9 +6,13 @@
 // Do Not Edit directly
 // TODO: This automation does not support: shadow reg, has_d has_de not has_q (right now does not
 // have internal storage if de=0)
-<% from reggen import (gen_fpv)
-%>\
-<% from topgen import lib
+<%
+  from reggen import (gen_fpv)
+  from reggen.data import get_basename
+  from reggen.register import Register
+  from reggen.multi_register import MultiRegister
+
+  from topgen import lib
 %>\
 <%def name="construct_classes(block)">\
 % for b in block.blocks:
@@ -159,50 +163,52 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
   has_q  = r.get_n_bits(["q"]) > 0
   has_d  = r.get_n_bits(["d"]) > 0
   has_de = r.get_n_bits(["de"]) > 0
+
+  if isinstance(r, Register):
+    r0 = r
+    flat_regs = [r]
+  else:
+    assert isinstance(r, MultiRegister)
+    r0 = r.reg
+    flat_regs = r.regs
 %>\
-  % if not r.get_field_flat(0).shadowed:
-  % if r.is_multi_reg():
+  % if not r0.shadowed:
+  % if isinstance(r, MultiRegister):
 <%
-      mreg_name          = r.name
+      mreg_name          = r0.name.lower()
       mreg_width_list    = list()
       mreg_fpv_name_list = list()
       mreg_dut_path_list = list()
       mreg_has_q_list    = list()
       mreg_has_d_list    = list()
       mreg_has_de_list   = list()
-      mreg_num_regs      = r.get_n_fields_flat()
+      fields             = r.get_field_list()
+      mreg_num_regs      = len(fields)
 
       mreg_msb = -1
       mreg_lsb = 0
       i        = 0
+
+      if not r.is_homogeneous():
+        for field in r0.fields:
+          mreg_fpv_name_list.append(mreg_name + "_" + field.name.lower())
+          mreg_dut_path_list.append(mreg_name + "[s]." + field.name.lower())
+          mreg_width_list.append(field.bits.width())
+          mreg_has_q_list.append(field.get_n_bits(r0.hwext, ["q"]) > 0)
+          mreg_has_d_list.append(field.get_n_bits(r0.hwext, ["d"]) > 0)
+          mreg_has_de_list.append(field.get_n_bits(r0.hwext, ["de"]) > 0)
+        mreg_num_base_fields = len(mreg_fpv_name_list)
+        mreg_num_regs        = mreg_num_regs / mreg_num_base_fields
+      else:
+        f = fields[0]
+        mreg_num_base_fields = 1
+        mreg_fpv_name_list.append(mreg_name)
+        mreg_dut_path_list.append(mreg_name + "[s]")
+        mreg_width_list.append(f.bits.width())
+        mreg_has_q_list.append(has_q)
+        mreg_has_d_list.append(has_d)
+        mreg_has_de_list.append(has_de)
 %>\
-   % if not r.ishomog:
-     % for field in r.get_reg_flat(0).fields:
-<%
-  mreg_fpv_name_list.append(mreg_name + "_" + field.get_basename())
-  mreg_dut_path_list.append(mreg_name + "[s]." + field.get_basename())
-  mreg_width_list.append(field.msb - field.lsb + 1)
-  mreg_has_q_list.append(field.get_n_bits(["q"]) > 0)
-  mreg_has_d_list.append(field.get_n_bits(["d"]) > 0)
-  mreg_has_de_list.append(field.get_n_bits(["de"]) > 0)
-%>\
-     % endfor
-<%
-  mreg_num_base_fields = len(mreg_fpv_name_list)
-  mreg_num_regs        = mreg_num_regs / mreg_num_base_fields
-%>\
-   % else:
-<%
-  f = r.get_field_flat(0)
-  mreg_num_base_fields = 1
-  mreg_fpv_name_list.append(mreg_name)
-  mreg_dut_path_list.append(mreg_name + "[s]")
-  mreg_width_list.append(f.msb - f.lsb + 1)
-  mreg_has_q_list.append(has_q)
-  mreg_has_d_list.append(has_d)
-  mreg_has_de_list.append(has_de)
-%>\
-   % endif
 
   // define local fpv variable for multi-reg
    % if r.get_n_bits(["q", "d"]):
@@ -217,58 +223,53 @@ ${assign_fpv_var(fpv_name, mreg_dut_path_list[loop.index], int(mreg_width_list[l
    % endif
   % endif
 
-  % for reg_flat in r.get_regs_flat():
+  % for reg_flat in flat_regs:
 <%
-  reg_name    = reg_flat.name
-  reg_offset  =  str(reg_width) + "'h" + "%x" % reg_flat.offset
-  reg_msb     = reg_flat.width - 1
-  regwen      = reg_flat.regwen
+  reg_name    = reg_flat.name.lower()
+  reg_offset  = "{}'h{:x}".format(reg_width, reg_flat.offset)
+  reg_msb     = reg_flat.get_width() - 1
+  reg_wen     = ('`REGWEN_PATH.{}_qs'.format(reg_flat.regwen.lower())
+                 if reg_flat.regwen is not None else '1')
   reg_wr_mask = 0
 %>\
-  // assertions for register: ${reg_name}
-    % if regwen:
-<% reg_wen = "`REGWEN_PATH." + regwen + "_qs" %>\
-    % else:
-<% reg_wen = "1" %>\
-    % endif
-    % for f in reg_flat.get_fields_flat():
+  // assertions for register: ${reg_name.lower()}
+    % for f in reg_flat.fields:
 <%
-      field_name      = f.name
+      field_name      = f.name.lower()
       assert_path     = reg_name + "." + field_name
       assert_name     = reg_name + "_" + field_name
-      field_access    = f.swaccess.name
-      field_wr_mask   = ((1 << (f.msb-f.lsb + 1)) -1) << f.lsb
+      field_access    = f.swaccess.key.upper()
+      field_wr_mask   = ((1 << f.bits.width()) - 1) << f.bits.lsb
       field_wr_mask_h = format(field_wr_mask, 'x')
       reg_wr_mask    |= field_wr_mask
       reg_wr_mask_h   = format(reg_wr_mask, 'x')
-      lsb             = f.lsb
-      sw_rdaccess     = f.swrdaccess.name
-      had_q           = f.get_n_bits(["q"]) > 0
-      has_d           = f.get_n_bits(["d"]) > 0
-      has_de          = f.get_n_bits(["de"]) > 0
+      lsb             = f.bits.lsb
+      sw_rdaccess     = f.swaccess.swrd().name
+      had_q           = f.get_n_bits(r0.hwext, ["q"]) > 0
+      has_d           = f.get_n_bits(r0.hwext, ["d"]) > 0
+      has_de          = f.get_n_bits(r0.hwext, ["de"]) > 0
 %>\
-      % if not r.ishomog:
-        % if r.is_multi_reg():
+      % if not r.is_homogeneous():
+        % if isinstance(r, MultiRegister):
   // this is a non-homog multi-reg
 <%
       mreg_lsb = i * mreg_width_list[loop.index]
       mreg_msb = mreg_lsb + mreg_width_list[loop.index] - 1
 %>\
-${gen_multi_reg_asserts_by_category(assert_name, mreg_name + "_" + f.get_basename(), mreg_msb, mreg_lsb, reg_flat.hwext, field_wr_mask_h)}\
+${gen_multi_reg_asserts_by_category(assert_name, mreg_name + "_" + get_basename(f.name.lower()), mreg_msb, mreg_lsb, reg_flat.hwext, field_wr_mask_h)}\
         % else:
 ${gen_asserts_by_category(assert_name, assert_path, reg_flat.hwext, field_wr_mask_h)}\
         % endif
       % endif
     % endfor
-    % if r.is_multi_reg():
 <%
-      mreg_lsb = i * (mreg_msb - mreg_lsb + 1)
-      mreg_msb = mreg_lsb + reg_msb
-      i += 1
+      if isinstance(r, MultiRegister):
+        mreg_lsb = i * (mreg_msb - mreg_lsb + 1)
+        mreg_msb = mreg_lsb + reg_msb
+        i += 1
 %>\
-    % endif
-    % if r.ishomog:
-      % if r.is_multi_reg():
+    % if r.is_homogeneous():
+      % if isinstance(r, MultiRegister):
 ${gen_multi_reg_asserts_by_category(reg_name, mreg_name, mreg_msb, mreg_lsb, reg_flat.hwext, reg_wr_mask_h)}\
       % else:
 ${gen_asserts_by_category(reg_name, reg_name, reg_flat.hwext, reg_wr_mask_h)}\
@@ -328,7 +329,7 @@ ${gen_rd_asserts(assert_name, is_ext, reg_r_path, wr_mask)}\
   % else:
 <% wr_property = "P" %>\
   % endif
-  % if not r.ishomog:
+  % if not r.is_homogeneous():
 <% shift_index = lsb %>\
   % else:
 <% shift_index = 0 %>\
@@ -348,7 +349,7 @@ ${gen_rd_asserts(assert_name, is_ext, reg_r_path, wr_mask)}\
   % else:
 <% rd_property = "rd_P" %>\
   % endif
-  % if not r.ishomog:
+  % if not r.is_homogeneous():
 <% shift_index = lsb %>\
   % else:
 <% shift_index = 0 %>\

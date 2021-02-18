@@ -15,12 +15,14 @@ log = logging.getLogger(__name__)
 
 
 class VerilatorSimEarlgrey:
-    UART0_SPEED = 9600  # see device/lib/arch/device_sim_verilator.c
+    UART0_SPEED = 7200  # see device/lib/arch/device_sim_verilator.c
 
     def __init__(self, sim_path: Path, rom_elf_path: Path, work_dir: Path):
         """ A verilator simulation of the Earl Grey toplevel """
         assert sim_path.is_file()
         self._sim_path = sim_path
+
+        self.p_sim = None
 
         assert rom_elf_path.is_file()
         self._rom_elf_path = rom_elf_path
@@ -134,6 +136,19 @@ class VerilatorSimEarlgrey:
             # process is already dead
             pass
 
+    def find_in_output(self,
+                       pattern,
+                       timeout,
+                       filter_func=None,
+                       from_start=False):
+        """ Find a pattern in STDOUT or STDERR of the Verilator simulation """
+        assert self.p_sim
+
+        return self.p_sim.find_in_output(pattern,
+                                         timeout,
+                                         from_start=from_start,
+                                         filter_func=filter_func)
+
     def find_in_uart0(self,
                       pattern,
                       timeout,
@@ -196,6 +211,24 @@ def app_selfchecking(request, bin_dir):
 # Therefore, if we do not read quickly enough, we miss the PASS/FAIL indication
 # and the test never finishes.
 
+def assert_selfchecking_test_passes(sim):
+    assert sim.find_in_output(
+        re.compile(r"SW test transitioned to SwTestStatusInTest.$"),
+        timeout=120,
+        filter_func=utils.filter_remove_sw_test_status_log_prefix
+    ) is not None, "Start of test indication not found."
+
+    log.debug("Waiting for pass string from device test")
+
+    result_match = sim.find_in_output(
+        re.compile(r'^==== SW TEST (PASSED|FAILED) ====$'),
+        timeout=600,
+        filter_func=utils.filter_remove_sw_test_status_log_prefix)
+    assert result_match is not None, "PASSED/FAILED indication not found in test output."
+
+    result_msg = result_match.group(1)
+    log.info("Test ended with {}".format(result_msg))
+    assert result_msg == 'PASSED'
 
 def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking):
     """
@@ -214,20 +247,7 @@ def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking):
 
     sim.run(app_selfchecking[0], extra_sim_args=app_selfchecking[1])
 
-    bootmsg_exp = b'Boot ROM initialisation has completed, jump into flash!'
-    assert sim.find_in_uart0(
-        bootmsg_exp,
-        timeout=120) is not None, "End-of-bootrom string not found."
-
-    log.debug("Waiting for pass string from device test")
-
-    result_match = sim.find_in_uart0(re.compile(rb'^(PASS|FAIL)!$'),
-                                     timeout=600)
-    assert result_match is not None, "PASS/FAIL indication not found in test output."
-
-    result_msg = result_match.group(1)
-    log.info("Test ended with {}".format(result_msg))
-    assert result_msg == b'PASS'
+    assert_selfchecking_test_passes(sim)
 
     sim.terminate()
 
@@ -253,19 +273,6 @@ def test_spiflash(tmp_path, bin_dir):
     utils.load_sw_over_spi(tmp_path, spiflash, app_bin,
                            ['--verilator', sim.spi0_device_path])
 
-    bootmsg_exp = b'Boot ROM initialisation has completed, jump into flash!'
-    assert sim.find_in_uart0(
-        bootmsg_exp,
-        timeout=600) is not None, "End-of-bootrom string not found."
-
-    log.debug("Waiting for pass string from device test")
-
-    result_match = sim.find_in_uart0(re.compile(rb'^(PASS|FAIL)!$'),
-                                     timeout=240)
-    assert result_match is not None, "PASS/FAIL indication not found in test output."
-
-    result_msg = result_match.group(1)
-    log.info("Test ended with {}".format(result_msg))
-    assert result_msg == b'PASS'
+    assert_selfchecking_test_passes(sim)
 
     sim.terminate()

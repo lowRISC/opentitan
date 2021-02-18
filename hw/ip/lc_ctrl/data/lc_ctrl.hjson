@@ -14,10 +14,10 @@
   ///////////////////////////
 
   alert_list: [
-    { name: "lc_programming_failure",
+    { name: "fatal_prog_error",
       desc: "This alert triggers if an error occurred during an OTP programming operation.",
     }
-    { name: "lc_state_failure",
+    { name: "fatal_state_error",
       desc: "This alert triggers if an error in the life cycle state or life cycle controller FSM is detected.",
     }
   ],
@@ -352,8 +352,8 @@
           name: "OTP_ERROR"
           desc: '''
                 This bit is set to 1 if an error occurred during an OTP programming operation.
-                This error will move the life cycle state automatically to ESCALATE and raise an
-                lc_programming_failure alert.
+                This error will move the life cycle state automatically to ESCALATE and raise a
+                fatal_prog_error alert.
                 '''
         }
         { bits: "7"
@@ -361,7 +361,7 @@
           desc: '''
                 This bit is set to 1 if either the controller FSM state or the life cycle state is invalid or
                 has been corrupted as part of a tampering attempt. This error will move the life cycle state
-                automatically to ESCALATE and raise an lc_state_failure alert.
+                automatically to ESCALATE and raise a fatal_state_error alert.
                 '''
         }
         { bits: "8"

@@ -10,7 +10,10 @@ package rstmgr_reg_pkg;
   parameter int RdWidth = 32;
   parameter int IdxWidth = 4;
   parameter int NumHwResets = 2;
-  parameter int NumSwResets = 2;
+  parameter int NumSwResets = 7;
+
+  // Address width within the block
+  parameter int BlockAw = 6;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -103,38 +106,55 @@ package rstmgr_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    rstmgr_reg2hw_reset_info_reg_t reset_info; // [17:16]
-    rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [15:11]
-    rstmgr_reg2hw_cpu_info_ctrl_reg_t cpu_info_ctrl; // [10:6]
-    rstmgr_reg2hw_sw_rst_regen_mreg_t [1:0] sw_rst_regen; // [5:4]
-    rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [1:0] sw_rst_ctrl_n; // [3:0]
+    rstmgr_reg2hw_reset_info_reg_t reset_info; // [32:31]
+    rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [30:26]
+    rstmgr_reg2hw_cpu_info_ctrl_reg_t cpu_info_ctrl; // [25:21]
+    rstmgr_reg2hw_sw_rst_regen_mreg_t [6:0] sw_rst_regen; // [20:14]
+    rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [6:0] sw_rst_ctrl_n; // [13:0]
   } rstmgr_reg2hw_t;
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    rstmgr_hw2reg_reset_info_reg_t reset_info; // [84:78]
-    rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [77:76]
-    rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [75:72]
-    rstmgr_hw2reg_alert_info_reg_t alert_info; // [71:40]
-    rstmgr_hw2reg_cpu_info_ctrl_reg_t cpu_info_ctrl; // [39:38]
-    rstmgr_hw2reg_cpu_info_attr_reg_t cpu_info_attr; // [37:34]
-    rstmgr_hw2reg_cpu_info_reg_t cpu_info; // [33:2]
-    rstmgr_hw2reg_sw_rst_ctrl_n_mreg_t [1:0] sw_rst_ctrl_n; // [1:0]
+    rstmgr_hw2reg_reset_info_reg_t reset_info; // [89:83]
+    rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [82:81]
+    rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [80:77]
+    rstmgr_hw2reg_alert_info_reg_t alert_info; // [76:45]
+    rstmgr_hw2reg_cpu_info_ctrl_reg_t cpu_info_ctrl; // [44:43]
+    rstmgr_hw2reg_cpu_info_attr_reg_t cpu_info_attr; // [42:39]
+    rstmgr_hw2reg_cpu_info_reg_t cpu_info; // [38:7]
+    rstmgr_hw2reg_sw_rst_ctrl_n_mreg_t [6:0] sw_rst_ctrl_n; // [6:0]
   } rstmgr_hw2reg_t;
 
   // Register Address
-  parameter logic [5:0] RSTMGR_RESET_INFO_OFFSET = 6'h 0;
-  parameter logic [5:0] RSTMGR_ALERT_INFO_CTRL_OFFSET = 6'h 4;
-  parameter logic [5:0] RSTMGR_ALERT_INFO_ATTR_OFFSET = 6'h 8;
-  parameter logic [5:0] RSTMGR_ALERT_INFO_OFFSET = 6'h c;
-  parameter logic [5:0] RSTMGR_CPU_INFO_CTRL_OFFSET = 6'h 10;
-  parameter logic [5:0] RSTMGR_CPU_INFO_ATTR_OFFSET = 6'h 14;
-  parameter logic [5:0] RSTMGR_CPU_INFO_OFFSET = 6'h 18;
-  parameter logic [5:0] RSTMGR_SW_RST_REGEN_OFFSET = 6'h 1c;
-  parameter logic [5:0] RSTMGR_SW_RST_CTRL_N_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] RSTMGR_RESET_INFO_OFFSET = 6'h 0;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_CTRL_OFFSET = 6'h 4;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_ATTR_OFFSET = 6'h 8;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_OFFSET = 6'h c;
+  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_CTRL_OFFSET = 6'h 10;
+  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_ATTR_OFFSET = 6'h 14;
+  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_OFFSET = 6'h 18;
+  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGEN_OFFSET = 6'h 1c;
+  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_OFFSET = 6'h 20;
 
+  // Reset values for hwext registers and their fields
+  parameter logic [3:0] RSTMGR_ALERT_INFO_ATTR_RESVAL = 4'h 0;
+  parameter logic [3:0] RSTMGR_ALERT_INFO_ATTR_CNT_AVAIL_RESVAL = 4'h 0;
+  parameter logic [31:0] RSTMGR_ALERT_INFO_RESVAL = 32'h 0;
+  parameter logic [31:0] RSTMGR_ALERT_INFO_VALUE_RESVAL = 32'h 0;
+  parameter logic [3:0] RSTMGR_CPU_INFO_ATTR_RESVAL = 4'h 0;
+  parameter logic [3:0] RSTMGR_CPU_INFO_ATTR_CNT_AVAIL_RESVAL = 4'h 0;
+  parameter logic [31:0] RSTMGR_CPU_INFO_RESVAL = 32'h 0;
+  parameter logic [31:0] RSTMGR_CPU_INFO_VALUE_RESVAL = 32'h 0;
+  parameter logic [6:0] RSTMGR_SW_RST_CTRL_N_RESVAL = 7'h 7f;
+  parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_0_RESVAL = 1'h 1;
+  parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_1_RESVAL = 1'h 1;
+  parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_2_RESVAL = 1'h 1;
+  parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_3_RESVAL = 1'h 1;
+  parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_4_RESVAL = 1'h 1;
+  parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_5_RESVAL = 1'h 1;
+  parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_6_RESVAL = 1'h 1;
 
   // Register Index
   typedef enum int {

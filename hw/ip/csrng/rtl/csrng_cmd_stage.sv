@@ -42,7 +42,8 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   output logic                       genbits_fips_o,
   // error indication
   output logic [2:0]                 cmd_stage_sfifo_cmd_err_o,
-  output logic [2:0]                 cmd_stage_sfifo_genbits_err_o
+  output logic [2:0]                 cmd_stage_sfifo_genbits_err_o,
+  output logic                       cmd_stage_sm_err_o
 );
 
   localparam int GenBitsFifoWidth = 1+128;
@@ -56,7 +57,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   logic [CmdFifoWidth-1:0] sfifo_cmd_wdata;
   logic                    sfifo_cmd_pop;
   logic [2:0]              sfifo_cmd_err;
-  logic                    sfifo_cmd_not_full;
+  logic                    sfifo_cmd_full;
   logic                    sfifo_cmd_not_empty;
 
   // genbits fifo
@@ -65,7 +66,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   logic [GenBitsFifoWidth-1:0] sfifo_genbits_wdata;
   logic                        sfifo_genbits_pop;
   logic [2:0]                  sfifo_genbits_err;
-  logic                        sfifo_genbits_not_full;
+  logic                        sfifo_genbits_full;
   logic                        sfifo_genbits_not_empty;
 
   logic [3:0]              cmd_len;
@@ -119,11 +120,12 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     .rst_ni         (rst_ni),
     .clr_i          (!cs_enable_i),
     .wvalid_i       (sfifo_cmd_push),
-    .wready_o       (sfifo_cmd_not_full),
+    .wready_o       (),
     .wdata_i        (sfifo_cmd_wdata),
     .rvalid_o       (sfifo_cmd_not_empty),
     .rready_i       (sfifo_cmd_pop),
     .rdata_o        (sfifo_cmd_rdata),
+    .full_o         (sfifo_cmd_full),
     .depth_o        (sfifo_cmd_depth)
   );
 
@@ -138,12 +140,12 @@ module csrng_cmd_stage import csrng_pkg::*; #(
          cmd_gen_1st_req ? {16'b0,cmd_stage_shid_i,sfifo_cmd_rdata[11:0]} :  // pad,id,f,clen,cmd
          sfifo_cmd_rdata;
 
-  assign cmd_stage_rdy_o = sfifo_cmd_not_full;
+  assign cmd_stage_rdy_o = !sfifo_cmd_full;
 
   assign sfifo_cmd_err =
-         {(sfifo_cmd_push && !sfifo_cmd_not_full),
+         {(sfifo_cmd_push && sfifo_cmd_full),
           (sfifo_cmd_pop && !sfifo_cmd_not_empty),
-          (!sfifo_cmd_not_full && !sfifo_cmd_not_empty)};
+          (sfifo_cmd_full && !sfifo_cmd_not_empty)};
 
 
   // state machine controls
@@ -172,28 +174,35 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   // state machine to process command
   //---------------------------------------------------------
 
-  // Encoding generated with ./sparse-fsm-encode.py -d 3 -m 6 -n 6 -s 1112859863
-  // Hamming distance histogram:
-  //
-  // 0: --
-  // 1: --
-  // 2: --
-  // 3: |||||||||||||||||||| (53.33%)
-  // 4: ||||||||||||||| (40.00%)
-  // 5: || (6.67%)
-  // 6: --
-  //
-  // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 5
-  //
+// Encoding generated with:
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 6 \
+//      -s 2519129599 --language=sv
+//
+// Hamming distance histogram:
+//
+//  0: --
+//  1: --
+//  2: --
+//  3: |||||||||||||||||||| (57.14%)
+//  4: ||||||||||||||| (42.86%)
+//  5: --
+//  6: --
+//
+// Minimum Hamming distance: 3
+// Maximum Hamming distance: 4
+// Minimum Hamming weight: 1
+// Maximum Hamming weight: 5
+//
+
   localparam int StateWidth = 6;
   typedef    enum logic [StateWidth-1:0] {
-    Idle      = 6'b000100, // idle
-    SendSOP   = 6'b110011, // send sop (start of packet)
-    SendMOP   = 6'b011110, // send mop (middle of packet)
-    GenCmdChk = 6'b001011, // gen cmd check
-    CmdAck    = 6'b101101, // wait for command ack
-    GenReq    = 6'b111000  // process gen requests
+    Idle      = 6'b001010, // idle
+    SendSOP   = 6'b000111, // send sop (start of packet)
+    SendMOP   = 6'b010000, // send mop (middle of packet)
+    GenCmdChk = 6'b011101, // gen cmd check
+    CmdAck    = 6'b111011, // wait for command ack
+    GenReq    = 6'b110110, // process gen requests
+    Error     = 6'b101100  // illegal state reached and hang
   } state_e;
 
   state_e state_d, state_q;
@@ -226,6 +235,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     cmd_arb_sop_o = 1'b0;
     cmd_arb_mop_o = 1'b0;
     cmd_arb_eop_o = 1'b0;
+    cmd_stage_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
         if (!cmd_fifo_zero) begin
@@ -275,7 +285,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
         // flag set if a gen request
         if (cmd_gen_flag_q) begin
           // must stall if genbits fifo is not clear
-          if (sfifo_genbits_not_full) begin
+          if (!sfifo_genbits_full) begin
             if (cmd_gen_cnt_q == '0) begin
               cmd_final_ack = 1'b1;
               state_d = Idle;
@@ -296,7 +306,10 @@ module csrng_cmd_stage import csrng_pkg::*; #(
           state_d = Idle;
         end
       end
-      default: state_d = Idle;
+      Error: begin
+        cmd_stage_sm_err_o = 1'b1;
+      end
+      default: state_d = Error;
     endcase
   end
 
@@ -313,11 +326,12 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     .rst_ni         (rst_ni),
     .clr_i          (!cs_enable_i),
     .wvalid_i       (sfifo_genbits_push),
-    .wready_o       (sfifo_genbits_not_full),
+    .wready_o       (),
     .wdata_i        (sfifo_genbits_wdata),
     .rvalid_o       (sfifo_genbits_not_empty),
     .rready_i       (sfifo_genbits_pop),
     .rdata_o        (sfifo_genbits_rdata),
+    .full_o         (sfifo_genbits_full),
     .depth_o        () // sfifo_genbits_depth)
   );
 
@@ -332,9 +346,9 @@ module csrng_cmd_stage import csrng_pkg::*; #(
 
 
   assign sfifo_genbits_err =
-         {(sfifo_genbits_push && !sfifo_genbits_not_full),
+         {(sfifo_genbits_push && sfifo_genbits_full),
           (sfifo_genbits_pop && !sfifo_genbits_not_empty),
-          (!sfifo_genbits_not_full && !sfifo_genbits_not_empty)};
+          (sfifo_genbits_full && !sfifo_genbits_not_empty)};
 
   //---------------------------------------------------------
   // ack logic

@@ -170,17 +170,40 @@ def main() -> int:
         out_elf = out_dir / (app_name + '.elf')
         call_otbn_ld(obj_files, out_elf, linker_script = args.linker_script)
 
+        # Use objcopy to create an ELF that can be linked into a RISC-V binary
+        # (to run on Ibex). This should set flags for all sections to look like
+        # rodata (since they're not executable on Ibex, nor does it make sense
+        # for Ibex code to manipulate OTBN data sections "in place"). We name
+        # them with a .otbn prefix, so end up with e.g. .rodata.otbn.text and
+        # .rodata.otbn.data.
+        #
+        # Symbols that are exposed by the binary (including those giving the
+        # start and end of imem and dmem) will be relocated as part of the
+        # link, so they'll give addresses in the Ibex address space. So that
+        # the RISC-V binary can link multiple OTBN applications, we give them
+        # an application-specific prefix. (Note: This prefix is used in
+        # sw/device/lib/runtime/otbn.h: so needs to be kept in sync with that).
+        sym_pfx = '_otbn_app_{}_'.format(app_name)
         out_embedded_obj = out_dir / (app_name + '.rv32embed.o')
-        args = [
-            '-O',
-            'elf32-littleriscv',
-            '--prefix-symbols',
-            '_otbn_app_' + app_name + '_',
-            out_elf,
-            out_embedded_obj,
-        ]
+        args = (['-O', 'elf32-littleriscv',
+                 '--prefix-sections=.rodata.otbn',
+                 '--set-section-flags=*=alloc,load,readonly',
+                 '--prefix-symbols', sym_pfx] +
+                [out_elf,
+                 out_embedded_obj])
 
         call_rv32_objcopy(args)
+
+        # After objcopy has finished, we have to do a little surgery to
+        # overwrite the ELF e_type field (a 16-bit little-endian number at file
+        # offset 0x10). It will currently be 0x2 (ET_EXEC), which means a
+        # fully-linked executable file. Binutils doesn't want to link with
+        # anything of type ET_EXEC (since it usually wouldn't make any sense to
+        # do so). Hack the type to be 0x1 (ET_REL), which means an object file.
+        with open(out_embedded_obj, 'r+b') as emb_file:
+            emb_file.seek(0x10)
+            emb_file.write(b'\1\0')
+
     except subprocess.CalledProcessError as e:
         # Show a nicer error message if any of the called programs fail.
         log.fatal("Command {!r} returned non-zero exit code {}".format(

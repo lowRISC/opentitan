@@ -67,7 +67,10 @@ _Static_assert(kDifPwrmgrWakeupRequestSourceOne ==
                    (1u << PWRMGR_WAKEUP_EN_EN_0_BIT),
                "Layout of WAKEUP_EN register changed.");
 _Static_assert(kDifPwrmgrWakeupRequestSourceOne ==
-                   (1u << PWRMGR_WAKE_INFO_REASONS_BIT),
+                   (1u << PWRMGR_PARAM_AON_WKUP_REQ_IDX),
+               "Layout of WAKE_INFO register changed.");
+_Static_assert(kDifPwrmgrWakeupRequestSourceTwo ==
+                   (1u << PWRMGR_PARAM_USB_WKUP_REQ_IDX),
                "Layout of WAKE_INFO register changed.");
 
 /**

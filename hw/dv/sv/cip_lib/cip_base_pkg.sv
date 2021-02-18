@@ -18,6 +18,7 @@ package cip_base_pkg;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
+  `include "cip_macros.svh"
 
   // package variables
   string msg_id = "cip_base_pkg";
@@ -30,7 +31,6 @@ package cip_base_pkg;
   } shadow_reg_alert_e;
 
   // functions
-
   // package sources
   // base env
   `include "cip_base_env_cfg.sv"

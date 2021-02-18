@@ -46,14 +46,17 @@ class rv_dm_env extends dv_base_env #(
     // create components
     m_jtag_agent = jtag_agent::type_id::create("m_jtag_agent", this);
     uvm_config_db#(jtag_agent_cfg)::set(this, "m_jtag_agent*", "cfg", cfg.m_jtag_agent_cfg);
+    cfg.m_jtag_agent_cfg.en_cov = cfg.en_cov;
 
     m_tl_host_agent = tl_agent::type_id::create("m_tl_host_agent", this);
     uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_host_agent*", "cfg",
                                       cfg.m_tl_host_agent_cfg);
+    cfg.m_tl_host_agent_cfg.en_cov = cfg.en_cov;
 
     m_tl_device_agent = tl_agent::type_id::create("m_tl_device_agent", this);
     uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_device_agent*", "cfg",
                                       cfg.m_tl_device_agent_cfg);
+    cfg.m_tl_device_agent_cfg.en_cov = cfg.en_cov;
   endfunction
 
   function void connect_phase(uvm_phase phase);

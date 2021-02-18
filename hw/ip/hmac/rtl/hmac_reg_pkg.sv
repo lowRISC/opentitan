@@ -9,6 +9,9 @@ package hmac_reg_pkg;
   // Param list
   parameter int NumWords = 8;
 
+  // Address width within the block
+  parameter int BlockAw = 12;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -186,36 +189,65 @@ package hmac_reg_pkg;
   } hmac_hw2reg_t;
 
   // Register Address
-  parameter logic [11:0] HMAC_INTR_STATE_OFFSET = 12'h 0;
-  parameter logic [11:0] HMAC_INTR_ENABLE_OFFSET = 12'h 4;
-  parameter logic [11:0] HMAC_INTR_TEST_OFFSET = 12'h 8;
-  parameter logic [11:0] HMAC_CFG_OFFSET = 12'h c;
-  parameter logic [11:0] HMAC_CMD_OFFSET = 12'h 10;
-  parameter logic [11:0] HMAC_STATUS_OFFSET = 12'h 14;
-  parameter logic [11:0] HMAC_ERR_CODE_OFFSET = 12'h 18;
-  parameter logic [11:0] HMAC_WIPE_SECRET_OFFSET = 12'h 1c;
-  parameter logic [11:0] HMAC_KEY_0_OFFSET = 12'h 20;
-  parameter logic [11:0] HMAC_KEY_1_OFFSET = 12'h 24;
-  parameter logic [11:0] HMAC_KEY_2_OFFSET = 12'h 28;
-  parameter logic [11:0] HMAC_KEY_3_OFFSET = 12'h 2c;
-  parameter logic [11:0] HMAC_KEY_4_OFFSET = 12'h 30;
-  parameter logic [11:0] HMAC_KEY_5_OFFSET = 12'h 34;
-  parameter logic [11:0] HMAC_KEY_6_OFFSET = 12'h 38;
-  parameter logic [11:0] HMAC_KEY_7_OFFSET = 12'h 3c;
-  parameter logic [11:0] HMAC_DIGEST_0_OFFSET = 12'h 40;
-  parameter logic [11:0] HMAC_DIGEST_1_OFFSET = 12'h 44;
-  parameter logic [11:0] HMAC_DIGEST_2_OFFSET = 12'h 48;
-  parameter logic [11:0] HMAC_DIGEST_3_OFFSET = 12'h 4c;
-  parameter logic [11:0] HMAC_DIGEST_4_OFFSET = 12'h 50;
-  parameter logic [11:0] HMAC_DIGEST_5_OFFSET = 12'h 54;
-  parameter logic [11:0] HMAC_DIGEST_6_OFFSET = 12'h 58;
-  parameter logic [11:0] HMAC_DIGEST_7_OFFSET = 12'h 5c;
-  parameter logic [11:0] HMAC_MSG_LENGTH_LOWER_OFFSET = 12'h 60;
-  parameter logic [11:0] HMAC_MSG_LENGTH_UPPER_OFFSET = 12'h 64;
+  parameter logic [BlockAw-1:0] HMAC_INTR_STATE_OFFSET = 12'h 0;
+  parameter logic [BlockAw-1:0] HMAC_INTR_ENABLE_OFFSET = 12'h 4;
+  parameter logic [BlockAw-1:0] HMAC_INTR_TEST_OFFSET = 12'h 8;
+  parameter logic [BlockAw-1:0] HMAC_CFG_OFFSET = 12'h c;
+  parameter logic [BlockAw-1:0] HMAC_CMD_OFFSET = 12'h 10;
+  parameter logic [BlockAw-1:0] HMAC_STATUS_OFFSET = 12'h 14;
+  parameter logic [BlockAw-1:0] HMAC_ERR_CODE_OFFSET = 12'h 18;
+  parameter logic [BlockAw-1:0] HMAC_WIPE_SECRET_OFFSET = 12'h 1c;
+  parameter logic [BlockAw-1:0] HMAC_KEY_0_OFFSET = 12'h 20;
+  parameter logic [BlockAw-1:0] HMAC_KEY_1_OFFSET = 12'h 24;
+  parameter logic [BlockAw-1:0] HMAC_KEY_2_OFFSET = 12'h 28;
+  parameter logic [BlockAw-1:0] HMAC_KEY_3_OFFSET = 12'h 2c;
+  parameter logic [BlockAw-1:0] HMAC_KEY_4_OFFSET = 12'h 30;
+  parameter logic [BlockAw-1:0] HMAC_KEY_5_OFFSET = 12'h 34;
+  parameter logic [BlockAw-1:0] HMAC_KEY_6_OFFSET = 12'h 38;
+  parameter logic [BlockAw-1:0] HMAC_KEY_7_OFFSET = 12'h 3c;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_0_OFFSET = 12'h 40;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_1_OFFSET = 12'h 44;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_2_OFFSET = 12'h 48;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_3_OFFSET = 12'h 4c;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_4_OFFSET = 12'h 50;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_5_OFFSET = 12'h 54;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_6_OFFSET = 12'h 58;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_7_OFFSET = 12'h 5c;
+  parameter logic [BlockAw-1:0] HMAC_MSG_LENGTH_LOWER_OFFSET = 12'h 60;
+  parameter logic [BlockAw-1:0] HMAC_MSG_LENGTH_UPPER_OFFSET = 12'h 64;
+
+  // Reset values for hwext registers and their fields
+  parameter logic [2:0] HMAC_INTR_TEST_RESVAL = 3'h 0;
+  parameter logic [0:0] HMAC_INTR_TEST_HMAC_DONE_RESVAL = 1'h 0;
+  parameter logic [0:0] HMAC_INTR_TEST_FIFO_EMPTY_RESVAL = 1'h 0;
+  parameter logic [0:0] HMAC_INTR_TEST_HMAC_ERR_RESVAL = 1'h 0;
+  parameter logic [3:0] HMAC_CFG_RESVAL = 4'h 4;
+  parameter logic [0:0] HMAC_CFG_ENDIAN_SWAP_RESVAL = 1'h 1;
+  parameter logic [0:0] HMAC_CFG_DIGEST_SWAP_RESVAL = 1'h 0;
+  parameter logic [1:0] HMAC_CMD_RESVAL = 2'h 0;
+  parameter logic [8:0] HMAC_STATUS_RESVAL = 9'h 1;
+  parameter logic [0:0] HMAC_STATUS_FIFO_EMPTY_RESVAL = 1'h 1;
+  parameter logic [31:0] HMAC_WIPE_SECRET_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_0_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_1_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_2_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_3_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_4_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_5_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_6_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_KEY_7_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_2_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_3_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_4_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_5_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_6_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_DIGEST_7_RESVAL = 32'h 0;
 
   // Window parameter
-  parameter logic [11:0] HMAC_MSG_FIFO_OFFSET = 12'h 800;
-  parameter logic [11:0] HMAC_MSG_FIFO_SIZE   = 12'h 800;
+  parameter logic [BlockAw-1:0] HMAC_MSG_FIFO_OFFSET = 12'h 800;
+  parameter logic [BlockAw-1:0] HMAC_MSG_FIFO_SIZE   = 12'h 800;
 
   // Register Index
   typedef enum int {

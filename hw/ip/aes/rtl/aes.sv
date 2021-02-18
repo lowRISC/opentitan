@@ -94,7 +94,7 @@ module aes
     .entropy_masking_ack_i  ( 1'b1                           ),
     .entropy_masking_i      ( RndCnstMaskingLfsrSeedDefault  ),
 
-    .alert_recoverable_o    ( alert[0]                       ),
+    .alert_recov_o          ( alert[0]                       ),
     .alert_fatal_o          ( alert[1]                       ),
 
     .reg2hw                 ( reg2hw                         ),
@@ -105,22 +105,25 @@ module aes
 
   logic [NumAlerts-1:0] alert_test;
   assign alert_test = {
-    reg2hw.alert_test.fatal.q &
-    reg2hw.alert_test.fatal.qe,
-    reg2hw.alert_test.recoverable.q &
-    reg2hw.alert_test.recoverable.qe
+    reg2hw.alert_test.fatal_fault.q &
+    reg2hw.alert_test.fatal_fault.qe,
+    reg2hw.alert_test.recov_ctrl_update_err.q &
+    reg2hw.alert_test.recov_ctrl_update_err.qe
   };
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
-      .AsyncOn(AlertAsyncOn[i])
-    ) u_alert_sender_i (
-      .clk_i       ( clk_i                    ),
-      .rst_ni      ( rst_ni                   ),
-      .alert_req_i ( alert[i] | alert_test[i] ),
-      .alert_ack_o (                          ),
-      .alert_rx_i  ( alert_rx_i[i]            ),
-      .alert_tx_o  ( alert_tx_o[i]            )
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(i)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alert[i]      ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
     );
   end
 

@@ -17,7 +17,7 @@ class otp_ctrl_env extends cip_base_env #(
   push_pull_agent#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_addr_pull_agent;
   push_pull_agent#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_data_pull_agent;
   push_pull_agent#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE)) m_lc_prog_pull_agent;
-  push_pull_agent#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) m_lc_token_pull_agent;
+  push_pull_agent#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) m_lc_token_pull_agent;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -54,36 +54,10 @@ class otp_ctrl_env extends cip_base_env #(
         set(this, "m_lc_prog_pull_agent", "cfg", cfg.m_lc_prog_pull_agent_cfg);
 
     // build lc-otp token pull agent
-    m_lc_token_pull_agent = push_pull_agent#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth))
+    m_lc_token_pull_agent = push_pull_agent#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth))
         ::type_id::create("m_lc_token_pull_agent", this);
-    uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)))::
+    uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)))::
         set(this, "m_lc_token_pull_agent", "cfg", cfg.m_lc_token_pull_agent_cfg);
-
-    // config power manager pin
-    if (!uvm_config_db#(pwr_otp_vif)::get(this, "", "pwr_otp_vif", cfg.pwr_otp_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get pwr_otp_vif from uvm_config_db")
-    end
-
-    // config lc pins
-    if (!uvm_config_db#(lc_creator_seed_sw_rw_en_vif)::get(this, "", "lc_creator_seed_sw_rw_en_vif",
-                                                     cfg.lc_creator_seed_sw_rw_en_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get lc_provision_wr_en_vif from uvm_config_db")
-    end
-    if (!uvm_config_db#(lc_seed_hw_rd_en_vif)::get(this, "", "lc_seed_hw_rd_en_vif",
-                                                     cfg.lc_seed_hw_rd_en_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get lc_seed_hw_rd_en_vif from uvm_config_db")
-    end
-    if (!uvm_config_db#(lc_dft_en_vif)::get(this, "", "lc_dft_en_vif", cfg.lc_dft_en_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get lc_dft_en_vif from uvm_config_db")
-    end
-    if (!uvm_config_db#(lc_escalate_en_vif)::get(this, "", "lc_escalate_en_vif",
-                                                 cfg.lc_escalate_en_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get lc_escalate_en_vif from uvm_config_db")
-    end
-    if (!uvm_config_db#(lc_check_byp_en_vif)::get(this, "", "lc_check_byp_en_vif",
-                                                     cfg.lc_check_byp_en_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get lc_check_byp_en_vif from uvm_config_db")
-    end
 
     // config mem virtual interface
     if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "mem_bkdr_vif", cfg.mem_bkdr_vif)) begin
@@ -91,9 +65,8 @@ class otp_ctrl_env extends cip_base_env #(
     end
 
     // config otp_ctrl output data virtual interface
-    if (!uvm_config_db#(otp_ctrl_output_data_vif)::get(this, "", "otp_ctrl_output_data_vif",
-                                                       cfg.otp_ctrl_output_data_vif)) begin
-      `uvm_fatal(`gfn, "failed to get otp_ctrl_output_data_vif from uvm_config_db")
+    if (!uvm_config_db#(otp_ctrl_vif)::get(this, "", "otp_ctrl_vif", cfg.otp_ctrl_vif)) begin
+      `uvm_fatal(`gfn, "failed to get otp_ctrl_vif from uvm_config_db")
     end
   endfunction
 

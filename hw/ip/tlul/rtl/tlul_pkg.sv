@@ -18,13 +18,27 @@ package tlul_pkg;
     PutPartialData = 3'h 1,
     Get            = 3'h 4
   } tl_a_op_e;
+
   typedef enum logic [2:0] {
     AccessAck     = 3'h 0,
     AccessAckData = 3'h 1
   } tl_d_op_e;
 
+  typedef enum logic [2:0] {
+    InstrEn       = 3'b101,
+    InstrDis      = 3'b010
+  } tl_instr_en_e;
+
+  // used for intermodule connections
+  typedef tl_instr_en_e tl_instr_en_t;
+
+  typedef enum logic [1:0] {
+    InstrType     = 2'b01,
+    DataType      = 2'b10
+  } tl_type_e;
+
   typedef struct packed {
-    logic [6:0] rsvd1; // Reserved for future use
+    tl_type_e   tl_type;
     logic       parity_en;
     logic [7:0] parity; // Use only lower TL_DBW bit
   } tl_a_user_t;

@@ -55,23 +55,24 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
   // all clocks sources are valid
   // if clocks (usb) not configured to be active, then just bypass check
-  assign all_clks_valid = (ast_i.core_clk_val == DiffValid) &
-     (ast_i.io_clk_val == DiffValid) &
-     (~usb_clk_en_active_i | ast_i.usb_clk_val == DiffValid);
+  assign all_clks_valid = ast_i.core_clk_val &
+                          ast_i.io_clk_val &
+                          (~usb_clk_en_active_i | ast_i.usb_clk_val);
 
   // if clocks were configured to turn off, make sure val is invalid
   // if clocks were not configured to turn off, just bypass the check
-  assign all_clks_invalid = (core_clk_en_i | ast_i.core_clk_val != DiffValid) &
-     (io_clk_en_i | ast_i.io_clk_val != DiffValid) &
-     (usb_clk_en_lp_i | ast_i.usb_clk_val != DiffValid);
+  assign all_clks_invalid = (core_clk_en_i | ~ast_i.core_clk_val) &
+                            (io_clk_en_i | ~ast_i.io_clk_val) &
+                            (usb_clk_en_lp_i | ~ast_i.usb_clk_val);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       state_q        <= SlowPwrStateReset;
       cause_q        <= Por;
       cause_toggle_q <= 1'b0;
-      pd_nq          <= 1'b0;
-      pwr_clamp_q    <= 1'b1;
+      // pwrmgr resets assuming main power domain is already ready
+      pd_nq          <= 1'b1;
+      pwr_clamp_q    <= 1'b0;
       core_clk_en_q  <= 1'b0;
       io_clk_en_q    <= 1'b0;
       usb_clk_en_q   <= 1'b0;
@@ -224,7 +225,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   ///  Unused
   ////////////////////////////
 
-  logic [1:0] unused_slow_clk_val;
+  logic unused_slow_clk_val;
   assign unused_slow_clk_val = ast_i.slow_clk_val;
 
 

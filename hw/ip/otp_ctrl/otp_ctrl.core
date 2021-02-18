@@ -24,7 +24,6 @@ filesets:
       - rtl/otp_ctrl_reg_top.sv
       - rtl/otp_ctrl_ecc_reg.sv
       - rtl/otp_ctrl_scrmbl.sv
-      - rtl/otp_ctrl_token_const.sv
       - rtl/otp_ctrl_lfsr_timer.sv
       - rtl/otp_ctrl_part_unbuf.sv
       - rtl/otp_ctrl_part_buf.sv

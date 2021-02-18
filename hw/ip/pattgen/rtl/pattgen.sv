@@ -13,10 +13,14 @@ module pattgen
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
-  output logic pda0_tx_o,
-  output logic pcl0_tx_o,
-  output logic pda1_tx_o,
-  output logic pcl1_tx_o,
+  output logic cio_pda0_tx_o,
+  output logic cio_pcl0_tx_o,
+  output logic cio_pda1_tx_o,
+  output logic cio_pcl1_tx_o,
+  output logic cio_pda0_tx_en_o,
+  output logic cio_pcl0_tx_en_o,
+  output logic cio_pda1_tx_en_o,
+  output logic cio_pcl1_tx_en_o,
 
   output logic intr_done_ch0_o,
   output logic intr_done_ch1_o
@@ -35,16 +39,21 @@ module pattgen
     .devmode_i(1'b1)
   );
 
+  assign cio_pda0_tx_en_o = 1'b1;
+  assign cio_pcl0_tx_en_o = 1'b1;
+  assign cio_pda1_tx_en_o = 1'b1;
+  assign cio_pcl1_tx_en_o = 1'b1;
+
   pattgen_core u_pattgen_core (
     .clk_i,
     .rst_ni,
     .reg2hw,
     .hw2reg,
 
-    .pda0_tx_o,
-    .pcl0_tx_o,
-    .pda1_tx_o,
-    .pcl1_tx_o,
+    .pda0_tx_o(cio_pda0_tx_o),
+    .pcl0_tx_o(cio_pcl0_tx_o),
+    .pda1_tx_o(cio_pda1_tx_o),
+    .pcl1_tx_o(cio_pcl1_tx_o),
 
     .intr_done_ch0_o,
     .intr_done_ch1_o
@@ -52,10 +61,14 @@ module pattgen
 
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
-  `ASSERT_KNOWN(Pcl0TxKnownO_A, pcl0_tx_o)
-  `ASSERT_KNOWN(Pda0TxKnownO_A, pda0_tx_o)
-  `ASSERT_KNOWN(Pcl1TxKnownO_A, pcl1_tx_o)
-  `ASSERT_KNOWN(Pda1TxKnownO_A, pda1_tx_o)
+  `ASSERT_KNOWN(Pcl0TxKnownO_A, cio_pcl0_tx_o)
+  `ASSERT_KNOWN(Pda0TxKnownO_A, cio_pda0_tx_o)
+  `ASSERT_KNOWN(Pcl1TxKnownO_A, cio_pcl1_tx_o)
+  `ASSERT_KNOWN(Pda1TxKnownO_A, cio_pda1_tx_o)
+  `ASSERT_KNOWN(Pcl0TxEnKnownO_A, cio_pcl0_tx_en_o)
+  `ASSERT_KNOWN(Pda0TxEnKnownO_A, cio_pda0_tx_en_o)
+  `ASSERT_KNOWN(Pcl1TxEnKnownO_A, cio_pcl1_tx_en_o)
+  `ASSERT_KNOWN(Pda1TxEnKnownO_A, cio_pda1_tx_en_o)
   `ASSERT_KNOWN(IntrCh0DoneKnownO_A, intr_done_ch0_o)
   `ASSERT_KNOWN(IntrCh1DoneKnownO_A, intr_done_ch1_o)
 

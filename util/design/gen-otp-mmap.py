@@ -37,8 +37,7 @@ TEMPLATES = [
 
 def main():
     log.basicConfig(level=log.INFO,
-                    format="%(asctime)s - %(message)s",
-                    datefmt="%Y-%m-%d %H:%M")
+                    format="%(levelname)s: %(message)s")
 
     parser = argparse.ArgumentParser(
         prog="gen-otp-mmap",
@@ -70,7 +69,11 @@ def main():
                 log.warning(
                     'No seed specified, setting to {}.'.format(new_seed))
 
-        otp_mmap = OtpMemMap(config)
+        try:
+            otp_mmap = OtpMemMap(config)
+        except RuntimeError as err:
+            log.error(err)
+            exit(1)
 
         with open(PARTITIONS_TABLE_FILE, 'w') as outfile:
             outfile.write(TABLE_HEADER_COMMENT +

@@ -656,7 +656,7 @@ dif_otp_ctrl_result_t dif_otp_ctrl_irq_restore_all(
  * Gets the current status of the OTP controller.
  *
  * @param otp An OTP handle.
- * @param[out] stauts Out-param for the controller's status.
+ * @param[out] status Out-param for the controller's status.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -835,7 +835,7 @@ dif_otp_ctrl_dai_result_t dif_otp_ctrl_read_blocking(
  * addition, `address + len` must also be in-range and must not overflow.
  *
  * @param otp An OTP handle.
- * @param partition The partition to read from.
+ * @param address The address to read from.
  * @param[out] buf A buffer of words to write read values to.
  * @param len The number of words to read.
  * @return The result of the operation.

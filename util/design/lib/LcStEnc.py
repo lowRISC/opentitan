@@ -6,16 +6,28 @@ used to generate new life cycle encodings.
 """
 import logging as log
 import random
+from collections import OrderedDict
 
 from lib.common import (check_int, ecc_encode, get_hd, hd_histogram,
-                        is_valid_codeword, scatter_bits)
+                        is_valid_codeword, random_or_hexvalue, scatter_bits)
+
+# Seed diversification constant for LcStEnc (this enables to use
+# the same seed for different classes)
+LC_SEED_DIVERSIFIER = 1939944205722120255
+
+# State types and permissible format for entries
+# The format is index dependent, e.g. ['0', 'A1', 'B1'] for index 1
+LC_STATE_TYPES = {
+    'lc_state': ['0', 'A{}', 'B{}'],
+    'lc_cnt': ['0', 'C{}', 'D{}'],
+    'lc_id_state': ['0', 'E{}', 'F{}']
+}
 
 
 def _is_incremental_codeword(word1, word2):
     '''Test whether word2 is incremental wrt word1.'''
     if len(word1) != len(word2):
-        log.error('Words are not of equal size')
-        exit(1)
+        raise RuntimeError('Words are not of equal size')
 
     _word1 = int(word1, 2)
     _word2 = int(word2, 2)
@@ -100,25 +112,134 @@ def _validate_words(config, words):
     for k, w in enumerate(words):
         # Check whether word is valid wrt to ECC polynomial.
         if not is_valid_codeword(config, w):
-            log.error('Codeword {} at index {} is not valid'.format(w, k))
-            exit(1)
+            raise RuntimeError('Codeword {} at index {} is not valid'.format(
+                w, k))
         # Check that word fulfills the Hamming weight constraints.
         pop_cnt = w.count('1')
         if pop_cnt < config['min_hw'] or pop_cnt > config['max_hw']:
-            log.error(
+            raise RuntimeError(
                 'Codeword {} at index {} has wrong Hamming weight'.format(
                     w, k))
-            exit(1)
         # Check Hamming distance wrt to all other existing words.
         # If the constraint is larger than 0 this implies uniqueness.
         if k < len(words) - 1:
             for k2, w2 in enumerate(words[k + 1:]):
                 if get_hd(w, w2) < config['min_hd']:
-                    log.error(
+                    raise RuntimeError(
                         'Hamming distance between codeword {} at index {} '
                         'and codeword {} at index {} is too low.'.format(
                             w, k, w2, k + 1 + k2))
-                    exit(1)
+
+
+def _validate_secded(config):
+    '''Validate SECDED configuration'''
+    config['secded'].setdefault('data_width', 0)
+    config['secded'].setdefault('ecc_width', 0)
+    config['secded'].setdefault('ecc_matrix', [[]])
+    config['secded']['data_width'] = check_int(config['secded']['data_width'])
+    config['secded']['ecc_width'] = check_int(config['secded']['ecc_width'])
+
+    total_width = config['secded']['data_width'] + config['secded']['ecc_width']
+
+    if config['secded']['data_width'] % 8:
+        raise RuntimeError('SECDED data width must be a multiple of 8')
+
+    if config['secded']['ecc_width'] != len(config['secded']['ecc_matrix']):
+        raise RuntimeError('ECC matrix does not have correct number of rows')
+
+    log.info('SECDED Matrix:')
+    for i, l in enumerate(config['secded']['ecc_matrix']):
+        log.info('ECC Bit {} Fanin: {}'.format(i, l))
+        for j, e in enumerate(l):
+            e = check_int(e)
+            if e < 0 or e >= total_width:
+                raise RuntimeError('ECC bit position is out of bounds')
+            config['secded']['ecc_matrix'][i][j] = e
+
+
+def _validate_constraints(config):
+    '''Validates Hamming weight and distance constraints'''
+    config.setdefault('min_hw', 0)
+    config.setdefault('max_hw', 0)
+    config.setdefault('min_hd', 0)
+    config['min_hw'] = check_int(config['min_hw'])
+    config['max_hw'] = check_int(config['max_hw'])
+    config['min_hd'] = check_int(config['min_hd'])
+
+    total_width = config['secded']['data_width'] + config['secded']['ecc_width']
+
+    if config['min_hw'] >= total_width or \
+       config['max_hw'] > total_width or \
+       config['min_hw'] >= config['max_hw']:
+        raise RuntimeError('Hamming weight constraints are inconsistent.')
+
+    if config['max_hw'] - config['min_hw'] + 1 < config['min_hd']:
+        raise RuntimeError('Hamming distance constraint is inconsistent.')
+
+
+def _validate_tokens(config):
+    '''Validates and hashes the tokens'''
+    config.setdefault('token_size', 128)
+    config['token_size'] = check_int(config['token_size'])
+
+    hashed_tokens = []
+    for token in config['tokens']:
+        random_or_hexvalue(token, 'value', config['token_size'])
+        hashed_token = OrderedDict()
+        hashed_token['name'] = token['name'] + 'Hashed'
+        # TODO: plug in PRESENT-based hashing algo or KMAC
+        hashed_token['value'] = token['value']
+        hashed_tokens.append(hashed_token)
+
+    config['tokens'] += hashed_tokens
+
+
+def _validate_state_declarations(config):
+    '''Validates life cycle state and counter declarations'''
+    for typ in LC_STATE_TYPES.keys():
+        for k, state in enumerate(config[typ].keys()):
+            if k == 0:
+                config['num_' + typ + '_words'] = len(config[typ][state])
+                log.info('Inferred {} = {}'.format(
+                    'num_' + typ + '_words', config['num_' + typ + '_words']))
+            if config['num_' + typ + '_words'] != len(config[typ][state]):
+                raise RuntimeError(
+                    '{} entry {} has incorrect length {}'.format(
+                        typ, state, len(config[typ][state])))
+            # Render the format templates above.
+            for j, entry in enumerate(config[typ][state]):
+                legal_values = [fmt.format(j) for fmt in LC_STATE_TYPES[typ]]
+                if entry not in legal_values:
+                    raise RuntimeError(
+                        'Illegal entry "{}" found in {} of {}'.format(
+                            entry, state, typ))
+
+
+def _generate_words(config):
+    '''Generate encoding words'''
+    config['genwords'] = {}  # dict holding the word pairs for each state type
+    existing_words = []  # temporary list of all words for uniqueness tests
+    for typ in LC_STATE_TYPES.keys():
+        config['genwords'][typ] = []
+        for k in range(config['num_' + typ + '_words']):
+            new_word = _get_new_state_word_pair(config, existing_words)
+            config['genwords'][typ].append(new_word)
+
+    # Validate words (this must not fail at this point).
+    _validate_words(config, existing_words)
+
+    # Calculate and store statistics
+    config['stats'] = hd_histogram(existing_words)
+    log.info('')
+    log.info('Hamming distance histogram:')
+    log.info('')
+    for bar in config['stats']["bars"]:
+        log.info(bar)
+    log.info('')
+    log.info('Minimum HD: {}'.format(config['stats']['min_hd']))
+    log.info('Maximum HD: {}'.format(config['stats']['max_hd']))
+    log.info('Minimum HW: {}'.format(config['stats']['min_hw']))
+    log.info('Maximum HW: {}'.format(config['stats']['max_hw']))
 
 
 class LcStEnc():
@@ -130,13 +251,6 @@ class LcStEnc():
 
     # This holds the config dict.
     config = {}
-    # Holds generated life cycle words.
-    gen = {
-        'ab_words': [],
-        'cd_words': [],
-        'ef_words': [],
-        'stats': [],
-    }
 
     def __init__(self, config):
         '''The constructor validates the configuration dict.'''
@@ -146,97 +260,76 @@ class LcStEnc():
         log.info('')
 
         if 'seed' not in config:
-            log.error('Missing seed in configuration')
-            exit(1)
-
+            raise RuntimeError('Missing seed in configuration')
         if 'secded' not in config:
-            log.error('Missing secded configuration')
-            exit(1)
+            raise RuntimeError('Missing secded configuration')
+        if 'tokens' not in config:
+            raise RuntimeError('Missing token configuration')
 
-        config['secded'].setdefault('data_width', 0)
-        config['secded'].setdefault('ecc_width', 0)
-        config['secded'].setdefault('ecc_matrix', [[]])
-        config.setdefault('num_ab_words', 0)
-        config.setdefault('num_cd_words', 0)
-        config.setdefault('num_ef_words', 0)
-        config.setdefault('min_hw', 0)
-        config.setdefault('max_hw', 0)
-        config.setdefault('min_hd', 0)
+        for typ in LC_STATE_TYPES.keys():
+            if typ not in config:
+                raise RuntimeError('Missing {} definition'.format(typ))
 
         config['seed'] = check_int(config['seed'])
-
         log.info('Seed: {0:x}'.format(config['seed']))
         log.info('')
 
-        config['secded']['data_width'] = check_int(
-            config['secded']['data_width'])
-        config['secded']['ecc_width'] = check_int(
-            config['secded']['ecc_width'])
-        config['num_ab_words'] = check_int(config['num_ab_words'])
-        config['num_cd_words'] = check_int(config['num_cd_words'])
-        config['num_ef_words'] = check_int(config['num_ef_words'])
-        config['min_hw'] = check_int(config['min_hw'])
-        config['max_hw'] = check_int(config['max_hw'])
-        config['min_hd'] = check_int(config['min_hd'])
+        # Re-initialize with seed to make results reproducible.
+        random.seed(LC_SEED_DIVERSIFIER + int(config['seed']))
 
-        total_width = config['secded']['data_width'] + config['secded'][
-            'ecc_width']
-
-        if config['min_hw'] >= total_width or \
-           config['max_hw'] > total_width or \
-           config['min_hw'] >= config['max_hw']:
-            log.error('Hamming weight constraints are inconsistent.')
-            exit(1)
-
-        if config['max_hw'] - config['min_hw'] + 1 < config['min_hd']:
-            log.error('Hamming distance constraint is inconsistent.')
-            exit(1)
-
-        if config['secded']['ecc_width'] != len(
-                config['secded']['ecc_matrix']):
-            log.error('ECC matrix does not have correct number of rows')
-            exit(1)
-
-        log.info('SECDED Matrix:')
-        for i, l in enumerate(config['secded']['ecc_matrix']):
-            log.info('ECC Bit {} Fanin: {}'.format(i, l))
-            for j, e in enumerate(l):
-                e = check_int(e)
-                config['secded']['ecc_matrix'][i][j] = e
-
+        log.info('Checking SECDED.')
+        _validate_secded(config)
         log.info('')
+        log.info('Checking Hamming weight and distance constraints.')
+        _validate_constraints(config)
+        log.info('')
+        log.info('Hashing tokens.')
+        _validate_tokens(config)
+        log.info('')
+        log.info('Checking state declarations.')
+        _validate_state_declarations(config)
+        log.info('')
+        log.info('Generate incremental word encodings.')
+        _generate_words(config)
 
         self.config = config
-
-        # Re-initialize with seed to make results reproducible.
-        random.seed(int(self.config['seed']))
-
-        # Generate new encoding words
-        word_types = ['ab_words', 'cd_words', 'ef_words']
-        existing_words = []
-        for w in word_types:
-            while len(self.gen[w]) < self.config['num_' + w]:
-                new_word = _get_new_state_word_pair(self.config,
-                                                    existing_words)
-                self.gen[w].append(new_word)
-
-        # Validate words (this must not fail at this point).
-        _validate_words(self.config, existing_words)
-
-        # Print out HD histogram
-        self.gen['stats'] = hd_histogram(existing_words)
-
-        log.info('')
-        log.info('Hamming distance histogram:')
-        log.info('')
-        for bar in self.gen['stats']["bars"]:
-            log.info(bar)
-        log.info('')
-        log.info('Minimum HD: {}'.format(self.gen['stats']['min_hd']))
-        log.info('Maximum HD: {}'.format(self.gen['stats']['max_hd']))
-        log.info('Minimum HW: {}'.format(self.gen['stats']['min_hw']))
-        log.info('Maximum HW: {}'.format(self.gen['stats']['max_hw']))
 
         log.info('')
         log.info('Successfully generated life cycle state.')
         log.info('')
+
+    def encode(self, name, state):
+        '''Look up state encoding and return as integer value'''
+
+        data_width = self.config['secded']['data_width']
+        ecc_width = self.config['secded']['ecc_width']
+
+        if name not in LC_STATE_TYPES:
+            raise RuntimeError('Unknown state type {}'.format(name))
+
+        if state not in self.config[name]:
+            raise RuntimeError('Unknown state {} of type {}'.format(
+                state, name))
+
+        # Assemble list of state words
+        words = []
+        for j, entry in enumerate(self.config[name][state]):
+            # This creates an index lookup table
+            val_idx = {
+                fmt.format(j): i
+                for i, fmt in enumerate(LC_STATE_TYPES[name])
+            }
+            idx = val_idx[entry]
+            if idx == 0:
+                words.append(0)
+            else:
+                # Only extract data portion, discard ECC portion
+                word = self.config['genwords'][name][j][idx - 1][ecc_width:]
+                words.append(int(word, 2))
+
+        # Convert words to one value
+        outval = 0
+        for k, word in enumerate(words):
+            outval += word << (data_width * k)
+
+        return outval

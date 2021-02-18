@@ -277,7 +277,7 @@ bool rom_ext_get_extension(rom_ext_manifest_t params, rom_ext_extension_id_t id,
  * interrupts in Ibex - the least significant two bits will have the correct
  * value.
  *
- * @param param Parameters required for manifest parsing.
+ * @param params Parameters required for manifest parsing.
  * @return The value to write to the `mtvec` RISC-V CSR.
  */
 uintptr_t rom_ext_get_interrupt_vector(rom_ext_manifest_t params);

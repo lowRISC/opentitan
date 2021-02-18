@@ -6,3 +6,6 @@
 
 waive -rules DUAL_EDGE_CLOCK -location {prim_clock_div.sv} -regexp {.*} \
       -comment "The clock switch signal is synchronized on negative edge to ensure it is away from any transition"
+
+waive -rules CLOCK_MUX -location {prim_clock_div.sv} -regexp {.*reaches a multiplexer here, used as a clock.*} \
+      -comment "A mux is used during scan bypass, and for switching between div by 2 and div by 1 clocks"

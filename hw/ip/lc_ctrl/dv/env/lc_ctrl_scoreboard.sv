@@ -15,7 +15,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(push_pull_item#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
                         .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))) otp_prog_fifo;
-  uvm_tlm_analysis_fifo #(push_pull_item#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)))
+  uvm_tlm_analysis_fifo #(push_pull_item#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)))
                         otp_token_fifo;
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_wipe_secrets_fifo;
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_scrap_state_fifo;
@@ -77,7 +77,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
                       .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)) item_rcv;
       otp_prog_fifo.get(item_rcv);
       if (cfg.lc_ctrl_vif.prog_err == 1) begin
-        void'(set_exp_alert(.alert_name("lc_programming_failure"), .max_delay(0), .always_on(1)));
+        set_exp_alert(.alert_name("fatal_prog_error"), .is_fatal(1));
       end
     end
   endtask

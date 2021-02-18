@@ -16,6 +16,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   rand bit [NumOtpCtrlIntr-1:0] en_intr;
   bit [TL_AW-1:0] used_dai_addr_q[$];
+  bit is_valid_dai_op = 1;
 
   `uvm_object_new
 
@@ -23,13 +24,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     super.dut_init(reset_kind);
     cfg.backdoor_clear_mem = 0;
     // reset power init pin and lc pins
-    cfg.pwr_otp_vif.drive_pin(OtpPwrInitReq, 0);
-    cfg.lc_creator_seed_sw_rw_en_vif.drive(lc_ctrl_pkg::Off);
-    cfg.lc_seed_hw_rd_en_vif.drive(lc_ctrl_pkg::Off);
-    cfg.lc_dft_en_vif.drive(lc_ctrl_pkg::Off);
-    cfg.lc_escalate_en_vif.drive(lc_ctrl_pkg::Off);
-    cfg.lc_check_byp_en_vif.drive(lc_ctrl_pkg::Off);
+    cfg.otp_ctrl_vif.init();
     if (do_otp_ctrl_init) otp_ctrl_init();
+    cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
     if (do_otp_pwr_init) otp_pwr_init();
   endtask
 
@@ -40,9 +37,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   // drive otp_pwr req pin to initialize OTP, and wait until init is done
   virtual task otp_pwr_init();
-    cfg.pwr_otp_vif.drive_pin(OtpPwrInitReq, 1);
-    wait(cfg.pwr_otp_vif.pins[OtpPwrDoneRsp] == 1);
-    cfg.pwr_otp_vif.drive_pin(OtpPwrInitReq, 0);
+    cfg.otp_ctrl_vif.drive_pwr_otp_init(1);
+    wait(cfg.otp_ctrl_vif.pwr_otp_done_o == 1);
+    cfg.otp_ctrl_vif.drive_pwr_otp_init(0);
   endtask
 
   // setup basic otp_ctrl features
@@ -55,8 +52,6 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   // some registers won't set to default value until otp_init is done
   virtual task read_and_check_all_csrs_after_reset();
-    // drive dft_en pins to access the test_access memory
-    cfg.lc_dft_en_vif.drive(lc_ctrl_pkg::On);
     otp_pwr_init();
     super.read_and_check_all_csrs_after_reset();
   endtask
@@ -65,6 +60,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task dai_wr(bit [TL_DW-1:0] addr,
                       bit [TL_DW-1:0] wdata0,
                       bit [TL_DW-1:0] wdata1 = 0);
+    bit [TL_DW-1:0] val;
     addr = randomize_dai_addr(addr);
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_wdata_0, wdata0);
@@ -74,28 +70,64 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("DAI write, address %0h, data0 %0h data1 %0h, is_secret = %0b",
               addr, wdata0, wdata1, is_secret(addr)), UVM_DEBUG)
 
+    // direct_access_regwen is set only when following conditions are met:
+    // - the dai operation is valid, otherwise it is hard to predict which cycle the error is
+    //   detected and regwen is set back to 1
+    // - zero delays in TLUL interface, otherwise dai operation might be finished before reading
+    //   this regwen CSR
+    if ($urandom_range(0, 1) && cfg.zero_delays && is_valid_dai_op) begin
+      csr_rd(.ptr(ral.direct_access_regwen), .value(val));
+    end
     csr_spinwait(ral.intr_state.otp_operation_done, 1);
     csr_wr(ral.intr_state, 1'b1 << OtpOperationDone);
   endtask : dai_wr
 
-  // this task triggers an OTP readout sequence via the DAI interface
-  virtual task dai_rd(bit [TL_DW-1:0]        addr,
+  // This task triggers an OTP readout sequence via the DAI interface
+  // If ecc_err_mask is not 0, will backdoor write to OTP and trigger an ECC error
+  virtual task dai_rd(input  bit [TL_DW-1:0] addr,
+                      input  bit [TL_DW-1:0] ecc_err_mask,
                       output bit [TL_DW-1:0] rdata0,
                       output bit [TL_DW-1:0] rdata1);
+    bit [TL_DW-1:0] val, backdoor_rd_val;
     addr = randomize_dai_addr(addr);
+    backdoor_rd_val = backdoor_inject_ecc_err(addr, ecc_err_mask);
+
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiRead));
+    if ($urandom_range(0, 1) && cfg.zero_delays && is_valid_dai_op) begin
+      csr_rd(.ptr(ral.direct_access_regwen), .value(val));
+    end
     csr_spinwait(ral.intr_state.otp_operation_done, 1);
 
     csr_rd(ral.direct_access_rdata_0, rdata0);
-    if (is_secret(addr)) csr_rd(ral.direct_access_rdata_1, rdata1);
+    if (is_secret(addr) || is_digest(addr)) csr_rd(ral.direct_access_rdata_1, rdata1);
     csr_wr(ral.intr_state, 1'b1 << OtpOperationDone);
+
+    // If has ecc_err, backdoor write back original value
+    // TODO: remove this once we can detect ECC error from men_bkdr_if
+    if (cfg.ecc_err != OtpNoEccErr) cfg.mem_bkdr_vif.write32({addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
   endtask : dai_rd
+
+  virtual task dai_rd_check(bit [TL_DW-1:0] addr,
+                            bit [TL_DW-1:0] exp_data0,
+                            bit [TL_DW-1:0] exp_data1 = 0);
+    bit [TL_DW-1:0] rdata0, rdata1;
+    dai_rd(addr, 0, rdata0, rdata1);
+    `DV_CHECK_EQ(rdata0, exp_data0, $sformatf("dai addr %0h rdata0 readout mismatch", addr))
+    if (is_secret(addr) || is_digest(addr)) begin
+      `DV_CHECK_EQ(rdata1, exp_data1, $sformatf("dai addr %0h rdata1 readout mismatch", addr))
+    end
+  endtask: dai_rd_check
 
   // this task exercises an OTP digest calculation via the DAI interface
   virtual task cal_digest(int part_idx);
+    bit [TL_DW-1:0] val;
     csr_wr(ral.direct_access_address, PART_BASE_ADDRS[part_idx]);
     csr_wr(ral.direct_access_cmd, otp_ctrl_pkg::DaiDigest);
+
+    if ($urandom_range(0, 1) && cfg.zero_delays && is_valid_dai_op) begin
+      csr_rd(.ptr(ral.direct_access_regwen), .value(val));
+    end
     csr_spinwait(ral.intr_state.otp_operation_done, 1);
     csr_wr(ral.intr_state, 1 << OtpOperationDone);
   endtask
@@ -145,6 +177,42 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.secret2_digest_1),        .value(val));
   endtask
 
+  // This function backdoor inject error according to err_mask.
+  // For example, if err_mask is set to 'b01, bit 1 in OTP macro will be flipped.
+  // This function will output original backdoor read data for the given address.
+  // TODO: move it to mem_bkdr_if once #4794 landed
+  virtual function bit [TL_DW-1:0] backdoor_inject_ecc_err(bit [TL_DW-1:0] addr,
+                                                           bit [TL_DW-1:0] err_mask);
+    bit [TL_DW-1:0] val, backdoor_val;
+    addr = {addr[TL_DW-3:2], 2'b00};
+    if (err_mask == 0 || addr >= LifeCycleOffset) begin
+      cfg.ecc_err = OtpNoEccErr;
+      return 0;
+    end
+
+    // If every byte at most has one ECC error bit, it is a correctable error
+    // If any byte at more than one ECC error bit, it is a uncorrectable error
+    cfg.ecc_err = OtpEccCorrErr;
+    for (int i = 0; i < 4; i++) begin
+      if (!$onehot(err_mask[i*8+:8]) && err_mask[i*8+:8]) begin
+        cfg.ecc_err = OtpEccUncorrErr;
+        break;
+      end
+    end
+
+    // Backdoor read and write back with error bits
+    val = cfg.mem_bkdr_vif.read32(addr);
+    foreach (err_mask[i]) backdoor_val[i] = err_mask[i] ? ~val[i] : val[i];
+    cfg.mem_bkdr_vif.write32(addr, backdoor_val);
+
+    return val;
+  endfunction
+
+  virtual task trigger_checks(bit [1:0] val, bit wait_done = 1);
+    csr_wr(ral.check_trigger, val);
+    if (wait_done && val) csr_spinwait(ral.status.check_pending, 0);
+  endtask
+
   virtual task req_sram_key(int index);
     push_pull_host_seq#(.DeviceDataWidth(SRAM_DATA_SIZE)) sram_pull_seq;
     `uvm_create_on(sram_pull_seq, p_sequencer.sram_pull_sequencer_h[index]);
@@ -178,21 +246,33 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task req_lc_transition();
-    // TODO: this two variables are constraints to lc_prog_pull_seq once it supports data
-    // constraint
-    lc_ctrl_pkg::lc_state_e lc_state;
-    lc_ctrl_pkg::lc_cnt_e lc_cnt;
+    lc_ctrl_state_pkg::lc_state_e lc_state;
+    lc_ctrl_state_pkg::lc_cnt_e   lc_cnt;
+    bit [TL_DW-1:0]               intr_val;
     push_pull_host_seq#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
                         lc_prog_pull_seq;
     `uvm_create_on(lc_prog_pull_seq, p_sequencer.lc_prog_pull_sequencer_h);
-    `DV_CHECK_STD_RANDOMIZE_FATAL(lc_state);
-    `DV_CHECK_STD_RANDOMIZE_FATAL(lc_cnt)
+
+    // Even though OTP does not check input lc_state or lc_cnt is valid enum,
+    // this sequence will have 90% chance that the input data is correctly encoded
+    if (!$urandom_range(0, 9)) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(lc_state)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(lc_cnt)
+      cfg.m_lc_prog_pull_agent_cfg.add_h_user_data({lc_state, lc_cnt});
+    end
+
     `DV_CHECK_RANDOMIZE_FATAL(lc_prog_pull_seq)
     `uvm_send(lc_prog_pull_seq)
+
+    // Wait 2 clock cycle until error propogates to the interrupts,
+    // then read and clear interrupt, check is implemented in scb
+    cfg.clk_rst_vif.wait_clks(2);
+    csr_rd(ral.intr_state, intr_val);
+    csr_wr(ral.intr_state, intr_val);
   endtask
 
   virtual task req_lc_token();
-    push_pull_host_seq#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) lc_token_pull_seq;
+    push_pull_host_seq#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) lc_token_pull_seq;
     `uvm_create_on(lc_token_pull_seq, p_sequencer.lc_token_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(lc_token_pull_seq)
     `uvm_send(lc_token_pull_seq)
@@ -208,4 +288,5 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       randomize_dai_addr = {dai_addr[TL_DW-1:2], rand_addr};
     end
   endfunction
+
 endclass : otp_ctrl_base_vseq

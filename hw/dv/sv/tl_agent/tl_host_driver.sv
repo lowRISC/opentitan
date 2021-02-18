@@ -25,16 +25,27 @@ class tl_host_driver extends tl_base_driver;
           if (req != null) begin
             send_a_channel_request(req);
           end else begin
-            // wait for reset to deassert and always align with clock edge to send item
-            wait(cfg.vif.rst_n === 1'b1);
-            `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
-                              wait(reset_asserted);)
-          end
-        end
-      end
+            if (reset_asserted) flush_during_reset();
+            if (!reset_asserted) begin
+              `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
+                                wait(reset_asserted);)
+            end
+          end // req != null
+        end // forever
+      end : process_seq_item
       d_channel_thread();
       d_ready_rsp();
     join_none
+  endtask
+
+  // keep flushing items when reset is asserted
+  virtual task flush_during_reset();
+    `DV_SPINWAIT_EXIT(
+                      forever begin
+                        seq_item_port.get_next_item(req);
+                        send_a_channel_request(req);
+                      end,
+                      wait(!reset_asserted);)
   endtask
 
   // reset signals every time reset occurs.

@@ -22,7 +22,6 @@ module tb;
   wire intr_rd_full;
   wire intr_rd_lvl;
   wire intr_op_done;
-  wire intr_op_error;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
@@ -31,6 +30,8 @@ module tb;
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   tl_if eflash_tl_if(.clk(clk), .rst_n(rst_n));
+
+  `DV_ALERT_IF_CONNECT
 
   // dut
   flash_ctrl_wrapper dut (
@@ -44,6 +45,7 @@ module tb;
 
     .flash_power_ready_h_i (1'b1  ),
     .flash_power_down_h_i  (1'b0  ),
+    .flash_bist_enable_i   (lc_ctrl_pkg::Off),
 
     .eflash_tl_i        (eflash_tl_if.h2d),
     .eflash_tl_o        (eflash_tl_if.d2h),
@@ -68,7 +70,8 @@ module tb;
     .intr_rd_full_o     (intr_rd_full   ),
     .intr_rd_lvl_o      (intr_rd_lvl    ),
     .intr_op_done_o     (intr_op_done   ),
-    .intr_op_error_o    (intr_op_error  )
+    .alert_rx_i         (alert_rx       ),
+    .alert_tx_o         (alert_tx       )
   );
 
   // bind mem_bkdr_if
@@ -102,7 +105,6 @@ module tb;
   assign interrupts[FlashCtrlIntrRdFull]    = intr_rd_full;
   assign interrupts[FlashCtrlIntrRdLvl]     = intr_rd_lvl;
   assign interrupts[FlashCtrlIntrOpDone]    = intr_op_done;
-  assign interrupts[FlashCtrlIntrOpError]   = intr_op_error;
 
   initial begin
     // drive clk and rst_n from clk_if

@@ -63,7 +63,12 @@ module flash_phy_rd import flash_phy_pkg::*; (
   output logic req_o,
   input ack_i,  // request has been accepted
   input done_i, // actual data return
-  input [FullDataWidth-1:0] data_i
+  input [FullDataWidth-1:0] data_i,
+
+  // error status reporting
+  output logic ecc_single_err_o,
+  output logic ecc_multi_err_o,
+  output logic [BusBankAddrW-1:0] ecc_addr_o
   );
 
   /////////////////////////////////
@@ -280,6 +285,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .wready_o(rsp_fifo_rdy),
     .wdata_i (rsp_fifo_wdata),
     .depth_o (),
+    .full_o (),
     .rvalid_o(rsp_fifo_vld),
     .rready_i(data_valid_o), // pop when a match has been found
     .rdata_o (rsp_fifo_rdata)
@@ -327,15 +333,17 @@ module flash_phy_rd import flash_phy_pkg::*; (
   /////////////////////////////////
 
   // only uncorrectable errors are passed on to the fabric
-  logic ecc_single_err;
-  logic ecc_err;
-  logic unused_err;
   logic data_err;
 
   // scrambled data must pass through ECC first
+  logic valid_ecc;
+  logic ecc_multi_err;
+  logic ecc_single_err;
   logic [DataWidth-1:0] data_ecc_chk;
   logic [DataWidth-1:0] data_int;
   logic data_erased;
+
+  assign valid_ecc = rd_done && rd_attrs.ecc && !data_erased;
 
   // When all bits are 1, the data has been erased
   // This check is only valid when read data returns.
@@ -345,19 +353,21 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .in(data_i[ScrDataWidth-1:0]),
     .d_o(data_ecc_chk),
     .syndrome_o(),
-    .err_o({ecc_err, ecc_single_err})
+    .err_o({ecc_multi_err, ecc_single_err})
   );
-
-  assign unused_err = ecc_single_err;
 
   // If data needs to be de-scrambled and has not been erased, pass through ecc decoder.
   // Otherwise, pass the data through untouched.
   // Likewise, ecc error is only observed if the data needs to be de-scrambled and has not been
   // erased.
   // rd_done signal below is duplicated (already in data_erased) to show clear intent of the code.
-  assign data_int = (rd_done && rd_attrs.ecc && !data_erased) ? data_ecc_chk :
-                                                                data_i[DataWidth-1:0];
-  assign data_err = (rd_done && rd_attrs.ecc && !data_erased) ? ecc_err : 1'b0;
+  assign data_int = valid_ecc ? data_ecc_chk :
+                                data_i[DataWidth-1:0];
+  assign data_err = valid_ecc & ecc_multi_err;
+  assign ecc_multi_err_o = data_err;
+  assign ecc_single_err_o = valid_ecc & ecc_single_err;
+  // ecc address return is always the full flash word
+  assign ecc_addr_o = {rd_attrs.addr, {LsbAddrBit{1'b0}}};
 
   /////////////////////////////////
   // De-scrambling stage
@@ -425,6 +435,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .wready_o(data_fifo_rdy),
     .wdata_i ({alloc_q, descram, forward, data_err, data_int}),
     .depth_o (),
+    .full_o (),
     .rvalid_o(fifo_data_valid),
     .rready_i(fifo_data_ready | fifo_forward_pop),
     .rdata_o ({alloc_q2, hint_descram, hint_forward, data_err_q, fifo_data})
@@ -444,6 +455,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .wready_o(mask_fifo_rdy),
     .wdata_i (mask_i),
     .depth_o (),
+    .full_o (),
     .rvalid_o(mask_valid),
     .rready_i(fifo_data_ready | fifo_forward_pop),
     .rdata_o (mask)

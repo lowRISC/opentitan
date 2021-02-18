@@ -12,6 +12,9 @@ filesets:
 
   files_dv:
     depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_macros
+      - lowrisc:dv:dv_test_status
       - lowrisc:dv:crypto_dpi_present:0.1
     files:
       - tb/prim_present_tb.sv

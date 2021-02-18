@@ -16,6 +16,10 @@ filesets:
       - rtl/prim_secded_39_32_enc.sv
       - rtl/prim_secded_72_64_dec.sv
       - rtl/prim_secded_72_64_enc.sv
+      - rtl/prim_secded_hamming_22_16_dec.sv
+      - rtl/prim_secded_hamming_22_16_enc.sv
+      - rtl/prim_secded_hamming_39_32_dec.sv
+      - rtl/prim_secded_hamming_39_32_enc.sv
       - rtl/prim_secded_hamming_72_64_dec.sv
       - rtl/prim_secded_hamming_72_64_enc.sv
     file_type: systemVerilogSource

@@ -239,7 +239,11 @@
 - mnemonic: lw
   rv32i: true
   synopsis: Load Word
-  operands: [grd, offset, grs1]
+  operands:
+    - grd
+    - name: offset
+      abbrev: "off"
+    - grs1
   syntax: <grd>, <offset>(<grs1>)
   encoding:
     scheme: I
@@ -252,7 +256,7 @@
   doc: |
     Loads a 32b word from address `offset + grs1` in data memory, writing the result to `grd`.
     Unaligned loads are not supported.
-    Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
+    Any address that is unaligned or is above the top of memory will result in an error (setting bit `bad_data_addr` in `ERR_BITS`).
   cycles: 2
   lsu:
     type: mem-load
@@ -262,7 +266,11 @@
 - mnemonic: sw
   rv32i: true
   synopsis: Store Word
-  operands: [grs2, offset, grs1]
+  operands:
+    - grs2
+    - name: offset
+      abbrev: "off"
+    - grs1
   syntax: <grs2>, <offset>(<grs1>)
   encoding:
     scheme: S
@@ -275,7 +283,7 @@
   doc: |
     Stores a 32b word in `grs2` to address `offset + grs1` in data memory.
     Unaligned stores are not supported.
-    Any address that is unaligned or is above the top of memory will result in an error (with error code `ErrCodeBadDataAddr`).
+    Any address that is unaligned or is above the top of memory will result in an error (setting bit `bad_data_addr` in `ERR_BITS`).
   lsu:
     type: mem-store
     target: [offset, grs1]
@@ -289,6 +297,7 @@
     - grs2
     - &branch-offset-operand
       name: offset
+      abbrev: "off"
       pc-rel: true
       type: simm<<1
   straight-line: false
@@ -374,14 +383,6 @@
   lsu:
     type: csr
     target: [csr]
-  decode: |
-    csr_num = UInt(csr)
-    d = UInt(grd)
-    s = UInt(grs1)
-  operation: |
-    gpr_s_val = GPR[s]
-    GPR[d] = CSR[csr_num]
-    CSR[csr_num] |= gpr_s_val
 
 - mnemonic: csrrw
   rv32i: true
@@ -403,17 +404,6 @@
   lsu:
     type: csr
     target: [csr]
-  decode: |
-    csr_num = UInt(csr)
-    d = UInt(grd)
-    s = UInt(grs1)
-  operation: |
-    gpr_s_val = GPR[s]
-
-    if d != 0:
-      GPR[d] = CSR[csr_num]
-
-    CSR[csr_num] = gpr_s_val
 
 - mnemonic: ecall
   rv32i: true
@@ -439,6 +429,7 @@
       doc: Name of the GPR containing the number of iterations
     - &bodysize-operand
       name: bodysize
+      abbrev: sz
       type: uimm+1
       doc: Number of instructions in the loop body
   straight-line: false
@@ -448,12 +439,12 @@
     The number of instructions in the loop is given in the `bodysize` immediate.
 
     The `LOOP` instruction doesn't support a zero iteration count.
-    If the value in `grs` is zero, OTBN stops with the `ErrCodeLoop` error.
+    If the value in `grs` is zero, OTBN stops, setting bit `loop` in `ERR_BITS`.
     Starting a loop pushes an entry on to the [loop stack](../#loop-stack).
-    If the stack is already full, OTBN stops with the `ErrCodeLoop` error.
+    If the stack is already full, OTBN stops, setting bit `loop` in `ERR_BITS`.
 
     `LOOP`, `LOOPI`, jump and branch instructions are all permitted inside a loop but may not appear as the last instruction in a loop.
-    OTBN will stop on that instruction with the `ErrCodeLoop` error.
+    OTBN will stop on that instruction with the, setting bit `loop` in `ERR_BITS`.
 
     For more information on how to correctly use `LOOP` see [loop nesting](../#loop-nesting).
   encoding:
@@ -478,10 +469,10 @@
     The `LOOPI` instruction doesn't support a zero iteration count.
     If the value of `iterations` is zero, OTBN stops with the `ErrCodeLoop` error.
     Starting a loop pushes an entry on to the [loop stack](../#loop-stack).
-    If the stack is already full, OTBN stops with the `ErrCodeLoop` error.
+    If the stack is already full, OTBN stops, setting bit `loop` in `ERR_BITS`.
 
     `LOOP`, `LOOPI`, jump and branch instructions are all permitted inside a loop but may not appear as the last instruction in a loop.
-    OTBN will stop on that instruction with the `ErrCodeLoop` error.
+    OTBN will stop on that instruction, setting bit `loop` in `ERR_BITS`.
 
     For more information on how to correctly use `LOOPI` see [loop nesting](../#loop-nesting).
   encoding:

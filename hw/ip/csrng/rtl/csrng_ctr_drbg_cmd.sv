@@ -96,7 +96,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   logic                       sfifo_cmdreq_push;
   logic [CmdreqFifoWidth-1:0] sfifo_cmdreq_wdata;
   logic                       sfifo_cmdreq_pop;
-  logic                       sfifo_cmdreq_not_full;
+  logic                       sfifo_cmdreq_full;
   logic                       sfifo_cmdreq_not_empty;
 
   // rcstage fifo
@@ -104,7 +104,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   logic                        sfifo_rcstage_push;
   logic [RCStageFifoWidth-1:0] sfifo_rcstage_wdata;
   logic                        sfifo_rcstage_pop;
-  logic                        sfifo_rcstage_not_full;
+  logic                        sfifo_rcstage_full;
   logic                        sfifo_rcstage_not_empty;
 
   // keyvrc fifo
@@ -112,7 +112,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   logic                        sfifo_keyvrc_push;
   logic [KeyVRCFifoWidth-1:0]  sfifo_keyvrc_wdata;
   logic                        sfifo_keyvrc_pop;
-  logic                        sfifo_keyvrc_not_full;
+  logic                        sfifo_keyvrc_full;
   logic                        sfifo_keyvrc_not_empty;
 
 
@@ -129,11 +129,12 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
     .rst_ni         (rst_ni),
     .clr_i          (!ctr_drbg_cmd_enable_i),
     .wvalid_i       (sfifo_cmdreq_push),
-    .wready_o       (sfifo_cmdreq_not_full),
+    .wready_o       (),
     .wdata_i        (sfifo_cmdreq_wdata),
     .rvalid_o       (sfifo_cmdreq_not_empty),
     .rready_i       (sfifo_cmdreq_pop),
     .rdata_o        (sfifo_cmdreq_rdata),
+    .full_o         (sfifo_cmdreq_full),
     .depth_o        ()
   );
 
@@ -153,12 +154,12 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
           cmdreq_entropy_fips,cmdreq_entropy,cmdreq_adata,
           cmdreq_id,cmdreq_ccmd} = sfifo_cmdreq_rdata;
 
-  assign ctr_drbg_cmd_rdy_o = sfifo_cmdreq_not_full;
+  assign ctr_drbg_cmd_rdy_o = !sfifo_cmdreq_full;
 
   assign ctr_drbg_cmd_sfifo_cmdreq_err_o =
-         {(sfifo_cmdreq_push && !sfifo_cmdreq_not_full),
+         {(sfifo_cmdreq_push && sfifo_cmdreq_full),
           (sfifo_cmdreq_pop && !sfifo_cmdreq_not_empty),
-          (!sfifo_cmdreq_not_full && !sfifo_cmdreq_not_empty)};
+          (sfifo_cmdreq_full && !sfifo_cmdreq_not_empty)};
 
 
   //--------------------------------------------
@@ -216,11 +217,12 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
     .rst_ni         (rst_ni),
     .clr_i          (!ctr_drbg_cmd_enable_i),
     .wvalid_i       (sfifo_rcstage_push),
-    .wready_o       (sfifo_rcstage_not_full),
+    .wready_o       (),
     .wdata_i        (sfifo_rcstage_wdata),
     .rvalid_o       (sfifo_rcstage_not_empty),
     .rready_i       (sfifo_rcstage_pop),
     .rdata_o        (sfifo_rcstage_rdata),
+    .full_o         (sfifo_rcstage_full),
     .depth_o        ()
   );
 
@@ -231,11 +233,11 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
 
 
   assign ctr_drbg_cmd_sfifo_rcstage_err_o =
-         {(sfifo_rcstage_push && !sfifo_rcstage_not_full),
+         {(sfifo_rcstage_push && sfifo_rcstage_full),
           (sfifo_rcstage_pop && !sfifo_rcstage_not_empty),
-          (!sfifo_rcstage_not_full && !sfifo_rcstage_not_empty)};
+          (sfifo_rcstage_full && !sfifo_rcstage_not_empty)};
 
-  assign cmd_upd_rdy_o = sfifo_rcstage_not_empty && sfifo_keyvrc_not_full;
+  assign cmd_upd_rdy_o = sfifo_rcstage_not_empty && !sfifo_keyvrc_full;
 
   //--------------------------------------------
   // final cmd block processing
@@ -250,11 +252,12 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
     .rst_ni         (rst_ni),
     .clr_i          (!ctr_drbg_cmd_enable_i),
     .wvalid_i       (sfifo_keyvrc_push),
-    .wready_o       (sfifo_keyvrc_not_full),
+    .wready_o       (),
     .wdata_i        (sfifo_keyvrc_wdata),
     .rvalid_o       (sfifo_keyvrc_not_empty),
     .rready_i       (sfifo_keyvrc_pop),
     .rdata_o        (sfifo_keyvrc_rdata),
+    .full_o         (sfifo_keyvrc_full),
     .depth_o        ()
   );
 
@@ -272,9 +275,9 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
           ctr_drbg_cmd_inst_id_o,ctr_drbg_cmd_ccmd_o} = sfifo_keyvrc_rdata;
 
   assign ctr_drbg_cmd_sfifo_keyvrc_err_o =
-         {(sfifo_keyvrc_push && !sfifo_keyvrc_not_full),
+         {(sfifo_keyvrc_push && sfifo_keyvrc_full),
           (sfifo_keyvrc_pop && !sfifo_keyvrc_not_empty),
-          (!sfifo_keyvrc_not_full && !sfifo_keyvrc_not_empty)};
+          (sfifo_keyvrc_full && !sfifo_keyvrc_not_empty)};
 
   // block ack
   assign ctr_drbg_cmd_ack_o = sfifo_keyvrc_pop;

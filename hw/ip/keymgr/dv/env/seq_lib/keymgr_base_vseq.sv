@@ -20,7 +20,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   // save DUT returned current state here, rather than using it from RAL, it's needed info to
   // predict operation result in seq
-  keymgr_pkg::keymgr_working_state_e current_state;
+  keymgr_pkg::keymgr_working_state_e current_state = keymgr_pkg::StReset;
 
   rand bit is_key_version_err;
 
@@ -52,8 +52,6 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   // setup basic keymgr features
   virtual task keymgr_init();
-    current_state = keymgr_pkg::StReset;
-
     // Any OP except advance at StReset will trigger OP error, test these OPs here
     if (do_op_before_init) begin
       repeat ($urandom_range(1, 5)) begin
@@ -65,6 +63,11 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
     `DV_CHECK_RANDOMIZE_FATAL(ral.intr_enable)
     csr_update(.csr(ral.intr_enable));
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.reseed_interval.val,
+                                   value dist {[50:100]   :/ 1,
+                                               [101:1000] :/ 1,
+                                               [1001:$]   :/ 1};)
+    csr_update(.csr(ral.reseed_interval));
   endtask : keymgr_init
 
   // advance to next state and generate output, clear output
@@ -101,7 +104,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
     max_key_ver_val = (current_state == keymgr_pkg::StCreatorRootKey)
         ? max_creator_key_ver_val : (current_state == keymgr_pkg::StOwnerIntKey)
         ? max_owner_int_key_ver_val : (current_state == keymgr_pkg::StOwnerKey)
-        ? max_owner_key_ver_val : '1;
+        ? max_owner_key_ver_val : 0;
 
     // if current key_version already match to what we need, return without updating it
     if (is_key_version_err && key_version_val > max_key_ver_val ||
@@ -151,26 +154,21 @@ class keymgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("Wait for operation done in state %0s, operation %0s, good_op %0d",
                               current_state.name, operation.name, is_good_op), UVM_MEDIUM)
 
-    // if keymgr_en is off, all OP is ignored, don't need to check status
-    if (cfg.keymgr_vif.keymgr_en != lc_ctrl_pkg::On) return;
-
     // wait for status to get out of OpWip and check
     csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpWip),
                  .compare_op(CompareOpNe), .spinwait_delay_ns($urandom_range(0, 100)));
+
     exp_status = is_good_op ? keymgr_pkg::OpDoneSuccess : keymgr_pkg::OpDoneFail;
 
     // if keymgr_en is set to off during OP, status is checked in scb. hard to predict the result
     // in seq
     if (get_check_en()) begin
       `DV_CHECK_EQ(`gmv(ral.op_status.status), exp_status)
-    end else begin
-      return;
+      // check and clear interrupt
+      check_interrupts(.interrupts(1 << IntrOpDone), .check_set(1));
     end
 
     read_current_state();
-
-    // check and clear interrupt
-    check_interrupts(.interrupts(1 << IntrOpDone), .check_set(1));
 
     // check for chech in scb and clear err_code
     csr_rd(.ptr(ral.err_code), .value(rd_val));
@@ -183,8 +181,10 @@ class keymgr_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] rdata;
 
     csr_rd(.ptr(ral.working_state), .value(rdata));
-    `downcast(current_state, rdata)
-    `uvm_info(`gfn, $sformatf("Current state %0s", current_state.name), UVM_MEDIUM)
+    if (!cfg.under_reset) begin
+      `downcast(current_state, rdata)
+      `uvm_info(`gfn, $sformatf("Current state %0s", current_state.name), UVM_MEDIUM)
+    end
   endtask : read_current_state
 
   virtual task keymgr_advance(bit wait_done = 1);

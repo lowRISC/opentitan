@@ -253,7 +253,7 @@ static size_t write_digits(buffer_sink_t out, uint32_t value, uint32_t width,
  * @param out the sink to write bytes to.
  * @param spec the specifier to use for stringifying.
  * @param[out] bytes_written out param for the number of bytes writen to `out`.
- * @param va_list the list to pull an entry from.
+ * @param args the list to pull an entry from.
  */
 static void process_specifier(buffer_sink_t out, format_specifier_t spec,
                               size_t *bytes_written, va_list *args) {

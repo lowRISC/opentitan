@@ -7,6 +7,7 @@
 
 module lc_ctrl_state_transition
   import lc_ctrl_pkg::*;
+  import lc_ctrl_state_pkg::*;
 (
   // Life cycle state vector.
   input  lc_state_e        lc_state_i,
@@ -42,7 +43,7 @@ module lc_ctrl_state_transition
       // In this state, the life cycle counter is incremented.
       // Throw an error if the counter is already maxed out.
       unique case (lc_cnt_i)
-        LcCntRaw: next_lc_cnt_o = LcCnt1;
+        LcCnt0:   next_lc_cnt_o = LcCnt1;
         LcCnt1:   next_lc_cnt_o = LcCnt2;
         LcCnt2:   next_lc_cnt_o = LcCnt3;
         LcCnt3:   next_lc_cnt_o = LcCnt4;

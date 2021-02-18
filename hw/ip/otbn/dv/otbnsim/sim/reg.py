@@ -41,10 +41,10 @@ class Reg:
     def read_unsigned(self, backdoor: bool = False) -> int:
         return self._uval
 
-    def write_unsigned(self, uval: int, backdoor: bool = False) -> None:
+    def write_unsigned(self, uval: int) -> None:
         assert 0 <= uval < (1 << self._width)
         self._next_uval = uval
-        if not backdoor and self._parent is not None:
+        if self._parent is not None:
             self._parent.mark_written(self._idx)
 
     def read_next(self) -> Optional[int]:

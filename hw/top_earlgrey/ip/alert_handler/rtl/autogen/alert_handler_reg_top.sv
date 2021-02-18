@@ -103,9 +103,9 @@ module alert_handler_reg_top (
   logic intr_test_classc_we;
   logic intr_test_classd_wd;
   logic intr_test_classd_we;
-  logic regen_qs;
-  logic regen_wd;
-  logic regen_we;
+  logic regwen_qs;
+  logic regwen_wd;
+  logic regwen_we;
   logic [23:0] ping_timeout_cyc_qs;
   logic [23:0] ping_timeout_cyc_wd;
   logic ping_timeout_cyc_we;
@@ -169,6 +169,18 @@ module alert_handler_reg_top (
   logic alert_en_en_a_19_qs;
   logic alert_en_en_a_19_wd;
   logic alert_en_en_a_19_we;
+  logic alert_en_en_a_20_qs;
+  logic alert_en_en_a_20_wd;
+  logic alert_en_en_a_20_we;
+  logic alert_en_en_a_21_qs;
+  logic alert_en_en_a_21_wd;
+  logic alert_en_en_a_21_we;
+  logic alert_en_en_a_22_qs;
+  logic alert_en_en_a_22_wd;
+  logic alert_en_en_a_22_we;
+  logic alert_en_en_a_23_qs;
+  logic alert_en_en_a_23_wd;
+  logic alert_en_en_a_23_we;
   logic [1:0] alert_class_0_class_a_0_qs;
   logic [1:0] alert_class_0_class_a_0_wd;
   logic alert_class_0_class_a_0_we;
@@ -229,6 +241,18 @@ module alert_handler_reg_top (
   logic [1:0] alert_class_1_class_a_19_qs;
   logic [1:0] alert_class_1_class_a_19_wd;
   logic alert_class_1_class_a_19_we;
+  logic [1:0] alert_class_1_class_a_20_qs;
+  logic [1:0] alert_class_1_class_a_20_wd;
+  logic alert_class_1_class_a_20_we;
+  logic [1:0] alert_class_1_class_a_21_qs;
+  logic [1:0] alert_class_1_class_a_21_wd;
+  logic alert_class_1_class_a_21_we;
+  logic [1:0] alert_class_1_class_a_22_qs;
+  logic [1:0] alert_class_1_class_a_22_wd;
+  logic alert_class_1_class_a_22_we;
+  logic [1:0] alert_class_1_class_a_23_qs;
+  logic [1:0] alert_class_1_class_a_23_wd;
+  logic alert_class_1_class_a_23_we;
   logic alert_cause_a_0_qs;
   logic alert_cause_a_0_wd;
   logic alert_cause_a_0_we;
@@ -289,6 +313,18 @@ module alert_handler_reg_top (
   logic alert_cause_a_19_qs;
   logic alert_cause_a_19_wd;
   logic alert_cause_a_19_we;
+  logic alert_cause_a_20_qs;
+  logic alert_cause_a_20_wd;
+  logic alert_cause_a_20_we;
+  logic alert_cause_a_21_qs;
+  logic alert_cause_a_21_wd;
+  logic alert_cause_a_21_we;
+  logic alert_cause_a_22_qs;
+  logic alert_cause_a_22_wd;
+  logic alert_cause_a_22_we;
+  logic alert_cause_a_23_qs;
+  logic alert_cause_a_23_wd;
+  logic alert_cause_a_23_we;
   logic loc_alert_en_en_la_0_qs;
   logic loc_alert_en_en_la_0_wd;
   logic loc_alert_en_en_la_0_we;
@@ -355,9 +391,9 @@ module alert_handler_reg_top (
   logic [1:0] classa_ctrl_map_e3_qs;
   logic [1:0] classa_ctrl_map_e3_wd;
   logic classa_ctrl_map_e3_we;
-  logic classa_clren_qs;
-  logic classa_clren_wd;
-  logic classa_clren_we;
+  logic classa_regwen_qs;
+  logic classa_regwen_wd;
+  logic classa_regwen_we;
   logic classa_clr_wd;
   logic classa_clr_we;
   logic [15:0] classa_accum_cnt_qs;
@@ -414,9 +450,9 @@ module alert_handler_reg_top (
   logic [1:0] classb_ctrl_map_e3_qs;
   logic [1:0] classb_ctrl_map_e3_wd;
   logic classb_ctrl_map_e3_we;
-  logic classb_clren_qs;
-  logic classb_clren_wd;
-  logic classb_clren_we;
+  logic classb_regwen_qs;
+  logic classb_regwen_wd;
+  logic classb_regwen_we;
   logic classb_clr_wd;
   logic classb_clr_we;
   logic [15:0] classb_accum_cnt_qs;
@@ -473,9 +509,9 @@ module alert_handler_reg_top (
   logic [1:0] classc_ctrl_map_e3_qs;
   logic [1:0] classc_ctrl_map_e3_wd;
   logic classc_ctrl_map_e3_we;
-  logic classc_clren_qs;
-  logic classc_clren_wd;
-  logic classc_clren_we;
+  logic classc_regwen_qs;
+  logic classc_regwen_wd;
+  logic classc_regwen_we;
   logic classc_clr_wd;
   logic classc_clr_we;
   logic [15:0] classc_accum_cnt_qs;
@@ -532,9 +568,9 @@ module alert_handler_reg_top (
   logic [1:0] classd_ctrl_map_e3_qs;
   logic [1:0] classd_ctrl_map_e3_wd;
   logic classd_ctrl_map_e3_we;
-  logic classd_clren_qs;
-  logic classd_clren_wd;
-  logic classd_clren_we;
+  logic classd_regwen_qs;
+  logic classd_regwen_wd;
+  logic classd_regwen_we;
   logic classd_clr_wd;
   logic classd_clr_we;
   logic [15:0] classd_accum_cnt_qs;
@@ -837,19 +873,19 @@ module alert_handler_reg_top (
   );
 
 
-  // R[regen]: V(False)
+  // R[regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_regen (
+  ) u_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (regen_we),
-    .wd     (regen_wd),
+    .we     (regwen_we),
+    .wd     (regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -857,10 +893,10 @@ module alert_handler_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regen.q ),
+    .q      (reg2hw.regwen.q ),
 
     // to register interface (read)
-    .qs     (regen_qs)
+    .qs     (regwen_qs)
   );
 
 
@@ -875,7 +911,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (ping_timeout_cyc_we & regen_qs),
+    .we     (ping_timeout_cyc_we & regwen_qs),
     .wd     (ping_timeout_cyc_wd),
 
     // from internal hardware
@@ -905,7 +941,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_0_we & regen_qs),
+    .we     (alert_en_en_a_0_we & regwen_qs),
     .wd     (alert_en_en_a_0_wd),
 
     // from internal hardware
@@ -931,7 +967,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_1_we & regen_qs),
+    .we     (alert_en_en_a_1_we & regwen_qs),
     .wd     (alert_en_en_a_1_wd),
 
     // from internal hardware
@@ -957,7 +993,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_2_we & regen_qs),
+    .we     (alert_en_en_a_2_we & regwen_qs),
     .wd     (alert_en_en_a_2_wd),
 
     // from internal hardware
@@ -983,7 +1019,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_3_we & regen_qs),
+    .we     (alert_en_en_a_3_we & regwen_qs),
     .wd     (alert_en_en_a_3_wd),
 
     // from internal hardware
@@ -1009,7 +1045,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_4_we & regen_qs),
+    .we     (alert_en_en_a_4_we & regwen_qs),
     .wd     (alert_en_en_a_4_wd),
 
     // from internal hardware
@@ -1035,7 +1071,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_5_we & regen_qs),
+    .we     (alert_en_en_a_5_we & regwen_qs),
     .wd     (alert_en_en_a_5_wd),
 
     // from internal hardware
@@ -1061,7 +1097,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_6_we & regen_qs),
+    .we     (alert_en_en_a_6_we & regwen_qs),
     .wd     (alert_en_en_a_6_wd),
 
     // from internal hardware
@@ -1087,7 +1123,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_7_we & regen_qs),
+    .we     (alert_en_en_a_7_we & regwen_qs),
     .wd     (alert_en_en_a_7_wd),
 
     // from internal hardware
@@ -1113,7 +1149,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_8_we & regen_qs),
+    .we     (alert_en_en_a_8_we & regwen_qs),
     .wd     (alert_en_en_a_8_wd),
 
     // from internal hardware
@@ -1139,7 +1175,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_9_we & regen_qs),
+    .we     (alert_en_en_a_9_we & regwen_qs),
     .wd     (alert_en_en_a_9_wd),
 
     // from internal hardware
@@ -1165,7 +1201,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_10_we & regen_qs),
+    .we     (alert_en_en_a_10_we & regwen_qs),
     .wd     (alert_en_en_a_10_wd),
 
     // from internal hardware
@@ -1191,7 +1227,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_11_we & regen_qs),
+    .we     (alert_en_en_a_11_we & regwen_qs),
     .wd     (alert_en_en_a_11_wd),
 
     // from internal hardware
@@ -1217,7 +1253,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_12_we & regen_qs),
+    .we     (alert_en_en_a_12_we & regwen_qs),
     .wd     (alert_en_en_a_12_wd),
 
     // from internal hardware
@@ -1243,7 +1279,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_13_we & regen_qs),
+    .we     (alert_en_en_a_13_we & regwen_qs),
     .wd     (alert_en_en_a_13_wd),
 
     // from internal hardware
@@ -1269,7 +1305,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_14_we & regen_qs),
+    .we     (alert_en_en_a_14_we & regwen_qs),
     .wd     (alert_en_en_a_14_wd),
 
     // from internal hardware
@@ -1295,7 +1331,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_15_we & regen_qs),
+    .we     (alert_en_en_a_15_we & regwen_qs),
     .wd     (alert_en_en_a_15_wd),
 
     // from internal hardware
@@ -1321,7 +1357,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_16_we & regen_qs),
+    .we     (alert_en_en_a_16_we & regwen_qs),
     .wd     (alert_en_en_a_16_wd),
 
     // from internal hardware
@@ -1347,7 +1383,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_17_we & regen_qs),
+    .we     (alert_en_en_a_17_we & regwen_qs),
     .wd     (alert_en_en_a_17_wd),
 
     // from internal hardware
@@ -1373,7 +1409,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_18_we & regen_qs),
+    .we     (alert_en_en_a_18_we & regwen_qs),
     .wd     (alert_en_en_a_18_wd),
 
     // from internal hardware
@@ -1399,7 +1435,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_en_en_a_19_we & regen_qs),
+    .we     (alert_en_en_a_19_we & regwen_qs),
     .wd     (alert_en_en_a_19_wd),
 
     // from internal hardware
@@ -1412,6 +1448,110 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_en_en_a_19_qs)
+  );
+
+
+  // F[en_a_20]: 20:20
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_alert_en_en_a_20 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (alert_en_en_a_20_we & regwen_qs),
+    .wd     (alert_en_en_a_20_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_en[20].q ),
+
+    // to register interface (read)
+    .qs     (alert_en_en_a_20_qs)
+  );
+
+
+  // F[en_a_21]: 21:21
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_alert_en_en_a_21 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (alert_en_en_a_21_we & regwen_qs),
+    .wd     (alert_en_en_a_21_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_en[21].q ),
+
+    // to register interface (read)
+    .qs     (alert_en_en_a_21_qs)
+  );
+
+
+  // F[en_a_22]: 22:22
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_alert_en_en_a_22 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (alert_en_en_a_22_we & regwen_qs),
+    .wd     (alert_en_en_a_22_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_en[22].q ),
+
+    // to register interface (read)
+    .qs     (alert_en_en_a_22_qs)
+  );
+
+
+  // F[en_a_23]: 23:23
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_alert_en_en_a_23 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (alert_en_en_a_23_we & regwen_qs),
+    .wd     (alert_en_en_a_23_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_en[23].q ),
+
+    // to register interface (read)
+    .qs     (alert_en_en_a_23_qs)
   );
 
 
@@ -1430,7 +1570,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_0_we & regen_qs),
+    .we     (alert_class_0_class_a_0_we & regwen_qs),
     .wd     (alert_class_0_class_a_0_wd),
 
     // from internal hardware
@@ -1456,7 +1596,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_1_we & regen_qs),
+    .we     (alert_class_0_class_a_1_we & regwen_qs),
     .wd     (alert_class_0_class_a_1_wd),
 
     // from internal hardware
@@ -1482,7 +1622,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_2_we & regen_qs),
+    .we     (alert_class_0_class_a_2_we & regwen_qs),
     .wd     (alert_class_0_class_a_2_wd),
 
     // from internal hardware
@@ -1508,7 +1648,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_3_we & regen_qs),
+    .we     (alert_class_0_class_a_3_we & regwen_qs),
     .wd     (alert_class_0_class_a_3_wd),
 
     // from internal hardware
@@ -1534,7 +1674,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_4_we & regen_qs),
+    .we     (alert_class_0_class_a_4_we & regwen_qs),
     .wd     (alert_class_0_class_a_4_wd),
 
     // from internal hardware
@@ -1560,7 +1700,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_5_we & regen_qs),
+    .we     (alert_class_0_class_a_5_we & regwen_qs),
     .wd     (alert_class_0_class_a_5_wd),
 
     // from internal hardware
@@ -1586,7 +1726,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_6_we & regen_qs),
+    .we     (alert_class_0_class_a_6_we & regwen_qs),
     .wd     (alert_class_0_class_a_6_wd),
 
     // from internal hardware
@@ -1612,7 +1752,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_7_we & regen_qs),
+    .we     (alert_class_0_class_a_7_we & regwen_qs),
     .wd     (alert_class_0_class_a_7_wd),
 
     // from internal hardware
@@ -1638,7 +1778,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_8_we & regen_qs),
+    .we     (alert_class_0_class_a_8_we & regwen_qs),
     .wd     (alert_class_0_class_a_8_wd),
 
     // from internal hardware
@@ -1664,7 +1804,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_9_we & regen_qs),
+    .we     (alert_class_0_class_a_9_we & regwen_qs),
     .wd     (alert_class_0_class_a_9_wd),
 
     // from internal hardware
@@ -1690,7 +1830,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_10_we & regen_qs),
+    .we     (alert_class_0_class_a_10_we & regwen_qs),
     .wd     (alert_class_0_class_a_10_wd),
 
     // from internal hardware
@@ -1716,7 +1856,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_11_we & regen_qs),
+    .we     (alert_class_0_class_a_11_we & regwen_qs),
     .wd     (alert_class_0_class_a_11_wd),
 
     // from internal hardware
@@ -1742,7 +1882,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_12_we & regen_qs),
+    .we     (alert_class_0_class_a_12_we & regwen_qs),
     .wd     (alert_class_0_class_a_12_wd),
 
     // from internal hardware
@@ -1768,7 +1908,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_13_we & regen_qs),
+    .we     (alert_class_0_class_a_13_we & regwen_qs),
     .wd     (alert_class_0_class_a_13_wd),
 
     // from internal hardware
@@ -1794,7 +1934,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_14_we & regen_qs),
+    .we     (alert_class_0_class_a_14_we & regwen_qs),
     .wd     (alert_class_0_class_a_14_wd),
 
     // from internal hardware
@@ -1820,7 +1960,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_0_class_a_15_we & regen_qs),
+    .we     (alert_class_0_class_a_15_we & regwen_qs),
     .wd     (alert_class_0_class_a_15_wd),
 
     // from internal hardware
@@ -1849,7 +1989,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_1_class_a_16_we & regen_qs),
+    .we     (alert_class_1_class_a_16_we & regwen_qs),
     .wd     (alert_class_1_class_a_16_wd),
 
     // from internal hardware
@@ -1875,7 +2015,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_1_class_a_17_we & regen_qs),
+    .we     (alert_class_1_class_a_17_we & regwen_qs),
     .wd     (alert_class_1_class_a_17_wd),
 
     // from internal hardware
@@ -1901,7 +2041,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_1_class_a_18_we & regen_qs),
+    .we     (alert_class_1_class_a_18_we & regwen_qs),
     .wd     (alert_class_1_class_a_18_wd),
 
     // from internal hardware
@@ -1927,7 +2067,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_class_1_class_a_19_we & regen_qs),
+    .we     (alert_class_1_class_a_19_we & regwen_qs),
     .wd     (alert_class_1_class_a_19_wd),
 
     // from internal hardware
@@ -1940,6 +2080,110 @@ module alert_handler_reg_top (
 
     // to register interface (read)
     .qs     (alert_class_1_class_a_19_qs)
+  );
+
+
+  // F[class_a_20]: 9:8
+  prim_subreg #(
+    .DW      (2),
+    .SWACCESS("RW"),
+    .RESVAL  (2'h0)
+  ) u_alert_class_1_class_a_20 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (alert_class_1_class_a_20_we & regwen_qs),
+    .wd     (alert_class_1_class_a_20_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_class[20].q ),
+
+    // to register interface (read)
+    .qs     (alert_class_1_class_a_20_qs)
+  );
+
+
+  // F[class_a_21]: 11:10
+  prim_subreg #(
+    .DW      (2),
+    .SWACCESS("RW"),
+    .RESVAL  (2'h0)
+  ) u_alert_class_1_class_a_21 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (alert_class_1_class_a_21_we & regwen_qs),
+    .wd     (alert_class_1_class_a_21_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_class[21].q ),
+
+    // to register interface (read)
+    .qs     (alert_class_1_class_a_21_qs)
+  );
+
+
+  // F[class_a_22]: 13:12
+  prim_subreg #(
+    .DW      (2),
+    .SWACCESS("RW"),
+    .RESVAL  (2'h0)
+  ) u_alert_class_1_class_a_22 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (alert_class_1_class_a_22_we & regwen_qs),
+    .wd     (alert_class_1_class_a_22_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_class[22].q ),
+
+    // to register interface (read)
+    .qs     (alert_class_1_class_a_22_qs)
+  );
+
+
+  // F[class_a_23]: 15:14
+  prim_subreg #(
+    .DW      (2),
+    .SWACCESS("RW"),
+    .RESVAL  (2'h0)
+  ) u_alert_class_1_class_a_23 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (alert_class_1_class_a_23_we & regwen_qs),
+    .wd     (alert_class_1_class_a_23_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_class[23].q ),
+
+    // to register interface (read)
+    .qs     (alert_class_1_class_a_23_qs)
   );
 
 
@@ -2468,6 +2712,110 @@ module alert_handler_reg_top (
   );
 
 
+  // F[a_20]: 20:20
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_alert_cause_a_20 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (alert_cause_a_20_we),
+    .wd     (alert_cause_a_20_wd),
+
+    // from internal hardware
+    .de     (hw2reg.alert_cause[20].de),
+    .d      (hw2reg.alert_cause[20].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_cause[20].q ),
+
+    // to register interface (read)
+    .qs     (alert_cause_a_20_qs)
+  );
+
+
+  // F[a_21]: 21:21
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_alert_cause_a_21 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (alert_cause_a_21_we),
+    .wd     (alert_cause_a_21_wd),
+
+    // from internal hardware
+    .de     (hw2reg.alert_cause[21].de),
+    .d      (hw2reg.alert_cause[21].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_cause[21].q ),
+
+    // to register interface (read)
+    .qs     (alert_cause_a_21_qs)
+  );
+
+
+  // F[a_22]: 22:22
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_alert_cause_a_22 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (alert_cause_a_22_we),
+    .wd     (alert_cause_a_22_wd),
+
+    // from internal hardware
+    .de     (hw2reg.alert_cause[22].de),
+    .d      (hw2reg.alert_cause[22].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_cause[22].q ),
+
+    // to register interface (read)
+    .qs     (alert_cause_a_22_qs)
+  );
+
+
+  // F[a_23]: 23:23
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_alert_cause_a_23 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (alert_cause_a_23_we),
+    .wd     (alert_cause_a_23_wd),
+
+    // from internal hardware
+    .de     (hw2reg.alert_cause[23].de),
+    .d      (hw2reg.alert_cause[23].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_cause[23].q ),
+
+    // to register interface (read)
+    .qs     (alert_cause_a_23_qs)
+  );
+
+
 
 
   // Subregister 0 of Multireg loc_alert_en
@@ -2483,7 +2831,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (loc_alert_en_en_la_0_we & regen_qs),
+    .we     (loc_alert_en_en_la_0_we & regwen_qs),
     .wd     (loc_alert_en_en_la_0_wd),
 
     // from internal hardware
@@ -2509,7 +2857,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (loc_alert_en_en_la_1_we & regen_qs),
+    .we     (loc_alert_en_en_la_1_we & regwen_qs),
     .wd     (loc_alert_en_en_la_1_wd),
 
     // from internal hardware
@@ -2535,7 +2883,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (loc_alert_en_en_la_2_we & regen_qs),
+    .we     (loc_alert_en_en_la_2_we & regwen_qs),
     .wd     (loc_alert_en_en_la_2_wd),
 
     // from internal hardware
@@ -2561,7 +2909,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (loc_alert_en_en_la_3_we & regen_qs),
+    .we     (loc_alert_en_en_la_3_we & regwen_qs),
     .wd     (loc_alert_en_en_la_3_wd),
 
     // from internal hardware
@@ -2592,7 +2940,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (loc_alert_class_class_la_0_we & regen_qs),
+    .we     (loc_alert_class_class_la_0_we & regwen_qs),
     .wd     (loc_alert_class_class_la_0_wd),
 
     // from internal hardware
@@ -2618,7 +2966,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (loc_alert_class_class_la_1_we & regen_qs),
+    .we     (loc_alert_class_class_la_1_we & regwen_qs),
     .wd     (loc_alert_class_class_la_1_wd),
 
     // from internal hardware
@@ -2644,7 +2992,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (loc_alert_class_class_la_2_we & regen_qs),
+    .we     (loc_alert_class_class_la_2_we & regwen_qs),
     .wd     (loc_alert_class_class_la_2_wd),
 
     // from internal hardware
@@ -2670,7 +3018,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (loc_alert_class_class_la_3_we & regen_qs),
+    .we     (loc_alert_class_class_la_3_we & regwen_qs),
     .wd     (loc_alert_class_class_la_3_wd),
 
     // from internal hardware
@@ -2808,7 +3156,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_ctrl_en_we & regen_qs),
+    .we     (classa_ctrl_en_we & regwen_qs),
     .wd     (classa_ctrl_en_wd),
 
     // from internal hardware
@@ -2834,7 +3182,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_ctrl_lock_we & regen_qs),
+    .we     (classa_ctrl_lock_we & regwen_qs),
     .wd     (classa_ctrl_lock_wd),
 
     // from internal hardware
@@ -2860,7 +3208,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_ctrl_en_e0_we & regen_qs),
+    .we     (classa_ctrl_en_e0_we & regwen_qs),
     .wd     (classa_ctrl_en_e0_wd),
 
     // from internal hardware
@@ -2886,7 +3234,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_ctrl_en_e1_we & regen_qs),
+    .we     (classa_ctrl_en_e1_we & regwen_qs),
     .wd     (classa_ctrl_en_e1_wd),
 
     // from internal hardware
@@ -2912,7 +3260,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_ctrl_en_e2_we & regen_qs),
+    .we     (classa_ctrl_en_e2_we & regwen_qs),
     .wd     (classa_ctrl_en_e2_wd),
 
     // from internal hardware
@@ -2938,7 +3286,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_ctrl_en_e3_we & regen_qs),
+    .we     (classa_ctrl_en_e3_we & regwen_qs),
     .wd     (classa_ctrl_en_e3_wd),
 
     // from internal hardware
@@ -2964,7 +3312,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_ctrl_map_e0_we & regen_qs),
+    .we     (classa_ctrl_map_e0_we & regwen_qs),
     .wd     (classa_ctrl_map_e0_wd),
 
     // from internal hardware
@@ -2990,7 +3338,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_ctrl_map_e1_we & regen_qs),
+    .we     (classa_ctrl_map_e1_we & regwen_qs),
     .wd     (classa_ctrl_map_e1_wd),
 
     // from internal hardware
@@ -3016,7 +3364,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_ctrl_map_e2_we & regen_qs),
+    .we     (classa_ctrl_map_e2_we & regwen_qs),
     .wd     (classa_ctrl_map_e2_wd),
 
     // from internal hardware
@@ -3042,7 +3390,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_ctrl_map_e3_we & regen_qs),
+    .we     (classa_ctrl_map_e3_we & regwen_qs),
     .wd     (classa_ctrl_map_e3_wd),
 
     // from internal hardware
@@ -3058,30 +3406,30 @@ module alert_handler_reg_top (
   );
 
 
-  // R[classa_clren]: V(False)
+  // R[classa_regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_classa_clren (
+  ) u_classa_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (classa_clren_we),
-    .wd     (classa_clren_wd),
+    .we     (classa_regwen_we),
+    .wd     (classa_regwen_wd),
 
     // from internal hardware
-    .de     (hw2reg.classa_clren.de),
-    .d      (hw2reg.classa_clren.d ),
+    .de     (hw2reg.classa_regwen.de),
+    .d      (hw2reg.classa_regwen.d ),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (classa_clren_qs)
+    .qs     (classa_regwen_qs)
   );
 
 
@@ -3096,7 +3444,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_clr_we & classa_clren_qs),
+    .we     (classa_clr_we & classa_regwen_qs),
     .wd     (classa_clr_wd),
 
     // from internal hardware
@@ -3138,7 +3486,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_accum_thresh_we & regen_qs),
+    .we     (classa_accum_thresh_we & regwen_qs),
     .wd     (classa_accum_thresh_wd),
 
     // from internal hardware
@@ -3165,7 +3513,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_timeout_cyc_we & regen_qs),
+    .we     (classa_timeout_cyc_we & regwen_qs),
     .wd     (classa_timeout_cyc_wd),
 
     // from internal hardware
@@ -3192,7 +3540,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_phase0_cyc_we & regen_qs),
+    .we     (classa_phase0_cyc_we & regwen_qs),
     .wd     (classa_phase0_cyc_wd),
 
     // from internal hardware
@@ -3219,7 +3567,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_phase1_cyc_we & regen_qs),
+    .we     (classa_phase1_cyc_we & regwen_qs),
     .wd     (classa_phase1_cyc_wd),
 
     // from internal hardware
@@ -3246,7 +3594,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_phase2_cyc_we & regen_qs),
+    .we     (classa_phase2_cyc_we & regwen_qs),
     .wd     (classa_phase2_cyc_wd),
 
     // from internal hardware
@@ -3273,7 +3621,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classa_phase3_cyc_we & regen_qs),
+    .we     (classa_phase3_cyc_we & regwen_qs),
     .wd     (classa_phase3_cyc_wd),
 
     // from internal hardware
@@ -3333,7 +3681,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_ctrl_en_we & regen_qs),
+    .we     (classb_ctrl_en_we & regwen_qs),
     .wd     (classb_ctrl_en_wd),
 
     // from internal hardware
@@ -3359,7 +3707,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_ctrl_lock_we & regen_qs),
+    .we     (classb_ctrl_lock_we & regwen_qs),
     .wd     (classb_ctrl_lock_wd),
 
     // from internal hardware
@@ -3385,7 +3733,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_ctrl_en_e0_we & regen_qs),
+    .we     (classb_ctrl_en_e0_we & regwen_qs),
     .wd     (classb_ctrl_en_e0_wd),
 
     // from internal hardware
@@ -3411,7 +3759,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_ctrl_en_e1_we & regen_qs),
+    .we     (classb_ctrl_en_e1_we & regwen_qs),
     .wd     (classb_ctrl_en_e1_wd),
 
     // from internal hardware
@@ -3437,7 +3785,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_ctrl_en_e2_we & regen_qs),
+    .we     (classb_ctrl_en_e2_we & regwen_qs),
     .wd     (classb_ctrl_en_e2_wd),
 
     // from internal hardware
@@ -3463,7 +3811,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_ctrl_en_e3_we & regen_qs),
+    .we     (classb_ctrl_en_e3_we & regwen_qs),
     .wd     (classb_ctrl_en_e3_wd),
 
     // from internal hardware
@@ -3489,7 +3837,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_ctrl_map_e0_we & regen_qs),
+    .we     (classb_ctrl_map_e0_we & regwen_qs),
     .wd     (classb_ctrl_map_e0_wd),
 
     // from internal hardware
@@ -3515,7 +3863,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_ctrl_map_e1_we & regen_qs),
+    .we     (classb_ctrl_map_e1_we & regwen_qs),
     .wd     (classb_ctrl_map_e1_wd),
 
     // from internal hardware
@@ -3541,7 +3889,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_ctrl_map_e2_we & regen_qs),
+    .we     (classb_ctrl_map_e2_we & regwen_qs),
     .wd     (classb_ctrl_map_e2_wd),
 
     // from internal hardware
@@ -3567,7 +3915,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_ctrl_map_e3_we & regen_qs),
+    .we     (classb_ctrl_map_e3_we & regwen_qs),
     .wd     (classb_ctrl_map_e3_wd),
 
     // from internal hardware
@@ -3583,30 +3931,30 @@ module alert_handler_reg_top (
   );
 
 
-  // R[classb_clren]: V(False)
+  // R[classb_regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_classb_clren (
+  ) u_classb_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (classb_clren_we),
-    .wd     (classb_clren_wd),
+    .we     (classb_regwen_we),
+    .wd     (classb_regwen_wd),
 
     // from internal hardware
-    .de     (hw2reg.classb_clren.de),
-    .d      (hw2reg.classb_clren.d ),
+    .de     (hw2reg.classb_regwen.de),
+    .d      (hw2reg.classb_regwen.d ),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (classb_clren_qs)
+    .qs     (classb_regwen_qs)
   );
 
 
@@ -3621,7 +3969,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_clr_we & classb_clren_qs),
+    .we     (classb_clr_we & classb_regwen_qs),
     .wd     (classb_clr_wd),
 
     // from internal hardware
@@ -3663,7 +4011,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_accum_thresh_we & regen_qs),
+    .we     (classb_accum_thresh_we & regwen_qs),
     .wd     (classb_accum_thresh_wd),
 
     // from internal hardware
@@ -3690,7 +4038,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_timeout_cyc_we & regen_qs),
+    .we     (classb_timeout_cyc_we & regwen_qs),
     .wd     (classb_timeout_cyc_wd),
 
     // from internal hardware
@@ -3717,7 +4065,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_phase0_cyc_we & regen_qs),
+    .we     (classb_phase0_cyc_we & regwen_qs),
     .wd     (classb_phase0_cyc_wd),
 
     // from internal hardware
@@ -3744,7 +4092,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_phase1_cyc_we & regen_qs),
+    .we     (classb_phase1_cyc_we & regwen_qs),
     .wd     (classb_phase1_cyc_wd),
 
     // from internal hardware
@@ -3771,7 +4119,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_phase2_cyc_we & regen_qs),
+    .we     (classb_phase2_cyc_we & regwen_qs),
     .wd     (classb_phase2_cyc_wd),
 
     // from internal hardware
@@ -3798,7 +4146,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classb_phase3_cyc_we & regen_qs),
+    .we     (classb_phase3_cyc_we & regwen_qs),
     .wd     (classb_phase3_cyc_wd),
 
     // from internal hardware
@@ -3858,7 +4206,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_ctrl_en_we & regen_qs),
+    .we     (classc_ctrl_en_we & regwen_qs),
     .wd     (classc_ctrl_en_wd),
 
     // from internal hardware
@@ -3884,7 +4232,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_ctrl_lock_we & regen_qs),
+    .we     (classc_ctrl_lock_we & regwen_qs),
     .wd     (classc_ctrl_lock_wd),
 
     // from internal hardware
@@ -3910,7 +4258,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_ctrl_en_e0_we & regen_qs),
+    .we     (classc_ctrl_en_e0_we & regwen_qs),
     .wd     (classc_ctrl_en_e0_wd),
 
     // from internal hardware
@@ -3936,7 +4284,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_ctrl_en_e1_we & regen_qs),
+    .we     (classc_ctrl_en_e1_we & regwen_qs),
     .wd     (classc_ctrl_en_e1_wd),
 
     // from internal hardware
@@ -3962,7 +4310,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_ctrl_en_e2_we & regen_qs),
+    .we     (classc_ctrl_en_e2_we & regwen_qs),
     .wd     (classc_ctrl_en_e2_wd),
 
     // from internal hardware
@@ -3988,7 +4336,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_ctrl_en_e3_we & regen_qs),
+    .we     (classc_ctrl_en_e3_we & regwen_qs),
     .wd     (classc_ctrl_en_e3_wd),
 
     // from internal hardware
@@ -4014,7 +4362,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_ctrl_map_e0_we & regen_qs),
+    .we     (classc_ctrl_map_e0_we & regwen_qs),
     .wd     (classc_ctrl_map_e0_wd),
 
     // from internal hardware
@@ -4040,7 +4388,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_ctrl_map_e1_we & regen_qs),
+    .we     (classc_ctrl_map_e1_we & regwen_qs),
     .wd     (classc_ctrl_map_e1_wd),
 
     // from internal hardware
@@ -4066,7 +4414,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_ctrl_map_e2_we & regen_qs),
+    .we     (classc_ctrl_map_e2_we & regwen_qs),
     .wd     (classc_ctrl_map_e2_wd),
 
     // from internal hardware
@@ -4092,7 +4440,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_ctrl_map_e3_we & regen_qs),
+    .we     (classc_ctrl_map_e3_we & regwen_qs),
     .wd     (classc_ctrl_map_e3_wd),
 
     // from internal hardware
@@ -4108,30 +4456,30 @@ module alert_handler_reg_top (
   );
 
 
-  // R[classc_clren]: V(False)
+  // R[classc_regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_classc_clren (
+  ) u_classc_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (classc_clren_we),
-    .wd     (classc_clren_wd),
+    .we     (classc_regwen_we),
+    .wd     (classc_regwen_wd),
 
     // from internal hardware
-    .de     (hw2reg.classc_clren.de),
-    .d      (hw2reg.classc_clren.d ),
+    .de     (hw2reg.classc_regwen.de),
+    .d      (hw2reg.classc_regwen.d ),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (classc_clren_qs)
+    .qs     (classc_regwen_qs)
   );
 
 
@@ -4146,7 +4494,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_clr_we & classc_clren_qs),
+    .we     (classc_clr_we & classc_regwen_qs),
     .wd     (classc_clr_wd),
 
     // from internal hardware
@@ -4188,7 +4536,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_accum_thresh_we & regen_qs),
+    .we     (classc_accum_thresh_we & regwen_qs),
     .wd     (classc_accum_thresh_wd),
 
     // from internal hardware
@@ -4215,7 +4563,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_timeout_cyc_we & regen_qs),
+    .we     (classc_timeout_cyc_we & regwen_qs),
     .wd     (classc_timeout_cyc_wd),
 
     // from internal hardware
@@ -4242,7 +4590,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_phase0_cyc_we & regen_qs),
+    .we     (classc_phase0_cyc_we & regwen_qs),
     .wd     (classc_phase0_cyc_wd),
 
     // from internal hardware
@@ -4269,7 +4617,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_phase1_cyc_we & regen_qs),
+    .we     (classc_phase1_cyc_we & regwen_qs),
     .wd     (classc_phase1_cyc_wd),
 
     // from internal hardware
@@ -4296,7 +4644,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_phase2_cyc_we & regen_qs),
+    .we     (classc_phase2_cyc_we & regwen_qs),
     .wd     (classc_phase2_cyc_wd),
 
     // from internal hardware
@@ -4323,7 +4671,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classc_phase3_cyc_we & regen_qs),
+    .we     (classc_phase3_cyc_we & regwen_qs),
     .wd     (classc_phase3_cyc_wd),
 
     // from internal hardware
@@ -4383,7 +4731,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_ctrl_en_we & regen_qs),
+    .we     (classd_ctrl_en_we & regwen_qs),
     .wd     (classd_ctrl_en_wd),
 
     // from internal hardware
@@ -4409,7 +4757,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_ctrl_lock_we & regen_qs),
+    .we     (classd_ctrl_lock_we & regwen_qs),
     .wd     (classd_ctrl_lock_wd),
 
     // from internal hardware
@@ -4435,7 +4783,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_ctrl_en_e0_we & regen_qs),
+    .we     (classd_ctrl_en_e0_we & regwen_qs),
     .wd     (classd_ctrl_en_e0_wd),
 
     // from internal hardware
@@ -4461,7 +4809,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_ctrl_en_e1_we & regen_qs),
+    .we     (classd_ctrl_en_e1_we & regwen_qs),
     .wd     (classd_ctrl_en_e1_wd),
 
     // from internal hardware
@@ -4487,7 +4835,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_ctrl_en_e2_we & regen_qs),
+    .we     (classd_ctrl_en_e2_we & regwen_qs),
     .wd     (classd_ctrl_en_e2_wd),
 
     // from internal hardware
@@ -4513,7 +4861,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_ctrl_en_e3_we & regen_qs),
+    .we     (classd_ctrl_en_e3_we & regwen_qs),
     .wd     (classd_ctrl_en_e3_wd),
 
     // from internal hardware
@@ -4539,7 +4887,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_ctrl_map_e0_we & regen_qs),
+    .we     (classd_ctrl_map_e0_we & regwen_qs),
     .wd     (classd_ctrl_map_e0_wd),
 
     // from internal hardware
@@ -4565,7 +4913,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_ctrl_map_e1_we & regen_qs),
+    .we     (classd_ctrl_map_e1_we & regwen_qs),
     .wd     (classd_ctrl_map_e1_wd),
 
     // from internal hardware
@@ -4591,7 +4939,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_ctrl_map_e2_we & regen_qs),
+    .we     (classd_ctrl_map_e2_we & regwen_qs),
     .wd     (classd_ctrl_map_e2_wd),
 
     // from internal hardware
@@ -4617,7 +4965,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_ctrl_map_e3_we & regen_qs),
+    .we     (classd_ctrl_map_e3_we & regwen_qs),
     .wd     (classd_ctrl_map_e3_wd),
 
     // from internal hardware
@@ -4633,30 +4981,30 @@ module alert_handler_reg_top (
   );
 
 
-  // R[classd_clren]: V(False)
+  // R[classd_regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_classd_clren (
+  ) u_classd_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (classd_clren_we),
-    .wd     (classd_clren_wd),
+    .we     (classd_regwen_we),
+    .wd     (classd_regwen_wd),
 
     // from internal hardware
-    .de     (hw2reg.classd_clren.de),
-    .d      (hw2reg.classd_clren.d ),
+    .de     (hw2reg.classd_regwen.de),
+    .d      (hw2reg.classd_regwen.d ),
 
     // to internal hardware
     .qe     (),
     .q      (),
 
     // to register interface (read)
-    .qs     (classd_clren_qs)
+    .qs     (classd_regwen_qs)
   );
 
 
@@ -4671,7 +5019,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_clr_we & classd_clren_qs),
+    .we     (classd_clr_we & classd_regwen_qs),
     .wd     (classd_clr_wd),
 
     // from internal hardware
@@ -4713,7 +5061,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_accum_thresh_we & regen_qs),
+    .we     (classd_accum_thresh_we & regwen_qs),
     .wd     (classd_accum_thresh_wd),
 
     // from internal hardware
@@ -4740,7 +5088,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_timeout_cyc_we & regen_qs),
+    .we     (classd_timeout_cyc_we & regwen_qs),
     .wd     (classd_timeout_cyc_wd),
 
     // from internal hardware
@@ -4767,7 +5115,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_phase0_cyc_we & regen_qs),
+    .we     (classd_phase0_cyc_we & regwen_qs),
     .wd     (classd_phase0_cyc_wd),
 
     // from internal hardware
@@ -4794,7 +5142,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_phase1_cyc_we & regen_qs),
+    .we     (classd_phase1_cyc_we & regwen_qs),
     .wd     (classd_phase1_cyc_wd),
 
     // from internal hardware
@@ -4821,7 +5169,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_phase2_cyc_we & regen_qs),
+    .we     (classd_phase2_cyc_we & regwen_qs),
     .wd     (classd_phase2_cyc_wd),
 
     // from internal hardware
@@ -4848,7 +5196,7 @@ module alert_handler_reg_top (
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (classd_phase3_cyc_we & regen_qs),
+    .we     (classd_phase3_cyc_we & regwen_qs),
     .wd     (classd_phase3_cyc_wd),
 
     // from internal hardware
@@ -4904,7 +5252,7 @@ module alert_handler_reg_top (
     addr_hit[ 0] = (reg_addr == ALERT_HANDLER_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == ALERT_HANDLER_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == ALERT_HANDLER_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == ALERT_HANDLER_REGEN_OFFSET);
+    addr_hit[ 3] = (reg_addr == ALERT_HANDLER_REGWEN_OFFSET);
     addr_hit[ 4] = (reg_addr == ALERT_HANDLER_PING_TIMEOUT_CYC_OFFSET);
     addr_hit[ 5] = (reg_addr == ALERT_HANDLER_ALERT_EN_OFFSET);
     addr_hit[ 6] = (reg_addr == ALERT_HANDLER_ALERT_CLASS_0_OFFSET);
@@ -4914,7 +5262,7 @@ module alert_handler_reg_top (
     addr_hit[10] = (reg_addr == ALERT_HANDLER_LOC_ALERT_CLASS_OFFSET);
     addr_hit[11] = (reg_addr == ALERT_HANDLER_LOC_ALERT_CAUSE_OFFSET);
     addr_hit[12] = (reg_addr == ALERT_HANDLER_CLASSA_CTRL_OFFSET);
-    addr_hit[13] = (reg_addr == ALERT_HANDLER_CLASSA_CLREN_OFFSET);
+    addr_hit[13] = (reg_addr == ALERT_HANDLER_CLASSA_REGWEN_OFFSET);
     addr_hit[14] = (reg_addr == ALERT_HANDLER_CLASSA_CLR_OFFSET);
     addr_hit[15] = (reg_addr == ALERT_HANDLER_CLASSA_ACCUM_CNT_OFFSET);
     addr_hit[16] = (reg_addr == ALERT_HANDLER_CLASSA_ACCUM_THRESH_OFFSET);
@@ -4926,7 +5274,7 @@ module alert_handler_reg_top (
     addr_hit[22] = (reg_addr == ALERT_HANDLER_CLASSA_ESC_CNT_OFFSET);
     addr_hit[23] = (reg_addr == ALERT_HANDLER_CLASSA_STATE_OFFSET);
     addr_hit[24] = (reg_addr == ALERT_HANDLER_CLASSB_CTRL_OFFSET);
-    addr_hit[25] = (reg_addr == ALERT_HANDLER_CLASSB_CLREN_OFFSET);
+    addr_hit[25] = (reg_addr == ALERT_HANDLER_CLASSB_REGWEN_OFFSET);
     addr_hit[26] = (reg_addr == ALERT_HANDLER_CLASSB_CLR_OFFSET);
     addr_hit[27] = (reg_addr == ALERT_HANDLER_CLASSB_ACCUM_CNT_OFFSET);
     addr_hit[28] = (reg_addr == ALERT_HANDLER_CLASSB_ACCUM_THRESH_OFFSET);
@@ -4938,7 +5286,7 @@ module alert_handler_reg_top (
     addr_hit[34] = (reg_addr == ALERT_HANDLER_CLASSB_ESC_CNT_OFFSET);
     addr_hit[35] = (reg_addr == ALERT_HANDLER_CLASSB_STATE_OFFSET);
     addr_hit[36] = (reg_addr == ALERT_HANDLER_CLASSC_CTRL_OFFSET);
-    addr_hit[37] = (reg_addr == ALERT_HANDLER_CLASSC_CLREN_OFFSET);
+    addr_hit[37] = (reg_addr == ALERT_HANDLER_CLASSC_REGWEN_OFFSET);
     addr_hit[38] = (reg_addr == ALERT_HANDLER_CLASSC_CLR_OFFSET);
     addr_hit[39] = (reg_addr == ALERT_HANDLER_CLASSC_ACCUM_CNT_OFFSET);
     addr_hit[40] = (reg_addr == ALERT_HANDLER_CLASSC_ACCUM_THRESH_OFFSET);
@@ -4950,7 +5298,7 @@ module alert_handler_reg_top (
     addr_hit[46] = (reg_addr == ALERT_HANDLER_CLASSC_ESC_CNT_OFFSET);
     addr_hit[47] = (reg_addr == ALERT_HANDLER_CLASSC_STATE_OFFSET);
     addr_hit[48] = (reg_addr == ALERT_HANDLER_CLASSD_CTRL_OFFSET);
-    addr_hit[49] = (reg_addr == ALERT_HANDLER_CLASSD_CLREN_OFFSET);
+    addr_hit[49] = (reg_addr == ALERT_HANDLER_CLASSD_REGWEN_OFFSET);
     addr_hit[50] = (reg_addr == ALERT_HANDLER_CLASSD_CLR_OFFSET);
     addr_hit[51] = (reg_addr == ALERT_HANDLER_CLASSD_ACCUM_CNT_OFFSET);
     addr_hit[52] = (reg_addr == ALERT_HANDLER_CLASSD_ACCUM_THRESH_OFFSET);
@@ -5066,8 +5414,8 @@ module alert_handler_reg_top (
   assign intr_test_classd_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_classd_wd = reg_wdata[3];
 
-  assign regen_we = addr_hit[3] & reg_we & ~wr_err;
-  assign regen_wd = reg_wdata[0];
+  assign regwen_we = addr_hit[3] & reg_we & ~wr_err;
+  assign regwen_wd = reg_wdata[0];
 
   assign ping_timeout_cyc_we = addr_hit[4] & reg_we & ~wr_err;
   assign ping_timeout_cyc_wd = reg_wdata[23:0];
@@ -5132,6 +5480,18 @@ module alert_handler_reg_top (
   assign alert_en_en_a_19_we = addr_hit[5] & reg_we & ~wr_err;
   assign alert_en_en_a_19_wd = reg_wdata[19];
 
+  assign alert_en_en_a_20_we = addr_hit[5] & reg_we & ~wr_err;
+  assign alert_en_en_a_20_wd = reg_wdata[20];
+
+  assign alert_en_en_a_21_we = addr_hit[5] & reg_we & ~wr_err;
+  assign alert_en_en_a_21_wd = reg_wdata[21];
+
+  assign alert_en_en_a_22_we = addr_hit[5] & reg_we & ~wr_err;
+  assign alert_en_en_a_22_wd = reg_wdata[22];
+
+  assign alert_en_en_a_23_we = addr_hit[5] & reg_we & ~wr_err;
+  assign alert_en_en_a_23_wd = reg_wdata[23];
+
   assign alert_class_0_class_a_0_we = addr_hit[6] & reg_we & ~wr_err;
   assign alert_class_0_class_a_0_wd = reg_wdata[1:0];
 
@@ -5192,6 +5552,18 @@ module alert_handler_reg_top (
   assign alert_class_1_class_a_19_we = addr_hit[7] & reg_we & ~wr_err;
   assign alert_class_1_class_a_19_wd = reg_wdata[7:6];
 
+  assign alert_class_1_class_a_20_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_class_1_class_a_20_wd = reg_wdata[9:8];
+
+  assign alert_class_1_class_a_21_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_class_1_class_a_21_wd = reg_wdata[11:10];
+
+  assign alert_class_1_class_a_22_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_class_1_class_a_22_wd = reg_wdata[13:12];
+
+  assign alert_class_1_class_a_23_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_class_1_class_a_23_wd = reg_wdata[15:14];
+
   assign alert_cause_a_0_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_0_wd = reg_wdata[0];
 
@@ -5251,6 +5623,18 @@ module alert_handler_reg_top (
 
   assign alert_cause_a_19_we = addr_hit[8] & reg_we & ~wr_err;
   assign alert_cause_a_19_wd = reg_wdata[19];
+
+  assign alert_cause_a_20_we = addr_hit[8] & reg_we & ~wr_err;
+  assign alert_cause_a_20_wd = reg_wdata[20];
+
+  assign alert_cause_a_21_we = addr_hit[8] & reg_we & ~wr_err;
+  assign alert_cause_a_21_wd = reg_wdata[21];
+
+  assign alert_cause_a_22_we = addr_hit[8] & reg_we & ~wr_err;
+  assign alert_cause_a_22_wd = reg_wdata[22];
+
+  assign alert_cause_a_23_we = addr_hit[8] & reg_we & ~wr_err;
+  assign alert_cause_a_23_wd = reg_wdata[23];
 
   assign loc_alert_en_en_la_0_we = addr_hit[9] & reg_we & ~wr_err;
   assign loc_alert_en_en_la_0_wd = reg_wdata[0];
@@ -5318,8 +5702,8 @@ module alert_handler_reg_top (
   assign classa_ctrl_map_e3_we = addr_hit[12] & reg_we & ~wr_err;
   assign classa_ctrl_map_e3_wd = reg_wdata[13:12];
 
-  assign classa_clren_we = addr_hit[13] & reg_we & ~wr_err;
-  assign classa_clren_wd = reg_wdata[0];
+  assign classa_regwen_we = addr_hit[13] & reg_we & ~wr_err;
+  assign classa_regwen_wd = reg_wdata[0];
 
   assign classa_clr_we = addr_hit[14] & reg_we & ~wr_err;
   assign classa_clr_wd = reg_wdata[0];
@@ -5378,8 +5762,8 @@ module alert_handler_reg_top (
   assign classb_ctrl_map_e3_we = addr_hit[24] & reg_we & ~wr_err;
   assign classb_ctrl_map_e3_wd = reg_wdata[13:12];
 
-  assign classb_clren_we = addr_hit[25] & reg_we & ~wr_err;
-  assign classb_clren_wd = reg_wdata[0];
+  assign classb_regwen_we = addr_hit[25] & reg_we & ~wr_err;
+  assign classb_regwen_wd = reg_wdata[0];
 
   assign classb_clr_we = addr_hit[26] & reg_we & ~wr_err;
   assign classb_clr_wd = reg_wdata[0];
@@ -5438,8 +5822,8 @@ module alert_handler_reg_top (
   assign classc_ctrl_map_e3_we = addr_hit[36] & reg_we & ~wr_err;
   assign classc_ctrl_map_e3_wd = reg_wdata[13:12];
 
-  assign classc_clren_we = addr_hit[37] & reg_we & ~wr_err;
-  assign classc_clren_wd = reg_wdata[0];
+  assign classc_regwen_we = addr_hit[37] & reg_we & ~wr_err;
+  assign classc_regwen_wd = reg_wdata[0];
 
   assign classc_clr_we = addr_hit[38] & reg_we & ~wr_err;
   assign classc_clr_wd = reg_wdata[0];
@@ -5498,8 +5882,8 @@ module alert_handler_reg_top (
   assign classd_ctrl_map_e3_we = addr_hit[48] & reg_we & ~wr_err;
   assign classd_ctrl_map_e3_wd = reg_wdata[13:12];
 
-  assign classd_clren_we = addr_hit[49] & reg_we & ~wr_err;
-  assign classd_clren_wd = reg_wdata[0];
+  assign classd_regwen_we = addr_hit[49] & reg_we & ~wr_err;
+  assign classd_regwen_wd = reg_wdata[0];
 
   assign classd_clr_we = addr_hit[50] & reg_we & ~wr_err;
   assign classd_clr_wd = reg_wdata[0];
@@ -5554,7 +5938,7 @@ module alert_handler_reg_top (
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[0] = regen_qs;
+        reg_rdata_next[0] = regwen_qs;
       end
 
       addr_hit[4]: begin
@@ -5582,6 +5966,10 @@ module alert_handler_reg_top (
         reg_rdata_next[17] = alert_en_en_a_17_qs;
         reg_rdata_next[18] = alert_en_en_a_18_qs;
         reg_rdata_next[19] = alert_en_en_a_19_qs;
+        reg_rdata_next[20] = alert_en_en_a_20_qs;
+        reg_rdata_next[21] = alert_en_en_a_21_qs;
+        reg_rdata_next[22] = alert_en_en_a_22_qs;
+        reg_rdata_next[23] = alert_en_en_a_23_qs;
       end
 
       addr_hit[6]: begin
@@ -5608,6 +5996,10 @@ module alert_handler_reg_top (
         reg_rdata_next[3:2] = alert_class_1_class_a_17_qs;
         reg_rdata_next[5:4] = alert_class_1_class_a_18_qs;
         reg_rdata_next[7:6] = alert_class_1_class_a_19_qs;
+        reg_rdata_next[9:8] = alert_class_1_class_a_20_qs;
+        reg_rdata_next[11:10] = alert_class_1_class_a_21_qs;
+        reg_rdata_next[13:12] = alert_class_1_class_a_22_qs;
+        reg_rdata_next[15:14] = alert_class_1_class_a_23_qs;
       end
 
       addr_hit[8]: begin
@@ -5631,6 +6023,10 @@ module alert_handler_reg_top (
         reg_rdata_next[17] = alert_cause_a_17_qs;
         reg_rdata_next[18] = alert_cause_a_18_qs;
         reg_rdata_next[19] = alert_cause_a_19_qs;
+        reg_rdata_next[20] = alert_cause_a_20_qs;
+        reg_rdata_next[21] = alert_cause_a_21_qs;
+        reg_rdata_next[22] = alert_cause_a_22_qs;
+        reg_rdata_next[23] = alert_cause_a_23_qs;
       end
 
       addr_hit[9]: begin
@@ -5668,7 +6064,7 @@ module alert_handler_reg_top (
       end
 
       addr_hit[13]: begin
-        reg_rdata_next[0] = classa_clren_qs;
+        reg_rdata_next[0] = classa_regwen_qs;
       end
 
       addr_hit[14]: begin
@@ -5725,7 +6121,7 @@ module alert_handler_reg_top (
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[0] = classb_clren_qs;
+        reg_rdata_next[0] = classb_regwen_qs;
       end
 
       addr_hit[26]: begin
@@ -5782,7 +6178,7 @@ module alert_handler_reg_top (
       end
 
       addr_hit[37]: begin
-        reg_rdata_next[0] = classc_clren_qs;
+        reg_rdata_next[0] = classc_regwen_qs;
       end
 
       addr_hit[38]: begin
@@ -5839,7 +6235,7 @@ module alert_handler_reg_top (
       end
 
       addr_hit[49]: begin
-        reg_rdata_next[0] = classd_clren_qs;
+        reg_rdata_next[0] = classd_regwen_qs;
       end
 
       addr_hit[50]: begin

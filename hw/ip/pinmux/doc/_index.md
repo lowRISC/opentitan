@@ -10,7 +10,7 @@ This module conforms to the [OpenTitan guideline for peripheral device functiona
 See that document for integration overview within the broader OpenTitan top level system.
 The module provides a mechanism to reconfigure the peripheral-to-pin mapping at runtime, which greatly enhances the system flexibility.
 This IP is closely related to the `padctrl` instance which provides additional control of pad attributes (pull-up, pull-down, open drain, drive strength, keeper and inversion).
-See [that spec]({{< relref "hw/ip/padctrl/doc" >}}) for more information.
+See  (**TODO**) for more information.
 
 
 
@@ -29,7 +29,7 @@ See [that spec]({{< relref "hw/ip/padctrl/doc" >}}) for more information.
 The pinmux peripheral is a programmable module designed to wire arbitrary peripheral inputs and outputs to arbitrary multiplexable chip bidirectional pins.
 It gives much flexibility at the top level of the device, allowing most data pins to be flexibly wired and controlled by many peripherals.
 It is assumed that all available pins that the pinmux connects to are bidirectional, controlled by logic within this module.
-This document does not define how these are connected to pads at the toplevel, since that is governed by the `padctrl` IP [that spec]({{< relref "hw/ip/padctrl/doc" >}}).
+This document does not define how these are connected to pads at the toplevel, since that is governed by the `padctrl` IP (**TODO**).
 However, some discussion is shared in a later section.
 
 The number of available peripheral IOs and muxed IOs is configurable, in other words modifiable at design time.

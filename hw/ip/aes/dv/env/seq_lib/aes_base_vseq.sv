@@ -62,17 +62,14 @@ class aes_base_vseq extends cip_base_vseq #(
   virtual task clear_regs(clear_t clr_vector);
     string txt="";
     bit [TL_DW:0] reg_val = '0;
-
-    txt = $sformatf("\n data_out: \t %0b", clr_vector.data_out);
-    txt = {txt, $sformatf("\n data_in: \t %0b", clr_vector.data_in)};
-    txt = {txt, $sformatf("\n data_iv: \t %0b", clr_vector.iv)};
-    txt = {txt, $sformatf("\n data_key: \t %0b", clr_vector.key)};
+    txt = {txt, $sformatf("\n data_out: \t %0b", clr_vector.dataout)};
+    txt = {txt, $sformatf("\n key_iv_data_in: \t %0b", clr_vector.key_iv_data_in)};
     txt = {txt, $sformatf("\n vector: \t %0b", clr_vector)};
     `uvm_info(`gfn, $sformatf("%s",txt), UVM_MEDIUM)
 
     ral.trigger.set(0);
-    ral.trigger.key_iv_data_in_clear.set(|clr_vector[2:0]);
-    ral.trigger.data_out_clear.set(clr_vector.data_out);
+    ral.trigger.key_iv_data_in_clear.set(clr_vector.key_iv_data_in);
+    ral.trigger.data_out_clear.set(clr_vector.dataout);
     csr_update(ral.trigger);
   endtask // clear_registers
 
@@ -98,7 +95,6 @@ class aes_base_vseq extends cip_base_vseq #(
 
   virtual task set_key_len(bit [2:0] key_len);
     ral.ctrl_shadowed.key_len.set(key_len);
-    `uvm_info(`gfn, $sformatf("Writing Key LEN: %b", key_len), UVM_LOW)
     csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
   endtask
 
@@ -368,6 +364,7 @@ class aes_base_vseq extends cip_base_vseq #(
     // the manual operation should be included in the unbalanced =1 also
     if (new_msg) setup_dut(cfg_item);
     if (unbalanced == 0 || manual_operation) begin
+       data_item = new();
       while (aes_item_queue.size() > 0) begin
         status_fsm(cfg_item, data_item, new_msg, manual_operation, 0, status);
         if (status.input_ready) begin
@@ -380,6 +377,8 @@ class aes_base_vseq extends cip_base_vseq #(
         end
       end
     end else begin
+
+      data_item = new();
 
       while ((aes_item_queue.size() > 0) || (read_queue.size() > 0)) begin
         // get the status to make sure we can provide data - but don't wait for output //
@@ -467,6 +466,7 @@ class aes_base_vseq extends cip_base_vseq #(
     bit                   done        = 0;
     string                txt         = "";
 
+    txt = "\n Entering FSM";
     // enable get status when provided with an empty Item.
     if (data_item.mode === 'X) begin
       csr_rd(.ptr(ral.status), .value(status), .blocking(is_blocking));
@@ -476,8 +476,9 @@ class aes_base_vseq extends cip_base_vseq #(
     while(!done && (data_item.mode != AES_NONE)) begin
       //read the status register to see that we have triggered the operation
       csr_rd(.ptr(ral.status), .value(status), .blocking(is_blocking));
+      txt = {txt, "\n ----|reading STATUS", status2string(status)};
       // check status and act accordingly //
-      if (status.alert_fatal) begin
+      if (status.alert_fatal_fault) begin
         // stuck pull reset //
       end else begin
         // state 0
@@ -485,9 +486,12 @@ class aes_base_vseq extends cip_base_vseq #(
           if (status.output_valid && read_output) begin
             read_data(data_item.data_out, is_blocking);
             txt = {txt, $sformatf("\n\t ----| status state 0 ")};
+            done = 1;
+          end else if (!read_output) begin
+            done = 1; // get more data
+          end else begin
+            try_recover(cfg_item, data_item, manual_operation);
           end
-          done = 1;
-
         end else if (status.idle && !status.input_ready) begin
           // state 1 //
           // if data ready just read and return
@@ -497,30 +501,9 @@ class aes_base_vseq extends cip_base_vseq #(
           end else begin
             // if data is not ready the DUT is missing
             // KEY and IV - or the configuration
-            csr_rd(.ptr(ral.ctrl_shadowed), .value(ctrl), .blocking(is_blocking));
-            ral.ctrl_shadowed.operation.set(cfg_item.operation);
-            ral.ctrl_shadowed.mode.set(cfg_item.mode);
-            ral.ctrl_shadowed.key_len.set(cfg_item.key_len);
-            ral.ctrl_shadowed.manual_operation.set(cfg_item.manual_op);
-
-            if (ral.ctrl_shadowed.get_mirrored_value() != ctrl) begin
-              `uvm_info(`gfn, $sformatf("\n\t ----| configuration does not match actual - re-confguring"), UVM_LOW)
-              txt = { txt, $sformatf("\n\t ----| configuration does not match actual - re-confguring")};
-              csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(is_blocking));
-            end else begin
-              // key and IV missing clear all and rewrite (a soon to come update will merge
-              // the clear options into a single bit)
-              clear_regs(4'b1111);
-              // wait for idle
-              csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
-              write_key(cfg_item.key, is_blocking);
-              write_iv(cfg_item.iv, is_blocking);
-              add_data(data_item.data_in, is_blocking);
-              if (manual_operation) trigger();
-            end
+            try_recover(cfg_item, data_item, manual_operation);
             txt = {txt, $sformatf("\n\t ----| status state 1 ")};
           end
-
         end else if (status.output_valid) begin
           // state 2 //
           // data ready to be read out
@@ -549,11 +532,40 @@ class aes_base_vseq extends cip_base_vseq #(
           txt = {txt, $sformatf("\n ----| OUTPUT_VALID %0b",status.output_valid)};
           `uvm_fatal(`gfn, $sformatf("\n\t %s",txt))
         end
-        `uvm_info(`gfn, $sformatf("\n\t %s",txt), UVM_MEDIUM)
-      end // else: !if(status.alert_fatal)
+      end // else: !if(status.alert_fatal_fault)
     end // while (!done)
-
+    `uvm_info(`gfn, $sformatf("\n\t %s",txt), UVM_MEDIUM)
   endtask // transmit_fsm
+
+
+  virtual task try_recover(
+    aes_seq_item        cfg_item,         // sequence item with configuraton
+    aes_seq_item        data_item,        // sequence item with data to process
+    bit                 manual_operation
+    );
+    // if data is not ready the DUT is missing
+    // KEY and IV - or the configuration
+    ctrl_reg_t            ctrl;
+    bit                   is_blocking = ~cfg_item.do_b2b;
+
+    csr_rd(.ptr(ral.ctrl_shadowed), .value(ctrl), .blocking(is_blocking));
+    ral.ctrl_shadowed.operation.set(cfg_item.operation);
+    ral.ctrl_shadowed.mode.set(cfg_item.mode);
+    ral.ctrl_shadowed.key_len.set(cfg_item.key_len);
+    ral.ctrl_shadowed.manual_operation.set(cfg_item.manual_op);
+    // key and IV missing clear all and rewrite (a soon to come update will merge
+    // the clear options into a single bit)
+
+    clear_regs(2'b11);
+    // wait for idle
+    csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+    csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(is_blocking));
+    csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+    write_key(cfg_item.key, is_blocking);
+    write_iv(cfg_item.iv, is_blocking);
+    add_data(data_item.data_in, is_blocking);
+    if (manual_operation) trigger();
+  endtask // try_recover
 
 
   virtual task send_msg_queue (
@@ -657,4 +669,18 @@ class aes_base_vseq extends cip_base_vseq #(
       `uvm_info(`gfn, $sformatf("%s", print_item.convert2string()), UVM_MEDIUM)
     end
   endfunction // aes_print_item_queue
+
+
+  function string status2string(status_t status);
+    string txt="";
+    txt ={txt, $sformatf("\n\t ---| IDLE:          %0b", status.idle)};
+    txt ={txt, $sformatf("\n\t ---| STALL:         %0b", status.stall)};
+    txt ={txt, $sformatf("\n\t ---| Output Lost:   %0b", status.output_lost)};
+    txt ={txt, $sformatf("\n\t ---| Output Valid:  %0b", status.output_valid)};
+    txt ={txt, $sformatf("\n\t ---| Input Ready:   %0b", status.input_ready)};
+    txt ={txt, $sformatf("\n\t ---| Alert - Recov: %0b", status.alert_recov_ctrl_update_err)};
+    txt ={txt, $sformatf("\n\t ---| Alert -Fatal:  %0b", status.alert_fatal_fault)};
+    return txt;
+  endfunction // status2string
+
 endclass : aes_base_vseq

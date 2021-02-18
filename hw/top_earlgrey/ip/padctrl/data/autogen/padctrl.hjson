@@ -25,13 +25,13 @@
     { name: "NDioPads",
       desc: "Number of dedicated IO pads",
       type: "int",
-      default: "15",
+      default: "21",
       local: "true"
     },
     { name: "NMioPads",
       desc: "Number of muxed IO pads",
       type: "int",
-      default: "32",
+      default: "44",
       local: "true"
     },
     { name: "AttrDw",
@@ -42,7 +42,7 @@
     },
   ],
   registers: [
-    { name: "REGEN",
+    { name: "REGWEN",
       desc: '''
             Register write enable for all control registers.
             ''',
@@ -69,7 +69,7 @@
                   hwaccess: "hrw",
                   hwext:    "true",
                   hwqe:     "true",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "ATTR",
                   fields: [
                     { bits: "9:0",
@@ -104,7 +104,7 @@
                   hwaccess: "hrw",
                   hwext:    "true",
                   hwqe:     "true",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "ATTR",
                   fields: [
                     { bits: "9:0",

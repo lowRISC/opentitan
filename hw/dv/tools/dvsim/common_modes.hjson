@@ -16,6 +16,9 @@
       name: cov
       is_sim_mode: 1
       en_build_modes: ["{tool}_cov"]
+      // This plusarg is retrieved in `hw/dv/sv/dv_lib/dv_base_test.sv`. If not set, the coverage
+      // collection components are not created.
+      run_opts: ["+en_cov=1"]
     }
     {
       name: profile

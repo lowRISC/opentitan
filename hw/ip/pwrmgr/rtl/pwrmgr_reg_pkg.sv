@@ -10,6 +10,9 @@ package pwrmgr_reg_pkg;
   parameter int NumWkups = 1;
   parameter int NumRstReqs = 1;
 
+  // Address width within the block
+  parameter int BlockAw = 6;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -153,21 +156,30 @@ package pwrmgr_reg_pkg;
   } pwrmgr_hw2reg_t;
 
   // Register Address
-  parameter logic [5:0] PWRMGR_INTR_STATE_OFFSET = 6'h 0;
-  parameter logic [5:0] PWRMGR_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter logic [5:0] PWRMGR_INTR_TEST_OFFSET = 6'h 8;
-  parameter logic [5:0] PWRMGR_CTRL_CFG_REGWEN_OFFSET = 6'h c;
-  parameter logic [5:0] PWRMGR_CONTROL_OFFSET = 6'h 10;
-  parameter logic [5:0] PWRMGR_CFG_CDC_SYNC_OFFSET = 6'h 14;
-  parameter logic [5:0] PWRMGR_WAKEUP_EN_REGWEN_OFFSET = 6'h 18;
-  parameter logic [5:0] PWRMGR_WAKEUP_EN_OFFSET = 6'h 1c;
-  parameter logic [5:0] PWRMGR_WAKE_STATUS_OFFSET = 6'h 20;
-  parameter logic [5:0] PWRMGR_RESET_EN_REGWEN_OFFSET = 6'h 24;
-  parameter logic [5:0] PWRMGR_RESET_EN_OFFSET = 6'h 28;
-  parameter logic [5:0] PWRMGR_RESET_STATUS_OFFSET = 6'h 2c;
-  parameter logic [5:0] PWRMGR_WAKE_INFO_CAPTURE_DIS_OFFSET = 6'h 30;
-  parameter logic [5:0] PWRMGR_WAKE_INFO_OFFSET = 6'h 34;
+  parameter logic [BlockAw-1:0] PWRMGR_INTR_STATE_OFFSET = 6'h 0;
+  parameter logic [BlockAw-1:0] PWRMGR_INTR_ENABLE_OFFSET = 6'h 4;
+  parameter logic [BlockAw-1:0] PWRMGR_INTR_TEST_OFFSET = 6'h 8;
+  parameter logic [BlockAw-1:0] PWRMGR_CTRL_CFG_REGWEN_OFFSET = 6'h c;
+  parameter logic [BlockAw-1:0] PWRMGR_CONTROL_OFFSET = 6'h 10;
+  parameter logic [BlockAw-1:0] PWRMGR_CFG_CDC_SYNC_OFFSET = 6'h 14;
+  parameter logic [BlockAw-1:0] PWRMGR_WAKEUP_EN_REGWEN_OFFSET = 6'h 18;
+  parameter logic [BlockAw-1:0] PWRMGR_WAKEUP_EN_OFFSET = 6'h 1c;
+  parameter logic [BlockAw-1:0] PWRMGR_WAKE_STATUS_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] PWRMGR_RESET_EN_REGWEN_OFFSET = 6'h 24;
+  parameter logic [BlockAw-1:0] PWRMGR_RESET_EN_OFFSET = 6'h 28;
+  parameter logic [BlockAw-1:0] PWRMGR_RESET_STATUS_OFFSET = 6'h 2c;
+  parameter logic [BlockAw-1:0] PWRMGR_WAKE_INFO_CAPTURE_DIS_OFFSET = 6'h 30;
+  parameter logic [BlockAw-1:0] PWRMGR_WAKE_INFO_OFFSET = 6'h 34;
 
+  // Reset values for hwext registers and their fields
+  parameter logic [0:0] PWRMGR_INTR_TEST_RESVAL = 1'h 0;
+  parameter logic [0:0] PWRMGR_INTR_TEST_WAKEUP_RESVAL = 1'h 0;
+  parameter logic [0:0] PWRMGR_CTRL_CFG_REGWEN_RESVAL = 1'h 1;
+  parameter logic [0:0] PWRMGR_CTRL_CFG_REGWEN_EN_RESVAL = 1'h 1;
+  parameter logic [2:0] PWRMGR_WAKE_INFO_RESVAL = 3'h 0;
+  parameter logic [0:0] PWRMGR_WAKE_INFO_REASONS_RESVAL = 1'h 0;
+  parameter logic [0:0] PWRMGR_WAKE_INFO_FALL_THROUGH_RESVAL = 1'h 0;
+  parameter logic [0:0] PWRMGR_WAKE_INFO_ABORT_RESVAL = 1'h 0;
 
   // Register Index
   typedef enum int {

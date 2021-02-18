@@ -31,15 +31,21 @@ module top_earlgrey_verilator (
   logic IO_JTCK, IO_JTMS, IO_JTRST_N, IO_JTDI, IO_JTDO;
 
   // TODO: instantiate padring and route these signals through that module
-  logic [14:0] dio_in;
-  logic [14:0] dio_out;
-  logic [14:0] dio_oe;
+  logic [20:0] dio_in;
+  logic [20:0] dio_out;
+  logic [20:0] dio_oe;
 
   assign dio_in = {cio_spi_device_sck_p2d,
                    cio_spi_device_csb_p2d,
+                   1'b0,
+                   1'b0,
+                   1'b0,
                    cio_spi_device_sdi_p2d,
                    1'b0,
-                   cio_uart_rx_p2d,
+                   1'b0,
+                   1'b0,
+                   1'b0,
+                   1'b0,
                    1'b0,
                    cio_usbdev_sense_p2d,
                    1'b0,
@@ -59,8 +65,7 @@ module top_earlgrey_verilator (
   assign cio_usbdev_dn_pullup_d2p = dio_out[5];
   assign cio_usbdev_dp_pullup_d2p = dio_out[6];
   assign cio_usbdev_se0_d2p = dio_out[7];
-  assign cio_uart_tx_d2p = dio_out[9];
-  assign cio_spi_device_sdo_d2p = dio_out[11];
+  assign cio_spi_device_sdo_d2p = dio_out[16];
 
   assign cio_usbdev_dn_en_d2p = dio_oe[0];
   assign cio_usbdev_dp_en_d2p = dio_oe[1];
@@ -70,74 +75,105 @@ module top_earlgrey_verilator (
   assign cio_usbdev_dn_pullup_en_d2p = dio_oe[5];
   assign cio_usbdev_dp_pullup_en_d2p = dio_oe[6];
   assign cio_usbdev_se0_en_d2p = dio_oe[7];
-  assign cio_uart_tx_en_d2p = dio_oe[9];
-  assign cio_spi_device_sdo_en_d2p = dio_oe[11];
+  assign cio_spi_device_sdo_en_d2p = dio_oe[16];
+
+  logic [43:0] mio_in;
+  logic [43:0] mio_out;
+  logic [43:0] mio_oe;
+
+  assign mio_in = {11'h0,
+                   cio_uart_rx_p2d,
+                   cio_gpio_p2d};
+
+  assign cio_gpio_d2p       = mio_out[31:0];
+  assign cio_gpio_en_d2p    = mio_oe[31:0];
+  assign cio_uart_tx_d2p    = mio_out[33];
+  assign cio_uart_tx_en_d2p = mio_oe[33];
 
   // dummy ast connections
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
-  ast_wrapper_pkg::ast_rst_t ast_base_rst;
-  ast_wrapper_pkg::ast_alert_req_t ast_base_alerts;
-  ast_wrapper_pkg::ast_status_t ast_base_status;
+  ast_pkg::ast_rst_t ast_base_rst;
+  ast_pkg::ast_alert_req_t ast_base_alerts;
+  ast_pkg::ast_status_t ast_base_status;
 
-  assign ast_base_pwr.slow_clk_val = pwrmgr_pkg::DiffValid;
-  assign ast_base_pwr.core_clk_val = pwrmgr_pkg::DiffValid;
-  assign ast_base_pwr.io_clk_val   = pwrmgr_pkg::DiffValid;
-  assign ast_base_pwr.usb_clk_val  = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.slow_clk_val = 1'b1;
+  assign ast_base_pwr.core_clk_val = 1'b1;
+  assign ast_base_pwr.io_clk_val   = 1'b1;
+  assign ast_base_pwr.usb_clk_val  = 1'b1;
   assign ast_base_pwr.main_pok     = 1'b1;
 
-  assign ast_base_alerts.alerts_p  = '0;
-  assign ast_base_alerts.alerts_n  = {ast_wrapper_pkg::NumAlerts{1'b1}};
-  assign ast_base_status.io_pok    = {ast_wrapper_pkg::NumIoRails{1'b1}};
+  ast_pkg::ast_dif_t silent_alert = '{
+                                       p: 1'b0,
+                                       n: 1'b1
+                                     };
+
+  assign ast_base_alerts.alerts = {ast_pkg::NumAlerts{silent_alert}};
+  assign ast_base_status.io_pok = {ast_pkg::NumIoRails{1'b1}};
 
   // the rst_ni pin only goes to AST
   // the rest of the logic generates reset based on the 'pok' signal.
   // for verilator purposes, make these two the same.
   assign ast_base_rst.aon_pok      = rst_ni;
+
+  lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
   // Top-level design
   top_earlgrey top_earlgrey (
-    .rst_ni                     (rst_ni),
-    .clk_main_i                 (clk_i),
-    .clk_io_i                   (clk_i),
-    .clk_usb_i                  (clk_i),
-    .clk_aon_i                  (clk_i),
-    .rstmgr_ast_i                 ( ast_base_rst    ),
-    .pwrmgr_pwr_ast_req_o         (                 ),
-    .pwrmgr_pwr_ast_rsp_i         ( ast_base_pwr    ),
-    .sensor_ctrl_ast_alert_req_i  ( ast_base_alerts ),
-    .sensor_ctrl_ast_alert_rsp_o  (                 ),
-    .sensor_ctrl_ast_status_i     ( ast_base_status ),
-    .usbdev_usb_ref_val_o         (                 ),
-    .usbdev_usb_ref_pulse_o       (                 ),
-    .ast_tl_req_o                 (                 ),
-    .ast_tl_rsp_i                 ( '0              ),
-    .otp_ctrl_otp_ast_pwr_seq_o   (                 ),
-    .otp_ctrl_otp_ast_pwr_seq_h_i ( '0              ),
-    .flash_power_down_h_i         ( '0              ),
-    .flash_power_ready_h_i        ( 1'b1            ),
-
-    .jtag_tck_i                 (cio_jtag_tck),
-    .jtag_tms_i                 (cio_jtag_tms),
-    .jtag_trst_ni               (cio_jtag_trst_n),
-    .jtag_tdi_i                 (cio_jtag_tdi),
-    .jtag_tdo_o                 (cio_jtag_tdo),
+    .rst_ni                       (rst_ni            ),
+    .clk_main_i                   (clk_i             ),
+    .clk_io_i                     (clk_i             ),
+    .clk_usb_i                    (clk_i             ),
+    .clk_aon_i                    (clk_i             ),
+    .clks_ast_o                   (                  ),
+    .rstmgr_ast_i                 ( ast_base_rst     ),
+    .rsts_ast_o                   (                  ),
+    .pwrmgr_ast_req_o             (                  ),
+    .pwrmgr_ast_rsp_i             ( ast_base_pwr     ),
+    .sensor_ctrl_ast_alert_req_i  ( ast_base_alerts  ),
+    .sensor_ctrl_ast_alert_rsp_o  (                  ),
+    .sensor_ctrl_ast_status_i     ( ast_base_status  ),
+    .usbdev_usb_ref_val_o         (                  ),
+    .usbdev_usb_ref_pulse_o       (                  ),
+    .ast_tl_req_o                 (                  ),
+    .ast_tl_rsp_i                 ( '0               ),
+    .ast_edn_edn_req_i            ( '0               ),
+    .ast_edn_edn_rsp_o            (                  ),
+    .otp_ctrl_otp_ast_pwr_seq_o   (                  ),
+    .otp_ctrl_otp_ast_pwr_seq_h_i ( '0               ),
+    .flash_bist_enable_i          ( lc_ctrl_pkg::Off ),
+    .flash_power_down_h_i         ( 1'b0             ),
+    .flash_power_ready_h_i        ( 1'b1             ),
+    // Need to model this logic at some point, otherwise entropy
+    // on verilator will hang
+    .es_rng_req_o                 (                  ),
+    .es_rng_rsp_i                 ( '0               ),
+    .lc_clk_byp_req_o             ( lc_clk_bypass    ),
+    .lc_clk_byp_ack_i             ( lc_clk_bypass    ),
+    .flash_test_mode_a_i          ('0),
+    .flash_test_voltage_h_i       ('0),
+    .jtag_tck_i                   (cio_jtag_tck),
+    .jtag_tms_i                   (cio_jtag_tms),
+    .jtag_trst_ni                 (cio_jtag_trst_n),
+    .jtag_tdi_i                   (cio_jtag_tdi),
+    .jtag_tdo_o                   (cio_jtag_tdo),
 
     // Multiplexed I/O
-    .mio_in_i                   (cio_gpio_p2d),
-    .mio_out_o                  (cio_gpio_d2p),
-    .mio_oe_o                   (cio_gpio_en_d2p),
+    .mio_in_i                     (mio_in),
+    .mio_out_o                    (mio_out),
+    .mio_oe_o                     (mio_oe),
 
     // Dedicated I/O
-    .dio_in_i                   (dio_in),
-    .dio_out_o                  (dio_out),
-    .dio_oe_o                   (dio_oe),
+    .dio_in_i                     (dio_in),
+    .dio_out_o                    (dio_out),
+    .dio_oe_o                     (dio_oe),
 
     // Pad attributes
-    .mio_attr_o                 ( ),
-    .dio_attr_o                 ( ),
+    .mio_attr_o                   ( ),
+    .dio_attr_o                   ( ),
 
     // DFT signals
-    .scan_rst_ni                (1'b1),
-    .scanmode_i                 (1'b0)
+    .scan_rst_ni                  (1'b1),
+    .scan_en_i                    (1'b0),
+    .scanmode_i                   (lc_ctrl_pkg::Off)
   );
 
   // GPIO DPI

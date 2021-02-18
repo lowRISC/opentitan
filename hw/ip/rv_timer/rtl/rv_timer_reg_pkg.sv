@@ -10,6 +10,9 @@ package rv_timer_reg_pkg;
   parameter int N_HARTS = 1;
   parameter int N_TIMERS = 1;
 
+  // Address width within the block
+  parameter int BlockAw = 9;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -99,16 +102,18 @@ package rv_timer_reg_pkg;
   } rv_timer_hw2reg_t;
 
   // Register Address
-  parameter logic [8:0] RV_TIMER_CTRL_OFFSET = 9'h 0;
-  parameter logic [8:0] RV_TIMER_CFG0_OFFSET = 9'h 100;
-  parameter logic [8:0] RV_TIMER_TIMER_V_LOWER0_OFFSET = 9'h 104;
-  parameter logic [8:0] RV_TIMER_TIMER_V_UPPER0_OFFSET = 9'h 108;
-  parameter logic [8:0] RV_TIMER_COMPARE_LOWER0_0_OFFSET = 9'h 10c;
-  parameter logic [8:0] RV_TIMER_COMPARE_UPPER0_0_OFFSET = 9'h 110;
-  parameter logic [8:0] RV_TIMER_INTR_ENABLE0_OFFSET = 9'h 114;
-  parameter logic [8:0] RV_TIMER_INTR_STATE0_OFFSET = 9'h 118;
-  parameter logic [8:0] RV_TIMER_INTR_TEST0_OFFSET = 9'h 11c;
+  parameter logic [BlockAw-1:0] RV_TIMER_CTRL_OFFSET = 9'h 0;
+  parameter logic [BlockAw-1:0] RV_TIMER_CFG0_OFFSET = 9'h 100;
+  parameter logic [BlockAw-1:0] RV_TIMER_TIMER_V_LOWER0_OFFSET = 9'h 104;
+  parameter logic [BlockAw-1:0] RV_TIMER_TIMER_V_UPPER0_OFFSET = 9'h 108;
+  parameter logic [BlockAw-1:0] RV_TIMER_COMPARE_LOWER0_0_OFFSET = 9'h 10c;
+  parameter logic [BlockAw-1:0] RV_TIMER_COMPARE_UPPER0_0_OFFSET = 9'h 110;
+  parameter logic [BlockAw-1:0] RV_TIMER_INTR_ENABLE0_OFFSET = 9'h 114;
+  parameter logic [BlockAw-1:0] RV_TIMER_INTR_STATE0_OFFSET = 9'h 118;
+  parameter logic [BlockAw-1:0] RV_TIMER_INTR_TEST0_OFFSET = 9'h 11c;
 
+  // Reset values for hwext registers and their fields
+  parameter logic [0:0] RV_TIMER_INTR_TEST0_RESVAL = 1'h 0;
 
   // Register Index
   typedef enum int {

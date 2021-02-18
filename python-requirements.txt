@@ -8,6 +8,7 @@ gitpython
 hjson
 ipyxact >= 0.2.4
 isort
+libcst
 livereload
 mako
 meson >= 0.53.0, <= 0.54 # minimum matches version in meson.build

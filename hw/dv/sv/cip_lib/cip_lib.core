@@ -17,6 +17,7 @@ filesets:
       - lowrisc:opentitan:bus_params_pkg
     files:
       - cip_base_pkg.sv
+      - cip_macros.svh: {is_include_file: true}
       - cip_base_env_cfg.sv: {is_include_file: true}
       - cip_base_env_cov.sv: {is_include_file: true}
       - cip_base_virtual_sequencer.sv: {is_include_file: true}

@@ -13,17 +13,18 @@
 `include "prim_assert.sv"
 
 module rv_dm #(
-  parameter int              NrHarts = 1,
-  parameter logic [31:0]     IdcodeValue = 32'h 0000_0001
+  parameter int               NrHarts = 1,
+  parameter logic [31:0]      IdcodeValue = 32'h 0000_0001
 ) (
-  input  logic               clk_i,       // clock
-  input  logic               rst_ni,      // asynchronous reset active low, connect PoR
+  input  logic                clk_i,       // clock
+  input  logic                rst_ni,      // asynchronous reset active low, connect PoR
                                           // here, not the system reset
-  input  logic               testmode_i,
-  output logic               ndmreset_o,  // non-debug module reset
-  output logic               dmactive_o,  // debug module is active
-  output logic [NrHarts-1:0] debug_req_o, // async debug request
-  input  logic [NrHarts-1:0] unavailable_i, // communicate whether the hart is unavailable
+  input  lc_ctrl_pkg::lc_tx_t hw_debug_en_i,
+  input  logic                testmode_i,
+  output logic                ndmreset_o,  // non-debug module reset
+  output logic                dmactive_o,  // debug module is active
+  output logic [NrHarts-1:0]  debug_req_o, // async debug request
+  input  logic [NrHarts-1:0]  unavailable_i, // communicate whether the hart is unavailable
                                             // (e.g.: power down)
 
   // bus device with debug memory, for an execution based technique
@@ -198,6 +199,7 @@ module rv_dm #(
     .clk_i,
     .rst_ni,
     .req_i        (host_req),
+    .type_i       (tlul_pkg::DataType),
     .gnt_o        (host_gnt),
     .addr_i       (host_add),
     .we_i         (host_we),
@@ -298,6 +300,20 @@ module rv_dm #(
   );
 `endif
 
+
+  tlul_pkg::tl_instr_en_e en_ifetch;
+  lc_ctrl_pkg::lc_tx_t [0:0] hw_debug_en;
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(hw_debug_en_i),
+    .lc_en_o(hw_debug_en)
+  );
+
+  assign en_ifetch = (hw_debug_en == lc_ctrl_pkg::On) ? tlul_pkg::InstrEn : tlul_pkg::InstrDis;
   tlul_adapter_sram #(
     .SramAw(AddressWidthWords),
     .SramDw(BusWidth),
@@ -306,19 +322,19 @@ module rv_dm #(
   ) tl_adapter_device_mem (
     .clk_i,
     .rst_ni,
+    .en_ifetch_i (en_ifetch),
+    .req_o       (req),
+    .gnt_i       (1'b1),
+    .we_o        (we),
+    .addr_o      (addr_w),
+    .wdata_o     (wdata),
+    .wmask_o     (),
+    .rdata_i     (rdata),
+    .rvalid_i    (rvalid),
+    .rerror_i    (2'b00),
 
-    .req_o    (req),
-    .gnt_i    (1'b1),
-    .we_o     (we),
-    .addr_o   (addr_w),
-    .wdata_o  (wdata),
-    .wmask_o  (),
-    .rdata_i  (rdata),
-    .rvalid_i (rvalid),
-    .rerror_i (2'b00),
-
-    .tl_o     (tl_d_o),
-    .tl_i     (tl_d_i)
+    .tl_o        (tl_d_o),
+    .tl_i        (tl_d_i)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin

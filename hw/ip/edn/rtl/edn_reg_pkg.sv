@@ -11,6 +11,9 @@ package edn_reg_pkg;
   parameter int BootInsCmd = 1;
   parameter int BootGenCmd = 12291;
 
+  // Address width within the block
+  parameter int BlockAw = 6;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -45,7 +48,7 @@ package edn_reg_pkg;
 
   typedef struct packed {
     logic        q;
-  } edn_reg2hw_regen_reg_t;
+  } edn_reg2hw_regwen_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -151,7 +154,7 @@ package edn_reg_pkg;
     edn_reg2hw_intr_state_reg_t intr_state; // [144:143]
     edn_reg2hw_intr_enable_reg_t intr_enable; // [142:141]
     edn_reg2hw_intr_test_reg_t intr_test; // [140:137]
-    edn_reg2hw_regen_reg_t regen; // [136:136]
+    edn_reg2hw_regwen_reg_t regwen; // [136:136]
     edn_reg2hw_ctrl_reg_t ctrl; // [135:132]
     edn_reg2hw_sw_cmd_req_reg_t sw_cmd_req; // [131:99]
     edn_reg2hw_reseed_cmd_reg_t reseed_cmd; // [98:66]
@@ -170,26 +173,33 @@ package edn_reg_pkg;
   } edn_hw2reg_t;
 
   // Register Address
-  parameter logic [5:0] EDN_INTR_STATE_OFFSET = 6'h 0;
-  parameter logic [5:0] EDN_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter logic [5:0] EDN_INTR_TEST_OFFSET = 6'h 8;
-  parameter logic [5:0] EDN_REGEN_OFFSET = 6'h c;
-  parameter logic [5:0] EDN_CTRL_OFFSET = 6'h 10;
-  parameter logic [5:0] EDN_SUM_STS_OFFSET = 6'h 14;
-  parameter logic [5:0] EDN_SW_CMD_REQ_OFFSET = 6'h 18;
-  parameter logic [5:0] EDN_SW_CMD_STS_OFFSET = 6'h 1c;
-  parameter logic [5:0] EDN_RESEED_CMD_OFFSET = 6'h 20;
-  parameter logic [5:0] EDN_GENERATE_CMD_OFFSET = 6'h 24;
-  parameter logic [5:0] EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_OFFSET = 6'h 28;
-  parameter logic [5:0] EDN_ERR_CODE_OFFSET = 6'h 2c;
+  parameter logic [BlockAw-1:0] EDN_INTR_STATE_OFFSET = 6'h 0;
+  parameter logic [BlockAw-1:0] EDN_INTR_ENABLE_OFFSET = 6'h 4;
+  parameter logic [BlockAw-1:0] EDN_INTR_TEST_OFFSET = 6'h 8;
+  parameter logic [BlockAw-1:0] EDN_REGWEN_OFFSET = 6'h c;
+  parameter logic [BlockAw-1:0] EDN_CTRL_OFFSET = 6'h 10;
+  parameter logic [BlockAw-1:0] EDN_SUM_STS_OFFSET = 6'h 14;
+  parameter logic [BlockAw-1:0] EDN_SW_CMD_REQ_OFFSET = 6'h 18;
+  parameter logic [BlockAw-1:0] EDN_SW_CMD_STS_OFFSET = 6'h 1c;
+  parameter logic [BlockAw-1:0] EDN_RESEED_CMD_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] EDN_GENERATE_CMD_OFFSET = 6'h 24;
+  parameter logic [BlockAw-1:0] EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_OFFSET = 6'h 28;
+  parameter logic [BlockAw-1:0] EDN_ERR_CODE_OFFSET = 6'h 2c;
 
+  // Reset values for hwext registers and their fields
+  parameter logic [1:0] EDN_INTR_TEST_RESVAL = 2'h 0;
+  parameter logic [0:0] EDN_INTR_TEST_EDN_CMD_REQ_DONE_RESVAL = 1'h 0;
+  parameter logic [0:0] EDN_INTR_TEST_EDN_FIFO_ERR_RESVAL = 1'h 0;
+  parameter logic [31:0] EDN_SW_CMD_REQ_RESVAL = 32'h 0;
+  parameter logic [31:0] EDN_RESEED_CMD_RESVAL = 32'h 0;
+  parameter logic [31:0] EDN_GENERATE_CMD_RESVAL = 32'h 0;
 
   // Register Index
   typedef enum int {
     EDN_INTR_STATE,
     EDN_INTR_ENABLE,
     EDN_INTR_TEST,
-    EDN_REGEN,
+    EDN_REGWEN,
     EDN_CTRL,
     EDN_SUM_STS,
     EDN_SW_CMD_REQ,
@@ -205,7 +215,7 @@ package edn_reg_pkg;
     4'b 0001, // index[ 0] EDN_INTR_STATE
     4'b 0001, // index[ 1] EDN_INTR_ENABLE
     4'b 0001, // index[ 2] EDN_INTR_TEST
-    4'b 0001, // index[ 3] EDN_REGEN
+    4'b 0001, // index[ 3] EDN_REGWEN
     4'b 0001, // index[ 4] EDN_CTRL
     4'b 1111, // index[ 5] EDN_SUM_STS
     4'b 1111, // index[ 6] EDN_SW_CMD_REQ

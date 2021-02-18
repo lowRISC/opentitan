@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <list>
 
 #include "svdpi.h"
 #include "vendor/kerukuro_digestpp/algorithm/kmac.hpp"
@@ -24,12 +26,17 @@ extern "C" {
  */
 static void load_arr_from_simulator(const svOpenArrayHandle arr,
                                     uint8_t *array_out, uint64_t array_len) {
+  svBitVecVal val;
+
   if (array_len == 0) {
     return;
   }
 
   uint8_t *arr_ptr = (uint8_t *)svGetArrayPtr(arr);
-  memcpy(array_out, arr_ptr, array_len);
+  for (int i = 0; i < array_len; i++) {
+    svGetBitArrElem1VecVal(&val, arr, i);
+    array_out[i] = (uint8_t)val;
+  }
 }
 
 /**
@@ -160,6 +167,7 @@ extern void c_dpi_shake256(const svOpenArrayHandle msg, uint64_t msg_len,
 // CSHAKE128 //
 ///////////////
 extern void c_dpi_cshake128(const svOpenArrayHandle msg,
+                            const char *function_name,
                             const char *customization_str, uint64_t msg_len,
                             uint64_t output_len, svOpenArrayHandle digest) {
   // Load message from SV memory
@@ -170,7 +178,8 @@ extern void c_dpi_cshake128(const svOpenArrayHandle msg,
 
   // Compute the digest
   digestpp::cshake128 shake;
-  shake.set_customization(customization_str);
+  shake.set_function_name(function_name, strlen(function_name));
+  shake.set_customization(customization_str, strlen(customization_str));
   shake.absorb(msg_arr, msg_len);
   shake.squeeze(digest_arr, output_len);
 
@@ -186,6 +195,7 @@ extern void c_dpi_cshake128(const svOpenArrayHandle msg,
 // CSHAKE256 //
 ///////////////
 extern void c_dpi_cshake256(const svOpenArrayHandle msg,
+                            const char *function_name,
                             const char *customization_str, uint64_t msg_len,
                             uint64_t output_len, svOpenArrayHandle digest) {
   // Load message from SV memory
@@ -196,7 +206,8 @@ extern void c_dpi_cshake256(const svOpenArrayHandle msg,
 
   // Compute the digest
   digestpp::cshake256 shake;
-  shake.set_customization(customization_str);
+  shake.set_function_name(function_name, strlen(function_name));
+  shake.set_customization(customization_str, strlen(customization_str));
   shake.absorb(msg_arr, msg_len);
   shake.squeeze(digest_arr, output_len);
 
@@ -213,7 +224,8 @@ extern void c_dpi_cshake256(const svOpenArrayHandle msg,
 /////////////
 extern void c_dpi_kmac128(const svOpenArrayHandle msg, uint64_t msg_len,
                           const svOpenArrayHandle key, uint64_t key_len,
-                          uint64_t output_len, svBitVecVal *digest) {
+                          const char *customization_str, uint64_t output_len,
+                          svBitVecVal *digest) {
   uint64_t output_len_bits = output_len * 8;
 
   // Load message from SV memory
@@ -228,9 +240,10 @@ extern void c_dpi_kmac128(const svOpenArrayHandle msg, uint64_t msg_len,
 
   // Compute the digest
   digestpp::kmac128 kmac(output_len_bits);
+  kmac.set_customization(customization_str, strlen(customization_str));
   kmac.set_key(key_arr, key_len);
   kmac.absorb(msg_arr, msg_len);
-  kmac.digest(digest_arr, output_len);
+  kmac.digest(digest_arr, sizeof(digest_arr));
 
   if (msg_arr != nullptr) {
     free(msg_arr);
@@ -249,6 +262,7 @@ extern void c_dpi_kmac128(const svOpenArrayHandle msg, uint64_t msg_len,
 /////////////////
 extern void c_dpi_kmac128_xof(const svOpenArrayHandle msg, uint64_t msg_len,
                               const svOpenArrayHandle key, uint64_t key_len,
+                              const char *customization_str,
                               uint64_t output_len, svBitVecVal *digest) {
   // Load message from SV memory
   uint8_t *msg_arr = (uint8_t *)malloc(msg_len * sizeof(uint8_t));
@@ -262,9 +276,10 @@ extern void c_dpi_kmac128_xof(const svOpenArrayHandle msg, uint64_t msg_len,
 
   // Compute the digest
   digestpp::kmac128_xof kmac;
+  kmac.set_customization(customization_str, strlen(customization_str));
   kmac.set_key(key_arr, key_len);
   kmac.absorb(msg_arr, msg_len);
-  kmac.squeeze(digest_arr, output_len);
+  kmac.squeeze(digest_arr, sizeof(digest_arr));
 
   if (msg_arr != nullptr) {
     free(msg_arr);
@@ -283,7 +298,8 @@ extern void c_dpi_kmac128_xof(const svOpenArrayHandle msg, uint64_t msg_len,
 /////////////
 extern void c_dpi_kmac256(const svOpenArrayHandle msg, uint64_t msg_len,
                           const svOpenArrayHandle key, uint64_t key_len,
-                          uint64_t output_len, svBitVecVal *digest) {
+                          const char *customization_str, uint64_t output_len,
+                          svBitVecVal *digest) {
   uint64_t output_len_bits = output_len * 8;
 
   // Load message from SV memory
@@ -298,9 +314,10 @@ extern void c_dpi_kmac256(const svOpenArrayHandle msg, uint64_t msg_len,
 
   // Compute the digest
   digestpp::kmac256 kmac(output_len_bits);
+  kmac.set_customization(customization_str, strlen(customization_str));
   kmac.set_key(key_arr, key_len);
   kmac.absorb(msg_arr, msg_len);
-  kmac.digest(digest_arr, output_len);
+  kmac.digest(digest_arr, sizeof(digest_arr));
 
   if (msg_arr != nullptr) {
     free(msg_arr);
@@ -319,6 +336,7 @@ extern void c_dpi_kmac256(const svOpenArrayHandle msg, uint64_t msg_len,
 /////////////////
 extern void c_dpi_kmac256_xof(const svOpenArrayHandle msg, uint64_t msg_len,
                               const svOpenArrayHandle key, uint64_t key_len,
+                              const char *customization_str,
                               uint64_t output_len, svBitVecVal *digest) {
   // Load message from SV memory
   uint8_t *msg_arr = (uint8_t *)malloc(msg_len * sizeof(uint8_t));
@@ -332,9 +350,10 @@ extern void c_dpi_kmac256_xof(const svOpenArrayHandle msg, uint64_t msg_len,
 
   // Compute the digest
   digestpp::kmac256_xof kmac;
+  kmac.set_customization(customization_str, strlen(customization_str));
   kmac.set_key(key_arr, key_len);
   kmac.absorb(msg_arr, msg_len);
-  kmac.squeeze(digest_arr, output_len);
+  kmac.squeeze(digest_arr, sizeof(digest_arr));
 
   if (msg_arr != nullptr) {
     free(msg_arr);

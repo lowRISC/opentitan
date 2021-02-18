@@ -361,9 +361,11 @@ class InsnSyntax:
     def render(self,
                cur_pc: int,
                op_vals: Dict[str, int],
-               operands: Dict[str, Operand]) -> str:
-        '''Return an assembly listing for the given operand fields'''
-        parts = []
-        for hunk in self.hunks:
-            parts.append(hunk.render(cur_pc, op_vals, operands))
-        return ''.join(parts)
+               operands: Dict[str, Operand]) -> List[str]:
+        '''Return an assembly listing for the given operand fields
+
+        The listings for hunks are returned separately (to allow an instruction
+        to support glued_ops). To generate the final listing, concatenate them.
+
+        '''
+        return [hunk.render(cur_pc, op_vals, operands) for hunk in self.hunks]

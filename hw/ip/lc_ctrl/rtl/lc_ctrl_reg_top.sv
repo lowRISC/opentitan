@@ -71,10 +71,10 @@ module lc_ctrl_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic alert_test_lc_programming_failure_wd;
-  logic alert_test_lc_programming_failure_we;
-  logic alert_test_lc_state_failure_wd;
-  logic alert_test_lc_state_failure_we;
+  logic alert_test_fatal_prog_error_wd;
+  logic alert_test_fatal_prog_error_we;
+  logic alert_test_fatal_state_error_wd;
+  logic alert_test_fatal_state_error_we;
   logic status_ready_qs;
   logic status_ready_re;
   logic status_transition_successful_qs;
@@ -147,32 +147,32 @@ module lc_ctrl_reg_top (
   // Register instances
   // R[alert_test]: V(True)
 
-  //   F[lc_programming_failure]: 0:0
+  //   F[fatal_prog_error]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_lc_programming_failure (
+  ) u_alert_test_fatal_prog_error (
     .re     (1'b0),
-    .we     (alert_test_lc_programming_failure_we),
-    .wd     (alert_test_lc_programming_failure_wd),
+    .we     (alert_test_fatal_prog_error_we),
+    .wd     (alert_test_fatal_prog_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.lc_programming_failure.qe),
-    .q      (reg2hw.alert_test.lc_programming_failure.q ),
+    .qe     (reg2hw.alert_test.fatal_prog_error.qe),
+    .q      (reg2hw.alert_test.fatal_prog_error.q ),
     .qs     ()
   );
 
 
-  //   F[lc_state_failure]: 1:1
+  //   F[fatal_state_error]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_lc_state_failure (
+  ) u_alert_test_fatal_state_error (
     .re     (1'b0),
-    .we     (alert_test_lc_state_failure_we),
-    .wd     (alert_test_lc_state_failure_wd),
+    .we     (alert_test_fatal_state_error_we),
+    .wd     (alert_test_fatal_state_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.lc_state_failure.qe),
-    .q      (reg2hw.alert_test.lc_state_failure.q ),
+    .qe     (reg2hw.alert_test.fatal_state_error.qe),
+    .q      (reg2hw.alert_test.fatal_state_error.q ),
     .qs     ()
   );
 
@@ -684,11 +684,11 @@ module lc_ctrl_reg_top (
     if (addr_hit[20] && reg_we && (LC_CTRL_PERMIT[20] != (LC_CTRL_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign alert_test_lc_programming_failure_we = addr_hit[0] & reg_we & ~wr_err;
-  assign alert_test_lc_programming_failure_wd = reg_wdata[0];
+  assign alert_test_fatal_prog_error_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_fatal_prog_error_wd = reg_wdata[0];
 
-  assign alert_test_lc_state_failure_we = addr_hit[0] & reg_we & ~wr_err;
-  assign alert_test_lc_state_failure_wd = reg_wdata[1];
+  assign alert_test_fatal_state_error_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_fatal_state_error_wd = reg_wdata[1];
 
   assign status_ready_re = addr_hit[1] && reg_re;
 

@@ -1,0 +1,30 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "rom_ext_signer"
+version = "0.1.0"
+authors = ["lowRISC contributors"]
+edition = "2018"
+
+[workspace]
+members = [
+    "config",
+    "image"
+]
+
+[profile.dev]
+lto = false
+opt-level = 2
+debug = true
+
+[profile.release]
+lto = true
+opt-level = 2
+debug = true
+
+[dependencies]
+mundane = "0.4.3"
+rom_ext_config = { path = "config" }
+rom_ext_image = { path = "image" }

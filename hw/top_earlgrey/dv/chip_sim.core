@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:systems:top_earlgrey_asic
+      - lowrisc:ibex:ibex_tracer
 
   files_dv:
     depend:

@@ -6,133 +6,16 @@ from typing import List, Optional, Tuple
 
 from shared.mem_layout import get_memory_layout
 
-from .alert import BadAddrError, LoopError
+from .alert import Alert, BadAddrError
 from .csr import CSRFile
 from .dmem import Dmem
 from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
 from .gpr import GPRs
+from .loop import LoopStack
 from .reg import RegFile
 from .trace import Trace, TracePC
 from .wsr import WSRFile
-
-
-class TraceLoopStart(Trace):
-    def __init__(self, iterations: int, bodysize: int):
-        self.iterations = iterations
-        self.bodysize = bodysize
-
-    def trace(self) -> str:
-        return "Start LOOP, {} iterations, bodysize: {}".format(
-            self.iterations, self.bodysize)
-
-
-class TraceLoopIteration(Trace):
-    def __init__(self, iteration: int, total: int):
-        self.iteration = iteration
-        self.total = total
-
-    def trace(self) -> str:
-        return "LOOP iteration {}/{}".format(self.iteration, self.total)
-
-
-class LoopLevel:
-    '''An object representing a level in the current loop stack
-
-    start_addr is the first instruction inside the loop (the instruction
-    following the loop instruction). insn_count is the number of instructions
-    in the loop (and must be positive). restarts is one less than the number of
-    iterations, and must be non-negative.
-
-    '''
-    def __init__(self, start_addr: int, insn_count: int, restarts: int):
-        assert 0 <= start_addr
-        assert 0 < insn_count
-        assert 0 <= restarts
-
-        self.loop_count = 1 + restarts
-        self.restarts_left = restarts
-        self.start_addr = start_addr
-        self.match_addr = start_addr + 4 * insn_count
-
-
-class LoopStack:
-    '''An object representing the loop stack
-
-    The loop stack holds up to 8 LoopLevel objects, corresponding to nested
-    loops.
-
-    '''
-    stack_depth = 8
-
-    def __init__(self) -> None:
-        self.stack = []  # type: List[LoopLevel]
-        self.trace = []  # type: List[Trace]
-
-    def start_loop(self,
-                   next_addr: int,
-                   loop_count: int,
-                   insn_count: int) -> None:
-        '''Start a loop.
-
-        next_addr is the address of the first instruction in the loop body.
-        loop_count must be positive and is the number of times to execute the
-        loop. insn_count must be positive and is the number of instructions in
-        the loop body.
-
-        '''
-        assert 0 <= next_addr
-        assert 0 < insn_count
-        assert 0 < loop_count
-
-        if len(self.stack) == LoopStack.stack_depth:
-            raise LoopError('loop stack overflow')
-
-        self.trace.append(TraceLoopStart(loop_count, insn_count))
-        self.stack.append(LoopLevel(next_addr, insn_count, loop_count - 1))
-
-    def check_insn(self, pc: int, insn_affects_control: bool) -> None:
-        '''Check for branch instructions at the end of a loop body'''
-        if self.stack:
-            top = self.stack[-1]
-            if pc + 4 == top.match_addr:
-                # We're about to execute the last instruction in the loop body.
-                # Make sure that it isn't a jump, branch or another loop
-                # instruction.
-                if insn_affects_control:
-                    raise LoopError('control instruction at end of loop')
-
-    def step(self, next_pc: int) -> Optional[int]:
-        '''Update loop stack. If we should loop, return new PC'''
-        if self.stack:
-            top = self.stack[-1]
-
-            if next_pc == top.match_addr:
-                assert top.restarts_left >= 0
-
-                # 1-based iteration number
-                loop_idx = top.loop_count - top.restarts_left
-
-                if not top.restarts_left:
-                    self.stack.pop()
-                    ret_val = None
-                else:
-                    top.restarts_left -= 1
-                    ret_val = top.start_addr
-
-                self.trace.append(TraceLoopIteration(loop_idx, top.loop_count))
-                return ret_val
-
-        return None
-
-    def changes(self) -> List[Trace]:
-        return self.trace
-
-    def commit(self) -> None:
-        self.trace = []
-
-    def abort(self) -> None:
-        self.trace = []
 
 
 class OTBNState:
@@ -168,6 +51,8 @@ class OTBNState:
         self.ext_regs = OTBNExtRegs()
         self.running = False
 
+        self.errs = []  # type: List[Alert]
+
     def add_stall_cycles(self, num_cycles: int) -> None:
         '''Add stall cycles before the next insn completes'''
         assert num_cycles >= 0
@@ -181,6 +66,14 @@ class OTBNState:
         back_pc = self.loop_stack.step(self.pc + 4)
         if back_pc is not None:
             self.pc_next = back_pc
+
+    def errors(self) -> List[Alert]:
+        c = []  # type: List[Alert]
+        c += self.errs
+        c += self.gprs.errors()
+        c += self.dmem.errors()
+        c += self.loop_stack.errors()
+        return c
 
     def changes(self) -> List[Trace]:
         c = []  # type: List[Trace]
@@ -230,7 +123,7 @@ class OTBNState:
         self.csrs.flags.commit()
         self.wdrs.commit()
 
-    def abort(self) -> None:
+    def _abort(self) -> None:
         '''Abort any pending state changes'''
         # This should only be called when an instruction's execution goes
         # wrong. If self._stalls is positive, the bad execution caused those
@@ -252,6 +145,29 @@ class OTBNState:
         self.running = True
         self._start_stall = True
         self.stalled = True
+
+    def _stop(self, err_bits: int) -> None:
+        '''Set flags to stop the processor.
+
+        err_bits is the value written to the ERR_BITS register.
+
+        '''
+        # INTR_STATE is the interrupt state register. Bit 0 (which is being
+        # set) is the 'done' flag.
+        self.ext_regs.set_bits('INTR_STATE', 1 << 0)
+        # STATUS is a status register. Bit 0 (being cleared) is the 'busy' flag
+        self.ext_regs.clear_bits('STATUS', 1 << 0)
+
+        self.ext_regs.write('ERR_BITS', err_bits, True)
+        self.running = False
+
+    def die(self, alerts: List[Alert]) -> None:
+        err_bits = 0
+        for alert in alerts:
+            err_bits |= alert.error_bit()
+
+        self._abort()
+        self._stop(err_bits)
 
     def get_quarter_word_unsigned(self, idx: int, qwsel: int) -> int:
         '''Select a 64-bit quarter of a wide register.
@@ -338,7 +254,7 @@ class OTBNState:
     def check_jump_dest(self) -> None:
         '''Check whether self.pc_next is a valid jump/branch target
 
-        If not, raises a BadAddrError.
+        If not, generates a BadAddrError.
 
         '''
         if self.pc_next is None:
@@ -350,18 +266,19 @@ class OTBNState:
 
         # Check the new PC is word-aligned
         if self.pc_next & 3:
-            raise BadAddrError('pc', self.pc_next,
-                               'address is not 4-byte aligned')
+            self.errs.append(BadAddrError('pc', self.pc_next,
+                                          'address is not 4-byte aligned'))
 
         # Check the new PC lies in instruction memory
         if self.pc_next >= self.imem_size:
-            raise BadAddrError('pc', self.pc_next,
-                               'address lies above the top of imem')
+            self.errs.append(BadAddrError('pc', self.pc_next,
+                                          'address lies above the top of imem'))
 
     def post_insn(self) -> None:
         '''Update state after running an instruction but before commit'''
         self.check_jump_dest()
         self.loop_step()
+        self.gprs.post_insn()
 
     def read_csr(self, idx: int) -> int:
         '''Read the CSR with index idx as an unsigned 32-bit number'''
@@ -375,20 +292,6 @@ class OTBNState:
         '''Return the current call stack, bottom-first'''
         return self.gprs.peek_call_stack()
 
-    def stop(self, err_code: Optional[int]) -> None:
-        '''Set flags to stop the processor.
-
-        If err_code is not None, it is the value to write to the ERR_CODE
-        register.
-
-        '''
-        # INTR_STATE is the interrupt state register. Bit 0 (which is being
-        # set) is the 'done' flag.
-        self.ext_regs.set_bits('INTR_STATE', 1 << 0)
-        # STATUS is a status register. Bit 0 (being cleared) is the 'busy' flag
-        self.ext_regs.clear_bits('STATUS', 1 << 0)
-
-        if err_code is not None:
-            self.ext_regs.write('ERR_CODE', err_code, True)
-
-        self.running = False
+    def on_error(self, error: Alert) -> None:
+        '''Add a pending error that will be reported at the end of the cycle'''
+        self.errs.append(error)

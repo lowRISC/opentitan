@@ -127,6 +127,7 @@ typedef uint8_t dif_pwrmgr_domain_config_t;
  */
 typedef enum dif_pwrmgr_wakeup_request_source {
   kDifPwrmgrWakeupRequestSourceOne = (1u << 0),
+  kDifPwrmgrWakeupRequestSourceTwo = (1u << 1),
 } dif_pwrmgr_wakeup_request_source_t;
 
 /**

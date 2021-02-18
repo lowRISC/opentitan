@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`ifndef SYNTHESIS
+
 /**
  * Tracer module for OTBN. This produces a multi-line string as trace output at most once every
  * cycle and provides it to the simulation environment via a DPI call. It uses `otbn_trace_if` to
@@ -216,3 +218,5 @@ module otbn_tracer
     end
   end
 endmodule
+
+`endif // SYNTHESIS

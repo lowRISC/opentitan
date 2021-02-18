@@ -38,8 +38,8 @@ USAGE = """
 
 # Version of hugo extended to be used to build the docs
 try:
-    tool_requirements = check_tool_requirements.read_tool_requirements()
-    HUGO_EXTENDED_VERSION = tool_requirements['hugo_extended']
+    TOOL_REQUIREMENTS = check_tool_requirements.read_tool_requirements()
+    HUGO_EXTENDED_VERSION = TOOL_REQUIREMENTS['hugo_extended'].min_version
 except Exception as e:
     print("Unable to get required hugo version: %s" % str(e), file=sys.stderr)
     sys.exit(1)
@@ -70,7 +70,6 @@ config = {
         "hw/ip/nmi_gen/data/nmi_gen.hjson",
         "hw/ip/otbn/data/otbn.hjson",
         "hw/ip/otp_ctrl/data/otp_ctrl.hjson",
-        "hw/ip/padctrl/data/padctrl.hjson",
         "hw/ip/pattgen/data/pattgen.hjson",
         "hw/ip/pwm/data/pwm.hjson",
         "hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson",
@@ -97,6 +96,7 @@ config = {
         "hw/ip/alert_handler/data/alert_handler_testplan.hjson",
         "hw/ip/entropy_src/data/entropy_src_testplan.hjson",
         "hw/ip/csrng/data/csrng_testplan.hjson",
+        "hw/ip/edn/data/edn_testplan.hjson",
         "hw/ip/flash_ctrl/data/flash_ctrl_testplan.hjson",
         "hw/ip/gpio/data/gpio_testplan.hjson",
         "hw/ip/hmac/data/hmac_testplan.hjson",
@@ -104,7 +104,6 @@ config = {
         "hw/ip/keymgr/data/keymgr_testplan.hjson",
         "hw/ip/lc_ctrl/data/lc_ctrl_testplan.hjson",
         "hw/ip/otp_ctrl/data/otp_ctrl_testplan.hjson",
-        "hw/ip/padctrl/data/padctrl_fpv_testplan.hjson",
         "hw/ip/pattgen/data/pattgen_testplan.hjson",
         "hw/ip/pinmux/data/pinmux_fpv_testplan.hjson",
         "hw/ip/rv_plic/data/rv_plic_fpv_testplan.hjson",
@@ -201,34 +200,38 @@ def generate_selfdocs():
                 fout.write(tlgen.selfdoc(heading=3, cmd='tlgen.py --doc'))
 
 
-def generate_apt_reqs():
-    """Generate an apt-get command line invocation from apt-requirements.txt
+def generate_pkg_reqs():
+    """Generate an apt/yum command line invocation from
+    apt/yum-requirements.txt
 
-    This will be saved in outdir-generated/apt_cmd.txt
+    This will be saved in outdir-generated/apt_cmd.txt and
+    outdir-generated/yum_cmd.txt, respectively.
     """
-    # Read the apt-requirements.txt
-    apt_requirements = []
-    requirements_file = open(str(SRCTREE_TOP.joinpath("apt-requirements.txt")))
-    for package_line in requirements_file.readlines():
-        # Ignore everything after `#` on each line, and strip whitespace
-        package = package_line.split('#', 1)[0].strip()
-        if package:
-            # only add non-empty lines to packages
-            apt_requirements.append(package)
 
-    apt_cmd = "$ sudo apt-get install " + " ".join(apt_requirements)
-    apt_cmd_lines = textwrap.wrap(apt_cmd,
+    for pkgmgr in ["apt", "yum"]:
+        # Read the apt/yum-requirements.txt
+        requirements = []
+        requirements_file = open(str(SRCTREE_TOP.joinpath(pkgmgr + "-requirements.txt")))
+        for package_line in requirements_file.readlines():
+            # Ignore everything after `#` on each line, and strip whitespace
+            package = package_line.split('#', 1)[0].strip()
+            if package:
+                # only add non-empty lines to packages
+                requirements.append(package)
+
+        cmd = "$ sudo " + pkgmgr + " install " + " ".join(requirements)
+        cmd_lines = textwrap.wrap(cmd,
                                   width=78,
                                   replace_whitespace=True,
                                   subsequent_indent='    ')
-    # Newlines need to be escaped
-    apt_cmd = " \\\n".join(apt_cmd_lines)
+        # Newlines need to be escaped
+        cmd = " \\\n".join(cmd_lines)
 
-    # And then to write the generated string directly to the file.
-    apt_cmd_path = config["outdir-generated"].joinpath('apt_cmd.txt')
-    apt_cmd_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(str(apt_cmd_path), mode='w') as fout:
-        fout.write(apt_cmd)
+        # And then to write the generated string directly to the file.
+        cmd_path = config["outdir-generated"].joinpath(pkgmgr + '_cmd.txt')
+        cmd_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(str(cmd_path), mode='w') as fout:
+            fout.write(cmd)
 
 
 def generate_tool_versions():
@@ -237,16 +240,12 @@ def generate_tool_versions():
     The version number per tool will be saved in outdir-generated/version_$TOOL_NAME.txt
     """
 
-    # Populate __TOOL_REQUIREMENTS__
-    requirements_file = str(SRCTREE_TOP.joinpath("tool_requirements.py"))
-    exec(open(requirements_file).read(), globals())
-
     # And then write a version file for every tool.
-    for tool in __TOOL_REQUIREMENTS__:  # noqa: F821
+    for tool, req in TOOL_REQUIREMENTS.items():
         version_path = config["outdir-generated"].joinpath('version_' + tool + '.txt')
         version_path.parent.mkdir(parents=True, exist_ok=True)
         with open(str(version_path), mode='w') as fout:
-            fout.write(__TOOL_REQUIREMENTS__[tool])  # noqa: F821
+            fout.write(req.min_version)
 
 
 def generate_dif_docs():
@@ -331,9 +330,11 @@ def generate_otbn_isa():
     otbn_dir = SRCTREE_TOP / 'hw/ip/otbn'
     script = otbn_dir / 'util/yaml_to_doc.py'
     yaml_file = otbn_dir / 'data/insns.yml'
+    impl_file = otbn_dir / 'dv/otbnsim/sim/insn.py'
 
     out_dir = config['outdir-generated'].joinpath('otbn-isa')
-    subprocess.run([str(script), str(yaml_file), str(out_dir)], check=True)
+    subprocess.run([str(script), str(yaml_file), str(impl_file), str(out_dir)],
+                   check=True)
 
 
 def hugo_match_version(hugo_bin_path, version):
@@ -446,7 +447,7 @@ def main():
     generate_dashboards()
     generate_testplans()
     generate_selfdocs()
-    generate_apt_reqs()
+    generate_pkg_reqs()
     generate_tool_versions()
     generate_dif_docs()
     generate_otbn_isa()

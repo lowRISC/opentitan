@@ -6,6 +6,7 @@
 
 module lc_ctrl_state_decode
   import lc_ctrl_pkg::*;
+  import lc_ctrl_state_pkg::*;
 (
   // Life cycle state vector.
   input  logic              lc_state_valid_i,
@@ -71,7 +72,7 @@ module lc_ctrl_state_decode
         endcase // lc_state_i
 
         unique case (lc_cnt_i)
-          LcCntRaw: dec_lc_cnt_o = 5'd0;
+          LcCnt0:   dec_lc_cnt_o = 5'd0;
           LcCnt1:   dec_lc_cnt_o = 5'd1;
           LcCnt2:   dec_lc_cnt_o = 5'd2;
           LcCnt3:   dec_lc_cnt_o = 5'd3;
@@ -99,7 +100,7 @@ module lc_ctrl_state_decode
 
         // Require that any non-raw state has a valid, nonzero
         // transition count.
-        if (lc_state_i != LcStRaw && lc_cnt_i == LcCntRaw) begin
+        if (lc_state_i != LcStRaw && lc_cnt_i == LcCnt0) begin
           state_invalid_error_o = 1'b1;
         end
 

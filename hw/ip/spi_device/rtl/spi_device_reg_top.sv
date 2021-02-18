@@ -28,7 +28,7 @@ module spi_device_reg_top (
 
   import spi_device_reg_pkg::* ;
 
-  localparam int AW = 12;
+  localparam int AW = 13;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -86,8 +86,8 @@ module spi_device_reg_top (
     reg_steer = 1;       // Default set to register
 
     // TODO: Can below codes be unique case () inside ?
-    if (tl_i.a_address[AW-1:0] >= 2048) begin
-      // Exceed or meet the address range. Removed the comparison of limit addr 'h 1000
+    if (tl_i.a_address[AW-1:0] >= 4096) begin
+      // Exceed or meet the address range. Removed the comparison of limit addr 'h 2000
       reg_steer = 0;
     end
   end

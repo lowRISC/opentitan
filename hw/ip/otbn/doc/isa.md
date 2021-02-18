@@ -12,6 +12,27 @@ It also includes a hardware call stack and hardware loop instructions.
 The big number subset is designed to operate on 256b WDRs.
 It doesn't include any control flow instructions, and just supports load/store, logical and arithmetic operations.
 
+In the instruction documentation that follows, each instruction has a syntax example.
+For example, the `SW` instruction has syntax:
+```
+  SW <grs2>, <offset>(<grs1>)
+```
+This means that it takes three operands, called `grs2`, `offset` and `grs1`.
+These operands are further documented in a table.
+Immediate operands like `offset` show their valid range of values.
+
+In the pseudo-code in the Operation sections, all operands have integer values.
+These values come from the encoded bits in the instruction and the operand table describes exactly how.
+The `signed()` and `unsigned()` functions denote signed and unsigned extension from raw bits to an integer.
+Signed values are encoded 2's complement.
+Some operands are encoded PC-relative and have their absolute values when they appear in the Operation section.
+To show this, the operand table's description includes `PC` to denote the current value of the program counter as an integer.
+
+Below the table of operands is an encoding table.
+This shows how the 32 bits of the instruction word are filled in.
+Ranges of bits that map to an operand are named (in capitals) and those names are used in the operand table.
+For example, the `SW` instruction's `offset` operand is split across two ranges of bits (31:25 and 11:7) called `OFF_1` and `OFF_0`, respectively.
+
 <!-- Documentation for the instructions in the ISA. Generated from ../data/insns.yml. -->
 # Base Instruction Subset
 

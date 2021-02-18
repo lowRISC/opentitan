@@ -51,18 +51,25 @@ module'],
 }
 
 top_optional = {
-    'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
-    'interrupt': ['lnw', 'interrupts (generated)'],
-    'alert_module':
-    ['l', 'list of the modules that connects to alert_handler'],
-    'alert': ['lnw', 'alerts (generated)'],
     'alert_async': ['l', 'async alerts (generated)'],
-    'pinmux': ['g', 'pinmux definition if doesn\'t exist, tool uses defaults'],
-    'padctrl':
-    ['g', 'PADS instantiation, if doesn\'t exist, tool creates direct output'],
-    'inter_module': ['g', 'define the signal connections between the modules'],
-    'num_cores': ['pn', "number of computing units"],
+    'alert': ['lnw', 'alerts (generated)'],
+    'alert_module': [
+        'l',
+        'list of the modules that connects to alert_handler'
+    ],
     'datawidth': ['pn', "default data width"],
+    'exported_clks': ['g', 'clock signal routing rules'],
+    'host': ['g', 'list of host-only components in the system'],
+    'inter_module': ['g', 'define the signal connections between the modules'],
+    'interrupt': ['lnw', 'interrupts (generated)'],
+    'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
+    'num_cores': ['pn', "number of computing units"],
+    'padctrl': [
+        'g',
+        'PADS instantiation, if doesn\'t exist, tool creates direct output'
+    ],
+    'pinmux': ['g', 'pinmux definition if doesn\'t exist, tool uses defaults'],
+    'power': ['g', 'power domains supported by the design'],
 }
 
 top_added = {}
@@ -122,16 +129,17 @@ clock_groups_added = {}
 
 eflash_required = {
     'banks': ['d', 'number of flash banks'],
-    'pages_per_bank': ['d', 'number of data pages per flash bank'],
-    'program_resolution':
-    ['d', 'maximum number of flash words allowed to program'],
-    'clock_srcs': ['g', 'clock connections'],
-    'clock_group': ['s', 'associated clock attribute group'],
-    'reset_connections': ['g', 'reset connections'],
-    'type': ['s', 'type of memory'],
     'base_addr': ['s', 'strarting hex address of memory'],
+    'clock_connections': ['g', 'generated, elaborated version of clock_srcs'],
+    'clock_group': ['s', 'associated clock attribute group'],
+    'clock_srcs': ['g', 'clock connections'],
+    'inter_signal_list': ['lg', 'intersignal list'],
+    'name': ['s', 'name of flash memory'],
+    'pages_per_bank': ['d', 'number of data pages per flash bank'],
+    'program_resolution': ['d', 'maximum number of flash words allowed to program'],
+    'reset_connections': ['g', 'reset connections'],
     'swaccess': ['s', 'software accessibility'],
-    'inter_signal_list': ['lg', 'intersignal list']
+    'type': ['s', 'type of memory']
 }
 
 eflash_optional = {}
@@ -284,6 +292,15 @@ def check_clock_groups(top):
 def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
 
     error = 0
+
+    # there should only be one each of pwrmgr/clkmgr/rstmgr
+    pwrmgrs = [m for m in top['module'] if m['type'] == 'pwrmgr']
+    clkmgrs = [m for m in top['module'] if m['type'] == 'clkmgr']
+    rstmgrs = [m for m in top['module'] if m['type'] == 'rstmgr']
+
+    if len(pwrmgrs) == 1 * len(clkmgrs) == 1 * len(rstmgrs) != 1:
+        log.error("Incorrect number of pwrmgr/clkmgr/rstmgr")
+        error += 1
 
     # check clock fields are all there
     ext_srcs = []
@@ -495,13 +512,12 @@ def check_power_domains(top):
     # If there is one defined, check that it is a valid definition
     for end_point in top['module'] + top['memory'] + top['xbar']:
         if 'domain' not in end_point:
-            log.warning("{} does not have a power domain defined, \
-            assigning default".format(end_point['name']))
-
             end_point['domain'] = top['power']['default']
-        elif end_point['domain'] not in top['power']['domains']:
-            log.error("{} defined invalid domain {}".format(
-                end_point['name'], end_point['domain']))
+
+        if end_point['domain'] not in top['power']['domains']:
+            log.error("{} defined invalid domain {}"
+                      .format(end_point['name'],
+                              end_point['domain']))
             error += 1
             return error
 

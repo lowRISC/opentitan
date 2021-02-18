@@ -208,9 +208,12 @@ Parameter                   | Default (Max)         | Top Earlgrey | Description
 ----------------------------|-----------------------|--------------|---------------
 `Depth`                     | 512                   | multiple     | SRAM depth, needs to be a power of 2 if `NumAddrScrRounds` > 0.
 `Width`                     | 32                    | 32           | Effective SRAM width without redundancy.
+`DataBitsPerMask`           | 8                     | 8            | Number of data bits per write mask.
+`EnableParity`              | 1                     | 1            | This parameter enables byte parity.
 `CfgWidth`                  | 8                     | 8            | Width of SRAM attributes field.
 `NumPrinceRoundsHalf`       | 2 (5)                 | 2            | Number of PRINCE half-rounds.
-`NumByteScrRounds`          | 2                     | 2            | Number of intra-byte diffusion rounds, set to 0 to disable.
+`NumDiffRounds`             | 2                     | 2            | Number of additional diffusion rounds, set to 0 to disable.
+`DiffWidth`                 | 8                     | 8            | Width of additional diffusion rounds, set to 8 for intra-byte diffusion.
 `NumAddrScrRounds`          | 2                     | 2            | Number of address scrambling rounds, set to 0 to disable.
 `ReplicateKeyStream`        | 0 (1)                 | 0            | If set to 1, the same 64bit key stream is replicated if the data port is wider than 64bit. Otherwise, multiple PRINCE primitives are employed to generate a unique keystream for the full data width.
 
@@ -259,7 +262,7 @@ It should also be noted that data and address scrambling is never entirely disab
 ## Error Handling
 
 Data in the SRAM is integrity protected with byte parity.
-In case an integrity failure is detected, the SRAM controller sets the {{< regref "STATUS.ERROR" >}} bit in the CSRs and continuously sends out an `sram_integ_alert`.
+In case an integrity failure is detected, the SRAM controller sets the {{< regref "STATUS.ERROR" >}} bit in the CSRs and continuously sends out a `fatal_parity_error` alert.
 At the same time, the affected TL-UL transaction will error out.
 
 SRAM integrity failures are considered unrecoverable and cannot be cleared.

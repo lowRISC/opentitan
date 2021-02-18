@@ -28,6 +28,11 @@ module prim_ram_2p_adv #(
   parameter  bit EnableInputPipeline  = 0, // Adds an input register (read latency +1)
   parameter  bit EnableOutputPipeline = 0, // Adds an output register (read latency +1)
 
+  // This switch allows to switch to standard Hamming ECC instead of the HSIAO ECC.
+  // It is recommended to leave this parameter at its default setting (HSIAO),
+  // since this results in a more compact and faster implementation.
+  parameter bit HammingECC            = 0,
+
   localparam int Aw                   = prim_util_pkg::vbits(Depth)
 ) (
   input                    clk_i,
@@ -63,7 +68,8 @@ module prim_ram_2p_adv #(
     .EnableECC           (EnableECC),
     .EnableParity        (EnableParity),
     .EnableInputPipeline (EnableInputPipeline),
-    .EnableOutputPipeline(EnableOutputPipeline)
+    .EnableOutputPipeline(EnableOutputPipeline),
+    .HammingECC          (HammingECC)
   ) i_prim_ram_2p_async_adv (
     .clk_a_i(clk_i),
     .rst_a_ni(rst_ni),

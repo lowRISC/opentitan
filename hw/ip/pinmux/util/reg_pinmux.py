@@ -22,7 +22,7 @@ def main():
     parser.add_argument('--n_mio_periph_in',
                         type=int,
                         help='Number of muxed peripheral inputs',
-                        default=32)
+                        default=33)
     parser.add_argument('--n_mio_periph_out',
                         type=int,
                         help='Number of muxed peripheral outputs',
@@ -51,6 +51,11 @@ def main():
                         type=int,
                         help='With of wakeup counters',
                         default=8)
+    parser.add_argument('--attr_dw',
+                        type=int,
+                        help='Pad attribute data width',
+                        default = 10)
+
 
     args = parser.parse_args()
 
@@ -66,7 +71,14 @@ def main():
                        n_dio_periph_out=args.n_dio_periph_out,
                        n_dio_pads=args.n_dio_pads,
                        n_wkup_detect=args.n_wkup_detect,
-                       wkup_cnt_width=args.wkup_cnt_width))
+                       wkup_cnt_width=args.wkup_cnt_width,
+                       attr_dw=args.attr_dw,
+                       usb_start_pos=0,
+                       n_usb_pins=0,
+                       usb_dp_sel=0,
+                       usb_dn_sel=0,
+                       usb_dp_pull_sel=0,
+                       usb_dn_pull_sel=0))
 
     print(out.getvalue())
 

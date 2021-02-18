@@ -8,8 +8,8 @@ class otp_ctrl_lc_vseq extends otp_ctrl_smoke_vseq;
 
   `uvm_object_new
 
-  virtual task pre_start();
-    super.pre_start();
-    do_lc_trans = 1;
-  endtask
+  constraint lc_trans_c {
+    do_lc_trans == 1;
+  }
+
 endclass

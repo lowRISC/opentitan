@@ -47,6 +47,7 @@
       name:    "edn",
       act:     "rsp",
       width:   "4",
+      default: "'0",
       desc:    '''
                The collection of peripheral ports supported by edn. The width (4)
                indicates the number of peripheral ports on a single instance.
@@ -60,9 +61,9 @@
 
   regwidth: "32",
   registers: [
-    { name: "REGEN",
+    { name: "REGWEN",
       desc: "Register write enable for all control registers",
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "hro",
       fields: [
         { bits: "0",
@@ -159,7 +160,7 @@
       hwaccess: "hro",
       hwext: "true",
       hwqe: "true",
-      regwen: "REGEN",
+      regwen: "REGWEN",
       fields: [
         { bits: "31:0",
           name: "SW_CMD_REQ",
@@ -203,7 +204,7 @@
       hwaccess: "hro",
       hwext: "true",
       hwqe: "true",
-      regwen: "REGEN",
+      regwen: "REGWEN",
       fields: [
         { bits: "31:0",
           name: "RESEED_CMD",
@@ -224,7 +225,7 @@
       hwaccess: "hro",
       hwext: "true",
       hwqe: "true",
-      regwen: "REGEN",
+      regwen: "REGWEN",
       fields: [
         { bits: "31:0",
           name: "GENERATE_CMD",

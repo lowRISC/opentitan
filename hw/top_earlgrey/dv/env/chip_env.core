@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:opentitan:bus_params_pkg
       - lowrisc:systems:top_earlgrey_pkg
+      - lowrisc:ip:spi_device
       - lowrisc:dv:ralgen
       - lowrisc:dv:str_utils
       - lowrisc:dv:cip_lib

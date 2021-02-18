@@ -19,16 +19,14 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   edn_pkg::edn_req_t [NUM_ENDPOINTS-1:0] endpoint_req;
   edn_pkg::edn_rsp_t [NUM_ENDPOINTS-1:0] endpoint_rsp;
-  csrng_pkg::csrng_req_t csrng_req;
-  csrng_pkg::csrng_rsp_t csrng_rsp;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if#(.HostDataWidth(entropy_src_env_pkg::FIPS_CSRNG_BUS_WIDTH))  csrng_genbits_if();
-  push_pull_if#(.HostDataWidth(edn_env_pkg::FIPS_ENDPOINT_BUS_WIDTH))
+  csrng_if csrng_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
        endpoint_if[NUM_ENDPOINTS-1:0]();
 
   // dut
@@ -42,28 +40,17 @@ module tb;
     .edn_i                     (endpoint_req),
     .edn_o                     (endpoint_rsp),
 
-    .csrng_cmd_i               (csrng_rsp),
-    .csrng_cmd_o               (csrng_req),
+    .csrng_cmd_i               (csrng_if.cmd_rsp),
+    .csrng_cmd_o               (csrng_if.cmd_req),
 
     .intr_edn_cmd_req_done_o   (intr_edn_cmd_req_done),
     .intr_edn_fifo_err_o       (intr_edn_fifo_err)
   );
 
-  // TODO: Add another push_pull_agent for cmd bus
-  assign csrng_rsp.csrng_req_ready = 1'b1;
-  assign csrng_rsp.csrng_rsp_ack   = 1'b0;
-  assign csrng_rsp.csrng_rsp_sts   = 1'b0;
-  assign csrng_rsp.genbits_valid   = csrng_genbits_if.valid;
-  assign csrng_rsp.genbits_fips    = csrng_genbits_if.h_data[entropy_src_pkg::CSRNG_BUS_WIDTH];
-  assign csrng_rsp.genbits_bus     = csrng_genbits_if.h_data[entropy_src_pkg::CSRNG_BUS_WIDTH-1:0];
-  assign csrng_genbits_if.ready    = csrng_req.genbits_ready;
-
   for (genvar i = 0; i < NUM_ENDPOINTS; i++) begin : gen_endpoint_if
     assign endpoint_req[i].edn_req = endpoint_if[i].req;
-    assign endpoint_if[i].ack      = endpoint_rsp[i].edn_ack;
-    assign endpoint_if[i].d_data   = {endpoint_rsp[i].edn_fips, endpoint_rsp[i].edn_bus};
     initial begin
-      uvm_config_db#(virtual push_pull_if#(.HostDataWidth(edn_env_pkg::FIPS_ENDPOINT_BUS_WIDTH)))::
+      uvm_config_db#(virtual push_pull_if#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)))::
           set(null, $sformatf("*.env.m_endpoint_agent[%0d]*", i),
                      "vif", endpoint_if[i]);
     end
@@ -79,8 +66,7 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(entropy_src_env_pkg::FIPS_CSRNG_BUS_WIDTH)))
-                   ::set(null, "*.env.m_csrng_genbits_agent*", "vif", csrng_genbits_if);
+    uvm_config_db#(virtual csrng_if)::set(null, "*.env.m_csrng_agent*", "vif", csrng_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

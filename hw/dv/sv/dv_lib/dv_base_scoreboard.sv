@@ -33,9 +33,12 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
       if (!cfg.clk_rst_vif.rst_n) begin
         `uvm_info(`gfn, "reset occurred", UVM_HIGH)
         cfg.reset_asserted();
+        csr_utils_pkg::reset_asserted();
         @(posedge cfg.clk_rst_vif.rst_n);
         reset();
         cfg.reset_deasserted();
+        csr_utils_pkg::clear_outstanding_access();
+        csr_utils_pkg::reset_deasserted();
         `uvm_info(`gfn, "out of reset", UVM_HIGH)
       end
       else begin
@@ -47,7 +50,9 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   virtual function void reset(string kind = "HARD");
     // reset the ral model
-    if (cfg.has_ral) ral.reset(kind);
+    if (cfg.has_ral) begin
+      foreach (cfg.ral_models[i]) cfg.ral_models[i].reset(kind);
+    end
   endfunction
 
   virtual function void pre_abort();

@@ -1,0 +1,46 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# List of packages installed with yum on RHEL/CentOS 7 platforms.
+#
+# This list of packages is also included in the documentation at
+# doc/ug/install_instructions/index.md. When updating this file also check if
+# doc/ug/install_instructions/index.md needs to be updated as well.
+#
+# Keep it sorted.
+autoconf
+bison
+build-essential
+clang-format
+curl
+doxygen
+flex
+g++
+git
+libelf1
+libelf-dev
+libftdi1-2
+libftdi1-dev
+libssl-dev
+libusb-1.0-0
+lsb-release
+make
+# A requirement of the prebuilt clang toolchain.
+ncurses
+ninja-build
+openssl11-libs
+openssl11-devel
+pkgconf
+python3
+python3-pip
+python3-setuptools
+python3-wheel
+# The pip-installed version does not come with LibYAML support by default,
+# which significantly speeds up the parsing/dumping of YAML files.
+python3-yaml
+srecord
+tree
+xsltproc
+zlib1g-dev
+xz-utils

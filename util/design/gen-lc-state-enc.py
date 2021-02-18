@@ -24,8 +24,7 @@ TEMPLATES = ["hw/ip/lc_ctrl/rtl/lc_ctrl_state_pkg.sv.tpl"]
 
 def main():
     log.basicConfig(level=log.INFO,
-                    format="%(asctime)s - %(message)s",
-                    datefmt="%Y-%m-%d %H:%M")
+                    format="%(levelname)s: %(message)s")
 
     parser = argparse.ArgumentParser(
         prog="gen-lc-state-enc",
@@ -37,7 +36,6 @@ def main():
                         type=int,
                         metavar='<seed>',
                         help='Custom seed for RNG.')
-
     args = parser.parse_args()
 
     with open(LC_STATE_DEFINITION_FILE, 'r') as infile:
@@ -58,7 +56,11 @@ def main():
                     'No seed specified, setting to {}.'.format(new_seed))
 
         # validate config and generate encoding
-        lc_st_enc = LcStEnc(config)
+        try:
+            lc_st_enc = LcStEnc(config)
+        except RuntimeError as err:
+            log.error(err)
+            exit(1)
 
         # render all templates
         for template in TEMPLATES:

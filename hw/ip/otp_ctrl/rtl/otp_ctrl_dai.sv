@@ -201,6 +201,7 @@ module otp_ctrl_dai
       // to the InitOtpSt waiting state.
       ResetSt: begin
         init_done_o = 1'b0;
+        dai_prog_idle_o = 1'b0;
         data_clr = 1'b1;
         if (init_req_i) begin
           otp_req_o = 1'b1;
@@ -215,6 +216,7 @@ module otp_ctrl_dai
       // error and move into a terminal error  state.
       InitOtpSt: begin
         init_done_o = 1'b0;
+        dai_prog_idle_o = 1'b0;
         if (otp_rvalid_i) begin
           if ((!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}))) begin
             state_d = ErrorSt;
@@ -230,6 +232,7 @@ module otp_ctrl_dai
       // all have initialized.
       InitPartSt: begin
         init_done_o = 1'b0;
+        dai_prog_idle_o = 1'b0;
         part_init_req_o = 1'b1;
         if (part_init_done_i == {NumPart{1'b1}}) begin
           state_d = IdleSt;

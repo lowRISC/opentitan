@@ -11,6 +11,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:ram_2p_async_adv
       - lowrisc:ip:usb_fs_nb_pe
+      - lowrisc:ip:usbdev_pkg
     files:
       - rtl/usbdev_reg_pkg.sv
       - rtl/usbdev_reg_top.sv
@@ -18,6 +19,7 @@ filesets:
       - rtl/usbdev_flop_2syncpulse.sv
       - rtl/usbdev_linkstate.sv
       - rtl/usbdev_iomux.sv
+      - rtl/usbdev_aon_wake.sv
       - rtl/usbdev.sv
     file_type: systemVerilogSource
 
@@ -45,11 +47,6 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
 
-  files_formal:
-    files:
-      - dv/tb/usbdev_bind.sv
-    file_type: systemVerilogSource
-
 parameters:
   SYNTHESIS:
     datatype: bool
@@ -62,14 +59,7 @@ targets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
-      - target_formal    ? (files_formal)
       - files_rtl
-    toplevel: usbdev
-
-  formal:
-    filesets:
-      - files_rtl
-      - files_formal
     toplevel: usbdev
 
   lint:
@@ -82,5 +72,3 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
-
-

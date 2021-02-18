@@ -238,36 +238,36 @@ module keymgr import keymgr_pkg::*; #(
     .en_i(lc_keymgr_en[KeyMgrEnCfgEn] == lc_ctrl_pkg::On),
     .set_i(reg2hw.control.start.q & op_done),
     .clr_i(reg2hw.control.start.q),
-    .out_o(hw2reg.cfgen.d)
+    .out_o(hw2reg.cfg_regwen.d)
   );
 
 
   logic sw_binding_set;
   logic sw_binding_clr;
-  logic sw_binding_en;
+  logic sw_binding_regwen;
 
   // set on a successful advance
   assign sw_binding_set = reg2hw.control.operation.q == OpAdvance &
                           sw_binding_unlock;
 
   // this is w0c
-  assign sw_binding_clr = reg2hw.sw_binding_en.qe & ~reg2hw.sw_binding_en.q;
+  assign sw_binding_clr = reg2hw.sw_binding_regwen.qe & ~reg2hw.sw_binding_regwen.q;
 
   // software clears the enable
   // hardware restores it upon successful advance
   keymgr_cfg_en #(
     .NonInitClr(1'b0)  // clear has no effect until init
-  ) u_sw_binding_en (
+  ) u_sw_binding_regwen (
     .clk_i,
     .rst_ni,
     .init_i(init),
     .en_i(lc_keymgr_en[KeyMgrEnSwBindingEn] == lc_ctrl_pkg::On),
     .set_i(sw_binding_set),
     .clr_i(sw_binding_clr),
-    .out_o(sw_binding_en)
+    .out_o(sw_binding_regwen)
   );
 
-  assign hw2reg.sw_binding_en.d = sw_binding_en & hw2reg.cfgen.d;
+  assign hw2reg.sw_binding_regwen.d = sw_binding_regwen & hw2reg.cfg_regwen.d;
 
   /////////////////////////////////////
   //  Key Manager Input Construction
@@ -312,10 +312,7 @@ module keymgr import keymgr_pkg::*; #(
                                               creator_seed});
 
   logic unused_otp_bits;
-  assign unused_otp_bits = ^{otp_hw_cfg_i.valid,
-                             otp_hw_cfg_i.data.hw_cfg_digest,
-                             otp_hw_cfg_i.data.hw_cfg_content
-                            };
+  assign unused_otp_bits = ^otp_hw_cfg_i;
 
   assign adv_dvalid[Creator] = creator_seed_vld &
                                devid_vld &
@@ -508,28 +505,35 @@ module keymgr import keymgr_pkg::*; #(
   end
 
   logic fault_alert_test;
-  assign fault_alert_test = reg2hw.alert_test.fault_err.q & reg2hw.alert_test.fault_err.qe;
+  assign fault_alert_test = reg2hw.alert_test.fatal_fault_err.q &
+                            reg2hw.alert_test.fatal_fault_err.qe;
   prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn)
+    .AsyncOn(AlertAsyncOn),
+    .IsFatal(1)
   ) u_fault_alert (
     .clk_i,
     .rst_ni,
-    .alert_req_i(fault_err_req_q | fault_alert_test),
+    .alert_test_i(fault_alert_test),
+    .alert_req_i(fault_err_req_q),
     .alert_ack_o(fault_err_ack),
+    .alert_state_o(),
     .alert_rx_i(alert_rx_i[0]),
     .alert_tx_o(alert_tx_o[0])
   );
 
   logic op_err_alert_test;
-  assign op_err_alert_test = reg2hw.alert_test.operation_err.q &
-                             reg2hw.alert_test.operation_err.qe;
+  assign op_err_alert_test = reg2hw.alert_test.recov_operation_err.q &
+                             reg2hw.alert_test.recov_operation_err.qe;
   prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn)
+    .AsyncOn(AlertAsyncOn),
+      .IsFatal(0)
   ) u_op_err_alert (
     .clk_i,
     .rst_ni,
-    .alert_req_i(op_err_req_q | op_err_alert_test),
+    .alert_test_i(op_err_alert_test),
+    .alert_req_i(op_err_req_q),
     .alert_ack_o(op_err_ack),
+    .alert_state_o(),
     .alert_rx_i(alert_rx_i[1]),
     .alert_tx_o(alert_tx_o[1])
   );

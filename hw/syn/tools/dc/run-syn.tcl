@@ -44,6 +44,7 @@ set BUILD_DIR $::env(BUILD_DIR)
 # might want to switch to top_earlgrey_asic later on (with pads)
 set DUT $::env(DUT)
 set CONSTRAINT $::env(CONSTRAINT)
+set FOUNDRY_CONSTRAINT $::env(FOUNDRY_CONSTRAINT)
 
 # paths
 set WORKLIB  "${BUILD_DIR}/WORK"
@@ -80,7 +81,7 @@ set_app_var hdlin_enable_hier_map true
 set DEFINE "PRIM_DEFAULT_IMPL=${PRIM_DEFAULT_IMPL}+${PRIM_STD_CELL_VARIANT}"
 
 # additional parameters
-set PARAMS "KmacEnMasking=1"
+set PARAMS ""
 
 ###########################
 ##   ELABORATE DESIGN    ##
@@ -116,6 +117,7 @@ write_file -format ddc -hierarchy -output "${DDCDIR}/elab.ddc"
 
 puts "Applying constraints for ${DUT}"
 source "${CONSTRAINT}"
+source "${FOUNDRY_CONSTRAINT}"
 puts "Done applying constraints for ${DUT}"
 
 # If hold time should be fixed

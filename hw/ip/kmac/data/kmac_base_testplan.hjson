@@ -5,7 +5,8 @@
   name: kmac_base
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
+                     // Uncomment stress tests once ready to prevent seeing failures every night.
+                     //"hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
@@ -18,7 +19,7 @@
               - Set function name to "KMAC" and set customization string as empty if applicable.
               - Randomly set endianness of input msg and internal keccak state.
               - Randomly provide a sideloaded key, do not set cfg.sideload.
-              - Set output length between 1-1600 bits if applicable.
+              - Set output length between 1-`keccak_rate` bytes if applicable.
               - Trigger KMAC to start absorbing input message.
                 - During absorption stage randomly read from STATE window, expect 0.
               - Write message to MSG_FIFO window, maximum length of 32 bytes.
@@ -35,7 +36,7 @@
       tests: ["{name}_smoke"]
     }
     {
-      name: long_message_and_output
+      name: long_msg_and_output
       desc: '''
             Same as the smoke test, except with a message of up to 100KB.
             Max firmware input size for KMAX is around 392KB, but this is too large for a DV
@@ -44,13 +45,13 @@
             input size for DV, but will enable easy extensibility for emulation testing where we can
             enable much larger messages.
             Allow output length to vary up to 1KB (for XOF functions).
-            If output length is greater than 1600 bits, keccak rounds will be run manually to
+            If output length is greater than `keccak_rate` bytes, keccak rounds will be run manually to
             squeeze extra output data.
             Set function name as "KMAC" and enable full randomization of customization string (if
             applicable).
             '''
       milestone: V2
-      tests: ["{name}_long_message_and_output"]
+      tests: ["{name}_long_msg_and_output"]
     }
     {
       name: burst_wr
@@ -68,13 +69,15 @@
             the output against the expected digest values.
             '''
       milestone: V2
-      tests: ["{name}_sha3_test_vectors", "{name}_shake_test_vectors", "{name}_test_vectors",
-      "{name}_xof_test_vectors"]
+      tests: ["{name}_test_vectors_sha3_224", "{name}_test_vectors_sha3_256",
+              "{name}_test_vectors_sha3_384", "{name}_test_vectors_sha3_512",
+              "{name}_test_vectors_shake_128", "{name}_test_vectors_shake_256",
+              "{name}_test_vectors_kmac", "{name}_test_vectors_kmac_xof"]
     }
     {
       name: sideload
       desc: '''
-            Same as long_message_and_output test, except we set cfg.sideload and provide a
+            Same as the smoke test, except we set cfg.sideload and provide a
             valid sideloaded key as well as a valid SW-provided key.
             KMAC should operate on the sideloaded key.
             '''

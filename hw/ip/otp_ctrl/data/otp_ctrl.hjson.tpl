@@ -47,10 +47,10 @@
   ],
 
   alert_list: [
-    { name: "otp_macro_failure",
+    { name: "fatal_macro_error",
       desc: "This alert triggers if hardware detects an ECC or digest error in the buffered partitions.",
     }
-    { name: "otp_check_failure",
+    { name: "fatal_check_error",
       desc: "This alert triggers if the digest over the buffered registers does not match with the digest stored in OTP.",
     }
   ],
@@ -71,30 +71,6 @@
       type:      "otp_ctrl_pkg::lfsr_perm_t"
       randcount: "40",
       randtype:  "perm", // random permutation for randcount elements
-    }
-    { name:      "RndCnstKey",
-      desc:      "Compile-time random scrambling keys",
-      type:      "otp_ctrl_pkg::key_array_t"
-      randcount: "384",  // 3*128
-      randtype:  "data", // randomize randcount databits
-    }
-    { name:      "RndCnstDigestConst",
-      desc:      "Compile-time random digest constant",
-      type:      "otp_ctrl_pkg::digest_const_array_t"
-      randcount: "640",  // 5*128
-      randtype:  "data", // randomize randcount databits
-    }
-    { name:      "RndCnstDigestIV",
-      desc:      "Compile-time random digest IV",
-      type:      "otp_ctrl_pkg::digest_iv_array_t"
-      randcount: "320",  // 5*64
-      randtype:  "data", // randomize randcount databits
-    }
-    { name:      "RndCnstRawUnlockToken",
-      desc:      "Compile-time random value for RAW unlock token.",
-      type:      "lc_ctrl_pkg::lc_token_t"
-      randcount: "128",
-      randtype:  "data", // randomize randcount databits
     }
     // Normal parameters
     { name: "NumSramKeyReqSlots",
@@ -360,28 +336,28 @@
           name: "TIMEOUT_ERROR"
           desc: '''
                 Set to 1 if an integrity or consistency check times out.
-                This raises an otp_check_failure alert and is an unrecoverable error condition.
+                This raises an fatal_check_error alert and is an unrecoverable error condition.
                 '''
         }
         { bits: "${num_part+3}"
           name: "LFSR_FSM_ERROR"
           desc: '''
                 Set to 1 if the LFSR timer FSM has reached an invalid state.
-                This raises an otp_check_failure alert and is an unrecoverable error condition.
+                This raises an fatal_check_error alert and is an unrecoverable error condition.
                 '''
         }
         { bits: "${num_part+4}"
           name: "SCRAMBLING_FSM_ERROR"
           desc: '''
                 Set to 1 if the scrambling datapath FSM has reached an invalid state.
-                This raises an otp_check_failure alert and is an unrecoverable error condition.
+                This raises an fatal_check_error alert and is an unrecoverable error condition.
                 '''
         }
         { bits: "${num_part+5}"
           name: "KEY_DERIV_FSM_ERROR"
           desc: '''
                 Set to 1 if the key derivation FSM has reached an invalid state.
-                This raises an otp_check_failure alert and is an unrecoverable error condition.
+                This raises an fatal_check_error alert and is an unrecoverable error condition.
                 '''
         }
         { bits: "${num_part+6}"
@@ -401,8 +377,8 @@
                   interacting with the OTP macro via the internal bus. The error codes should be checked
                   if the partitions, DAI or LCI flag an error in the !!STATUS register, or when an
                   !!INTR_STATE.otp_error has been triggered. Note that all errors trigger an otp_error
-                  interrupt, and in addition some errors may trigger either an otp_macro_failure or an
-                  otp_check_failure alert.
+                  interrupt, and in addition some errors may trigger either an fatal_macro_error or an
+                  fatal_check_error alert.
                   ''',
         count:     "NumErrorEntries",
         swaccess:  "ro",
@@ -427,7 +403,7 @@
                 Returned if the OTP macro command was invalid or did not complete successfully
                 due to a macro malfunction.
                 This error should never occur during normal operation and is not recoverable.
-                This error triggers an otp_macro_failure alert.
+                This error triggers an fatal_macro_error alert.
                 '''
               },
               { value: "2",
@@ -444,7 +420,7 @@
                 An uncorrectable ECC error has occurred during an OTP read operation.
                 This error should never occur during normal operation and is not recoverable.
                 If this error is present this may be a sign that the device is malfunctioning.
-                This error triggers an otp_macro_failure alert.
+                This error triggers an fatal_macro_error alert.
                 '''
               },
               { value: "4",
@@ -467,7 +443,7 @@
                 desc: '''
                 An ECC, integrity or consistency mismatch has been detected in the buffer registers.
                 This error should never occur during normal operation and is not recoverable.
-                This error triggers an otp_check_failure alert.
+                This error triggers an fatal_check_error alert.
                 '''
               },
               { value: "7",
@@ -477,7 +453,7 @@
                 been moved into a terminal error state due to an escalation action via lc_escalate_en_i.
                 This error should never occur during normal operation and is not recoverable.
                 If this error is present, this is a sign that the device has fallen victim to
-                an invasive attack. This error triggers an otp_check_failure alert.
+                an invasive attack. This error triggers an fatal_check_error alert.
                 '''
               },
             ]
@@ -610,7 +586,7 @@
       desc: '''
             Register write enable for !!CHECK_TRIGGER.
             ''',
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "none",
       fields: [
         { bits:   "0",
@@ -652,7 +628,7 @@
       desc: '''
             Register write enable for !!INTEGRITY_CHECK_PERIOD and !!CONSISTENCY_CHECK_PERIOD.
             ''',
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "none",
       fields: [
         { bits:   "0",
@@ -676,7 +652,7 @@
           desc: '''
           Timeout value in cycles for the for the integrity and consistency checks. If an integrity or consistency
           check does not complete within the timeout window, an error will be flagged in the !!STATUS register,
-          an otp_error interrupt will be raised, and an otp_check_failure alert will be sent out. The timeout should
+          an otp_error interrupt will be raised, and an fatal_check_error alert will be sent out. The timeout should
           be set to a large value to stay on the safe side. The maximum check time can be upper bounded by the
           number of cycles it takes to readout, scramble and digest the entire OTP array. Since this amounts to
           roughly 25k cycles, it is recommended to set this value to at least 100'000 cycles in order to stay on the

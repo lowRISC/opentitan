@@ -13,11 +13,11 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   // various knobs to enable certain routines
   bit do_lc_ctrl_init = 1'b1;
 
-  rand lc_ctrl_pkg::lc_state_e lc_state;
-  rand lc_ctrl_pkg::lc_cnt_e   lc_cnt;
+  rand lc_ctrl_state_pkg::lc_state_e lc_state;
+  rand lc_ctrl_state_pkg::lc_cnt_e   lc_cnt;
 
   constraint lc_cnt_c {
-    (lc_state != LcStRaw) -> (lc_cnt != LcCntRaw);
+    (lc_state != LcStRaw) -> (lc_cnt != LcCnt0);
   }
 
   `uvm_object_new
@@ -45,7 +45,7 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
       `DV_CHECK_RANDOMIZE_FATAL(this)
     end else begin
       lc_state = LcStRaw;
-      lc_cnt = LcCntRaw;
+      lc_cnt = LcCnt0;
     end
     cfg.lc_ctrl_vif.init(lc_state, lc_cnt);
     wait(cfg.pwr_lc_vif.pins[LcPwrDoneRsp] == 1);
@@ -97,13 +97,14 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state,
-                                 bit [TL_DW*3-1:0] token_val,
+                                 bit [TL_DW*4-1:0] token_val,
                                  bit trans_success = 1);
     csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
     csr_wr(ral.transition_target, next_lc_state);
     csr_wr(ral.transition_token_0, token_val[TL_DW-1:0]);
-    csr_wr(ral.transition_token_1, token_val[TL_DW*2-1:TL_DW]);
-    csr_wr(ral.transition_token_2, token_val[TL_DW*3-1:TL_DW*2]);
+    csr_wr(ral.transition_token_1, token_val[TL_DW*2-1-:TL_DW]);
+    csr_wr(ral.transition_token_2, token_val[TL_DW*3-1-:TL_DW]);
+    csr_wr(ral.transition_token_3, token_val[TL_DW*4-1-:TL_DW]);
     csr_wr(ral.transition_cmd, 'h01);
     if (trans_success) begin
       csr_spinwait(ral.status.transition_successful, 1);

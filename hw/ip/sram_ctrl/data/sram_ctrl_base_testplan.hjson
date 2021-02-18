@@ -5,30 +5,142 @@
   name: "sram_ctrl_base"
   // TODO: remove the common testplans if not applicable
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
       name: smoke
       desc: '''
-            Smoke test accessing a major datapath within the sram_ctrl.
-
-            **Stimulus**:
-            - TBD
-
-            **Checks**:
-            - TBD
+            This test performs basic SRAM initialization procedure and tests basic memory function:
+              - Initialize SRAM memory to zero
+              - Perform some random memory operations, verify that they all succeed with an
+                all-zero key and nonce
+              - Request a new scrambling key from the OTP interface and verify that:
+                - A valid key is received
+                - The key seed used by OTP is valid
+              - Perform a number of random memory accesses to the SRAM, verify that all accesses
+                were executed correctly using the `mem_bkdr_if`
             '''
       milestone: V1
       tests: ["{name}_smoke"]
     }
     {
-      name: feature1
-      desc: '''Add more test entries here like above.'''
-      milestone: V1
-      tests: []
+      name: multiple_keys
+      desc: '''
+            In this test we request multiple scrambling keys from OTP and verify that the memory
+            scrambling is performed correctly even with multiple seeds.
+            Perform the following steps:
+              - Initialize the memory to zero
+              - Perform some random memory operations, verify that they succeed with an
+                all-zero key and nonce
+              - Repeat the following steps a number of times:
+                - Get a scrambling key from the OTP interface
+                - Perform a number of random memory accesses to the SRAM
+              - Verify that all memory access succeed even if the scrambling key changes at arbitrary
+                intervals
+            ''
+      milestone: V2
+      tests: ["{name}_multiple_keys"]
+    }
+    {
+      name: stress_pipeline
+      desc: '''
+            This test is the same as the multiple_keys_test, but we now do a series of back-to-back
+            memory accesses at each random address in order to create read/write conflicts and
+            stress the encryption pipeline.
+            '''
+      milestone: V2
+      tests: ["{name}_stress_pipeline"]
+    }
+    {
+      name: bijection
+      desc: '''
+            In this test we iterate through each address in the SRAM memory.
+            For each address write the current address to the SRAM.
+
+            After this is done, read every address and check that the stored data is equivalent to
+            the current address.
+
+            This will verify that the SRAM encryption mechanism is actually bijective, and will not
+            cause any address collisions.
+
+            e.g. if the encryption scheme causes addresses 0x1 and 0x2 to collide and we write 0x1
+                 and 0x2 respectively, we will see a return value of 0x2 when we read from 0x1,
+                 instead of the expected 0x1.
+
+            This process will be repeated for a number of new key seeds.
+            '''
+      milestone: V2
+      tests: ["{name}_bijection"]
+    }
+    {
+      name: mem_tl_errors
+      desc: '''
+            This test will reuse the common tl_access_tests to run TLUL error sequences on the
+            SRAM TLUL interface to verify that erroneous TLUL transactions are handled correctly.
+            '''
+      milestone: V2
+      tests: ["{name}_mem_tl_errors"]
+    }
+    {
+      name: access_during_key_req
+      desc: '''
+            This test is the same as the multiple_keys test, except we make sure to sequence some
+            memory transactions while a key request to OTP is still pending.
+            Verify that these transactions are completely ignored by the memory.
+
+            TODO: Behavior might change in future to throw an error instead of ignore,
+                  should be reflected in TB.
+            '''
+      milestone: V2
+      tests: ["{name}_access_during_key_req"]
+    }
+    {
+      name: lc_escalation
+      desc: '''
+            This test is the same as the multiple_keys test, except we now randomly assert the
+            lifecycle escalation signal.
+            Upon sending an escalation request, we verify that the DUT has properly latched it,
+            and all scrambling state has been reset.
+            In this state, we perform some memory accesses, they should all be blocked and not go
+            through.
+            We then issue a reset to the SRAM to get it out of the terminal state, and issue a
+            couple of memory accesses just to make sure everything is still in working order.
+            '''
+      milestone: V2
+      tests: ["{name}_lc_escalation"]
+    }
+    {
+      name: parity
+      desc: '''
+            This test is the same as the multiple_keys test, except we randomly inject a parity
+            error into the memory (TODO: figure out how exactly to do this).
+            Verify that the SRAM reports the error and the faulty address correctly, and that the
+            alert is sent out properly.
+            We then perform some memory accesses and verify that none of them go through.
+            This error is terminal, so like the lc_escalation test, issue a reset and then perform
+            some memory accesses to make sure everything comes back online correctly.
+            '''
+      milestone: V2
+      tests: ["{name}_parity"]
+    }
+    {
+      name: executable
+      desc: '''
+            TODO: This feature is not yet implemented, so this description will become
+                  more detailed at that time.
+
+            This test is meant to test executable SRAM (Ibex fetching  data from SRAM).
+
+            This test is the same as the multiple_keys test, except now we randomly set the
+            `sram_fetch` (name TBD) input(s) from the OTP controller.
+
+            Verify that in this scenario all memory transactions matching the Host user ID go
+            through, but all transactions with mismatched user IDs error out.
+            '''
+      milestone: V3
+      tests: ["{name}_executable"]
     }
   ]
 }

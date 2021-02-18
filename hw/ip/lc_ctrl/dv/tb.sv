@@ -8,7 +8,6 @@ module tb;
   import dv_utils_pkg::*;
   import lc_ctrl_env_pkg::*;
   import lc_ctrl_test_pkg::*;
-  import lc_ctrl_pkg::*;
   import otp_ctrl_pkg::*;
   import jtag_agent_pkg::*;
 
@@ -34,7 +33,7 @@ module tb;
   jtag_if      jtag_if();
   push_pull_if #(.HostDataWidth(OTP_PROG_HDATA_WIDTH), .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))
                otp_prog_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if #(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)) otp_token_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) otp_token_if(.clk(clk), .rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT
 
@@ -43,7 +42,7 @@ module tb;
   assign otp_prog_rsp.ack = otp_prog_if.ack;
   assign otp_token_rsp.ack = otp_token_if.ack;
   // TODO: temp constraint to 0 because it has to equal to otp_lc_data_i tokens
-  assign otp_token_rsp.hashed_token = 0;
+  assign otp_token_rsp.hashed_token = lc_ctrl_if.hashed_token;
 
   // dut
   lc_ctrl dut (
@@ -118,7 +117,7 @@ module tb;
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
                                          .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)))::
                    set(null, "*env.m_otp_prog_pull_agent*", "vif", otp_prog_if);
-    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(lc_ctrl_pkg::LcTokenWidth)))::
+    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)))::
                    set(null, "*env.m_otp_token_pull_agent*", "vif", otp_token_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();

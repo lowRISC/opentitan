@@ -707,6 +707,13 @@ module usbdev_reg_top (
   logic phy_config_tx_osc_test_mode_qs;
   logic phy_config_tx_osc_test_mode_wd;
   logic phy_config_tx_osc_test_mode_we;
+  logic wake_config_wake_en_qs;
+  logic wake_config_wake_en_wd;
+  logic wake_config_wake_en_we;
+  logic wake_config_wake_ack_qs;
+  logic wake_config_wake_ack_wd;
+  logic wake_config_wake_ack_we;
+  logic [2:0] wake_debug_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -5918,9 +5925,89 @@ module usbdev_reg_top (
   );
 
 
+  // R[wake_config]: V(False)
+
+  //   F[wake_en]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_wake_config_wake_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (wake_config_wake_en_we),
+    .wd     (wake_config_wake_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.wake_config.wake_en.q ),
+
+    // to register interface (read)
+    .qs     (wake_config_wake_en_qs)
+  );
 
 
-  logic [27:0] addr_hit;
+  //   F[wake_ack]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_wake_config_wake_ack (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (wake_config_wake_ack_we),
+    .wd     (wake_config_wake_ack_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.wake_config.wake_ack.q ),
+
+    // to register interface (read)
+    .qs     (wake_config_wake_ack_qs)
+  );
+
+
+  // R[wake_debug]: V(False)
+
+  prim_subreg #(
+    .DW      (3),
+    .SWACCESS("RO"),
+    .RESVAL  (3'h0)
+  ) u_wake_debug (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.wake_debug.de),
+    .d      (hw2reg.wake_debug.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (wake_debug_qs)
+  );
+
+
+
+
+  logic [29:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == USBDEV_INTR_STATE_OFFSET);
@@ -5951,6 +6038,8 @@ module usbdev_reg_top (
     addr_hit[25] = (reg_addr == USBDEV_PHY_PINS_SENSE_OFFSET);
     addr_hit[26] = (reg_addr == USBDEV_PHY_PINS_DRIVE_OFFSET);
     addr_hit[27] = (reg_addr == USBDEV_PHY_CONFIG_OFFSET);
+    addr_hit[28] = (reg_addr == USBDEV_WAKE_CONFIG_OFFSET);
+    addr_hit[29] = (reg_addr == USBDEV_WAKE_DEBUG_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -5986,6 +6075,8 @@ module usbdev_reg_top (
     if (addr_hit[25] && reg_we && (USBDEV_PERMIT[25] != (USBDEV_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[26] && reg_we && (USBDEV_PERMIT[26] != (USBDEV_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[27] && reg_we && (USBDEV_PERMIT[27] != (USBDEV_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[28] && reg_we && (USBDEV_PERMIT[28] != (USBDEV_PERMIT[28] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[29] && reg_we && (USBDEV_PERMIT[29] != (USBDEV_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_pkt_received_we = addr_hit[0] & reg_we & ~wr_err;
@@ -6608,6 +6699,13 @@ module usbdev_reg_top (
   assign phy_config_tx_osc_test_mode_we = addr_hit[27] & reg_we & ~wr_err;
   assign phy_config_tx_osc_test_mode_wd = reg_wdata[7];
 
+  assign wake_config_wake_en_we = addr_hit[28] & reg_we & ~wr_err;
+  assign wake_config_wake_en_wd = reg_wdata[0];
+
+  assign wake_config_wake_ack_we = addr_hit[28] & reg_we & ~wr_err;
+  assign wake_config_wake_ack_wd = reg_wdata[1];
+
+
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -6908,6 +7006,15 @@ module usbdev_reg_top (
         reg_rdata_next[5] = phy_config_pinflip_qs;
         reg_rdata_next[6] = phy_config_usb_ref_disable_qs;
         reg_rdata_next[7] = phy_config_tx_osc_test_mode_qs;
+      end
+
+      addr_hit[28]: begin
+        reg_rdata_next[0] = wake_config_wake_en_qs;
+        reg_rdata_next[1] = wake_config_wake_ack_qs;
+      end
+
+      addr_hit[29]: begin
+        reg_rdata_next[2:0] = wake_debug_qs;
       end
 
       default: begin

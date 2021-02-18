@@ -71,6 +71,13 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   task pre_start();
     if (common_seq_type == "") void'($value$plusargs("run_%0s", common_seq_type));
     if (common_seq_type == "alert_test") en_auto_alerts_response = 0;
+
+    // num_trans is constrained to a small number for CSR test in common test, need a bigger number
+    // for stress_all with reset
+    if (common_seq_type == "stress_all_with_rand_reset") begin
+      num_trans_c.constraint_mode(0);
+      num_trans = $urandom_range(5, 10);
+    end
     csr_utils_pkg::max_outstanding_accesses = 1 << BUS_AIW;
     super.pre_start();
     extract_common_csrs();
@@ -495,10 +502,12 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                             int             num_test_csrs = 0,
                             bit             do_rand_wr_and_reset = 1);
 
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(csr_access_abort_pct)
     cfg.m_tl_agent_cfg.csr_access_abort_pct_in_adapter = csr_access_abort_pct;
     // when allowing TL transaction to be aborted, TL adapter will return status UVM_NOT_OK, skip
     // checking the status.
     if (csr_access_abort_pct > 0) csr_utils_pkg::default_csr_check = UVM_NO_CHECK;
+    else                          csr_utils_pkg::default_csr_check = UVM_CHECK;
     super.run_csr_vseq(csr_test_type, csr_excl, num_test_csrs, do_rand_wr_and_reset);
   endtask
 
@@ -534,7 +543,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                   end else begin
                     `downcast(dv_vseq, seq.clone())
                   end
-                  dv_vseq.do_dut_init = 0;
+                  dv_vseq.do_apply_reset = 0;
                   dv_vseq.set_sequencer(p_sequencer);
                   `DV_CHECK_RANDOMIZE_FATAL(dv_vseq)
                   dv_vseq.start(p_sequencer);
@@ -544,6 +553,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               `uvm_info(`gfn, $sformatf("\nFinished run %0d/%0d w/o reset", i, num_times), UVM_LOW)
             end
             begin : issue_rand_reset
+              `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay_to_reset)
               cfg.clk_rst_vif.wait_clks(delay_to_reset);
               ongoing_reset = 1'b1;
               `uvm_info(`gfn, $sformatf("\nReset is issued for run %0d/%0d", i, num_times), UVM_LOW)
@@ -552,7 +562,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               do_read_and_check_all_csrs = 1'b1;
             end
           join_any
-          p_sequencer.tl_sequencer_h.stop_sequences();
           disable fork;
           `uvm_info(`gfn, $sformatf("\nStress w/ reset is done for run %0d/%0d", i, num_times),
                     UVM_LOW)
@@ -580,7 +589,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     csr_test_type_e csr_test_type = CsrRwTest; // share the same exclusion as csr_rw_test
     dv_base_reg     test_csrs[$];
 
-    foreach (cfg.ral_models[i]) cfg.ral_models[i].get_dv_base_regs(test_csrs);
+    ral.get_dv_base_regs(test_csrs);
 
     for (int trans = 1; trans <= num_times; trans++) begin
       `uvm_info(`gfn, $sformatf("Running same CSR outstanding test iteration %0d/%0d",
@@ -623,16 +632,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
   endtask
 
-  virtual task split_all_csrs_by_shadowed(ref dv_base_reg shadowed_csrs[$],
-                                          ref dv_base_reg non_shadowed_csrs[$]);
-    dv_base_reg all_csrs[$];
-    foreach (cfg.ral_models[i]) cfg.ral_models[i].get_dv_base_regs(all_csrs);
-    foreach (all_csrs[i]) begin
-      if (all_csrs[i].get_is_shadowed()) shadowed_csrs.push_back(all_csrs[i]);
-      else non_shadowed_csrs.push_back(all_csrs[i]);
-    end
-  endtask
-
   // callback for individual modules to override
   // can be used to update storage error status register
   virtual function void shadow_reg_storage_err_post_write();
@@ -649,7 +648,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             csr_wr(.csr(csr), .value(wdata), .en_shadow_wr(0), .predict(1));
           end
           begin
-            string alert_name = get_alert_agent_name(err_update, csr);
+            string alert_name = csr.get_update_err_alert_name();
             while (1) begin
               cfg.clk_rst_vif.wait_clks(1);
               if (!alert_triggered) begin
@@ -662,18 +661,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       end
     join
   endtask
-
-  // alert_agent name is: (if top_level `block_name` +) `csr_name without _shadow` + `alert_type`
-  virtual function string get_alert_agent_name(shadow_reg_alert_e alert_type, dv_base_reg csr);
-    string shadowed = "_shadowed";
-    string csr_name = csr.get_name();
-    int csr_name_len = csr_name.len();
-    csr_name = csr_name.substr(0, csr_name.len() - shadowed.len() - 1);
-    get_alert_agent_name = $sformatf("%s_%s", csr_name, alert_type.name);
-    if (csr.get_parent().get_name() != "ral") begin
-      get_alert_agent_name = $sformatf("%s_%s", csr.get_parent().get_name(), get_alert_agent_name);
-    end
-  endfunction
 
   // this function will return a storage_err value to backdoor poke shadow_reg's storage registers
   // it can generate a rand value, or randomly flip one bit from the original value
@@ -689,20 +676,20 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   virtual task run_shadow_reg_errors(int num_times);
     csr_excl_item      csr_excl = add_and_return_csr_excl("csr_excl");
-    dv_base_reg        shadowed_csrs[$], non_shadowed_csrs[$], test_csrs[$];
+    dv_base_reg        shadowed_csrs[$], all_csrs[$], test_csrs[$];
     uvm_reg_data_t     wdata;
     bit                alert_triggered;
 
-    split_all_csrs_by_shadowed(shadowed_csrs, non_shadowed_csrs);
+    ral.get_shadowed_regs(shadowed_csrs);
+    ral.get_dv_base_regs(all_csrs);
 
     for (int trans = 1; trans <= num_times; trans++) begin
       `uvm_info(`gfn, $sformatf("Running shadow reg error test iteration %0d/%0d", trans,
                                 num_times), UVM_LOW)
       repeat ($urandom_range(10, 100)) begin
-        non_shadowed_csrs.shuffle();
+        all_csrs.shuffle();
         test_csrs.delete();
-        test_csrs = {shadowed_csrs,
-                     non_shadowed_csrs[0: $urandom_range(0, non_shadowed_csrs.size()-1)]};
+        test_csrs = {shadowed_csrs, all_csrs[0: $urandom_range(0, all_csrs.size()-1)]};
         test_csrs.shuffle();
 
         if ($urandom_range(1, 10) == 10) dut_init("HARD");
@@ -729,7 +716,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
           // check shadow_reg update error
           if (test_csrs[i].get_shadow_update_err()) begin
-            string alert_name = get_alert_agent_name(err_update, test_csrs[i]);
+            string alert_name = test_csrs[i].get_update_err_alert_name();
             `DV_SPINWAIT(if(!alert_triggered) begin
                            while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
                            cfg.clk_rst_vif.wait_clks(1);
@@ -762,7 +749,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
             // check shadow_reg storage error
             if ((origin_val ^ rand_val) & ((1 << shadow_reg_width) - 1)) begin
-              string alert_name = get_alert_agent_name(err_storage, shadowed_csrs[index]);
+              string alert_name = shadowed_csrs[index].get_storage_err_alert_name();
               bit    has_storage_error;
 
               shadow_reg_storage_err_post_write();
@@ -789,10 +776,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         // random read to check if the register values are equal to the predicted values,
         // reading shadow registers after their first write will clear the phase tracker
         if ($urandom_range(0, 1)) begin
-          test_csrs = {shadowed_csrs, non_shadowed_csrs};
-          test_csrs.shuffle();
-          foreach (test_csrs[i]) begin
-            do_check_csr_or_field_rd(.csr(test_csrs[i]),
+          all_csrs.shuffle();
+          foreach (all_csrs[i]) begin
+            do_check_csr_or_field_rd(.csr(all_csrs[i]),
                                      .blocking(0),
                                      .compare(1),
                                      .compare_vs_ral(1),

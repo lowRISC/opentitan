@@ -1,0 +1,22 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "spi_host",
+    design_spec:        "",
+    dv_doc:            "",
+    hw_checklist:       "",
+    sw_checklist:       "",
+    revisions: [
+      {
+        version:            "0.5",
+        life_stage:         "L0",
+        design_stage:       "D0",
+        verification_stage: "",
+        dif_stage:          "",
+        commit_id:          "",
+        notes:              ""
+      }
+    ]
+}

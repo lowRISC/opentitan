@@ -24,7 +24,6 @@
   ral_spec: "{proj_root}/hw/ip/otp_ctrl/data/otp_ctrl.hjson"
 
   // Import additional common sim cfg files.
-  // TODO: remove imported cfgs that do not apply.
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Common CIP test lists
@@ -61,6 +60,12 @@
     }
 
     {
+      name: otp_ctrl_partition_walk
+      uvm_test_seq: otp_ctrl_partition_walk_vseq
+      reseed: 1
+    }
+
+    {
       name: otp_ctrl_lc
       uvm_test_seq: otp_ctrl_lc_vseq
     }
@@ -73,6 +78,24 @@
     {
       name: otp_ctrl_dai_errs
       uvm_test_seq: otp_ctrl_dai_errs_vseq
+    }
+
+    {
+      name: otp_ctrl_macro_errs
+      uvm_test_seq: otp_ctrl_macro_errs_vseq
+    }
+
+    {
+      name: otp_ctrl_parallel_key_req
+      uvm_test_seq: otp_ctrl_parallel_key_req_vseq
+    }
+
+    {
+      name: otp_ctrl_regwen
+      uvm_test_seq: otp_ctrl_regwen_vseq
+      // This test is to check reg programming is gated when direct_access_regwen=0
+      // Thus this test is timing sensitive
+      run_opts: ["+zero_delays=1"]
     }
 
   ]

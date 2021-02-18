@@ -53,8 +53,20 @@
                cov: true
              }
              {
+               name: prim_alert_rxtx_fatal_fpv
+               fusesoc_core: lowrisc:fpv:prim_alert_rxtx_fatal_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: true
+             }
+             {
                name: prim_alert_rxtx_async_fpv
                fusesoc_core: lowrisc:fpv:prim_alert_rxtx_async_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: true
+             }
+             {
+               name: prim_alert_rxtx_async_fatal_fpv
+               fusesoc_core: lowrisc:fpv:prim_alert_rxtx_async_fatal_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                cov: true
              }
@@ -71,8 +83,44 @@
                cov: true
              }
              {
-               name: padctrl_fpv
-               fusesoc_core: lowrisc:fpv:padctrl_fpv
+               name: prim_secded_22_16_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_22_16_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: true
+             }
+             {
+               name: prim_secded_28_22_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_28_22_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: true
+             }
+             {
+               name: prim_secded_39_32_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_39_32_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: true
+             }
+             {
+               name: prim_secded_72_64_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_72_64_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: true
+             }
+             {
+               name: prim_secded_hamming_22_16_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_hamming_22_16_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: true
+             }
+             {
+               name: prim_secded_hamming_39_32_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_hamming_39_32_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: true
+             }
+             {
+               name: prim_secded_hamming_72_64_fpv
+               fusesoc_core: lowrisc:fpv:prim_secded_hamming_72_64_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                cov: true
              }
@@ -214,6 +262,18 @@
              {
                name: uart
                fusesoc_core: lowrisc:dv:uart_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: false
+             }
+             {
+               name: usbdev
+               fusesoc_core: lowrisc:dv:usbdev_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               cov: false
+             }
+             {
+               name: usbuart
+               fusesoc_core: lowrisc:dv:usbuart_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                cov: false
              }

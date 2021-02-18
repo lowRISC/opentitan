@@ -23,6 +23,8 @@
     'hw/ip/hmac/dv/cryptoc_dpi/*',
     # PRINCE C++ reference model from Sebastien Riou
     'hw/ip/prim/dv/prim_prince/crypto_dpi_prince/prince_ref.h',
+    # PRESENT Python reference model
+    'util/design/lib/Present.py',
     # Vendored FPGA information
     'hw/top_earlgrey/data/*.xdc',
     'util/fpga/bram_load.mmi',
@@ -61,9 +63,10 @@
     'site/**/assets/scss/**',
     'site/landing/static/js/tiny-slider.js',
     'util/opentitan-pgm-fpga/vivado_pgm.tcl',
-
     # Code taken from Chromium, so covered by the BSD licence
     'sw/otbn/code-snippets/modexp.s',
     'sw/otbn/code-snippets/p256.s',
+    # Mersenne Twister PRNG
+    'sw/device/sca/lib/prng.c',
   ],
 }

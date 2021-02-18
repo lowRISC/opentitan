@@ -196,7 +196,7 @@ def elab_intermodule(topcfg: OrderedDict):
 
     # Gather the inter_signal_list
     instances = topcfg["module"] + topcfg["memory"] + topcfg["xbar"] + \
-        topcfg["host"]
+        topcfg["host"] + topcfg["port"]
 
     intermodule_instances = [x for x in instances if "inter_signal_list" in x]
 
@@ -246,7 +246,6 @@ def elab_intermodule(topcfg: OrderedDict):
         req_struct = find_intermodule_signal(list_of_intersignals, req_module,
                                              req_signal)
 
-        rsp_len = len(rsps)
         # decide signal format based on the `key`
         sig_name = intersignal_format(req_struct)
         req_struct["top_signame"] = sig_name
@@ -275,6 +274,9 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('signame', sig_name + "_req"),
                              ('width', req_struct["width"]),
                              ('type', req_struct["type"]),
+                             ('end_idx', req_struct["end_idx"]),
+                             ('act', req_struct["act"]),
+                             ('suffix', "req"),
                              ('default', req_struct["default"])]))
             definitions.append(
                 OrderedDict([('package', package),
@@ -282,6 +284,9 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('signame', sig_name + "_rsp"),
                              ('width', req_struct["width"]),
                              ('type', req_struct["type"]),
+                             ('end_idx', req_struct["end_idx"]),
+                             ('act', req_struct["act"]),
+                             ('suffix', "rsp"),
                              ('default', req_struct["default"])]))
         else:
             # unidirection
@@ -291,6 +296,9 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('signame', sig_name),
                              ('width', req_struct["width"]),
                              ('type', req_struct["type"]),
+                             ('end_idx', req_struct["end_idx"]),
+                             ('act', req_struct["act"]),
+                             ('suffix', ""),
                              ('default', req_struct["default"])]))
 
         req_struct["index"] = -1
@@ -319,12 +327,6 @@ def elab_intermodule(topcfg: OrderedDict):
                 assert req_struct[
                     "type"] != "req_rsp", "logic signal cannot have req_rsp type"
 
-            if rsp_len != 1:
-                log.warning("{req}[{i}] -> {rsp}".format(req=req, i=i,
-                                                         rsp=rsp))
-            else:
-                log.warning("{req} -> {rsp}".format(req=req, rsp=rsp))
-
             # increase Unique ID
             uid += 1
 
@@ -349,18 +351,21 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('struct', sig["struct"] + req_suffix),
                              ('signame', sig_name + "_req"),
                              ('width', sig["width"]), ('type', sig["type"]),
+                             ('end_idx', -1),
                              ('default', sig["default"])]))
             definitions.append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"] + rsp_suffix),
                              ('signame', sig_name + "_rsp"),
                              ('width', sig["width"]), ('type', sig["type"]),
+                             ('end_idx', -1),
                              ('default', sig["default"])]))
         else:  # if sig["type"] == "uni":
             definitions.append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"]), ('signame', sig_name),
                              ('width', sig["width"]), ('type', sig["type"]),
+                             ('end_idx', -1),
                              ('default', sig["default"])]))
 
     topcfg["inter_module"].setdefault('external', [])
@@ -375,16 +380,24 @@ def elab_intermodule(topcfg: OrderedDict):
         sig['external'] = True
 
         sig_name = port if port != "" else intersignal_format(sig)
-        sig["top_signame"] = sig_name
+
+        # if top signame already defined, then a previous connection category
+        # is already connected to external pin.  Sig name is only used for
+        # port definition
+        if "top_signame" not in sig:
+            sig["top_signame"] = sig_name
 
         if "index" not in sig:
             sig["index"] = -1
 
         # Add the port definition to top external ports
+        index = sig["index"]
+        netname = sig["top_signame"]
         if sig["type"] == "req_rsp":
             req_suffix, rsp_suffix = get_suffixes(sig)
             if sig["act"] == "req":
                 req_sigsuffix, rsp_sigsuffix = ("_o", "_i")
+
             else:
                 req_sigsuffix, rsp_sigsuffix = ("_i", "_o")
 
@@ -395,7 +408,9 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"]),
                              ('direction',
-                              'out' if sig['act'] == "req" else 'in')]))
+                              'out' if sig['act'] == "req" else 'in'),
+                             ('index', index),
+                             ('netname', netname + req_suffix)]))
             topcfg["inter_signal"]["external"].append(
                 OrderedDict([('package', sig["package"]),
                              ('struct', sig["struct"] + rsp_suffix),
@@ -403,7 +418,9 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"]),
                              ('direction',
-                              'in' if sig['act'] == "req" else 'out')]))
+                              'in' if sig['act'] == "req" else 'out'),
+                             ('index', index),
+                             ('netname', netname + rsp_suffix)]))
         else:  # uni
             if sig["act"] == "req":
                 sigsuffix = "_o"
@@ -416,7 +433,9 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('width', sig["width"]), ('type', sig["type"]),
                              ('default', sig["default"]),
                              ('direction',
-                              'out' if sig['act'] == "req" else 'in')]))
+                              'out' if sig['act'] == "req" else 'in'),
+                             ('index', index),
+                             ('netname', netname)]))
 
     for sig in topcfg["inter_signal"]["signals"]:
         # Check if it exist in definitions
@@ -531,7 +550,7 @@ def find_otherside_modules(topcfg: OrderedDict, m,
         ('main', 'tl_rom'): ('tl_adapter_rom', 'tl'),
         ('main', 'tl_ram_main'): ('tl_adapter_ram_main', 'tl'),
         ('main', 'tl_eflash'): ('tl_adapter_eflash', 'tl'),
-        ('peri', 'tl_ram_ret'): ('tl_adapter_ram_ret', 'tl'),
+        ('peri', 'tl_ram_ret_aon'): ('tl_adapter_ram_ret_aon', 'tl'),
         ('main', 'tl_corei'): ('rv_core_ibex', 'tl_i'),
         ('main', 'tl_cored'): ('rv_core_ibex', 'tl_d'),
         ('main', 'tl_dm_sba'): ('dm_top', 'tl_h'),
@@ -676,21 +695,32 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
                         .format(rsp=rsp))
                     error += 1
 
-        # Determine if "uni" is broadcast or one-to-N
-        if req_struct["type"] == "uni" and len(rsps) != 1:
+        # Determine if broadcast or one-to-N
+        log.debug("Handling inter-sig {} {}".format(req_struct['name'], total_width))
+        req_struct["end_idx"] = -1
+        if req_struct["width"] > 1 or len(rsps) != 1:
+            # If req width is same to the every width of rsps ==> broadcast
+            if len(rsps) * [req_struct["width"]] == widths:
+                log.debug("broadcast type")
+                req_struct["top_type"] = "broadcast"
+
             # If req width is same as total width of rsps ==> one-to-N
-            if req_struct["width"] == total_width:
+            elif req_struct["width"] == total_width:
+                log.debug("one-to-N type")
                 req_struct["top_type"] = "one-to-N"
 
-            # If req width is same to the every width of rsps ==> broadcast
-            elif len(rsps) * [req_struct["width"]] == widths:
-                req_struct["top_type"] = "broadcast"
+            # one-to-N connection is not fully populated
+            elif req_struct["width"] > total_width:
+                log.debug("partial one-to-N type")
+                req_struct["top_type"] = "partial-one-to-N"
+                req_struct["end_idx"] = len(rsps)
 
             # If not, error
             else:
                 log.error("'uni' type connection {req} should be either "
                           "OneToN or Broadcast".format(req=req))
                 error += 1
+
         elif req_struct["type"] == "uni":
             # one-to-one connection
             req_struct["top_type"] = "broadcast"
@@ -703,19 +733,6 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
         if error != 0:
             # Skip the check
             continue
-        rsps_width = 0
-        for rsp in rsps:
-            rsp_m, rsp_s, rsp_i = filter_index(rsp)
-            rsp_struct = find_intermodule_signal(
-                topcfg["inter_signal"]["signals"], rsp_m, rsp_s)
-            # Update total responses width
-            rsps_width += rsp_struct["width"]
-
-        if req_struct["width"] != rsps_width:
-            log.error(
-                "Request {} width is not matched with total responses width {}"
-                .format(req_struct["width"], rsps_width))
-            error += 1
 
     for item in topcfg["inter_module"]["top"] + list(
             topcfg["inter_module"]["external"].keys()):
@@ -744,10 +761,13 @@ def im_defname(obj: OrderedDict) -> str:
                                           struct=obj["struct"])
 
 
-def im_netname(obj: OrderedDict, suffix: str = "") -> str:
+def im_netname(obj: OrderedDict, suffix: str = "", default_name=False) -> str:
     """return top signal name with index
 
-    It also adds suffix for external signal
+    It also adds suffix for external signal.
+
+    The default name input forces function to return default name, even if object
+    has a connection.
     """
 
     # Basic check and add missing fields
@@ -755,7 +775,7 @@ def im_netname(obj: OrderedDict, suffix: str = "") -> str:
 
     # Floating signals
     # TODO: Find smarter way to assign default?
-    if "top_signame" not in obj:
+    if "top_signame" not in obj or default_name:
         if obj["act"] == "req" and suffix == "req":
             return ""
         if obj["act"] == "rsp" and suffix == "rsp":
@@ -829,3 +849,38 @@ def im_portname(obj: OrderedDict, suffix: str = "") -> str:
         suffix_s = "_o" if obj["act"] == "rsp" else "_i"
 
     return "{signame}{suffix}".format(signame=obj["name"], suffix=suffix_s)
+
+
+def get_dangling_im_def(objs: OrderedDict) -> str:
+    """return partial inter-module definitions
+
+    Dangling intermodule connections happen when a one-to-N assignment
+    is not fully populated.
+
+    This can result in two types of dangling:
+    - outgoing requests not used
+    - incoming responses not driven
+
+    The determination of which category we fall into follows similar rules
+    as those used by im_netname.
+
+    When the direction of the net is the same as the active direction of the
+    the connecting module, it is "unused".
+
+    When the direction of the net is opposite of the active direction of the
+    the connecting module, it is "undriven".
+
+    As an example, edn is defined as "rsp" of a "req_rsp" pair. It is also used
+    as the "active" module in inter-module connection. If there are not enough
+    connecting modules, the 'req' line is undriven, while the 'rsp' line is
+    unused.
+
+    """
+    unused_def = [obj for obj in objs if obj['end_idx'] > 0 and
+                  obj['act'] == obj['suffix']]
+
+    undriven_def = [obj for obj in objs if obj['end_idx'] > 0 and
+                    (obj['act'] == 'req' and obj['suffix'] == 'rsp' or
+                     obj['act'] == 'rsp' and obj['suffix'] == 'req')]
+
+    return unused_def, undriven_def

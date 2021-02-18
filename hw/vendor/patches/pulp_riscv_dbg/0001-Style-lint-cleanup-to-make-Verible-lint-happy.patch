@@ -4,13 +4,6 @@ Date: Mon, 13 Jul 2020 19:25:04 -0700
 Subject: [PATCH 1/2] Style lint cleanup to make Verible lint happy
 
 Signed-off-by: Michael Schaffner <msf@google.com>
----
- src/dm_csrs.sv    |  6 +++---
- src/dm_mem.sv     |  7 +++++--
- src/dm_obi_top.sv | 50 ++++++++++++++++++++++++++---------------------
- src/dm_pkg.sv     |  2 +-
- src/dm_sba.sv     |  6 +++---
- 5 files changed, 40 insertions(+), 31 deletions(-)
 
 diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
 index 78fd32a..f131392 100644
@@ -211,6 +204,3 @@ index f605088..c97f956 100644
          end
        end
  
--- 
-2.28.0.rc0.105.gf9edc3c819-goog
-

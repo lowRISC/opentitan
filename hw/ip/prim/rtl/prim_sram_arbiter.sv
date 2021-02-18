@@ -112,10 +112,11 @@ module prim_sram_arbiter #(
     .wvalid_i (sram_req_o & ~sram_write_o),  // Push only for read
     .wready_o (),     // TODO: Generate Error
     .wdata_i  (gnt_o),
-    .depth_o  (),     // Not used
     .rvalid_o (),     // TODO; Generate error if sram_rvalid_i but rvalid==0
     .rready_i (sram_ack),
-    .rdata_o  (steer)
+    .rdata_o  (steer),
+    .full_o   (),
+    .depth_o  ()     // Not used
   );
 
   assign rsp_rvalid_o = steer & {N{sram_rvalid_i}};

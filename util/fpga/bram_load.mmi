@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <MemInfo Version="1" Minor="0">
   <Processor Endianness="Little" InstPath="dummy">
-  <AddressSpace Name="brom" Begin="0" End="4095">
+  <AddressSpace Name="brom" Begin="0" End="16383">
       <BusBlock>
         <BitLane MemType="RAMB32" Placement="X4Y18">
           <DataWidth MSB="7" LSB="0"/>

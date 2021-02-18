@@ -73,7 +73,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   output logic [2:0]         ctr_drbg_gen_sfifo_grcstage_err_o,
   output logic [2:0]         ctr_drbg_gen_sfifo_ggenreq_err_o,
   output logic [2:0]         ctr_drbg_gen_sfifo_gadstage_err_o,
-  output logic [2:0]         ctr_drbg_gen_sfifo_ggenbits_err_o
+  output logic [2:0]         ctr_drbg_gen_sfifo_ggenbits_err_o,
+  output logic               ctr_drbg_gen_sm_err_o
 );
 
   localparam int GenreqFifoDepth = 1;
@@ -116,7 +117,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   logic                       sfifo_genreq_push;
   logic [GenreqFifoWidth-1:0] sfifo_genreq_wdata;
   logic                       sfifo_genreq_pop;
-  logic                       sfifo_genreq_not_full;
+  logic                       sfifo_genreq_full;
   logic                       sfifo_genreq_not_empty;
 
   // adstage fifo
@@ -124,14 +125,14 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   logic                        sfifo_adstage_push;
   logic [AdstageFifoWidth-1:0] sfifo_adstage_wdata;
   logic                        sfifo_adstage_pop;
-  logic                        sfifo_adstage_not_full;
+  logic                        sfifo_adstage_full;
   logic                        sfifo_adstage_not_empty;
   // blk_encrypt_ack fifo
   logic [BlkEncAckFifoWidth-1:0] sfifo_bencack_rdata;
   logic                       sfifo_bencack_push;
   logic [BlkEncAckFifoWidth-1:0] sfifo_bencack_wdata;
   logic                       sfifo_bencack_pop;
-  logic                       sfifo_bencack_not_full;
+  logic                       sfifo_bencack_full;
   logic                       sfifo_bencack_not_empty;
   // breakout
   logic [Cmd-1:0]             sfifo_bencack_ccmd;
@@ -143,7 +144,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   logic                        sfifo_rcstage_push;
   logic [RCStageFifoWidth-1:0] sfifo_rcstage_wdata;
   logic                        sfifo_rcstage_pop;
-  logic                        sfifo_rcstage_not_full;
+  logic                        sfifo_rcstage_full;
   logic                        sfifo_rcstage_not_empty;
 
   // genbits fifo
@@ -151,7 +152,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   logic                        sfifo_genbits_push;
   logic [GenbitsFifoWidth-1:0] sfifo_genbits_wdata;
   logic                        sfifo_genbits_pop;
-  logic                        sfifo_genbits_not_full;
+  logic                        sfifo_genbits_full;
   logic                        sfifo_genbits_not_empty;
 
   logic [CtrLen-1:0]           v_inc;
@@ -166,22 +167,30 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   logic [CtrLen-1:0]           v_ctr_q, v_ctr_d;
   logic [1:0]                  interate_ctr_q, interate_ctr_d;
 
-  // Encoding generated with ./sparse-fsm-encode.py -d 3 -m 2 -n 4 -s 352244715
-  // Hamming distance histogram:
-  //
-  // 0: --
-  // 1: --
-  // 2: --
-  // 3: --
-  // 4: |||||||||||||||||||| (100.00%)
-  //
-  // Minimum Hamming distance: 4
-  // Maximum Hamming distance: 4
-  //
-  localparam int StateWidth = 4;
+// Encoding generated with:
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 3 -n 5 \
+//      -s 214010139 --language=sv
+//
+// Hamming distance histogram:
+//
+//  0: --
+//  1: --
+//  2: --
+//  3: |||||||||||||||||||| (66.67%)
+//  4: |||||||||| (33.33%)
+//  5: --
+//
+// Minimum Hamming distance: 3
+// Maximum Hamming distance: 4
+// Minimum Hamming weight: 2
+// Maximum Hamming weight: 3
+//
+
+  localparam int StateWidth = 5;
   typedef enum logic [StateWidth-1:0] {
-    ReqIdle = 4'b1010,
-    ReqSend = 4'b0101
+    ReqIdle  = 5'b01011,
+    ReqSend  = 5'b10001,
+    ReqError = 5'b10110
 } state_e;
 
   state_e state_d, state_q;
@@ -226,11 +235,12 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     .rst_ni         (rst_ni),
     .clr_i          (!ctr_drbg_gen_enable_i),
     .wvalid_i       (sfifo_genreq_push),
-    .wready_o       (sfifo_genreq_not_full),
+    .wready_o       (),
     .wdata_i        (sfifo_genreq_wdata),
     .rvalid_o       (sfifo_genreq_not_empty),
     .rready_i       (sfifo_genreq_pop),
     .rdata_o        (sfifo_genreq_rdata),
+    .full_o         (sfifo_genreq_full),
     .depth_o        ()
   );
 
@@ -246,12 +256,12 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
           genreq_fips,genreq_adata,
           genreq_id,genreq_ccmd} = sfifo_genreq_rdata;
 
-  assign ctr_drbg_gen_rdy_o = sfifo_genreq_not_full;
+  assign ctr_drbg_gen_rdy_o = !sfifo_genreq_full;
 
   assign ctr_drbg_gen_sfifo_ggenreq_err_o =
-         {(sfifo_genreq_push && !sfifo_genreq_not_full),
+         {(sfifo_genreq_push && sfifo_genreq_full),
           (sfifo_genreq_pop && !sfifo_genreq_not_empty),
-          (!sfifo_genreq_not_full && !sfifo_genreq_not_empty)};
+          (sfifo_genreq_full && !sfifo_genreq_not_empty)};
 
 
 
@@ -299,15 +309,17 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     sfifo_adstage_push = 1'b0;
     block_encrypt_req_o = 1'b0;
     sfifo_genreq_pop = 1'b0;
+    ctr_drbg_gen_sm_err_o = 1'b0;
     unique case (state_q)
       // ReqIdle: increment v this cycle, push in next
-      ReqIdle:
-        if (sfifo_genreq_not_empty && sfifo_adstage_not_full) begin
+      ReqIdle: begin
+        if (sfifo_genreq_not_empty && !sfifo_adstage_full) begin
           v_ctr_load = 1'b1;
           sfifo_adstage_push = 1'b1;
           state_d = ReqSend;
         end
-      ReqSend:
+      end
+      ReqSend: begin
         if (!interate_ctr_done) begin
           block_encrypt_req_o = 1'b1;
           if (block_encrypt_rdy_i) begin
@@ -318,7 +330,11 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
           sfifo_genreq_pop = 1'b1;
           state_d = ReqIdle;
         end
-      default: state_d = ReqIdle;
+      end
+      ReqError: begin
+        ctr_drbg_gen_sm_err_o = 1'b1;
+      end
+      default: state_d = ReqError;
     endcase
   end
 
@@ -336,23 +352,23 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     .rst_ni         (rst_ni),
     .clr_i          (!ctr_drbg_gen_enable_i),
     .wvalid_i       (sfifo_adstage_push),
-    .wready_o       (sfifo_adstage_not_full),
+    .wready_o       (),
     .wdata_i        (sfifo_adstage_wdata),
     .rvalid_o       (sfifo_adstage_not_empty),
     .rready_i       (sfifo_adstage_pop),
     .rdata_o        (sfifo_adstage_rdata),
+    .full_o         (sfifo_adstage_full),
     .depth_o        ()
   );
 
-//  assign sfifo_adstage_push = sfifo_genreq_pop;
   assign sfifo_adstage_wdata = {genreq_key,genreq_v,genreq_rc,genreq_fips,genreq_adata};
   assign sfifo_adstage_pop = sfifo_adstage_not_empty && sfifo_bencack_pop;
   assign {adstage_key,adstage_v,adstage_rc,adstage_fips,adstage_adata} = sfifo_adstage_rdata;
 
   assign ctr_drbg_gen_sfifo_gadstage_err_o =
-         {(sfifo_adstage_push && !sfifo_adstage_not_full),
+         {(sfifo_adstage_push && sfifo_adstage_full),
           (sfifo_adstage_pop && !sfifo_adstage_not_empty),
-          (!sfifo_adstage_not_full && !sfifo_adstage_not_empty)};
+          (sfifo_adstage_full && !sfifo_adstage_not_empty)};
 
 
 
@@ -369,28 +385,29 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_gen_enable_i),
     .wvalid_i (sfifo_bencack_push),
-    .wready_o (sfifo_bencack_not_full),
+    .wready_o (),
     .wdata_i  (sfifo_bencack_wdata),
     .rvalid_o (sfifo_bencack_not_empty),
     .rready_i (sfifo_bencack_pop),
     .rdata_o  (sfifo_bencack_rdata),
+    .full_o   (sfifo_bencack_full),
     .depth_o  ()
   );
 
   assign bencack_ccmd_modified = (block_encrypt_ccmd_i == GENB) ? GENU : INV;
 
-  assign sfifo_bencack_push = sfifo_bencack_not_full && block_encrypt_ack_i;
+  assign sfifo_bencack_push = !sfifo_bencack_full && block_encrypt_ack_i;
   assign sfifo_bencack_wdata = {block_encrypt_v_i,block_encrypt_inst_id_i,bencack_ccmd_modified};
-  assign block_encrypt_rdy_o = sfifo_bencack_not_full;
+  assign block_encrypt_rdy_o = !sfifo_bencack_full;
 
-  assign sfifo_bencack_pop = sfifo_rcstage_not_full && sfifo_bencack_not_empty && upd_gen_rdy_i;
+  assign sfifo_bencack_pop = !sfifo_rcstage_full && sfifo_bencack_not_empty && upd_gen_rdy_i;
 
   assign {sfifo_bencack_bits,sfifo_bencack_inst_id,sfifo_bencack_ccmd} = sfifo_bencack_rdata;
 
   assign ctr_drbg_gen_sfifo_gbencack_err_o =
-         {(sfifo_bencack_push && !sfifo_bencack_not_full),
+         {(sfifo_bencack_push && sfifo_bencack_full),
           (sfifo_bencack_pop && !sfifo_bencack_not_empty),
-          (!sfifo_bencack_not_full && !sfifo_bencack_not_empty)};
+          (sfifo_bencack_full && !sfifo_bencack_not_empty)};
 
 
   //--------------------------------------------
@@ -420,11 +437,12 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     .rst_ni         (rst_ni),
     .clr_i          (!ctr_drbg_gen_enable_i),
     .wvalid_i       (sfifo_rcstage_push),
-    .wready_o       (sfifo_rcstage_not_full),
+    .wready_o       (),
     .wdata_i        (sfifo_rcstage_wdata),
     .rvalid_o       (sfifo_rcstage_not_empty),
     .rready_i       (sfifo_rcstage_pop),
     .rdata_o        (sfifo_rcstage_rdata),
+    .full_o         (sfifo_rcstage_full),
     .depth_o        ()
   );
 
@@ -435,11 +453,11 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
 
 
   assign ctr_drbg_gen_sfifo_grcstage_err_o =
-         {(sfifo_rcstage_push && !sfifo_rcstage_not_full),
+         {(sfifo_rcstage_push && sfifo_rcstage_full),
           (sfifo_rcstage_pop && !sfifo_rcstage_not_empty),
-          (!sfifo_rcstage_not_full && !sfifo_rcstage_not_empty)};
+          (sfifo_rcstage_full && !sfifo_rcstage_not_empty)};
 
-  assign gen_upd_rdy_o = sfifo_rcstage_not_empty && sfifo_genbits_not_full;
+  assign gen_upd_rdy_o = sfifo_rcstage_not_empty && !sfifo_genbits_full;
 
 
   //--------------------------------------------
@@ -455,11 +473,12 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     .rst_ni         (rst_ni),
     .clr_i          (!ctr_drbg_gen_enable_i),
     .wvalid_i       (sfifo_genbits_push),
-    .wready_o       (sfifo_genbits_not_full),
+    .wready_o       (),
     .wdata_i        (sfifo_genbits_wdata),
     .rvalid_o       (sfifo_genbits_not_empty),
     .rready_i       (sfifo_genbits_pop),
     .rdata_o        (sfifo_genbits_rdata),
+    .full_o         (sfifo_genbits_full),
     .depth_o        ()
   );
 
@@ -477,9 +496,9 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
           ctr_drbg_gen_inst_id_o,ctr_drbg_gen_ccmd_o} = sfifo_genbits_rdata;
 
   assign ctr_drbg_gen_sfifo_ggenbits_err_o =
-         {(sfifo_genbits_push && !sfifo_genbits_not_full),
+         {(sfifo_genbits_push && sfifo_genbits_full),
          (sfifo_genbits_pop && !sfifo_genbits_not_empty),
-         (!sfifo_genbits_not_full && !sfifo_genbits_not_empty)};
+         (sfifo_genbits_full && !sfifo_genbits_not_empty)};
 
   // block ack
   assign ctr_drbg_gen_ack_o = sfifo_genbits_pop;

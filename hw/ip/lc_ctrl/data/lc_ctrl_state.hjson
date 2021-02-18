@@ -4,9 +4,7 @@
 //
 // Use the gen-lc-state-enc.py script to regenerate the SV package:
 //
-// $ cd ${PROJ_ROOT}/hw/ip/lc_ctrl/util/
-// $ ./gen-lc-state-enc.py
-//
+// $ ./util/design/gen-lc-state-enc.py
 
 {
     // Seed to be used for generation of partition item default values.
@@ -14,27 +12,82 @@
     seed: 10167336684108184581
 
     // Secded used in prim_generic_otp.sv
+    // SECDED matrix used for ECC in OTP
     secded : {
         data_width : 16,
         ecc_width  : 6,
         ecc_matrix : [
-            [0, 1, 5, 8 , 9 , 10, 11, 15], // ECC bit 0
-            [0, 4, 5, 6 , 8 , 12, 13, 14], // ECC bit 1
-            [1, 3, 4, 6 , 7 , 8 , 10, 13], // ECC bit 2
-            [1, 2, 3, 11, 12, 13, 14, 15], // ECC bit 3
-            [2, 3, 5, 6 , 7 , 9 , 11, 12], // ECC bit 4
-            [0, 2, 4, 7 , 9 , 10, 14, 15], // ECC bit 5
+            // This is a standard extended Hamming code for 16bit
+            [0, 1, 3, 4, 6, 8, 10, 11, 13, 15], // ECC bit 0
+            [0, 2, 3, 5, 6, 9, 10, 12, 13],     // ECC bit 1
+            [1, 2, 3, 7, 8, 9, 10, 14, 15],     // ECC bit 2
+            [4, 5, 6, 7, 8, 9, 10],             // ECC bit 3
+            [11, 12, 13, 14, 15],               // ECC bit 4
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], // Parity bit
         ]
     }
-
-    // This is given by the life cycle encoding.
-    num_ab_words : 12,
-    num_cd_words : 16,
-    num_ef_words : 1,
 
     // Additional Hamming weight and distance requirements.
     // Note that the life cycle words are 16 + 6 = 22 bits wide total.
     min_hw       : 5,
     max_hw       : 17,
     min_hd       : 5
+
+    // LC token size in bit
+    token_size   : 128
+    tokens       : [
+        {
+            name:  "AllZeroToken"
+            value: "0x0"
+        }
+        {
+            name:  "RndCnstRawUnlockToken"
+            value: "<random>"
+        }
+    ]
+
+    // Life cycle state definition.
+    // From least to most significant OTP word in ascending order.
+    lc_state : {
+        RAW            : [ '0',  '0',  '0',  '0', '0',  '0',  '0',   '0',  '0',  '0',   '0',   '0'],
+        TEST_UNLOCKED0 : ['B0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11'],
+        TEST_LOCKED0   : ['B0', 'B1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11'],
+        TEST_UNLOCKED1 : ['B0', 'B1', 'B2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11'],
+        TEST_LOCKED1   : ['B0', 'B1', 'B2', 'B3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11'],
+        TEST_UNLOCKED2 : ['B0', 'B1', 'B2', 'B3', 'B4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11'],
+        TEST_LOCKED2   : ['B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11'],
+        TEST_UNLOCKED3 : ['B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'A7', 'A8', 'A9', 'A10', 'A11'],
+        DEV            : ['B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'A8', 'A9', 'A10', 'A11'],
+        PROD           : ['B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'A7', 'B8', 'A9', 'A10', 'A11'],
+        PROD_END       : ['B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'A7', 'A8', 'B9', 'A10', 'A11'],
+        RMA            : ['B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'A9', 'B10', 'B11'],
+        SCRAP          : ['B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11']
+    }
+
+    // Life cycle state transition counter definition.
+    // From least to most significant OTP word in ascending order.
+    lc_cnt : {
+        0   : [ '0',  '0',  '0',  '0', '0',  '0',  '0',   '0',  '0',  '0',   '0',   '0',   '0',   '0',   '0',   '0'],
+        1   : ['D0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15'],
+        2   : ['D0', 'D1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15'],
+        3   : ['D0', 'D1', 'D2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15'],
+        4   : ['D0', 'D1', 'D2', 'D3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15'],
+        5   : ['D0', 'D1', 'D2', 'D3', 'D4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15'],
+        6   : ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15'],
+        7   : ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15'],
+        8   : ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15'],
+        9   : ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15'],
+        10  : ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15'],
+        11  : ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'C11', 'C12', 'C13', 'C14', 'C15'],
+        12  : ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'C12', 'C13', 'C14', 'C15'],
+        13  : ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 'C13', 'C14', 'C15'],
+        14  : ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 'D13', 'C14', 'C15'],
+        15  : ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 'D13', 'D14', 'C15'],
+        16  : ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12', 'D13', 'D14', 'D15']
+    }
+
+    lc_id_state : {
+        IdBlank        : ['E0'],
+        IdPersonalized : ['F0']
+    }
 }

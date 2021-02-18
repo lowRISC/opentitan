@@ -1,0 +1,25 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  input_files: {
+    image_path: "build-out/sw/device/rom_exts/rom_ext_slot_a_sim_verilator.bin",
+    private_key_der_path: "sw/device/rom_exts/keys/test_key_private.der",
+  },
+  // TBD
+  usage_constraints: {
+    value: 0,
+  },
+  // TBD
+  peripheral_lockdown_info: {
+    value: 0,
+  },
+  manifest_identifier: "43981",
+  image_length: "0xdeadbeef",
+  image_version: "0xdeadbeef",
+  image_timestamp: "0xaabbccddeeff1122",
+  extension0_checksum: "0xdeadbeef",
+  extension1_checksum: "0xdeadbeef",
+  extension2_checksum: "0xdeadbeef",
+  extension3_checksum: "0xdeadbeef",
+}

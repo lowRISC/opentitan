@@ -97,7 +97,7 @@ def transform_disasm_line(line: str,
 
     # Similarly, we know we have a syntax (again, get_insn_masks requires it).
     # The rendering of the fields is done by the syntax object.
-    return match.group(1) + insn.disassemble(pc, op_vals, 7)
+    return match.group(1) + insn.disassemble(pc, op_vals)
 
 
 def get_insn_masks(insns_file: InsnsFile) -> List[Tuple[int, int, Insn]]:

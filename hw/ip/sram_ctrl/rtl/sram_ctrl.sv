@@ -13,9 +13,11 @@ module sram_ctrl
 #(
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0] AlertAsyncOn          = {NumAlerts{1'b1}},
+  parameter bit InstrExec                               = 1,
   // Random netlist constants
   parameter otp_ctrl_pkg::sram_key_t   RndCnstSramKey   = RndCnstSramKeyDefault,
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce = RndCnstSramNonceDefault
+
 ) (
   // SRAM Clock
   input                                              clk_i,
@@ -31,12 +33,17 @@ module sram_ctrl
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]  alert_tx_o,
   // Life-cycle escalation input (scraps the scrambling keys)
   input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
+  input  lc_ctrl_pkg::lc_tx_t                        lc_hw_debug_en_i,
+  // Otp configuration for sram execution
+  input  otp_ctrl_part_pkg::otp_hw_cfg_t             otp_hw_cfg_i,
   // Key request to OTP (running on clk_fixed)
   output otp_ctrl_pkg::sram_otp_key_req_t            sram_otp_key_o,
   input  otp_ctrl_pkg::sram_otp_key_rsp_t            sram_otp_key_i,
   // Interface with SRAM scrambling wrapper
   output sram_scr_req_t                              sram_scr_o,
-  input  sram_scr_rsp_t                              sram_scr_i
+  input  sram_scr_rsp_t                              sram_scr_i,
+  // Interface with corresponding tlul adapters
+  output tlul_pkg::tl_instr_en_e                     en_ifetch_o
 );
 
   // This peripheral only works up to a width of 64bits.
@@ -84,35 +91,34 @@ module sram_ctrl
   assign hw2reg.error_address.de            = sram_scr_i.rerror[1];
   assign parity_error_d                     = parity_error_q | sram_scr_i.rerror[1];
 
+  // Correctable RAM errors are not supported
+  logic unused_error;
+  assign unused_error = sram_scr_i.rerror[0];
+
 
   //////////////////
   // Alert Sender //
   //////////////////
 
-  logic [NumAlerts-1:0] alerts;
-  logic [NumAlerts-1:0] alert_test;
+  logic alert;
+  logic alert_test;
+  assign alert = parity_error_q;
+  assign alert_test = reg2hw.alert_test.q &
+                      reg2hw.alert_test.qe;
 
-  assign alerts = {
-    parity_error_q
-  };
-
-  assign alert_test = {
-    reg2hw.alert_test.q &
-    reg2hw.alert_test.qe
-  };
-
-  for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx
-    prim_alert_sender #(
-      .AsyncOn(AlertAsyncOn[k])
-    ) u_prim_alert_sender (
-      .clk_i,
-      .rst_ni,
-      .alert_req_i ( alerts[k] | alert_test[k] ),
-      .alert_ack_o (                 ),
-      .alert_rx_i  ( alert_rx_i[k]   ),
-      .alert_tx_o  ( alert_tx_o[k]   )
-    );
-  end
+  prim_alert_sender #(
+    .AsyncOn(AlertAsyncOn[0]),
+    .IsFatal(1)
+  ) u_prim_alert_sender (
+    .clk_i,
+    .rst_ni,
+    .alert_test_i  ( alert_test    ),
+    .alert_req_i   ( alert         ),
+    .alert_ack_o   (               ),
+    .alert_state_o (               ),
+    .alert_rx_i    ( alert_rx_i[0] ),
+    .alert_tx_o    ( alert_tx_o[0] )
+  );
 
   //////////////////////////////////////////
   // Lifecycle Escalation Synchronization //
@@ -177,7 +183,8 @@ module sram_ctrl
   end
 
   prim_sync_reqack_data #(
-    .Width($bits(otp_ctrl_pkg::sram_otp_key_rsp_t)-1)
+    .Width($bits(otp_ctrl_pkg::sram_otp_key_rsp_t)-1),
+    .DataSrc2Dst(1'b0)
   ) u_prim_sync_reqack_data (
     .clk_src_i  ( clk_i              ),
     .rst_src_ni ( rst_ni             ),
@@ -194,6 +201,35 @@ module sram_ctrl
                    nonce_d,
                    key_seed_valid_d}          )
   );
+
+  ////////////////////
+  // SRAM Execution //
+  ////////////////////
+
+  import tlul_pkg::tl_instr_en_e;
+
+  if (InstrExec) begin : gen_instr_ctrl
+    tl_instr_en_e lc_ifetch_en;
+    tl_instr_en_e reg_ifetch_en;
+    assign lc_ifetch_en = (lc_hw_debug_en_i == lc_ctrl_pkg::On) ? tlul_pkg::InstrEn :
+                                                                  tlul_pkg::InstrDis;
+    assign reg_ifetch_en = tl_instr_en_e'(reg2hw.exec.q);
+    assign en_ifetch_o = (otp_hw_cfg_i.data.en_sram_ifetch == EnSramIfetch) ? reg_ifetch_en :
+                                                                              lc_ifetch_en;
+  end else begin : gen_tieoff
+    assign en_ifetch_o = tlul_pkg::InstrDis;
+  end
+
+  // tie off unused signal
+  if (!InstrExec) begin : gen_tieoff_unused
+    lc_ctrl_pkg::lc_tx_t unused_lc;
+    tl_instr_en_e unused_reg_en;
+    assign unused_lc = lc_hw_debug_en_i;
+    assign unused_reg_en = tl_instr_en_e'(reg2hw.exec.q);
+  end
+
+  logic unused_otp_bits;
+  assign unused_otp_bits = ^otp_hw_cfg_i;
 
   ////////////////
   // Assertions //

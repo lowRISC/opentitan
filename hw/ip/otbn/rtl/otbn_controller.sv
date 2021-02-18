@@ -24,7 +24,7 @@ module otbn_controller
   input  logic  start_i, // start the processing at start_addr_i
   output logic  done_o,  // processing done, signaled by ECALL or error occurring
 
-  output err_code_e err_code_o, // valid when done_o is asserted
+  output err_bits_t err_bits_o, // valid when done_o is asserted
 
   input  logic [ImemAddrWidth-1:0] start_addr_i,
 
@@ -47,6 +47,7 @@ module otbn_controller
   // Base register file
   output logic [4:0]   rf_base_wr_addr_o,
   output logic         rf_base_wr_en_o,
+  output logic         rf_base_wr_commit_o,
   output logic [31:0]  rf_base_wr_data_o,
 
   output logic [4:0]   rf_base_rd_addr_a_o,
@@ -118,12 +119,14 @@ module otbn_controller
   logic stall;
   logic mem_stall;
   logic branch_taken;
+  logic insn_executing;
   logic [ImemAddrWidth-1:0] branch_target;
   logic                     branch_target_overflow;
   logic [ImemAddrWidth:0]   next_insn_addr_wide;
   logic [ImemAddrWidth-1:0] next_insn_addr;
 
   csr_e                                csr_addr;
+  logic [$clog2(BaseWordsPerWLEN)-1:0] csr_sub_addr;
   logic [31:0]                         csr_rdata_raw;
   logic [31:0]                         csr_rdata;
   logic [BaseWordsPerWLEN-1:0]         csr_rdata_mux [32];
@@ -140,6 +143,11 @@ module otbn_controller
   ispr_e                               ispr_addr_bignum;
 
   logic                                ispr_wr_insn;
+  logic                                ispr_wr_base_insn;
+  logic                                ispr_wr_bignum_insn;
+
+  logic lsu_load_req_raw;
+  logic lsu_store_req_raw;
 
   // Computed increments for indirect register index and memory address in BN.LID/BN.SID/BN.MOVR
   // instructions.
@@ -152,7 +160,8 @@ module otbn_controller
   logic [31:0]              increment_out;
 
   // Loop control, used to start a new loop
-  logic        loop_start;
+  logic        loop_start_req;
+  logic        loop_start_commit;
   logic [11:0] loop_bodysize;
   logic [31:0] loop_iterations;
 
@@ -171,7 +180,7 @@ module otbn_controller
   // required on stores as there is no response to deal with.
   // TODO: Possibility of error response on store? Probably still don't need to stall in that case
   // just ensure incoming store error stops anything else happening.
-  assign mem_stall = lsu_load_req_o;
+  assign mem_stall = lsu_load_req_raw;
 
   assign stall = mem_stall;
 
@@ -236,12 +245,21 @@ module otbn_controller
         // Only ever stall for a single cycle
         // TODO: Any more than one cycle stall cases?
         insn_fetch_req_valid_raw = 1'b1;
-        insn_fetch_req_addr_o    = next_insn_addr;
+
+        if (loop_jump) begin
+          insn_fetch_req_addr_o = loop_jump_addr;
+        end else begin
+          insn_fetch_req_addr_o = next_insn_addr;
+        end
+
         state_raw = OtbnStateRun;
       end
       default: ;
     endcase
   end
+
+  // Anything that moves us or keeps us in the stall state should cause `stall` to be asserted
+  `ASSERT(StallIfNextStateStall, insn_valid_i & (state_d == OtbnStateStall) |-> stall)
 
   // On any error immediately halt and suppress any Imem request.
   assign state_d = err ? OtbnStateHalt : state_raw;
@@ -266,31 +284,33 @@ module otbn_controller
   // Err signal and code generation and prioritisation
   always_comb begin
     err        = 1'b1;
-    err_code_o = ErrCodeNoError;
+    err_bits_o = '0;
 
     if (insn_fetch_err_i) begin
-      err_code_o = ErrCodeFatalImem;
+      err_bits_o.fatal_imem = 1'b1;
     end else if (lsu_rdata_err_i) begin
-      err_code_o = ErrCodeFatalDmem;
+      err_bits_o.fatal_dmem = 1'b1;
     end else if (insn_illegal_i) begin
-      err_code_o = ErrCodeIllegalInsn;
+      err_bits_o.illegal_insn = 1'b1;
     end else if (ispr_err) begin
-      err_code_o = ErrCodeIllegalInsn;
+      err_bits_o.illegal_insn = 1'b1;
     end else if (dmem_addr_err) begin
-      err_code_o = ErrCodeBadDataAddr;
+      err_bits_o.bad_data_addr = 1'b1;
     end else if (loop_err) begin
-      err_code_o = ErrCodeLoop;
+      err_bits_o.loop = 1'b1;
     end else if (rf_base_call_stack_err_i) begin
-      err_code_o = ErrCodeCallStack;
+      err_bits_o.call_stack = 1'b1;
     end else if (imem_addr_err) begin
-      err_code_o = ErrCodeBadInsnAddr;
+      err_bits_o.bad_insn_addr = 1'b1;
     end else begin
       err        = 1'b0;
-      err_code_o = ErrCodeNoError;
     end
   end
 
-  `ASSERT(ErrCodeOnErr, err |-> err_code_o != ErrCodeNoError)
+  // Instructions must not execute if there is an error
+  assign insn_executing = insn_valid_i & ~err;
+
+  `ASSERT(ErrBitSetOnErr, err |-> |err_bits_o)
 
   `ASSERT(ControllerStateValid, state_q inside {OtbnStateHalt, OtbnStateRun, OtbnStateStall})
   // Branch only takes effect in OtbnStateRun so must not go into stall state for branch
@@ -314,22 +334,28 @@ module otbn_controller
 
     .insn_valid_i,
     .insn_addr_i,
-    .next_insn_addr_i  (next_insn_addr),
+    .next_insn_addr_i    (next_insn_addr),
 
-    .loop_start_i      (loop_start),
-    .loop_bodysize_i   (loop_bodysize),
-    .loop_iterations_i (loop_iterations),
+    .loop_start_req_i    (loop_start_req),
+    .loop_start_commit_i (loop_start_commit),
+    .loop_bodysize_i     (loop_bodysize),
+    .loop_iterations_i   (loop_iterations),
 
-    .loop_jump_o       (loop_jump),
-    .loop_jump_addr_o  (loop_jump_addr),
-    .loop_err_o        (loop_err),
+    .loop_jump_o         (loop_jump),
+    .loop_jump_addr_o    (loop_jump_addr),
+    .loop_err_o          (loop_err),
 
-    .branch_taken_i    (branch_taken)
+    .branch_taken_i      (branch_taken),
+    .otbn_stall_i        (stall)
   );
 
-  assign loop_start      = insn_valid_i & insn_dec_shared_i.loop_insn;
-  assign loop_bodysize   = insn_dec_base_i.loop_bodysize;
-  assign loop_iterations = insn_dec_base_i.loop_immediate ? insn_dec_base_i.i : rf_base_rd_data_a_i;
+  // loop_start_req indicates the instruction wishes to start a loop, loop_start_commit confirms it
+  // should occur.
+  assign loop_start_req    = insn_valid_i & insn_dec_shared_i.loop_insn;
+  assign loop_start_commit = insn_executing;
+  assign loop_bodysize     = insn_dec_base_i.loop_bodysize;
+  assign loop_iterations   = insn_dec_base_i.loop_immediate ? insn_dec_base_i.i :
+                                                              rf_base_rd_data_a_i;
 
   // Compute increments which can be optionally applied to indirect register accesses and memory
   // addresses in BN.LID/BN.SID/BN.MOVR instructions.
@@ -373,7 +399,7 @@ module otbn_controller
     rf_base_rd_addr_b_o = insn_dec_base_i.b;
     rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & insn_valid_i;
     rf_base_wr_addr_o   = insn_dec_base_i.d;
-    rf_base_rd_commit_o = !stall;
+    rf_base_rd_commit_o = !stall & ~err;
 
     if (insn_dec_shared_i.subset == InsnSubsetBignum) begin
       unique case (1'b1)
@@ -420,7 +446,8 @@ module otbn_controller
   // Suppress write for loads when controller isn't in stall state as load data for writeback is
   // only available in the stall state.
   assign rf_base_wr_en_o = insn_valid_i & insn_dec_base_i.rf_we &
-    ~(insn_dec_shared_i.ld_insn & (state_q != OtbnStateStall));
+      ~(insn_dec_shared_i.ld_insn & (state_q != OtbnStateStall));
+  assign rf_base_wr_commit_o = insn_executing;
 
   always_comb begin
     unique case (insn_dec_base_i.rf_wdata_sel)
@@ -467,7 +494,7 @@ module otbn_controller
   assign mac_bignum_operation_o.zero_acc          = insn_dec_bignum_i.mac_zero_acc;
   assign mac_bignum_operation_o.shift_acc         = insn_dec_bignum_i.mac_shift_out;
 
-  assign mac_bignum_en_o = insn_dec_bignum_i.mac_en & insn_valid_i;
+  assign mac_bignum_en_o = insn_executing & insn_dec_bignum_i.mac_en;
 
 
   // Bignum Register file write control
@@ -476,8 +503,8 @@ module otbn_controller
     // By default write nothing
     rf_bignum_wr_en_o = 2'b00;
 
-    // Only write if enabled
-    if (insn_valid_i && insn_dec_bignum_i.rf_we) begin
+    // Only write if executing instruction wants a bignum rf write
+    if (insn_executing && insn_dec_bignum_i.rf_we) begin
       if (insn_dec_bignum_i.mac_en && insn_dec_bignum_i.mac_shift_out) begin
         // Special handling for BN.MULQACC.SO, only enable upper or lower half depending on
         // mac_wr_hw_sel_upper.
@@ -527,7 +554,8 @@ module otbn_controller
   // ISPRs (Internal Special Purpose Registers) are the internal registers. CSRs and WSRs are the
   // ISA visible versions of those registers in the base and bignum ISAs respectively.
 
-  assign csr_addr = csr_e'(insn_dec_base_i.i[11:0]);
+  assign csr_addr     = csr_e'(insn_dec_base_i.i[11:0]);
+  assign csr_sub_addr = insn_dec_base_i.i[$clog2(BaseWordsPerWLEN)-1:0];
 
   always_comb begin
     ispr_addr_base      = IsprMod;
@@ -539,9 +567,9 @@ module otbn_controller
         ispr_addr_base      = IsprFlags;
         ispr_word_addr_base = '0;
       end
-      CsrMod0,CsrMod1,CsrMod2,CsrMod3,CsrMod4,CsrMod5,CsrMod6,CsrMod7: begin
+      CsrMod0, CsrMod1, CsrMod2, CsrMod3, CsrMod4, CsrMod5, CsrMod6, CsrMod7: begin
         ispr_addr_base      = IsprMod;
-        ispr_word_addr_base = csr_addr[2:0];
+        ispr_word_addr_base = csr_sub_addr;
       end
       CsrRnd: begin
         ispr_addr_base      = IsprRnd;
@@ -615,38 +643,49 @@ module otbn_controller
   assign wsr_wdata = insn_dec_shared_i.ispr_rs_insn ? ispr_rdata_i | rf_bignum_rd_data_a_i :
                                                       rf_bignum_rd_data_a_i;
 
-  assign ispr_illegal_addr = insn_dec_shared_i.subset == InsnSubsetBase ? csr_illegal_addr : wsr_illegal_addr;
+  assign ispr_illegal_addr = insn_dec_shared_i.subset == InsnSubsetBase ? csr_illegal_addr :
+                                                                          wsr_illegal_addr;
 
   assign ispr_err = ispr_illegal_addr & insn_valid_i & (insn_dec_shared_i.ispr_rd_insn |
                                                         insn_dec_shared_i.ispr_wr_insn |
                                                         insn_dec_shared_i.ispr_rs_insn);
 
   assign ispr_wr_insn = insn_dec_shared_i.ispr_wr_insn | insn_dec_shared_i.ispr_rs_insn;
+  assign ispr_wr_base_insn   = ispr_wr_insn & (insn_dec_shared_i.subset == InsnSubsetBase);
+  assign ispr_wr_bignum_insn = ispr_wr_insn & (insn_dec_shared_i.subset == InsnSubsetBignum);
 
   assign ispr_addr_o         = insn_dec_shared_i.subset == InsnSubsetBase ? ispr_addr_base :
                                                                             ispr_addr_bignum;
   assign ispr_base_wdata_o   = csr_wdata;
-  assign ispr_base_wr_en_o   =
-    {BaseWordsPerWLEN{(insn_dec_shared_i.subset == InsnSubsetBase) & ispr_wr_insn & insn_valid_i}}
-    & ispr_word_sel_base;
+  assign ispr_base_wr_en_o   = {BaseWordsPerWLEN{ispr_wr_base_insn & insn_executing}} &
+                               ispr_word_sel_base;
 
   assign ispr_bignum_wdata_o = wsr_wdata;
-  assign ispr_bignum_wr_en_o = (insn_dec_shared_i.subset == InsnSubsetBignum) & ispr_wr_insn
-    & insn_valid_i;
+  assign ispr_bignum_wr_en_o = ispr_wr_bignum_insn & insn_executing;
 
-  assign lsu_load_req_o   = insn_valid_i & insn_dec_shared_i.ld_insn & (state_q == OtbnStateRun);
-  assign lsu_store_req_o  = insn_valid_i & insn_dec_shared_i.st_insn & (state_q == OtbnStateRun);
+  // lsu_load_req_raw/lsu_store_req_raw indicate an instruction wishes to perform a store or a load.
+  // lsu_load_req_o/lsu_store_req_o factor in whether an instruction is actually executing (it may
+  // be suppressed due an error) and command the load or store to happen when asserted.
+  assign lsu_load_req_raw = insn_valid_i & insn_dec_shared_i.ld_insn & (state_q == OtbnStateRun);
+  assign lsu_load_req_o   = insn_executing & lsu_load_req_raw;
+
+  assign lsu_store_req_raw = insn_valid_i & insn_dec_shared_i.st_insn & (state_q == OtbnStateRun);
+  assign lsu_store_req_o   = insn_executing & lsu_store_req_raw;
+
   assign lsu_req_subset_o = insn_dec_shared_i.subset;
 
   assign lsu_addr_o         = alu_base_operation_result_i[DmemAddrWidth-1:0];
   assign lsu_base_wdata_o   = rf_base_rd_data_b_i;
   assign lsu_bignum_wdata_o = rf_bignum_rd_data_b_i;
 
-  assign dmem_addr_unaligned_bignum = (lsu_req_subset_o == InsnSubsetBignum) & (|lsu_addr_o[$clog2(WLEN/8)-1:0]);
-  assign dmem_addr_unaligned_base   = (lsu_req_subset_o == InsnSubsetBase)   & (|lsu_addr_o[1:0]);
+  assign dmem_addr_unaligned_bignum =
+      (lsu_req_subset_o == InsnSubsetBignum) & (|lsu_addr_o[$clog2(WLEN/8)-1:0]);
+  assign dmem_addr_unaligned_base   =
+      (lsu_req_subset_o == InsnSubsetBase)   & (|lsu_addr_o[1:0]);
   assign dmem_addr_overflow         = |alu_base_operation_result_i[31:DmemAddrWidth];
 
-  assign dmem_addr_err = (lsu_load_req_o | lsu_store_req_o) & (dmem_addr_overflow    |
+  assign dmem_addr_err =
+      insn_valid_i & (lsu_load_req_raw | lsu_store_req_raw) & (dmem_addr_overflow         |
                                                                dmem_addr_unaligned_bignum |
                                                                dmem_addr_unaligned_base);
 

@@ -23,14 +23,16 @@ import argparse
 import datetime
 import logging as log
 import os
+from pathlib import Path
 import shutil
 import shlex
 import subprocess
 import sys
 import textwrap
-from signal import SIGINT, signal
 
 import Deploy
+from Scheduler import Scheduler
+from Timer import Timer
 import utils
 from CfgFactory import make_cfg
 
@@ -182,14 +184,6 @@ def resolve_proj_root(args):
         proj_root_dest = proj_root_src
 
     return proj_root_src, proj_root_dest
-
-
-def sigint_handler(signal_received, frame):
-    # Kill processes and background jobs.
-    log.debug('SIGINT or CTRL-C detected. Exiting gracefully')
-    cfg.kill()
-    log.info('Exit due to SIGINT or CTRL-C ')
-    exit(1)
 
 
 def copy_repo(src, dest, dry_run):
@@ -611,6 +605,11 @@ def main():
     proj_root_src, proj_root = resolve_proj_root(args)
     log.info("[proj_root]: %s", proj_root)
 
+    # Create an empty FUSESOC_IGNORE file in scratch_root. This ensures that
+    # any fusesoc invocation from a job won't search within scratch_root for
+    # core files.
+    (Path(args.scratch_root) / 'FUSESOC_IGNORE').touch()
+
     args.cfg = os.path.abspath(args.cfg)
     if args.remote:
         cfg_path = args.cfg.replace(proj_root_src + "/", "")
@@ -636,17 +635,14 @@ def main():
     Deploy.RunTest.fixed_seed = args.fixed_seed
 
     # Register the common deploy settings.
-    Deploy.Deploy.print_interval = args.print_interval
-    Deploy.Deploy.max_parallel = args.max_parallel
+    Timer.print_interval = args.print_interval
+    Scheduler.max_parallel = args.max_parallel
     Deploy.Deploy.max_odirs = args.max_odirs
 
     # Build infrastructure from hjson file and create the list of items to
     # be deployed.
     global cfg
     cfg = make_cfg(args.cfg, args, proj_root)
-
-    # Handle Ctrl-C exit.
-    signal(SIGINT, sigint_handler)
 
     # List items available for run if --list switch is passed, and exit.
     if args.list is not None:
@@ -675,10 +671,10 @@ def main():
     if args.items != []:
         # Create deploy objects.
         cfg.create_deploy_objects()
-        cfg.deploy_objects()
+        results = cfg.deploy_objects()
 
         # Generate results.
-        cfg.gen_results()
+        cfg.gen_results(results)
 
         # Publish results
         if args.publish:

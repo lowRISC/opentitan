@@ -24,7 +24,7 @@
  *    - Z: Indicates if highest limb of result is zero
  *    - C: Never set
  *
- * @param[in] [w9, w8]: a first operand, max. length 384 bit.
+ * @param[in] [w9, w8]: a, first operand, max. length 384 bit.
  * @param[in] [w11, w10]: b, second operand, max. length 384 bit.
  * @param[in] w31: all-zero.
  * @param[out] [w18, w17, w16]: c, result, max. length 768 bit.
@@ -87,16 +87,20 @@ mul384:
  * This implementation mostly follows the description in the
  * "Handbook of Applied Cryptography" in Algorithm 14.42.
  * Differences:
+ *   - This implementation incorporates a multiplication before the reduction.
+ *     Therefore it expects two operands (a, b) instead of a wider integer x.
  *   - The computation of q2 ignores the MSbs of q1 and u to allow using
  *     a 384x384 bit multiplication. This is compensated later by
  *     individual (conditional) additions.
- *   - R1 is calculated early for better use of registers.
+ *   - The truncations in step 2 of HAC 14.42 in the form of (... mod b^(k+1) )
+ *     are not implemented here and the full register width is used. This
+ *     allows to omit computation of r1 (since r1=x) and step 3 of HAC 14.42
  *
  * Flags: Flags when leaving this subroutine depend on a potentially discarded
  *        value and therefore are not usable after return.
  *
- * @param[in] [w9, w8]: a, first operand, max. length 384 bit.
- * @param[in] [w11, w10]: b, second operand, max. length 384 bit.
+ * @param[in] [w9, w8]: a, first operand, max. length 384 bit, a < m.
+ * @param[in] [w11, w10]: b, second operand, max. length 384 bit, b < m.
  * @param[in] [w13, w12]: m, modulus, max. length 384 bit, 2^384 > m > 2^383.
  * @param[in] [w15, w14]: u, pre-computed Barrett constant (without u[384]/MSb
  *                           of u which is always 1 for the allowed range but
@@ -108,11 +112,6 @@ mul384:
  * Clobbered flag groups: FG0
  */
 barrett384:
-  /* Compute 2^129-1 mask. Could be pre-calculated for the cost of a register.
-     Currently w30 is clobbered later in this subroutine. */
-  bn.subi w30, w31, 1
-  bn.rshi w30, w30, w31 >> 127
-
   /* Compute the integer product of the operands x = a * b
      x = [w18, w17, w16] = a * b = [w9, w8] * [w11, w10]
      => max. length x: 768 bit */
@@ -128,18 +127,15 @@ barrett384:
   bn.sel w24, w14, w31, M
   bn.sel w25, w15, w31, M
 
-  /* Compute r1 = x % 2^385
-     r1 = [w22, w21] = x % 2^385 = x & (2^3851)
-        = ([w9, w8] * [w13,w12]) & [w30, w31]
-     => max length r1: 385 bits */
+  /* save lower limbs of x. [w22, w21] = x[511:0] = [w17,w16] */
   bn.mov w21, w16
-  bn.and w22, w17, w30
+  bn.mov w22, w17
 
   /* Compute q1 = x >> 383
      q1 = [w9, w8] = [w18, w17, w16] >> 383  = [w18, w17] >> 127
      => max length q1: 385 bits */
-  bn.rshi w9, w18, w31 >> 127
-  bn.rshi w8, w17, w18 >> 127
+  bn.rshi w9, w31, w18 >> 127
+  bn.rshi w8, w18, w17 >> 127
 
   /* Compute q2 = q1*u
      Instead of full q2 (which would be up to 770 bits) we ignore the MSb of u
@@ -162,8 +158,8 @@ barrett384:
      after shift.
      q2'' = q2' >> 384 = [w20, w19] = [w18, w17, w16] >> 384
                                     = [w18, w17] >> 128 */
-  bn.rshi w20, w18, w31 >> 128
-  bn.rshi w19, w17, w18 >> 128
+  bn.rshi w20, w31, w18 >> 128
+  bn.rshi w19, w18, w17 >> 128
   /* Add q1. This is unconditional since MSb of u is always 1.
      This cannot overflow due to leading zeros.
      q2''' = q2'' + q1 = [w20, w19] = [w20, w19] + [w8, w9] */
@@ -176,36 +172,26 @@ barrett384:
             = [w20, w19] + [w25, w24] = q2 >> 384 */
   bn.add w19, w19, w24
   bn.addc w20, w20, w25
-  /* finally this gives q3 by shifting the remain bit to the right
+  /* finally this gives q3 by shifting the remaining bit to the right
      q3 = q2 >> 385 = q2'''' >> 1 = [w9, w8] = [w20, w19] >> 1 */
-  bn.rshi w9, w20, w31 >> 1
-  bn.rshi w8, w19, w20 >> 1
+  bn.rshi w9, w31, w20 >> 1
+  bn.rshi w8, w20, w19 >> 1
 
-  /* Compute r2 = q3 * m % 2^385.
-     => max. length r2: 385 bit
-     q3*m = [w18, w17, w16] = [w9, w8] * [w13,w12] */
+  /* Compute r = q3 * m
+     => max. length r: 768 bit
+     r2 = q3*m = [w18, w17, w16] = [w9, w8] * [w13, w12]
+     A 384x384 bit multiplication kernel is used here, hence both q3 and m
+     must not be wider than 384 bit. This is always the case for m. For q3 it
+     is the case if a<m and b<m. */
   bn.mov w10, w12
   bn.mov w11, w13
   jal x1, mul384
-  /* r2 = [w17, w16] = q3*m%2^385 = [w18, w17, w16] & (2^385-1)
-                                  = [w17&(2^129-1), w16] = [w17&w30, w16] */
-  bn.and w17, w17, w30
 
-  /* Compute r = r1 - r2.
-     => max. length r: 385 bit
-     [w22,w21] = [w22,w21] - [w17,w16] */
+  /* Compute r = x-r2 = x-q3*m
+     since 0 <= r < 3*m, we only need to consider the lower limbs of x and r2
+     r[511:0] = [w22, w21] - [w17, w16] */
   bn.sub w21, w21, w16
   bn.subb w22, w22, w17
-
-  /* Reuse old 129-bit mask to get single 1 at bit pos 129
-     2^129 = 2^129-1 +1 = w[30] <= [w30] + 1 */
-  bn.addi w30, w30, 1
-
-  /* Conditionally add 2^385 to r if r is negative.
-     r = [w22, w21] <= (r < 0)?r + 2^385 = [w22, w21] + 2^385
-                                         = [w22 + 2^129, w21] */
-  bn.add w30, w30, w22
-  bn.sel w22, w30, w22, C
 
   /* Barrett algorithm requires subtraction of the modulus at most two times if
      result is too large. */

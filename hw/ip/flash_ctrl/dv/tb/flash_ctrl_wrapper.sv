@@ -21,7 +21,7 @@ module flash_ctrl_wrapper (
   input        flash_power_down_h_i,
 
   // DFT Interface
-  input        flash_bist_enable_i,
+  input        lc_ctrl_pkg::lc_tx_t flash_bist_enable_i,
 
   // OTP interface
   input        otp_ctrl_pkg::flash_otp_key_req_t otp_i,
@@ -44,7 +44,9 @@ module flash_ctrl_wrapper (
   output logic intr_rd_full_o,    // Read fifo is full
   output logic intr_rd_lvl_o,     // Read fifo is full
   output logic intr_op_done_o,    // Requested flash operation (wr/erase) done
-  output logic intr_op_error_o    // Requested flash operation (wr/erase) done
+
+  input  prim_alert_pkg::alert_rx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_tx_o
 );
 
   // define inter-module signals
@@ -61,7 +63,10 @@ module flash_ctrl_wrapper (
     .intr_rd_full_o   (intr_rd_full_o),
     .intr_rd_lvl_o    (intr_rd_lvl_o),
     .intr_op_done_o   (intr_op_done_o),
-    .intr_op_error_o  (intr_op_error_o),
+
+    // Alerts
+    .alert_rx_i,
+    .alert_tx_o,
 
     // Inter-module signals
     .flash_o           (flash_ctrl_flash_req),

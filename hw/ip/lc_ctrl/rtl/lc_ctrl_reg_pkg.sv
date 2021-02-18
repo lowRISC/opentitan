@@ -14,6 +14,9 @@ package lc_ctrl_reg_pkg;
   parameter int NumDeviceIdWords = 8;
   parameter int NumAlerts = 2;
 
+  // Address width within the block
+  parameter int BlockAw = 7;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -21,11 +24,11 @@ package lc_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } lc_programming_failure;
+    } fatal_prog_error;
     struct packed {
       logic        q;
       logic        qe;
-    } lc_state_failure;
+    } fatal_state_error;
   } lc_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -139,28 +142,53 @@ package lc_ctrl_reg_pkg;
   } lc_ctrl_hw2reg_t;
 
   // Register Address
-  parameter logic [6:0] LC_CTRL_ALERT_TEST_OFFSET = 7'h 0;
-  parameter logic [6:0] LC_CTRL_STATUS_OFFSET = 7'h 4;
-  parameter logic [6:0] LC_CTRL_CLAIM_TRANSITION_IF_OFFSET = 7'h 8;
-  parameter logic [6:0] LC_CTRL_TRANSITION_REGWEN_OFFSET = 7'h c;
-  parameter logic [6:0] LC_CTRL_TRANSITION_CMD_OFFSET = 7'h 10;
-  parameter logic [6:0] LC_CTRL_TRANSITION_TOKEN_0_OFFSET = 7'h 14;
-  parameter logic [6:0] LC_CTRL_TRANSITION_TOKEN_1_OFFSET = 7'h 18;
-  parameter logic [6:0] LC_CTRL_TRANSITION_TOKEN_2_OFFSET = 7'h 1c;
-  parameter logic [6:0] LC_CTRL_TRANSITION_TOKEN_3_OFFSET = 7'h 20;
-  parameter logic [6:0] LC_CTRL_TRANSITION_TARGET_OFFSET = 7'h 24;
-  parameter logic [6:0] LC_CTRL_LC_STATE_OFFSET = 7'h 28;
-  parameter logic [6:0] LC_CTRL_LC_TRANSITION_CNT_OFFSET = 7'h 2c;
-  parameter logic [6:0] LC_CTRL_LC_ID_STATE_OFFSET = 7'h 30;
-  parameter logic [6:0] LC_CTRL_DEVICE_ID_0_OFFSET = 7'h 34;
-  parameter logic [6:0] LC_CTRL_DEVICE_ID_1_OFFSET = 7'h 38;
-  parameter logic [6:0] LC_CTRL_DEVICE_ID_2_OFFSET = 7'h 3c;
-  parameter logic [6:0] LC_CTRL_DEVICE_ID_3_OFFSET = 7'h 40;
-  parameter logic [6:0] LC_CTRL_DEVICE_ID_4_OFFSET = 7'h 44;
-  parameter logic [6:0] LC_CTRL_DEVICE_ID_5_OFFSET = 7'h 48;
-  parameter logic [6:0] LC_CTRL_DEVICE_ID_6_OFFSET = 7'h 4c;
-  parameter logic [6:0] LC_CTRL_DEVICE_ID_7_OFFSET = 7'h 50;
+  parameter logic [BlockAw-1:0] LC_CTRL_ALERT_TEST_OFFSET = 7'h 0;
+  parameter logic [BlockAw-1:0] LC_CTRL_STATUS_OFFSET = 7'h 4;
+  parameter logic [BlockAw-1:0] LC_CTRL_CLAIM_TRANSITION_IF_OFFSET = 7'h 8;
+  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_REGWEN_OFFSET = 7'h c;
+  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_CMD_OFFSET = 7'h 10;
+  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_0_OFFSET = 7'h 14;
+  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_1_OFFSET = 7'h 18;
+  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_2_OFFSET = 7'h 1c;
+  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TOKEN_3_OFFSET = 7'h 20;
+  parameter logic [BlockAw-1:0] LC_CTRL_TRANSITION_TARGET_OFFSET = 7'h 24;
+  parameter logic [BlockAw-1:0] LC_CTRL_LC_STATE_OFFSET = 7'h 28;
+  parameter logic [BlockAw-1:0] LC_CTRL_LC_TRANSITION_CNT_OFFSET = 7'h 2c;
+  parameter logic [BlockAw-1:0] LC_CTRL_LC_ID_STATE_OFFSET = 7'h 30;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_0_OFFSET = 7'h 34;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_1_OFFSET = 7'h 38;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_2_OFFSET = 7'h 3c;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_3_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_4_OFFSET = 7'h 44;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_5_OFFSET = 7'h 48;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_6_OFFSET = 7'h 4c;
+  parameter logic [BlockAw-1:0] LC_CTRL_DEVICE_ID_7_OFFSET = 7'h 50;
 
+  // Reset values for hwext registers and their fields
+  parameter logic [1:0] LC_CTRL_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [0:0] LC_CTRL_ALERT_TEST_FATAL_PROG_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] LC_CTRL_ALERT_TEST_FATAL_STATE_ERROR_RESVAL = 1'h 0;
+  parameter logic [8:0] LC_CTRL_STATUS_RESVAL = 9'h 0;
+  parameter logic [7:0] LC_CTRL_CLAIM_TRANSITION_IF_RESVAL = 8'h 0;
+  parameter logic [0:0] LC_CTRL_TRANSITION_REGWEN_RESVAL = 1'h 0;
+  parameter logic [0:0] LC_CTRL_TRANSITION_REGWEN_TRANSITION_REGWEN_RESVAL = 1'h 0;
+  parameter logic [0:0] LC_CTRL_TRANSITION_CMD_RESVAL = 1'h 0;
+  parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_0_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_1_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_2_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_3_RESVAL = 32'h 0;
+  parameter logic [3:0] LC_CTRL_TRANSITION_TARGET_RESVAL = 4'h 0;
+  parameter logic [3:0] LC_CTRL_LC_STATE_RESVAL = 4'h 0;
+  parameter logic [4:0] LC_CTRL_LC_TRANSITION_CNT_RESVAL = 5'h 0;
+  parameter logic [1:0] LC_CTRL_LC_ID_STATE_RESVAL = 2'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_0_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_1_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_2_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_3_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_4_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_5_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_6_RESVAL = 32'h 0;
+  parameter logic [31:0] LC_CTRL_DEVICE_ID_7_RESVAL = 32'h 0;
 
   // Register Index
   typedef enum int {

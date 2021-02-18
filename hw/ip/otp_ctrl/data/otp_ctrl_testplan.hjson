@@ -39,6 +39,7 @@
             - Read out keys from key_manager, flash, SRAM, OTBN
             - Write random values to random addresses within each OTP partition
             - Read out the random selected write addresses, check if the readout values are expected
+            - During read and write operations, check if direct_access_regwen is correctly set by HW
             - Perform a system-level reset and check corresponding CSRs are set correctly
             - Lock all partitions except life_cycle by triggering digest calculations
             - Read back and verify the digest
@@ -49,13 +50,13 @@
       tests: ["otp_ctrl_smoke"]
     }
     {
-      name: all_partitions
+      name: dai_access_partition_walk
       desc: '''
-            Based on the smoke test, this test ensures every address in each partition can be accessed
-            successfully within its access policy.
+            Similar to UVM's memory walk test, this test ensures every address in each partition
+            can be accessed successfully via DAI and TLUL interfacs according to its access policy.
             '''
       milestone: V2
-      tests: []
+      tests: ["otp_ctrl_partition_walk"]
     }
     {
       name: partition_check_failure
@@ -71,6 +72,20 @@
       tests: []
     }
     {
+      name: regwen_during_otp_init
+      desc: '''
+            DIRECT_ACCESS_REGWEN is RO reg and it gates bunch of write access of other registers,
+            which isn't tested in common CSR tests. HW will set this register to 0 when OTP_CTRL's
+            DAI interface is busy.
+
+            Stimulus and checks:
+            - Random read DIRECT_ACCESS_REGWEN and ensure the value is set to 0 during OTP init.
+            - Test accessing registers gated by DIRECT_ACCESS_REGWEN is ignored during OTP init.
+            '''
+      milestone: V2
+      tests: ["otp_ctrl_regwen"]
+    }
+    {
       name: partition_lock
       desc: '''
             This test will cover two methods of locking read and write: digest calculation and CSR
@@ -83,11 +98,12 @@
     {
       name: interface_key_check
       desc: '''
-            OTP_CTRL can output keys to key_manager, flash, sram, and OTBN. This test will modify
-            inputs and OTP storage, the check if generated keys are correct.
+            OTP_CTRL will generate keys to flash, sram, and OTBN upon their requests.
+            This test will randomly issue key requests from the above modules either before or
+            after partitions are locked, and check if generated keys are correct.
             '''
       milestone: V2
-      tests: []
+      tests: ["otp_ctrl_rand_key_rsp"]
     }
     {
       name: lc_interactions
@@ -129,7 +145,7 @@
             - If error is unrecoverable, ensure that OTP entered terminal state
             '''
       milestone: V2
-      tests: []
+      tests: ["otp_ctrl_macro_errs"]
     }
     {
       name: otp_ctrl_errors

@@ -7,10 +7,10 @@
 package alert_handler_reg_pkg;
 
   // Param list
-  parameter int NAlerts = 20;
+  parameter int NAlerts = 24;
   parameter int EscCntDw = 32;
   parameter int AccuCntDw = 16;
-  parameter logic [NAlerts-1:0] AsyncOn = 20'b01100001100000001111;
+  parameter logic [NAlerts-1:0] AsyncOn = 24'b111011100001100000001111;
   parameter int N_CLASSES = 4;
   parameter int N_ESC_SEV = 4;
   parameter int N_PHASES = 4;
@@ -18,6 +18,9 @@ package alert_handler_reg_pkg;
   parameter int PING_CNT_DW = 24;
   parameter int PHASE_DW = 2;
   parameter int CLASS_DW = 2;
+
+  // Address width within the block
+  parameter int BlockAw = 10;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -73,7 +76,7 @@ package alert_handler_reg_pkg;
 
   typedef struct packed {
     logic        q;
-  } alert_handler_reg2hw_regen_reg_t;
+  } alert_handler_reg2hw_regwen_reg_t;
 
   typedef struct packed {
     logic [23:0] q;
@@ -384,7 +387,7 @@ package alert_handler_reg_pkg;
   typedef struct packed {
     logic        d;
     logic        de;
-  } alert_handler_hw2reg_classa_clren_reg_t;
+  } alert_handler_hw2reg_classa_regwen_reg_t;
 
   typedef struct packed {
     logic [15:0] d;
@@ -401,7 +404,7 @@ package alert_handler_reg_pkg;
   typedef struct packed {
     logic        d;
     logic        de;
-  } alert_handler_hw2reg_classb_clren_reg_t;
+  } alert_handler_hw2reg_classb_regwen_reg_t;
 
   typedef struct packed {
     logic [15:0] d;
@@ -418,7 +421,7 @@ package alert_handler_reg_pkg;
   typedef struct packed {
     logic        d;
     logic        de;
-  } alert_handler_hw2reg_classc_clren_reg_t;
+  } alert_handler_hw2reg_classc_regwen_reg_t;
 
   typedef struct packed {
     logic [15:0] d;
@@ -435,7 +438,7 @@ package alert_handler_reg_pkg;
   typedef struct packed {
     logic        d;
     logic        de;
-  } alert_handler_hw2reg_classd_clren_reg_t;
+  } alert_handler_hw2reg_classd_regwen_reg_t;
 
   typedef struct packed {
     logic [15:0] d;
@@ -454,14 +457,14 @@ package alert_handler_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    alert_handler_reg2hw_intr_state_reg_t intr_state; // [904:901]
-    alert_handler_reg2hw_intr_enable_reg_t intr_enable; // [900:897]
-    alert_handler_reg2hw_intr_test_reg_t intr_test; // [896:889]
-    alert_handler_reg2hw_regen_reg_t regen; // [888:888]
-    alert_handler_reg2hw_ping_timeout_cyc_reg_t ping_timeout_cyc; // [887:864]
-    alert_handler_reg2hw_alert_en_mreg_t [19:0] alert_en; // [863:844]
-    alert_handler_reg2hw_alert_class_mreg_t [19:0] alert_class; // [843:804]
-    alert_handler_reg2hw_alert_cause_mreg_t [19:0] alert_cause; // [803:784]
+    alert_handler_reg2hw_intr_state_reg_t intr_state; // [920:917]
+    alert_handler_reg2hw_intr_enable_reg_t intr_enable; // [916:913]
+    alert_handler_reg2hw_intr_test_reg_t intr_test; // [912:905]
+    alert_handler_reg2hw_regwen_reg_t regwen; // [904:904]
+    alert_handler_reg2hw_ping_timeout_cyc_reg_t ping_timeout_cyc; // [903:880]
+    alert_handler_reg2hw_alert_en_mreg_t [23:0] alert_en; // [879:856]
+    alert_handler_reg2hw_alert_class_mreg_t [23:0] alert_class; // [855:808]
+    alert_handler_reg2hw_alert_cause_mreg_t [23:0] alert_cause; // [807:784]
     alert_handler_reg2hw_loc_alert_en_mreg_t [3:0] loc_alert_en; // [783:780]
     alert_handler_reg2hw_loc_alert_class_mreg_t [3:0] loc_alert_class; // [779:772]
     alert_handler_reg2hw_loc_alert_cause_mreg_t [3:0] loc_alert_cause; // [771:768]
@@ -503,96 +506,114 @@ package alert_handler_reg_pkg;
   // Internal design logic to register //
   ///////////////////////////////////////
   typedef struct packed {
-    alert_handler_hw2reg_intr_state_reg_t intr_state; // [267:260]
-    alert_handler_hw2reg_alert_cause_mreg_t [19:0] alert_cause; // [259:220]
+    alert_handler_hw2reg_intr_state_reg_t intr_state; // [275:268]
+    alert_handler_hw2reg_alert_cause_mreg_t [23:0] alert_cause; // [267:220]
     alert_handler_hw2reg_loc_alert_cause_mreg_t [3:0] loc_alert_cause; // [219:212]
-    alert_handler_hw2reg_classa_clren_reg_t classa_clren; // [211:210]
+    alert_handler_hw2reg_classa_regwen_reg_t classa_regwen; // [211:210]
     alert_handler_hw2reg_classa_accum_cnt_reg_t classa_accum_cnt; // [209:194]
     alert_handler_hw2reg_classa_esc_cnt_reg_t classa_esc_cnt; // [193:162]
     alert_handler_hw2reg_classa_state_reg_t classa_state; // [161:159]
-    alert_handler_hw2reg_classb_clren_reg_t classb_clren; // [158:157]
+    alert_handler_hw2reg_classb_regwen_reg_t classb_regwen; // [158:157]
     alert_handler_hw2reg_classb_accum_cnt_reg_t classb_accum_cnt; // [156:141]
     alert_handler_hw2reg_classb_esc_cnt_reg_t classb_esc_cnt; // [140:109]
     alert_handler_hw2reg_classb_state_reg_t classb_state; // [108:106]
-    alert_handler_hw2reg_classc_clren_reg_t classc_clren; // [105:104]
+    alert_handler_hw2reg_classc_regwen_reg_t classc_regwen; // [105:104]
     alert_handler_hw2reg_classc_accum_cnt_reg_t classc_accum_cnt; // [103:88]
     alert_handler_hw2reg_classc_esc_cnt_reg_t classc_esc_cnt; // [87:56]
     alert_handler_hw2reg_classc_state_reg_t classc_state; // [55:53]
-    alert_handler_hw2reg_classd_clren_reg_t classd_clren; // [52:51]
+    alert_handler_hw2reg_classd_regwen_reg_t classd_regwen; // [52:51]
     alert_handler_hw2reg_classd_accum_cnt_reg_t classd_accum_cnt; // [50:35]
     alert_handler_hw2reg_classd_esc_cnt_reg_t classd_esc_cnt; // [34:3]
     alert_handler_hw2reg_classd_state_reg_t classd_state; // [2:0]
   } alert_handler_hw2reg_t;
 
   // Register Address
-  parameter logic [9:0] ALERT_HANDLER_INTR_STATE_OFFSET = 10'h 0;
-  parameter logic [9:0] ALERT_HANDLER_INTR_ENABLE_OFFSET = 10'h 4;
-  parameter logic [9:0] ALERT_HANDLER_INTR_TEST_OFFSET = 10'h 8;
-  parameter logic [9:0] ALERT_HANDLER_REGEN_OFFSET = 10'h c;
-  parameter logic [9:0] ALERT_HANDLER_PING_TIMEOUT_CYC_OFFSET = 10'h 10;
-  parameter logic [9:0] ALERT_HANDLER_ALERT_EN_OFFSET = 10'h 20;
-  parameter logic [9:0] ALERT_HANDLER_ALERT_CLASS_0_OFFSET = 10'h 120;
-  parameter logic [9:0] ALERT_HANDLER_ALERT_CLASS_1_OFFSET = 10'h 124;
-  parameter logic [9:0] ALERT_HANDLER_ALERT_CAUSE_OFFSET = 10'h 220;
-  parameter logic [9:0] ALERT_HANDLER_LOC_ALERT_EN_OFFSET = 10'h 320;
-  parameter logic [9:0] ALERT_HANDLER_LOC_ALERT_CLASS_OFFSET = 10'h 324;
-  parameter logic [9:0] ALERT_HANDLER_LOC_ALERT_CAUSE_OFFSET = 10'h 328;
-  parameter logic [9:0] ALERT_HANDLER_CLASSA_CTRL_OFFSET = 10'h 32c;
-  parameter logic [9:0] ALERT_HANDLER_CLASSA_CLREN_OFFSET = 10'h 330;
-  parameter logic [9:0] ALERT_HANDLER_CLASSA_CLR_OFFSET = 10'h 334;
-  parameter logic [9:0] ALERT_HANDLER_CLASSA_ACCUM_CNT_OFFSET = 10'h 338;
-  parameter logic [9:0] ALERT_HANDLER_CLASSA_ACCUM_THRESH_OFFSET = 10'h 33c;
-  parameter logic [9:0] ALERT_HANDLER_CLASSA_TIMEOUT_CYC_OFFSET = 10'h 340;
-  parameter logic [9:0] ALERT_HANDLER_CLASSA_PHASE0_CYC_OFFSET = 10'h 344;
-  parameter logic [9:0] ALERT_HANDLER_CLASSA_PHASE1_CYC_OFFSET = 10'h 348;
-  parameter logic [9:0] ALERT_HANDLER_CLASSA_PHASE2_CYC_OFFSET = 10'h 34c;
-  parameter logic [9:0] ALERT_HANDLER_CLASSA_PHASE3_CYC_OFFSET = 10'h 350;
-  parameter logic [9:0] ALERT_HANDLER_CLASSA_ESC_CNT_OFFSET = 10'h 354;
-  parameter logic [9:0] ALERT_HANDLER_CLASSA_STATE_OFFSET = 10'h 358;
-  parameter logic [9:0] ALERT_HANDLER_CLASSB_CTRL_OFFSET = 10'h 35c;
-  parameter logic [9:0] ALERT_HANDLER_CLASSB_CLREN_OFFSET = 10'h 360;
-  parameter logic [9:0] ALERT_HANDLER_CLASSB_CLR_OFFSET = 10'h 364;
-  parameter logic [9:0] ALERT_HANDLER_CLASSB_ACCUM_CNT_OFFSET = 10'h 368;
-  parameter logic [9:0] ALERT_HANDLER_CLASSB_ACCUM_THRESH_OFFSET = 10'h 36c;
-  parameter logic [9:0] ALERT_HANDLER_CLASSB_TIMEOUT_CYC_OFFSET = 10'h 370;
-  parameter logic [9:0] ALERT_HANDLER_CLASSB_PHASE0_CYC_OFFSET = 10'h 374;
-  parameter logic [9:0] ALERT_HANDLER_CLASSB_PHASE1_CYC_OFFSET = 10'h 378;
-  parameter logic [9:0] ALERT_HANDLER_CLASSB_PHASE2_CYC_OFFSET = 10'h 37c;
-  parameter logic [9:0] ALERT_HANDLER_CLASSB_PHASE3_CYC_OFFSET = 10'h 380;
-  parameter logic [9:0] ALERT_HANDLER_CLASSB_ESC_CNT_OFFSET = 10'h 384;
-  parameter logic [9:0] ALERT_HANDLER_CLASSB_STATE_OFFSET = 10'h 388;
-  parameter logic [9:0] ALERT_HANDLER_CLASSC_CTRL_OFFSET = 10'h 38c;
-  parameter logic [9:0] ALERT_HANDLER_CLASSC_CLREN_OFFSET = 10'h 390;
-  parameter logic [9:0] ALERT_HANDLER_CLASSC_CLR_OFFSET = 10'h 394;
-  parameter logic [9:0] ALERT_HANDLER_CLASSC_ACCUM_CNT_OFFSET = 10'h 398;
-  parameter logic [9:0] ALERT_HANDLER_CLASSC_ACCUM_THRESH_OFFSET = 10'h 39c;
-  parameter logic [9:0] ALERT_HANDLER_CLASSC_TIMEOUT_CYC_OFFSET = 10'h 3a0;
-  parameter logic [9:0] ALERT_HANDLER_CLASSC_PHASE0_CYC_OFFSET = 10'h 3a4;
-  parameter logic [9:0] ALERT_HANDLER_CLASSC_PHASE1_CYC_OFFSET = 10'h 3a8;
-  parameter logic [9:0] ALERT_HANDLER_CLASSC_PHASE2_CYC_OFFSET = 10'h 3ac;
-  parameter logic [9:0] ALERT_HANDLER_CLASSC_PHASE3_CYC_OFFSET = 10'h 3b0;
-  parameter logic [9:0] ALERT_HANDLER_CLASSC_ESC_CNT_OFFSET = 10'h 3b4;
-  parameter logic [9:0] ALERT_HANDLER_CLASSC_STATE_OFFSET = 10'h 3b8;
-  parameter logic [9:0] ALERT_HANDLER_CLASSD_CTRL_OFFSET = 10'h 3bc;
-  parameter logic [9:0] ALERT_HANDLER_CLASSD_CLREN_OFFSET = 10'h 3c0;
-  parameter logic [9:0] ALERT_HANDLER_CLASSD_CLR_OFFSET = 10'h 3c4;
-  parameter logic [9:0] ALERT_HANDLER_CLASSD_ACCUM_CNT_OFFSET = 10'h 3c8;
-  parameter logic [9:0] ALERT_HANDLER_CLASSD_ACCUM_THRESH_OFFSET = 10'h 3cc;
-  parameter logic [9:0] ALERT_HANDLER_CLASSD_TIMEOUT_CYC_OFFSET = 10'h 3d0;
-  parameter logic [9:0] ALERT_HANDLER_CLASSD_PHASE0_CYC_OFFSET = 10'h 3d4;
-  parameter logic [9:0] ALERT_HANDLER_CLASSD_PHASE1_CYC_OFFSET = 10'h 3d8;
-  parameter logic [9:0] ALERT_HANDLER_CLASSD_PHASE2_CYC_OFFSET = 10'h 3dc;
-  parameter logic [9:0] ALERT_HANDLER_CLASSD_PHASE3_CYC_OFFSET = 10'h 3e0;
-  parameter logic [9:0] ALERT_HANDLER_CLASSD_ESC_CNT_OFFSET = 10'h 3e4;
-  parameter logic [9:0] ALERT_HANDLER_CLASSD_STATE_OFFSET = 10'h 3e8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_INTR_STATE_OFFSET = 10'h 0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_INTR_ENABLE_OFFSET = 10'h 4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_INTR_TEST_OFFSET = 10'h 8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_REGWEN_OFFSET = 10'h c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_PING_TIMEOUT_CYC_OFFSET = 10'h 10;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_EN_OFFSET = 10'h 20;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_0_OFFSET = 10'h 120;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CLASS_1_OFFSET = 10'h 124;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_ALERT_CAUSE_OFFSET = 10'h 220;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_EN_OFFSET = 10'h 320;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CLASS_OFFSET = 10'h 324;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_LOC_ALERT_CAUSE_OFFSET = 10'h 328;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_CTRL_OFFSET = 10'h 32c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_REGWEN_OFFSET = 10'h 330;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_CLR_OFFSET = 10'h 334;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_ACCUM_CNT_OFFSET = 10'h 338;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_ACCUM_THRESH_OFFSET = 10'h 33c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_TIMEOUT_CYC_OFFSET = 10'h 340;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE0_CYC_OFFSET = 10'h 344;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE1_CYC_OFFSET = 10'h 348;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE2_CYC_OFFSET = 10'h 34c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_PHASE3_CYC_OFFSET = 10'h 350;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_ESC_CNT_OFFSET = 10'h 354;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSA_STATE_OFFSET = 10'h 358;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CTRL_OFFSET = 10'h 35c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_REGWEN_OFFSET = 10'h 360;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_CLR_OFFSET = 10'h 364;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_ACCUM_CNT_OFFSET = 10'h 368;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_ACCUM_THRESH_OFFSET = 10'h 36c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_TIMEOUT_CYC_OFFSET = 10'h 370;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE0_CYC_OFFSET = 10'h 374;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE1_CYC_OFFSET = 10'h 378;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE2_CYC_OFFSET = 10'h 37c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_PHASE3_CYC_OFFSET = 10'h 380;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_ESC_CNT_OFFSET = 10'h 384;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSB_STATE_OFFSET = 10'h 388;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CTRL_OFFSET = 10'h 38c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_REGWEN_OFFSET = 10'h 390;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_CLR_OFFSET = 10'h 394;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_ACCUM_CNT_OFFSET = 10'h 398;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_ACCUM_THRESH_OFFSET = 10'h 39c;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_TIMEOUT_CYC_OFFSET = 10'h 3a0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE0_CYC_OFFSET = 10'h 3a4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE1_CYC_OFFSET = 10'h 3a8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE2_CYC_OFFSET = 10'h 3ac;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_PHASE3_CYC_OFFSET = 10'h 3b0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_ESC_CNT_OFFSET = 10'h 3b4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSC_STATE_OFFSET = 10'h 3b8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CTRL_OFFSET = 10'h 3bc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_REGWEN_OFFSET = 10'h 3c0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_CLR_OFFSET = 10'h 3c4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ACCUM_CNT_OFFSET = 10'h 3c8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ACCUM_THRESH_OFFSET = 10'h 3cc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_TIMEOUT_CYC_OFFSET = 10'h 3d0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE0_CYC_OFFSET = 10'h 3d4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE1_CYC_OFFSET = 10'h 3d8;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE2_CYC_OFFSET = 10'h 3dc;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_PHASE3_CYC_OFFSET = 10'h 3e0;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_ESC_CNT_OFFSET = 10'h 3e4;
+  parameter logic [BlockAw-1:0] ALERT_HANDLER_CLASSD_STATE_OFFSET = 10'h 3e8;
 
+  // Reset values for hwext registers and their fields
+  parameter logic [3:0] ALERT_HANDLER_INTR_TEST_RESVAL = 4'h 0;
+  parameter logic [0:0] ALERT_HANDLER_INTR_TEST_CLASSA_RESVAL = 1'h 0;
+  parameter logic [0:0] ALERT_HANDLER_INTR_TEST_CLASSB_RESVAL = 1'h 0;
+  parameter logic [0:0] ALERT_HANDLER_INTR_TEST_CLASSC_RESVAL = 1'h 0;
+  parameter logic [0:0] ALERT_HANDLER_INTR_TEST_CLASSD_RESVAL = 1'h 0;
+  parameter logic [15:0] ALERT_HANDLER_CLASSA_ACCUM_CNT_RESVAL = 16'h 0;
+  parameter logic [31:0] ALERT_HANDLER_CLASSA_ESC_CNT_RESVAL = 32'h 0;
+  parameter logic [2:0] ALERT_HANDLER_CLASSA_STATE_RESVAL = 3'h 0;
+  parameter logic [15:0] ALERT_HANDLER_CLASSB_ACCUM_CNT_RESVAL = 16'h 0;
+  parameter logic [31:0] ALERT_HANDLER_CLASSB_ESC_CNT_RESVAL = 32'h 0;
+  parameter logic [2:0] ALERT_HANDLER_CLASSB_STATE_RESVAL = 3'h 0;
+  parameter logic [15:0] ALERT_HANDLER_CLASSC_ACCUM_CNT_RESVAL = 16'h 0;
+  parameter logic [31:0] ALERT_HANDLER_CLASSC_ESC_CNT_RESVAL = 32'h 0;
+  parameter logic [2:0] ALERT_HANDLER_CLASSC_STATE_RESVAL = 3'h 0;
+  parameter logic [15:0] ALERT_HANDLER_CLASSD_ACCUM_CNT_RESVAL = 16'h 0;
+  parameter logic [31:0] ALERT_HANDLER_CLASSD_ESC_CNT_RESVAL = 32'h 0;
+  parameter logic [2:0] ALERT_HANDLER_CLASSD_STATE_RESVAL = 3'h 0;
 
   // Register Index
   typedef enum int {
     ALERT_HANDLER_INTR_STATE,
     ALERT_HANDLER_INTR_ENABLE,
     ALERT_HANDLER_INTR_TEST,
-    ALERT_HANDLER_REGEN,
+    ALERT_HANDLER_REGWEN,
     ALERT_HANDLER_PING_TIMEOUT_CYC,
     ALERT_HANDLER_ALERT_EN,
     ALERT_HANDLER_ALERT_CLASS_0,
@@ -602,7 +623,7 @@ package alert_handler_reg_pkg;
     ALERT_HANDLER_LOC_ALERT_CLASS,
     ALERT_HANDLER_LOC_ALERT_CAUSE,
     ALERT_HANDLER_CLASSA_CTRL,
-    ALERT_HANDLER_CLASSA_CLREN,
+    ALERT_HANDLER_CLASSA_REGWEN,
     ALERT_HANDLER_CLASSA_CLR,
     ALERT_HANDLER_CLASSA_ACCUM_CNT,
     ALERT_HANDLER_CLASSA_ACCUM_THRESH,
@@ -614,7 +635,7 @@ package alert_handler_reg_pkg;
     ALERT_HANDLER_CLASSA_ESC_CNT,
     ALERT_HANDLER_CLASSA_STATE,
     ALERT_HANDLER_CLASSB_CTRL,
-    ALERT_HANDLER_CLASSB_CLREN,
+    ALERT_HANDLER_CLASSB_REGWEN,
     ALERT_HANDLER_CLASSB_CLR,
     ALERT_HANDLER_CLASSB_ACCUM_CNT,
     ALERT_HANDLER_CLASSB_ACCUM_THRESH,
@@ -626,7 +647,7 @@ package alert_handler_reg_pkg;
     ALERT_HANDLER_CLASSB_ESC_CNT,
     ALERT_HANDLER_CLASSB_STATE,
     ALERT_HANDLER_CLASSC_CTRL,
-    ALERT_HANDLER_CLASSC_CLREN,
+    ALERT_HANDLER_CLASSC_REGWEN,
     ALERT_HANDLER_CLASSC_CLR,
     ALERT_HANDLER_CLASSC_ACCUM_CNT,
     ALERT_HANDLER_CLASSC_ACCUM_THRESH,
@@ -638,7 +659,7 @@ package alert_handler_reg_pkg;
     ALERT_HANDLER_CLASSC_ESC_CNT,
     ALERT_HANDLER_CLASSC_STATE,
     ALERT_HANDLER_CLASSD_CTRL,
-    ALERT_HANDLER_CLASSD_CLREN,
+    ALERT_HANDLER_CLASSD_REGWEN,
     ALERT_HANDLER_CLASSD_CLR,
     ALERT_HANDLER_CLASSD_ACCUM_CNT,
     ALERT_HANDLER_CLASSD_ACCUM_THRESH,
@@ -656,17 +677,17 @@ package alert_handler_reg_pkg;
     4'b 0001, // index[ 0] ALERT_HANDLER_INTR_STATE
     4'b 0001, // index[ 1] ALERT_HANDLER_INTR_ENABLE
     4'b 0001, // index[ 2] ALERT_HANDLER_INTR_TEST
-    4'b 0001, // index[ 3] ALERT_HANDLER_REGEN
+    4'b 0001, // index[ 3] ALERT_HANDLER_REGWEN
     4'b 0111, // index[ 4] ALERT_HANDLER_PING_TIMEOUT_CYC
     4'b 0111, // index[ 5] ALERT_HANDLER_ALERT_EN
     4'b 1111, // index[ 6] ALERT_HANDLER_ALERT_CLASS_0
-    4'b 0001, // index[ 7] ALERT_HANDLER_ALERT_CLASS_1
+    4'b 0011, // index[ 7] ALERT_HANDLER_ALERT_CLASS_1
     4'b 0111, // index[ 8] ALERT_HANDLER_ALERT_CAUSE
     4'b 0001, // index[ 9] ALERT_HANDLER_LOC_ALERT_EN
     4'b 0001, // index[10] ALERT_HANDLER_LOC_ALERT_CLASS
     4'b 0001, // index[11] ALERT_HANDLER_LOC_ALERT_CAUSE
     4'b 0011, // index[12] ALERT_HANDLER_CLASSA_CTRL
-    4'b 0001, // index[13] ALERT_HANDLER_CLASSA_CLREN
+    4'b 0001, // index[13] ALERT_HANDLER_CLASSA_REGWEN
     4'b 0001, // index[14] ALERT_HANDLER_CLASSA_CLR
     4'b 0011, // index[15] ALERT_HANDLER_CLASSA_ACCUM_CNT
     4'b 0011, // index[16] ALERT_HANDLER_CLASSA_ACCUM_THRESH
@@ -678,7 +699,7 @@ package alert_handler_reg_pkg;
     4'b 1111, // index[22] ALERT_HANDLER_CLASSA_ESC_CNT
     4'b 0001, // index[23] ALERT_HANDLER_CLASSA_STATE
     4'b 0011, // index[24] ALERT_HANDLER_CLASSB_CTRL
-    4'b 0001, // index[25] ALERT_HANDLER_CLASSB_CLREN
+    4'b 0001, // index[25] ALERT_HANDLER_CLASSB_REGWEN
     4'b 0001, // index[26] ALERT_HANDLER_CLASSB_CLR
     4'b 0011, // index[27] ALERT_HANDLER_CLASSB_ACCUM_CNT
     4'b 0011, // index[28] ALERT_HANDLER_CLASSB_ACCUM_THRESH
@@ -690,7 +711,7 @@ package alert_handler_reg_pkg;
     4'b 1111, // index[34] ALERT_HANDLER_CLASSB_ESC_CNT
     4'b 0001, // index[35] ALERT_HANDLER_CLASSB_STATE
     4'b 0011, // index[36] ALERT_HANDLER_CLASSC_CTRL
-    4'b 0001, // index[37] ALERT_HANDLER_CLASSC_CLREN
+    4'b 0001, // index[37] ALERT_HANDLER_CLASSC_REGWEN
     4'b 0001, // index[38] ALERT_HANDLER_CLASSC_CLR
     4'b 0011, // index[39] ALERT_HANDLER_CLASSC_ACCUM_CNT
     4'b 0011, // index[40] ALERT_HANDLER_CLASSC_ACCUM_THRESH
@@ -702,7 +723,7 @@ package alert_handler_reg_pkg;
     4'b 1111, // index[46] ALERT_HANDLER_CLASSC_ESC_CNT
     4'b 0001, // index[47] ALERT_HANDLER_CLASSC_STATE
     4'b 0011, // index[48] ALERT_HANDLER_CLASSD_CTRL
-    4'b 0001, // index[49] ALERT_HANDLER_CLASSD_CLREN
+    4'b 0001, // index[49] ALERT_HANDLER_CLASSD_REGWEN
     4'b 0001, // index[50] ALERT_HANDLER_CLASSD_CLR
     4'b 0011, // index[51] ALERT_HANDLER_CLASSD_ACCUM_CNT
     4'b 0011, // index[52] ALERT_HANDLER_CLASSD_ACCUM_THRESH

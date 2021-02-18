@@ -546,13 +546,13 @@ def xbar_cross_node(node_name, device_xbar, xbars, visited=[]):
     return result
 
 
-# Check if the export field already exists
-# If yes, return it
-# If no, set a default and return that
-def check_clk_rst_export(module):
-    if 'clock_reset_export' not in module:
-        module['clock_reset_export'] = []
-    return module['clock_reset_export']
+# find the first instance name of a given type
+def _find_module_name(modules, module_type):
+    for m in modules:
+        if m['type'] == module_type:
+            return m['name']
+
+    return None
 
 
 def amend_clocks(top: OrderedDict):
@@ -561,6 +561,7 @@ def amend_clocks(top: OrderedDict):
     """
     clks_attr = top['clocks']
     clk_paths = clks_attr['hier_paths']
+    clkmgr_name = _find_module_name(top['module'], 'clkmgr')
     groups_in_top = [x["name"].lower() for x in clks_attr['groups']]
     exported_clks = OrderedDict()
     trans_eps = []
@@ -587,7 +588,7 @@ def amend_clocks(top: OrderedDict):
         clock_connections = OrderedDict()
 
         # Ensure each module has a default case
-        export_if = check_clk_rst_export(ep)
+        export_if = ep.get('clock_reset_export', [])
 
         # if no clock group assigned, default is unique
         ep['clock_group'] = 'secure' if 'clock_group' not in ep else ep[
@@ -663,26 +664,30 @@ def amend_clocks(top: OrderedDict):
 
     # add entry to inter_module automatically
     for intf in top['exported_clks']:
-        top['inter_module']['external']['clkmgr.clocks_{}'.format(
-            intf)] = "clks_{}".format(intf)
+        top['inter_module']['external']['{}.clocks_{}'.format(
+            clkmgr_name, intf)] = "clks_{}".format(intf)
 
     # add to intermodule connections
     for ep in trans_eps:
         entry = ep + ".idle"
-        top['inter_module']['connect']['clkmgr.idle'].append(entry)
+        top['inter_module']['connect']['{}.idle'.format(clkmgr_name)].append(entry)
 
 
 def amend_resets(top):
     """Generate exported reset structure and automatically connect to
        intermodule.
     """
+
+    rstmgr = [m for m in top['module'] if m['type'] == 'rstmgr']
+    rstmgr_name = _find_module_name(top['module'], 'rstmgr')
+
     # Generate exported reset list
     exported_rsts = OrderedDict()
     for module in top["module"]:
 
         # This code is here to ensure if amend_clocks/resets switched order
         # everything would still work
-        export_if = check_clk_rst_export(module)
+        export_if = module.get('clock_reset_export', [])
 
         # There may be multiple export interfaces
         for intf in export_if:
@@ -699,8 +704,8 @@ def amend_resets(top):
 
     # add entry to inter_module automatically
     for intf in top['exported_rsts']:
-        top['inter_module']['external']['rstmgr.resets_{}'.format(
-            intf)] = "rsts_{}".format(intf)
+        top['inter_module']['external']['{}.resets_{}'.format(
+            rstmgr_name,intf)] = "rsts_{}".format(intf)
     """Discover the full path and selection to each reset connection.
        This is done by modifying the reset connection of each end point.
     """
@@ -781,6 +786,8 @@ def amend_alert(top):
 
 def amend_wkup(topcfg: OrderedDict):
 
+    pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
+
     if "wakeups" not in topcfg or topcfg["wakeups"] == "":
         topcfg["wakeups"] = []
 
@@ -798,15 +805,16 @@ def amend_wkup(topcfg: OrderedDict):
         "{}.{}".format(s["module"].lower(), s["name"].lower())
         for s in topcfg["wakeups"]
     ]
-    # TBD: What's the best way to not hardcode this signal below?
-    #      We could make this a top.hjson variable and validate it against pwrmgr hjson
-    topcfg["inter_module"]["connect"]["pwrmgr.wakeups"] = signal_names
+
+    topcfg["inter_module"]["connect"]["{}.wakeups".format(pwrmgr_name)] = signal_names
     log.info("Intermodule signals: {}".format(
         topcfg["inter_module"]["connect"]))
 
 
 # Handle reset requests from modules
 def amend_reset_request(topcfg: OrderedDict):
+
+    pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
 
     if "reset_requests" not in topcfg or topcfg["reset_requests"] == "":
         topcfg["reset_requests"] = []
@@ -825,9 +833,8 @@ def amend_reset_request(topcfg: OrderedDict):
         "{}.{}".format(s["module"].lower(), s["name"].lower())
         for s in topcfg["reset_requests"]
     ]
-    # TBD: What's the best way to not hardcode this signal below?
-    #      We could make this a top.hjson variable and validate it against pwrmgr hjson
-    topcfg["inter_module"]["connect"]["pwrmgr.rstreqs"] = signal_names
+
+    topcfg["inter_module"]["connect"]["{}.rstreqs".format(pwrmgr_name)] = signal_names
     log.info("Intermodule signals: {}".format(
         topcfg["inter_module"]["connect"]))
 
@@ -910,8 +917,6 @@ def amend_pinmux_io(top):
         pinmux["inputs"] = []
     if "outputs" not in pinmux:
         pinmux["outputs"] = []
-    if "inouts" not in pinmux:
-        pinmux["inouts"] = []
 
     for e in pinmux["mio_modules"]:
         tokens = e.split('.')
@@ -930,7 +935,22 @@ def amend_pinmux_io(top):
                     map(
                         partial(lib.add_module_prefix_to_signal,
                                 module=m["name"].lower()),
+                        m["available_inout_list"])))
+            pinmux["inputs"] += list(
+                filter(
+                    lambda x: x["name"] not in dio_names,
+                    map(
+                        partial(lib.add_module_prefix_to_signal,
+                                module=m["name"].lower()),
                         m["available_input_list"])))
+
+            pinmux["outputs"] += list(
+                filter(
+                    lambda x: x["name"] not in dio_names,
+                    map(
+                        partial(lib.add_module_prefix_to_signal,
+                                module=m["name"].lower()),
+                        m["available_inout_list"])))
             pinmux["outputs"] += list(
                 filter(
                     lambda x: x["name"] not in dio_names,
@@ -938,13 +958,6 @@ def amend_pinmux_io(top):
                         partial(lib.add_module_prefix_to_signal,
                                 module=m["name"].lower()),
                         m["available_output_list"])))
-            pinmux["inouts"] += list(
-                filter(
-                    lambda x: x["name"] not in dio_names,
-                    map(
-                        partial(lib.add_module_prefix_to_signal,
-                                module=m["name"].lower()),
-                        m["available_inout_list"])))
 
         elif len(tokens) == 2:
             # Current version doesn't consider signal in mio_modules

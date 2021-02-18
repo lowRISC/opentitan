@@ -199,8 +199,6 @@ class aes_message_item extends uvm_sequence_item;
       output_cleared = { output_cleared, item.data_was_cleared, item.data_was_cleared,
                         item.data_was_cleared, item.data_was_cleared};
     end
-
-
   endfunction // add_data_item
 
 

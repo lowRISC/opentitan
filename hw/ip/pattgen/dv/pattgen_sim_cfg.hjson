@@ -12,7 +12,7 @@
   tb: tb
 
   // Simulator used to sign off this block
-  tool: vcs
+  tool: xcelium
 
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:pattgen_sim:0.1
@@ -30,8 +30,7 @@
                 // Common CIP test lists
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
-                // TODO: enable in V2
-                //"{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
 
   // Add additional tops for simulation.
@@ -54,6 +53,11 @@
     {
       name: pattgen_perf
       uvm_test_seq: pattgen_perf_vseq
+    }
+
+    {
+      name: pattgen_error
+      uvm_test_seq: pattgen_error_vseq
     }
   ]
 

@@ -13,6 +13,7 @@ package lc_ctrl_env_pkg;
   import csr_utils_pkg::*;
   import lc_ctrl_ral_pkg::*;
   import lc_ctrl_pkg::*;
+  import lc_ctrl_state_pkg::*;
   import otp_ctrl_pkg::*;
   import push_pull_agent_pkg::*;
   import alert_esc_agent_pkg::*;
@@ -23,13 +24,13 @@ package lc_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[] = {"lc_programming_failure", "lc_state_failure"};
+  parameter string LIST_OF_ALERTS[] = {"fatal_prog_error", "fatal_state_error"};
   parameter uint   NUM_ALERTS = 2;
   parameter uint   CLAIM_TRANS_VAL = 'ha5;
   parameter uint   NUM_STATES = 16;
 
   // lc_otp_program host data width: lc_state_e width + lc_cnt_e width
-  parameter uint OTP_PROG_HDATA_WIDTH = lc_ctrl_pkg::LcStateWidth + lc_ctrl_pkg::LcCountWidth;
+  parameter uint OTP_PROG_HDATA_WIDTH = LcStateWidth + LcCountWidth;
   // TODO: temp set to 0, once push-pull agent can constraint data, it will set to 1 for error bit
   parameter uint OTP_PROG_DDATA_WIDTH = 0;
 
@@ -149,7 +150,7 @@ package lc_ctrl_env_pkg;
 
   function automatic int dec_lc_cnt(lc_cnt_e curr_cnt);
     case (curr_cnt)
-      LcCntRaw: return 0;
+      LcCnt0  : return 0;
       LcCnt1  : return 1;
       LcCnt2  : return 2;
       LcCnt3  : return 3;

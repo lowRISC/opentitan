@@ -11,6 +11,7 @@
 // widths remain untested.
 
 module prim_present_tb;
+  `include "dv_macros.svh"
 
 //////////////////////////////////////////////////////
 // config
@@ -42,6 +43,10 @@ module prim_present_tb;
   // this parameter is required for the DPI model.
   localparam bit KeySize80 = (KeyWidth == 80);
 
+  // This bit can be set from the command line to indicate that we are running a smoke regression,
+  // and to run just a single iteration of the test.
+  // This helps drastically reduce runtimes in the CI flows.
+  bit smoke_test;
 
 //////////////////////////////////////////////////////
 // DUTs for both encryption and decryption
@@ -94,14 +99,11 @@ module prim_present_tb;
 
     crypto_dpi_present_pkg::sv_dpi_present_get_key_schedule(key, KeySize80, key_schedule);
 
-    $display("Starting encryption pass with data[0x%0x] and key[0x%0x]!", plaintext, key);
     check_encryption(plaintext, key, key_schedule, encrypted_text);
 
-    $display("Starting decryption pass!");
     check_decryption(encrypted_text, key, key_out[Encrypt]);
 
   endtask
-
 
 
   // Helper task to drive plaintext and key into each encryption instance.
@@ -194,7 +196,7 @@ module prim_present_tb;
         break;
       end
     end
-    if (error) $fatal("TEST FAILED CHECKS");
+    if (error) dv_test_status_pkg::dv_test_status(.passed(1'b0));
   endtask
 
 
@@ -203,6 +205,8 @@ module prim_present_tb;
 //////////////////////////////////////////////////////
 
   initial begin : p_stimuli
+    int num_trans;
+    string msg_id = $sformatf("%m");
 
     // The key and plaintext/ciphertext to be fed into PRESENT instances.
     bit [KeyWidth-1:0] key;
@@ -231,22 +235,27 @@ module prim_present_tb;
     test_present(plaintext, key);
 
     // Test random vectors
-    for (int i = 0; i < 5000; i++) begin
-      if (!std::randomize(plaintext)) begin
-        $fatal("Randomization of plaintext failed!");
-      end
-      if (!std::randomize(key)) begin
-        $fatal("Randomization of key failed!");
-      end
+    void'($value$plusargs("smoke_test=%0b", smoke_test));
+    num_trans = smoke_test ? 1 : $urandom_range(5000, 25000);
+    for (int i = 0; i < num_trans; i++) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(plaintext, "", msg_id)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(key, "", msg_id)
       test_present(plaintext, key);
     end
 
-
     // Final error checking and print out the test signature (expected by simulation flow).
     $display("All encryption and decryption passes were successful!");
-    $display("TEST PASSED CHECKS");
+    dv_test_status_pkg::dv_test_status(.passed(1'b1));
     $finish();
   end
 
+  // TODO: perhaps wrap this in a macro?
+  initial begin
+    bit poll_for_stop = 1'b1;
+    int unsigned poll_for_stop_interval_ns = 1000;
+    void'($value$plusargs("poll_for_stop=%0b", poll_for_stop));
+    void'($value$plusargs("poll_for_stop_interval_ns=%0d", poll_for_stop_interval_ns));
+    if (poll_for_stop) dv_utils_pkg::poll_for_stop(.interval_ns(poll_for_stop_interval_ns));
+  end
 
 endmodule : prim_present_tb

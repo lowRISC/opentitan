@@ -51,7 +51,7 @@ module pinmux_wkup import pinmux_pkg::*; import pinmux_reg_pkg::*; #(
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin : p_sync
     if (!rst_aon_ni) begin
       aon_wkup_en_q     <= 1'b0;
-      aon_wkup_mode_q   <= Disabled;
+      aon_wkup_mode_q   <= Posedge;
       aon_filter_en_q   <= 1'b0;
       aon_wkup_cnt_th_q <= '0;
     end else begin
@@ -119,17 +119,17 @@ module pinmux_wkup import pinmux_pkg::*; import pinmux_reg_pkg::*; #(
     if (aon_wkup_en_q) begin
       unique case (aon_wkup_mode_q)
         Negedge:   aon_wkup_pulse = aon_falling;
-        Posedge:   aon_wkup_pulse = aon_rising;
         Edge:      aon_wkup_pulse = aon_rising | aon_falling;
-        LowTimed: begin
-          aon_cnt_en = ~aon_filter_out_d;
-          aon_wkup_pulse = aon_cnt_eq_th;
-        end
         HighTimed: begin
           aon_cnt_en = aon_filter_out_d;
           aon_wkup_pulse = aon_cnt_eq_th;
         end
-        default: ; // also covers "Disabled"
+        LowTimed: begin
+          aon_cnt_en = ~aon_filter_out_d;
+          aon_wkup_pulse = aon_cnt_eq_th;
+        end
+        // Default to rising
+        default:   aon_wkup_pulse = aon_rising;
       endcase
     end
   end

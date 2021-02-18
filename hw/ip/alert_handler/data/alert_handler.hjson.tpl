@@ -17,6 +17,9 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 {
   name: "ALERT_HANDLER",
   clock_primary: "clk_i",
+  other_clock_list: [ "clk_edn_i" ],
+  reset_primary: "rst_ni",
+  other_reset_list: [ "rst_edn_ni" ],
   bus_device: "tlul",
   regwidth: "32",
   hier_path: "i_reg_wrap"
@@ -111,12 +114,12 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       act:     "req",
       package: "alert_pkg"
     },
-    // TODO: connect this to EDN
-    { struct:  "logic",
-      type:    "uni",
-      name:    "entropy",
-      default: " 1'b0",
-      act:     "rcv",
+    { struct:  "edn"
+      type:    "req_rsp"
+      name:    "edn"
+      act:     "req"
+      width:   "1"
+      package: "edn_pkg"
     },
     { struct:  "esc_rx"
       type:    "uni"
@@ -148,11 +151,11 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
   registers: [
 ##############################################################################
 # register locks for alerts and class configs
-    { name: "REGEN",
+    { name: "REGWEN",
       desc: '''
             Register write enable for all control registers.
             ''',
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "hro",
       fields: [
         {
@@ -172,7 +175,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         {
           # TODO: add PING_CNT_DW parameter here
@@ -193,7 +196,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   count:    "NAlerts",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "alert",
                   tags:     [// Enable `alert_en` might cause top-level escalators to trigger
                              // unexpected reset
@@ -213,7 +216,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   count:    "NAlerts",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "alert",
                   fields: [
                     {
@@ -256,7 +259,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   count:    "N_LOC_ALERT",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "local alert",
                   fields: [
                     { bits: "0",
@@ -273,7 +276,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   count:    "N_LOC_ALERT",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGEN",
+                  regwen:   "REGWEN",
                   cname:    "local alert",
                   fields: [
                     {
@@ -314,10 +317,10 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 % for i in range(n_classes):
 <% c = chars[i] %>
     { name:     "CLASS${chars[i]}_CTRL",
-      desc:     "Escalation control register for alert Class ${chars[i]}. Can not be modified if !!REGEN is false."
+      desc:     "Escalation control register for alert Class ${chars[i]}. Can not be modified if !!REGWEN is false."
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "0",
           name: "EN",
@@ -379,11 +382,11 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         }
       ]
     },
-    { name:     "CLASS${chars[i]}_CLREN",
+    { name:     "CLASS${chars[i]}_REGWEN",
       desc:     '''
                 Clear enable for escalation protocol of Class ${chars[i]} alerts.
                 '''
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "hwo",
       fields: [
       {   bits:   "0",
@@ -406,11 +409,11 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       swaccess: "wo",
       hwaccess: "hro",
       hwqe:     "true",
-      regwen:   "CLASS${chars[i]}_CLREN",
+      regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
         { bits: "0",
           desc: '''Writing to this register clears the accumulator and aborts escalation
-          (if it has been triggered). This clear is disabled if !!CLASS${chars[i]}_CLREN is false.
+          (if it has been triggered). This clear is disabled if !!CLASS${chars[i]}_REGWEN is false.
           '''
         }
       ]
@@ -418,7 +421,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     { name:     "CLASS${chars[i]}_ACCUM_CNT",
       desc:     '''
                 Current accumulation value for alert Class ${chars[i]}. Software can clear this register
-                with a write to !!CLASS${chars[i]}_CLR register unless !!CLASS${chars[i]}_CLREN is false.
+                with a write to !!CLASS${chars[i]}_CLR register unless !!CLASS${chars[i]}_REGWEN is false.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
@@ -436,12 +439,12 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "${accu_cnt_dw - 1}:0",
           desc: '''Once the accumulation value register is equal to the threshold escalation will
           be triggered on the next alert occurrence within this class ${chars[i]} begins. Note that this
-          register can not be modified if !!REGEN is false.
+          register can not be modified if !!REGWEN is false.
           '''
         }
       ]
@@ -452,14 +455,14 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "${esc_cnt_dw - 1}:0",
           desc: '''If the interrupt corresponding to this class is not
           handled within the specified amount of cycles, escalation will be triggered.
           Set to a positive value to enable the interrupt timeout for Class ${chars[i]}. The timeout is set to zero
           by default, which disables this feature. Note that this register can not be modified if
-          !!REGEN is false.
+          !!REGWEN is false.
           '''
         }
       ]
@@ -471,11 +474,11 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGEN",
+      regwen:   "REGWEN",
       fields: [
         { bits: "${esc_cnt_dw - 1}:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGEN is false.'''
+          modified if !!REGWEN is false.'''
         }
       ]
     }
@@ -496,7 +499,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
           corresponding interrupt bit.
 
           If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
-          aborted by writing to !!CLASS${chars[i]}_CLR. Note however that has no effect if !!CLASS${chars[i]}_CLREN
+          aborted by writing to !!CLASS${chars[i]}_CLR. Note however that has no effect if !!CLASS${chars[i]}_REGWEN
           is set to false (either by SW or by HW via the !!CLASS${chars[i]}_CTRL.LOCK feature).
           '''
         }

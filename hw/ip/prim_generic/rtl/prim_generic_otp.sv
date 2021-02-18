@@ -69,17 +69,18 @@ module prim_generic_otp
   ) u_tlul_adapter_sram (
     .clk_i,
     .rst_ni,
-    .tl_i     ( test_tl_i         ),
-    .tl_o     ( test_tl_o         ),
-    .req_o    ( tlul_req          ),
-    .gnt_i    ( tlul_req          ),
-    .we_o     ( tlul_wren         ),
-    .addr_o   ( tlul_addr         ),
-    .wdata_o  ( tlul_wdata        ),
-    .wmask_o  (                   ),
-    .rdata_i  ( tlul_rdata_q      ),
-    .rvalid_i ( tlul_rvalid_q     ),
-    .rerror_i ( '0                )
+    .tl_i        ( test_tl_i          ),
+    .tl_o        ( test_tl_o          ),
+    .en_ifetch_i ( tlul_pkg::InstrDis ),
+    .req_o       ( tlul_req           ),
+    .gnt_i       ( tlul_req           ),
+    .we_o        ( tlul_wren          ),
+    .addr_o      ( tlul_addr          ),
+    .wdata_o     ( tlul_wdata         ),
+    .wmask_o     (                    ),
+    .rdata_i     ( tlul_rdata_q       ),
+    .rvalid_i    ( tlul_rvalid_q      ),
+    .rerror_i    ( '0                 )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_tlul_testreg
@@ -155,7 +156,7 @@ module prim_generic_otp
     state_d = state_q;
     ready_o = 1'b0;
     valid_d = 1'b0;
-    err_d   = NoError;
+    err_d   = err_q;
     req     = 1'b0;
     wren    = 1'b0;
     cnt_clr = 1'b0;
@@ -164,6 +165,7 @@ module prim_generic_otp
     unique case (state_q)
       // Wait here until we receive an initialization command.
       ResetSt: begin
+        err_d = NoError;
         ready_o = 1'b1;
         if (valid_i) begin
           if (cmd_i == Init) begin
@@ -179,10 +181,12 @@ module prim_generic_otp
       InitSt: begin
         state_d = IdleSt;
         valid_d = 1'b1;
+        err_d = NoError;
       end
       // In the idle state, we basically wait for read or write commands.
       IdleSt: begin
         ready_o = 1'b1;
+        err_d = NoError;
         if (valid_i) begin
           cnt_clr = 1'b1;
           err_d = NoError;
@@ -280,7 +284,9 @@ module prim_generic_otp
     .MemInitFile          (MemInitFile),
     .EnableECC            (1'b1),
     .EnableInputPipeline  (1),
-    .EnableOutputPipeline (1)
+    .EnableOutputPipeline (1),
+    // Use a standard Hamming ECC for OTP.
+    .HammingECC           (1)
   ) u_prim_ram_1p_adv (
     .clk_i,
     .rst_ni,

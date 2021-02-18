@@ -33,7 +33,7 @@ package otbn_pkg;
   // Toplevel constants ============================================================================
 
   parameter int AlertFatal = 0;
-  parameter int AlertRecoverable = 1;
+  parameter int AlertRecov = 1;
 
   // Register file implementation selection enum.
   typedef enum integer {
@@ -41,21 +41,20 @@ package otbn_pkg;
     RegFileFPGA  = 1  // FPGA implmentation, does infer RAM primitives.
   } regfile_e;
 
-  // Error codes
+  // Error bits
   //
-  // Note: This list is duplicated in the documentation (../doc/_index.md), the ISS
-  // (../dv/otbnsim/sim/alert.py), and the DIF. If updating it here, update those too.
-  typedef enum logic [31:0] {
-    ErrCodeNoError     = 32'h00,
-    ErrCodeBadDataAddr = 32'h01,
-    ErrCodeBadInsnAddr = 32'h02,
-    ErrCodeCallStack   = 32'h03,
-    ErrCodeIllegalInsn = 32'h04,
-    ErrCodeLoop        = 32'h05,
-    ErrCodeFatalImem   = 32'h80,
-    ErrCodeFatalDmem   = 32'h81,
-    ErrCodeFatalReg    = 32'h82
-  } err_code_e;
+  // Note: These errors are duplicated in the register HJSON (../data/otbn.hjson), the ISS
+  // (../dv/otbnsim/sim/alert.py), and the DIF. If updating them here, update those too.
+  typedef struct packed {
+    logic fatal_reg;
+    logic fatal_dmem;
+    logic fatal_imem;
+    logic loop;
+    logic illegal_insn;
+    logic call_stack;
+    logic bad_insn_addr;
+    logic bad_data_addr;
+  } err_bits_t;
 
   // Constants =====================================================================================
 

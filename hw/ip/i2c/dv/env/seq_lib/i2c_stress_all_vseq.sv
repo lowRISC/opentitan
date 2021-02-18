@@ -43,16 +43,16 @@ class i2c_stress_all_vseq extends i2c_rx_tx_vseq;
       seq = create_seq_by_name(seq_name);
       `downcast(i2c_vseq, seq)
 
-      // if upper seq disables do_dut_init for this seq, then can't issue reset
+      // if upper seq disables do_apply_reset for this seq, then can't issue reset
       // as upper seq may drive reset
-      `uvm_info(`gfn, $sformatf("\n  *do_dut_init %0b", do_dut_init), UVM_DEBUG)
-      if (do_dut_init) begin
-        i2c_vseq.do_dut_init = $urandom_range(0, 1);
-        if (i2c_vseq.do_dut_init) begin
+      `uvm_info(`gfn, $sformatf("\n  *do_apply_reset %0b", do_apply_reset), UVM_DEBUG)
+      if (do_apply_reset) begin
+        i2c_vseq.do_apply_reset = $urandom_range(0, 1);
+        if (i2c_vseq.do_apply_reset) begin
           `uvm_info(`gfn, "\n  *reset is randomly issued with stress_test", UVM_DEBUG)
         end
       end else begin
-        i2c_vseq.do_dut_init = 0;
+        i2c_vseq.do_apply_reset = 0;
         `uvm_info(`gfn, "\n  *upper_seq may drive reset thus not issue reset", UVM_DEBUG)
       end
 

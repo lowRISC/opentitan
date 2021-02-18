@@ -40,7 +40,7 @@ module prim_intr_hw # (
     // flop the interrupt output
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        intr_o <= 1'b0;
+        intr_o <= '0;
       end else begin
         intr_o <= reg2hw_intr_state_q_i & reg2hw_intr_enable_q_i;
       end

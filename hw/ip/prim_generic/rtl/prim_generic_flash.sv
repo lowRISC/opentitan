@@ -14,7 +14,7 @@ module prim_generic_flash #(
   parameter int WordsPerPage   = 256,// words per page
   parameter int DataWidth      = 32, // bits per word
   parameter int MetaDataWidth  = 12, // metadata such as ECC
-  parameter int TestModeWidth  = 2
+  parameter int TestModeWidth  = 4
 ) (
   input clk_i,
   input rst_ni,
@@ -26,19 +26,29 @@ module prim_generic_flash #(
   input tdi_i,
   input tms_i,
   output logic tdo_o,
-  input bist_enable_i,
-  input scanmode_i,
+  input lc_ctrl_pkg::lc_tx_t bist_enable_i,
+  input lc_ctrl_pkg::lc_tx_t scanmode_i,
+  input scan_en_i,
   input scan_rst_ni,
   input flash_power_ready_h_i,
   input flash_power_down_h_i,
   input [TestModeWidth-1:0] flash_test_mode_a_i,
   input flash_test_voltage_h_i,
+  output logic flash_err_o,
+  output logic flash_alert_po,
+  output logic flash_alert_no,
+  input flash_alert_ack_i,
+  input flash_alert_trig_i,
   input tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o
+  output tlul_pkg::tl_d2h_t tl_o,
+  input  devmode_i
 );
 
   localparam int CfgRegs = 21;
   localparam int CfgAddrWidth = $clog2(CfgRegs);
+
+  logic unused_devmode;
+  assign unused_devmode = devmode_i;
 
   // convert this into a tlul write later
   logic init;
@@ -89,7 +99,8 @@ module prim_generic_flash #(
     );
   end
 
-  logic unused_scanmode;
+  lc_ctrl_pkg::lc_tx_t unused_scanmode;
+  logic unused_scan_en;
   logic unused_scan_rst_n;
   logic [TestModeWidth-1:0] unused_flash_test_mode;
   logic unused_flash_test_voltage;
@@ -98,6 +109,7 @@ module prim_generic_flash #(
   logic unused_tms;
 
   assign unused_scanmode = scanmode_i;
+  assign unused_scan_en = scan_en_i;
   assign unused_scan_rst_n = scan_rst_ni;
   assign unused_flash_test_mode = flash_test_mode_a_i;
   assign unused_flash_test_voltage = flash_test_voltage_h_i;
@@ -126,12 +138,13 @@ module prim_generic_flash #(
     .SramAw(CfgAddrWidth),
     .SramDw(32),
     .Outstanding(2),
-    .ErrOnWrite(1)
+    .ErrOnWrite(0)
   ) u_cfg (
     .clk_i,
     .rst_ni,
     .tl_i,
     .tl_o,
+    .en_ifetch_i(tlul_pkg::InstrDis),
     .req_o(cfg_req),
     .gnt_i(1'b1),
     .we_o(cfg_we),
@@ -156,7 +169,28 @@ module prim_generic_flash #(
     .rdata_o(cfg_rdata)
   );
 
-  logic unused_bist_enable;
+  lc_ctrl_pkg::lc_tx_t unused_bist_enable;
   assign unused_bist_enable = bist_enable_i;
+
+  // open source model has no error response at the moment
+  assign flash_err_o = 1'b0;
+
+  logic alerts_active;
+  assign alerts_active = flash_alert_po | ~flash_alert_no;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      flash_alert_po <= 1'b0;
+      flash_alert_no <= 1'b1;
+    end else if (flash_alert_trig_i) begin
+      flash_alert_po <= 1'b1;
+      flash_alert_no <= 1'b0;
+    end else if (alerts_active && flash_alert_ack_i) begin
+      flash_alert_po <= 1'b0;
+      flash_alert_no <= 1'b1;
+    end
+  end
+
+
 
 endmodule // prim_generic_flash

@@ -8,6 +8,7 @@ package csrng_env_pkg;
   import top_pkg::*;
   import dv_utils_pkg::*;
   import push_pull_agent_pkg::*;
+  import csrng_agent_pkg::*;
   import dv_lib_pkg::*;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
@@ -20,6 +21,7 @@ package csrng_env_pkg;
 
   // parameters
   parameter uint NUM_HW_APPS = 1;
+
   parameter bit [TL_DW-1:0] [3:0] ZERO_SEED_GENBITS = {32'h0,
                                                        32'h0,
                                                        32'h0,

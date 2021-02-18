@@ -19,8 +19,8 @@
   ///////////////////////////
 
   alert_list: [
-    { name: "sram_integ_alert",
-      desc: "An uncorrectable integrity error has occurred in SRAM."
+    { name: "fatal_parity_error",
+      desc: "An uncorrectable parity error has occurred in the SRAM."
     }
   ],
 
@@ -39,7 +39,14 @@
       type:      "otp_ctrl_pkg::sram_nonce_t"
       randcount: "64",
       randtype:  "data", // randomize randcount databits
-    }
+    },
+    { name:      "InstrExec",
+      desc:      "Support execution from SRAM",
+      type:      "bit",
+      local:     "false",
+      expose:    "true",
+      default:   "1"
+    },
   ]
 
   /////////////////////////////
@@ -54,7 +61,7 @@
       act:     "req"
       default: "'0"
       package: "otp_ctrl_pkg"
-    }
+    },
     // Interface with SRAM scrambling wrapper
     { struct:  "sram_scr"
       type:    "req_rsp"
@@ -62,7 +69,7 @@
       act:     "req"
       default: "'0"
       package: "sram_ctrl_pkg"
-    }
+    },
     // Broadcast from LC
     { struct:  "lc_tx"
       type:    "uni"
@@ -70,7 +77,26 @@
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
-    }
+    },
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_hw_debug_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    },
+    { struct:  "otp_hw_cfg",
+      type:    "uni",
+      name:    "otp_hw_cfg",
+      act:     "rcv",
+      package: "otp_ctrl_part_pkg",
+    },
+    { struct:  "tl_instr_en",
+      type:    "uni",
+      name:    "en_ifetch",
+      act:     "req",
+      package: "tlul_pkg",
+    },
   ] // inter_signal_list
 
   regwidth: "32",
@@ -93,7 +119,7 @@
                 Set to 1 if an uncorrectable parity error has occurred in the SRAM macro.
                 The address of the faulty access is exposed in the !!ERROR_ADDRESS register
                 for debugging purposes. This is an unrecoverable error condition and causes
-                the SRAM controller to continuously send out sram_integ_alert alerts.
+                the SRAM controller to continuously send out fatal_parity_error alerts.
                 The error bit is sticky and can only be cleared via a reset.
                 '''
         }
@@ -126,9 +152,36 @@
         }
       ]
     }
+    { name: "EXEC_REGWEN",
+      desc: "Lock register for execution enable register.",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0"
+          desc: '''
+                When cleared to zero, !!EXEC can not be written anymore.
+                ''',
+          resval: 1
+        }
+      ]
+    }
+    { name: "EXEC",
+      desc: "Sram execution enable.",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen:   "EXEC_REGWEN"
+      fields: [
+        { bits: "2:0",
+          name: "EN",
+          desc: '''
+                  Write 5 (3b101) to this field to enable execution from SRAM
+                '''
+        },
+      ]
+    },
     { name: "CTRL_REGWEN",
       desc: "Lock register for control register.",
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "none",
       fields: [
         { bits: "0"
@@ -141,10 +194,10 @@
     }
     { name: "CTRL",
       desc: "SRAM ctrl register.",
-      swaccess: "r0w1c",
+      swaccess: "wo",
       hwaccess: "hro",
       hwqe:     "true",
-      hwext:    "false",
+      hwext:    "true",
       regwen:   "CTRL_REGWEN"
       fields: [
         { bits: "0",
@@ -157,9 +210,9 @@
                 to ~800 CPU cycles (OTP runs at 24MHz, CPU runs at 100MHz). Note that writing 1 to this register while
                 a key request is pending has no effect.
                 '''
-        }
+        },
       ]
-    }
+    },
 
     { name: "ERROR_ADDRESS",
       desc: "Error address register.",

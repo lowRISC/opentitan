@@ -10,12 +10,15 @@ import re
 import shlex
 import subprocess
 import sys
-import time
-from collections import OrderedDict
 
 from sim_utils import get_cov_summary_table
 from tabulate import tabulate
 from utils import VERBOSE, find_and_substitute_wildcards, run_cmd
+
+
+class DeployError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
 
 
 class Deploy():
@@ -23,41 +26,18 @@ class Deploy():
     Abstraction for deploying builds and runs.
     """
 
-    # Timer in hours, minutes and seconds.
-    hh = 0
-    mm = 0
-    ss = 0
-
-    # Maintain a list of dispatched items.
-    dispatch_counter = 0
-
     # Misc common deploy settings.
-    print_legend = True
-    print_interval = 5
-    max_parallel = 16
     max_odirs = 5
-    # Max jobs dispatched in one go.
-    slot_limit = 20
 
     # List of variable names that are to be treated as "list of commands".
     # This tells `construct_cmd` that these vars are lists that need to
     # be joined with '&&' instead of a space.
     cmds_list_vars = []
 
-    def __self_str__(self):
-        if log.getLogger().isEnabledFor(VERBOSE):
-            return pprint.pformat(self.__dict__)
-        else:
-            ret = self.cmd
-            if self.sub != []:
-                ret += "\nSub:\n" + str(self.sub)
-            return ret
-
     def __str__(self):
-        return self.__self_str__()
-
-    def __repr__(self):
-        return self.__self_str__()
+        return (pprint.pformat(self.__dict__)
+                if log.getLogger().isEnabledFor(VERBOSE)
+                else self.cmd)
 
     def __init__(self, sim_cfg):
         '''Initialize common class members.'''
@@ -82,13 +62,17 @@ class Deploy():
         # List of vars required to be exported to sub-shell
         self.exports = None
 
-        # Deploy sub commands
-        self.sub = []
+        # A list of jobs on which this job depends
+        self.dependencies = []
+
+        # Indicates whether running this job requires all dependencies to pass.
+        # If this flag is set to False, any passing dependency will trigger
+        # this current job to run
+        self.needs_all_dependencies_passing = True
 
         # Process
         self.process = None
         self.log_fd = None
-        self.status = None
 
         # These are mandatory class attributes that need to be extracted and
         # set from the sim_cfg object. These are explicitly used to construct
@@ -290,13 +274,10 @@ class Deploy():
                                             stderr=f,
                                             env=exports)
             self.log_fd = f
-            self.status = "D"
-            Deploy.dispatch_counter += 1
         except IOError:
-            log.error('IO Error: See %s', self.log)
             if self.log_fd:
                 self.log_fd.close()
-            self.status = "K"
+            raise DeployError('IO Error: See {}'.format(self.log))
 
     def odir_limiter(self, odir, max_odirs=-1):
         '''Function to backup previously run output directory to maintain a
@@ -351,103 +332,119 @@ class Deploy():
             log.error("Failed to delete old run directories!")
         return dirs
 
-    def set_status(self):
-        self.status = 'P'
-        if self.dry_run is False:
-            seen_fail_pattern = False
-            for fail_pattern in self.fail_patterns:
-                # Return error message with the following 4 lines.
-                grep_cmd = "grep -m 1 -A 4 -E \'" + fail_pattern + "\' " + self.log
-                (status, rslt) = subprocess.getstatusoutput(grep_cmd)
-                if rslt:
-                    msg = "```\n{}\n```\n".format(rslt)
-                    self.fail_msg += msg
-                    log.log(VERBOSE, msg)
-                    self.status = 'F'
-                    seen_fail_pattern = True
-                    break
+    def _test_passed(self):
+        '''Return True if the job passed, False otherwise
 
-            # If fail patterns were not encountered, but the job returned with non-zero exit code
-            # for whatever reason, then show the last 10 lines of the log as the failure message,
-            # which might help with the debug.
-            if self.process.returncode != 0 and not seen_fail_pattern:
-                msg = "Last 10 lines of the log:<br>\n"
+        This is called by poll() just after the job finishes.
+
+        '''
+        if self.dry_run:
+            return True
+
+        seen_fail_pattern = False
+        for fail_pattern in self.fail_patterns:
+            # Return error message with the following 4 lines.
+            grep_cmd = "grep -m 1 -A 4 -E \'" + fail_pattern + "\' " + self.log
+            (status, rslt) = subprocess.getstatusoutput(grep_cmd)
+            if rslt:
+                msg = "```\n{}\n```\n".format(rslt)
                 self.fail_msg += msg
                 log.log(VERBOSE, msg)
-                get_fail_msg_cmd = "tail -n 10 " + self.log
-                msg = run_cmd(get_fail_msg_cmd)
-                msg = "```\n{}\n```\n".format(msg)
+                seen_fail_pattern = True
+                break
+
+        if seen_fail_pattern:
+            return False
+
+        # If no fail patterns were seen, but the job returned with non-zero
+        # exit code for whatever reason, then show the last 10 lines of the log
+        # as the failure message, which might help with the debug.
+        if self.process.returncode != 0:
+            msg = "Last 10 lines of the log:<br>\n"
+            self.fail_msg += msg
+            log.log(VERBOSE, msg)
+            get_fail_msg_cmd = "tail -n 10 " + self.log
+            msg = run_cmd(get_fail_msg_cmd)
+            msg = "```\n{}\n```\n".format(msg)
+            self.fail_msg += msg
+            log.log(VERBOSE, msg)
+            return False
+
+        # If we get here, we've not seen anything explicitly wrong, but we
+        # might have "pass patterns": patterns that must occur in the log for
+        # the run to be considered successful.
+        for pass_pattern in self.pass_patterns:
+            grep_cmd = "grep -c -m 1 -E \'" + pass_pattern + "\' " + self.log
+            (status, rslt) = subprocess.getstatusoutput(grep_cmd)
+            if rslt == "0":
+                msg = "Pass pattern {!r} not found.<br>\n".format(pass_pattern)
                 self.fail_msg += msg
                 log.log(VERBOSE, msg)
-                self.status = "F"
+                return False
 
-            # Return if status is fail - no need to look for pass patterns.
-            if self.status == 'F':
-                return
+        return True
 
-            # If fail patterns were not found, ensure pass patterns indeed were.
-            for pass_pattern in self.pass_patterns:
-                grep_cmd = "grep -c -m 1 -E \'" + pass_pattern + "\' " + self.log
-                (status, rslt) = subprocess.getstatusoutput(grep_cmd)
-                if rslt == "0":
-                    msg = "Pass pattern \"{}\" not found.<br>\n".format(
-                        pass_pattern)
-                    self.fail_msg += msg
-                    log.log(VERBOSE, msg)
-                    self.status = 'F'
-                    break
+    def _link_odir(self, status):
+        old_link = self.sim_cfg.links['D'] + "/" + self.odir_ln
+        new_link = self.sim_cfg.links[status] + "/" + self.odir_ln
+        cmd = "ln -s " + self.odir + " " + new_link + "; "
+        cmd += "rm " + old_link
+        if os.system(cmd):
+            log.error("Cmd \"%s\" could not be run", cmd)
 
-    # Recursively set sub-item's status if parent item fails
-    def set_sub_status(self, status):
-        for sub_item in self.sub:
-            sub_item.status = status
-            sub_item.set_sub_status(status)
+    def _on_finish(self, status):
+        '''Called when the process finishes or is killed'''
+        assert status in ['P', 'F', 'K']
+        if status in ['P', 'F']:
+            self._link_odir(status)
 
-    def link_odir(self):
-        if self.status == '.':
-            log.error("Method unexpectedly called!")
-        else:
-            old_link = self.sim_cfg.links['D'] + "/" + self.odir_ln
-            new_link = self.sim_cfg.links[self.status] + "/" + self.odir_ln
-            cmd = "ln -s " + self.odir + " " + new_link + "; "
-            cmd += "rm " + old_link
-            if os.system(cmd):
-                log.error("Cmd \"%s\" could not be run", cmd)
+    def poll(self):
+        '''Check status of the running process
 
-    def get_status(self):
-        if self.status != "D":
-            return
-        if self.process.poll() is not None:
-            self.log_fd.close()
-            self.set_status()
+        This returns 'D', 'P' or 'F'. If 'D', the job is still running. If 'P',
+        the job finished successfully. If 'F', the job finished with an error.
 
-            log.debug("Item %s has completed execution: %s", self.name,
-                      self.status)
-            Deploy.dispatch_counter -= 1
-            self.link_odir()
-            del self.process
+        This function must only be called after running self.dispatch_cmd() and
+        must not be called again once it has returned 'P' or 'F'.
+
+        '''
+        assert self.process is not None
+        if self.process.poll() is None:
+            return 'D'
+        self.log_fd.close()
+
+        status = 'P' if self._test_passed() else 'F'
+
+        log.debug("Item %s has completed execution: %s", self.name, status)
+        self._on_finish(status)
+
+        del self.process
+        self.process = None
+
+        return status
 
     def kill(self):
-        '''Kill running processes.
+        '''Kill the running process.
+
+        This must be called between dispatching and reaping the process (the
+        same window as poll()).
+
         '''
-        if self.status == "D" and self.process.poll() is None:
-            self.kill_remote_job()
+        assert self.process is not None
+        self.kill_remote_job()
 
-            # Try to kill the running process. Send SIGTERM first, wait a bit,
-            # and then send SIGKILL if it didn't work.
-            self.process.terminate()
-            try:
-                self.process.wait(timeout=2)
-            except subprocess.TimeoutExpired:
-                self.process.kill()
+        # Try to kill the running process. Send SIGTERM first, wait a bit,
+        # and then send SIGKILL if it didn't work.
+        self.process.terminate()
+        try:
+            self.process.wait(timeout=2)
+        except subprocess.TimeoutExpired:
+            self.process.kill()
 
-            if self.log_fd:
-                self.log_fd.close()
-            self.status = "K"
-        # recurisvely kill sub target
-        elif len(self.sub):
-            for item in self.sub:
-                item.kill()
+        if self.log_fd:
+            self.log_fd.close()
+        self.process = None
+        self._on_finish('K')
 
     def kill_remote_job(self):
         '''
@@ -467,171 +464,6 @@ class Deploy():
                     subprocess.run(["bkill", job_id], check=True)
                 except Exception as e:
                     log.error("%s: Failed to run bkill\n", e)
-
-    @staticmethod
-    def increment_timer():
-        # sub function that increments with overflow = 60
-        def _incr_ovf_60(val):
-            if val >= 59:
-                val = 0
-                return val, True
-            else:
-                val += 1
-                return val, False
-
-        incr_hh = False
-        Deploy.ss, incr_mm = _incr_ovf_60(Deploy.ss)
-        if incr_mm:
-            Deploy.mm, incr_hh = _incr_ovf_60(Deploy.mm)
-        if incr_hh:
-            Deploy.hh += 1
-
-    @staticmethod
-    def deploy(items):
-        dispatched_items = []
-        queued_items = []
-
-        # Print timer val in hh:mm:ss.
-        def get_timer_val():
-            return "%02i:%02i:%02i" % (Deploy.hh, Deploy.mm, Deploy.ss)
-
-        # Check if elapsed time has reached the next print interval.
-        def has_print_interval_reached():
-            # Deploy.print_interval is expected to be < 1 hour.
-            return (((Deploy.mm * 60 + Deploy.ss) %
-                     Deploy.print_interval) == 0)
-
-        def dispatch_items(items):
-            item_names = OrderedDict()
-            for item in items:
-                if item.target not in item_names.keys():
-                    item_names[item.target] = ""
-                if item.status is None:
-                    item_names[item.target] += item.identifier + ", "
-                    item.dispatch_cmd()
-
-            for target in item_names.keys():
-                if item_names[target] != "":
-                    item_names[target] = "  [" + item_names[target][:-2] + "]"
-                    log.log(VERBOSE, "[%s]: [%s]: [dispatch]:\n%s",
-                            get_timer_val(), target, item_names[target])
-
-        # Initialize status for a target, add '_stats_' for the said target
-        # and initialize counters for queued, dispatched, passed, failed,
-        # killed and total to 0. Also adds a boolean key to indicate if all
-        # items in a given target are done.
-        def init_status_target_stats(status, target):
-            status[target] = OrderedDict()
-            status[target]['_stats_'] = OrderedDict()
-            status[target]['_stats_']['Q'] = 0
-            status[target]['_stats_']['D'] = 0
-            status[target]['_stats_']['P'] = 0
-            status[target]['_stats_']['F'] = 0
-            status[target]['_stats_']['K'] = 0
-            status[target]['_stats_']['T'] = 0
-            status[target]['_done_'] = False
-
-        # Update status counter for a newly queued item.
-        def add_status_target_queued(status, item):
-            if item.target not in status.keys():
-                init_status_target_stats(status, item.target)
-            status[item.target][item] = "Q"
-            status[item.target]['_stats_']['Q'] += 1
-            status[item.target]['_stats_']['T'] += 1
-
-        # Update status counters for a target.
-        def update_status_target_stats(status, item):
-            old_status = status[item.target][item]
-            status[item.target]['_stats_'][old_status] -= 1
-            status[item.target]['_stats_'][item.status] += 1
-            status[item.target][item] = item.status
-
-        def check_if_done_and_print_status(status, print_status_flag):
-            all_done = True
-            for target in status.keys():
-                target_done_prev = status[target]['_done_']
-                target_done_curr = ((status[target]['_stats_']["Q"] == 0) and
-                                    (status[target]['_stats_']["D"] == 0))
-                status[target]['_done_'] = target_done_curr
-                all_done &= target_done_curr
-
-                # Print if flag is set and target_done is not True for two
-                # consecutive times.
-                if not (target_done_prev and
-                        target_done_curr) and print_status_flag:
-                    stats = status[target]['_stats_']
-                    width = "0{}d".format(len(str(stats["T"])))
-                    msg = "["
-                    for s in stats.keys():
-                        msg += s + ": {:{}}, ".format(stats[s], width)
-                    msg = msg[:-2] + "]"
-                    log.info("[%s]: [%s]: %s", get_timer_val(), target, msg)
-            return all_done
-
-        # Print legend once at the start of the run.
-        if Deploy.print_legend:
-            log.info("[legend]: [Q: queued, D: dispatched, "
-                     "P: passed, F: failed, K: killed, T: total]")
-            Deploy.print_legend = False
-
-        status = OrderedDict()
-        print_status_flag = True
-
-        # Queue all items
-        queued_items = items
-        for item in queued_items:
-            add_status_target_queued(status, item)
-
-        all_done = False
-        while not all_done:
-            # Get status of dispatched items.
-            for item in dispatched_items:
-                if item.status == "D":
-                    item.get_status()
-                if item.status != status[item.target][item]:
-                    print_status_flag = True
-                    if item.status != "D":
-                        if item.status != "P":
-                            # Kill its sub items if item did not pass.
-                            item.set_sub_status("K")
-                            log.error("[%s]: [%s]: [status] [%s: %s]",
-                                      get_timer_val(), item.target,
-                                      item.identifier, item.status)
-                        else:
-                            log.log(VERBOSE, "[%s]: [%s]: [status] [%s: %s]",
-                                    get_timer_val(), item.target,
-                                    item.identifier, item.status)
-                        # Queue items' sub-items if it is done.
-                        queued_items.extend(item.sub)
-                        for sub_item in item.sub:
-                            add_status_target_queued(status, sub_item)
-                    update_status_target_stats(status, item)
-
-            # Dispatch items from the queue as slots free up.
-            all_done = (len(queued_items) == 0)
-            if not all_done:
-                num_slots = Deploy.max_parallel - Deploy.dispatch_counter
-                if num_slots > Deploy.slot_limit:
-                    num_slots = Deploy.slot_limit
-                if num_slots > 0:
-                    if len(queued_items) > num_slots:
-                        dispatch_items(queued_items[0:num_slots])
-                        dispatched_items.extend(queued_items[0:num_slots])
-                        queued_items = queued_items[num_slots:]
-                    else:
-                        dispatch_items(queued_items)
-                        dispatched_items.extend(queued_items)
-                        queued_items = []
-
-            # Check if we are done and print the status periodically.
-            all_done &= check_if_done_and_print_status(status,
-                                                       print_status_flag)
-
-            # Advance time by 1s if there is more work to do.
-            if not all_done:
-                time.sleep(1)
-                Deploy.increment_timer()
-                print_status_flag = has_print_interval_reached()
 
 
 class CompileSim(Deploy):
@@ -765,7 +597,7 @@ class RunTest(Deploy):
 
     cmds_list_vars = ["pre_run_cmds", "post_run_cmds"]
 
-    def __init__(self, index, test, sim_cfg):
+    def __init__(self, index, test, build_job, sim_cfg):
         # Initialize common vars.
         super().__init__(sim_cfg)
 
@@ -794,6 +626,9 @@ class RunTest(Deploy):
             "run_pass_patterns": False,
             "run_fail_patterns": False
         })
+
+        if build_job is not None:
+            self.dependencies.append(build_job)
 
         self.index = index
         self.seed = RunTest.get_seed()
@@ -824,11 +659,9 @@ class RunTest(Deploy):
         # Set identifier.
         self.identifier = self.sim_cfg.name + ":" + self.run_dir_name
 
-    def get_status(self):
-        '''Override base class get_status implementation for additional post-status
-        actions.'''
-        super().get_status()
-        if self.status not in ["D", "P"]:
+    def _on_finish(self, status):
+        super()._on_finish(status)
+        if status != 'P':
             # Delete the coverage data if available.
             if os.path.exists(self.cov_db_test_dir):
                 log.log(VERBOSE, "Deleting coverage data of failing test:\n%s",
@@ -906,9 +739,12 @@ class CovMerge(Deploy):
     # Register all builds with the class
     items = []
 
-    def __init__(self, sim_cfg):
+    def __init__(self, run_items, sim_cfg):
         # Initialize common vars.
         super().__init__(sim_cfg)
+
+        self.dependencies += run_items
+        self.needs_all_dependencies_passing = False
 
         self.target = "cov_merge"
         self.pass_patterns = []
@@ -990,9 +826,11 @@ class CovReport(Deploy):
     # Register all builds with the class
     items = []
 
-    def __init__(self, sim_cfg):
+    def __init__(self, merge_job, sim_cfg):
         # Initialize common vars.
         super().__init__(sim_cfg)
+
+        self.dependencies.append(merge_job)
 
         self.target = "cov_report"
         self.pass_patterns = []
@@ -1021,28 +859,31 @@ class CovReport(Deploy):
 
         CovReport.items.append(self)
 
-    def get_status(self):
-        super().get_status()
-        # Once passed, extract the cov results summary from the dashboard.
-        if self.status == "P":
-            results, self.cov_total, ex_msg = get_cov_summary_table(
-                self.cov_report_txt, self.sim_cfg.tool)
+    def _test_passed(self):
+        # Add an extra check to Deploy._test_passed where we extract the
+        # coverage results summary for the dashboard (and fail the job if
+        # something goes wrong).
+        if not super()._test_passed():
+            return False
 
-            if not ex_msg:
-                # Succeeded in obtaining the coverage data.
-                colalign = (("center", ) * len(results[0]))
-                self.cov_results = tabulate(results,
-                                            headers="firstrow",
-                                            tablefmt="pipe",
-                                            colalign=colalign)
-            else:
-                self.fail_msg += ex_msg
-                log.error(ex_msg)
-                self.status = "F"
+        results, self.cov_total, ex_msg = get_cov_summary_table(
+            self.cov_report_txt, self.sim_cfg.tool)
 
-        if self.status == "P":
-            # Delete the cov report - not needed.
-            os.system("rm -rf " + self.log)
+        if ex_msg:
+            self.fail_msg += ex_msg
+            log.error(ex_msg)
+            return False
+
+        # Succeeded in obtaining the coverage data.
+        colalign = (("center", ) * len(results[0]))
+        self.cov_results = tabulate(results,
+                                    headers="firstrow",
+                                    tablefmt="pipe",
+                                    colalign=colalign)
+
+        # Delete the cov report - not needed.
+        os.system("rm -rf " + self.log)
+        return True
 
 
 class CovAnalyze(Deploy):

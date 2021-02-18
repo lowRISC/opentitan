@@ -13,14 +13,10 @@ module otp_ctrl
   import otp_ctrl_part_pkg::*;
 #(
   // Enable asynchronous transitions on alerts.
-  parameter logic [NumAlerts-1:0] AlertAsyncOn      = {NumAlerts{1'b1}},
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   // Compile time random constants, to be overriden by topgen.
-  parameter lfsr_seed_t             RndCnstLfsrSeed       = RndCnstLfsrSeedDefault,
-  parameter lfsr_perm_t             RndCnstLfsrPerm       = RndCnstLfsrPermDefault,
-  parameter key_array_t             RndCnstKey            = RndCnstKeyDefault,
-  parameter digest_const_array_t    RndCnstDigestConst    = RndCnstDigestConstDefault,
-  parameter digest_iv_array_t       RndCnstDigestIV       = RndCnstDigestIVDefault,
-  parameter lc_ctrl_pkg::lc_token_t RndCnstRawUnlockToken = RndCnstRawUnlockTokenDefault,
+  parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
+  parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   // Hexfile file to initialize the OTP macro.
   // Note that the hexdump needs to account for ECC.
   parameter MemInitFile = ""
@@ -85,11 +81,13 @@ module otp_ctrl
 
   // These error codes need to be identical.
   `ASSERT_INIT(ErrorCodeWidth_A, OtpErrWidth == prim_otp_pkg::ErrWidth)
-  `ASSERT_INIT(OtpErrorCode0_A, NoError == prim_otp_pkg::NoError)
-  `ASSERT_INIT(OtpErrorCode1_A, MacroError == prim_otp_pkg::MacroError)
-  `ASSERT_INIT(OtpErrorCode2_A, MacroEccCorrError == prim_otp_pkg::MacroEccCorrError)
-  `ASSERT_INIT(OtpErrorCode3_A, MacroEccUncorrError == prim_otp_pkg::MacroEccUncorrError)
-  `ASSERT_INIT(OtpErrorCode4_A, MacroWriteBlankError == prim_otp_pkg::MacroWriteBlankError)
+  `ASSERT_INIT(OtpErrorCode0_A,  int'(NoError) == int'(prim_otp_pkg::NoError))
+  `ASSERT_INIT(OtpErrorCode1_A,  int'(MacroError) == int'(prim_otp_pkg::MacroError))
+  `ASSERT_INIT(OtpErrorCode2_A,  int'(MacroEccCorrError) == int'(prim_otp_pkg::MacroEccCorrError))
+  `ASSERT_INIT(OtpErrorCode3_A,
+               int'(MacroEccUncorrError) == int'(prim_otp_pkg::MacroEccUncorrError))
+  `ASSERT_INIT(OtpErrorCode4_A,
+               int'(MacroWriteBlankError) == int'(prim_otp_pkg::MacroWriteBlankError))
 
   /////////////
   // Regfile //
@@ -117,7 +115,7 @@ module otp_ctrl
   // Life Cycle Signal Synchronization //
   ///////////////////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en, lc_seed_hw_rd_en, lc_check_byp_en;
+  lc_ctrl_pkg::lc_tx_t [0:0] lc_creator_seed_sw_rw_en, lc_seed_hw_rd_en, lc_check_byp_en;
   lc_ctrl_pkg::lc_tx_t [1:0] lc_dft_en;
   // NumAgents + lfsr timer and scrambling datapath.
   lc_ctrl_pkg::lc_tx_t [NumAgentsIdx+1:0] lc_escalate_en;
@@ -186,17 +184,18 @@ module otp_ctrl
   ) u_tlul_adapter_sram (
     .clk_i,
     .rst_ni,
-    .tl_i     ( tl_win_h2d[0] ),
-    .tl_o     ( tl_win_d2h[0] ),
-    .req_o    (  tlul_req     ),
-    .gnt_i    (  tlul_gnt     ),
-    .we_o     (               ), // unused
-    .addr_o   (  tlul_addr    ),
-    .wdata_o  (               ), // unused
-    .wmask_o  (               ), // unused
-    .rdata_i  (  tlul_rdata   ),
-    .rvalid_i (  tlul_rvalid  ),
-    .rerror_i (  tlul_rerror  )
+    .en_ifetch_i ( tlul_pkg::InstrDis ),
+    .tl_i        ( tl_win_h2d[0]      ),
+    .tl_o        ( tl_win_d2h[0]      ),
+    .req_o       (  tlul_req          ),
+    .gnt_i       (  tlul_gnt          ),
+    .we_o        (                    ), // unused
+    .addr_o      (  tlul_addr         ),
+    .wdata_o     (                    ), // unused
+    .wmask_o     (                    ), // unused
+    .rdata_i     (  tlul_rdata        ),
+    .rvalid_i    (  tlul_rvalid       ),
+    .rerror_i    (  tlul_rerror       )
   );
 
   logic [NumPart-1:0] tlul_part_sel_oh;
@@ -303,7 +302,7 @@ module otp_ctrl
   // DAI-related CSRs //
   //////////////////////
 
-  logic                         dai_idle, dai_prog_idle;
+  logic                         dai_idle;
   logic                         dai_req;
   dai_cmd_e                     dai_cmd;
   logic [OtpByteAddrWidth-1:0]  dai_addr;
@@ -329,8 +328,8 @@ module otp_ctrl
   // are pending. Hence, we signal the LCI/DAI idle state to the
   // power manager. This signal is flopped here as it has to
   // cross a clock boundary to the power manager.
-  logic lci_idle, otp_idle_d, otp_idle_q;
-  assign otp_idle_d = lci_idle & dai_prog_idle;
+  logic dai_prog_idle, lci_prog_idle, otp_idle_d, otp_idle_q;
+  assign otp_idle_d = lci_prog_idle & dai_prog_idle;
   assign pwr_otp_o.otp_idle = otp_idle_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_idle_reg
@@ -349,26 +348,26 @@ module otp_ctrl
   otp_err_e [NumPart+1:0] part_error;
   logic [NumPart+1:0] part_errors_reduced;
   logic otp_operation_done, otp_error;
-  logic otp_macro_failure_d, otp_macro_failure_q;
-  logic otp_check_failure_d, otp_check_failure_q;
+  logic fatal_macro_error_d, fatal_macro_error_q;
+  logic fatal_check_error_d, fatal_check_error_q;
   logic chk_pending, chk_timeout;
   logic lfsr_fsm_err, key_deriv_fsm_err, scrmbl_fsm_err;
   always_comb begin : p_errors_alerts
     hw2reg.err_code = part_error;
     // Note: since these are all fatal alert events, we latch them and keep on sending
     // alert events via the alert senders. These regs can only be cleared via a system reset.
-    otp_macro_failure_d = otp_macro_failure_q;
-    otp_check_failure_d = otp_check_failure_q;
+    fatal_macro_error_d = fatal_macro_error_q;
+    fatal_check_error_d = fatal_check_error_q;
     // Aggregate all the errors from the partitions and the DAI/LCI
     for (int k = 0; k < NumPart+2; k++) begin
       // Set the error bit if the error status of the corresponding partition is nonzero.
       // Need to reverse the order here since the field enumeration in hw2reg.status is reversed.
       part_errors_reduced[NumPart+1-k] = |part_error[k];
       // Filter for critical error codes that should not occur in the field.
-      otp_macro_failure_d |= part_error[k] inside {MacroError, MacroEccUncorrError};
+      fatal_macro_error_d |= part_error[k] inside {MacroError, MacroEccUncorrError};
 
       // Filter for integrity and consistency check failures.
-      otp_check_failure_d |= part_error[k] inside {CheckFailError, FsmStateError} |
+      fatal_check_error_d |= part_error[k] inside {CheckFailError, FsmStateError} |
                              chk_timeout       |
                              lfsr_fsm_err      |
                              scrmbl_fsm_err    |
@@ -390,11 +389,11 @@ module otp_ctrl
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_alert_regs
     if (!rst_ni) begin
-      otp_macro_failure_q <= '0;
-      otp_check_failure_q <= '0;
+      fatal_macro_error_q <= '0;
+      fatal_check_error_q <= '0;
     end else begin
-      otp_macro_failure_q <= otp_macro_failure_d;
-      otp_check_failure_q <= otp_check_failure_d;
+      fatal_macro_error_q <= fatal_macro_error_d;
+      fatal_check_error_q <= fatal_check_error_d;
     end
   end
 
@@ -436,27 +435,30 @@ module otp_ctrl
   logic [NumAlerts-1:0] alert_test;
 
   assign alerts = {
-    otp_check_failure_q,
-    otp_macro_failure_q
+    fatal_check_error_q,
+    fatal_macro_error_q
   };
 
   assign alert_test = {
-    reg2hw.alert_test.otp_check_failure.q &
-    reg2hw.alert_test.otp_check_failure.qe,
-    reg2hw.alert_test.otp_macro_failure.q &
-    reg2hw.alert_test.otp_macro_failure.qe
+    reg2hw.alert_test.fatal_check_error.q &
+    reg2hw.alert_test.fatal_check_error.qe,
+    reg2hw.alert_test.fatal_macro_error.q &
+    reg2hw.alert_test.fatal_macro_error.qe
   };
 
   for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx
     prim_alert_sender #(
-      .AsyncOn(AlertAsyncOn[k])
+      .AsyncOn(AlertAsyncOn[k]),
+      .IsFatal(1)
     ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,
-      .alert_req_i ( alerts[k] | alert_test[k] ),
-      .alert_ack_o (                 ),
-      .alert_rx_i  ( alert_rx_i[k]   ),
-      .alert_tx_o  ( alert_tx_o[k]   )
+      .alert_test_i  ( alert_test[k] ),
+      .alert_req_i   ( alerts[k]     ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[k] ),
+      .alert_tx_o    ( alert_tx_o[k] )
     );
   end
 
@@ -647,7 +649,8 @@ module otp_ctrl
     .rvalid_o ( otp_fifo_valid ),
     .rready_i ( otp_rvalid     ),
     .rdata_o  ( otp_part_idx   ),
-    .depth_o  (                )
+    .depth_o  (                ),
+    .full_o   (                )
   );
 
   // Steer response back to the partition where this request originated.
@@ -717,11 +720,7 @@ module otp_ctrl
   logic scrmbl_arb_req_ready, scrmbl_arb_rsp_valid;
   logic [NumAgents-1:0] part_scrmbl_req_ready, part_scrmbl_rsp_valid;
 
-  otp_ctrl_scrmbl #(
-    .RndCnstKey(RndCnstKey),
-    .RndCnstDigestConst(RndCnstDigestConst),
-    .RndCnstDigestIV(RndCnstDigestIV)
-  ) u_scrmbl (
+  otp_ctrl_scrmbl u_scrmbl (
     .clk_i,
     .rst_ni,
     .cmd_i         ( scrmbl_req_bundle.cmd       ),
@@ -743,19 +742,6 @@ module otp_ctrl
     part_scrmbl_req_ready[scrmbl_mtx_idx] = scrmbl_arb_req_ready;
     part_scrmbl_rsp_valid[scrmbl_mtx_idx] = scrmbl_arb_rsp_valid;
   end
-
-  /////////////////////////////////////////////
-  // Static fife cycle token precomputations //
-  /////////////////////////////////////////////
-
-  otp_ctrl_token_const #(
-    .RndCnstDigestConst    ( RndCnstDigestConst    ),
-    .RndCnstDigestIV       ( RndCnstDigestIV       ),
-    .RndCnstRawUnlockToken ( RndCnstRawUnlockToken )
-  ) u_otp_ctrl_token_const (
-    .all_zero_token_hashed_o   ( otp_lc_data_o.all_zero_token   ),
-    .raw_unlock_token_hashed_o ( otp_lc_data_o.raw_unlock_token )
-  );
 
   /////////////////////////////
   // Direct Access Interface //
@@ -839,7 +825,7 @@ module otp_ctrl
     .lci_en_i         ( pwr_otp_o.otp_done                ),
     .escalate_en_i    ( lc_escalate_en[LciIdx]            ),
     .error_o          ( part_error[LciIdx]                ),
-    .lci_idle_o       ( lci_idle                          ),
+    .lci_prog_idle_o  ( lci_prog_idle                     ),
     .lc_req_i         ( lc_otp_program_i.req              ),
     .lc_state_i       ( lc_otp_program_i.state            ),
     .lc_count_i       ( lc_otp_program_i.count            ),
@@ -1023,11 +1009,10 @@ module otp_ctrl
       assign part_tlul_rerror[k] = '0;
       assign part_tlul_rvalid[k] = 1'b0;
       assign part_tlul_rdata[k]  = '0;
-end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
+    end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
       otp_ctrl_part_buf #(
         .Info(PartInfo[k]),
-        // By default all counter words are set and the life cycle state is scrapped.
-        .DataDefault({lc_ctrl_pkg::LcCnt16, lc_ctrl_pkg::LcStScrap})
+        .DataDefault(PartInvDefault[PartInfo[k].offset*8 +: PartInfo[k].size*8])
       ) u_part_buf (
         .clk_i,
         .rst_ni,
@@ -1041,7 +1026,7 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
         // This is only supported by the life cycle partition. We need to prevent this partition
         // from escalating once the life cycle state in memory is being updated (and hence not
         // consistent with the values in the buffer regs anymore).
-        .check_byp_en_i ( lc_check_byp_en              ),
+        .check_byp_en_i    ( lc_check_byp_en[0]              ),
         .error_o           ( part_error[k]                   ),
         .access_i          ( part_access_csrs[k]             ),
         .access_o          ( part_access_dai[k]              ),
@@ -1134,14 +1119,14 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
 
   // The device is personalized if the root key has been provisioned and locked
   assign otp_lc_data_o.id_state       = (part_digest[Secret2Idx] != '0) ?
-                                        lc_ctrl_pkg::LcIdPersonalized :
-                                        lc_ctrl_pkg::LcIdBlank;
+                                        lc_ctrl_state_pkg::LcIdPersonalized :
+                                        lc_ctrl_state_pkg::LcIdBlank;
 
   // Lifecycle state
-  assign otp_lc_data_o.state = lc_ctrl_pkg::lc_state_e'(part_buf_data[LcStateOffset +:
-                                                                      LcStateSize]);
-  assign otp_lc_data_o.count = lc_ctrl_pkg::lc_cnt_e'(part_buf_data[LcTransitionCntOffset +:
-                                                                    LcTransitionCntSize]);
+  assign otp_lc_data_o.state = lc_ctrl_state_pkg::lc_state_e'(part_buf_data[LcStateOffset +:
+                                                                            LcStateSize]);
+  assign otp_lc_data_o.count = lc_ctrl_state_pkg::lc_cnt_e'(part_buf_data[LcTransitionCntOffset +:
+                                                                          LcTransitionCntSize]);
 
   // Assert life cycle state valid signal only when all partitions have initialized.
   assign otp_lc_data_o.valid    = &part_init_done;
@@ -1164,11 +1149,11 @@ end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
   `ASSERT_INIT(FlashAddrKeySeedSize_A,     FlashKeySeedWidth == FlashAddrKeySeedSize * 8)
   `ASSERT_INIT(SramDataKeySeedSize_A,      SramKeySeedWidth == SramDataKeySeedSize * 8)
 
-  `ASSERT_INIT(RmaTokenSize_A,        lc_ctrl_pkg::LcTokenWidth == RmaTokenSize * 8)
-  `ASSERT_INIT(TestUnlockTokenSize_A, lc_ctrl_pkg::LcTokenWidth == TestUnlockTokenSize * 8)
-  `ASSERT_INIT(TestExitTokenSize_A,   lc_ctrl_pkg::LcTokenWidth == TestExitTokenSize * 8)
-  `ASSERT_INIT(LcStateSize_A,         lc_ctrl_pkg::LcStateWidth == LcStateSize * 8)
-  `ASSERT_INIT(LcTransitionCntSize_A, lc_ctrl_pkg::LcCountWidth == LcTransitionCntSize * 8)
+  `ASSERT_INIT(RmaTokenSize_A,        lc_ctrl_state_pkg::LcTokenWidth == RmaTokenSize * 8)
+  `ASSERT_INIT(TestUnlockTokenSize_A, lc_ctrl_state_pkg::LcTokenWidth == TestUnlockTokenSize * 8)
+  `ASSERT_INIT(TestExitTokenSize_A,   lc_ctrl_state_pkg::LcTokenWidth == TestExitTokenSize * 8)
+  `ASSERT_INIT(LcStateSize_A,         lc_ctrl_state_pkg::LcStateWidth == LcStateSize * 8)
+  `ASSERT_INIT(LcTransitionCntSize_A, lc_ctrl_state_pkg::LcCountWidth == LcTransitionCntSize * 8)
 
   `ASSERT_KNOWN(OtpAstPwrSeqKnown_A,         otp_ast_pwr_seq_o)
   `ASSERT_KNOWN(TlOutKnown_A,                tl_o)

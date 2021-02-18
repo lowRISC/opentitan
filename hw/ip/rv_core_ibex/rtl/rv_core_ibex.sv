@@ -74,8 +74,8 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
 
   // if pipeline=1, do not allow pass through and always break the path
   // if pipeline is 0, passthrough the fifo completely
-  localparam int FifoPass = PipeLine ? 1'b0 : 1'b1;
-  localparam int FifoDepth = PipeLine ? 4'h2 : 4'h0;
+  localparam bit FifoPass = PipeLine ? 1'b0 : 1'b1;
+  localparam int unsigned FifoDepth = PipeLine ? 2 : 0;
   // ICache creates more outstanding transactions
   localparam int NumOutstandingReqs = ICache ? 8 : 2;
 
@@ -259,6 +259,7 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
     .clk_i,
     .rst_ni,
     .req_i   (instr_req),
+    .type_i  (tlul_pkg::InstrType),
     .gnt_o   (instr_gnt),
     .addr_i  (instr_addr),
     .we_i    (1'b0),
@@ -294,6 +295,7 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
     .clk_i,
     .rst_ni,
     .req_i   (data_req),
+    .type_i  (tlul_pkg::DataType),
     .gnt_o   (data_gnt),
     .addr_i  (data_addr),
     .we_i    (data_we),

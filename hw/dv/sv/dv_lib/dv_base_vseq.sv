@@ -25,7 +25,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   // knobs to enable pre_start routines
   bit do_dut_init       = 1'b1;
   bit do_apply_reset    = 1'b1;
-  bit do_wait_for_reset = 1'b1;
+  bit do_wait_for_reset = 1'b0;
 
   // knobs to enable post_start routines
   bit do_dut_shutdown   = 1'b1;
@@ -86,13 +86,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   virtual task apply_reset(string kind = "HARD");
     if (kind == "HARD") begin
-      csr_utils_pkg::reset_asserted();
       cfg.clk_rst_vif.apply_reset();
-      csr_utils_pkg::clear_outstanding_access();
-      csr_utils_pkg::reset_deasserted();
-    end
-    if (cfg.has_ral) begin
-      foreach (cfg.ral_models[i]) cfg.ral_models[i].reset(kind);
     end
   endtask
 

@@ -52,6 +52,25 @@ class OperandType:
         '''
         return None
 
+    @staticmethod
+    def _describe_bits_lst(bits_lst: List[str]) -> str:
+        assert bits_lst
+        if len(bits_lst) == 1:
+            return bits_lst[0]
+        else:
+            return '{{{}}}'.format(', '.join(bits_lst))
+
+    def describe_decode(self, bits_lst: List[str]) -> str:
+        '''Return string saying how to interpret the raw bits of bits_str
+
+        bits_lst is a nonempty list of string describing which bits are used to
+        get the raw value.
+
+        Overridden in subclasses if they do something non-trivial.
+
+        '''
+        return 'unsigned({})'.format(OperandType._describe_bits_lst(bits_lst))
+
     def syntax_determines_value(self) -> bool:
         '''Can the value of this operand always be inferred from asm syntax?
 
@@ -276,21 +295,80 @@ class ImmOperandType(OperandType):
 
         return ImmOperandType(width, enc_offset, shift, signed, pc_rel)
 
+    @staticmethod
+    def _doc_rel_to_abs(value: int) -> str:
+        '''Turn X to . + X or . - X, as appropriate.'''
+        if value < 0:
+            return '.-{}'.format(-value)
+        elif value == 0:
+            return '.'
+        else:
+            return '.+{}'.format(value)
+
     def markdown_doc(self) -> Optional[str]:
         # Override from OperandType base class
-        rel_rng = self.get_doc_range()
-        if rel_rng is None:
+        rng = self.get_doc_range()
+        if rng is None:
             return None
 
-        rel_lo, rel_hi = rel_rng
+        lo, hi = rng
         if self.shift == 0:
             stp_msg = ''
         else:
             stp_msg = ' in steps of `{}`'.format(1 << self.shift)
 
-        pc_pfx = '.+' if self.pc_rel else ''
-        return ('Valid range: `{}{}..{}{}`{}'
-                .format(pc_pfx, rel_lo, pc_pfx, rel_hi, stp_msg))
+        rel_suffix = ''
+        if self.pc_rel:
+            rel_suffix = (' This is encoded PC-relative but appears '
+                          'as an absolute value in assembly. To write a raw '
+                          'value in an assembly file, write something in the '
+                          'range `{}` to `{}`.'
+                          .format(ImmOperandType._doc_rel_to_abs(lo),
+                                  ImmOperandType._doc_rel_to_abs(hi)))
+
+        return ('Valid range: `{}` to `{}`{}.{}'
+                .format(lo, hi, stp_msg, rel_suffix))
+
+    def describe_decode(self, bits_lst: List[str]) -> str:
+        # The "most general" result is something like this:
+        #
+        #   PC + (signed({A, B, C} + enc_offset) << shift)
+        #
+        # But if enc_offset is zero and shift is positive, we'd like results
+        # that look like
+        #
+        #   PC + signed({A, B, C, 2'b0})
+
+        # Show shift with a concatenation if there is no offset
+        shift = self.shift
+        if shift and not self.enc_offset:
+            bits_lst = bits_lst + ["{}'b0".format(shift)]
+            shift = 0
+
+        # Render as a concatenation and make the conversion to an integer
+        # explicit.
+        xsigned = 'signed' if self.signed else 'unsigned'
+        acc = '{}({})'.format(xsigned,
+                              OperandType._describe_bits_lst(bits_lst))
+        acc_prec = 2
+
+        if self.enc_offset:
+            acc = '{} + {}'.format(acc, self.enc_offset)
+            if shift:
+                # Although a + b << c is logically the same as (a + b) << c, we add
+                # the parentheses to make it easier to read.
+                acc = '({}) << {}'.format(acc, self.shift)
+                acc_prec = 0
+        else:
+            assert not shift
+
+        if self.pc_rel:
+            if acc_prec < 1:
+                acc = '({})'.format(acc)
+
+            acc = 'PC + {}'.format(acc)
+
+        return acc
 
     def str_to_op_val(self, as_str: str) -> Optional[int]:
         # Try to parse the literal as an integer. Give up safely if we can't
@@ -310,7 +388,7 @@ class ImmOperandType(OperandType):
             #
             # The other time this is used is objdump, where either version
             # works fine.
-            return '.+{}'.format(op_val - cur_pc)
+            return ImmOperandType._doc_rel_to_abs(op_val - cur_pc)
         else:
             return str(op_val)
 
@@ -475,9 +553,8 @@ class EnumOperandType(OperandType):
 
     def markdown_doc(self) -> Optional[str]:
         # Override from OperandType base class
-        parts = ['Syntax table:\n\n'
-                 '| Syntax | Value of immediate |\n'
-                 '|--------|--------------------|\n']
+        parts = ['| Assembly Syntax | Value |\n'
+                 '|-----------------|-------|\n']
         for idx, item in enumerate(self.items):
             parts.append('| `{}` | `{}` |\n'
                          .format(item, idx))
@@ -685,16 +762,22 @@ class Operand:
         # dict.
         what = 'operand for {!r} instruction'.format(mnemonic)
         if isinstance(yml, str):
-            name = yml
+            name = yml.lower()
+            abbrev = None
             op_type = None
             doc = None
             pc_rel = False
             op_what = '{!r} {}'.format(name, what)
         elif isinstance(yml, dict):
-            yd = check_keys(yml, what, ['name'], ['type', 'pc-rel', 'doc'])
-            name = check_str(yd['name'], 'name of ' + what)
+            yd = check_keys(yml, what,
+                            ['name'],
+                            ['type', 'pc-rel', 'doc', 'abbrev'])
+            name = check_str(yd['name'], 'name of ' + what).lower()
 
             op_what = '{!r} {}'.format(name, what)
+            abbrev = get_optional_str(yd, 'abbrev', op_what)
+            if abbrev is not None:
+                abbrev = abbrev.lower()
             op_type = get_optional_str(yd, 'type', op_what)
             pc_rel = check_bool(yd.get('pc-rel', False),
                                 'pc-rel field of ' + op_what)
@@ -712,7 +795,14 @@ class Operand:
                                  .format(mnemonic, name))
             enc_scheme_field = insn_encoding.fields[field_name].scheme_field
 
+        if abbrev is not None:
+            if name == abbrev:
+                raise ValueError('Operand {!r} of the {!r} instruction has '
+                                 'an abbreviated name the same as its '
+                                 'actual name.'
+                                 .format(name, mnemonic))
         self.name = name
+        self.abbrev = abbrev
         self.op_type = make_operand_type(op_type, pc_rel, name,
                                          mnemonic, enc_scheme_field)
         self.doc = doc

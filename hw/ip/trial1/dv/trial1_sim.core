@@ -16,6 +16,8 @@ filesets:
     file_type: systemVerilogSource
 
   files_dv:
+    depend:
+      - lowrisc:dv:dv_test_status
     files:
       - bus_pkg.sv
       - trial1_test.sv
@@ -34,10 +36,6 @@ targets:
     <<: *sim_target
     default_tool: verilator
     tools:
-      ascentlint:
-        ascentlint_options:
-          - "-wait_license"
-          - "-stop_on_error"
       verilator:
         mode: lint-only
         verilator_options:

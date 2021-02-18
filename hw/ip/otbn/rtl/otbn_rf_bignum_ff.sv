@@ -29,7 +29,7 @@ module otbn_rf_bignum_ff
   logic [WLEN-1:0] rf [NWdr];
   logic [1:0]      we_onehot [NWdr];
 
-  for (genvar i = 0;i < NWdr; i++) begin : g_rf
+  for (genvar i = 0; i < NWdr; i++) begin : g_rf
     assign we_onehot[i] = wr_en_i & {2{wr_addr_i == i}};
 
     // Split registers into halves for clear seperation for the enable terms

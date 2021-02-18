@@ -52,14 +52,14 @@ module top_earlgrey_artys7  #(
   //////////////////////
 
   logic clk_main, clk_usb_48mhz, rst_n;
-  logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr;
-  logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_attr;
-  logic [padctrl_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
-  logic [padctrl_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
-  logic [padctrl_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] mio_attr;
+  logic [pinmux_reg_pkg::NDioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] dio_attr;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_padring;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
 
   padring #(
     // MIOs 31:20 are currently not
@@ -77,11 +77,11 @@ module top_earlgrey_artys7  #(
   ) padring (
     // Clk / Rst
     .clk_pad_i           ( 1'b0 ),
-    .clk_usb_48mhz_pad_i ( 1'b0 ),
     .rst_pad_ni          ( 1'b0 ),
     .clk_o               (      ),
-    .clk_usb_48mhz_o     (      ),
     .rst_no              (      ),
+    .cc1_i               ( 1'b0 ),
+    .cc2_i               ( 1'b0 ),
     // MIO Pads
     .mio_pad_io          ( { 16'bz,   // Note that 31:16 are currently not mapped
                              IO_GP15,
@@ -214,8 +214,13 @@ module top_earlgrey_artys7  #(
     .ast_tl_rsp_i                 ( '0              ),
     .otp_ctrl_otp_ast_pwr_seq_o   (                 ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( '0              ),
-    .flash_power_down_h_i         ( '0              ),
+    .flash_bist_enable_i          ( 1'b0            ),
+    .flash_power_down_h_i         ( 1'b0            ),
     .flash_power_ready_h_i        ( 1'b1            ),
+    .flash_test_mode_a_i          ('0),
+    .flash_test_voltage_h_i       ('0),
+    .clks_ast_o                   ( ),
+    .rsts_ast_o                   ( ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck_buf  ),

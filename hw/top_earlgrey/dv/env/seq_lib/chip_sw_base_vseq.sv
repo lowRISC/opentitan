@@ -119,7 +119,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
         cfg.m_spi_agent_cfg.en_monitor_checks = 1;
       end
 
-      cfg.clk_rst_vif.wait_clks(20_000);
+      cfg.clk_rst_vif.wait_clks(30_000);
       byte_cnt += SPI_FRAME_BYTE_SIZE;
     end
   endtask

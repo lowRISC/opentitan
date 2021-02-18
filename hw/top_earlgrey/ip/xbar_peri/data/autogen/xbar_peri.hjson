@@ -21,7 +21,49 @@
     // device
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_uart"
+      name:   "tl_uart0"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_uart1"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_uart2"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_uart3"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_i2c0"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_i2c1"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_i2c2"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_pattgen"
       act:    "req"
       package: "tlul_pkg"
     }
@@ -39,6 +81,18 @@
     }
     { struct: "tl"
       type:   "req_rsp"
+      name:   "tl_spi_host0"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_spi_host1"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
       name:   "tl_rv_timer"
       act:    "req"
       package: "tlul_pkg"
@@ -51,25 +105,31 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_pwrmgr"
+      name:   "tl_pwrmgr_aon"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_rstmgr"
+      name:   "tl_rstmgr_aon"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_clkmgr"
+      name:   "tl_clkmgr_aon"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_ram_ret"
+      name:   "tl_pinmux_aon"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_ram_ret_aon"
       act:    "req"
       package: "tlul_pkg"
     }
@@ -87,7 +147,7 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_sensor_ctrl"
+      name:   "tl_sensor_ctrl_aon"
       act:    "req"
       package: "tlul_pkg"
     }
@@ -99,13 +159,13 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_sram_ctrl_ret"
+      name:   "tl_sram_ctrl_ret_aon"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_nmi_gen"
+      name:   "tl_aon_timer_aon"
       act:    "req"
       package: "tlul_pkg"
     }

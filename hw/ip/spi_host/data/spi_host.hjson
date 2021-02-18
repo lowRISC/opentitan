@@ -1,0 +1,57 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "SPI_HOST",
+  clock_primary: "clk_i",
+  bus_device: "tlul",
+  available_input_list: [
+  ],
+  available_output_list: [
+    { name: "sck", desc: "SPI Clock" },
+    { name: "csb", desc: "Chip Enable#" },
+  ],
+  available_inout_list: [
+    { name: "sd", width: 4, desc: "SPI In/Out ports" },
+  ],
+  scan: "true", // Enable `scanmode_i` port
+  regwidth: "32",
+  registers: [
+    { name: "CONTROL",
+      desc: "Control register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "3:0",
+          name: "data",
+          desc: '''This is a dummy register
+            '''
+          resval: "0"
+        },
+        { bits: "4",
+          name: "sck",
+          desc: '''This is a dummy register
+            '''
+          resval: "0"
+        },
+        { bits: "5",
+          name: "csb",
+          desc: '''This is a dummy register
+            '''
+          resval: "0"
+        },
+        { bits: "6",
+          name: "dir",
+          desc: '''This is a dummy register
+            '''
+          resval: "0"
+        },
+      ]
+      // This is a dummy register in order to
+      // connect some logic to the TL-UL bus.
+      // Do not write to or read from this reg
+      // until this has been replaced by correctly
+      // behaving logic.
+      tags: ["excl:CsrAllTests:CsrExclAll"]
+    },
+  ]
+}

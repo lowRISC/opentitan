@@ -30,34 +30,33 @@ RSA library.
 /* reserved */
 .word 0x00000000
 
-/* Key/modulus size in 256b limbs (i.e. for RSA-1024: N = 4) */
+/* N: Key/modulus size in 256b limbs (i.e. for RSA-1024: N = 4) */
 .globl n_limbs
 n_limbs:
-  /* number of limbs (N) */
   .word 0x00000000
 
+/* pointer to m0' (dptr_m0d) */
 dptr_m0d:
-  /* pointer to m0' (dptr_m0d) */
   .word m0d
 
+/* pointer to RR (dptr_rr) */
 dptr_rr:
-  /* pointer to RR (dptr_rr) */
   .word RR
 
+/* load pointer to modulus (dptr_m) */
 dptr_m:
-  /* load pointer to modulus (dptr_m) */
   .word modulus
 
+/* pointer to base bignum buffer (dptr_in) */
 dptr_in:
-  /* pointer to base bignum buffer (dptr_in) */
   .word in
 
+/* pointer to exponent buffer (dptr_exp, unused for encrypt) */
 dptr_exp:
-  /* pointer to exponent buffer (dptr_exp, unused for encrypt) */
   .word exp
 
+/* pointer to out buffer (dptr_out) */
 dptr_out:
-  /* pointer to out buffer (dptr_out) */
   .word out
 
 

@@ -8,9 +8,16 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   bit en_scb            = 1; // can be changed at run-time
   bit en_scb_tl_err_chk = 1;
   bit en_scb_mem_chk    = 1;
-  bit en_cov            = 1;
+  bit en_cov            = 0; // Enable via plusarg, only if coverage collection is turned on.
   bit has_ral           = 1;
   bit under_reset       = 0;
+  bit is_initialized;        // Indicates that the initialize() method has been called.
+
+  // The scope and runtime of a existing test can be reduced by setting this variable. This is
+  // useful to keep the runtime down especially in time-sensitive runs such as CI, which is meant
+  // to check the code health and not find design bugs. It is set via plusarg and retrieved in
+  // `dv_base_test`.
+  bit smoke_test        = 0;
 
   // bit to configure all uvcs with zero delays to create high bw test
   rand bit zero_delays;
@@ -40,8 +47,12 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
 
   `uvm_object_new
 
+  function void pre_randomize();
+    `DV_CHECK_FATAL(is_initialized, "Please invoke initialize() before randomizing this object.")
+  endfunction
+
   virtual function void initialize(bit [bus_params_pkg::BUS_AW-1:0] csr_base_addr = '1);
-    import bus_params_pkg::*;
+    is_initialized = 1'b1;
 
     // build the ral model
     if (has_ral) begin
@@ -63,7 +74,7 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
       // correctly handle the case where a bus address is narrower than a uvm_reg_addr_t).
       base_addr = (&csr_base_addr ?
                    {`UVM_REG_ADDR_WIDTH{1'b1}} :
-                   {{(`UVM_REG_ADDR_WIDTH - BUS_AW){1'b0}}, csr_base_addr});
+                   {{(`UVM_REG_ADDR_WIDTH - bus_params_pkg::BUS_AW){1'b0}}, csr_base_addr});
       ral.set_base_addr(base_addr);
 
       // Get list of valid csr addresses (useful in seq to randomize addr as well as in scb checks)

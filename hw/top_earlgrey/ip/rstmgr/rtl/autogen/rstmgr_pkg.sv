@@ -24,7 +24,12 @@ package rstmgr_pkg;
 
   // positions of software controllable reset bits
   parameter int SPI_DEVICE = 0;
-  parameter int USB = 1;
+  parameter int SPI_HOST0 = 1;
+  parameter int SPI_HOST1 = 2;
+  parameter int USB = 3;
+  parameter int I2C0 = 4;
+  parameter int I2C1 = 5;
+  parameter int I2C2 = 6;
 
   // ast interface
   typedef struct packed {
@@ -51,7 +56,12 @@ package rstmgr_pkg;
     logic [PowerDomains-1:0] rst_sys_io_div4_n;
     logic [PowerDomains-1:0] rst_sys_aon_n;
     logic [PowerDomains-1:0] rst_spi_device_n;
+    logic [PowerDomains-1:0] rst_spi_host0_n;
+    logic [PowerDomains-1:0] rst_spi_host1_n;
     logic [PowerDomains-1:0] rst_usb_n;
+    logic [PowerDomains-1:0] rst_i2c0_n;
+    logic [PowerDomains-1:0] rst_i2c1_n;
+    logic [PowerDomains-1:0] rst_i2c2_n;
   } rstmgr_out_t;
 
   // cpu reset requests and status
@@ -62,9 +72,12 @@ package rstmgr_pkg;
 
   // exported resets
   typedef struct packed {
-    logic [PowerDomains-1:0] rst_ast_sensor_ctrl_sys_io_div4_n;
     logic [PowerDomains-1:0] rst_ast_usbdev_sys_io_div4_n;
+    logic [PowerDomains-1:0] rst_ast_usbdev_sys_aon_n;
     logic [PowerDomains-1:0] rst_ast_usbdev_usb_n;
+    logic [PowerDomains-1:0] rst_ast_sensor_ctrl_aon_sys_io_div4_n;
+    logic [PowerDomains-1:0] rst_ast_entropy_src_sys_n;
+    logic [PowerDomains-1:0] rst_ast_edn0_sys_n;
   } rstmgr_ast_out_t;
 
   // default value for rstmgr_ast_rsp_t (for dangling ports)

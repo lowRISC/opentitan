@@ -26,7 +26,7 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
+    foreach (channel_cfg[i]) begin
       item_fifo[i] = new($sformatf("item_fifo[%0d]", i), this);
       channel_cfg[i] = pattgen_channel_cfg::type_id::create($sformatf("channel_cfg[%d]", i));
     end
@@ -45,7 +45,7 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg         csr;
     bit [TL_DW-1:0] reg_value;
-    bit             do_read_check = 1'b0;  // TODO: temporaly disable
+    bit             do_read_check = 1'b1;
     bit             write = item.is_write();
 
     uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
@@ -96,15 +96,23 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
         end
         "ctrl": begin
           reg_value = ral.ctrl.get_mirrored_value();
-          channel_cfg[0].polarity = bit'(get_field_val(ral.ctrl.polarity_ch0, reg_value));
           channel_cfg[0].enable   = bit'(get_field_val(ral.ctrl.enable_ch0,   reg_value));
-          channel_cfg[1].polarity = bit'(get_field_val(ral.ctrl.polarity_ch1, reg_value));
           channel_cfg[1].enable   = bit'(get_field_val(ral.ctrl.enable_ch1,   reg_value));
-          foreach (channel_cfg[i]) begin
-            if (channel_cfg[i].enable && !channel_cfg[i].start) begin
+          channel_cfg[0].polarity = bit'(get_field_val(ral.ctrl.polarity_ch0, reg_value));
+          channel_cfg[1].polarity = bit'(get_field_val(ral.ctrl.polarity_ch1, reg_value));
+          `uvm_info(`gfn, $sformatf("\n  scb: ctrl reg %b", reg_value[3:0]), UVM_DEBUG);
+          for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
+            // channel is started
+            if (channel_cfg[i].enable && !channel_cfg[i].start && !channel_cfg[i].stop) begin
               channel_cfg[i].start = 1'b1;
-              `uvm_info(`gfn, $sformatf("\n  scb: started channel %0d %p",
-                  i, channel_cfg[i]), UVM_DEBUG)
+              `uvm_info(`gfn, $sformatf("\n  scb: channel %0d is started", i), UVM_DEBUG)
+            end
+            // channel is operating but incorrectly disabled -> error injected
+            if (!channel_cfg[i].enable && channel_cfg[i].start && !channel_cfg[i].stop) begin
+              channel_cfg[i].stop = 1'b1;
+              `uvm_info(`gfn, $sformatf("\n  scb: channel config %0d\n%s",
+                  i, channel_cfg[i].convert2string()), UVM_DEBUG)
+              generate_exp_items(.channel(i), .error_injected(1'b1));
             end
           end
         end
@@ -133,24 +141,34 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (!write && channel == DataChannel) begin
-      if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-            $sformatf("reg name: %0s", csr.get_full_name()))
-      end
-      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
-
       case (csr.get_name())
         "intr_state": begin
+          do_read_check = 1'b0;
           // done_ch0/done_ch1 is asserted to indicate a pattern is completely generated
-          reg_value = ral.intr_state.get_mirrored_value();
-          channel_cfg[0].done = bit'(get_field_val(ral.intr_state.done_ch0, reg_value));
-          channel_cfg[1].done = bit'(get_field_val(ral.intr_state.done_ch1, reg_value));
-          generate_exp_items();
+          reg_value = item.d_data;
+          channel_cfg[0].stop = bit'(get_field_val(ral.intr_state.done_ch0, reg_value));
+          channel_cfg[1].stop = bit'(get_field_val(ral.intr_state.done_ch1, reg_value));
+          `uvm_info(`gfn, $sformatf("\n  scb: read intr_state %b%b",
+              channel_cfg[1].stop, channel_cfg[0].stop), UVM_DEBUG)
+          for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
+            generate_exp_items(.channel(i), .error_injected(1'b0));
+          end
+        end
+        "ctrl", "size", "intr_test", "intr_enable",
+        "prediv_ch0", "data_ch0_0", "data_ch0_1",
+        "prediv_ch1", "data_ch1_0", "data_ch1_1": begin
+          // no special handle is needed
         end
         default: begin
           `uvm_fatal(`gfn, $sformatf("\n  scb: read from invalid csr: %0s", csr.get_full_name()))
         end
       endcase
+
+      if (do_read_check) begin
+        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
+            $sformatf("reg name: %0s", csr.get_full_name()))
+      end
+      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask : process_tl_access
 
@@ -173,25 +191,25 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
     end
   endtask : compare_trans
 
-  virtual function void generate_exp_items();
-    for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
-      if (channel_cfg[i].start && channel_cfg[i].done) begin
+  virtual function void generate_exp_items(uint channel, bit error_injected = 1'b0);
+    if (channel_cfg[channel].start && channel_cfg[channel].stop) begin
+      if (!error_injected) begin
         pattgen_item exp_item;
         exp_item = pattgen_item::type_id::create("exp_item");
-        `uvm_info(`gfn, $sformatf("\n  scb: finished channel %0d %p",
-            i, channel_cfg[i]), UVM_DEBUG)
         // see the specification document, the effective values of prediv, len, and reps
         // are incremented from the coresponding register values
-        for (uint r = 0; r <= channel_cfg[i].reps; r++) begin
-          for (uint l = 0; l <= channel_cfg[i].len; l++) begin
-            exp_item.data_q.push_back(channel_cfg[i].data[l]);
+        for (uint r = 0; r <= channel_cfg[channel].reps; r++) begin
+          for (uint l = 0; l <= channel_cfg[channel].len; l++) begin
+            exp_item.data_q.push_back(channel_cfg[channel].data[l]);
           end
         end
-        exp_item_q[i].push_back(exp_item);
-        `uvm_info(`gfn, $sformatf("\n--> scoreboard: built exp_item for channel %0d\n%s",
-            i, exp_item.sprint()), UVM_DEBUG)
-        channel_cfg[i].reset_channel_config;
+        exp_item_q[channel].push_back(exp_item);
+        `uvm_info(`gfn, $sformatf("\n--> scb: get exp_item for channel %0d\n%s",
+            channel, exp_item.sprint()), UVM_DEBUG)
+      end else begin
+        `uvm_info(`gfn, $sformatf("\n--> scb: drop exp_item for channel %0d", channel), UVM_DEBUG)
       end
+      channel_cfg[channel].reset_channel_config();
     end
   endfunction : generate_exp_items
 
@@ -200,7 +218,7 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
     for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
       item_fifo[i].flush();
       exp_item_q[i].delete();
-      channel_cfg[i].reset_channel_config;
+      channel_cfg[i].reset_channel_config(kind);
     end
   endfunction : reset
 

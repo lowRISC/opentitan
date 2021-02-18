@@ -42,13 +42,14 @@ class sram_ctrl_env extends cip_base_env #(
     m_sram_tl_agent = tl_agent::type_id::create("m_sram_tl_agent", this);
     uvm_config_db#(tl_agent_cfg)::set(this,
       "m_sram_tl_agent", "cfg", cfg.m_sram_cfg);
+    cfg.m_sram_cfg.en_cov = cfg.en_cov;
 
     // Build the KDI agent
     m_kdi_agent = push_pull_agent#(.DeviceDataWidth(KDI_DATA_SIZE))::type_id
       ::create("m_kdi_agent", this);
     uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(KDI_DATA_SIZE)))::set(
       this, "m_kdi_agent", "cfg", cfg.m_kdi_cfg);
-
+    cfg.m_kdi_cfg.en_cov = cfg.en_cov;
   endfunction
 
   function void connect_phase(uvm_phase phase);

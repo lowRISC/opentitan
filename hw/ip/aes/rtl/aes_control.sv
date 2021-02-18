@@ -27,6 +27,7 @@ module aes_control
   input  logic                    key_iv_data_in_clear_i,
   input  logic                    data_out_clear_i,
   input  logic                    prng_reseed_i,
+  input  logic                    mux_sel_err_i,
   input  logic                    alert_fatal_i,
   output logic                    alert_o,
 
@@ -477,7 +478,8 @@ module aes_control
 
           // Proceed upon successful handshake.
           if (cipher_out_done) begin
-            data_out_we_o = 1'b1;
+            // Don't release data from cipher core in case of invalid mux selector signals.
+            data_out_we_o = ~mux_sel_err_i;
             aes_ctrl_ns   = IDLE;
           end
         end
@@ -516,8 +518,9 @@ module aes_control
           // To clear the output data registers, we re-use the muxing resources of the cipher core.
           // data_out_clear_i is acknowledged by the cipher core with cipher_data_out_clear_i.
           if (cipher_data_out_clear_i) begin
-            // Clear output data and the trigger bit.
-            data_out_we_o       = 1'b1;
+            // Clear output data and the trigger bit. Don't release data from cipher core in case
+            // of invalid mux selector signals.
+            data_out_we_o       = ~mux_sel_err_i;
             data_out_clear_we_o = 1'b1;
           end
 
@@ -532,10 +535,15 @@ module aes_control
 
       // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
       default: begin
-        alert_o     = 1'b1;
         aes_ctrl_ns = ERROR;
       end
     endcase
+
+    // Unconditionally jump into the terminal error state in case a mux selector signal becomes
+    // invalid.
+    if (mux_sel_err_i) begin
+      aes_ctrl_ns = ERROR;
+    end
   end
 
   // This primitive is used to place a size-only constraint on the
@@ -551,6 +559,10 @@ module aes_control
     .d_i ( aes_ctrl_ns     ),
     .q_o ( aes_ctrl_cs_raw )
   );
+
+  /////////////////////
+  // Status Tracking //
+  /////////////////////
 
   // We only use clean initial keys. Either software/counter has updated
   // - all initial key registers, or
@@ -663,6 +675,10 @@ module aes_control
   assign key_iv_data_in_clear_o = 1'b0;
   assign data_out_clear_o       = 1'b0;
   assign prng_reseed_o          = 1'b0;
+
+  ////////////////
+  // Assertions //
+  ////////////////
 
   // Selectors must be known/valid
   `ASSERT(AesModeValid, !ctrl_err_storage_i |-> mode_i inside {

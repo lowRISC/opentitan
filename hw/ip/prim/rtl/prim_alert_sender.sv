@@ -12,6 +12,17 @@
 // can keep alert_req_i asserted until it has been ack'd (transferred to the alert
 // receiver).  The parent module is not required to use this.
 //
+// In case the alert sender parameter IsFatal is set to 1, an incoming alert
+// alert_req_i is latched in a local register until the next reset, causing the
+// alert sender to behave as if alert_req_i were continously asserted.
+// The alert_state_o output reflects the state of this internal latching register.
+//
+// The alert sender also exposes an alert test input, which can be used to trigger
+// single alert handshakes. This input behaves exactly the same way as the
+// alert_req_i input with IsFatal set to 0. Test alerts do not cause alert_ack_o
+// to be asserted, nor are they latched until reset (regardless of the value of the
+// IsFatal parameter).
+//
 // Further, this module supports in-band ping testing, which means that a level
 // change on the ping_p/n diff pair will result in a full-handshake response
 // on alert_p/n and ack_p/n.
@@ -34,13 +45,20 @@ module prim_alert_sender
   import prim_alert_pkg::*;
 #(
   // enables additional synchronization logic
-  parameter bit AsyncOn = 1'b1
+  parameter bit AsyncOn = 1'b1,
+  // alert sender will latch the incoming alert event permanently and
+  // keep on sending alert events until the next reset.
+  parameter bit IsFatal = 1'b0
 ) (
   input             clk_i,
   input             rst_ni,
+  // alert test trigger (this will never be latched, even if IsFatal == 1)
+  input             alert_test_i,
   // native alert from the peripheral
   input             alert_req_i,
   output logic      alert_ack_o,
+  // state of the alert latching register
+  output logic      alert_state_o,
   // ping input diff pair and ack diff pair
   input alert_rx_t  alert_rx_i,
   // alert output diff pair
@@ -110,14 +128,32 @@ module prim_alert_sender
 
   // alert and ping set regs
   logic alert_set_d, alert_set_q, alert_clr;
+  logic alert_test_set_d, alert_test_set_q;
   logic ping_set_d, ping_set_q, ping_clr;
+  logic alert_req_trigger, alert_test_trigger, ping_trigger;
 
-  // if handshake is ongoing, capture additional alert requests
-  assign alert_set_d = (alert_clr) ? 1'b0 :  (alert_set_q | alert_req_i);
-  assign ping_set_d  = (ping_clr) ? 1'b0 : (ping_set_q | ping_event);
+  // if handshake is ongoing, capture additional alert requests.
+  assign alert_req_trigger = alert_req_i | alert_set_q;
+  if (IsFatal) begin : gen_fatal
+    assign alert_set_d = alert_req_trigger;
+  end else begin : gen_recov
+    assign alert_set_d = (alert_clr) ? 1'b0 : alert_req_trigger;
+  end
 
-  // alert event acknowledge
-  assign alert_ack_o = alert_clr;
+  // the alert test request is always cleared.
+  assign alert_test_trigger = alert_test_i | alert_test_set_q;
+  assign alert_test_set_d = (alert_clr) ? 1'b0 : alert_test_trigger;
+
+  logic alert_trigger;
+  assign alert_trigger = alert_req_trigger | alert_test_trigger;
+
+  assign ping_trigger = ping_set_q | ping_event;
+  assign ping_set_d  = (ping_clr) ? 1'b0 : ping_trigger;
+
+
+  // alert event acknowledge and state (not affected by alert_test_i)
+  assign alert_ack_o = alert_clr & alert_set_q;
+  assign alert_state_o = alert_set_q;
 
   // this FSM performs a full four phase handshake upon a ping or alert trigger.
   // note that the latency of the alert_p/n diff pair is at least one cycle
@@ -127,19 +163,19 @@ module prim_alert_sender
   // signal that condition over to the receiver.
   always_comb begin : p_fsm
     // default
-    state_d = state_q;
-    alert_p    = 1'b0;
-    alert_n    = 1'b1;
-    ping_clr   = 1'b0;
-    alert_clr  = 1'b0;
+    state_d   = state_q;
+    alert_p   = 1'b0;
+    alert_n   = 1'b1;
+    ping_clr  = 1'b0;
+    alert_clr = 1'b0;
 
     unique case (state_q)
       Idle: begin
         // alert always takes precedence
-        if (alert_req_i || alert_set_q || ping_event || ping_set_q) begin
-          state_d   = (alert_req_i || alert_set_q) ? AlertHsPhase1 : PingHsPhase1;
-          alert_p   = 1'b1;
-          alert_n   = 1'b0;
+        if (alert_trigger || ping_trigger) begin
+          state_d = (alert_trigger) ? AlertHsPhase1 : PingHsPhase1;
+          alert_p = 1'b1;
+          alert_n = 1'b0;
         end
       end
       // waiting for ack from receiver
@@ -222,17 +258,19 @@ module prim_alert_sender
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_reg
     if (!rst_ni) begin
-      state_q     <= Idle;
-      alert_pq    <= 1'b0;
-      alert_nq    <= 1'b1;
-      alert_set_q <= 1'b0;
-      ping_set_q  <= 1'b0;
+      state_q          <= Idle;
+      alert_pq         <= 1'b0;
+      alert_nq         <= 1'b1;
+      alert_set_q      <= 1'b0;
+      alert_test_set_q <= 1'b0;
+      ping_set_q       <= 1'b0;
     end else begin
-      state_q     <= state_d;
-      alert_pq    <= alert_pd;
-      alert_nq    <= alert_nd;
-      alert_set_q <= alert_set_d;
-      ping_set_q  <= ping_set_d;
+      state_q          <= state_d;
+      alert_pq         <= alert_pd;
+      alert_nq         <= alert_nd;
+      alert_set_q      <= alert_set_d;
+      alert_test_set_q <= alert_test_set_d;
+      ping_set_q       <= ping_set_d;
     end
   end
 
@@ -278,8 +316,27 @@ module prim_alert_sender
         $rose(alert_tx_o.alert_p), clk_i, !rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
   end
 
+  // Test the alert state output.
+  `ASSERT(AlertState0_A, alert_set_q === alert_state_o)
+
+  if (IsFatal) begin : gen_fatal_assert
+    `ASSERT(AlertState1_A, alert_req_i |=> alert_state_o)
+    `ASSERT(AlertState2_A, alert_state_o |=> $stable(alert_state_o))
+    `ASSERT(AlertState3_A, alert_ack_o |=> alert_state_o)
+  end else begin : gen_recov_assert
+    `ASSERT(AlertState1_A, alert_req_i && !alert_clr |=> alert_state_o)
+    `ASSERT(AlertState2_A, alert_req_i && alert_ack_o |=> !alert_state_o)
+  end
+
+  // The alert test input should not set the alert state register.
+  `ASSERT(AlertTest1_A, alert_test_i && !alert_req_i && !alert_state_o |=> $stable(alert_state_o))
+
   // if alert_req_i is true, handshakes should be continuously repeated
   `ASSERT(AlertHs_A, alert_req_i && state_q == Idle |=> $rose(alert_tx_o.alert_p),
+      clk_i, !rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
+
+  // if alert_test_i is true, handshakes should be continuously repeated
+  `ASSERT(AlertTestHs_A, alert_test_i && state_q == Idle |=> $rose(alert_tx_o.alert_p),
       clk_i, !rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
 
 endmodule : prim_alert_sender

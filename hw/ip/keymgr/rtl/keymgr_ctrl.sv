@@ -424,6 +424,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
       default: begin
         if (!en_i && in_disabled) begin
           state_d = StCtrlWipe;
+          op_accept = 1'b1;
         end else begin
           update_sel = KeyUpdateInvalid;
           op_accept = 1'b1;

@@ -17,14 +17,13 @@
   reset: rst_main_ni
   reset_connections:
   {
-    rst_main_ni: rstmgr_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
-    rst_fixed_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
+    rst_main_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
+    rst_fixed_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
   }
-  clock_reset_export: []
   clock_connections:
   {
-    clk_main_i: clkmgr_clocks.clk_main_infra
-    clk_fixed_i: clkmgr_clocks.clk_io_div4_infra
+    clk_main_i: clkmgr_aon_clocks.clk_main_infra
+    clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
   }
   domain: "0"
   connections:
@@ -51,8 +50,6 @@
       edn1
       hmac
       rv_plic
-      pinmux
-      padctrl
       otbn
       keymgr
       kmac
@@ -72,8 +69,6 @@
       edn1
       hmac
       rv_plic
-      pinmux
-      padctrl
       otbn
       kmac
       sram_ctrl_main
@@ -161,7 +156,7 @@
       [
         {
           base_addr: 0x10000000
-          size_byte: 0x10000
+          size_byte: 0x20000
         }
       ]
       xbar: false
@@ -179,7 +174,7 @@
       [
         {
           base_addr: 0x20000000
-          size_byte: 0x80000
+          size_byte: 0x100000
         }
       ]
       xbar: false
@@ -198,16 +193,8 @@
       addr_range:
       [
         {
-          base_addr: 0x18000000
-          size_byte: 0x1000
-        }
-        {
           base_addr: 0x40000000
-          size_byte: 0x421000
-        }
-        {
-          base_addr: 0x40500000
-          size_byte: 0x20000
+          size_byte: 0x800000
         }
       ]
     }
@@ -251,7 +238,7 @@
       name: kmac
       type: device
       clock: clk_main_i
-      rset: rst_main_ni
+      reset: rst_main_ni
       pipeline_byp: "false"
       inst_type: kmac
       addr_range:
@@ -365,42 +352,6 @@
       [
         {
           base_addr: 0x41010000
-          size_byte: 0x1000
-        }
-      ]
-      pipeline_byp: "false"
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: pinmux
-      type: device
-      clock: clk_main_i
-      reset: rst_fixed_ni
-      inst_type: pinmux
-      addr_range:
-      [
-        {
-          base_addr: 0x40460000
-          size_byte: 0x1000
-        }
-      ]
-      pipeline_byp: "false"
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: padctrl
-      type: device
-      clock: clk_main_i
-      reset: rst_fixed_ni
-      inst_type: padctrl
-      addr_range:
-      [
-        {
-          base_addr: 0x40470000
           size_byte: 0x1000
         }
       ]

@@ -20,8 +20,9 @@
     {
       name: firmware
       desc: '''
-            Verify ability to access SW app registers based on value of efuse input
-            Verify regen bit enables/disables write access to control registers
+            Verify ability to access genbits register based on value of efuse input.
+            Verify regen bit disables write access of control registers.
+            Verify registers at End-Of-Test.
             '''
       milestone: V2
       tests: []
@@ -29,7 +30,11 @@
     {
       name: interrupts
       desc: '''
-            Verify all csrng interrupts assert/clear when expected.
+            Verify cs_cmd_req_done interrupt asserts/clears as predicted.
+            Verify cs_entropy_req interrupt asserts/clears as predicted.
+            Verify cs_hw_inst_exc interrupt asserts/clears as predicted.
+            Verify cs_fifo_err interrupt asserts/clears as predicted.
+            Verify fifo error status bits are set as predicted.
             '''
       milestone: V2
       tests: []
@@ -41,6 +46,16 @@
             Verify all HW app csrng commands req/status behave as predicted.
             Verify above for all valid values of acmd, clen, flags, glen.
             Verify for multiple hw app interfaces running in parallel.
+            Verify sw/hw app interfaces running in parallel.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: life cycle
+      desc: '''
+            Verify lifecycle hardware debug mode enables AES bypass, reading CSRNG internal state.
+	    Verify CSRNG internal state for all csrng/genbits operations.
             '''
       milestone: V2
       tests: []
@@ -49,7 +64,7 @@
       name: genbits
       desc: '''
             Verify genbits generated as predicted.
-            Verify fips bits as predicted.
+            Verify fips bits is passed through properly.
             Verify for multiple hw app interfaces running in parallel.
             '''
       milestone: V2

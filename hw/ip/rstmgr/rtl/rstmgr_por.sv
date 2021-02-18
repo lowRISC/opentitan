@@ -62,18 +62,31 @@ module rstmgr_por #(
   assign cnt_en = rst_stable & !rst_no;
 
   // stretch the POR
+  logic rst_nd, rst_nq;
+
+  assign rst_nd = ~rst_stable ? 1'b0 :
+                  cnt_en & (cnt == StretchCount) ? 1'b1 : rst_nq;
+
   always_ff @(posedge clk_i or negedge rst_clean_n) begin
     if (!rst_clean_n) begin
       cnt <= '0;
-      rst_no <= '0;
     end else if (!rst_stable) begin
       cnt <= '0;
-      rst_no <= '0;
-    end else if (cnt_en && cnt == StretchCount) begin
-      rst_no <= 1'b1;
     end else if (cnt_en) begin
       cnt <= cnt + 1'b1;
     end
   end
+
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_rst_flop (
+    .clk_i,
+    .rst_ni(rst_clean_n),
+    .d_i(rst_nd),
+    .q_o(rst_nq)
+  );
+
+  assign rst_no = rst_nq;
 
 endmodule // rstmgr_por

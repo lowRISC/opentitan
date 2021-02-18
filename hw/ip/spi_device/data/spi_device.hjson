@@ -7,10 +7,11 @@
   available_input_list: [
     { name: "sck", desc: "SPI Clock" },
     { name: "csb", desc: "Chip Enable#" },
-    { name: "sdi", desc: "SPI Input" },
   ],
   available_output_list: [
-    { name: "sdo", desc: "SPI Output" },
+  ],
+  available_inout_list: [
+    { name: "sd", width: 4, desc: "SPI In/Out ports" },
   ],
   interrupt_list: [
     { name: "rxf",         desc: "RX SRAM FIFO Full" },
@@ -20,7 +21,16 @@
     { name: "rxoverflow",  desc: "RX Async FIFO overflow" },
     { name: "txunderflow", desc: "TX Async FIFO underflow" },
   ],
-  scan: "true", // Enable `scanmode_i` port
+  scan: "true",       // Enable `scanmode_i` port
+  scan_reset: "true", // Enable `scan_rst_ni` port
+  param_list: [
+    { name:    "SramDepth"
+      desc:    "Sram Entries. Word size is 32bit width."
+      type:    "int unsigned"
+      default: "1024"
+      local:   "true"
+    }
+  ]
   regwidth: "32",
   registers: [
     { name: "CONTROL",
@@ -270,17 +280,21 @@
         }
       ],
     },
+    { skipto: "0x1000" }
     { window: {
         name: "buffer",
-        items: "512",
+        items: "SramDepth",
         validbits: "32",
         byte-write: "false",
         unusual: "false"
         swaccess: "rw",
         desc: '''
-          SPI internal 2kB buffer.
+          SPI internal buffer.
 
-          This buffer is shared by RX and TX circular buffer together.
+          In Generic mode, this buffer is used for RX/TX buffer.  In Flash &
+          Passthrough mode, lower 2kB is for Read content emulating eFlash.
+          next 1kB is for Mailbox read/write buffer. The rest is 64B of
+          CmdFIFO, 64B of AddrFIFO, and 256B of payload FIFO.
           '''
       },
     },

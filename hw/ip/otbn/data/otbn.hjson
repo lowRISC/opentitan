@@ -23,7 +23,7 @@
     { name: "fatal"
       desc: "A fatal error. Fatal alerts are non-recoverable and will be asserted until a hard reset."
     }
-    { name: "recoverable"
+    { name: "recov"
       desc: "A recoverable error. Just sent once (as the processor stops)."
     }
   ]
@@ -72,16 +72,6 @@
             "excl:CsrAllTests:CsrExclWrite"
           ]
         }
-        { bits: "1",
-          name: "dummy",
-          desc: '''
-            Reggen doesn't generate sub-fields with only a single field
-            specified; instead, the whole register is taken as a field, leading
-            to signals like `hw2reg.status.d` instead of
-            `hw2reg.status.start.d`. Since we expect to add more commands later,
-            we force the generation of fields with this dummy field for now.
-          '''
-        }
       ],
     }
     { name: "STATUS",
@@ -94,38 +84,81 @@
           name: "busy",
           desc: "OTBN is performing an operation."
         }
-        { bits: "1",
-          name: "dummy",
-          desc: '''
-            See !!CMD.dummy for details.
-          '''
-        }
       ]
     } // register : status
-    { name: "ERR_CODE",
-      desc: "Error Code",
+    { name: "ERR_BITS",
+      desc: '''
+        Error bitfield. Reads as non-zero if an error was seen during OTBN
+        operation
+      ''',
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
-        { bits: "31:0",
-          name: "err_code",
+        { bits: "0",
+          name: "bad_data_addr"
           desc: '''
-            The error cause if an error occurred.
-
-            This is set to zero (ErrCodeNoError) when OTBN successfully
-            completes an operation or a positive value when OTBN stops on an
-            error.
-
-            While OTBN is running (!!CMD.busy set), this has no meaning. When
-            OTBN stops this will be set to indicate the outcome. It is
-            guaranteed not to change until OTBN is run again (with !!CMD.start).
-
-            See <a href='#error-conditions'>Error Conditions</a> for
-            details on the possible values.
+            A DMEM read or write occurred with an out of bounds or unaligned
+            address.
           '''
         }
+        { bits: "1",
+          name: "bad_insn_addr"
+          desc: '''
+            An IMEM read or write occurred with an out of bounds or unaligned
+            address.
+          '''
+        }
+        { bits: "2",
+          name: "call_stack"
+          desc: '''
+            A instruction tried to pop from an empty call stack or push to a
+            full call stack.
+          '''
+        }
+        { bits: "3",
+          name: "illegal_insn"
+          desc: '''
+            One of the following happened:
+            <ul>
+              <li>An instruction being excuted had an invalid encoding.</li>
+              <li>An access occurred for an invalid CSR or WSR.</li>
+              <li>
+                A CSR or WSR access occurred that is not permitted (e.g. writing
+                to a read-only CSR or WSR).
+              </li>
+            </ul>
+          '''
+        }
+        { bits: "4",
+          name: "loop"
+          desc: '''
+            One of the following happened:
+            <ul>
+              <li>A loop was started with an iteration count of zero.</li>
+              <li>
+                The final instruction of a loop was a branch or another loop.
+              </li>
+              <li>
+                A new loop tried to push to a full loop stack (loop nesting
+                level too deep).
+              </li>
+            </ul>
+          '''
+        }
+        { bits: "5",
+          name: "fatal_imem"
+          desc: "A fatal failure was seen on an instruction fetch."
+        }
+        { bits: "6",
+          name: "fatal_dmem"
+          desc: "A fatal failure was seen on a DMEM read."
+        }
+        { bits: "7",
+          name: "fatal_reg"
+          desc: "A fatal failure was seen on a GPR or WDR read."
+        }
       ]
-    } // register : err_code
+    } // register : err_bits
     { name: "START_ADDR",
       desc: "Start byte address in the instruction memory",
       swaccess: "wo",

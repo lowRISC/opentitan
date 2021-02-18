@@ -6,9 +6,6 @@ Generate C header (Titan style) from validated register JSON tree
 """
 
 import io
-import logging as log
-import re
-import sys
 
 
 def genout(outfile, msg):
@@ -107,12 +104,6 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
             continue
 
         if 'skipto' in x:
-            continue
-
-        if 'sameaddr' in x:
-            for sareg in x['sameaddr']:
-                gen_cdefine_register(outstr, sareg, component, regwidth,
-                                     rnames)
             continue
 
         if 'window' in x:

@@ -18,6 +18,13 @@ using mock_mmio::MmioTest;
 using mock_mmio::MockDevice;
 using testing::Test;
 
+// If either of these static assertions fail, then the unit-tests for related
+// API should be revisited.
+static_assert(RV_PLIC_PARAM_NUMSRC == 171,
+              "PLIC instantiation parameters have changed.");
+static_assert(RV_PLIC_PARAM_NUMTARGET == 1,
+              "PLIC instantiation parameters have changed.");
+
 constexpr uint32_t kTarget0 = 0;
 constexpr uint32_t kFirstIrq = 1;
 
@@ -31,23 +38,27 @@ class PlicTest : public Test, public MmioTest {
 class InitTest : public PlicTest {
  protected:
   void ExpectInitReset() {
-    // Interrupt enable multireg.
-    EXPECT_WRITE32(RV_PLIC_IE0_0_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_IE0_1_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_IE0_2_REG_OFFSET, 0);
-    EXPECT_WRITE32(RV_PLIC_IE0_3_REG_OFFSET, 0);
-
     // Level/edge multireg.
     EXPECT_WRITE32(RV_PLIC_LE_0_REG_OFFSET, 0);
     EXPECT_WRITE32(RV_PLIC_LE_1_REG_OFFSET, 0);
     EXPECT_WRITE32(RV_PLIC_LE_2_REG_OFFSET, 0);
     EXPECT_WRITE32(RV_PLIC_LE_3_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_LE_4_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_LE_5_REG_OFFSET, 0);
 
     // Priority registers.
     for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
       ptrdiff_t offset = RV_PLIC_PRIO0_REG_OFFSET + (sizeof(uint32_t) * i);
       EXPECT_WRITE32(offset, 0);
     }
+
+    // Interrupt enable multireg.
+    EXPECT_WRITE32(RV_PLIC_IE0_0_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_IE0_1_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_IE0_2_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_IE0_3_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_IE0_4_REG_OFFSET, 0);
+    EXPECT_WRITE32(RV_PLIC_IE0_5_REG_OFFSET, 0);
 
     // Target threshold registers.
     EXPECT_WRITE32(RV_PLIC_THRESHOLD0_REG_OFFSET, 0);
@@ -99,21 +110,27 @@ class IrqTest : public PlicTest {
           {RV_PLIC_IE0_0_REG_OFFSET, RV_PLIC_IE0_0_E_31_BIT},
           {RV_PLIC_IE0_1_REG_OFFSET, RV_PLIC_IE0_1_E_63_BIT},
           {RV_PLIC_IE0_2_REG_OFFSET, RV_PLIC_IE0_2_E_95_BIT},
-          {RV_PLIC_IE0_3_REG_OFFSET, RV_PLIC_IE0_3_E_98_BIT},
+          {RV_PLIC_IE0_3_REG_OFFSET, RV_PLIC_IE0_3_E_127_BIT},
+          {RV_PLIC_IE0_4_REG_OFFSET, RV_PLIC_IE0_4_E_159_BIT},
+          {RV_PLIC_IE0_5_REG_OFFSET, RV_PLIC_IE0_5_E_170_BIT},
       }};
   static constexpr std::array<Register, RV_PLIC_LE_MULTIREG_COUNT>
       kTriggerRegisters{{
           {RV_PLIC_LE_0_REG_OFFSET, RV_PLIC_LE_0_LE_31_BIT},
           {RV_PLIC_LE_1_REG_OFFSET, RV_PLIC_LE_1_LE_63_BIT},
           {RV_PLIC_LE_2_REG_OFFSET, RV_PLIC_LE_2_LE_95_BIT},
-          {RV_PLIC_LE_3_REG_OFFSET, RV_PLIC_LE_3_LE_98_BIT},
+          {RV_PLIC_LE_3_REG_OFFSET, RV_PLIC_LE_3_LE_127_BIT},
+          {RV_PLIC_LE_4_REG_OFFSET, RV_PLIC_LE_4_LE_159_BIT},
+          {RV_PLIC_LE_5_REG_OFFSET, RV_PLIC_LE_5_LE_170_BIT},
       }};
   static constexpr std::array<Register, RV_PLIC_IP_MULTIREG_COUNT>
       kPendingRegisters{{
           {RV_PLIC_IP_0_REG_OFFSET, RV_PLIC_IP_0_P_31_BIT},
           {RV_PLIC_IP_1_REG_OFFSET, RV_PLIC_IP_1_P_63_BIT},
           {RV_PLIC_IP_2_REG_OFFSET, RV_PLIC_IP_2_P_95_BIT},
-          {RV_PLIC_IP_3_REG_OFFSET, RV_PLIC_IP_3_P_98_BIT},
+          {RV_PLIC_IP_3_REG_OFFSET, RV_PLIC_IP_3_P_127_BIT},
+          {RV_PLIC_IP_4_REG_OFFSET, RV_PLIC_IP_4_P_159_BIT},
+          {RV_PLIC_IP_5_REG_OFFSET, RV_PLIC_IP_5_P_170_BIT},
       }};
 
   // Set enable/disable multireg expectations, one bit per call.

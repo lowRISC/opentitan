@@ -185,10 +185,10 @@ dif_lc_ctrl_result_t dif_lc_ctrl_alert_force(const dif_lc_ctrl_t *lc,
   bitfield_bit32_index_t alert_idx;
   switch (alert) {
     case kDifLcCtrlAlertOtp:
-      alert_idx = LC_CTRL_ALERT_TEST_LC_PROGRAMMING_FAILURE_BIT;
+      alert_idx = LC_CTRL_ALERT_TEST_FATAL_PROG_ERROR_BIT;
       break;
     case kDifLcCtrlAlertCorrupt:
-      alert_idx = LC_CTRL_ALERT_TEST_LC_STATE_FAILURE_BIT;
+      alert_idx = LC_CTRL_ALERT_TEST_FATAL_STATE_ERROR_BIT;
       break;
     default:
       return kDifLcCtrlBadArg;

@@ -8,7 +8,6 @@ import topgen.lib as lib
 
 num_mio_inputs = sum([x["width"] for x in top["pinmux"]["inputs"]])
 num_mio_outputs = sum([x["width"] for x in top["pinmux"]["outputs"]])
-num_mio_inouts = sum([x["width"] for x in top["pinmux"]["inouts"]])
 num_mio = top["pinmux"]["num_mio"]
 
 num_dio_inputs = sum([x["width"] if x["type"] == "input" else 0 for x in top["pinmux"]["dio"]])
@@ -18,10 +17,10 @@ num_dio = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["dio"]])
 
 num_im = sum([x["width"] if "width" in x else 1 for x in top["inter_signal"]["external"]])
 
-max_miolength = max([len(x["name"]) for x in top["pinmux"]["inputs"] + top["pinmux"]["outputs"] + top["pinmux"]["inouts"]])
+max_miolength = max([len(x["name"]) for x in top["pinmux"]["inputs"] + top["pinmux"]["outputs"]])
 max_diolength = max([len(x["name"]) for x in top["pinmux"]["dio"]])
 
-max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["inputs"] + top["pinmux"]["outputs"] +  top["pinmux"]["inouts"]])
+max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["inputs"] + top["pinmux"]["outputs"]])
 max_sigwidth = len("{}".format(max_sigwidth))
 
 clks_attr = top['clocks']
@@ -32,6 +31,8 @@ esc_clk = top['clocks']['hier_paths']['top'] + "clk_io_div4_timers"
 esc_rst = top["reset_paths"]["sys_io_div4"]
 
 unused_resets = lib.get_unused_resets(top)
+unused_im_defs, undriven_im_defs = lib.get_dangling_im_def(top["inter_signal"]["definitions"])
+
 %>\
 module top_${top["name"]} #(
   // Auto-inferred parameters
@@ -70,12 +71,12 @@ module top_${top["name"]} #(
   output logic ${lib.bitarray(num_dio, max_sigwidth)} dio_oe_o,
 % endif
 
-% if "padctrl" in top:
+% if "pinmux" in top:
   // pad attributes to padring
-  output logic[padctrl_reg_pkg::NMioPads-1:0]
-              [padctrl_reg_pkg::AttrDw-1:0]   mio_attr_o,
-  output logic[padctrl_reg_pkg::NDioPads-1:0]
-              [padctrl_reg_pkg::AttrDw-1:0]   dio_attr_o,
+  output logic[pinmux_reg_pkg::NMioPads-1:0]
+              [pinmux_reg_pkg::AttrDw-1:0]   mio_attr_o,
+  output logic[pinmux_reg_pkg::NDioPads-1:0]
+              [pinmux_reg_pkg::AttrDw-1:0]   dio_attr_o,
 % endif
 
 % if num_im != 0:
@@ -85,8 +86,9 @@ module top_${top["name"]} #(
   ${"input " if sig["direction"] == "in" else "output"} ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]},
   % endfor
 % endif
-  input               scan_rst_ni, // reset used for test mode
-  input               scanmode_i   // 1 for Scan
+  input                      scan_rst_ni, // reset used for test mode
+  input                      scan_en_i,
+  input lc_ctrl_pkg::lc_tx_t scanmode_i   // 1 for Scan
 );
 
   // JTAG IDCODE for development versions of this code.
@@ -108,9 +110,9 @@ module top_${top["name"]} #(
   import top_${top["name"]}_rnd_cnst_pkg::*;
 
   // Signals
-  logic [${num_mio_inputs + num_mio_inouts - 1}:0] mio_p2d;
-  logic [${num_mio_outputs + num_mio_inouts - 1}:0] mio_d2p;
-  logic [${num_mio_outputs + num_mio_inouts - 1}:0] mio_d2p_en;
+  logic [${num_mio_inputs - 1}:0] mio_p2d;
+  logic [${num_mio_outputs - 1}:0] mio_d2p;
+  logic [${num_mio_outputs - 1}:0] mio_d2p_en;
   logic [${num_dio - 1}:0] dio_p2d;
   logic [${num_dio - 1}:0] dio_d2p;
   logic [${num_dio - 1}:0] dio_d2p_en;
@@ -184,6 +186,40 @@ module top_${top["name"]} #(
   ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]};
 % endfor
 
+## Mixed connection to port
+## Index greater than 0 means a port is assigned to an inter-module array
+## whereas an index of 0 means a port is directly driven by a module
+  // define mixed connection to port
+% for port in top['inter_signal']['external']:
+  % if port['index'] > 0:
+    % if port['direction'] == 'in':
+  assign ${port['netname']}[${port['index']}] = ${port['signame']};
+    % else:
+  assign ${port['signame']} = ${port['netname']}[${port['index']}];
+    % endif
+  % endif
+% endfor
+
+## Partial inter-module definition tie-off
+  // define partial inter-module tie-off
+% for sig in unused_im_defs:
+  % for idx in range(sig['end_idx'], sig['width']):
+  ${lib.im_defname(sig)} unused_${sig["signame"]}${idx};
+  % endfor
+% endfor
+
+  // assign partial inter-module tie-off
+% for sig in unused_im_defs:
+  % for idx in range(sig['end_idx'], sig['width']):
+  assign unused_${sig["signame"]}${idx} = ${sig["signame"]}[${idx}];
+  % endfor
+% endfor
+% for sig in undriven_im_defs:
+  % for idx in range(sig['end_idx'], sig['width']):
+  assign ${sig["signame"]}[${idx}] = ${lib.im_netname(sig, sig['suffix'], True)};
+  % endfor
+% endfor
+
 ## Inter-module signal collection
 
   // Unused reset signals
@@ -249,7 +285,7 @@ module top_${top["name"]} #(
     .crash_dump_o         (rv_core_ibex_crashdump),
     // CPU control signals
     .fetch_enable_i       (1'b1),
-    .core_sleep_o         (pwrmgr_pwr_cpu.core_sleeping)
+    .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping)
   );
 
   // Debug Module (RISC-V Debug Spec 0.13)
@@ -274,6 +310,7 @@ module top_${top["name"]} #(
   ) u_dm_top (
     .clk_i         (${cpu_clk}),
     .rst_ni        (${dm_rst}[rstmgr_pkg::Domain0Sel]),
+    .hw_debug_en_i (lc_ctrl_lc_hw_debug_en),
     .testmode_i    (1'b0),
     .ndmreset_o    (ndmreset_req),
     .dmactive_o    (),
@@ -293,8 +330,8 @@ module top_${top["name"]} #(
     .jtag_rsp_o    (jtag_rsp)
   );
 
-  assign rstmgr_cpu.ndmreset_req = ndmreset_req;
-  assign rstmgr_cpu.rst_cpu_n = ${top["reset_paths"]["sys"]}[rstmgr_pkg::Domain0Sel];
+  assign rstmgr_aon_cpu.ndmreset_req = ndmreset_req;
+  assign rstmgr_aon_cpu.rst_cpu_n = ${top["reset_paths"]["sys"]}[rstmgr_pkg::Domain0Sel];
 
 ## Memory Instantiation
 % for m in top["memory"]:
@@ -332,23 +369,24 @@ module top_${top["name"]} #(
     % for key, value in resets.items():
     .${key}   (${value}),
     % endfor
-    .tl_i     (${m["name"]}_tl_req),
-    .tl_o     (${m["name"]}_tl_rsp),
-
-    .req_o    (${m["name"]}_req),
-    .gnt_i    (${m["name"]}_gnt),
-    .we_o     (${m["name"]}_we),
-    .addr_o   (${m["name"]}_addr),
-    .wdata_o  (${m["name"]}_wdata),
-    .wmask_o  (${m["name"]}_wmask),
-    .rdata_i  (${m["name"]}_rdata),
-    .rvalid_i (${m["name"]}_rvalid),
-    .rerror_i (${m["name"]}_rerror)
+    .tl_i        (${m["name"]}_tl_req),
+    .tl_o        (${m["name"]}_tl_rsp),
+    .en_ifetch_i (${m["inter_signal_list"][2]["top_signame"]}),
+    .req_o       (${m["name"]}_req),
+    .gnt_i       (${m["name"]}_gnt),
+    .we_o        (${m["name"]}_we),
+    .addr_o      (${m["name"]}_addr),
+    .wdata_o     (${m["name"]}_wdata),
+    .wmask_o     (${m["name"]}_wmask),
+    .rdata_i     (${m["name"]}_rdata),
+    .rvalid_i    (${m["name"]}_rvalid),
+    .rerror_i    (${m["name"]}_rerror)
   );
 
   prim_ram_1p_scr #(
     .Width(${data_width}),
     .Depth(${sram_depth}),
+    .EnableParity(1),
     .CfgWidth(8)
   ) u_ram1p_${m["name"]} (
     % for key in clocks:
@@ -404,18 +442,18 @@ module top_${top["name"]} #(
     .${key}   (${value}),
     % endfor
 
-    .tl_i     (${m["name"]}_tl_req),
-    .tl_o     (${m["name"]}_tl_rsp),
-
-    .req_o    (${m["name"]}_req),
-    .gnt_i    (1'b1), // Always grant as only one requester exists
-    .we_o     (),
-    .addr_o   (${m["name"]}_addr),
-    .wdata_o  (),
-    .wmask_o  (),
-    .rdata_i  (${m["name"]}_rdata),
-    .rvalid_i (${m["name"]}_rvalid),
-    .rerror_i (2'b00)
+    .tl_i        (${m["name"]}_tl_req),
+    .tl_o        (${m["name"]}_tl_rsp),
+    .en_ifetch_i (tlul_pkg::InstrEn),
+    .req_o       (${m["name"]}_req),
+    .gnt_i       (1'b1), // Always grant as only one requester exists
+    .we_o        (),
+    .addr_o      (${m["name"]}_addr),
+    .wdata_o     (),
+    .wmask_o     (),
+    .rdata_i     (${m["name"]}_rdata),
+    .rvalid_i    (${m["name"]}_rvalid),
+    .rerror_i    (2'b00)
   );
 
   prim_rom_adv #(
@@ -460,18 +498,18 @@ module top_${top["name"]} #(
     .${key}   (${value}),
     % endfor
 
-    .tl_i     (${m["name"]}_tl_req),
-    .tl_o     (${m["name"]}_tl_rsp),
-
-    .req_o    (flash_host_req),
-    .gnt_i    (flash_host_req_rdy),
-    .we_o     (),
-    .addr_o   (flash_host_addr),
-    .wdata_o  (),
-    .wmask_o  (),
-    .rdata_i  (flash_host_rdata),
-    .rvalid_i (flash_host_req_done),
-    .rerror_i ({flash_host_rderr,1'b0})
+    .tl_i        (${m["name"]}_tl_req),
+    .tl_o        (${m["name"]}_tl_rsp),
+    .en_ifetch_i (tlul_pkg::InstrEn), // tie this to secure boot somehow
+    .req_o       (flash_host_req),
+    .gnt_i       (flash_host_req_rdy),
+    .we_o        (),
+    .addr_o      (flash_host_addr),
+    .wdata_o     (),
+    .wmask_o     (),
+    .rdata_i     (flash_host_rdata),
+    .rvalid_i    (flash_host_req_done),
+    .rerror_i    ({flash_host_rderr,1'b0})
   );
 
   flash_phy u_flash_${m["name"]} (
@@ -498,6 +536,7 @@ module top_${top["name"]} #(
     .flash_test_mode_a_i,
     .flash_test_voltage_h_i,
     .scanmode_i,
+    .scan_en_i,
     .scan_rst_ni
   );
 
@@ -596,6 +635,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .periph_to_mio_oe_i   (mio_d2p_en ),
       .mio_to_periph_o      (mio_p2d    ),
 
+      .mio_attr_o,
       .mio_out_o,
       .mio_oe_o,
       .mio_in_i,
@@ -604,14 +644,11 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .periph_to_dio_oe_i   (dio_d2p_en ),
       .dio_to_periph_o      (dio_p2d    ),
 
+      .dio_attr_o,
       .dio_out_o,
       .dio_oe_o,
       .dio_in_i,
-    % endif
-    % if m["type"] == "padctrl":
 
-      .mio_attr_o,
-      .dio_attr_o,
     % endif
     % if m["type"] == "alert_handler":
       // alert signals
@@ -624,6 +661,8 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % if m["scan_reset"] == "true":
       .scan_rst_ni  (scan_rst_ni),
     % endif
+
+      // Clock and reset connections
     % for k, v in m["clock_connections"].items():
       .${k} (${v}),
     % endfor
@@ -635,10 +674,10 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 % endfor
   // interrupt assignments
   assign intr_vector = {
-  % for intr in top["interrupt"][::-1]:
-      intr_${intr["name"]},
+  % for k, intr in enumerate(top["interrupt"][::-1]):
+      intr_${intr["name"]}, // ID ${len(top["interrupt"])-k}
   % endfor
-      1'b 0 // For ID 0.
+      1'b 0 // ID 0 is a special case and tied to zero.
   };
 
   // TL-UL Crossbar
@@ -669,21 +708,21 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 
 % if "pinmux" in top:
   // Pinmux connections
-  % if num_mio_outputs + num_mio_inouts != 0:
+  % if num_mio_outputs != 0:
   assign mio_d2p = {
-    % for sig in top["pinmux"]["inouts"] + top["pinmux"]["outputs"]:
+    % for sig in list(reversed(top["pinmux"]["outputs"])):
     cio_${sig["name"]}_d2p${"" if loop.last else ","}
     % endfor
   };
   assign mio_d2p_en = {
-  % for sig in top["pinmux"]["inouts"] + top["pinmux"]["outputs"]:
+  % for sig in list(reversed(top["pinmux"]["outputs"])):
     cio_${sig["name"]}_en_d2p${"" if loop.last else ","}
   % endfor
   };
   % endif
-  % if num_mio_inputs + num_mio_inouts != 0:
+  % if num_mio_inputs != 0:
   assign {
-    % for sig in top["pinmux"]["inouts"] + top["pinmux"]["inputs"]:
+    % for sig in list(reversed(top["pinmux"]["inputs"])):
     cio_${sig["name"]}_p2d${"" if loop.last else ","}
     % endfor
   } = mio_p2d;
@@ -693,32 +732,64 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 % if num_dio != 0:
   // Dedicated IO connections
   // Input-only DIOs have no d2p signals
-  assign dio_d2p = {
+  assign dio_d2p = {<% vector_idx = num_dio - 1 %>
   % for sig in top["pinmux"]["dio"]:
     % if sig["type"] in ["output", "inout"]:
-    cio_${sig["name"]}_d2p${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}
+      % if sig["width"] > 1:
+        % for i in range(sig["width"]-1,-1,-1):
+    cio_${sig["name"]}_d2p[${i}]${"" if vector_idx - sig["width"] + 1 == 0 else ","} // DIO${vector_idx}<% vector_idx -= 1 %>
+        % endfor
+      % else:
+    cio_${sig["name"]}_d2p${"" if vector_idx == 0 else ","} // DIO${vector_idx}<% vector_idx -= 1 %>
+      % endif
     % else:
-    ${sig["width"]}'b0${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}: cio_${sig["name"]}
+      % if sig["width"] > 1:
+    ${sig["width"]}'b0${"" if vector_idx - sig["width"] + 1 == 0 else ","} // DIO${vector_idx} - DIO${vector_idx-sig["width"] + 1}: cio_${sig["name"]}<% vector_idx -= sig["width"] %>
+      % else:
+    ${sig["width"]}'b0${"" if vector_idx == 0 else ","} // DIO${vector_idx}: cio_${sig["name"]}<% vector_idx -= 1 %>
+      % endif
     % endif
   % endfor
   };
 
-  assign dio_d2p_en = {
+  assign dio_d2p_en = {<% vector_idx = num_dio - 1 %>
   % for sig in top["pinmux"]["dio"]:
     % if sig["type"] in ["output", "inout"]:
-    cio_${sig["name"]}_en_d2p${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}
+      % if sig["width"] > 1:
+        % for i in range(sig["width"]-1,-1,-1):
+    cio_${sig["name"]}_en_d2p[${i}]${"" if vector_idx - sig["width"] + 1 == 0 else ","} // DIO${vector_idx}<% vector_idx -= 1 %>
+        % endfor
+      % else:
+    cio_${sig["name"]}_en_d2p${"" if vector_idx == 0 else ","} // DIO${vector_idx}<% vector_idx -= 1 %>
+      % endif
     % else:
-    ${sig["width"]}'b0${"" if loop.last else ","} // DIO${num_dio - 1 - loop.index}: cio_${sig["name"]}
+      % if sig["width"] > 1:
+    ${sig["width"]}'b0${"" if vector_idx - sig["width"] + 1 == 0 else ","} // DIO${vector_idx} - DIO${vector_idx-sig["width"] + 1}: cio_${sig["name"]}<% vector_idx -= sig["width"] %>
+      % else:
+    ${sig["width"]}'b0${"" if vector_idx == 0 else ","} // DIO${vector_idx}: cio_${sig["name"]}<% vector_idx -= 1 %>
+      % endif
     % endif
   % endfor
   };
 
-  // Output-only DIOs have no p2d signal
+  // Output-only DIOs have no p2d signal<% vector_idx = num_dio - 1 %>
   % for sig in top["pinmux"]["dio"]:
     % if sig["type"] in ["input", "inout"]:
-  assign cio_${sig["name"]}_p2d${" " * (max_diolength - len(sig["name"]))} = dio_p2d[${num_dio - 1 - loop.index}]; // DIO${num_dio - 1 - loop.index}
+      % if sig["width"] > 1:
+        % for i in range(sig["width"]-1,-1,-1):
+  assign cio_${sig["name"]}_p2d[${i}]${" " * (max_diolength - len(str(i)) - 2 - len(sig["name"]))} = dio_p2d[${vector_idx}]; // DIO${vector_idx}<% vector_idx -= 1 %>
+        % endfor
+      % else:
+  assign cio_${sig["name"]}_p2d${" " * (max_diolength - len(sig["name"]))} = dio_p2d[${vector_idx}]; // DIO${vector_idx}<% vector_idx -= 1 %>
+      % endif
     % else:
-  // DIO${num_dio - 1 - loop.index}: cio_${sig["name"]}
+      % if sig["width"] > 1:
+        % for i in range(sig["width"]-1,-1,-1):
+  // DIO${vector_idx}: cio_${sig["name"]}[${i}] // DIO${vector_idx}<% vector_idx -= 1 %>
+        % endfor
+      % else:
+  // DIO${vector_idx}: cio_${sig["name"]} // DIO${vector_idx}<% vector_idx -= 1 %>
+      % endif
     % endif
   % endfor
 % endif

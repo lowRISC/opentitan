@@ -10,8 +10,10 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:push_pull_agent
+      - lowrisc:dv:str_utils
       - lowrisc:dv:test_vectors
       - lowrisc:dv:digestpp_dpi:0.1
+      - lowrisc:ip:kmac
     files:
       - kmac_env_pkg.sv
       - kmac_sideload_if.sv
@@ -24,6 +26,13 @@ filesets:
       - seq_lib/kmac_base_vseq.sv: {is_include_file: true}
       - seq_lib/kmac_common_vseq.sv: {is_include_file: true}
       - seq_lib/kmac_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_long_msg_and_output_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_sideload_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_test_vectors_base_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_test_vectors_sha3_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_test_vectors_shake_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_test_vectors_kmac_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_test_vectors_kmac_xof_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

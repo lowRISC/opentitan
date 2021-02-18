@@ -38,12 +38,13 @@ $ ninja -C build-out sw/device/boot_rom/boot_rom_export_fpga_nexysvideo
 
 Since not all FPGAs are able to fit the full design, there is a separate script that can be invoked to reduce the size of the design.
 
-To reduce the design:
+To reduce the design such that it fits the Nexys Video FPGA board:
 ```console
 $ cd $REPO_TOP
-$ ./hw/top_earlgrey/util/top_earlgrey_reduce.py
+$ ./hw/top_earlgrey/util/top_earlgrey_reduce.py --build
 ```
-By default, the reduce script targets 'nexysvideo', cw305 is also supported.
+The `--build` argument is optional and ensures that the boot ROM is rebuilt for the reduced design.
+Alternatively, the boot ROM can be manually regenerated using the previous command.
 
 
 In the following example we synthesize the Earl Grey design for the Nexys Video board using Xilinx Vivado 2020.1.
@@ -56,7 +57,7 @@ $ ./hw/top_earlgrey/util/top_earlgrey_reduce.py
 $ ninja -C build-out sw/device/boot_rom/boot_rom_export_fpga_nexysvideo
 $ fusesoc --cores-root . run --flag=fileset_top --target=synth lowrisc:systems:top_earlgrey_nexysvideo
 ```
-The fsel_top flag used above is specific to the OpenTitan project to select the correct fileset.
+The `fileset_top` flag used above is specific to the OpenTitan project to select the correct fileset.
 
 The resulting bitstream is located at `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit`.
 See the [reference manual]({{< relref "ref_manual_fpga.md" >}}) for more information.

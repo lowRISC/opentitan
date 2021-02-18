@@ -150,6 +150,13 @@ module otp_ctrl_lfsr_timer
                                                   cnsty_chk_req_q & ~cnsty_chk_ack_i;
 
 
+  // external triggers
+  logic clr_integ_chk_trig, clr_cnsty_chk_trig;
+  logic integ_chk_trig_d, integ_chk_trig_q;
+  logic cnsty_chk_trig_d, cnsty_chk_trig_q;
+  assign integ_chk_trig_d = (integ_chk_trig_q & ~clr_integ_chk_trig) | integ_chk_trig_i;
+  assign cnsty_chk_trig_d = (cnsty_chk_trig_q & ~clr_cnsty_chk_trig) | cnsty_chk_trig_i;
+
   ////////////////////////////
   // Ping and Timeout Logic //
   ////////////////////////////
@@ -202,8 +209,12 @@ module otp_ctrl_lfsr_timer
 
     // Status signals going to CSRs and error logic.
     chk_timeout_d = 1'b0;
-    chk_pending_o = 1'b0;
+    chk_pending_o = cnsty_chk_trig_q || integ_chk_trig_q;
     fsm_err_o = 1'b0;
+
+    // Clear signals for external triggers
+    clr_integ_chk_trig = 1'b0;
+    clr_cnsty_chk_trig = 1'b0;
 
     unique case (state_q)
       ///////////////////////////////////////////////////////////////////
@@ -219,14 +230,16 @@ module otp_ctrl_lfsr_timer
       // Wait here until one of the two timers expires (if enabled) or if
       // a check is triggered externally.
       IdleSt: begin
-        if ((!integ_msk_zero && integ_cnt_zero) || integ_chk_trig_i) begin
+        if ((!integ_msk_zero && integ_cnt_zero) || integ_chk_trig_q) begin
           state_d = IntegWaitSt;
           integ_load_timeout = 1'b1;
           set_all_integ_reqs = 1'b1;
-        end else if ((!cnsty_msk_zero && cnsty_cnt_zero) || cnsty_chk_trig_i) begin
+          clr_integ_chk_trig = integ_chk_trig_q;
+        end else if ((!cnsty_msk_zero && cnsty_cnt_zero) || cnsty_chk_trig_q) begin
           state_d = CnstyWaitSt;
           cnsty_load_timeout = 1'b1;
           set_all_cnsty_reqs = 1'b1;
+          clr_cnsty_chk_trig = cnsty_chk_trig_q;
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -315,6 +328,8 @@ module otp_ctrl_lfsr_timer
       cnsty_chk_req_q <= '0;
       chk_timeout_q   <= 1'b0;
       reseed_timer_q  <= {ReseedLfsrWidth{1'b1}};
+      integ_chk_trig_q <= 1'b0;
+      cnsty_chk_trig_q <= 1'b0;
     end else begin
       integ_cnt_q <= integ_cnt_d;
       cnsty_cnt_q <= cnsty_cnt_d;
@@ -322,6 +337,8 @@ module otp_ctrl_lfsr_timer
       cnsty_chk_req_q <= cnsty_chk_req_d;
       chk_timeout_q   <= chk_timeout_d;
       reseed_timer_q  <= reseed_timer_d;
+      integ_chk_trig_q <= integ_chk_trig_d;
+      cnsty_chk_trig_q <= cnsty_chk_trig_d;
     end
   end
 

@@ -11,10 +11,10 @@
     { name: "op_done",   desc: "Operation complete" },
   ],
   alert_list: [
-    { name: "fault_err",
+    { name: "fatal_fault_err",
       desc: "Alert for key manager faults.  These errors cannot be caused by software",
     },
-    { name: "operation_err",
+    { name: "recov_operation_err",
       desc: '''
         Alert for key manager operation errors.  These errors could have been caused by
         software'''
@@ -198,7 +198,7 @@
 
   regwidth: "32",
   registers: [
-    { name: "CFGEN",
+    { name: "CFG_REGWEN",
       desc: "Key manager configuration enable",
       swaccess: "ro",  // this particular lock is meant to be fully HW managed
       hwaccess: "hwo",
@@ -221,7 +221,7 @@
 
     { name: "CONTROL",
       desc: "Key manager operation controls",
-      regwen: "CFGEN",
+      regwen: "CFG_REGWEN",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
@@ -361,7 +361,7 @@
     //                     32b * NumOutReg * 2 (if key shares desired) for outputs
     //                     32b * NumOutReg * NumCryptos * 2 (if key shares desired) for hidden key bus
     // This totals to over 2kb of storage
-    { name: "SW_BINDING_EN",
+    { name: "SW_BINDING_REGWEN",
       desc: "Register write enable for SOFTWARE_BINDING",
       swaccess: "rw0c",
       hwaccess: "hrw",
@@ -374,6 +374,8 @@
           desc: '''
             Software binding register write enable.
             This is locked by software and unlocked by hardware upon a successful advance call.
+
+            Software binding resets to 1, and its value cannot be altered by software until advancement to Init state.
           '''
         },
       ]
@@ -384,7 +386,7 @@
     { multireg: {
         cname: "KEYMGR",
         name: "SW_BINDING",
-        regwen: "CFGEN",
+        regwen: "SW_BINDING_REGWEN",
         desc: '''
           Software binding input to key manager.
           This register is lockable and shared between key manager stages.
@@ -410,7 +412,7 @@
     { multireg: {
         cname: "KEYMGR",
         name: "Salt",
-        regwen: "CFGEN",
+        regwen: "CFG_REGWEN",
         desc: '''
           Salt value used as part of output generation
         ''',
@@ -432,7 +434,7 @@
     { multireg: {
         cname: "KEYMGR",
         name: "KEY_VERSION",
-        regwen: "CFGEN",
+        regwen: "CFG_REGWEN",
         desc: '''
           Version used as part of output generation
         ''',
@@ -460,7 +462,7 @@
     // The following storage is also huge, should consider switching to RAMs after examining
     // the security implications
 
-    { name: "MAX_CREATOR_KEY_VER_EN",
+    { name: "MAX_CREATOR_KEY_VER_REGWEN",
       desc: "Register write enable for MAX_CREATOR_KEY_VERSION",
       swaccess: "rw0c",
       hwaccess: "none",
@@ -480,7 +482,7 @@
       desc: "Max creator key version",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen: "MAX_CREATOR_KEY_VER_EN",
+      regwen: "MAX_CREATOR_KEY_VER_REGWEN",
       fields: [
         { bits: "31:0",
           name: "VAL",
@@ -494,7 +496,7 @@
       ]
     },
 
-    { name: "MAX_OWNER_INT_KEY_VER_EN",
+    { name: "MAX_OWNER_INT_KEY_VER_REGWEN",
       desc: "Register write enable for MAX_OWNER_INT_KEY_VERSION",
       swaccess: "rw0c",
       hwaccess: "none",
@@ -514,7 +516,7 @@
       desc: "Max owner intermediate key version",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen: "MAX_OWNER_INT_KEY_VER_EN",
+      regwen: "MAX_OWNER_INT_KEY_VER_REGWEN",
       fields: [
         { bits: "31:0",
           name: "VAL",
@@ -528,7 +530,7 @@
       ]
     },
 
-    { name: "MAX_OWNER_KEY_VER_EN",
+    { name: "MAX_OWNER_KEY_VER_REGWEN",
       desc: "Register write enable for MAX_OWNER_KEY_VERSION",
       swaccess: "rw0c",
       hwaccess: "none",
@@ -548,7 +550,7 @@
       desc: "Max owner key version",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen: "MAX_OWNER_KEY_VER_EN",
+      regwen: "MAX_OWNER_KEY_VER_REGWEN",
       fields: [
         { bits: "31:0",
           name: "VAL",

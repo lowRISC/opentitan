@@ -356,8 +356,9 @@ typedef enum dif_i2c_fmt {
  * some of the calculations, such as how the allocation of a lengthened SCL
  * period.
  *
- * @param config Configuration values for producing timing parameters.
- * @param[out] out I2C configuration to which to apply the computed parameters.
+ * @param timing_config Configuration values for producing timing parameters.
+ * @param[out] config I2C configuration to which to apply the computed
+ * parameters.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
@@ -616,7 +617,7 @@ dif_i2c_result_t dif_i2c_write_byte_raw(const dif_i2c_t *i2c, uint8_t byte,
  * @param i2c An I2C handle.
  * @param byte The value to push onto the FIFO.
  * @param code The code to use for this write.
- * @param supress_nak_irq Whether to supress the NAK IRQ for this one byte.
+ * @param suppress_nak_irq Whether to supress the NAK IRQ for this one byte.
  *        May not be used in combination with `Rx` codes.
  * @return The result of the operation.
  */

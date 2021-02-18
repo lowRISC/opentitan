@@ -7,9 +7,11 @@
 //
 
 
-module usbdev (
+module usbdev import usbdev_pkg::*; (
   input  logic       clk_i,
   input  logic       rst_ni,
+  input  logic       clk_aon_i,
+  input  logic       rst_aon_ni,
   input  logic       clk_usb_48mhz_i, // use usb_ prefix for signals in this clk
   input  logic       rst_usb_48mhz_ni, // async reset, with relase sync to clk_usb_48_mhz_i
 
@@ -42,6 +44,15 @@ module usbdev (
   output logic       cio_suspend_en_o,
   output logic       cio_tx_mode_se_o,
   output logic       cio_tx_mode_se_en_o,
+
+  // Direct pinmux aon detect connections
+  output logic       usb_out_of_rst_o,
+  output logic       usb_aon_wake_en_o,
+  output logic       usb_aon_wake_ack_o,
+  output logic       usb_suspend_o,
+
+  // Debug info from wakeup module
+  input awk_state_t  usb_state_debug_i,
 
   // SOF reference for clock calibration
   output logic       usb_ref_val_o,
@@ -654,21 +665,21 @@ module usbdev (
     .SramAw(SramAw),
     .ByteAccess(0)
   ) u_tlul2sram (
-    .clk_i    (clk_i),
-    .rst_ni   (rst_ni),
+    .clk_i       (clk_i),
+    .rst_ni      (rst_ni),
 
-    .tl_i     (tl_sram_h2d [0]),
-    .tl_o     (tl_sram_d2h [0]),
-
-    .req_o    (mem_a_req),
-    .gnt_i    (mem_a_req),  //Always grant when request
-    .we_o     (mem_a_write),
-    .addr_o   (mem_a_addr),
-    .wdata_o  (mem_a_wdata),
-    .wmask_o  (),           // Not used
-    .rdata_i  (mem_a_rdata),
-    .rvalid_i (mem_a_rvalid),
-    .rerror_i (mem_a_rerror)
+    .tl_i        (tl_sram_h2d [0]),
+    .tl_o        (tl_sram_d2h [0]),
+    .en_ifetch_i (tlul_pkg::InstrDis),
+    .req_o       (mem_a_req),
+    .gnt_i       (mem_a_req),  //Always grant when request
+    .we_o        (mem_a_write),
+    .addr_o      (mem_a_addr),
+    .wdata_o     (mem_a_wdata),
+    .wmask_o     (),           // Not used
+    .rdata_i     (mem_a_rdata),
+    .rvalid_i    (mem_a_rvalid),
+    .rerror_i    (mem_a_rerror)
   );
 
   // SRAM Wrapper
@@ -1044,5 +1055,58 @@ module usbdev (
   end
 
   assign usb_ref_val_o = usb_ref_val_q;
+
+  /////////////////////////////////////////
+  // USB aon detector signaling          //
+  /////////////////////////////////////////
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      usb_out_of_rst_o <= 1'b0;
+    end else begin
+      usb_out_of_rst_o <= 1'b1;
+    end
+  end
+
+  assign usb_aon_wake_en_o = reg2hw.wake_config.wake_en.q;
+  assign usb_aon_wake_ack_o = reg2hw.wake_config.wake_ack.q;
+  assign usb_suspend_o = usb_event_link_suspend;
+
+  /////////////////////////////////////////
+  // capture async debug info            //
+  /////////////////////////////////////////
+
+  logic aon_tgl;
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
+      aon_tgl <= 1'b0;
+    end else begin
+      aon_tgl <= aon_tgl ^ 1'b1;
+    end
+  end
+
+  logic tgl_sync, tgl_sync_d1;
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_tgl_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(aon_tgl),
+    .q_o(tgl_sync)
+    );
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      tgl_sync_d1 <= 1'b0;
+    end else begin
+      tgl_sync_d1 <= tgl_sync;
+    end
+  end
+
+  logic tgl_en;
+  assign tgl_en = tgl_sync ^ tgl_sync_d1;
+
+  assign hw2reg.wake_debug.de = tgl_en;
+  assign hw2reg.wake_debug.d = usb_state_debug_i;
 
 endmodule

@@ -38,6 +38,8 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
+  run_opts: ["+test_timeout_ns=4000000000"]
+
   // Need to override the default output directory
   overrides: [
     {
@@ -69,8 +71,61 @@
       name: "{variant}_smoke"
       uvm_test_seq: kmac_smoke_vseq
     }
-
-    // TODO: add more tests here
+    {
+      name: "{variant}_long_msg_and_output"
+      uvm_test_seq: kmac_long_msg_and_output_vseq
+      run_opts: ["+test_timeout_ns=10000000000"]
+    }
+    {
+      name: "{variant}_sideload"
+      uvm_test_seq: kmac_sideload_vseq
+    }
+    {
+      name: "{variant}_test_vectors_sha3_224"
+      uvm_test_seq: kmac_test_vectors_sha3_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
+                 "+test_vectors_sha3_variant=224"]
+    }
+    {
+      name: "{variant}_test_vectors_sha3_256"
+      uvm_test_seq: kmac_test_vectors_sha3_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
+                 "+test_vectors_sha3_variant=256"]
+    }
+    {
+      name: "{variant}_test_vectors_sha3_384"
+      uvm_test_seq: kmac_test_vectors_sha3_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
+                 "+test_vectors_sha3_variant=384"]
+    }
+    {
+      name: "{variant}_test_vectors_sha3_512"
+      uvm_test_seq: kmac_test_vectors_sha3_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
+                 "+test_vectors_sha3_variant=512"]
+    }
+    {
+      name: "{variant}_test_vectors_shake_128"
+      uvm_test_seq: kmac_test_vectors_shake_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
+                 "+test_vectors_shake_variant=128"]
+    }
+    {
+      name: "{variant}_test_vectors_shake_256"
+      uvm_test_seq: kmac_test_vectors_shake_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
+                 "+test_vectors_shake_variant=256"]
+    }
+    {
+      name: "{variant}_test_vectors_kmac"
+      uvm_test_seq: kmac_test_vectors_kmac_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
+    }
+    {
+      name: "{variant}_test_vectors_kmac_xof"
+      uvm_test_seq: kmac_test_vectors_kmac_xof_vseq
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
+    }
   ]
 
   // List of regressions.

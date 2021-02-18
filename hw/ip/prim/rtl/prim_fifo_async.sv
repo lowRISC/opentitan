@@ -28,10 +28,10 @@ module prim_fifo_async #(
   output [DepthW-1:0]    rdepth_o
 );
 
-  `ASSERT_INIT(paramCheckDepth,  Depth >= 3)
+  // Depth must be a power of 2 for the gray code pointers to work
+  `ASSERT_INIT(ParamCheckDepth_A, (Depth > 2) && (Depth == 2**$clog2(Depth)))
 
   localparam int unsigned PTRV_W = $clog2(Depth);
-  localparam logic [PTRV_W-1:0] DepthMinus1 = PTRV_W'(Depth - 1);
   localparam int unsigned PTR_WIDTH = PTRV_W+1;
 
   logic [PTR_WIDTH-1:0]    fifo_wptr, fifo_rptr;
@@ -58,23 +58,15 @@ module prim_fifo_async #(
     if (!rst_wr_ni) begin
       fifo_wptr <= {(PTR_WIDTH){1'b0}};
     end else if (fifo_incr_wptr) begin
-      if (fifo_wptr[PTR_WIDTH-2:0] == DepthMinus1) begin
-        fifo_wptr <= {~fifo_wptr[PTR_WIDTH-1],{(PTR_WIDTH-1){1'b0}}};
-      end else begin
-        fifo_wptr <= fifo_wptr + {{(PTR_WIDTH-1){1'b0}},1'b1};
+      fifo_wptr <= fifo_wptr + PTR_WIDTH'(1);
     end
-  end
 
   // gray-coded version
   always_ff @(posedge clk_wr_i or negedge rst_wr_ni)
     if (!rst_wr_ni) begin
       fifo_wptr_gray <= {(PTR_WIDTH){1'b0}};
     end else if (fifo_incr_wptr) begin
-      if (fifo_wptr[PTR_WIDTH-2:0] == DepthMinus1) begin
-        fifo_wptr_gray <= dec2gray({~fifo_wptr[PTR_WIDTH-1],{(PTR_WIDTH-1){1'b0}}});
-      end else begin
-        fifo_wptr_gray <= dec2gray(fifo_wptr + {{(PTR_WIDTH-1){1'b0}},1'b1});
-      end
+      fifo_wptr_gray <= dec2gray(fifo_wptr + PTR_WIDTH'(1));
     end
 
   prim_flop_2sync #(.Width(PTR_WIDTH)) sync_wptr (
@@ -93,23 +85,15 @@ module prim_fifo_async #(
     if (!rst_rd_ni) begin
       fifo_rptr <= {(PTR_WIDTH){1'b0}};
     end else if (fifo_incr_rptr) begin
-      if (fifo_rptr[PTR_WIDTH-2:0] == DepthMinus1) begin
-        fifo_rptr <= {~fifo_rptr[PTR_WIDTH-1],{(PTR_WIDTH-1){1'b0}}};
-      end else begin
-        fifo_rptr <= fifo_rptr + {{(PTR_WIDTH-1){1'b0}},1'b1};
+      fifo_rptr <= fifo_rptr + PTR_WIDTH'(1);
     end
-  end
 
   // gray-coded version
   always_ff @(posedge clk_rd_i or negedge rst_rd_ni)
     if (!rst_rd_ni) begin
       fifo_rptr_gray <= {(PTR_WIDTH){1'b0}};
     end else if (fifo_incr_rptr) begin
-      if (fifo_rptr[PTR_WIDTH-2:0] == DepthMinus1) begin
-        fifo_rptr_gray <= dec2gray({~fifo_rptr[PTR_WIDTH-1],{(PTR_WIDTH-1){1'b0}}});
-      end else begin
-        fifo_rptr_gray <= dec2gray(fifo_rptr + {{(PTR_WIDTH-1){1'b0}},1'b1});
-      end
+      fifo_rptr_gray <= dec2gray(fifo_rptr + PTR_WIDTH'(1));
     end
 
   prim_flop_2sync #(.Width(PTR_WIDTH)) sync_rptr (

@@ -36,18 +36,18 @@ def _nexysvideo_check():
 
     return files, match
 
+
 def main():
 
     parser = argparse.ArgumentParser(
         prog="flash_size_check",
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
-    parser.add_argument(
-        '--target',
-        '-g',
-        default='nexysvideo',
-        choices=['nexysvideo'],
-        help='fpga reduction target')
+    parser.add_argument('--target',
+                        '-g',
+                        default='nexysvideo',
+                        choices=['nexysvideo'],
+                        help='fpga reduction target')
 
     args = parser.parse_args()
 
@@ -71,11 +71,10 @@ def main():
 
     if not all_good:
         log.error(
-            "It seems that the size of the embedded flash has not been adjusted for the targeted " +
-            "FPGA device. The design might not fit. \n" +
-            "Please run hw/top_earlgrey/util/opentitan_earlgrey_flash_size_reduce.py before " +
-            "running this fusesoc core."
-        )
+            "It seems that the size of the embedded flash has not been adjusted for the " +
+            "targeted FPGA device. The design might not fit. \n" +
+            "Please run hw/top_earlgrey/util/top_earlgrey_reduce.py --build before " +
+            "running this fusesoc core.")
         return 1
 
     return 0

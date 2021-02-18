@@ -154,7 +154,7 @@ class AlertTest : public LcTest {};
 
 TEST_F(AlertTest, Force) {
   EXPECT_WRITE32(LC_CTRL_ALERT_TEST_REG_OFFSET,
-                 {{LC_CTRL_ALERT_TEST_LC_PROGRAMMING_FAILURE_BIT, true}});
+                 {{LC_CTRL_ALERT_TEST_FATAL_PROG_ERROR_BIT, true}});
   EXPECT_EQ(dif_lc_ctrl_alert_force(&lc_, kDifLcCtrlAlertOtp), kDifLcCtrlOk);
 }
 

@@ -5,33 +5,14 @@
 Generate HTML documentation from validated register Hjson tree
 """
 
-import logging as log
-import re
+from .html_helpers import expand_paras, render_td
+
+from .multi_register import MultiRegister
+from .register import Register
 
 
 def genout(outfile, msg):
     outfile.write(msg)
-
-
-# expand !!register references into HTML links, gen **bold** and *italic*
-def desc_expand(s, rnames):
-    def fieldsub(match):
-        base = match.group(1).partition('.')[0].lower()
-        if base in rnames:
-            if match.group(1)[-1] == ".":
-                return ('<a href="#Reg_' + base + '"><code class=\"reg\">' +
-                        match.group(1)[:-1] + '</code></a>.')
-            else:
-                return ('<a href="#Reg_' + base + '"><code class=\"reg\">' +
-                        match.group(1) + '</code></a>')
-        log.warn('!!' + match.group(1).partition('.')[0] +
-                 ' not found in register list.')
-        return match.group(0)
-
-    s = re.sub(r"!!([A-Za-z0-9_.]+)", fieldsub, s)
-    s = re.sub(r"(?s)\*\*(.+?)\*\*", r'<B>\1</B>', s)
-    s = re.sub(r"\*([^*]+?)\*", r'<I>\1</I>', s)
-    return s
 
 
 # Generation of HTML table with register bit-field summary picture
@@ -74,11 +55,11 @@ def gen_html_reg_pic(outfile, reg, width):
     genout(outfile, "<table class=\"regpic\">")
     gen_tbl_row(outfile, nextbit, hdrbits, False)
 
-    for field in reversed(reg['fields']):
-        fieldlsb = field['bitinfo'][2]
-        fieldwidth = field['bitinfo'][1]
-        fieldmsb = fieldlsb + fieldwidth - 1
-        fname = field['name']
+    for field in reversed(reg.fields):
+        fieldlsb = field.bits.lsb
+        fieldwidth = field.bits.width()
+        fieldmsb = field.bits.msb
+        fname = field.name
 
         while nextbit > fieldmsb:
             if (nextbit >= nextline) and (fieldmsb < nextline):
@@ -100,7 +81,7 @@ def gen_html_reg_pic(outfile, reg, width):
             genout(
                 outfile, "<td class=\"fname\" colspan=" + str(spans) + ">" +
                 fname + "...</td>\n")
-            fname = "..." + field['name']
+            fname = "..." + field.name
             fieldwidth = fieldwidth - spans
             fieldmsb = nextline - 1
             nextline = nextline - 16
@@ -140,35 +121,42 @@ def gen_html_reg_pic(outfile, reg, width):
 
 
 def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
-    def gen_merge(outfile, fieldlsb, mergebase, mergeprev, mergedesc):
-        genout(
-            outfile, "<tr><td class=\"regbits\">" + str(fieldlsb - 1) + ':' +
-            str(mergebase) + "</td>")
-        genout(outfile, "<td class=\"regperm\"></td>")
-        genout(outfile, "<td class=\"regrv\"></td>")
-        genout(outfile, "<td class=\"regfn\"></td>")
-        if mergeprev != mergedesc:
-            genout(outfile,
-                   "<td class=\"regde\">" + mergedesc + ".." + mergeprev[4:])
-        else:
-            genout(outfile, "<td class=\"regde\">" + mergedesc)
-        genout(outfile, "</td></tr>\n")
+    assert isinstance(reg, Register)
 
-    rname = reg['name']
-    offset = reg['genoffset']
-    # in a multireg with multiple regs give anchor with base register name
-    if 'genbasebits' in reg and rname[-1] == '0':
-        genout(outfile, "<div id=\"Reg_" + rname[:-1].lower() + "\"></div>\n")
-    regwen_string = ''
-    if 'regwen' in reg and (reg['regwen'] != ''):
-        regwen_string = '<br>Register enable = ' + reg['regwen']
-    genout(
-        outfile, "<table class=\"regdef\" id=\"Reg_" + rname.lower() + "\">\n"
-        "<tr><th class=\"regdef\" colspan=5><div>" + comp + "." + rname +
-        " @ + " + hex(offset) + "</div><div>" +
-        desc_expand(reg['desc'], rnames) + "</div>" + "<div>Reset default = " +
-        hex(reg['genresval']) + ", mask " + hex(reg['genresmask']) +
-        regwen_string + "</div></th></tr>\n")
+    rname = reg.name
+    offset = reg.offset
+    regwen_div = ''
+    if reg.regwen is not None:
+        regwen_div = ('    <div>Register enable = {}</div>\n'
+                      .format(reg.regwen))
+
+    desc_paras = expand_paras(reg.desc, rnames)
+    desc_head = desc_paras[0]
+    desc_body = desc_paras[1:]
+
+    genout(outfile,
+           '<table class="regdef" id="Reg_{lrname}">\n'
+           ' <tr>\n'
+           '  <th class="regdef" colspan=5>\n'
+           '   <div>{comp}.{rname} @ {off:#x}</div>\n'
+           '   <div>{desc}</div>\n'
+           '   <div>Reset default = {resval:#x}, mask {mask:#x}</div>\n'
+           '{wen}'
+           '  </th>\n'
+           ' </tr>\n'
+           .format(lrname=rname.lower(),
+                   comp=comp,
+                   rname=rname,
+                   off=offset,
+                   desc=desc_head,
+                   resval=reg.resval,
+                   mask=reg.resmask,
+                   wen=regwen_div))
+    if desc_body:
+        genout(outfile,
+               '<tr><td colspan=5><p>{}</p></td></tr>'
+               .format('</p><p>'.join(desc_body)))
+
     if toc is not None:
         toc.append((toclvl, comp + "." + rname, "Reg_" + rname.lower()))
     genout(outfile, "<tr><td colspan=5>")
@@ -182,16 +170,13 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
     genout(outfile, "<th>Description</th></tr>")
     nextbit = 0
     fcount = 0
-    mergebase = -1
-    for field in reg['fields']:
-        fcount += 1
-        if 'name' not in field:
-            fname = "field " + str(fcount)
-        else:
-            fname = field['name']
 
-        fieldlsb = field['bitinfo'][2]
-        if (fieldlsb > nextbit) and mergebase < 0:
+    for field in reg.fields:
+        fcount += 1
+        fname = field.name
+
+        fieldlsb = field.bits.lsb
+        if fieldlsb > nextbit:
             genout(outfile, "<tr><td class=\"regbits\">")
             if (nextbit == (fieldlsb - 1)):
                 genout(outfile, str(nextbit))
@@ -199,57 +184,34 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
                 genout(outfile, str(fieldlsb - 1) + ":" + str(nextbit))
             genout(outfile,
                    "</td><td></td><td></td><td></td><td>Reserved</td></tr>")
-        if 'genbasebits' in reg:
-            if (((1 << fieldlsb) & reg['genbasebits']) == 0):
-                mergeprev = field['desc']
-                if (mergebase < 0):
-                    mergebase = fieldlsb
-                    mergedesc = field['desc']
-                nextbit = fieldlsb + field['bitinfo'][1]
-                continue
-            else:
-                if (mergebase >= 0):
-                    gen_merge(outfile, fieldlsb, mergebase, mergeprev,
-                              mergedesc)
-                    mergebase = -1
-        genout(outfile, "<tr><td class=\"regbits\">" + field['bits'] + "</td>")
-        genout(outfile, "<td class=\"regperm\">" + field['swaccess'] + "</td>")
+        genout(outfile, "<tr><td class=\"regbits\">" + field.bits.as_str() + "</td>")
+        genout(outfile, "<td class=\"regperm\">" + field.swaccess.key + "</td>")
         genout(
             outfile, "<td class=\"regrv\">" +
-            ('x' if field['genresvalx'] else hex(field['genresval'])) +
+            ('x' if field.resval is None else hex(field.resval)) +
             "</td>")
         genout(outfile, "<td class=\"regfn\">" + fname + "</td>")
-        if 'desc' in field:
-            genout(
-                outfile, "<td class=\"regde\">" +
-                desc_expand(field['desc'], rnames) + "\n")
+        if field.desc is not None:
+            genout(outfile, render_td(field.desc, rnames, 'regde'))
         else:
             genout(outfile, "<td>\n")
 
-        if 'enum' in field:
+        if field.enum is not None:
             genout(outfile, "    <table>")
-            for enum in field['enum']:
-                if 'name' not in enum:
-                    ename = "enum for " + fname + " in " + rname
-                else:
-                    ename = enum['name']
-                genout(outfile, "    <tr><td>" + enum['value'] + "</td>")
+            for enum in field.enum:
+                ename = enum.name
+                genout(outfile, "    <tr><td>" + str(enum.value) + "</td>")
                 genout(outfile, "<td>" + ename + "</td>")
-                genout(
-                    outfile, "<td>" + desc_expand(enum['desc'], rnames) +
-                    "</td></tr>\n")
+                genout(outfile, render_td(enum.desc, rnames, None))
+                genout(outfile, "</tr>\n")
 
             genout(outfile, "    </table>")
-            if 'genrsvdenum' in field:
+            if field.has_incomplete_enum():
                 genout(outfile, "Other values are reserved.")
         genout(outfile, "</td></tr>\n")
-        nextbit = fieldlsb + field['bitinfo'][1]
+        nextbit = fieldlsb + field.bits.width()
 
-    # could be in the middle of a merge
-    if (mergebase >= 0):
-        gen_merge(outfile, nextbit, mergebase, mergeprev, mergedesc)
-
-    genout(outfile, "</table>\n<br><br>\n")
+    genout(outfile, "</table>\n<br>\n")
 
     return
 
@@ -297,10 +259,9 @@ def gen_html_window(outfile, win, comp, regwidth, rnames, toc, toclvl):
                     '>&nbsp;</td>\n')
             genout(outfile, '</tr>')
     genout(outfile, '</td></tr></table>')
-    genout(
-        outfile, '<tr><td class="regde">' + desc_expand(win['desc'], rnames) +
-        '</td></tr>')
-    genout(outfile, "</table>\n<br><br>\n")
+    genout(outfile,
+           '<tr>{}</tr>'.format(render_td(win['desc'], rnames, 'regde')))
+    genout(outfile, "</table>\n<br>\n")
     if toc is not None:
         toc.append((toclvl, comp + "." + wname, "Reg_" + wname.lower()))
 
@@ -319,29 +280,20 @@ def gen_html(regs, outfile, toclist=None, toclevel=3):
         regwidth = 32
 
     for x in registers:
-        if 'reserved' in x:
+        if isinstance(x, Register):
+            gen_html_register(outfile, x, component, regwidth, rnames, toclist,
+                              toclevel)
             continue
-
-        if 'skipto' in x:
-            continue
-
-        if 'sameaddr' in x:
-            for sareg in x['sameaddr']:
-                gen_html_register(outfile, sareg, component, regwidth, rnames,
+        if isinstance(x, MultiRegister):
+            for reg in x.regs:
+                gen_html_register(outfile, reg, component, regwidth, rnames,
                                   toclist, toclevel)
             continue
 
+        assert isinstance(x, dict)
         if 'window' in x:
             gen_html_window(outfile, x['window'], component, regwidth, rnames,
                             toclist, toclevel)
             continue
 
-        if 'multireg' in x:
-            for reg in x['multireg']['genregs']:
-                gen_html_register(outfile, reg, component, regwidth, rnames,
-                                  toclist, toclevel)
-            continue
-
-        gen_html_register(outfile, x, component, regwidth, rnames, toclist,
-                          toclevel)
-    return
+    return 0

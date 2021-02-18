@@ -44,7 +44,7 @@ module clkmgr import clkmgr_pkg::*; (
   output pwrmgr_pkg::pwr_clk_rsp_t pwr_o,
 
   // dft interface
-  input scanmode_i,
+  input lc_ctrl_pkg::lc_tx_t scanmode_i,
 
   // idle hints
   input [3:0] idle_i,
@@ -52,6 +52,9 @@ module clkmgr import clkmgr_pkg::*; (
   // clock bypass control
   input lc_ctrl_pkg::lc_tx_t ast_clk_bypass_ack_i,
   output lc_ctrl_pkg::lc_tx_t lc_clk_bypass_ack_o,
+
+  // jittery enable
+  output logic jitter_en_o,
 
   // clock output interface
   output clkmgr_ast_out_t clocks_ast_o,
@@ -93,6 +96,18 @@ module clkmgr import clkmgr_pkg::*; (
   logic clk_io_div2_i;
   logic clk_io_div4_i;
 
+
+  lc_ctrl_pkg::lc_tx_t io_div2_div_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_io_div2_div_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(io_div2_div_scanmode)
+  );
+
   prim_clock_div #(
     .Divisor(2)
   ) u_io_div2_div (
@@ -100,9 +115,21 @@ module clkmgr import clkmgr_pkg::*; (
     .rst_ni(rst_io_ni),
     .step_down_req_i(step_down_req == lc_ctrl_pkg::On),
     .step_down_ack_o(step_down_acks[0]),
-    .test_en_i(scanmode_i),
+    .test_en_i(io_div2_div_scanmode == lc_ctrl_pkg::On),
     .clk_o(clk_io_div2_i)
   );
+
+  lc_ctrl_pkg::lc_tx_t io_div4_div_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_io_div4_div_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(io_div4_div_scanmode)
+  );
+
   prim_clock_div #(
     .Divisor(4)
   ) u_io_div4_div (
@@ -110,7 +137,7 @@ module clkmgr import clkmgr_pkg::*; (
     .rst_ni(rst_io_ni),
     .step_down_req_i(step_down_req == lc_ctrl_pkg::On),
     .step_down_ack_o(step_down_acks[1]),
-    .test_en_i(scanmode_i),
+    .test_en_i(io_div4_div_scanmode == lc_ctrl_pkg::On),
     .clk_o(clk_io_div4_i)
   );
 
@@ -155,6 +182,14 @@ module clkmgr import clkmgr_pkg::*; (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_secure)
   );
+  prim_clock_buf u_clk_aon_peri_buf (
+    .clk_i(clk_aon_i),
+    .clk_o(clocks_o.clk_aon_peri)
+  );
+  prim_clock_buf u_clk_aon_timers_buf (
+    .clk_i(clk_aon_i),
+    .clk_o(clocks_o.clk_aon_timers)
+  );
 
   ////////////////////////////////////////////////////
   // Root gating
@@ -178,42 +213,97 @@ module clkmgr import clkmgr_pkg::*; (
   logic clk_io_div4_root;
   logic clk_io_div4_en;
 
+  lc_ctrl_pkg::lc_tx_t main_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_main_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(main_scanmode)
+  );
+
   prim_clock_gating_sync u_main_cg (
     .clk_i(clk_main_i),
     .rst_ni(rst_main_ni),
-    .test_en_i(scanmode_i),
+    .test_en_i(main_scanmode == lc_ctrl_pkg::On),
     .async_en_i(pwr_i.ip_clk_en),
     .en_o(clk_main_en),
     .clk_o(clk_main_root)
   );
+  lc_ctrl_pkg::lc_tx_t io_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_io_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(io_scanmode)
+  );
+
   prim_clock_gating_sync u_io_cg (
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
-    .test_en_i(scanmode_i),
+    .test_en_i(io_scanmode == lc_ctrl_pkg::On),
     .async_en_i(pwr_i.ip_clk_en),
     .en_o(clk_io_en),
     .clk_o(clk_io_root)
   );
+  lc_ctrl_pkg::lc_tx_t usb_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_usb_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(usb_scanmode)
+  );
+
   prim_clock_gating_sync u_usb_cg (
     .clk_i(clk_usb_i),
     .rst_ni(rst_usb_ni),
-    .test_en_i(scanmode_i),
+    .test_en_i(usb_scanmode == lc_ctrl_pkg::On),
     .async_en_i(pwr_i.ip_clk_en),
     .en_o(clk_usb_en),
     .clk_o(clk_usb_root)
   );
+  lc_ctrl_pkg::lc_tx_t io_div2_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_io_div2_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(io_div2_scanmode)
+  );
+
   prim_clock_gating_sync u_io_div2_cg (
     .clk_i(clk_io_div2_i),
     .rst_ni(rst_io_div2_ni),
-    .test_en_i(scanmode_i),
+    .test_en_i(io_div2_scanmode == lc_ctrl_pkg::On),
     .async_en_i(pwr_i.ip_clk_en),
     .en_o(clk_io_div2_en),
     .clk_o(clk_io_div2_root)
   );
+  lc_ctrl_pkg::lc_tx_t io_div4_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_io_div4_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(io_div4_scanmode)
+  );
+
   prim_clock_gating_sync u_io_div4_cg (
     .clk_i(clk_io_div4_i),
     .rst_ni(rst_io_div4_ni),
-    .test_en_i(scanmode_i),
+    .test_en_i(io_div4_scanmode == lc_ctrl_pkg::On),
     .async_en_i(pwr_i.ip_clk_en),
     .en_o(clk_io_div4_en),
     .clk_o(clk_io_div4_root)
@@ -304,12 +394,23 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_io_div4_peri_sw_en)
   );
 
+  lc_ctrl_pkg::lc_tx_t clk_io_div4_peri_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_clk_io_div4_peri_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(clk_io_div4_peri_scanmode)
+  );
+
   prim_clock_gating #(
     .NoFpgaGate(1'b1)
   ) u_clk_io_div4_peri_cg (
     .clk_i(clk_io_div4_root),
     .en_i(clk_io_div4_peri_sw_en & clk_io_div4_en),
-    .test_en_i(scanmode_i),
+    .test_en_i(clk_io_div4_peri_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_io_div4_peri)
   );
 
@@ -322,12 +423,23 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_usb_peri_sw_en)
   );
 
+  lc_ctrl_pkg::lc_tx_t clk_usb_peri_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_clk_usb_peri_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(clk_usb_peri_scanmode)
+  );
+
   prim_clock_gating #(
     .NoFpgaGate(1'b1)
   ) u_clk_usb_peri_cg (
     .clk_i(clk_usb_root),
     .en_i(clk_usb_peri_sw_en & clk_usb_en),
-    .test_en_i(scanmode_i),
+    .test_en_i(clk_usb_peri_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_usb_peri)
   );
 
@@ -358,12 +470,23 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_main_aes_hint)
   );
 
+  lc_ctrl_pkg::lc_tx_t clk_main_aes_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_clk_main_aes_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(clk_main_aes_scanmode)
+  );
+
   prim_clock_gating #(
     .NoFpgaGate(1'b1)
   ) u_clk_main_aes_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_aes_en & clk_main_en),
-    .test_en_i(scanmode_i),
+    .test_en_i(clk_main_aes_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_aes)
   );
 
@@ -378,12 +501,23 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_main_hmac_hint)
   );
 
+  lc_ctrl_pkg::lc_tx_t clk_main_hmac_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_clk_main_hmac_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(clk_main_hmac_scanmode)
+  );
+
   prim_clock_gating #(
     .NoFpgaGate(1'b1)
   ) u_clk_main_hmac_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_hmac_en & clk_main_en),
-    .test_en_i(scanmode_i),
+    .test_en_i(clk_main_hmac_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_hmac)
   );
 
@@ -398,12 +532,23 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_main_kmac_hint)
   );
 
+  lc_ctrl_pkg::lc_tx_t clk_main_kmac_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_clk_main_kmac_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(clk_main_kmac_scanmode)
+  );
+
   prim_clock_gating #(
     .NoFpgaGate(1'b1)
   ) u_clk_main_kmac_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_kmac_en & clk_main_en),
-    .test_en_i(scanmode_i),
+    .test_en_i(clk_main_kmac_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_kmac)
   );
 
@@ -418,12 +563,23 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_main_otbn_hint)
   );
 
+  lc_ctrl_pkg::lc_tx_t clk_main_otbn_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_clk_main_otbn_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(clk_main_otbn_scanmode)
+  );
+
   prim_clock_gating #(
     .NoFpgaGate(1'b1)
   ) u_clk_main_otbn_cg (
     .clk_i(clk_main_root),
     .en_i(clk_main_otbn_en & clk_main_en),
-    .test_en_i(scanmode_i),
+    .test_en_i(clk_main_otbn_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_main_otbn)
   );
 
@@ -438,13 +594,18 @@ module clkmgr import clkmgr_pkg::*; (
   assign hw2reg.clk_hints_status.clk_main_otbn_val.de = 1'b1;
   assign hw2reg.clk_hints_status.clk_main_otbn_val.d = clk_main_otbn_en;
 
+  assign jitter_en_o = reg2hw.jitter_enable.q;
+
   ////////////////////////////////////////////////////
   // Exported clocks
   ////////////////////////////////////////////////////
 
-  assign clocks_ast_o.clk_ast_sensor_ctrl_io_div4_secure = clocks_o.clk_io_div4_secure;
   assign clocks_ast_o.clk_ast_usbdev_io_div4_peri = clocks_o.clk_io_div4_peri;
+  assign clocks_ast_o.clk_ast_usbdev_aon_peri = clocks_o.clk_aon_peri;
   assign clocks_ast_o.clk_ast_usbdev_usb_peri = clocks_o.clk_usb_peri;
+  assign clocks_ast_o.clk_ast_sensor_ctrl_aon_io_div4_secure = clocks_o.clk_io_div4_secure;
+  assign clocks_ast_o.clk_ast_entropy_src_main_secure = clocks_o.clk_main_secure;
+  assign clocks_ast_o.clk_ast_edn0_main_secure = clocks_o.clk_main_secure;
 
   ////////////////////////////////////////////////////
   // Assertions

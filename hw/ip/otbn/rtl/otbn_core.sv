@@ -29,7 +29,7 @@ module otbn_core
   input  logic  start_i, // start the operation
   output logic  done_o,  // operation done
 
-  output err_code_e err_code_o, // valid when done_o is asserted
+  output err_bits_t err_bits_o, // valid when done_o is asserted
 
   input  logic [ImemAddrWidth-1:0] start_addr_i, // start byte address in IMEM
 
@@ -82,6 +82,7 @@ module otbn_core
 
   logic [4:0]   rf_base_wr_addr;
   logic         rf_base_wr_en;
+  logic         rf_base_wr_commit;
   logic [31:0]  rf_base_wr_data;
   logic [4:0]   rf_base_rd_addr_a;
   logic         rf_base_rd_en_a;
@@ -199,7 +200,7 @@ module otbn_core
     .start_i,
     .done_o,
 
-    .err_code_o,
+    .err_bits_o,
 
     .start_addr_i,
 
@@ -222,6 +223,7 @@ module otbn_core
     // To/from base register file
     .rf_base_wr_addr_o        (rf_base_wr_addr),
     .rf_base_wr_en_o          (rf_base_wr_en),
+    .rf_base_wr_commit_o      (rf_base_wr_commit),
     .rf_base_wr_data_o        (rf_base_wr_data),
     .rf_base_rd_addr_a_o      (rf_base_rd_addr_a),
     .rf_base_rd_en_a_o        (rf_base_rd_en_a),
@@ -314,9 +316,10 @@ module otbn_core
     .clk_i,
     .rst_ni,
 
-    .wr_addr_i (rf_base_wr_addr),
-    .wr_en_i   (rf_base_wr_en),
-    .wr_data_i (rf_base_wr_data),
+    .wr_addr_i   (rf_base_wr_addr),
+    .wr_en_i     (rf_base_wr_en),
+    .wr_commit_i (rf_base_wr_commit),
+    .wr_data_i   (rf_base_wr_data),
 
     .rd_addr_a_i (rf_base_rd_addr_a),
     .rd_en_a_i   (rf_base_rd_en_a),

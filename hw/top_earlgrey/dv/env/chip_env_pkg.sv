@@ -31,7 +31,8 @@ package chip_env_pkg;
 
   // local parameters and types
   parameter uint NUM_GPIOS = 16;
-  parameter uint SPI_FRAME_BYTE_SIZE = 1024;
+  // Buffer is half of SPI_DEVICE Dual Port SRAM
+  parameter uint SPI_FRAME_BYTE_SIZE = spi_device_reg_pkg::SPI_DEVICE_BUFFER_SIZE/2;
 
   // SW constants - use unmapped address space with at least 32 bytes.
   parameter bit [TL_AW-1:0] SW_DV_START_ADDR        = 32'h3000_0000;
@@ -69,13 +70,14 @@ package chip_env_pkg;
     case (mem)
       Rom:    return top_earlgrey_pkg::TOP_EARLGREY_ROM_BASE_ADDR;
       RamMain:return top_earlgrey_pkg::TOP_EARLGREY_RAM_MAIN_BASE_ADDR;
-      RamRet: return top_earlgrey_pkg::TOP_EARLGREY_RAM_RET_BASE_ADDR;
+      RamRet: return top_earlgrey_pkg::TOP_EARLGREY_RAM_RET_AON_BASE_ADDR;
       FlashBank0, FlashBank0Info: return top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR;
       FlashBank1, FlashBank1Info: return top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR +
                                          flash_ctrl_pkg::PagesPerBank *
                                          flash_ctrl_pkg::WordsPerPage *
                                          flash_ctrl_pkg::DataWidth / 8;
-      SpiMem: return top_earlgrey_pkg::TOP_EARLGREY_SPI_DEVICE_BASE_ADDR + 32'h800; // TODO
+      SpiMem: return top_earlgrey_pkg::TOP_EARLGREY_SPI_DEVICE_BASE_ADDR
+                      + spi_device_reg_pkg::SPI_DEVICE_BUFFER_OFFSET ; // TODO
       default:`uvm_fatal("chip_env_pkg", {"Invalid input: ", mem.name()})
     endcase
   endfunction
@@ -102,8 +104,10 @@ package chip_env_pkg;
       string line;
       int out_file_d = 0;
       string out_file = $sformatf("%0s.dat", symbol);
-      string cmd = $sformatf("/usr/bin/readelf -s %0s | grep %0s | awk \'{print $2\" \"$3}\' > %0s",
-                             elf_file, symbol, out_file);
+      string cmd = $sformatf(
+          // use `--wide` to avoid truncating the output, in case of long symbol name
+          "/usr/bin/readelf -s --wide %0s | grep %0s | awk \'{print $2\" \"$3}\' > %0s",
+          elf_file, symbol, out_file);
 
       // TODO #3838: shell pipes are bad 'mkay?
       ret = $system(cmd);

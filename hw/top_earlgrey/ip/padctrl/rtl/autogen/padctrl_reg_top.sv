@@ -71,9 +71,9 @@ module padctrl_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic regen_qs;
-  logic regen_wd;
-  logic regen_we;
+  logic regwen_qs;
+  logic regwen_wd;
+  logic regwen_we;
   logic [9:0] dio_pads_0_attr_0_qs;
   logic [9:0] dio_pads_0_attr_0_wd;
   logic dio_pads_0_attr_0_we;
@@ -134,6 +134,30 @@ module padctrl_reg_top (
   logic [9:0] dio_pads_4_attr_14_wd;
   logic dio_pads_4_attr_14_we;
   logic dio_pads_4_attr_14_re;
+  logic [9:0] dio_pads_5_attr_15_qs;
+  logic [9:0] dio_pads_5_attr_15_wd;
+  logic dio_pads_5_attr_15_we;
+  logic dio_pads_5_attr_15_re;
+  logic [9:0] dio_pads_5_attr_16_qs;
+  logic [9:0] dio_pads_5_attr_16_wd;
+  logic dio_pads_5_attr_16_we;
+  logic dio_pads_5_attr_16_re;
+  logic [9:0] dio_pads_5_attr_17_qs;
+  logic [9:0] dio_pads_5_attr_17_wd;
+  logic dio_pads_5_attr_17_we;
+  logic dio_pads_5_attr_17_re;
+  logic [9:0] dio_pads_6_attr_18_qs;
+  logic [9:0] dio_pads_6_attr_18_wd;
+  logic dio_pads_6_attr_18_we;
+  logic dio_pads_6_attr_18_re;
+  logic [9:0] dio_pads_6_attr_19_qs;
+  logic [9:0] dio_pads_6_attr_19_wd;
+  logic dio_pads_6_attr_19_we;
+  logic dio_pads_6_attr_19_re;
+  logic [9:0] dio_pads_6_attr_20_qs;
+  logic [9:0] dio_pads_6_attr_20_wd;
+  logic dio_pads_6_attr_20_we;
+  logic dio_pads_6_attr_20_re;
   logic [9:0] mio_pads_0_attr_0_qs;
   logic [9:0] mio_pads_0_attr_0_wd;
   logic mio_pads_0_attr_0_we;
@@ -262,21 +286,69 @@ module padctrl_reg_top (
   logic [9:0] mio_pads_10_attr_31_wd;
   logic mio_pads_10_attr_31_we;
   logic mio_pads_10_attr_31_re;
+  logic [9:0] mio_pads_10_attr_32_qs;
+  logic [9:0] mio_pads_10_attr_32_wd;
+  logic mio_pads_10_attr_32_we;
+  logic mio_pads_10_attr_32_re;
+  logic [9:0] mio_pads_11_attr_33_qs;
+  logic [9:0] mio_pads_11_attr_33_wd;
+  logic mio_pads_11_attr_33_we;
+  logic mio_pads_11_attr_33_re;
+  logic [9:0] mio_pads_11_attr_34_qs;
+  logic [9:0] mio_pads_11_attr_34_wd;
+  logic mio_pads_11_attr_34_we;
+  logic mio_pads_11_attr_34_re;
+  logic [9:0] mio_pads_11_attr_35_qs;
+  logic [9:0] mio_pads_11_attr_35_wd;
+  logic mio_pads_11_attr_35_we;
+  logic mio_pads_11_attr_35_re;
+  logic [9:0] mio_pads_12_attr_36_qs;
+  logic [9:0] mio_pads_12_attr_36_wd;
+  logic mio_pads_12_attr_36_we;
+  logic mio_pads_12_attr_36_re;
+  logic [9:0] mio_pads_12_attr_37_qs;
+  logic [9:0] mio_pads_12_attr_37_wd;
+  logic mio_pads_12_attr_37_we;
+  logic mio_pads_12_attr_37_re;
+  logic [9:0] mio_pads_12_attr_38_qs;
+  logic [9:0] mio_pads_12_attr_38_wd;
+  logic mio_pads_12_attr_38_we;
+  logic mio_pads_12_attr_38_re;
+  logic [9:0] mio_pads_13_attr_39_qs;
+  logic [9:0] mio_pads_13_attr_39_wd;
+  logic mio_pads_13_attr_39_we;
+  logic mio_pads_13_attr_39_re;
+  logic [9:0] mio_pads_13_attr_40_qs;
+  logic [9:0] mio_pads_13_attr_40_wd;
+  logic mio_pads_13_attr_40_we;
+  logic mio_pads_13_attr_40_re;
+  logic [9:0] mio_pads_13_attr_41_qs;
+  logic [9:0] mio_pads_13_attr_41_wd;
+  logic mio_pads_13_attr_41_we;
+  logic mio_pads_13_attr_41_re;
+  logic [9:0] mio_pads_14_attr_42_qs;
+  logic [9:0] mio_pads_14_attr_42_wd;
+  logic mio_pads_14_attr_42_we;
+  logic mio_pads_14_attr_42_re;
+  logic [9:0] mio_pads_14_attr_43_qs;
+  logic [9:0] mio_pads_14_attr_43_wd;
+  logic mio_pads_14_attr_43_we;
+  logic mio_pads_14_attr_43_re;
 
   // Register instances
-  // R[regen]: V(False)
+  // R[regwen]: V(False)
 
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
-  ) u_regen (
+  ) u_regwen (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (regen_we),
-    .wd     (regen_wd),
+    .we     (regwen_we),
+    .wd     (regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -287,7 +359,7 @@ module padctrl_reg_top (
     .q      (),
 
     // to register interface (read)
-    .qs     (regen_qs)
+    .qs     (regwen_qs)
   );
 
 
@@ -301,7 +373,7 @@ module padctrl_reg_top (
   ) u_dio_pads_0_attr_0 (
     .re     (dio_pads_0_attr_0_re),
     // qualified with register enable
-    .we     (dio_pads_0_attr_0_we & regen_qs),
+    .we     (dio_pads_0_attr_0_we & regwen_qs),
     .wd     (dio_pads_0_attr_0_wd),
     .d      (hw2reg.dio_pads[0].d),
     .qre    (),
@@ -317,7 +389,7 @@ module padctrl_reg_top (
   ) u_dio_pads_0_attr_1 (
     .re     (dio_pads_0_attr_1_re),
     // qualified with register enable
-    .we     (dio_pads_0_attr_1_we & regen_qs),
+    .we     (dio_pads_0_attr_1_we & regwen_qs),
     .wd     (dio_pads_0_attr_1_wd),
     .d      (hw2reg.dio_pads[1].d),
     .qre    (),
@@ -333,7 +405,7 @@ module padctrl_reg_top (
   ) u_dio_pads_0_attr_2 (
     .re     (dio_pads_0_attr_2_re),
     // qualified with register enable
-    .we     (dio_pads_0_attr_2_we & regen_qs),
+    .we     (dio_pads_0_attr_2_we & regwen_qs),
     .wd     (dio_pads_0_attr_2_wd),
     .d      (hw2reg.dio_pads[2].d),
     .qre    (),
@@ -352,7 +424,7 @@ module padctrl_reg_top (
   ) u_dio_pads_1_attr_3 (
     .re     (dio_pads_1_attr_3_re),
     // qualified with register enable
-    .we     (dio_pads_1_attr_3_we & regen_qs),
+    .we     (dio_pads_1_attr_3_we & regwen_qs),
     .wd     (dio_pads_1_attr_3_wd),
     .d      (hw2reg.dio_pads[3].d),
     .qre    (),
@@ -368,7 +440,7 @@ module padctrl_reg_top (
   ) u_dio_pads_1_attr_4 (
     .re     (dio_pads_1_attr_4_re),
     // qualified with register enable
-    .we     (dio_pads_1_attr_4_we & regen_qs),
+    .we     (dio_pads_1_attr_4_we & regwen_qs),
     .wd     (dio_pads_1_attr_4_wd),
     .d      (hw2reg.dio_pads[4].d),
     .qre    (),
@@ -384,7 +456,7 @@ module padctrl_reg_top (
   ) u_dio_pads_1_attr_5 (
     .re     (dio_pads_1_attr_5_re),
     // qualified with register enable
-    .we     (dio_pads_1_attr_5_we & regen_qs),
+    .we     (dio_pads_1_attr_5_we & regwen_qs),
     .wd     (dio_pads_1_attr_5_wd),
     .d      (hw2reg.dio_pads[5].d),
     .qre    (),
@@ -403,7 +475,7 @@ module padctrl_reg_top (
   ) u_dio_pads_2_attr_6 (
     .re     (dio_pads_2_attr_6_re),
     // qualified with register enable
-    .we     (dio_pads_2_attr_6_we & regen_qs),
+    .we     (dio_pads_2_attr_6_we & regwen_qs),
     .wd     (dio_pads_2_attr_6_wd),
     .d      (hw2reg.dio_pads[6].d),
     .qre    (),
@@ -419,7 +491,7 @@ module padctrl_reg_top (
   ) u_dio_pads_2_attr_7 (
     .re     (dio_pads_2_attr_7_re),
     // qualified with register enable
-    .we     (dio_pads_2_attr_7_we & regen_qs),
+    .we     (dio_pads_2_attr_7_we & regwen_qs),
     .wd     (dio_pads_2_attr_7_wd),
     .d      (hw2reg.dio_pads[7].d),
     .qre    (),
@@ -435,7 +507,7 @@ module padctrl_reg_top (
   ) u_dio_pads_2_attr_8 (
     .re     (dio_pads_2_attr_8_re),
     // qualified with register enable
-    .we     (dio_pads_2_attr_8_we & regen_qs),
+    .we     (dio_pads_2_attr_8_we & regwen_qs),
     .wd     (dio_pads_2_attr_8_wd),
     .d      (hw2reg.dio_pads[8].d),
     .qre    (),
@@ -454,7 +526,7 @@ module padctrl_reg_top (
   ) u_dio_pads_3_attr_9 (
     .re     (dio_pads_3_attr_9_re),
     // qualified with register enable
-    .we     (dio_pads_3_attr_9_we & regen_qs),
+    .we     (dio_pads_3_attr_9_we & regwen_qs),
     .wd     (dio_pads_3_attr_9_wd),
     .d      (hw2reg.dio_pads[9].d),
     .qre    (),
@@ -470,7 +542,7 @@ module padctrl_reg_top (
   ) u_dio_pads_3_attr_10 (
     .re     (dio_pads_3_attr_10_re),
     // qualified with register enable
-    .we     (dio_pads_3_attr_10_we & regen_qs),
+    .we     (dio_pads_3_attr_10_we & regwen_qs),
     .wd     (dio_pads_3_attr_10_wd),
     .d      (hw2reg.dio_pads[10].d),
     .qre    (),
@@ -486,7 +558,7 @@ module padctrl_reg_top (
   ) u_dio_pads_3_attr_11 (
     .re     (dio_pads_3_attr_11_re),
     // qualified with register enable
-    .we     (dio_pads_3_attr_11_we & regen_qs),
+    .we     (dio_pads_3_attr_11_we & regwen_qs),
     .wd     (dio_pads_3_attr_11_wd),
     .d      (hw2reg.dio_pads[11].d),
     .qre    (),
@@ -505,7 +577,7 @@ module padctrl_reg_top (
   ) u_dio_pads_4_attr_12 (
     .re     (dio_pads_4_attr_12_re),
     // qualified with register enable
-    .we     (dio_pads_4_attr_12_we & regen_qs),
+    .we     (dio_pads_4_attr_12_we & regwen_qs),
     .wd     (dio_pads_4_attr_12_wd),
     .d      (hw2reg.dio_pads[12].d),
     .qre    (),
@@ -521,7 +593,7 @@ module padctrl_reg_top (
   ) u_dio_pads_4_attr_13 (
     .re     (dio_pads_4_attr_13_re),
     // qualified with register enable
-    .we     (dio_pads_4_attr_13_we & regen_qs),
+    .we     (dio_pads_4_attr_13_we & regwen_qs),
     .wd     (dio_pads_4_attr_13_wd),
     .d      (hw2reg.dio_pads[13].d),
     .qre    (),
@@ -537,13 +609,115 @@ module padctrl_reg_top (
   ) u_dio_pads_4_attr_14 (
     .re     (dio_pads_4_attr_14_re),
     // qualified with register enable
-    .we     (dio_pads_4_attr_14_we & regen_qs),
+    .we     (dio_pads_4_attr_14_we & regwen_qs),
     .wd     (dio_pads_4_attr_14_wd),
     .d      (hw2reg.dio_pads[14].d),
     .qre    (),
     .qe     (reg2hw.dio_pads[14].qe),
     .q      (reg2hw.dio_pads[14].q ),
     .qs     (dio_pads_4_attr_14_qs)
+  );
+
+
+  // Subregister 15 of Multireg dio_pads
+  // R[dio_pads_5]: V(True)
+
+  // F[attr_15]: 9:0
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_dio_pads_5_attr_15 (
+    .re     (dio_pads_5_attr_15_re),
+    // qualified with register enable
+    .we     (dio_pads_5_attr_15_we & regwen_qs),
+    .wd     (dio_pads_5_attr_15_wd),
+    .d      (hw2reg.dio_pads[15].d),
+    .qre    (),
+    .qe     (reg2hw.dio_pads[15].qe),
+    .q      (reg2hw.dio_pads[15].q ),
+    .qs     (dio_pads_5_attr_15_qs)
+  );
+
+
+  // F[attr_16]: 19:10
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_dio_pads_5_attr_16 (
+    .re     (dio_pads_5_attr_16_re),
+    // qualified with register enable
+    .we     (dio_pads_5_attr_16_we & regwen_qs),
+    .wd     (dio_pads_5_attr_16_wd),
+    .d      (hw2reg.dio_pads[16].d),
+    .qre    (),
+    .qe     (reg2hw.dio_pads[16].qe),
+    .q      (reg2hw.dio_pads[16].q ),
+    .qs     (dio_pads_5_attr_16_qs)
+  );
+
+
+  // F[attr_17]: 29:20
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_dio_pads_5_attr_17 (
+    .re     (dio_pads_5_attr_17_re),
+    // qualified with register enable
+    .we     (dio_pads_5_attr_17_we & regwen_qs),
+    .wd     (dio_pads_5_attr_17_wd),
+    .d      (hw2reg.dio_pads[17].d),
+    .qre    (),
+    .qe     (reg2hw.dio_pads[17].qe),
+    .q      (reg2hw.dio_pads[17].q ),
+    .qs     (dio_pads_5_attr_17_qs)
+  );
+
+
+  // Subregister 18 of Multireg dio_pads
+  // R[dio_pads_6]: V(True)
+
+  // F[attr_18]: 9:0
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_dio_pads_6_attr_18 (
+    .re     (dio_pads_6_attr_18_re),
+    // qualified with register enable
+    .we     (dio_pads_6_attr_18_we & regwen_qs),
+    .wd     (dio_pads_6_attr_18_wd),
+    .d      (hw2reg.dio_pads[18].d),
+    .qre    (),
+    .qe     (reg2hw.dio_pads[18].qe),
+    .q      (reg2hw.dio_pads[18].q ),
+    .qs     (dio_pads_6_attr_18_qs)
+  );
+
+
+  // F[attr_19]: 19:10
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_dio_pads_6_attr_19 (
+    .re     (dio_pads_6_attr_19_re),
+    // qualified with register enable
+    .we     (dio_pads_6_attr_19_we & regwen_qs),
+    .wd     (dio_pads_6_attr_19_wd),
+    .d      (hw2reg.dio_pads[19].d),
+    .qre    (),
+    .qe     (reg2hw.dio_pads[19].qe),
+    .q      (reg2hw.dio_pads[19].q ),
+    .qs     (dio_pads_6_attr_19_qs)
+  );
+
+
+  // F[attr_20]: 29:20
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_dio_pads_6_attr_20 (
+    .re     (dio_pads_6_attr_20_re),
+    // qualified with register enable
+    .we     (dio_pads_6_attr_20_we & regwen_qs),
+    .wd     (dio_pads_6_attr_20_wd),
+    .d      (hw2reg.dio_pads[20].d),
+    .qre    (),
+    .qe     (reg2hw.dio_pads[20].qe),
+    .q      (reg2hw.dio_pads[20].q ),
+    .qs     (dio_pads_6_attr_20_qs)
   );
 
 
@@ -558,7 +732,7 @@ module padctrl_reg_top (
   ) u_mio_pads_0_attr_0 (
     .re     (mio_pads_0_attr_0_re),
     // qualified with register enable
-    .we     (mio_pads_0_attr_0_we & regen_qs),
+    .we     (mio_pads_0_attr_0_we & regwen_qs),
     .wd     (mio_pads_0_attr_0_wd),
     .d      (hw2reg.mio_pads[0].d),
     .qre    (),
@@ -574,7 +748,7 @@ module padctrl_reg_top (
   ) u_mio_pads_0_attr_1 (
     .re     (mio_pads_0_attr_1_re),
     // qualified with register enable
-    .we     (mio_pads_0_attr_1_we & regen_qs),
+    .we     (mio_pads_0_attr_1_we & regwen_qs),
     .wd     (mio_pads_0_attr_1_wd),
     .d      (hw2reg.mio_pads[1].d),
     .qre    (),
@@ -590,7 +764,7 @@ module padctrl_reg_top (
   ) u_mio_pads_0_attr_2 (
     .re     (mio_pads_0_attr_2_re),
     // qualified with register enable
-    .we     (mio_pads_0_attr_2_we & regen_qs),
+    .we     (mio_pads_0_attr_2_we & regwen_qs),
     .wd     (mio_pads_0_attr_2_wd),
     .d      (hw2reg.mio_pads[2].d),
     .qre    (),
@@ -609,7 +783,7 @@ module padctrl_reg_top (
   ) u_mio_pads_1_attr_3 (
     .re     (mio_pads_1_attr_3_re),
     // qualified with register enable
-    .we     (mio_pads_1_attr_3_we & regen_qs),
+    .we     (mio_pads_1_attr_3_we & regwen_qs),
     .wd     (mio_pads_1_attr_3_wd),
     .d      (hw2reg.mio_pads[3].d),
     .qre    (),
@@ -625,7 +799,7 @@ module padctrl_reg_top (
   ) u_mio_pads_1_attr_4 (
     .re     (mio_pads_1_attr_4_re),
     // qualified with register enable
-    .we     (mio_pads_1_attr_4_we & regen_qs),
+    .we     (mio_pads_1_attr_4_we & regwen_qs),
     .wd     (mio_pads_1_attr_4_wd),
     .d      (hw2reg.mio_pads[4].d),
     .qre    (),
@@ -641,7 +815,7 @@ module padctrl_reg_top (
   ) u_mio_pads_1_attr_5 (
     .re     (mio_pads_1_attr_5_re),
     // qualified with register enable
-    .we     (mio_pads_1_attr_5_we & regen_qs),
+    .we     (mio_pads_1_attr_5_we & regwen_qs),
     .wd     (mio_pads_1_attr_5_wd),
     .d      (hw2reg.mio_pads[5].d),
     .qre    (),
@@ -660,7 +834,7 @@ module padctrl_reg_top (
   ) u_mio_pads_2_attr_6 (
     .re     (mio_pads_2_attr_6_re),
     // qualified with register enable
-    .we     (mio_pads_2_attr_6_we & regen_qs),
+    .we     (mio_pads_2_attr_6_we & regwen_qs),
     .wd     (mio_pads_2_attr_6_wd),
     .d      (hw2reg.mio_pads[6].d),
     .qre    (),
@@ -676,7 +850,7 @@ module padctrl_reg_top (
   ) u_mio_pads_2_attr_7 (
     .re     (mio_pads_2_attr_7_re),
     // qualified with register enable
-    .we     (mio_pads_2_attr_7_we & regen_qs),
+    .we     (mio_pads_2_attr_7_we & regwen_qs),
     .wd     (mio_pads_2_attr_7_wd),
     .d      (hw2reg.mio_pads[7].d),
     .qre    (),
@@ -692,7 +866,7 @@ module padctrl_reg_top (
   ) u_mio_pads_2_attr_8 (
     .re     (mio_pads_2_attr_8_re),
     // qualified with register enable
-    .we     (mio_pads_2_attr_8_we & regen_qs),
+    .we     (mio_pads_2_attr_8_we & regwen_qs),
     .wd     (mio_pads_2_attr_8_wd),
     .d      (hw2reg.mio_pads[8].d),
     .qre    (),
@@ -711,7 +885,7 @@ module padctrl_reg_top (
   ) u_mio_pads_3_attr_9 (
     .re     (mio_pads_3_attr_9_re),
     // qualified with register enable
-    .we     (mio_pads_3_attr_9_we & regen_qs),
+    .we     (mio_pads_3_attr_9_we & regwen_qs),
     .wd     (mio_pads_3_attr_9_wd),
     .d      (hw2reg.mio_pads[9].d),
     .qre    (),
@@ -727,7 +901,7 @@ module padctrl_reg_top (
   ) u_mio_pads_3_attr_10 (
     .re     (mio_pads_3_attr_10_re),
     // qualified with register enable
-    .we     (mio_pads_3_attr_10_we & regen_qs),
+    .we     (mio_pads_3_attr_10_we & regwen_qs),
     .wd     (mio_pads_3_attr_10_wd),
     .d      (hw2reg.mio_pads[10].d),
     .qre    (),
@@ -743,7 +917,7 @@ module padctrl_reg_top (
   ) u_mio_pads_3_attr_11 (
     .re     (mio_pads_3_attr_11_re),
     // qualified with register enable
-    .we     (mio_pads_3_attr_11_we & regen_qs),
+    .we     (mio_pads_3_attr_11_we & regwen_qs),
     .wd     (mio_pads_3_attr_11_wd),
     .d      (hw2reg.mio_pads[11].d),
     .qre    (),
@@ -762,7 +936,7 @@ module padctrl_reg_top (
   ) u_mio_pads_4_attr_12 (
     .re     (mio_pads_4_attr_12_re),
     // qualified with register enable
-    .we     (mio_pads_4_attr_12_we & regen_qs),
+    .we     (mio_pads_4_attr_12_we & regwen_qs),
     .wd     (mio_pads_4_attr_12_wd),
     .d      (hw2reg.mio_pads[12].d),
     .qre    (),
@@ -778,7 +952,7 @@ module padctrl_reg_top (
   ) u_mio_pads_4_attr_13 (
     .re     (mio_pads_4_attr_13_re),
     // qualified with register enable
-    .we     (mio_pads_4_attr_13_we & regen_qs),
+    .we     (mio_pads_4_attr_13_we & regwen_qs),
     .wd     (mio_pads_4_attr_13_wd),
     .d      (hw2reg.mio_pads[13].d),
     .qre    (),
@@ -794,7 +968,7 @@ module padctrl_reg_top (
   ) u_mio_pads_4_attr_14 (
     .re     (mio_pads_4_attr_14_re),
     // qualified with register enable
-    .we     (mio_pads_4_attr_14_we & regen_qs),
+    .we     (mio_pads_4_attr_14_we & regwen_qs),
     .wd     (mio_pads_4_attr_14_wd),
     .d      (hw2reg.mio_pads[14].d),
     .qre    (),
@@ -813,7 +987,7 @@ module padctrl_reg_top (
   ) u_mio_pads_5_attr_15 (
     .re     (mio_pads_5_attr_15_re),
     // qualified with register enable
-    .we     (mio_pads_5_attr_15_we & regen_qs),
+    .we     (mio_pads_5_attr_15_we & regwen_qs),
     .wd     (mio_pads_5_attr_15_wd),
     .d      (hw2reg.mio_pads[15].d),
     .qre    (),
@@ -829,7 +1003,7 @@ module padctrl_reg_top (
   ) u_mio_pads_5_attr_16 (
     .re     (mio_pads_5_attr_16_re),
     // qualified with register enable
-    .we     (mio_pads_5_attr_16_we & regen_qs),
+    .we     (mio_pads_5_attr_16_we & regwen_qs),
     .wd     (mio_pads_5_attr_16_wd),
     .d      (hw2reg.mio_pads[16].d),
     .qre    (),
@@ -845,7 +1019,7 @@ module padctrl_reg_top (
   ) u_mio_pads_5_attr_17 (
     .re     (mio_pads_5_attr_17_re),
     // qualified with register enable
-    .we     (mio_pads_5_attr_17_we & regen_qs),
+    .we     (mio_pads_5_attr_17_we & regwen_qs),
     .wd     (mio_pads_5_attr_17_wd),
     .d      (hw2reg.mio_pads[17].d),
     .qre    (),
@@ -864,7 +1038,7 @@ module padctrl_reg_top (
   ) u_mio_pads_6_attr_18 (
     .re     (mio_pads_6_attr_18_re),
     // qualified with register enable
-    .we     (mio_pads_6_attr_18_we & regen_qs),
+    .we     (mio_pads_6_attr_18_we & regwen_qs),
     .wd     (mio_pads_6_attr_18_wd),
     .d      (hw2reg.mio_pads[18].d),
     .qre    (),
@@ -880,7 +1054,7 @@ module padctrl_reg_top (
   ) u_mio_pads_6_attr_19 (
     .re     (mio_pads_6_attr_19_re),
     // qualified with register enable
-    .we     (mio_pads_6_attr_19_we & regen_qs),
+    .we     (mio_pads_6_attr_19_we & regwen_qs),
     .wd     (mio_pads_6_attr_19_wd),
     .d      (hw2reg.mio_pads[19].d),
     .qre    (),
@@ -896,7 +1070,7 @@ module padctrl_reg_top (
   ) u_mio_pads_6_attr_20 (
     .re     (mio_pads_6_attr_20_re),
     // qualified with register enable
-    .we     (mio_pads_6_attr_20_we & regen_qs),
+    .we     (mio_pads_6_attr_20_we & regwen_qs),
     .wd     (mio_pads_6_attr_20_wd),
     .d      (hw2reg.mio_pads[20].d),
     .qre    (),
@@ -915,7 +1089,7 @@ module padctrl_reg_top (
   ) u_mio_pads_7_attr_21 (
     .re     (mio_pads_7_attr_21_re),
     // qualified with register enable
-    .we     (mio_pads_7_attr_21_we & regen_qs),
+    .we     (mio_pads_7_attr_21_we & regwen_qs),
     .wd     (mio_pads_7_attr_21_wd),
     .d      (hw2reg.mio_pads[21].d),
     .qre    (),
@@ -931,7 +1105,7 @@ module padctrl_reg_top (
   ) u_mio_pads_7_attr_22 (
     .re     (mio_pads_7_attr_22_re),
     // qualified with register enable
-    .we     (mio_pads_7_attr_22_we & regen_qs),
+    .we     (mio_pads_7_attr_22_we & regwen_qs),
     .wd     (mio_pads_7_attr_22_wd),
     .d      (hw2reg.mio_pads[22].d),
     .qre    (),
@@ -947,7 +1121,7 @@ module padctrl_reg_top (
   ) u_mio_pads_7_attr_23 (
     .re     (mio_pads_7_attr_23_re),
     // qualified with register enable
-    .we     (mio_pads_7_attr_23_we & regen_qs),
+    .we     (mio_pads_7_attr_23_we & regwen_qs),
     .wd     (mio_pads_7_attr_23_wd),
     .d      (hw2reg.mio_pads[23].d),
     .qre    (),
@@ -966,7 +1140,7 @@ module padctrl_reg_top (
   ) u_mio_pads_8_attr_24 (
     .re     (mio_pads_8_attr_24_re),
     // qualified with register enable
-    .we     (mio_pads_8_attr_24_we & regen_qs),
+    .we     (mio_pads_8_attr_24_we & regwen_qs),
     .wd     (mio_pads_8_attr_24_wd),
     .d      (hw2reg.mio_pads[24].d),
     .qre    (),
@@ -982,7 +1156,7 @@ module padctrl_reg_top (
   ) u_mio_pads_8_attr_25 (
     .re     (mio_pads_8_attr_25_re),
     // qualified with register enable
-    .we     (mio_pads_8_attr_25_we & regen_qs),
+    .we     (mio_pads_8_attr_25_we & regwen_qs),
     .wd     (mio_pads_8_attr_25_wd),
     .d      (hw2reg.mio_pads[25].d),
     .qre    (),
@@ -998,7 +1172,7 @@ module padctrl_reg_top (
   ) u_mio_pads_8_attr_26 (
     .re     (mio_pads_8_attr_26_re),
     // qualified with register enable
-    .we     (mio_pads_8_attr_26_we & regen_qs),
+    .we     (mio_pads_8_attr_26_we & regwen_qs),
     .wd     (mio_pads_8_attr_26_wd),
     .d      (hw2reg.mio_pads[26].d),
     .qre    (),
@@ -1017,7 +1191,7 @@ module padctrl_reg_top (
   ) u_mio_pads_9_attr_27 (
     .re     (mio_pads_9_attr_27_re),
     // qualified with register enable
-    .we     (mio_pads_9_attr_27_we & regen_qs),
+    .we     (mio_pads_9_attr_27_we & regwen_qs),
     .wd     (mio_pads_9_attr_27_wd),
     .d      (hw2reg.mio_pads[27].d),
     .qre    (),
@@ -1033,7 +1207,7 @@ module padctrl_reg_top (
   ) u_mio_pads_9_attr_28 (
     .re     (mio_pads_9_attr_28_re),
     // qualified with register enable
-    .we     (mio_pads_9_attr_28_we & regen_qs),
+    .we     (mio_pads_9_attr_28_we & regwen_qs),
     .wd     (mio_pads_9_attr_28_wd),
     .d      (hw2reg.mio_pads[28].d),
     .qre    (),
@@ -1049,7 +1223,7 @@ module padctrl_reg_top (
   ) u_mio_pads_9_attr_29 (
     .re     (mio_pads_9_attr_29_re),
     // qualified with register enable
-    .we     (mio_pads_9_attr_29_we & regen_qs),
+    .we     (mio_pads_9_attr_29_we & regwen_qs),
     .wd     (mio_pads_9_attr_29_wd),
     .d      (hw2reg.mio_pads[29].d),
     .qre    (),
@@ -1068,7 +1242,7 @@ module padctrl_reg_top (
   ) u_mio_pads_10_attr_30 (
     .re     (mio_pads_10_attr_30_re),
     // qualified with register enable
-    .we     (mio_pads_10_attr_30_we & regen_qs),
+    .we     (mio_pads_10_attr_30_we & regwen_qs),
     .wd     (mio_pads_10_attr_30_wd),
     .d      (hw2reg.mio_pads[30].d),
     .qre    (),
@@ -1084,7 +1258,7 @@ module padctrl_reg_top (
   ) u_mio_pads_10_attr_31 (
     .re     (mio_pads_10_attr_31_re),
     // qualified with register enable
-    .we     (mio_pads_10_attr_31_we & regen_qs),
+    .we     (mio_pads_10_attr_31_we & regwen_qs),
     .wd     (mio_pads_10_attr_31_wd),
     .d      (hw2reg.mio_pads[31].d),
     .qre    (),
@@ -1094,29 +1268,239 @@ module padctrl_reg_top (
   );
 
 
+  // F[attr_32]: 29:20
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_mio_pads_10_attr_32 (
+    .re     (mio_pads_10_attr_32_re),
+    // qualified with register enable
+    .we     (mio_pads_10_attr_32_we & regwen_qs),
+    .wd     (mio_pads_10_attr_32_wd),
+    .d      (hw2reg.mio_pads[32].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[32].qe),
+    .q      (reg2hw.mio_pads[32].q ),
+    .qs     (mio_pads_10_attr_32_qs)
+  );
+
+
+  // Subregister 33 of Multireg mio_pads
+  // R[mio_pads_11]: V(True)
+
+  // F[attr_33]: 9:0
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_mio_pads_11_attr_33 (
+    .re     (mio_pads_11_attr_33_re),
+    // qualified with register enable
+    .we     (mio_pads_11_attr_33_we & regwen_qs),
+    .wd     (mio_pads_11_attr_33_wd),
+    .d      (hw2reg.mio_pads[33].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[33].qe),
+    .q      (reg2hw.mio_pads[33].q ),
+    .qs     (mio_pads_11_attr_33_qs)
+  );
+
+
+  // F[attr_34]: 19:10
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_mio_pads_11_attr_34 (
+    .re     (mio_pads_11_attr_34_re),
+    // qualified with register enable
+    .we     (mio_pads_11_attr_34_we & regwen_qs),
+    .wd     (mio_pads_11_attr_34_wd),
+    .d      (hw2reg.mio_pads[34].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[34].qe),
+    .q      (reg2hw.mio_pads[34].q ),
+    .qs     (mio_pads_11_attr_34_qs)
+  );
+
+
+  // F[attr_35]: 29:20
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_mio_pads_11_attr_35 (
+    .re     (mio_pads_11_attr_35_re),
+    // qualified with register enable
+    .we     (mio_pads_11_attr_35_we & regwen_qs),
+    .wd     (mio_pads_11_attr_35_wd),
+    .d      (hw2reg.mio_pads[35].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[35].qe),
+    .q      (reg2hw.mio_pads[35].q ),
+    .qs     (mio_pads_11_attr_35_qs)
+  );
+
+
+  // Subregister 36 of Multireg mio_pads
+  // R[mio_pads_12]: V(True)
+
+  // F[attr_36]: 9:0
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_mio_pads_12_attr_36 (
+    .re     (mio_pads_12_attr_36_re),
+    // qualified with register enable
+    .we     (mio_pads_12_attr_36_we & regwen_qs),
+    .wd     (mio_pads_12_attr_36_wd),
+    .d      (hw2reg.mio_pads[36].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[36].qe),
+    .q      (reg2hw.mio_pads[36].q ),
+    .qs     (mio_pads_12_attr_36_qs)
+  );
+
+
+  // F[attr_37]: 19:10
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_mio_pads_12_attr_37 (
+    .re     (mio_pads_12_attr_37_re),
+    // qualified with register enable
+    .we     (mio_pads_12_attr_37_we & regwen_qs),
+    .wd     (mio_pads_12_attr_37_wd),
+    .d      (hw2reg.mio_pads[37].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[37].qe),
+    .q      (reg2hw.mio_pads[37].q ),
+    .qs     (mio_pads_12_attr_37_qs)
+  );
+
+
+  // F[attr_38]: 29:20
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_mio_pads_12_attr_38 (
+    .re     (mio_pads_12_attr_38_re),
+    // qualified with register enable
+    .we     (mio_pads_12_attr_38_we & regwen_qs),
+    .wd     (mio_pads_12_attr_38_wd),
+    .d      (hw2reg.mio_pads[38].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[38].qe),
+    .q      (reg2hw.mio_pads[38].q ),
+    .qs     (mio_pads_12_attr_38_qs)
+  );
+
+
+  // Subregister 39 of Multireg mio_pads
+  // R[mio_pads_13]: V(True)
+
+  // F[attr_39]: 9:0
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_mio_pads_13_attr_39 (
+    .re     (mio_pads_13_attr_39_re),
+    // qualified with register enable
+    .we     (mio_pads_13_attr_39_we & regwen_qs),
+    .wd     (mio_pads_13_attr_39_wd),
+    .d      (hw2reg.mio_pads[39].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[39].qe),
+    .q      (reg2hw.mio_pads[39].q ),
+    .qs     (mio_pads_13_attr_39_qs)
+  );
+
+
+  // F[attr_40]: 19:10
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_mio_pads_13_attr_40 (
+    .re     (mio_pads_13_attr_40_re),
+    // qualified with register enable
+    .we     (mio_pads_13_attr_40_we & regwen_qs),
+    .wd     (mio_pads_13_attr_40_wd),
+    .d      (hw2reg.mio_pads[40].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[40].qe),
+    .q      (reg2hw.mio_pads[40].q ),
+    .qs     (mio_pads_13_attr_40_qs)
+  );
+
+
+  // F[attr_41]: 29:20
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_mio_pads_13_attr_41 (
+    .re     (mio_pads_13_attr_41_re),
+    // qualified with register enable
+    .we     (mio_pads_13_attr_41_we & regwen_qs),
+    .wd     (mio_pads_13_attr_41_wd),
+    .d      (hw2reg.mio_pads[41].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[41].qe),
+    .q      (reg2hw.mio_pads[41].q ),
+    .qs     (mio_pads_13_attr_41_qs)
+  );
+
+
+  // Subregister 42 of Multireg mio_pads
+  // R[mio_pads_14]: V(True)
+
+  // F[attr_42]: 9:0
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_mio_pads_14_attr_42 (
+    .re     (mio_pads_14_attr_42_re),
+    // qualified with register enable
+    .we     (mio_pads_14_attr_42_we & regwen_qs),
+    .wd     (mio_pads_14_attr_42_wd),
+    .d      (hw2reg.mio_pads[42].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[42].qe),
+    .q      (reg2hw.mio_pads[42].q ),
+    .qs     (mio_pads_14_attr_42_qs)
+  );
+
+
+  // F[attr_43]: 19:10
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_mio_pads_14_attr_43 (
+    .re     (mio_pads_14_attr_43_re),
+    // qualified with register enable
+    .we     (mio_pads_14_attr_43_we & regwen_qs),
+    .wd     (mio_pads_14_attr_43_wd),
+    .d      (hw2reg.mio_pads[43].d),
+    .qre    (),
+    .qe     (reg2hw.mio_pads[43].qe),
+    .q      (reg2hw.mio_pads[43].q ),
+    .qs     (mio_pads_14_attr_43_qs)
+  );
 
 
 
-  logic [16:0] addr_hit;
+
+
+  logic [22:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == PADCTRL_REGEN_OFFSET);
+    addr_hit[ 0] = (reg_addr == PADCTRL_REGWEN_OFFSET);
     addr_hit[ 1] = (reg_addr == PADCTRL_DIO_PADS_0_OFFSET);
     addr_hit[ 2] = (reg_addr == PADCTRL_DIO_PADS_1_OFFSET);
     addr_hit[ 3] = (reg_addr == PADCTRL_DIO_PADS_2_OFFSET);
     addr_hit[ 4] = (reg_addr == PADCTRL_DIO_PADS_3_OFFSET);
     addr_hit[ 5] = (reg_addr == PADCTRL_DIO_PADS_4_OFFSET);
-    addr_hit[ 6] = (reg_addr == PADCTRL_MIO_PADS_0_OFFSET);
-    addr_hit[ 7] = (reg_addr == PADCTRL_MIO_PADS_1_OFFSET);
-    addr_hit[ 8] = (reg_addr == PADCTRL_MIO_PADS_2_OFFSET);
-    addr_hit[ 9] = (reg_addr == PADCTRL_MIO_PADS_3_OFFSET);
-    addr_hit[10] = (reg_addr == PADCTRL_MIO_PADS_4_OFFSET);
-    addr_hit[11] = (reg_addr == PADCTRL_MIO_PADS_5_OFFSET);
-    addr_hit[12] = (reg_addr == PADCTRL_MIO_PADS_6_OFFSET);
-    addr_hit[13] = (reg_addr == PADCTRL_MIO_PADS_7_OFFSET);
-    addr_hit[14] = (reg_addr == PADCTRL_MIO_PADS_8_OFFSET);
-    addr_hit[15] = (reg_addr == PADCTRL_MIO_PADS_9_OFFSET);
-    addr_hit[16] = (reg_addr == PADCTRL_MIO_PADS_10_OFFSET);
+    addr_hit[ 6] = (reg_addr == PADCTRL_DIO_PADS_5_OFFSET);
+    addr_hit[ 7] = (reg_addr == PADCTRL_DIO_PADS_6_OFFSET);
+    addr_hit[ 8] = (reg_addr == PADCTRL_MIO_PADS_0_OFFSET);
+    addr_hit[ 9] = (reg_addr == PADCTRL_MIO_PADS_1_OFFSET);
+    addr_hit[10] = (reg_addr == PADCTRL_MIO_PADS_2_OFFSET);
+    addr_hit[11] = (reg_addr == PADCTRL_MIO_PADS_3_OFFSET);
+    addr_hit[12] = (reg_addr == PADCTRL_MIO_PADS_4_OFFSET);
+    addr_hit[13] = (reg_addr == PADCTRL_MIO_PADS_5_OFFSET);
+    addr_hit[14] = (reg_addr == PADCTRL_MIO_PADS_6_OFFSET);
+    addr_hit[15] = (reg_addr == PADCTRL_MIO_PADS_7_OFFSET);
+    addr_hit[16] = (reg_addr == PADCTRL_MIO_PADS_8_OFFSET);
+    addr_hit[17] = (reg_addr == PADCTRL_MIO_PADS_9_OFFSET);
+    addr_hit[18] = (reg_addr == PADCTRL_MIO_PADS_10_OFFSET);
+    addr_hit[19] = (reg_addr == PADCTRL_MIO_PADS_11_OFFSET);
+    addr_hit[20] = (reg_addr == PADCTRL_MIO_PADS_12_OFFSET);
+    addr_hit[21] = (reg_addr == PADCTRL_MIO_PADS_13_OFFSET);
+    addr_hit[22] = (reg_addr == PADCTRL_MIO_PADS_14_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1141,10 +1525,16 @@ module padctrl_reg_top (
     if (addr_hit[14] && reg_we && (PADCTRL_PERMIT[14] != (PADCTRL_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[15] && reg_we && (PADCTRL_PERMIT[15] != (PADCTRL_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[16] && reg_we && (PADCTRL_PERMIT[16] != (PADCTRL_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[17] && reg_we && (PADCTRL_PERMIT[17] != (PADCTRL_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[18] && reg_we && (PADCTRL_PERMIT[18] != (PADCTRL_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[19] && reg_we && (PADCTRL_PERMIT[19] != (PADCTRL_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[20] && reg_we && (PADCTRL_PERMIT[20] != (PADCTRL_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[21] && reg_we && (PADCTRL_PERMIT[21] != (PADCTRL_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[22] && reg_we && (PADCTRL_PERMIT[22] != (PADCTRL_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign regen_we = addr_hit[0] & reg_we & ~wr_err;
-  assign regen_wd = reg_wdata[0];
+  assign regwen_we = addr_hit[0] & reg_we & ~wr_err;
+  assign regwen_wd = reg_wdata[0];
 
   assign dio_pads_0_attr_0_we = addr_hit[1] & reg_we & ~wr_err;
   assign dio_pads_0_attr_0_wd = reg_wdata[9:0];
@@ -1206,140 +1596,212 @@ module padctrl_reg_top (
   assign dio_pads_4_attr_14_wd = reg_wdata[29:20];
   assign dio_pads_4_attr_14_re = addr_hit[5] && reg_re;
 
-  assign mio_pads_0_attr_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign dio_pads_5_attr_15_we = addr_hit[6] & reg_we & ~wr_err;
+  assign dio_pads_5_attr_15_wd = reg_wdata[9:0];
+  assign dio_pads_5_attr_15_re = addr_hit[6] && reg_re;
+
+  assign dio_pads_5_attr_16_we = addr_hit[6] & reg_we & ~wr_err;
+  assign dio_pads_5_attr_16_wd = reg_wdata[19:10];
+  assign dio_pads_5_attr_16_re = addr_hit[6] && reg_re;
+
+  assign dio_pads_5_attr_17_we = addr_hit[6] & reg_we & ~wr_err;
+  assign dio_pads_5_attr_17_wd = reg_wdata[29:20];
+  assign dio_pads_5_attr_17_re = addr_hit[6] && reg_re;
+
+  assign dio_pads_6_attr_18_we = addr_hit[7] & reg_we & ~wr_err;
+  assign dio_pads_6_attr_18_wd = reg_wdata[9:0];
+  assign dio_pads_6_attr_18_re = addr_hit[7] && reg_re;
+
+  assign dio_pads_6_attr_19_we = addr_hit[7] & reg_we & ~wr_err;
+  assign dio_pads_6_attr_19_wd = reg_wdata[19:10];
+  assign dio_pads_6_attr_19_re = addr_hit[7] && reg_re;
+
+  assign dio_pads_6_attr_20_we = addr_hit[7] & reg_we & ~wr_err;
+  assign dio_pads_6_attr_20_wd = reg_wdata[29:20];
+  assign dio_pads_6_attr_20_re = addr_hit[7] && reg_re;
+
+  assign mio_pads_0_attr_0_we = addr_hit[8] & reg_we & ~wr_err;
   assign mio_pads_0_attr_0_wd = reg_wdata[9:0];
-  assign mio_pads_0_attr_0_re = addr_hit[6] && reg_re;
+  assign mio_pads_0_attr_0_re = addr_hit[8] && reg_re;
 
-  assign mio_pads_0_attr_1_we = addr_hit[6] & reg_we & ~wr_err;
+  assign mio_pads_0_attr_1_we = addr_hit[8] & reg_we & ~wr_err;
   assign mio_pads_0_attr_1_wd = reg_wdata[19:10];
-  assign mio_pads_0_attr_1_re = addr_hit[6] && reg_re;
+  assign mio_pads_0_attr_1_re = addr_hit[8] && reg_re;
 
-  assign mio_pads_0_attr_2_we = addr_hit[6] & reg_we & ~wr_err;
+  assign mio_pads_0_attr_2_we = addr_hit[8] & reg_we & ~wr_err;
   assign mio_pads_0_attr_2_wd = reg_wdata[29:20];
-  assign mio_pads_0_attr_2_re = addr_hit[6] && reg_re;
+  assign mio_pads_0_attr_2_re = addr_hit[8] && reg_re;
 
-  assign mio_pads_1_attr_3_we = addr_hit[7] & reg_we & ~wr_err;
+  assign mio_pads_1_attr_3_we = addr_hit[9] & reg_we & ~wr_err;
   assign mio_pads_1_attr_3_wd = reg_wdata[9:0];
-  assign mio_pads_1_attr_3_re = addr_hit[7] && reg_re;
+  assign mio_pads_1_attr_3_re = addr_hit[9] && reg_re;
 
-  assign mio_pads_1_attr_4_we = addr_hit[7] & reg_we & ~wr_err;
+  assign mio_pads_1_attr_4_we = addr_hit[9] & reg_we & ~wr_err;
   assign mio_pads_1_attr_4_wd = reg_wdata[19:10];
-  assign mio_pads_1_attr_4_re = addr_hit[7] && reg_re;
+  assign mio_pads_1_attr_4_re = addr_hit[9] && reg_re;
 
-  assign mio_pads_1_attr_5_we = addr_hit[7] & reg_we & ~wr_err;
+  assign mio_pads_1_attr_5_we = addr_hit[9] & reg_we & ~wr_err;
   assign mio_pads_1_attr_5_wd = reg_wdata[29:20];
-  assign mio_pads_1_attr_5_re = addr_hit[7] && reg_re;
+  assign mio_pads_1_attr_5_re = addr_hit[9] && reg_re;
 
-  assign mio_pads_2_attr_6_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mio_pads_2_attr_6_we = addr_hit[10] & reg_we & ~wr_err;
   assign mio_pads_2_attr_6_wd = reg_wdata[9:0];
-  assign mio_pads_2_attr_6_re = addr_hit[8] && reg_re;
+  assign mio_pads_2_attr_6_re = addr_hit[10] && reg_re;
 
-  assign mio_pads_2_attr_7_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mio_pads_2_attr_7_we = addr_hit[10] & reg_we & ~wr_err;
   assign mio_pads_2_attr_7_wd = reg_wdata[19:10];
-  assign mio_pads_2_attr_7_re = addr_hit[8] && reg_re;
+  assign mio_pads_2_attr_7_re = addr_hit[10] && reg_re;
 
-  assign mio_pads_2_attr_8_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mio_pads_2_attr_8_we = addr_hit[10] & reg_we & ~wr_err;
   assign mio_pads_2_attr_8_wd = reg_wdata[29:20];
-  assign mio_pads_2_attr_8_re = addr_hit[8] && reg_re;
+  assign mio_pads_2_attr_8_re = addr_hit[10] && reg_re;
 
-  assign mio_pads_3_attr_9_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mio_pads_3_attr_9_we = addr_hit[11] & reg_we & ~wr_err;
   assign mio_pads_3_attr_9_wd = reg_wdata[9:0];
-  assign mio_pads_3_attr_9_re = addr_hit[9] && reg_re;
+  assign mio_pads_3_attr_9_re = addr_hit[11] && reg_re;
 
-  assign mio_pads_3_attr_10_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mio_pads_3_attr_10_we = addr_hit[11] & reg_we & ~wr_err;
   assign mio_pads_3_attr_10_wd = reg_wdata[19:10];
-  assign mio_pads_3_attr_10_re = addr_hit[9] && reg_re;
+  assign mio_pads_3_attr_10_re = addr_hit[11] && reg_re;
 
-  assign mio_pads_3_attr_11_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mio_pads_3_attr_11_we = addr_hit[11] & reg_we & ~wr_err;
   assign mio_pads_3_attr_11_wd = reg_wdata[29:20];
-  assign mio_pads_3_attr_11_re = addr_hit[9] && reg_re;
+  assign mio_pads_3_attr_11_re = addr_hit[11] && reg_re;
 
-  assign mio_pads_4_attr_12_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mio_pads_4_attr_12_we = addr_hit[12] & reg_we & ~wr_err;
   assign mio_pads_4_attr_12_wd = reg_wdata[9:0];
-  assign mio_pads_4_attr_12_re = addr_hit[10] && reg_re;
+  assign mio_pads_4_attr_12_re = addr_hit[12] && reg_re;
 
-  assign mio_pads_4_attr_13_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mio_pads_4_attr_13_we = addr_hit[12] & reg_we & ~wr_err;
   assign mio_pads_4_attr_13_wd = reg_wdata[19:10];
-  assign mio_pads_4_attr_13_re = addr_hit[10] && reg_re;
+  assign mio_pads_4_attr_13_re = addr_hit[12] && reg_re;
 
-  assign mio_pads_4_attr_14_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mio_pads_4_attr_14_we = addr_hit[12] & reg_we & ~wr_err;
   assign mio_pads_4_attr_14_wd = reg_wdata[29:20];
-  assign mio_pads_4_attr_14_re = addr_hit[10] && reg_re;
+  assign mio_pads_4_attr_14_re = addr_hit[12] && reg_re;
 
-  assign mio_pads_5_attr_15_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mio_pads_5_attr_15_we = addr_hit[13] & reg_we & ~wr_err;
   assign mio_pads_5_attr_15_wd = reg_wdata[9:0];
-  assign mio_pads_5_attr_15_re = addr_hit[11] && reg_re;
+  assign mio_pads_5_attr_15_re = addr_hit[13] && reg_re;
 
-  assign mio_pads_5_attr_16_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mio_pads_5_attr_16_we = addr_hit[13] & reg_we & ~wr_err;
   assign mio_pads_5_attr_16_wd = reg_wdata[19:10];
-  assign mio_pads_5_attr_16_re = addr_hit[11] && reg_re;
+  assign mio_pads_5_attr_16_re = addr_hit[13] && reg_re;
 
-  assign mio_pads_5_attr_17_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mio_pads_5_attr_17_we = addr_hit[13] & reg_we & ~wr_err;
   assign mio_pads_5_attr_17_wd = reg_wdata[29:20];
-  assign mio_pads_5_attr_17_re = addr_hit[11] && reg_re;
+  assign mio_pads_5_attr_17_re = addr_hit[13] && reg_re;
 
-  assign mio_pads_6_attr_18_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mio_pads_6_attr_18_we = addr_hit[14] & reg_we & ~wr_err;
   assign mio_pads_6_attr_18_wd = reg_wdata[9:0];
-  assign mio_pads_6_attr_18_re = addr_hit[12] && reg_re;
+  assign mio_pads_6_attr_18_re = addr_hit[14] && reg_re;
 
-  assign mio_pads_6_attr_19_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mio_pads_6_attr_19_we = addr_hit[14] & reg_we & ~wr_err;
   assign mio_pads_6_attr_19_wd = reg_wdata[19:10];
-  assign mio_pads_6_attr_19_re = addr_hit[12] && reg_re;
+  assign mio_pads_6_attr_19_re = addr_hit[14] && reg_re;
 
-  assign mio_pads_6_attr_20_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mio_pads_6_attr_20_we = addr_hit[14] & reg_we & ~wr_err;
   assign mio_pads_6_attr_20_wd = reg_wdata[29:20];
-  assign mio_pads_6_attr_20_re = addr_hit[12] && reg_re;
+  assign mio_pads_6_attr_20_re = addr_hit[14] && reg_re;
 
-  assign mio_pads_7_attr_21_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mio_pads_7_attr_21_we = addr_hit[15] & reg_we & ~wr_err;
   assign mio_pads_7_attr_21_wd = reg_wdata[9:0];
-  assign mio_pads_7_attr_21_re = addr_hit[13] && reg_re;
+  assign mio_pads_7_attr_21_re = addr_hit[15] && reg_re;
 
-  assign mio_pads_7_attr_22_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mio_pads_7_attr_22_we = addr_hit[15] & reg_we & ~wr_err;
   assign mio_pads_7_attr_22_wd = reg_wdata[19:10];
-  assign mio_pads_7_attr_22_re = addr_hit[13] && reg_re;
+  assign mio_pads_7_attr_22_re = addr_hit[15] && reg_re;
 
-  assign mio_pads_7_attr_23_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mio_pads_7_attr_23_we = addr_hit[15] & reg_we & ~wr_err;
   assign mio_pads_7_attr_23_wd = reg_wdata[29:20];
-  assign mio_pads_7_attr_23_re = addr_hit[13] && reg_re;
+  assign mio_pads_7_attr_23_re = addr_hit[15] && reg_re;
 
-  assign mio_pads_8_attr_24_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mio_pads_8_attr_24_we = addr_hit[16] & reg_we & ~wr_err;
   assign mio_pads_8_attr_24_wd = reg_wdata[9:0];
-  assign mio_pads_8_attr_24_re = addr_hit[14] && reg_re;
+  assign mio_pads_8_attr_24_re = addr_hit[16] && reg_re;
 
-  assign mio_pads_8_attr_25_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mio_pads_8_attr_25_we = addr_hit[16] & reg_we & ~wr_err;
   assign mio_pads_8_attr_25_wd = reg_wdata[19:10];
-  assign mio_pads_8_attr_25_re = addr_hit[14] && reg_re;
+  assign mio_pads_8_attr_25_re = addr_hit[16] && reg_re;
 
-  assign mio_pads_8_attr_26_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mio_pads_8_attr_26_we = addr_hit[16] & reg_we & ~wr_err;
   assign mio_pads_8_attr_26_wd = reg_wdata[29:20];
-  assign mio_pads_8_attr_26_re = addr_hit[14] && reg_re;
+  assign mio_pads_8_attr_26_re = addr_hit[16] && reg_re;
 
-  assign mio_pads_9_attr_27_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_pads_9_attr_27_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_pads_9_attr_27_wd = reg_wdata[9:0];
-  assign mio_pads_9_attr_27_re = addr_hit[15] && reg_re;
+  assign mio_pads_9_attr_27_re = addr_hit[17] && reg_re;
 
-  assign mio_pads_9_attr_28_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_pads_9_attr_28_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_pads_9_attr_28_wd = reg_wdata[19:10];
-  assign mio_pads_9_attr_28_re = addr_hit[15] && reg_re;
+  assign mio_pads_9_attr_28_re = addr_hit[17] && reg_re;
 
-  assign mio_pads_9_attr_29_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_pads_9_attr_29_we = addr_hit[17] & reg_we & ~wr_err;
   assign mio_pads_9_attr_29_wd = reg_wdata[29:20];
-  assign mio_pads_9_attr_29_re = addr_hit[15] && reg_re;
+  assign mio_pads_9_attr_29_re = addr_hit[17] && reg_re;
 
-  assign mio_pads_10_attr_30_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_pads_10_attr_30_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_pads_10_attr_30_wd = reg_wdata[9:0];
-  assign mio_pads_10_attr_30_re = addr_hit[16] && reg_re;
+  assign mio_pads_10_attr_30_re = addr_hit[18] && reg_re;
 
-  assign mio_pads_10_attr_31_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_pads_10_attr_31_we = addr_hit[18] & reg_we & ~wr_err;
   assign mio_pads_10_attr_31_wd = reg_wdata[19:10];
-  assign mio_pads_10_attr_31_re = addr_hit[16] && reg_re;
+  assign mio_pads_10_attr_31_re = addr_hit[18] && reg_re;
+
+  assign mio_pads_10_attr_32_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mio_pads_10_attr_32_wd = reg_wdata[29:20];
+  assign mio_pads_10_attr_32_re = addr_hit[18] && reg_re;
+
+  assign mio_pads_11_attr_33_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mio_pads_11_attr_33_wd = reg_wdata[9:0];
+  assign mio_pads_11_attr_33_re = addr_hit[19] && reg_re;
+
+  assign mio_pads_11_attr_34_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mio_pads_11_attr_34_wd = reg_wdata[19:10];
+  assign mio_pads_11_attr_34_re = addr_hit[19] && reg_re;
+
+  assign mio_pads_11_attr_35_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mio_pads_11_attr_35_wd = reg_wdata[29:20];
+  assign mio_pads_11_attr_35_re = addr_hit[19] && reg_re;
+
+  assign mio_pads_12_attr_36_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mio_pads_12_attr_36_wd = reg_wdata[9:0];
+  assign mio_pads_12_attr_36_re = addr_hit[20] && reg_re;
+
+  assign mio_pads_12_attr_37_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mio_pads_12_attr_37_wd = reg_wdata[19:10];
+  assign mio_pads_12_attr_37_re = addr_hit[20] && reg_re;
+
+  assign mio_pads_12_attr_38_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mio_pads_12_attr_38_wd = reg_wdata[29:20];
+  assign mio_pads_12_attr_38_re = addr_hit[20] && reg_re;
+
+  assign mio_pads_13_attr_39_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mio_pads_13_attr_39_wd = reg_wdata[9:0];
+  assign mio_pads_13_attr_39_re = addr_hit[21] && reg_re;
+
+  assign mio_pads_13_attr_40_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mio_pads_13_attr_40_wd = reg_wdata[19:10];
+  assign mio_pads_13_attr_40_re = addr_hit[21] && reg_re;
+
+  assign mio_pads_13_attr_41_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mio_pads_13_attr_41_wd = reg_wdata[29:20];
+  assign mio_pads_13_attr_41_re = addr_hit[21] && reg_re;
+
+  assign mio_pads_14_attr_42_we = addr_hit[22] & reg_we & ~wr_err;
+  assign mio_pads_14_attr_42_wd = reg_wdata[9:0];
+  assign mio_pads_14_attr_42_re = addr_hit[22] && reg_re;
+
+  assign mio_pads_14_attr_43_we = addr_hit[22] & reg_we & ~wr_err;
+  assign mio_pads_14_attr_43_wd = reg_wdata[19:10];
+  assign mio_pads_14_attr_43_re = addr_hit[22] && reg_re;
 
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = regen_qs;
+        reg_rdata_next[0] = regwen_qs;
       end
 
       addr_hit[1]: begin
@@ -1373,68 +1835,104 @@ module padctrl_reg_top (
       end
 
       addr_hit[6]: begin
+        reg_rdata_next[9:0] = dio_pads_5_attr_15_qs;
+        reg_rdata_next[19:10] = dio_pads_5_attr_16_qs;
+        reg_rdata_next[29:20] = dio_pads_5_attr_17_qs;
+      end
+
+      addr_hit[7]: begin
+        reg_rdata_next[9:0] = dio_pads_6_attr_18_qs;
+        reg_rdata_next[19:10] = dio_pads_6_attr_19_qs;
+        reg_rdata_next[29:20] = dio_pads_6_attr_20_qs;
+      end
+
+      addr_hit[8]: begin
         reg_rdata_next[9:0] = mio_pads_0_attr_0_qs;
         reg_rdata_next[19:10] = mio_pads_0_attr_1_qs;
         reg_rdata_next[29:20] = mio_pads_0_attr_2_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[9]: begin
         reg_rdata_next[9:0] = mio_pads_1_attr_3_qs;
         reg_rdata_next[19:10] = mio_pads_1_attr_4_qs;
         reg_rdata_next[29:20] = mio_pads_1_attr_5_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[10]: begin
         reg_rdata_next[9:0] = mio_pads_2_attr_6_qs;
         reg_rdata_next[19:10] = mio_pads_2_attr_7_qs;
         reg_rdata_next[29:20] = mio_pads_2_attr_8_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[11]: begin
         reg_rdata_next[9:0] = mio_pads_3_attr_9_qs;
         reg_rdata_next[19:10] = mio_pads_3_attr_10_qs;
         reg_rdata_next[29:20] = mio_pads_3_attr_11_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[12]: begin
         reg_rdata_next[9:0] = mio_pads_4_attr_12_qs;
         reg_rdata_next[19:10] = mio_pads_4_attr_13_qs;
         reg_rdata_next[29:20] = mio_pads_4_attr_14_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[13]: begin
         reg_rdata_next[9:0] = mio_pads_5_attr_15_qs;
         reg_rdata_next[19:10] = mio_pads_5_attr_16_qs;
         reg_rdata_next[29:20] = mio_pads_5_attr_17_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[14]: begin
         reg_rdata_next[9:0] = mio_pads_6_attr_18_qs;
         reg_rdata_next[19:10] = mio_pads_6_attr_19_qs;
         reg_rdata_next[29:20] = mio_pads_6_attr_20_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[15]: begin
         reg_rdata_next[9:0] = mio_pads_7_attr_21_qs;
         reg_rdata_next[19:10] = mio_pads_7_attr_22_qs;
         reg_rdata_next[29:20] = mio_pads_7_attr_23_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[16]: begin
         reg_rdata_next[9:0] = mio_pads_8_attr_24_qs;
         reg_rdata_next[19:10] = mio_pads_8_attr_25_qs;
         reg_rdata_next[29:20] = mio_pads_8_attr_26_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[17]: begin
         reg_rdata_next[9:0] = mio_pads_9_attr_27_qs;
         reg_rdata_next[19:10] = mio_pads_9_attr_28_qs;
         reg_rdata_next[29:20] = mio_pads_9_attr_29_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[18]: begin
         reg_rdata_next[9:0] = mio_pads_10_attr_30_qs;
         reg_rdata_next[19:10] = mio_pads_10_attr_31_qs;
+        reg_rdata_next[29:20] = mio_pads_10_attr_32_qs;
+      end
+
+      addr_hit[19]: begin
+        reg_rdata_next[9:0] = mio_pads_11_attr_33_qs;
+        reg_rdata_next[19:10] = mio_pads_11_attr_34_qs;
+        reg_rdata_next[29:20] = mio_pads_11_attr_35_qs;
+      end
+
+      addr_hit[20]: begin
+        reg_rdata_next[9:0] = mio_pads_12_attr_36_qs;
+        reg_rdata_next[19:10] = mio_pads_12_attr_37_qs;
+        reg_rdata_next[29:20] = mio_pads_12_attr_38_qs;
+      end
+
+      addr_hit[21]: begin
+        reg_rdata_next[9:0] = mio_pads_13_attr_39_qs;
+        reg_rdata_next[19:10] = mio_pads_13_attr_40_qs;
+        reg_rdata_next[29:20] = mio_pads_13_attr_41_qs;
+      end
+
+      addr_hit[22]: begin
+        reg_rdata_next[9:0] = mio_pads_14_attr_42_qs;
+        reg_rdata_next[19:10] = mio_pads_14_attr_43_qs;
       end
 
       default: begin

@@ -33,7 +33,7 @@ module xbar_${xbar.name} (
   input  tlul_pkg::tl_d2h_t tl_${node.name}_i,
 % endfor
 
-  input scanmode_i
+  input lc_ctrl_pkg::lc_tx_t scanmode_i
 );
 
   import tlul_pkg::*;
@@ -41,7 +41,7 @@ module xbar_${xbar.name} (
 
   // scanmode_i is currently not used, but provisioned for future use
   // this assignment prevents lint warnings
-  logic unused_scanmode;
+  lc_ctrl_pkg::lc_tx_t unused_scanmode;
   assign unused_scanmode = scanmode_i;
 
 % for block in xbar.nodes:
@@ -198,8 +198,8 @@ ${"end" if loop.last else ""}
 % for block in xbar.nodes:
   % if block.node_type.name   == "ASYNC_FIFO":
   tlul_fifo_async #(
-    .ReqDepth        (3),// At least 3 to make async work
-    .RspDepth        (3) // At least 3 to make async work
+    .ReqDepth        (4),// At least 4 to make async work
+    .RspDepth        (4) // At least 4 to make async work
   ) u_${block.name} (
     .clk_h_i      (${block.clocks[0]}),
     .rst_h_ni     (${block.resets[0]}),

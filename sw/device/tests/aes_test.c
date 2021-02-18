@@ -8,6 +8,9 @@
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_main.h"
 
+// TODO:
+// 1) Use the dif_aes directly.
+
 // The following plaintext, key and ciphertext are extracted from Appendix C of
 // the Advanced Encryption Standard (AES) FIPS Publication 197 available at
 // https://www.nist.gov/publications/advanced-encryption-standard-aes

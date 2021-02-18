@@ -4,21 +4,8 @@
 
 from typing import List
 
-from .alert import Alert, ERR_CODE_CALL_STACK
+from .alert import CallStackError
 from .reg import Reg, RegFile
-
-
-class CallStackError(Alert):
-    '''Raised when under- or over-flowing the call stack'''
-
-    err_code = ERR_CODE_CALL_STACK
-
-    def __init__(self, is_overflow: bool):
-        self.is_overflow = is_overflow
-
-    def __str__(self) -> str:
-        xflow = 'overflow' if self.is_overflow else 'underflow'
-        return 'Instruction caused {} of x1 call stack.'.format(xflow)
 
 
 class CallStackReg(Reg):
@@ -27,10 +14,11 @@ class CallStackReg(Reg):
     # The depth of the x1 call stack
     stack_depth = 8
 
-    def __init__(self, parent: RegFile):
+    def __init__(self, parent: 'GPRs'):
         super().__init__(parent, 1, 32, 0)
         self.stack = []  # type: List[int]
         self.saw_read = False
+        self.gpr_parent = parent
 
     # We overload read_unsigned here, to handle the read-sensitive behaviour
     # without needing the base class to deal with it.
@@ -41,15 +29,18 @@ class CallStackReg(Reg):
             return self.stack[-1] if self.stack else 0xcafef00d
 
         if not self.stack:
-            raise CallStackError(False)
+            self.gpr_parent.errs.append(CallStackError(False))
+            return 0
 
         # Mark that we've read something (so that we pop from the stack as part
         # of commit) and return the top of the stack.
         self.saw_read = True
         return self.stack[-1]
 
-    def write_unsigned(self, uval: int, backdoor: bool = False) -> None:
-        super().write_unsigned(uval, backdoor)
+    def post_insn(self) -> None:
+        if self._next_uval is not None:
+            if not self.saw_read and len(self.stack) == 8:
+                self.gpr_parent.errs.append(CallStackError(True))
 
     def commit(self) -> None:
         if self.saw_read:
@@ -58,8 +49,9 @@ class CallStackReg(Reg):
             self.saw_read = False
 
         if self._next_uval is not None:
-            if len(self.stack) == 8:
-                raise CallStackError(True)
+            # We should already have checked that we won't overflow the call
+            # stack in post_insn().
+            assert len(self.stack) <= 8
             self.stack.append(self._next_uval)
 
         super().commit()
@@ -75,6 +67,7 @@ class GPRs(RegFile):
     def __init__(self) -> None:
         super().__init__('x', 32, 32)
         self._x1 = CallStackReg(self)
+        self.errs = []  # type: List[CallStackError]
 
     def get_reg(self, idx: int) -> Reg:
         if idx == 0:
@@ -92,10 +85,18 @@ class GPRs(RegFile):
         '''Get the call stack, bottom-first.'''
         return self._x1.stack
 
+    def post_insn(self) -> None:
+        return self._x1.post_insn()
+
+    def errors(self) -> List[CallStackError]:
+        return self.errs
+
     def commit(self) -> None:
-        self._x1.commit()
         super().commit()
+        assert not self.errs
+        self._x1.commit()
 
     def abort(self) -> None:
-        self._x1.abort()
         super().abort()
+        self._x1.abort()
+        self.errs = []

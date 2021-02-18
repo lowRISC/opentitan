@@ -92,6 +92,10 @@ encoding-schemes: enc-schemes.yml
 #
 #  name:      The name of the operand. Required and must be unique.
 #
+#  abbrev:    An optional shortened name for the operand. If given, it
+#             must not match the short name or full name of any other
+#             operand.
+#
 #  type:      The type of the operand. A string. If this can be figured out
 #             from the operand name, it is optional. See below for a list of
 #             possible operand types and the rules for recognising them

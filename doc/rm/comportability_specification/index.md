@@ -203,8 +203,8 @@ Comportable peripherals do not designate whether their available IO are hardwire
 That is done at the top level with an Hjson configuration file.
 See the top level specification for information about that configuration file.
 
-In addition, full pad control is not done by the peripheral logic, but is done by the [`padctrl`]({{< relref "/hw/ip/padctrl/doc" >}}) module.
-The `padctrl` module provides software configuration control over pad drive strength, pin mapping, pad type (push/pull, open drain, etc).
+In addition, full pad control is not done by the peripheral logic, but is done, by the `pinmux` as well.
+The `pinmux` module provides software configuration control over pad drive strength, pin mapping, pad type (push/pull, open drain, etc).
 
 ### Interrupts
 
@@ -276,8 +276,8 @@ In this example, the IP name is `uart`, though the other configuration fields ar
       { name: "rx_parity_err", desc: "raised if the receiver..."}
     ],
     alert_list: [                    // optional; default []
-      { name: "uart_breach", desc: "Someone has attacked the ..."}
-      { name: "uart_frozen", desc: "The UART lines are frozen..." }
+      { name: "fatal_uart_breach", desc: "Someone has attacked the ..."}
+      { name: "recov_uart_frozen", desc: "The UART lines are frozen..." }
     ],
     inter_signal_list: [
       { name: "msg_fifo",
@@ -338,8 +338,8 @@ The following shows the expected documentation format for this example.
 
 | Alert name | Description |
 | --- | --- |
-| `uart_breach` | Someone has attacked the UART module |
-| `uart_frozen` | The UART lines are frozen and might be under attack |
+| `fatal_uart_breach` | Someone has attacked the UART module |
+| `recov_uart_frozen` | The UART lines are frozen and might be under attack |
 
 ## Interrupt Handling
 
@@ -391,7 +391,6 @@ The following sections specify what comes out of various tools based upon the si
 ### Register Creation
 
 For every peripheral, by default, three registers are **automatically** created to manage each of the interrupts for that peripheral (as defined in the `interrupt_list` portion of the Hjson file).
-This can be overridden within the `reggen` tool by specifying `no_auto_intr_regs = true`.
 Every interrupt has one field bit for each of three registers.
 (It is an error condition if there are more than 32 interrupts per peripheral.)
 The three registers are the `INTR_STATE` register, the `INTR_ENABLE` register, and the `INTR_TEST` register.
@@ -440,18 +439,78 @@ Unlike interrupts, there is no software component to alerts at the peripheral, t
 See that [specification]({{< relref "/hw/ip/alert_handler/doc" >}}) for full details.
 A general description of the handling of alerts at the hardware level is given here.
 
-### Alerts per module
+### Alerts per Module
 
 Alerts are sent as a bundled output from a peripheral to the hardware alert handler.
 Each peripheral can send zero or more alerts, where each is a distinguishable security threat.
 Each alert originates in some internal event, and must be specially handled within the peripheral, and then within the alert handler module.
 
+Alerts of comportable IPs in the system must be in either of the following two categories:
+
+1. *Recoverable*, one-time triggered alerts.
+This category is for regular alerts that are due to recoverable error conditions.
+The alert sender transmits one single alert event when the corresponding error condition is asserted.
+
+2. *Fatal* alerts that are continuously triggered until reset.
+This category is for highly critical alerts that are due to terminal error conditions.
+The alert sender continuously transmits alert events until the system is reset.
+
+It is recommended that fatal alerts also trigger local security countermeasures, if they exist.
+For example, a redundantly encoded FSM that is glitched into an invalid state is typically considered to be a fatal error condition.
+In this case, a local countermeasure could be to move the FSM into a terminal error state in order to render the FSM inoperable until the next reset.
+
+The table below lists a few common error conditions and the recommended alert type for each of those errors.
+
+Error Event                                                             | Regular IRQ | Recoverable Alert | Fatal Alert
+------------------------------------------------------------------------|-------------|-------------------|-------------
+ECC correctable in NVM (OTP, Flash)                                     | (x)         | x                 |
+ECC uncorrectable in Flash                                              | (x)         | x                 |
+ECC uncorrectable in OTP                                                | (x)         |                   | x
+Any ECC / Parity error in SRAMs or register files                       | (x)         |                   | x
+Glitch detectors (e.g., invalid FSM encoding)                           | (x)         |                   | x
+Incorrect usage of security IP (e.g., shadowed control register in AES) | (x)         | x                 |
+Incorrect usage of regular IP                                           | x           |                   |
+
+(x): optional
+
+The column "Regular IRQ" indicates whether the corresponding error condition should also send out a regular IRQ.
+A peripheral may optionally send out an IRQ for any alert event, depending on whether this is needed by the programming model to make forward progress.
+Note that while alerts may eventually lead to a system wide reset, this is not guaranteed since the alert response depends on the alert handler configuration.
+
+### Defining Alerts
+
+The Hjson configuration file defined above specifies all that needs to be known about the alerts in the standard case.
+The following sections specify what comes out of various tools based upon the simple list defined in the above example.
+
+In terms of naming convention, alerts shall be given a meaningful name that is indicative of its cause.
+Recoverable alerts must be prefixed with `recov_*`, whereas fatal alerts must be prefixed with `fatal_*`.
+For instance, an uncorrectable parity error in SRAM could be named `fatal_parity_error`.
+
+In cases where many diverse alert sources are bundled into one alert event (see [Alert Hardware Implementation]({{< relref "#alert-hardware-implementation" >}})), it may sometimes be difficult to assign the alert event a meaningful and descriptive name.
+In such cases, it is permissible to default the alert names to just `recov` and/or `fatal`.
+Note that this implies that the peripheral does not expose more than one alert for that type.
+
+### Test Alert Register Creation
+
+For every peripheral, by default, one register named `ALERT_TEST` is **automatically** created.
+
+`ALERT_TEST` is a write-only (`wo`) register that allows software to test the reporting of alerts in the alert handler.
+Every alert of a peripheral has one field bit inside the `ALERT_TEST` register, and each field bit is meant to be connected to the test input of the corresponding `prim_alert_sender` (see next subsection).
+
 ### Alert Hardware Implementation
 
 Internal events are sent active-high to a piece of IP within the peripheral called the `prim_alert_sender`.
-One `prim_alert_sender` must be instantiated per distinct alert event type.
+One `prim_alert_sender` must be instantiated per distinct alert event, and the `IsFatal` parameter of the alert sender must be set to 1 for fatal alerts (this causes the alert sender to latch the alert until the next system reset).
+
 It is up to the peripheral owner to determine what are distinct alert events;
 multiple ones can be bundled depending upon the distinction required within the module (i.e.  high priority threat vs. low level threat).
+As a general guideline, it is recommended that each peripheral bundles alert sources into one or two distinct alerts, for example one fatal and one recoverable alert.
+This helps to keep the total number of alerts (and their physical impact) low at the system level.
+
+It is recommended that comportable IPs with multiple bundled alerts expose a cause register for disambiguation, which is useful for debugging and crash dumps.
+Cause registers for recoverable alerts must either be clearable by SW, or the HW must provide an automatic mechanism to clear them (e.g., upon starting a new transaction initiated by SW).
+Cause registers for fatal alerts must not be clearable in any way and must hence be read-only.
+
 The `prim_alert_sender` converts the event into a differentially encoded signal pair to be routed to the hardware alert handler, as dictated by the details in the
 [alert handler specification]({{< relref "/hw/ip/alert_handler/doc" >}}).
 The alert handler module is automatically generated to have enough alert ports to represent each alert declared in the different included peripheral IP configuration files.

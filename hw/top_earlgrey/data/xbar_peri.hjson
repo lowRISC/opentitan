@@ -15,7 +15,49 @@
       pipeline: "false"
 
     },
-    { name:      "uart",
+    { name:      "uart0",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "uart1",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "uart2",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "uart3",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "i2c0",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "i2c1",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "i2c2",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "pattgen",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
@@ -33,6 +75,18 @@
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
+    { name:      "spi_host0",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "spi_host1",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
     { name:      "rv_timer",
       type:      "device",
       clock:     "clk_peri_i",
@@ -45,25 +99,31 @@
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
-    { name:      "pwrmgr",
+    { name:      "pwrmgr_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
-    { name:      "rstmgr",
+    { name:      "rstmgr_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
-    { name:      "clkmgr",
+    { name:      "clkmgr_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
-    { name:      "ram_ret",
+    { name:      "pinmux_aon",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  "false"
+    },
+    { name:      "ram_ret_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
@@ -81,7 +141,7 @@
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
-    { name:      "sensor_ctrl",
+    { name:      "sensor_ctrl_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
@@ -93,15 +153,13 @@
       reset:     "rst_peri_ni",
       pipeline:  "false",
     },
-    { name:      "sram_ctrl_ret",
+    { name:      "sram_ctrl_ret_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
       pipeline:  "false"
     },
-    // dummy module to capture the alert handler escalation signals
-    // and test them by converting them into IRQs
-    { name:      "nmi_gen",
+    { name:      "aon_timer_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
@@ -116,15 +174,17 @@
       addr_range:
       [
         {
-          base_addr: 0x40180000
+          base_addr: 0x40480000
           size_byte: 0x1000
         }
       ]
     },
   ],
   connections: {
-    main:  ["uart", "gpio", "spi_device", "rv_timer", "usbdev", "pwrmgr", "rstmgr", "clkmgr",
-            "ram_ret", "otp_ctrl", "lc_ctrl", "sensor_ctrl", "alert_handler", "nmi_gen",
-            "ast_wrapper", "sram_ctrl_ret"],
+    main:  ["uart0", "uart1", "uart2", "uart3", "i2c0", "i2c1", "i2c2", "pattgen",
+            "gpio", "spi_device", "spi_host0", "spi_host1", "rv_timer", "usbdev",
+            "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon", "ram_ret_aon",
+            "otp_ctrl", "lc_ctrl", "sensor_ctrl_aon", "alert_handler", "ast_wrapper",
+            "sram_ctrl_ret_aon", "aon_timer_aon"],
   },
 }

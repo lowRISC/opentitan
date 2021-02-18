@@ -1,0 +1,14 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "rom_ext_config"
+version = "0.1.0"
+authors = ["lowRISC contributors"]
+edition = "2018"
+
+[dependencies]
+serde = "0.8"
+serde_derive = "0.8"
+serde-hjson = "0.8"

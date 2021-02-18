@@ -14,12 +14,13 @@ filesets:
       - lowrisc:ip:rv_dm
       - lowrisc:top_earlgrey:rv_plic
       - lowrisc:top_earlgrey:pinmux_reg
-      - lowrisc:top_earlgrey:padctrl_reg
       - lowrisc:ip:pinmux_component
-      - lowrisc:ip:padctrl_component
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device
+      - lowrisc:ip:spi_host
+      - lowrisc:ip:i2c
+      - lowrisc:ip:pattgen
       - lowrisc:ip:aes
       - lowrisc:ip:entropy_src
       - lowrisc:ip:csrng
@@ -42,11 +43,14 @@ filesets:
       - lowrisc:top_earlgrey:xbar_peri
       - lowrisc:ip:rstmgr
       - lowrisc:ip:pwrmgr
+      - lowrisc:ip:aon_timer
       - lowrisc:systems:clkmgr
       - lowrisc:systems:sensor_ctrl
-      - lowrisc:systems:ast_wrapper_pkg
+      - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
+      - "fileset_partner ? (partner:systems:ast_pkg)"
       - lowrisc:tlul:headers
       - lowrisc:prim:all
+      - lowrisc:prim:usb_diff_rx
     files:
       - rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv
       - rtl/autogen/top_earlgrey.sv

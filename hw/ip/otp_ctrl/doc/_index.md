@@ -197,7 +197,7 @@ Once the appropriate partitions have been locked, the hardware integrity checker
 The purpose of this check is NOT to check between the storage flops and the OTP, but whether the buffer register contents remain consistent with the calculated digest.
 This verification is primarily concerned with whether the storage flops have experienced fault attacks.
 This check applies to only the HW_CFG and SECRET* partitions.
-If a failure is encountered, the OTP controller will send out an `otp_integrity_mismatch` alert and reset all of its hardware outputs to their defaults.
+If a failure is encountered, the OTP controller will send out a `fatal_check_error` alert and reset all of its hardware outputs to their defaults.
 
 ### Storage Consistency
 
@@ -208,7 +208,7 @@ If there is an integrity digest, only the digest needs to be read; otherwise, al
 
 
 This check applies to LIFE_CYCLE, HW_CFG and SECRET* partitions.
-If a failure is encountered, the OTP controller will send out an `otp_consistency_mismatch` alert and reset all of its hardware outputs to their defaults.
+If a failure is encountered, the OTP controller will send out a `fatal_check_error` alert and reset all of its hardware outputs to their defaults.
 
 Note that checks applied to life cycle could cause a failure if life cycle is updated, because life cycle is the only partition that may contain live updates.
 The controller hence detects this condition and makes sure that the buffer registers are kept up to date in order to prevent false positives.
@@ -434,7 +434,7 @@ The expected timining is illustrated below:
 #### Interface to Key Manager
 
 The interface to the key manager is a simple struct that outputs the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1 keys via `otp_keymgr_key_o` if these secrets have been provisioned and locked (via CREATOR_KEY_LOCK).
-Otherwise, this signal is tied to all-zeros.
+Otherwise, this signal is tied to a random netlist constant.
 
 Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the `otp_keymgr_key_o` signals.
 
@@ -512,9 +512,9 @@ The following is a high-level block diagram that illustrates everything that has
 Each of the partitions P0-P6 has its [own controller FSM]({{< relref "#partition-implementations" >}}) that interacts with the OTP wrapper and the [scrambling datapath]({{< relref "#scrambling-datapath" >}}) to fulfill its tasks.
 The partitions expose the address ranges and access control information to the DAI in order to block accesses that go to locked address ranges.
 Further, the only two blocks that have (conditional) write access to the OTP are the DAI and the Life Cycle Interface (LCI) blocks.
-The partitions  can only issue read transactions to the OTP macro.
+The partitions can only issue read transactions to the OTP macro.
 Note that the access ranges of the DAI and the LCI are mutually exclusive.
-I.e., the DAI can read the life cycle partition but it is not allowed to write to it.
+I.e., the DAI cannot read from nor write to the life cycle partition.
 The LCI cannot read the OTP, but is allowed to write to the life cycle partition.
 
 The CSR node on the left side of this diagram connects to the DAI, the OTP partitions (P0-P6) and the OTP wrapper through a gated TL-UL interface.
@@ -915,7 +915,7 @@ Error Code | Enum Name            | Recoverable | DAI | LCI | Unbuf | Buf   | De
 0x7        | FsmStateError        | no          |  x  |  x  |   x   |  x    | The FSM has been glitched into an invalid state, or escalation has been triggered and the FSM has been moved into a terminal error state.
 
 All non-zero error codes listed above trigger an `otp_error` interrupt.
-In addition, all unrecoverable OTP `Macro*` errors (codes 0x1, 0x3) trigger an `otp_macro_failure` alert, while all remaining unrecoverable errors trigger an `otp_check_failure` alert.
+In addition, all unrecoverable OTP `Macro*` errors (codes 0x1, 0x3) trigger a `fatal_macro_error` alert, while all remaining unrecoverable errors trigger a `fatal_check_error` alert.
 
 ## Direct Access Memory Map
 

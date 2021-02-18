@@ -33,8 +33,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
-                // TODO, enable it later
-                // "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
                 ]
 
   // Add additional tops for simulation.
@@ -65,9 +64,9 @@
     }
 
     {
-      name: keymgr_cfgen
-      uvm_test_seq: keymgr_cfgen_vseq
-      // This test is to check reg programming is gated when cfgen=0, it's timing sensitive
+      name: keymgr_cfg_regwen
+      uvm_test_seq: keymgr_cfg_regwen_vseq
+      // This test is to check reg programming is gated when cfg_regwen=0, it's timing sensitive
       run_opts: ["+zero_delays=1"]
     }
 
@@ -82,8 +81,23 @@
     }
 
     {
-      name: keymgr_invalid_kmac_input
-      uvm_test_seq: keymgr_invalid_kmac_input_vseq
+      name: keymgr_sw_invalid_input
+      uvm_test_seq: keymgr_sw_invalid_input_vseq
+    }
+
+    {
+      name: keymgr_hwsw_invalid_input
+      uvm_test_seq: keymgr_hwsw_invalid_input_vseq
+    }
+
+    {
+      name: keymgr_kmac_rsp_err
+      uvm_test_seq: keymgr_kmac_rsp_err_vseq
+    }
+
+    {
+      name: keymgr_stress_all
+      uvm_test_seq: keymgr_stress_all_vseq
     }
   ]
 

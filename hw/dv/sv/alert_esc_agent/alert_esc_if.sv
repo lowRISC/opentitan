@@ -26,14 +26,14 @@ interface alert_esc_if(input clk, input rst_n);
   prim_esc_pkg::esc_tx_t     esc_tx_int;   // internal esc_tx
   prim_esc_pkg::esc_rx_t     esc_rx_int;   // internal esc_rx
 
-  wire                    sender_clk;
+  wire                    async_clk;
   bit                     is_async, is_alert;
   dv_utils_pkg::if_mode_e if_mode;
-  clk_rst_if              clk_rst_async_if(.clk(sender_clk), .rst_n(rst_n));
+  clk_rst_if              clk_rst_async_if(.clk(async_clk), .rst_n(rst_n));
 
   // if alert sender is async mode, the clock will be drived in alert_esc_agent,
   // if it is sync mode, will assign to dut clk here
-  assign sender_clk = (is_async) ? 'z : clk ;
+  assign async_clk = (is_async) ? 'z : clk ;
 
   // async interface for alert_tx has two_clock cycles delay
   // TODO: this is not needed once the CDC module is implemented
@@ -55,7 +55,7 @@ interface alert_esc_if(input clk, input rst_n);
   assign alert_rx_final = (is_async && (if_mode == dv_utils_pkg::Device)) ?
                           alert_rx_sync_dly2 : alert_rx;
 
-  clocking sender_cb @(posedge sender_clk);
+  clocking sender_cb @(posedge async_clk);
     input  rst_n;
     output alert_tx_int;
     input  alert_rx;
@@ -63,7 +63,7 @@ interface alert_esc_if(input clk, input rst_n);
     input  esc_rx;
   endclocking
 
-  clocking receiver_cb @(posedge clk);
+  clocking receiver_cb @(posedge async_clk);
     input  rst_n;
     input  alert_tx;
     output alert_rx_int;

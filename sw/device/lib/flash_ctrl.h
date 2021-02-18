@@ -99,7 +99,7 @@ void flash_cfg_bank_erase(bank_index_t bank, bool erase_en);
 /**
  * Set flash controller default permissions.
  *
- * @param rd_end Read enable.
+ * @param rd_en Read enable.
  * @param prog_en Write enable.
  * @param erase_en Erase enable.
  */

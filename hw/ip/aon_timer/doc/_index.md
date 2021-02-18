@@ -21,7 +21,7 @@ See that document for an overview of how it is integrated into the top level sys
 The always-on wakeup timer operation is straightforward.
 A count starts at 0 and slowly ticks upwards (one tick every N+1 clock cycles, where N is the pre-scaler value).
 When it reaches / exceeds the wake count, a level wakeup signal is sent to the power manager and a level IRQ is sent to the processor.
-This wakeup signal stays high until it is explicitly acknowledged by software.
+This wakeup signal stays high until it is explicitly acknowledged by software (software must write zero to the wkup_cause register to clear it).
 The wakeup timer can be used like a real-time clock for long periods in a low-power mode (though it does not give any guarantees of time-accuracy TODO: specify accuracy).
 
 ### AON Watchdog timer
@@ -79,6 +79,8 @@ The timers themselves are 32b wide, giving a maximum timeout window of roughly ~
 For the wakeup timer, pre-scaler extends the maximum timeout to ~1000 days.
 
 Since the timer core runs on a slow clock, register values are sampled into the main clock domain to ensure register read / writes do not incur large latencies.
+The synchronization between clocks means that there is a delay between a register write completing and the underlying hardware taking the new value.
+Software can read back register values to know if/when updates have taken effect.
 
 # Programmers Guide
 

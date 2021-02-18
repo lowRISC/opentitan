@@ -88,22 +88,23 @@ class aes_scoreboard extends cip_base_scoreboard #(
       case (1)
         // add individual case item for each csr
         (!uvm_re_match("ctrl_shadowed", csr_name)): begin
-          input_item.manual_op = item.a_data[10];
-          input_item.key_len   = item.a_data[9:7];
-          `downcast(input_item.operation, item.a_data[0]);
-          input_item.valid = 1'b1;
-          case (item.a_data[6:1])
-            6'b00_0001:  input_item.mode = AES_ECB;
-            6'b00_0010:  input_item.mode = AES_CBC;
-            6'b00_0100:  input_item.mode = AES_CFB;
-            6'b00_1000:  input_item.mode = AES_OFB;
-            6'b01_0000:  input_item.mode = AES_CTR;
-            6'b10_0000:  input_item.mode = AES_NONE;
-            default:     input_item.mode = AES_NONE;
-          endcase // case item.a_data[4:1]
-          input_item.clean();
-          input_item.start_item = 1;
-
+          if (write) begin
+            input_item.manual_op = item.a_data[10];
+            input_item.key_len   = item.a_data[9:7];
+            `downcast(input_item.operation, item.a_data[0]);
+            input_item.valid = 1'b1;
+            case (item.a_data[6:1])
+              6'b00_0001:  input_item.mode = AES_ECB;
+              6'b00_0010:  input_item.mode = AES_CBC;
+              6'b00_0100:  input_item.mode = AES_CFB;
+              6'b00_1000:  input_item.mode = AES_OFB;
+              6'b01_0000:  input_item.mode = AES_CTR;
+              6'b10_0000:  input_item.mode = AES_NONE;
+              default:     input_item.mode = AES_NONE;
+            endcase // case item.a_data[4:1]
+            input_item.clean();
+            input_item.start_item = 1;
+          end
         end
 
         (!uvm_re_match("key_share0*", csr_name)): begin
@@ -161,9 +162,10 @@ class aes_scoreboard extends cip_base_scoreboard #(
           // this is seen as the beginning of a new message
           if (!input_item.start_item) begin
             input_item.start_item = 1;
+            input_item.split_item = 1;
             `uvm_info(`gfn, $sformatf("splitting message"), UVM_MEDIUM)
           end
-          `uvm_info(`gfn, $sformatf("\n\t ----clearing KEY"), UVM_MEDIUM)
+          `uvm_info(`gfn, $sformatf("\n\t ----| clearing KEY"), UVM_MEDIUM)
           `uvm_info(`gfn, $sformatf("\n\t ----| clearing IV"), UVM_MEDIUM)
           `uvm_info(`gfn, $sformatf("\n\t ----| clearing DATA_IN"), UVM_MEDIUM)
         end
@@ -293,8 +295,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
               end
             end else begin
               // verify that all 4 data_in and all 8 and all 4 IV  key are clean
-              `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",input_item.data_in_valid(), input_item.key_clean(1,0)),
-                                       UVM_MEDIUM)
+              `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",input_item.data_in_valid(),
+                                        input_item.key_clean(1,0)),UVM_MEDIUM)
               if (input_item.data_in_valid() && input_item.key_clean(1,0) && input_item.iv_clean(1,0)) begin
                 //clone and add to ref and rec data fifo
                 ok_to_fwd = 1;
@@ -312,10 +314,16 @@ class aes_scoreboard extends cip_base_scoreboard #(
       if (ok_to_fwd) begin
         ok_to_fwd = 0;
         `downcast(input_clone, input_item.clone());
-        `uvm_info(`gfn, $sformatf("\n\t AES INPUT ITEM RECEIVED - \n %s", input_clone.convert2string()),
+        `uvm_info(`gfn, $sformatf("\n\t AES INPUT ITEM RECEIVED - \n %s \n\t split message: %0b",
+                                   input_clone.convert2string(), input_clone.split_item),
                                   UVM_MEDIUM)
         rcv_item_q.push_front(input_clone);
         input_item.clean();
+        // only reset the split here
+        // in the case the reset comes after data input
+        // having it in clean will reset it when the ctrl
+        // is written
+        input_item.split_item = 0;
       end
     end
 
@@ -356,6 +364,10 @@ class aes_scoreboard extends cip_base_scoreboard #(
           // and no output is ready
           // there won't be a response for this item
           // reset/clear was triggered
+          `uvm_info(`gfn, $sformatf("\n\t ---| Status read: \n\t idle %0b \n\t output lost %0b  ",
+                          get_field_val(ral.status.idle, item.d_data),
+                          get_field_val(ral.status.output_lost, item.d_data)), UVM_MEDIUM)
+          
           if (get_field_val(ral.status.idle, item.d_data) &&
               get_field_val(ral.status.output_lost, item.d_data)) begin
             if (rcv_item_q.size() != 0) begin
@@ -366,7 +378,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
         end
       endcase // case (csr.get_name())
 
-      if (output_item.data_out_valid()) begin
+      if (output_item.data_out_valid() || output_item.data_was_cleared) begin
         // if data_out is read multipletimes in a row we should not pop input more than once
         if (rcv_item_q.size() == 0) begin
           output_item                    = new();
@@ -375,6 +387,13 @@ class aes_scoreboard extends cip_base_scoreboard #(
           complete_item                  = rcv_item_q.pop_back();
           complete_item.data_out         = output_item.data_out;
           complete_item.data_was_cleared = output_item.data_was_cleared;
+          // if message was split and data was read out.
+          // we will have one more message than expected.
+          if (complete_item.split_item) begin
+            cfg.split_cnt++;
+            `uvm_info(`gfn, $sformatf("\n\t ----| incrementing split count now at: %d",
+                      cfg.split_cnt), UVM_MEDIUM)
+          end
 
           `downcast(complete_clone, complete_item.clone());
           item_fifo.put(complete_clone);
@@ -495,7 +514,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
           `uvm_fatal(`gfn, $sformatf(" # %0d  \n\t %s \n", good_cnt, txt))
           end
         end
-        `uvm_info(`gfn, $sformatf("\n\t ----|   MESSAGE #%0d MATCHED    |-----", good_cnt),
+        `uvm_info(`gfn, $sformatf("\n\t ----|   MESSAGE #%0d MATCHED  %s  |-----", good_cnt, msg.aes_mode.name() ),
                                   UVM_MEDIUM)
         good_cnt++;
       end else begin
@@ -534,6 +553,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
   virtual task wait_fifo_empty();
     `uvm_info(`gfn, $sformatf("item fifo entries %d", item_fifo.num()), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("rcv_queue entries %d", rcv_item_q.size()), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("msg fifo entries %d", msg_fifo.num()), UVM_MEDIUM)
     wait (rcv_item_q.size() == 0);
     wait (item_fifo.num()   == 0);
     wait (msg_fifo.num()    == 0);

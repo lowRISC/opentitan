@@ -137,10 +137,10 @@ module otp_ctrl_reg_top (
   logic intr_test_otp_operation_done_we;
   logic intr_test_otp_error_wd;
   logic intr_test_otp_error_we;
-  logic alert_test_otp_macro_failure_wd;
-  logic alert_test_otp_macro_failure_we;
-  logic alert_test_otp_check_failure_wd;
-  logic alert_test_otp_check_failure_we;
+  logic alert_test_fatal_macro_error_wd;
+  logic alert_test_fatal_macro_error_we;
+  logic alert_test_fatal_check_error_wd;
+  logic alert_test_fatal_check_error_we;
   logic status_creator_sw_cfg_error_qs;
   logic status_creator_sw_cfg_error_re;
   logic status_owner_sw_cfg_error_qs;
@@ -403,32 +403,32 @@ module otp_ctrl_reg_top (
 
   // R[alert_test]: V(True)
 
-  //   F[otp_macro_failure]: 0:0
+  //   F[fatal_macro_error]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_otp_macro_failure (
+  ) u_alert_test_fatal_macro_error (
     .re     (1'b0),
-    .we     (alert_test_otp_macro_failure_we),
-    .wd     (alert_test_otp_macro_failure_wd),
+    .we     (alert_test_fatal_macro_error_we),
+    .wd     (alert_test_fatal_macro_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.otp_macro_failure.qe),
-    .q      (reg2hw.alert_test.otp_macro_failure.q ),
+    .qe     (reg2hw.alert_test.fatal_macro_error.qe),
+    .q      (reg2hw.alert_test.fatal_macro_error.q ),
     .qs     ()
   );
 
 
-  //   F[otp_check_failure]: 1:1
+  //   F[fatal_check_error]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test_otp_check_failure (
+  ) u_alert_test_fatal_check_error (
     .re     (1'b0),
-    .we     (alert_test_otp_check_failure_we),
-    .wd     (alert_test_otp_check_failure_wd),
+    .we     (alert_test_fatal_check_error_we),
+    .wd     (alert_test_fatal_check_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.otp_check_failure.qe),
-    .q      (reg2hw.alert_test.otp_check_failure.q ),
+    .qe     (reg2hw.alert_test.fatal_check_error.qe),
+    .q      (reg2hw.alert_test.fatal_check_error.q ),
     .qs     ()
   );
 
@@ -987,7 +987,7 @@ module otp_ctrl_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_check_trigger_regwen (
     .clk_i   (clk_i    ),
@@ -1048,7 +1048,7 @@ module otp_ctrl_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_check_regwen (
     .clk_i   (clk_i    ),
@@ -1508,11 +1508,11 @@ module otp_ctrl_reg_top (
   assign intr_test_otp_error_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_otp_error_wd = reg_wdata[1];
 
-  assign alert_test_otp_macro_failure_we = addr_hit[3] & reg_we & ~wr_err;
-  assign alert_test_otp_macro_failure_wd = reg_wdata[0];
+  assign alert_test_fatal_macro_error_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_fatal_macro_error_wd = reg_wdata[0];
 
-  assign alert_test_otp_check_failure_we = addr_hit[3] & reg_we & ~wr_err;
-  assign alert_test_otp_check_failure_wd = reg_wdata[1];
+  assign alert_test_fatal_check_error_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_fatal_check_error_wd = reg_wdata[1];
 
   assign status_creator_sw_cfg_error_re = addr_hit[4] && reg_re;
 

@@ -17,6 +17,9 @@ class keymgr_kmac_agent_cfg extends dv_base_agent_cfg;
   // Enable starting the device auto-response sequence by default if configured in Device mode.
   bit start_default_device_seq = 1;
 
+  // Knob to enable percentage of error response in auto-response sequence
+  int unsigned error_rsp_pct = 0;
+
   // Bias randomization in favor of enabling zero delays less often.
   constraint zero_delays_c {
     zero_delays dist { 0 := 8,

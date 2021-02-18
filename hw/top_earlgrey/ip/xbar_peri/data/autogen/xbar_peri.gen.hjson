@@ -16,34 +16,43 @@
   reset: rst_peri_ni
   reset_connections:
   {
-    rst_peri_ni: rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
+    rst_peri_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
   }
-  clock_reset_export: []
   clock_connections:
   {
-    clk_peri_i: clkmgr_clocks.clk_io_div4_infra
+    clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
   }
   domain: "0"
   connections:
   {
     main:
     [
-      uart
+      uart0
+      uart1
+      uart2
+      uart3
+      i2c0
+      i2c1
+      i2c2
+      pattgen
       gpio
       spi_device
+      spi_host0
+      spi_host1
       rv_timer
       usbdev
-      pwrmgr
-      rstmgr
-      clkmgr
-      ram_ret
+      pwrmgr_aon
+      rstmgr_aon
+      clkmgr_aon
+      pinmux_aon
+      ram_ret_aon
       otp_ctrl
       lc_ctrl
-      sensor_ctrl
+      sensor_ctrl_aon
       alert_handler
-      nmi_gen
       ast_wrapper
-      sram_ctrl_ret
+      sram_ctrl_ret_aon
+      aon_timer_aon
     ]
   }
   nodes:
@@ -60,7 +69,7 @@
       pipeline_byp: "true"
     }
     {
-      name: uart
+      name: uart0
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -70,6 +79,132 @@
       [
         {
           base_addr: 0x40000000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: uart1
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addr: 0x40010000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: uart2
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addr: 0x40020000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: uart3
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addr: 0x40030000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: i2c0
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: i2c
+      addr_range:
+      [
+        {
+          base_addr: 0x40080000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: i2c1
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: i2c
+      addr_range:
+      [
+        {
+          base_addr: 0x40090000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: i2c2
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: i2c
+      addr_range:
+      [
+        {
+          base_addr: 0x400A0000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: pattgen
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: pattgen
+      addr_range:
+      [
+        {
+          base_addr: 0x400E0000
           size_byte: 0x1000
         }
       ]
@@ -106,6 +241,42 @@
       [
         {
           base_addr: 0x40050000
+          size_byte: 0x2000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: spi_host0
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: spi_host
+      addr_range:
+      [
+        {
+          base_addr: 0x40060000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: spi_host1
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: spi_host
+      addr_range:
+      [
+        {
+          base_addr: 0x40070000
           size_byte: 0x1000
         }
       ]
@@ -141,7 +312,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40500000
+          base_addr: 0x40110000
           size_byte: 0x1000
         }
       ]
@@ -150,7 +321,7 @@
       pipeline_byp: "true"
     }
     {
-      name: pwrmgr
+      name: pwrmgr_aon
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -168,7 +339,7 @@
       pipeline_byp: "true"
     }
     {
-      name: rstmgr
+      name: rstmgr_aon
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -186,7 +357,7 @@
       pipeline_byp: "true"
     }
     {
-      name: clkmgr
+      name: clkmgr_aon
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -204,7 +375,25 @@
       pipeline_byp: "true"
     }
     {
-      name: ram_ret
+      name: pinmux_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: pinmux
+      addr_range:
+      [
+        {
+          base_addr: 0x40460000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: ram_ret_aon
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -213,7 +402,7 @@
       addr_range:
       [
         {
-          base_addr: 0x18000000
+          base_addr: 0x40600000
           size_byte: 0x1000
         }
       ]
@@ -258,7 +447,7 @@
       pipeline_byp: "true"
     }
     {
-      name: sensor_ctrl
+      name: sensor_ctrl_aon
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -267,7 +456,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40110000
+          base_addr: 0x40490000
           size_byte: 0x1000
         }
       ]
@@ -294,7 +483,7 @@
       pipeline_byp: "true"
     }
     {
-      name: sram_ctrl_ret
+      name: sram_ctrl_ret_aon
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -303,7 +492,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40510000
+          base_addr: 0x40500000
           size_byte: 0x1000
         }
       ]
@@ -312,16 +501,16 @@
       pipeline_byp: "true"
     }
     {
-      name: nmi_gen
+      name: aon_timer_aon
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
       pipeline: "false"
-      inst_type: nmi_gen
+      inst_type: aon_timer
       addr_range:
       [
         {
-          base_addr: 0x40160000
+          base_addr: 0x40470000
           size_byte: 0x1000
         }
       ]
@@ -339,7 +528,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40180000
+          base_addr: 0x40480000
           size_byte: 0x1000
         }
       ]

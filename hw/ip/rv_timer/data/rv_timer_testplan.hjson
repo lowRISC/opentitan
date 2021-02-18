@@ -9,20 +9,20 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
   entries: [
     {
-      name: smoke
-      desc: '''RV_TIMER smoke test performs following steps for number of iterations
+      name: random
+      desc: '''RV_TIMER random test performs following steps for number of iterations
             - Program zero to CTRL.active* Register(deactivate timer)
             - Program random legal values in CFG*, TIMER_V_*, COMPARE_*, INTR_ENABLE*
             - Program one to CTRL.active* (activate timer)
             - Wait for number of cycles to have mTime>= mTimeCmp
             - Check Interrupt state register and Interrupt signal (scoreboard logic)'''
       milestone: V1
-      tests: ["rv_timer_smoke"]
+      tests: ["rv_timer_random"]
     }
     {
       name: random_reset
       desc: '''This test is to exercise on the fly reset(timer is active)
-            - Assert reset randomly in the middle of smoke test steps
+            - Assert reset randomly in the middle of random test steps
             - Scoreboard check for all register go back to reset value'''
       milestone: V2
       tests: ["rv_timer_random_reset"]

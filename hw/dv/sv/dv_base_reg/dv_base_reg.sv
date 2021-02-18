@@ -14,6 +14,8 @@ class dv_base_reg extends uvm_reg;
   local bit            shadow_wr_staged; // stage the first shadow reg write
   local bit            shadow_update_err;
   local bit            en_shadow_wr = 1;
+  local string         update_err_alert_name;
+  local string         storage_err_alert_name;
 
   // atomic_shadow_wr: semaphore to guarantee atomicity of the two writes for shadowed registers.
   // In case a parallel thread writing a different value to the same reg causing an update_err
@@ -58,6 +60,11 @@ class dv_base_reg extends uvm_reg;
   // if the register is an enable reg, it will add controlled registers in the queue
   function void add_locked_reg(dv_base_reg locked_reg);
     locked_regs.push_back(locked_reg);
+  endfunction
+
+  function bit is_inside_locked_regs(dv_base_reg csr);
+    if (csr inside {locked_regs}) return 1;
+    else                          return 0;
   endfunction
 
   function bit is_enable_reg();
@@ -158,7 +165,8 @@ class dv_base_reg extends uvm_reg;
       field_access = fields[0].get_access();
       case (field_access)
         // rw.value is a dynamic array
-        "W1C": if (rw.value[0][0] == 1'b1) set_locked_regs_access("RO");
+        // discussed in issue #1922: enable register is standarized to W0C or RO (if HW has write
+        // access).
         "W0C": if (rw.value[0][0] == 1'b0) set_locked_regs_access("RO");
         "RO": ; // if RO, it's updated by design, need to predict in scb
         default:`uvm_fatal(`gfn, $sformatf("enable register invalid access %s", field_access))
@@ -257,4 +265,33 @@ class dv_base_reg extends uvm_reg;
       atomic_en_shadow_wr.put(1);
     end
   endfunction
+
+  function void add_update_err_alert(string name);
+    if (update_err_alert_name == "") update_err_alert_name = name;
+  endfunction
+
+  function void add_storage_err_alert(string name);
+    if (storage_err_alert_name == "") storage_err_alert_name = name;
+  endfunction
+
+  function string get_update_err_alert_name();
+    string parent_name = this.get_parent().get_name();
+
+    // block level alert name is input alert name from hjson
+    if (parent_name == "ral") return update_err_alert_name;
+
+    // top-level alert name is ${block_name} + alert name from hjson
+    return ($sformatf("%0s_%0s", parent_name, update_err_alert_name));
+  endfunction
+
+  function string get_storage_err_alert_name();
+    string parent_name = this.get_parent().get_name();
+
+    // block level alert name is input alert name from hjson
+    if (parent_name == "ral") return storage_err_alert_name;
+
+    // top-level alert name is ${block_name} + alert name from hjson
+    return ($sformatf("%0s_%0s", parent_name, storage_err_alert_name));
+  endfunction
+
 endclass

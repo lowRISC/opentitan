@@ -73,37 +73,115 @@ module top_earlgrey_nexysvideo #(
 
 
   logic clk_main, clk_usb_48mhz, rst_n;
-  logic [padctrl_reg_pkg::NMioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] mio_attr;
-  logic [padctrl_reg_pkg::NDioPads-1:0][padctrl_reg_pkg::AttrDw-1:0] dio_attr;
-  logic [padctrl_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
-  logic [padctrl_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
-  logic [padctrl_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_umux, dio_out_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_umux, dio_oe_padring;
-  logic [padctrl_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_umux, dio_in_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] mio_attr;
+  logic [pinmux_reg_pkg::NDioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] dio_attr;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_umux, dio_out_padring;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_umux, dio_oe_padring;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_umux, dio_in_padring;
 
   padring #(
-    // MIOs 23:20 are currently not
+    // MIOs 43:34 and 23:20 are currently not
     // connected to pads and hence tied off
-    .ConnectMioIn  ( 32'hFF0FFFFF ),
-    .ConnectMioOut ( 32'hFF0FFFFF ),
+    .ConnectMioIn  ( 44'h003_FF0F_FFFF ),
+    .ConnectMioOut ( 44'h003_FF0F_FFFF ),
     // Tied off DIOs:
     // 2: usbdev_d
     // 3: usbdev_suspend
     // 4: usbdev_tx_mode
     // 7: usbdev_se
-    .ConnectDioIn  ( 15'h7F63 ),
-    .ConnectDioOut ( 15'h7F63 )
+    // 9-14: spi_host all signals
+    // 17-18: spi_device unused quad signals
+    .ConnectDioIn  ( 21'h19_8163 ),
+    .ConnectDioOut ( 21'h19_8163 ),
+    // MIO pad types
+    .MioPadVariant ( { // RBox
+                       2'd3, // IOR13   -- open drain
+                       2'd3, // IOR12   -- open drain
+                       2'd3, // IOR11   -- open drain
+                       2'd3, // IOR10   -- open drain
+                       2'd3, // IOR9    -- open drain
+                       2'd3, // IOR8    -- open drain
+                       2'd0, // IOR7    -- bidir
+                       2'd0, // IOR6    -- bidir
+                       2'd0, // IOR5    -- bidir
+                       2'd0, // IOR4    -- bidir
+                       2'd0, // IOR3    -- bidir
+                       2'd0, // IOR2    -- bidir
+                       2'd0, // IOR1    -- bidir
+                       2'd0, // IOR0    -- bidir
+                       // Bank C
+                       2'd3, // IOC11   -- open drain
+                       2'd3, // IOC10   -- open drain
+                       2'd3, // IOC9    -- open drain
+                       2'd3, // IOC8    -- open drain
+                       2'd0, // IOC7    -- bidir
+                       2'd0, // IOC6    -- bidir
+                       2'd0, // IOC5    -- bidir
+                       2'd0, // IOC4    -- bidir
+                       2'd0, // IOC3    -- bidir
+                       2'd0, // IOC2    -- bidir
+                       2'd0, // IOC1    -- bidir
+                       2'd0, // IOC0    -- bidir
+                       // Bank B
+                       2'd3, // IOB11   -- open drain
+                       2'd3, // IOB10   -- open drain
+                       2'd3, // IOB9    -- open drain
+                       2'd3, // IOB8    -- open drain
+                       2'd0, // IOB7    -- birid
+                       2'd0, // IOB6    -- birid
+                       2'd0, // IOB5    -- birid
+                       2'd0, // IOB4    -- birid
+                       2'd0, // IOB3    -- bidir
+                       2'd0, // IOB2    -- bidir
+                       2'd0, // IOB1    -- bidir
+                       2'd0, // IOB0    -- bidir
+                       // Bank A
+                       2'd3, // IOA5    -- open drain
+                       2'd3, // IOA4    -- open drain
+                       2'd0, // IOA3    -- bidir
+                       2'd0, // IOA2    -- bidir
+                       2'd0, // IOA1    -- bidir
+                       2'd0  // IOA0    -- bidir
+                      } ),
+    // DIO pad types
+    .DioPadVariant (  { 2'd1, // SPI_DEV_CLK    -- input only
+                        2'd1, // SPI_DEV_CS_L   -- input only
+                        2'd0, // SPI_DEV_D3     -- bidir
+                        2'd0, // SPI_DEV_D2     -- bidir
+                        2'd0, // SPI_DEV_D1     -- bidir
+                        2'd0, // SPI_DEV_D0     -- bidir
+                        2'd0, // SPI_HOST_CLK   -- bidir
+                        2'd0, // SPI_HOST_CS_L  -- bidir
+                        2'd0, // SPI_HOST_D3    -- bidir
+                        2'd0, // SPI_HOST_D2    -- bidir
+                        2'd0, // SPI_HOST_D1    -- bidir
+                        2'd0, // SPI_HOST_D0    -- bidir
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd0, // unused
+                        2'd2, // USB_P          -- tolerant
+                        2'd2  // USB_N          -- tolerant
+                      } )
   ) padring (
     // Clk / Rst
     .clk_pad_i           ( 1'b0 ),
-    .clk_usb_48mhz_pad_i ( 1'b0 ),
     .rst_pad_ni          ( 1'b0 ),
     .clk_o               (      ),
-    .clk_usb_48mhz_o     (      ),
     .rst_no              (      ),
+    .cc1_i               ( 1'b0 ),
+    .cc2_i               ( 1'b0 ),
     // MIO Pads
-    .mio_pad_io          ( { IO_GP31,
+    .mio_pad_io          ( { 10'bz,    // Note that 43:34 are currently not mapped
+                             IO_UTX,
+                             IO_URX,
+                             IO_GP31,
                              IO_GP30,
                              IO_GP29,
                              IO_GP28,
@@ -135,10 +213,10 @@ module top_earlgrey_nexysvideo #(
     // DIO Pads
     .dio_pad_io          ( { IO_DPS0, // SCK, JTAG_TCK
                              IO_DPS3, // CSB, JTAG_TMS
-                             IO_DPS1, // SDI, JTAG_TDI
+                             2'bz,    // quad SPI device signals are not mapped
                              IO_DPS2, // SDO, JTAG_TDO
-                             IO_URX,
-                             IO_UTX,
+                             IO_DPS1, // SDI, JTAG_TDI
+                             6'bz,    // SPI host signals are not mapped
                              IO_USB_SENSE0,
                              1'bz,    // usbdev_se0
                              IO_USB_DPPULLUP0,
@@ -168,13 +246,13 @@ module top_earlgrey_nexysvideo #(
   logic jtag_trst_n, jtag_srst_n;
   logic jtag_tck, jtag_tck_buf, jtag_tms, jtag_tdi, jtag_tdo;
 
-  localparam int NumIOs = padctrl_reg_pkg::NMioPads +
-                          padctrl_reg_pkg::NDioPads;
+  localparam int NumIOs = pinmux_reg_pkg::NMioPads +
+                          pinmux_reg_pkg::NDioPads;
 
   // This specifies the tie-off values of the muxed MIO/DIOs
   // when the JTAG is active. SPI CSB is active low.
   localparam logic [NumIOs-1:0] TieOffValues = NumIOs'(1'b1 << (
-      padctrl_reg_pkg::NMioPads + top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb));
+      pinmux_reg_pkg::NMioPads + top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb));
 
   // TODO: this is a temporary solution. JTAG will eventually be selected and
   // qualified inside the pinmux, based on strap and lifecycle state.
@@ -185,16 +263,16 @@ module top_earlgrey_nexysvideo #(
     .TieOffValues   (                   TieOffValues ),
     .JtagEnIdx      (                             16 ), // MIO 16
     .JtagEnPolarity (                              1 ),
-    .TckIdx         ( padctrl_reg_pkg::NMioPads +
+    .TckIdx         ( pinmux_reg_pkg::NMioPads +
                       top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSck ),
-    .TmsIdx         ( padctrl_reg_pkg::NMioPads +
+    .TmsIdx         ( pinmux_reg_pkg::NMioPads +
                       top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb ),
     .TrstIdx        (                             18 ), // MIO 18
     .SrstIdx        (                             19 ), // MIO 19
-    .TdiIdx         ( padctrl_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSdi ),
-    .TdoIdx         ( padctrl_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSdo )
+    .TdiIdx         ( pinmux_reg_pkg::NMioPads +
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd0 ),
+    .TdoIdx         ( pinmux_reg_pkg::NMioPads +
+                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd1 )
   ) jtag_mux (
     // To JTAG inside core
     .jtag_tck_o   ( jtag_tck        ),
@@ -210,7 +288,11 @@ module top_earlgrey_nexysvideo #(
     // To padring side
     .out_padring_o ( {dio_out_padring, mio_out_padring} ),
     .oe_padring_o  ( {dio_oe_padring, mio_oe_padring } ),
-    .in_padring_i  ( {dio_in_padring, mio_in_padring } )
+    .in_padring_i  ( {dio_in_padring, mio_in_padring } ),
+    // USB breakouts
+    .usb_pullup_p_en_o (      ),
+    .usb_pullup_n_en_o (      ),
+    .usb_diff_input_i  ( 1'b0 )
   );
 
   // Software can enable the pinflip feature inside usbdev.
@@ -282,7 +364,7 @@ module top_earlgrey_nexysvideo #(
   logic use_uphy;
   assign use_uphy = mio_in_padring[2];
 
-  for (genvar i = 0; i < padctrl_reg_pkg::NDioPads; i++) begin : gen_dio
+  for (genvar i = 0; i < pinmux_reg_pkg::NDioPads; i++) begin : gen_dio
     if (i == DioIdxUsbDn0) begin
       assign dio_out_umux[i] = undo_swap ? dio_out_core[DioIdxUsbDp0] :
                                            dio_out_core[DioIdxUsbDn0];
@@ -360,43 +442,52 @@ module top_earlgrey_nexysvideo #(
   // Top-level design //
   //////////////////////
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
-  ast_wrapper_pkg::ast_rst_t ast_base_rst;
-  ast_wrapper_pkg::ast_alert_req_t ast_base_alerts;
-  ast_wrapper_pkg::ast_status_t ast_base_status;
+  ast_pkg::ast_rst_t ast_base_rst;
+  ast_pkg::ast_alert_req_t ast_base_alerts;
+  ast_pkg::ast_status_t ast_base_status;
 
-  assign ast_base_pwr.slow_clk_val = pwrmgr_pkg::DiffValid;
-  assign ast_base_pwr.core_clk_val = pwrmgr_pkg::DiffValid;
-  assign ast_base_pwr.io_clk_val   = pwrmgr_pkg::DiffValid;
-  assign ast_base_pwr.usb_clk_val  = pwrmgr_pkg::DiffValid;
+  assign ast_base_pwr.slow_clk_val = 1'b1;
+  assign ast_base_pwr.core_clk_val = 1'b1;
+  assign ast_base_pwr.io_clk_val   = 1'b1;
+  assign ast_base_pwr.usb_clk_val  = 1'b1;
   assign ast_base_pwr.main_pok     = 1'b1;
 
-  assign ast_base_alerts.alerts_p  = '0;
-  assign ast_base_alerts.alerts_n  = {ast_wrapper_pkg::NumAlerts{1'b1}};
-  assign ast_base_status.io_pok    = {ast_wrapper_pkg::NumIoRails{1'b1}};
+  ast_pkg::ast_dif_t silent_alert = '{
+                                       p: 1'b0,
+                                       n: 1'b1
+                                     };
+
+  assign ast_base_alerts.alerts = {ast_pkg::NumAlerts{silent_alert}};
+  assign ast_base_status.io_pok = {ast_pkg::NumIoRails{1'b1}};
 
   // the rst_ni pin only goes to AST
   // the rest of the logic generates reset based on the 'pok' signal.
   // for verilator purposes, make these two the same.
   assign ast_base_rst.aon_pok      = rst_n;
+  lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
+
   top_earlgrey #(
     .AesMasking(1'b0),
     .AesSBoxImpl(aes_pkg::SBoxImplLut),
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b0),
+    .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .IbexRegFile(ibex_pkg::RegFileFPGA),
     .IbexPipeLine(1),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .BootRomInitFile(BootRomInitFile)
   ) top_earlgrey (
     // Clocks, resets
-    .rst_ni          ( rst_n         ),
-    .clk_main_i      ( clk_main      ),
-    .clk_io_i        ( clk_main      ),
-    .clk_usb_i       ( clk_usb_48mhz ),
-    .clk_aon_i       ( clk_main      ),
+    .rst_ni                       ( rst_n           ),
+    .clk_main_i                   ( clk_main        ),
+    .clk_io_i                     ( clk_main        ),
+    .clk_usb_i                    ( clk_usb_48mhz   ),
+    .clk_aon_i                    ( clk_main        ),
+    .clks_ast_o                   (                 ),
     .rstmgr_ast_i                 ( ast_base_rst    ),
-    .pwrmgr_pwr_ast_req_o         (                 ),
-    .pwrmgr_pwr_ast_rsp_i         ( ast_base_pwr    ),
+    .rsts_ast_o                   (                 ),
+    .pwrmgr_ast_req_o             (                 ),
+    .pwrmgr_ast_rsp_i             ( ast_base_pwr    ),
     .sensor_ctrl_ast_alert_req_i  ( ast_base_alerts ),
     .sensor_ctrl_ast_alert_rsp_o  (                 ),
     .sensor_ctrl_ast_status_i     ( ast_base_status ),
@@ -404,10 +495,21 @@ module top_earlgrey_nexysvideo #(
     .usbdev_usb_ref_pulse_o       (                 ),
     .ast_tl_req_o                 (                 ),
     .ast_tl_rsp_i                 ( '0              ),
+    .ast_edn_edn_req_i            ( '0              ),
+    .ast_edn_edn_rsp_o            (                 ),
     .otp_ctrl_otp_ast_pwr_seq_o   (                 ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( '0              ),
-    .flash_power_down_h_i         ( '0              ),
+    .flash_bist_enable_i          ( 1'b0            ),
+    .flash_power_down_h_i         ( 1'b0            ),
     .flash_power_ready_h_i        ( 1'b1            ),
+    // Need to modle this logic at some point, otherwise entropy
+    // on verilator will hang
+    .es_rng_req_o                 (                 ),
+    .es_rng_rsp_i                 ( '0              ),
+    .lc_clk_byp_req_o             ( lc_clk_bypass   ),
+    .lc_clk_byp_ack_i             ( lc_clk_bypass   ),
+    .flash_test_mode_a_i          ('0               ),
+    .flash_test_voltage_h_i       ('0               ),
 
     // JTAG
     .jtag_tck_i      ( jtag_tck_buf  ),
@@ -432,7 +534,8 @@ module top_earlgrey_nexysvideo #(
 
     // DFT signals
     .scan_rst_ni     ( 1'b1          ),
-    .scanmode_i      ( 1'b0          )
+    .scan_en_i       ( 1'b0          ),
+    .scanmode_i      ( lc_ctrl_pkg::Off )
   );
 
 endmodule : top_earlgrey_nexysvideo

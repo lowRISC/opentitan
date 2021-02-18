@@ -7,7 +7,7 @@ sw_lib_dif_clkmgr = declare_dependency(
   link_with: static_library(
     'clkmgr_ot',
     sources: [
-      hw_ip_clkgmr_reg_h,
+      hw_ip_clkmgr_reg_h,
       'dif_clkmgr.c',
     ],
     dependencies: [
@@ -188,6 +188,21 @@ sw_lib_dif_pwrmgr = declare_dependency(
   )
 )
 
+# Key Manager DIF library
+sw_lib_dif_keymgr = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_keymgr',
+    sources: [
+      hw_ip_keymgr_reg_h,
+      'dif_keymgr.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_bitfield,
+    ],
+  )
+)
+
 # OTP controller library
 sw_lib_dif_otp_ctrl = declare_dependency(
   link_with: static_library(
@@ -230,5 +245,17 @@ sw_lib_dif_aon_timer = declare_dependency(
       sw_lib_mmio,
       sw_lib_bitfield,
     ],
+  )
+)
+
+# AES DIF library
+sw_lib_dif_aes = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_aes',
+    sources: [
+      hw_ip_aes_reg_h,
+      'dif_aes.c',
+    ],
+    dependencies: [sw_lib_mmio],
   )
 )
