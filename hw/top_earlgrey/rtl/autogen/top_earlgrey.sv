@@ -88,7 +88,7 @@ module top_earlgrey #(
   output rstmgr_pkg::rstmgr_ast_out_t       rsts_ast_o,
   input                      scan_rst_ni, // reset used for test mode
   input                      scan_en_i,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i   // 1 for Scan
+  input lc_ctrl_pkg::lc_tx_t scanmode_i   // lc_ctrl_pkg::On for Scan
 );
 
   // JTAG IDCODE for development versions of this code.
@@ -688,7 +688,7 @@ module top_earlgrey #(
     .clk_i         (clkmgr_aon_clocks.clk_proc_main),
     .rst_ni        (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
     .hw_debug_en_i (lc_ctrl_lc_hw_debug_en),
-    .testmode_i    (1'b0),
+    .scanmode_i,
     .ndmreset_o    (ndmreset_req),
     .dmactive_o    (),
     .debug_req_o   (debug_req),
@@ -1087,7 +1087,7 @@ module top_earlgrey #(
       // Inter-module signals
       .tl_i(spi_device_tl_req),
       .tl_o(spi_device_tl_rsp),
-      .scanmode_i   (scanmode_i),
+      .scanmode_i,
       .scan_rst_ni  (scan_rst_ni),
 
       // Clock and reset connections
@@ -1111,7 +1111,7 @@ module top_earlgrey #(
       // Inter-module signals
       .tl_i(spi_host0_tl_req),
       .tl_o(spi_host0_tl_rsp),
-      .scanmode_i   (scanmode_i),
+      .scanmode_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
@@ -1134,7 +1134,7 @@ module top_earlgrey #(
       // Inter-module signals
       .tl_i(spi_host1_tl_req),
       .tl_o(spi_host1_tl_rsp),
-      .scanmode_i   (scanmode_i),
+      .scanmode_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
@@ -1457,7 +1457,7 @@ module top_earlgrey #(
       .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
       .tl_i(lc_ctrl_tl_req),
       .tl_o(lc_ctrl_tl_rsp),
-      .scanmode_i   (scanmode_i),
+      .scanmode_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_timers),
@@ -1540,7 +1540,7 @@ module top_earlgrey #(
       .resets_ast_o(rsts_ast_o),
       .tl_i(rstmgr_aon_tl_req),
       .tl_o(rstmgr_aon_tl_rsp),
-      .scanmode_i   (scanmode_i),
+      .scanmode_i,
       .scan_rst_ni  (scan_rst_ni),
 
       // Clock and reset connections
@@ -1571,7 +1571,7 @@ module top_earlgrey #(
       .idle_i(clkmgr_aon_idle),
       .tl_i(clkmgr_aon_tl_req),
       .tl_o(clkmgr_aon_tl_rsp),
-      .scanmode_i   (scanmode_i),
+      .scanmode_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),

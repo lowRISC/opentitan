@@ -88,7 +88,7 @@ module top_${top["name"]} #(
 % endif
   input                      scan_rst_ni, // reset used for test mode
   input                      scan_en_i,
-  input lc_ctrl_pkg::lc_tx_t scanmode_i   // 1 for Scan
+  input lc_ctrl_pkg::lc_tx_t scanmode_i   // lc_ctrl_pkg::On for Scan
 );
 
   // JTAG IDCODE for development versions of this code.
@@ -311,7 +311,7 @@ module top_${top["name"]} #(
     .clk_i         (${cpu_clk}),
     .rst_ni        (${dm_rst}[rstmgr_pkg::Domain0Sel]),
     .hw_debug_en_i (lc_ctrl_lc_hw_debug_en),
-    .testmode_i    (1'b0),
+    .scanmode_i,
     .ndmreset_o    (ndmreset_req),
     .dmactive_o    (),
     .debug_req_o   (debug_req),
@@ -656,7 +656,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .alert_tx_i  ( alert_tx ),
     % endif
     % if m["scan"] == "true":
-      .scanmode_i   (scanmode_i),
+      .scanmode_i,
     % endif
     % if m["scan_reset"] == "true":
       .scan_rst_ni  (scan_rst_ni),
