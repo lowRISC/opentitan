@@ -219,6 +219,9 @@ module rv_dm #(
   // DBG doesn't handle error responses so raise assertion if we see one
   `ASSERT(dbgNoErrorResponse, host_r_valid |-> !host_r_err)
 
+  logic unused_host_r_err;
+  assign unused_host_r_err = host_r_err;
+
   localparam int unsigned AddressWidthWords = BusWidth - $clog2(BusWidth/8);
 
   logic                         req;
