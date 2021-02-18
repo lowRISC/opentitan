@@ -21,7 +21,7 @@ REQUIRED_FIELDS = {
     ],
     'cname': [
         's', "base name for each instance, mostly"
-        " useful for refering to instance in messages."
+        " useful for referring to instance in messages."
     ],
     'fields': [
         'l', "list of register field description"
