@@ -24,7 +24,4 @@
 
   // Technology specific timing constraints for this module
   foundry_sdc_file: "{foundry_root}/top_earlgrey/syn/foundry.constraints.sdc"
-
-  // Configuration for result parser script
-  area_depth: 1
- }
+}
