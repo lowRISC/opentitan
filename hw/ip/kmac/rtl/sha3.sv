@@ -129,7 +129,13 @@ module sha3
   assign keccak_run = sha3pad_keccak_run | sw_keccak_run;
 
   // Absorb pulse output : used to generate interrupts
-  assign absorbed_o = absorbed;
+  // Latch absorbed signal as kmac_keymgr asserts `CmdDone` when it sees
+  // `absorbed` signal. When this signal goes out, the state is still in
+  // `StAbsorb`. Next state is `StSqueeze`.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) absorbed_o <= 1'b 0;
+    else         absorbed_o <= absorbed;
+  end
 
   // Squeezing output
   assign squeezing_o = squeezing;
