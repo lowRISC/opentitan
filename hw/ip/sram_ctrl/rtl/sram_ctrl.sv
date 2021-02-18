@@ -124,7 +124,7 @@ module sram_ctrl
   // Lifecycle Escalation Synchronization //
   //////////////////////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t escalate_en;
+  lc_ctrl_pkg::lc_tx_t [0:0] escalate_en;
   prim_lc_sync #(
     .NumCopies (1)
   ) u_prim_lc_sync (
