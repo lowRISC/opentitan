@@ -49,7 +49,12 @@ module otbn_core
   output logic [WLEN-1:0]          dmem_wmask_o,
   input  logic [WLEN-1:0]          dmem_rdata_i,
   input  logic                     dmem_rvalid_i,
-  input  logic                     dmem_rerror_i
+  input  logic                     dmem_rerror_i,
+
+  // Entropy distribution network (EDN)
+  output logic                    edn_req_o,
+  input  logic                    edn_ack_i,
+  input  logic [EdnDataWidth-1:0] edn_data_i
 );
   // Random number
   // TODO: Hook up to RNG distribution network
@@ -411,4 +416,12 @@ module otbn_core
     .ispr_acc_wr_data_i (ispr_acc_wr_data),
     .ispr_acc_wr_en_i   (ispr_acc_wr_en)
   );
+
+  logic                    unused_edn_ack;
+  logic [EdnDataWidth-1:0] unused_edn_data;
+
+  // Tie-off EDN interface
+  assign unused_edn_ack  = edn_ack_i;
+  assign unused_edn_data = edn_data_i;
+  assign edn_req_o       = 1'b0;
 endmodule

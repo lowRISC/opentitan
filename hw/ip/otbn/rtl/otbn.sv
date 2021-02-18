@@ -29,10 +29,13 @@ module otbn
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
-  // CSRNG interface
-  // TODO: Needs to be connected to RNG distribution network (#2638)
+  // EDN clock and interface
+  input                                              clk_edn_i,
+  input                                              rst_edn_ni,
+  output edn_pkg::edn_req_t                          edn_o,
+  input  edn_pkg::edn_rsp_t                          edn_i
 );
 
   import prim_util_pkg::vbits;
@@ -437,6 +440,28 @@ module otbn
   end
 
 
+  // EDN Connection ============================================================
+  logic edn_req, edn_ack;
+  logic [EdnDataWidth-1:0] edn_data;
+
+  // This synchronizes the data coming from EDN and stacks the
+  // 32bit EDN words to achieve an internal entropy width of 256 bit.
+  prim_edn_req #(
+    .OutWidth(EdnDataWidth)
+  ) u_prim_edn_req (
+    .clk_i,
+    .rst_ni,
+    .req_i      ( edn_req  ),
+    .ack_o      ( edn_ack  ),
+    .data_o     ( edn_data ),
+    .fips_o     (          ), // unused
+    .clk_edn_i,
+    .rst_edn_ni,
+    .edn_o,
+    .edn_i
+  );
+
+
   // OTBN Core =================================================================
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -556,7 +581,11 @@ module otbn
       .dmem_wmask_o  (dmem_wmask_core),
       .dmem_rdata_i  (dmem_rdata_core),
       .dmem_rvalid_i (dmem_rvalid_core),
-      .dmem_rerror_i (dmem_rerror_core)
+      .dmem_rerror_i (dmem_rerror_core),
+
+      .edn_req_o     (edn_req),
+      .edn_ack_i     (edn_ack),
+      .edn_data_i    (edn_data)
     );
   `endif
 

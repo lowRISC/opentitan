@@ -36,6 +36,8 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:util
       - lowrisc:prim:ram_1p_adv
+      - lowrisc:ip:edn_pkg
+      - lowrisc:prim:edn_req
       - lowrisc:ip:otbn_pkg
       - lowrisc:dv:otbn_model
     files:

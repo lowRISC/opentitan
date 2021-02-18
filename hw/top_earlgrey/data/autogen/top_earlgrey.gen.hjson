@@ -6767,7 +6767,7 @@
             '''
           package: edn_pkg
           inst_name: edn1
-          end_idx: 1
+          end_idx: 2
           top_type: partial-one-to-N
           top_signame: edn1_edn
           index: -1
@@ -6971,16 +6971,19 @@
       clock_srcs:
       {
         clk_i: main
+        clk_edn_i: main
       }
       clock_group: trans
       reset_connections:
       {
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
+        rst_edn_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x411D0000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_otbn
+        clk_edn_i: clkmgr_aon_clocks.clk_main_otbn
       }
       domain: "0"
       size: 0x10000
@@ -7053,6 +7056,18 @@
       scan_reset: "false"
       inter_signal_list:
       [
+        {
+          struct: edn
+          type: req_rsp
+          name: edn
+          act: req
+          package: edn_pkg
+          inst_name: otbn
+          width: 1
+          default: ""
+          top_signame: edn1_edn
+          index: 1
+        }
         {
           name: idle
           type: uni
@@ -7537,6 +7552,7 @@
       edn1.edn:
       [
         alert_handler.edn
+        otbn.edn
       ]
       otp_ctrl.otp_keymgr_key:
       [
@@ -14421,7 +14437,7 @@
           '''
         package: edn_pkg
         inst_name: edn1
-        end_idx: 1
+        end_idx: 2
         top_type: partial-one-to-N
         top_signame: edn1_edn
         index: -1
@@ -14526,6 +14542,18 @@
         end_idx: -1
         top_signame: sram_ctrl_main_tl
         index: -1
+      }
+      {
+        struct: edn
+        type: req_rsp
+        name: edn
+        act: req
+        package: edn_pkg
+        inst_name: otbn
+        width: 1
+        default: ""
+        top_signame: edn1_edn
+        index: 1
       }
       {
         name: idle
@@ -16151,7 +16179,7 @@
         signame: edn1_edn_req
         width: 4
         type: req_rsp
-        end_idx: 1
+        end_idx: 2
         act: rsp
         suffix: req
         default: "'0"
@@ -16162,7 +16190,7 @@
         signame: edn1_edn_rsp
         width: 4
         type: req_rsp
-        end_idx: 1
+        end_idx: 2
         act: rsp
         suffix: rsp
         default: "'0"

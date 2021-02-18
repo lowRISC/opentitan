@@ -29,6 +29,9 @@ package otbn_pkg;
   // Number of Wide Data Registers (WDRs)
   parameter int NWdr = 2 ** WdrAw;
 
+  // Width of entropy input
+  parameter int EdnDataWidth = 256;
+
 
   // Toplevel constants ============================================================================
 

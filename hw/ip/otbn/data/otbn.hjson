@@ -3,6 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 { name: "otbn"
   clock_primary: "clk_i"
+  other_clock_list: [
+    "clk_edn_i"
+  ],
+  reset_primary: "rst_ni",
+  other_reset_list: [
+    "rst_edn_ni"
+  ]
   bus_device: "tlul"
   bus_host: "none"
   param_list: [
@@ -29,15 +36,13 @@
   ]
 
   inter_signal_list: [
-    // TODO: CSRNG isn't committed yet, depends on assumed interface done for
-    // AES in https://github.com/lowRISC/opentitan/pull/2140.
-    /*{ name:    "entropy",
-      type:    "req_rsp",
-      act:     "req",
-      package: "csrng_pkg",
-      struct:  "csrng_entropy",
-      width:   "1"
-    },*/
+    // EDN interface
+    { struct:  "edn"
+      type:    "req_rsp"
+      name:    "edn"
+      act:     "req"
+      package: "edn_pkg"
+    }
 
     // OTBN is not performing any operation and can be clock/power-gated.
     { name:    "idle",
