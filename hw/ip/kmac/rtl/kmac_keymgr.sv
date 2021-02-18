@@ -103,13 +103,18 @@ module kmac_keymgr
 
   // Define right_encode(outlen) value here
   // Look at kmac_pkg::key_len_e for the kinds of key size
+  //
+  // These values should be exactly the same as the key length encodings
+  // in kmac_core.sv, with the only difference being that the byte representing
+  // the byte-length of the encoded value is in the MSB position due to right encoding
+  // instead of in the LSB position (left encoding).
   localparam int OutLenW = 24;
   localparam logic [OutLenW-1:0] EncodedOutLen [5]= '{
-    24'h 000180, // Key128
-    24'h 0001C0, // Key192
-    24'h 020100, // Key256
-    24'h 020180, // Key384
-    24'h 020200  // Key512
+    24'h 0001_80, // Key128
+    24'h 0001_C0, // Key192
+    24'h 02_0001, // Key256
+    24'h 02_8001, // Key384
+    24'h 02_0002  // Key512
   };
 
   localparam logic [OutLenW-1:0] EncodedOutLenMask [5] = '{
