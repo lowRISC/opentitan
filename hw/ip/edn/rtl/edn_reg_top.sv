@@ -74,19 +74,21 @@ module edn_reg_top (
   logic intr_state_edn_cmd_req_done_qs;
   logic intr_state_edn_cmd_req_done_wd;
   logic intr_state_edn_cmd_req_done_we;
-  logic intr_state_edn_fifo_err_qs;
-  logic intr_state_edn_fifo_err_wd;
-  logic intr_state_edn_fifo_err_we;
+  logic intr_state_edn_fatal_err_qs;
+  logic intr_state_edn_fatal_err_wd;
+  logic intr_state_edn_fatal_err_we;
   logic intr_enable_edn_cmd_req_done_qs;
   logic intr_enable_edn_cmd_req_done_wd;
   logic intr_enable_edn_cmd_req_done_we;
-  logic intr_enable_edn_fifo_err_qs;
-  logic intr_enable_edn_fifo_err_wd;
-  logic intr_enable_edn_fifo_err_we;
+  logic intr_enable_edn_fatal_err_qs;
+  logic intr_enable_edn_fatal_err_wd;
+  logic intr_enable_edn_fatal_err_we;
   logic intr_test_edn_cmd_req_done_wd;
   logic intr_test_edn_cmd_req_done_we;
-  logic intr_test_edn_fifo_err_wd;
-  logic intr_test_edn_fifo_err_we;
+  logic intr_test_edn_fatal_err_wd;
+  logic intr_test_edn_fatal_err_we;
+  logic alert_test_wd;
+  logic alert_test_we;
   logic regwen_qs;
   logic regwen_wd;
   logic regwen_we;
@@ -123,20 +125,15 @@ module edn_reg_top (
   logic [31:0] max_num_reqs_between_reseeds_wd;
   logic max_num_reqs_between_reseeds_we;
   logic err_code_sfifo_rescmd_err_qs;
-  logic err_code_sfifo_rescmd_err_wd;
-  logic err_code_sfifo_rescmd_err_we;
   logic err_code_sfifo_gencmd_err_qs;
-  logic err_code_sfifo_gencmd_err_wd;
-  logic err_code_sfifo_gencmd_err_we;
+  logic err_code_edn_ack_sm_err_qs;
+  logic err_code_edn_main_sm_err_qs;
   logic err_code_fifo_write_err_qs;
-  logic err_code_fifo_write_err_wd;
-  logic err_code_fifo_write_err_we;
   logic err_code_fifo_read_err_qs;
-  logic err_code_fifo_read_err_wd;
-  logic err_code_fifo_read_err_we;
   logic err_code_fifo_state_err_qs;
-  logic err_code_fifo_state_err_wd;
-  logic err_code_fifo_state_err_we;
+  logic [4:0] err_code_test_qs;
+  logic [4:0] err_code_test_wd;
+  logic err_code_test_we;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -167,29 +164,29 @@ module edn_reg_top (
   );
 
 
-  //   F[edn_fifo_err]: 1:1
+  //   F[edn_fatal_err]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
-  ) u_intr_state_edn_fifo_err (
+  ) u_intr_state_edn_fatal_err (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_state_edn_fifo_err_we),
-    .wd     (intr_state_edn_fifo_err_wd),
+    .we     (intr_state_edn_fatal_err_we),
+    .wd     (intr_state_edn_fatal_err_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.edn_fifo_err.de),
-    .d      (hw2reg.intr_state.edn_fifo_err.d ),
+    .de     (hw2reg.intr_state.edn_fatal_err.de),
+    .d      (hw2reg.intr_state.edn_fatal_err.d ),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.edn_fifo_err.q ),
+    .q      (reg2hw.intr_state.edn_fatal_err.q ),
 
     // to register interface (read)
-    .qs     (intr_state_edn_fifo_err_qs)
+    .qs     (intr_state_edn_fatal_err_qs)
   );
 
 
@@ -221,18 +218,18 @@ module edn_reg_top (
   );
 
 
-  //   F[edn_fifo_err]: 1:1
+  //   F[edn_fatal_err]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
-  ) u_intr_enable_edn_fifo_err (
+  ) u_intr_enable_edn_fatal_err (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (intr_enable_edn_fifo_err_we),
-    .wd     (intr_enable_edn_fifo_err_wd),
+    .we     (intr_enable_edn_fatal_err_we),
+    .wd     (intr_enable_edn_fatal_err_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -240,10 +237,10 @@ module edn_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.edn_fifo_err.q ),
+    .q      (reg2hw.intr_enable.edn_fatal_err.q ),
 
     // to register interface (read)
-    .qs     (intr_enable_edn_fifo_err_qs)
+    .qs     (intr_enable_edn_fatal_err_qs)
   );
 
 
@@ -264,17 +261,33 @@ module edn_reg_top (
   );
 
 
-  //   F[edn_fifo_err]: 1:1
+  //   F[edn_fatal_err]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_edn_fifo_err (
+  ) u_intr_test_edn_fatal_err (
     .re     (1'b0),
-    .we     (intr_test_edn_fifo_err_we),
-    .wd     (intr_test_edn_fifo_err_wd),
+    .we     (intr_test_edn_fatal_err_we),
+    .wd     (intr_test_edn_fatal_err_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.intr_test.edn_fifo_err.qe),
-    .q      (reg2hw.intr_test.edn_fifo_err.q ),
+    .qe     (reg2hw.intr_test.edn_fatal_err.qe),
+    .q      (reg2hw.intr_test.edn_fatal_err.q ),
+    .qs     ()
+  );
+
+
+  // R[alert_test]: V(True)
+
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.qe),
+    .q      (reg2hw.alert_test.q ),
     .qs     ()
   );
 
@@ -627,15 +640,14 @@ module edn_reg_top (
   //   F[sfifo_rescmd_err]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_rescmd_err (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (err_code_sfifo_rescmd_err_we),
-    .wd     (err_code_sfifo_rescmd_err_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
     .de     (hw2reg.err_code.sfifo_rescmd_err.de),
@@ -653,15 +665,14 @@ module edn_reg_top (
   //   F[sfifo_gencmd_err]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_gencmd_err (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (err_code_sfifo_gencmd_err_we),
-    .wd     (err_code_sfifo_gencmd_err_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
     .de     (hw2reg.err_code.sfifo_gencmd_err.de),
@@ -676,18 +687,67 @@ module edn_reg_top (
   );
 
 
+  //   F[edn_ack_sm_err]: 20:20
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_err_code_edn_ack_sm_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.edn_ack_sm_err.de),
+    .d      (hw2reg.err_code.edn_ack_sm_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_code_edn_ack_sm_err_qs)
+  );
+
+
+  //   F[edn_main_sm_err]: 21:21
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_err_code_edn_main_sm_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.edn_main_sm_err.de),
+    .d      (hw2reg.err_code.edn_main_sm_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_code_edn_main_sm_err_qs)
+  );
+
+
   //   F[fifo_write_err]: 28:28
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_write_err (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (err_code_fifo_write_err_we),
-    .wd     (err_code_fifo_write_err_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
     .de     (hw2reg.err_code.fifo_write_err.de),
@@ -705,15 +765,14 @@ module edn_reg_top (
   //   F[fifo_read_err]: 29:29
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_read_err (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (err_code_fifo_read_err_we),
-    .wd     (err_code_fifo_read_err_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
     .de     (hw2reg.err_code.fifo_read_err.de),
@@ -731,15 +790,14 @@ module edn_reg_top (
   //   F[fifo_state_err]: 30:30
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("RW"),
+    .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_state_err (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface
-    .we     (err_code_fifo_state_err_we),
-    .wd     (err_code_fifo_state_err_wd),
+    .we     (1'b0),
+    .wd     ('0  ),
 
     // from internal hardware
     .de     (hw2reg.err_code.fifo_state_err.de),
@@ -754,23 +812,52 @@ module edn_reg_top (
   );
 
 
+  // R[err_code_test]: V(False)
+
+  prim_subreg #(
+    .DW      (5),
+    .SWACCESS("RW"),
+    .RESVAL  (5'h0)
+  ) u_err_code_test (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (err_code_test_we & regwen_qs),
+    .wd     (err_code_test_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (reg2hw.err_code_test.qe),
+    .q      (reg2hw.err_code_test.q ),
+
+    // to register interface (read)
+    .qs     (err_code_test_qs)
+  );
 
 
-  logic [11:0] addr_hit;
+
+
+  logic [13:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == EDN_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == EDN_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == EDN_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == EDN_REGWEN_OFFSET);
-    addr_hit[ 4] = (reg_addr == EDN_CTRL_OFFSET);
-    addr_hit[ 5] = (reg_addr == EDN_SUM_STS_OFFSET);
-    addr_hit[ 6] = (reg_addr == EDN_SW_CMD_REQ_OFFSET);
-    addr_hit[ 7] = (reg_addr == EDN_SW_CMD_STS_OFFSET);
-    addr_hit[ 8] = (reg_addr == EDN_RESEED_CMD_OFFSET);
-    addr_hit[ 9] = (reg_addr == EDN_GENERATE_CMD_OFFSET);
-    addr_hit[10] = (reg_addr == EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_OFFSET);
-    addr_hit[11] = (reg_addr == EDN_ERR_CODE_OFFSET);
+    addr_hit[ 3] = (reg_addr == EDN_ALERT_TEST_OFFSET);
+    addr_hit[ 4] = (reg_addr == EDN_REGWEN_OFFSET);
+    addr_hit[ 5] = (reg_addr == EDN_CTRL_OFFSET);
+    addr_hit[ 6] = (reg_addr == EDN_SUM_STS_OFFSET);
+    addr_hit[ 7] = (reg_addr == EDN_SW_CMD_REQ_OFFSET);
+    addr_hit[ 8] = (reg_addr == EDN_SW_CMD_STS_OFFSET);
+    addr_hit[ 9] = (reg_addr == EDN_RESEED_CMD_OFFSET);
+    addr_hit[10] = (reg_addr == EDN_GENERATE_CMD_OFFSET);
+    addr_hit[11] = (reg_addr == EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_OFFSET);
+    addr_hit[12] = (reg_addr == EDN_ERR_CODE_OFFSET);
+    addr_hit[13] = (reg_addr == EDN_ERR_CODE_TEST_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -790,78 +877,78 @@ module edn_reg_top (
     if (addr_hit[ 9] && reg_we && (EDN_PERMIT[ 9] != (EDN_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[10] && reg_we && (EDN_PERMIT[10] != (EDN_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[11] && reg_we && (EDN_PERMIT[11] != (EDN_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[12] && reg_we && (EDN_PERMIT[12] != (EDN_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[13] && reg_we && (EDN_PERMIT[13] != (EDN_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_edn_cmd_req_done_we = addr_hit[0] & reg_we & ~wr_err;
   assign intr_state_edn_cmd_req_done_wd = reg_wdata[0];
 
-  assign intr_state_edn_fifo_err_we = addr_hit[0] & reg_we & ~wr_err;
-  assign intr_state_edn_fifo_err_wd = reg_wdata[1];
+  assign intr_state_edn_fatal_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_edn_fatal_err_wd = reg_wdata[1];
 
   assign intr_enable_edn_cmd_req_done_we = addr_hit[1] & reg_we & ~wr_err;
   assign intr_enable_edn_cmd_req_done_wd = reg_wdata[0];
 
-  assign intr_enable_edn_fifo_err_we = addr_hit[1] & reg_we & ~wr_err;
-  assign intr_enable_edn_fifo_err_wd = reg_wdata[1];
+  assign intr_enable_edn_fatal_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_edn_fatal_err_wd = reg_wdata[1];
 
   assign intr_test_edn_cmd_req_done_we = addr_hit[2] & reg_we & ~wr_err;
   assign intr_test_edn_cmd_req_done_wd = reg_wdata[0];
 
-  assign intr_test_edn_fifo_err_we = addr_hit[2] & reg_we & ~wr_err;
-  assign intr_test_edn_fifo_err_wd = reg_wdata[1];
+  assign intr_test_edn_fatal_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_edn_fatal_err_wd = reg_wdata[1];
 
-  assign regwen_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_wd = reg_wdata[0];
+
+  assign regwen_we = addr_hit[4] & reg_we & ~wr_err;
   assign regwen_wd = reg_wdata[0];
 
-  assign ctrl_edn_enable_we = addr_hit[4] & reg_we & ~wr_err;
+  assign ctrl_edn_enable_we = addr_hit[5] & reg_we & ~wr_err;
   assign ctrl_edn_enable_wd = reg_wdata[0];
 
-  assign ctrl_cmd_fifo_rst_we = addr_hit[4] & reg_we & ~wr_err;
+  assign ctrl_cmd_fifo_rst_we = addr_hit[5] & reg_we & ~wr_err;
   assign ctrl_cmd_fifo_rst_wd = reg_wdata[1];
 
-  assign ctrl_auto_req_mode_we = addr_hit[4] & reg_we & ~wr_err;
+  assign ctrl_auto_req_mode_we = addr_hit[5] & reg_we & ~wr_err;
   assign ctrl_auto_req_mode_wd = reg_wdata[2];
 
-  assign ctrl_boot_req_dis_we = addr_hit[4] & reg_we & ~wr_err;
+  assign ctrl_boot_req_dis_we = addr_hit[5] & reg_we & ~wr_err;
   assign ctrl_boot_req_dis_wd = reg_wdata[3];
 
-  assign sum_sts_req_mode_sm_sts_we = addr_hit[5] & reg_we & ~wr_err;
+  assign sum_sts_req_mode_sm_sts_we = addr_hit[6] & reg_we & ~wr_err;
   assign sum_sts_req_mode_sm_sts_wd = reg_wdata[0];
 
-  assign sum_sts_boot_inst_ack_we = addr_hit[5] & reg_we & ~wr_err;
+  assign sum_sts_boot_inst_ack_we = addr_hit[6] & reg_we & ~wr_err;
   assign sum_sts_boot_inst_ack_wd = reg_wdata[1];
 
-  assign sum_sts_internal_use_we = addr_hit[5] & reg_we & ~wr_err;
+  assign sum_sts_internal_use_we = addr_hit[6] & reg_we & ~wr_err;
   assign sum_sts_internal_use_wd = reg_wdata[31];
 
-  assign sw_cmd_req_we = addr_hit[6] & reg_we & ~wr_err;
+  assign sw_cmd_req_we = addr_hit[7] & reg_we & ~wr_err;
   assign sw_cmd_req_wd = reg_wdata[31:0];
 
 
 
-  assign reseed_cmd_we = addr_hit[8] & reg_we & ~wr_err;
+  assign reseed_cmd_we = addr_hit[9] & reg_we & ~wr_err;
   assign reseed_cmd_wd = reg_wdata[31:0];
 
-  assign generate_cmd_we = addr_hit[9] & reg_we & ~wr_err;
+  assign generate_cmd_we = addr_hit[10] & reg_we & ~wr_err;
   assign generate_cmd_wd = reg_wdata[31:0];
 
-  assign max_num_reqs_between_reseeds_we = addr_hit[10] & reg_we & ~wr_err;
+  assign max_num_reqs_between_reseeds_we = addr_hit[11] & reg_we & ~wr_err;
   assign max_num_reqs_between_reseeds_wd = reg_wdata[31:0];
 
-  assign err_code_sfifo_rescmd_err_we = addr_hit[11] & reg_we & ~wr_err;
-  assign err_code_sfifo_rescmd_err_wd = reg_wdata[0];
 
-  assign err_code_sfifo_gencmd_err_we = addr_hit[11] & reg_we & ~wr_err;
-  assign err_code_sfifo_gencmd_err_wd = reg_wdata[1];
 
-  assign err_code_fifo_write_err_we = addr_hit[11] & reg_we & ~wr_err;
-  assign err_code_fifo_write_err_wd = reg_wdata[28];
 
-  assign err_code_fifo_read_err_we = addr_hit[11] & reg_we & ~wr_err;
-  assign err_code_fifo_read_err_wd = reg_wdata[29];
 
-  assign err_code_fifo_state_err_we = addr_hit[11] & reg_we & ~wr_err;
-  assign err_code_fifo_state_err_wd = reg_wdata[30];
+
+
+
+  assign err_code_test_we = addr_hit[13] & reg_we & ~wr_err;
+  assign err_code_test_wd = reg_wdata[4:0];
 
   // Read data return
   always_comb begin
@@ -869,12 +956,12 @@ module edn_reg_top (
     unique case (1'b1)
       addr_hit[0]: begin
         reg_rdata_next[0] = intr_state_edn_cmd_req_done_qs;
-        reg_rdata_next[1] = intr_state_edn_fifo_err_qs;
+        reg_rdata_next[1] = intr_state_edn_fatal_err_qs;
       end
 
       addr_hit[1]: begin
         reg_rdata_next[0] = intr_enable_edn_cmd_req_done_qs;
-        reg_rdata_next[1] = intr_enable_edn_fifo_err_qs;
+        reg_rdata_next[1] = intr_enable_edn_fatal_err_qs;
       end
 
       addr_hit[2]: begin
@@ -883,33 +970,33 @@ module edn_reg_top (
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[0] = regwen_qs;
+        reg_rdata_next[0] = '0;
       end
 
       addr_hit[4]: begin
+        reg_rdata_next[0] = regwen_qs;
+      end
+
+      addr_hit[5]: begin
         reg_rdata_next[0] = ctrl_edn_enable_qs;
         reg_rdata_next[1] = ctrl_cmd_fifo_rst_qs;
         reg_rdata_next[2] = ctrl_auto_req_mode_qs;
         reg_rdata_next[3] = ctrl_boot_req_dis_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[6]: begin
         reg_rdata_next[0] = sum_sts_req_mode_sm_sts_qs;
         reg_rdata_next[1] = sum_sts_boot_inst_ack_qs;
         reg_rdata_next[31] = sum_sts_internal_use_qs;
       end
 
-      addr_hit[6]: begin
-        reg_rdata_next[31:0] = '0;
-      end
-
       addr_hit[7]: begin
-        reg_rdata_next[0] = sw_cmd_sts_cmd_rdy_qs;
-        reg_rdata_next[1] = sw_cmd_sts_cmd_sts_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[0] = sw_cmd_sts_cmd_rdy_qs;
+        reg_rdata_next[1] = sw_cmd_sts_cmd_sts_qs;
       end
 
       addr_hit[9]: begin
@@ -917,15 +1004,25 @@ module edn_reg_top (
       end
 
       addr_hit[10]: begin
-        reg_rdata_next[31:0] = max_num_reqs_between_reseeds_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[11]: begin
+        reg_rdata_next[31:0] = max_num_reqs_between_reseeds_qs;
+      end
+
+      addr_hit[12]: begin
         reg_rdata_next[0] = err_code_sfifo_rescmd_err_qs;
         reg_rdata_next[1] = err_code_sfifo_gencmd_err_qs;
+        reg_rdata_next[20] = err_code_edn_ack_sm_err_qs;
+        reg_rdata_next[21] = err_code_edn_main_sm_err_qs;
         reg_rdata_next[28] = err_code_fifo_write_err_qs;
         reg_rdata_next[29] = err_code_fifo_read_err_qs;
         reg_rdata_next[30] = err_code_fifo_state_err_qs;
+      end
+
+      addr_hit[13]: begin
+        reg_rdata_next[4:0] = err_code_test_qs;
       end
 
       default: begin

@@ -28,8 +28,13 @@
   interrupt_list: [
     { name: "edn_cmd_req_done"
       desc: "Asserted when a software CSRNG request has completed."}
-    { name: "edn_fifo_err"
+    { name: "edn_fatal_err"
       desc: "Asserted when a FIFO error occurs."}
+  ],
+  alert_list: [
+    { name: "fatal_alert",
+      desc: "This alert triggers if an illegal state machine state is reached.",
+    }
   ],
   inter_signal_list: [
     { struct:  "csrng",  // csrng_req_t, csrng_rsp_t
@@ -261,7 +266,7 @@
     {
       name: "ERR_CODE",
       desc: "Hardware detection of error conditions status register",
-      swaccess: "rw",
+      swaccess: "ro",
       hwaccess: "hwo",
       fields: [
         { bits: "0",
@@ -279,6 +284,24 @@
                 This bit will be set to one when an error has been detected for the
                 generate command FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "20",
+          name: "EDN_ACK_SM_ERR",
+          desc: '''
+                This bit will be set to one when an illegal state has been detected for the
+                EDN ack stage state machine. This error will signal a fatal alert, and also
+                an interrupt if enabled.
+                This bit will stay set until firmware clears it.
+                '''
+        }
+        { bits: "21",
+          name: "EDN_MAIN_SM_ERR",
+          desc: '''
+                This bit will be set to one when an illegal state has been detected for the
+                EDN main stage state machine. This error will signal a fatal alert, and also
+                an interrupt if enabled.
                 This bit will stay set until firmware clears it.
                 '''
         }
@@ -309,6 +332,27 @@
                 This bit will stay set until firmware clears it.
                 '''
         }
+      ]
+    },
+    { name: "ERR_CODE_TEST",
+      desc: "Test error conditions register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      hwqe: "true",
+      regwen: "REGWEN",
+      fields: [
+        {
+            bits: "4:0",
+            name: "ERR_CODE_TEST",
+            desc: '''
+                  Setting this field will set the bit number for which an error
+                  will be forced in the hardware. This bit number is that same one
+                  found in the !!ERR_CODE register. The action of writing this
+                  register will force an error pulse. The sole purpose of this
+                  register is to test that any error properly propagates to either
+                  an interrupt or an alert.
+                  '''
+        },
       ]
     },
   ]

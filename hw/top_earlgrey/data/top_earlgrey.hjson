@@ -874,7 +874,7 @@
   // list all modules that expose alerts
   // first item goes to LSB of the alert source
   alert_module: [ "aes", "otbn", "sensor_ctrl_aon", "keymgr", "otp_ctrl", "lc_ctrl",
-                  "entropy_src","csrng",
+                  "entropy_src","csrng", "edn0", "edn1",
                   "sram_ctrl_main", "sram_ctrl_ret_aon", "flash_ctrl"]
 
   // generated list of alerts:

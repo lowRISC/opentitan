@@ -6,35 +6,46 @@
 
 `include "prim_assert.sv"
 
-module edn import edn_pkg::*; #(
+module edn
+  import edn_pkg::*;
+  import edn_reg_pkg::*;
+#(
   parameter int NumEndPoints = 4,
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter int BootInsCmd = 32'h0000_0001,
   parameter int BootGenCmd = 32'h0000_3003
 ) (
   input logic clk_i,
   input logic rst_ni,
 
-  // reg bus Interface
+  // Tilelink Bus registers
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
-  // edn interfaces
+  // EDN interfaces
   input  edn_req_t [NumEndPoints-1:0] edn_i,
   output edn_rsp_t [NumEndPoints-1:0] edn_o,
 
-  // csrng application interface
+  // CSRNG Application Interface
   output  csrng_pkg::csrng_req_t  csrng_cmd_o,
   input   csrng_pkg::csrng_rsp_t  csrng_cmd_i,
 
+  // Alerts
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
+
   // Interrupts
   output logic      intr_edn_cmd_req_done_o,
-  output logic      intr_edn_fifo_err_o
+  output logic      intr_edn_fatal_err_o
 );
 
   import edn_reg_pkg::*;
 
   edn_reg2hw_t reg2hw;
   edn_hw2reg_t hw2reg;
+
+  logic  alert;
+  logic  alert_test;
 
   edn_reg_top u_reg (
     .clk_i,
@@ -63,10 +74,28 @@ module edn import edn_pkg::*; #(
     .csrng_cmd_o,
     .csrng_cmd_i,
 
+    // Alerts
+    .alert_test_o(alert_test),
+    .fatal_alert_o(alert),
+
     .intr_edn_cmd_req_done_o,
-    .intr_edn_fifo_err_o
+    .intr_edn_fatal_err_o
   );
 
+
+  prim_alert_sender #(
+    .AsyncOn(AlertAsyncOn[0]),
+    .IsFatal(1)
+  ) u_prim_alert_sender (
+    .clk_i,
+    .rst_ni,
+    .alert_test_i  ( alert_test    ),
+    .alert_req_i   ( alert         ),
+    .alert_ack_o   (               ),
+    .alert_state_o (               ),
+    .alert_rx_i    ( alert_rx_i[0] ),
+    .alert_tx_o    ( alert_tx_o[0] )
+  );
 
   // Assertions
 
@@ -81,8 +110,11 @@ module edn import edn_pkg::*; #(
   // CSRNG Asserts
   `ASSERT_KNOWN(CsrngAppIfOut_A, csrng_cmd_o)
 
+  // Alerts
+  `ASSERT_KNOWN(AlertTxKnownO_A, alert_tx_o)
+
   // Interrupt Asserts
   `ASSERT_KNOWN(IntrEdnCmdReqDoneKnownO_A, intr_edn_cmd_req_done_o)
-  `ASSERT_KNOWN(IntrEdnFifoErrKnownO_A, intr_edn_fifo_err_o)
+  `ASSERT_KNOWN(IntrEdnFifoErrKnownO_A, intr_edn_fatal_err_o)
 
 endmodule
