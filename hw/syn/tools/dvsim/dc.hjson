@@ -16,11 +16,19 @@
   build_opts: ["-f {syn_root}/tools/dc/run-syn.tcl"]
 
   // DC-specific results parsing script that is called after running synthesis
-  report_cmd: "{syn_root}/tools/dc/parse-syn-report.py --depth {area_depth}"
+  report_cmd: "{syn_root}/tools/dc/parse-syn-report.py"
   report_opts: ["--dut {dut}",
-                "--logpath {build_dir} ",
-                "--reppath {build_dir}/REPORTS",
-                "--outdir {build_dir}"]
+                "--expand-modules {expand_modules}",
+                "--expand-depth {expand_depth}",
+                "--log-path {build_dir} ",
+                "--rep-path {build_dir}/REPORTS",
+                "--out-dir {build_dir}"]
+
+  // By default, 1 level of hierarchy is always expanded in the area report.
+  // This can be changed by setting the expansion depth to a higher value,
+  // or by listing explicitly which submodules shall be expanded further.
+  expand_modules: ""
+  expand_depth: 1
 
   // Restrict the maximum message count in each category
   max_msg_count: 20

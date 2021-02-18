@@ -135,7 +135,11 @@ class SynCfg(OneShotCfg):
                     entry = "%2.1f %s" % (perc, perctag)
                 else:
                     value = float(val) / norm
-                    entry = "%2.1f" % (value)
+                    if value < 1.0:
+                        entry = "%2.2f" % (value)
+                    else:
+                        entry = "%2.1f" % (value)
+
             else:
                 entry = "--"
 
@@ -219,45 +223,43 @@ class SynCfg(OneShotCfg):
             if "area" in self.result:
 
                 header = [
-                    "Instance", "Comb ", "Buf/Inv", "Regs", "Macros", "Total",
-                    "Total [%]"
+                    "Instance", "Comb ", "Buf/Inv", "Regs", "Logic", "Macros", "Total",
+                    "Logic [%]", "Macro [%]", "Total [%]"
                 ]
                 colalign = ("left", ) + ("center", ) * (len(header) - 1)
                 table = [header]
 
-                # print top-level summary first
-                row = ["**" + self.result["top"] + "**"]
                 try:
                     kge = float(self.result["area"]["ge"]) * 1000.0
 
-                    for field in ["comb", "buf", "reg", "macro", "total"]:
-                        row += [
-                            "**" +
-                            _create_entry(self.result["area"][field], kge) +
-                            "**"
-                        ]
-
-                    row += ["**--**"]
-                    table.append(row)
-
-                    # go through submodules
+                    # go through submodules. this assumes that the top-level
+                    # is listed before any other modules
+                    totals = [0] * 3
                     for name in self.result["area"]["instances"].keys():
-                        if name == self.result["top"]:
-                            continue
-                        row = [name]
-                        for field in ["comb", "buf", "reg", "macro", "total"]:
-                            row += [
+                        row = []
+                        is_top = (self.result["area"]["instances"][name]["depth"] == 0)
+                        if is_top:
+                            row = ["**" + name + "**"]
+                        else:
+                            row = [name]
+
+                        for field in ["comb", "buf", "reg", "logic", "macro", "total"]:
+                            row.append(
                                 _create_entry(
                                     self.result["area"]["instances"][name]
                                     [field], kge)
-                            ]
+                            )
 
-                        # add percentage  of total
-                        row += [
-                            _create_entry(
-                                self.result["area"]["instances"][name][field],
-                                kge, self.result["area"]["total"], "%u")
-                        ]
+                        for k, field in enumerate(["logic", "macro", "total"]):
+                            if is_top:
+                                row.append("**--**")
+                                totals[k] = self.result["area"]["instances"][name][field]
+                            else:
+                                row.append(
+                                    _create_entry(
+                                        self.result["area"]["instances"][name][field],
+                                        kge, totals[k], "%u")
+                                )
 
                         table.append(row)
 
@@ -278,7 +280,7 @@ class SynCfg(OneShotCfg):
             results_str += "### Timing in [ns]\n\n"
             if "timing" in self.result and "units" in self.result:
 
-                header = ["Clock", "Period", "WNS", "TNS"]
+                header = ["Path Group", "Period", "WNS", "TNS"]
                 colalign = ("left", ) + ("center", ) * (len(header) - 1)
                 table = [header]
 

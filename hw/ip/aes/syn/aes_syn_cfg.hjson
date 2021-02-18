@@ -13,7 +13,4 @@
 
   // Timing constraints for this module
   sdc_file: "{proj_root}/hw/ip/aes/syn/constraints.sdc"
-
-  // Configuration for result parser script
-  area_depth: 1
- }
+}

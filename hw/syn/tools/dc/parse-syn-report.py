@@ -39,8 +39,8 @@ def _match_fp_number(full_file, patterns):
         floats = []
         matches = re.findall(pattern, full_file, flags=re.MULTILINE)
         if not matches:
-            errs.append('Pattern {!r} of key {!r} not found'
-                        .format(pattern, key))
+            errs.append('Pattern {!r} of key {!r} not found'.format(
+                pattern, key))
             continue
 
         for match in matches:
@@ -68,10 +68,9 @@ def _extract_messages(full_file, results, key, args):
         results['messages'][severity] += re.findall(pattern,
                                                     full_file,
                                                     flags=re.MULTILINE)
-    return results
 
 
-def _extract_gate_equiv(full_file, results, key, args):
+def _extract_gate_eq(full_file, results, key, args):
     """
     This reads out the unit gate-equivalent.
     """
@@ -79,8 +78,6 @@ def _extract_gate_equiv(full_file, results, key, args):
         results[key]["ge"] = float(full_file.strip())
     except ValueError as err:
         results["messages"]["flow_errors"] += ["ValueError: %s" % err]
-
-    return results
 
 
 def _rel_err(val, ref):
@@ -93,11 +90,111 @@ def _rel_err(val, ref):
         return abs(val - ref) / ref
 
 
+def _extract_area_recursive(full_file, results, key, args, depth=1, prefix=""):
+    """
+    This recursively extracts the area of submodules in the report.
+    """
+    # current depth level of sub-modules
+    pattern = r"^(" + prefix + r"[\.0-9A-Za-z_\[\]]+){1}(?:(?:/[\.0-9A-Za-z_\[\]]+)*)"
+
+    for k in range(5):
+        pattern += r"\s+(" + FP_NUMBER + r")"
+    matches = re.findall(pattern, full_file, flags=re.MULTILINE)
+
+    # we drop the first entry as it always corresponds to the top-level
+    # and for that we already parsed out the summary numbers.
+    if matches and depth == 1:
+        matches = matches[1:]
+
+    instances = results[key]['instances']
+    try:
+        for match in matches:
+            name = match[0]
+
+            if name not in instances:
+                instances.update({
+                    name: {
+                        "comb": 0.0,
+                        "reg": 0.0,
+                        "buf": float("nan"),  # not available here
+                        "logic": 0.0,
+                        "macro": 0.0,
+                        "total": 0.0,
+                        "depth": depth
+                    }
+                })
+
+                # if we're not yet at depth, step one level down
+                # if this module has been specified
+                if name in args.expand_modules or depth < args.expand_depth:
+                    _extract_area_recursive(full_file,
+                                            results,
+                                            key,
+                                            args,
+                                            depth=depth + 1,
+                                            prefix=name + "/")
+
+            comb = float(match[3])
+            reg = float(match[4])
+            macro = float(match[5])
+
+            instance = instances[name]
+
+            instance["comb"] += comb
+            instance["reg"] += reg
+            instance["logic"] += comb + reg
+            instance["macro"] += macro
+            instance["total"] += comb + reg + macro
+
+    except ValueError as err:
+        results["messages"]["flow_errors"] += ["ValueError: %s" % err]
+
+
+def _check_area(results, key, args):
+    """
+    Checks whether the calculated area aggregates are
+    consistent among depth levels.
+    """
+
+    instances = list(results[key]["instances"].values())
+    names = list(results[key]["instances"].keys())
+    for k, inst in enumerate(instances[:-1]):
+        # checksums
+        comb_check = 0.0
+        reg_check = 0.0
+        macro_check = 0.0
+        do_check = False
+        for subinst in instances[k + 1:]:
+            # if the subinst is one level below, add the
+            # numbers to the checksums.
+            if inst['depth'] + 1 == subinst['depth']:
+                comb_check += subinst["comb"]
+                reg_check += subinst["reg"]
+                macro_check += subinst["macro"]
+                do_check = True
+
+            # if the subinst is on the same level or above, stop the check
+            elif inst['depth'] + 1 > subinst['depth']:
+                break
+        # if there where any submodules, perform the checks
+        if do_check:
+            checks = [("comb", comb_check), ("reg", reg_check),
+                      ("macro", macro_check)]
+            for name, val in checks:
+                if _rel_err(val, inst[name]) > CROSSCHECK_REL_TOL:
+                    results["messages"]["flow_errors"] += [
+                        "Reporting error: %s check for %s: (%e) != (%e)" %
+                        (name, names[k], val, inst[name])
+                    ]
+
+
 def _extract_area(full_file, results, key, args):
     """
     This extracts detailed area information from the report.
     Area will be reported in gate equivalents.
     """
+
+    # this extracts the top-level summary
     patterns = [("comb", r"^Combinational area: \s* (\d+\.\d+)"),
                 ("buf", r"^Buf/Inv area: \s* (\d+\.\d+)"),
                 ("reg", r"^Noncombinational area: \s* (\d+\.\d+)"),
@@ -105,76 +202,29 @@ def _extract_area(full_file, results, key, args):
                 ("total", r"^Total cell area: \s* (\d+\.\d+)")]
 
     nums, errs = _match_fp_number(full_file, patterns)
-
-    # only overwrite default values if a match has been returned
-    for num_key in nums.keys():
-        results[key][num_key] = nums[num_key]
-
     results['messages']['flow_errors'] += errs
 
-    # aggregate one level of sub-modules
-    pattern = r"^([\.0-9A-Za-z_\[\]]+){1}(?:(?:/[\.0-9A-Za-z_\[\]]+)*)"
+    top_inst = {
+        "comb": 0.0,
+        "reg": 0.0,
+        "buf": 0.0,
+        "logic": 0.0,
+        "macro": 0.0,
+        "total": 0.0,
+        "depth": 0
+    }
 
-    if args.depth == 2:
-        pattern = r"^args.dut/([\.0-9A-Za-z_\[\]]+){1}" + \
-                  r"(?:(?:/[\.0-9A-Za-z_\[\]]+)*)"
-    elif args.depth > 2:
-        results['messages']['flow_warnings'] += [
-            "Warning: unsupported hierarchy depth="
-            "%d specified, defaulting to depth=1" % args.depth
-            ]
+    # only overwrite default values if a match has been returned
+    for num in nums.keys():
+        top_inst[num] = nums[num]
 
-    for k in range(5):
-        pattern += r"\s+(" + FP_NUMBER + r")"
-    matches = re.findall(pattern, full_file, flags=re.MULTILINE)
+    top_inst['logic'] = top_inst['comb'] + top_inst['reg']
+    results[key]["instances"].update({args.dut: top_inst})
 
-    # checksums
-    comb_check = 0.0
-    reg_check = 0.0
-    macro_check = 0.0
-    try:
-        for item in matches:
-            if item[0] not in results[key]["instances"]:
-                results[key]["instances"].update({
-                    item[0]: {
-                        "comb": 0.0,
-                        "reg": 0.0,
-                        "buf": float("nan"),  # not available here
-                        "macro": 0.0,
-                        "total": 0.0,
-                    }
-                })
-            results[key]["instances"][item[0]]["comb"] += float(item[3])
-            results[key]["instances"][item[0]]["reg"] += float(item[4])
-            results[key]["instances"][item[0]]["macro"] += float(item[5])
-            results[key]["instances"][item[0]]["total"] += float(item[3]) + \
-                                                           float(item[4]) + \
-                                                           float(item[5])
-            comb_check += float(item[3])
-            reg_check += float(item[4])
-            macro_check += float(item[5])
-
-    except ValueError as err:
-        results["messages"]["flow_errors"] += ["ValueError: %s" % err]
-
-    # cross check whether the above accounting is correct
-    if _rel_err(comb_check, results[key]["comb"]) > CROSSCHECK_REL_TOL:
-        results["messages"]["flow_errors"] += [
-            "Reporting error: comb_check (%e) != (%e)" %
-            (comb_check, results[key]["comb"])
-        ]
-    if _rel_err(reg_check, results[key]["reg"]) > CROSSCHECK_REL_TOL:
-        results["messages"]["flow_errors"] += [
-            "Reporting error: reg_check (%e) != (%e)" %
-            (reg_check, results[key]["reg"])
-        ]
-    if _rel_err(macro_check, results[key]["macro"]) > CROSSCHECK_REL_TOL:
-        results["messages"]["flow_errors"] += [
-            "Reporting error: macro_check (%e) != (%e)" %
-            (macro_check, results[key]["macro"])
-        ]
-
-    return results
+    # this extracts submodules
+    _extract_area_recursive(full_file, results, key, args)
+    # second pass to crosscheck the calculated aggregates
+    _check_area(results, key, args)
 
 
 def _extract_clocks(full_file, results, key, args):
@@ -197,8 +247,6 @@ def _extract_clocks(full_file, results, key, args):
                 })
     except ValueError as err:
         results["messages"]["flow_errors"] += ["ValueError: %s" % err]
-
-    return results
 
 
 def _extract_timing(full_file, results, key, args):
@@ -229,8 +277,6 @@ def _extract_timing(full_file, results, key, args):
     except ValueError as err:
         results["messages"]["flow_errors"] += ["ValueError: %s" % err]
 
-    return results
-
 
 def _match_units(full_file, patterns, key, results):
     """
@@ -247,8 +293,6 @@ def _match_units(full_file, patterns, key, results):
                             units[match[0][1].strip()]
         except ValueError as err:
             results["messages"]["flow_errors"] += ["ValueError: %s" % err]
-
-    return results
 
 
 def _extract_units(full_file, results, key, args):
@@ -292,8 +336,6 @@ def _extract_units(full_file, results, key, args):
 
     _match_units(full_file, patterns, key, results)
 
-    return results
-
 
 def _extract_power(full_file, results, key, args):
     """
@@ -316,20 +358,17 @@ def _extract_power(full_file, results, key, args):
 
     results['messages']['flow_errors'] += errs
 
-    return results
-
 
 def _parse_file(path, name, results, handler, key, args):
     """
-    Attempts to open and aprse a given report file with the handler provided.
+    Attempts to open and parse a given report file with the handler provided.
     """
     try:
         with Path(path).joinpath(name).open() as f:
             full_file = f.read()
-            results = handler(full_file, results, key, args)
+            handler(full_file, results, key, args)
     except IOError as err:
         results["messages"]["flow_errors"] += ["IOError: %s" % err]
-    return results
 
 
 def get_results(args):
@@ -358,12 +397,6 @@ def get_results(args):
         "area": {
             # gate equivalent of a NAND2 gate
             "ge": float("nan"),
-            # summary, in GE
-            "comb": float("nan"),
-            "buf": float("nan"),
-            "reg": float("nan"),
-            "macro": float("nan"),
-            "total": float("nan"),
             # hierchical report with "comb", "buf", "reg", "macro", "total"
             "instances": {},
         },
@@ -383,33 +416,21 @@ def get_results(args):
 
     results["top"] = args.dut
 
-    # flow messages
-    results = _parse_file(args.logpath, 'synthesis.log', results, _extract_messages,
-                          "flow", args)
+    args.expand_modules = args.expand_modules.strip().split(',')
 
-    # messages
-    for rep_type in ["analyze", "elab", "compile"]:
-        results = _parse_file(args.reppath, '%s.rpt' % rep_type, results,
-                              _extract_messages, rep_type, args)
+    rep_types = [(args.log_path, 'synthesis.log', 'flow', _extract_messages),
+                 (args.rep_path, 'analyze.rpt', 'analyze', _extract_messages),
+                 (args.rep_path, 'elab.rpt', 'elab', _extract_messages),
+                 (args.rep_path, 'compile.rpt', 'compile', _extract_messages),
+                 (args.rep_path, 'gate_equiv.rpt', 'area', _extract_gate_eq),
+                 (args.rep_path, 'area.rpt', 'area', _extract_area),
+                 (args.rep_path, 'clocks.rpt', 'timing', _extract_clocks),
+                 (args.rep_path, 'timing.rpt', 'timing', _extract_timing),
+                 (args.rep_path, 'power.rpt', 'power', _extract_power),
+                 (args.rep_path, 'power.rpt', 'units', _extract_units)]
 
-    # get gate equivalents
-    results = _parse_file(args.reppath, 'gate_equiv.rpt', results,
-                          _extract_gate_equiv, "area", args)
-    # area
-    results = _parse_file(args.reppath, 'area.rpt', results, _extract_area,
-                          "area", args)
-    # clocks. this complements the timing report later below
-    results = _parse_file(args.reppath, 'clocks.rpt', results, _extract_clocks,
-                          "timing", args)
-    # timing
-    results = _parse_file(args.reppath, 'timing.rpt', results, _extract_timing,
-                          "timing", args)
-    # power
-    results = _parse_file(args.reppath, 'power.rpt', results, _extract_power,
-                          "power", args)
-    # units
-    results = _parse_file(args.reppath, 'power.rpt', results, _extract_units,
-                          "units", args)
+    for path, name, key, handler in rep_types:
+        _parse_file(path, name, results, handler, key, args)
 
     return results
 
@@ -493,44 +514,54 @@ def main():
         type=str,
         help="""Name of the DUT. This is needed to parse the reports.""")
 
-    parser.add_argument('--logpath',
+    parser.add_argument('--log-path',
                         type=str,
-                        help="""Path to log files for the flow.
-                This script expects the following log files to be present:
+                        help="""
+                             Path to log files for the flow.
+                             This script expects the following log files to be present:
 
-                            - <logpath>/synthesis.log : output of synopsys shell
+                               - <log-path>/synthesis.log : output of synopsys shell
 
-                        """)
+                             """)
 
-    parser.add_argument('--reppath',
+    parser.add_argument('--rep-path',
                         type=str,
-                        help="""Path to report files of the flow.
-                This script expects the following report files to be present:
+                        help="""
+                             Path to report files of the flow.
+                             This script expects the following report
+                             files to be present:
 
-                            - <reppath>/analyze.rpt : output of analyze command
-                            - <reppath>/elab.rpt    : output of elab command
-                            - <reppath>/compile.rpt : output of compile_ultra
-                            - <reppath>/area.rpt    : output of report_area
-                            - <reppath>/timing.rpt  : output of report_timing
-                            - <reppath>/power.rpt   : output of report_power
+                               - <rep-path>/analyze.rpt : output of analyze command
+                               - <rep-path>/elab.rpt    : output of elab command
+                               - <rep-path>/compile.rpt : output of compile_ultra
+                               - <rep-path>/area.rpt    : output of report_area
+                               - <rep-path>/timing.rpt  : output of report_timing
+                               - <rep-path>/power.rpt   : output of report_power
 
-                        """)
+                             """)
 
-    parser.add_argument('--outdir',
+    parser.add_argument('--out-dir',
                         type=str,
                         default="./",
                         help="""Output directory for the 'results.hjson' file.
                         Defaults to './'""")
 
-    parser.add_argument('--depth',
+    parser.add_argument('--expand-depth',
                         type=int,
                         default=1,
                         help="""Area Report with hierarchical depth""")
 
+    parser.add_argument(
+        '--expand-modules',
+        type=str,
+        default="",
+        help="""Comma separated list of modules to expand in area report""")
+
     args = parser.parse_args()
     results = get_results(args)
 
-    with Path(args.outdir).joinpath("results.hjson").open("w") as results_file:
+    with Path(
+            args.out_dir).joinpath("results.hjson").open("w") as results_file:
         hjson.dump(results,
                    results_file,
                    ensure_ascii=False,
@@ -539,10 +570,10 @@ def main():
 
     # return nonzero status if any warnings or errors are present
     # lint infos do not count as failures
-    nr_errors = len(results["messages"]["flow_errors"])     + \
-                len(results["messages"]["analyze_errors"])  + \
-                len(results["messages"]["elab_errors"])     + \
-                len(results["messages"]["compile_errors"])
+    nr_errors = (len(results["messages"]["flow_errors"]) +
+                 len(results["messages"]["analyze_errors"]) +
+                 len(results["messages"]["elab_errors"]) +
+                 len(results["messages"]["compile_errors"]))
 
     print("""------------- Summary -------------
 Flow Warnings:      %s
