@@ -22,7 +22,7 @@
 <td>OWNER_DATA</td>
 <td colspan="3" style="text-align:center;vertical-align:middle">OWNER_SEED_SW_RW_EN == ON</td>
 <td style="text-align:center;vertical-align:middle">yes</td>
-<td rowspan="2">Follows normal software isolation rules.</td>
+<td>Follows normal software isolation rules.</td>
 </tr>
 </tbody>
 </table>
