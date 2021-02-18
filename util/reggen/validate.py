@@ -10,11 +10,12 @@ from collections import OrderedDict
 from typing import List
 
 from .access import SWAccess, HWAccess
-from .bits import Bits
+from .alert import Alert
 from .field import Field
 from .params import LocalParam, Params
 from .reg_block import RegBlock
 from .register import Register
+from .signal import Signal
 
 
 # Routine that can be used for Hjson object_pairs_hook
@@ -164,7 +165,7 @@ top_required = {
      "offset control groups"]
 }
 top_optional = {
-    'alert_list': ['lnw', "list of peripheral alerts"],
+    'alert_list': ['ln', "list of peripheral alerts"],
     'available_inout_list': ['lnw', "list of available peripheral inouts"],
     'available_input_list': ['lnw', "list of available peripheral inputs"],
     'available_output_list': ['lnw', "list of available peripheral outputs"],
@@ -238,11 +239,7 @@ list_optone = {
 key_use = {'r': "required", 'o': "optional", 'a': "added by tool"}
 
 
-def make_intr_alert_reg(reg_block, regs, name, swaccess, hwaccess, desc):
-    if name == 'ALERT_TEST':
-        signal_list = regs['alert_list']
-    else:
-        signal_list = regs['interrupt_list']
+def make_intr_alert_reg(reg_block, signals, name, swaccess, hwaccess, desc):
     # these names will be converted into test registers
     testreg_names = ['INTR_TEST', 'ALERT_TEST']
 
@@ -250,46 +247,30 @@ def make_intr_alert_reg(reg_block, regs, name, swaccess, hwaccess, desc):
     hwaccess_obj = HWAccess('make_intr_alert_reg()', hwaccess)
 
     fields = []
-    cur_bit = 0
-    for (field_idx, bit) in enumerate(signal_list):
-        w = 1
-        if 'width' in bit and bit['width'] != '1':
-            w = int(bit['width'], 0)
-            field_bits = Bits(cur_bit + w - 1, cur_bit)
-        else:
-            field_bits = Bits(cur_bit, cur_bit)
-        cur_bit += w
+    for signal in signals:
+        width = signal.bits.width()
 
-        field_name = bit['name']
         if name == 'INTR_ENABLE':
             field_desc = ('Enable interrupt when {}!!INTR_STATE.{} is set.'
-                          .format('corresponding bit in ' if w > 1 else '',
-                                  field_name))
+                          .format('corresponding bit in ' if width > 1 else '',
+                                  signal.name))
         elif name == 'INTR_TEST':
             field_desc = ('Write 1 to force {}!!INTR_STATE.{} to 1.'
-                          .format('corresponding bit in ' if w > 1 else '',
-                                  field_name))
+                          .format('corresponding bit in ' if width > 1 else '',
+                                  signal.name))
         elif name == 'ALERT_TEST':
             field_desc = 'Write 1 to trigger one alert event of this kind.'
         else:
-            field_desc = bit['desc']
+            field_desc = signal.desc
 
-        # Put the automatically generated information back into
-        # `interrupt_list`, so that it can be used to generate C preprocessor
-        # definitions if needed.
-        signal_list[field_idx]['bits'] = field_bits.as_str()
-        signal_list[field_idx]['bitinfo'] = (field_bits.bitmask(),
-                                             field_bits.width(),
-                                             field_bits.lsb)
-
-        fields.append(Field(field_name,
+        fields.append(Field(signal.name,
                             field_desc,
-                            bit.get('tags', []),
-                            swaccess_obj,
-                            hwaccess_obj,
+                            tags=[],
+                            swaccess=swaccess_obj,
+                            hwaccess=hwaccess_obj,
                             hwqe=name in testreg_names,
                             hwre=False,
-                            bits=field_bits,
+                            bits=signal.bits,
                             resval=0,
                             enum=None))
 
@@ -324,22 +305,23 @@ def make_intr_alert_reg(reg_block, regs, name, swaccess, hwaccess, desc):
     return reg
 
 
-def make_intr_regs(reg_block, regs, fullwidth):
+def make_intr_regs(reg_block, interrupt_list, fullwidth):
+    assert interrupt_list
+
     iregs = []
-    intrs = regs['interrupt_list']
-    num_intrs = sum([int(x.get('width', '1'), 0) for x in intrs])
-    if num_intrs > fullwidth:
-        log.error('More than ' + str(fullwidth) + ' interrupts in list')
+    msb = interrupt_list[-1].bits.msb
+    if msb >= fullwidth:
+        log.error('More than {} interrupts in list'.format(fullwidth))
         return iregs, 1
 
     try:
-        new_reg = make_intr_alert_reg(reg_block, regs, 'INTR_STATE', 'rw1c',
+        new_reg = make_intr_alert_reg(reg_block, interrupt_list, 'INTR_STATE', 'rw1c',
                                       'hrw', 'Interrupt State Register')
         iregs.append(new_reg)
-        new_reg = make_intr_alert_reg(reg_block, regs, 'INTR_ENABLE', 'rw',
+        new_reg = make_intr_alert_reg(reg_block, interrupt_list, 'INTR_ENABLE', 'rw',
                                       'hro', 'Interrupt Enable Register')
         iregs.append(new_reg)
-        new_reg = make_intr_alert_reg(reg_block, regs, 'INTR_TEST',
+        new_reg = make_intr_alert_reg(reg_block, interrupt_list, 'INTR_TEST',
                                       'wo', 'hro', 'Interrupt Test Register')
         iregs.append(new_reg)
     except ValueError as err:
@@ -349,16 +331,16 @@ def make_intr_regs(reg_block, regs, fullwidth):
     return iregs, 0
 
 
-def make_alert_regs(reg_block, regs, fullwidth):
+def make_alert_regs(reg_block, alert_list, fullwidth):
+    assert alert_list
+
     alert_regs = []
-    alerts = regs['alert_list']
-    num_alerts = sum([int(x.get('width', '1'), 0) for x in alerts])
-    if num_alerts > fullwidth:
-        log.error('More than ' + str(fullwidth) + ' alerts in list')
+    if len(alert_list) > fullwidth:
+        log.error('More than {} alerts in list'.format(fullwidth))
         return alert_regs, 1
 
     try:
-        new_reg = make_intr_alert_reg(reg_block, regs, 'ALERT_TEST',
+        new_reg = make_intr_alert_reg(reg_block, alert_list, 'ALERT_TEST',
                                       'wo', 'hro', 'Alert Test Register')
         alert_regs.append(new_reg)
     except ValueError as err:
@@ -408,16 +390,23 @@ def validate(regs, params: List[str]):
 
     # auto header generation would go here and update autoregs
 
+    interrupt_list = Signal.from_raw_list('interrupt_list for block {}'
+                                          .format(component),
+                                          regs.get('interrupt_list', []))
+    alert_list = Alert.from_raw_list('alert_list for block {}'
+                                     .format(component),
+                                     regs.get('alert_list', []))
+
+    regs['interrupt_list'] = interrupt_list
+    regs['alert_list'] = alert_list
+
     if 'no_auto_intr_regs' in regs:
         no_auto_intr, err = check_bool(regs['no_auto_intr_regs'],
                                        'no_auto_intr_regs')
         if err:
             error += 1
     else:
-        if 'interrupt_list' not in regs:
-            no_auto_intr = True
-        else:
-            no_auto_intr = False
+        no_auto_intr = not interrupt_list
 
     if 'no_auto_alert_regs' in regs:
         no_auto_alerts, err = check_bool(regs['no_auto_alert_regs'],
@@ -425,46 +414,35 @@ def validate(regs, params: List[str]):
         if err:
             error += 1
     else:
-        if 'alert_list' not in regs:
-            no_auto_alerts = True
-        else:
-            no_auto_alerts = False
+        no_auto_alerts = not alert_list
 
-    if 'interrupt_list' in regs and 'genautoregs' not in regs and not no_auto_intr:
-        iregs, err = make_intr_regs(reg_block, regs, fullwidth)
+    if interrupt_list and 'genautoregs' not in regs and not no_auto_intr:
+        iregs, err = make_intr_regs(reg_block, interrupt_list, fullwidth)
         error += err
         autoregs.extend(iregs)
 
     # Generate a NumAlerts parameter for provided alert_list.
-    if regs.setdefault('alert_list', []):
+    if alert_list:
         # Generate alert test registers.
         if 'genautoregs' not in regs and not no_auto_alerts:
-            aregs, err = make_alert_regs(reg_block, regs, fullwidth)
+            aregs, err = make_alert_regs(reg_block, alert_list, fullwidth)
             error += err
             autoregs.extend(aregs)
 
-        num_alerts = 0
-        for alert in regs['alert_list']:
-            alert_width = int(alert.get('width', '1'), 0)
-            num_alerts += alert_width
-            if alert_width > 1:
-                log.warning(
-                    "{}: Consider naming each alert individually instead of "
-                    "declaring an alert signal with width > 1.".format(
-                        alert['name']))
-
+        num_alerts = len(alert_list)
+        for alert in alert_list:
             # check alert naming scheme
-            if alert['name'] == "":
-                log.error("{}: Alert name cannot be empty".format(alert['name']))
+            if alert.name == "":
+                log.error("{}: Alert name cannot be empty".format(alert.name))
                 error += 1
-            prefix = alert['name'].split('_')
+            prefix = alert.name.split('_')
             if prefix[0] not in ['recov', 'fatal']:
                 log.error(
                     "{}: Alerts must be prefixed with either 'recov_' or "
-                    "'fatal_'.".format(alert['name']))
+                    "'fatal_'.".format(alert.name))
                 error += 1
 
-        if num_alerts != 0:
+        if num_alerts:
             existing_param = param_list.get('NumAlerts')
             if existing_param is not None:
                 if ((not isinstance(existing_param, LocalParam) or

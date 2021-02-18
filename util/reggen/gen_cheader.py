@@ -244,19 +244,19 @@ def gen_cdefine_multireg(outstr, multireg, component, regwidth, rnames,
 
 def gen_cdefines_interrupt_field(outstr, interrupt, component, regwidth,
                                  existing_defines):
-    fieldlsb = interrupt['bitinfo'][2]
-    iname = interrupt['name']
+    fieldlsb = interrupt.bits.lsb
+    iname = interrupt.name
     defname = as_define(component + '_INTR_COMMON_' + iname)
 
-    if interrupt['bitinfo'][1] == 1:
+    if interrupt.bits.width() == 1:
         # single bit
         genout(
             outstr,
             gen_define(defname + '_BIT', [], str(fieldlsb), existing_defines))
     else:
         # multiple bits (unless it is the whole register)
-        if interrupt['bitinfo'][1] != regwidth:
-            mask = interrupt['bitinfo'][0] >> fieldlsb
+        if interrupt.bits.width() != regwidth:
+            mask = interrupt.bits.msb >> fieldlsb
             genout(
                 outstr,
                 gen_define(defname + '_MASK', [], hex(mask), existing_defines))

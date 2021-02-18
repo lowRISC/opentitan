@@ -168,30 +168,23 @@ def amend_ip(top, ip):
         ip_module["param_list"] = new_params
 
         # interrupt_list
-        if "interrupt_list" in ip:
-            ip_module["interrupt_list"] = deepcopy(ip["interrupt_list"])
-            for i in ip_module["interrupt_list"]:
-                i.pop('desc', None)
-                i["type"] = "interrupt"
-                i["width"] = int(i["width"])
-        else:
-            ip_module["interrupt_list"] = []
+        mod_int_list = []
+        for i in ip.get('interrupt_list', []):
+            mod_int_list.append({'name': i.name,
+                                 'width': i.bits.width(),
+                                 'type': 'interrupt'})
+        ip_module["interrupt_list"] = mod_int_list
 
         # alert_list
-        if "alert_list" in ip:
-            ip_module["alert_list"] = deepcopy(ip["alert_list"])
-            for i in ip_module["alert_list"]:
-                i.pop('desc', None)
-                i["type"] = "alert"
-                i["width"] = int(i["width"])
-                # automatically insert asynchronous transition if necessary
-                if ip_module["clock_srcs"]["clk_i"] == \
-                   top["module"][ah_idx]["clock_srcs"]["clk_i"]:
-                    i["async"] = 0
-                else:
-                    i["async"] = 1
-        else:
-            ip_module["alert_list"] = []
+        async_alerts = (ip_module["clock_srcs"]["clk_i"] !=
+                        top["module"][ah_idx]["clock_srcs"]["clk_i"])
+        mod_alert_list = []
+        for i in ip.get("alert_list", []):
+            mod_alert_list.append({'name': i.name,
+                                   'type': 'alert',
+                                   'width': 1,
+                                   'async': '1' if async_alerts else '0'})
+        ip_module["alert_list"] = mod_alert_list
 
         # wkup_list
         if "wakeup_list" in ip:
