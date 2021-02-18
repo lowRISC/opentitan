@@ -8,6 +8,7 @@ create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports IO_
 ## Clock Domain Crossings
 set clks_10_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT0]]
 set clks_48_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT1]]
+set clks_aon_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT2]]
 
 ## Divided clock
 ## This is not really recommended per Vivado's guidelines, but hopefully these clocks are slow enough and their
@@ -25,4 +26,4 @@ create_clock -add -name jtag_tck    -period 100.00 -waveform {0 5} [get_nets jta
 create_clock -add -name clk_spi_in  -period 100.00 -waveform {0 5} [get_pin top_*/u_spi_device/u_clk_spi_in_buf/gen_xilinx.u_impl_xilinx/bufg_i/O]
 create_clock -add -name clk_spi_out -period 100.00 -waveform {0 5} [get_pin top_*/u_spi_device/u_clk_spi_out_buf/gen_xilinx.u_impl_xilinx/bufg_i/O]
 
-set_clock_groups -group ${clks_10_unbuf} -group ${clks_48_unbuf} -group clk_io_div2 -group clk_io_div4 -group jtag_tck -group clk_spi_in -group clk_spi_out -asynchronous
+set_clock_groups -group ${clks_10_unbuf} -group ${clks_48_unbuf} -group ${clks_aon_unbuf} -group clk_io_div2 -group clk_io_div4 -group jtag_tck -group clk_spi_in -group clk_spi_out -asynchronous

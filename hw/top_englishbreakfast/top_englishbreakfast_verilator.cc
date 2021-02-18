@@ -32,7 +32,9 @@ int main(int argc, char **argv) {
        "generic.u_impl_generic"),
       64, nullptr);
   simctrl.RegisterExtension(&memutil);
-  simctrl.SetInitialResetDelay(100);
+  // see top_earlgrey_verilator.cc for justification and explanation
+  simctrl.SetInitialResetDelay(500);
+  simctrl.SetResetDuration(10);
 
   std::cout << "Simulation of OpenTitan English Breakfast" << std::endl
             << "=================================" << std::endl

@@ -72,7 +72,7 @@ module top_earlgrey_nexysvideo #(
   //////////////////////
 
 
-  logic clk_main, clk_usb_48mhz, rst_n;
+  logic clk_main, clk_usb_48mhz, clk_aon, rst_n;
   logic [pinmux_reg_pkg::NMioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] mio_attr;
   logic [pinmux_reg_pkg::NDioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] dio_attr;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
@@ -435,6 +435,7 @@ module top_earlgrey_nexysvideo #(
     .jtag_srst_n,
     .clk_main(clk_main),
     .clk_48MHz(clk_usb_48mhz),
+    .clk_aon(clk_aon),
     .rst_n(rst_n)
   );
 
@@ -480,7 +481,7 @@ module top_earlgrey_nexysvideo #(
     .clk_main_i                   ( clk_main        ),
     .clk_io_i                     ( clk_main        ),
     .clk_usb_i                    ( clk_usb_48mhz   ),
-    .clk_aon_i                    ( clk_main        ),
+    .clk_aon_i                    ( clk_aon         ),
     .clks_ast_o                   (                 ),
     .rsts_ast_o                   (                 ),
     .pwrmgr_ast_req_o             (                 ),

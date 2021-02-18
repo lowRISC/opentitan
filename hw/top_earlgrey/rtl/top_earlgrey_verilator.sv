@@ -113,6 +113,24 @@ module top_earlgrey_verilator (
   // the rest of the logic generates reset based on the 'pok' signal.
   // for verilator purposes, make these two the same.
 
+  logic clk_aon;
+  // reset is not used below becuase verilator uses only sync resets
+  // and also does not under 'x'.
+  // if we allow the divider below to reset, clk_aon will be silenced,
+  // and as a result all the clk_aon logic inside top_earlgrey does not
+  // get reset
+  prim_clock_div #(
+    .Divisor(4)
+  ) u_aon_div (
+    .clk_i,
+    .rst_ni(1'b1),
+    .step_down_req_i('0),
+    .step_down_ack_o(),
+    .test_en_i('0),
+    .clk_o(clk_aon)
+  );
+
+
   lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
   // Top-level design
   top_earlgrey top_earlgrey (
@@ -120,7 +138,7 @@ module top_earlgrey_verilator (
     .clk_main_i                   (clk_i             ),
     .clk_io_i                     (clk_i             ),
     .clk_usb_i                    (clk_i             ),
-    .clk_aon_i                    (clk_i             ),
+    .clk_aon_i                    (clk_aon           ),
     .clks_ast_o                   (                  ),
     .rsts_ast_o                   (                  ),
     .pwrmgr_ast_req_o             (                  ),
