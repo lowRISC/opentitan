@@ -338,7 +338,7 @@
           bits: "14:8",
           name: "size",
           desc: '''
-                This field contains the data lenght in bytes of the packet written to the buffer.
+                This field contains the data length in bytes of the packet written to the buffer.
                 '''
         }
         {

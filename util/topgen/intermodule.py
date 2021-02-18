@@ -608,7 +608,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
         #   }
         #
         # If length of value list is > 1, then key should be array (width need to match)
-        # If key is format #2, then lenght of value list shall be 1
+        # If key is format #2, then length of value list shall be 1
         # If one of the value is format #2, then the key should be 1 bit width and
         # entries of value list should be 1
         req_m, req_s, req_i = filter_index(req)

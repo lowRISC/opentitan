@@ -213,7 +213,7 @@ The ESCALATE_EN signal is available in all life cycle states and is asserted if 
 
 #### CHECK_BYP_EN
 
-The CHECK_BYP_EN signal is used to disable the [background consistency checks]({{< relref "hw/ip/otp_ctrl/doc/_index.md#partition-checks" >}}) of the life cycle OTP partition during life cycle transitions to prevent spurious consistency checkl failures (the OTP contents and the buffer registers can get out of sync during state transitions).
+The CHECK_BYP_EN signal is used to disable the [background consistency checks]({{< relref "hw/ip/otp_ctrl/doc/_index.md#partition-checks" >}}) of the life cycle OTP partition during life cycle transitions to prevent spurious consistency check failures (the OTP contents and the buffer registers can get out of sync during state transitions).
 The CHECK_BYP_EN signal is only asserted when a transition command is issued.
 
 #### CLK_BYP_REQ
@@ -331,7 +331,7 @@ The general flash partition refers to any software managed storage in flash, and
 ### Flash Accessibility Summary and Impact of Life Cycle Signals
 
 The creator software is trusted to manage the owner partition (OWNER_DATA).
-As such, OWNER_DATA is remains accessible during DEV / PROD / PROD_END / RMA states, irrespective of the device personalization state.
+As such, OWNER_DATA remains accessible during DEV / PROD / PROD_END / RMA states, irrespective of the device personalization state.
 It is expected that ROM_ext during secure boot programs the protection correctly such that downstream software has appropriate permissions.
 
 The CREATOR_DATA partitions however, are further qualified based on the personalization state of the device.
@@ -406,7 +406,7 @@ The power manager interface is comprised of three signals overall: an initializa
 The power manager asserts `pwr_lc_i.lc_init` in order to signal to the life cycle controller that it can start initialization, and the life cycle controller signals completion of the initialization sequence by asserting `pwr_lc_o.lc_done` (the signal will remain high until reset).
 
 The idle indication signal `pwr_lc_o.lc_idle` indicates that the life cycle controller is idle.
-If this bit is 0, the life cycle controller is either not initialized or in the middle of carryingout a life cycle state transition.
+If this bit is 0, the life cycle controller is either not initialized or in the middle of carrying out a life cycle state transition.
 The power manager uses that indication to determine whether a power down request needs to be aborted.
 
 Since the power manager may run in a different clock domain, the `pwr_lc_i.lc_init` signal is synchronized within the life cycle controller.
@@ -468,7 +468,7 @@ That augmented state vector is consumed by three combinational submodules:
 - `lc_ctrl_transition`: This submodule checks whether the transition target state specified via the CSRs is valid, and computes the redundantly encoded state vector of the transition target state.
 - `lc_ctrl_signal_decode`: This submodule is an output function only and derives the life cycle control signals (colored in blue) from the augmented state vector.
 
-Note that the two additional life cycle control signals `lc_flash_rma_req_o` and `lc_clk_byp_req_o` are output by the main FSM, since they cannot he derived from the life cycle state alone and are reactive in nature in the sense that there is a corresponding acknowledgement signal.
+Note that the two additional life cycle control signals `lc_flash_rma_req_o` and `lc_clk_byp_req_o` are output by the main FSM, since they cannot be derived from the life cycle state alone and are reactive in nature in the sense that there is a corresponding acknowledgement signal.
 
 The life cycle controller contains a JTAG TAP that can be used to access the same CSR space that is accessible via TL-UL.
 In order to write to the CSRs, a [hardware mutex]({{< relref "#hardware-mutex" >}}) has to be claimed.
@@ -583,12 +583,12 @@ If two requests arrive simultaneously, the TAP interface is given priority.
 The request interface consists of 4 registers:
 
 1. {{< regref "TRANSITION_TARGET" >}}: Specifies the target state to which the agent wants to transition.
-2. {{< regref "TRANSITION_TOKEN_0" >}}: Any necessary token for conditional transitions.
+2. {{< regref "TRANSITION_TOKEN_*" >}}: Any necessary token for conditional transitions.
 3. {{< regref "TRANSITION_CMD" >}}: Start the life cycle transition.
 4. {{< regref "STATUS" >}}: Indicates whether the requested transition succeeded.
 If the transition fails, the cause will be reported in this register as well.
 
-See diagram below
+See diagram below.
 
 ![LC Request Interface](lc_ctrl_request_interface.svg)
 
@@ -609,7 +609,7 @@ In the case of the life cycle TAP controller this register space is essentially 
 Hence, the [register table]({{< relref "#register-table" >}}) is identical for both the SW view and the view through the DMI, with the only difference that the byte offsets have to be converted to word offsets for the DMI.
 
 The RISC-V external debug specification defines the two custom JTAG registers 0x10 (DTM control/status) and 0x11 (DMI).
-The former provides status info such as idle state, number of addrtess bits and RISC-V specification version plus reset control.
+The former provides status info such as idle state, number of address bits and RISC-V specification version plus reset control.
 The latter exposes an address, data and operation field for accessing a CSR space.
 
 In order to interact with the LC controller through JTAG, the debugging agent should read out the `abits` field from 0x10 in order to determine the address width in the DMI, and verify that the `version` field is indeed set to 1 to confirm that the DTM implements v0.13 of the spec.
