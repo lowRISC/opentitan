@@ -21,6 +21,7 @@ filesets:
       - lowrisc:dv:sim_sram
       - lowrisc:dv:sw_test_status
       - lowrisc:dv:dv_test_status
+      - lowrisc:prim:clock_div
 
     files:
       - rtl/top_earlgrey_verilator.sv: { file_type: systemVerilogSource }

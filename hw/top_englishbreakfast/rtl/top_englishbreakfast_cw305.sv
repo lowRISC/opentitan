@@ -57,7 +57,7 @@ module top_englishbreakfast_cw305 #(
   //////////////////////
 
 
-  logic clk_main, clk_usb_48mhz, rst_n;
+  logic clk_main, clk_usb_48mhz, clk_aon, rst_n;
   logic [pinmux_reg_pkg::NMioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] mio_attr;
   logic [pinmux_reg_pkg::NDioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] dio_attr;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
@@ -293,6 +293,7 @@ module top_englishbreakfast_cw305 #(
     .jtag_srst_n,
     .clk_main(clk_main),
     .clk_48MHz(clk_usb_48mhz),
+    .clk_aon(clk_aon),
     .rst_n(rst_n)
   );
 
@@ -336,7 +337,7 @@ module top_englishbreakfast_cw305 #(
     .clk_main_i                   ( clk_main        ),
     .clk_io_i                     ( clk_main        ),
     .clk_usb_i                    ( clk_usb_48mhz   ),
-    .clk_aon_i                    ( clk_main        ),
+    .clk_aon_i                    ( clk_aon         ),
     .pwrmgr_ast_req_o             (                 ),
     .pwrmgr_ast_rsp_i             ( ast_base_pwr    ),
     .sensor_ctrl_ast_alert_req_i  ( ast_base_alerts ),

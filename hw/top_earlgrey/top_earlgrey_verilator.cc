@@ -31,7 +31,13 @@ int main(int argc, char **argv) {
        "generic.u_impl_generic"),
       64, nullptr);
   simctrl.RegisterExtension(&memutil);
-  simctrl.SetInitialResetDelay(100);
+  // The initial reset delay must be long enough such that pwr/rst/clkmgr will
+  // release clocks to the entire design.  This allows for synchronous resets
+  // to appropriately propagate.
+  // The reset duration must be appropriately sized to the divider for clk_aon
+  // in top_earlgrey_verilator.sv.  It must be at least 2 cycles of clk_aon.
+  simctrl.SetInitialResetDelay(500);
+  simctrl.SetResetDuration(10);
 
   std::cout << "Simulation of OpenTitan Earl Grey" << std::endl
             << "=================================" << std::endl
