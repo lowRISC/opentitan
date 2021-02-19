@@ -5,7 +5,7 @@
 from typing import Dict, Optional, Sequence
 
 import libcst as cst
-from libcst._nodes.internal import CodegenState
+from libcst._nodes.internal import CodegenState, visit_required
 
 
 class RegRef(cst.Subscript):
@@ -46,6 +46,47 @@ class RegRef(cst.Subscript):
         with state.record_syntactic_position(self):
             self.idx._codegen(state)
         state.add_token(']')
+
+
+class NBAssignTarget(cst.AssignTarget):
+    '''The target of a (delayed) state update'''
+    def _codegen_impl(self, state: CodegenState) -> None:
+        with state.record_syntactic_position(self):
+            self.target._codegen(state)
+
+        self.whitespace_before_equal._codegen(state)
+        # U+21D0 is "Leftwards Double Arrow" (a nice unicode rendering of
+        # SystemVerilog's "<=" which doesn't collide with less-than-or-equal.
+        state.add_token("\u21d0")
+        self.whitespace_after_equal._codegen(state)
+
+
+class NBAssign(cst.BaseSmallStatement):
+    '''An assignment statement that models a (delayed) state update'''
+
+    def __init__(self, target: NBAssignTarget, value: cst.BaseExpression):
+        super().__init__()
+        self.target = target
+        self.value = value
+
+    def _visit_and_replace_children(self,
+                                    visitor: cst.CSTVisitorT) -> "NBAssign":
+        target = visit_required(self, "target", self.target, visitor)
+        value = visit_required(self, "value", self.value, visitor)
+        return NBAssign(target=target, value=value)
+
+    def _codegen_impl(self,
+                      state: CodegenState,
+                      default_semicolon: bool = False) -> None:
+        with state.record_syntactic_position(self):
+            self.target._codegen(state)
+            self.value._codegen(state)
+
+    @staticmethod
+    def make(lhs: cst.BaseAssignTargetExpression,
+             rhs: cst.BaseExpression) -> 'NBAssign':
+        return NBAssign(target=NBAssignTarget(target=lhs),
+                        value=rhs)
 
 
 class ImplTransformer(cst.CSTTransformer):
@@ -215,8 +256,7 @@ class ImplTransformer(cst.CSTTransformer):
         if reg_ref is None:
             return updated
 
-        return cst.Assign(targets=[cst.AssignTarget(target=reg_ref)],
-                          value=rhs)
+        return NBAssign.make(reg_ref, rhs)
 
 
 def read_implementation(path: str) -> Dict[str, str]:
