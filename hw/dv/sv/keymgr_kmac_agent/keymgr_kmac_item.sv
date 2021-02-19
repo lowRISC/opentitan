@@ -9,7 +9,13 @@ class keymgr_kmac_item extends uvm_sequence_item;
       (rsp_digest_share0 inside {0, '1} || rsp_digest_share1 inside {0, '1})
 
   // random variables
-  rand byte               byte_data_q[$];
+
+  // request data/mask
+  //
+  // also used by the monitor to assemble the full request message
+  rand byte byte_data_q[$];
+
+  // response digest/error
   rand bit [KeyWidth-1:0] rsp_digest_share0;
   rand bit [KeyWidth-1:0] rsp_digest_share1;
   rand bit                rsp_error;

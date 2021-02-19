@@ -7,6 +7,9 @@ class keymgr_kmac_agent_cfg extends dv_base_agent_cfg;
   // interface handle used by driver, monitor & the sequencer, via cfg handle
   virtual keymgr_kmac_intf vif;
 
+  int unsigned req_delay_min = 0;
+  int unsigned req_delay_max = 1000;
+
   // delay between last for req data and done for digest data
   int unsigned rsp_delay_min = 0;
   int unsigned rsp_delay_max = 1000;
