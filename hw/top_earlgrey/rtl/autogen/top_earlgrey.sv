@@ -19,7 +19,7 @@ module top_earlgrey #(
   parameter bit SecAesAllowForcingMasks = 1'b0,
   parameter bit KmacEnMasking = 0,
   parameter int KmacReuseShare = 0,
-  parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplLut,
+  parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
   parameter bit SramCtrlMainInstrExec = 1,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
 
