@@ -142,12 +142,14 @@ registers: [
         hwaccess: "hro",
         regwen: "CFG_REGWEN",
         fields: [
-            { bits: "0",
+            { bits: "1:0",
               name: "VAL",
               desc: '''
                 Acknowledge mode to alerts.
-                0 is immediate acknowledge, the hardware immedaitely acks an incoming alert.
+                0 is immediate acknowledge, the hardware immediately acks an incoming alert.
                 1 is software acknowledge.  Software must program the appropriate bit in !!ALERT_STATE to acknowledge the alert.
+                2 is no acknowledge.  When in this mode, any alert will effectively be considered fatal to the system.
+                3 is not a valid selection, but behaves similarly to 2.
                 ''',
               resval: "0"
             },

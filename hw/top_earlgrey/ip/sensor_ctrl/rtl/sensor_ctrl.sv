@@ -57,6 +57,7 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
   logic [NumAlerts-1:0] alert_test;
   logic [NumAlerts-1:0] alerts_vld, alerts_clr;
   logic [NumAlerts-1:0] sw_ack_mode;
+  logic [NumAlerts-1:0] no_ack_mode;
 
   // While the alerts are differential, they are not perfectly aligned.
   // Instead, each alert is treated independently.
@@ -76,13 +77,15 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
   assign alert_test[OtSel]   = reg2hw.alert_test.recov_ot.qe    & reg2hw.alert_test.recov_ot.q;
 
 
-  // fire an alert whenever indicated, or whenever input no longer differential
+  // fire an alert whenever indicated
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
 
     // when there is a valid alert, set the alert state
     logic valid_alert;
 
     assign sw_ack_mode[i] = ast_ack_mode_e'(reg2hw.ack_mode[i].q) == SwAck;
+    assign no_ack_mode[i] = ast_ack_mode_e'(reg2hw.ack_mode[i].q) == NoAck |
+                            ast_ack_mode_e'(reg2hw.ack_mode[i].q) == InvalidAck;
 
     // if differential checks fail, generate alert
     assign valid_alert = alerts_vld[i];
@@ -92,6 +95,7 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
     logic alert_req;
     logic alert_ack;
     assign alert_req = sw_ack_mode[i] ? reg2hw.alert_state[i].q : valid_alert;
+
     prim_alert_sender #(
       .AsyncOn(AsyncOn),
       .IsFatal(0)
@@ -106,16 +110,30 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
       .alert_tx_o(alert_tx_o[i])
     );
 
-    assign alerts_clr[i] = sw_ack_mode[i] ? reg2hw.alert_state[i].q & reg2hw.alert_state[i].qe :
+    assign alerts_clr[i] = no_ack_mode[i] ? '0 :
+                           sw_ack_mode[i] ? ~reg2hw.alert_state[i].q & reg2hw.alert_state[i].qe :
                                             alert_req & alert_ack;
   end
 
   // When in immediate ack mode, ack alerts as they are received by the sender
   // When in software ack mode, only ack when software issues the command to clear alert_state
+  //
+  // Note, even though the incoming alerts are differential, they are NOT expected to be
+  // consistent all the time.  It is more appropriate for sensor_ctrl to treat them as
+  // independent lines.
+  // As a result, the alerts_clr is only applied if an incoming alert is set to the active polarity.
+  //
+  // Note, due to the converging nature of sensor ctrl (non-synced inputs being forwarded to 1
+  // alert), it is possible that when one alert arrives, it is ack'd right when the differential
+  // version comes.  As a result, the first alert will be ack'd, and the second will also
+  // immediately be ack'd, resulting in one alert being sent.
+  // This is OK because the intent is to send the alert anyways, and the ack would not have happened
+  // if the alert was not sent out.  If the incoming alert stays high, then alerts will continue to
+  // fire.
   always_comb begin
     for (int i = 0; i < NumAlerts; i++) begin
-      ast_alert_o.alerts_ack[i].p = alerts_clr[i];
-      ast_alert_o.alerts_ack[i].n = ~alerts_clr[i];
+      ast_alert_o.alerts_ack[i].p = ast_alert_i.alerts[i].p & alerts_clr[i];
+      ast_alert_o.alerts_ack[i].n = ~(~ast_alert_i.alerts[i].n & alerts_clr[i]);
     end
   end
 
