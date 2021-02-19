@@ -330,7 +330,18 @@ package test_vectors_pkg;
             str_to_bytes(entry_data, bytes);
             vector.keys = new[vector.key_length_word];
             for (int i = 0; i < vector.key_length_word; i++) begin
-              vector.keys[i] = {<< byte {bytes with [i*4 +: 4]}};
+              bit [7:0] key_bytes[] = new[4];
+              // parsed key will always be a multiple of 4 bytes
+              for (int j = 0; j < 4; j++) begin
+                key_bytes[j] = bytes[i*4 + j];
+              end
+              vector.keys[i] = {<< byte {key_bytes}};
+
+              // Streaming operations using the `with` syntax is currently unsupported by
+              // the Verible linter (Issue #5280).
+              // Comment this out for now, and uncomment once Verible support is added.
+              //
+              //vector.keys[i] = {<< byte {bytes with [i*4 +: 4]}};
             end
           end
           "Outputlen", "OutputLen": begin
