@@ -10,7 +10,7 @@
 module rstmgr import rstmgr_pkg::*; (
   // Primary module clocks
   input clk_i,
-  input rst_ni, // this is currently connected to top level reset, but will change once ast is in
+  input rst_ni, // this is connected to the top level reset
 % for clk in clks:
   input clk_${clk}_i,
 % endfor
@@ -22,9 +22,6 @@ module rstmgr import rstmgr_pkg::*; (
   // pwrmgr interface
   input pwrmgr_pkg::pwr_rst_req_t pwr_i,
   output pwrmgr_pkg::pwr_rst_rsp_t pwr_o,
-
-  // ast interface
-  input rstmgr_ast_t ast_i,
 
   // cpu related inputs
   input rstmgr_cpu_t cpu_i,
@@ -61,16 +58,16 @@ module rstmgr import rstmgr_pkg::*; (
       prim_lc_sync #(
         .NumCopies(2),
         .AsyncOn(0)
-      ) u_por_scanmode_sync  (
-        .clk_i,
-        .rst_ni,
+      ) u_por_scanmode_sync (
+        .clk_i(1'b0),  // unused clock
+        .rst_ni(1'b1), // unused reset
         .lc_en_i(scanmode_i),
         .lc_en_o(por_aon_scanmode)
       );
 
       rstmgr_por u_rst_por_aon (
         .clk_i(clk_aon_i),
-        .rst_ni(ast_i.aon_pok),
+        .rst_ni, // this is the only use of rst_ni in this module
         .scan_rst_ni,
         .scanmode_i(por_aon_scanmode[0] == lc_ctrl_pkg::On),
         .rst_no(rst_por_aon_n[i])
@@ -206,8 +203,8 @@ module rstmgr import rstmgr_pkg::*; (
     .NumCopies(${len(leaf_rsts)}),
     .AsyncOn(0)
     ) u_leaf_rst_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  // unused clock
+    .rst_ni(1'b1), // unused reset
     .lc_en_i(scanmode_i),
     .lc_en_o(leaf_rst_scanmode)
  );
