@@ -3218,6 +3218,9 @@
           act: rsp
           package: jtag_pkg
           inst_name: lc_ctrl
+          width: 1
+          default: ""
+          top_signame: pinmux_aon_lc_jtag
           index: -1
         }
         {
@@ -4359,12 +4362,57 @@
       inter_signal_list:
       [
         {
-          struct: lc_strap
+          struct: lc_tx
+          type: uni
+          name: lc_hw_debug_en
+          act: rcv
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: pinmux_aon
+          width: 1
+          top_signame: lc_ctrl_lc_hw_debug_en
+          index: -1
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_dft_en
+          act: rcv
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: pinmux_aon
+          width: 1
+          top_signame: lc_ctrl_lc_dft_en
+          index: -1
+        }
+        {
+          struct: jtag
           type: req_rsp
-          name: lc_pinmux_strap
-          act: rsp
-          package: pinmux_pkg
-          default: "'0"
+          name: lc_jtag
+          act: req
+          package: jtag_pkg
+          inst_name: pinmux_aon
+          width: 1
+          default: ""
+          end_idx: -1
+          top_signame: pinmux_aon_lc_jtag
+          index: -1
+        }
+        {
+          struct: jtag
+          type: req_rsp
+          name: rv_jtag
+          act: req
+          package: jtag_pkg
+          inst_name: pinmux_aon
+          index: -1
+        }
+        {
+          struct: jtag
+          type: req_rsp
+          name: dft_jtag
+          act: req
+          package: jtag_pkg
           inst_name: pinmux_aon
           index: -1
         }
@@ -4382,6 +4430,16 @@
           struct: logic
           type: uni
           name: sleep_en
+          act: rcv
+          package: ""
+          default: 1'b0
+          inst_name: pinmux_aon
+          index: -1
+        }
+        {
+          struct: logic
+          type: uni
+          name: strap_en
           act: rcv
           package: ""
           default: 1'b0
@@ -7590,6 +7648,10 @@
         kmac.idle
         otbn.idle
       ]
+      pinmux_aon.lc_jtag:
+      [
+        lc_ctrl.jtag
+      ]
       otp_ctrl.otp_lc_data:
       [
         lc_ctrl.otp_lc_data
@@ -7616,6 +7678,7 @@
       lc_ctrl.lc_dft_en:
       [
         otp_ctrl.lc_dft_en
+        pinmux_aon.lc_dft_en
       ]
       lc_ctrl.lc_nvm_debug_en:
       [
@@ -7625,6 +7688,7 @@
       [
         sram_ctrl_main.lc_hw_debug_en
         sram_ctrl_ret_aon.lc_hw_debug_en
+        pinmux_aon.lc_hw_debug_en
       ]
       lc_ctrl.lc_cpu_en: []
       lc_ctrl.lc_escalate_en:
@@ -12715,6 +12779,9 @@
         act: rsp
         package: jtag_pkg
         inst_name: lc_ctrl
+        width: 1
+        default: ""
+        top_signame: pinmux_aon_lc_jtag
         index: -1
       }
       {
@@ -13544,12 +13611,57 @@
         index: -1
       }
       {
-        struct: lc_strap
+        struct: lc_tx
+        type: uni
+        name: lc_hw_debug_en
+        act: rcv
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: pinmux_aon
+        width: 1
+        top_signame: lc_ctrl_lc_hw_debug_en
+        index: -1
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_dft_en
+        act: rcv
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: pinmux_aon
+        width: 1
+        top_signame: lc_ctrl_lc_dft_en
+        index: -1
+      }
+      {
+        struct: jtag
         type: req_rsp
-        name: lc_pinmux_strap
-        act: rsp
-        package: pinmux_pkg
-        default: "'0"
+        name: lc_jtag
+        act: req
+        package: jtag_pkg
+        inst_name: pinmux_aon
+        width: 1
+        default: ""
+        end_idx: -1
+        top_signame: pinmux_aon_lc_jtag
+        index: -1
+      }
+      {
+        struct: jtag
+        type: req_rsp
+        name: rv_jtag
+        act: req
+        package: jtag_pkg
+        inst_name: pinmux_aon
+        index: -1
+      }
+      {
+        struct: jtag
+        type: req_rsp
+        name: dft_jtag
+        act: req
+        package: jtag_pkg
         inst_name: pinmux_aon
         index: -1
       }
@@ -13567,6 +13679,16 @@
         struct: logic
         type: uni
         name: sleep_en
+        act: rcv
+        package: ""
+        default: 1'b0
+        inst_name: pinmux_aon
+        index: -1
+      }
+      {
+        struct: logic
+        type: uni
+        name: strap_en
         act: rcv
         package: ""
         default: 1'b0
@@ -16270,6 +16392,28 @@
         end_idx: -1
         act: rcv
         suffix: ""
+        default: ""
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_req
+        signame: pinmux_aon_lc_jtag_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
+        default: ""
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_rsp
+        signame: pinmux_aon_lc_jtag_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
         default: ""
       }
       {

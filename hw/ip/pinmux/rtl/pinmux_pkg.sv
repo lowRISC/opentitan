@@ -25,18 +25,8 @@ package pinmux_pkg;
   } dft_strap_test_req_t;
 
   // Life cycle DFT straps for TAP select
-  parameter int NLcStraps  = 2;
+  parameter int NTapStraps  = 2;
   // Strap sampling is only supported on MIOs at the moment
-  parameter int LcStrapPos [NLcStraps] = '{1, 0};
-
-  // Interface with LC controller
-  typedef struct packed {
-    logic sample_pulse;
-  } lc_strap_req_t;
-
-  typedef struct packed {
-    logic                 valid;
-    logic [NLcStraps-1:0] straps;
-  } lc_strap_rsp_t;
+  parameter int TapStrapPos [NTapStraps] = '{1, 0};
 
 endpackage : pinmux_pkg

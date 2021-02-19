@@ -26,13 +26,39 @@
   ],
 
   inter_signal_list: [
-    // Define lc <-> pinmux signal for strap sampling
-    { struct:  "lc_strap",
-      type:    "req_rsp",
-      name:    "lc_pinmux_strap",
-      act:     "rsp",
-      package: "pinmux_pkg",
-      default: "'0"
+    // Life cycle inputs
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_hw_debug_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_dft_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    // JTAG TAPs
+    { struct:  "jtag"
+      type:    "req_rsp"
+      name:    "lc_jtag"
+      act:     "req"
+      package: "jtag_pkg"
+    }
+    { struct:  "jtag"
+      type:    "req_rsp"
+      name:    "rv_jtag"
+      act:     "req"
+      package: "jtag_pkg"
+    }
+    { struct:  "jtag"
+      type:    "req_rsp"
+      name:    "dft_jtag"
+      act:     "req"
+      package: "jtag_pkg"
     }
     // Testmode signals to AST
     { struct:  "dft_strap_test",
@@ -46,6 +72,13 @@
     { struct:  "logic",
       type:    "uni",
       name:    "sleep_en",
+      act:     "rcv",
+      package: "",
+      default: "1'b0"
+    },
+    { struct:  "logic",
+      type:    "uni",
+      name:    "strap_en",
       act:     "rcv",
       package: "",
       default: "1'b0"

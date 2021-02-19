@@ -19,12 +19,23 @@ module pinmux
   // Wakeup request, running on clk_aon_i
   output logic                     aon_wkup_req_o,
   output logic                     usb_wkup_req_o,
-  // Sleep enable, running on clk_i
+  // Sleep enable and strap sample enable
+  // from pwrmgr, running on clk_i
+  // TODO(#5198): figure out the connections.
   input                            sleep_en_i,
-  // Strap sample request
-  input  lc_strap_req_t            lc_pinmux_strap_i,
-  output lc_strap_rsp_t            lc_pinmux_strap_o,
+  input                            strap_en_i,
+  // LC signals for TAP qualification
+  input  lc_ctrl_pkg::lc_tx_t      lc_dft_en_i,
+  input  lc_ctrl_pkg::lc_tx_t      lc_hw_debug_en_i,
+  // Sampled values for DFT straps
   output dft_strap_test_req_t      dft_strap_test_o,
+  // Qualified JTAG signals for TAPs
+  output jtag_pkg::jtag_req_t      lc_jtag_o,
+  input  jtag_pkg::jtag_rsp_t      lc_jtag_i,
+  output jtag_pkg::jtag_req_t      rv_jtag_o,
+  input  jtag_pkg::jtag_rsp_t      rv_jtag_i,
+  output jtag_pkg::jtag_req_t      dft_jtag_o,
+  input  jtag_pkg::jtag_rsp_t      dft_jtag_i,
   // Direct USB connection
   input                            usb_out_of_rst_i,
   input                            usb_aon_wake_en_i,
@@ -103,7 +114,7 @@ module pinmux
   // Connect attributes //
   ////////////////////////
 
-  // TODO: rework the WARL behavior
+  // TODO(#5221): rework the WARL behavior
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_attr
     logic [AttrDw-1:0] warl_mask;
     assign warl_mask = '0;
@@ -296,7 +307,7 @@ module pinmux
                        dio_data_mux[reg2hw.wkup_detector_padsel[k]] :
                        mio_data_mux[reg2hw.wkup_detector_padsel[k]];
 
-    pinmux_wkup i_pinmux_wkup (
+    pinmux_wkup u_pinmux_wkup (
       .clk_i,
       .rst_ni,
       .clk_aon_i,
@@ -319,43 +330,25 @@ module pinmux
   // OR' together all wakeup requests
   assign aon_wkup_req_o = |aon_wkup_req;
 
-  ////////////////////
-  // Strap Sampling //
-  ////////////////////
+  //////////////////////////
+  // Strap Sampling Logic //
+  //////////////////////////
 
-  logic [NLcStraps-1:0] lc_strap_taps;
-  logic [NDFTStraps-1:0] dft_strap_taps;
-  lc_strap_rsp_t lc_strap_d, lc_strap_q;
-  dft_strap_test_req_t dft_strap_test_d, dft_strap_test_q;
-
-  for (genvar k = 0; k < NLcStraps; k++) begin : gen_lc_strap_taps
-    assign lc_strap_taps[k] = mio_in_i[LcStrapPos[k]];
-  end
-
-  for (genvar k = 0; k < NDFTStraps; k++) begin : gen_dft_strap_taps
-    assign dft_strap_taps[k] = mio_in_i[DftStrapPos[k]];
-  end
-
-  assign lc_pinmux_strap_o = lc_strap_q;
-  assign lc_strap_d = (lc_pinmux_strap_i.sample_pulse)      ?
-                      '{valid: 1'b1, straps: lc_strap_taps} :
-                      lc_strap_q;
-
-  // DFT straps are triggered by the same LC sampling pulse
-  assign dft_strap_test_o = dft_strap_test_q;
-  assign dft_strap_test_d = (lc_pinmux_strap_i.sample_pulse) ?
-                            '{valid: 1'b1, straps: dft_strap_taps} :
-                            dft_strap_test_q;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_strap_sample
-    if (!rst_ni) begin
-      lc_strap_q       <= '0;
-      dft_strap_test_q <= '0;
-    end else begin
-      lc_strap_q       <= lc_strap_d;
-      dft_strap_test_q <= dft_strap_test_d;
-    end
-  end
+  pinmux_strap_sampling u_pinmux_strap_sampling (
+    .clk_i,
+    .rst_ni,
+    .mio_in_i,
+    .strap_en_i,
+    .lc_dft_en_i,
+    .lc_hw_debug_en_i,
+    .dft_strap_test_o,
+    .lc_jtag_o,
+    .lc_jtag_i,
+    .rv_jtag_o,
+    .rv_jtag_i,
+    .dft_jtag_o,
+    .dft_jtag_i
+  );
 
   ////////////////
   // Assertions //
@@ -367,7 +360,6 @@ module pinmux
   `ASSERT_KNOWN(MioOeKnownO_A, mio_oe_o)
   // `ASSERT_KNOWN(DioToPeriphKnownO_A, dio_to_periph_o)
   `ASSERT_KNOWN(DioOeKnownO_A, dio_oe_o)
-  `ASSERT_KNOWN(LcPinmuxStrapKnownO_A, lc_pinmux_strap_o)
 
   // TODO: need to check why some outputs are not valid (e.g. SPI device SDO)
   // for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_known_if
@@ -380,6 +372,11 @@ module pinmux
 
   `ASSERT_KNOWN(MioKnownO_A, mio_attr_o)
   `ASSERT_KNOWN(DioKnownO_A, dio_attr_o)
+
+  `ASSERT_KNOWN(LcJtagKnown_A, lc_jtag_o)
+  `ASSERT_KNOWN(RvJtagKnown_A, rv_jtag_o)
+  `ASSERT_KNOWN(DftJtagKnown_A, dft_jtag_o)
+  `ASSERT_KNOWN(DftStrapsKnown_A, dft_strap_test_o)
 
   // running on slow AON clock
   `ASSERT_KNOWN(AonWkupReqKnownO_A, aon_wkup_req_o, clk_aon_i, !rst_aon_ni)
