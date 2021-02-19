@@ -281,31 +281,17 @@ module otbn_controller
     end
   end
 
-  // Err signal and code generation and prioritisation
-  always_comb begin
-    err        = 1'b1;
-    err_bits_o = '0;
+  // No RF integrity checks implemented yet
+  assign err_bits_o.fatal_reg     = 1'b0;
+  assign err_bits_o.fatal_imem    = insn_fetch_err_i;
+  assign err_bits_o.fatal_dmem    = lsu_rdata_err_i;
+  assign err_bits_o.illegal_insn  = insn_illegal_i | ispr_err;
+  assign err_bits_o.bad_data_addr = dmem_addr_err;
+  assign err_bits_o.loop          = loop_err;
+  assign err_bits_o.call_stack    = rf_base_call_stack_err_i;
+  assign err_bits_o.bad_insn_addr = imem_addr_err;
 
-    if (insn_fetch_err_i) begin
-      err_bits_o.fatal_imem = 1'b1;
-    end else if (lsu_rdata_err_i) begin
-      err_bits_o.fatal_dmem = 1'b1;
-    end else if (insn_illegal_i) begin
-      err_bits_o.illegal_insn = 1'b1;
-    end else if (ispr_err) begin
-      err_bits_o.illegal_insn = 1'b1;
-    end else if (dmem_addr_err) begin
-      err_bits_o.bad_data_addr = 1'b1;
-    end else if (loop_err) begin
-      err_bits_o.loop = 1'b1;
-    end else if (rf_base_call_stack_err_i) begin
-      err_bits_o.call_stack = 1'b1;
-    end else if (imem_addr_err) begin
-      err_bits_o.bad_insn_addr = 1'b1;
-    end else begin
-      err        = 1'b0;
-    end
-  end
+  assign err = |err_bits_o;
 
   // Instructions must not execute if there is an error
   assign insn_executing = insn_valid_i & ~err;
