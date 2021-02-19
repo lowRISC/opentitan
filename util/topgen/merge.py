@@ -330,7 +330,7 @@ def xbar_adddevice(top, xbar, device):
 
         # case 1: Crossbar handling
         if device in xbar_list:
-            log.warning(
+            log.info(
                 "device {} in Xbar {} is connected to another Xbar".format(
                     device, xbar["name"]))
             assert len(nodeobj) == 1
