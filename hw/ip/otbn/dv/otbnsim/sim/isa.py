@@ -107,7 +107,7 @@ class OTBNInsn:
         return disasm
 
     @staticmethod
-    def as_u32(value: int) -> int:
+    def to_2s_complement(value: int) -> int:
         '''Interpret the signed value as a 2's complement u32'''
         assert -(1 << 31) <= value < (1 << 31)
         return (1 << 32) + value if value < 0 else value
