@@ -84,10 +84,12 @@ module tb;
   bind `FLASH1_INFO_HIER mem_bkdr_if flash1_info_bkdr_if();
   bind `OTP_MEM_HIER mem_bkdr_if otp_bkdr_if();
 
+  // TODO: the external clk is currently not connected.
+  // We will need to feed this in via a muxed pin, once that function implemented.
+
   top_earlgrey_asic dut (
     // Clock and Reset
-    .IO_CLK(clk),
-    .IO_RST_N(rst_n),
+    .POR_N(rst_n),
     // Bank A (VIOA domain)
     .SPI_HOST_D0(spi_host_tie_off[0]),
     .SPI_HOST_D1(spi_host_tie_off[1]),
