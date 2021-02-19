@@ -11,6 +11,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   // local variables
 
+  // this bit is set if a KDF transaction is being performed
+  bit in_kdf;
+
   // CFG fields
   bit kmac_en;
   sha3_pkg::sha3_mode_e hash_mode;
@@ -42,6 +45,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // input message
   bit [7:0] msg[$];
 
+  // input message from keymgr
+  byte kdf_msg[$];
+
+  // output digest from KDF (256 bits each)
+  bit [keymgr_pkg::KeyWidth-1:0] kdf_digest_share0;
+  bit [keymgr_pkg::KeyWidth-1:0] kdf_digest_share1;
+
   // output digests
   bit [7:0] digest_share0[];
   bit [7:0] digest_share1[];
@@ -52,12 +62,16 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // through the data read phase.
   bit [TL_DBW-1:0] state_mask;
 
-  // local queues to hold incoming packets pending comparison
+  // TLM fifos
+  uvm_tlm_analysis_fifo #(keymgr_kmac_item) kdf_req_fifo;
+  uvm_tlm_analysis_fifo #(keymgr_kmac_item) kdf_rsp_fifo;
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    kdf_req_fifo = new("kdf_req_fifo", this);
+    kdf_rsp_fifo = new("kdf_rsp_fifo", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -68,6 +82,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     super.run_phase(phase);
     fork
       process_sideload_key();
+      process_kdf_req_fifo();
+      process_kdf_rsp_fifo();
     join_none
   endtask
 
@@ -92,6 +108,57 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
       // Sequence will drop the sideloaded key after scb can process the digest
       cfg.sideload_vif.wait_valid(logic'(1'b0));
+    end
+  endtask
+
+  // This task continuously checks the `kdf_req_fifo`.
+  //
+  // This fifo is populated once a full KDF request has been detected,
+  // and is used by the scoreboard to store the input KDF message and set
+  // some internal state.
+  virtual task process_kdf_req_fifo();
+    keymgr_kmac_item kdf_req;
+    forever begin
+      kdf_req_fifo.get(kdf_req);
+      `uvm_info(`gfn, $sformatf("Detected a KDF request:\n%0s", kdf_req.sprint()), UVM_HIGH)
+
+      // signal to the rest of the scoreboard that we are now in KDF mode
+      in_kdf = 1'b1;
+
+      // store the input KDF message locally
+      kdf_msg = kdf_req.byte_data_q;
+      `uvm_info(`gfn, $sformatf("kdf_msg: %0p", kdf_msg), UVM_HIGH)
+    end
+  endtask
+
+  // This task processes the `kdf_rsp_fifo`.
+  //
+  // This fifo is populated once the KMAC has sent the response digest to
+  // complete the KDF request.
+  // As such, `in_kdf` must always be 1 when a response item is seen, otherwise
+  // something has gone horribly wrong.
+  //
+  // It is important to note that when in KDF mode, any messages/keys/commands sent
+  // to the CSRs will not be considered as valid, so this task needs to take care of checking
+  // the KDF digest and clearing internal state for the next hash operation.
+  virtual task process_kdf_rsp_fifo();
+    keymgr_kmac_item kdf_rsp;
+    forever begin
+      kdf_rsp_fifo.get(kdf_rsp);
+      `uvm_info(`gfn, $sformatf("Detected a KDF response:\n%0s", kdf_rsp.sprint()), UVM_HIGH)
+
+      // safety check that things are working properly and no random KDF operations are seen
+      `DV_CHECK_FATAL(in_kdf == 1, "in_kdf is not set, scoreboard has not picked up KDF request")
+
+      // TODO error checks
+
+      // assign digest values
+      kdf_digest_share0 = kdf_rsp.rsp_digest_share0;
+      kdf_digest_share1 = kdf_rsp.rsp_digest_share1;
+
+      check_digest();
+
+      in_kdf = 1'b0;
     end
   endtask
 
@@ -176,6 +243,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       "cfg": begin
         if (addr_phase_write) begin
           // don't continue if the KMAC is currently operating
+          //
+          // TODO this is an error case that needs to be handled
           if (!(kmac_cmd inside {CmdNone, CmdDone})) begin
             return;
           end
@@ -189,6 +258,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       end
       "cmd": begin
         // Writing to CMD will always result in the KMAC doing something
+        //
+        // TODO unless in KDF mode...need to handle errors
         if (addr_phase_write) begin
           case (kmac_cmd_e'(item.a_data))
             CmdStart: begin
@@ -362,7 +433,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       // If we read the state digest in either CmdStart or CmdDone states,
       // we should read back all zeroes.
       // Check immediately and clear the digest arrays.
-      if (kmac_cmd inside {CmdStart, CmdDone}) begin
+      if (kmac_cmd inside {CmdNone, CmdStart, CmdDone}) begin
         foreach (digest_share0[i]) begin
           `DV_CHECK_EQ_FATAL(digest_share0[i], '0,
               $sformatf("Share 0 should be zero in state %0s", kmac_cmd.name()))
@@ -396,12 +467,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // This function should be called to reset internal state to prepare for a new hash operation
   virtual function void clear_state();
     msg.delete();
-    keys          = '0;
-    keymgr_keys   = '0;
-    sideload_key  = '0;
-    prefix        = '{default:0};
-    digest_share0 = {};
-    digest_share1 = {};
+    kdf_msg.delete();
+    keys              = '0;
+    keymgr_keys       = '0;
+    sideload_key      = '0;
+    prefix            = '{default:0};
+    digest_share0     = {};
+    digest_share1     = {};
+    kdf_digest_share0 = '0;
+    kdf_digest_share1 = '0;
   endfunction
 
   // This function is called whenever a CmdDone command is issued to KMAC,
@@ -456,15 +530,24 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     // Calculate:
     // - the expected output length in bytes
     // - if we are using the xof version of kmac
-    get_digest_len_and_xof(output_len_bytes, xof_en);
+    if (in_kdf) begin
+      // KDF output will always be 256 bits (32 bytes)
+      output_len_bytes = 32;
+
+      // xof_en is 1 when the padded output length is 0,
+      // but this will never happen in KDF
+      xof_en = 0;
+    end else begin
+      get_digest_len_and_xof(output_len_bytes, xof_en, msg);
+
+      // quick check that the calculated output length is the same
+      // as the number of bytes read from the digest window
+      `DV_CHECK_EQ_FATAL(digest_share0.size(), output_len_bytes,
+          $sformatf("Calculated output length doesn't match actual output length!"))
+    end
 
     `uvm_info(`gfn, $sformatf("output_len_bytes: %0d", output_len_bytes), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("xof_en: %0d", xof_en), UVM_HIGH)
-
-    // Do a quick check that the calculated output length is the same
-    // as the number of bytes read from the digest windows.
-    `DV_CHECK_EQ_FATAL(digest_share0.size(), output_len_bytes,
-        $sformatf("Calculated output length doesn't match actual output length!"))
 
     // initialize arrays
     dpi_digest = new[output_len_bytes];
@@ -474,21 +557,40 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     // Calculate the actual digest //
     /////////////////////////////////
     if (cfg.enable_masking) begin
-      foreach (unmasked_digest[i]) begin
-        unmasked_digest[i] = digest_share0[i] ^ digest_share1[i];
+      if (in_kdf) begin
+        unmasked_digest = {<< byte {kdf_digest_share0 ^ kdf_digest_share1}};
+      end else begin
+        foreach (unmasked_digest[i]) begin
+          unmasked_digest[i] = digest_share0[i] ^ digest_share1[i];
+        end
       end
     end else begin
-      unmasked_digest = digest_share0;
+      if (in_kdf) begin
+        unmasked_digest = {<< byte {kdf_digest_share0}};
+      end else begin
+        unmasked_digest = digest_share0;
+      end
     end
     `uvm_info(`gfn, $sformatf("unmasked_digest: %0p", unmasked_digest), UVM_HIGH)
 
     ///////////////////////////////////////////////////////////
     // Calculate the expected digest using the DPI-C++ model //
     ///////////////////////////////////////////////////////////
-    msg_arr = msg;
+    if (in_kdf) begin
+      // kdf message is a byte array, cast to bit[7:0]
+      msg_arr = new[kdf_msg.size()];
+      foreach (kdf_msg[i]) begin
+        msg_arr[i] = kdf_msg[i];
+      end
+    end else begin
+      msg_arr = msg;
+    end
     `uvm_info(`gfn, $sformatf("msg_arr for DPI mode: %0p", msg_arr), UVM_HIGH)
 
     case (hash_mode)
+      ///////////
+      // SHA-3 //
+      ///////////
       sha3_pkg::Sha3: begin
         case (strength)
           sha3_pkg::L224: begin
@@ -508,6 +610,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           end
         endcase
       end
+      ///////////
+      // SHAKE //
+      ///////////
       sha3_pkg::Shake: begin
         case (strength)
           sha3_pkg::L128: begin
@@ -521,6 +626,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           end
         endcase
       end
+      ////////////
+      // CSHAKE //
+      ////////////
       sha3_pkg::CShake: begin
         if (kmac_en) begin
           // Get the fname and custom_str string values from the writes to PREFIX csrs
@@ -604,7 +712,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   // This function is used to calculate the requested digest length
-  virtual function void get_digest_len_and_xof(ref int output_len, ref bit xof_en);
+  virtual function void get_digest_len_and_xof(ref int output_len, ref bit xof_en,
+                                               ref bit [7:0] msg[$]);
     xof_en = 0;
     case (hash_mode)
       // For SHA3 hashes, the output length is the same as the security strength.

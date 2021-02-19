@@ -11,6 +11,8 @@ class kmac_smoke_vseq extends kmac_base_vseq;
   // Set this bit if we want to burst write the message into the msgfifo
   bit burst_write = 0;
 
+  bit en_kdf = 0;
+
   // TODO: 200 is chosen as upper bound due to large configuration space for KMAC.
   //       If this large range causes noticeable simulation slowdown, reduce it.
   constraint num_trans_c {
@@ -107,7 +109,9 @@ class kmac_smoke_vseq extends kmac_base_vseq;
           cfg.sideload_vif.drive_sideload_key(1, sideload_share0, sideload_share1);
         end
         // write the SW key to the CSRs
-        write_key_shares();
+        if (!en_kdf) begin
+          write_key_shares();
+        end
       end
 
       if (cfg.enable_masking && entropy_mode == EntropyModeSw) begin
@@ -115,41 +119,55 @@ class kmac_smoke_vseq extends kmac_base_vseq;
         provide_sw_entropy();
       end
 
-      // issue Start cmd
-      issue_cmd(CmdStart);
-
-      // write the message into msgfifo
-      `uvm_info(`gfn, $sformatf("msg: %0p", msg), UVM_HIGH)
-      if (burst_write) begin
-        burst_write_msg(msg);
+      // Only send a KDF request when in KMAC mode
+      if (kmac_en && en_kdf) begin
+        send_kdf_req();
+        // Wait until the KMAC engine has completely finished
+        wait (cfg.idle_vif.pins == 1);
       end else begin
-        write_msg(msg);
+        // normal hashing operation - en_kdf doesn't matter when not in KMAC mode
+
+        // issue Start cmd
+        issue_cmd(CmdStart);
+
+        // write the message into msgfifo
+        `uvm_info(`gfn, $sformatf("msg: %0p", msg), UVM_HIGH)
+        if (burst_write) begin
+          burst_write_msg(msg);
+        end else begin
+          write_msg(msg);
+        end
+
+        // if using KMAC, need to write either encoded output length or 0 to msgfifo
+        if (kmac_en) begin
+          right_encode(xof_en ? 0 : output_len * 8, output_len_enc);
+          `uvm_info(`gfn, $sformatf("output_len_enc: %0p", output_len_enc), UVM_HIGH)
+          write_msg(output_len_enc);
+        end
+
+        // issue Process cmd
+        issue_cmd(CmdProcess);
+
+        wait_for_kmac_done();
       end
-
-      // if using KMAC, need to write either encoded output length or 0 to msgfifo
-      if (kmac_en) begin
-        right_encode(xof_en ? 0 : output_len * 8, output_len_enc);
-        `uvm_info(`gfn, $sformatf("output_len_enc: %0p", output_len_enc), UVM_HIGH)
-        write_msg(output_len_enc);
-      end
-
-      // issue Process cmd
-      issue_cmd(CmdProcess);
-
-      // wait for kmac_done to be set
-      wait_for_kmac_done();
 
       // Read the output digest, scb will check digest
+      //
+      // If performing a KDF operation, digest will be sent directly to the m_kdf_agent,
+      // so scoreboard will handle everything
+      //
       read_digest_shares(output_len, cfg.enable_masking, share0, share1);
 
-      // issue the Done cmd to tell KMAC to clear internal state
-      issue_cmd(CmdDone);
-      `uvm_info(`gfn, "done", UVM_HIGH)
+      if (!(kmac_en && en_kdf)) begin
+        // issue the Done cmd to tell KMAC to clear internal state
+        issue_cmd(CmdDone);
+        `uvm_info(`gfn, "done", UVM_HIGH)
+      end
 
       // randomly read out both digests after issuing Done cmd.
       if ($urandom_range(0, 1)) begin
-        read_digest_chunk(KMAC_STATE_SHARE0_BASE, 200, share0);
-        read_digest_chunk(KMAC_STATE_SHARE1_BASE, 200, share1);
+        read_digest_chunk(KMAC_STATE_SHARE0_BASE, keccak_block_size, share0);
+        read_digest_chunk(KMAC_STATE_SHARE1_BASE, keccak_block_size, share1);
       end else begin
         // If we don't read out the state window again, wait a few clocks before dropping the
         // sideload key (if applicable).
