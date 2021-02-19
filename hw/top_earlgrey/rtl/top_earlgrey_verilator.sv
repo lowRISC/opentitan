@@ -92,7 +92,6 @@ module top_earlgrey_verilator (
 
   // dummy ast connections
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
-  ast_pkg::ast_rst_t ast_base_rst;
   ast_pkg::ast_alert_req_t ast_base_alerts;
   ast_pkg::ast_status_t ast_base_status;
 
@@ -113,7 +112,6 @@ module top_earlgrey_verilator (
   // the rst_ni pin only goes to AST
   // the rest of the logic generates reset based on the 'pok' signal.
   // for verilator purposes, make these two the same.
-  assign ast_base_rst.aon_pok      = rst_ni;
 
   lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
   // Top-level design
@@ -124,7 +122,6 @@ module top_earlgrey_verilator (
     .clk_usb_i                    (clk_i             ),
     .clk_aon_i                    (clk_i             ),
     .clks_ast_o                   (                  ),
-    .rstmgr_ast_i                 ( ast_base_rst     ),
     .rsts_ast_o                   (                  ),
     .pwrmgr_ast_req_o             (                  ),
     .pwrmgr_ast_rsp_i             ( ast_base_pwr     ),

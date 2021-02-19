@@ -67,13 +67,6 @@
       package: "rstmgr_pkg", // Origin package (only needs for the req)
     },
 
-    { struct:  "rstmgr_ast",
-      type:    "uni",
-      name:    "ast",
-      act:     "rcv",
-      package: "rstmgr_pkg", // Origin package (only needs for the req)
-    },
-
     { struct:  "rstmgr_cpu",
       type:    "uni",
       name:    "cpu",

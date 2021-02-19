@@ -386,7 +386,7 @@ module top_earlgrey_asic (
   ast_pkg::ast_status_t ast_status;
 
   // ast clocks and resets
-  ast_pkg::ast_rst_t ast_base_rst;
+  logic aon_pok;
   ast_pkg::ast_clks_t ast_base_clks;
 
   // pwrmgr interface
@@ -486,7 +486,7 @@ module top_earlgrey_asic (
     .vioa_supp_i           ( 1'b1 ),
     .viob_supp_i           ( 1'b1 ),
     // pok
-    .vcaon_pok_o           ( ast_base_rst.aon_pok ),
+    .vcaon_pok_o           ( aon_pok ),
     .vcmain_pok_o          ( ast_base_pwr.main_pok ),
     .vioa_pok_o            ( ast_status.io_pok[0] ),
     .viob_pok_o            ( ast_status.io_pok[1] ),
@@ -596,7 +596,7 @@ module top_earlgrey_asic (
     .KmacEnMasking(1),  // DOM AND + Masking scheme
     .KmacReuseShare(0)
   ) top_earlgrey (
-    .rst_ni                       ( rst_n                      ),
+    .rst_ni                       ( aon_pok                    ),
     // ast connections
     .clk_main_i                   ( ast_base_clks.clk_sys      ),
     .clk_io_i                     ( ast_base_clks.clk_io       ),
@@ -604,7 +604,6 @@ module top_earlgrey_asic (
     .clk_aon_i                    ( ast_base_clks.clk_aon      ),
     .clks_ast_o                   ( clks_ast                   ),
     .clk_main_jitter_en_o         ( jen                        ),
-    .rstmgr_ast_i                 ( ast_base_rst               ),
     .rsts_ast_o                   ( rsts_ast                   ),
     .pwrmgr_ast_req_o             ( base_ast_pwr               ),
     .pwrmgr_ast_rsp_i             ( ast_base_pwr               ),

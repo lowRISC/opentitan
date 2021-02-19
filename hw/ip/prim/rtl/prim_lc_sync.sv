@@ -41,6 +41,10 @@ module prim_lc_sync #(
       .q_o(lc_en)
     );
   end else begin : gen_no_flops
+    logic unused_clk;
+    logic unused_rst;
+    assign unused_clk = clk_i;
+    assign unused_rst = rst_ni;
     assign lc_en = lc_en_i;
   end
 
