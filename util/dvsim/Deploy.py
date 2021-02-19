@@ -287,16 +287,17 @@ class Deploy():
         remain after deletion.
         """
 
-        if not os.path.exists(odir):
-            return []
-
-        # If output directory exists, back it up.
-        ts = datetime.fromtimestamp(os.stat(odir).st_ctime)
-        ts = ts.strftime(self.sim_cfg.ts_format)
-        shutil.move(odir, odir + "_" + ts)
+        if os.path.exists(odir):
+            # If output directory exists, back it up.
+            ts = datetime.fromtimestamp(os.stat(odir).st_ctime)
+            ts = ts.strftime(self.sim_cfg.ts_format)
+            shutil.move(odir, odir + "_" + ts)
 
         # Get list of past output directories sorted by creation time.
         pdir = Path(odir).resolve().parent
+        if not pdir.exists():
+            return []
+
         dirs = sorted([old for old in pdir.iterdir() if old.is_dir()],
                       key=os.path.getctime,
                       reverse=True)
@@ -643,6 +644,7 @@ class RunTest(Deploy):
 
         self.mandatory_misc_attrs.update({
             "run_dir_name": False,
+            "cov_db_dir": False,
             "cov_db_test_dir": False,
             "run_pass_patterns": False,
             "run_fail_patterns": False
@@ -797,9 +799,11 @@ class CovMerge(Deploy):
         CovMerge.items.append(self)
 
     def __post_init__(self):
-        # Add cov db dirs from all the builds that were kicked off.
-        for bld in self.sim_cfg.builds:
-            self.cov_db_dirs += bld.cov_db_dir + " "
+        # Extract cov db dirs from all the sim runs.
+        for item in self.dependencies:
+            if item.target == "run":
+                if item.cov_db_dir not in self.cov_db_dirs:
+                    self.cov_db_dirs += item.cov_db_dir + " "
 
         # Recursively search and replace wildcards, ignoring cov_db_dirs.
         # We need to resolve it later based on cov_db_dirs value set below.
@@ -829,7 +833,8 @@ class CovMerge(Deploy):
         # that as well for merging, if the --cov-merge-previous command line
         # switch is passed.
         if self.sim_cfg.cov_merge_previous:
-            self.cov_db_dirs += prev_cov_db_dirs
+            self.cov_db_dirs += " ".join(
+                [str(item) for item in prev_cov_db_dirs])
 
         # Append cov_db_dirs to the list of exports.
         self.exports["cov_db_dirs"] = "\"{}\"".format(self.cov_db_dirs)
