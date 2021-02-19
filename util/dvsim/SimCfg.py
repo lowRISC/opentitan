@@ -125,10 +125,6 @@ class SimCfg(FlowCfg):
         self.dry_run = args.dry_run
         self.map_full_testplan = args.map_full_testplan
 
-        # Disable cov if --build-only is passed.
-        if self.build_only:
-            self.cov = False
-
         # Set default sim modes for unpacking
         if args.waves is not None:
             self.en_build_modes.append("waves")
@@ -482,41 +478,41 @@ class SimCfg(FlowCfg):
         # Create the build and run list first
         self._create_build_and_run_list()
 
+        self.builds = []
+        build_map = {}
+        for build_mode_obj in self.build_list:
+            new_build = CompileSim(build_mode_obj, self)
+
+            # It is possible for tests to supply different build modes, but
+            # those builds may differ only under specific circumstances,
+            # such as coverage being enabled. If coverage is not enabled,
+            # then they may be completely identical. In that case, we can
+            # save compute resources by removing the extra duplicated
+            # builds. We discard the new_build if it is equivalent to an
+            # existing one.
+            is_unique = True
+            for build in self.builds:
+                if build.is_equivalent_job(new_build):
+                    new_build = build
+                    is_unique = False
+                    break
+
+            if is_unique:
+                self.builds.append(new_build)
+            build_map[build_mode_obj] = new_build
+
+        # Update all tests to use the updated (uniquified) build modes.
+        for test in self.run_list:
+            if test.build_mode.name != build_map[test.build_mode].name:
+                test.build_mode = Modes.find_mode(
+                    build_map[test.build_mode].name, self.build_modes)
+
         if self.run_only:
             self.builds = []
-            self.runs = self._expand_run_list(None)
-        else:
-            self.builds = []
-            build_map = {}
-            for build_mode_obj in self.build_list:
-                new_build = CompileSim(build_mode_obj, self)
+            build_map = None
 
-                # It is possible for tests to supply different build modes, but
-                # those builds may differ only under specific circumstances,
-                # such as coverage being enabled. If coverage is not enabled,
-                # then they may be completely identical. In that case, we can
-                # save compute resources by removing the extra duplicated
-                # builds. We discard the new_build if it is equivalent to an
-                # existing one.
-                is_unique = True
-                for build in self.builds:
-                    if build.is_equivalent_job(new_build):
-                        new_build = build
-                        is_unique = False
-                        break
-
-                if is_unique:
-                    self.builds.append(new_build)
-                build_map[build_mode_obj] = new_build
-
-            # Update all tests to use the updated (uniquified) build modes.
-            for test in self.run_list:
-                if test.build_mode.name != build_map[test.build_mode].name:
-                    test.build_mode = Modes.find_mode(
-                        build_map[test.build_mode].name, self.build_modes)
-
-            self.runs = ([] if self.build_only else
-                         self._expand_run_list(build_map))
+        self.runs = ([]
+                     if self.build_only else self._expand_run_list(build_map))
 
         self.deploy = self.builds + self.runs
 
@@ -577,9 +573,6 @@ class SimCfg(FlowCfg):
         '''
 
         deployed_items = self.deploy
-        if self.cov:
-            deployed_items.append(self.cov_merge_deploy)
-
         results = Results(deployed_items, run_results)
 
         # Set a flag if anything failed
@@ -619,7 +612,7 @@ class SimCfg(FlowCfg):
             self.results_summary = self.testplan.results_summary
 
             # Append coverage results of coverage was enabled.
-            if self.cov:
+            if self.cov_report_deploy is not None:
                 report_status = run_results[self.cov_report_deploy]
                 if report_status == "P":
                     results_str += "\n## Coverage Results\n"
@@ -662,26 +655,29 @@ class SimCfg(FlowCfg):
 
         # sim summary result has 5 columns from each SimCfg.results_summary
         header = ["Name", "Passing", "Total", "Pass Rate"]
-        if self.cov:
+        if self.cov_report_deploy is not None:
             header.append('Coverage')
-        table = [header]
+        table = []
         colalign = ("center", ) * len(header)
         for item in self.cfgs:
             row = []
             for title in item.results_summary:
                 row.append(item.results_summary[title])
-            if row == []:
-                continue
-            table.append(row)
+            if row:
+                table.append(row)
         self.results_summary_md = "## " + self.results_title + " (Summary)\n"
         self.results_summary_md += "### " + self.timestamp_long + "\n"
         if self.revision:
             self.results_summary_md += "### " + self.revision + "\n"
         self.results_summary_md += "### Branch: " + self.branch + "\n"
-        self.results_summary_md += tabulate(table,
-                                            headers="firstrow",
-                                            tablefmt="pipe",
-                                            colalign=colalign)
+        if table:
+            self.results_summary_md += tabulate(table,
+                                                headers=header,
+                                                tablefmt="pipe",
+                                                colalign=colalign)
+        else:
+            self.results_summary_md += "\nNo results to display.\n"
+
         print(self.results_summary_md)
         return self.results_summary_md
 
@@ -689,7 +685,7 @@ class SimCfg(FlowCfg):
         '''Publish coverage results to the opentitan web server.'''
         super()._publish_results()
 
-        if self.cov:
+        if self.cov_report_deploy is not None:
             results_server_dir_url = self.results_server_dir.replace(
                 self.results_server_prefix, self.results_server_url_prefix)
 
