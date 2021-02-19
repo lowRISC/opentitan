@@ -27,7 +27,9 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
 
     foreach (vector_list[i]) begin
       // import function from the test_vectors_pkg to parse the sha vector file
-      test_vectors_pkg::get_hash_test_vectors(vector_list[i], parsed_vectors);
+      test_vectors_pkg::get_hash_test_vectors(.test_name(vector_list[i]),
+                                              .parsed_vectors(parsed_vectors),
+                                              .reverse_key(0));
       parsed_vectors.shuffle();
 
       // if in smoke_regression mode, to reduce the run time, we will randomly pick 2 vectors to
@@ -41,8 +43,8 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
         hmac_init(.hmac_en(hmac_en), .endian_swap(1'b0), .digest_swap(1'b0));
 
         `uvm_info(`gtn, $sformatf("%s, starting seq %0d, msg size = %0d",
-                                  test_vectors_pkg::sha_file_list[i], j,
-                                  parsed_vectors[j].msg_length_byte), UVM_MEDIUM)
+                                  vector_list[i], j, parsed_vectors[j].msg_length_byte),
+                                  UVM_MEDIUM)
 
         if ($urandom_range(0, 1) && !hmac_en) begin
           `DV_CHECK_RANDOMIZE_FATAL(this) // only key is randomized
