@@ -8,44 +8,9 @@ import libcst as cst
 from libcst._nodes.internal import CodegenState, visit_required
 
 
-class RegRef(cst.Subscript):
-    '''An expression class to represent references to the register file'''
-    gprs = cst.Name('GPRs')
-    wdrs = cst.Name('WDRs')
-
-    is_wide: bool
-    idx: cst.BaseExpression
-
-    def __init__(self, is_wide: bool, idx: cst.BaseExpression):
-        # We want to do a computation when defining the fields in the base
-        # class (value and slice). That means we can't use the automatically
-        # generated init method from dataclass (nor can we use it's
-        # __post_init__ hook: that would happen too late).
-        #
-        # However, we also want to store fields ourselves (is_wide and idx). We
-        # can't just do something like "self.is_wide = is_wide", because that
-        # crashes into the frozen setattr that the base class defines. Instead,
-        # we have to use object.__setattr__ directly.
-        sub_elt = cst.SubscriptElement(slice=cst.Index(value=idx))
-        super().__init__(value=(RegRef.wdrs if is_wide else RegRef.gprs),
-                         slice=[sub_elt])
-        object.__setattr__(self, 'is_wide', is_wide)
-        object.__setattr__(self, 'idx', idx)
-
-    def _visit_and_replace_children(self,
-                                    visitor: cst.CSTVisitorT) -> 'RegRef':
-        new_idx = self.idx.visit(visitor)
-        if isinstance(new_idx, cst.RemovalSentinel):
-            raise ValueError('Cannot remove index of a RegRef')
-        return RegRef(self.is_wide, new_idx)
-
-    def _codegen_impl(self, state: CodegenState) -> None:
-        reg_bank = 'WDRs' if self.is_wide else 'GPRs'
-        state.add_token(reg_bank)
-        state.add_token('[')
-        with state.record_syntactic_position(self):
-            self.idx._codegen(state)
-        state.add_token(']')
+def make_aref(name: str, idx: cst.BaseExpression) -> cst.Subscript:
+    sub_elt = cst.SubscriptElement(slice=cst.Index(value=idx))
+    return cst.Subscript(value=cst.Name(name), slice=[sub_elt])
 
 
 class NBAssignTarget(cst.AssignTarget):
@@ -143,7 +108,7 @@ class ImplTransformer(cst.CSTTransformer):
         return updated
 
     @staticmethod
-    def match_get_reg(call: cst.BaseExpression) -> Optional[RegRef]:
+    def match_get_reg(call: cst.BaseExpression) -> Optional[cst.Subscript]:
         '''Extract a RegRef from state.gprs.get_reg(foo)
 
         Returns None if this isn't a match.
@@ -175,13 +140,13 @@ class ImplTransformer(cst.CSTTransformer):
 
         regfile_name = state_dot_reg.attr.value
         if regfile_name == 'gprs':
-            is_wide = False
+            regfile_uname = 'GPRs'
         elif regfile_name == 'wdrs':
-            is_wide = True
+            regfile_uname = 'WDRs'
         else:
             return None
 
-        return RegRef(is_wide, getreg_idx)
+        return make_aref(regfile_uname, getreg_idx)
 
     def leave_Call(self,
                    orig: cst.Call,
@@ -260,7 +225,7 @@ class ImplTransformer(cst.CSTTransformer):
             return updated
 
         # We expect call.func.value to be match state.gprs.get_reg(foo).
-        # Extract the RegRef if we can.
+        # Extract the array reference if we can.
         reg_ref = ImplTransformer.match_get_reg(call.func.value)
         if reg_ref is None:
             return updated
