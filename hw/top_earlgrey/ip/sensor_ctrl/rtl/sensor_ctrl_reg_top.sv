@@ -88,26 +88,26 @@ module sensor_ctrl_reg_top (
   logic cfg_regwen_qs;
   logic cfg_regwen_wd;
   logic cfg_regwen_we;
-  logic ack_mode_val_0_qs;
-  logic ack_mode_val_0_wd;
+  logic [1:0] ack_mode_val_0_qs;
+  logic [1:0] ack_mode_val_0_wd;
   logic ack_mode_val_0_we;
-  logic ack_mode_val_1_qs;
-  logic ack_mode_val_1_wd;
+  logic [1:0] ack_mode_val_1_qs;
+  logic [1:0] ack_mode_val_1_wd;
   logic ack_mode_val_1_we;
-  logic ack_mode_val_2_qs;
-  logic ack_mode_val_2_wd;
+  logic [1:0] ack_mode_val_2_qs;
+  logic [1:0] ack_mode_val_2_wd;
   logic ack_mode_val_2_we;
-  logic ack_mode_val_3_qs;
-  logic ack_mode_val_3_wd;
+  logic [1:0] ack_mode_val_3_qs;
+  logic [1:0] ack_mode_val_3_wd;
   logic ack_mode_val_3_we;
-  logic ack_mode_val_4_qs;
-  logic ack_mode_val_4_wd;
+  logic [1:0] ack_mode_val_4_qs;
+  logic [1:0] ack_mode_val_4_wd;
   logic ack_mode_val_4_we;
-  logic ack_mode_val_5_qs;
-  logic ack_mode_val_5_wd;
+  logic [1:0] ack_mode_val_5_qs;
+  logic [1:0] ack_mode_val_5_wd;
   logic ack_mode_val_5_we;
-  logic ack_mode_val_6_qs;
-  logic ack_mode_val_6_wd;
+  logic [1:0] ack_mode_val_6_qs;
+  logic [1:0] ack_mode_val_6_wd;
   logic ack_mode_val_6_we;
   logic alert_trig_val_0_qs;
   logic alert_trig_val_0_wd;
@@ -292,11 +292,11 @@ module sensor_ctrl_reg_top (
   // Subregister 0 of Multireg ack_mode
   // R[ack_mode]: V(False)
 
-  // F[val_0]: 0:0
+  // F[val_0]: 1:0
   prim_subreg #(
-    .DW      (1),
+    .DW      (2),
     .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+    .RESVAL  (2'h0)
   ) u_ack_mode_val_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -318,11 +318,11 @@ module sensor_ctrl_reg_top (
   );
 
 
-  // F[val_1]: 1:1
+  // F[val_1]: 3:2
   prim_subreg #(
-    .DW      (1),
+    .DW      (2),
     .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+    .RESVAL  (2'h0)
   ) u_ack_mode_val_1 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -344,11 +344,11 @@ module sensor_ctrl_reg_top (
   );
 
 
-  // F[val_2]: 2:2
+  // F[val_2]: 5:4
   prim_subreg #(
-    .DW      (1),
+    .DW      (2),
     .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+    .RESVAL  (2'h0)
   ) u_ack_mode_val_2 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -370,11 +370,11 @@ module sensor_ctrl_reg_top (
   );
 
 
-  // F[val_3]: 3:3
+  // F[val_3]: 7:6
   prim_subreg #(
-    .DW      (1),
+    .DW      (2),
     .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+    .RESVAL  (2'h0)
   ) u_ack_mode_val_3 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -396,11 +396,11 @@ module sensor_ctrl_reg_top (
   );
 
 
-  // F[val_4]: 4:4
+  // F[val_4]: 9:8
   prim_subreg #(
-    .DW      (1),
+    .DW      (2),
     .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+    .RESVAL  (2'h0)
   ) u_ack_mode_val_4 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -422,11 +422,11 @@ module sensor_ctrl_reg_top (
   );
 
 
-  // F[val_5]: 5:5
+  // F[val_5]: 11:10
   prim_subreg #(
-    .DW      (1),
+    .DW      (2),
     .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+    .RESVAL  (2'h0)
   ) u_ack_mode_val_5 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -448,11 +448,11 @@ module sensor_ctrl_reg_top (
   );
 
 
-  // F[val_6]: 6:6
+  // F[val_6]: 13:12
   prim_subreg #(
-    .DW      (1),
+    .DW      (2),
     .SWACCESS("RW"),
-    .RESVAL  (1'h0)
+    .RESVAL  (2'h0)
   ) u_ack_mode_val_6 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -926,25 +926,25 @@ module sensor_ctrl_reg_top (
   assign cfg_regwen_wd = reg_wdata[0];
 
   assign ack_mode_val_0_we = addr_hit[2] & reg_we & ~wr_err;
-  assign ack_mode_val_0_wd = reg_wdata[0];
+  assign ack_mode_val_0_wd = reg_wdata[1:0];
 
   assign ack_mode_val_1_we = addr_hit[2] & reg_we & ~wr_err;
-  assign ack_mode_val_1_wd = reg_wdata[1];
+  assign ack_mode_val_1_wd = reg_wdata[3:2];
 
   assign ack_mode_val_2_we = addr_hit[2] & reg_we & ~wr_err;
-  assign ack_mode_val_2_wd = reg_wdata[2];
+  assign ack_mode_val_2_wd = reg_wdata[5:4];
 
   assign ack_mode_val_3_we = addr_hit[2] & reg_we & ~wr_err;
-  assign ack_mode_val_3_wd = reg_wdata[3];
+  assign ack_mode_val_3_wd = reg_wdata[7:6];
 
   assign ack_mode_val_4_we = addr_hit[2] & reg_we & ~wr_err;
-  assign ack_mode_val_4_wd = reg_wdata[4];
+  assign ack_mode_val_4_wd = reg_wdata[9:8];
 
   assign ack_mode_val_5_we = addr_hit[2] & reg_we & ~wr_err;
-  assign ack_mode_val_5_wd = reg_wdata[5];
+  assign ack_mode_val_5_wd = reg_wdata[11:10];
 
   assign ack_mode_val_6_we = addr_hit[2] & reg_we & ~wr_err;
-  assign ack_mode_val_6_wd = reg_wdata[6];
+  assign ack_mode_val_6_wd = reg_wdata[13:12];
 
   assign alert_trig_val_0_we = addr_hit[3] & reg_we & ~wr_err;
   assign alert_trig_val_0_wd = reg_wdata[0];
@@ -1008,13 +1008,13 @@ module sensor_ctrl_reg_top (
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[0] = ack_mode_val_0_qs;
-        reg_rdata_next[1] = ack_mode_val_1_qs;
-        reg_rdata_next[2] = ack_mode_val_2_qs;
-        reg_rdata_next[3] = ack_mode_val_3_qs;
-        reg_rdata_next[4] = ack_mode_val_4_qs;
-        reg_rdata_next[5] = ack_mode_val_5_qs;
-        reg_rdata_next[6] = ack_mode_val_6_qs;
+        reg_rdata_next[1:0] = ack_mode_val_0_qs;
+        reg_rdata_next[3:2] = ack_mode_val_1_qs;
+        reg_rdata_next[5:4] = ack_mode_val_2_qs;
+        reg_rdata_next[7:6] = ack_mode_val_3_qs;
+        reg_rdata_next[9:8] = ack_mode_val_4_qs;
+        reg_rdata_next[11:10] = ack_mode_val_5_qs;
+        reg_rdata_next[13:12] = ack_mode_val_6_qs;
       end
 
       addr_hit[3]: begin

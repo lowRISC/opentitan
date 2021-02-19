@@ -55,7 +55,7 @@ package sensor_ctrl_reg_pkg;
   } sensor_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
-    logic        q;
+    logic [1:0]  q;
   } sensor_ctrl_reg2hw_ack_mode_mreg_t;
 
   typedef struct packed {
@@ -83,8 +83,8 @@ package sensor_ctrl_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    sensor_ctrl_reg2hw_alert_test_reg_t alert_test; // [41:28]
-    sensor_ctrl_reg2hw_ack_mode_mreg_t [6:0] ack_mode; // [27:21]
+    sensor_ctrl_reg2hw_alert_test_reg_t alert_test; // [48:35]
+    sensor_ctrl_reg2hw_ack_mode_mreg_t [6:0] ack_mode; // [34:21]
     sensor_ctrl_reg2hw_alert_trig_mreg_t [6:0] alert_trig; // [20:14]
     sensor_ctrl_reg2hw_alert_state_mreg_t [6:0] alert_state; // [13:0]
   } sensor_ctrl_reg2hw_t;
@@ -129,7 +129,7 @@ package sensor_ctrl_reg_pkg;
   parameter logic [3:0] SENSOR_CTRL_PERMIT [6] = '{
     4'b 0001, // index[0] SENSOR_CTRL_ALERT_TEST
     4'b 0001, // index[1] SENSOR_CTRL_CFG_REGWEN
-    4'b 0001, // index[2] SENSOR_CTRL_ACK_MODE
+    4'b 0011, // index[2] SENSOR_CTRL_ACK_MODE
     4'b 0001, // index[3] SENSOR_CTRL_ALERT_TRIG
     4'b 0001, // index[4] SENSOR_CTRL_ALERT_STATE
     4'b 0001  // index[5] SENSOR_CTRL_STATUS

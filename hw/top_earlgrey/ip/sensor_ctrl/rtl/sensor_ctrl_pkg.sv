@@ -9,9 +9,11 @@ package sensor_ctrl_pkg;
   parameter int NumIoRails  = sensor_ctrl_reg_pkg::NumIoRails;
 
   // Ack mode enumerations
-  typedef enum logic {
-    ImmAck = 0,
-    SwAck  = 1
+  typedef enum logic [1:0] {
+    ImmAck,
+    SwAck,
+    NoAck,
+    InvalidAck // not a valid selection
   } ast_ack_mode_e;
 
 endpackage // sensor_ctrl_pkg
