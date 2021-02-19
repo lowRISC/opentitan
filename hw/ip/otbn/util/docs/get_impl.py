@@ -267,6 +267,25 @@ class ImplTransformer(cst.CSTTransformer):
 
         return NBAssign.make(reg_ref, rhs)
 
+    def leave_Assign(self,
+                     orig: cst.Assign,
+                     updated: cst.Assign) -> cst.BaseSmallStatement:
+        # Handle assignments to state.pc_next and replace them with delayed
+        # assignments to PC.
+
+        # We don't handle things like "(foo, state.pc_next) = some_fun()"
+        if len(updated.targets) != 1:
+            return updated
+
+        tgt = updated.targets[0].target
+        if ((isinstance(tgt, cst.Attribute) and
+             isinstance(tgt.value, cst.Name) and
+             tgt.value.value == 'state' and
+             tgt.attr.value == 'pc_next')):
+            return NBAssign.make(cst.Name(value='PC'), updated.value)
+
+        return updated
+
 
 def read_implementation(path: str) -> Dict[str, str]:
     '''Read the implementation at path (probably insn.py)
