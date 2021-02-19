@@ -65,8 +65,9 @@ interface keymgr_kmac_intf (input clk, input rst_n);
   `ASSERT(LastAssertWithValid_A, kmac_data_req.last |-> kmac_data_req.valid, clk, !rst_n)
 
   // Done should be asserted after last, before we start another request
-  `ASSERT(DoneAssertAfterLast_A, kmac_data_req.last |=>
-                                 !kmac_data_req.valid throughout rsp_done[->1], clk, !rst_n)
+  `ASSERT(DoneAssertAfterLast_A,
+    (kmac_data_req.last && kmac_data_req.valid && kmac_data_rsp.ready) |=>
+    !kmac_data_req.valid throughout rsp_done[->1], clk, !rst_n)
 
   // Check strb is aligned to LSB, for example: if strb[1]==0, strb[$:2] should be 0 too
   for (genvar k = 1; k < KmacDataIfWidth / 8 - 1; k++) begin : gen_strb_check

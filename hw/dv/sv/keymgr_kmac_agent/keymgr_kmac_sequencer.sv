@@ -8,6 +8,8 @@ class keymgr_kmac_sequencer extends dv_base_sequencer #(
 );
   `uvm_component_param_utils(keymgr_kmac_sequencer)
 
+  push_pull_sequencer#(`CONNECT_DATA_WIDTH) m_push_pull_sequencer;
+
   // Analysis port through which device monitors can send transactions
   // to the sequencer.
   uvm_tlm_analysis_fifo #(keymgr_kmac_item) req_data_fifo;

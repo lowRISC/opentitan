@@ -46,9 +46,7 @@ class keymgr_kmac_agent extends dv_base_agent #(
 
     if (cfg.is_active) begin
       if (cfg.if_mode == dv_utils_pkg::Host) begin
-        HOST_DRIVER_T host_driver;
-        `downcast(host_driver, driver)
-        host_driver.m_push_pull_sequencer = m_data_push_agent.sequencer;
+        sequencer.m_push_pull_sequencer = m_data_push_agent.sequencer;
       end else begin
         monitor.req_port.connect(sequencer.req_data_fifo.analysis_export);
       end
