@@ -440,6 +440,8 @@ module top_earlgrey #(
   keymgr_pkg::kmac_data_req_t       keymgr_kmac_data_req;
   keymgr_pkg::kmac_data_rsp_t       keymgr_kmac_data_rsp;
   logic [3:0] clkmgr_aon_idle;
+  jtag_pkg::jtag_req_t       pinmux_aon_lc_jtag_req;
+  jtag_pkg::jtag_rsp_t       pinmux_aon_lc_jtag_rsp;
   otp_ctrl_pkg::otp_lc_data_t       otp_ctrl_otp_lc_data;
   otp_ctrl_pkg::lc_otp_program_req_t       lc_ctrl_lc_otp_program_req;
   otp_ctrl_pkg::lc_otp_program_rsp_t       lc_ctrl_lc_otp_program_rsp;
@@ -1419,8 +1421,8 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[3:2] ),
 
       // Inter-module signals
-      .jtag_i(jtag_pkg::JTAG_REQ_DEFAULT),
-      .jtag_o(),
+      .jtag_i(pinmux_aon_lc_jtag_req),
+      .jtag_o(pinmux_aon_lc_jtag_rsp),
       .esc_wipe_secrets_tx_i(alert_handler_esc_tx[1]),
       .esc_wipe_secrets_rx_o(alert_handler_esc_rx[1]),
       .esc_scrap_state_tx_i(alert_handler_esc_tx[2]),
@@ -1581,10 +1583,17 @@ module top_earlgrey #(
   pinmux u_pinmux_aon (
 
       // Inter-module signals
-      .lc_pinmux_strap_i('0),
-      .lc_pinmux_strap_o(),
+      .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
+      .lc_dft_en_i(lc_ctrl_lc_dft_en),
+      .lc_jtag_o(pinmux_aon_lc_jtag_req),
+      .lc_jtag_i(pinmux_aon_lc_jtag_rsp),
+      .rv_jtag_o(),
+      .rv_jtag_i(jtag_pkg::JTAG_RSP_DEFAULT),
+      .dft_jtag_o(),
+      .dft_jtag_i(jtag_pkg::JTAG_RSP_DEFAULT),
       .dft_strap_test_o(),
       .sleep_en_i(1'b0),
+      .strap_en_i(1'b0),
       .aon_wkup_req_o(pwrmgr_aon_wakeups[0]),
       .usb_wkup_req_o(pwrmgr_aon_wakeups[1]),
       .usb_out_of_rst_i(usbdev_usb_out_of_rst),
