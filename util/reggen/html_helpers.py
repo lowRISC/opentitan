@@ -68,7 +68,7 @@ def _expand_paragraph(s, rnames):
         part = re.sub(r"\*([^*]+?)\*", r'<I>\1</I>', part)
         expanded_parts.append(part)
 
-    return ''.join(expanded_parts)
+    return '<p>{}</p>'.format(''.join(expanded_parts))
 
 
 def render_td(s, rnames, td_class):
@@ -79,5 +79,4 @@ def render_td(s, rnames, td_class):
     '''
     desc_paras = expand_paras(s, rnames)
     class_attr = '' if td_class is None else ' class="{}"'.format(td_class)
-    return ('<td{}><p>{}</p></td>'
-            .format(class_attr, '</p><p>'.join(desc_paras)))
+    return '<td{}>{}</td>'.format(class_attr, ''.join(desc_paras))
