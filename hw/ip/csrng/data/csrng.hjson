@@ -8,7 +8,7 @@
   param_list: [
     { name: "SBoxImpl",
       type: "aes_pkg::sbox_impl_e",
-      default: "aes_pkg::SBoxImplLut",
+      default: "aes_pkg::SBoxImplCanright",
       desc: "Selection of the S-Box implementation. See aes_pkg.sv.",
       local: "false",
       expose: "true"
