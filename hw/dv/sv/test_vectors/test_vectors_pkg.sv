@@ -219,8 +219,9 @@ package test_vectors_pkg;
   // as the single consistency in all NIST test vectors is that the output data is the last entry of
   // each test vector description.
   function automatic void get_hash_test_vectors(
-    string test_name,
-    ref test_vectors_t parsed_vectors[]
+    string             test_name,
+    ref test_vectors_t parsed_vectors[],
+    input bit          reverse_key = 1
   );
     int fd;
     bit [7:0] bytes[];
@@ -328,6 +329,8 @@ package test_vectors_pkg;
           end
           "Key": begin
             str_to_bytes(entry_data, bytes);
+            // If no keyword `KeyLen` but has `Key`, use the default key len: 256 bits
+            if (vector.key_length_word == 0) vector.key_length_word = 8;
             vector.keys = new[vector.key_length_word];
             for (int i = 0; i < vector.key_length_word; i++) begin
               bit [7:0] key_bytes[] = new[4];
@@ -335,7 +338,8 @@ package test_vectors_pkg;
               for (int j = 0; j < 4; j++) begin
                 key_bytes[j] = bytes[i*4 + j];
               end
-              vector.keys[i] = {<< byte {key_bytes}};
+              if (reverse_key) vector.keys[i] = {<< byte {key_bytes}};
+              else             vector.keys[i] = {>> byte {key_bytes}};
 
               // Streaming operations using the `with` syntax is currently unsupported by
               // the Verible linter (Issue #5280).
