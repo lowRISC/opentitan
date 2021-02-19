@@ -12,14 +12,17 @@
 module padring import pinmux_reg_pkg::*; #(
   // This allows to selectively connect Pad instances.
   // unconnected inputs are tied to 0, unconnected outputs are high-z.
-  parameter logic [NMioPads-1:0] ConnectMioIn = '1,
-  parameter logic [NMioPads-1:0] ConnectMioOut = '1,
-  parameter logic [NDioPads-1:0] ConnectDioIn = '1,
-  parameter logic [NDioPads-1:0] ConnectDioOut = '1,
+  parameter bit ConnectClk = 1,
+  parameter bit ConnectRst = 1,
+  parameter bit [1:0] ConnectCc = '1,
+  parameter bit [NMioPads-1:0] ConnectMioIn = '1,
+  parameter bit [NMioPads-1:0] ConnectMioOut = '1,
+  parameter bit [NDioPads-1:0] ConnectDioIn = '1,
+  parameter bit [NDioPads-1:0] ConnectDioOut = '1,
 
   // 0: bidir, 1: input, 2: tolerant, 3: open drain
-  parameter logic [NMioPads-1:0][1:0] MioPadVariant = '0,
-  parameter logic [NDioPads-1:0][1:0] DioPadVariant = '0
+  parameter bit [NMioPads-1:0][1:0] MioPadVariant = '0,
+  parameter bit [NDioPads-1:0][1:0] DioPadVariant = '0
 ) (
   // pad input
   input wire                  clk_pad_i,
@@ -56,34 +59,46 @@ module padring import pinmux_reg_pkg::*; #(
   // connection of input wire to an inout pad causes lint problems
   // (even though oe is hardwired to 0).
   wire clk, rst_n;
-  assign clk           = clk_pad_i;
-  assign rst_n         = rst_pad_ni;
+  assign clk   = clk_pad_i;
+  assign rst_n = rst_pad_ni;
 
-  prim_pad_wrapper #(
-    .AttrDw  ( AttrDw ),
-    .Variant ( 1      ) // input-only
-  ) u_clk_pad (
-    .inout_io ( clk   ),
-    .in_o     ( clk_o ),
-    .ie_i     ( 1'b1  ),
-    .out_i    ( 1'b0  ),
-    .oe_i     ( 1'b0  ),
-    .attr_i   (   '0  ),
-    .warl_o   (       )
-  );
+  if (ConnectClk) begin : gen_clk_pad
+    prim_pad_wrapper #(
+      .AttrDw  ( AttrDw ),
+      .Variant ( 1      ) // input-only
+    ) u_clk_pad (
+      .inout_io ( clk   ),
+      .in_o     ( clk_o ),
+      .ie_i     ( 1'b1  ),
+      .out_i    ( 1'b0  ),
+      .oe_i     ( 1'b0  ),
+      .attr_i   (   '0  ),
+      .warl_o   (       )
+    );
+  end else begin : gen_no_clk_pad
+    logic unused_clk;
+    assign unused_clk = clk;
+    assign clk_o = 1'b0;
+  end
 
-  prim_pad_wrapper #(
-    .AttrDw  ( AttrDw ),
-    .Variant ( 1      ) // input-only
-  ) u_rst_pad (
-    .inout_io ( rst_n  ),
-    .in_o     ( rst_no ),
-    .ie_i     ( 1'b1  ),
-    .out_i    ( 1'b0  ),
-    .oe_i     ( 1'b0  ),
-    .attr_i   (   '0  ),
-    .warl_o   (       )
-  );
+  if (ConnectRst) begin : gen_rst_pad
+     prim_pad_wrapper #(
+      .AttrDw  ( AttrDw ),
+      .Variant ( 1      ) // input-only
+    ) u_rst_pad (
+      .inout_io ( rst_n  ),
+      .in_o     ( rst_no ),
+      .ie_i     ( 1'b1  ),
+      .out_i    ( 1'b0  ),
+      .oe_i     ( 1'b0  ),
+      .attr_i   (   '0  ),
+      .warl_o   (       )
+    );
+  end else begin : gen_no_rst_pad
+    logic unused_rst;
+    assign unused_rst = rst_n;
+    assign rst_no = 1'b0;
+  end
 
   //////////////////
   // Pads for DCD //
@@ -95,31 +110,41 @@ module padring import pinmux_reg_pkg::*; #(
   assign cc1 = cc1_i;
   assign cc2 = cc2_i;
 
-  prim_pad_wrapper #(
-    .AttrDw  ( AttrDw ),
-    .Variant ( 1      ) // input-only
-  ) u_cc1_pad (
-    .inout_io ( cc1   ),
-    .in_o     (       ),
-    .ie_i     ( 1'b0  ), // input buffer disabled
-    .out_i    ( 1'b0  ),
-    .oe_i     ( 1'b0  ),
-    .attr_i   (   '0  ),
-    .warl_o   (       )
-  );
+  if (ConnectCc[0]) begin : gen_cc1_pad
+    prim_pad_wrapper #(
+      .AttrDw  ( AttrDw ),
+      .Variant ( 1      ) // input-only
+    ) u_cc1_pad (
+      .inout_io ( cc1   ),
+      .in_o     (       ),
+      .ie_i     ( 1'b0  ), // input buffer disabled
+      .out_i    ( 1'b0  ),
+      .oe_i     ( 1'b0  ),
+      .attr_i   (   '0  ),
+      .warl_o   (       )
+    );
+  end else begin : gen_no_cc1_pad
+    logic unused_cc1;
+    assign unused_cc1 = cc1;
+  end
 
-  prim_pad_wrapper #(
-    .AttrDw  ( AttrDw ),
-    .Variant ( 1      ) // input-only
-  ) u_cc2_pad (
-    .inout_io ( cc2   ),
-    .in_o     (       ),
-    .ie_i     ( 1'b0  ), // input buffer disabled
-    .out_i    ( 1'b0  ),
-    .oe_i     ( 1'b0  ),
-    .attr_i   (   '0  ),
-    .warl_o   (       )
-  );
+  if (ConnectCc[1]) begin : gen_cc2_pad
+    prim_pad_wrapper #(
+      .AttrDw  ( AttrDw ),
+      .Variant ( 1      ) // input-only
+    ) u_cc2_pad (
+      .inout_io ( cc2   ),
+      .in_o     (       ),
+      .ie_i     ( 1'b0  ), // input buffer disabled
+      .out_i    ( 1'b0  ),
+      .oe_i     ( 1'b0  ),
+      .attr_i   (   '0  ),
+      .warl_o   (       )
+    );
+  end else begin : gen_no_cc2_pad
+    logic unused_cc2;
+    assign unused_cc2 = cc2;
+  end
 
   //////////////
   // MIO Pads //
