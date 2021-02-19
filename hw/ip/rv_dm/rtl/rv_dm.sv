@@ -277,6 +277,17 @@ module rv_dm #(
 
   // Bound-in DPI module replaces the TAP
 `ifndef DMIDirectTAP
+
+  logic tck_muxed;
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_prim_clock_mux2 (
+    .clk0_i(jtag_req_i.tck),
+    .clk1_i(clk_i),
+    .sel_i (testmode),
+    .clk_o (tck_muxed)
+  );
+
   // JTAG TAP
   dmi_jtag #(
     .IdcodeValue    (IdcodeValue)
@@ -295,7 +306,7 @@ module rv_dm #(
     .dmi_resp_valid_i (dmi_rsp_valid),
 
     //JTAG
-    .tck_i            (jtag_req_i.tck),
+    .tck_i            (tck_muxed),
     .tms_i            (jtag_req_i.tms),
     .trst_ni          (jtag_req_i.trst_n),
     .td_i             (jtag_req_i.tdi),

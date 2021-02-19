@@ -142,12 +142,25 @@ module lc_ctrl
   logic dmi_resp_ready;
   logic dmi_resp_valid;
 
+  logic scanmode;
+  assign scanmode = (scanmode_i == On);
+
+  logic tck_muxed;
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_prim_clock_mux2 (
+    .clk0_i(jtag_i.tck),
+    .clk1_i(clk_i),
+    .sel_i (scanmode),
+    .clk_o (tck_muxed)
+  );
+
   dmi_jtag #(
     .IdcodeValue(IdcodeValue)
   ) u_dmi_jtag (
     .clk_i,
     .rst_ni,
-    .testmode_i       ( scanmode_i == On  ),
+    .testmode_i       ( scanmode          ),
     .dmi_rst_no       (                   ), // unused
     .dmi_req_o        ( dmi_req           ),
     .dmi_req_valid_o  ( dmi_req_valid     ),
@@ -155,7 +168,7 @@ module lc_ctrl
     .dmi_resp_i       ( dmi_resp          ),
     .dmi_resp_ready_o ( dmi_resp_ready    ),
     .dmi_resp_valid_i ( dmi_resp_valid    ),
-    .tck_i            ( jtag_i.tck        ),
+    .tck_i            ( tck_muxed         ),
     .tms_i            ( jtag_i.tms        ),
     .trst_ni          ( jtag_i.trst_n     ),
     .td_i             ( jtag_i.tdi        ),
