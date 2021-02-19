@@ -66,6 +66,18 @@ class ImplTransformer(cst.CSTTransformer):
         self.cur_class = None
         return updated
 
+    def leave_Attribute(self,
+                        orig: cst.Attribute,
+                        updated: cst.Attribute) -> cst.BaseExpression:
+        # Strip out "self." references. In the ISS code, a field in the
+        # instruction appears as self.field_name. In the documentation, we can
+        # treat all the instruction fields as being in scope.
+        if ((isinstance(updated.value, cst.Name) and
+             updated.value.value == 'self')):
+            return updated.attr
+
+        return updated
+
     def leave_FunctionDef(self,
                           orig: cst.FunctionDef,
                           updated: cst.FunctionDef) -> cst.BaseStatement:
