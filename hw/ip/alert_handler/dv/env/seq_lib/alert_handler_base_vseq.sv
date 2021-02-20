@@ -80,10 +80,13 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     if (!regwen[3]) csr_wr(.csr(ral.classd_regwen), .value($urandom_range(0, 1)));
   endtask
 
-  // write regen register if do_lock_config is set. If not set, 50% of chance to write value 0
-  // to regen register.
+  // If do_lock_config is set, write value 0 to rewgen register.
+  // If not set, this task has 50% of chance to write value 1 to regwen register.
+  // Please note that writing 1 to regwen won't lock any lockable regs.
   virtual task lock_config(bit do_lock_config);
-    if (do_lock_config || $urandom_range(0,1)) csr_wr(.csr(ral.regwen), .value(do_lock_config));
+    if (do_lock_config || $urandom_range(0, 1)) begin
+      csr_wr(.csr(ral.regwen), .value(!do_lock_config));
+    end
   endtask
 
   virtual task drive_alert(bit[NUM_ALERTS-1:0] alert_trigger, bit[NUM_ALERTS-1:0] alert_int_err);
