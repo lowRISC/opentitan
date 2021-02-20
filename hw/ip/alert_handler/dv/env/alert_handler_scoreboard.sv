@@ -199,7 +199,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   virtual function void alert_accum_cal(int class_i);
     bit [TL_DW-1:0] accum_thresh = get_class_accum_thresh(class_i);
     realtime curr_time = $realtime();
-    if (curr_time != last_triggered_alert_per_class[class_i]) begin
+    if (curr_time != last_triggered_alert_per_class[class_i] && !cfg.under_reset) begin
       last_triggered_alert_per_class[class_i] = curr_time;
       // avoid accum_cnt saturate
       if (accum_cnter_per_class[class_i] < 'hffff) begin
