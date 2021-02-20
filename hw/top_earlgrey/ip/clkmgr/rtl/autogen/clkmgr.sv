@@ -383,6 +383,7 @@ module clkmgr import clkmgr_pkg::*; (
   ////////////////////////////////////////////////////
 
   logic clk_io_div4_peri_sw_en;
+  logic clk_io_div2_peri_sw_en;
   logic clk_usb_peri_sw_en;
 
   prim_flop_2sync #(
@@ -412,6 +413,35 @@ module clkmgr import clkmgr_pkg::*; (
     .en_i(clk_io_div4_peri_sw_en & clk_io_div4_en),
     .test_en_i(clk_io_div4_peri_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_io_div4_peri)
+  );
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_clk_io_div2_peri_sw_en_sync (
+    .clk_i(clk_io_div2_i),
+    .rst_ni(rst_io_div2_ni),
+    .d_i(reg2hw.clk_enables.clk_io_div2_peri_en.q),
+    .q_o(clk_io_div2_peri_sw_en)
+  );
+
+  lc_ctrl_pkg::lc_tx_t clk_io_div2_peri_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_clk_io_div2_peri_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(scanmode_i),
+    .lc_en_o(clk_io_div2_peri_scanmode)
+  );
+
+  prim_clock_gating #(
+    .NoFpgaGate(1'b1)
+  ) u_clk_io_div2_peri_cg (
+    .clk_i(clk_io_div2_root),
+    .en_i(clk_io_div2_peri_sw_en & clk_io_div2_en),
+    .test_en_i(clk_io_div2_peri_scanmode == lc_ctrl_pkg::On),
+    .clk_o(clocks_o.clk_io_div2_peri)
   );
 
   prim_flop_2sync #(

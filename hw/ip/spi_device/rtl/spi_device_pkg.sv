@@ -99,6 +99,7 @@ package spi_device_pkg;
     CsbRstMuxSel,
     TxRstMuxSel,
     RxRstMuxSel,
+    ClkMuxSel,
     ScanModeUseLast
   } scan_mode_e;
 
