@@ -103,8 +103,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_${src['name']}_div_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(${src['name']}_div_scanmode)
   );
@@ -163,8 +163,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_${src}_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(${src}_scanmode)
   );
@@ -271,8 +271,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_${k}_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(${k}_scanmode)
   );
@@ -316,8 +316,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_${k}_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(${k}_scanmode)
   );
