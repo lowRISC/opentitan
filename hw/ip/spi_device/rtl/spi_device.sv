@@ -30,6 +30,8 @@ module spi_device (
   output logic intr_rxoverflow_o,  // RX Async FIFO Overflow
   output logic intr_txunderflow_o, // TX Async FIFO Underflow
 
+  // DFT related controls
+  input scan_clk_i,
   input scan_rst_ni,
   input lc_ctrl_pkg::lc_tx_t scanmode_i
 );
@@ -43,8 +45,8 @@ module spi_device (
   localparam int PtrW = SramAw + 1 + SDW;
   localparam int AsFifoDepthW = $clog2(FifoDepth+1);
 
-  logic clk_spi_in, clk_spi_in_buf;   // clock for latch SDI
-  logic clk_spi_out, clk_spi_out_buf; // clock for driving SDO
+  logic clk_spi_in, clk_spi_in_muxed, clk_spi_in_buf;   // clock for latch SDI
+  logic clk_spi_out, clk_spi_out_muxed, clk_spi_out_buf; // clock for driving SDO
 
   spi_device_reg2hw_t reg2hw;
   spi_device_hw2reg_t hw2reg;
@@ -327,8 +329,8 @@ module spi_device (
     .NumCopies(int'(ScanModeUseLast)),
     .AsyncOn(0)
   ) u_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(scanmode)
   );
@@ -342,12 +344,31 @@ module spi_device (
   assign clk_spi_in  = (cpha ^ cpol) ? sck_n    : cio_sck_i   ;
   assign clk_spi_out = (cpha ^ cpol) ? cio_sck_i    : sck_n   ;
 
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_clk_spi_in_mux (
+    .clk0_i(clk_spi_in),
+    .clk1_i(scan_clk_i),
+    .sel_i(scanmode[ClkMuxSel] == lc_ctrl_pkg::On),
+    .clk_o(clk_spi_in_muxed)
+  );
+
   prim_clock_buf u_clk_spi_in_buf(
-    .clk_i (clk_spi_in),
+    .clk_i (clk_spi_in_muxed),
     .clk_o (clk_spi_in_buf)
   );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_clk_spi_out_mux (
+    .clk0_i(clk_spi_out),
+    .clk1_i(scan_clk_i),
+    .sel_i(scanmode[ClkMuxSel] == lc_ctrl_pkg::On),
+    .clk_o(clk_spi_out_muxed)
+  );
+
   prim_clock_buf u_clk_spi_out_buf(
-    .clk_i (clk_spi_out),
+    .clk_i (clk_spi_out_muxed),
     .clk_o (clk_spi_out_buf)
   );
 

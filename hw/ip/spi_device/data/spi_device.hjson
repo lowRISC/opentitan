@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 { name: "SPI_DEVICE",
   clock_primary: "clk_i",
+  other_clock_list: [
+    "scan_clk_i"
+  ],
   bus_device: "tlul",
   available_input_list: [
     { name: "sck", desc: "SPI Clock" },

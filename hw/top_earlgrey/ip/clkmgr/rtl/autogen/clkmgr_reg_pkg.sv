@@ -25,6 +25,9 @@ package clkmgr_reg_pkg;
     } clk_io_div4_peri_en;
     struct packed {
       logic        q;
+    } clk_io_div2_peri_en;
+    struct packed {
+      logic        q;
     } clk_usb_peri_en;
   } clkmgr_reg2hw_clk_enables_reg_t;
 
@@ -68,8 +71,8 @@ package clkmgr_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [6:6]
-    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [5:4]
+    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [7:7]
+    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [6:4]
     clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [3:0]
   } clkmgr_reg2hw_t;
 
