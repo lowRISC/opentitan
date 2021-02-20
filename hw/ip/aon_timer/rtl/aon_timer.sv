@@ -93,6 +93,7 @@ module aon_timer (
   assign aon_hw2reg.wdog_count.d               = wdog_count;
   assign aon_hw2reg.wkup_cause.d               = aon_wkup_req_q;
   assign aon_hw2reg.intr_state                 = '0; // Doesn't come from AON domain
+  assign aon_hw2reg.intr_enable                = '0; // dummy assignment due to #5260
 
   // Register read values sampled into clk_i domain. These are sampled with a special slow to fast
   // synchronizer which captures the value on the negative edge of the slow clock.

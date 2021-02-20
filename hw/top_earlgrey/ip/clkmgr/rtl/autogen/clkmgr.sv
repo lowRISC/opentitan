@@ -102,8 +102,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_io_div2_div_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(io_div2_div_scanmode)
   );
@@ -124,8 +124,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_io_div4_div_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(io_div4_div_scanmode)
   );
@@ -218,8 +218,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_main_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(main_scanmode)
   );
@@ -237,8 +237,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_io_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(io_scanmode)
   );
@@ -256,8 +256,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_usb_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(usb_scanmode)
   );
@@ -275,8 +275,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_io_div2_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(io_div2_scanmode)
   );
@@ -294,8 +294,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_io_div4_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(io_div4_scanmode)
   );
@@ -399,8 +399,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_io_div4_peri_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(clk_io_div4_peri_scanmode)
   );
@@ -428,8 +428,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_usb_peri_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(clk_usb_peri_scanmode)
   );
@@ -475,8 +475,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_main_aes_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(clk_main_aes_scanmode)
   );
@@ -506,8 +506,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_main_hmac_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(clk_main_hmac_scanmode)
   );
@@ -537,8 +537,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_main_kmac_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(clk_main_kmac_scanmode)
   );
@@ -568,8 +568,8 @@ module clkmgr import clkmgr_pkg::*; (
     .NumCopies(1),
     .AsyncOn(0)
   ) u_clk_main_otbn_scanmode_sync  (
-    .clk_i,
-    .rst_ni,
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
     .lc_en_i(scanmode_i),
     .lc_en_o(clk_main_otbn_scanmode)
   );
