@@ -70,11 +70,11 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
 
 # generated clocks (div2/div4)
 create_generated_clock -name IO_DIV2_CLK -divide_by 2 \
-    -source [get_pins top_earlgrey/u_clkmgr_aon/u_io_div2_div/u_clk_mux/gen_*u_impl*/u_size_only_mux2/D0] \
+    -source [get_pins top_earlgrey/u_clkmgr_aon/u_io_div2_div/u_clk_mux/gen_*u_impl*/u_size_only_mux2/D1] \
     [get_pins top_earlgrey/u_clkmgr_aon/u_io_div2_div/u_clk_mux/gen_*u_impl*/u_size_only_inv/${DRIVING_CELL_PIN}]
 
 create_generated_clock -name IO_DIV4_CLK -divide_by 4 \
-    -source [get_pins top_earlgrey/u_clkmgr_aon/u_io_div4_div/u_clk_mux/gen_*u_impl*/u_size_only_mux2/D0] \
+    -source [get_pins top_earlgrey/u_clkmgr_aon/u_io_div4_div/u_clk_mux/gen_*u_impl*/u_size_only_mux2/D1] \
     [get_pins top_earlgrey/u_clkmgr_aon/u_io_div4_div/u_clk_mux/gen_*u_impl*/u_size_only_inv/${DRIVING_CELL_PIN}]
 
 # TODO: these are dummy constraints and likely incorrect, need to properly constrain min/max
@@ -298,5 +298,5 @@ puts "Done applying constraints for top level"
 ##########################################
 
 # assume a value of 0 for the pad attribute at index [9]
-set_case_analysis 0 [get_pins u_padring/u_*_pad/attr_i[9]]
+#set_case_analysis 0 [get_pins u_padring/u_*_pad/attr_i[9]]
 set_case_analysis 0 [get_pins u_padring/gen_*gen_*u_*_pad/attr_i[9]]
