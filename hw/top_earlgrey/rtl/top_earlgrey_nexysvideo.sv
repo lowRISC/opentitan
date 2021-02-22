@@ -474,7 +474,9 @@ module top_earlgrey_nexysvideo #(
     .IbexRegFile(ibex_pkg::RegFileFPGA),
     .IbexPipeLine(1),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
-    .BootRomInitFile(BootRomInitFile)
+    .BootRomInitFile(BootRomInitFile),
+    .SramCtrlRetAonInstrExec(0),
+    .SramCtrlMainInstrExec(1)
   ) top_earlgrey (
     // Clocks, resets
     .rst_ni                       ( rst_n           ),

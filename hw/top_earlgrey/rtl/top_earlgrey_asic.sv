@@ -599,7 +599,9 @@ module top_earlgrey_asic (
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b0),
     .KmacEnMasking(1),  // DOM AND + Masking scheme
-    .KmacReuseShare(0)
+    .KmacReuseShare(0),
+    .SramCtrlRetAonInstrExec(0),
+    .SramCtrlMainInstrExec(1)
   ) top_earlgrey (
     .rst_ni                       ( aon_pok                    ),
     // ast connections

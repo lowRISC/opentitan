@@ -133,7 +133,10 @@ module top_earlgrey_verilator (
 
   lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
   // Top-level design
-  top_earlgrey top_earlgrey (
+  top_earlgrey #(
+    .SramCtrlRetAonInstrExec(0),
+    .SramCtrlMainInstrExec(1)
+  ) top_earlgrey (
     .rst_ni                       (rst_ni            ),
     .clk_main_i                   (clk_i             ),
     .clk_io_i                     (clk_i             ),
