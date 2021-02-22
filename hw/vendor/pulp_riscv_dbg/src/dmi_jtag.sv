@@ -131,8 +131,15 @@ module dmi_jtag #(
 
       Write: begin
         dmi_req_valid = 1'b1;
-        // got a valid answer go back to idle
+        // request sent, wait for response before going back to idle
         if (dmi_req_ready) begin
+          state_d = WaitWriteValid;
+        end
+      end
+
+      WaitWriteValid: begin
+        // got a valid answer go back to idle
+        if (dmi_resp_valid) begin
           state_d = Idle;
         end
       end
@@ -162,7 +169,7 @@ module dmi_jtag #(
       error_d = DMIBusy;
     end
     // clear sticky error flag
-    if (dmi_reset && dtmcs_select) begin
+    if (update_dr && dmi_reset && dtmcs_select) begin
       error_d = DMINoError;
     end
   end

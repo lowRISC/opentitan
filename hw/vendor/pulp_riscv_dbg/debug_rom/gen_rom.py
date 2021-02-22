@@ -50,7 +50,8 @@ module $filename (
 
   localparam int unsigned RomSize = $size;
 
-  const logic [RomSize-1:0][63:0] mem = {
+  logic [RomSize-1:0][63:0] mem;
+  assign mem = {
 $content
   };
 
@@ -131,4 +132,3 @@ with open(filename + ".sv", "w") as f:
     f.write(license)
     s = Template(module)
     f.write(s.substitute(filename=filename, size=int(len(rom)/8), content=rom_str))
-

@@ -16,7 +16,8 @@
 *
 */
 module dm_sba #(
-  parameter int unsigned BusWidth = 32
+  parameter int unsigned BusWidth = 32,
+  parameter bit          ReadByteEnable = 1
 ) (
   input  logic                   clk_i,       // Clock
   input  logic                   rst_ni,
@@ -52,17 +53,37 @@ module dm_sba #(
   output logic [2:0]             sberror_o // bus error occurred
 );
 
-  typedef enum logic [2:0] { Idle, Read, Write, WaitRead, WaitWrite } state_e;
-  state_e state_d, state_q;
+  dm::sba_state_e state_d, state_q;
 
   logic [BusWidth-1:0]           address;
   logic                          req;
   logic                          gnt;
   logic                          we;
   logic [BusWidth/8-1:0]         be;
+  logic [BusWidth/8-1:0]         be_mask;
   logic [$clog2(BusWidth/8)-1:0] be_idx;
 
-  assign sbbusy_o = logic'(state_q != Idle);
+  assign sbbusy_o = logic'(state_q != dm::Idle);
+
+  always_comb begin : p_be_mask
+    be_mask = '0;
+
+    // generate byte enable mask
+    unique case (sbaccess_i)
+      3'b000: begin
+        be_mask[be_idx] = '1;
+      end
+      3'b001: begin
+        be_mask[int'({be_idx[$high(be_idx):1], 1'b0}) +: 2] = '1;
+      end
+      3'b010: begin
+        if (BusWidth == 32'd64) be_mask[int'({be_idx[$high(be_idx)], 2'h0}) +: 4] = '1;
+        else                    be_mask = '1;
+      end
+      3'b011: be_mask = '1;
+      default: ;
+    endcase
+  end
 
   always_comb begin : p_fsm
     req     = 1'b0;
@@ -78,64 +99,51 @@ module dm_sba #(
     state_d = state_q;
 
     unique case (state_q)
-      Idle: begin
+      dm::Idle: begin
         // debugger requested a read
-        if (sbaddress_write_valid_i && sbreadonaddr_i)  state_d = Read;
+        if (sbaddress_write_valid_i && sbreadonaddr_i)  state_d = dm::Read;
         // debugger requested a write
-        if (sbdata_write_valid_i) state_d = Write;
+        if (sbdata_write_valid_i) state_d = dm::Write;
         // perform another read
-        if (sbdata_read_valid_i && sbreadondata_i) state_d = Read;
+        if (sbdata_read_valid_i && sbreadondata_i) state_d = dm::Read;
       end
 
-      Read: begin
+      dm::Read: begin
         req = 1'b1;
-        if (gnt) state_d = WaitRead;
+        if (ReadByteEnable) be = be_mask;
+        if (gnt) state_d = dm::WaitRead;
       end
 
-      Write: begin
+      dm::Write: begin
         req = 1'b1;
         we  = 1'b1;
-        // generate byte enable mask
-        unique case (sbaccess_i)
-          3'b000: begin
-            be[be_idx] = '1;
-          end
-          3'b001: begin
-            be[int'({be_idx[$high(be_idx):1], 1'b0}) +: 2] = '1;
-          end
-          3'b010: begin
-            if (BusWidth == 32'd64) be[int'({be_idx[$high(be_idx)], 2'h0}) +: 4] = '1;
-            else                    be = '1;
-          end
-          3'b011: be = '1;
-          default: ;
-        endcase
-        if (gnt) state_d = WaitWrite;
+        be = be_mask;
+        if (gnt) state_d = dm::WaitWrite;
       end
 
-      WaitRead: begin
+      dm::WaitRead: begin
         if (sbdata_valid_o) begin
-          state_d = Idle;
+          state_d = dm::Idle;
           // auto-increment address
           if (sbautoincrement_i) sbaddress_o = sbaddress_i + (32'h1 << sbaccess_i);
         end
       end
 
-      WaitWrite: begin
+      dm::WaitWrite: begin
         if (sbdata_valid_o) begin
-          state_d = Idle;
+          state_d = dm::Idle;
           // auto-increment address
           if (sbautoincrement_i) sbaddress_o = sbaddress_i + (32'h1 << sbaccess_i);
         end
       end
 
-      default: state_d = Idle; // catch parasitic state
+      default: state_d = dm::Idle; // catch parasitic state
     endcase
 
     // handle error case
-    if (sbaccess_i > 3 && state_q != Idle) begin
+    if (sbaccess_i > 3 && state_q != dm::Idle) begin
       req             = 1'b0;
-      state_d         = Idle;
+      state_d         = dm::Idle;
       sberror_valid_o = 1'b1;
       sberror_o       = 3'd3;
     end
@@ -144,7 +152,7 @@ module dm_sba #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      state_q <= Idle;
+      state_q <= dm::Idle;
     end else begin
       state_q <= state_d;
     end
@@ -158,15 +166,5 @@ module dm_sba #(
   assign gnt             = master_gnt_i;
   assign sbdata_valid_o  = master_r_valid_i;
   assign sbdata_o        = master_r_rdata_i[BusWidth-1:0];
-
-
-  //pragma translate_off
-  `ifndef VERILATOR
-    // maybe bump severity to $error if not handled at runtime
-    dm_sba_access_size: assert property(@(posedge clk_i) disable iff (dmactive_i !== 1'b0)
-        (state_d != Idle) |-> (sbaccess_i < 4))
-            else $warning ("accesses > 8 byte not supported at the moment");
-  `endif
-  //pragma translate_on
 
 endmodule : dm_sba
