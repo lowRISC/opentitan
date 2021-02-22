@@ -65,7 +65,7 @@ module otbn_core_model
   localparam int ImemSizeWords = ImemSizeByte / 4;
   localparam int DmemSizeWords = DmemSizeByte / (WLEN / 8);
 
-  `ASSERT_INIT(StartAddr32_A, ImemAddrWidth <= 32);
+  `ASSERT_INIT(StartAddr32_A, ImemAddrWidth <= 32)
   logic [31:0] start_addr_32;
   assign start_addr_32 = {{32 - ImemAddrWidth{1'b0}}, start_addr_i};
 
