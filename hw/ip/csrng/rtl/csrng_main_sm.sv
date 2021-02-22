@@ -24,43 +24,46 @@ module csrng_main_sm import csrng_pkg::*; (
   output logic               generate_req_o,
   output logic               update_req_o,
   output logic               uninstant_req_o,
+  input logic                halt_main_sm_i,
+  output logic               main_sm_halted_o,
   output logic               main_sm_err_o
 );
 
 // Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 10 -n 8 \
-//      -s 845453599 --language=sv
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 11 -n 8 \
+//      -s 2773294212 --language=sv
 //
 // Hamming distance histogram:
 //
 //  0: --
 //  1: --
 //  2: --
-//  3: ||||||||||||||| (26.67%)
-//  4: |||||||||||||||||||| (35.56%)
-//  5: ||||||||||||||| (26.67%)
-//  6: ||||| (8.89%)
-//  7: --
-//  8: | (2.22%)
+//  3: |||||||||||||||| (29.09%)
+//  4: |||||||||||||||||||| (34.55%)
+//  5: |||||||||| (18.18%)
+//  6: |||||||| (14.55%)
+//  7: || (3.64%)
+//  8: --
 //
 // Minimum Hamming distance: 3
-// Maximum Hamming distance: 8
-// Minimum Hamming weight: 2
+// Maximum Hamming distance: 7
+// Minimum Hamming weight: 1
 // Maximum Hamming weight: 7
 //
 
   localparam int StateWidth = 8;
   typedef    enum logic [StateWidth-1:0] {
-    Idle    =      8'b10111111, // idle
-    InstantPrep  = 8'b11011101, // instantiate prep
-    InstantReq   = 8'b00010100, // instantiate request (takes adata or entropy)
-    ReseedPrep   = 8'b11000001, // reseed prep
-    ReseedReq    = 8'b01100100, // reseed request (takes adata and entropy and Key,V,RC)
-    GenerateReq  = 8'b10101100, // generate request (takes adata? and Key,V,RC)
-    UpdatePrep   = 8'b11010010, // update prep
-    UpdateReq    = 8'b11111000, // update request (takes adata and Key,V,RC)
-    UninstantReq = 8'b11101011, // uninstantiate request (no input)
-    Error        = 8'b00001010  // error state, results in fatal alert
+    Idle    =      8'b10100100, // idle
+    InstantPrep  = 8'b10011100, // instantiate prep
+    InstantReq   = 8'b00010010, // instantiate request (takes adata or entropy)
+    ReseedPrep   = 8'b10101001, // reseed prep
+    ReseedReq    = 8'b11010011, // reseed request (takes adata and entropy and Key,V,RC)
+    GenerateReq  = 8'b11101010, // generate request (takes adata? and Key,V,RC)
+    UpdatePrep   = 8'b00000001, // update prep
+    UpdateReq    = 8'b01010101, // update request (takes adata and Key,V,RC)
+    UninstantReq = 8'b00001110, // uninstantiate request (no input)
+    SMHalted     = 8'b01011000, // state machine halted
+    Error        = 8'b11111101  // error state, results in fatal alert
   } state_e;
 
   state_e state_d, state_q;
@@ -90,28 +93,33 @@ module csrng_main_sm import csrng_pkg::*; (
     generate_req_o = 1'b0;
     update_req_o = 1'b0;
     uninstant_req_o = 1'b0;
+    main_sm_halted_o = 1'b0;
     main_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
-        if (ctr_drbg_cmd_req_rdy_i) begin
-          if (acmd_avail_i) begin
-            acmd_accept_o = 1'b1;
-            if (acmd_i == INS) begin
-              if (acmd_eop_i) begin
-                state_d = InstantPrep;
+        if (halt_main_sm_i) begin
+          state_d = SMHalted;
+        end else begin
+          if (ctr_drbg_cmd_req_rdy_i) begin
+            if (acmd_avail_i) begin
+              acmd_accept_o = 1'b1;
+              if (acmd_i == INS) begin
+                if (acmd_eop_i) begin
+                  state_d = InstantPrep;
+                end
+              end else if (acmd_i == RES) begin
+                if (acmd_eop_i) begin
+                  state_d = ReseedPrep;
+                end
+              end else if (acmd_i == GEN) begin
+                state_d = GenerateReq;
+              end else if (acmd_i == UPD) begin
+                if (acmd_eop_i) begin
+                  state_d = UpdatePrep;
+                end
+              end else if (acmd_i == UNI) begin
+                state_d = UninstantReq;
               end
-            end else if (acmd_i == RES) begin
-              if (acmd_eop_i) begin
-                state_d = ReseedPrep;
-              end
-            end else if (acmd_i == GEN) begin
-              state_d = GenerateReq;
-            end else if (acmd_i == UPD) begin
-              if (acmd_eop_i) begin
-                state_d = UpdatePrep;
-              end
-            end else if (acmd_i == UNI) begin
-              state_d = UninstantReq;
             end
           end
         end
@@ -161,6 +169,12 @@ module csrng_main_sm import csrng_pkg::*; (
       UninstantReq: begin
         uninstant_req_o = 1'b1;
         state_d = Idle;
+      end
+      SMHalted: begin
+        main_sm_halted_o = 1'b1;
+        if (!halt_main_sm_i) begin
+          state_d = Idle;
+        end
       end
       Error: begin
         main_sm_err_o = 1'b1;

@@ -212,6 +212,46 @@
         }
       ]
     },
+    { name: "HALT_MAIN_SM",
+      desc: "Halt the CSRNG main state machine register",
+      swaccess: "wo",
+      hwaccess: "hro",
+      regwen: "REGWEN",
+      fields: [
+        {
+            bits: "0",
+            name: "HALT_MAIN_SM",
+            desc: '''
+                  Setting this bit halts the main state machine that processes
+                  csrng application commands. The purpose of this register is to
+                  allow reading the internal state registers in a controlled manner.
+                  After this bit is set, the status bit should be polled to determine if the
+                  state machine has halted. Once halted, the internal state can be read
+                  out. To resume operation, this bit should be reset.
+                  '''
+        },
+      ]
+    },
+    { name: "MAIN_SM_STS",
+      desc: "CSRNG main state machine status register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "MAIN_SM_STS",
+          desc: '''
+                This bit indicates when the CSRNG main state machine has been halted.
+                When the halt bit is set, this bit should be polled until this
+                status bit is set. When set, it is safe to read the internal state
+                registers. When the halt bit is cleared, this register can be
+                polled to make sure the main state machine is operational again.
+                '''
+          tags: [// Internal HW can modify status register
+                 "excl:CsrAllTests:CsrExclCheck"]
+          resval: "0"
+        }
+      ]
+    },
     { name: "INT_STATE_NUM",
       desc: "Internal state number register",
       swaccess: "rw",

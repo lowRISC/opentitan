@@ -229,7 +229,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   prim_fifo_sync #(
     .Width(GenreqFifoWidth),
     .Pass(0),
-    .Depth(GenreqFifoDepth)
+    .Depth(GenreqFifoDepth),
+    .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_genreq (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
@@ -346,7 +347,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   prim_fifo_sync #(
     .Width(AdstageFifoWidth),
     .Pass(0),
-    .Depth(AdstageFifoDepth)
+    .Depth(AdstageFifoDepth),
+    .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_adstage (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
@@ -379,7 +381,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   prim_fifo_sync #(
     .Width(BlkEncAckFifoWidth),
     .Pass(0),
-    .Depth(BlkEncAckFifoDepth)
+    .Depth(BlkEncAckFifoDepth),
+    .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_bencack (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
@@ -431,7 +434,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   prim_fifo_sync #(
     .Width(RCStageFifoWidth),
     .Pass(0),
-    .Depth(RCStageFifoDepth)
+    .Depth(RCStageFifoDepth),
+    .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_rcstage (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
@@ -467,7 +471,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   prim_fifo_sync #(
     .Width(GenbitsFifoWidth),
     .Pass(0),
-    .Depth(GenbitsFifoDepth)
+    .Depth(GenbitsFifoDepth),
+    .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_genbits (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
