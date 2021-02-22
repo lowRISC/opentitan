@@ -327,9 +327,8 @@ class LOOP(OTBNInsn):
         num_iters = state.gprs.get_reg(self.grs).read_unsigned()
         if num_iters == 0:
             state.stop_at_end_of_cycle(err_bits.LOOP)
-            return
-
-        state.loop_start(num_iters, self.bodysize)
+        else:
+            state.loop_start(num_iters, self.bodysize)
 
 
 class LOOPI(OTBNInsn):
