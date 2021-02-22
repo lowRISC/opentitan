@@ -22,7 +22,6 @@ module csrng_state_db import csrng_pkg::*; #(
 
    // read interface
   input logic                state_db_enable_i,
-  input logic                state_db_rd_req_i,
   input logic [StateId-1:0]  state_db_rd_inst_id_i,
   output logic [KeyLen-1:0]  state_db_rd_key_o,
   output logic [BlkLen-1:0]  state_db_rd_v_o,
@@ -42,7 +41,6 @@ module csrng_state_db import csrng_pkg::*; #(
   // status interface
   input logic                state_db_lc_en_i,
   input logic                state_db_reg_rd_sel_i,
-  input logic [StateId-1:0]  state_db_reg_rd_id_i,
   input logic                state_db_reg_rd_id_pulse_i,
   output logic [31:0]        state_db_reg_rd_val_o,
   output logic               state_db_sts_ack_o,
@@ -53,7 +51,6 @@ module csrng_state_db import csrng_pkg::*; #(
   localparam int InternalStateWidth = 2+KeyLen+BlkLen+CtrLen;
   localparam int RegInternalStateWidth = 30+InternalStateWidth;
   localparam int RegW = 32;
-  localparam int MaxNApps = 16;
 
   logic [StateId-1:0]              state_db_id;
   logic [KeyLen-1:0]               state_db_key;
@@ -64,11 +61,8 @@ module csrng_state_db import csrng_pkg::*; #(
   logic                            state_db_sts;
   logic                            state_db_write;
   logic                            instance_status;
-  logic [MaxNApps-1:0]             int_st_out_sel;
-  logic [MaxNApps-1:0]             int_st_dmp_sel;
-  logic [InternalStateWidth-1:0]   internal_states_out[MaxNApps];
-  logic [InternalStateWidth-1:0]   internal_states_dmp[MaxNApps];
-  logic [InternalStateWidth-1:0]   internal_state_func;
+  logic [NApps-1:0]             int_st_out_sel;
+  logic [InternalStateWidth-1:0]   internal_states_out[NApps];
   logic [RegInternalStateWidth-1:0] internal_state_diag;
   logic                             reg_rd_ptr_inc;
 
@@ -93,12 +87,14 @@ module csrng_state_db import csrng_pkg::*; #(
 
   // flops - no reset
   logic [InternalStateWidth-1:0]  internal_states_q[NApps], internal_states_d[NApps];
+  logic [InternalStateWidth-1:0]  internal_state_pl_q, internal_state_pl_d;
 
 
   // no reset on state
   always_ff @(posedge clk_i)
     begin
       internal_states_q  <=  internal_states_d;
+      internal_state_pl_q  <=  internal_state_pl_d;
     end
 
 
@@ -106,63 +102,26 @@ module csrng_state_db import csrng_pkg::*; #(
   // internal state read logic
   //--------------------------------------------
   for (genvar rd = 0; rd < NApps; rd = rd+1) begin : gen_state_rd
-    assign int_st_out_sel[rd] = (state_db_rd_req_i && (state_db_rd_inst_id_i == rd));
+    assign int_st_out_sel[rd] = (state_db_rd_inst_id_i == rd);
     assign internal_states_out[rd] = int_st_out_sel[rd] ? internal_states_q[rd] : '0;
-    // for dumping the internal state into register reads, the life cycle enable must be active
-    assign int_st_dmp_sel[rd] = (state_db_reg_rd_sel_i && (state_db_reg_rd_id_i == rd)) &&
-                                state_db_lc_en_i;
-    assign internal_states_dmp[rd] = int_st_dmp_sel[rd] ? internal_states_q[rd] : '0;
-  end
-
-  for (genvar rd = NApps; rd < 16; rd = rd+1) begin : gen_state_rd_zeros
-    assign int_st_out_sel[rd] = 1'b0;
-    assign int_st_dmp_sel[rd] = 1'b0;
-    assign internal_states_out[rd] = {InternalStateWidth{int_st_out_sel[rd]}};
-    assign internal_states_dmp[rd] = {InternalStateWidth{int_st_dmp_sel[rd]}};
   end
 
   // since only one of the internal states is active at a time, a
   // logical "or" is made of all of the buses into one
-  assign internal_state_func = internal_states_out[0] |
-                               internal_states_out[1] |
-                               internal_states_out[2] |
-                               internal_states_out[3] |
-                               internal_states_out[4] |
-                               internal_states_out[5] |
-                               internal_states_out[6] |
-                               internal_states_out[7] |
-                               internal_states_out[8] |
-                               internal_states_out[9] |
-                               internal_states_out[10] |
-                               internal_states_out[11] |
-                               internal_states_out[12] |
-                               internal_states_out[13] |
-                               internal_states_out[14] |
-                               internal_states_out[15];
+  always_comb begin
+    internal_state_pl_d = '0;
+    for (int i = 0; i < NApps; i = i+1) begin
+      internal_state_pl_d |= internal_states_out[i];
+    end
+  end
 
   assign {state_db_rd_fips_o,state_db_rd_inst_st_o,
           state_db_rd_key_o,state_db_rd_v_o,
-          state_db_rd_res_ctr_o} = internal_state_func;
+          state_db_rd_res_ctr_o} = internal_state_pl_q;
 
 
-  // to dump out the internal states, only one is active at a time, a
-  // logical "or" is made of all of the buses into one
-  assign internal_state_diag = {30'b0,internal_states_dmp[0]} |
-                               {30'b0,internal_states_dmp[1]} |
-                               {30'b0,internal_states_dmp[2]} |
-                               {30'b0,internal_states_dmp[3]} |
-                               {30'b0,internal_states_dmp[4]} |
-                               {30'b0,internal_states_dmp[5]} |
-                               {30'b0,internal_states_dmp[6]} |
-                               {30'b0,internal_states_dmp[7]} |
-                               {30'b0,internal_states_dmp[8]} |
-                               {30'b0,internal_states_dmp[9]} |
-                               {30'b0,internal_states_dmp[10]} |
-                               {30'b0,internal_states_dmp[11]} |
-                               {30'b0,internal_states_dmp[12]} |
-                               {30'b0,internal_states_dmp[13]} |
-                               {30'b0,internal_states_dmp[14]} |
-                               {30'b0,internal_states_dmp[15]};
+  // re-using the internal state pipeline version for better timing
+  assign internal_state_diag = {32'b0,internal_state_pl_q};
 
 
   // Register access of internal state
@@ -187,7 +146,8 @@ module csrng_state_db import csrng_pkg::*; #(
   assign reg_rd_ptr_inc = state_db_reg_rd_sel_i;
 
   assign reg_rd_ptr_d =
-         !state_db_enable_i ? '0 :
+         !state_db_enable_i ? 4'hf :
+         !state_db_lc_en_i ? 4'hf :
          (reg_rd_ptr_q == 4'he) ? '0 :
          state_db_reg_rd_id_pulse_i ? '0 :
          reg_rd_ptr_inc ? (reg_rd_ptr_q+1) :
@@ -200,7 +160,8 @@ module csrng_state_db import csrng_pkg::*; #(
 
   for (genvar wr = 0; wr < NApps; wr = wr+1) begin : gen_state_wr
 
-    assign internal_states_d[wr] = (state_db_write && (state_db_id == wr)) ?
+    assign internal_states_d[wr] = !state_db_enable_i ? '0 : // better timing
+                                   (state_db_write && (state_db_id == wr)) ?
                                    {state_db_fips,state_db_inst_st,state_db_key,
                                     state_db_v,state_db_rc} : internal_states_q[wr];
   end : gen_state_wr
@@ -235,6 +196,5 @@ module csrng_state_db import csrng_pkg::*; #(
 
   // Assertions
   `ASSERT_KNOWN(IntStOutSelOneHot_A, $onehot(int_st_out_sel))
-  `ASSERT_KNOWN(IntStDmpSelOneHot_A, $onehot(int_st_dmp_sel))
 
 endmodule

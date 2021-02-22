@@ -123,7 +123,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   prim_fifo_sync #(
     .Width(CmdreqFifoWidth),
     .Pass(0),
-    .Depth(CmdreqFifoDepth)
+    .Depth(CmdreqFifoDepth),
+    .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_cmdreq (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
@@ -211,7 +212,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   prim_fifo_sync #(
     .Width(RCStageFifoWidth),
     .Pass(0),
-    .Depth(RCStageFifoDepth)
+    .Depth(RCStageFifoDepth),
+    .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_rcstage (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
@@ -246,7 +248,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   prim_fifo_sync #(
     .Width(KeyVRCFifoWidth),
     .Pass(0),
-    .Depth(KeyVRCFifoDepth)
+    .Depth(KeyVRCFifoDepth),
+    .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_keyvrc (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),

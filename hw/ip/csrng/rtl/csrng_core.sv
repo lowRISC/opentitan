@@ -125,7 +125,6 @@ module csrng_core import csrng_pkg::*; #(
   logic                   update_req;
   logic                   uninstant_req;
   logic [3:0]             fifo_sel;
-  logic                   state_db_rd_req;
   logic                   ctr_drbg_cmd_req;
   logic                   ctr_drbg_gen_req;
   logic                   ctr_drbg_gen_req_rdy;
@@ -297,6 +296,8 @@ module csrng_core import csrng_pkg::*; #(
   logic                    state_db_reg_rd_id_pulse;
   logic [StateId-1:0]      state_db_reg_rd_id;
   logic [31:0]             state_db_reg_rd_val;
+  logic                    halt_main_sm;
+  logic                    main_sm_sts;
 
   logic [30:0]             err_code_test_bit;
 
@@ -306,6 +307,9 @@ module csrng_core import csrng_pkg::*; #(
   logic        flag0_q, flag0_d;
   logic        statedb_wr_select_q, statedb_wr_select_d;
   logic        genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
+  logic        lc_hw_debug_not_on_q, lc_hw_debug_not_on_d;
+  logic        lc_hw_debug_on_q, lc_hw_debug_on_d;
+  logic        cmd_req_dly_q, cmd_req_dly_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -314,12 +318,18 @@ module csrng_core import csrng_pkg::*; #(
       flag0_q <= '0;
       statedb_wr_select_q <= '0;
       genbits_stage_fips_sw_q <= '0;
+      lc_hw_debug_not_on_q <= '0;
+      lc_hw_debug_on_q <= '0;
+      cmd_req_dly_q <= '0;
     end else begin
       acmd_q  <= acmd_d;
       shid_q  <= shid_d;
       flag0_q <= flag0_d;
       statedb_wr_select_q <= statedb_wr_select_d;
       genbits_stage_fips_sw_q <= genbits_stage_fips_sw_d;
+      lc_hw_debug_not_on_q <= lc_hw_debug_not_on_d;
+      lc_hw_debug_on_q <= lc_hw_debug_on_d;
+      cmd_req_dly_q <= cmd_req_dly_d;
     end
 
   //--------------------------------------------
@@ -776,7 +786,9 @@ module csrng_core import csrng_pkg::*; #(
   assign shid = acmd_bus[15:12];
 
   assign acmd_d = acmd_sop ? acmd_bus[2:0] : acmd_q;
-  assign shid_d = acmd_sop ? shid : shid_q;
+  assign shid_d = acmd_sop ? shid :
+         state_db_reg_rd_id_pulse ? state_db_reg_rd_id :
+         shid_q;
   assign flag0_d = acmd_sop ? flag0 : flag0_q;
 
   // sm to process all instantiation requests
@@ -796,9 +808,10 @@ module csrng_core import csrng_pkg::*; #(
     .generate_req_o(generate_req),
     .update_req_o(update_req),
     .uninstant_req_o(uninstant_req),
+    .halt_main_sm_i(halt_main_sm),
+    .main_sm_halted_o(main_sm_sts),
     .main_sm_err_o(main_sm_err)
   );
-
 
   // interrupt for sw app interface only
   assign event_cs_cmd_req_done = cmd_stage_ack[NApps-1];
@@ -850,15 +863,19 @@ module csrng_core import csrng_pkg::*; #(
   // of each csrng instance. The state
   // is updated after each command.
 
-  assign state_db_rd_req = reseed_req || generate_req || update_req;
-
   assign cmd_result_wr_req = cmd_result_ack && (cmd_result_ccmd != GEN);
 
   // register read access
   assign state_db_reg_rd_sel = reg2hw.int_state_val.re;
   assign state_db_reg_rd_id = reg2hw.int_state_num.q;
   assign state_db_reg_rd_id_pulse = reg2hw.int_state_num.qe;
-  assign hw2reg.int_state_val.d = cs_enable ? state_db_reg_rd_val : '0;
+  assign hw2reg.int_state_val.d = state_db_reg_rd_val;
+
+  // main sm control
+  assign halt_main_sm = reg2hw.halt_main_sm.q;
+  assign hw2reg.main_sm_sts.de = 1'b1;
+  assign hw2reg.main_sm_sts.d = main_sm_sts;
+
 
   csrng_state_db #(
     .NApps(NApps),
@@ -871,7 +888,6 @@ module csrng_core import csrng_pkg::*; #(
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .state_db_enable_i(cs_enable),
-    .state_db_rd_req_i(state_db_rd_req),
     .state_db_rd_inst_id_i(shid_q),
     .state_db_rd_key_o(state_db_rd_key),
     .state_db_rd_v_o(state_db_rd_v),
@@ -889,9 +905,8 @@ module csrng_core import csrng_pkg::*; #(
     .state_db_wr_res_ctr_i(state_db_wr_rc),
     .state_db_wr_sts_i(state_db_wr_sts),
 
-    .state_db_lc_en_i(lc_hw_debug_on),
+    .state_db_lc_en_i(lc_hw_debug_on_q),
     .state_db_reg_rd_sel_i(state_db_reg_rd_sel),
-    .state_db_reg_rd_id_i(state_db_reg_rd_id),
     .state_db_reg_rd_id_pulse_i(state_db_reg_rd_id_pulse),
     .state_db_reg_rd_val_o(state_db_reg_rd_val),
     .state_db_sts_ack_o(state_db_sts_ack),
@@ -960,9 +975,10 @@ module csrng_core import csrng_pkg::*; #(
 
 
 
-  assign ctr_drbg_cmd_req =
+  assign cmd_req_dly_d =
          instant_req || reseed_req || generate_req || update_req || uninstant_req;
 
+  assign ctr_drbg_cmd_req = cmd_req_dly_q;
 
   csrng_ctr_drbg_cmd #(
     .Cmd(Cmd),
@@ -1131,6 +1147,9 @@ module csrng_core import csrng_pkg::*; #(
   assign      lc_hw_debug_not_on = (lc_hw_debug_en_out[0] != lc_ctrl_pkg::On);
   assign      lc_hw_debug_on = (lc_hw_debug_en_out[1] == lc_ctrl_pkg::On);
 
+  // flop for better timing
+  assign      lc_hw_debug_not_on_d = lc_hw_debug_not_on;
+  assign      lc_hw_debug_on_d = lc_hw_debug_on;
 
   //-------------------------------------
   // csrng_block_encrypt instantiation
@@ -1153,7 +1172,7 @@ module csrng_core import csrng_pkg::*; #(
     .rst_ni(rst_ni),
     .block_encrypt_bypass_i(!aes_cipher_enable),
     .block_encrypt_enable_i(cs_enable),
-    .block_encrypt_lc_hw_debug_not_on_i(lc_hw_debug_not_on),
+    .block_encrypt_lc_hw_debug_not_on_i(lc_hw_debug_not_on_q),
     .block_encrypt_req_i(benblk_arb_vld),
     .block_encrypt_rdy_o(benblk_arb_rdy),
     .block_encrypt_key_i(benblk_arb_key),

@@ -10,7 +10,7 @@ module csrng
  import csrng_pkg::*;
  import csrng_reg_pkg::*;
 #(
-  parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut,
+  parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplCanright,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter int NHwApps = 2
 ) (

@@ -114,7 +114,8 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   prim_fifo_sync #(
     .Width(CmdFifoWidth),
     .Pass(0),
-    .Depth(CmdFifoDepth)
+    .Depth(CmdFifoDepth),
+    .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_cmd (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
@@ -320,7 +321,8 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   prim_fifo_sync #(
     .Width(GenBitsFifoWidth),
     .Pass(0),
-    .Depth(GenBitsFifoDepth)
+    .Depth(GenBitsFifoDepth),
+    .OutputZeroIfEmpty(1'b1) // Set to 1 to prevent triggering the output assert check for x's
   ) u_prim_fifo_genbits (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
