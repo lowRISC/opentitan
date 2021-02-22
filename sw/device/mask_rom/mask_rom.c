@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/stdasm.h"
+#include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/rom_exts/rom_ext_manifest_parser.h"
 
@@ -19,6 +20,8 @@ static const uint32_t kRomExtIdentifierExpected = 0x4552544F;
 typedef void(boot_fn)(void);
 
 void mask_rom_boot(void) {
+  pinmux_init();
+
   rom_ext_manifest_t rom_ext = rom_ext_get_parameters(kRomExtManifestSlotA);
 
   // Check we have a valid ROM_EXT

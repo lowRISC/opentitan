@@ -27,8 +27,9 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     dependencies: [
       chip_info_h,
       device_lib,
+      rom_ext_manifest_parser,
+      sw_lib_pinmux,
       sw_lib_crt,
-      rom_ext_manifest_parser
     ],
   )
 
