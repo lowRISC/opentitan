@@ -177,6 +177,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("\n  %s monitor and scoreboard",
         cfg.en_scb ? "enable" : "disable"), UVM_DEBUG)
     num_runs.rand_mode(0);
+    num_trans_c.constraint_mode(0);
     super.pre_start();
   endtask : pre_start
 
@@ -386,7 +387,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       str = {str, $sformatf("\n  %s, %s, i2c_seq_cfg", msg, get_name())};
       str = {str, $sformatf("\n    en_scb                %b", cfg.en_scb)};
       str = {str, $sformatf("\n    en_monitor            %b", cfg.m_i2c_agent_cfg.en_monitor)};
-      str = {str, $sformatf("\n    do_dut_init           %b", do_dut_init)};
+      str = {str, $sformatf("\n    do_apply_reset        %b", do_apply_reset)};
       str = {str, $sformatf("\n    en_fmt_overflow       %b", cfg.seq_cfg.en_fmt_overflow)};
       str = {str, $sformatf("\n    en_rx_overflow        %b", cfg.seq_cfg.en_rx_overflow)};
       str = {str, $sformatf("\n    en_rx_watermark       %b", cfg.seq_cfg.en_rx_watermark)};

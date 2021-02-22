@@ -46,11 +46,16 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   endfunction : build_phase
 
   task run_phase(uvm_phase phase);
-    fork
-      super.run_phase(phase);
-      compare_trans(BusOpWrite);
-      compare_trans(BusOpRead);
-    join
+    super.run_phase(phase);
+    forever begin
+      `DV_SPINWAIT_EXIT(
+        fork
+          compare_trans(BusOpWrite);
+          compare_trans(BusOpRead);
+        join,
+        @(negedge cfg.clk_rst_vif.rst_n),
+      )
+    end
   endtask : run_phase
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
@@ -58,8 +63,11 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     i2c_item  sb_exp_wr_item;
     i2c_item  sb_exp_rd_item;
     bit       fmt_overflow;
-    bit       do_read_check = 1'b0;    // TODO: Enable this bit later
+    bit       do_read_check = 1'b1;
     bit       write = item.is_write();
+
+    bit addr_phase_write  = (write && channel  == AddrChannel);
+    bit data_phase_read   = (!write && channel == DataChannel);
 
     uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
     // if access was to a valid csr, get the csr handle
@@ -72,7 +80,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
     sb_exp_wr_item = new();
     sb_exp_rd_item = new();
-    if (write && channel == AddrChannel) begin
+    if (addr_phase_write) begin
       // incoming access is a write to a valid csr, then make updates right away
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
 
@@ -214,15 +222,10 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     end // end of write address phase
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-    if (!write && channel == DataChannel) begin
-      if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-            $sformatf("reg name: %0s", csr.get_full_name()))
-      end
-      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
-
+    if (data_phase_read) begin
       case (csr.get_name())
         "rdata": begin
+          do_read_check = 1'b0;
           if (host_init) begin
             if (rdata_cnt == 0) begin
               // for on-the-fly reset, immediately finish task to avoid blocking
@@ -230,7 +233,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
               if (cfg.under_reset) return; 
               rd_pending_item = rd_pending_q.pop_front();
             end
-            rd_pending_item.data_q.push_back(ral.rdata.get_mirrored_value());
+            rd_pending_item.data_q.push_back(item.d_data);
             rdata_cnt++;
             `uvm_info(`gfn, $sformatf("\nscoreboard, rd_pending_item\n\%s",
                 rd_pending_item.sprint()), UVM_DEBUG)
@@ -238,7 +241,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             if (rdata_cnt == rd_pending_item.num_data) begin
               rd_pending_item.stop = 1'b1;
               `downcast(sb_exp_rd_item, rd_pending_item.clone());
-              exp_rd_q.push_back(sb_exp_rd_item);
+              if (!cfg.under_reset) exp_rd_q.push_back(sb_exp_rd_item);
               num_exp_tran++;
               `uvm_info(`gfn, $sformatf("\nscoreboard, push to queue, exp_rd_item\n\%s",
                   sb_exp_rd_item.sprint()), UVM_DEBUG)
@@ -246,7 +249,29 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             end
           end
         end
+        "intr_state": begin
+          i2c_intr_e     intr;
+          bit [TL_DW-1:0] intr_en = item.d_data;
+          do_read_check = 1'b0;
+          foreach (intr_exp[i]) begin
+            intr = i2c_intr_e'(i); // cast to enum to get interrupt name
+            if (cfg.en_cov) begin
+              cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
+              cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
+            end
+          end
+        end
+        "status": begin
+          // check in test
+          do_read_check = 1'b0;
+        end
       endcase
+
+      if (do_read_check) begin
+        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
+            $sformatf("reg name: %0s", csr.get_full_name()))
+      end
+      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end // end of read data phase
   endtask : process_tl_access
 
@@ -305,7 +330,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     tran_id      = 0;
     rdata_cnt    = 0;
     num_exp_tran = 0;
-    `uvm_info(`gfn, "\n>>> finish resetting scoreboard", UVM_DEBUG)
+    `uvm_info(`gfn, "\n>>> reset scoreboard", UVM_DEBUG)
     `DV_EOT_PRINT_Q_CONTENTS(i2c_item, exp_wr_q)
     `DV_EOT_PRINT_Q_CONTENTS(i2c_item, exp_rd_q)
     `DV_EOT_PRINT_Q_CONTENTS(i2c_item, rd_pending_q)
