@@ -63,6 +63,8 @@ module prim_packer_fifo #(
   output logic [DepthW:0]   depth_o
 );
 
+  localparam int unsigned   WidthRatio = MaxW / MinW;
+  localparam bit [DepthW:0] FullDepth = WidthRatio[DepthW:0];
 
   // signals
   logic  load_data;
@@ -93,7 +95,7 @@ module prim_packer_fifo #(
   if (InW < OutW) begin : gen_pack_mode
     logic [MaxW-1:0] wdata_shifted;
 
-    assign wdata_shifted = wdata_i << (depth_q*InW);
+    assign wdata_shifted = {{OutW - InW{1'b0}}, wdata_i} << (depth_q*InW);
     assign clear_data = (rready_i && rvalid_o) || clr_q;
     assign load_data = wvalid_i && wready_o;
 
@@ -106,9 +108,9 @@ module prim_packer_fifo #(
            data_q;
 
     // set outputs
-    assign wready_o = !(depth_q == (MaxW/MinW)) && !clr_q;
+    assign wready_o = !(depth_q == FullDepth) && !clr_q;
     assign rdata_o =  data_q;
-    assign rvalid_o = (depth_q == (MaxW/MinW)) && !clr_q;
+    assign rvalid_o = (depth_q == FullDepth) && !clr_q;
 
   end else begin : gen_unpack_mode
     logic [MaxW-1:0] rdata_shifted; // ri lint_check_waive NOT_READ
@@ -126,7 +128,7 @@ module prim_packer_fifo #(
     end
 
     assign lsb_is_one = {{DepthW{1'b0}},1'b1}; // ri lint_check_waive ZERO_REP
-    assign   max_value = (MaxW/MinW);
+    assign max_value = FullDepth;
     assign rdata_shifted = data_q >> ptr_q*OutW;
     assign clear_data = (rready_i && (depth_q == lsb_is_one)) || clr_q;
     assign load_data = wvalid_i && wready_o;
