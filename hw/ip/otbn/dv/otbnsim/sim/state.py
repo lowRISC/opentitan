@@ -188,46 +188,6 @@ class OTBNState:
         new_val = (old_val & ~mask) | shifted_input
         self.wdrs.get_reg(idx).write_unsigned(new_val)
 
-    @staticmethod
-    def add_with_carry(a: int, b: int, carry_in: int) -> Tuple[int, FlagReg]:
-        '''Compute a + b + carry_in and resulting flags.
-
-        Here, a and b are unsigned 256-bit numbers and carry_in is 0 or 1.
-        Returns a pair (result, flags) where result is the unsigned 256-bit
-        result and flags is the FlagReg that the computation generates.
-
-        '''
-        mask256 = (1 << 256) - 1
-        assert 0 <= a <= mask256
-        assert 0 <= b <= mask256
-        assert 0 <= carry_in <= 1
-
-        result = a + b + carry_in
-        carryless_result = result & mask256
-        C = bool((result >> 256) & 1)
-
-        return (carryless_result, FlagReg.mlz_for_result(C, carryless_result))
-
-    @staticmethod
-    def sub_with_borrow(a: int, b: int, borrow_in: int) -> Tuple[int, FlagReg]:
-        '''Compute a - b - borrow_in and resulting flags.
-
-        Here, a and b are unsigned 256-bit numbers and borrow_in is 0 or 1.
-        Returns a pair (result, flags) where result is the unsigned 256-bit
-        result and flags is the FlagReg that the computation generates.
-
-        '''
-        mask256 = (1 << 256) - 1
-        assert 0 <= a <= mask256
-        assert 0 <= b <= mask256
-        assert 0 <= borrow_in <= 1
-
-        result = a - b - borrow_in
-        carryless_result = result & mask256
-        C = bool((result >> 256) & 1)
-
-        return (carryless_result, FlagReg.mlz_for_result(C, carryless_result))
-
     def set_flags(self, fg: int, flags: FlagReg) -> None:
         '''Update flags for a flag group'''
         self.csrs.flags[fg] = flags
