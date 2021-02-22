@@ -4,7 +4,7 @@
 
 from typing import Dict
 
-from .alert import LoopError
+from sim import err_bits
 from .flags import FlagReg
 from .isa import (DecodeError, OTBNInsn, RV32RegReg, RV32RegImm, RV32ImmShift,
                   insn_for_mnemonic, logical_byte_shift)
@@ -309,13 +309,9 @@ class CSRRW(OTBNInsn):
 class ECALL(OTBNInsn):
     insn = insn_for_mnemonic('ecall', 0)
 
-    def __init__(self, raw: int, op_vals: Dict[str, int]):
-        super().__init__(raw, op_vals)
-        pass
-
     def execute(self, state: OTBNState) -> None:
         # Set INTR_STATE.done and STATUS, reflecting the fact we've stopped.
-        state._stop(0)
+        state.stop_at_end_of_cycle(err_bits=0)
 
 
 class LOOP(OTBNInsn):
@@ -330,8 +326,7 @@ class LOOP(OTBNInsn):
     def execute(self, state: OTBNState) -> None:
         num_iters = state.gprs.get_reg(self.grs).read_unsigned()
         if num_iters == 0:
-            state.on_error(LoopError('loop count in x{} was zero'
-                                     .format(self.grs)))
+            state.stop_at_end_of_cycle(err_bits.LOOP)
             return
 
         state.loop_start(num_iters, self.bodysize)

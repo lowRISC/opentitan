@@ -6,9 +6,9 @@ from typing import List, Optional, Tuple
 
 from shared.mem_layout import get_memory_layout
 
-from .alert import Alert, BadAddrError
 from .csr import CSRFile
 from .dmem import Dmem
+from .err_bits import BAD_INSN_ADDR
 from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
 from .gpr import GPRs
@@ -51,7 +51,8 @@ class OTBNState:
         self.ext_regs = OTBNExtRegs()
         self.running = False
 
-        self.errs = []  # type: List[Alert]
+        self._err_bits = 0
+        self.pending_halt = False
 
     def add_stall_cycles(self, num_cycles: int) -> None:
         '''Add stall cycles before the next insn completes'''
@@ -67,14 +68,6 @@ class OTBNState:
         if back_pc is not None:
             self.pc_next = back_pc
 
-    def errors(self) -> List[Alert]:
-        c = []  # type: List[Alert]
-        c += self.errs
-        c += self.gprs.errors()
-        c += self.dmem.errors()
-        c += self.loop_stack.errors()
-        return c
-
     def changes(self) -> List[Trace]:
         c = []  # type: List[Trace]
         c += self.gprs.changes()
@@ -89,6 +82,11 @@ class OTBNState:
         return c
 
     def commit(self) -> None:
+        # If the pending_halt flag is set or there are error bits (which should
+        # imply pending_halt is set), we shouldn't get as far as commit.
+        assert not self.pending_halt
+        assert self._err_bits == 0
+
         # Update self.stalled. If the instruction we just ran stalled us then
         # self._stalls will be positive but self.stalled will be false.
         assert self._stalls >= 0
@@ -145,29 +143,21 @@ class OTBNState:
         self.running = True
         self._start_stall = True
         self.stalled = True
+        self.pending_halt = False
+        self._err_bits = 0
 
-    def _stop(self, err_bits: int) -> None:
-        '''Set flags to stop the processor.
+    def stop(self) -> None:
+        '''Set flags to stop the processor and abort the instruction'''
+        self._abort()
 
-        err_bits is the value written to the ERR_BITS register.
-
-        '''
         # INTR_STATE is the interrupt state register. Bit 0 (which is being
         # set) is the 'done' flag.
         self.ext_regs.set_bits('INTR_STATE', 1 << 0)
         # STATUS is a status register. Bit 0 (being cleared) is the 'busy' flag
         self.ext_regs.clear_bits('STATUS', 1 << 0)
 
-        self.ext_regs.write('ERR_BITS', err_bits, True)
+        self.ext_regs.write('ERR_BITS', self._err_bits, True)
         self.running = False
-
-    def die(self, alerts: List[Alert]) -> None:
-        err_bits = 0
-        for alert in alerts:
-            err_bits |= alert.error_bit()
-
-        self._abort()
-        self._stop(err_bits)
 
     def get_quarter_word_unsigned(self, idx: int, qwsel: int) -> int:
         '''Select a 64-bit quarter of a wide register.
@@ -266,19 +256,23 @@ class OTBNState:
 
         # Check the new PC is word-aligned
         if self.pc_next & 3:
-            self.errs.append(BadAddrError('pc', self.pc_next,
-                                          'address is not 4-byte aligned'))
+            self._err_bits |= BAD_INSN_ADDR
 
         # Check the new PC lies in instruction memory
         if self.pc_next >= self.imem_size:
-            self.errs.append(BadAddrError('pc', self.pc_next,
-                                          'address lies above the top of imem'))
+            self._err_bits |= BAD_INSN_ADDR
 
     def post_insn(self) -> None:
         '''Update state after running an instruction but before commit'''
         self.check_jump_dest()
         self.loop_step()
         self.gprs.post_insn()
+
+        self._err_bits |= (self.gprs.err_bits() |
+                           self.dmem.err_bits() |
+                           self.loop_stack.err_bits())
+        if self._err_bits:
+            self.pending_halt = True
 
     def read_csr(self, idx: int) -> int:
         '''Read the CSR with index idx as an unsigned 32-bit number'''
@@ -292,6 +286,12 @@ class OTBNState:
         '''Return the current call stack, bottom-first'''
         return self.gprs.peek_call_stack()
 
-    def on_error(self, error: Alert) -> None:
-        '''Add a pending error that will be reported at the end of the cycle'''
-        self.errs.append(error)
+    def stop_at_end_of_cycle(self, err_bits: int) -> None:
+        '''Tell the simulation to stop at the end of the cycle
+
+        Any bits set in err_bits will be set in the ERR_BITS register when
+        we're done.
+
+        '''
+        self._err_bits |= err_bits
+        self.pending_halt = True

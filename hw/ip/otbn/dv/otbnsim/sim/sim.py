@@ -4,7 +4,6 @@
 
 from typing import List, Optional, Tuple
 
-from .alert import Alert
 from .isa import OTBNInsn
 from .state import OTBNState
 from .trace import Trace
@@ -72,13 +71,14 @@ class OTBNSim:
             insn.execute(self.state)
             self.state.post_insn()
 
-            errors = self.state.errors()
-            if errors:
+            if self.state.pending_halt:
                 # Roll back any pending state changes, ensuring that a faulting
-                # instruction doesn't actually do anything. Also generate a
-                # change that sets an appropriate error bits in the external
-                # ERR_CODE register and clears the busy flag.
-                self.state.die(errors)
+                # instruction doesn't actually do anything (this also aborts an
+                # ECALL instruction, but that doesn't really matter because it
+                # doesn't have any side-effects). Also generate a change that
+                # sets an appropriate error bits in the external ERR_CODE
+                # register and clears the busy flag.
+                self.state.stop()
                 changes = self.state.changes()
             else:
                 changes = self.state.changes()

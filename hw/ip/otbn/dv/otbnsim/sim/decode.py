@@ -7,7 +7,7 @@
 import struct
 from typing import List, Optional, Tuple, Type
 
-from .alert import IllegalInsnError
+from .err_bits import ILLEGAL_INSN
 from .isa import DecodeError, OTBNInsn
 from .insn import INSN_CLASSES
 from .state import OTBNState
@@ -39,7 +39,7 @@ class IllegalInsn(OTBNInsn):
         self._disasm = (pc, '?? 0x{:08x}'.format(raw))
 
     def execute(self, state: OTBNState) -> None:
-        state.on_error(IllegalInsnError(self.raw, self.msg))
+        state.stop_at_end_of_cycle(ILLEGAL_INSN)
 
 
 MASK_TUPLES = None  # type: Optional[List[_MaskTuple]]
