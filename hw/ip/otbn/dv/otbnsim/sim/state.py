@@ -159,24 +159,6 @@ class OTBNState:
         self.ext_regs.write('ERR_BITS', self._err_bits, True)
         self.running = False
 
-    def set_half_word_unsigned(self, idx: int, hwsel: int, value: int) -> None:
-        '''Set the low or high 128-bit half of a wide register to value.
-
-        The value should be unsigned.
-
-        '''
-        assert 0 <= idx <= 31
-        assert 0 <= hwsel <= 1
-        assert 0 <= value <= (1 << 128) - 1
-
-        shift = 128 * hwsel
-        shifted_input = value << shift
-        mask = ((1 << 128) - 1) << shift
-
-        old_val = self.wdrs.get_reg(idx).read_unsigned()
-        new_val = (old_val & ~mask) | shifted_input
-        self.wdrs.get_reg(idx).write_unsigned(new_val)
-
     def set_flags(self, fg: int, flags: FlagReg) -> None:
         '''Update flags for a flag group'''
         self.csrs.flags[fg] = flags
