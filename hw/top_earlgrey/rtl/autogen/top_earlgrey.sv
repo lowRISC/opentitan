@@ -685,7 +685,9 @@ module top_earlgrey #(
   ) u_dm_top (
     .clk_i         (clkmgr_aon_clocks.clk_proc_main),
     .rst_ni        (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
-    .hw_debug_en_i (lc_ctrl_lc_hw_debug_en),
+    // TODO: #5359
+    //.hw_debug_en_i (lc_ctrl_lc_hw_debug_en),
+    .hw_debug_en_i (lc_ctrl_pkg::On),
     .scanmode_i,
     .ndmreset_o    (ndmreset_req),
     .dmactive_o    (),
