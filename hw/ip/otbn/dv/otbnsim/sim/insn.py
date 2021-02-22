@@ -542,10 +542,18 @@ class BNMULQACCSO(OTBNInsn):
         acc += (mul_res << self.acc_shift_imm)
         truncated = acc & ((1 << 256) - 1)
 
+        # Split the result into low and high parts
         lo_part = truncated & ((1 << 128) - 1)
         hi_part = truncated >> 128
 
-        state.set_half_word_unsigned(self.wrd, self.wrd_hwsel, lo_part)
+        # Shift out the low part of the result
+        hw_shift = 128 * self.wrd_hwsel
+        hw_mask = ((1 << 128) - 1) << hw_shift
+        old_wrd = state.wdrs.get_reg(self.wrd).read_unsigned()
+        new_wrd = (old_wrd & ~hw_mask) | (lo_part << hw_shift)
+        state.wdrs.get_reg(self.wrd).write_unsigned(new_wrd)
+
+        # Write back the high part of the result
         state.wsrs.ACC.write_unsigned(hi_part)
 
         old_flags = state.csrs.flags[self.flag_group]
