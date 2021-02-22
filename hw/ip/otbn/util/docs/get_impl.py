@@ -233,7 +233,7 @@ class ImplTransformer(cst.CSTTransformer):
         return make_aref('CSRs', node.args[0].value)
 
     @staticmethod
-    def _spot_wsr_read(node: cst.Call) -> Optional[cst.BaseExpression]:
+    def _spot_wsr_read_idx(node: cst.Call) -> Optional[cst.BaseExpression]:
         # Detect
         #
         #    state.wsrs.read_at_idx(FOO)
@@ -257,6 +257,39 @@ class ImplTransformer(cst.CSTTransformer):
 
         return make_aref('WSRs', node.args[0].value)
 
+    @staticmethod
+    def _spot_wsr_read_name(node: cst.Call) -> Optional[cst.BaseExpression]:
+        # Detect
+        #
+        #    state.wsrs.FOO.read_unsigned()
+        #
+        # and replace it with the expression
+        #
+        #    FOO
+
+        # Check we have no arguments
+        if len(node.args) != 0:
+            return None
+
+        # Check this is A.B.C.D for names A, B, C, D.
+        if not (isinstance(node.func, cst.Attribute) and
+                isinstance(node.func.value, cst.Attribute) and
+                isinstance(node.func.value.value, cst.Attribute) and
+                isinstance(node.func.value.value.value, cst.Name)):
+            return None
+
+        a_name = node.func.value.value.value
+        b_name = node.func.value.value.attr
+        c_name = node.func.value.attr
+        d_name = node.func.attr
+
+        if not (a_name.value == 'state' and
+                b_name.value == 'wsrs' and
+                d_name.value == 'read_unsigned'):
+            return None
+
+        return c_name
+
     def leave_Call(self,
                    orig: cst.Call,
                    updated: cst.Call) -> cst.BaseExpression:
@@ -273,9 +306,13 @@ class ImplTransformer(cst.CSTTransformer):
         if csr_read is not None:
             return csr_read
 
-        wsr_read = ImplTransformer._spot_wsr_read(updated)
-        if wsr_read is not None:
-            return wsr_read
+        wsr_read_idx = ImplTransformer._spot_wsr_read_idx(updated)
+        if wsr_read_idx is not None:
+            return wsr_read_idx
+
+        wsr_read_name = ImplTransformer._spot_wsr_read_name(updated)
+        if wsr_read_name is not None:
+            return wsr_read_name
 
         return updated
 
@@ -344,7 +381,7 @@ class ImplTransformer(cst.CSTTransformer):
         return NBAssign.make(make_aref('CSRs', idx), rhs)
 
     @staticmethod
-    def _spot_wsr_write(node: cst.Expr) -> Optional[NBAssign]:
+    def _spot_wsr_write_idx(node: cst.Expr) -> Optional[NBAssign]:
         # Spot
         #
         #   state.wsrs.write_at_idx(wsr, new_val)
@@ -373,6 +410,44 @@ class ImplTransformer(cst.CSTTransformer):
         rhs = call.args[1].value
 
         return NBAssign.make(make_aref('WSRs', idx), rhs)
+
+    @staticmethod
+    def _spot_wsr_write_name(node: cst.Expr) -> Optional[NBAssign]:
+        # Spot
+        #
+        #   state.wsrs.FOO.write_unsigned(new_val)
+        #
+        # and turn it into
+        #
+        #   FOO = new_val
+
+        if not isinstance(node.value, cst.Call):
+            return None
+
+        call = node.value
+        if len(call.args) != 1 or not isinstance(call.func, cst.Attribute):
+            return None
+
+        # Check this is A.B.C.D for names A, B, C, D.
+        if not (isinstance(call.func, cst.Attribute) and
+                isinstance(call.func.value, cst.Attribute) and
+                isinstance(call.func.value.value, cst.Attribute) and
+                isinstance(call.func.value.value.value, cst.Name)):
+            return None
+
+        a_name = call.func.value.value.value
+        b_name = call.func.value.value.attr
+        c_name = call.func.value.attr
+        d_name = call.func.attr
+
+        if not (a_name.value == 'state' and
+                b_name.value == 'wsrs' and
+                d_name.value == 'write_unsigned'):
+            return None
+
+        rhs = call.args[0].value
+
+        return NBAssign.make(c_name, rhs)
 
     @staticmethod
     def _spot_flag_write(node: cst.Expr) -> Optional[NBAssign]:
@@ -412,9 +487,13 @@ class ImplTransformer(cst.CSTTransformer):
         if csr_write is not None:
             return csr_write
 
-        wsr_write = ImplTransformer._spot_wsr_write(updated)
-        if wsr_write is not None:
-            return wsr_write
+        wsr_write_idx = ImplTransformer._spot_wsr_write_idx(updated)
+        if wsr_write_idx is not None:
+            return wsr_write_idx
+
+        wsr_write_name = ImplTransformer._spot_wsr_write_name(updated)
+        if wsr_write_name is not None:
+            return wsr_write_name
 
         flag_write = ImplTransformer._spot_flag_write(updated)
         if flag_write is not None:
