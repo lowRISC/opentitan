@@ -93,6 +93,12 @@ def logical_byte_shift(value: int, shift_type: int, shift_bytes: int) -> int:
     shift_bits = 8 * shift_bytes
     shifted = value << shift_bits if shift_type == 0 else value >> shift_bits
     return shifted & mask256
+
+def extract_quarter_word(value: int, qwsel: int) -> int:
+    '''Extract a 64-bit quarter word from a 256-bit value.'''
+    assert 0 <= value < (1 << 256)
+    assert 0 <= qwsel <= 3
+    return (value >> (qwsel * 64)) & ((1 << 64) - 1)
 ```
 
 <!-- Documentation for the instructions in the ISA. Generated from ../data/insns.yml. -->

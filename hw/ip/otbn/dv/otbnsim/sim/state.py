@@ -159,17 +159,6 @@ class OTBNState:
         self.ext_regs.write('ERR_BITS', self._err_bits, True)
         self.running = False
 
-    def get_quarter_word_unsigned(self, idx: int, qwsel: int) -> int:
-        '''Select a 64-bit quarter of a wide register.
-
-        The bits are interpreted as an unsigned value.
-
-        '''
-        assert 0 <= idx <= 31
-        assert 0 <= qwsel <= 3
-        full_val = self.wdrs.get_reg(idx).read_unsigned()
-        return (full_val >> (qwsel * 64)) & ((1 << 64) - 1)
-
     def set_half_word_unsigned(self, idx: int, hwsel: int, value: int) -> None:
         '''Set the low or high 128-bit half of a wide register to value.
 
