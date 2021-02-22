@@ -4,7 +4,7 @@
 
 from typing import List, Optional
 
-from .alert import LoopError
+from .err_bits import LOOP
 from .trace import Trace
 
 
@@ -59,7 +59,7 @@ class LoopStack:
     def __init__(self) -> None:
         self.stack = []  # type: List[LoopLevel]
         self.trace = []  # type: List[Trace]
-        self.errs = []  # type: List[LoopError]
+        self.err_flag = False
 
     def start_loop(self,
                    next_addr: int,
@@ -78,7 +78,7 @@ class LoopStack:
         assert 0 < loop_count
 
         if len(self.stack) == LoopStack.stack_depth:
-            self.errs.append(LoopError('loop stack overflow'))
+            self.err_flag = True
 
         self.trace.append(TraceLoopStart(loop_count, insn_count))
         self.stack.append(LoopLevel(next_addr, insn_count, loop_count - 1))
@@ -92,8 +92,7 @@ class LoopStack:
                 # Make sure that it isn't a jump, branch or another loop
                 # instruction.
                 if insn_affects_control:
-                    self.errs.append(LoopError('control instruction '
-                                               'at end of loop'))
+                    self.err_flag = True
 
     def step(self, next_pc: int) -> Optional[int]:
         '''Update loop stack. If we should loop, return new PC'''
@@ -118,16 +117,16 @@ class LoopStack:
 
         return None
 
-    def errors(self) -> List[LoopError]:
-        return self.errs
+    def err_bits(self) -> int:
+        return LOOP if self.err_flag else 0
 
     def changes(self) -> List[Trace]:
         return self.trace
 
     def commit(self) -> None:
-        assert not self.errs
+        assert not self.err_flag
         self.trace = []
 
     def abort(self) -> None:
         self.trace = []
-        self.errs = []
+        self.err_flag = False

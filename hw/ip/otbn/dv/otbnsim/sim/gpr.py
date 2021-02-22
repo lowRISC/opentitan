@@ -4,7 +4,7 @@
 
 from typing import List
 
-from .alert import CallStackError
+from .err_bits import CALL_STACK
 from .reg import Reg, RegFile
 
 
@@ -29,7 +29,7 @@ class CallStackReg(Reg):
             return self.stack[-1] if self.stack else 0xcafef00d
 
         if not self.stack:
-            self.gpr_parent.errs.append(CallStackError(False))
+            self.gpr_parent.err_flag = True
             return 0
 
         # Mark that we've read something (so that we pop from the stack as part
@@ -40,7 +40,7 @@ class CallStackReg(Reg):
     def post_insn(self) -> None:
         if self._next_uval is not None:
             if not self.saw_read and len(self.stack) == 8:
-                self.gpr_parent.errs.append(CallStackError(True))
+                self.gpr_parent.err_flag = True
 
     def commit(self) -> None:
         if self.saw_read:
@@ -67,7 +67,7 @@ class GPRs(RegFile):
     def __init__(self) -> None:
         super().__init__('x', 32, 32)
         self._x1 = CallStackReg(self)
-        self.errs = []  # type: List[CallStackError]
+        self.err_flag = False
 
     def get_reg(self, idx: int) -> Reg:
         if idx == 0:
@@ -88,15 +88,15 @@ class GPRs(RegFile):
     def post_insn(self) -> None:
         return self._x1.post_insn()
 
-    def errors(self) -> List[CallStackError]:
-        return self.errs
+    def err_bits(self) -> int:
+        return CALL_STACK if self.err_flag else 0
 
     def commit(self) -> None:
         super().commit()
-        assert not self.errs
+        assert not self.err_flag
         self._x1.commit()
 
     def abort(self) -> None:
         super().abort()
         self._x1.abort()
-        self.errs = []
+        self.err_flag = False
