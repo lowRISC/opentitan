@@ -73,6 +73,26 @@ def to_2s_complement(n: int) -> int:
     '''Interpret the bits of signed integer n as a 32-bit unsigned integer'''
     assert -(1 << 31) <= n < (1 << 31)
     return (1 << 32) + n if n < 0 else n
+
+def logical_byte_shift(value: int, shift_type: int, shift_bytes: int) -> int:
+    '''Logical shift value by shift_bytes to the left or right.
+
+    value should be an unsigned 256-bit value. shift_type should be 0 (shift
+    left) or 1 (shift right), matching the encoding of the big number
+    instructions. shift_bytes should be a non-negative number of bytes to shift
+    by.
+
+    Returns an unsigned 256-bit value, truncating on an overflowing left shift.
+
+    '''
+    mask256 = (1 << 256) - 1
+    assert 0 <= value <= mask256
+    assert 0 <= shift_type <= 1
+    assert 0 <= shift_bytes
+
+    shift_bits = 8 * shift_bytes
+    shifted = value << shift_bits if shift_type == 0 else value >> shift_bits
+    return shifted & mask256
 ```
 
 <!-- Documentation for the instructions in the ISA. Generated from ../data/insns.yml. -->

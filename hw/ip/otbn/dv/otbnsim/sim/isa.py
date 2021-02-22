@@ -143,9 +143,10 @@ class RV32ImmShift(OTBNInsn):
 def logical_byte_shift(value: int, shift_type: int, shift_bytes: int) -> int:
     '''Logical shift value by shift_bytes to the left or right.
 
-    value should be an unsigned 256-bit value. shift_type should be 0 (shift left)
-    or 1 (shift right): matching the encoding of the big number instructions.
-    shift_bytes should be a non-negative number of bytes to shift by.
+    value should be an unsigned 256-bit value. shift_type should be 0 (shift
+    left) or 1 (shift right), matching the encoding of the big number
+    instructions. shift_bytes should be a non-negative number of bytes to shift
+    by.
 
     Returns an unsigned 256-bit value, truncating on an overflowing left shift.
 
