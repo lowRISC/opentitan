@@ -22,12 +22,15 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // This bit is used for DAI interface to mark if the read access is valid.
   bit dai_read_valid;
+
   // This two bits are local values stored for sw partitions' read lock registers.
   bit [1:0] sw_read_lock;
 
   // Status related variables
   bit under_chk, under_dai_access;
   bit [TL_DW-1:0] exp_status;
+
+  bit macro_alert_triggered;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(SRAM_DATA_SIZE)))
@@ -383,11 +386,20 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
-    // if incoming access is a write to a valid csr, and not locked by `direct_access_regwen`
-    // then make updates right away
     if (addr_phase_write) begin
+      // Skip predict if the register is locked by `direct_access_regwen`.
       if (ral.direct_access_regwen.is_inside_locked_regs(dv_reg) &&
           `gmv(ral.direct_access_regwen) == 0) return;
+
+      // Skip predict if the register is accessing DAI interface while macro alert is triggered.
+      if (macro_alert_triggered) begin
+        if (csr.get_name() inside {"direct_access_cmd", "creator_sw_cfg_read_lock",
+          "owner_sw_cfg_read_lock", "direct_access_wdata_0", "direct_access_wdata_1",
+          "direct_access_address"}) begin
+          return;
+        end
+      end
+
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
     end
 
@@ -446,14 +458,19 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                   predict_rdata(is_secret(dai_addr), 0, 0);
                 end else begin
                   bit [TL_AW-1:0] otp_addr = get_scb_otp_addr();
-                  predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
-                                otp_a[otp_addr], otp_a[otp_addr+1]);
-                  if (cfg.ecc_err == OtpNoEccErr) begin
-                    predict_dai_idle_status_wo_err();
-                  end else if (cfg.ecc_err == OtpEccCorrErr) begin
-                    predict_status_err(.dai_err(1));
+                  if (cfg.ecc_err == OtpNoEccErr) predict_dai_idle_status_wo_err();
+                  else                            predict_status_err(.dai_err(1));
+
+                  // OTP macro uncorrectable error: DAI interface goes to error state
+                  if (cfg.ecc_err == OtpEccUncorrErr) begin
+                    // Max wait 20 clock cycles because scb did not know when exactly OTP will
+                    // finish reading and reporting the uncorrectable error.
+                    set_exp_alert("fatal_macro_error", 1, 20);
+                    macro_alert_triggered = 1;
+                    predict_rdata(1, 0, 0);
                   end else begin
-                    // TODO: trigger alert and goes to terminal stage
+                    predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
+                                  otp_a[otp_addr], otp_a[otp_addr+1]);
                   end
                 end
               end
@@ -607,9 +624,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       sram_fifos[i].flush();
     end
 
-    under_chk        = 0;
-    under_dai_access = 0;
-    exp_status       = `gmv(ral.status);
+    under_chk             = 0;
+    under_dai_access      = 0;
+    macro_alert_triggered = 0;
+    exp_status            = `gmv(ral.status);
 
     // reset local fifos queues and variables
     // digest values are updated after a power cycle
