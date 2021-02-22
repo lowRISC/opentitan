@@ -31,6 +31,7 @@ class i2c_monitor extends dv_base_monitor #(
     @(negedge cfg.vif.rst_ni);
     num_dut_tran = 0;
     mon_dut_item.clear_all();
+
   endtask : wait_for_reset_and_drop_item
 
   virtual task run_phase(uvm_phase phase);
@@ -56,7 +57,7 @@ class i2c_monitor extends dv_base_monitor #(
 
   // collect transactions forever
   virtual protected task collect_thread(uvm_phase phase);
-    i2c_item complete_item;
+    i2c_item full_item;
 
     wait(cfg.en_monitor);
     if (mon_dut_item.stop ||
@@ -74,13 +75,13 @@ class i2c_monitor extends dv_base_monitor #(
     if (mon_dut_item.bus_op == BusOpRead) read_thread();
     else                                  write_thread();
     // send rsp_item to scoreboard
-    `downcast(complete_item, mon_dut_item.clone());
-    complete_item.stop = 1'b1;
-    if (cfg.vif.rst_ni && complete_item.stop && complete_item.start) begin
-      if (complete_item.bus_op == BusOpRead) rd_item_port.write(complete_item);
-      else                                   wr_item_port.write(complete_item);
-      `uvm_info(`gfn, $sformatf("\nmonitor, send complete item to scb\n%s",
-          complete_item.sprint()), UVM_DEBUG)
+    `downcast(full_item, mon_dut_item.clone());
+    full_item.stop = 1'b1;
+    if (cfg.vif.rst_ni && full_item.stop && full_item.start) begin
+      if (full_item.bus_op == BusOpRead) rd_item_port.write(full_item);
+      else                               wr_item_port.write(full_item);
+      `uvm_info(`gfn, $sformatf("\nmonitor, send full item to scb\n%s",
+          full_item.sprint()), UVM_DEBUG)
     end
     mon_dut_item.clear_data();
   endtask: collect_thread
@@ -93,8 +94,9 @@ class i2c_monitor extends dv_base_monitor #(
     mon_dut_item.tran_id = num_dut_tran;
     for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
       cfg.vif.get_bit_data("host", cfg.timing_cfg, mon_dut_item.addr[i]);
-    `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]), UVM_DEBUG)
+      `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]), UVM_DEBUG)
     end
+    `uvm_info(`gfn, $sformatf("\nmonitor, address 0x%0x", mon_dut_item.addr), UVM_DEBUG)
     cfg.vif.get_bit_data("host", cfg.timing_cfg, rw_req);
     mon_dut_item.bus_op = (rw_req) ? BusOpRead : BusOpWrite;
     // get ack after transmitting address
@@ -107,7 +109,7 @@ class i2c_monitor extends dv_base_monitor #(
 
   virtual protected task read_thread();
     i2c_item clone_item;
-    
+
     mon_dut_item.stop   = 1'b0;
     mon_dut_item.rstart = 1'b0;
     mon_dut_item.ack    = 1'b0;
