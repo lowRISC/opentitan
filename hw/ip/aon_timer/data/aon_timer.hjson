@@ -216,6 +216,8 @@
           desc: "Raised if the watchdog timer has hit the bark threshold",
         }
       ]
+      tags: [// interrupt could be updated by HW
+        "excl:CsrNonInitTests:CsrExclWriteCheck"],
     },
     { name: "INTR_ENABLE",
       desc: "Dummy interrupt enable register.  This is only here because of #5260.  DO NOT USE",
@@ -265,6 +267,8 @@
           desc: "AON timer requested wakeup, write 0 to clear",
         }
       ]
+      tags: [// this could be updated by HW
+        "excl:CsrNonInitTests:CsrExclWriteCheck"],
     },
   ],
 }
