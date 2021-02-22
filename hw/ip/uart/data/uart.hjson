@@ -140,13 +140,17 @@
           name: "RXIDLE"
           desc: "RX is idle"
           resval: "1",
-          tags: [// check idle in directed test only
-            "excl:CsrNonInitTests:CsrExclCheck"]
+          tags: [// check idle in other tests only. In top-level, RX pin is driven by 0 when it's
+                 // not selected at pinmux
+            "excl:CsrAllTests:CsrExclCheck"]
         }
         { bits: "5"
           name: "RXEMPTY"
           desc: "RX FIFO is empty"
           resval: "1"
+          tags: [// check idle in other tests only. In top-level, RX pin is driven by 0 when it's
+                 // not selected at pinmux
+            "excl:CsrAllTests:CsrExclCheck"]
         }
       ]
     }
