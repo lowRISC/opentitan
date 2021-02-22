@@ -30,6 +30,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     if (do_otp_pwr_init) otp_pwr_init();
   endtask
 
+  // Cfg errors are cleared after reset
+  virtual task apply_reset(string reset_kind = "HARD");
+    super.apply_reset(reset_kind);
+    cfg.ecc_err = OtpNoEccErr;
+  endtask
+
   virtual task dut_shutdown();
     // check for pending otp_ctrl operations and wait for them to complete
     // TODO
@@ -79,7 +85,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       csr_rd_check(ral.status.dai_idle, .compare_value(0), .backdoor(1));
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
-    csr_spinwait(ral.status.dai_idle, 1);
+    if (cfg.ecc_err == OtpEccUncorrErr) csr_spinwait(ral.status.dai_error, 1);
+    else                                csr_spinwait(ral.status.dai_idle, 1);
     rd_and_clear_intrs();
   endtask : dai_wr
 
@@ -90,8 +97,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
                       output bit [TL_DW-1:0] rdata0,
                       output bit [TL_DW-1:0] rdata1);
     bit [TL_DW-1:0] val, backdoor_rd_val;
+    bit backdoor_wr;
     addr = randomize_dai_addr(addr);
-    backdoor_rd_val = backdoor_inject_ecc_err(addr, ecc_err_mask);
+    if (cfg.ecc_err != OtpEccUncorrErr) begin
+      backdoor_rd_val = backdoor_inject_ecc_err(addr, ecc_err_mask);
+      backdoor_wr = 1;
+    end
 
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiRead));
@@ -100,7 +111,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       csr_rd_check(ral.status.dai_idle, .compare_value(0), .backdoor(1));
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
-    csr_spinwait(ral.status.dai_idle, 1);
+
+    if (cfg.ecc_err == OtpEccUncorrErr) csr_spinwait(ral.status.dai_error, 1);
+    else                                csr_spinwait(ral.status.dai_idle, 1);
 
     csr_rd(ral.direct_access_rdata_0, rdata0);
     if (is_secret(addr) || is_digest(addr)) csr_rd(ral.direct_access_rdata_1, rdata1);
@@ -108,7 +121,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
     // If has ecc_err, backdoor write back original value
     // TODO: remove this once we can detect ECC error from men_bkdr_if
-    if (cfg.ecc_err != OtpNoEccErr) begin
+    if (cfg.ecc_err != OtpNoEccErr && backdoor_wr) begin
       cfg.mem_bkdr_vif.write32({addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
     end
   endtask : dai_rd
@@ -134,7 +147,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       csr_rd_check(ral.status.dai_idle, .compare_value(0), .backdoor(1));
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
-    csr_spinwait(ral.status.dai_idle, 1);
+
+    if (cfg.ecc_err == OtpEccUncorrErr) csr_spinwait(ral.status.dai_error, 1);
+    else                                csr_spinwait(ral.status.dai_idle, 1);
     rd_and_clear_intrs();
   endtask
 
@@ -199,8 +214,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     // If every byte at most has one ECC error bit, it is a correctable error
     // If any byte at more than one ECC error bit, it is a uncorrectable error
     cfg.ecc_err = OtpEccCorrErr;
-    for (int i = 0; i < 4; i++) begin
-      if (!$onehot(err_mask[i*8+:8]) && err_mask[i*8+:8]) begin
+    for (int i = 0; i < 2; i++) begin
+      if (!$onehot(err_mask[i*16+:16]) && err_mask[i*16+:16]) begin
         cfg.ecc_err = OtpEccUncorrErr;
         break;
       end
@@ -210,6 +225,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     val = cfg.mem_bkdr_vif.read32(addr);
     foreach (err_mask[i]) backdoor_val[i] = err_mask[i] ? ~val[i] : val[i];
     cfg.mem_bkdr_vif.write32(addr, backdoor_val);
+    `uvm_info(`gfn, $sformatf("original val %0h, backdoor val %0h, err_mask %0h",
+                              val, backdoor_val, err_mask), UVM_HIGH)
 
     return val;
   endfunction
