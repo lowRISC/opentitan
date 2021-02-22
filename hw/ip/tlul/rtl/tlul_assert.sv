@@ -255,7 +255,7 @@ module tlul_assert #(
 
   initial begin : p_dbw
     // widths up to 64bit / 8 Byte are supported
-    `ASSERT_I(TlDbw_A, TL_DBW <= 8);
+    `ASSERT_I(TlDbw_A, TL_DBW <= 8)
   end
 
   // make sure all "pending" bits are 0 at the end of the sim

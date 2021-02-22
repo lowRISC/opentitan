@@ -164,6 +164,6 @@ module tlul_adapter_host import tlul_pkg::*; #(
     end
   end
 
-  `ASSERT(DontExceeedMaxReqs, req_i |-> outstanding_reqs_d <= MAX_REQS);
+  `ASSERT(DontExceeedMaxReqs, req_i |-> outstanding_reqs_d <= MAX_REQS)
 `endif
 endmodule
