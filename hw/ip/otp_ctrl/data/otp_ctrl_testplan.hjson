@@ -99,26 +99,24 @@
       name: interface_key_check
       desc: '''
             OTP_CTRL will generate keys to flash, sram, and OTBN upon their requests.
-            This test will randomly issue key requests from the above modules either before or
-            after partitions are locked, and check if generated keys are correct.
+            Based on the DAI access sequence, this test will run key requests sequence in
+            parallel, and check if generated keys are correct.
             '''
       milestone: V2
-      tests: ["otp_ctrl_rand_key_rsp"]
+      tests: ["otp_ctrl_parallel_key_req"]
     }
     {
       name: lc_interactions
       desc: '''
-            This test check otp and life_cycle interactions.
+            This test check otp and life_cycle interactions. Based on the DAI access sequence,
+            this test will run the following sequences in parallel:
 
-            - Initialize life_cycle, secret0, and secret2 partitions
-            - Check if `otp_lc_data_o` is asserted correctly
-            - Randomly issue the following three sequences:
-            - Seq 1. State transitions via the programming interface
-            - Seq 2. Token hashing
-            - Seq 3. Trigger escalation_en
+            - State transitions via the programming interface
+            - Token hashing
+            - Trigger escalation_en
             '''
       milestone: V2
-      tests: ["otp_ctrl_lc"]
+      tests: ["otp_ctrl_parallel_lc_req"]
     }
     { name: otp_dai_errors
       desc: '''
