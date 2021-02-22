@@ -31,9 +31,10 @@ module tb_top_verilator #(
     localparam CLUSTER_ID         = 6'd0;
     localparam CORE_ID            = 4'd0;
 
-    localparam CORE_MHARTID       = {CLUSTER_ID, 1'b0, CORE_ID};
+    localparam CORE_MHARTID       = {21'b0, CLUSTER_ID, 1'b0, CORE_ID};
     localparam NrHarts                               = 1;
     localparam logic [NrHarts-1:0] SELECTABLE_HARTS  = 1 << CORE_MHARTID;
+    localparam HARTINFO           = {8'h0, 4'h2, 3'b0, 1'b1, dm::DataCount, dm::DataAddr};
 
     // signals connecting core to memory
     logic                        instr_req;
@@ -95,29 +96,29 @@ module tb_top_verilator #(
     logic [0:4]                  irq_id_in;
     logic                        irq_ack;
     logic [0:4]                  irq_id_out;
-    logic                        irq_sec;
 
     // make jtag bridge work
     assign sim_jtag_enable = JTAG_BOOT;
 
-    // interrupts (only timer for now)
-    assign irq_sec = '0;
-
     // instantiate the core
-    riscv_core #(
-        .INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH),
-        .PULP_SECURE(1),
-        .FPU(0)
+    cv32e40p_core #(
+        .PULP_XPULP             ( 0                      ),
+        .PULP_CLUSTER           ( 0                      ),
+        .FPU                    ( 0                      ),
+        .PULP_ZFINX             ( 0                      ),
+        .NUM_MHPMCOUNTERS       ( 1                      )
     ) riscv_core_i (
         .clk_i                  ( clk_i                 ),
         .rst_ni                 ( ndmreset_n            ),
 
-        .clock_en_i             ( '1                    ),
-        .test_en_i              ( '0                    ),
+        .pulp_clock_en_i        ( '1                    ),
+        .scan_cg_en_i           ( '0                    ),
 
         .boot_addr_i            ( BOOT_ADDR             ),
-        .core_id_i              ( CORE_ID               ),
-        .cluster_id_i           ( CLUSTER_ID            ),
+        .mtvec_addr_i           ( 32'h00000000          ),
+        .dm_halt_addr_i         ( 32'h1A110800          ),
+        .hart_id_i              ( CORE_MHARTID          ),
+        .dm_exception_addr_i    ( 32'h00000000          ),
 
         .instr_addr_o           ( instr_addr            ),
         .instr_req_o            ( instr_req             ),
@@ -145,26 +146,14 @@ module tb_top_verilator #(
         .apu_master_result_i    (                       ),
         .apu_master_flags_i     (                       ),
 
-
-        .irq_software_i         ( 1'b0                  ),
-        .irq_timer_i            ( 1'b0                  ),
-        .irq_external_i         ( 1'b0                  ),
-        .irq_fast_i             ( 15'b0                 ),
-        .irq_nmi_i              ( 1'b0                  ),
-        .irq_fastx_i            ( 32'b0                 ),
+        .irq_i                  ( 32'b0                 ),
         .irq_ack_o              ( irq_ack               ),
         .irq_id_o               ( irq_id_out            ),
-        .irq_sec_i              ( irq_sec               ),
-
-        .sec_lvl_o              ( sec_lvl_o             ),
 
         .debug_req_i            ( dm_debug_req[CORE_MHARTID] ),
 
         .fetch_enable_i         ( fetch_enable_i        ),
-        .core_busy_o            ( core_busy_o           ),
-
-        .ext_perf_counters_i    (                       ),
-        .fregfile_disable_i     ( 1'b0                  ));
+        .core_sleep_o           ( core_sleep_o          ));
 
     // this handles read to RAM and memory mapped pseudo peripherals
     mm_ram #(
@@ -256,7 +245,7 @@ module tb_top_verilator #(
        .dmactive_o        (                   ), // active debug session TODO
        .debug_req_o       ( dm_debug_req      ),
        .unavailable_i     ( ~SELECTABLE_HARTS ),
-       .hartinfo_i        ( '0                ),
+       .hartinfo_i        ( HARTINFO          ),
 
        .slave_req_i       ( dm_req            ),
        .slave_we_i        ( dm_we             ),

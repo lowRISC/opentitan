@@ -62,6 +62,20 @@ package dm;
     DevTreeAddr3 = 8'h1C,
     NextDM       = 8'h1D,
     ProgBuf0     = 8'h20,
+    ProgBuf1     = 8'h21,
+    ProgBuf2     = 8'h22,
+    ProgBuf3     = 8'h23,
+    ProgBuf4     = 8'h24,
+    ProgBuf5     = 8'h25,
+    ProgBuf6     = 8'h26,
+    ProgBuf7     = 8'h27,
+    ProgBuf8     = 8'h28,
+    ProgBuf9     = 8'h29,
+    ProgBuf10    = 8'h2A,
+    ProgBuf11    = 8'h2B,
+    ProgBuf12    = 8'h2C,
+    ProgBuf13    = 8'h2D,
+    ProgBuf14    = 8'h2E,
     ProgBuf15    = 8'h2F,
     AuthData     = 8'h30,
     HaltSum2     = 8'h34,
@@ -300,6 +314,14 @@ package dm;
     CSR_INSTRET        = 12'hC02
   } csr_reg_t;
 
+  // SBA state
+  typedef enum logic [2:0] {
+    Idle,
+    Read,
+    Write,
+    WaitRead,
+    WaitWrite
+  } sba_state_e;
 
   // Instruction Generation Helpers
   function automatic logic [31:0] jal (logic [4:0]  rd,

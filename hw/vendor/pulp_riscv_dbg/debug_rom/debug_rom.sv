@@ -23,7 +23,8 @@ module debug_rom (
 
   localparam int unsigned RomSize = 19;
 
-  const logic [RomSize-1:0][63:0] mem = {
+  logic [RomSize-1:0][63:0] mem;
+  assign mem = {
     64'h00000000_7b200073,
     64'h7b202473_7b302573,
     64'h10852423_f1402473,

@@ -1,4 +1,4 @@
-From c9bb351a0d0f915b0f66cf0bee38afedbea3c02c Mon Sep 17 00:00:00 2001
+From 433e1909f3775ea6a742d8b461d1ff1223c8ef46 Mon Sep 17 00:00:00 2001
 From: Philipp Wagner <phw@lowrisc.org>
 Date: Fri, 22 Feb 2019 14:48:46 +0000
 Subject: [PATCH 2/2] Use lowrisc instead of PULP primitives
@@ -6,7 +6,7 @@ Subject: [PATCH 2/2] Use lowrisc instead of PULP primitives
 Signed-off-by: Michael Schaffner <msf@google.com>
 
 diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
-index f131392..e4698eb 100644
+index 4b0f254..8f12ac4 100644
 --- a/src/dm_csrs.sv
 +++ b/src/dm_csrs.sv
 @@ -78,6 +78,7 @@ module dm_csrs #(
@@ -27,7 +27,7 @@ index f131392..e4698eb 100644
 -  logic        resp_queue_pop;
    logic [31:0] resp_queue_data;
  
-   localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'b0, dm::DataCount} - 8'h1);
+   localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'h0, dm::DataCount} - 8'h1);
 @@ -180,9 +177,6 @@ module dm_csrs #(
  
    // a successful response returns zero
@@ -38,7 +38,7 @@ index f131392..e4698eb 100644
    // SBA
    assign sbautoincrement_o = sbcs_q.sbautoincrement;
    assign sbreadonaddr_o    = sbcs_q.sbreadonaddr;
-@@ -550,27 +544,28 @@ module dm_csrs #(
+@@ -554,27 +548,28 @@ module dm_csrs #(
    assign progbuf_o   = progbuf_q;
    assign data_o      = data_q;
  
@@ -156,7 +156,7 @@ index 4665c91..1299b09 100644
  
  endmodule : dmi_cdc
 diff --git a/src/dmi_jtag_tap.sv b/src/dmi_jtag_tap.sv
-index 3d11145..94b51d6 100644
+index c2e8d6e..5f10e6c 100644
 --- a/src/dmi_jtag_tap.sv
 +++ b/src/dmi_jtag_tap.sv
 @@ -216,18 +216,14 @@ module dmi_jtag_tap #(

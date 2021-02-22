@@ -5,18 +5,36 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
 ### Added
+### Changed
+### Fixed
+
+## [0.4.0] - 2020-11-06
+### Added
+- Added parameter ReadByteEnable that may be disabled to revert SBA _be_ behavior to 0 on reads
 - Optional wrapper `dm_obi_top.sv` that wraps `dm_top` providing an OBI compliant interface
 - `tb` that runs dm in conjunction with ri5cy and OpenOCD
 - `.travis-ci.yml` running `tb` with verilator
 
 ### Changed
-- Made second scratch register optional (default is two) from [@zarubaf](https://github.com/zarubaf
+- Made second scratch register optional (default is two) from [@zarubaf](https://github.com/zarubaf)
+- Use latest version of CV32E40P in testbench (#82) [@Silabs-ArjanB](https://github.com/Silabs-ArjanB)
+- Move assertions into separate module (#82) [@Silabs-ArjanB](https://github.com/Silabs-ArjanB)
 
 ### Fixed
+- Fix for SBA _be_ when reading to match the request size from (#70) [@jm4rtin](https://github.com/jm4rtin)
 - Off-by-one error in data and progbuf end address from [@pbing](https://github.com/pbing)
 - Haltsum1-3 calculation
+- A DMI read of SBAddress0 andSBAddress0 will (wrongly) trigger SBBUSYERROR when
+  the system bus master is busy (#93) [@Silabs-ArjanB](https://github.com/Silabs-ArjanB)
+- When the two scratch mode is being used, a0 was loaded instead of saved into
+  scratch1 (#90) [@Silabs-ArjanB](https://github.com/Silabs-ArjanB)
+- dmireset can be accidentally triggered (#89) [@Silabs-ArjanB](https://github.com/Silabs-ArjanB)
+- enumeration lint issue in ProgBuf (#84) [@Silabs-ArjanB](https://github.com/Silabs-ArjanB)
+- Fix faulty assertion because of bad `hartinfo_i` in testbench (#82)
+  [@Silabs-ArjanB](https://github.com/Silabs-ArjanB)
+- Return `CmdErrBusy` if accessing data or progbuf while command was executing
+  (#79) [@noytzach](https://github.com/noytzach)
 
 ## [0.3.0] - 2020-01-23
 

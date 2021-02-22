@@ -124,7 +124,6 @@ module tb_top #(
         .INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH),
         .RAM_ADDR_WIDTH (RAM_ADDR_WIDTH),
         .BOOT_ADDR (BOOT_ADDR),
-        .PULP_SECURE (1),
         .JTAG_BOOT (JTAG_BOOT),
         .OPENOCD_PORT (OPENOCD_PORT)
     ) tb_test_env_i(

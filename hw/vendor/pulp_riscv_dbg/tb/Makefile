@@ -61,6 +61,9 @@ RTLSRC_TB		:= boot_rom.sv \
 				dp_ram.sv \
 				mm_ram.sv \
 				SimJTAG.sv \
+				../sva/dm_top_sva.sv \
+				../sva/dm_csrs_sva.sv \
+				../sva/dm_sba_sva.sv \
 				tb_test_env.sv \
 				tb_top.sv
 
@@ -68,45 +71,44 @@ RTLSRC_VERI_TB          := boot_rom.sv \
 				dp_ram.sv \
 				mm_ram.sv \
 				SimJTAG.sv \
-				tb_test_env.sv \
 				tb_top_verilator.sv
 
 RTLSRC_INCDIR           := riscv/rtl/include
 
 RTLSRC_FPNEW_PKG	:= fpnew/src/fpnew_pkg.sv
 RTLSRC_RISCV_PKG	+= $(addprefix riscv/rtl/include/,\
-				apu_core_package.sv riscv_defines.sv \
-				riscv_tracer_defines.sv)
+				cv32e40p_apu_core_pkg.sv cv32e40p_pkg.sv \
+				../../bhv/include/cv32e40p_tracer_pkg.sv)
 RTLSRC_DM_PKG		+= ../src/dm_pkg.sv
 
 RTLSRC_PKG 		= $(RTLSRC_FPNEW_PKG) dm_tb_pkg.sv $(RTLSRC_RISCV_PKG) $(RTLSRC_DM_PKG)
 RTLSRC_RISCV		:= $(addprefix riscv/rtl/,\
-				cv32e40p_sim_clock_gating.sv \
-				register_file_test_wrap.sv \
-				riscv_tracer.sv \
-				riscv_register_file.sv \
-				riscv_alu.sv \
-				riscv_alu_basic.sv \
-				riscv_alu_div.sv \
-				riscv_compressed_decoder.sv \
-				riscv_controller.sv \
-				riscv_cs_registers.sv \
-				riscv_decoder.sv \
-				riscv_int_controller.sv \
-				riscv_ex_stage.sv \
-				riscv_hwloop_controller.sv \
-				riscv_hwloop_regs.sv \
-				riscv_id_stage.sv \
-				riscv_if_stage.sv \
-				riscv_load_store_unit.sv \
-				riscv_mult.sv \
-				riscv_prefetch_buffer.sv \
-				riscv_prefetch_L0_buffer.sv \
-				riscv_core.sv \
-				riscv_apu_disp.sv \
-				riscv_fetch_fifo.sv \
-				riscv_L0_buffer.sv \
-				riscv_pmp.sv)
+				../bhv/cv32e40p_sim_clock_gate.sv \
+				../bhv/cv32e40p_tracer.sv \
+				cv32e40p_if_stage.sv \
+				cv32e40p_cs_registers.sv \
+				cv32e40p_register_file_ff.sv \
+				cv32e40p_load_store_unit.sv \
+				cv32e40p_id_stage.sv \
+				cv32e40p_aligner.sv \
+				cv32e40p_decoder.sv \
+				cv32e40p_compressed_decoder.sv \
+				cv32e40p_fifo.sv \
+				cv32e40p_prefetch_buffer.sv \
+				cv32e40p_hwloop_regs.sv \
+				cv32e40p_mult.sv \
+				cv32e40p_int_controller.sv \
+				cv32e40p_ex_stage.sv \
+				cv32e40p_alu_div.sv \
+				cv32e40p_alu.sv \
+				cv32e40p_ff_one.sv \
+				cv32e40p_popcnt.sv \
+				cv32e40p_apu_disp.sv \
+				cv32e40p_controller.sv \
+				cv32e40p_obi_interface.sv \
+				cv32e40p_prefetch_controller.sv \
+				cv32e40p_sleep_unit.sv \
+				cv32e40p_core.sv)
 RTLSRC_COMMON           := $(addprefix common_cells/src/,\
 				cdc_2phase.sv fifo_v2.sv fifo_v3.sv\
 				rstgen.sv rstgen_bypass.sv)
@@ -122,7 +124,7 @@ RTLSRC_DEBUG		+= $(addprefix ../src/,\
 RTLSRC			+= $(RTLSRC_RISCV) $(RTLSRC_COMMON) $(RTLSRC_TECH) $(RTLSRC_DEBUG)
 
 # versions for this tb
-RI5CY_SHA               = d049690e7867291830631db7dbeb47c92718ed9e
+CV32E40P_SHA            = f9d63290eea738cb0a6fbf1e77bbd18555015a03
 FPU_SHA                 = v0.6.1
 COMMON_SHA              = 337f54a7cdfdad78b124cbdd2a627db3e0939141
 TECH_SHA                = b35652608124b7ea813818b14a00ca76edd7599d
@@ -228,7 +230,7 @@ $(RTLSRC_TECH):
 
 $(RTLSRC_RISCV_PKG) $(RTLSRC_RISCV):
 	git clone https://github.com/openhwgroup/cv32e40p.git riscv
-	cd riscv/ && git checkout $(RI5CY_SHA)
+	cd riscv/ && git checkout $(CV32E40P_SHA)
 
 # openocd server
 remote_bitbang/librbs_veri.so: INCLUDE_DIRS =./ $(VSIM_HOME)/include
