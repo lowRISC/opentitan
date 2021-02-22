@@ -7,7 +7,7 @@ from typing import Dict
 from sim import err_bits
 from .flags import FlagReg
 from .isa import (DecodeError, OTBNInsn, RV32RegReg, RV32RegImm, RV32ImmShift,
-                  insn_for_mnemonic, logical_byte_shift)
+                  insn_for_mnemonic, logical_byte_shift, extract_quarter_word)
 from .state import OTBNState
 
 
@@ -458,8 +458,11 @@ class BNMULQACC(OTBNInsn):
         self.acc_shift_imm = op_vals['acc_shift_imm']
 
     def execute(self, state: OTBNState) -> None:
-        a_qw = state.get_quarter_word_unsigned(self.wrs1, self.wrs1_qwsel)
-        b_qw = state.get_quarter_word_unsigned(self.wrs2, self.wrs2_qwsel)
+        a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+
+        a_qw = extract_quarter_word(a, self.wrs1_qwsel)
+        b_qw = extract_quarter_word(b, self.wrs2_qwsel)
 
         mul_res = a_qw * b_qw
 
@@ -488,8 +491,11 @@ class BNMULQACCWO(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
-        a_qw = state.get_quarter_word_unsigned(self.wrs1, self.wrs1_qwsel)
-        b_qw = state.get_quarter_word_unsigned(self.wrs2, self.wrs2_qwsel)
+        a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+
+        a_qw = extract_quarter_word(a, self.wrs1_qwsel)
+        b_qw = extract_quarter_word(b, self.wrs2_qwsel)
 
         mul_res = a_qw * b_qw
 
@@ -521,8 +527,11 @@ class BNMULQACCSO(OTBNInsn):
         self.flag_group = op_vals['flag_group']
 
     def execute(self, state: OTBNState) -> None:
-        a_qw = state.get_quarter_word_unsigned(self.wrs1, self.wrs1_qwsel)
-        b_qw = state.get_quarter_word_unsigned(self.wrs2, self.wrs2_qwsel)
+        a = state.wdrs.get_reg(self.wrs1).read_unsigned()
+        b = state.wdrs.get_reg(self.wrs2).read_unsigned()
+
+        a_qw = extract_quarter_word(a, self.wrs1_qwsel)
+        b_qw = extract_quarter_word(b, self.wrs2_qwsel)
 
         mul_res = a_qw * b_qw
 
