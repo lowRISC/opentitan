@@ -25,6 +25,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   local bit under_alert_handshake[string];
   local bit exp_alert[string];
   local bit is_fatal_alert[string];
+  local int alert_chk_max_delay[string];
 
   `uvm_component_new
 
@@ -156,23 +157,22 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   virtual task check_alert_triggered(string alert_name);
     // 2 clock cycles between two alert handshakes, 1 clock cycle to go back to `Idle` state,
     // 1 clock cycle for monitor to detect alert, 1 negedge edge to make sure no race condition.
-    repeat(5) begin
+    repeat(5 + alert_chk_max_delay[alert_name]) begin
       cfg.clk_rst_vif.wait_n_clks(1);
       if (under_alert_handshake[alert_name] || cfg.under_reset) return;
     end
     `uvm_error(`gfn, $sformatf("alert %0s did not trigger", alert_name))
   endtask
 
-  // this function is used for individual IPs to set when they expect certain alert to trigger
-  // - input alert_name is the full name of the alert listed in LIST_OF_ALERTS
-  // - input is_fatal, if set, expects to continuously trigger alert request until reset is
-  //   asserted
-  // Note that this function requires user to know exact time that alert should be triggered,
-  // which means the time when `alert_req_i` is set. Because we need to accurately predict if two
-  // alerts are merged or not
-  // TODO: needs to handle a corner case where user could not predict the exact time when
-  // `alert_req_i` is set
-  virtual function void set_exp_alert(string alert_name, bit is_fatal = 0);
+  // This function is used for individual IPs to set when they expect certain alert to trigger
+  // - Input alert_name is the full name of the alert listed in LIST_OF_ALERTS.
+  // - Input is_fatal, if set, expects to continuously trigger alert request until reset is
+  //   asserted.
+  // - Input max_delay can be used when user could not predict the exact time when alert triggered.
+  //   This input allows alert to trigger anytime between 0 to `max_delay` clock cycles. However,
+  //   please do not use this variable if there is any ongoing alert handshake, because if using
+  //   max_delay, we cannot accurately predict if two alerts are merged or not.
+  virtual function void set_exp_alert(string alert_name, bit is_fatal = 0, int max_delay = 0);
     if (!(alert_name inside {cfg.list_of_alerts})) begin
       `uvm_fatal(`gfn, $sformatf("alert_name %0s is not in cfg.list_of_alerts!", alert_name))
     end
@@ -189,6 +189,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
           `uvm_info(`gfn, $sformatf("alert %0s is expected to trigger", alert_name), UVM_MEDIUM)
           is_fatal_alert[alert_name] = is_fatal;
           exp_alert[alert_name] = 1;
+          alert_chk_max_delay[alert_name] = max_delay;
         end
       end
     join_none
@@ -320,7 +321,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       alert_fifos[cfg.list_of_alerts[i]].flush();
       exp_alert[cfg.list_of_alerts[i]]             = 0;
       under_alert_handshake[cfg.list_of_alerts[i]] = 0;
-      is_fatal_alert[cfg.list_of_alerts[i]]    = 0;
+      is_fatal_alert[cfg.list_of_alerts[i]]        = 0;
+      alert_chk_max_delay[cfg.list_of_alerts[i]]   = 0;
     end
   endfunction
 
