@@ -5044,8 +5044,32 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
-      available_input_list: []
-      available_output_list: []
+      available_input_list:
+      [
+        {
+          name: tck
+          width: 1
+          type: input
+        }
+        {
+          name: tms
+          width: 1
+          type: input
+        }
+        {
+          name: tdi
+          width: 1
+          type: input
+        }
+      ]
+      available_output_list:
+      [
+        {
+          name: tdo
+          width: 1
+          type: output
+        }
+      ]
       available_inout_list: []
       param_list:
       [
@@ -11723,6 +11747,7 @@
       i2c2
       pattgen
       spi_host1
+      flash_ctrl
     ]
     nc_modules:
     [
@@ -12027,6 +12052,24 @@
         type: inout
         module_name: spi_host1
       }
+      {
+        name: flash_ctrl_tck
+        width: 1
+        type: input
+        module_name: flash_ctrl
+      }
+      {
+        name: flash_ctrl_tms
+        width: 1
+        type: input
+        module_name: flash_ctrl
+      }
+      {
+        name: flash_ctrl_tdi
+        width: 1
+        type: input
+        module_name: flash_ctrl
+      }
     ]
     outputs:
     [
@@ -12137,6 +12180,12 @@
         width: 1
         type: output
         module_name: spi_host1
+      }
+      {
+        name: flash_ctrl_tdo
+        width: 1
+        type: output
+        module_name: flash_ctrl
       }
     ]
   }

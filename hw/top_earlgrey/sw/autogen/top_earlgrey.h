@@ -1079,7 +1079,10 @@ typedef enum top_earlgrey_pinmux_peripheral_in {
   kTopEarlgreyPinmuxPeripheralInSpiHost1Sd1 = 43, /**< spi_host1_sd 1 */
   kTopEarlgreyPinmuxPeripheralInSpiHost1Sd2 = 44, /**< spi_host1_sd 2 */
   kTopEarlgreyPinmuxPeripheralInSpiHost1Sd3 = 45, /**< spi_host1_sd 3 */
-  kTopEarlgreyPinmuxPeripheralInLast = 45, /**< \internal Last valid peripheral input */
+  kTopEarlgreyPinmuxPeripheralInFlashCtrlTck = 46, /**< flash_ctrl_tck */
+  kTopEarlgreyPinmuxPeripheralInFlashCtrlTms = 47, /**< flash_ctrl_tms */
+  kTopEarlgreyPinmuxPeripheralInFlashCtrlTdi = 48, /**< flash_ctrl_tdi */
+  kTopEarlgreyPinmuxPeripheralInLast = 48, /**< \internal Last valid peripheral input */
 } top_earlgrey_pinmux_peripheral_in_t;
 
 /**
@@ -1245,7 +1248,8 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselSpiHost1Sd3 = 52, /**< spi_host1_sd 3 */
   kTopEarlgreyPinmuxOutselSpiHost1Sck = 53, /**< spi_host1_sck */
   kTopEarlgreyPinmuxOutselSpiHost1Csb = 54, /**< spi_host1_csb */
-  kTopEarlgreyPinmuxOutselLast = 54, /**< \internal Last valid outsel value */
+  kTopEarlgreyPinmuxOutselFlashCtrlTdo = 55, /**< flash_ctrl_tdo */
+  kTopEarlgreyPinmuxOutselLast = 55, /**< \internal Last valid outsel value */
 } top_earlgrey_pinmux_outsel_t;
 
 /**
