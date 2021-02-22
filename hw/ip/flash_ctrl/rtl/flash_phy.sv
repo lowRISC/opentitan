@@ -29,9 +29,7 @@ module flash_phy import flash_ctrl_pkg::*; (
   input [3:0] flash_test_mode_a_i,
   input flash_test_voltage_h_i,
   input lc_ctrl_pkg::lc_tx_t flash_bist_enable_i,
-  input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
-  input jtag_pkg::jtag_req_t jtag_req_i,
-  output jtag_pkg::jtag_rsp_t jtag_rsp_o
+  input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i
 );
 
   // Flash macro outstanding refers to how many reads we allow a macro to move ahead of an
@@ -230,7 +228,7 @@ module flash_phy import flash_ctrl_pkg::*; (
   logic tdo;
   lc_ctrl_pkg::lc_tx_t [FlashLcDftLast-1:0] lc_nvm_debug_en;
 
-  assign jtag_rsp_o.tdo = tdo & (lc_nvm_debug_en[FlashLcTdoSel] == lc_ctrl_pkg::On);
+  assign flash_ctrl_o.jtag_rsp.tdo = tdo & (lc_nvm_debug_en[FlashLcTdoSel] == lc_ctrl_pkg::On);
 
   prim_lc_sync #(
     .NumCopies(int'(FlashLcDftLast))
@@ -264,9 +262,9 @@ module flash_phy import flash_ctrl_pkg::*; (
     .flash_rsp_o(prim_flash_rsp),
     .prog_type_avail_o(prog_type_avail),
     .init_busy_o(init_busy),
-    .tck_i(jtag_req_i.tck & (lc_nvm_debug_en[FlashLcTckSel] == lc_ctrl_pkg::On)),
-    .tdi_i(jtag_req_i.tdi & (lc_nvm_debug_en[FlashLcTdiSel] == lc_ctrl_pkg::On)),
-    .tms_i(jtag_req_i.tms & (lc_nvm_debug_en[FlashLcTmsSel] == lc_ctrl_pkg::On)),
+    .tck_i(flash_ctrl_i.jtag_req.tck & (lc_nvm_debug_en[FlashLcTckSel] == lc_ctrl_pkg::On)),
+    .tdi_i(flash_ctrl_i.jtag_req.tdi & (lc_nvm_debug_en[FlashLcTdiSel] == lc_ctrl_pkg::On)),
+    .tms_i(flash_ctrl_i.jtag_req.tms & (lc_nvm_debug_en[FlashLcTmsSel] == lc_ctrl_pkg::On)),
     .tdo_o(tdo),
     .bist_enable_i(bist_enable_qual),
     .scanmode_i,
@@ -284,8 +282,8 @@ module flash_phy import flash_ctrl_pkg::*; (
   );
 
   logic unused_trst_n;
-  assign unused_trst_n = jtag_req_i.trst_n;
-  assign jtag_rsp_o.tdo_oe = 1'b1;
+  assign unused_trst_n = flash_ctrl_i.jtag_req.trst_n;
+  assign flash_ctrl_o.jtag_rsp.tdo_oe = 1'b1;
 
   //////////////////////////////////////////////
   // Assertions, Assumptions, and Coverpoints //

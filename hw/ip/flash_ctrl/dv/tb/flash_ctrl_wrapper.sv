@@ -57,6 +57,12 @@ module flash_ctrl_wrapper (
     .tl_i (flash_ctrl_tl_i),
     .tl_o (flash_ctrl_tl_o),
 
+    .cio_tck_i    ('0),
+    .cio_tms_i    ('0),
+    .cio_tdi_i    ('0),
+    .cio_tdo_o    (),
+    .cio_tdo_en_o (),
+
     // Interrupt
     .intr_prog_empty_o(intr_prog_empty_o),
     .intr_prog_lvl_o  (intr_prog_lvl_o),
@@ -139,9 +145,7 @@ module flash_ctrl_wrapper (
     .flash_bist_enable_i,
     .flash_test_mode_a_i    (1'b0),
     .flash_test_voltage_h_i (1'b0),
-    .lc_nvm_debug_en_i,
-    .jtag_req_i             ('0),
-    .jtag_rsp_o             ()
+    .lc_nvm_debug_en_i
   );
 
 endmodule
