@@ -550,7 +550,7 @@ class BNMULQACCSO(OTBNInsn):
                                 M=old_flags.M,
                                 L=bool(lo_part & 1),
                                 Z=lo_part == 0)
-        state.csrs.flags[self.flag_group] = new_flags
+        state.set_flags(self.flag_group, new_flags)
 
 
 class BNSUB(OTBNInsn):

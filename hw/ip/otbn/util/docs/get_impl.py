@@ -91,6 +91,23 @@ class ImplTransformer(cst.CSTTransformer):
             if stem == 'state' and updated.attr.value == 'dmem':
                 return cst.Name(value='DMEM')
 
+        if isinstance(updated.value, cst.Attribute):
+            # This attribute looks like A.B.C where B, C are names and A may be
+            # a further attribute or it might be a name.
+            attr_a = updated.value.value
+            attr_b = updated.value.attr.value
+            attr_c = updated.attr.value
+
+            if isinstance(attr_a, cst.Name):
+                stem = attr_a.value
+
+                # Replace state.csrs.flags with FLAGs: the flag groups are
+                # stored in the CSRs in the ISS and the implementation, but
+                # logically exist somewhat separately, so we want named
+                # reads/writes from them to look different.
+                if (stem, attr_b, attr_c) == ('state', 'csrs', 'flags'):
+                    return cst.Name(value='FLAGs')
+
         return updated
 
     def leave_FunctionDef(self,
@@ -297,6 +314,33 @@ class ImplTransformer(cst.CSTTransformer):
 
         return NBAssign.make(make_aref('CSRs', idx), rhs)
 
+    @staticmethod
+    def _spot_flag_write(node: cst.Expr) -> Optional[NBAssign]:
+        # Spot
+        #
+        #   state.set_flags(fg, flags)
+        #
+        # and turn it into
+        #
+        #   FLAGs[fg] = flags
+
+        if not isinstance(node.value, cst.Call):
+            return None
+
+        call = node.value
+        if len(call.args) != 2 or not isinstance(call.func, cst.Attribute):
+            return None
+
+        if not (isinstance(call.func.value, cst.Name) and
+                call.func.value.value == 'state' and
+                call.func.attr.value == 'set_flags'):
+            return None
+
+        fg = call.args[0].value
+        flags = call.args[1].value
+
+        return NBAssign.make(make_aref('FLAGs', fg), flags)
+
     def leave_Expr(self,
                    orig: cst.Expr,
                    updated: cst.Expr) -> cst.BaseSmallStatement:
@@ -307,6 +351,10 @@ class ImplTransformer(cst.CSTTransformer):
         csr_write = ImplTransformer._spot_csr_write(updated)
         if csr_write is not None:
             return csr_write
+
+        flag_write = ImplTransformer._spot_flag_write(updated)
+        if flag_write is not None:
+            return flag_write
 
         return updated
 
