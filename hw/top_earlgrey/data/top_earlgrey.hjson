@@ -914,7 +914,8 @@
     //  If `mio_modules` aren't defined, it uses all remaining modules from
     //  module list except defined in `dio_modules`.
     mio_modules: ["gpio", "uart0", "uart1", "uart2", "uart3",
-                  "i2c0", "i2c1", "i2c2", "pattgen", "spi_host1"]
+                  "i2c0", "i2c1", "i2c2", "pattgen", "spi_host1",
+                  "flash_ctrl"]
 
     // If any module isn't defined in above two lists, its inputs will be tied
     //  to 0, and the output/OE signals will be floating (or connected to

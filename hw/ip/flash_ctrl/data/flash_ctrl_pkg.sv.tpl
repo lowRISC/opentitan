@@ -301,6 +301,7 @@ package flash_ctrl_pkg;
     tlul_pkg::tl_h2d_t    tl_flash_c2p;
     logic                 alert_trig;
     logic                 alert_ack;
+    jtag_pkg::jtag_req_t  jtag_req;
   } flash_req_t;
 
   // default value of flash_req_t (for dangling ports)
@@ -326,7 +327,8 @@ package flash_ctrl_pkg;
     rd_buf_en:     1'b0,
     tl_flash_c2p:  '0,
     alert_trig:    1'b0,
-    alert_ack:     1'b0
+    alert_ack:     1'b0,
+    jtag_req:      '0
   };
 
   // memory to flash controller
@@ -345,6 +347,7 @@ package flash_ctrl_pkg;
     logic [NumBanks-1:0] ecc_single_err;
     logic [NumBanks-1:0] ecc_multi_err;
     logic [NumBanks-1:0][BusAddrW-1:0] ecc_addr;
+    jtag_pkg::jtag_rsp_t jtag_rsp;
   } flash_rsp_t;
 
   // default value of flash_rsp_t (for dangling ports)
@@ -362,7 +365,8 @@ package flash_ctrl_pkg;
     flash_alert_n:      1'b1,
     ecc_single_err:     '0,
     ecc_multi_err:      '0,
-    ecc_addr:           '0
+    ecc_addr:           '0,
+    jtag_rsp:           '0
   };
 
   // RMA entries

@@ -530,8 +530,6 @@ module top_${top["name"]} #(
     .flash_ctrl_i      (${m["inter_signal_list"][0]["top_signame"]}_req),
     .flash_ctrl_o      (${m["inter_signal_list"][0]["top_signame"]}_rsp),
     .lc_nvm_debug_en_i (${m["inter_signal_list"][2]["top_signame"]}),
-    .jtag_req_i        ('0),
-    .jtag_rsp_o        (),
     .flash_bist_enable_i,
     .flash_power_down_h_i,
     .flash_power_ready_h_i,

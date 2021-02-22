@@ -46,6 +46,13 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   output       pwrmgr_pkg::pwr_flash_rsp_t pwrmgr_o,
   output       keymgr_flash_t keymgr_o,
 
+  // IOs
+  input cio_tck_i,
+  input cio_tms_i,
+  input cio_tdi_i,
+  output logic cio_tdo_en_o,
+  output logic cio_tdo_o,
+
   // Interrupts
   output logic intr_prog_empty_o, // Program fifo is empty
   output logic intr_prog_lvl_o,   // Program fifo is empty
@@ -767,9 +774,16 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   assign flash_o.tl_flash_c2p = tl_win_h2d[2];
   assign flash_o.alert_trig = reg2hw.phy_alert_cfg.alert_trig.q;
   assign flash_o.alert_ack = reg2hw.phy_alert_cfg.alert_ack.q;
+  assign flash_o.jtag_req.tck = cio_tck_i;
+  assign flash_o.jtag_req.tms = cio_tms_i;
+  assign flash_o.jtag_req.tdi = cio_tdi_i;
+  assign flash_o.jtag_req.trst_n = '0;
+  assign cio_tdo_o = flash_i.jtag_rsp.tdo;
+  assign cio_tdo_en_o = flash_i.jtag_rsp.tdo_oe;
   assign flash_rd_err = flash_i.rd_err;
   assign flash_rd_data = flash_i.rd_data;
   assign flash_phy_busy = flash_i.init_busy;
+
 
   // Interface to pwrmgr
   // flash is not idle as long as there is a stateful operation ongoing
@@ -911,7 +925,6 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
   logic [BusByteWidth-1:0] unused_byte_sel;
   logic [top_pkg::TL_AW-1-BusAddrW:0] unused_higher_addr_bits;
   logic [top_pkg::TL_AW-1:0] unused_scratch;
-
 
   // Unused signals
   assign unused_byte_sel = muxed_addr[BusByteWidth-1:0];

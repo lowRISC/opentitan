@@ -15,8 +15,16 @@
   clock_primary: "clk_i",
   other_clock_list: [ "clk_otp_i" ],
   reset_primary: "rst_ni",
-  other_reset_list: [ "rst_otp_ni" ]
+  other_reset_list: [ "rst_otp_ni" ],
   bus_device: "tlul",
+  available_input_list: [
+    { name: "tck", desc: "jtag clock" },
+    { name: "tms", desc: "jtag tms" },
+    { name: "tdi", desc: "jtag input" },
+  ],
+  available_output_list: [
+    { name: "tdo", desc: "jtag output" },
+  ],
   interrupt_list: [
     { name: "prog_empty", desc: "Program FIFO empty" },
     { name: "prog_lvl",   desc: "Program FIFO drained to level" },
