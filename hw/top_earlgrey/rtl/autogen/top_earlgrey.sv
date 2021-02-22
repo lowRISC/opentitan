@@ -109,9 +109,9 @@ module top_earlgrey #(
   import top_earlgrey_rnd_cnst_pkg::*;
 
   // Signals
-  logic [45:0] mio_p2d;
-  logic [51:0] mio_d2p;
-  logic [51:0] mio_d2p_en;
+  logic [48:0] mio_p2d;
+  logic [52:0] mio_d2p;
+  logic [52:0] mio_d2p_en;
   logic [20:0] dio_p2d;
   logic [20:0] dio_d2p;
   logic [20:0] dio_d2p_en;
@@ -220,6 +220,11 @@ module top_earlgrey #(
   // sensor_ctrl_aon
   // sram_ctrl_ret_aon
   // flash_ctrl
+  logic        cio_flash_ctrl_tck_p2d;
+  logic        cio_flash_ctrl_tms_p2d;
+  logic        cio_flash_ctrl_tdi_p2d;
+  logic        cio_flash_ctrl_tdo_d2p;
+  logic        cio_flash_ctrl_tdo_en_d2p;
   // rv_plic
   // aes
   // hmac
@@ -916,8 +921,6 @@ module top_earlgrey #(
     .flash_ctrl_i      (flash_ctrl_flash_req),
     .flash_ctrl_o      (flash_ctrl_flash_rsp),
     .lc_nvm_debug_en_i (lc_ctrl_lc_nvm_debug_en),
-    .jtag_req_i        ('0),
-    .jtag_rsp_o        (),
     .flash_bist_enable_i,
     .flash_power_down_h_i,
     .flash_power_ready_h_i,
@@ -1712,6 +1715,15 @@ module top_earlgrey #(
     .RndCnstLfsrPerm(RndCnstFlashCtrlLfsrPerm)
   ) u_flash_ctrl (
 
+      // Input
+      .cio_tck_i    (cio_flash_ctrl_tck_p2d),
+      .cio_tms_i    (cio_flash_ctrl_tms_p2d),
+      .cio_tdi_i    (cio_flash_ctrl_tdi_p2d),
+
+      // Output
+      .cio_tdo_o    (cio_flash_ctrl_tdo_d2p),
+      .cio_tdo_en_o (cio_flash_ctrl_tdo_en_d2p),
+
       // Interrupt
       .intr_prog_empty_o (intr_flash_ctrl_prog_empty),
       .intr_prog_lvl_o   (intr_flash_ctrl_prog_lvl),
@@ -2396,6 +2408,7 @@ module top_earlgrey #(
 
   // Pinmux connections
   assign mio_d2p = {
+    cio_flash_ctrl_tdo_d2p,
     cio_spi_host1_csb_d2p,
     cio_spi_host1_sck_d2p,
     cio_spi_host1_sd_d2p,
@@ -2416,6 +2429,7 @@ module top_earlgrey #(
     cio_gpio_gpio_d2p
   };
   assign mio_d2p_en = {
+    cio_flash_ctrl_tdo_en_d2p,
     cio_spi_host1_csb_en_d2p,
     cio_spi_host1_sck_en_d2p,
     cio_spi_host1_sd_en_d2p,
@@ -2436,6 +2450,9 @@ module top_earlgrey #(
     cio_gpio_gpio_en_d2p
   };
   assign {
+    cio_flash_ctrl_tdi_p2d,
+    cio_flash_ctrl_tms_p2d,
+    cio_flash_ctrl_tck_p2d,
     cio_spi_host1_sd_p2d,
     cio_i2c2_scl_p2d,
     cio_i2c2_sda_p2d,
