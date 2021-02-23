@@ -13,6 +13,13 @@ sw_tests = {
   # },
 }
 
+# TODO
+sw_rom_ext_tests = {
+  # 'test_name': {
+  #   'library': test_lib,
+  # },
+}
+
 subdir('dif')
 subdir('rom_ext')
 subdir('runtime')
@@ -223,6 +230,47 @@ foreach sw_test_name, sw_test_info : sw_tests
         sw_test_sim_dv_logs,
       ],
       output: sw_test_name + '_export_' + device_name,
+      build_always_stale: true,
+      build_by_default: true,
+    )
+  endforeach
+endforeach
+
+foreach sw_test_name, sw_test_info : sw_rom_ext_tests
+  foreach device_name, device_lib : sw_lib_arch_core_devices
+    sw_test_elf = executable(
+      sw_test_name + '_rom_ext_' + device_name,
+      name_suffix: 'elf',
+      sources: [
+        meson.source_root() / 'sw/device/rom_exts/rom_ext_test.c',
+      ],
+      dependencies: [
+        temp['rom_ext_slot_a'],
+        device_lib,
+        sw_test_info['library'],
+        sw_lib_irq_handlers,
+        sw_lib_testing_test_main,
+      ],
+    )
+
+    sw_test_embedded = custom_target(
+      sw_test_name + '_rom_ext_' + device_name,
+      command: make_embedded_target_command,
+      depend_files: [make_embedded_target_depend_files,],
+      input: sw_test_elf,
+      output: make_embedded_target_outputs,
+      build_by_default: true,
+    )
+
+    custom_target(
+      sw_test_name + '_rom_ext_export_' + device_name,
+      command: export_target_command,
+      depend_files: [export_target_depend_files,],
+      input: [
+        sw_test_elf,
+        sw_test_embedded,
+      ],
+      output: sw_test_name + '_rom_ext_export_' + device_name,
       build_always_stale: true,
       build_by_default: true,
     )

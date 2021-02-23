@@ -263,6 +263,11 @@ sw_tests += {
     'library': dif_uart_smoketest_lib,
   }
 }
+sw_rom_ext_tests += {
+  'dif_uart_smoketest': {
+    'library': dif_uart_smoketest_lib,
+  }
+}
 
 dif_rv_timer_smoketest_lib = declare_dependency(
   link_with: static_library(
