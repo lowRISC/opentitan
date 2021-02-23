@@ -430,6 +430,8 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_otp_rsp_t       pwrmgr_aon_pwr_otp_rsp;
   pwrmgr_pkg::pwr_lc_req_t       pwrmgr_aon_pwr_lc_req;
   pwrmgr_pkg::pwr_lc_rsp_t       pwrmgr_aon_pwr_lc_rsp;
+  logic       pwrmgr_aon_strap;
+  logic       pwrmgr_aon_low_power;
   rv_core_ibex_pkg::crashdump_t       rv_core_ibex_crashdump;
   logic       usbdev_usb_out_of_rst;
   logic       usbdev_usb_aon_wake_en;
@@ -1521,6 +1523,8 @@ module top_earlgrey #(
       .pwr_cpu_i(pwrmgr_aon_pwr_cpu),
       .wakeups_i(pwrmgr_aon_wakeups),
       .rstreqs_i(pwrmgr_aon_rstreqs),
+      .strap_o(pwrmgr_aon_strap),
+      .low_power_o(pwrmgr_aon_low_power),
       .tl_i(pwrmgr_aon_tl_req),
       .tl_o(pwrmgr_aon_tl_rsp),
 
@@ -1598,8 +1602,8 @@ module top_earlgrey #(
       .dft_jtag_o(),
       .dft_jtag_i(jtag_pkg::JTAG_RSP_DEFAULT),
       .dft_strap_test_o(),
-      .sleep_en_i(1'b0),
-      .strap_en_i(1'b0),
+      .sleep_en_i(pwrmgr_aon_low_power),
+      .strap_en_i(pwrmgr_aon_strap),
       .aon_wkup_req_o(pwrmgr_aon_wakeups[0]),
       .usb_wkup_req_o(pwrmgr_aon_wakeups[1]),
       .usb_out_of_rst_i(usbdev_usb_out_of_rst),
@@ -1630,8 +1634,8 @@ module top_earlgrey #(
 
 
       // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
-      .clk_aon_i (clkmgr_aon_clocks.clk_aon_secure),
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),
+      .clk_aon_i (clkmgr_aon_clocks.clk_aon_powerup),
       .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_aon_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel])
   );
@@ -1646,7 +1650,7 @@ module top_earlgrey #(
       .aon_timer_wkup_req_o(pwrmgr_aon_wakeups[2]),
       .aon_timer_rst_req_o(pwrmgr_aon_rstreqs),
       .lc_escalate_en_i(lc_ctrl_pkg::Off),
-      .sleep_mode_i('0),
+      .sleep_mode_i(pwrmgr_aon_low_power),
       .tl_i(aon_timer_aon_tl_req),
       .tl_o(aon_timer_aon_tl_rsp),
 

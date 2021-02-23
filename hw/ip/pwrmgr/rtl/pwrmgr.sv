@@ -50,6 +50,10 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   input  [NumWkups-1:0] wakeups_i,
   input  [NumRstReqs-1:0] rstreqs_i,
 
+  // pinmux and other peripherals
+  output logic strap_o,
+  output logic low_power_o,
+
   // escalation interface
   input prim_esc_pkg::esc_tx_t esc_rst_tx_i,
   output prim_esc_pkg::esc_rx_t esc_rst_rx_o,
@@ -94,7 +98,6 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   logic ack_pwrdn;
   pwrup_cause_e pwrup_cause;
 
-  logic capture_en_pulse; // begin capture wakeup causes
   logic low_power_fall_through;
   logic low_power_abort;
 
@@ -302,6 +305,8 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   pwrmgr_fsm i_fsm (
     .clk_i,
     .rst_ni,
+    .clk_slow_i,
+    .rst_slow_ni,
 
     // interface with slow_fsm
     .req_pwrup_i       (req_pwrup),
@@ -316,7 +321,6 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .main_pd_ni        (reg2hw.control.main_pd_n.q),
 
     // consumed in pwrmgr
-    .wkup_record_o     (capture_en_pulse),
     .wkup_o            (wkup),
     .clr_cfg_lock_o    (clr_cfg_lock),
     .fall_through_o    (low_power_fall_through),
@@ -344,7 +348,11 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     // flash
     .flash_init_o      (pwr_flash_o.flash_init),
     .flash_done_i      (flash_rsp.flash_done),
-    .flash_idle_i      (flash_rsp.flash_idle)
+    .flash_idle_i      (flash_rsp.flash_idle),
+
+    // pinmux and other peripherals
+    .strap_o,
+    .low_power_o
   );
 
   ////////////////////////////
@@ -367,7 +375,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .rst_ni,
     .wr_i            (wake_info_wen),
     .data_i          (wake_info_data),
-    .start_capture_i (capture_en_pulse),
+    .start_capture_i (low_power_o),
     .record_dis_i    (reg2hw.wake_info_capture_dis.q),
     .wakeups_i       (peri_reqs_masked.wakeups),
     .fall_through_i  (low_power_fall_through),

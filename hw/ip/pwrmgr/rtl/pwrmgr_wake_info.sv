@@ -23,13 +23,25 @@ module pwrmgr_wake_info import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   logic record_en;
 
+  // detect rising edge of start_capture_i
+  logic start_capture_q1, start_capture;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      start_capture_q1 <= 1'b1;
+    end else begin
+      start_capture_q1 <= start_capture_i;
+    end
+  end
+
+  assign start_capture = start_capture_i & ~start_capture_q1;
+
   // generate the record enbale signal
   // HW enables the recording
   // Software can suppress the recording or disable it
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       record_en <= 1'b0;
-    end else if (start_capture_i && !record_dis_i) begin
+    end else if (start_capture && !record_dis_i) begin
       // if not disabled by software
       // a recording enable puls by HW starts recording
       record_en <= 1'b1;

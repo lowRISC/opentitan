@@ -21,9 +21,11 @@ module aon_timer (
   output logic                intr_wdog_timer_bark_o,
 
   // clk_aon_i domain
-  input  logic                sleep_mode_i, // TODO where will this come from?
   output logic                aon_timer_wkup_req_o,
-  output logic                aon_timer_rst_req_o
+  output logic                aon_timer_rst_req_o,
+
+  // async domain
+  input  logic                sleep_mode_i
 );
 
   import aon_timer_reg_pkg::*;
@@ -260,10 +262,20 @@ module aon_timer (
   // Timer Core //
   ////////////////
 
+  logic sleep_mode;
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_sync_sleep_mode (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+    .d_i     (sleep_mode_i),
+    .q_o     (sleep_mode)
+  );
+
   aon_timer_core u_core (
     .clk_aon_i,
     .rst_aon_ni,
-    .sleep_mode_i,
+    .sleep_mode_i              (sleep_mode),
     .lc_escalate_en_i          (lc_escalate_en),
     .wkup_enable_o             (wkup_enable),
     .wkup_prescaler_o          (wkup_prescaler),

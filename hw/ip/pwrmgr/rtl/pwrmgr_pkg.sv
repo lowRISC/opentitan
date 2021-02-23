@@ -190,6 +190,7 @@ package pwrmgr_pkg;
     FastPwrStateReleaseLcRst,
     FastPwrStateOtpInit,
     FastPwrStateLcInit,
+    FastPwrStateStrap,
     FastPwrStateFlashInit,
     FastPwrStateAckPwrUp,
     FastPwrStateActive,

@@ -127,7 +127,6 @@
         clocks:
         {
           clk_io_div4_secure: io_div4
-          clk_aon_secure: aon
           clk_main_secure: main
         }
       }
@@ -3974,6 +3973,34 @@
           index: -1
         }
         {
+          struct: logic
+          type: uni
+          name: strap
+          act: req
+          package: ""
+          inst_name: pwrmgr_aon
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: pwrmgr_aon_strap
+          index: -1
+        }
+        {
+          struct: logic
+          type: uni
+          name: low_power
+          act: req
+          package: ""
+          inst_name: pwrmgr_aon
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: pwrmgr_aon_low_power
+          index: -1
+        }
+        {
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -4325,7 +4352,7 @@
         clk_i: io_div4
         clk_aon_i: aon
       }
-      clock_group: secure
+      clock_group: powerup
       reset_connections:
       {
         rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]
@@ -4336,8 +4363,8 @@
       generated: "true"
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_secure
-        clk_aon_i: clkmgr_aon_clocks.clk_aon_secure
+        clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
+        clk_aon_i: clkmgr_aon_clocks.clk_aon_powerup
       }
       size: 0x1000
       bus_device: tlul
@@ -4437,6 +4464,8 @@
           package: ""
           default: 1'b0
           inst_name: pinmux_aon
+          width: 1
+          top_signame: pwrmgr_aon_low_power
           index: -1
         }
         {
@@ -4447,6 +4476,8 @@
           package: ""
           default: 1'b0
           inst_name: pinmux_aon
+          width: 1
+          top_signame: pwrmgr_aon_strap
           index: -1
         }
         {
@@ -4650,8 +4681,10 @@
           act: rcv
           package: ""
           struct: logic
-          width: "1"
+          width: 1
           inst_name: aon_timer_aon
+          default: ""
+          top_signame: pwrmgr_aon_low_power
           index: -1
         }
         {
@@ -7619,6 +7652,15 @@
       pwrmgr_aon.pwr_lc:
       [
         lc_ctrl.pwr_lc
+      ]
+      pwrmgr_aon.strap:
+      [
+        pinmux_aon.strap_en
+      ]
+      pwrmgr_aon.low_power:
+      [
+        pinmux_aon.sleep_en
+        aon_timer_aon.sleep_mode
       ]
       rv_core_ibex.crashdump:
       [
@@ -13410,6 +13452,34 @@
         index: -1
       }
       {
+        struct: logic
+        type: uni
+        name: strap
+        act: req
+        package: ""
+        inst_name: pwrmgr_aon
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: pwrmgr_aon_strap
+        index: -1
+      }
+      {
+        struct: logic
+        type: uni
+        name: low_power
+        act: req
+        package: ""
+        inst_name: pwrmgr_aon
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: pwrmgr_aon_low_power
+        index: -1
+      }
+      {
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -13735,6 +13805,8 @@
         package: ""
         default: 1'b0
         inst_name: pinmux_aon
+        width: 1
+        top_signame: pwrmgr_aon_low_power
         index: -1
       }
       {
@@ -13745,6 +13817,8 @@
         package: ""
         default: 1'b0
         inst_name: pinmux_aon
+        width: 1
+        top_signame: pwrmgr_aon_strap
         index: -1
       }
       {
@@ -13886,8 +13960,10 @@
         act: rcv
         package: ""
         struct: logic
-        width: "1"
+        width: 1
         inst_name: aon_timer_aon
+        default: ""
+        top_signame: pwrmgr_aon_low_power
         index: -1
       }
       {
@@ -16279,6 +16355,28 @@
         end_idx: -1
         act: req
         suffix: rsp
+        default: ""
+      }
+      {
+        package: ""
+        struct: logic
+        signame: pwrmgr_aon_strap
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: ""
+      }
+      {
+        package: ""
+        struct: logic
+        signame: pwrmgr_aon_low_power
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
         default: ""
       }
       {

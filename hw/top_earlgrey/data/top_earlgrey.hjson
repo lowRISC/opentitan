@@ -85,7 +85,7 @@
     // The proc group is not peripheral, and directly hardwired
 
     groups: [
-      // the powerup group is used exclusively by clk/pwr/rstmgr
+      // the powerup group is used exclusively by clk/pwr/rstmgr/pinmux
       { name: "powerup", src:"top", sw_cg: "no"                   }
       { name: "trans",   src:"top", sw_cg: "hint", unique: "yes", }
       { name: "infra",   src:"top", sw_cg: "no",                  }
@@ -406,7 +406,7 @@
     { name: "pinmux_aon",
       type: "pinmux",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
-      clock_group: "secure",
+      clock_group: "powerup",
       reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
       domain: "Aon",
       base_addr: "0x40460000",
@@ -730,6 +730,8 @@
       'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],
       'pwrmgr_aon.pwr_otp'      : ['otp_ctrl.pwr_otp'],
       'pwrmgr_aon.pwr_lc'       : ['lc_ctrl.pwr_lc'],
+      'pwrmgr_aon.strap'        : ['pinmux_aon.strap_en'],
+      'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en','aon_timer_aon.sleep_mode'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'rv_core_ibex.crashdump'  : ['rstmgr_aon.cpu_dump'],

@@ -92,6 +92,19 @@
       package: "",
     },
 
+    { struct:  "logic",
+      type:    "uni",
+      name:    "strap",
+      act:     "req",
+      package: "",
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "low_power",
+      act:     "req",
+      package: "",
+    },
   ],
 
   param_list: [
