@@ -70,16 +70,18 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("DAI write, address %0h, data0 %0h data1 %0h, is_secret = %0b",
               addr, wdata0, wdata1, is_secret(addr)), UVM_DEBUG)
 
-    // direct_access_regwen is set only when following conditions are met:
+    // Direct_access_regwen and dai_idle are checked only when following conditions are met:
     // - the dai operation is valid, otherwise it is hard to predict which cycle the error is
-    //   detected and regwen is set back to 1
+    //   detected
     // - zero delays in TLUL interface, otherwise dai operation might be finished before reading
-    //   this regwen CSR
-    if ($urandom_range(0, 1) && cfg.zero_delays && is_valid_dai_op) begin
-      csr_rd(.ptr(ral.direct_access_regwen), .value(val));
+    //   these two CSRs
+    if (cfg.zero_delays && is_valid_dai_op) begin
+      csr_rd_check(ral.status.dai_idle, .compare_value(0), .backdoor(1));
+      if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
-    csr_spinwait(ral.intr_state.otp_operation_done, 1);
-    csr_wr(ral.intr_state, 1'b1 << OtpOperationDone);
+    csr_spinwait(ral.status.dai_idle, 1);
+    csr_rd(ral.intr_state, val);
+    csr_wr(ral.intr_state, val);
   endtask : dai_wr
 
   // This task triggers an OTP readout sequence via the DAI interface
@@ -94,18 +96,23 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiRead));
-    if ($urandom_range(0, 1) && cfg.zero_delays && is_valid_dai_op) begin
-      csr_rd(.ptr(ral.direct_access_regwen), .value(val));
+
+    if (cfg.zero_delays && is_valid_dai_op) begin
+      csr_rd_check(ral.status.dai_idle, .compare_value(0), .backdoor(1));
+      if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
-    csr_spinwait(ral.intr_state.otp_operation_done, 1);
+    csr_spinwait(ral.status.dai_idle, 1);
 
     csr_rd(ral.direct_access_rdata_0, rdata0);
     if (is_secret(addr) || is_digest(addr)) csr_rd(ral.direct_access_rdata_1, rdata1);
-    csr_wr(ral.intr_state, 1'b1 << OtpOperationDone);
+    csr_rd(ral.intr_state, val);
+    csr_wr(ral.intr_state, val);
 
     // If has ecc_err, backdoor write back original value
     // TODO: remove this once we can detect ECC error from men_bkdr_if
-    if (cfg.ecc_err != OtpNoEccErr) cfg.mem_bkdr_vif.write32({addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
+    if (cfg.ecc_err != OtpNoEccErr) begin
+      cfg.mem_bkdr_vif.write32({addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
+    end
   endtask : dai_rd
 
   virtual task dai_rd_check(bit [TL_DW-1:0] addr,
@@ -125,11 +132,13 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_wr(ral.direct_access_address, PART_BASE_ADDRS[part_idx]);
     csr_wr(ral.direct_access_cmd, otp_ctrl_pkg::DaiDigest);
 
-    if ($urandom_range(0, 1) && cfg.zero_delays && is_valid_dai_op) begin
-      csr_rd(.ptr(ral.direct_access_regwen), .value(val));
+    if (cfg.zero_delays && is_valid_dai_op) begin
+      csr_rd_check(ral.status.dai_idle, .compare_value(0), .backdoor(1));
+      if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
-    csr_spinwait(ral.intr_state.otp_operation_done, 1);
-    csr_wr(ral.intr_state, 1 << OtpOperationDone);
+    csr_spinwait(ral.status.dai_idle, 1);
+    csr_rd(ral.intr_state, val);
+    csr_wr(ral.intr_state, val);
   endtask
 
   // this task provisions all HW partitions
@@ -245,7 +254,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_send(flash_data_pull_seq)
   endtask
 
-  virtual task req_lc_transition();
+  virtual task req_lc_transition(bit check_intr = 0);
     lc_ctrl_state_pkg::lc_state_e lc_state;
     lc_ctrl_state_pkg::lc_cnt_e   lc_cnt;
     bit [TL_DW-1:0]               intr_val;
@@ -266,9 +275,11 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
     // Wait 2 clock cycle until error propogates to the interrupts,
     // then read and clear interrupt, check is implemented in scb
-    cfg.clk_rst_vif.wait_clks(2);
-    csr_rd(ral.intr_state, intr_val);
-    csr_wr(ral.intr_state, intr_val);
+    if (check_intr) begin
+      cfg.clk_rst_vif.wait_clks(2);
+      csr_rd(ral.intr_state, intr_val);
+      csr_wr(ral.intr_state, intr_val);
+    end
   endtask
 
   virtual task req_lc_token();

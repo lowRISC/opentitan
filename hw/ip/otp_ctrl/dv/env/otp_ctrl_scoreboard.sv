@@ -25,7 +25,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   // This two bits are local values stored for sw partitions' read lock registers.
   bit [1:0] sw_read_lock;
 
-  bit under_chk;
+  // Status related variables
+  bit under_chk, under_dai_access;
+  bit [TL_DW-1:0] exp_status;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(SRAM_DATA_SIZE)))
@@ -77,8 +79,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   //    clear OTP memory to all zeros, clear all digests and re-calculate secret partitions
   virtual task process_otp_power_up();
     forever begin
-      @(posedge cfg.otp_ctrl_vif.pwr_otp_init_i && cfg.en_scb) begin
-        if (cfg.backdoor_clear_mem) begin
+      @(posedge cfg.otp_ctrl_vif.pwr_otp_init_i) begin
+        if (cfg.backdoor_clear_mem && cfg.en_scb) begin
           bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, Secret0Idx);
           otp_a   = '{default:0};
           digests = '{default:0};
@@ -113,6 +115,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           // Dai access is unlocked because the power init is done
           void'(ral.direct_access_regwen.predict(1));
 
+          // Dai idle is set because the otp init is done
+          exp_status[OtpDaiIdleIdx] = 1;
+
           // Hwcfg_o gets data from OTP HW cfg partition
           exp_hwcfg_data = otp_hw_cfg_data_t'({<<32 {otp_a[HwCfgOffset/4 +: HwCfgSize/4]}});
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.data, exp_hwcfg_data)
@@ -146,11 +151,12 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       if ((otp_lc_data & rcv_item.h_data) == otp_lc_data) begin
         `DV_CHECK_EQ(rcv_item.d_data, 0, err_msg)
         otp_lc_data = rcv_item.h_data;
+        exp_status[OtpLciErrIdx] = 0;
       end else begin
         `DV_CHECK_EQ(rcv_item.d_data, 1, err_msg)
         fork
           begin
-            cfg.clk_rst_vif.wait_n_clks(2);
+            cfg.clk_rst_vif.wait_n_clks(1);
             predict_status_err(.dai_err(0), .lc_err(1));
           end
         join
@@ -391,19 +397,33 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
-        // FIXME
-        do_read_check = 1'b0;
-        if (data_phase_read && item.d_data[OtpOperationDone]) begin
-          void'(ral.direct_access_regwen.predict(1));
+        if (data_phase_read) begin
+          bit [TL_DW-1:0] intr_en           = `gmv(ral.intr_enable);
+          bit [NumOtpCtrlIntr-1:0] intr_exp = `gmv(ral.intr_state);
+
+          // TODO: check with designer if otp_error is sticky
+          do_read_check = 0;
+          if (do_read_check) begin
+            foreach (intr_exp[i]) begin
+              otp_intr_e intr = otp_intr_e'(i);
+              `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[i], (intr_en[i] & intr_exp[i]),
+                                $sformatf("Interrupt_pin: %0s", intr.name));
+            end
+          end
         end
       end
-      "intr_enable": begin
-        do_read_check = 1'b0;
-        // FIXME
-      end
       "intr_test": begin
-        do_read_check = 1'b0;
-        // FIXME
+        if (addr_phase_write) begin
+          bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
+          bit [NumOtpCtrlIntr-1:0] intr_exp = `gmv(ral.intr_state) | item.a_data;
+
+          void'(ral.intr_state.predict(.value(intr_exp)));
+          if (cfg.en_cov) begin
+            foreach (intr_exp[i]) begin
+              cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_exp[i]);
+            end
+          end
+        end
       end
       "direct_access_cmd": begin
         if (addr_phase_write) begin
@@ -411,6 +431,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           bit [TL_AW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int part_idx = get_part_index(dai_addr);
           void'(ral.direct_access_regwen.predict(0));
+          under_dai_access = 1;
 
           // LC partition cannot be access via DAI
           if (part_idx == LifeCycleIdx) begin
@@ -509,23 +530,42 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         if (addr_phase_write && item.d_data == 1) sw_read_lock[OwnerSwCfgIdx] = 1;
       end
       "status": begin
-        // TODO: LC program could also cause otp_idle to be 0, will that affect DAI access and
-        // status?
-        if (data_phase_read) begin
+        if (addr_phase_read) begin
+          void'(ral.status.predict(.value(exp_status), .kind(UVM_PREDICT_READ)));
+        end else if (data_phase_read) begin
           bit [TL_DW-1:0] status_mask;
-          if ((item.d_data & OtpDaiIdle) == OtpDaiIdle) check_otp_idle(1);
+          if (item.d_data[OtpDaiIdleIdx]) check_otp_idle(1);
 
-          // Ignore check `check_pending` field - we do not know how long it take to process checks
-          if (under_chk) status_mask |= OtpCheckPending;
+          // Mask out check_pending field - we do not know how long it takes to process checks.
+          if (under_chk) status_mask[OtpCheckPendingIdx] = 1;
+
+          // Mask out otp_dai access related field - we do not know how long it takes to finish
+          // DAI access.
+          if (under_dai_access) begin
+            status_mask[OtpDaiIdleIdx] = 1;
+            status_mask[OtpDaiErrIdx]  = 1;
+          end
 
           // STATUS register check with mask
           `DV_CHECK_EQ((csr.get_mirrored_value() | status_mask), (item.d_data | status_mask),
-                       "reg name: status")
+                       $sformatf("reg name: status, compare_mask %0h", status_mask))
 
+          // Check if OtpCheckPending is set correctly, then ignore checking until check is done
           if (under_chk) begin
-            if ((item.d_data & OtpCheckPending) != OtpCheckPending) under_chk = 0;
+            if (item.d_data[OtpCheckPendingIdx] == 0) begin
+              exp_status[OtpCheckPendingIdx] = 0;
+              under_chk = 0;
+            end
           end else begin
             if (`gmv(ral.status.check_pending)) under_chk = 1;
+          end
+
+          if (under_dai_access) begin
+            if (item.d_data[OtpDaiIdleIdx]) begin
+              under_dai_access = 0;
+              void'(ral.direct_access_regwen.predict(1));
+              void'(ral.intr_state.otp_operation_done.predict(1));
+            end
           end
         end
         // checked in this block above
@@ -533,14 +573,14 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       "check_trigger": begin
         if (addr_phase_write && `gmv(ral.check_trigger_regwen) && item.a_data inside {[1:3]}) begin
-          void'(ral.status.check_pending.predict(1));
+          exp_status[OtpCheckPendingIdx] = 1;
         end
       end
       "hw_cfg_digest_0", "hw_cfg_digest_1", "", "secret0_digest_0", "secret0_digest_1",
       "secret1_digest_0", "secret1_digest_1", "secret2_digest_0", "secret2_digest_1",
       "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1", "owner_sw_cfg_digest_0",
       "owner_sw_cfg_digest_1", "direct_access_regwen", "direct_access_wdata_0", "check_timeout",
-      "direct_access_wdata_1", "direct_access_address", "direct_access_rdata_0",
+      "direct_access_wdata_1", "direct_access_address", "direct_access_rdata_0", "intr_enable",
       "direct_access_rdata_1", "check_regwen", "check_trigger_regwen", "check_trigger": begin
         // Do nothing
       end
@@ -571,12 +611,14 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       sram_fifos[i].flush();
     end
 
-    under_chk = 0;
+    under_chk        = 0;
+    under_dai_access = 0;
+    exp_status       = `gmv(ral.status);
+
     // reset local fifos queues and variables
     // digest values are updated after a power cycle
     predict_digest_csrs();
     update_digests_to_otp_mem();
-    void'(ral.status.predict(OtpDaiIdle));
     edn_data_q.delete();
 
     // Out of reset: lock dai access until power init is done
@@ -802,15 +844,15 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   virtual function void predict_status_err(bit dai_err = 0, bit lc_err = 0);
     void'(ral.intr_state.otp_error.predict(.value(1), .kind(UVM_PREDICT_READ)));
     if (dai_err) begin
-       void'(ral.status.dai_idle.predict(1));
-       void'(ral.status.dai_error.predict(1));
+      exp_status[OtpDaiIdleIdx] = 1;
+      exp_status[OtpDaiErrIdx]  = 1;
     end
-    if (lc_err) void'(ral.status.lci_error.predict(.value(1), .kind(UVM_PREDICT_READ)));
+    if (lc_err) exp_status[OtpLciErrIdx] = 1;
   endfunction
 
   virtual function void predict_dai_idle_status_wo_err();
-    void'(ral.status.dai_idle.predict(1));
-    void'(ral.status.dai_error.predict(0));
+    exp_status[OtpDaiIdleIdx] = 1;
+    exp_status[OtpDaiErrIdx]  = 0;
   endfunction
 
   virtual function void predict_rdata(bit is_64_bits, bit [TL_DW-1:0] rdata0,

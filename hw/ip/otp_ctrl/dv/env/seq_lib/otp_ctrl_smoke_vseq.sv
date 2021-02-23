@@ -82,7 +82,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         if (i > 1) dut_init();
         // after otp-init done, check status
         cfg.clk_rst_vif.wait_clks(1);
-        csr_rd_check(.ptr(ral.status), .compare_value(OtpDaiIdle));
+        csr_rd_check(.ptr(ral.status.dai_idle), .compare_value(1));
       end
       do_otp_ctrl_init = 0;
 
@@ -134,7 +134,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       end
 
       if (do_lc_trans) begin
-        req_lc_transition();
+        req_lc_transition(do_lc_trans);
         req_lc_token();
       end
 

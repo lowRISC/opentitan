@@ -23,7 +23,7 @@ class otp_ctrl_wake_up_vseq extends otp_ctrl_base_vseq;
     // check status
     cfg.clk_rst_vif.wait_clks(1);
     csr_wr(ral.intr_enable, (1'b1 << NumOtpCtrlIntr) - 1);
-    csr_rd_check(.ptr(ral.status), .compare_value(OtpDaiIdle));
+    csr_rd_check(.ptr(ral.status.dai_idle), .compare_value(1));
 
     // write seq
     csr_wr(ral.direct_access_address, rand_addr);
