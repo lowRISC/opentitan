@@ -289,3 +289,14 @@ sw_lib_dif_pinmux = declare_dependency(
     ],
   )
 )
+
+# SRAM Controller library
+sw_lib_dif_sram_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_sram_ctrl',
+    sources: [
+      'dif_sram_ctrl.c',
+    ],
+    dependencies: [sw_lib_mmio],
+  )
+)
