@@ -385,15 +385,28 @@ module otp_ctrl
                           chk_pending};
 
   // If we got an error, we trigger an interrupt.
-  assign otp_error = |part_errors_reduced | chk_timeout;
+  logic [$bits(part_errors_reduced)+4-1:0] interrupt_triggers_d, interrupt_triggers_q;
+
+  // This makes sure that interrupts are not sticky.
+  assign interrupt_triggers_d = {
+    part_errors_reduced,
+    chk_timeout,
+    lfsr_fsm_err,
+    scrmbl_fsm_err,
+    key_deriv_fsm_err
+  };
+
+  assign otp_error = |(interrupt_triggers_d & ~interrupt_triggers_q);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_alert_regs
     if (!rst_ni) begin
-      fatal_macro_error_q <= '0;
-      fatal_check_error_q <= '0;
+      fatal_macro_error_q  <= '0;
+      fatal_check_error_q  <= '0;
+      interrupt_triggers_q <= '0;
     end else begin
-      fatal_macro_error_q <= fatal_macro_error_d;
-      fatal_check_error_q <= fatal_check_error_d;
+      fatal_macro_error_q  <= fatal_macro_error_d;
+      fatal_check_error_q  <= fatal_check_error_d;
+      interrupt_triggers_q <= interrupt_triggers_d;
     end
   end
 
