@@ -17,7 +17,8 @@ rom_ext_link_info = {
     [
       '-Wl,-L,@0@'.format(meson.source_root()),
       '-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_ext_linkfile_slot_a[0]),
-      embedded_target_extra_link_args,
+#      embedded_target_extra_link_args,
+      '-Wl,--build-id=none',
     ],
     # Link dependency file for slot A.
     [
@@ -30,7 +31,8 @@ rom_ext_link_info = {
     [
       '-Wl,-L,@0@'.format(meson.source_root()),
       '-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_ext_linkfile_slot_b[0]),
-      embedded_target_extra_link_args,
+#      embedded_target_extra_link_args,
+      '-Wl,--build-id=none',
     ],
     # Link dependency file for slot B.
     [
@@ -38,6 +40,27 @@ rom_ext_link_info = {
     ],
   ],
 }
+
+rom_ext_crts = []
+# TODO - ripped out and modified from legacy flash meson.build.
+foreach slot, slot_link_args : rom_ext_link_info
+  rom_ext_crts += declare_dependency(
+    sources: [
+      'rom_ext_manifest.S',
+      'rom_ext_start.S',
+    ],
+    link_args: slot_link_args[0],
+    dependencies: [
+      freestanding_headers,
+      sw_lib_crt,
+    ],
+    link_with: static_library(
+      slot + '_crt_linker_shim',
+      sources: ['empty.c'],
+      link_depends: [slot_link_args[1]],
+  )
+)
+endforeach
 
 # ROM_EXT manifest generator.
 rom_exts_manifest_offsets_header = custom_target(
@@ -74,21 +97,28 @@ rom_ext_manifest_parser = declare_dependency(
   ],
 )
 
+temp = {
+  'rom_ext_slot_a' :
+  [
+    rom_ext_crts[0],
+  ],
+  'rom_ext_slot_b' :
+  [
+    rom_ext_crts[1],
+  ],
+}
+
 foreach device_name, device_lib : sw_lib_arch_core_devices
-  foreach slot, slot_link_args : rom_ext_link_info
+  foreach slot, rom_ext_crt : temp
     rom_ext_elf = executable(
       slot + '_' + device_name,
       sources: [
-        'rom_ext_manifest.S',
-        'rom_ext_start.S',
         'rom_ext.c',
       ],
       name_suffix: 'elf',
-      link_args: slot_link_args[0],
-      link_depends: slot_link_args[1],
       dependencies: [
+        rom_ext_crt,
         device_lib,
-        sw_lib_crt,
         sw_lib_dif_uart,
         sw_lib_runtime_hart,
         sw_lib_runtime_print,
@@ -115,3 +145,5 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     )
   endforeach
 endforeach
+
+
