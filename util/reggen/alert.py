@@ -10,9 +10,10 @@ from .lib import check_keys, check_name, check_str, check_list
 
 
 class Alert(Signal):
-    def __init__(self, name: str, desc: str, bit: int):
+    def __init__(self, name: str, desc: str, bit: int, fatal: bool):
         super().__init__(name, desc, Bits(bit, bit))
         self.bit = bit
+        self.fatal = fatal
 
     @staticmethod
     def from_raw(what: str,
@@ -22,7 +23,20 @@ class Alert(Signal):
 
         name = check_name(rd['name'], 'name field of ' + what)
         desc = check_str(rd['desc'], 'desc field of ' + what)
-        return Alert(name, desc, lsb)
+
+        # Make sense of the alert name, which should be prefixed with recov_ or
+        # fatal_.
+        pfx = name.split('_')[0]
+        if pfx == 'recov':
+            fatal = False
+        elif pfx == 'fatal':
+            fatal = True
+        else:
+            raise ValueError('Invalid name field of {}: alert names must be '
+                             'prefixed with "recov_" or "fatal_". Saw {!r}.'
+                             .format(what, name))
+
+        return Alert(name, desc, lsb, fatal)
 
     @staticmethod
     def from_raw_list(what: str, raw: object) -> List['Alert']:

@@ -189,6 +189,19 @@ def check_str_list(obj: object, what: str) -> List[str]:
     return cast(List[str], lst)
 
 
+def check_name_list(obj: object, what: str) -> List[str]:
+    '''Check that the given object is a list of valid names
+
+    If not, raise a ValueError; the what argument names the object.
+
+    '''
+    lst = check_list(obj, what)
+    for idx, elt in enumerate(lst):
+        check_name(elt, 'Element {} of {}'.format(idx + 1, what))
+
+    return cast(List[str], lst)
+
+
 def check_int(obj: object, what: str) -> int:
     '''Check that obj is an integer or a string that parses to an integer.
 
@@ -237,3 +250,13 @@ def check_xint(obj: object, what: str) -> Optional[int]:
 def check_optional_str(obj: object, what: str) -> Optional[str]:
     '''Check that obj is a string or None'''
     return None if obj is None else check_str(obj, what)
+
+
+def get_basename(name: str) -> str:
+    '''Strip trailing _number (used as multireg suffix) from name'''
+    # TODO: This is a workaround, should solve this as part of parsing a
+    # multi-reg.
+    match = re.search(r'_[0-9]+$', name)
+    assert match
+    assert match.start() > 0
+    return name[0:match.start()]

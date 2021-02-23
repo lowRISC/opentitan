@@ -13,16 +13,18 @@ from collections import OrderedDict
 from copy import deepcopy
 from io import StringIO
 from pathlib import Path
+from typing import Dict, Tuple
 
 import hjson
 from mako import exceptions
 from mako.template import Template
 
 import tlgen
-from reggen import access, gen_dv, gen_rtl, validate, window
+from reggen import access, gen_dv, gen_rtl, window
 from reggen.inter_signal import InterSignal
+from reggen.ip_block import IpBlock
 from reggen.lib import check_list
-from reggen.reg_block import RegBlock
+from reggen.top import Top
 from topgen import amend_clocks, get_hjsonobj_xbars
 from topgen import intermodule as im
 from topgen import lib as lib
@@ -191,11 +193,8 @@ def generate_alert_handler(top, out_path):
 
     # Generate register RTLs (currently using shell execute)
     # TODO: More secure way to gneerate RTL
-    hjson_obj = hjson.loads(out,
-                            use_decimal=True,
-                            object_pairs_hook=validate.checking_dict)
-    validate.validate(hjson_obj, params=[])
-    gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+    gen_rtl.gen_rtl(IpBlock.from_text(out, [], str(hjson_gen_path)),
+                    str(rtl_path))
 
 
 def generate_plic(top, out_path):
@@ -250,11 +249,8 @@ def generate_plic(top, out_path):
 
     # Generate register RTLs (currently using shell execute)
     # TODO: More secure way to generate RTL
-    hjson_obj = hjson.loads(out,
-                            use_decimal=True,
-                            object_pairs_hook=OrderedDict)
-    validate.validate(hjson_obj, params=[])
-    gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+    gen_rtl.gen_rtl(IpBlock.from_text(out, [], str(hjson_gen_path)),
+                    str(rtl_path))
 
     # Generate RV_PLIC Top Module
     with rtl_tpl_path.open(mode='r', encoding='UTF-8') as fin:
@@ -468,11 +464,8 @@ def generate_pinmux(top, out_path):
     with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
         fout.write(genhdr + gencmd + out)
 
-    hjson_obj = hjson.loads(out,
-                            use_decimal=True,
-                            object_pairs_hook=validate.checking_dict)
-    validate.validate(hjson_obj, params=[])
-    gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+    gen_rtl.gen_rtl(IpBlock.from_text(out, [], str(hjson_gen_path)),
+                    str(rtl_path))
 
 
 def generate_clkmgr(top, cfg_path, out_path):
@@ -572,12 +565,7 @@ def generate_clkmgr(top, cfg_path, out_path):
             fout.write(genhdr + out)
 
     # Generate reg files
-    with open(str(hjson_out), 'r') as out:
-        hjson_obj = hjson.load(out,
-                               use_decimal=True,
-                               object_pairs_hook=OrderedDict)
-    validate.validate(hjson_obj, params=[])
-    gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+    gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_out), []), str(rtl_path))
 
 
 # generate pwrmgr
@@ -629,12 +617,7 @@ def generate_pwrmgr(top, out_path):
         fout.write(genhdr + out)
 
     # Generate reg files
-    with open(str(hjson_path), 'r') as out:
-        hjson_obj = hjson.load(out,
-                               use_decimal=True,
-                               object_pairs_hook=OrderedDict)
-    validate.validate(hjson_obj, params=[])
-    gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+    gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []), str(rtl_path))
 
 
 # generate rstmgr
@@ -718,12 +701,7 @@ def generate_rstmgr(topcfg, out_path):
 
     # Generate reg files
     hjson_path = outputs[0]
-    with open(str(hjson_path), 'r') as out:
-        hjson_obj = hjson.load(out,
-                               use_decimal=True,
-                               object_pairs_hook=OrderedDict)
-    validate.validate(hjson_obj, params=[])
-    gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+    gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []), str(rtl_path))
 
 
 # generate flash
@@ -777,12 +755,7 @@ def generate_flash(topcfg, out_path):
 
     # Generate reg files
     hjson_path = outputs[0]
-    with open(str(hjson_path), 'r') as out:
-        hjson_obj = hjson.load(out,
-                               use_decimal=True,
-                               object_pairs_hook=OrderedDict)
-    validate.validate(hjson_obj, params=[])
-    gen_rtl.gen_rtl(hjson_obj, str(rtl_path))
+    gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []), str(rtl_path))
 
 
 def generate_top_only(top_only_list, out_path, topname):
@@ -797,39 +770,33 @@ def generate_top_only(top_only_list, out_path, topname):
             ip, hjson_path, genrtl_dir))
 
         # Generate reg files
-        with open(str(hjson_path), 'r') as out:
-            hjson_obj = hjson.load(out,
-                                   use_decimal=True,
-                                   object_pairs_hook=OrderedDict)
-            validate.validate(hjson_obj, params=[])
-            gen_rtl.gen_rtl(hjson_obj, str(genrtl_dir))
+        gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []), str(genrtl_dir))
 
 
 def generate_top_ral(top, ip_objs, dv_base_prefix, out_path):
     # construct top ral block
-    top_block = gen_rtl.Block()
-    top_block.name = "chip"
-    top_block.base_addr = 0
-    top_block.width = int(top["datawidth"])
 
-    # add all the IPs into blocks
-    for ip_obj in ip_objs:
-        top_block.blocks.append(gen_rtl.json_to_reg(ip_obj))
+    regwidth = int(top['datawidth'])
+    assert regwidth % 8 == 0
+    addrsep = regwidth // 8
 
-    assert top_block.width % 8 == 0
-    reg_width_in_bytes = top_block.width // 8
+    # Get sub-block base addresses and instance names from top cfg
+    sub_blocks = {}  # type: Dict[int, Tuple[str, IpBlock]]
+    for block in ip_objs:
+        block_lname = block.name.lower()
+        for module in top["module"]:
+            if block_lname == module["type"]:
+                block_addr = int(module["base_addr"], 0)
+                assert block_addr not in sub_blocks
+                sub_blocks[block_addr] = (module["name"], block)
 
-    top_block.reg_block = RegBlock(reg_width_in_bytes,
-                                   top_block.width,
-                                   [])
-
-    # Add memories (in order)
+    # Collect up the memories to add
     mems = []
     for item in list(top.get("memory", [])):
         byte_write = ('byte_write' in item and
                       item["byte_write"].lower() == "true")
         size_in_bytes = int(item['size'], 0)
-        num_regs = size_in_bytes // reg_width_in_bytes
+        num_regs = size_in_bytes // addrsep
         swaccess = access.SWAccess('top-level memory',
                                    item.get('swaccess', 'rw'))
 
@@ -837,26 +804,16 @@ def generate_top_ral(top, ip_objs, dv_base_prefix, out_path):
                                   desc='(generated from top-level)',
                                   unusual=False,
                                   byte_write=byte_write,
-                                  validbits=top_block.width,
+                                  validbits=regwidth,
                                   items=num_regs,
                                   size_in_bytes=size_in_bytes,
                                   offset=int(item["base_addr"], 0),
                                   swaccess=swaccess))
-    mems.sort(key=lambda w: w.offset)
-    for mem in mems:
-        top_block.reg_block.add_window(mem)
 
-    # get sub-block base addresses, instance names from top cfg
-    for block in top_block.blocks:
-        for module in top["module"]:
-            if block.name == module["type"]:
-                block.base_addr[module["name"]] = int(module["base_addr"], 0)
-
-    # sort by the base_addr of 1st instance of the block
-    top_block.blocks.sort(key=lambda block: next(iter(block.base_addr))[1])
+    chip = Top(regwidth, sub_blocks, mems)
 
     # generate the top ral model with template
-    gen_dv.gen_ral(top_block, dv_base_prefix, str(out_path))
+    gen_dv.gen_ral(chip, dv_base_prefix, str(out_path))
 
 
 def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
@@ -940,13 +897,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
             else:
                 hjson_file = x
 
-            obj = hjson.load(hjson_file.open('r'),
-                             use_decimal=True,
-                             object_pairs_hook=OrderedDict)
-            if validate.validate(obj, params=[]) != 0:
-                log.info("Parsing IP %s configuration failed. Skip" % x)
-                continue
-            ip_objs.append(obj)
+            ip_objs.append(IpBlock.from_path(str(hjson_file), []))
 
     except ValueError:
         raise SystemExit(sys.exc_info()[1])

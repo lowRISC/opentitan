@@ -9,12 +9,16 @@
   from reggen.register import Register
   from reggen.multi_register import MultiRegister
 
-  flat_regs = block.reg_block.flat_regs
+  flat_regs = block.regs.flat_regs
   num_regs = len(flat_regs)
   max_regs_char = len("{}".format(num_regs - 1))
   localparams = block.params.get_localparams()
+  addr_width = block.regs.get_addr_width()
+
+  lblock = block.name.lower()
+  ublock = lblock.upper()
 %>\
-package ${block.name}_reg_pkg;
+package ${lblock}_reg_pkg;
 % if localparams:
 
   // Param list
@@ -24,12 +28,12 @@ package ${block.name}_reg_pkg;
 % endfor
 
   // Address width within the block
-  parameter int BlockAw = ${block.addr_width};
+  parameter int BlockAw = ${addr_width};
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
-% for r in block.reg_block.all_regs:
+% for r in block.regs.all_regs:
   % if r.get_n_bits(["q"]):
 <%
     if isinstance(r, Register):
@@ -41,7 +45,7 @@ package ${block.name}_reg_pkg;
       type_suff = 'mreg_t'
 
     reg2hw_name = ('{}_reg2hw_{}_{}'
-                   .format(block.name, r0.name.lower(), type_suff))
+                   .format(lblock, r0.name.lower(), type_suff))
 %>\
   typedef struct packed {
     % if r.is_homogeneous():
@@ -97,7 +101,7 @@ package ${block.name}_reg_pkg;
   %endif
 % endfor
 
-% for r in block.reg_block.all_regs:
+% for r in block.regs.all_regs:
   % if r.get_n_bits(["d"]):
 <%
     if isinstance(r, Register):
@@ -109,7 +113,7 @@ package ${block.name}_reg_pkg;
       type_suff = 'mreg_t'
 
     hw2reg_name = ('{}_hw2reg_{}_{}'
-                   .format(block.name, r0.name.lower(), type_suff))
+                   .format(lblock, r0.name.lower(), type_suff))
 %>\
   typedef struct packed {
     % if r.is_homogeneous():
@@ -155,12 +159,12 @@ package ${block.name}_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
 <%
-nbits = block.reg_block.get_n_bits(["q", "qe", "re"])
+nbits = block.regs.get_n_bits(["q", "qe", "re"])
 packbit = 0
 %>\
 % if nbits > 0:
   typedef struct packed {
-% for r in block.reg_block.all_regs:
+% for r in block.regs.all_regs:
   % if r.get_n_bits(["q"]):
 <%
     if isinstance(r, MultiRegister):
@@ -173,7 +177,7 @@ packbit = 0
       type_suff = 'reg_t'
 
     struct_type = ('{}_reg2hw_{}_{}'
-                   .format(block.name, r0.name.lower(), type_suff))
+                   .format(lblock, r0.name.lower(), type_suff))
 
     struct_width = r0.get_n_bits(['q', 'qe', 're']) * repl_count
     msb = nbits - packbit - 1
@@ -183,19 +187,19 @@ packbit = 0
     ${struct_type} ${r0.name.lower()}; // [${msb}:${lsb}]
   % endif
 % endfor
-  } ${block.name}_reg2hw_t;
+  } ${lblock}_reg2hw_t;
 % endif
 
   ///////////////////////////////////////
   // Internal design logic to register //
   ///////////////////////////////////////
 <%
-nbits = block.reg_block.get_n_bits(["d", "de"])
+nbits = block.regs.get_n_bits(["d", "de"])
 packbit = 0
 %>\
 % if nbits > 0:
   typedef struct packed {
-% for r in block.reg_block.all_regs:
+% for r in block.regs.all_regs:
   % if r.get_n_bits(["d"]):
 <%
     if isinstance(r, MultiRegister):
@@ -208,7 +212,7 @@ packbit = 0
       type_suff = 'reg_t'
 
     struct_type = ('{}_hw2reg_{}_{}'
-                   .format(block.name, r0.name.lower(), type_suff))
+                   .format(lblock, r0.name.lower(), type_suff))
 
     struct_width = r0.get_n_bits(['d', 'de']) * repl_count
     msb = nbits - packbit - 1
@@ -218,12 +222,11 @@ packbit = 0
     ${struct_type} ${r0.name.lower()}; // [${msb}:${lsb}]
   % endif
 % endfor
-  } ${block.name}_hw2reg_t;
+  } ${lblock}_hw2reg_t;
 % endif
 
   // Register Address
 <%
-ublock = block.name.upper()
 
 def reg_pfx(reg):
   return '{}_{}'.format(ublock, reg.name.upper())
@@ -236,7 +239,7 @@ def field_resname(reg, field):
 
 %>\
 % for r in flat_regs:
-  parameter logic [BlockAw-1:0] ${reg_pfx(r)}_OFFSET = ${block.addr_width}'h ${"%x" % r.offset};
+  parameter logic [BlockAw-1:0] ${reg_pfx(r)}_OFFSET = ${addr_width}'h ${"%x" % r.offset};
 % endfor
 
 <%
@@ -262,13 +265,13 @@ def field_resname(reg, field):
   % endfor
 
 % endif
-% if len(block.reg_block.windows) > 0:
+% if len(block.regs.windows) > 0:
   // Window parameter
-% for i,w in enumerate(block.reg_block.windows):
+% for i,w in enumerate(block.regs.windows):
 <%
     win_pfx = '{}_{}'.format(ublock, w.name.upper())
-    base_txt_val = "{}'h {:x}".format(block.addr_width, w.offset)
-    size_txt_val = "{}'h {:x}".format(block.addr_width, w.size_in_bytes)
+    base_txt_val = "{}'h {:x}".format(addr_width, w.offset)
+    size_txt_val = "{}'h {:x}".format(addr_width, w.size_in_bytes)
 %>\
   parameter logic [BlockAw-1:0] ${win_pfx}_OFFSET = ${base_txt_val};
   parameter logic [BlockAw-1:0] ${win_pfx}_SIZE   = ${size_txt_val};
@@ -280,7 +283,7 @@ def field_resname(reg, field):
 % for r in flat_regs:
     ${ublock}_${r.name.upper()}${"" if loop.last else ","}
 % endfor
-  } ${block.name}_id_e;
+  } ${lblock}_id_e;
 
   // Register width information to check illegal writes
   parameter logic [3:0] ${ublock}_PERMIT [${len(flat_regs)}] = '{

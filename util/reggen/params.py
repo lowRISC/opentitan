@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import re
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from .lib import check_keys, check_str, check_int, check_bool, check_list
 
@@ -252,24 +252,15 @@ class Params:
     def get(self, name: str) -> Optional[BaseParam]:
         return self.by_name.get(name)
 
-    def _apply_default(self, name: str, value: str) -> None:
-        param = self.by_name.get(name)
-        if param is None:
-            raise KeyError('Cannot find parameter '
-                           '{} to set default value.'
-                           .format(name))
+    def apply_defaults(self, defaults: List[Tuple[str, str]]) -> None:
+        for idx, (key, value) in enumerate(defaults):
+            param = self.by_name.get(key)
+            if param is None:
+                raise KeyError('Cannot find parameter '
+                               '{} to set default value.'
+                               .format(key))
 
-        param.apply_default(value)
-
-    def apply_defaults(self, defaults: List[str]) -> None:
-        for idx, entry in enumerate(defaults):
-            tokens = entry.split('=')
-            if len(tokens) != 2:
-                raise ValueError('Entry {} in list of parameter defaults to '
-                                 'apply is {!r}, which is not of the form '
-                                 'param=value.'
-                                 .format(idx, entry))
-            self._apply_default(tokens[0], tokens[1])
+            param.apply_default(value)
 
     def _expand_one(self, value: str, when: str) -> int:
         # Check whether value is already an integer: if so, return that.

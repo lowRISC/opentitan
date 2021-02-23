@@ -10,19 +10,18 @@
   from reggen.register import Register
 
   from topgen import lib
+
+  lblock = block.name.lower()
 %>\
 <%def name="construct_classes(block)">\
-% for b in block.blocks:
-${construct_classes(b)}
-% endfor
 
 `include "prim_assert.sv"
 `ifdef UVM
   import uvm_pkg::*;
 `endif
 
-// Block: ${block.name}
-module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg_pkg::*;
+// Block: ${lblock}
+module ${lblock}_csr_assert_fpv import tlul_pkg::*; import ${lblock}_reg_pkg::*;
     import top_pkg::*;(
   input clk_i,
   input rst_ni,
@@ -32,8 +31,8 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
   input tl_d2h_t d2h,
 
   // reg and hw ports
-  input ${block.name}_reg2hw_t reg2hw,
-  input ${block.name}_hw2reg_t hw2reg
+  input ${lblock}_reg2hw_t reg2hw,
+  input ${lblock}_hw2reg_t hw2reg
 );
 
 `ifndef VERILATOR
@@ -57,9 +56,9 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
   assign a_mask_bit[31:24] = h2d.a_mask[3] ? '1 : '0;
 
 <%
-  addr_msb   = block.addr_width - 1
-  reg_width  = block.addr_width
-  block_size = ((block.reg_block.flat_regs[-1].offset) >> 2) + 1
+  addr_width = block.regs.get_addr_width()
+  addr_msb  = addr_width - 1
+  block_size = ((block.regs.flat_regs[-1].offset) >> 2) + 1
 %>\
   // store internal expected values for HW ReadOnly registers
   logic [TL_DW-1:0] exp_vals[${block_size}];
@@ -70,7 +69,7 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
   assign normalized_addr = {h2d.a_address[${addr_msb}:2], 2'b0};
 
 <% hro_regs_list = list(); %>\
-% for r in block.reg_block.flat_regs:
+% for r in block.regs.flat_regs:
   % if not r.hwaccess.allows_write():
 <% hro_regs_list.append(r) %>\
   % endif
@@ -125,7 +124,7 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
     % if reg_mask != 0:
 <%  reg_mask_hex = format(reg_mask, 'x') %>\
     `ASSERT(${r_name}_rd_A, d2h.d_valid && pend_trans[d2h.d_source].rd_pending &&
-           pend_trans[d2h.d_source].addr == (${reg_width}'h${reg_addr_hex} >> 2) |->
+           pend_trans[d2h.d_source].addr == (${addr_width}'h${reg_addr_hex} >> 2) |->
            d2h.d_error ||
            (d2h.d_data & 'h${reg_mask_hex}) == (exp_vals[${reg_addr >> 2}] & 'h${reg_mask_hex}))
 
