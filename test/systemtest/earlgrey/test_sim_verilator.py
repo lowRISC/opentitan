@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from .. import config, utils
+from .. import config, secure_boot_config, utils
 
 log = logging.getLogger(__name__)
 
@@ -204,12 +204,47 @@ def app_selfchecking(request, bin_dir):
     return (bin_path, verilator_extra_args)
 
 
+@pytest.fixture(params=secure_boot_config.TEST_SECURE_BOOT_APPS_SELFCHECKING,
+                ids=lambda param: param['name'])
+def app_secure_boot_selfchecking(request, bin_dir):
+    """ A self-checking device application for Verilator simulation
+
+    Returns:
+        A set (elf_path, verilator_extra_args)
+    """
+
+    app_config = request.param
+
+    if 'name' not in app_config:
+        raise RuntimeError("Key 'name' not found in TEST_APPS_SELFCHECKING")
+
+    if 'targets' in app_config and 'sim_verilator' not in app_config['targets']:
+        pytest.skip("Test %s skipped on Verilator." % app_config['name'])
+
+    if 'binary_name' in app_config:
+        binary_name = app_config['binary_name']
+    else:
+        binary_name = app_config['name']
+
+    if 'verilator_extra_args' in app_config:
+        verilator_extra_args = app_config['verilator_extra_args']
+    else:
+        verilator_extra_args = []
+
+    test_filename = binary_name + '_rom_ext_sim_verilator.elf'
+    bin_path = bin_dir / 'sw/device/tests' / test_filename
+    assert bin_path.is_file()
+
+    return (bin_path, verilator_extra_args)
+
+
 # The following tests use the UART output from the log file written by the
 # UARTDPI module, and not the simulated UART device (/dev/pty/N) to ensure
 # reliable testing: As soon as the device application finishes, the simulation
 # ends and the UART device becomes unavailable to readers.
 # Therefore, if we do not read quickly enough, we miss the PASS/FAIL indication
 # and the test never finishes.
+
 
 def assert_selfchecking_test_passes(sim):
     assert sim.find_in_output(
@@ -230,6 +265,7 @@ def assert_selfchecking_test_passes(sim):
     log.info("Test ended with {}".format(result_msg))
     assert result_msg == 'PASSED'
 
+
 def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking):
     """
     Run a self-checking application on a Earl Grey Verilator simulation
@@ -246,6 +282,30 @@ def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking):
     sim = VerilatorSimEarlgrey(sim_path, rom_elf_path, tmp_path)
 
     sim.run(app_selfchecking[0], extra_sim_args=app_selfchecking[1])
+
+    assert_selfchecking_test_passes(sim)
+
+    sim.terminate()
+
+
+def test_apps_selfchecking_secure_boot(tmp_path, bin_dir,
+                                       app_secure_boot_selfchecking):
+    """
+    Run a self-checking application on a Earl Grey Verilator simulation
+
+    The ROM is initialized with the default boot ROM, the flash is initialized
+    with |app_selfchecking|.
+
+    Self-checking applications are expected to return PASS or FAIL in the end.
+    """
+
+    sim_path = bin_dir / "hw/top_earlgrey/Vtop_earlgrey_verilator"
+    rom_elf_path = bin_dir / "sw/device/mask_rom/mask_rom_sim_verilator.elf"
+
+    sim = VerilatorSimEarlgrey(sim_path, rom_elf_path, tmp_path)
+
+    sim.run(app_secure_boot_selfchecking[0],
+            extra_sim_args=app_secure_boot_selfchecking[1])
 
     assert_selfchecking_test_passes(sim)
 
