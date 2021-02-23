@@ -4491,6 +4491,15 @@ module rv_plic_reg_top (
     endcase
   end
 
+  // Unused signal tieoff
+
+  // wdata / byte enable are not always fully used
+  // add a blanket unused statement to handle lint waivers
+  logic unused_wdata;
+  logic unused_be;
+  assign unused_wdata = ^reg_wdata;
+  assign unused_be = ^reg_be;
+
   // Assertions for Register Interface
   `ASSERT_PULSE(wePulse, reg_we)
   `ASSERT_PULSE(rePulse, reg_re)
