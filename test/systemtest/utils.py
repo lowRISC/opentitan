@@ -82,7 +82,8 @@ class Process:
         # the string indicating a successful startup.
         # see discussion at http://www.pixelbeat.org/programming/stdio_buffering/
         cmd = ['stdbuf', '-oL'] + self.cmd
-        self.logger.info("Running command " + ' '.join(cmd))
+        self.logger.info("Running command " +
+                         ' '.join(shlex.quote(w) for w in cmd))
 
         logfile_stdout = os.path.join(self.logdir,
                                       "{}.stdout".format(cmd_name))
