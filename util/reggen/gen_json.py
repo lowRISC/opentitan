@@ -8,14 +8,6 @@ import hjson
 
 
 def gen_json(obj, outfile, format):
-    # Temporary hack to deal with the fact that the 'registers' and
-    # 'param_list' fields are lists rather than dictionaries. When we convert
-    # the top-level object to a class (with its own _as_dict method), this
-    # logic can go in there.
-    obj = obj.copy()
-    obj['registers'] = obj['registers'].as_dicts()
-    obj['param_list'] = obj['param_list'].as_dicts()
-
     if format == 'json':
         hjson.dumpJSON(obj,
                        outfile,

@@ -11,64 +11,14 @@ from mako.template import Template
 from pkg_resources import resource_filename
 
 from .access import HwAccess, SwRdAccess, SwWrAccess
-from .data import Block
+from .ip_block import IpBlock
 
 
 def escape_name(name):
     return name.lower().replace(' ', '_')
 
 
-def check_field_bool(obj, field, default):
-    if field in obj:
-        return True if obj[field] == "true" else False
-    else:
-        return default
-
-
-def json_to_reg(obj):
-    """Converts JSON OrderedDict into structure having useful information for
-    Template to use.
-
-    Main purpose of this function is:
-        - Add Offset value based on auto calculation
-        - Prepare Systemverilog data structure to generate _pkg file
-    """
-    block = Block()
-
-    # Name
-    block.name = escape_name(obj["name"])
-    log.info("Processing module: %s", block.name)
-
-    block.width = int(obj["regwidth"], 0)
-
-    if block.width != 32 and block.width != 64:
-        log.error(
-            "Current reggen tool doesn't support field width that is not 32 nor 64"
-        )
-
-    log.info("Data Width is set to %d bits", block.width)
-
-    block.params = obj["param_list"] if "param_list" in obj else []
-
-    block.hier_path = obj["hier_path"] if "hier_path" in obj else ""
-
-    block.reg_block = obj['registers']
-
-    # Last offset and calculate space
-    #  Later on, it could use block.regs[-1].genoffset
-    if "space" in obj:
-        block.addr_width = int(obj["space"], 0).bit_length()
-    else:
-        block.addr_width = (obj["gensize"] - 1).bit_length()
-
-    return block
-
-
-def gen_rtl(obj, outdir):
-    # obj: OrderedDict
-
-    block = json_to_reg(obj)
-
+def gen_rtl(block: IpBlock, outdir: str):
     # Read Register templates
     reg_top_tpl = Template(
         filename=resource_filename('reggen', 'reg_top.sv.tpl'))
@@ -76,7 +26,7 @@ def gen_rtl(obj, outdir):
         filename=resource_filename('reggen', 'reg_pkg.sv.tpl'))
 
     # Generate pkg.sv with block name
-    with open(outdir + "/" + block.name + "_reg_pkg.sv", 'w',
+    with open(outdir + "/" + block.name.lower() + "_reg_pkg.sv", 'w',
               encoding='UTF-8') as fout:
         try:
             fout.write(
@@ -89,7 +39,7 @@ def gen_rtl(obj, outdir):
             return 1
 
     # Generate top.sv
-    with open(outdir + "/" + block.name + "_reg_top.sv", 'w',
+    with open(outdir + "/" + block.name.lower() + "_reg_top.sv", 'w',
               encoding='UTF-8') as fout:
         try:
             fout.write(

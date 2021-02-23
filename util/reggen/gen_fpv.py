@@ -13,7 +13,7 @@ from mako.template import Template
 from pkg_resources import resource_filename
 
 from .access import HwAccess, SwRdAccess, SwWrAccess
-from .gen_rtl import json_to_reg
+from .ip_block import IpBlock
 
 
 # function get write property name
@@ -26,19 +26,13 @@ def rpname(r):
     return r.name + "_rd_p"
 
 
-def gen_fpv(obj, outdir):
-    # obj: OrderedDict
-    block = json_to_reg(obj)
-    gen_assertion(block, outdir)
-
-
-def gen_assertion(block, outdir):
+def gen_fpv(block: IpBlock, outdir):
     # Read Register templates
     fpv_csr_tpl = Template(
         filename=resource_filename('reggen', 'fpv_csr.sv.tpl'))
 
     # Generate pkg.sv with block name
-    with open(outdir + "/" + block.name + "_csr_assert_fpv.sv", 'w') as fout:
+    with open(outdir + "/" + block.name.lower() + "_csr_assert_fpv.sv", 'w') as fout:
         try:
             fout.write(
                 fpv_csr_tpl.render(block=block,

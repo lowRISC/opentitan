@@ -8,8 +8,6 @@ import os
 import sys
 from typing import Optional, Tuple
 
-import hjson  # type: ignore
-
 
 # We use reggen to read the hjson file. Since that lives somewhere completely
 # different from this script (and there aren't __init__.py files scattered all
@@ -19,11 +17,11 @@ try:
     _UTIL_PATH = os.path.join(os.path.dirname(__file__),
                               '..', '..', '..', '..', '..', 'util')
     sys.path = [_UTIL_PATH] + _OLD_SYS_PATH
-    from reggen.validate import checking_dict, validate   # type: ignore
     import reggen.field  # type: ignore
+    import reggen.ip_block   # type: ignore
+    import reggen.reg_block   # type: ignore
     import reggen.register  # type: ignore
     import reggen.window  # type: ignore
-    import reggen.reg_block   # type: ignore
 finally:
     sys.path = _OLD_SYS_PATH
 
@@ -33,6 +31,7 @@ Register = reggen.register.Register
 Field = reggen.field.Field
 Window = reggen.window.Window
 RegBlock = reggen.reg_block.RegBlock
+IpBlock = reggen.ip_block.IpBlock
 
 _LR_RETVAL = None  # type: Optional[Tuple[int, object]]
 
@@ -52,29 +51,15 @@ def load_registers() -> Tuple[int, object]:
                         '..', '..', 'data', 'otbn.hjson')
 
     try:
-        with open(path, 'r') as handle:
-            obj = hjson.loads(handle.read(),
-                              use_decimal=True,
-                              object_pairs_hook=checking_dict)
+        obj = IpBlock.from_path(path, [])
     except ValueError as err:
         raise RuntimeError('Failed to parse {!r}: {}'.format(path, err))
 
-    # Unconditionally run second validation pass
-    num_errs = validate(obj)
-    if num_errs:
-        raise RuntimeError('Reggen second validation pass failed for {!r} '
-                           '({} errors).'
-                           .format(path, num_errs))
-
-    reg_bit_width = int(obj.get('regwidth', 32))
+    reg_bit_width = obj.regwidth
     assert isinstance(reg_bit_width, int) and reg_bit_width >= 0
-    reg_byte_width = reg_bit_width // 8
+    reg_byte_width = (reg_bit_width + 7) // 8
 
-    # obj should be an OrderedDict and should contain a registers entry
-    # (checked by validate). This is a list of registers which we'll return.
-    # The validation code would also have exploded if it wasn't a list of
-    # dictionaries, so we can assert the type safely.
-    registers = obj['registers']
+    registers = obj.regs
     assert isinstance(registers, RegBlock)
     _LR_RETVAL = (reg_byte_width, registers)
     return _LR_RETVAL

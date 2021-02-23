@@ -495,6 +495,7 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list:
       [
         {
@@ -511,7 +512,6 @@
           type: output
         }
       ]
-      available_inout_list: []
       param_list: []
       interrupt_list:
       [
@@ -599,6 +599,7 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list:
       [
         {
@@ -615,7 +616,6 @@
           type: output
         }
       ]
-      available_inout_list: []
       param_list: []
       interrupt_list:
       [
@@ -703,6 +703,7 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list:
       [
         {
@@ -719,7 +720,6 @@
           type: output
         }
       ]
-      available_inout_list: []
       param_list: []
       interrupt_list:
       [
@@ -807,6 +807,7 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list:
       [
         {
@@ -823,7 +824,6 @@
           type: output
         }
       ]
-      available_inout_list: []
       param_list: []
       interrupt_list:
       [
@@ -911,8 +911,6 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
-      available_input_list: []
-      available_output_list: []
       available_inout_list:
       [
         {
@@ -921,6 +919,8 @@
           type: inout
         }
       ]
+      available_input_list: []
+      available_output_list: []
       param_list: []
       interrupt_list:
       [
@@ -975,6 +975,14 @@
       size: 0x2000
       bus_device: tlul
       bus_host: none
+      available_inout_list:
+      [
+        {
+          name: sd
+          width: 4
+          type: inout
+        }
+      ]
       available_input_list:
       [
         {
@@ -989,14 +997,6 @@
         }
       ]
       available_output_list: []
-      available_inout_list:
-      [
-        {
-          name: sd
-          width: 4
-          type: inout
-        }
-      ]
       param_list: []
       interrupt_list:
       [
@@ -1077,6 +1077,14 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list:
+      [
+        {
+          name: sd
+          width: 4
+          type: inout
+        }
+      ]
       available_input_list: []
       available_output_list:
       [
@@ -1089,14 +1097,6 @@
           name: csb
           width: 1
           type: output
-        }
-      ]
-      available_inout_list:
-      [
-        {
-          name: sd
-          width: 4
-          type: inout
         }
       ]
       param_list: []
@@ -1159,6 +1159,14 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list:
+      [
+        {
+          name: sd
+          width: 4
+          type: inout
+        }
+      ]
       available_input_list: []
       available_output_list:
       [
@@ -1171,14 +1179,6 @@
           name: csb
           width: 1
           type: output
-        }
-      ]
-      available_inout_list:
-      [
-        {
-          name: sd
-          width: 4
-          type: inout
         }
       ]
       param_list: []
@@ -1238,8 +1238,6 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
-      available_input_list: []
-      available_output_list: []
       available_inout_list:
       [
         {
@@ -1253,6 +1251,8 @@
           type: inout
         }
       ]
+      available_input_list: []
+      available_output_list: []
       param_list: []
       interrupt_list:
       [
@@ -1380,8 +1380,6 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
-      available_input_list: []
-      available_output_list: []
       available_inout_list:
       [
         {
@@ -1395,6 +1393,8 @@
           type: inout
         }
       ]
+      available_input_list: []
+      available_output_list: []
       param_list: []
       interrupt_list:
       [
@@ -1522,8 +1522,6 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
-      available_input_list: []
-      available_output_list: []
       available_inout_list:
       [
         {
@@ -1537,6 +1535,8 @@
           type: inout
         }
       ]
+      available_input_list: []
+      available_output_list: []
       param_list: []
       interrupt_list:
       [
@@ -1664,6 +1664,7 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list:
       [
@@ -1688,7 +1689,6 @@
           type: output
         }
       ]
-      available_inout_list: []
       param_list: []
       interrupt_list:
       [
@@ -1746,9 +1746,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list: []
       interrupt_list:
       [
@@ -1811,6 +1811,24 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list:
+      [
+        {
+          name: d
+          width: 1
+          type: inout
+        }
+        {
+          name: dp
+          width: 1
+          type: inout
+        }
+        {
+          name: dn
+          width: 1
+          type: inout
+        }
+      ]
       available_input_list:
       [
         {
@@ -1845,24 +1863,6 @@
           name: suspend
           width: 1
           type: output
-        }
-      ]
-      available_inout_list:
-      [
-        {
-          name: d
-          width: 1
-          type: inout
-        }
-        {
-          name: dp
-          width: 1
-          type: inout
-        }
-        {
-          name: dn
-          width: 1
-          type: inout
         }
       ]
       param_list: []
@@ -2088,9 +2088,9 @@
       size: 0x4000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list:
       [
         {
@@ -2405,9 +2405,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list:
       [
         {
@@ -2876,9 +2876,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list:
       [
         {
@@ -3026,9 +3026,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list: []
       interrupt_list:
       [
@@ -3260,9 +3260,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list: []
       interrupt_list: []
       alert_list: []
@@ -3387,9 +3387,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list: []
       interrupt_list: []
       alert_list: []
@@ -3574,9 +3574,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list: []
       interrupt_list: []
       alert_list: []
@@ -3814,9 +3814,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list: []
       interrupt_list:
       [
@@ -3843,6 +3843,7 @@
       [
         {
           name: aon_timer_rst_req
+          width: "1"
         }
       ]
       scan: "false"
@@ -3937,9 +3938,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list: []
       interrupt_list: []
       alert_list: []
@@ -3987,9 +3988,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list: []
       interrupt_list: []
       alert_list:
@@ -4108,9 +4109,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list:
       [
         {
@@ -4291,6 +4292,7 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list:
       [
         {
@@ -4317,7 +4319,6 @@
           type: output
         }
       ]
-      available_inout_list: []
       param_list:
       [
         {
@@ -4607,9 +4608,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list: []
       interrupt_list: []
       alert_list: []
@@ -4658,9 +4659,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list:
       [
         {
@@ -4872,9 +4873,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list: []
       interrupt_list:
       [
@@ -4952,9 +4953,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list:
       [
         {
@@ -5099,9 +5100,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list:
       [
         {
@@ -5419,9 +5420,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list:
       [
         {
@@ -5558,9 +5559,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list: []
       interrupt_list:
       [
@@ -5685,9 +5686,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list: []
       interrupt_list:
       [
@@ -5788,9 +5789,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list: []
       interrupt_list:
       [
@@ -5894,9 +5895,9 @@
       size: 0x1000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list:
       [
         {
@@ -6076,9 +6077,9 @@
       size: 0x10000
       bus_device: tlul
       bus_host: none
+      available_inout_list: []
       available_input_list: []
       available_output_list: []
-      available_inout_list: []
       param_list:
       [
         {
@@ -10159,6 +10160,7 @@
   [
     {
       name: aon_timer_rst_req
+      width: "1"
       module: aon_timer_aon
     }
   ]

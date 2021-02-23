@@ -20,17 +20,15 @@ import sys
 import textwrap
 from pathlib import Path
 
-import hjson
-
 import check_tool_requirements
 import dashboard.gen_dashboard_entry as gen_dashboard_entry
 import difgen.gen_dif_listing as gen_dif_listing
 import reggen.gen_cfg_html as gen_cfg_html
 import reggen.gen_html as gen_html
-import reggen.validate as validate
 import reggen.gen_selfdoc as reggen_selfdoc
 import dvsim.testplanner.testplan_utils as testplan_utils
 import tlgen
+from reggen.ip_block import IpBlock
 
 USAGE = """
   build_docs [options]
@@ -150,28 +148,19 @@ def generate_dashboards():
 
 def generate_hardware_blocks():
     for hardware in config["hardware_definitions"]:
-        hardware_file = open(str(SRCTREE_TOP.joinpath(hardware)))
-        regs = hjson.load(hardware_file,
-                          use_decimal=True,
-                          object_pairs_hook=validate.checking_dict)
-        if validate.validate(regs, params=[]) == 0:
-            logging.info("Parsed %s" % (hardware))
-        else:
-            logging.fatal("Failed to parse %s" % (hardware))
+        regs = IpBlock.from_path(str(SRCTREE_TOP.joinpath(hardware)), [])
 
-        base_path = config["outdir-generated"].joinpath(hardware)
-        base_path.parent.mkdir(parents=True, exist_ok=True)
+        hw_path = config["outdir-generated"].joinpath(hardware)
+        dst_path = hw_path.parent
+        dst_path.mkdir(parents=True, exist_ok=True)
 
-        regs_html = open(str(base_path.parent.joinpath(base_path.name +
-                                                       '.registers')),
-                         mode='w')
-        gen_html.gen_html(regs, regs_html)
-        regs_html.close()
+        regs_path = dst_path.joinpath(hw_path.name + '.registers')
+        with open(regs_path, 'w') as regs_file:
+            gen_html.gen_html(regs, regs_file)
 
-        hwcfg_html = open(str(base_path.parent.joinpath(base_path.name + '.hwcfg')),
-                          mode='w')
-        gen_cfg_html.gen_cfg_html(regs, hwcfg_html)
-        hwcfg_html.close()
+        hwcfg_path = dst_path.joinpath(hw_path.name + '.hwcfg')
+        with open(hwcfg_path, 'w') as hwcfg_file:
+            gen_cfg_html.gen_cfg_html(regs, hwcfg_file)
 
 
 def generate_testplans():

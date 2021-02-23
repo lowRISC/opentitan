@@ -286,28 +286,21 @@ def gen_html_window(outfile, win, comp, regwidth, rnames, toc, toclvl):
 # Must have called validate, so should have no errors
 
 
-def gen_html(regs, outfile, toclist=None, toclevel=3):
-    component = regs['name']
-    registers = regs['registers']
-    rnames = regs['genrnames']
+def gen_html(block, outfile, toclist=None, toclevel=3):
+    rnames = list(block.regs.name_to_offset.keys())
 
-    if 'regwidth' in regs:
-        regwidth = int(regs['regwidth'], 0)
-    else:
-        regwidth = 32
-
-    for x in registers.entries:
+    for x in block.regs.entries:
         if isinstance(x, Register):
-            gen_html_register(outfile, x, component, regwidth, rnames, toclist,
-                              toclevel)
+            gen_html_register(outfile, x, block.name, block.regwidth, rnames,
+                              toclist, toclevel)
             continue
         if isinstance(x, MultiRegister):
             for reg in x.regs:
-                gen_html_register(outfile, reg, component, regwidth, rnames,
-                                  toclist, toclevel)
+                gen_html_register(outfile, reg, block.name, block.regwidth,
+                                  rnames, toclist, toclevel)
             continue
         if isinstance(x, Window):
-            gen_html_window(outfile, x, component, regwidth, rnames,
+            gen_html_window(outfile, x, block.name, block.regwidth, rnames,
                             toclist, toclevel)
             continue
 

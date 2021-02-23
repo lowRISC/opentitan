@@ -53,9 +53,9 @@ def amend_ip(top, ip):
     """
     ip_list_in_top = [x["type"].lower() for x in top["module"]]
     # TODO make set
-    ipname = ip["name"].lower()
+    ipname = ip.name.lower()
     if ipname not in ip_list_in_top:
-        log.info("TOP doens't use the IP %s. Skip" % ip["name"])
+        log.info("TOP doens't use the IP %s. Skip" % ip.name)
         return
 
     # Initialize RNG for compile-time netlist constants.
@@ -69,58 +69,45 @@ def amend_ip(top, ip):
     ip_modules = list(
         filter(lambda module: module["type"] == ipname, top["module"]))
 
+    ip_size = 1 << ip.regs.get_addr_width()
+
     for ip_module in ip_modules:
         mod_name = ip_module["name"]
 
         # Size
         if "size" not in ip_module:
-            ip_module["size"] = "0x%x" % max(ip["gensize"], 0x1000)
-        elif int(ip_module["size"], 0) < ip["gensize"]:
+            ip_module["size"] = "0x%x" % max(ip_size, 0x1000)
+        elif int(ip_module["size"], 0) < ip_size:
             log.error(
                 "given 'size' field in IP %s is smaller than the required space"
                 % mod_name)
 
-        # bus_device
-        ip_module["bus_device"] = ip["bus_device"]
+        ip_module["bus_device"] = ip.bus_device or 'none'
+        ip_module["bus_host"] = ip.bus_host or 'none'
 
-        # bus_host
-        if "bus_host" in ip and ip["bus_host"] != "":
-            ip_module["bus_host"] = ip["bus_host"]
-        else:
-            ip_module["bus_host"] = "none"
-
-        # available_input_list , available_output_list, available_inout_list
-        if "available_input_list" in ip:
-            ip_module["available_input_list"] = deepcopy(
-                ip["available_input_list"])
-            for i in ip_module["available_input_list"]:
-                i.pop('desc', None)
-                i["type"] = "input"
-                i["width"] = int(i["width"])
-        else:
-            ip_module["available_input_list"] = []
-        if "available_output_list" in ip:
-            ip_module["available_output_list"] = deepcopy(
-                ip["available_output_list"])
-            for i in ip_module["available_output_list"]:
-                i.pop('desc', None)
-                i["type"] = "output"
-                i["width"] = int(i["width"])
-        else:
-            ip_module["available_output_list"] = []
-        if "available_inout_list" in ip:
-            ip_module["available_inout_list"] = deepcopy(
-                ip["available_inout_list"])
-            for i in ip_module["available_inout_list"]:
-                i.pop('desc', None)
-                i["type"] = "inout"
-                i["width"] = int(i["width"])
-        else:
-            ip_module["available_inout_list"] = []
+        inouts, inputs, outputs = ip.xputs
+        ip_module['available_inout_list'] = [
+            {'name': signal.name,
+             'width': signal.bits.width(),
+             'type': 'inout'}
+            for signal in inouts
+        ]
+        ip_module['available_input_list'] = [
+            {'name': signal.name,
+             'width': signal.bits.width(),
+             'type': 'input'}
+            for signal in inputs
+        ]
+        ip_module['available_output_list'] = [
+            {'name': signal.name,
+             'width': signal.bits.width(),
+             'type': 'output'}
+            for signal in outputs
+        ]
 
         # param_list
         new_params = []
-        for param in ip['param_list'].by_name.values():
+        for param in ip.params.by_name.values():
             if isinstance(param, LocalParam):
                 # Remove local parameters.
                 continue
@@ -168,58 +155,47 @@ def amend_ip(top, ip):
         ip_module["param_list"] = new_params
 
         # interrupt_list
-        mod_int_list = []
-        for i in ip.get('interrupt_list', []):
-            mod_int_list.append({'name': i.name,
-                                 'width': i.bits.width(),
-                                 'type': 'interrupt'})
-        ip_module["interrupt_list"] = mod_int_list
+        ip_module["interrupt_list"] = [
+            {'name': i.name,
+             'width': i.bits.width(),
+             'type': 'interrupt'}
+            for i in ip.interrupts
+        ]
 
         # alert_list
         async_alerts = (ip_module["clock_srcs"]["clk_i"] !=
                         top["module"][ah_idx]["clock_srcs"]["clk_i"])
-        mod_alert_list = []
-        for i in ip.get("alert_list", []):
-            mod_alert_list.append({'name': i.name,
-                                   'type': 'alert',
-                                   'width': 1,
-                                   'async': '1' if async_alerts else '0'})
-        ip_module["alert_list"] = mod_alert_list
+        ip_module["alert_list"] = [
+            {'name': i.name,
+             'type': 'alert',
+             'width': 1,
+             'async': '1' if async_alerts else '0'}
+            for i in ip.alerts
+        ]
 
         # wkup_list
-        if "wakeup_list" in ip:
-            ip_module["wakeup_list"] = deepcopy(ip["wakeup_list"])
-            for i in ip_module["wakeup_list"]:
-                i.pop('desc', None)
-        else:
-            ip_module["wakeup_list"] = []
+        ip_module["wakeup_list"] = [
+            {'name': signal.name,
+             'width': str(signal.bits.width())}
+            for signal in ip.wakeups
+        ]
 
         # reset request
-        if "reset_request_list" in ip:
-            ip_module["reset_request_list"] = deepcopy(
-                ip["reset_request_list"])
-            for i in ip_module["reset_request_list"]:
-                i.pop('desc', None)
-        else:
-            ip_module["reset_request_list"] = []
+        ip_module["reset_request_list"] = [
+            {'name': signal.name,
+             'width': str(signal.bits.width())}
+            for signal in ip.reset_requests
+        ]
 
         # scan
-        if "scan" in ip:
-            ip_module["scan"] = ip["scan"]
-        else:
-            ip_module["scan"] = "false"
+        ip_module['scan'] = 'true' if ip.scan else 'false'
 
         # scan_reset
-        if "scan_reset" in ip:
-            ip_module["scan_reset"] = ip["scan_reset"]
-        else:
-            ip_module["scan_reset"] = "false"
+        ip_module['scan_reset'] = 'true' if ip.scan_reset else 'false'
 
         # inter-module
-        if "inter_signal_list" in ip:
-            ip_module["inter_signal_list"] = deepcopy(ip["inter_signal_list"])
-
-            # TODO: validate
+        ip_module["inter_signal_list"] = ip.inter_signals.copy()
+        # TODO: validate
 
 
 # TODO: Replace this part to be configurable from Hjson or template
