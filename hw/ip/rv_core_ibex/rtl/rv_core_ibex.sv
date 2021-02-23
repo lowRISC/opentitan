@@ -65,7 +65,7 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
   output crashdump_t  crash_dump_o,
 
   // CPU Control Signals
-  input  logic        fetch_enable_i,
+  input lc_ctrl_pkg::lc_tx_t fetch_enable_i,
   output logic        core_sleep_o
 );
 
@@ -164,6 +164,14 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
   assign unused_alert_minor = alert_minor;
   assign unused_alert_major = alert_major;
 
+  lc_ctrl_pkg::lc_tx_t fetch_enable;
+  prim_lc_sync u_lc_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(fetch_enable_i),
+    .lc_en_o(fetch_enable)
+  );
+
   ibex_core #(
     .PMPEnable                ( PMPEnable                ),
     .PMPGranularity           ( PMPGranularity           ),
@@ -243,7 +251,7 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
     .rvfi_mem_wdata,
 `endif
 
-    .fetch_enable_i,
+    .fetch_enable_i   (fetch_enable == lc_ctrl_pkg::On),
     .alert_minor_o    (alert_minor),
     .alert_major_o    (alert_major),
     .core_sleep_o

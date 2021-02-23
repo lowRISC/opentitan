@@ -12,6 +12,8 @@ filesets:
       - lowrisc:prim:clock_gating
       - lowrisc:ip:tlul
       - lowrisc:tlul:adapter_host
+      - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:prim:lc_sync
       - lowrisc:ip:rv_core_ibex_pkg
     files:
       - rtl/rv_core_ibex.sv
