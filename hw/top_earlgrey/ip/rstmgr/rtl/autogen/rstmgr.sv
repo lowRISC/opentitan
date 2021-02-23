@@ -385,24 +385,9 @@ module rstmgr import rstmgr_pkg::*; (
   );
 
   logic [PowerDomains-1:0] rst_sys_n;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_aon_sys (
-    .clk_i(clk_main_i),
-    .rst_ni(rst_sys_src_n[DomainAonSel]),
-    .d_i(1'b1),
-    .q_o(rst_sys_n[DomainAonSel])
-  );
+  assign rst_sys_n[DomainAonSel] = 1'b0;
+  assign resets_o.rst_sys_n[DomainAonSel] = rst_sys_n[DomainAonSel];
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_aon_sys_mux (
-    .clk0_i(rst_sys_n[DomainAonSel]),
-    .clk1_i(scan_rst_ni),
-    .sel_i(leaf_rst_scanmode[7] == lc_ctrl_pkg::On),
-    .clk_o(resets_o.rst_sys_n[DomainAonSel])
-  );
 
   prim_flop_2sync #(
     .Width(1),

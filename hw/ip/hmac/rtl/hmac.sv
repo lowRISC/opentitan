@@ -500,6 +500,12 @@ module hmac
   end
 
   /////////////////////
+  // Unused Signals  //
+  /////////////////////
+  logic unused_wmask;
+  assign unused_wmask = ^reg_fifo_wmask;
+
+  /////////////////////
   // Idle output     //
   /////////////////////
   // TBD this should be connected later
