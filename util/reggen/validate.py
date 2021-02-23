@@ -6,12 +6,13 @@ Register JSON validation
 """
 
 import logging as log
-from collections import OrderedDict
 from typing import List
 
 from .access import SWAccess, HWAccess
 from .alert import Alert
 from .field import Field
+from .inter_signal import InterSignal
+from .lib import check_list
 from .params import LocalParam, Params
 from .reg_block import RegBlock
 from .register import Register
@@ -489,7 +490,19 @@ def validate(regs, params: List[str]):
         log.error("Register description had " + str(error) + " error" +
                   "s" if error > 1 else "")
 
-    regs.setdefault('inter_signal_list', [])
+    try:
+        r_inter_signal_list = check_list(regs.get('inter_signal_list', []),
+                                         'inter_signal_list field')
+        inter_signal_list = [
+            InterSignal.from_raw('entry {} of the inter_signal_list field'
+                                 .format(idx + 1),
+                                 entry)
+            for idx, entry in enumerate(r_inter_signal_list)
+        ]
+    except ValueError as err:
+        log.error(str(err))
+        error += 1
+
     regs.setdefault('bus_device', '')
     regs.setdefault('bus_host', '')
 
@@ -497,16 +510,15 @@ def validate(regs, params: List[str]):
         # Add to inter_module_signal
         port_name = "tl" if regs["bus_host"] in ["none", ""] else "tl_d"
 
-        regs["inter_signal_list"].append(
-            OrderedDict([('struct', 'tl'), ('package', 'tlul_pkg'),
-                         ('type', 'req_rsp'), ('act', 'rsp'),
-                         ('name', port_name)]))
+        inter_signal_list.append(InterSignal(port_name, None, 'tl', 'tlul_pkg',
+                                             'req_rsp', 'rsp', 1, None))
 
     if regs['bus_host'] == "tlul":
         port_name = "tl" if regs["bus_host"] in ["none", ""] else "tl_h"
 
-        regs["inter_signal_list"].append(
-            OrderedDict([('struct', 'tl'), ('package', 'tlul_pkg'),
-                         ('type', 'req_rsp'), ('act', 'req'),
-                         ('name', port_name)]))
+        inter_signal_list.append(InterSignal(port_name, None, 'tl', 'tlul_pkg',
+                                             'req_rsp', 'req', 1, None))
+
+    regs['inter_signal_list'] = inter_signal_list
+
     return error

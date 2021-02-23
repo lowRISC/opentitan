@@ -20,6 +20,8 @@ from mako.template import Template
 
 import tlgen
 from reggen import access, gen_dv, gen_rtl, validate, window
+from reggen.inter_signal import InterSignal
+from reggen.lib import check_list
 from reggen.reg_block import RegBlock
 from topgen import amend_clocks, get_hjsonobj_xbars
 from topgen import intermodule as im
@@ -95,13 +97,14 @@ def generate_xbars(top, out_path):
                                     use_decimal=True,
                                     object_pairs_hook=OrderedDict)
 
-            # Deepcopy of the inter_signal_list.
-            # As of writing the code, it is not expected to write-back the
-            # read xbar objects into files. Still, as `inter_signal_list` is
-            # modified in the `elab_intermodule()` stage, it is better to keep
-            # the original content.
-            obj["inter_signal_list"] = deepcopy(
-                xbar_ipobj["inter_signal_list"])
+            r_inter_signal_list = check_list(xbar_ipobj.get('inter_signal_list', []),
+                                             'inter_signal_list field')
+            obj['inter_signal_list'] = [
+                InterSignal.from_raw('entry {} of the inter_signal_list field'
+                                     .format(idx + 1),
+                                     entry)
+                for idx, entry in enumerate(r_inter_signal_list)
+            ]
 
 
 def generate_alert_handler(top, out_path):
