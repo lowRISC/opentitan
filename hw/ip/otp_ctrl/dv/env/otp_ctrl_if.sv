@@ -21,16 +21,19 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
                        lc_creator_seed_sw_rw_en_i, lc_seed_hw_rd_en_i;
 
   // connect with lc_prog push-pull interface
-  logic                lc_prog_req, lc_prog_err, lc_prog_req_dly1;
+  logic                lc_prog_req, lc_prog_err;
+  logic                lc_prog_err_dly1, lc_prog_no_intr_check;
 
-  // delay one clock cycle for lc_prog_req, this will be used in scb to check lci_err status
+  // Lc_err takes one clock cycle to propogate to intr signal. So avoid intr check if it happens
+  // during the transition.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      lc_prog_req_dly1 <= 0;
+      lc_prog_err_dly1 <= 0;
     end else begin
-      lc_prog_req_dly1 <= lc_prog_req;
+      lc_prog_err_dly1 <= lc_prog_err;
     end
   end
+  assign lc_prog_no_intr_check = lc_prog_err | lc_prog_err_dly1;
 
   // TODO: for lc_tx, except esc_en signal, all value different from On is treated as Off,
   // technically we can randomize values here once scb supports
