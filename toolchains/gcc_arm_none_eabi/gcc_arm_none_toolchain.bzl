@@ -272,9 +272,7 @@ def gcc_arm_none_toolchain(name, compiler_components, architecture, float_abi, e
     native.toolchain(
         name = "-".join(["cc-toolchain", architecture, fpu]),
         exec_compatible_with = [
-            "@platforms//cpu:" + architecture,
-            "//constraints/fpu:" + fpu,
-            "@platforms//os:none",
+            "@platforms//cpu:x86_64",
         ],
         target_compatible_with = [
             "@platforms//cpu:" + architecture,
