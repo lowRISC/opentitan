@@ -80,8 +80,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
     csr_spinwait(ral.status.dai_idle, 1);
-    csr_rd(ral.intr_state, val);
-    csr_wr(ral.intr_state, val);
+    rd_and_clear_intrs();
   endtask : dai_wr
 
   // This task triggers an OTP readout sequence via the DAI interface
@@ -105,8 +104,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
     csr_rd(ral.direct_access_rdata_0, rdata0);
     if (is_secret(addr) || is_digest(addr)) csr_rd(ral.direct_access_rdata_1, rdata1);
-    csr_rd(ral.intr_state, val);
-    csr_wr(ral.intr_state, val);
+    rd_and_clear_intrs();
 
     // If has ecc_err, backdoor write back original value
     // TODO: remove this once we can detect ECC error from men_bkdr_if
@@ -137,8 +135,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
     csr_spinwait(ral.status.dai_idle, 1);
-    csr_rd(ral.intr_state, val);
-    csr_wr(ral.intr_state, val);
+    rd_and_clear_intrs();
   endtask
 
   // this task provisions all HW partitions
@@ -222,6 +219,13 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     if (wait_done && val) csr_spinwait(ral.status.check_pending, 0);
   endtask
 
+  virtual task rd_and_clear_intrs();
+    bit [TL_DW-1:0] val;
+    wait(cfg.otp_ctrl_vif.lc_prog_no_intr_check == 0);
+    csr_rd(ral.intr_state, val);
+    csr_wr(ral.intr_state, val);
+  endtask
+
   virtual task req_sram_key(int index);
     push_pull_host_seq#(.DeviceDataWidth(SRAM_DATA_SIZE)) sram_pull_seq;
     `uvm_create_on(sram_pull_seq, p_sequencer.sram_pull_sequencer_h[index]);
@@ -273,13 +277,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `DV_CHECK_RANDOMIZE_FATAL(lc_prog_pull_seq)
     `uvm_send(lc_prog_pull_seq)
 
-    // Wait 2 clock cycle until error propogates to the interrupts,
-    // then read and clear interrupt, check is implemented in scb
-    if (check_intr) begin
-      cfg.clk_rst_vif.wait_clks(2);
-      csr_rd(ral.intr_state, intr_val);
-      csr_wr(ral.intr_state, intr_val);
-    end
+    if (check_intr) rd_and_clear_intrs();
   endtask
 
   virtual task req_lc_token();

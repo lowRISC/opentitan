@@ -397,18 +397,14 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
-        if (data_phase_read) begin
+        if (data_phase_read && do_read_check) begin
           bit [TL_DW-1:0] intr_en           = `gmv(ral.intr_enable);
           bit [NumOtpCtrlIntr-1:0] intr_exp = `gmv(ral.intr_state);
 
-          // TODO: check with designer if otp_error is sticky
-          do_read_check = 0;
-          if (do_read_check) begin
-            foreach (intr_exp[i]) begin
-              otp_intr_e intr = otp_intr_e'(i);
-              `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[i], (intr_en[i] & intr_exp[i]),
-                                $sformatf("Interrupt_pin: %0s", intr.name));
-            end
+          foreach (intr_exp[i]) begin
+            otp_intr_e intr = otp_intr_e'(i);
+            `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[i], (intr_en[i] & intr_exp[i]),
+                              $sformatf("Interrupt_pin: %0s", intr.name));
           end
         end
       end
