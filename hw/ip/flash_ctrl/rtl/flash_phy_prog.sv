@@ -68,6 +68,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
 
   // The currently observed data beat
   logic [WordSelW-1:0] idx;
+  logic [WordSelW-1:0] idx_sub_one;
   logic pack_valid;
   logic [BusWidth-1:0] pack_data;
   logic align_next;
@@ -79,7 +80,8 @@ module flash_phy_prog import flash_phy_pkg::*; (
   assign pack_data  = (data_sel == Actual) ? data_i : {BusWidth{1'b1}};
 
   // next idx will be aligned
-  assign align_next = (idx > '0) ? (idx - 1'b1) == sel_i : 1'b0;
+  assign idx_sub_one = idx - 1'b1;
+  assign align_next = (idx > '0) ? (idx_sub_one == sel_i) : 1'b0;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

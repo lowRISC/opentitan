@@ -297,7 +297,6 @@
         type: top
         domains:
         [
-          Aon
           "0"
         ]
         parent: sys_src

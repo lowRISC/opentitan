@@ -284,38 +284,15 @@ module top_earlgrey_asic (
     .dio_attr_i          ( dio_attr         )
   );
 
-  ///////////////////////////////
-  // Differential USB Receiver //
-  ///////////////////////////////
+  //////////////////////
+  // JTAG Overlay Mux //
+  //////////////////////
 
   logic usbdev_aon_usb_rx_enable;
   logic usb_pullup_p_en;
   logic usb_pullup_n_en;
   logic usb_diff_input;
-
-  logic ast_usb_core_pok;
-  logic [31:0] ast_usb_calibration;
   logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
-
-  // TODO: overhaul these USB connections
-  assign usbdev_aon_usb_rx_enable = 1'b0;
-
-  prim_usb_diff_rx #(
-    .CalibW(ast_pkg::UsbCalibWidth)
-  ) u_prim_usb_diff_rx (
-    .input_pi      ( USB_P                    ),
-    .input_ni      ( USB_N                    ),
-    .input_en_i    ( usbdev_aon_usb_rx_enable ),
-    .core_pok_i    ( ast_usb_core_pok         ),
-    .pullup_p_en_i ( usb_pullup_p_en          ),
-    .pullup_n_en_i ( usb_pullup_n_en          ),
-    .calibration_i ( usb_io_pu_cal            ),
-    .input_o       ( usb_diff_input           )
-  );
-
-  //////////////////////
-  // JTAG Overlay Mux //
-  //////////////////////
 
   logic jtag_trst_n, jtag_srst_n;
   logic jtag_tck, jtag_tms, jtag_tdi, jtag_tdo;
@@ -450,12 +427,36 @@ module top_earlgrey_asic (
   import sensor_ctrl_reg_pkg::OtSel;
 
   // reset domain connections
+  import rstmgr_pkg::PowerDomains;
   import rstmgr_pkg::DomainAonSel;
   import rstmgr_pkg::Domain0Sel;
 
   // TODO: need to mux the external clock.
   logic ext_clk;
   assign ext_clk = 1'b0;
+
+  // AST does not use all clocks / resets forwarded to it
+  logic unused_slow_clk_en;
+  logic unused_usb_clk_aon;
+  logic unused_usb_clk_io_div4;
+  assign unused_slow_clk_en = base_ast_pwr.slow_clk_en;
+  assign unused_usb_clk_aon = clks_ast.clk_ast_usbdev_aon_peri;
+  assign unused_usb_clk_io_div4 = clks_ast.clk_ast_usbdev_io_div4_peri;
+
+  logic unused_usb_usb_rst;
+  logic [PowerDomains-1:0] unused_usb_sys_io_div4_rst;
+  logic [PowerDomains-1:0] unused_usb_sys_aon_rst;
+  logic unused_sensor_ctrl_sys_io_div4_rst;
+  logic unused_entropy_sys_rst;
+  logic unused_edn_sys_rst;
+  assign unused_usb_usb_rst = rsts_ast.rst_ast_usbdev_usb_n[DomainAonSel];
+  assign unused_usb_sys_io_div4_rst = rsts_ast.rst_ast_usbdev_sys_io_div4_n;
+  assign unused_usb_sys_aon_rst = rsts_ast.rst_ast_usbdev_sys_aon_n;
+  assign unused_sensor_ctrl_sys_io_div4_rst =
+    rsts_ast.rst_ast_sensor_ctrl_aon_sys_io_div4_n[Domain0Sel];
+  assign unused_entropy_sys_rst = rsts_ast.rst_ast_entropy_src_sys_n[DomainAonSel];
+  assign unused_edn_sys_rst = rsts_ast.rst_ast_edn0_sys_n[DomainAonSel];
+
 
   ast #(
     .EntropyStreams(top_pkg::ENTROPY_STREAM),
@@ -588,6 +589,25 @@ module top_earlgrey_asic (
     .scan_reset_no         ( scan_rst_n )
   );
 
+  ///////////////////////////////
+  // Differential USB Receiver //
+  ///////////////////////////////
+
+  // TODO: overhaul these USB connections
+  assign usbdev_aon_usb_rx_enable = 1'b0;
+
+  prim_usb_diff_rx #(
+    .CalibW(ast_pkg::UsbCalibWidth)
+  ) u_prim_usb_diff_rx (
+    .input_pi      ( USB_P                    ),
+    .input_ni      ( USB_N                    ),
+    .input_en_i    ( usbdev_aon_usb_rx_enable ),
+    .core_pok_i    ( ast_base_pwr.main_pok    ),
+    .pullup_p_en_i ( usb_pullup_p_en          ),
+    .pullup_n_en_i ( usb_pullup_n_en          ),
+    .calibration_i ( usb_io_pu_cal            ),
+    .input_o       ( usb_diff_input           )
+  );
 
   //////////////////////
   // Top-level design //

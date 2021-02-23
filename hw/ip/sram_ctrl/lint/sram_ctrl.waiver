@@ -3,6 +3,3 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # waiver file for SRAM controller
-
-waive -rules {HIER_NET_NOT_READ NOT_READ} -location {sram_ctrl_reg_top.sv} -regexp {.* 'reg_wdata\[31:1\]' is not read from in module 'sram_ctrl_reg_top'} \
-      -comment {Not all bits are wdata bits are used}

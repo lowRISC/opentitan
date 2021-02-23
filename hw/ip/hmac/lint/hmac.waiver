@@ -46,4 +46,3 @@ waive -rules {INTEGER}        -location {tlul_socket_1n.sv} -regexp {'idx' of ty
 
 waive -rules {NOT_READ HIER_NET_NOT_READ} -location {hmac.sv} -regexp {'msg_fifo_wmask.* is not read} \
       -comment "Only first bit in a byte is used"
-

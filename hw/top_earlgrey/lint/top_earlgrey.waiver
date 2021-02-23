@@ -15,6 +15,12 @@ waive -rules RESET_MUX -location {top_earlgrey.sv} -regexp {Asynchronous reset .
 waive -rules CLOCK_MUX -location {clkmgr.sv top_earlgrey.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
       -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"
 
+# Combo loops through uart loopback can be ignored
+waive -rules {COMBO_LOOP} -location {top_earlgrey_asic.sv} -regexp {'tx' driven in module 'uart_core' by 'rx' at uart_core.sv} \
+      -comment "there is technically a loopback path through uart, however RX / TX should never be configured to the same pin"
+
+waive -rules {SAME_NAME_TYPE} -location {*} -regexp {.*} \
+      -comment "same names across modules are allowed to exist at the top level"
 
 ## xbar
 #waive -rules HIER_NET_NOT_READ -location {tlul_xbar.sv} -regexp {a_source.* is not read from} \

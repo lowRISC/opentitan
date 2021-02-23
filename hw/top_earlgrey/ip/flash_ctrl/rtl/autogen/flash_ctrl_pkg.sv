@@ -225,7 +225,7 @@ package flash_ctrl_pkg;
                  ecc_en:      1'b1,
                  he_en:       1'b1, // HW assumes high endurance
                  base:        '0,
-                 size:        '{default:'1}
+                 size:        {AllPagesW{1'b1}}
                 }
      }
   };
@@ -355,7 +355,7 @@ package flash_ctrl_pkg;
 
   // default value of flash_rsp_t (for dangling ports)
   parameter flash_rsp_t FLASH_RSP_DEFAULT = '{
-    prog_type_avail:    '{default: '1},
+    prog_type_avail:    {ProgTypes{1'b1}},
     rd_done:            1'b0,
     prog_done:          1'b0,
     erase_done:         1'b0,
