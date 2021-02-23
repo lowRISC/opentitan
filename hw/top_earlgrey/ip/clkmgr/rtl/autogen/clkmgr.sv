@@ -178,10 +178,6 @@ module clkmgr import clkmgr_pkg::*; (
     .clk_i(clk_io_div2_i),
     .clk_o(clocks_o.clk_io_div2_powerup)
   );
-  prim_clock_buf u_clk_aon_secure_buf (
-    .clk_i(clk_aon_i),
-    .clk_o(clocks_o.clk_aon_secure)
-  );
   prim_clock_buf u_clk_aon_peri_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_peri)
