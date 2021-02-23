@@ -639,10 +639,10 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       // Inter-module signals
       % for sig in m["inter_signal_list"]:
         ## TODO: handle below condition in lib.py
-        % if sig["type"] == "req_rsp":
+        % if sig['type'] == "req_rsp":
       .${lib.im_portname(sig,"req")}(${lib.im_netname(sig, "req")}),
       .${lib.im_portname(sig,"rsp")}(${lib.im_netname(sig, "rsp")}),
-        % elif sig["type"] == "uni":
+        % elif sig['type'] == "uni":
           ## TODO: Broadcast type
           ## TODO: default for logic type
       .${lib.im_portname(sig)}(${lib.im_netname(sig)}),
@@ -722,7 +722,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 
   ## Inter-module signal
   % for sig in xbar["inter_signal_list"]:
-<% assert sig["type"] == "req_rsp" %>\
+<% assert sig['type'] == "req_rsp" %>\
     // port: ${sig['name']}
     .${lib.im_portname(sig,"req")}(${lib.im_netname(sig, "req")}),
     .${lib.im_portname(sig,"rsp")}(${lib.im_netname(sig, "rsp")}),
