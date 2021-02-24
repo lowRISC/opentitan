@@ -22,7 +22,7 @@ LC_STATE_DEFINITION_FILE = 'hw/ip/lc_ctrl/data/lc_ctrl_state.hjson'
 # Default image file definition (can be overridden on the command line).
 IMAGE_DEFINITION_FILE = 'hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson'
 # Default output path (can be overridden on the command line).
-MEMORY_HEX_FILE = 'otp-img.mem'
+MEMORY_HEX_FILE = 'otp-img.vmem'
 
 
 def _override_seed(args, name, config):

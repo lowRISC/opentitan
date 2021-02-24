@@ -6,6 +6,7 @@ r"""OTP memory image class, used to create preload images for the OTP
 memory for simulations and FPGA emulation.
 """
 
+import copy
 import logging as log
 import random
 
@@ -41,10 +42,17 @@ def _present_64bit_encrypt(plain, key):
 def _present_64bit_digest(data_blocks, iv, const):
     '''Compute digest over multiple 64bit data blocks'''
 
+    # Make a deepcopy since we're going to modify and pad the list.
+    data_blocks = copy.deepcopy(data_blocks)
+
     # We need to align the number of data blocks to 2x64bit
     # for the digest to work properly.
     if len(data_blocks) % 2 == 1:
-        data_blocks = data_blocks + [data_blocks[-1]]
+        data_blocks.append(data_blocks[-1])
+
+    # Append finalization constant.
+    data_blocks.append(const & 0xFFFF_FFFF_FFFF_FFFF)
+    data_blocks.append((const >> 64) & 0xFFFF_FFFF_FFFF_FFFF)
 
     # This computes a digest according to a Merkle-Damgard construction
     # that uses the Davies-Meyer scheme to turn the PRESENT cipher into
