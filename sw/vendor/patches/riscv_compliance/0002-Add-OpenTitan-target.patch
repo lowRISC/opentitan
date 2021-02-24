@@ -1,7 +1,7 @@
 From 12485c998481c4414e157a7b6d475c2c118fce77 Mon Sep 17 00:00:00 2001
 From: Greg Chadwick <gac@lowrisc.org>
 Date: Wed, 15 Apr 2020 15:44:54 +0100
-Subject: [PATCH 2/3] Add OpenTitan target
+Subject: [PATCH 2/4] Add OpenTitan target
 
 
 diff --git a/Makefile b/Makefile
