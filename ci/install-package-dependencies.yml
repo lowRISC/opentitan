@@ -43,6 +43,7 @@ steps:
 
       cp apt-requirements.txt apt-requirements-ci.txt
       echo "verilator-$(VERILATOR_VERSION)" >> apt-requirements-ci.txt
+      echo "openocd-$(OPENOCD_VERSION)" >> apt-requirements-ci.txt
       echo rsync >> apt-requirements-ci.txt
       cat apt-requirements-ci.txt
 
