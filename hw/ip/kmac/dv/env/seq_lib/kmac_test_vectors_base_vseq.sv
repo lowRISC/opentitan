@@ -11,6 +11,7 @@ class kmac_test_vectors_base_vseq extends kmac_smoke_vseq;
 
   virtual task pre_start();
     msg_c.constraint_mode(0);
+    output_len_c.constraint_mode(0);
     super.pre_start();
   endtask
 
