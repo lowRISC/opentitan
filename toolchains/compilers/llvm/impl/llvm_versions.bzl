@@ -23,7 +23,7 @@
 _WINDOWS = {
     "full_version": "11.0",
     "remote_compiler": {
-        "url": "",
+        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.0.1-win64.exe",
         "sha256": "",
         "strip_prefix": "",
     },
@@ -45,7 +45,7 @@ _PLATFORM_SPECIFIC_CONFIGS_11 = {
         "full_version": "11.0",
         "remote_compiler": {
             "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/clang+llvm-10.0.0-x86_64-apple-darwin.tar.xz",
-            "sha256": "",
+            "sha256": "633a833396bf2276094c126b072d52b59aca6249e7ce8eae14c728016edb5e61",
             "strip_prefix": "clang+llvm-10.0.0-x86_64-apple-darwin",
         },
     },

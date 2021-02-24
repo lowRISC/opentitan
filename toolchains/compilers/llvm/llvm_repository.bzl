@@ -3,15 +3,25 @@ load("//toolchains/tools/include_tools:include_tools.bzl", "include_tools")
 
 def _llvm_repository_impl(repository_ctx):
     version = repository_ctx.attr.version
-    remote_toolchain_info = get_platform_specific_config(version, repository_ctx.os.name)
-    if repository_ctx.attr.sysroot:
-        sysroot_marker = repository_ctx.path(repository_ctx.attr.sysroot)
+    if "windows" not in repository_ctx.os.name:
+        remote_toolchain_info = get_platform_specific_config(version, repository_ctx.os.name)
+        if repository_ctx.attr.sysroot:
+            sysroot_marker = repository_ctx.path(repository_ctx.attr.sysroot)
 
-    repository_ctx.download_and_extract(
-        url = remote_toolchain_info["remote_compiler"]["url"],
-        sha256 = remote_toolchain_info["remote_compiler"]["sha256"],
-        stripPrefix = remote_toolchain_info["remote_compiler"]["strip_prefix"],
-    )
+        repository_ctx.download_and_extract(
+            url = remote_toolchain_info["remote_compiler"]["url"],
+            sha256 = remote_toolchain_info["remote_compiler"]["sha256"],
+            stripPrefix = remote_toolchain_info["remote_compiler"]["strip_prefix"],
+        )
+    else:
+        repository_ctx.download(
+            url = "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.0.1-win64.exe",
+            output = "clang_installer.exe",
+        )
+        installer_path = repository_ctx.path("clang_installer.exe").realpath
+        out = repository_ctx.execute(["powershell", "-c", "'clang_installer.exe \\S \\D=$(pwd)'"])
+        print("clang_installer_stdout", out.stdout)
+        print("clang_installer_stderr", out.stderr)
     sysroot_args = []
     sysroot_path = ""
     if repository_ctx.attr.sysroot != None:

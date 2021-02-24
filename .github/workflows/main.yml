@@ -7,7 +7,7 @@ on:
       - master
 
 jobs:
-  build:
+  build_embedded:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -28,7 +28,7 @@ jobs:
 
       - name: Build
         run: |
-          bazelisk build  --platforms=@local_config_platform//:host //... 
+
           bazelisk build  --platforms=@bazel_embedded//platforms:cortex_m0 //toolchains/... //third_party_libs/... 
           bazelisk build  --platforms=@bazel_embedded//platforms:cortex_m3 //toolchains/... //third_party_libs/... 
           bazelisk build  --platforms=@bazel_embedded//platforms:cortex_m4 //toolchains/... //third_party_libs/... 
@@ -41,3 +41,27 @@ jobs:
           bazelisk build  --platforms=@bazel_embedded//platforms:stm32f4xx //toolchains/... //third_party_libs/...
           bazelisk build  --platforms=@bazel_embedded//platforms:stm32g4xx //toolchains/... //third_party_libs/...
           bazelisk build  --platforms=@bazel_embedded//platforms:stm32h7xx //toolchains/... //third_party_libs/...
+
+  build_host:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, macos-10.15]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Mount bazel cache
+        uses: actions/cache@v1
+        with:
+          path: "/home/runner/.cache/bazel"
+          key: ${{ runner.os }}-bazel
+
+      - name: Test
+        run: |
+          bazelisk test //...
+
+      - name: Build
+        run: |
+          bazelisk build  --platforms=@local_config_platform//:host //... 
+
