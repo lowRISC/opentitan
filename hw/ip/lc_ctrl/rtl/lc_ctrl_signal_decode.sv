@@ -25,6 +25,7 @@ module lc_ctrl_signal_decode
   input  fsm_state_e     fsm_state_i,
   // Escalation enable from escalation receiver.
   input                  esc_wipe_secrets_i,
+  input                  esc_scrap_state_i,
   // Life cycle broadcast outputs.
   output lc_tx_t         lc_dft_en_o,
   output lc_tx_t         lc_nvm_debug_en_o,
@@ -67,7 +68,7 @@ module lc_ctrl_signal_decode
     lc_keymgr_div_d          = RndCnstLcKeymgrDivInvalid;
     // The escalation life cycle signal is always decoded, no matter
     // which state we currently are in.
-    if (esc_wipe_secrets_i) begin
+    if (esc_wipe_secrets_i || esc_scrap_state_i) begin
       lc_escalate_en = On;
     end
 
@@ -152,7 +153,7 @@ module lc_ctrl_signal_decode
         ///////////////////////////////////////////////////////////////////
         // Invalid or scrapped life cycle state, do not assert
         // any signals other than escalate_en and clk_byp_en.
-        default: ;
+        default:;
       endcase // lc_state_i
     end
   end
@@ -266,6 +267,14 @@ module lc_ctrl_signal_decode
       lc_keymgr_div_o == RndCnstLcKeymgrDivInvalid)
 
   `ASSERT(EscalationAlwaysDecoded_A,
-      (lc_escalate_en_o == On) == $past(esc_wipe_secrets_i))
+      (lc_escalate_en_o == On) == $past(esc_wipe_secrets_i) ||
+                                  !(lc_state_i inside {LcStTestUnlocked0,
+                                                       LcStTestUnlocked1,
+                                                       LcStTestUnlocked2,
+                                                       LcStTestUnlocked3,
+                                                       LcStProd,
+                                                       LcStProdEnd,
+                                                       LcStDev,
+                                                       LcStRma}))
 
 endmodule : lc_ctrl_signal_decode

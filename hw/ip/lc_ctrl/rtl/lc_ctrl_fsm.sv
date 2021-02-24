@@ -442,6 +442,7 @@ module lc_ctrl_fsm
     .lc_id_state_i      ( lc_id_state_q    ),
     .fsm_state_i        ( fsm_state_q      ),
     .esc_wipe_secrets_i,
+    .esc_scrap_state_i,
     .lc_dft_en_o,
     .lc_nvm_debug_en_o,
     .lc_hw_debug_en_o,
@@ -481,7 +482,7 @@ module lc_ctrl_fsm
   // Assertions //
   ////////////////
 
-  `ASSERT(ClkBypStaysOnOnceAsserted_A,
+  `ASSERT(EscStaysOnOnceAsserted_A,
       lc_escalate_en_o == On
       |=>
       lc_escalate_en_o == On)
