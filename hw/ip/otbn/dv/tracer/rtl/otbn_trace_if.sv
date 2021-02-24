@@ -26,8 +26,8 @@
  */
 interface otbn_trace_if
 #(
-  parameter int ImemAddrWidth,
-  parameter int DmemAddrWidth,
+  parameter int ImemAddrWidth = 12,
+  parameter int DmemAddrWidth = 12,
   parameter otbn_pkg::regfile_e RegFile = otbn_pkg::RegFileFF
 )(
   input logic clk_i,
