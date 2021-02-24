@@ -8,6 +8,11 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
+      - lowrisc:prim:all
+      - lowrisc:prim:clock_buf
+      - lowrisc:prim:clock_gating
+      - lowrisc:prim:clock_inv
+      - lowrisc:prim:lc_dec
       - lowrisc:top_earlgrey:pinmux_reg
       - lowrisc:ip:pinmux_component
       - lowrisc:ip:lc_ctrl_pkg
@@ -15,14 +20,13 @@ filesets:
     files:
       - rtl/ast_reg_pkg.sv
       - rtl/ast_pkg.sv
-      - rtl/ana_pkg.sv
       - rtl/ast.sv
       - rtl/adc.sv
       - rtl/aon_clk.sv
       - rtl/aon_osc.sv
       - rtl/ast_reg_top.sv
-      - rtl/entropy.sv
-      - rtl/alert.sv
+      - rtl/ast_entropy.sv
+      - rtl/ast_alert.sv
       - rtl/gen_pok.sv
       - rtl/io_clk.sv
       - rtl/io_osc.sv
@@ -33,7 +37,7 @@ filesets:
       - rtl/sys_osc.sv
       - rtl/usb_clk.sv
       - rtl/usb_osc.sv
-
+      
     file_type: systemVerilogSource
 
 
@@ -62,7 +66,7 @@ targets:
           - "-Wall"
 
   sim:
-    <<: *default_target
+    <<: *default_target  
     default_tool: vcs
     filesets:
       - files_rtl
@@ -70,4 +74,4 @@ targets:
       vcs:
         vcs_options: [-timescale=1ns/1ps -l vcs.log]
     toplevel: ast
-
+  

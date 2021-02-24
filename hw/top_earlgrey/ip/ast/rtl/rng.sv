@@ -5,13 +5,10 @@
 // *Name: rng
 // *Module Description:  Random (bit/s) Generator
 //############################################################################
-`timescale 1ns / 10ps
 
 module rng #(
-`ifndef VERILATOR
-// synopsys translate_off
+`ifndef SYNTHESIS
   parameter time RNG_EN_RDLY = 5us,
-// synopsys translate_on
 `endif
   parameter int EntropyStreams = 4
 ) (
@@ -29,20 +26,20 @@ module rng #(
 logic clk, rng_clk_en, rng_clk, rst_n;
 assign rst_n = vcaon_pok_i;
 
-// Behavioral Model
-
+// clock Oschilator
+////////////////////////////////////////
 // For FPGA, it can be replace with clk_src_aon_o/4 (200K/4=50K)
+`ifndef SYNTHESIS
 rng_osc #(
-`ifndef VERILATOR
-// synopsys translate_off
-/*P*/ .RNG_EN_RDLY ( RNG_EN_RDLY )
-// synopsys translate_on
-`endif
+  .RNG_EN_RDLY ( RNG_EN_RDLY )
 ) u_rng_osc (
-/*I*/ .vcaon_pok_i ( vcaon_pok_i ),
-/*I*/ .rng_en_i ( rng_en_i ),
-/*O*/ .rng_clk_o ( rng_clk_o )
-);
+`else
+rng_osc u_rng_osc (
+`endif
+  .vcaon_pok_i ( vcaon_pok_i ),
+  .rng_en_i ( rng_en_i ),
+  .rng_clk_o ( rng_clk_o )
+);  // of u_rng_osc
 
 
 ///////////////////////////////////////
@@ -72,8 +69,11 @@ logic rng_rdy;
 logic [2-1:0] rng_rdy_cnt;
 
 always_ff @( posedge rng_clk_o, negedge rng_rst_n ) begin
-  if ( !rng_rst_n )    rng_rdy_cnt <= 2'b00;
-  else if ( !rng_rdy ) rng_rdy_cnt <= rng_rdy_cnt + 1'b1;
+  if ( !rng_rst_n ) begin
+    rng_rdy_cnt <= 2'b00;
+  end else if ( !rng_rdy ) begin
+    rng_rdy_cnt <= rng_rdy_cnt + 1'b1;
+  end
 end
 
 assign rng_rdy = (rng_rdy_cnt == 2'b11);
@@ -81,8 +81,11 @@ assign rng_rdy = (rng_rdy_cnt == 2'b11);
 logic [EntropyStreams-1:0] rng_b;
 
 always_ff @( posedge rng_clk_o, negedge rng_rst_n ) begin
-  if ( !rng_rst_n ) rng_b <= {EntropyStreams{1'b0}};
-  else              rng_b <= lfsr_val[EntropyStreams-1:0];
+  if ( !rng_rst_n ) begin
+    rng_b <= {EntropyStreams{1'b0}};
+  end else begin
+    rng_b <= lfsr_val[EntropyStreams-1:0];
+  end
 end
 
 
@@ -93,8 +96,7 @@ always_ff @( posedge clk_i, negedge rst_ni ) begin
   if ( !rst_ni ) begin
     rng_rdy_s <= 1'b0;
     rng_val_o <= 1'b0;
-  end
-  else begin
+  end else begin
     rng_rdy_s <= rng_rdy;
     rng_val_o <= rng_rdy_s;
   end
@@ -107,12 +109,10 @@ always_ff @( posedge clk_i, negedge rst_ni ) begin
   if ( !rst_ni ) begin
     rng_b_r <= {EntropyStreams{1'b0}};
     rng_b_o <= {EntropyStreams{1'b0}};
-  end
-  else begin
+  end else begin
     rng_b_r <= rng_b;
     rng_b_o <= rng_b_r;
   end
 end
 
-
-endmodule  // of rng
+endmodule : rng

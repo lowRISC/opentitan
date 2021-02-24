@@ -5,23 +5,21 @@
 // *Name: gen_pok
 // *Module Description:  Generic Power OK
 //############################################################################
-`timescale 1ns / 10ps
 
+`ifndef SYNTHESIS
 module gen_pok #(
-`ifndef VERILATOR
-// synopsys translate_off
  parameter time POK_RDLY = 3us,
  parameter time POK_FDLY = 500ns
-// synopsys translate_on
-`endif
 ) (
+`else
+module gen_pok (
+`endif
   output logic gen_pok_o
 );
 
+`ifndef SYNTHESIS
 // Behavioral Model
-
-`ifndef VERILATOR
-// synopsys translate_off
+////////////////////////////////////////
 // Local signal for testing hook
 logic gen_supp_a;
 assign gen_supp_a = 1'b1;
@@ -36,13 +34,25 @@ initial begin
 end
 
 always @( * ) begin
-  if ( init_start )                      gen_pok_o <= 1'b0;
-  else if ( !init_start && gen_supp_a )  gen_pok_o <= #(POK_RDLY) gen_supp_a;
-  else if ( !init_start && !gen_supp_a ) gen_pok_o <= #(POK_FDLY) gen_supp_a;
+  if ( init_start ) begin
+    gen_pok_o <= 1'b0;
+  end else if ( !init_start && gen_supp_a ) begin
+    gen_pok_o <= #(POK_RDLY) gen_supp_a;
+  end else if ( !init_start && !gen_supp_a ) begin
+    gen_pok_o <= #(POK_FDLY) gen_supp_a;
+  end
 end
-// synopsys translate_on
+
+`else
+// SYNTHESUS/VERILATOR/LINTER/FPGA
+///////////////////////////////////////
+`ifndef FPGA
+assign gen_pok_o = 1'b1;
+`else
+// FPGA Specific (place holder)
+///////////////////////////////////////
+assign gen_pok_o = 1'b1;
+`endif
 `endif
 
-
-endmodule  // of gen_pok
-
+endmodule : gen_pok

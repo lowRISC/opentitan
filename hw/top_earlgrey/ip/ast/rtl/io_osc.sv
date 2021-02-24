@@ -5,24 +5,24 @@
 // *Name: io_osc
 // *Module Description: IO Clock Oscilator
 //############################################################################
-`timescale 1ns / 10ps
+`ifndef SYNTHESIS
+`timescale 1ns / 1ps
 
 module io_osc #(
-`ifndef VERILATOR
-// synopsys translate_off
   parameter time IO_EN_RDLY = 5us
-// synopsys translate_on
-`endif
 ) (
+`else
+
+module io_osc (
+`endif
   input vcore_pok_h_i,   // VCORE POK @3.3V
   input io_en_i,         // IO Source Clock Enable
   output logic io_clk_o  // IO Clock Output
 );
 
+`ifndef SYNTHESIS
 // Behavioral Model
-
-`ifndef VERILATOR
-// synopsys translate_off
+////////////////////////////////////////
 localparam real IoClkPeriod = 1000000/96;  // ~10416.666667ps (96Mhz)
 logic clk, en_dly, en_osc, en_osc_re, en_osc_fe;
 
@@ -40,8 +40,11 @@ assign en_osc_re = vcore_pok_h_i && io_en_i && (io_en_dly && en_dly);
 
 // Syncronize en_osc to clk FE for glitch free disable
 always_ff @( negedge clk or negedge vcore_pok_h_i ) begin
-  if ( !vcore_pok_h_i ) en_osc_fe <= 1'b0;
-  else                  en_osc_fe <= en_osc_re;
+  if ( !vcore_pok_h_i ) begin
+    en_osc_fe <= 1'b0;
+  end else begin
+    en_osc_fe <= en_osc_re;
+  end
 end
 
 assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
@@ -51,8 +54,33 @@ always begin
 end
 
 assign io_clk_o = clk;
-// synopsys translate_on
+`else  // of SYNTHESIS
+// SYNTHESUS/VERILATOR/LINTER/FPGA
+///////////////////////////////////////
+logic clk, en_osc, en_osc_re, en_osc_fe;
+
+assign en_osc_re = vcore_pok_h_i && io_en_i;
+
+// Syncronize en_osc to clk FE for glitch free disable
+always_ff @( negedge clk or negedge vcore_pok_h_i ) begin
+  if ( !vcore_pok_h_i ) begin
+    en_osc_fe <= 1'b0;
+  end else begin
+    en_osc_fe <= en_osc_re;
+  end
+end
+
+assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
+
+`ifndef FPGA
+assign clk = (/*TODO*/ 1'b1) && en_osc;
+assign io_clk_o = clk;
+`else
+// FPGA Specific (place holder)
+///////////////////////////////////////
+assign clk = (/*TODO*/ 1'b1) && en_osc;
+assign io_clk_o = clk;
+`endif
 `endif
 
-
-endmodule  // of io_osc
+endmodule : io_osc

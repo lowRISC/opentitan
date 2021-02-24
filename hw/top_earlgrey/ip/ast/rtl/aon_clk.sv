@@ -5,59 +5,60 @@
 // *Name: aon_clk
 // *Module Description: Always ON Clock
 //############################################################################
-`timescale 1ns / 10ps
 
+`ifndef SYNTHESIS
 module aon_clk #(
-`ifndef VERILATOR
-// synopsys translate_off
   parameter time AON_EN_RDLY = 5us
-// synopsys translate_on
-`endif
 ) (
-  input clk_src_aon_en_i,         // AON Source Clock Enable
-  input clk_aon_pd_ni,            // AON Clock Power-down
-  input rst_aon_clk_ni,           // AON Clock Logic reset
-  input vcore_pok_h_i,            // VCORE POK @3.3V (for OSC)
-  output logic clk_src_aon_o,     // AON Source Clock
-  output logic clk_src_aon_val_o  // AON Source Clock Valid
+`else
+module aon_clk (
+`endif
+  input vcore_pok_h_i,                     // VCORE POK @3.3V (for OSC)
+  input clk_aon_pd_ni,                     // AON Clock Power-down
+  input rst_aon_clk_ni,                    // AON Clock Logic reset
+  input clk_src_aon_en_i,                  // AON Source Clock Enable
+  output logic clk_src_aon_o,              // AON Source Clock
+  output logic clk_src_aon_val_o           // AON Source Clock Valid
 );
 
-logic clk, aon_clk_en, aon_clk_val, rst_n;
+logic clk, aon_clk_en, rst_n;
 
-assign rst_n = rst_aon_clk_ni;
-
+assign rst_n = rst_aon_clk_ni;  // Scan enabled
 assign aon_clk_en = clk_src_aon_en_i && clk_aon_pd_ni;
 
-// Behavioral Model
-
+// Clock Oscillator
+///////////////////////////////////////
+`ifndef SYNTHESIS
 aon_osc #(
-`ifndef VERILATOR
-// synopsys translate_off
-/*P*/ .AON_EN_RDLY ( AON_EN_RDLY )
-// synopsys translate_on
-`endif
+  .AON_EN_RDLY ( AON_EN_RDLY )
 ) u_aon_osc (
-/*I*/ .vcore_pok_h_i ( vcore_pok_h_i ),
-/*I*/ .aon_en_i ( aon_clk_en ),
-/*O*/ .aon_clk_o ( clk )
-);
-
+`else
+aon_osc u_aon_osc (
+`endif
+  .vcore_pok_h_i ( vcore_pok_h_i ),
+  .aon_en_i ( aon_clk_en ),
+  .aon_clk_o ( clk )
+);  // of u_aon_osc
 
 // Clock & Valid
-assign clk_src_aon_o = clk;
+///////////////////////////////////////
+prim_clock_buf u_clk_aon_buf(
+  .clk_i ( clk ),
+  .clk_o ( clk_src_aon_o )
+);
 
-wire rst_val_n = rst_n && clk_aon_pd_ni;
+// 2-stage de-assertion
+logic rst_val_n;
+assign rst_val_n = rst_n && clk_aon_pd_ni;
 
-// 2-stage deassertion
-always_ff @( posedge clk, negedge rst_val_n ) begin
-  if ( !rst_val_n )  begin
-    aon_clk_val       <= 1'b0;
-    clk_src_aon_val_o <= 1'b0;
-  end else begin
-    aon_clk_val       <= 1'b1;
-    clk_src_aon_val_o <= aon_clk_val;
-  end
-end
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_val_sync (
+  .clk_i ( clk ),
+  .rst_ni ( rst_val_n ),
+  .d_i ( 1'b1 ),
+  .q_o ( clk_src_aon_val_o )
+);
 
-
-endmodule  // of aon_clk
+endmodule : aon_clk

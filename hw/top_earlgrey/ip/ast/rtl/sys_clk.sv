@@ -5,63 +5,62 @@
 // *Name: sys_clk
 // *Module Description: System Clock
 //############################################################################
-`timescale 1ns / 10ps
 
-module sys_clk
-#(
-`ifndef VERILATOR
-// synopsys translate_off
+`ifndef SYNTHESIS
+module sys_clk #(
   parameter time SYS_EN_RDLY = 5us
-// synopsys translate_on
-`endif
 ) (
-  input clk_src_sys_en_i,           // System Source Clock Enable
-  input clk_src_sys_jen_i,          // System Source Clock Jitter Enable
-  input clk_sys_pd_ni,              // System Clock Power-down
-  input rst_sys_clk_ni,             // System Clock Logic reset
-  input vcore_pok_h_i,              // VCORE POK @3.3V (for OSC)
-  output logic clk_src_sys_o,       // System Source Clock
-  output logic clk_src_sys_val_o    // System Source Clock Valid
+`else
+module sys_clk (
+`endif
+  input vcore_pok_h_i,                     // VCORE POK @3.3V (for OSC)
+  input clk_sys_pd_ni,                     // System Clock Power-down
+  input rst_sys_clk_ni,                    // System Clock Logic reset
+  input clk_src_sys_en_i,                  // System Source Clock Enable
+  input clk_src_sys_jen_i,                 // System Source Clock Jitter Enable
+  output logic clk_src_sys_o,              // System Source Clock
+  output logic clk_src_sys_val_o           // System Source Clock Valid
 );
 
-logic clk, sys_clk_en, sys_clk_val, rst_n;
+logic clk, sys_clk_en, rst_n;
 
-assign rst_n = rst_sys_clk_ni;
-
+assign rst_n = rst_sys_clk_ni;  // scan enabled
 assign sys_clk_en = clk_src_sys_en_i && clk_sys_pd_ni;
 
-// Behavioral Model
-
 // Clock Oscilator
+///////////////////////////////////////
+`ifndef SYNTHESIS
 sys_osc #(
-`ifndef VERILATOR
-// synopsys translate_off
-/*P*/ .SYS_EN_RDLY ( SYS_EN_RDLY )
-// synopsys translate_on
-`endif
+  .SYS_EN_RDLY ( SYS_EN_RDLY )
 ) u_sys_osc (
-/*I*/ .vcore_pok_h_i ( vcore_pok_h_i ),
-/*I*/ .sys_en_i ( sys_clk_en ),
-/*I*/ .sys_jen_i ( clk_src_sys_jen_i ),
-/*O*/ .sys_clk_o ( clk )
-);
-
+`else
+sys_osc u_sys_osc (
+`endif
+  .vcore_pok_h_i ( vcore_pok_h_i ),
+  .sys_en_i ( sys_clk_en ),
+  .sys_jen_i ( clk_src_sys_jen_i ),
+  .sys_clk_o ( clk )
+);  // of u_sys_osc
 
 // Clock & Valid
-assign clk_src_sys_o = clk;
+///////////////////////////////////////
+prim_clock_buf u_clk_sys_buf(
+  .clk_i ( clk ),
+  .clk_o ( clk_src_sys_o )
+);
 
-wire rst_val_n = rst_n && sys_clk_en;
+// 2-stage de-assertion
+logic rst_val_n;
+assign rst_val_n = rst_n && sys_clk_en;
 
-// 2-stage deassertion
-always_ff @( posedge clk, negedge rst_val_n ) begin
-  if ( !rst_val_n ) begin
-    sys_clk_val       <= 1'b0;
-    clk_src_sys_val_o <= 1'b0;
-  end else begin
-    sys_clk_val       <= 1'b1;
-    clk_src_sys_val_o <= sys_clk_val;
-  end
-end
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_val_sync (
+  .clk_i ( clk ),
+  .rst_ni ( rst_val_n ),
+  .d_i ( 1'b1 ),
+  .q_o ( clk_src_sys_val_o )
+);
 
-
-endmodule  // of sys_clk
+endmodule : sys_clk

@@ -5,22 +5,24 @@
 // *Name: aon_osc
 // *Module Description: AON Clock Oscilator
 //############################################################################
+`ifndef SYNTHESIS
 `timescale 1ns / 10ps
 
 module aon_osc #(
-`ifndef VERILATOR
-// synopsys translate_off
   parameter time AON_EN_RDLY = 5us
-// synopsys translate_on
-`endif
 ) (
+`else
+
+module aon_osc (
+`endif
   input vcore_pok_h_i,     // VCORE POK @3.3V
   input aon_en_i,          // AON Source Clock Enable
   output logic aon_clk_o   // AON Clock Output
 );
 
-`ifndef VERILATOR
-// synopsys translate_off
+`ifndef SYNTHESIS
+// Behavioral Model
+////////////////////////////////////////
 localparam time AonClkPeriod = 5000ns; // 5000ns (200Khz)
 logic clk, en_dly, en_osc, en_osc_re, en_osc_fe;
 
@@ -38,8 +40,11 @@ assign en_osc_re = vcore_pok_h_i && aon_en_i && (aon_en_dly && en_dly);
 
 // Syncronize en_osc_fe to clk FE for glitch free disable
 always_ff @( negedge clk or negedge vcore_pok_h_i ) begin
-  if ( !vcore_pok_h_i ) en_osc_fe <= 1'b0;
-  else                  en_osc_fe <= en_osc_re;
+  if ( !vcore_pok_h_i ) begin
+    en_osc_fe <= 1'b0;
+  end else begin
+    en_osc_fe <= en_osc_re;
+  end
 end
 
 assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
@@ -49,8 +54,35 @@ always begin
 end
 
 assign aon_clk_o = clk;
-// synopsys translate_on
+`else  // of SYNTHESIS
+// SYNTHESUS/VERILATOR/LINTER/FPGA
+///////////////////////////////////////
+logic clk, en_osc, en_osc_re, en_osc_fe;
+
+assign en_osc_re = vcore_pok_h_i && aon_en_i;
+
+// Syncronize en_osc to clk FE for glitch free disable
+always_ff @( negedge clk or negedge vcore_pok_h_i ) begin
+  if ( !vcore_pok_h_i ) begin
+    en_osc_fe <= 1'b0;
+  end else begin
+    en_osc_fe <= en_osc_re;
+  end
+end
+
+assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
+
+`ifndef FPGA
+assign clk = (/*TODO*/ 1'b1) && en_osc;
+
+assign aon_clk_o = clk;
+`else
+// FPGA Specific (place holder)
+///////////////////////////////////////
+assign clk = (/*TODO*/ 1'b1) && en_osc;
+
+assign aon_clk_o = clk;
+`endif
 `endif
 
-
-endmodule  // of aon_osc
+endmodule : aon_osc

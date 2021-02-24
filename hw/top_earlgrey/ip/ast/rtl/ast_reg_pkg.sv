@@ -6,6 +6,9 @@
 
 package ast_reg_pkg;
 
+  // Address width within the block
+  parameter int BlockAw = 4;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
@@ -56,9 +59,9 @@ package ast_reg_pkg;
   } ast_hw2reg_t;
 
   // Register Address
-  parameter logic [3:0] AST_REVID_OFFSET = 4'h 0;
-  parameter logic [3:0] AST_RWTYPE0_OFFSET = 4'h 4;
-  parameter logic [3:0] AST_RWTYPE1_OFFSET = 4'h 8;
+  parameter logic [BlockAw-1:0] AST_REVID_OFFSET = 4'h 0;
+  parameter logic [BlockAw-1:0] AST_RWTYPE0_OFFSET = 4'h 4;
+  parameter logic [BlockAw-1:0] AST_RWTYPE1_OFFSET = 4'h 8;
 
 
   // Register Index
