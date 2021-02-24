@@ -464,7 +464,8 @@ def match_line(line, pattern, filter_func=None):
     1. A regular expression (any object with a match attribute, or a re.Pattern
        object in Python 3.7+). In this case, the pattern is matched against all
        lines and the result of re.match(pattern) (a re.Match object since
-       Python 3.7) is returned.
+       Python 3.7) is returned. Note that re.match() always matches from the
+       beginning of the line.
     2. A string. In this case pattern is compared to each line with
        startswith(), and the full matching line is returned on a match.
     If no match is found None is returned.

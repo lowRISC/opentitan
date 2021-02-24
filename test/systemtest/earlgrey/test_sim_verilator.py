@@ -63,7 +63,7 @@ class VerilatorSimEarlgrey:
         self._log.info("Simulation running")
 
         # Find paths to simulated I/O devices
-        # UART
+        # UART (through the simulated terminal)
         self._uart0 = None
         uart0_match = self.p_sim.find_in_output(
             re.compile(r'UART: Created (/dev/pts/\d+) for uart0\.'),
@@ -75,6 +75,7 @@ class VerilatorSimEarlgrey:
         self._log.debug("Found uart0 device file at {}".format(
             str(self.uart0_device_path)))
 
+        # UART0 as logged directly to file by the uartdpi module.
         assert self.uart0_log_path.is_file()
         self._uart0_log = open(str(self.uart0_log_path), 'rb')
 
@@ -152,13 +153,9 @@ class VerilatorSimEarlgrey:
     def find_in_uart0(self,
                       pattern,
                       timeout,
-                      filter_func=None,
+                      filter_func=utils.filter_remove_device_sw_log_prefix,
                       from_start=False):
         assert self._uart0_log
-
-        if filter_func is None:
-            # The default filter function for all device software in OpenTitan.
-            filter_func = utils.filter_remove_device_sw_log_prefix
 
         try:
             return utils.find_in_files([self._uart0_log],
@@ -211,6 +208,7 @@ def app_selfchecking(request, bin_dir):
 # Therefore, if we do not read quickly enough, we miss the PASS/FAIL indication
 # and the test never finishes.
 
+
 def assert_selfchecking_test_passes(sim):
     assert sim.find_in_output(
         re.compile(r"SW test transitioned to SwTestStatusInTest.$"),
@@ -229,6 +227,7 @@ def assert_selfchecking_test_passes(sim):
     result_msg = result_match.group(1)
     log.info("Test ended with {}".format(result_msg))
     assert result_msg == 'PASSED'
+
 
 def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking):
     """
@@ -276,3 +275,4 @@ def test_spiflash(tmp_path, bin_dir):
     assert_selfchecking_test_passes(sim)
 
     sim.terminate()
+
