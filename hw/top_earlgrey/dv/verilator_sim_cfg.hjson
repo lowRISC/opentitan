@@ -56,18 +56,20 @@
   run_modes: [
     {
       name: sw_test_mode
-      sw_images: ["sw/device/boot_rom/boot_rom:0"]
+      sw_images: ["sw/device/boot_rom/boot_rom:0",
+                  "sw/device/otp_img/otp_img:3"]
       run_opts: [
         // The following shell snippet converts the SW images specification to what's
         // needed as a run time switch to Verilator.
         '''{eval_cmd} \
         opts=;  \
-        types=(rom flash); \
+        types=(rom flash otbn otp); \
+        exts=(elf elf elf vmem); \
         images=`echo {sw_images}`; \
         for image in $images; do \
           path=`echo $image | cut -d: -f 1`;  \
           index=`echo $image | cut -d: -f 2`; \
-          opts="$opts --meminit=${types[$index]},{sw_build_dir}/build-bin/$path""_{sw_build_device}.elf"; \
+          opts="$opts --meminit=${types[$index]},{sw_build_dir}/build-bin/$path""_{sw_build_device}.${exts[$index]}"; \
         done; \
         echo "$opts"''',
       ]
@@ -91,7 +93,8 @@
   // is used by the testbench to know what type of image is it:
   // - 0 for boot_rom,
   // - 1 for SW test,
-  // - 2 for OTBN and so on
+  // - 2 for OTBN test,
+  // - 3 for OTP and so on
   // This allows an arbitrary number of SW images to be supplied to the TB.
   tests: [
     {
