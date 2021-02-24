@@ -96,6 +96,11 @@
     }
 
     {
+      name: keymgr_cmd_invalid
+      uvm_test_seq: keymgr_cmd_invalid_vseq
+    }
+
+    {
       name: keymgr_stress_all
       uvm_test_seq: keymgr_stress_all_vseq
     }

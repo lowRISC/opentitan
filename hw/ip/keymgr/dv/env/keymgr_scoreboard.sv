@@ -91,11 +91,13 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       forever begin
         keymgr_kmac_item item;
         req_fifo.get(item);
+        if (!cfg.en_scb) continue;
         process_kmac_data_req(item);
       end
       forever begin
         keymgr_kmac_item item;
         rsp_fifo.get(item);
+        if (!cfg.en_scb) continue;
         process_kmac_data_rsp(item);
       end
       forever begin

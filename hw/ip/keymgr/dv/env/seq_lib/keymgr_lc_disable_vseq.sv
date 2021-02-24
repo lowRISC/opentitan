@@ -11,7 +11,10 @@ class keymgr_lc_disable_vseq extends keymgr_random_vseq;
     bit regular_vseq_done;
 
     fork
-      disable_keymgr_after_random_delay(regular_vseq_done);
+      begin
+        add_random_delay(regular_vseq_done);
+        trigger_error(regular_vseq_done);
+      end
       begin
         super.body();
         // let the unblocking thread finish before ending the body
@@ -21,9 +24,8 @@ class keymgr_lc_disable_vseq extends keymgr_random_vseq;
   endtask : body
 
   // disable keymgr after 3 kinds of random delay
-  task disable_keymgr_after_random_delay(ref bit regular_vseq_done);
+  virtual task add_random_delay(ref bit regular_vseq_done);
     uint delay_cycles;
-    lc_ctrl_pkg::lc_tx_t lc_en;
 
     randcase
       // delay 0-5000 cycles, the length of most of simulation is 1000-10_000 cycles
@@ -72,7 +74,10 @@ class keymgr_lc_disable_vseq extends keymgr_random_vseq;
         cfg.clk_rst_vif.wait_clks(delay_cycles);
       end
     endcase
+  endtask : add_random_delay
 
+  virtual task trigger_error(ref bit regular_vseq_done);
+    lc_ctrl_pkg::lc_tx_t lc_en;
     // keymgr_en is async
     #($urandom_range(0, cfg.clk_rst_vif.clk_period_ps) * 1ps);
 
@@ -80,6 +85,6 @@ class keymgr_lc_disable_vseq extends keymgr_random_vseq;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_en,
                                        lc_en != lc_ctrl_pkg::On;)
     cfg.keymgr_vif.keymgr_en = lc_en;
-  endtask : disable_keymgr_after_random_delay
+  endtask : trigger_error
 
 endclass : keymgr_lc_disable_vseq

@@ -55,6 +55,11 @@ interface keymgr_if(input clk, input rst_n);
   bit edn_req_ack_sync;
   bit edn_req_ack_sync_done;
 
+  // for scb to predict error and alert
+  bit is_cmd_err;
+  bit is_fsm_err;
+  bit [2:0] force_cmds;
+
   string msg_id = "keymgr_if";
 
   task automatic init();
@@ -74,7 +79,7 @@ interface keymgr_if(input clk, input rst_n);
   endtask
 
   // reset local exp variables when reset is issued
-  task automatic reset();
+  function automatic void reset();
     kmac_key_exp = '0;
     hmac_key_exp = '0;
     aes_key_exp  = '0;
@@ -86,7 +91,15 @@ interface keymgr_if(input clk, input rst_n);
     // edn related
     edn_interval  = 'h100;
     start_edn_req = 0;
-  endtask
+
+    if (is_cmd_err) begin
+      if (force_cmds[0]) release tb.dut.u_ctrl.adv_en_o;
+      if (force_cmds[1]) release tb.dut.u_ctrl.id_en_o;
+      if (force_cmds[2]) release tb.dut.u_ctrl.gen_en_o;
+    end
+    is_cmd_err = 0;
+    is_fsm_err = 0;
+  endfunction
 
   // randomize otp, lc, flash input data
   task automatic drive_random_hw_input_data(int num_invalid_input = 0);
@@ -193,6 +206,37 @@ interface keymgr_if(input clk, input rst_n);
     return keymgr_en_sync2 === lc_ctrl_pkg::On;
   endfunction
 
+  task automatic force_cmd_err();
+    @(posedge clk);
+    randcase
+      // force more than one force_cmds are issued
+      // TODO disable this case due to design issue #5363
+      0: begin
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_cmds, $countones(force_cmds) > 1;, , msg_id)
+
+        // these signals are wires, need force and then release at reset
+        if (force_cmds[0]) force tb.dut.u_ctrl.adv_en_o = 1;
+        if (force_cmds[1]) force tb.dut.u_ctrl.id_en_o  = 1;
+        if (force_cmds[2]) force tb.dut.u_ctrl.gen_en_o = 1;
+        @(posedge clk);
+        if (force_cmds[0]) release tb.dut.u_ctrl.adv_en_o;
+        if (force_cmds[1]) release tb.dut.u_ctrl.id_en_o;
+        if (force_cmds[2]) release tb.dut.u_ctrl.gen_en_o;
+        is_cmd_err = 1;
+      end
+      1: begin
+        // Dynamic type in non-procedural context isn't allowed
+        static reg [2:0] invalid_state;
+        // 0-4 are illegal state
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_state, invalid_state > 4;, , msg_id)
+        force tb.dut.u_kmac_if.state_q = invalid_state;
+        @(posedge clk);
+        release tb.dut.u_kmac_if.state_q;
+        is_fsm_err = 1;
+      end
+    endcase
+  endtask
+
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       keymgr_en_sync1 <= lc_ctrl_pkg::Off;
@@ -239,7 +283,7 @@ interface keymgr_if(input clk, input rst_n);
   end
 
   function automatic void check_invalid_key(keymgr_pkg::hw_key_req_t act_key, string key_name);
-    if (rst_n && act_key.valid) begin
+    if (rst_n && act_key.valid && !is_cmd_err && !is_fsm_err) begin
       foreach (keys_a_array[i, j]) begin
         `DV_CHECK_NE({act_key.key_share1, act_key.key_share0}, keys_a_array[i][j],
             $sformatf("%s key at state %s from %s", key_name, i, j), , msg_id)
@@ -248,7 +292,8 @@ interface keymgr_if(input clk, input rst_n);
   endfunction
 
   `define KM_ASSERT(NAME, SEQ) \
-    `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_en_sync2 != lc_ctrl_pkg::On)
+    `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_en_sync2 != lc_ctrl_pkg::On || is_cmd_err || \
+           is_fsm_err)
 
   `KM_ASSERT(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid -> kmac_key == kmac_key_exp)
 
