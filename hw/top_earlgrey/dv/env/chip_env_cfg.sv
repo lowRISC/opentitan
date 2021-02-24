@@ -113,6 +113,7 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
     sw_images[SwTypeRom] = "./rom";
     sw_images[SwTypeTest] = "./sw";
     sw_images[SwTypeOtbn] = "./otbn";
+    sw_images[SwTypeOtp] = "./otp";
   endfunction
 
   // ral flow is limited in terms of setting correct field access policies and reset values

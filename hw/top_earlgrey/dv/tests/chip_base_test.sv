@@ -26,7 +26,7 @@ class chip_base_test extends cip_base_test #(
     // Knob to set the UART baud rate (set to 2M by default).
     void'($value$plusargs("uart_baud_rate=%0d", cfg.uart_baud_rate));
 
-    // The following plurargs are only valid for SW based tests.
+    // The following plusargs are only valid for SW based tests.
     if (!cfg.stub_cpu) begin
       string sw_images_plusarg;
 

@@ -98,15 +98,21 @@
 
   // Add run modes.
   run_modes: [
-    {
-      name: sw_test_mode
-      sw_images: ["sw/device/boot_rom/boot_rom:0"]
+    { // This base mode initializes the OTP / life cycle with the DEV state
+      name: base_otp_lc_dev_mode
+      sw_images: ["sw/device/otp_img/otp_img:3"],
       run_opts: ["+sw_build_bin_dir={sw_build_dir}/build-bin",
                  "+sw_build_device={sw_build_device}",
                  "+sw_images=\\\"{sw_images}\\\""]
     }
     {
+      name: sw_test_mode
+      sw_images: ["sw/device/boot_rom/boot_rom:0"]
+      en_run_modes: ["base_otp_lc_dev_mode"]
+    }
+    {
       name: stub_cpu_mode
+      en_run_modes: ["base_otp_lc_dev_mode"]
       run_opts: ["+stub_cpu=1"]
     }
     {
@@ -123,6 +129,7 @@
     }
     {
       name: xbar_mode
+      en_run_modes: ["base_otp_lc_dev_mode"]
       run_opts: ["+xbar_mode=1"]
       reseed: 100
     }
@@ -142,7 +149,8 @@
   // is used by the testbench to know what type of image is it:
   // - 0 for boot_rom,
   // - 1 for SW test,
-  // - 2 for OTBN and so on
+  // - 2 for OTBN test,
+  // - 3 for OTP and so on
   // This allows an arbitrary number of SW images to be supplied to the TB.
   tests: [
     {
