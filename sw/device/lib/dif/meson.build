@@ -259,3 +259,18 @@ sw_lib_dif_aes = declare_dependency(
     dependencies: [sw_lib_mmio],
   )
 )
+
+# Pinmux DIF library
+sw_lib_dif_pinmux = declare_dependency(
+  link_with: static_library(
+    'sw_lib_dif_pinmux',
+    sources: [
+      hw_top_earlgrey_pinmux_reg_h,
+      'dif_pinmux.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+      sw_lib_bitfield,
+    ],
+  )
+)
