@@ -38,6 +38,9 @@ $ ./meson_init.sh
 $ ninja -C build-out all
 ```
 
+The above command also builds the OTP image that contains the root secrets and life cycle state.
+By default, the life cycle state will be moved into DEV, which enables debugging features such as the JTAG interface for the main processor.
+
 Now the simulation can be run.
 The programs listed after `--meminit` are loaded into the system's specified memory and execution is started immediately.
 
@@ -45,7 +48,8 @@ The programs listed after `--meminit` are loaded into the system's specified mem
 $ cd $REPO_TOP
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
   --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.elf \
-  --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf
+  --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf \
+  --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
 ```
 
 To stop the simulation press CTRL-c.
@@ -102,6 +106,7 @@ $ cd $REPO_TOP
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
   --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.elf \
   --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf \
+  --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem \
   +UARTDPI_LOG_uart0=-
 ```
 
@@ -198,6 +203,7 @@ $ cd $REPO_TOP
 $ build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
   --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.elf \
   --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf \
+  --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem \
   --trace
 $ gtkwave sim.fst
 ```
