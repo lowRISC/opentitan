@@ -98,6 +98,7 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
       {"rominit", required_argument, nullptr, 'r'},
       {"raminit", required_argument, nullptr, 'm'},
       {"flashinit", required_argument, nullptr, 'f'},
+      {"otpinit", required_argument, nullptr, 'o'},
       {"meminit", required_argument, nullptr, 'l'},
       {"verbose-mem-load", no_argument, nullptr, 'V'},
       {"load-elf", required_argument, nullptr, 'E'},
@@ -133,6 +134,10 @@ bool VerilatorMemUtil::ParseCLIArguments(int argc, char **argv,
       case 'f':
         load_args.push_back(
             {.name = "flash", .filepath = optarg, .type = kMemImageUnknown});
+        break;
+      case 'o':
+        load_args.push_back(
+            {.name = "otp", .filepath = optarg, .type = kMemImageUnknown});
         break;
       case 'l':
         if (strcasecmp(optarg, "list") == 0) {

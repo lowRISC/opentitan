@@ -30,6 +30,11 @@ int main(int argc, char **argv) {
        "mem.gen_"
        "generic.u_impl_generic"),
       64, nullptr);
+  memutil.RegisterMemoryArea(
+      "otp",
+      "TOP.top_earlgrey_verilator.top_earlgrey.u_otp_ctrl.u_otp."
+      "gen_generic.u_impl_generic.u_prim_ram_1p_adv.u_mem.gen_generic."
+      "u_impl_generic");
   simctrl.RegisterExtension(&memutil);
   // The initial reset delay must be long enough such that pwr/rst/clkmgr will
   // release clocks to the entire design.  This allows for synchronous resets
