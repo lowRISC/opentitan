@@ -171,28 +171,28 @@ void AESTLULInterface::DriveSignals() {
   rtl_->tl_i[0] = 0;
 
   // tl_i bits:
-  // a_valid   - 1   - [101]    - [3][5]
-  // a_opcode  - 3   - [100:98] - [3][4:2]
-  // a_param   - 3   - [97:95]  - [2][31] - [3][1:0]
-  // a_size    - 2   - [94:93]  - [2][30:29]
-  // a_source  - 8   - [92:85]  - [2][28:21]
-  // a_address - 32  - [84:53]  - [1][31:21] - [2][20:0]
-  // a_mask    - 4   - [52:49]  - [1][20:17]
-  // a_data    - 32  - [48:17]  - [0][31:17] - [1][16:0]
-  // a_user    - 16  - [16:1]   - [0][16:1]
-  // d_ready   - 1   - [0]      - [0][0]
+  // a_valid   - 1   - [96]    - [4][0]
+  // a_opcode  - 3   - [95:93] - [3][31:29]
+  // a_param   - 3   - [92:90] - [2][28:26]
+  // a_size    - 2   - [89:88] - [2][25:24]
+  // a_source  - 8   - [87:80] - [2][23:16]
+  // a_address - 32  - [79:48] - [1][31:16] - [2][15:0]
+  // a_mask    - 4   - [47:44] - [1][15:12]
+  // a_data    - 32  - [43:12] - [0][31:12] - [1][11:0]
+  // a_user    - 11  - [11:1]  - [0][11:1]
+  // d_ready   - 1   - [0]     - [0][0]
 
   // set required bits
-  rtl_->tl_i[3] |= (tl_i_.a_valid & 0x1) << 5;
-  rtl_->tl_i[3] |= (tl_i_.a_opcode & 0x7) << 2;
+  rtl_->tl_i[3] |= (tl_i_.a_valid & 0x1);
+  rtl_->tl_i[2] |= (tl_i_.a_opcode & 0x7) << 29;
   // param = 0
-  rtl_->tl_i[2] |= (tl_i_.a_size & 0x3) << 29;
+  rtl_->tl_i[2] |= (tl_i_.a_size & 0x3) << 24;
   // source = 0
-  rtl_->tl_i[2] |= (tl_i_.a_address & 0xFFFFF800) >> 11;
-  rtl_->tl_i[1] |= (tl_i_.a_address & 0x000007FF) << 21;
-  rtl_->tl_i[1] |= (tl_i_.a_mask & 0xF) << 17;
-  rtl_->tl_i[1] |= (tl_i_.a_data & 0xFFFF8000) >> 15;
-  rtl_->tl_i[0] |= (tl_i_.a_data & 0x00007FFF) << 17;
+  rtl_->tl_i[2] |= (tl_i_.a_address & 0xFFFF0000) >> 16;
+  rtl_->tl_i[1] |= (tl_i_.a_address & 0x0000FFFF) << 16;
+  rtl_->tl_i[1] |= (tl_i_.a_mask & 0xF) << 12;
+  rtl_->tl_i[1] |= (tl_i_.a_data & 0xFFF00000) >> 20;
+  rtl_->tl_i[0] |= (tl_i_.a_data & 0x000FFFFF) << 12;
   // a_user = 0
   rtl_->tl_i[0] |= (tl_i_.d_ready & 0x1);
 
