@@ -1,0 +1,19 @@
+From 74393f086a0d36070152f828a07f015ede7198aa Mon Sep 17 00:00:00 2001
+From: Michael Schaffner <msf@google.com>
+Date: Tue, 23 Feb 2021 18:30:20 -0800
+Subject: [PATCH 4/4] [otp-img] Add OTP image preload switch to RUN_TARGET
+
+Signed-off-by: Michael Schaffner <msf@google.com>
+
+diff --git a/riscv-target/opentitan/device/rv32imc/Makefile.include b/riscv-target/opentitan/device/rv32imc/Makefile.include
+index b71105c..ca47ee0 100644
+--- a/riscv-target/opentitan/device/rv32imc/Makefile.include
++++ b/riscv-target/opentitan/device/rv32imc/Makefile.include
+@@ -25,6 +25,7 @@ ifeq ($(OT_TARGET),sim_verilator)
+     CARG = -DSIMULATION=1
+     RUN_TARGET = \
+         $(TARGET_SIM) \
++            --meminit="otp,$(OT_BIN)/sw/device/otp_img/otp_img_sim_verilator.vmem" \
+             --meminit="rom,$(OT_BIN)/sw/device/boot_rom/boot_rom_sim_verilator.elf" \
+             --meminit="flash,$(<)" \
+             +UARTDPI_LOG_uart0="$(*).uart.log" > $@ 2>&1 \
