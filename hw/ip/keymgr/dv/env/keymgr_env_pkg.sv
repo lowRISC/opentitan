@@ -31,6 +31,7 @@ package keymgr_env_pkg;
     NumKeyMgrIntr
   } keymgr_intr_e;
 
+  string msg_id = "keymgr_env_pkg";
   // functions
   // state is incremental, if it's not in defined enum, consider as StDisabled
   function automatic keymgr_pkg::keymgr_working_state_e get_next_state(
@@ -40,10 +41,8 @@ package keymgr_env_pkg;
     if (next_state >= int'(keymgr_pkg::StDisabled)) begin
       return keymgr_pkg::StDisabled;
     end else begin
-      return next_state;
+      `downcast(get_next_state, next_state, , , msg_id);
     end
-
-
   endfunction
 
   // package sources

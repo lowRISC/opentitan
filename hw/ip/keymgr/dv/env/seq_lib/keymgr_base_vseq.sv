@@ -13,6 +13,8 @@ class keymgr_base_vseq extends cip_base_vseq #(
   // various knobs to enable certain routines
   bit do_keymgr_init = 1'b1;
   bit do_wait_for_init_done = 1'b1;
+  bit do_reset_at_end_of_seq = 1'b0;
+  bit seq_check_en = 1'b1;
 
   // do operations at StReset
   rand bit do_op_before_init;
@@ -257,5 +259,16 @@ class keymgr_base_vseq extends cip_base_vseq #(
   virtual function bit get_check_en();
     return cfg.keymgr_vif.keymgr_en == lc_ctrl_pkg::On && !cfg.under_reset;
   endfunction
+
+  task post_start();
+    super.post_start();
+
+    // If fatal alert will be triggered in this seq, issue reset if reset is allowed, otherwise,
+    // reset will be called in upper vseq
+    if (do_reset_at_end_of_seq) begin
+      #10_000ns;
+      if (do_apply_reset) apply_reset();
+    end
+  endtask
 
 endclass : keymgr_base_vseq

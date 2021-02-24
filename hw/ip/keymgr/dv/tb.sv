@@ -57,7 +57,7 @@ module tb;
     .edn_o                (edn_if.req),
     .edn_i                ({edn_if.ack, edn_if.d_data}),
     .flash_i              (keymgr_if.flash),
-    .intr_op_done_o       (interrupts),
+    .intr_op_done_o       (interrupts[0]),
     .alert_rx_i           (alert_rx   ),
     .alert_tx_o           (alert_tx   ),
     .tl_i                 (tl_if.h2d  ),
