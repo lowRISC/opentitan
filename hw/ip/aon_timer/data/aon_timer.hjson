@@ -216,6 +216,9 @@
           desc: "Raised if the watchdog timer has hit the bark threshold",
         }
       ]
+      tags: [// register implemented in clk_aon domain and does not update according to
+             // normal timing
+        "excl:CsrAllTests:CsrExclWriteCheck"],
     },
     { name: "INTR_ENABLE",
       desc: "Dummy interrupt enable register.  This is only here because of #5260.  DO NOT USE",
