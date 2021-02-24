@@ -10,7 +10,7 @@ def _openocd_flash_impl(ctx):
     if ctx.attr.transport:
         transport_string = "-c \"transport select %s\"" % (ctx.attr.transport)
     script_template = """
-{openocd} {interface_config_string} -c "transport select {transport}" {chip_config_string} -c "adapter_khz {programmer_frequency}; program {firmware} verify reset exit {flash_offset}"
+{openocd} {interface_config_string} {transport_string} {chip_config_string} -c "adapter_khz {programmer_frequency}; program {firmware} verify reset exit {flash_offset}"
 """
     script = ctx.actions.declare_file("%s.sh" % ctx.label.name)
 
