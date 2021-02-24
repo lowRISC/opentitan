@@ -276,3 +276,54 @@ def test_spiflash(tmp_path, bin_dir):
 
     sim.terminate()
 
+
+def test_openocd_basic_connectivity(tmp_path, bin_dir, topsrcdir, openocd):
+    """Test the basic connectivity to the system through OpenOCD
+
+    Run earlgrey in Verilator, connect to it via OpenOCD, and check that the
+    JTAG TAP, the harts, etc. are found as expected. No further interaction
+    with the core or the system (bus) is performed.
+    """
+    # Run a simulation (bootrom only, no app beyond that)
+    sim_path = bin_dir / "hw/top_earlgrey/Vtop_earlgrey_verilator"
+    rom_elf_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.elf"
+    sim = VerilatorSimEarlgrey(sim_path, rom_elf_path, tmp_path)
+    sim.run()
+
+    # Wait a bit until the system has reached the bootrom and a first arbitrary
+    # message has been printed to UART.
+    assert sim.find_in_uart0(re.compile(rb'.*I00000'), 120,
+                             filter_func=None), "No UART log message found."
+
+    # Run OpenOCD to connect to design and then shut down again immediately.
+    cmd_openocd = [
+        openocd, '-s',
+        str(topsrcdir / 'util' / 'openocd'), '-f',
+        'board/lowrisc-earlgrey-verilator.cfg', '-c', 'init; shutdown'
+    ]
+    p_openocd = utils.Process(cmd_openocd, logdir=tmp_path, cwd=tmp_path)
+    p_openocd.run()
+
+    # Look for a message indicating that the right JTAG TAP was found.
+    msgs_exp = [
+        ('Info : JTAG tap: riscv.tap tap/device found: 0x04f5484d '
+         '(mfg: 0x426 (Google Inc), part: 0x4f54, ver: 0x0)'),
+        'Info : Examined RISC-V core; found 1 harts',
+        'Info :  hart 0: XLEN=32, misa=0x40101104',
+    ]
+
+    for msg_exp in msgs_exp:
+        msg = p_openocd.find_in_output(msg_exp, 1, from_start=True)
+        assert msg is not None, "Did not find message {!r} in OpenOCD output".format(
+            msg_exp)
+
+    p_openocd.proc.wait(timeout=120)
+    try:
+        p_openocd.terminate()
+    except ProcessLookupError:
+        # OpenOCD process is already dead
+        pass
+    assert p_openocd.proc.returncode == 0
+
+    # End Verilator simulation
+    sim.terminate()

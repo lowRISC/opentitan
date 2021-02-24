@@ -4,10 +4,13 @@
 
 import logging
 import os
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
 import yaml
+
 from . import utils
 
 log = logging.getLogger(__name__)
@@ -33,7 +36,7 @@ def localconf():
     if 'OPENTITAN_TEST_LOCALCONF' in os.environ:
         localconf_yaml_file = Path(os.environ['OPENTITAN_TEST_LOCALCONF'])
         log.info("Attempting to use configuration file set in "
-            "OPENTITAN_TEST_LOCALCONF.")
+                 "OPENTITAN_TEST_LOCALCONF.")
     else:
         XDG_CONFIG_HOME = Path(os.getenv(
             'XDG_CONFIG_HOME', os.path.join(os.environ['HOME'], '.config')))
@@ -66,3 +69,19 @@ def bin_dir(topsrcdir):
 
     assert bin_dir.is_dir()
     return bin_dir
+
+
+@pytest.fixture(scope="session")
+def openocd():
+    """ Return the path to the openocd binary. """
+    openocd_bin = shutil.which('openocd')
+    assert openocd_bin
+
+    proc = subprocess.run([openocd_bin, '--version'],
+                          check=True,
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT,
+                          encoding="utf8")
+    log.info("Using OpenOCD at {}: '{}'".format(openocd_bin,
+                                                proc.stdout.splitlines()[0]))
+    return Path(openocd_bin)
