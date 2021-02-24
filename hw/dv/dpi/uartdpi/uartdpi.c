@@ -62,16 +62,16 @@ void *uartdpi_create(const char *name, const char *log_file_path) {
         fprintf(stderr, "UART: Unable to open log file at %s: %s\n",
                 log_file_path, strerror(errno));
       } else {
+        // Switch log file output to line buffering to ensure lines written to
+        // the UART device show up in the log file as soon as a newline
+        // character is written.
+        rv = setvbuf(log_file, NULL, _IOLBF, 0);
+        assert(rv == 0);
+
         ctx->log_file = log_file;
         printf("UART: Additionally writing all UART output to '%s'.\n",
                log_file_path);
       }
-
-      // Switch log file output to line buffering to ensure lines written to
-      // the UART device show up in the log file as soon as a newline character
-      // is written.
-      rv = setvbuf(log_file, NULL, _IOLBF, 0);
-      assert(rv == 0);
     }
   }
 
