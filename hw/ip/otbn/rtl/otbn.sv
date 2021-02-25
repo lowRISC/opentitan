@@ -507,8 +507,6 @@ module otbn
       .clk_i,
       .rst_ni,
 
-      .enable_i (otbn_use_model),
-
       .start_i (start_model),
       .done_o (done_model),
 
