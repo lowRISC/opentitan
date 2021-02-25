@@ -6,8 +6,9 @@
   other_clock_list: [ "clk_core_i" ],
   reset_primary: "rst_ni",
   other_reset_list: [ "rst_core_ni" ],
-  bus_device: "tlul",
-  bus_host: "none",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   regwidth: "32",
   scan: "true",
   param_list: [

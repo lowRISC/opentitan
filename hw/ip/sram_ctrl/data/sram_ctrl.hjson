@@ -11,8 +11,9 @@
     "rst_otp_ni" // OTP reset
   ]
 
-  bus_device: "tlul",
-  bus_host: "none",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
 
   ///////////////////////////
   // Interrupts and Alerts //

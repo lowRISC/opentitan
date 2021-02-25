@@ -27,7 +27,9 @@
     "rst_io_div2_ni"
     "rst_io_div4_ni"
   ]
-  bus_device: "tlul",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   regwidth: "32",
   param_list: [
     { name: "NumGroups",

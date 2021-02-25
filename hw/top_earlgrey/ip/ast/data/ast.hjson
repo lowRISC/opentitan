@@ -7,8 +7,9 @@
 //#############################################################################
 { name: "ast",
   clock_primary: "clk_i",
-  bus_device: "tlul",
-  bus_host: "",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   regwidth: "32",
   registers: [
     { name: "REVID",

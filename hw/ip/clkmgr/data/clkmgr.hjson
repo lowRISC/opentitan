@@ -22,7 +22,9 @@
     "rst_fixed_ni"
     "rst_usb_48mhz_ni"
   ]
-  bus_device: "tlul",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   regwidth: "32",
   param_list: [
     { name: "NumGroups",

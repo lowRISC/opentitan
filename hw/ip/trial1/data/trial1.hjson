@@ -4,7 +4,9 @@
 { name: "TRIAL1",
   regwidth: 32,
   clock_primary: "clk_fixed",
-  bus_device: "tlul",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   // this is a legal comment, with TODO and FIXME
   registers: [
      ////////////////////////////

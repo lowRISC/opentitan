@@ -10,8 +10,9 @@
   other_reset_list: [
     "rst_slow_ni",
   ],
-  bus_device: "tlul",
-  bus_host: "none",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   //inter_signal_list: [
   //  { struct: "adc_ast",
   //    type: "req_rsp",

@@ -4,8 +4,9 @@
 
 { name: "pattgen",
   clock_primary: "clk_i",
-  bus_device: "tlul",
-  bus_host: "none",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   regwidth: "32",
   // OUTPUT pins
   available_output_list: [

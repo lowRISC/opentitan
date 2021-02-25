@@ -20,7 +20,9 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
   other_clock_list: [ "clk_edn_i" ],
   reset_primary: "rst_ni",
   other_reset_list: [ "rst_edn_ni" ],
-  bus_device: "tlul",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   regwidth: "32",
   hier_path: "i_reg_wrap"
 ##############################################################################

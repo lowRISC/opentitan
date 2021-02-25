@@ -11,7 +11,9 @@
 {
   name: "RV_PLIC",
   clock_primary: "clk_i",
-  bus_device: "tlul",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
 
   param_list: [
     { name: "NumSrc",

@@ -19,40 +19,46 @@ def name_width(x):
     return '{}[{}:0]'.format(x.name, x.bits.msb)
 
 
-# Must have called cfg_validate, so should have no errors
+def gen_kv(outfile, key, value):
+    genout(outfile,
+           '<p><i>{}:</i> {}</p>\n'.format(key, value))
 
 
 def gen_cfg_html(cfgs, outfile):
     rnames = list(cfgs.regs.name_to_offset.keys())
 
-    genout(outfile, "<p>Referring to the \n")
-    genout(
-        outfile,
-        "<a href=\"https://docs.opentitan.org/doc/rm/comportability_specification\">\n"
-    )
+    ot_server = 'https://docs.opentitan.org'
+    comport_url = ot_server + '/doc/rm/comportability_specification'
     genout(outfile,
-           "Comportable guideline for peripheral device functionality</a>,\n")
-    genout(outfile,
-           "the module <b><code>" + cfgs.name + "</code></b> has \n")
-    genout(outfile, "the following hardware interfaces defined.</p>\n")
+           '<p>Referring to the <a href="{url}">Comportable guideline for '
+           'peripheral device functionality</a>, the module '
+           '<b><code>{mod_name}</code></b> has the following hardware '
+           'interfaces defined.</p>\n'
+           .format(url=comport_url, mod_name=cfgs.name))
+
     # clocks
-    genout(
-        outfile, "<p><i>Primary Clock:</i> <b><code>" + cfgs.clock_signals[0] +
-        "</code></b></p>\n")
+    gen_kv(outfile,
+           'Primary Clock',
+           '<b><code>{}</code></b>'.format(cfgs.clock_signals[0]))
     if len(cfgs.clock_signals) > 1:
-        genout(outfile, "<p><i>Other Clocks:</i></p>\n")
+        other_clocks = ['<b><code>{}</code></b>'.format(clk)
+                        for clk in cfgs.clock_signals[1:]]
+        gen_kv(outfile, 'Other Clocks', ', '.join(other_clocks))
     else:
-        genout(outfile, "<p><i>Other Clocks: none</i></p>\n")
+        gen_kv(outfile, 'Other Clocks', '<i>none</i>')
+
     # bus interfaces
-    genout(
-        outfile, "<p><i>Bus Device Interface:</i> <b><code>" +
-        (cfgs.bus_device or '') + "</code></b></p>\n")
-    if cfgs.bus_host is not None:
-        genout(
-            outfile, "<p><i>Bus Host Interface:</i> <b><code>" +
-            cfgs.bus_host + "</code></b></p>\n")
+    dev_ports = ['<b><code>{}</code></b>'.format(port)
+                 for port in cfgs.bus_interfaces.get_port_names(False, True)]
+    assert dev_ports
+    gen_kv(outfile, 'Bus Device Interfaces (TL-UL)', ', '.join(dev_ports))
+
+    host_ports = ['<b><code>{}</code></b>'.format(port)
+                  for port in cfgs.bus_interfaces.get_port_names(True, False)]
+    if host_ports:
+        gen_kv(outfile, 'Bus Host Interfaces (TL-UL)', ', '.join(host_ports))
     else:
-        genout(outfile, "<p><i>Bus Host Interface: none</i></p>\n")
+        gen_kv(outfile, 'Bus Host Interfaces (TL-UL)', '<i>none</i>')
 
     # IO
     ios = ([('input', x) for x in cfgs.xputs[1]] +

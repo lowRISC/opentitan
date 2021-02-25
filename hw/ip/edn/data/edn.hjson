@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 { name: "edn",
   clock_primary: "clk_i",
-  bus_device: "tlul",
-  bus_host: "none",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   param_list: [
     { name: "NumEndPoints",
       desc: "The number of endpoint ports supported by this EDN instance",
