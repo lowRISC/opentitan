@@ -93,7 +93,8 @@ class OtbnTraceUtil : public SimCtrlExtension {
 int main(int argc, char **argv) {
   otbn_top_sim top;
 
-  VerilatorMemUtil memutil(new OtbnMemUtil("TOP.otbn_top_sim"));
+  OtbnMemUtil otbn_memutil("TOP.otbn_top_sim");
+  VerilatorMemUtil memutil(&otbn_memutil);
   OtbnTraceUtil traceutil;
 
   VerilatorSimCtrl &simctrl = VerilatorSimCtrl::GetInstance();
