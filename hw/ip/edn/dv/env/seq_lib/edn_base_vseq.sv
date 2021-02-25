@@ -10,23 +10,33 @@ class edn_base_vseq extends cip_base_vseq #(
   );
   `uvm_object_utils(edn_base_vseq)
 
-  // various knobs to enable certain routines
-  bit do_edn_init = 1'b1;
-
   `uvm_object_new
+
+  task body();
+    // Start csrng_device_seq
+    device_init();
+    // Initialize DUT
+    dut_init();
+  endtask
+
+  virtual task device_init();
+    csrng_device_seq   m_dev_seq;
+
+    m_dev_seq = csrng_device_seq::type_id::create("m_dev_seq");
+    `uvm_info(`gfn, "Start csrng_device sequence", UVM_DEBUG)
+
+    fork
+      m_dev_seq.start(p_sequencer.csrng_sequencer_h);
+    join_none
+  endtask
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
-    if (do_edn_init) edn_init();
   endtask
 
   virtual task dut_shutdown();
     // check for pending edn operations and wait for them to complete
     // TODO
-  endtask
-
-  // setup basic edn features
-  virtual task edn_init();
   endtask
 
 endclass : edn_base_vseq

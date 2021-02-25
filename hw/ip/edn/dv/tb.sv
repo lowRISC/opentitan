@@ -27,7 +27,7 @@ module tb;
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   csrng_if csrng_if(.clk(clk), .rst_n(rst_n));
   push_pull_if#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
-       endpoint_if[NUM_ENDPOINTS-1:0]();
+       endpoint_if[NUM_ENDPOINTS-1:0](.clk(clk), .rst_n(rst_n));
 
   // dut
   edn#(.NumEndPoints(NUM_ENDPOINTS)) dut (
@@ -52,6 +52,8 @@ module tb;
 
   for (genvar i = 0; i < NUM_ENDPOINTS; i++) begin : gen_endpoint_if
     assign endpoint_req[i].edn_req = endpoint_if[i].req;
+    assign endpoint_if[i].ack = endpoint_rsp[i].edn_ack;
+    assign endpoint_if[i].d_data = {endpoint_rsp[i].edn_fips, endpoint_rsp[i].edn_bus};
     initial begin
       uvm_config_db#(virtual push_pull_if#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)))::
           set(null, $sformatf("*.env.m_endpoint_agent[%0d]*", i),
