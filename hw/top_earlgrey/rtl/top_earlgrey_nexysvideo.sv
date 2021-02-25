@@ -5,7 +5,10 @@
 module top_earlgrey_nexysvideo #(
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
-  parameter BootRomInitFile = "boot_rom_fpga_nexysvideo.32.vmem"
+  parameter BootRomInitFile = "boot_rom_fpga_nexysvideo.32.vmem",
+  // Path to a VMEM file containing the contents of the emulated OTP, which will be
+  // baked into the FPGA bitstream.
+  parameter OtpCtrlMemInitFile = "otp_img_fpga_nexysvideo.vmem"
 ) (
   // Clock and Reset
   input               IO_CLK,
@@ -475,6 +478,7 @@ module top_earlgrey_nexysvideo #(
     .IbexPipeLine(1),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .BootRomInitFile(BootRomInitFile),
+    .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1)
   ) top_earlgrey (

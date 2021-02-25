@@ -43,6 +43,11 @@ parameters:
     description: Boot ROM initialization file in 32 bit vmem hex format
     default: "../../../../../build-bin/sw/device/boot_rom/boot_rom_fpga_nexysvideo.32.vmem"
     paramtype: vlogparam
+  OtpCtrlMemInitFile:
+    datatype: str
+    description: OTP initialization file in vmem hex format
+    default: "../../../../../build-bin/sw/device/otp_img/otp_img_fpga_nexysvideo.vmem"
+    paramtype: vlogparam
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
   PRIM_DEFAULT_IMPL:
     datatype: str
@@ -64,6 +69,7 @@ targets:
     toplevel: top_earlgrey_nexysvideo
     parameters:
       - BootRomInitFile
+      - OtpCtrlMemInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
     tools:
       vivado:

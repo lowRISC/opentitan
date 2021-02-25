@@ -2859,6 +2859,17 @@
       param_list:
       [
         {
+          name: MemInitFile
+          desc: VMEM file to initialize the OTP macro.
+          type: ""
+          default: '''""'''
+          expose: "true"
+          local: "false"
+          randcount: "0"
+          randtype: none
+          name_top: OtpCtrlMemInitFile
+        }
+        {
           name: RndCnstLfsrSeed
           desc: Compile-time random bits for initial LFSR seed
           type: otp_ctrl_pkg::lfsr_seed_t
