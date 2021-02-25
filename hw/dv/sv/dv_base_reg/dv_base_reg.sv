@@ -14,6 +14,8 @@ class dv_base_reg extends uvm_reg;
   local bit            shadow_wr_staged; // stage the first shadow reg write
   local bit            shadow_update_err;
   local bit            en_shadow_wr = 1;
+  // In certain shadow reg (e.g. in AES), fatal error can lock write access
+  local bit            shadow_fatal_lock;
   local string         update_err_alert_name;
   local string         storage_err_alert_name;
 
@@ -143,7 +145,7 @@ class dv_base_reg extends uvm_reg;
     // no need to update shadow value or access type if access is not OK, as access is aborted
     if (rw.status != UVM_IS_OK) return;
 
-    if (is_shadowed) begin
+    if (is_shadowed && !shadow_fatal_lock) begin
       // first write
       if (!shadow_wr_staged) begin
         shadow_wr_staged = 1;
@@ -206,15 +208,20 @@ class dv_base_reg extends uvm_reg;
     if (is_shadowed) atomic_shadow_wr.put(1);
   endtask
 
-  // override do_predict function to support shadow_reg:
-  // skip predict if it is shadow_reg's first write, or second write with an update_err
+  // Override do_predict function to support shadow_reg.
+  // Skip predict in one of the following conditions:
+  // 1). It is shadow_reg's first write.
+  // 2). It is shadow_reg's second write with an update_err.
+  // 2). The shadow_reg is locked due to fatal storage error and it is not a backdoor write.
+
   virtual function void do_predict (uvm_reg_item      rw,
                                     uvm_predict_e     kind = UVM_PREDICT_DIRECT,
                                     uvm_reg_byte_en_t be = -1);
-    if (is_shadowed && (shadow_wr_staged || shadow_update_err) && kind != UVM_PREDICT_READ) begin
-      `uvm_info(`gfn,
-                $sformatf("skip predict csr %s: due to shadow_reg_first_wr=%0b or update_err=%0b",
-                          get_name(), shadow_wr_staged, shadow_update_err), UVM_HIGH)
+    if (is_shadowed && kind != UVM_PREDICT_READ && (shadow_wr_staged || shadow_update_err ||
+        (shadow_fatal_lock && rw.path != UVM_BACKDOOR))) begin
+      `uvm_info(`gfn, $sformatf(
+          "skip predict %s: due to shadow_reg_first_wr=%0b, update_err=%0b, shadow_fatal_lock=%0b",
+          get_name(), shadow_wr_staged, shadow_update_err, shadow_fatal_lock), UVM_HIGH)
       return;
     end
     super.do_predict(rw, kind, be);
@@ -229,12 +236,15 @@ class dv_base_reg extends uvm_reg;
                      input int               lineno = 0);
     if (kind == "BkdrRegPathRtlShadow") shadowed_val = value;
     else if (kind == "BkdrRegPathRtlCommitted") committed_val = value;
+
     super.poke(status, value, kind, parent, extension, fname, lineno);
   endtask
 
-  // callback function to update shadowed values according to specific design
-  // should only be called after post-write
+  // Callback function to update shadowed values according to specific design.
+  // Should only be called after post-write.
+  // If a shadow reg is locked due to fatal error, this function will return without updates
   virtual function void update_shadowed_val(uvm_reg_data_t val, bit do_predict = 1);
+    if (shadow_fatal_lock) return;
     if (shadow_wr_staged) begin
       // update value after first write
       staged_shadow_val = val;
@@ -256,6 +266,7 @@ class dv_base_reg extends uvm_reg;
     if (is_shadowed) begin
       shadow_update_err = 0;
       shadow_wr_staged  = 0;
+      shadow_fatal_lock = 0;
       committed_val     = get_mirrored_value();
       shadowed_val      = ~committed_val;
       // in case reset is issued during shadowed writes
@@ -282,6 +293,14 @@ class dv_base_reg extends uvm_reg;
 
     // top-level alert name is ${block_name} + alert name from hjson
     return ($sformatf("%0s_%0s", parent_name, update_err_alert_name));
+  endfunction
+
+  function void lock_shadow_reg();
+    shadow_fatal_lock = 1;
+  endfunction
+
+  function bit shadow_reg_is_locked();
+    return shadow_fatal_lock;
   endfunction
 
   function string get_storage_err_alert_name();

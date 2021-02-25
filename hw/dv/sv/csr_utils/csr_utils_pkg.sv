@@ -343,7 +343,7 @@ package csr_utils_pkg;
     end
     // poke always updates predict value, if predict == 0, revert back to old mirrored value
     if (!predict || kind == BkdrRegPathRtlShadow) begin
-      void'(csr.predict(.value(old_mirrored_val), .kind(UVM_PREDICT_DIRECT)));
+      void'(csr.predict(.value(old_mirrored_val), .kind(UVM_PREDICT_DIRECT), .path(UVM_BACKDOOR)));
     end
   endtask
 
