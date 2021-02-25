@@ -16,7 +16,9 @@
   other_clock_list: [ "clk_otp_i" ],
   reset_primary: "rst_ni",
   other_reset_list: [ "rst_otp_ni" ],
-  bus_device: "tlul",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   available_input_list: [
     { name: "tck", desc: "jtag clock" },
     { name: "tms", desc: "jtag tms" },

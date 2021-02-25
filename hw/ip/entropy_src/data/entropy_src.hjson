@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 { name: "entropy_src",
   clock_primary: "clk_i",
-  bus_device: "tlul",
-  bus_host: "none",
-param_list: [
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  param_list: [
     { name: "EsFifoDepth",
       desc: "Depth of the entropy FIFO",
       type: "int",

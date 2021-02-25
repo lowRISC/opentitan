@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 { name: "uart",
   clock_primary: "clk_i",
-  bus_device: "tlul",
-  bus_host: "none",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   available_input_list: [
     { name: "rx", desc: "Serial receive bit" }
   ],

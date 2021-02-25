@@ -4,8 +4,9 @@
 
 { name: "i2c"
   clock_primary: "clk_i"
-  bus_device: "tlul"
-  bus_host: "none"
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   // INPUT pins
   available_inout_list: [
     { name: "sda", desc: "Serial input data bit" }

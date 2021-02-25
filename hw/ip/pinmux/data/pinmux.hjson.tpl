@@ -25,7 +25,9 @@
   [
     "rst_aon_ni"
   ],
-  bus_device: "tlul",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   regwidth: "32",
 
   wakeup_list: [

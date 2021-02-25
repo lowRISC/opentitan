@@ -100,8 +100,7 @@ This file is specified later within this document.
 | Feature | Mand/Opt | Description |
 | ---     | ---      | --- |
 | Clocking     | mandatory | Each peripheral must specify what its primary functional clock is, and any other clocks needed.  The primary clock is the one driving the bus the peripheral is receiving.  The clocking section lists the available clocks. Other clocks can be designated as needed. |
-| Bus Device   | mandatory | All peripherals are assumed to have registers, and are thus required to be a device on the chip bus.  More details in the bus definition section. |
-| Bus Host     | optional  | Peripherals can act as a bus host on some occasion, though for full chip simplicity the preferred model is for the processor to be primary host. An example would be a DMA unit.  More details are available in the bus definition section. |
+| Bus Interfaces | mandatory | A list of the bus interfaces that the peripheral supports. This must contain at least one device entry. More details in the Bus Interfaces section. |
 | Available IO | optional  | Peripherals can optionally make connections to dedicated or multiplexed IO pins; the chip peripheral needs to indicate its module inputs and outputs that are available for this purpose. Details are available in the peripheral IO section below. |
 | Registers    | mandatory | Each peripheral must define its collection of registers in the specified register format.  The registers are automatically generated in the form of hardware, software, and documentation collateral. Details are available in the register section. |
 | Interrupts   | optional  | Peripherals have the option of generating signals that can be used to interrupt the primary processor.  These are designated as a list of signals, and each results in a single wire or bundled output that is sent to the processor to be gathered as part of its interrupt vector input.  Details can be found in the interrupt and alert section. |
@@ -134,7 +133,7 @@ The configuration file format is given below.
 
 Each peripheral must define at least one clock: the primary clock.
 This is defined as `clock_primary` in the configuration file, and must be equal to one of the known clock names.
-This primary clock is defined as the one used to clock the bus device, indicating to the top level if asynchronous handling of the bus interface is needed.
+This primary clock is defined as the one used to clock any device interfaces, indicating to the top level if asynchronous handling of the bus interface is needed.
 
 Optionally the peripheral can request other clocks that it needs for internal use.
 These would create asynchronous clock domains within the IP that are handled by the design.
@@ -162,28 +161,39 @@ By "care" an example would be to reset their value synchronously at a time after
 
 Based upon this and the fact that much of the team history was with asynchronous active low reset, we chose that methodology with added requirements that special care be applied for security state, the details of which will come at a later date.
 
-### Bus Device
+### Bus Interfaces
 
-All peripheral devices use TileLink-UL (TileLink-Uncached-Lite, aka TL-UL) as their interface to the framework.
-As of this writing, there are no other options, but the configuration file designates the protocol with the `bus_device` keyword.
-The only acceptable value at this time is `tlul`.
+Peripherals can connect to the chip bus.
+All peripherals are assumed to have registers, and are thus required to expose at least one device interface on the chip bus.
+Peripherals can act as a bus host on some occasions, though for full chip simplicity the preferred model is for the processor to be primary host.
+An example of a peripheral that acts as a host is a DMA unit.
 
-The address map for peripheral devices is not determined by the peripheral itself, or its configuration file.
-A higher level full-chip configuration file distributes address ranges to all of the included bus peripheral devices.
+The arrangement of peripherals' device interfaces into a system-wide address map is controlled by a higher level full-chip configuration file.
+Addresses within the block of addresses assigned to a device interface are defined by the peripheral's configuration file.
 
+The `bus_interfaces` attribute in the configuration file should contain a list of dictionaries, describing the interfaces that the peripheral exposes.
+The full syntax for an entry in the list looks like this:
+```
+{ protocol: "tlul", direction: "device", name: "my_interface" }
+```
+
+For each entry, the `protocol` field gives the protocol that the peripheral uses to connect to the bus.
+All peripherals use TileLink-UL (TileLink-Uncached-Lite, aka TL-UL) as their interface to the framework.
+To signify this, the peripheral must have a protocol of `tlul`.
 The TileLink-UL protocol and its usage within lowRISC devices is given in the
 [TileLink-UL Bus Specification]({{< relref "hw/ip/tlul/doc" >}}).
+As of this writing, there are no other options, but this field leaves an option for extension in the future.
 
-### Bus Host
-
-Peripherals have the option of declaring themselves as bus hosts.
-This is done in the configuration file with `bus_host` keyword.
-This is optional, or the configuration can indicate none (via an empty string), or else the bus host protocol name (only `tlul` allowed at this time).
+Each entry must also contain a `direction`.
+This must either be `host` or `device`.
 All bus hosts must use the same clock as the defined primary host clock.
-
 Each bus host is provided a 4-bit host ID to distinguish hosts within the system.
 This is done by the framework in order to ensure uniqueness.
 The use of the ID within the bus fabric is discussed in the bus specification.
+
+An entry may also include a name.
+This name is added as a prefix to the module's top-level port names.
+This is optional unless there is another entry in the list with the same direction (in which case, the port names would collide).
 
 ### Available IO
 
@@ -256,8 +266,9 @@ In this example, the IP name is `uart`, though the other configuration fields ar
     name: "uart",
     clock_primary: "clk_fixed",      // optional; default "clk"
     other_clock_list: [ "clk", "clk_lowpower" ], // optional; default []
-    bus_device: "tlul",
-    bus_host: "",                    // optional; default undefined
+    bus_interfaces: [
+      { protocol: "tlul", direction: "device", name: "regs" }
+    ],
     available_input_list: [          // optional; default []
       { name: "rx", desc: "Receive bit" }
     ],
@@ -310,9 +321,9 @@ The following shows the expected documentation format for this example.
 
 *Other clocks:* `clk, clk_lowpower`
 
-*Bus Device Interface:* `tlul`
+*Bus Device Interfaces (TL-UL):* `regs_tl`
 
-*Bus Host Interface: none*
+*Bus Host Interfaces (TL-UL): none*
 
 *Peripheral Pins available for chip-level IO:*
 

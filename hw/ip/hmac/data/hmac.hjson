@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 { name: "hmac",
   clock_primary: "clk_i",
-  bus_device: "tlul",
-  bus_host: "none",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   interrupt_list: [
     { name: "hmac_done",
       desc: "HMAC-256 completes a message with key"

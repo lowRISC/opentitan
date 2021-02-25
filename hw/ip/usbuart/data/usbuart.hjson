@@ -4,8 +4,9 @@
 { name: "usbuart",
   clock_primary: "clk_fixed",
   other_clock_list: [ "clk_48mhz" ]
-  bus_device: "tlul",
-  bus_host: "none",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   available_inout_list: [
     { name: "usb_dp", desc: "USB data D+" }
     { name: "usb_dm", desc: "USB data D-" }

@@ -6,7 +6,9 @@
   other_clock_list: [ "clk_slow_i" ]
   reset_primary: "rst_ni",
   other_reset_list: [ "rst_slow_ni" ]
-  bus_device: "tlul",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   interrupt_list: [
     { name: "wakeup", desc: "Wake from low power state. See wake info for more details" },
   ],

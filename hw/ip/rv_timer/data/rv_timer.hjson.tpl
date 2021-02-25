@@ -7,8 +7,9 @@
 ##  - timers: number of timers in each hart
 { name: "rv_timer",
   clock_primary: "clk_i",
-  bus_device: "tlul",
-  bus_host: "none",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   available_input_list: [
   ],
   available_output_list: [

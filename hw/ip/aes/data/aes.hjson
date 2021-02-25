@@ -13,7 +13,9 @@
   other_reset_list: [
     "rst_edn_ni"
   ]
-  bus_device: "tlul",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   param_list: [
     # Regular parameters
     { name:    "AES192Enable",

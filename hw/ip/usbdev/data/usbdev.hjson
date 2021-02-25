@@ -6,8 +6,9 @@
   other_clock_list: [ "clk_aon_i", "clk_usb_48mhz_i" ]
   reset_primary: "rst_ni",
   other_reset_list: [ "rst_aon_ni", "rst_usb_48mhz_ni" ]
-  bus_device: "tlul",
-  bus_host: "none",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   available_inout_list: [
     { name: "d", desc: "USB data differential" }
     { name: "dp", desc: "USB data D+" }

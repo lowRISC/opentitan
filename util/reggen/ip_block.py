@@ -10,6 +10,7 @@ import hjson  # type: ignore
 
 from .alert import Alert
 from .block import Block
+from .bus_interfaces import BusInterfaces
 from .inter_signal import InterSignal
 from .lib import (check_keys, check_name, check_int, check_bool,
                   check_list, check_optional_str, check_name_list)
@@ -21,7 +22,7 @@ from .signal import Signal
 REQUIRED_FIELDS = {
     'name': ['s', "name of the component"],
     'clock_primary': ['s', "name of the primary clock"],
-    'bus_device': ['s', "name of the bus interface for the device"],
+    'bus_interfaces': ['l', "bus interfaces for the device"],
     'registers': [
         'l',
         "list of register definition groups and "
@@ -34,7 +35,6 @@ OPTIONAL_FIELDS = {
     'available_inout_list': ['lnw', "list of available peripheral inouts"],
     'available_input_list': ['lnw', "list of available peripheral inputs"],
     'available_output_list': ['lnw', "list of available peripheral outputs"],
-    'bus_host': ['s', "name of the bus interface as host"],
     'hier_path': [
         None,
         'additional hierarchy path before the reg block instance'
@@ -83,8 +83,7 @@ class IpBlock(Block):
                  no_auto_alert: bool,
                  scan: bool,
                  inter_signals: List[InterSignal],
-                 bus_device: Optional[str],
-                 bus_host: Optional[str],
+                 bus_interfaces: BusInterfaces,
                  hier_path: Optional[str],
                  clock_signals: List[str],
                  reset_signals: List[str],
@@ -106,8 +105,7 @@ class IpBlock(Block):
         self.no_auto_alert = no_auto_alert
         self.scan = scan
         self.inter_signals = inter_signals
-        self.bus_device = bus_device
-        self.bus_host = bus_host
+        self.bus_interfaces = bus_interfaces
         self.hier_path = hier_path
         self.clock_signals = clock_signals
         self.reset_signals = reset_signals
@@ -207,20 +205,10 @@ class IpBlock(Block):
             for idx, entry in enumerate(r_inter_signals)
         ]
 
-        bus_device = check_optional_str(rd.get('bus_device', None),
-                                        'bus_device field of ' + what)
-        bus_host = check_optional_str(rd.get('bus_host', None),
-                                      'bus_host field of ' + what)
-
-        if bus_device == "tlul":
-            # Add to inter_module_signal
-            port_name = "tl" if bus_host in ["none", "", None] else "tl_d"
-            inter_signals.append(InterSignal(port_name, None, 'tl', 'tlul_pkg',
-                                             'req_rsp', 'rsp', 1, None))
-
-        if bus_host == "tlul":
-            inter_signals.append(InterSignal('tl_h', None, 'tl', 'tlul_pkg',
-                                             'req_rsp', 'rsp', 1, None))
+        bus_interfaces = (BusInterfaces.
+                          from_raw(rd['bus_interfaces'],
+                                   'bus_interfaces field of ' + where))
+        inter_signals += bus_interfaces.inter_signals()
 
         hier_path = check_optional_str(rd.get('hier_path', None),
                                        'hier_path field of ' + what)
@@ -255,7 +243,7 @@ class IpBlock(Block):
 
         return IpBlock(name, regwidth, params, regs,
                        interrupts, no_auto_intr, alerts, no_auto_alert,
-                       scan, inter_signals, bus_device, bus_host,
+                       scan, inter_signals, bus_interfaces,
                        hier_path, clock_signals, reset_signals,
                        xputs, wakeups, rst_reqs, scan_reset)
 
@@ -285,11 +273,8 @@ class IpBlock(Block):
         ret['no_auto_alert_regs'] = self.no_auto_alert
         ret['scan'] = self.scan
         ret['inter_signal_list'] = self.inter_signals
+        ret['bus_interfaces'] = self.bus_interfaces.as_dicts()
 
-        if self.bus_device is not None:
-            ret['bus_device'] = self.bus_device
-        if self.bus_host is not None:
-            ret['bus_host'] = self.bus_host
         if self.hier_path is not None:
             ret['hier_path'] = self.hier_path
 

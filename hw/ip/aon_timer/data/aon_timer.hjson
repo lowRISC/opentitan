@@ -13,7 +13,9 @@
   [
     "rst_aon_ni"
   ],
-  bus_device: "tlul",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   interrupt_list: [
     { name: "wkup_timer_expired",
       desc: "Raised if the wakeup timer has hit the specified threshold"

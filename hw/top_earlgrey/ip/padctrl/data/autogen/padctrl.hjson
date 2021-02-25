@@ -19,7 +19,9 @@
 {
   name: "PADCTRL",
   clock_primary: "clk_i",
-  bus_device: "tlul",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   regwidth: "32",
   param_list: [
     { name: "NDioPads",

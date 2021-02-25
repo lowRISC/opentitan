@@ -30,8 +30,9 @@
   other_reset_list: [
     "rst_edn_ni"
   ]
-  bus_device: "tlul",
-  bus_host: "none",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
 
   ///////////////////////////
   // Interrupts and Alerts //

@@ -29,7 +29,9 @@ num_grps = len(grps)
     "rst_${src['name']}_ni"
 % endfor
   ]
-  bus_device: "tlul",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   regwidth: "32",
   param_list: [
     { name: "NumGroups",

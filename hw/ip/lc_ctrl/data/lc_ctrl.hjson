@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 { name: "lc_ctrl",
   clock_primary: "clk_i",
-  bus_device: "tlul",
-  bus_host: "none",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   scan: "true", // Enable `scanmode_i` port
   regwidth: "32",
 

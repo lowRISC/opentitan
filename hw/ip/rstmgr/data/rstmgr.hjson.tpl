@@ -16,7 +16,9 @@
     "clk_${clk}_i"
 % endfor
   ],
-  bus_device: "tlul",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   regwidth: "32",
   scan: "true",
   scan_reset: "true",
