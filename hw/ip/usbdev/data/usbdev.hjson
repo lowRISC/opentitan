@@ -763,6 +763,9 @@
           desc: '''
                 Enable the usb resume wake function.  When this is set, a resume indication from
                 a usb host can be used to drive a wake from sleep event.
+
+                Note this function is meant to be set as a mode and not toggled on/off every time
+                usb enters / exit suspend.
                 '''
         }
         {

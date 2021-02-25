@@ -1073,7 +1073,8 @@ module usbdev import usbdev_pkg::*; (
 
   assign usb_aon_wake_en_o = reg2hw.wake_config.wake_en.q;
   assign usb_aon_wake_ack_o = reg2hw.wake_config.wake_ack.q;
-  assign usb_suspend_o = usb_event_link_suspend;
+  // re-use I/O version to allow software override if needed
+  assign usb_suspend_o = cio_suspend_o;
 
   /////////////////////////////////////////
   // capture async debug info            //
