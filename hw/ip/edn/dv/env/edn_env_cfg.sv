@@ -26,7 +26,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
     for (int i = 0; i < NUM_ENDPOINTS; i++) begin
       m_endpoint_agent_cfg[i] = push_pull_agent_cfg#(.HostDataWidth(edn_pkg::
                                 FIPS_ENDPOINT_BUS_WIDTH))::type_id::create
-                                ($sformatf("m_endpoint_agent_cfg[$0d]", i));
+                                ($sformatf("m_endpoint_agent_cfg[%0d]", i));
     end
 
     // set num_interrupts & num_alerts

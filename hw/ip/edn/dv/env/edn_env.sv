@@ -32,17 +32,23 @@ class edn_env extends cip_base_env #(
                     "cfg", cfg.m_endpoint_agent_cfg[i]);
       cfg.m_endpoint_agent_cfg[i].agent_type = push_pull_agent_pkg::PullAgent;
       cfg.m_endpoint_agent_cfg[i].if_mode    = dv_utils_pkg::Host;
+      // TODO: Move these
+      cfg.m_endpoint_agent_cfg[i].zero_delays = 1'b1;
     end
   endfunction
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+
+    virtual_sequencer.csrng_sequencer_h = m_csrng_agent.sequencer;
+
     if (cfg.en_scb) begin
       for (int i = 0; i < NUM_ENDPOINTS; i++) begin
         m_endpoint_agent[i].monitor.analysis_port.connect
         (scoreboard.endpoint_fifo[i].analysis_export);
       end
     end
+
     for (int i = 0; i < NUM_ENDPOINTS; i++) begin
       if (cfg.m_endpoint_agent_cfg[i].is_active) begin
         virtual_sequencer.endpoint_sequencer_h[i] = m_endpoint_agent[i].sequencer;

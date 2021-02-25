@@ -15,4 +15,8 @@ class csrng_agent_cfg extends dv_base_agent_cfg;
 
   `uvm_object_new
 
+  // TODO: set in testcase
+  uint   min_cmd_ack_dly=2, max_cmd_ack_dly=2;
+  uint   min_genbits_dly=10, max_genbits_dly=10;
+
 endclass

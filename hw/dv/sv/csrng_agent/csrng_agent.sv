@@ -61,10 +61,13 @@ class csrng_agent extends dv_base_agent #(
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    // TODO
+
+    if (cfg.is_active) begin
+      if (cfg.if_mode == dv_utils_pkg::Device) begin
+        monitor.req_port.connect(sequencer.cmd_req_fifo.analysis_export);
+        sequencer.m_genbits_push_sequencer = m_genbits_push_agent.sequencer;
+      end
+    end
   endfunction
 
-  virtual task run_phase(uvm_phase phase);
-    // TODO
-  endtask
 endclass

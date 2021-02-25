@@ -11,6 +11,8 @@ class edn_virtual_sequencer extends cip_base_virtual_sequencer #(
   push_pull_sequencer#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
        endpoint_sequencer_h[NUM_ENDPOINTS-1:0];
 
+  csrng_sequencer   csrng_sequencer_h;
+
   `uvm_component_new
 
 endclass
