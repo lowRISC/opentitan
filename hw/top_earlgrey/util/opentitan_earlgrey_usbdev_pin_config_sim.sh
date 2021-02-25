@@ -9,6 +9,7 @@ VERILATOR=build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_ea
 # Code to load
 ROMCODE=build-bin/sw/device/boot_rom/boot_rom_sim_verilator.elf
 FLASH=build-bin/sw/device/examples/hello_usbdev/hello_usbdev_sim_verilator.elf
+OTP=build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
 
 # Where simulator output or control fifos are put
 VFILE_DIR=.
@@ -27,7 +28,7 @@ IGNORE_USB="-I Pullup.change"
 IGNORE_UART="-I PHY.settings"
 
 echo "Simulation with normal pins, singleended"
-$VERILATOR --meminit=rom,$ROMCODE --meminit=flash,$FLASH -c $SIM_CYCLES &
+$VERILATOR --meminit=rom,$ROMCODE --meminit=flash,$FLASH --meminit=otp,$OTP -c $SIM_CYCLES &
 sleep 1
 echo 'l01 l00' > $VFILE_DIR/gpio0-write && cat $VFILE_DIR/gpio0-read
 cp $VFILE_DIR/usb0.log $VFILE_DIR/usb-noflip-se.log
@@ -35,21 +36,21 @@ cp $VFILE_DIR/uart0.log $VFILE_DIR/uart-noflip-se.log
 
 
 echo "Simulation with flipped pins, singleended"
-$VERILATOR --meminit=rom,$ROMCODE --meminit=flash,$FLASH -c $SIM_CYCLES &
+$VERILATOR --meminit=rom,$ROMCODE --meminit=flash,$FLASH --meminit=otp,$OTP -c $SIM_CYCLES &
 sleep 1
 echo 'l01 h00' > $VFILE_DIR/gpio0-write && cat $VFILE_DIR/gpio0-read
 cp $VFILE_DIR/usb0.log $VFILE_DIR/usb-flip-se.log
 cp $VFILE_DIR/uart0.log $VFILE_DIR/uart-flip-se.log
 
 echo "Simulation with normal pins, differential"
-$VERILATOR --meminit=rom,$ROMCODE --meminit=flash,$FLASH -c $SIM_CYCLES &
+$VERILATOR --meminit=rom,$ROMCODE --meminit=flash,$FLASH --meminit=otp,$OTP -c $SIM_CYCLES &
 sleep 1
 echo 'h01 l00' > $VFILE_DIR/gpio0-write && cat $VFILE_DIR/gpio0-read
 cp $VFILE_DIR/usb0.log $VFILE_DIR/usb-noflip-diff.log
 cp $VFILE_DIR/uart0.log $VFILE_DIR/uart-noflip-diff.log
 
 echo "Simulation with flipped pins, differential"
-$VERILATOR --meminit=rom,$ROMCODE --meminit=flash,$FLASH -c $SIM_CYCLES &
+$VERILATOR --meminit=rom,$ROMCODE --meminit=flash,$FLASH --meminit=otp,$OTP -c $SIM_CYCLES &
 sleep 1
 echo 'h01 h00' > $VFILE_DIR/gpio0-write && cat $VFILE_DIR/gpio0-read
 cp $VFILE_DIR/usb0.log $VFILE_DIR/usb-flip-diff.log

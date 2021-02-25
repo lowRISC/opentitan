@@ -364,12 +364,15 @@ jobs:
 
       BOOTROM_VMEM="$BIN_DIR/sw/device/boot_rom/boot_rom_fpga_nexysvideo.32.vmem"
       test -f "$BOOTROM_VMEM"
+      OTP_VMEM="$BIN_DIR/sw/device/otp_img/otp_img_fpga_nexysvideo.vmem"
+      test -f "$OTP_VMEM"
 
       fusesoc --cores-root=. \
         run --flag=fileset_top --target=synth --setup --build \
         --build-root="$OBJ_DIR/hw" \
         lowrisc:systems:top_earlgrey_nexysvideo \
-        --BootRomInitFile="$BOOTROM_VMEM"
+        --BootRomInitFile="$BOOTROM_VMEM" \
+        --OtpCtrlMemInitFile="$OTP_VMEM"
 
       cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit" \
         "$BIN_DIR/hw/top_earlgrey"

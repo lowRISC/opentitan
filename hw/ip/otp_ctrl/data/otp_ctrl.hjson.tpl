@@ -59,6 +59,14 @@
   // Parameters //
   ////////////////
   param_list: [
+    // Init file
+    { name:      "MemInitFile",
+      desc:      "VMEM file to initialize the OTP macro.",
+      type:      "",
+      default:   '""',
+      expose:    "true",
+      local:     "false"
+    }
     // Random netlist constants
     { name:      "RndCnstLfsrSeed",
       desc:      "Compile-time random bits for initial LFSR seed",
