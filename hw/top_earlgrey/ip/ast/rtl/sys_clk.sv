@@ -6,13 +6,7 @@
 // *Module Description: System Clock
 //############################################################################
 
-`ifndef SYNTHESIS
-module sys_clk #(
-  parameter time SYS_EN_RDLY = 5us
-) (
-`else
 module sys_clk (
-`endif
   input vcore_pok_h_i,                     // VCORE POK @3.3V (for OSC)
   input clk_sys_pd_ni,                     // System Clock Power-down
   input rst_sys_clk_ni,                    // System Clock Logic reset
@@ -25,17 +19,11 @@ module sys_clk (
 logic clk, sys_clk_en, rst_n;
 
 assign rst_n = rst_sys_clk_ni;  // scan enabled
-assign sys_clk_en = clk_src_sys_en_i && clk_sys_pd_ni;
+assign sys_clk_en = clk_src_sys_en_i && clk_sys_pd_ni && rst_sys_clk_ni;
 
 // Clock Oscilator
 ///////////////////////////////////////
-`ifndef SYNTHESIS
-sys_osc #(
-  .SYS_EN_RDLY ( SYS_EN_RDLY )
-) u_sys_osc (
-`else
 sys_osc u_sys_osc (
-`endif
   .vcore_pok_h_i ( vcore_pok_h_i ),
   .sys_en_i ( sys_clk_en ),
   .sys_jen_i ( clk_src_sys_jen_i ),

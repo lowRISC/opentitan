@@ -7,20 +7,17 @@
 //############################################################################
 `ifndef SYNTHESIS
 `timescale 1ns / 1ps
-
-module rng_osc #(
-  parameter time RNG_EN_RDLY = 5us
-) (
-`else
+`endif
 
 module rng_osc (
-`endif
   input vcaon_pok_i,        // VCAON POK @1.1V
   input rng_en_i,           // RNG Source Clock Enable
   output logic rng_clk_o    // RNG Clock Output
 );
 
 `ifndef SYNTHESIS
+import ast_bhv_pkg::* ;
+
 // Behavioral Model
 ///////////////////////////////////////
 integer CLK_PERIOD;

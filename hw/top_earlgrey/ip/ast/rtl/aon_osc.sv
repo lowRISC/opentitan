@@ -7,20 +7,17 @@
 //############################################################################
 `ifndef SYNTHESIS
 `timescale 1ns / 10ps
-
-module aon_osc #(
-  parameter time AON_EN_RDLY = 5us
-) (
-`else
+`endif
 
 module aon_osc (
-`endif
   input vcore_pok_h_i,     // VCORE POK @3.3V
   input aon_en_i,          // AON Source Clock Enable
   output logic aon_clk_o   // AON Clock Output
 );
 
 `ifndef SYNTHESIS
+import ast_bhv_pkg::* ;
+
 // Behavioral Model
 ////////////////////////////////////////
 localparam time AonClkPeriod = 5000ns; // 5000ns (200Khz)
@@ -30,7 +27,7 @@ initial begin
   clk = 1'b0;
   $display("\nAON Clock Period: %0dns", AonClkPeriod);
   en_dly = 1'b0;  // to block init X
-  #(AON_EN_RDLY+1) en_dly = 1'b1;
+  #(AON_EN_RDLY + VCAON_POK_RDLY +1) en_dly = 1'b1;
 end
 
 // Enable 5us RC Delay

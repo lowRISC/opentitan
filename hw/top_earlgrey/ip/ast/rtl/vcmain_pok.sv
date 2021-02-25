@@ -2,22 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// *Name: gen_pok
-// *Module Description:  Generic Power OK
+// *Name: vcmain_pok
+// *Module Description:  VCMAIN Power OK
 //############################################################################
 
-`ifndef SYNTHESIS
-module gen_pok #(
- parameter time POK_RDLY = 3us,
- parameter time POK_FDLY = 500ns
-) (
-`else
-module gen_pok (
-`endif
-  output logic gen_pok_o
+module vcmain_pok (
+  output logic vcmain_pok_o
 );
 
 `ifndef SYNTHESIS
+import ast_bhv_pkg::* ;
+
 // Behavioral Model
 ////////////////////////////////////////
 // Local signal for testing hook
@@ -35,11 +30,11 @@ end
 
 always @( * ) begin
   if ( init_start ) begin
-    gen_pok_o <= 1'b0;
+    vcmain_pok_o <= 1'b0;
   end else if ( !init_start && gen_supp_a ) begin
-    gen_pok_o <= #(POK_RDLY) gen_supp_a;
+    vcmain_pok_o <= #(VCMAIN_POK_RDLY) gen_supp_a;
   end else if ( !init_start && !gen_supp_a ) begin
-    gen_pok_o <= #(POK_FDLY) gen_supp_a;
+    vcmain_pok_o <= #(VCMAIN_POK_FDLY) gen_supp_a;
   end
 end
 
@@ -47,12 +42,12 @@ end
 // SYNTHESUS/VERILATOR/LINTER/FPGA
 ///////////////////////////////////////
 `ifndef FPGA
-assign gen_pok_o = 1'b1;
+assign vcmain_pok_o = 1'b1;
 `else
 // FPGA Specific (place holder)
 ///////////////////////////////////////
-assign gen_pok_o = 1'b1;
+assign vcmain_pok_o = 1'b1;
 `endif
 `endif
 
-endmodule : gen_pok
+endmodule : vcmain_pok

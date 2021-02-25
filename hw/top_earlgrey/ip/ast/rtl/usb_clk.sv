@@ -6,15 +6,7 @@
 // *Module Description: USB Clock
 //############################################################################
 
-`ifndef SYNTHESIS
-module usb_clk #(
-  parameter time USB_EN_RDLY = 5us,
-  parameter time USB_VAL_RDLY = 50ms,
-  parameter time USB_VAL_FDLY = 80ns
-) (
-`else
 module usb_clk (
-`endif
   input vcore_pok_h_i,                     // VCORE POK @3.3V (for OSC)
   input clk_usb_pd_ni,                     // USB Clock Power-down
   input rst_usb_clk_ni,                    // USB Clock Logic reset
@@ -29,19 +21,11 @@ module usb_clk (
 logic clk, usb_clk_en, rst_n;
 
 assign rst_n = rst_usb_clk_ni;  // Scan enabled
-assign usb_clk_en = clk_src_usb_en_i && clk_usb_pd_ni;
+assign usb_clk_en = clk_src_usb_en_i && clk_usb_pd_ni && rst_usb_clk_ni;
 
 // Clock Oscilator
 ///////////////////////////////////////
-`ifndef SYNTHESIS
-usb_osc #(
-  .USB_EN_RDLY ( USB_EN_RDLY ),
-  .USB_VAL_RDLY ( USB_VAL_RDLY ),
-  .USB_VAL_FDLY ( USB_VAL_FDLY )
-) u_usb_osc (
-`else
 usb_osc u_usb_osc (
-`endif
   .vcore_pok_h_i ( vcore_pok_h_i ),
   .usb_en_i (usb_clk_en ),
   .usb_ref_val_i ( usb_ref_val_i ),

@@ -20,6 +20,7 @@ filesets:
     files:
       - rtl/ast_reg_pkg.sv
       - rtl/ast_pkg.sv
+      - rtl/ast_bhv_pkg.sv
       - rtl/ast.sv
       - rtl/adc.sv
       - rtl/aon_clk.sv
@@ -27,7 +28,10 @@ filesets:
       - rtl/ast_reg_top.sv
       - rtl/ast_entropy.sv
       - rtl/ast_alert.sv
-      - rtl/gen_pok.sv
+      - rtl/vcc_pok.sv
+      - rtl/vio_pok.sv
+      - rtl/vcaon_pok.sv
+      - rtl/vcmain_pok.sv
       - rtl/io_clk.sv
       - rtl/io_osc.sv
       - rtl/rglts_pdm_3p3v.sv

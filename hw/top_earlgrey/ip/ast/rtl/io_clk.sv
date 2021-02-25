@@ -6,13 +6,7 @@
 // *Module Description: IO Clock
 //############################################################################
 
-`ifndef SYNTHESIS
-module io_clk #(
-  parameter time IO_EN_RDLY = 5us
-) (
-`else
 module io_clk (
-`endif
   input vcore_pok_h_i,                     // VCORE POK @3.3V (for OSC)
   input clk_io_pd_ni,                      // IO Clock Power-down
   input rst_io_clk_ni,                     // IO Clock Logic reset
@@ -24,18 +18,11 @@ module io_clk (
 logic clk, io_clk_en, rst_n;
 
 assign rst_n = rst_io_clk_ni;  // Scan enabled
-assign io_clk_en = clk_src_io_en_i && clk_io_pd_ni;
+assign io_clk_en = clk_src_io_en_i && clk_io_pd_ni && rst_io_clk_ni;
 
 // Clock Oscilator
 ///////////////////////////////////////
-`ifndef SYNTHESIS
-io_osc #(
-  .IO_EN_RDLY ( IO_EN_RDLY )
-) u_io_osc (
-`else  // of SYNTHESIS
-
 io_osc u_io_osc (
-`endif
   .vcore_pok_h_i ( vcore_pok_h_i ),
   .io_en_i ( io_clk_en ),
   .io_clk_o ( clk )

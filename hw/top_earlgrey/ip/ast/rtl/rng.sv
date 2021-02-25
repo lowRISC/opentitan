@@ -7,9 +7,6 @@
 //############################################################################
 
 module rng #(
-`ifndef SYNTHESIS
-  parameter time RNG_EN_RDLY = 5us,
-`endif
   parameter int EntropyStreams = 4
 ) (
   input clk_i,
@@ -29,13 +26,7 @@ assign rst_n = vcaon_pok_i;
 // clock Oschilator
 ////////////////////////////////////////
 // For FPGA, it can be replace with clk_src_aon_o/4 (200K/4=50K)
-`ifndef SYNTHESIS
-rng_osc #(
-  .RNG_EN_RDLY ( RNG_EN_RDLY )
-) u_rng_osc (
-`else
 rng_osc u_rng_osc (
-`endif
   .vcaon_pok_i ( vcaon_pok_i ),
   .rng_en_i ( rng_en_i ),
   .rng_clk_o ( rng_clk_o )

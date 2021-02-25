@@ -129,6 +129,7 @@ assign entropy_bus = entropy_rsp_i.edn_bus;
 ////////////////////////////////////////
 logic entropy_clr, entropy_bit, entropy_bit_valid;
 logic [6-1:0] entropy_depth_o;
+logic fifo_full;
 
 prim_flop_2sync #(
   .Width ( 1 ),
@@ -163,7 +164,7 @@ prim_packer_fifo #(
 logic [6-1:0] fifo_cnt;            // For 32 1-bit FIFO
 logic [5-1:0] fifo_rdp, fifo_wrp;  // FIFO read pointer & write pointer
 logic [32-1:0] fifo_data;          // 32 1-bit FIFO
-logic fifo_full, fifo_empty;
+logic fifo_empty;
 
 assign fifo_full  = (fifo_cnt == 6'h20);
 assign fifo_empty = (fifo_cnt == 6'h00);

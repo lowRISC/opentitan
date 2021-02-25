@@ -166,8 +166,9 @@ module ast #(
   output scan_reset_no                        // Scan Reset output
 );
 
-import ast_pkg::*;
-import ast_reg_pkg::*;
+import ast_pkg::* ;
+import ast_reg_pkg::* ;
+import ast_bhv_pkg::* ;
 
 logic vcaon_pok, vcaon_pok_h;
 
@@ -178,15 +179,8 @@ logic vcaon_pok, vcaon_pok_h;
 ///////////////////////////////////////
 logic vcc_pok_h, vcc_pok;
 
-`ifndef SYNTHESIS
-gen_pok #(
-  .POK_RDLY ( VCC_POK_RDLY ),
-  .POK_FDLY ( VCC_POK_FDLY )
-) u_vcc_pok (
-`else
-gen_pok u_vcc_pok (
-`endif
-  .gen_pok_o ( vcc_pok_int )
+vcc_pok u_vcc_pok (
+  .vcc_pok_o ( vcc_pok_int )
 );  // of u_vcc_pok
 
 assign vcc_pok = vcc_pok_int && vcc_supp_i;
@@ -229,15 +223,8 @@ logic vcmain_pok_por;
 // Power up/down with rise/fall delays.
 logic vcmain_pok_int, main_pwr_dly_o;
 
-`ifndef SYNTHESIS
-gen_pok #(
-  .POK_RDLY ( VCMAIN_POK_RDLY ),
-  .POK_FDLY ( VCMAIN_POK_FDLY )
-) u_vcmain_pok (
-`else
-gen_pok u_vcmain_pok (
-`endif
-  .gen_pok_o ( vcmain_pok_int )
+vcmain_pok u_vcmain_pok (
+  .vcmain_pok_o ( vcmain_pok_int )
 );  // of u_vcmain_pok
 
 assign vcmain_pok = vcmain_pok_int && vcmain_supp_i && main_pwr_dly_o ;
@@ -254,15 +241,8 @@ assign vcmain_pok_o   = vcmain_pok_por;
 logic vioa_pok;
 logic vioa_pok_int;
 
-`ifndef SYNTHESIS
-gen_pok #(
-  .POK_RDLY ( VIOA_POK_RDLY ),
-  .POK_FDLY ( VIOA_POK_FDLY )
-) u_vioa_pok (
-`else
-gen_pok u_vioa_pok (
-`endif
-  .gen_pok_o ( vioa_pok_int )
+vio_pok u_vioa_pok (
+  .vio_pok_o ( vioa_pok_int )
 );  // of u_vioa_pok
 
 assign vioa_pok = vioa_pok_int && vioa_supp_i;
@@ -276,15 +256,8 @@ assign vioa_pok_o = vcaon_pok && vioa_pok;
 logic viob_pok;
 logic viob_pok_int;
 
-`ifndef SYNTHESIS
-gen_pok #(
-  .POK_RDLY ( VIOB_POK_RDLY ),
-  .POK_FDLY ( VIOB_POK_FDLY )
-) u_viob_pok (
-`else
-gen_pok u_viob_pok (
-`endif
-  .gen_pok_o ( viob_pok_int )
+vio_pok u_viob_pok (
+  .vio_pok_o ( viob_pok_int )
 );  // of u_viob_pok
 
 assign viob_pok = viob_pok_int && viob_supp_i;
@@ -295,16 +268,8 @@ assign viob_pok_o = vcaon_pok && viob_pok;
 ///////////////////////////////////////
 // Regulators & PDM Logic (VCC)
 ///////////////////////////////////////
-`ifndef SYNTHESIS
-rglts_pdm_3p3v #(
-  .MRVCC_RDLY ( MPVCC_RDLY ),
-  .MRVCC_FDLY ( MPVCC_FDLY ),
-  .MRPD_RDLY ( MPPD_RDLY ),
-  .MRPD_FDLY ( MPPD_FDLY )
-) u_rglts_pdm_3p3v (
-`else
+
 rglts_pdm_3p3v u_rglts_pdm_3p3v (
-`endif
   .vcc_pok_h_i ( vcc_pok_h ),
   .vcmain_pok_h_i ( vcmain_pok_h ),
   .vcmain_pok_o_h_i ( vcmain_pok_por ),
@@ -325,13 +290,7 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
 logic rst_sys_clk_n;
 assign rst_sys_clk_n = vcmain_pok_por;
 
-`ifndef SYNTHESIS
-sys_clk #(
-  .SYS_EN_RDLY ( SYS_EN_RDLY )
-) u_sys_clk (
-`else
 sys_clk u_sys_clk (
-`endif
   .vcore_pok_h_i ( vcaon_pok_h ),
   .clk_sys_pd_ni ( vcmain_pok ),
   .rst_sys_clk_ni ( rst_sys_clk_n ),
@@ -348,15 +307,7 @@ sys_clk u_sys_clk (
 logic rst_usb_clk_n;
 assign rst_usb_clk_n = vcmain_pok_por;
 
-`ifndef SYNTHESIS
-usb_clk #(
-  .USB_EN_RDLY ( USB_EN_RDLY ),
-  .USB_VAL_RDLY ( USB_VAL_RDLY ),
-  .USB_VAL_FDLY ( USB_VAL_FDLY )
-) u_usb_clk (
-`else
 usb_clk u_usb_clk (
-`endif
   .vcore_pok_h_i ( vcaon_pok_h ),
   .clk_usb_pd_ni ( vcmain_pok ),
   .rst_usb_clk_ni ( rst_usb_clk_n ),
@@ -374,13 +325,7 @@ usb_clk u_usb_clk (
 logic rst_aon_clk_n;
  assign rst_aon_clk_n = vcaon_pok;
 
-`ifndef SYNTHESIS
-aon_clk #(
-  .AON_EN_RDLY ( AON_EN_RDLY )
-) u_aon_clk (
-`else
 aon_clk  u_aon_clk (
-`endif
   .vcore_pok_h_i ( vcaon_pok_h ),
   .clk_aon_pd_ni ( 1'b1 ),     // Always Enabled
   .rst_aon_clk_ni ( rst_aon_clk_n ),
@@ -396,13 +341,7 @@ aon_clk  u_aon_clk (
 logic rst_io_clk_n;
 assign rst_io_clk_n = vcmain_pok_por;
 
-`ifndef SYNTHESIS
-io_clk #(
-  .IO_EN_RDLY ( 5us )
-) u_io_clk (
-`else  // of SYNTHESIS
 io_clk u_io_clk (
-`endif
   .vcore_pok_h_i ( vcaon_pok_h ),
   .clk_io_pd_ni ( vcmain_pok ),
   .rst_io_clk_ni ( rst_io_clk_n ),
@@ -456,9 +395,6 @@ ast_entropy #(
 // RNG (Always ON)
 ///////////////////////////////////////
 rng #(
-`ifndef SYNTHESIS
- .RNG_EN_RDLY ( 5us ),
-`endif
   .EntropyStreams ( EntropyStreams )
 ) u_rng (
   .clk_i ( clk_ast_rng_i ),

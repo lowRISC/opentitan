@@ -7,20 +7,17 @@
 //############################################################################
 `ifndef SYNTHESIS
 `timescale 1ns / 1ps
-
-module io_osc #(
-  parameter time IO_EN_RDLY = 5us
-) (
-`else
+`endif
 
 module io_osc (
-`endif
   input vcore_pok_h_i,   // VCORE POK @3.3V
   input io_en_i,         // IO Source Clock Enable
   output logic io_clk_o  // IO Clock Output
 );
 
 `ifndef SYNTHESIS
+import ast_bhv_pkg::* ;
+
 // Behavioral Model
 ////////////////////////////////////////
 localparam real IoClkPeriod = 1000000/96;  // ~10416.666667ps (96Mhz)
@@ -30,7 +27,7 @@ initial begin
   clk = 1'b0;
   $display("\nIO Clock Period: %0dps", IoClkPeriod);
   en_dly = 1'b0;  // to block init X
-  #(IO_EN_RDLY+1) en_dly = 1'b1;
+  #(IO_EN_RDLY + VCAON_POK_RDLY + 1) en_dly = 1'b1;
 end
 
 // Enable 5us RC Delay

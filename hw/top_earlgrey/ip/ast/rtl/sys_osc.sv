@@ -7,14 +7,9 @@
 //############################################################################
 `ifndef SYNTHESIS
 `timescale 1ns / 1ps
-
-module sys_osc #(
-  parameter time SYS_EN_RDLY = 5us
-) (
-`else
+`endif
 
 module sys_osc (
-`endif
   input vcore_pok_h_i,    // VCORE POK @3.3V
   input sys_en_i,         // System Source Clock Enable
   input sys_jen_i,        // System Source Clock Jitter Enable
@@ -22,6 +17,8 @@ module sys_osc (
 );
 
 `ifndef SYNTHESIS
+import ast_bhv_pkg::* ;
+
 // Behavioral Model
 ////////////////////////////////////////
 localparam real SysClkPeriod = 10000; // 10000ps (100Mhz)
@@ -33,7 +30,7 @@ initial begin
   clk  = 1'b0;
   $display("\nSYS Clock Period: %0dps", SysClkPeriod);
   en_dly = 1'b0;  // to block init X
-  #(SYS_EN_RDLY+1) en_dly = 1'b1;
+  #(SYS_EN_RDLY + VCAON_POK_RDLY + 1) en_dly = 1'b1;
 end
 
 // Enable 5us RC Delay

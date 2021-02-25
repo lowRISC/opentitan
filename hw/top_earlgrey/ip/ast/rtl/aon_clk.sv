@@ -6,13 +6,7 @@
 // *Module Description: Always ON Clock
 //############################################################################
 
-`ifndef SYNTHESIS
-module aon_clk #(
-  parameter time AON_EN_RDLY = 5us
-) (
-`else
 module aon_clk (
-`endif
   input vcore_pok_h_i,                     // VCORE POK @3.3V (for OSC)
   input clk_aon_pd_ni,                     // AON Clock Power-down
   input rst_aon_clk_ni,                    // AON Clock Logic reset
@@ -24,17 +18,11 @@ module aon_clk (
 logic clk, aon_clk_en, rst_n;
 
 assign rst_n = rst_aon_clk_ni;  // Scan enabled
-assign aon_clk_en = clk_src_aon_en_i && clk_aon_pd_ni;
+assign aon_clk_en = clk_src_aon_en_i && clk_aon_pd_ni && rst_aon_clk_ni;
 
 // Clock Oscillator
 ///////////////////////////////////////
-`ifndef SYNTHESIS
-aon_osc #(
-  .AON_EN_RDLY ( AON_EN_RDLY )
-) u_aon_osc (
-`else
 aon_osc u_aon_osc (
-`endif
   .vcore_pok_h_i ( vcore_pok_h_i ),
   .aon_en_i ( aon_clk_en ),
   .aon_clk_o ( clk )
