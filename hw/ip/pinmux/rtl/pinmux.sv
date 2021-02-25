@@ -185,6 +185,12 @@ module pinmux
     .clk_aon_i,
     .rst_aon_ni,
 
+    // input signals for usb entering low power
+    // This will be different per system integration.
+    // It specifically refers to situations where the system
+    // containing usb has gone to low power.
+    .low_power_alw_i(sleep_en_i),
+
     // input signals for resume detection
     .usb_dp_async_alw_i(dio_to_periph_o[UsbDpSel]),
     .usb_dn_async_alw_i(dio_to_periph_o[UsbDnSel]),
@@ -192,7 +198,7 @@ module pinmux
     .usb_dnpullup_en_alw_i(dio_oe_o[UsbDnPullUpSel]),
 
     // tie this to something from usbdev to indicate its out of reset
-    .usb_out_of_rst_alw_i(usb_out_of_rst_i),
+    .usb_out_of_rst_upwr_i(usb_out_of_rst_i),
     .usb_aon_wake_en_upwr_i(usb_aon_wake_en_i),
     .usb_aon_woken_upwr_i(usb_aon_wake_ack_i),
     .usb_suspended_upwr_i(usb_suspend_i),
