@@ -16,6 +16,32 @@
 #include "otbn_trace_checker.h"
 #include "sv_scoped.h"
 
+namespace {
+// An extremely thin wrapper around ISSWrapper. The point is that we want to
+// create the model in an initial block in the SystemVerilog simulation, but
+// might not actually want to spawn the ISS. To handle that in a non-racy
+// way, the most convenient thing is to spawn the ISS on the first call to
+// otbn_model_step.
+struct OtbnModel {
+ public:
+  bool ensure() {
+    if (!iss) {
+      try {
+        iss.reset(new ISSWrapper());
+      } catch (const std::runtime_error &err) {
+        std::cerr << "Error when constructing ISS wrapper: " << err.what()
+                  << "\n";
+        return false;
+      }
+    }
+    assert(iss);
+    return true;
+  }
+
+  std::unique_ptr<ISSWrapper> iss;
+};
+}  // namespace
+
 extern "C" {
 // DPI imports, implemented in SystemVerilog
 int simutil_get_mem(int index, svBitVecVal *val);
@@ -64,7 +90,7 @@ int otbn_stack_element_peek(int index, svBitVecVal *val) __attribute__((weak));
 //
 // If start_i is true, we start the model at start_addr and then step once (as
 // described above).
-extern "C" unsigned otbn_model_step(ISSWrapper *model, const char *imem_scope,
+extern "C" unsigned otbn_model_step(OtbnModel *model, const char *imem_scope,
                                     unsigned imem_words, const char *dmem_scope,
                                     unsigned dmem_words,
                                     const char *design_scope, svLogic start_i,
@@ -187,20 +213,13 @@ static void load_memory_from_file(const std::string &path, const char *scope,
                  word_size);
 }
 
-extern "C" ISSWrapper *otbn_model_init() {
-  try {
-    return new ISSWrapper();
-  } catch (const std::runtime_error &err) {
-    std::cerr << "Error when constructing ISS wrapper: " << err.what() << "\n";
-    return nullptr;
-  }
-}
+extern "C" OtbnModel *otbn_model_init() { return new OtbnModel; }
 
-extern "C" void otbn_model_destroy(ISSWrapper *model) { delete model; }
+extern "C" void otbn_model_destroy(OtbnModel *model) { delete model; }
 
 // Start a new run with the model, writing IMEM/DMEM and jumping to the given
 // start address. Returns 0 on success; -1 on failure.
-static int start_model(ISSWrapper *model, const char *imem_scope,
+static int start_model(OtbnModel *model, const char *imem_scope,
                        unsigned imem_words, const char *dmem_scope,
                        unsigned dmem_words, unsigned start_addr) {
   assert(model);
@@ -208,8 +227,13 @@ static int start_model(ISSWrapper *model, const char *imem_scope,
   assert(dmem_words >= 0);
   assert(start_addr < (imem_words * 4));
 
-  std::string ifname(model->make_tmp_path("imem"));
-  std::string dfname(model->make_tmp_path("dmem"));
+  if (!model->ensure())
+    return -1;
+  assert(model->iss);
+  ISSWrapper &iss = *model->iss;
+
+  std::string ifname(iss.make_tmp_path("imem"));
+  std::string dfname(iss.make_tmp_path("dmem"));
 
   try {
     dump_memory_to_file(dfname, dmem_scope, dmem_words, 32);
@@ -220,9 +244,9 @@ static int start_model(ISSWrapper *model, const char *imem_scope,
   }
 
   try {
-    model->load_d(dfname);
-    model->load_i(ifname);
-    model->start(start_addr);
+    iss.load_d(dfname);
+    iss.load_i(ifname);
+    iss.start(start_addr);
   } catch (const std::runtime_error &err) {
     std::cerr << "Error when starting ISS: " << err.what() << "\n";
     return -1;
@@ -234,12 +258,17 @@ static int start_model(ISSWrapper *model, const char *imem_scope,
 // Step once in the model. Returns 1 if the model has finished, 0 if not and -1
 // on failure. If gen_trace is true, pass trace entries to the trace checker.
 // If the model has finished, writes otbn.ERR_CODE to *err_code.
-static int step_model(ISSWrapper *model, bool gen_trace, uint32_t *err_code) {
+static int step_model(OtbnModel *model, bool gen_trace, uint32_t *err_code) {
   assert(model);
   assert(err_code);
 
+  if (!model->ensure())
+    return -1;
+  assert(model->iss);
+  ISSWrapper &iss = *model->iss;
+
   try {
-    std::pair<bool, uint32_t> ret = model->step(gen_trace);
+    std::pair<bool, uint32_t> ret = iss.step(gen_trace);
     if (ret.first) {
       *err_code = ret.second;
       return 1;
@@ -254,12 +283,18 @@ static int step_model(ISSWrapper *model, bool gen_trace, uint32_t *err_code) {
 
 // Grab contents of dmem from the model and load it back into the RTL. Returns
 // 0 on success; -1 on failure.
-static int load_dmem(ISSWrapper *model, const char *dmem_scope,
+static int load_dmem(OtbnModel *model, const char *dmem_scope,
                      unsigned dmem_words) {
   assert(model);
-  std::string dfname(model->make_tmp_path("dmem_out"));
+  if (!model->iss) {
+    std::cerr << "Cannot load dmem from OTBN model: ISS has not started.\n";
+    return -1;
+  }
+  ISSWrapper &iss = *model->iss;
+
+  std::string dfname(iss.make_tmp_path("dmem_out"));
   try {
-    model->dump_d(dfname);
+    iss.dump_d(dfname);
     load_memory_from_file(dfname, dmem_scope, dmem_words, 32);
   } catch (const std::exception &err) {
     std::cerr << "Error when loading dmem from ISS: " << err.what() << "\n";
@@ -271,14 +306,12 @@ static int load_dmem(ISSWrapper *model, const char *dmem_scope,
 // Grab contents of dmem from the model and compare it with the RTL.
 // Prints messages to stderr on failure or mismatch. Returns true on
 // success; false on mismatch. Throws a std::runtime_error on failure.
-static bool check_dmem(ISSWrapper *model, const char *dmem_scope,
+static bool check_dmem(ISSWrapper &iss, const char *dmem_scope,
                        unsigned dmem_words) {
-  assert(model);
-
   size_t dmem_bytes = dmem_words * 32;
-  std::string dfname(model->make_tmp_path("dmem_out"));
+  std::string dfname(iss.make_tmp_path("dmem_out"));
 
-  model->dump_d(dfname);
+  iss.dump_d(dfname);
   std::vector<uint8_t> iss_data = read_vector_from_file(dfname, dmem_bytes);
   assert(iss_data.size() == dmem_bytes);
 
@@ -388,9 +421,7 @@ static std::vector<T> get_stack(const std::string &stack_scope) {
 // Compare contents of ISS registers with those from the design. Prints
 // messages to stderr on failure or mismatch. Returns true on success; false on
 // mismatch. Throws a std::runtime_error on failure.
-static bool check_regs(ISSWrapper *model, const std::string &design_scope) {
-  assert(model);
-
+static bool check_regs(ISSWrapper &iss, const std::string &design_scope) {
   std::string base_scope =
       design_scope +
       ".u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.u_snooper";
@@ -402,7 +433,7 @@ static bool check_regs(ISSWrapper *model, const std::string &design_scope) {
 
   std::array<uint32_t, 32> iss_gprs;
   std::array<ISSWrapper::u256_t, 32> iss_wdrs;
-  model->get_regs(&iss_gprs, &iss_wdrs);
+  iss.get_regs(&iss_gprs, &iss_wdrs);
 
   bool good = true;
 
@@ -451,16 +482,13 @@ static bool check_regs(ISSWrapper *model, const std::string &design_scope) {
 // Compare contents of ISS call stack with those from the design. Prints
 // messages to stderr on failure or mismatch. Returns true on success; false on
 // mismatch.  Throws a std::runtime_error on failure.
-static bool check_call_stack(ISSWrapper *model,
-                             const std::string &design_scope) {
-  assert(model);
-
+static bool check_call_stack(ISSWrapper &iss, const std::string &design_scope) {
   std::string call_stack_snooper_scope =
       design_scope + ".u_otbn_rf_base.u_call_stack_snooper";
 
   auto rtl_call_stack = get_stack<uint32_t>(call_stack_snooper_scope);
 
-  auto iss_call_stack = model->get_call_stack();
+  auto iss_call_stack = iss.get_call_stack();
 
   bool good = true;
 
@@ -493,32 +521,38 @@ static bool check_call_stack(ISSWrapper *model,
 // Check model against RTL when a run has finished. Prints messages to stderr
 // on failure or mismatch. Returns 1 for a match, 0 for a mismatch, -1 for some
 // other failure.
-int check_model(ISSWrapper *model, const char *dmem_scope, unsigned dmem_words,
+int check_model(OtbnModel *model, const char *dmem_scope, unsigned dmem_words,
                 const char *design_scope) {
   assert(model);
   assert(dmem_words >= 0);
   assert(design_scope);
+
+  if (!model->iss) {
+    std::cerr << "Cannot check OTBN model: ISS has not started.\n";
+    return -1;
+  }
+  ISSWrapper &iss = *model->iss;
 
   bool good = true;
 
   good &= OtbnTraceChecker::get().Finish();
 
   try {
-    good &= check_dmem(model, dmem_scope, dmem_words);
+    good &= check_dmem(iss, dmem_scope, dmem_words);
   } catch (const std::exception &err) {
     std::cerr << "Failed to check DMEM: " << err.what() << "\n";
     return -1;
   }
 
   try {
-    good &= check_regs(model, design_scope);
+    good &= check_regs(iss, design_scope);
   } catch (const std::exception &err) {
     std::cerr << "Failed to check registers: " << err.what() << "\n";
     return -1;
   }
 
   try {
-    good &= check_call_stack(model, design_scope);
+    good &= check_call_stack(iss, design_scope);
   } catch (const std::exception &err) {
     std::cerr << "Failed to check call stack: " << err.what() << "\n";
     return -1;
@@ -537,7 +571,7 @@ static void set_err_code(svBitVecVal *dst, uint32_t src) {
   }
 }
 
-extern "C" unsigned otbn_model_step(ISSWrapper *model, const char *imem_scope,
+extern "C" unsigned otbn_model_step(OtbnModel *model, const char *imem_scope,
                                     unsigned imem_words, const char *dmem_scope,
                                     unsigned dmem_words,
                                     const char *design_scope, svLogic start_i,

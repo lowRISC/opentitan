@@ -82,8 +82,6 @@ module tb;
     .clk_i        (model_if.clk_i),
     .rst_ni       (model_if.rst_ni),
 
-    .enable_i     (1'b1),
-
     .start_i      (model_if.start),
     .done_o       (model_if.done),
     .start_addr_i (model_if.start_addr),

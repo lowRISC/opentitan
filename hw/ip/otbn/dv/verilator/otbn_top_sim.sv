@@ -221,8 +221,6 @@ module otbn_top_sim (
     .clk_i        ( IO_CLK ),
     .rst_ni       ( IO_RST_N ),
 
-    .enable_i     ( 1'b1 ),
-
     .start_i      ( otbn_start ),
     .done_o       ( otbn_model_done ),
 

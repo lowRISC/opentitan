@@ -34,10 +34,6 @@ module otbn_core_model
   input  logic  clk_i,
   input  logic  rst_ni,
 
-  // Enable the model. This signal is a "runtime parameter", it is only honored if set in an initial
-  // block.
-  input logic   enable_i,
-
   input  logic  start_i, // start the operation
   output bit    done_o,  // operation done
 
@@ -79,21 +75,13 @@ module otbn_core_model
 `endif
 
   // Create and destroy an object through which we can talk to the ISS.
-  // If enable_i is not set, do not initialize the ISS (and, by consequence, do not start the Python
-  // process).
-  chandle model_handle = chandle_null;
+  chandle model_handle;
   initial begin
-    if (enable_i) begin
-      model_handle = otbn_model_init();
-      assert(model_handle != chandle_null);
-      $display("OTBN: Model enabled.");
-    end
+    model_handle = otbn_model_init();
+    assert(model_handle != chandle_null);
   end
   final begin
-    if (model_handle != chandle_null) begin
-      otbn_model_destroy(model_handle);
-      model_handle = chandle_null;
-    end
+    otbn_model_destroy(model_handle);
   end
 
   // A packed "status" value. This gets assigned by DPI function calls that need to update both
@@ -115,7 +103,7 @@ module otbn_core_model
   bit [31:0] raw_err_bits_d, raw_err_bits_q;
   bit unused_raw_err_bits;
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni || !enable_i) begin
+    if (!rst_ni) begin
       // Clear status (stop running, and forget any errors)
       status <= 0;
       raw_err_bits_q <= 0;
