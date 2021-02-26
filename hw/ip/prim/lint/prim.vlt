@@ -12,3 +12,7 @@ lint_off -rule UNUSED -file "*/rtl/prim_subreg.sv" -match "Signal is not used: '
 // In passthrough mode, clk and reset are not read form within this module
 lint_off -rule UNUSED -file "*/rtl/prim_fifo_sync.sv" -match "*clk_i*"
 lint_off -rule UNUSED -file "*/rtl/prim_fifo_sync.sv" -match "*rst_ni*"
+
+// prim_lfsr
+// lfsr_perm_test is just used for an SVA
+lint_off -rule UNUSED -file "*/rtl/prim_lfsr.sv" -match "*lfsr_perm_test*"
