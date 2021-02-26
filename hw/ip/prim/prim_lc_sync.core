@@ -35,7 +35,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-      - lowrisc:lint:comportable
 
 targets:
   default: &default_target

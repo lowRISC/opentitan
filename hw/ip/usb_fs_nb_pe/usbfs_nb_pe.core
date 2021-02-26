@@ -22,7 +22,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-      - lowrisc:lint:comportable
     files:
       - lint/usb_fs_nb_pe.vlt
     file_type: vlt
@@ -31,7 +30,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-      - lowrisc:lint:comportable
     files:
       - lint/usb_fs_nb_pe.waiver
     file_type: waiver
@@ -40,7 +38,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-      - lowrisc:lint:comportable
 
 parameters:
   SYNTHESIS:

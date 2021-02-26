@@ -23,7 +23,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-      - lowrisc:lint:comportable
     files:
       - lint/rv_core_ibex.vlt
     file_type: vlt
@@ -32,7 +31,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-      - lowrisc:lint:comportable
     files:
       - lint/rv_core_ibex.waiver
     file_type: waiver
@@ -41,7 +39,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-      - lowrisc:lint:comportable
 
 parameters:
   SYNTHESIS:
