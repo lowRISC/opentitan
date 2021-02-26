@@ -45,18 +45,18 @@
   </tr>
   <tr>
     <td style="text-align:left">SCRAP</td>
-    <td colspan="3" style="background:#dadce0"></td><td>Y*</td><td>Y*</td>
+    <td colspan="3" style="background:#dadce0"></td><td>Y*</td><td>Y</td>
   </tr>
   <tr>
     <td style="text-align:left;color:red">INVALID</td>
-    <td colspan="3" style="background:#dadce0"></td><td>Y*</td><td>Y*</td>
+    <td colspan="3" style="background:#dadce0"></td><td>Y*</td><td>Y</td>
   </tr>
   <tr>
     <td style="text-align:left;color:red">POST_TRANSITION</td>
-    <td colspan="7" style="background:#dadce0"></td><td>Y*</td><td>Y*</td>
+    <td colspan="7" style="background:#dadce0"></td><td>Y*</td><td>Y</td>
   </tr>
   <tr>
     <td style="text-align:left;color:red">ESCALATION</td>
-    <td colspan="7" style="background:#dadce0"></td><td>Y*</td><td>Y*</td>
+    <td colspan="7" style="background:#dadce0"></td><td>Y*</td><td>Y</td>
   </tr>
 </table>

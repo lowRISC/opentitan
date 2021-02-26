@@ -129,7 +129,7 @@ Upon assertion, the life cycle controller asserts the ESCALATE_EN life cycle sig
 
 The second escalation path is used to **TEMPORARILY** alter the life cycle state.
 I.e. when this escalation path is triggered, the life cycle state is transitioned into "ESCALATE", which behaves like a virtual "SCRAP" state (i.e. this state is not programmed into OTP).
-This causes [all decoded outputs]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}) to be disabled until the next power cycle, with the exception of the escalation enable life cycle signal ESCALATE_EN which is used for the first escalation path.
+This causes [all decoded outputs]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}) to be disabled until the next power cycle, with the exception of the ESCALATE_EN signal which will also be asserted in this case.
 
 Whether to escalate to the life cycle controller or not is a software decision, please see the [alert handler]({{< relref "hw/ip/alert_handler/doc/_index.md" >}}) for more details.
 
@@ -210,6 +210,7 @@ The KEY_MANAGER_EN signal is active only during DEV / PROD / PROD_END / RMA.
 #### ESCALATE_EN
 
 The ESCALATE_EN signal is available in all life cycle states and is asserted if for any reason the alert subsystem decides to move the life cycle state into the ESCALATION state.
+This signal is also unconditionally asserted in all INVALID and SCRAP states (including virtual SCRAP states).
 
 #### CHECK_BYP_EN
 
@@ -564,6 +565,7 @@ Note that this first escalation action does not affect the life cycle state.
 
 When the second channel `esc_scrap_state` is asserted, the life cycle controller moves the life cycle state into `EscalateSt`, which behaves like a "virtual" SCRAP life cycle state.
 This transition is not permanent, and will clear upon the next power cycle.
+Note that any scrap state (virtual or encoded in the life cycle state vector) will also cause the `lc_escalate_en` life cycle signal to be asserted.
 
 #### FSM Glitch Countermeasures
 
@@ -615,12 +617,11 @@ The latter exposes an address, data and operation field for accessing a CSR spac
 In order to interact with the LC controller through JTAG, the debugging agent should read out the `abits` field from 0x10 in order to determine the address width in the DMI, and verify that the `version` field is indeed set to 1 to confirm that the DTM implements v0.13 of the spec.
 Then, the debbuger can issue a CSR read or write operation via the 0x11 register as explained in more detail in [the RISC-V external specification, Chapter 6.1.5](https://github.com/riscv/riscv-debug-spec/blob/release/riscv-debug-release.pdf).
 
-### TAP Isolation
+### TAP and Isolation
 
 As currently defined, the life cycle controller TAP is a separate entity from the main SOC DFT TAP and the processor TAP.
 This physical separation aids in logical isolation, as the SOC DFT tap can be disabled by DFT_EN, while the processor TAP can be disabled by DEBUG_EN.
-
-**TODO: update this section and add blockdiagram once TAP selection/isolation is implemented in the pinmux**
+The TAP isolation and multiplexing is implemented in the pinmux IP as [described here]({{< relref "hw/ip/pinmux/doc" >}}).
 
 # Programmer's Guide
 
