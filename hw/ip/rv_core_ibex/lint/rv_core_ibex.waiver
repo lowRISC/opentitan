@@ -4,8 +4,6 @@
 #
 # waiver file for Ibex core
 
-waive -rules ONE_BRANCH           -location {ibex_alu.sv} -regexp {unique case statement has only one branch} \
-      -comment "acceptable coding style, more readable than if-string"
 waive -rules EXPLICIT_BITLEN      -location {ibex_core.sv} -regexp {Bit length not specified for constant .*h2} \
       -comment "better way to write it?"
 waive -rules HIER_BRANCH_NOT_READ -location {ibex_decoder.sv} -regexp {Net 'instr_rdata_i.*is not read from in module} \
@@ -88,6 +86,10 @@ waive -rules HIER_BRANCH_NOT_READ -location {ibex_decoder.sv ibex_compressed_dec
       -comment "These signals are only used for assertions inside these two modules"
 waive -rules INPUT_NOT_READ -location {ibex_decoder.sv ibex_compressed_decoder.sv} -regexp {Input port '(clk_i|rst_ni)' is not read from in module '(ibex_decoder|ibex_compressed_decoder)'.*} \
       -comment "These signals are only used for assertions inside these two modules"
+waive -rules IFDEF_CODE -location {ibex_core.sv} -regexp {Assignment to 'unused_instr_new_id' contained within `else block} \
+      -comment "Declaration of signal and assignment to it are in same `else block"
+waive -rules IFDEF_CODE -location {rv_core_ibex.sv} -regexp {Assignment to 'tl_d_o' contained within `else block} \
+      -comment "DV environment will drive things when `else block isn't used so assignment only occurs in `else block"
 
 # Highlighting my main concerns here, documenting areas to review in next dive
 #
