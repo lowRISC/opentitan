@@ -12,6 +12,7 @@ module prim_secded_64_57_dec (
   output logic [1:0] err_o
 );
 
+  logic single_error;
 
   // Syndrome calculation
   assign syndrome_o[0] = ^(in & 64'h0303FFF800007FFF);
@@ -82,7 +83,8 @@ module prim_secded_64_57_dec (
   assign d_o[56] = (syndrome_o == 7'h7f) ^ in[56];
 
   // err_o calc. bit0: single error, bit1: double error
-  assign err_o[0] = ^syndrome_o;
-  assign err_o[1] = ~err_o[0] & (|syndrome_o);
+  assign single_error = ^syndrome_o;
+  assign err_o[0] = single_error;
+  assign err_o[1] = ~single_error & (|syndrome_o);
 
 endmodule : prim_secded_64_57_dec
