@@ -29,6 +29,7 @@ module aes_control import aes_pkg::*;
   input  logic                    prng_reseed_i,
   input  logic                    mux_sel_err_i,
   input  logic                    sp_enc_err_i,
+  input  lc_ctrl_pkg::lc_tx_t     lc_escalate_en_i,
   input  logic                    alert_fatal_i,
   output logic                    alert_o,
 
@@ -587,8 +588,8 @@ module aes_control import aes_pkg::*;
     endcase
 
     // Unconditionally jump into the terminal error state in case a mux selector or a sparsely
-    // encoded signal becomes invalid
-    if (mux_sel_err_i || sp_enc_err) begin
+    // encoded signal becomes invalid, or if the life cycle controller triggers an escalation.
+    if (mux_sel_err_i || sp_enc_err || lc_escalate_en_i != lc_ctrl_pkg::Off) begin
       aes_ctrl_ns = ERROR;
     end
   end

@@ -47,6 +47,9 @@ module aes
   // Idle indicator for clock manager
   output logic                                      idle_o,
 
+  // Life cycle
+  input  lc_ctrl_pkg::lc_tx_t                       lc_escalate_en_i,
+
   // Bus interface
   input  tlul_pkg::tl_h2d_t                         tl_i,
   output tlul_pkg::tl_d2h_t                         tl_o,
@@ -60,6 +63,7 @@ module aes
   aes_hw2reg_t hw2reg;
 
   logic [NumAlerts-1:0] alert;
+  lc_ctrl_pkg::lc_tx_t [0:0] lc_escalate_en; // Need a degenerate array for FPV tool.
 
   aes_reg_top u_reg (
     .clk_i,
@@ -69,6 +73,15 @@ module aes
     .reg2hw,
     .hw2reg,
     .devmode_i(1'b1)
+  );
+
+  prim_lc_sync #(
+    .NumCopies (1)
+  ) u_prim_lc_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i ( lc_escalate_en_i ),
+    .lc_en_o ( lc_escalate_en   )
   );
 
   aes_core #(
@@ -93,6 +106,8 @@ module aes
     .entropy_masking_req_o  (                                ),
     .entropy_masking_ack_i  ( 1'b1                           ),
     .entropy_masking_i      ( RndCnstMaskingLfsrSeedDefault  ),
+
+    .lc_escalate_en_i       ( lc_escalate_en                 ),
 
     .alert_recov_o          ( alert[0]                       ),
     .alert_fatal_o          ( alert[1]                       ),

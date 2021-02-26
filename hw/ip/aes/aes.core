@@ -8,8 +8,10 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:all
+      - lowrisc:prim:lc_sync
       - lowrisc:prim:lfsr
       - lowrisc:ip:tlul
+      - lowrisc:ip:lc_ctrl_pkg
     files:
       - rtl/aes_pkg.sv
       - rtl/aes_reg_pkg.sv
