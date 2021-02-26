@@ -270,7 +270,7 @@ The example below is for Ubuntu 18.04:
 ```console
 $ export VERIBLE_VERSION={{< tool_version "verible" >}}
 
-$ wget https://github.com/google/verible/releases/download/v${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz
+$ wget https://github.com/google/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz
 $ tar -xf verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz
 
 $ sudo mkdir -p /tools/verible/${VERIBLE_VERSION}/
