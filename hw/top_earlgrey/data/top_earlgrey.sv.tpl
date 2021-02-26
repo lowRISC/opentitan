@@ -311,9 +311,7 @@ module top_${top["name"]} #(
   ) u_dm_top (
     .clk_i         (${cpu_clk}),
     .rst_ni        (${dm_rst}[rstmgr_pkg::Domain0Sel]),
-    // TODO: #5359
-    //.hw_debug_en_i (lc_ctrl_lc_hw_debug_en),
-    .hw_debug_en_i (lc_ctrl_pkg::On),
+    .hw_debug_en_i (lc_ctrl_lc_hw_debug_en),
     .scanmode_i,
     .ndmreset_o    (ndmreset_req),
     .dmactive_o    (),
