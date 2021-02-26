@@ -1,7 +1,7 @@
-From 433e1909f3775ea6a742d8b461d1ff1223c8ef46 Mon Sep 17 00:00:00 2001
+From 5caf3a335f38d4cd27d9d00a1947776acebdf10a Mon Sep 17 00:00:00 2001
 From: Philipp Wagner <phw@lowrisc.org>
 Date: Fri, 22 Feb 2019 14:48:46 +0000
-Subject: [PATCH 2/2] Use lowrisc instead of PULP primitives
+Subject: [PATCH] Use lowrisc instead of PULP primitives
 
 Signed-off-by: Michael Schaffner <msf@google.com>
 
