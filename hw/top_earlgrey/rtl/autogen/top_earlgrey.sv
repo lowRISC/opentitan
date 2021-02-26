@@ -1791,10 +1791,10 @@ module top_earlgrey #(
     .SecStartTriggerDelay(SecAesStartTriggerDelay),
     .SecAllowForcingMasks(SecAesAllowForcingMasks),
     .AlertAsyncOn({aes_reg_pkg::NumAlerts{1'b1}}),
-    .RndCnstClearingLfsrSeed(aes_pkg::RndCnstClearingLfsrSeedDefault),
-    .RndCnstClearingLfsrPerm(aes_pkg::RndCnstClearingLfsrPermDefault),
-    .RndCnstMaskingLfsrSeed(aes_pkg::RndCnstMaskingLfsrSeedDefault),
-    .RndCnstMskgChunkLfsrPerm(aes_pkg::RndCnstMskgChunkLfsrPermDefault)
+    .RndCnstClearingLfsrSeed(RndCnstAesClearingLfsrSeed),
+    .RndCnstClearingLfsrPerm(RndCnstAesClearingLfsrPerm),
+    .RndCnstMaskingLfsrSeed(RndCnstAesMaskingLfsrSeed),
+    .RndCnstMskgChunkLfsrPerm(RndCnstAesMskgChunkLfsrPerm)
   ) u_aes (
 
       // [15]: recov_ctrl_update_err

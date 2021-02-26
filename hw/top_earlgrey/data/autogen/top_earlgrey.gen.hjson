@@ -5558,46 +5558,50 @@
         {
           name: RndCnstClearingLfsrSeed
           type: aes_pkg::clearing_lfsr_seed_t
-          default: aes_pkg::RndCnstClearingLfsrSeedDefault
           desc: Default seed of the PRNG used for register clearing.
+          randcount: "64"
+          randtype: data
           local: "false"
+          default: 0xf4c3471c5def7861
           expose: "false"
-          randcount: "0"
-          randtype: none
           name_top: RndCnstAesClearingLfsrSeed
+          randwidth: 64
         }
         {
           name: RndCnstClearingLfsrPerm
           type: aes_pkg::clearing_lfsr_perm_t
-          default: aes_pkg::RndCnstClearingLfsrPermDefault
           desc: Permutation applied to the LFSR of the PRNG used for clearing.
+          randcount: "64"
+          randtype: perm
           local: "false"
+          default: 0x26ac29e186c1f4dc6f959d6ed08dc044a0f3f1519e8dca131275df1e48bbf964ac772e613d0320adaebf38552dd822e6
           expose: "false"
-          randcount: "0"
-          randtype: none
           name_top: RndCnstAesClearingLfsrPerm
+          randwidth: 384
         }
         {
           name: RndCnstMaskingLfsrSeed
           type: aes_pkg::masking_lfsr_seed_t
-          default: aes_pkg::RndCnstMaskingLfsrSeedDefault
           desc: Default seed of the PRNG used for masking.
+          randcount: "160"
+          randtype: data
           local: "false"
+          default: 0x19e5a91389b9fe0d3b818e46ce7d846469a3b8e3
           expose: "false"
-          randcount: "0"
-          randtype: none
           name_top: RndCnstAesMaskingLfsrSeed
+          randwidth: 160
         }
         {
           name: RndCnstMskgChunkLfsrPerm
           type: aes_pkg::mskg_chunk_lfsr_perm_t
-          default: aes_pkg::RndCnstMskgChunkLfsrPermDefault
           desc: Permutation applied to the LFSR chunks of the PRNG used for masking.
+          randcount: "32"
+          randtype: perm
           local: "false"
+          default: 0x23f6ba7ea92aa0e8e3b900f826cee835bc1648fa
           expose: "false"
-          randcount: "0"
-          randtype: none
           name_top: RndCnstAesMskgChunkLfsrPerm
+          randwidth: 160
         }
       ]
       interrupt_list: []

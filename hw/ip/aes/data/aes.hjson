@@ -8,6 +8,7 @@
   clock_primary: "clk_i",
   bus_device: "tlul",
   param_list: [
+    # Regular parameters
     { name:    "AES192Enable",
       type:    "bit",
       default: "1'b1",
@@ -66,41 +67,38 @@
       local:   "false",
       expose:  "false"
     },
+    # Random netlist constants
     { name:    "RndCnstClearingLfsrSeed",
       type:    "aes_pkg::clearing_lfsr_seed_t",
-      default: "aes_pkg::RndCnstClearingLfsrSeedDefault",
       desc:    '''
         Default seed of the PRNG used for register clearing.
       '''
-      local:   "false",
-      expose:  "false"
+      randcount: "64",
+      randtype:  "data"
     },
     { name:    "RndCnstClearingLfsrPerm",
       type:    "aes_pkg::clearing_lfsr_perm_t",
-      default: "aes_pkg::RndCnstClearingLfsrPermDefault",
       desc:    '''
         Permutation applied to the LFSR of the PRNG used for clearing.
       '''
-      local:   "false",
-      expose:  "false"
+      randcount: "64",
+      randtype:  "perm"
     },
     { name:    "RndCnstMaskingLfsrSeed",
       type:    "aes_pkg::masking_lfsr_seed_t",
-      default: "aes_pkg::RndCnstMaskingLfsrSeedDefault",
       desc:    '''
         Default seed of the PRNG used for masking.
       '''
-      local:   "false",
-      expose:  "false"
+      randcount: "160",
+      randtype:  "data"
     },
     { name:    "RndCnstMskgChunkLfsrPerm",
       type:    "aes_pkg::mskg_chunk_lfsr_perm_t",
-      default: "aes_pkg::RndCnstMskgChunkLfsrPermDefault",
       desc:    '''
         Permutation applied to the LFSR chunks of the PRNG used for masking.
       '''
-      local:   "false",
-      expose:  "false"
+      randcount: "32",
+      randtype:  "perm"
     },
     # Note: All parameters below are local, they are not actually configurable.
     # Selecting values different from the default values below might cause undefined behavior.
