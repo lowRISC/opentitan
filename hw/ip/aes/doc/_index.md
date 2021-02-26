@@ -118,6 +118,12 @@ The initialization vector (IV) register and the register to hold the previous in
 
 {{< hwcfg "hw/ip/aes/data/aes.hjson" >}}
 
+The table below lists other signals of the AES unit.
+
+Signal             | Direction        | Type                   | Description
+-------------------|------------------|------------------------|---------------
+`idle_o`           | `output`         | `logic`                | Idle indication signal for clock manager.
+
 
 ## Design Details
 
