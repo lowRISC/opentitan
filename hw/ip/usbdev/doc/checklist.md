@@ -18,7 +18,7 @@ RTL           | [IP_TOP][]                     | Done        |
 RTL           | [IP_INSTANTIABLE][]            | Done        |
 RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Done        |
 RTL           | [FUNC_IMPLEMENTED][]           | Done        |
-RTL           | [ASSERT_KNOWN_ADDED][]         | Not Started |
+RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
 Code Quality  | [LINT_SETUP][]                 | Done        |
 
 [SPEC_COMPLETE]:              {{<relref "/doc/project/checklist.md#spec_complete" >}}
