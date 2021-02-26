@@ -353,8 +353,8 @@ endfunction
 function automatic logic [3:0][3:0][7:0] aes_transpose(logic [3:0][3:0][7:0] in);
   logic [3:0][3:0][7:0] transpose;
   transpose = '0;
-  for (int j=0; j<4; j++) begin
-    for (int i=0; i<4; i++) begin
+  for (int j = 0; j < 4; j++) begin
+    for (int i = 0; i < 4; i++) begin
       transpose[i][j] = in[j][i];
     end
   end
@@ -364,7 +364,7 @@ endfunction
 // Extract single column from state matrix
 function automatic logic [3:0][7:0] aes_col_get(logic [3:0][3:0][7:0] in, logic [1:0] idx);
   logic [3:0][7:0] out;
-  for (int i=0; i<4; i++) begin
+  for (int i = 0; i < 4; i++) begin
     out[i] = in[i][idx];
   end
   return out;
@@ -377,8 +377,8 @@ function automatic logic [7:0] aes_mvm(
 );
   logic [7:0] vec_c;
   vec_c = '0;
-  for (int i=0; i<8; i++) begin
-    for (int j=0; j<8; j++) begin
+  for (int i = 0; i < 8; i++) begin
+    for (int j = 0; j < 8; j++) begin
       vec_c[i] = vec_c[i] ^ (mat_a[j][i] & vec_b[7-j]);
     end
   end
@@ -416,7 +416,7 @@ function automatic logic [3:0][7:0] aes_prd_get_lsbs(
   logic [(4*WidthPRDSBox)-1:0] in
 );
   logic [3:0][7:0] prd_lsbs;
-  for (int i=0; i<4; i++) begin
+  for (int i = 0; i < 4; i++) begin
     prd_lsbs[i] = in[i*WidthPRDSBox +: 8];
   end
   return prd_lsbs;

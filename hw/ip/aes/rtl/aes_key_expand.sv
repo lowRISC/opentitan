@@ -260,13 +260,13 @@ module aes_key_expand import aes_pkg::*;
           regular[s][0] = irregular[s] ^ key_i[s][0];
           unique case (op_i)
             CIPH_FWD: begin
-              for (int i=1; i<4; i++) begin
+              for (int i = 1; i < 4; i++) begin
                 regular[s][i] = regular[s][i-1] ^ key_i[s][i];
               end
             end
 
             CIPH_INV: begin
-              for (int i=1; i<4; i++) begin
+              for (int i = 1; i < 4; i++) begin
                 regular[s][i] = key_i[s][i-1] ^ key_i[s][i];
               end
             end
@@ -295,7 +295,7 @@ module aes_key_expand import aes_pkg::*;
                   // Shift down two upper most words
                   regular[s][1:0] = key_i[s][5:4];
                   // Generate new upper four words
-                  for (int i=0; i<4; i++) begin
+                  for (int i = 0; i < 4; i++) begin
                     if ((i == 0 && rnd_type[2]) ||
                         (i == 2 && rnd_type[3])) begin
                       regular[s][i+2] = irregular[s]    ^ key_i[s][i];
@@ -311,14 +311,14 @@ module aes_key_expand import aes_pkg::*;
                   // Shift up four lowest words
                   regular[s][5:2] = key_i[s][3:0];
                   // Generate Word 44 and 45
-                  for (int i=0; i<2; i++) begin
+                  for (int i = 0; i < 2; i++) begin
                     regular[s][i] = key_i[s][3+i] ^ key_i[s][3+i+1];
                   end
                 end else begin
                   // Shift up two lowest words
                   regular[s][5:4] = key_i[s][1:0];
                   // Generate new lower four words
-                  for (int i=0; i<4; i++) begin
+                  for (int i = 0; i < 4; i++) begin
                     if ((i == 2 && rnd_type[1]) ||
                         (i == 0 && rnd_type[2])) begin
                       regular[s][i] = irregular[s]  ^ key_i[s][i+2];
@@ -352,7 +352,7 @@ module aes_key_expand import aes_pkg::*;
                 regular[s][3:0] = key_i[s][7:4];
                 // Generate new upper half
                 regular[s][4]   = irregular[s] ^ key_i[s][0];
-                for (int i=1; i<4; i++) begin
+                for (int i = 1; i < 4; i++) begin
                   regular[s][i+4] = regular[s][i+4-1] ^ key_i[s][i];
                 end
               end // rnd == 0
@@ -368,7 +368,7 @@ module aes_key_expand import aes_pkg::*;
                 regular[s][7:4] = key_i[s][3:0];
                 // Generate new lower half
                 regular[s][0]   = irregular[s] ^ key_i[s][4];
-                for (int i=0; i<3; i++) begin
+                for (int i = 0; i < 3; i++) begin
                   regular[s][i+1] = key_i[s][4+i] ^ key_i[s][4+i+1];
                 end
               end // rnd == 0
