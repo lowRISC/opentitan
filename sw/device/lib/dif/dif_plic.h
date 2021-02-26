@@ -83,7 +83,7 @@ typedef enum dif_plic_result {
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
-   * When this value is returned, no hardware operations occured.
+   * When this value is returned, no hardware operations occurred.
    */
   kDifPlicBadArg = 2,
 } dif_plic_result_t;

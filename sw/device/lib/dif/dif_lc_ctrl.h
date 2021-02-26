@@ -36,8 +36,8 @@ typedef enum dif_lc_ctrl_status_code {
    */
   kDifLcCtrlStatusCodeSuccess,
   /**
-   * Indicates that too many hardware transitions have occured, and the hardware
-   * will not transition the lifecycle any further.
+   * Indicates that too many hardware transitions have occurred, and the
+   * hardware will not transition the lifecycle any further.
    */
   kDifLcCtrlStatusCodeTooManyTransitions,
   /**
@@ -240,7 +240,7 @@ typedef enum dif_lc_ctrl_result {
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
-   * When this value is returned, no hardware operations occured.
+   * When this value is returned, no hardware operations occurred.
    */
   kDifLcCtrlBadArg = 2,
 } dif_lc_ctrl_result_t;
@@ -261,7 +261,7 @@ typedef enum dif_lc_ctrl_attempts_result {
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
-   * When this value is returned, no hardware operations occured.
+   * When this value is returned, no hardware operations occurred.
    */
   kDifLcCtrlAttemptsBadArg = kDifLcCtrlBadArg,
   /**
@@ -287,7 +287,7 @@ typedef enum dif_lc_ctrl_mutex_result {
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
-   * When this value is returned, no hardware operations occured.
+   * When this value is returned, no hardware operations occurred.
    */
   kDifLcCtrlMutexBadArg = kDifLcCtrlBadArg,
 

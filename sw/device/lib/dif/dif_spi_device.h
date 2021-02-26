@@ -133,7 +133,7 @@ typedef enum dif_spi_device_result {
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
-   * When this value is returned, no hardware operations occured.
+   * When this value is returned, no hardware operations occurred.
    */
   kDifSpiDeviceBadArg = 2,
 } dif_spi_device_result_t;
@@ -159,11 +159,11 @@ typedef enum dif_spi_device_irq {
    */
   kDifSpiDeviceIrqRxError,
   /**
-   * Indicates that overflow has occured in the RX FIFO.
+   * Indicates that overflow has occurred in the RX FIFO.
    */
   kDifSpiDeviceIrqRxOverflow,
   /**
-   * Indicates that underflow has occured in the RX FIFO.
+   * Indicates that underflow has occurred in the RX FIFO.
    */
   kDifSpiDeviceIrqTxUnderflow,
 } dif_spi_device_irq_t;
