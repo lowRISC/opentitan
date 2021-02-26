@@ -134,6 +134,7 @@ package tlul_pkg;
   localparam tl_d2h_t TL_D2H_DEFAULT = '{
     a_ready:  1'b1,
     d_opcode: tl_d_op_e'('0),
+    d_user:   tl_d_user_t'(0),
     default:  '0
   };
 
