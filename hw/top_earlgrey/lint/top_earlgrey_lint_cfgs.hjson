@@ -34,6 +34,11 @@
                     }
                   ]
              },
+             {    name: aon_timer
+                  fusesoc_core: lowrisc:ip:aon_timer
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/aon_timer/lint/{tool}"
+             },
              {    name: entropy_src
                   fusesoc_core: lowrisc:ip:entropy_src
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
