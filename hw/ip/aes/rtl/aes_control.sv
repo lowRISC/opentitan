@@ -343,12 +343,12 @@ module aes_control import aes_pkg::*;
 
         if (idle_o) begin
           // Initial key and IV updates are ignored if we are not idle.
-          for (int s=0; s<2; s++) begin
-            for (int i=0; i<8; i++) begin
+          for (int s = 0; s < 2; s++) begin
+            for (int i = 0; i < 8; i++) begin
               key_init_we_o[s][i] = key_init_qe_i[s][i] ? SP2V_HIGH : SP2V_LOW;
             end
           end
-          for (int i=0; i<8; i++) begin
+          for (int i = 0; i < 8; i++) begin
             iv_we_o[i] = iv_qe[i] ? SP2V_HIGH : SP2V_LOW;
           end
 

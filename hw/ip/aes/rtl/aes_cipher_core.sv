@@ -724,7 +724,7 @@ module aes_cipher_core import aes_pkg::*;
       logic [(4*WidthPRDSBox)-1:0] in
     );
       logic [3:0][(WidthPRDSBox-8)-1:0] prd_msbs;
-      for (int i=0; i<4; i++) begin
+      for (int i = 0; i < 4; i++) begin
         prd_msbs[i] = in[(i*WidthPRDSBox) + 8 +: (WidthPRDSBox-8)];
       end
       return prd_msbs;
@@ -738,7 +738,7 @@ module aes_cipher_core import aes_pkg::*;
       logic [3:0][(WidthPRDSBox-8)-1:0] prd_msbs
     );
       logic [(4*WidthPRDSBox)-1:0] prd;
-      for (int i=0; i<4; i++) begin
+      for (int i = 0; i < 4; i++) begin
         prd[(i*WidthPRDSBox) +: WidthPRDSBox] = {prd_msbs[i], prd_lsbs[i]};
       end
       return prd;

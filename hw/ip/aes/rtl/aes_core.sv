@@ -194,7 +194,7 @@ module aes_core
   ////////////
 
   always_comb begin : key_init_get
-    for (int i=0; i<8; i++) begin
+    for (int i = 0; i < 8; i++) begin
       key_init[0][i]    = reg2hw.key_share0[i].q;
       key_init_qe[0][i] = reg2hw.key_share0[i].qe;
       key_init[1][i]    = reg2hw.key_share1[i].q;
@@ -203,21 +203,21 @@ module aes_core
   end
 
   always_comb begin : iv_get
-    for (int i=0; i<4; i++) begin
+    for (int i = 0; i < 4; i++) begin
       iv[i]    = reg2hw.iv[i].q;
       iv_qe[i] = reg2hw.iv[i].qe;
     end
   end
 
   always_comb begin : data_in_get
-    for (int i=0; i<4; i++) begin
+    for (int i = 0; i < 4; i++) begin
       data_in[i]    = reg2hw.data_in[i].q;
       data_in_qe[i] = reg2hw.data_in[i].qe;
     end
   end
 
   always_comb begin : data_out_get
-    for (int i=0; i<4; i++) begin
+    for (int i = 0; i < 4; i++) begin
       // data_out is actually hwo, but we need hrw for hwre
       unused_data_out_q[i] = reg2hw.data_out[i].q;
       data_out_re[i]       = reg2hw.data_out[i].re;
@@ -241,8 +241,8 @@ module aes_core
     if (!rst_ni) begin
       key_init_q <= '{default: '0};
     end else begin
-      for (int s=0; s<2; s++) begin
-        for (int i=0; i<8; i++) begin
+      for (int s = 0; s < 2; s++) begin
+        for (int i = 0; i < 8; i++) begin
           if (key_init_we[s][i] == SP2V_HIGH) begin
             key_init_q[s][i] <= key_init_d[s][i];
           end
@@ -268,7 +268,7 @@ module aes_core
     if (!rst_ni) begin
       iv_q <= '0;
     end else begin
-      for (int i=0; i<8; i++) begin
+      for (int i = 0; i < 8; i++) begin
         if (iv_we[i] == SP2V_HIGH) begin
           iv_q[i] <= iv_d[i];
         end
@@ -593,7 +593,7 @@ module aes_core
 
   // Input data register clear
   always_comb begin : data_in_reg_clear
-    for (int i=0; i<4; i++) begin
+    for (int i = 0; i < 4; i++) begin
       hw2reg.data_in[i].d  = prd_clearing_128[i*32 +: 32];
       hw2reg.data_in[i].de = data_in_we;
     end
@@ -778,20 +778,20 @@ module aes_core
   end
 
   always_comb begin : key_reg_put
-    for (int i=0; i<8; i++) begin
+    for (int i = 0; i < 8; i++) begin
       hw2reg.key_share0[i].d = key_init_q[0][i];
       hw2reg.key_share1[i].d = key_init_q[1][i];
     end
   end
 
   always_comb begin : iv_reg_put
-    for (int i=0; i<4; i++) begin
+    for (int i = 0; i < 4; i++) begin
       hw2reg.iv[i].d  = {iv_q[2*i+1], iv_q[2*i]};
     end
   end
 
   always_comb begin : data_out_put
-    for (int i=0; i<4; i++) begin
+    for (int i = 0; i < 4; i++) begin
       hw2reg.data_out[i].d = data_out_q[i];
     end
   end

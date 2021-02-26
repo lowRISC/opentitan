@@ -25,7 +25,7 @@ module aes_ctr import aes_pkg::*;
   // Reverse byte order
   function automatic logic [15:0][7:0] aes_rev_order_byte(logic [15:0][7:0] in);
     logic [15:0][7:0] out;
-    for (int i=0; i<16; i++) begin
+    for (int i = 0; i < 16; i++) begin
       out[i] = in[15-i];
     end
     return out;
@@ -34,7 +34,7 @@ module aes_ctr import aes_pkg::*;
   // Reverse sp2v order
   function automatic sp2v_e [7:0] aes_rev_order_sp2v(sp2v_e [7:0] in);
     sp2v_e [7:0] out;
-    for (int i=0; i<8; i++) begin
+    for (int i = 0; i < 8; i++) begin
       out[i] = in[7-i];
     end
     return out;
