@@ -94,6 +94,30 @@ package top_earlgrey_rnd_cnst_pkg;
   };
 
   ////////////////////////////////////////////
+  // aes
+  ////////////////////////////////////////////
+  // Default seed of the PRNG used for register clearing.
+  parameter aes_pkg::clearing_lfsr_seed_t RndCnstAesClearingLfsrSeed = {
+    64'hF4C3471C5DEF7861
+  };
+
+  // Permutation applied to the LFSR of the PRNG used for clearing.
+  parameter aes_pkg::clearing_lfsr_perm_t RndCnstAesClearingLfsrPerm = {
+    128'h26AC29E186C1F4DC6F959D6ED08DC044,
+    256'hA0F3F1519E8DCA131275DF1E48BBF964AC772E613D0320ADAEBF38552DD822E6
+  };
+
+  // Default seed of the PRNG used for masking.
+  parameter aes_pkg::masking_lfsr_seed_t RndCnstAesMaskingLfsrSeed = {
+    160'h19E5A91389B9FE0D3B818E46CE7D846469A3B8E3
+  };
+
+  // Permutation applied to the LFSR chunks of the PRNG used for masking.
+  parameter aes_pkg::mskg_chunk_lfsr_perm_t RndCnstAesMskgChunkLfsrPerm = {
+    160'h23F6BA7EA92AA0E8E3B900F826CEE835BC1648FA
+  };
+
+  ////////////////////////////////////////////
   // keymgr
   ////////////////////////////////////////////
   // Compile-time random bits for initial LFSR seed
