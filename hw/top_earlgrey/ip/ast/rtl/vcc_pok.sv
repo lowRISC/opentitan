@@ -5,6 +5,11 @@
 // *Name: vcc_pok
 // *Module Description:  VCC Power OK
 //############################################################################
+`ifdef SYNTHESIS
+`ifndef PRIM_DEFAULT_IMPL
+`define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
+`endif
+`endif
 
 module vcc_pok (
   output logic vcc_pok_o
@@ -39,15 +44,18 @@ always @( * ) begin
 end
 
 `else
+localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
+
 // SYNTHESUS/VERILATOR/LINTER/FPGA
 ///////////////////////////////////////
-`ifndef FPGA
-assign vcc_pok_o = 1'b1;
-`else
-// FPGA Specific (place holder)
-///////////////////////////////////////
-assign vcc_pok_o = 1'b1;
-`endif
+
+if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
+  // FPGA Specific (place holder)
+  ///////////////////////////////////////
+  assign vcc_pok_o = 1'b1;
+end else begin : gen_generic
+  assign vcc_pok_o = 1'b1;
+end
 `endif
 
 endmodule : vcc_pok

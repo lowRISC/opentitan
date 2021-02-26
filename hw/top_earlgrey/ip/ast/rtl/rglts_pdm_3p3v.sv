@@ -5,6 +5,11 @@
 // *Name: rglts_pdm_3p3v
 // *Module Description: Regulators (MAIN & AON) & PDM Logic @3.3V
 //############################################################################
+`ifdef SYNTHESIS
+`ifndef PRIM_DEFAULT_IMPL
+`define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
+`endif
+`endif
 
 module rglts_pdm_3p3v (
   input vcc_pok_h_i,                     // VCC (3.3V) Exist @3.3v
@@ -67,6 +72,8 @@ vcaon_pok u_vcaon_pok (
 );
 
 `else  // of SYNTHESIS
+localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
+
 // SYNTHESUS/VERILATOR/LINTER/FPGA
 ///////////////////////////////////////
 logic dummy0, dummy1;
@@ -76,13 +83,14 @@ assign dummy1 = vcmain_pok_h_i || vcmain_pok_o_h_i || clk_src_aon_h_i || 1'b1;
 
 assign vcaon_pok_h_o  = dummy0 || !dummy0;  // 1'b1
 assign main_pwr_dly_o = dummy1 || !dummy1;  // 1'b1
-`ifndef FPGA
-// TODO
-`else  // of FPGA
-// FPGA Specifi (place holder)
-///////////////////////////////////////
-// TODO
-`endif  // of FPGA
+
+if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
+  // FPGA Specifi (place holder)
+  ///////////////////////////////////////
+  // TODO
+end else begin : gen_generic
+  // TODO
+end
 `endif  // of SYNTHESIS
 
 

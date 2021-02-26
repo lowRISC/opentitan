@@ -45,13 +45,11 @@ package ast_pkg;
   } adc_ast_rsp_t;
 
   // Analog Signal
-  typedef struct {
   `ifdef ANALOGSIM
-    real    a;
+  typedef real  awire_t;
   `else
-    logic   a;
+  typedef logic awire_t;
   `endif
-  } awire_t;
 
   // Clock & Resets Interface
   typedef struct packed {

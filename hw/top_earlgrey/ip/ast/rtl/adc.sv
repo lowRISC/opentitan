@@ -59,11 +59,11 @@ integer adc_d_ch0, adc_d_ch1;
 `ifndef SYNTHESIS
 ast_pkg::awire_t vref;
 ast_pkg::awire_t adc_vi0, adc_vi1;
-assign vref.a = 2.3;
-assign adc_vi0.a = adc_a0_ai.a;
-assign adc_vi1.a = adc_a1_ai.a;
-assign adc_d_ch0 = $rtoi( (adc_vi0.a/vref.a) * $itor(10'h3ff) );
-assign adc_d_ch1 = $rtoi( (adc_vi1.a/vref.a) * $itor(10'h3ff) );
+assign vref = 2.3;
+assign adc_vi0 = adc_a0_ai;
+assign adc_vi1 = adc_a1_ai;
+assign adc_d_ch0 = $rtoi( (adc_vi0/vref) * $itor(10'h3ff) );
+assign adc_d_ch1 = $rtoi( (adc_vi1/vref) * $itor(10'h3ff) );
 `else
 assign adc_d_ch0 = 'h31;    // 0.111V
 assign adc_d_ch1 = 'h21f;   // 1.222V

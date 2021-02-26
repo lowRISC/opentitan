@@ -7,6 +7,10 @@
 //############################################################################
 `ifndef SYNTHESIS
 `timescale 1ns / 1ps
+`else
+`ifndef PRIM_DEFAULT_IMPL
+`define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
+`endif
 `endif
 
 module usb_osc (
@@ -62,6 +66,8 @@ end
 
 assign usb_clk_o = clk;
 `else  // of SYNTHESIS
+localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
+
 // SYNTHESUS/VERILATOR/LINTER/FPGA
 ///////////////////////////////////////
 logic clk, en_osc, en_osc_re, en_osc_fe;
@@ -79,15 +85,15 @@ end
 
 assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
 
-`ifndef FPGA
-assign clk = (/*TODO*/ 1'b1) && en_osc;
-assign usb_clk_o = clk;
-`else
-// FPGA Specific (place holder)
-///////////////////////////////////////
-assign clk = (/*TODO*/ 1'b1) && en_osc;
-assign usb_clk_o = clk;
-`endif
+if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
+  // FPGA Specific (place holder)
+  ///////////////////////////////////////
+  assign clk = (/*TODO*/ 1'b1) && en_osc;
+  assign usb_clk_o = clk;
+end else begin : gen_generic
+  assign clk = (/*TODO*/ 1'b1) && en_osc;
+  assign usb_clk_o = clk;
+end
 `endif
 
 endmodule : usb_osc

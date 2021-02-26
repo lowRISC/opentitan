@@ -5,6 +5,11 @@
 // *Name: vcaon_pok
 // *Module Description:  VCAON Power OK
 //############################################################################
+`ifdef SYNTHESIS
+`ifndef PRIM_DEFAULT_IMPL
+`define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
+`endif
+`endif
 
 module vcaon_pok (
   output logic vcaon_pok_o
@@ -39,15 +44,18 @@ always @( * ) begin
 end
 
 `else
+localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
+
 // SYNTHESUS/VERILATOR/LINTER/FPGA
 ///////////////////////////////////////
-`ifndef FPGA
-assign vcaon_pok_o = 1'b1;
-`else
-// FPGA Specific (place holder)
-///////////////////////////////////////
-assign vcaon_pok_o = 1'b1;
-`endif
+
+if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
+  // FPGA Specific (place holder)
+  ///////////////////////////////////////
+  assign vcaon_pok_o = 1'b1;
+end else begin : gen_generic
+  assign vcaon_pok_o = 1'b1;
+end
 `endif
 
 endmodule : vcaon_pok
