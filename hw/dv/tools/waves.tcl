@@ -19,6 +19,7 @@ global tb_top
 set wavedump_db "waves.$waves"
 
 # TODO: convert this to a proc?
+set fid ""
 switch $waves {
   "none" {
     puts "INFO: Dumping waves is not enabled."
@@ -39,7 +40,7 @@ switch $waves {
 
   "vpd" {
     checkEq simulator "vcs"
-    dump -file $wavedump_db -type VPD
+    set fid [dump -file $wavedump_db -type VPD]
   }
 
   "vcd" {
@@ -76,13 +77,14 @@ if {$waves ne "none"} {
 # simulation. It is useful in that case to only dump the relevant scopes of interest during debug.
 #
 # scope       : Design / testbench hierarchy to dump waves. Defaults to $tb_top.
+# fid         : File ID returned by the dump command in the first step above.
 # depth       : Levels in the hierarchy to dump waves. Defaults to 0 (dump all levels).
 # fsdb_flags  : Additional string flags passed to fsdbDumpVars. Defaults to "+all".
 # probe_flags : Additional string flags passed to probe command (Xcelium). Defaults to "-all".
 # dump_flags  : Additional string flags passed to dump command (VCS). Defaults to "-aggregates".
 #
 # Depending on the need, more such technlogy specific flags can be added in future.
-proc wavedumpScope {scope {depth 0} {fsdb_flags "+all"} {probe_flags  "-all"}
+proc wavedumpScope {scope fid {depth 0} {fsdb_flags "+all"} {probe_flags  "-all"}
                     {dump_flags "-aggregates"}} {
   global simulator
   global waves
@@ -114,7 +116,7 @@ proc wavedumpScope {scope {depth 0} {fsdb_flags "+all"} {probe_flags  "-all"}
     "vpd" {
       # The dump command switch -aggregates enables dumping of structs &
       # arrays.
-      dump -add "$scope" -depth $depth $dump_flags
+      dump -add "$scope" -fid $fid -depth $depth $dump_flags
     }
 
     "vcd" {
@@ -154,5 +156,5 @@ setDefault dump_tb_top 1
 
 # By default, add the full test bench scope for wavedump.
 if {$dump_tb_top == 1} {
-  wavedumpScope $tb_top
+  wavedumpScope $tb_top $fid
 }
