@@ -157,7 +157,7 @@ typedef enum dif_otp_ctrl_result {
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
-   * When this value is returned, no hardware operations occured.
+   * When this value is returned, no hardware operations occurred.
    */
   kDifOtpCtrlBadArg = 2,
 } dif_otp_ctrl_result_t;
@@ -178,7 +178,7 @@ typedef enum dif_otp_ctrl_lockable_result {
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
-   * When this value is returned, no hardware operations occured.
+   * When this value is returned, no hardware operations occurred.
    */
   kDifOtpCtrlLockableBadArg = kDifOtpCtrlBadArg,
   /**
@@ -204,7 +204,7 @@ typedef enum dif_otp_ctrl_dai_result {
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
-   * When this value is returned, no hardware operations occured.
+   * When this value is returned, no hardware operations occurred.
    */
   kDifOtpCtrlDaiBadArg = kDifOtpCtrlBadArg,
   /**
@@ -242,7 +242,7 @@ typedef enum dif_otp_ctrl_digest_result {
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
-   * When this value is returned, no hardware operations occured.
+   * When this value is returned, no hardware operations occurred.
    */
   kDifOtpCtrlDigestBadArg = kDifOtpCtrlBadArg,
   /**
@@ -261,7 +261,7 @@ typedef enum dif_otp_ctrl_irq {
    */
   kDifOtpCtrlIrqDone,
   /**
-   * Indicates that an error has occured in the OTP controller.
+   * Indicates that an error has occurred in the OTP controller.
    */
   kDifOtpCtrlIrqError,
 } dif_otp_ctrl_irq_t;
@@ -286,40 +286,40 @@ typedef enum dif_otp_ctrl_status_code {
   // Note furthermore that these enum variants are intended as bit indices, so
   // their values should not be randomized.
   /**
-   * Indicates an error occured in the `CreatorSwCfg` partition.
+   * Indicates an error occurred in the `CreatorSwCfg` partition.
    */
   kDifOtpCtrlStatusCodeCreatorSwCfgError = 0,
   /**
-   * Indicates an error occured in the `OwnerSwCfg` partition.
+   * Indicates an error occurred in the `OwnerSwCfg` partition.
    */
   kDifOtpCtrlStatusCodeOwnerSwCfgError,
   /**
-   * Indicates an error occured in the `HwCfg` partition.
+   * Indicates an error occurred in the `HwCfg` partition.
    */
   kDifOtpCtrlStatusCodeHwCfgError,
   /**
-   * Indicates an error occured in the `LifeCycle` partition.
+   * Indicates an error occurred in the `LifeCycle` partition.
    */
   kDifOtpCtrlStatusCodeLifeCycleError,
   /**
-   * Indicates an error occured in the `Secret0` partition.
+   * Indicates an error occurred in the `Secret0` partition.
    */
   kDifOtpCtrlStatusCodeSecret0Error,
   /**
-   * Indicates an error occured in the `Secret1` partition.
+   * Indicates an error occurred in the `Secret1` partition.
    */
   kDifOtpCtrlStatusCodeSecret1Error,
   /**
-   * Indicates an error occured in the `Secret2` partition.
+   * Indicates an error occurred in the `Secret2` partition.
    */
   kDifOtpCtrlStatusCodeSecret2Error,
 
   /**
-   * Indicates an error occured in the direct access interface.
+   * Indicates an error occurred in the direct access interface.
    */
   kDifOtpCtrlStatusCodeDaiError,
   /**
-   * Indicates an error occured in the lifecycle interface.
+   * Indicates an error occurred in the lifecycle interface.
    */
   kDifOtpCtrlStatusCodeLciError,
 

@@ -90,7 +90,7 @@ typedef enum dif_alert_handler_result {
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
-   * When this value is returned, no hardware operations occured.
+   * When this value is returned, no hardware operations occurred.
    */
   kDifAlertHandlerBadArg = 2,
 } dif_alert_handler_result_t;
@@ -111,7 +111,7 @@ typedef enum dif_alert_handler_config_result {
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
-   * When this value is returned, no hardware operations occured.
+   * When this value is returned, no hardware operations occurred.
    */
   kDifAlertHandlerConfigBadArg = kDifAlertHandlerBadArg,
   /**

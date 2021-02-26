@@ -78,7 +78,7 @@ typedef enum dif_gpio_result {
    * Indicates that some parameter passed into a function failed a
    * precondition.
    *
-   * When this value is returned, no hardware operations occured.
+   * When this value is returned, no hardware operations occurred.
    */
   kDifGpioBadArg = 2,
 } dif_gpio_result_t;
