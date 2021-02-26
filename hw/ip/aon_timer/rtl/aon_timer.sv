@@ -399,4 +399,17 @@ module aon_timer (
 
   assign aon_timer_rst_req_o = aon_rst_req_q;
 
+  /////////////////////////////
+  // Assert Known on Outputs //
+  /////////////////////////////
+
+  // clk_i domain
+  `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+  `ASSERT_KNOWN(IntrWkupKnown_A, intr_wkup_timer_expired_o)
+  `ASSERT_KNOWN(IntrWdogKnown_A, intr_wdog_timer_bark_o)
+  // clk_aon_i domain
+  `ASSERT_KNOWN(WkupReqKnown_A, aon_timer_wkup_req_o, clk_aon_i, !rst_aon_ni)
+  `ASSERT_KNOWN(RstReqKnown_A, aon_timer_rst_req_o, clk_aon_i, !rst_aon_ni)
+
 endmodule
