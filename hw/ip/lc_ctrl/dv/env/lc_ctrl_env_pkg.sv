@@ -77,13 +77,13 @@ package lc_ctrl_env_pkg;
     // Rma
     {On,  On,  On,  On,  On,  On,  On,  On,  On,  On,  Off},
     // Scrap
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On},
     // PostTrans
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off},
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On},
     // Escalate
     {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On},
     // Invalid
-    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, Off}
+    {Off, Off, Off, Off, Off, Off, Off, Off, Off, Off, On}
   };
 
   // associative array cannot declare parameter here, so we used const instead

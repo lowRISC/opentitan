@@ -67,94 +67,124 @@ module lc_ctrl_signal_decode
     lc_keymgr_div_d          = RndCnstLcKeymgrDivInvalid;
     // The escalation life cycle signal is always decoded, no matter
     // which state we currently are in.
+    // Note that this can be overridden by scrap states further below.
     if (esc_wipe_secrets_i) begin
       lc_escalate_en = On;
     end
 
-    // Only broadcast during the following main FSM states
-    if (lc_state_valid_i && fsm_state_i inside {IdleSt,
-                                                ClkMuxSt,
-                                                CntIncrSt,
-                                                CntProgSt,
-                                                TransCheckSt,
-                                                FlashRmaSt,
-                                                TokenHashSt,
-                                                TokenCheck0St,
-                                                TokenCheck1St}) begin
-      unique case (lc_state_i)
-        ///////////////////////////////////////////////////////////////////
-        // Enable DFT and debug functionality, including the CPU in the
-        // test unlocked states.
-        LcStTestUnlocked0,
-        LcStTestUnlocked1,
-        LcStTestUnlocked2,
-        LcStTestUnlocked3: begin
-          lc_dft_en            = On;
-          lc_nvm_debug_en      = On;
-          lc_hw_debug_en       = On;
-          lc_cpu_en            = On;
-          lc_iso_part_sw_wr_en = On;
-          lc_keymgr_div_d      = RndCnstLcKeymgrDivTestDevRma;
-        end
-        ///////////////////////////////////////////////////////////////////
-        // Enable production functions
-        LcStProd, LcStProdEnd: begin
-          lc_cpu_en              = On;
-          lc_keymgr_en           = On;
-          lc_owner_seed_sw_rw_en = On;
-          lc_iso_part_sw_wr_en   = On;
-          lc_iso_part_sw_rd_en   = On;
-          lc_keymgr_div_d        = RndCnstLcKeymgrDivProduction;
-          // Only allow provisioning if the device has not yet been personalized.
-          if (lc_id_state_i == LcIdBlank) begin
-            lc_creator_seed_sw_rw_en = On;
-          end
-          // Only allow hardware to consume the seeds once personalized.
-          if (lc_id_state_i == LcIdPersonalized) begin
-            lc_seed_hw_rd_en = On;
-          end
+    unique case (fsm_state_i)
+      ///////////////////////////////////////////////////////////////////
+      // Don't broadcast anything in this state.
+      ResetSt: ;
+      ///////////////////////////////////////////////////////////////////
+      // Broadcasting of most signals is only enabled during the following life cycle states.
+      IdleSt,
+      ClkMuxSt,
+      CntIncrSt,
+      CntProgSt,
+      TransCheckSt,
+      FlashRmaSt,
+      TokenHashSt,
+      TokenCheck0St,
+      TokenCheck1St,
+      TransProgSt: begin
+        if (lc_state_valid_i) begin
+          unique case (lc_state_i)
+            ///////////////////////////////////////////////////////////////////
+            // RAW and test locked states, nothing to broadcast
+            LcStRaw,
+            LcStTestLocked0,
+            LcStTestLocked1,
+            LcStTestLocked2: ;
+            ///////////////////////////////////////////////////////////////////
+            // Enable DFT and debug functionality, including the CPU in the
+            // test unlocked states.
+            LcStTestUnlocked0,
+            LcStTestUnlocked1,
+            LcStTestUnlocked2,
+            LcStTestUnlocked3: begin
+              lc_dft_en            = On;
+              lc_nvm_debug_en      = On;
+              lc_hw_debug_en       = On;
+              lc_cpu_en            = On;
+              lc_iso_part_sw_wr_en = On;
+              lc_keymgr_div_d      = RndCnstLcKeymgrDivTestDevRma;
+            end
+            ///////////////////////////////////////////////////////////////////
+            // Enable production functions
+            LcStProd,
+            LcStProdEnd: begin
+              lc_cpu_en              = On;
+              lc_keymgr_en           = On;
+              lc_owner_seed_sw_rw_en = On;
+              lc_iso_part_sw_wr_en   = On;
+              lc_iso_part_sw_rd_en   = On;
+              lc_keymgr_div_d        = RndCnstLcKeymgrDivProduction;
+              // Only allow provisioning if the device has not yet been personalized.
+              if (lc_id_state_i == LcIdBlank) begin
+                lc_creator_seed_sw_rw_en = On;
+              end
+              // Only allow hardware to consume the seeds once personalized.
+              if (lc_id_state_i == LcIdPersonalized) begin
+                lc_seed_hw_rd_en = On;
+              end
 
+            end
+            ///////////////////////////////////////////////////////////////////
+            // Same functions as PROD, but with additional debug functionality.
+            LcStDev: begin
+              lc_hw_debug_en         = On;
+              lc_cpu_en              = On;
+              lc_keymgr_en           = On;
+              lc_owner_seed_sw_rw_en = On;
+              lc_iso_part_sw_wr_en   = On;
+              lc_iso_part_sw_rd_en   = On;
+              lc_keymgr_div_d        = RndCnstLcKeymgrDivTestDevRma;
+              // Only allow provisioning if the device has not yet been personalized.
+              if (lc_id_state_i == LcIdBlank) begin
+                lc_creator_seed_sw_rw_en = On;
+              end
+              // Only allow hardware to consume the seeds once personalized.
+              if (lc_id_state_i == LcIdPersonalized) begin
+                lc_seed_hw_rd_en = On;
+              end
+            end
+            ///////////////////////////////////////////////////////////////////
+            // Enable all test and production functions.
+            LcStRma: begin
+              lc_dft_en                = On;
+              lc_nvm_debug_en          = On;
+              lc_hw_debug_en           = On;
+              lc_cpu_en                = On;
+              lc_keymgr_en             = On;
+              lc_creator_seed_sw_rw_en = On;
+              lc_owner_seed_sw_rw_en   = On;
+              lc_iso_part_sw_wr_en     = On;
+              lc_iso_part_sw_rd_en     = On;
+              lc_seed_hw_rd_en         = On;
+              lc_keymgr_div_d          = RndCnstLcKeymgrDivTestDevRma;
+            end
+            ///////////////////////////////////////////////////////////////////
+            // Invalid or scrapped life cycle state, make sure the escalation
+            // signal is also asserted in this case.
+            default: begin
+              lc_escalate_en = On;
+            end
+          endcase // lc_state_i
         end
-        ///////////////////////////////////////////////////////////////////
-        // Same functions as PROD, but with additional debug functionality.
-        LcStDev: begin
-          lc_hw_debug_en         = On;
-          lc_cpu_en              = On;
-          lc_keymgr_en           = On;
-          lc_owner_seed_sw_rw_en = On;
-          lc_iso_part_sw_wr_en   = On;
-          lc_iso_part_sw_rd_en   = On;
-          lc_keymgr_div_d        = RndCnstLcKeymgrDivTestDevRma;
-          // Only allow provisioning if the device has not yet been personalized.
-          if (lc_id_state_i == LcIdBlank) begin
-            lc_creator_seed_sw_rw_en = On;
-          end
-          // Only allow hardware to consume the seeds once personalized.
-          if (lc_id_state_i == LcIdPersonalized) begin
-            lc_seed_hw_rd_en = On;
-          end
-        end
-        ///////////////////////////////////////////////////////////////////
-        // Enable all test and production functions.
-        LcStRma: begin
-          lc_dft_en                = On;
-          lc_nvm_debug_en          = On;
-          lc_hw_debug_en           = On;
-          lc_cpu_en                = On;
-          lc_keymgr_en             = On;
-          lc_creator_seed_sw_rw_en = On;
-          lc_owner_seed_sw_rw_en   = On;
-          lc_iso_part_sw_wr_en     = On;
-          lc_iso_part_sw_rd_en     = On;
-          lc_seed_hw_rd_en         = On;
-          lc_keymgr_div_d          = RndCnstLcKeymgrDivTestDevRma;
-        end
-        ///////////////////////////////////////////////////////////////////
-        // Invalid or scrapped life cycle state, do not assert
-        // any signals other than escalate_en and clk_byp_en.
-        default: ;
-      endcase // lc_state_i
-    end
+      end
+      ///////////////////////////////////////////////////////////////////
+      // Virtual scrap states, make sure the escalation signal is
+      // also asserted in this case.
+      PostTransSt,
+      EscalateSt,
+      InvalidSt: begin
+        lc_escalate_en = On;
+      end
+      default: begin
+        lc_escalate_en = On;
+      end
+    endcase // fsm_state_i
   end
 
   /////////////////////////////////
@@ -266,6 +296,47 @@ module lc_ctrl_signal_decode
       lc_keymgr_div_o == RndCnstLcKeymgrDivInvalid)
 
   `ASSERT(EscalationAlwaysDecoded_A,
-      (lc_escalate_en_o == On) == $past(esc_wipe_secrets_i))
+      esc_wipe_secrets_i |=> lc_escalate_en_o == On)
+
+  `ASSERT(FsmInScrap_A,
+      !(fsm_state_i inside {ResetSt,
+                            TransProgSt,
+                            IdleSt,
+                            ClkMuxSt,
+                            CntIncrSt,
+                            CntProgSt,
+                            TransCheckSt,
+                            FlashRmaSt,
+                            TokenHashSt,
+                            TokenCheck0St,
+                            TokenCheck1St})
+      |=>
+      lc_escalate_en_o == On)
+
+  `ASSERT(StateInScrap_A,
+      lc_state_valid_i &&
+      fsm_state_i inside {IdleSt,
+                          ClkMuxSt,
+                          CntIncrSt,
+                          CntProgSt,
+                          TransCheckSt,
+                          FlashRmaSt,
+                          TokenHashSt,
+                          TokenCheck0St,
+                          TokenCheck1St} &&
+      !(lc_state_i inside {LcStRaw,
+                           LcStTestUnlocked0,
+                           LcStTestLocked0,
+                           LcStTestUnlocked1,
+                           LcStTestLocked1,
+                           LcStTestUnlocked2,
+                           LcStTestLocked2,
+                           LcStTestUnlocked3,
+                           LcStDev,
+                           LcStProd,
+                           LcStProdEnd,
+                           LcStRma})
+      |=>
+      lc_escalate_en_o == On)
 
 endmodule : lc_ctrl_signal_decode
