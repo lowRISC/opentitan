@@ -1,0 +1,148 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "spi_host"
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+  entries: [
+    {
+      name: smoke
+      desc: '''
+            SPI_HOST smoke test in which random (rd/wr) transactions are sent to the DUT and
+            received asynchronously with scoreboard checks.
+
+            Stimulus:
+              - Enable spi_host ip
+              - Clear/enable interrupt (if needed)
+              - Program configuration registers (CONTROL) to reset spi_fsm, reset/set watermark for the fifos
+              - Program the CONFIGOPTS register to config spi_host channel
+                operating in different modes (single, dual, or quad)
+              - Randomize the content of COMMAND register
+              - Program/retrive data in TXDATA/RXDATA register w.r.t transmitted/received transactions
+
+            Checking:
+              - Ensure transactions are transmitted/received correctly
+            '''
+      milestone: V1
+      tests: ["spi_host_smoke"]
+    }
+    {
+      name: perf
+      desc: '''
+            Send/receive transactions at max bandwidth
+
+            Stimulus:
+              - Program the content of timing fields of CONFIGOPTS to the min values
+              - Programming TX1_CNT and TXN_CNT to issue read/write back-to-back transactions
+              - Read/write rx_fifo/tx_fifo as soon as possible (avoid stalling transactions)
+
+            Checking:
+              - Ensure transactions are transmitted/received correctly
+            '''
+      milestone: V2
+      tests: ["spi_host_perf"]
+    }
+    {
+      name: error_event_intr
+      desc: '''
+            This test includes multi tasks which verify error/event interrupt assertion
+            (except TX OVERFLOW error interrupt is verified in separate test).
+
+            Stimulus:
+              - Program ERROR_ENABLE/EVENT_ENABLE register to enable corresponding error/event interrupt assertion
+              - Program transaction with proper constraints to assert error/event interrupts
+
+            Checking:
+              - Ensure transactions are transmitted/received correctly
+              - Ensure the matching between the bit-field values of ERROR_STATUS
+                and ERROR_ENABLE respectively once the error interrupt pin is asserted
+              - Ensure the matching between the bit-field values of ERROR_ENABLE
+                once the event interrupt pin is asserted
+            '''
+      milestone: V2
+      tests: ["spi_host_error_event_intr"]
+    }
+    {
+      name: tx_overflow_error
+      desc: '''
+            Test TX OVERFLOW error is asserted by the spi_host
+
+            Stimulus:
+              - Program ERROR_ENABLE register to enable the TXOVERFLOW interrupt
+              - Program transaction with proper constraints to assert the TXOVERFLOW interrupts
+
+            Checking:
+              - Ensure excess tx data is dropped
+              - Ensure the matching between the value of OVERFLOW bit in the ERROR_STATUS
+                and the ERROR_ENABLE register the once error interrupt pin is asserted
+            '''
+      milestone: V2
+      tests: ["spi_host_tx_overflow_error"]
+    }
+    {
+      name: component_reset
+      desc: '''
+            Test components (spi_fsm, rx_fifo, tx_fifo) are randomly reset
+
+            Stimulus:
+              - Reset the components of spi_host randomly after a random number of data shows up on fifos
+
+            Checking:
+              - Ensure that reads to RXDATA register yield 0s after the rx_fifo is reset
+              - Ensure that transactions are dropped in both the scoreboard and spi_agent monitor
+                after the tx_fifo or spi_fsm is reset
+            '''
+      milestone: V2
+      tests: ["spi_host_component_reset"]
+    }
+    {
+      name: stress_all
+      desc: '''
+            Support vseq (context) switching with random reset in between.
+
+            Stimulus:
+              - Combine the above sequences in one test to run sequentially
+                except csr sequence and (requires zero_delays)
+              - Randomly add reset between each sequence
+
+            Checking:
+              - Ensure transactions are transmitted/received correctly
+              - Ensure reset is handled correctly
+            '''
+      milestone: V2
+      tests: ["spi_host_stress_all"]
+    }
+    {
+      name: clock_domain
+      desc: '''
+            TBD -Verify the function of spi_host in both bus and core clock domains
+
+            Stimulus:
+              - TBD
+
+            Checking:
+              - TBD
+      '''
+      milestone: V2
+      tests: ["spi_host_clock_domain"]
+    }
+    {
+      name: stress_all_with_rand_reset
+      desc: '''
+            Support random reset in parallel with stress_all and tl_errors sequences
+
+            Stimulus:
+              - Combine above sequences in one test to run sequentially
+                except csr sequence and spi_host_rx_oversample_vseq (requires zero_delays)
+              - Randomly add reset within the sequences then switch to another one
+
+            Checking:
+              - Ensure transactions are transmitted/received correctly
+              - Ensure reset is handled correctly
+            '''
+      milestone: V2
+      tests: ["spi_host_stress_all_with_rand_reset"]
+    }
+}
