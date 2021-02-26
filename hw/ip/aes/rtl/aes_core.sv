@@ -34,6 +34,9 @@ module aes_core
   input  logic                        entropy_masking_ack_i,
   input  logic  [WidthPRDMasking-1:0] entropy_masking_i,
 
+  // Life cycle
+  input  lc_ctrl_pkg::lc_tx_t         lc_escalate_en_i,
+
   // Alerts
   output logic                        alert_recov_o,
   output logic                        alert_fatal_o,
@@ -525,6 +528,7 @@ module aes_core
     .prng_reseed_i             ( reg2hw.trigger.prng_reseed.q           ),
     .mux_sel_err_i             ( mux_sel_err                            ),
     .sp_enc_err_i              ( sp_enc_err_q                           ),
+    .lc_escalate_en_i          ( lc_escalate_en_i                       ),
     .alert_fatal_i             ( alert_fatal_o                          ),
     .alert_o                   ( ctrl_alert                             ),
 

@@ -123,6 +123,7 @@ The table below lists other signals of the AES unit.
 Signal             | Direction        | Type                   | Description
 -------------------|------------------|------------------------|---------------
 `idle_o`           | `output`         | `logic`                | Idle indication signal for clock manager.
+`lc_escalate_en_i` | `input`          | `lc_ctrl_pkg::lc_tx_t` | Life cycle escalation enable coming from life cycle controller. This signal moves the main controller FSM within the AES unit into the terminal error state. The AES unit needs to be reset.
 
 
 ## Design Details

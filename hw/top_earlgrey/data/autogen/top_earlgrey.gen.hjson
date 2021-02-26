@@ -5711,6 +5711,18 @@
           index: 0
         }
         {
+          struct: lc_tx
+          type: uni
+          name: lc_escalate_en
+          act: rcv
+          default: lc_ctrl_pkg::Off
+          package: lc_ctrl_pkg
+          inst_name: aes
+          width: 1
+          top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -7781,6 +7793,7 @@
       lc_ctrl.lc_cpu_en: []
       lc_ctrl.lc_escalate_en:
       [
+        aes.lc_escalate_en
         otp_ctrl.lc_escalate_en
         sram_ctrl_main.lc_escalate_en
         sram_ctrl_ret_aon.lc_escalate_en
@@ -14282,6 +14295,18 @@
         default: ""
         top_signame: clkmgr_aon_idle
         index: 0
+      }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_escalate_en
+        act: rcv
+        default: lc_ctrl_pkg::Off
+        package: lc_ctrl_pkg
+        inst_name: aes
+        width: 1
+        top_signame: lc_ctrl_lc_escalate_en
+        index: -1
       }
       {
         struct: tl

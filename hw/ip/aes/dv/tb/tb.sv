@@ -32,6 +32,7 @@ module tb;
     .rst_ni               (rst_n      ),
 
     .idle_o               (           ),
+    .lc_escalate_en_i     (lc_ctrl_pkg::Off),
 
     .tl_i                 (tl_if.h2d  ),
     .tl_o                 (tl_if.d2h  ),

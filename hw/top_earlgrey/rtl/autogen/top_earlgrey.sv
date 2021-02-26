@@ -1818,6 +1818,7 @@ module top_earlgrey #(
 
       // Inter-module signals
       .idle_o(clkmgr_aon_idle[0]),
+      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .tl_i(aes_tl_req),
       .tl_o(aes_tl_rsp),
 
