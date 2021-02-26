@@ -24,7 +24,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-      #- lowrisc:lint:comportable
     files:
       - lint/rv_dm.vlt
     file_type: vlt
@@ -33,7 +32,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-      #- lowrisc:lint:comportable
     files:
       - lint/rv_dm.waiver
     file_type: waiver
@@ -42,7 +40,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-      - lowrisc:lint:comportable
 
 parameters:
   NrHarts:
