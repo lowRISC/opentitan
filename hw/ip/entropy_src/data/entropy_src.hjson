@@ -239,208 +239,288 @@ param_list: [
     { name: "REPCNT_THRESHOLDS",
       desc: "Repetition count test thresholds register",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe:  "true",
       regwen:   "REGWEN",
+      tags: [// Exclude from writes to these field because they are one-way updates
+             "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_REPCNT_THRESH",
+          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the repetition count health test.
                    This value is used in normal mode when entropy is being tested in
                    FIPS/CC compliance mode.
-                   The default value is 32
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is less than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x0020"
+          resval: "0xFFFF"
         }
         { bits: "31:16",
-          name: "BYPASS_REPCNT_THRESH",
+          name: "BYPASS_THRESH",
           desc: '''This is the threshold size for the repetition count health test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
-                   The default value is 32
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is less than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x0020"
+          resval: "0xFFFF"
         }
       ]
     },
     { name: "ADAPTP_HI_THRESHOLDS",
       desc: "Adaptive proportion test high thresholds register",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe:  "true",
       regwen:   "REGWEN",
+      tags: [// Exclude from writes to these field because they are one-way updates
+             "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_ADAPTP_HI_THRESH",
+          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the adaptive proportion health test.
                    This value is used in normal mode when entropy is being tested in
                    FIPS/CC compliance mode.
-                   The default value is 598.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is less than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x0256"
+          resval: "0xFFFF"
         }
         { bits: "31:16",
-          name: "BYPASS_ADAPTP_HI_THRESH",
+          name: "BYPASS_THRESH",
           desc: '''This is the threshold size for the adaptive proportion health test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
-                   The default value is .375 of the FIPS threshold.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is less than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x00e0"
+          resval: "0xFFFF"
         }
       ]
     },
     { name: "ADAPTP_LO_THRESHOLDS",
       desc: "Adaptive proportion test low thresholds register",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe:  "true",
       regwen:   "REGWEN",
+      tags: [// Exclude from writes to these field because they are one-way updates
+             "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_ADAPTP_LO_THRESH",
+          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the adaptive proportion health test.
                    This value is used in normal mode when entropy is being tested in
                    FIPS/CC compliance mode.
-                   The default value is 426.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is greater than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x01aa"
+          resval: "0x0000"
         }
         { bits: "31:16",
-          name: "BYPASS_ADAPTP_LO_THRESH",
+          name: "BYPASS_THRESH",
           desc: '''This is the threshold size for the adaptive proportion health test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
-                   The default value is .375 of the FIPS threshold.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is greater than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x00a0"
+          resval: "0x0000"
         }
       ]
     },
     { name: "BUCKET_THRESHOLDS",
       desc: "Bucket test thresholds register",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe:  "true",
       regwen:   "REGWEN",
+      tags: [// Exclude from writes to these field because they are one-way updates
+             "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_BUCKET_THRESH",
+          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the bucket health test.
                    This value is used in normal mode when entropy is being tested in
                    FIPS/CC compliance mode.
-                   The default value is 32.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is less than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x0020"
+          resval: "0xFFFF"
         }
         { bits: "31:16",
-          name: "BYPASS_BUCKET_THRESH",
+          name: "BYPASS_THRESH",
           desc: '''This is the threshold size for the bucket health test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
-                   The default value is 32.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is less than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x0020"
+          resval: "0xFFFF"
         }
       ]
     },
     { name: "MARKOV_HI_THRESHOLDS",
       desc: "Markov test high thresholds register",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe:  "true",
       regwen:   "REGWEN",
+      tags: [// Exclude from writes to these field because they are one-way updates
+             "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_MARKOV_HI_THRESH",
+          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the Markov health test.
                    This value is used in normal mode when entropy is being tested in
                    FIPS/CC compliance mode.
-                   The default value is 256.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is less than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x0100"
+          resval: "0xFFFF"
         }
         { bits: "31:16",
-          name: "BYPASS_MARKOV_HI_THRESH",
+          name: "BYPASS_THRESH",
           desc: '''This is the threshold size for the Markov health test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
-                   The default value is .375 of the FIPS threshold.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is less than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x0060"
-        }
+          resval: "0xFFFF"
+       }
       ]
     },
     { name: "MARKOV_LO_THRESHOLDS",
       desc: "Markov test low thresholds register",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe:  "true",
       regwen:   "REGWEN",
+      tags: [// Exclude from writes to these field because they are one-way updates
+             "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_MARKOV_LO_THRESH",
+          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the Markov health test.
                    This value is used in normal mode when entropy is being tested in
                    FIPS/CC compliance mode.
-                   The default value is 16.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is greater than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x0010"
+          resval: "0x0000"
         }
         { bits: "31:16",
-          name: "BYPASS_MARKOV_LO_THRESH",
+          name: "BYPASS_THRESH",
           desc: '''This is the threshold size for the Markov health test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
-                   The default value is .375 of the FIPS threshold.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is greater than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x006"
+          resval: "0x0000"
         }
       ]
     },
     { name: "EXTHT_HI_THRESHOLDS",
       desc: "External health test high thresholds register",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe:  "true",
       regwen:   "REGWEN",
+      tags: [// Exclude from writes to these field because they are one-way updates
+             "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_EXTHT_HI_THRESH",
+          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the external health test.
                    This value is used in normal mode when entropy is being tested in
                    FIPS/CC compliance mode.
-                   The default value is 0.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is less than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x0"
+          resval: "0xFFFF"
         }
         { bits: "31:16",
-          name: "BYPASS_EXTHT_HI_THRESH",
+          name: "BYPASS_THRESH",
           desc: '''This is the threshold size for the external health test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
-                   The default value is 0.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is less than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x0"
+          resval: "0xFFFF"
         }
       ]
     },
     { name: "EXTHT_LO_THRESHOLDS",
       desc: "External health test low thresholds register",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe:  "true",
       regwen:   "REGWEN",
+      tags: [// Exclude from writes to these field because they are one-way updates
+             "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_EXTHT_LO_THRESH",
+          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the external health test.
                    This value is used in normal mode when entropy is being tested in
                    FIPS/CC compliance mode.
-                   The default value is 0.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is greater than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x0"
+          resval: "0x0000"
         }
         { bits: "31:16",
-          name: "BYPASS_EXTHT_LO_THRESH",
+          name: "BYPASS_THRESH",
           desc: '''This is the threshold size for the external health test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
-                   The default value is 0.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is greater than the current value of this register.
+                   A read from this register always reflects the current value.
                 '''
-          resval: "0x0"
+          resval: "0x0000"
         }
       ]
     },
@@ -451,11 +531,11 @@ param_list: [
       hwext: "true",
       fields: [
         { bits: "15:0",
-          name: "FIPS_REPCNT_HI_WATERMARK",
+          name: "FIPS_WATERMARK",
           desc: "High watermark value of the REPCNT test in FIPS mode."
         }
         { bits: "31:16",
-          name: "BYPASS_REPCNT_HI_WATERMARK",
+          name: "BYPASS_WATERMARK",
           desc: "High watermark value of the REPCNT test in bypass mode."
         }
       ]
@@ -467,11 +547,11 @@ param_list: [
       hwext: "true",
       fields: [
         { bits: "15:0",
-          name: "FIPS_ADAPTP_HI_WATERMARK",
+          name: "FIPS_WATERMARK",
           desc: "High watermark value of the adaptive proportion test in FIPS mode."
         }
         { bits: "31:16",
-          name: "BYPASS_ADAPTP_HI_WATERMARK",
+          name: "BYPASS_WATERMARK",
           desc: "High watermark value of the adaptive proportion test in bypass mode."
         }
       ]
@@ -483,12 +563,14 @@ param_list: [
       hwext: "true",
       fields: [
         { bits: "15:0",
-          name: "FIPS_ADAPTP_LO_WATERMARK",
+          name: "FIPS_WATERMARK",
           desc: "Low watermark value of the adaptive proportion test in FIPS mode."
+          resval: "0xFFFF"
         }
         { bits: "31:16",
-          name: "BYPASS_ADAPTP_LO_WATERMARK",
+          name: "BYPASS_WATERMARK",
           desc: "Low watermark value of the adaptive proportion test in bypass mode."
+          resval: "0xFFFF"
         }
       ]
     },
@@ -499,11 +581,11 @@ param_list: [
       hwext: "true",
       fields: [
         { bits: "15:0",
-          name: "FIPS_EXTHT_HI_WATERMARK",
+          name: "FIPS_WATERMARK",
           desc: "High watermark value of the external health test in FIPS mode."
         }
         { bits: "31:16",
-          name: "BYPASS_EXTHT_HI_WATERMARK",
+          name: "BYPASS_WATERMARK",
           desc: "High watermark value of the external health test in bypass mode."
         }
       ]
@@ -515,12 +597,14 @@ param_list: [
       hwext: "true",
       fields: [
         { bits: "15:0",
-          name: "FIPS_EXTHT_LO_WATERMARK",
+          name: "FIPS_WATERMARK",
           desc: "Low watermark value of the external health test in FIPS mode."
+          resval: "0xFFFF"
         }
         { bits: "31:16",
-          name: "BYPASS_EXTHT_LO_WATERMARK",
+          name: "BYPASS_WATERMARK",
           desc: "Low watermark value of the external health test in bypass mode."
+          resval: "0xFFFF"
         }
       ]
     },
@@ -531,11 +615,11 @@ param_list: [
       hwext: "true",
       fields: [
         { bits: "15:0",
-          name: "FIPS_BUCKET_HI_WATERMARK",
+          name: "FIPS_WATERMARK",
           desc: "High watermark value of the bucket test in FIPS mode."
         }
         { bits: "31:16",
-          name: "BYPASS_BUCKET_HI_WATERMARK",
+          name: "BYPASS_WATERMARK",
           desc: "High watermark value of the bucket test in bypass mode."
         }
       ]
@@ -547,11 +631,11 @@ param_list: [
       hwext: "true",
       fields: [
         { bits: "15:0",
-          name: "FIPS_MARKOV_HI_WATERMARK",
+          name: "FIPS_WATERMARK",
           desc: "High watermark value of the Markov test in FIPS mode."
         }
         { bits: "31:16",
-          name: "BYPASS_MARKOV_HI_WATERMARK",
+          name: "BYPASS_WATERMARK",
           desc: "High watermark value of the Markov test in bypass mode."
         }
       ]
@@ -563,12 +647,14 @@ param_list: [
       hwext: "true",
       fields: [
         { bits: "15:0",
-          name: "FIPS_MARKOV_LO_WATERMARK",
+          name: "FIPS_WATERMARK",
           desc: "Low watermark value of the Markov test in FIPS mode."
+          resval: "0xFFFF"
         }
         { bits: "31:16",
-          name: "BYPASS_MARKOV_LO_WATERMARK",
+          name: "BYPASS_WATERMARK",
           desc: "Low watermark value of the Markov test in bypass mode."
+          resval: "0xFFFF"
         }
       ]
     },

@@ -140,8 +140,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] health_test_fips_window;
   logic [HalfRegWidth-1:0] health_test_bypass_window;
   logic [HalfRegWidth-1:0] health_test_window;
+
   logic [HalfRegWidth-1:0] repcnt_fips_threshold;
+  logic [HalfRegWidth-1:0] repcnt_fips_threshold_oneway;
+  logic                    repcnt_fips_threshold_wr;
   logic [HalfRegWidth-1:0] repcnt_bypass_threshold;
+  logic [HalfRegWidth-1:0] repcnt_bypass_threshold_oneway;
+  logic                    repcnt_bypass_threshold_wr;
   logic [HalfRegWidth-1:0] repcnt_threshold;
   logic [HalfRegWidth-1:0] repcnt_event_cnt;
   logic [HalfRegWidth-1:0] repcnt_event_hwm_fips;
@@ -151,10 +156,18 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     repcnt_fail_pulse;
 
   logic [HalfRegWidth-1:0] adaptp_hi_fips_threshold;
+  logic [HalfRegWidth-1:0] adaptp_hi_fips_threshold_oneway;
+  logic                    adaptp_hi_fips_threshold_wr;
   logic [HalfRegWidth-1:0] adaptp_hi_bypass_threshold;
+  logic [HalfRegWidth-1:0] adaptp_hi_bypass_threshold_oneway;
+  logic                    adaptp_hi_bypass_threshold_wr;
   logic [HalfRegWidth-1:0] adaptp_hi_threshold;
   logic [HalfRegWidth-1:0] adaptp_lo_fips_threshold;
+  logic [HalfRegWidth-1:0] adaptp_lo_fips_threshold_oneway;
+  logic                    adaptp_lo_fips_threshold_wr;
   logic [HalfRegWidth-1:0] adaptp_lo_bypass_threshold;
+  logic [HalfRegWidth-1:0] adaptp_lo_bypass_threshold_oneway;
+  logic                    adaptp_lo_bypass_threshold_wr;
   logic [HalfRegWidth-1:0] adaptp_lo_threshold;
   logic [HalfRegWidth-1:0] adaptp_event_cnt;
   logic [HalfRegWidth-1:0] adaptp_hi_event_hwm_fips;
@@ -169,7 +182,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     adaptp_lo_fail_pulse;
 
   logic [HalfRegWidth-1:0] bucket_fips_threshold;
+  logic [HalfRegWidth-1:0] bucket_fips_threshold_oneway;
+  logic                    bucket_fips_threshold_wr;
   logic [HalfRegWidth-1:0] bucket_bypass_threshold;
+  logic [HalfRegWidth-1:0] bucket_bypass_threshold_oneway;
+  logic                    bucket_bypass_threshold_wr;
   logic [HalfRegWidth-1:0] bucket_threshold;
   logic [HalfRegWidth-1:0] bucket_event_cnt;
   logic [HalfRegWidth-1:0] bucket_event_hwm_fips;
@@ -179,10 +196,18 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     bucket_fail_pulse;
 
   logic [HalfRegWidth-1:0] markov_hi_fips_threshold;
+  logic [HalfRegWidth-1:0] markov_hi_fips_threshold_oneway;
+  logic                    markov_hi_fips_threshold_wr;
   logic [HalfRegWidth-1:0] markov_hi_bypass_threshold;
+  logic [HalfRegWidth-1:0] markov_hi_bypass_threshold_oneway;
+  logic                    markov_hi_bypass_threshold_wr;
   logic [HalfRegWidth-1:0] markov_hi_threshold;
   logic [HalfRegWidth-1:0] markov_lo_fips_threshold;
+  logic [HalfRegWidth-1:0] markov_lo_fips_threshold_oneway;
+  logic                    markov_lo_fips_threshold_wr;
   logic [HalfRegWidth-1:0] markov_lo_bypass_threshold;
+  logic [HalfRegWidth-1:0] markov_lo_bypass_threshold_oneway;
+  logic                    markov_lo_bypass_threshold_wr;
   logic [HalfRegWidth-1:0] markov_lo_threshold;
   logic [HalfRegWidth-1:0] markov_hi_event_cnt;
   logic [HalfRegWidth-1:0] markov_lo_event_cnt;
@@ -198,10 +223,18 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     markov_lo_fail_pulse;
 
   logic [HalfRegWidth-1:0] extht_hi_fips_threshold;
+  logic [HalfRegWidth-1:0] extht_hi_fips_threshold_oneway;
+  logic                    extht_hi_fips_threshold_wr;
   logic [HalfRegWidth-1:0] extht_hi_bypass_threshold;
+  logic [HalfRegWidth-1:0] extht_hi_bypass_threshold_oneway;
+  logic                    extht_hi_bypass_threshold_wr;
   logic [HalfRegWidth-1:0] extht_hi_threshold;
   logic [HalfRegWidth-1:0] extht_lo_fips_threshold;
+  logic [HalfRegWidth-1:0] extht_lo_fips_threshold_oneway;
+  logic                    extht_lo_fips_threshold_wr;
   logic [HalfRegWidth-1:0] extht_lo_bypass_threshold;
+  logic [HalfRegWidth-1:0] extht_lo_bypass_threshold_oneway;
+  logic                    extht_lo_bypass_threshold_wr;
   logic [HalfRegWidth-1:0] extht_lo_threshold;
   logic [HalfRegWidth-1:0] extht_event_cnt;
   logic [HalfRegWidth-1:0] extht_hi_event_hwm_fips;
@@ -607,50 +640,327 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign health_test_fips_window = reg2hw.health_test_windows.fips_window.q;
   assign health_test_bypass_window = reg2hw.health_test_windows.bypass_window.q;
 
-  assign repcnt_fips_threshold = reg2hw.repcnt_thresholds.fips_repcnt_thresh.q;
-  assign repcnt_bypass_threshold = reg2hw.repcnt_thresholds.bypass_repcnt_thresh.q;
+  assign repcnt_fips_threshold = reg2hw.repcnt_thresholds.fips_thresh.q;
+  assign repcnt_fips_threshold_wr = reg2hw.repcnt_thresholds.fips_thresh.qe;
+  assign hw2reg.repcnt_thresholds.fips_thresh.d = repcnt_fips_threshold_oneway;
+  assign repcnt_bypass_threshold = reg2hw.repcnt_thresholds.bypass_thresh.q;
+  assign repcnt_bypass_threshold_wr = reg2hw.repcnt_thresholds.bypass_thresh.qe;
+  assign hw2reg.repcnt_thresholds.bypass_thresh.d = repcnt_bypass_threshold_oneway;
 
 
-  assign adaptp_hi_fips_threshold = reg2hw.adaptp_hi_thresholds.fips_adaptp_hi_thresh.q;
-  assign adaptp_hi_bypass_threshold = reg2hw.adaptp_hi_thresholds.bypass_adaptp_hi_thresh.q;
+  assign adaptp_hi_fips_threshold = reg2hw.adaptp_hi_thresholds.fips_thresh.q;
+  assign adaptp_hi_fips_threshold_wr = reg2hw.adaptp_hi_thresholds.fips_thresh.qe;
+  assign hw2reg.adaptp_hi_thresholds.fips_thresh.d = adaptp_hi_fips_threshold_oneway;
+  assign adaptp_hi_bypass_threshold = reg2hw.adaptp_hi_thresholds.bypass_thresh.q;
+  assign adaptp_hi_bypass_threshold_wr = reg2hw.adaptp_hi_thresholds.bypass_thresh.qe;
+  assign hw2reg.adaptp_hi_thresholds.bypass_thresh.d = adaptp_hi_bypass_threshold_oneway;
 
-  assign adaptp_lo_fips_threshold = reg2hw.adaptp_lo_thresholds.fips_adaptp_lo_thresh.q;
-  assign adaptp_lo_bypass_threshold = reg2hw.adaptp_lo_thresholds.bypass_adaptp_lo_thresh.q;
-
-
-  assign bucket_fips_threshold = reg2hw.bucket_thresholds.fips_bucket_thresh.q;
-  assign bucket_bypass_threshold = reg2hw.bucket_thresholds.bypass_bucket_thresh.q;
-
-
-  assign markov_hi_fips_threshold = reg2hw.markov_hi_thresholds.fips_markov_hi_thresh.q;
-  assign markov_hi_bypass_threshold = reg2hw.markov_hi_thresholds.bypass_markov_hi_thresh.q;
-
-  assign markov_lo_fips_threshold = reg2hw.markov_lo_thresholds.fips_markov_lo_thresh.q;
-  assign markov_lo_bypass_threshold = reg2hw.markov_lo_thresholds.bypass_markov_lo_thresh.q;
+  assign adaptp_lo_fips_threshold = reg2hw.adaptp_lo_thresholds.fips_thresh.q;
+  assign adaptp_lo_fips_threshold_wr = reg2hw.adaptp_lo_thresholds.fips_thresh.qe;
+  assign hw2reg.adaptp_lo_thresholds.fips_thresh.d = adaptp_lo_fips_threshold_oneway;
+  assign adaptp_lo_bypass_threshold = reg2hw.adaptp_lo_thresholds.bypass_thresh.q;
+  assign adaptp_lo_bypass_threshold_wr = reg2hw.adaptp_lo_thresholds.bypass_thresh.qe;
+  assign hw2reg.adaptp_lo_thresholds.bypass_thresh.d = adaptp_lo_bypass_threshold_oneway;
 
 
-  assign extht_hi_fips_threshold = reg2hw.extht_hi_thresholds.fips_extht_hi_thresh.q;
-  assign extht_hi_bypass_threshold = reg2hw.extht_hi_thresholds.bypass_extht_hi_thresh.q;
+  assign bucket_fips_threshold = reg2hw.bucket_thresholds.fips_thresh.q;
+  assign bucket_fips_threshold_wr = reg2hw.bucket_thresholds.fips_thresh.qe;
+  assign hw2reg.bucket_thresholds.fips_thresh.d = bucket_fips_threshold_oneway;
+  assign bucket_bypass_threshold = reg2hw.bucket_thresholds.bypass_thresh.q;
+  assign bucket_bypass_threshold_wr = reg2hw.bucket_thresholds.bypass_thresh.qe;
+  assign hw2reg.bucket_thresholds.bypass_thresh.d = bucket_bypass_threshold_oneway;
 
-  assign extht_lo_fips_threshold = reg2hw.extht_lo_thresholds.fips_extht_lo_thresh.q;
-  assign extht_lo_bypass_threshold = reg2hw.extht_lo_thresholds.bypass_extht_lo_thresh.q;
+
+  assign markov_hi_fips_threshold = reg2hw.markov_hi_thresholds.fips_thresh.q;
+  assign markov_hi_fips_threshold_wr = reg2hw.markov_hi_thresholds.fips_thresh.qe;
+  assign hw2reg.markov_hi_thresholds.fips_thresh.d = markov_hi_fips_threshold_oneway;
+  assign markov_hi_bypass_threshold = reg2hw.markov_hi_thresholds.bypass_thresh.q;
+  assign markov_hi_bypass_threshold_wr = reg2hw.markov_hi_thresholds.bypass_thresh.qe;
+  assign hw2reg.markov_hi_thresholds.bypass_thresh.d = markov_hi_bypass_threshold_oneway;
+
+  assign markov_lo_fips_threshold = reg2hw.markov_lo_thresholds.fips_thresh.q;
+  assign markov_lo_fips_threshold_wr = reg2hw.markov_lo_thresholds.fips_thresh.qe;
+  assign hw2reg.markov_lo_thresholds.fips_thresh.d = markov_lo_fips_threshold_oneway;
+  assign markov_lo_bypass_threshold = reg2hw.markov_lo_thresholds.bypass_thresh.q;
+  assign markov_lo_bypass_threshold_wr = reg2hw.markov_lo_thresholds.bypass_thresh.qe;
+  assign hw2reg.markov_lo_thresholds.bypass_thresh.d = markov_lo_bypass_threshold_oneway;
+
+
+  assign extht_hi_fips_threshold = reg2hw.extht_hi_thresholds.fips_thresh.q;
+  assign extht_hi_fips_threshold_wr = reg2hw.extht_hi_thresholds.fips_thresh.qe;
+  assign hw2reg.extht_hi_thresholds.fips_thresh.d = extht_hi_fips_threshold_oneway;
+  assign extht_hi_bypass_threshold = reg2hw.extht_hi_thresholds.bypass_thresh.q;
+  assign extht_hi_bypass_threshold_wr = reg2hw.extht_hi_thresholds.bypass_thresh.qe;
+  assign hw2reg.extht_hi_thresholds.bypass_thresh.d = extht_hi_bypass_threshold_oneway;
+
+  assign extht_lo_fips_threshold = reg2hw.extht_lo_thresholds.fips_thresh.q;
+  assign extht_lo_fips_threshold_wr = reg2hw.extht_lo_thresholds.fips_thresh.qe;
+  assign hw2reg.extht_lo_thresholds.fips_thresh.d = extht_lo_fips_threshold_oneway;
+  assign extht_lo_bypass_threshold = reg2hw.extht_lo_thresholds.bypass_thresh.q;
+  assign extht_lo_bypass_threshold_wr = reg2hw.extht_lo_thresholds.bypass_thresh.qe;
+  assign hw2reg.extht_lo_thresholds.bypass_thresh.d = extht_lo_bypass_threshold_oneway;
+
 
 
   assign health_test_window = es_bypass_mode ? health_test_bypass_window : health_test_fips_window;
-  assign repcnt_threshold = es_bypass_mode ? repcnt_bypass_threshold : repcnt_fips_threshold;
-  assign adaptp_hi_threshold = es_bypass_mode ? adaptp_hi_bypass_threshold :
-         adaptp_hi_fips_threshold;
-  assign adaptp_lo_threshold = es_bypass_mode ? adaptp_lo_bypass_threshold :
-         adaptp_lo_fips_threshold;
-  assign bucket_threshold = es_bypass_mode ? bucket_bypass_threshold : bucket_fips_threshold;
-  assign markov_hi_threshold = es_bypass_mode ? markov_hi_bypass_threshold :
-         markov_hi_fips_threshold;
-  assign markov_lo_threshold = es_bypass_mode ? markov_lo_bypass_threshold :
-         markov_lo_fips_threshold;
-  assign extht_hi_threshold = es_bypass_mode ? extht_hi_bypass_threshold :
-         extht_hi_fips_threshold;
-  assign extht_lo_threshold = es_bypass_mode ? extht_lo_bypass_threshold :
-         extht_lo_fips_threshold;
+
+  //------------------------------
+  // repcnt one-way thresholds
+  //------------------------------
+  assign repcnt_threshold = es_bypass_mode ? repcnt_bypass_threshold_oneway :
+         repcnt_fips_threshold_oneway;
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(0)
+  ) u_entropy_src_watermark_reg_repcnt_thresh_fips (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (repcnt_fips_threshold_wr),
+    .value_i             (repcnt_fips_threshold),
+    .value_o             (repcnt_fips_threshold_oneway)
+  );
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(0)
+  ) u_entropy_src_watermark_reg_repcnt_thresh_bypass (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (repcnt_bypass_threshold_wr),
+    .value_i             (repcnt_bypass_threshold),
+    .value_o             (repcnt_bypass_threshold_oneway)
+  );
+
+
+  //------------------------------
+  // adaptp one-way thresholds
+  //------------------------------
+  assign adaptp_hi_threshold = es_bypass_mode ? adaptp_hi_bypass_threshold_oneway :
+         adaptp_hi_fips_threshold_oneway;
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(0)
+  ) u_entropy_src_watermark_reg_adaptp_hi_thresh_fips (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (adaptp_hi_fips_threshold_wr),
+    .value_i             (adaptp_hi_fips_threshold),
+    .value_o             (adaptp_hi_fips_threshold_oneway)
+  );
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(0)
+  ) u_entropy_src_watermark_reg_adaptp_hi_thresh_bypass (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (adaptp_hi_bypass_threshold_wr),
+    .value_i             (adaptp_hi_bypass_threshold),
+    .value_o             (adaptp_hi_bypass_threshold_oneway)
+  );
+
+  assign adaptp_lo_threshold = es_bypass_mode ? adaptp_lo_bypass_threshold_oneway :
+         adaptp_lo_fips_threshold_oneway;
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_adaptp_lo_thresh_fips (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (adaptp_lo_fips_threshold_wr),
+    .value_i             (adaptp_lo_fips_threshold),
+    .value_o             (adaptp_lo_fips_threshold_oneway)
+  );
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_adaptp_lo_thresh_bypass (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (adaptp_lo_bypass_threshold_wr),
+    .value_i             (adaptp_lo_bypass_threshold),
+    .value_o             (adaptp_lo_bypass_threshold_oneway)
+  );
+
+
+  //------------------------------
+  // bucket one-way thresholds
+  //------------------------------
+  assign bucket_threshold = es_bypass_mode ? bucket_bypass_threshold_oneway :
+         bucket_fips_threshold_oneway;
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(0)
+  ) u_entropy_src_watermark_reg_bucket_thresh_fips (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (bucket_fips_threshold_wr),
+    .value_i             (bucket_fips_threshold),
+    .value_o             (bucket_fips_threshold_oneway)
+  );
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(0)
+  ) u_entropy_src_watermark_reg_bucket_thresh_bypass (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (bucket_bypass_threshold_wr),
+    .value_i             (bucket_bypass_threshold),
+    .value_o             (bucket_bypass_threshold_oneway)
+  );
+
+
+  //------------------------------
+  // markov one-way thresholds
+  //------------------------------
+  assign markov_hi_threshold = es_bypass_mode ? markov_hi_bypass_threshold_oneway :
+         markov_hi_fips_threshold_oneway;
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(0)
+  ) u_entropy_src_watermark_reg_markov_hi_thresh_fips (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (markov_hi_fips_threshold_wr),
+    .value_i             (markov_hi_fips_threshold),
+    .value_o             (markov_hi_fips_threshold_oneway)
+  );
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(0)
+  ) u_entropy_src_watermark_reg_markov_hi_thresh_bypass (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (markov_hi_bypass_threshold_wr),
+    .value_i             (markov_hi_bypass_threshold),
+    .value_o             (markov_hi_bypass_threshold_oneway)
+  );
+
+  assign markov_lo_threshold = es_bypass_mode ? markov_lo_bypass_threshold_oneway :
+         markov_lo_fips_threshold_oneway;
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_markov_lo_thresh_fips (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (markov_lo_fips_threshold_wr),
+    .value_i             (markov_lo_fips_threshold),
+    .value_o             (markov_lo_fips_threshold_oneway)
+  );
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_markov_lo_thresh_bypass (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (markov_lo_bypass_threshold_wr),
+    .value_i             (markov_lo_bypass_threshold),
+    .value_o             (markov_lo_bypass_threshold_oneway)
+  );
+
+
+  //------------------------------
+  // extht one-way thresholds
+  //------------------------------
+  assign extht_hi_threshold = es_bypass_mode ? extht_hi_bypass_threshold_oneway :
+         extht_hi_fips_threshold_oneway;
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(0)
+  ) u_entropy_src_watermark_reg_extht_hi_thresh_fips (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (extht_hi_fips_threshold_wr),
+    .value_i             (extht_hi_fips_threshold),
+    .value_o             (extht_hi_fips_threshold_oneway)
+  );
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(0)
+  ) u_entropy_src_watermark_reg_extht_hi_thresh_bypass (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (extht_hi_bypass_threshold_wr),
+    .value_i             (extht_hi_bypass_threshold),
+    .value_o             (extht_hi_bypass_threshold_oneway)
+  );
+
+
+  assign extht_lo_threshold = es_bypass_mode ? extht_lo_bypass_threshold_oneway :
+         extht_lo_fips_threshold_oneway;
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_extht_lo_thresh_fips (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (extht_lo_fips_threshold_wr),
+    .value_i             (extht_lo_fips_threshold),
+    .value_o             (extht_lo_fips_threshold_oneway)
+  );
+
+  entropy_src_watermark_reg #(
+    .RegWidth(HalfRegWidth),
+    .HighWatermark(1)
+  ) u_entropy_src_watermark_reg_extht_lo_thresh_bypass (
+    .clk_i               (clk_i),
+    .rst_ni              (rst_ni),
+    .clear_i             (1'b0),
+    .active_i            (!es_enable),
+    .event_i             (extht_lo_bypass_threshold_wr),
+    .value_i             (extht_lo_bypass_threshold),
+    .value_o             (extht_lo_bypass_threshold_oneway)
+  );
+
+
+
+  //------------------------------
+  // misc control settings
+  //------------------------------
 
   assign event_es_health_test_failed = recov_alert_event;
 
@@ -735,8 +1045,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (repcnt_total_fails)
   );
 
-  assign hw2reg.repcnt_hi_watermarks.fips_repcnt_hi_watermark.d = repcnt_event_hwm_fips;
-  assign hw2reg.repcnt_hi_watermarks.bypass_repcnt_hi_watermark.d = repcnt_event_hwm_bypass;
+  assign hw2reg.repcnt_hi_watermarks.fips_watermark.d = repcnt_event_hwm_fips;
+  assign hw2reg.repcnt_hi_watermarks.bypass_watermark.d = repcnt_event_hwm_bypass;
   assign hw2reg.repcnt_total_fails.d = repcnt_total_fails;
 
   //--------------------------------------------
@@ -800,8 +1110,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
 
-  assign hw2reg.adaptp_hi_watermarks.fips_adaptp_hi_watermark.d = adaptp_hi_event_hwm_fips;
-  assign hw2reg.adaptp_hi_watermarks.bypass_adaptp_hi_watermark.d = adaptp_hi_event_hwm_bypass;
+  assign hw2reg.adaptp_hi_watermarks.fips_watermark.d = adaptp_hi_event_hwm_fips;
+  assign hw2reg.adaptp_hi_watermarks.bypass_watermark.d = adaptp_hi_event_hwm_bypass;
   assign hw2reg.adaptp_hi_total_fails.d = adaptp_hi_total_fails;
 
 
@@ -842,8 +1152,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (adaptp_lo_total_fails)
   );
 
-  assign hw2reg.adaptp_lo_watermarks.fips_adaptp_lo_watermark.d = adaptp_lo_event_hwm_fips;
-  assign hw2reg.adaptp_lo_watermarks.bypass_adaptp_lo_watermark.d = adaptp_lo_event_hwm_bypass;
+  assign hw2reg.adaptp_lo_watermarks.fips_watermark.d = adaptp_lo_event_hwm_fips;
+  assign hw2reg.adaptp_lo_watermarks.bypass_watermark.d = adaptp_lo_event_hwm_bypass;
   assign hw2reg.adaptp_lo_total_fails.d = adaptp_lo_total_fails;
 
 
@@ -904,8 +1214,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (bucket_total_fails)
   );
 
-  assign hw2reg.bucket_hi_watermarks.fips_bucket_hi_watermark.d = bucket_event_hwm_fips;
-  assign hw2reg.bucket_hi_watermarks.bypass_bucket_hi_watermark.d = bucket_event_hwm_bypass;
+  assign hw2reg.bucket_hi_watermarks.fips_watermark.d = bucket_event_hwm_fips;
+  assign hw2reg.bucket_hi_watermarks.bypass_watermark.d = bucket_event_hwm_bypass;
   assign hw2reg.bucket_total_fails.d = bucket_total_fails;
 
 
@@ -969,14 +1279,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (markov_hi_total_fails)
   );
 
-  assign hw2reg.markov_hi_watermarks.fips_markov_hi_watermark.d = markov_hi_event_hwm_fips;
-  assign hw2reg.markov_hi_watermarks.bypass_markov_hi_watermark.d = markov_hi_event_hwm_bypass;
+  assign hw2reg.markov_hi_watermarks.fips_watermark.d = markov_hi_event_hwm_fips;
+  assign hw2reg.markov_hi_watermarks.bypass_watermark.d = markov_hi_event_hwm_bypass;
   assign hw2reg.markov_hi_total_fails.d = markov_hi_total_fails;
 
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
+    .HighWatermark(0)
   ) u_entropy_src_watermark_reg_markov_lo_fips (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
@@ -989,7 +1299,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
-    .HighWatermark(1)
+    .HighWatermark(0)
   ) u_entropy_src_watermark_reg_markov_lo_bypass (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
@@ -1011,8 +1321,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (markov_lo_total_fails)
   );
 
-  assign hw2reg.markov_lo_watermarks.fips_markov_lo_watermark.d = markov_lo_event_hwm_fips;
-  assign hw2reg.markov_lo_watermarks.bypass_markov_lo_watermark.d = markov_lo_event_hwm_bypass;
+  assign hw2reg.markov_lo_watermarks.fips_watermark.d = markov_lo_event_hwm_fips;
+  assign hw2reg.markov_lo_watermarks.bypass_watermark.d = markov_lo_event_hwm_bypass;
   assign hw2reg.markov_lo_total_fails.d = markov_lo_total_fails;
 
 
@@ -1073,8 +1383,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
 
-  assign hw2reg.extht_hi_watermarks.fips_extht_hi_watermark.d = extht_hi_event_hwm_fips;
-  assign hw2reg.extht_hi_watermarks.bypass_extht_hi_watermark.d = extht_hi_event_hwm_bypass;
+  assign hw2reg.extht_hi_watermarks.fips_watermark.d = extht_hi_event_hwm_fips;
+  assign hw2reg.extht_hi_watermarks.bypass_watermark.d = extht_hi_event_hwm_bypass;
   assign hw2reg.extht_hi_total_fails.d = extht_hi_total_fails;
 
 
@@ -1115,8 +1425,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .value_o             (extht_lo_total_fails)
   );
 
-  assign hw2reg.extht_lo_watermarks.fips_extht_lo_watermark.d = extht_lo_event_hwm_fips;
-  assign hw2reg.extht_lo_watermarks.bypass_extht_lo_watermark.d = extht_lo_event_hwm_bypass;
+  assign hw2reg.extht_lo_watermarks.fips_watermark.d = extht_lo_event_hwm_fips;
+  assign hw2reg.extht_lo_watermarks.bypass_watermark.d = extht_lo_event_hwm_bypass;
   assign hw2reg.extht_lo_total_fails.d = extht_lo_total_fails;
 
 

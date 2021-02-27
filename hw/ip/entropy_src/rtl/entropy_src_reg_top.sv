@@ -180,86 +180,102 @@ module entropy_src_reg_top (
   logic [15:0] health_test_windows_bypass_window_qs;
   logic [15:0] health_test_windows_bypass_window_wd;
   logic health_test_windows_bypass_window_we;
-  logic [15:0] repcnt_thresholds_fips_repcnt_thresh_qs;
-  logic [15:0] repcnt_thresholds_fips_repcnt_thresh_wd;
-  logic repcnt_thresholds_fips_repcnt_thresh_we;
-  logic [15:0] repcnt_thresholds_bypass_repcnt_thresh_qs;
-  logic [15:0] repcnt_thresholds_bypass_repcnt_thresh_wd;
-  logic repcnt_thresholds_bypass_repcnt_thresh_we;
-  logic [15:0] adaptp_hi_thresholds_fips_adaptp_hi_thresh_qs;
-  logic [15:0] adaptp_hi_thresholds_fips_adaptp_hi_thresh_wd;
-  logic adaptp_hi_thresholds_fips_adaptp_hi_thresh_we;
-  logic [15:0] adaptp_hi_thresholds_bypass_adaptp_hi_thresh_qs;
-  logic [15:0] adaptp_hi_thresholds_bypass_adaptp_hi_thresh_wd;
-  logic adaptp_hi_thresholds_bypass_adaptp_hi_thresh_we;
-  logic [15:0] adaptp_lo_thresholds_fips_adaptp_lo_thresh_qs;
-  logic [15:0] adaptp_lo_thresholds_fips_adaptp_lo_thresh_wd;
-  logic adaptp_lo_thresholds_fips_adaptp_lo_thresh_we;
-  logic [15:0] adaptp_lo_thresholds_bypass_adaptp_lo_thresh_qs;
-  logic [15:0] adaptp_lo_thresholds_bypass_adaptp_lo_thresh_wd;
-  logic adaptp_lo_thresholds_bypass_adaptp_lo_thresh_we;
-  logic [15:0] bucket_thresholds_fips_bucket_thresh_qs;
-  logic [15:0] bucket_thresholds_fips_bucket_thresh_wd;
-  logic bucket_thresholds_fips_bucket_thresh_we;
-  logic [15:0] bucket_thresholds_bypass_bucket_thresh_qs;
-  logic [15:0] bucket_thresholds_bypass_bucket_thresh_wd;
-  logic bucket_thresholds_bypass_bucket_thresh_we;
-  logic [15:0] markov_hi_thresholds_fips_markov_hi_thresh_qs;
-  logic [15:0] markov_hi_thresholds_fips_markov_hi_thresh_wd;
-  logic markov_hi_thresholds_fips_markov_hi_thresh_we;
-  logic [15:0] markov_hi_thresholds_bypass_markov_hi_thresh_qs;
-  logic [15:0] markov_hi_thresholds_bypass_markov_hi_thresh_wd;
-  logic markov_hi_thresholds_bypass_markov_hi_thresh_we;
-  logic [15:0] markov_lo_thresholds_fips_markov_lo_thresh_qs;
-  logic [15:0] markov_lo_thresholds_fips_markov_lo_thresh_wd;
-  logic markov_lo_thresholds_fips_markov_lo_thresh_we;
-  logic [15:0] markov_lo_thresholds_bypass_markov_lo_thresh_qs;
-  logic [15:0] markov_lo_thresholds_bypass_markov_lo_thresh_wd;
-  logic markov_lo_thresholds_bypass_markov_lo_thresh_we;
-  logic [15:0] extht_hi_thresholds_fips_extht_hi_thresh_qs;
-  logic [15:0] extht_hi_thresholds_fips_extht_hi_thresh_wd;
-  logic extht_hi_thresholds_fips_extht_hi_thresh_we;
-  logic [15:0] extht_hi_thresholds_bypass_extht_hi_thresh_qs;
-  logic [15:0] extht_hi_thresholds_bypass_extht_hi_thresh_wd;
-  logic extht_hi_thresholds_bypass_extht_hi_thresh_we;
-  logic [15:0] extht_lo_thresholds_fips_extht_lo_thresh_qs;
-  logic [15:0] extht_lo_thresholds_fips_extht_lo_thresh_wd;
-  logic extht_lo_thresholds_fips_extht_lo_thresh_we;
-  logic [15:0] extht_lo_thresholds_bypass_extht_lo_thresh_qs;
-  logic [15:0] extht_lo_thresholds_bypass_extht_lo_thresh_wd;
-  logic extht_lo_thresholds_bypass_extht_lo_thresh_we;
-  logic [15:0] repcnt_hi_watermarks_fips_repcnt_hi_watermark_qs;
-  logic repcnt_hi_watermarks_fips_repcnt_hi_watermark_re;
-  logic [15:0] repcnt_hi_watermarks_bypass_repcnt_hi_watermark_qs;
-  logic repcnt_hi_watermarks_bypass_repcnt_hi_watermark_re;
-  logic [15:0] adaptp_hi_watermarks_fips_adaptp_hi_watermark_qs;
-  logic adaptp_hi_watermarks_fips_adaptp_hi_watermark_re;
-  logic [15:0] adaptp_hi_watermarks_bypass_adaptp_hi_watermark_qs;
-  logic adaptp_hi_watermarks_bypass_adaptp_hi_watermark_re;
-  logic [15:0] adaptp_lo_watermarks_fips_adaptp_lo_watermark_qs;
-  logic adaptp_lo_watermarks_fips_adaptp_lo_watermark_re;
-  logic [15:0] adaptp_lo_watermarks_bypass_adaptp_lo_watermark_qs;
-  logic adaptp_lo_watermarks_bypass_adaptp_lo_watermark_re;
-  logic [15:0] extht_hi_watermarks_fips_extht_hi_watermark_qs;
-  logic extht_hi_watermarks_fips_extht_hi_watermark_re;
-  logic [15:0] extht_hi_watermarks_bypass_extht_hi_watermark_qs;
-  logic extht_hi_watermarks_bypass_extht_hi_watermark_re;
-  logic [15:0] extht_lo_watermarks_fips_extht_lo_watermark_qs;
-  logic extht_lo_watermarks_fips_extht_lo_watermark_re;
-  logic [15:0] extht_lo_watermarks_bypass_extht_lo_watermark_qs;
-  logic extht_lo_watermarks_bypass_extht_lo_watermark_re;
-  logic [15:0] bucket_hi_watermarks_fips_bucket_hi_watermark_qs;
-  logic bucket_hi_watermarks_fips_bucket_hi_watermark_re;
-  logic [15:0] bucket_hi_watermarks_bypass_bucket_hi_watermark_qs;
-  logic bucket_hi_watermarks_bypass_bucket_hi_watermark_re;
-  logic [15:0] markov_hi_watermarks_fips_markov_hi_watermark_qs;
-  logic markov_hi_watermarks_fips_markov_hi_watermark_re;
-  logic [15:0] markov_hi_watermarks_bypass_markov_hi_watermark_qs;
-  logic markov_hi_watermarks_bypass_markov_hi_watermark_re;
-  logic [15:0] markov_lo_watermarks_fips_markov_lo_watermark_qs;
-  logic markov_lo_watermarks_fips_markov_lo_watermark_re;
-  logic [15:0] markov_lo_watermarks_bypass_markov_lo_watermark_qs;
-  logic markov_lo_watermarks_bypass_markov_lo_watermark_re;
+  logic [15:0] repcnt_thresholds_fips_thresh_qs;
+  logic [15:0] repcnt_thresholds_fips_thresh_wd;
+  logic repcnt_thresholds_fips_thresh_we;
+  logic repcnt_thresholds_fips_thresh_re;
+  logic [15:0] repcnt_thresholds_bypass_thresh_qs;
+  logic [15:0] repcnt_thresholds_bypass_thresh_wd;
+  logic repcnt_thresholds_bypass_thresh_we;
+  logic repcnt_thresholds_bypass_thresh_re;
+  logic [15:0] adaptp_hi_thresholds_fips_thresh_qs;
+  logic [15:0] adaptp_hi_thresholds_fips_thresh_wd;
+  logic adaptp_hi_thresholds_fips_thresh_we;
+  logic adaptp_hi_thresholds_fips_thresh_re;
+  logic [15:0] adaptp_hi_thresholds_bypass_thresh_qs;
+  logic [15:0] adaptp_hi_thresholds_bypass_thresh_wd;
+  logic adaptp_hi_thresholds_bypass_thresh_we;
+  logic adaptp_hi_thresholds_bypass_thresh_re;
+  logic [15:0] adaptp_lo_thresholds_fips_thresh_qs;
+  logic [15:0] adaptp_lo_thresholds_fips_thresh_wd;
+  logic adaptp_lo_thresholds_fips_thresh_we;
+  logic adaptp_lo_thresholds_fips_thresh_re;
+  logic [15:0] adaptp_lo_thresholds_bypass_thresh_qs;
+  logic [15:0] adaptp_lo_thresholds_bypass_thresh_wd;
+  logic adaptp_lo_thresholds_bypass_thresh_we;
+  logic adaptp_lo_thresholds_bypass_thresh_re;
+  logic [15:0] bucket_thresholds_fips_thresh_qs;
+  logic [15:0] bucket_thresholds_fips_thresh_wd;
+  logic bucket_thresholds_fips_thresh_we;
+  logic bucket_thresholds_fips_thresh_re;
+  logic [15:0] bucket_thresholds_bypass_thresh_qs;
+  logic [15:0] bucket_thresholds_bypass_thresh_wd;
+  logic bucket_thresholds_bypass_thresh_we;
+  logic bucket_thresholds_bypass_thresh_re;
+  logic [15:0] markov_hi_thresholds_fips_thresh_qs;
+  logic [15:0] markov_hi_thresholds_fips_thresh_wd;
+  logic markov_hi_thresholds_fips_thresh_we;
+  logic markov_hi_thresholds_fips_thresh_re;
+  logic [15:0] markov_hi_thresholds_bypass_thresh_qs;
+  logic [15:0] markov_hi_thresholds_bypass_thresh_wd;
+  logic markov_hi_thresholds_bypass_thresh_we;
+  logic markov_hi_thresholds_bypass_thresh_re;
+  logic [15:0] markov_lo_thresholds_fips_thresh_qs;
+  logic [15:0] markov_lo_thresholds_fips_thresh_wd;
+  logic markov_lo_thresholds_fips_thresh_we;
+  logic markov_lo_thresholds_fips_thresh_re;
+  logic [15:0] markov_lo_thresholds_bypass_thresh_qs;
+  logic [15:0] markov_lo_thresholds_bypass_thresh_wd;
+  logic markov_lo_thresholds_bypass_thresh_we;
+  logic markov_lo_thresholds_bypass_thresh_re;
+  logic [15:0] extht_hi_thresholds_fips_thresh_qs;
+  logic [15:0] extht_hi_thresholds_fips_thresh_wd;
+  logic extht_hi_thresholds_fips_thresh_we;
+  logic extht_hi_thresholds_fips_thresh_re;
+  logic [15:0] extht_hi_thresholds_bypass_thresh_qs;
+  logic [15:0] extht_hi_thresholds_bypass_thresh_wd;
+  logic extht_hi_thresholds_bypass_thresh_we;
+  logic extht_hi_thresholds_bypass_thresh_re;
+  logic [15:0] extht_lo_thresholds_fips_thresh_qs;
+  logic [15:0] extht_lo_thresholds_fips_thresh_wd;
+  logic extht_lo_thresholds_fips_thresh_we;
+  logic extht_lo_thresholds_fips_thresh_re;
+  logic [15:0] extht_lo_thresholds_bypass_thresh_qs;
+  logic [15:0] extht_lo_thresholds_bypass_thresh_wd;
+  logic extht_lo_thresholds_bypass_thresh_we;
+  logic extht_lo_thresholds_bypass_thresh_re;
+  logic [15:0] repcnt_hi_watermarks_fips_watermark_qs;
+  logic repcnt_hi_watermarks_fips_watermark_re;
+  logic [15:0] repcnt_hi_watermarks_bypass_watermark_qs;
+  logic repcnt_hi_watermarks_bypass_watermark_re;
+  logic [15:0] adaptp_hi_watermarks_fips_watermark_qs;
+  logic adaptp_hi_watermarks_fips_watermark_re;
+  logic [15:0] adaptp_hi_watermarks_bypass_watermark_qs;
+  logic adaptp_hi_watermarks_bypass_watermark_re;
+  logic [15:0] adaptp_lo_watermarks_fips_watermark_qs;
+  logic adaptp_lo_watermarks_fips_watermark_re;
+  logic [15:0] adaptp_lo_watermarks_bypass_watermark_qs;
+  logic adaptp_lo_watermarks_bypass_watermark_re;
+  logic [15:0] extht_hi_watermarks_fips_watermark_qs;
+  logic extht_hi_watermarks_fips_watermark_re;
+  logic [15:0] extht_hi_watermarks_bypass_watermark_qs;
+  logic extht_hi_watermarks_bypass_watermark_re;
+  logic [15:0] extht_lo_watermarks_fips_watermark_qs;
+  logic extht_lo_watermarks_fips_watermark_re;
+  logic [15:0] extht_lo_watermarks_bypass_watermark_qs;
+  logic extht_lo_watermarks_bypass_watermark_re;
+  logic [15:0] bucket_hi_watermarks_fips_watermark_qs;
+  logic bucket_hi_watermarks_fips_watermark_re;
+  logic [15:0] bucket_hi_watermarks_bypass_watermark_qs;
+  logic bucket_hi_watermarks_bypass_watermark_re;
+  logic [15:0] markov_hi_watermarks_fips_watermark_qs;
+  logic markov_hi_watermarks_fips_watermark_re;
+  logic [15:0] markov_hi_watermarks_bypass_watermark_qs;
+  logic markov_hi_watermarks_bypass_watermark_re;
+  logic [15:0] markov_lo_watermarks_fips_watermark_qs;
+  logic markov_lo_watermarks_fips_watermark_re;
+  logic [15:0] markov_lo_watermarks_bypass_watermark_qs;
+  logic markov_lo_watermarks_bypass_watermark_re;
   logic [31:0] repcnt_total_fails_qs;
   logic repcnt_total_fails_re;
   logic [31:0] adaptp_hi_total_fails_qs;
@@ -1031,691 +1047,531 @@ module entropy_src_reg_top (
   );
 
 
-  // R[repcnt_thresholds]: V(False)
+  // R[repcnt_thresholds]: V(True)
 
-  //   F[fips_repcnt_thresh]: 15:0
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h20)
-  ) u_repcnt_thresholds_fips_repcnt_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (repcnt_thresholds_fips_repcnt_thresh_we & regwen_qs),
-    .wd     (repcnt_thresholds_fips_repcnt_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.repcnt_thresholds.fips_repcnt_thresh.q ),
-
-    // to register interface (read)
-    .qs     (repcnt_thresholds_fips_repcnt_thresh_qs)
+  //   F[fips_thresh]: 15:0
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_repcnt_thresholds_fips_thresh (
+    .re     (repcnt_thresholds_fips_thresh_re),
+    // qualified with register enable
+    .we     (repcnt_thresholds_fips_thresh_we & regwen_qs),
+    .wd     (repcnt_thresholds_fips_thresh_wd),
+    .d      (hw2reg.repcnt_thresholds.fips_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.repcnt_thresholds.fips_thresh.qe),
+    .q      (reg2hw.repcnt_thresholds.fips_thresh.q ),
+    .qs     (repcnt_thresholds_fips_thresh_qs)
   );
 
 
-  //   F[bypass_repcnt_thresh]: 31:16
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h20)
-  ) u_repcnt_thresholds_bypass_repcnt_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (repcnt_thresholds_bypass_repcnt_thresh_we & regwen_qs),
-    .wd     (repcnt_thresholds_bypass_repcnt_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.repcnt_thresholds.bypass_repcnt_thresh.q ),
-
-    // to register interface (read)
-    .qs     (repcnt_thresholds_bypass_repcnt_thresh_qs)
+  //   F[bypass_thresh]: 31:16
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_repcnt_thresholds_bypass_thresh (
+    .re     (repcnt_thresholds_bypass_thresh_re),
+    // qualified with register enable
+    .we     (repcnt_thresholds_bypass_thresh_we & regwen_qs),
+    .wd     (repcnt_thresholds_bypass_thresh_wd),
+    .d      (hw2reg.repcnt_thresholds.bypass_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.repcnt_thresholds.bypass_thresh.qe),
+    .q      (reg2hw.repcnt_thresholds.bypass_thresh.q ),
+    .qs     (repcnt_thresholds_bypass_thresh_qs)
   );
 
 
-  // R[adaptp_hi_thresholds]: V(False)
+  // R[adaptp_hi_thresholds]: V(True)
 
-  //   F[fips_adaptp_hi_thresh]: 15:0
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h256)
-  ) u_adaptp_hi_thresholds_fips_adaptp_hi_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (adaptp_hi_thresholds_fips_adaptp_hi_thresh_we & regwen_qs),
-    .wd     (adaptp_hi_thresholds_fips_adaptp_hi_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.adaptp_hi_thresholds.fips_adaptp_hi_thresh.q ),
-
-    // to register interface (read)
-    .qs     (adaptp_hi_thresholds_fips_adaptp_hi_thresh_qs)
+  //   F[fips_thresh]: 15:0
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_adaptp_hi_thresholds_fips_thresh (
+    .re     (adaptp_hi_thresholds_fips_thresh_re),
+    // qualified with register enable
+    .we     (adaptp_hi_thresholds_fips_thresh_we & regwen_qs),
+    .wd     (adaptp_hi_thresholds_fips_thresh_wd),
+    .d      (hw2reg.adaptp_hi_thresholds.fips_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.adaptp_hi_thresholds.fips_thresh.qe),
+    .q      (reg2hw.adaptp_hi_thresholds.fips_thresh.q ),
+    .qs     (adaptp_hi_thresholds_fips_thresh_qs)
   );
 
 
-  //   F[bypass_adaptp_hi_thresh]: 31:16
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'he0)
-  ) u_adaptp_hi_thresholds_bypass_adaptp_hi_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (adaptp_hi_thresholds_bypass_adaptp_hi_thresh_we & regwen_qs),
-    .wd     (adaptp_hi_thresholds_bypass_adaptp_hi_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.adaptp_hi_thresholds.bypass_adaptp_hi_thresh.q ),
-
-    // to register interface (read)
-    .qs     (adaptp_hi_thresholds_bypass_adaptp_hi_thresh_qs)
+  //   F[bypass_thresh]: 31:16
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_adaptp_hi_thresholds_bypass_thresh (
+    .re     (adaptp_hi_thresholds_bypass_thresh_re),
+    // qualified with register enable
+    .we     (adaptp_hi_thresholds_bypass_thresh_we & regwen_qs),
+    .wd     (adaptp_hi_thresholds_bypass_thresh_wd),
+    .d      (hw2reg.adaptp_hi_thresholds.bypass_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.adaptp_hi_thresholds.bypass_thresh.qe),
+    .q      (reg2hw.adaptp_hi_thresholds.bypass_thresh.q ),
+    .qs     (adaptp_hi_thresholds_bypass_thresh_qs)
   );
 
 
-  // R[adaptp_lo_thresholds]: V(False)
+  // R[adaptp_lo_thresholds]: V(True)
 
-  //   F[fips_adaptp_lo_thresh]: 15:0
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h1aa)
-  ) u_adaptp_lo_thresholds_fips_adaptp_lo_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (adaptp_lo_thresholds_fips_adaptp_lo_thresh_we & regwen_qs),
-    .wd     (adaptp_lo_thresholds_fips_adaptp_lo_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.adaptp_lo_thresholds.fips_adaptp_lo_thresh.q ),
-
-    // to register interface (read)
-    .qs     (adaptp_lo_thresholds_fips_adaptp_lo_thresh_qs)
+  //   F[fips_thresh]: 15:0
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_adaptp_lo_thresholds_fips_thresh (
+    .re     (adaptp_lo_thresholds_fips_thresh_re),
+    // qualified with register enable
+    .we     (adaptp_lo_thresholds_fips_thresh_we & regwen_qs),
+    .wd     (adaptp_lo_thresholds_fips_thresh_wd),
+    .d      (hw2reg.adaptp_lo_thresholds.fips_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.adaptp_lo_thresholds.fips_thresh.qe),
+    .q      (reg2hw.adaptp_lo_thresholds.fips_thresh.q ),
+    .qs     (adaptp_lo_thresholds_fips_thresh_qs)
   );
 
 
-  //   F[bypass_adaptp_lo_thresh]: 31:16
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'ha0)
-  ) u_adaptp_lo_thresholds_bypass_adaptp_lo_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (adaptp_lo_thresholds_bypass_adaptp_lo_thresh_we & regwen_qs),
-    .wd     (adaptp_lo_thresholds_bypass_adaptp_lo_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.adaptp_lo_thresholds.bypass_adaptp_lo_thresh.q ),
-
-    // to register interface (read)
-    .qs     (adaptp_lo_thresholds_bypass_adaptp_lo_thresh_qs)
+  //   F[bypass_thresh]: 31:16
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_adaptp_lo_thresholds_bypass_thresh (
+    .re     (adaptp_lo_thresholds_bypass_thresh_re),
+    // qualified with register enable
+    .we     (adaptp_lo_thresholds_bypass_thresh_we & regwen_qs),
+    .wd     (adaptp_lo_thresholds_bypass_thresh_wd),
+    .d      (hw2reg.adaptp_lo_thresholds.bypass_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.adaptp_lo_thresholds.bypass_thresh.qe),
+    .q      (reg2hw.adaptp_lo_thresholds.bypass_thresh.q ),
+    .qs     (adaptp_lo_thresholds_bypass_thresh_qs)
   );
 
 
-  // R[bucket_thresholds]: V(False)
+  // R[bucket_thresholds]: V(True)
 
-  //   F[fips_bucket_thresh]: 15:0
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h20)
-  ) u_bucket_thresholds_fips_bucket_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (bucket_thresholds_fips_bucket_thresh_we & regwen_qs),
-    .wd     (bucket_thresholds_fips_bucket_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.bucket_thresholds.fips_bucket_thresh.q ),
-
-    // to register interface (read)
-    .qs     (bucket_thresholds_fips_bucket_thresh_qs)
+  //   F[fips_thresh]: 15:0
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_bucket_thresholds_fips_thresh (
+    .re     (bucket_thresholds_fips_thresh_re),
+    // qualified with register enable
+    .we     (bucket_thresholds_fips_thresh_we & regwen_qs),
+    .wd     (bucket_thresholds_fips_thresh_wd),
+    .d      (hw2reg.bucket_thresholds.fips_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.bucket_thresholds.fips_thresh.qe),
+    .q      (reg2hw.bucket_thresholds.fips_thresh.q ),
+    .qs     (bucket_thresholds_fips_thresh_qs)
   );
 
 
-  //   F[bypass_bucket_thresh]: 31:16
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h20)
-  ) u_bucket_thresholds_bypass_bucket_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (bucket_thresholds_bypass_bucket_thresh_we & regwen_qs),
-    .wd     (bucket_thresholds_bypass_bucket_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.bucket_thresholds.bypass_bucket_thresh.q ),
-
-    // to register interface (read)
-    .qs     (bucket_thresholds_bypass_bucket_thresh_qs)
+  //   F[bypass_thresh]: 31:16
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_bucket_thresholds_bypass_thresh (
+    .re     (bucket_thresholds_bypass_thresh_re),
+    // qualified with register enable
+    .we     (bucket_thresholds_bypass_thresh_we & regwen_qs),
+    .wd     (bucket_thresholds_bypass_thresh_wd),
+    .d      (hw2reg.bucket_thresholds.bypass_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.bucket_thresholds.bypass_thresh.qe),
+    .q      (reg2hw.bucket_thresholds.bypass_thresh.q ),
+    .qs     (bucket_thresholds_bypass_thresh_qs)
   );
 
 
-  // R[markov_hi_thresholds]: V(False)
+  // R[markov_hi_thresholds]: V(True)
 
-  //   F[fips_markov_hi_thresh]: 15:0
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h100)
-  ) u_markov_hi_thresholds_fips_markov_hi_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (markov_hi_thresholds_fips_markov_hi_thresh_we & regwen_qs),
-    .wd     (markov_hi_thresholds_fips_markov_hi_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.markov_hi_thresholds.fips_markov_hi_thresh.q ),
-
-    // to register interface (read)
-    .qs     (markov_hi_thresholds_fips_markov_hi_thresh_qs)
+  //   F[fips_thresh]: 15:0
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_markov_hi_thresholds_fips_thresh (
+    .re     (markov_hi_thresholds_fips_thresh_re),
+    // qualified with register enable
+    .we     (markov_hi_thresholds_fips_thresh_we & regwen_qs),
+    .wd     (markov_hi_thresholds_fips_thresh_wd),
+    .d      (hw2reg.markov_hi_thresholds.fips_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.markov_hi_thresholds.fips_thresh.qe),
+    .q      (reg2hw.markov_hi_thresholds.fips_thresh.q ),
+    .qs     (markov_hi_thresholds_fips_thresh_qs)
   );
 
 
-  //   F[bypass_markov_hi_thresh]: 31:16
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h60)
-  ) u_markov_hi_thresholds_bypass_markov_hi_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (markov_hi_thresholds_bypass_markov_hi_thresh_we & regwen_qs),
-    .wd     (markov_hi_thresholds_bypass_markov_hi_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.markov_hi_thresholds.bypass_markov_hi_thresh.q ),
-
-    // to register interface (read)
-    .qs     (markov_hi_thresholds_bypass_markov_hi_thresh_qs)
+  //   F[bypass_thresh]: 31:16
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_markov_hi_thresholds_bypass_thresh (
+    .re     (markov_hi_thresholds_bypass_thresh_re),
+    // qualified with register enable
+    .we     (markov_hi_thresholds_bypass_thresh_we & regwen_qs),
+    .wd     (markov_hi_thresholds_bypass_thresh_wd),
+    .d      (hw2reg.markov_hi_thresholds.bypass_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.markov_hi_thresholds.bypass_thresh.qe),
+    .q      (reg2hw.markov_hi_thresholds.bypass_thresh.q ),
+    .qs     (markov_hi_thresholds_bypass_thresh_qs)
   );
 
 
-  // R[markov_lo_thresholds]: V(False)
+  // R[markov_lo_thresholds]: V(True)
 
-  //   F[fips_markov_lo_thresh]: 15:0
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h10)
-  ) u_markov_lo_thresholds_fips_markov_lo_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (markov_lo_thresholds_fips_markov_lo_thresh_we & regwen_qs),
-    .wd     (markov_lo_thresholds_fips_markov_lo_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.markov_lo_thresholds.fips_markov_lo_thresh.q ),
-
-    // to register interface (read)
-    .qs     (markov_lo_thresholds_fips_markov_lo_thresh_qs)
+  //   F[fips_thresh]: 15:0
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_markov_lo_thresholds_fips_thresh (
+    .re     (markov_lo_thresholds_fips_thresh_re),
+    // qualified with register enable
+    .we     (markov_lo_thresholds_fips_thresh_we & regwen_qs),
+    .wd     (markov_lo_thresholds_fips_thresh_wd),
+    .d      (hw2reg.markov_lo_thresholds.fips_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.markov_lo_thresholds.fips_thresh.qe),
+    .q      (reg2hw.markov_lo_thresholds.fips_thresh.q ),
+    .qs     (markov_lo_thresholds_fips_thresh_qs)
   );
 
 
-  //   F[bypass_markov_lo_thresh]: 31:16
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h6)
-  ) u_markov_lo_thresholds_bypass_markov_lo_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (markov_lo_thresholds_bypass_markov_lo_thresh_we & regwen_qs),
-    .wd     (markov_lo_thresholds_bypass_markov_lo_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.markov_lo_thresholds.bypass_markov_lo_thresh.q ),
-
-    // to register interface (read)
-    .qs     (markov_lo_thresholds_bypass_markov_lo_thresh_qs)
+  //   F[bypass_thresh]: 31:16
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_markov_lo_thresholds_bypass_thresh (
+    .re     (markov_lo_thresholds_bypass_thresh_re),
+    // qualified with register enable
+    .we     (markov_lo_thresholds_bypass_thresh_we & regwen_qs),
+    .wd     (markov_lo_thresholds_bypass_thresh_wd),
+    .d      (hw2reg.markov_lo_thresholds.bypass_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.markov_lo_thresholds.bypass_thresh.qe),
+    .q      (reg2hw.markov_lo_thresholds.bypass_thresh.q ),
+    .qs     (markov_lo_thresholds_bypass_thresh_qs)
   );
 
 
-  // R[extht_hi_thresholds]: V(False)
+  // R[extht_hi_thresholds]: V(True)
 
-  //   F[fips_extht_hi_thresh]: 15:0
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h0)
-  ) u_extht_hi_thresholds_fips_extht_hi_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (extht_hi_thresholds_fips_extht_hi_thresh_we & regwen_qs),
-    .wd     (extht_hi_thresholds_fips_extht_hi_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.extht_hi_thresholds.fips_extht_hi_thresh.q ),
-
-    // to register interface (read)
-    .qs     (extht_hi_thresholds_fips_extht_hi_thresh_qs)
+  //   F[fips_thresh]: 15:0
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_extht_hi_thresholds_fips_thresh (
+    .re     (extht_hi_thresholds_fips_thresh_re),
+    // qualified with register enable
+    .we     (extht_hi_thresholds_fips_thresh_we & regwen_qs),
+    .wd     (extht_hi_thresholds_fips_thresh_wd),
+    .d      (hw2reg.extht_hi_thresholds.fips_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.extht_hi_thresholds.fips_thresh.qe),
+    .q      (reg2hw.extht_hi_thresholds.fips_thresh.q ),
+    .qs     (extht_hi_thresholds_fips_thresh_qs)
   );
 
 
-  //   F[bypass_extht_hi_thresh]: 31:16
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h0)
-  ) u_extht_hi_thresholds_bypass_extht_hi_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (extht_hi_thresholds_bypass_extht_hi_thresh_we & regwen_qs),
-    .wd     (extht_hi_thresholds_bypass_extht_hi_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.extht_hi_thresholds.bypass_extht_hi_thresh.q ),
-
-    // to register interface (read)
-    .qs     (extht_hi_thresholds_bypass_extht_hi_thresh_qs)
+  //   F[bypass_thresh]: 31:16
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_extht_hi_thresholds_bypass_thresh (
+    .re     (extht_hi_thresholds_bypass_thresh_re),
+    // qualified with register enable
+    .we     (extht_hi_thresholds_bypass_thresh_we & regwen_qs),
+    .wd     (extht_hi_thresholds_bypass_thresh_wd),
+    .d      (hw2reg.extht_hi_thresholds.bypass_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.extht_hi_thresholds.bypass_thresh.qe),
+    .q      (reg2hw.extht_hi_thresholds.bypass_thresh.q ),
+    .qs     (extht_hi_thresholds_bypass_thresh_qs)
   );
 
 
-  // R[extht_lo_thresholds]: V(False)
+  // R[extht_lo_thresholds]: V(True)
 
-  //   F[fips_extht_lo_thresh]: 15:0
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h0)
-  ) u_extht_lo_thresholds_fips_extht_lo_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (extht_lo_thresholds_fips_extht_lo_thresh_we & regwen_qs),
-    .wd     (extht_lo_thresholds_fips_extht_lo_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.extht_lo_thresholds.fips_extht_lo_thresh.q ),
-
-    // to register interface (read)
-    .qs     (extht_lo_thresholds_fips_extht_lo_thresh_qs)
+  //   F[fips_thresh]: 15:0
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_extht_lo_thresholds_fips_thresh (
+    .re     (extht_lo_thresholds_fips_thresh_re),
+    // qualified with register enable
+    .we     (extht_lo_thresholds_fips_thresh_we & regwen_qs),
+    .wd     (extht_lo_thresholds_fips_thresh_wd),
+    .d      (hw2reg.extht_lo_thresholds.fips_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.extht_lo_thresholds.fips_thresh.qe),
+    .q      (reg2hw.extht_lo_thresholds.fips_thresh.q ),
+    .qs     (extht_lo_thresholds_fips_thresh_qs)
   );
 
 
-  //   F[bypass_extht_lo_thresh]: 31:16
-  prim_subreg #(
-    .DW      (16),
-    .SWACCESS("RW"),
-    .RESVAL  (16'h0)
-  ) u_extht_lo_thresholds_bypass_extht_lo_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface (qualified with register enable)
-    .we     (extht_lo_thresholds_bypass_extht_lo_thresh_we & regwen_qs),
-    .wd     (extht_lo_thresholds_bypass_extht_lo_thresh_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.extht_lo_thresholds.bypass_extht_lo_thresh.q ),
-
-    // to register interface (read)
-    .qs     (extht_lo_thresholds_bypass_extht_lo_thresh_qs)
+  //   F[bypass_thresh]: 31:16
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_extht_lo_thresholds_bypass_thresh (
+    .re     (extht_lo_thresholds_bypass_thresh_re),
+    // qualified with register enable
+    .we     (extht_lo_thresholds_bypass_thresh_we & regwen_qs),
+    .wd     (extht_lo_thresholds_bypass_thresh_wd),
+    .d      (hw2reg.extht_lo_thresholds.bypass_thresh.d),
+    .qre    (),
+    .qe     (reg2hw.extht_lo_thresholds.bypass_thresh.qe),
+    .q      (reg2hw.extht_lo_thresholds.bypass_thresh.q ),
+    .qs     (extht_lo_thresholds_bypass_thresh_qs)
   );
 
 
   // R[repcnt_hi_watermarks]: V(True)
 
-  //   F[fips_repcnt_hi_watermark]: 15:0
+  //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
-  ) u_repcnt_hi_watermarks_fips_repcnt_hi_watermark (
-    .re     (repcnt_hi_watermarks_fips_repcnt_hi_watermark_re),
+  ) u_repcnt_hi_watermarks_fips_watermark (
+    .re     (repcnt_hi_watermarks_fips_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.repcnt_hi_watermarks.fips_repcnt_hi_watermark.d),
+    .d      (hw2reg.repcnt_hi_watermarks.fips_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (repcnt_hi_watermarks_fips_repcnt_hi_watermark_qs)
+    .qs     (repcnt_hi_watermarks_fips_watermark_qs)
   );
 
 
-  //   F[bypass_repcnt_hi_watermark]: 31:16
+  //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
     .DW    (16)
-  ) u_repcnt_hi_watermarks_bypass_repcnt_hi_watermark (
-    .re     (repcnt_hi_watermarks_bypass_repcnt_hi_watermark_re),
+  ) u_repcnt_hi_watermarks_bypass_watermark (
+    .re     (repcnt_hi_watermarks_bypass_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.repcnt_hi_watermarks.bypass_repcnt_hi_watermark.d),
+    .d      (hw2reg.repcnt_hi_watermarks.bypass_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (repcnt_hi_watermarks_bypass_repcnt_hi_watermark_qs)
+    .qs     (repcnt_hi_watermarks_bypass_watermark_qs)
   );
 
 
   // R[adaptp_hi_watermarks]: V(True)
 
-  //   F[fips_adaptp_hi_watermark]: 15:0
+  //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
-  ) u_adaptp_hi_watermarks_fips_adaptp_hi_watermark (
-    .re     (adaptp_hi_watermarks_fips_adaptp_hi_watermark_re),
+  ) u_adaptp_hi_watermarks_fips_watermark (
+    .re     (adaptp_hi_watermarks_fips_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.adaptp_hi_watermarks.fips_adaptp_hi_watermark.d),
+    .d      (hw2reg.adaptp_hi_watermarks.fips_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (adaptp_hi_watermarks_fips_adaptp_hi_watermark_qs)
+    .qs     (adaptp_hi_watermarks_fips_watermark_qs)
   );
 
 
-  //   F[bypass_adaptp_hi_watermark]: 31:16
+  //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
     .DW    (16)
-  ) u_adaptp_hi_watermarks_bypass_adaptp_hi_watermark (
-    .re     (adaptp_hi_watermarks_bypass_adaptp_hi_watermark_re),
+  ) u_adaptp_hi_watermarks_bypass_watermark (
+    .re     (adaptp_hi_watermarks_bypass_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.adaptp_hi_watermarks.bypass_adaptp_hi_watermark.d),
+    .d      (hw2reg.adaptp_hi_watermarks.bypass_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (adaptp_hi_watermarks_bypass_adaptp_hi_watermark_qs)
+    .qs     (adaptp_hi_watermarks_bypass_watermark_qs)
   );
 
 
   // R[adaptp_lo_watermarks]: V(True)
 
-  //   F[fips_adaptp_lo_watermark]: 15:0
+  //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
-  ) u_adaptp_lo_watermarks_fips_adaptp_lo_watermark (
-    .re     (adaptp_lo_watermarks_fips_adaptp_lo_watermark_re),
+  ) u_adaptp_lo_watermarks_fips_watermark (
+    .re     (adaptp_lo_watermarks_fips_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.adaptp_lo_watermarks.fips_adaptp_lo_watermark.d),
+    .d      (hw2reg.adaptp_lo_watermarks.fips_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (adaptp_lo_watermarks_fips_adaptp_lo_watermark_qs)
+    .qs     (adaptp_lo_watermarks_fips_watermark_qs)
   );
 
 
-  //   F[bypass_adaptp_lo_watermark]: 31:16
+  //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
     .DW    (16)
-  ) u_adaptp_lo_watermarks_bypass_adaptp_lo_watermark (
-    .re     (adaptp_lo_watermarks_bypass_adaptp_lo_watermark_re),
+  ) u_adaptp_lo_watermarks_bypass_watermark (
+    .re     (adaptp_lo_watermarks_bypass_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.adaptp_lo_watermarks.bypass_adaptp_lo_watermark.d),
+    .d      (hw2reg.adaptp_lo_watermarks.bypass_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (adaptp_lo_watermarks_bypass_adaptp_lo_watermark_qs)
+    .qs     (adaptp_lo_watermarks_bypass_watermark_qs)
   );
 
 
   // R[extht_hi_watermarks]: V(True)
 
-  //   F[fips_extht_hi_watermark]: 15:0
+  //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
-  ) u_extht_hi_watermarks_fips_extht_hi_watermark (
-    .re     (extht_hi_watermarks_fips_extht_hi_watermark_re),
+  ) u_extht_hi_watermarks_fips_watermark (
+    .re     (extht_hi_watermarks_fips_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.extht_hi_watermarks.fips_extht_hi_watermark.d),
+    .d      (hw2reg.extht_hi_watermarks.fips_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (extht_hi_watermarks_fips_extht_hi_watermark_qs)
+    .qs     (extht_hi_watermarks_fips_watermark_qs)
   );
 
 
-  //   F[bypass_extht_hi_watermark]: 31:16
+  //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
     .DW    (16)
-  ) u_extht_hi_watermarks_bypass_extht_hi_watermark (
-    .re     (extht_hi_watermarks_bypass_extht_hi_watermark_re),
+  ) u_extht_hi_watermarks_bypass_watermark (
+    .re     (extht_hi_watermarks_bypass_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.extht_hi_watermarks.bypass_extht_hi_watermark.d),
+    .d      (hw2reg.extht_hi_watermarks.bypass_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (extht_hi_watermarks_bypass_extht_hi_watermark_qs)
+    .qs     (extht_hi_watermarks_bypass_watermark_qs)
   );
 
 
   // R[extht_lo_watermarks]: V(True)
 
-  //   F[fips_extht_lo_watermark]: 15:0
+  //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
-  ) u_extht_lo_watermarks_fips_extht_lo_watermark (
-    .re     (extht_lo_watermarks_fips_extht_lo_watermark_re),
+  ) u_extht_lo_watermarks_fips_watermark (
+    .re     (extht_lo_watermarks_fips_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.extht_lo_watermarks.fips_extht_lo_watermark.d),
+    .d      (hw2reg.extht_lo_watermarks.fips_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (extht_lo_watermarks_fips_extht_lo_watermark_qs)
+    .qs     (extht_lo_watermarks_fips_watermark_qs)
   );
 
 
-  //   F[bypass_extht_lo_watermark]: 31:16
+  //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
     .DW    (16)
-  ) u_extht_lo_watermarks_bypass_extht_lo_watermark (
-    .re     (extht_lo_watermarks_bypass_extht_lo_watermark_re),
+  ) u_extht_lo_watermarks_bypass_watermark (
+    .re     (extht_lo_watermarks_bypass_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.extht_lo_watermarks.bypass_extht_lo_watermark.d),
+    .d      (hw2reg.extht_lo_watermarks.bypass_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (extht_lo_watermarks_bypass_extht_lo_watermark_qs)
+    .qs     (extht_lo_watermarks_bypass_watermark_qs)
   );
 
 
   // R[bucket_hi_watermarks]: V(True)
 
-  //   F[fips_bucket_hi_watermark]: 15:0
+  //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
-  ) u_bucket_hi_watermarks_fips_bucket_hi_watermark (
-    .re     (bucket_hi_watermarks_fips_bucket_hi_watermark_re),
+  ) u_bucket_hi_watermarks_fips_watermark (
+    .re     (bucket_hi_watermarks_fips_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.bucket_hi_watermarks.fips_bucket_hi_watermark.d),
+    .d      (hw2reg.bucket_hi_watermarks.fips_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (bucket_hi_watermarks_fips_bucket_hi_watermark_qs)
+    .qs     (bucket_hi_watermarks_fips_watermark_qs)
   );
 
 
-  //   F[bypass_bucket_hi_watermark]: 31:16
+  //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
     .DW    (16)
-  ) u_bucket_hi_watermarks_bypass_bucket_hi_watermark (
-    .re     (bucket_hi_watermarks_bypass_bucket_hi_watermark_re),
+  ) u_bucket_hi_watermarks_bypass_watermark (
+    .re     (bucket_hi_watermarks_bypass_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.bucket_hi_watermarks.bypass_bucket_hi_watermark.d),
+    .d      (hw2reg.bucket_hi_watermarks.bypass_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (bucket_hi_watermarks_bypass_bucket_hi_watermark_qs)
+    .qs     (bucket_hi_watermarks_bypass_watermark_qs)
   );
 
 
   // R[markov_hi_watermarks]: V(True)
 
-  //   F[fips_markov_hi_watermark]: 15:0
+  //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
-  ) u_markov_hi_watermarks_fips_markov_hi_watermark (
-    .re     (markov_hi_watermarks_fips_markov_hi_watermark_re),
+  ) u_markov_hi_watermarks_fips_watermark (
+    .re     (markov_hi_watermarks_fips_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.markov_hi_watermarks.fips_markov_hi_watermark.d),
+    .d      (hw2reg.markov_hi_watermarks.fips_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (markov_hi_watermarks_fips_markov_hi_watermark_qs)
+    .qs     (markov_hi_watermarks_fips_watermark_qs)
   );
 
 
-  //   F[bypass_markov_hi_watermark]: 31:16
+  //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
     .DW    (16)
-  ) u_markov_hi_watermarks_bypass_markov_hi_watermark (
-    .re     (markov_hi_watermarks_bypass_markov_hi_watermark_re),
+  ) u_markov_hi_watermarks_bypass_watermark (
+    .re     (markov_hi_watermarks_bypass_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.markov_hi_watermarks.bypass_markov_hi_watermark.d),
+    .d      (hw2reg.markov_hi_watermarks.bypass_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (markov_hi_watermarks_bypass_markov_hi_watermark_qs)
+    .qs     (markov_hi_watermarks_bypass_watermark_qs)
   );
 
 
   // R[markov_lo_watermarks]: V(True)
 
-  //   F[fips_markov_lo_watermark]: 15:0
+  //   F[fips_watermark]: 15:0
   prim_subreg_ext #(
     .DW    (16)
-  ) u_markov_lo_watermarks_fips_markov_lo_watermark (
-    .re     (markov_lo_watermarks_fips_markov_lo_watermark_re),
+  ) u_markov_lo_watermarks_fips_watermark (
+    .re     (markov_lo_watermarks_fips_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.markov_lo_watermarks.fips_markov_lo_watermark.d),
+    .d      (hw2reg.markov_lo_watermarks.fips_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (markov_lo_watermarks_fips_markov_lo_watermark_qs)
+    .qs     (markov_lo_watermarks_fips_watermark_qs)
   );
 
 
-  //   F[bypass_markov_lo_watermark]: 31:16
+  //   F[bypass_watermark]: 31:16
   prim_subreg_ext #(
     .DW    (16)
-  ) u_markov_lo_watermarks_bypass_markov_lo_watermark (
-    .re     (markov_lo_watermarks_bypass_markov_lo_watermark_re),
+  ) u_markov_lo_watermarks_bypass_watermark (
+    .re     (markov_lo_watermarks_bypass_watermark_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.markov_lo_watermarks.bypass_markov_lo_watermark.d),
+    .d      (hw2reg.markov_lo_watermarks.bypass_watermark.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (markov_lo_watermarks_bypass_markov_lo_watermark_qs)
+    .qs     (markov_lo_watermarks_bypass_watermark_qs)
   );
 
 
@@ -2650,85 +2506,101 @@ module entropy_src_reg_top (
   assign health_test_windows_bypass_window_we = addr_hit[10] & reg_we & !reg_error;
   assign health_test_windows_bypass_window_wd = reg_wdata[31:16];
 
-  assign repcnt_thresholds_fips_repcnt_thresh_we = addr_hit[11] & reg_we & !reg_error;
-  assign repcnt_thresholds_fips_repcnt_thresh_wd = reg_wdata[15:0];
+  assign repcnt_thresholds_fips_thresh_we = addr_hit[11] & reg_we & !reg_error;
+  assign repcnt_thresholds_fips_thresh_wd = reg_wdata[15:0];
+  assign repcnt_thresholds_fips_thresh_re = addr_hit[11] & reg_re & !reg_error;
 
-  assign repcnt_thresholds_bypass_repcnt_thresh_we = addr_hit[11] & reg_we & !reg_error;
-  assign repcnt_thresholds_bypass_repcnt_thresh_wd = reg_wdata[31:16];
+  assign repcnt_thresholds_bypass_thresh_we = addr_hit[11] & reg_we & !reg_error;
+  assign repcnt_thresholds_bypass_thresh_wd = reg_wdata[31:16];
+  assign repcnt_thresholds_bypass_thresh_re = addr_hit[11] & reg_re & !reg_error;
 
-  assign adaptp_hi_thresholds_fips_adaptp_hi_thresh_we = addr_hit[12] & reg_we & !reg_error;
-  assign adaptp_hi_thresholds_fips_adaptp_hi_thresh_wd = reg_wdata[15:0];
+  assign adaptp_hi_thresholds_fips_thresh_we = addr_hit[12] & reg_we & !reg_error;
+  assign adaptp_hi_thresholds_fips_thresh_wd = reg_wdata[15:0];
+  assign adaptp_hi_thresholds_fips_thresh_re = addr_hit[12] & reg_re & !reg_error;
 
-  assign adaptp_hi_thresholds_bypass_adaptp_hi_thresh_we = addr_hit[12] & reg_we & !reg_error;
-  assign adaptp_hi_thresholds_bypass_adaptp_hi_thresh_wd = reg_wdata[31:16];
+  assign adaptp_hi_thresholds_bypass_thresh_we = addr_hit[12] & reg_we & !reg_error;
+  assign adaptp_hi_thresholds_bypass_thresh_wd = reg_wdata[31:16];
+  assign adaptp_hi_thresholds_bypass_thresh_re = addr_hit[12] & reg_re & !reg_error;
 
-  assign adaptp_lo_thresholds_fips_adaptp_lo_thresh_we = addr_hit[13] & reg_we & !reg_error;
-  assign adaptp_lo_thresholds_fips_adaptp_lo_thresh_wd = reg_wdata[15:0];
+  assign adaptp_lo_thresholds_fips_thresh_we = addr_hit[13] & reg_we & !reg_error;
+  assign adaptp_lo_thresholds_fips_thresh_wd = reg_wdata[15:0];
+  assign adaptp_lo_thresholds_fips_thresh_re = addr_hit[13] & reg_re & !reg_error;
 
-  assign adaptp_lo_thresholds_bypass_adaptp_lo_thresh_we = addr_hit[13] & reg_we & !reg_error;
-  assign adaptp_lo_thresholds_bypass_adaptp_lo_thresh_wd = reg_wdata[31:16];
+  assign adaptp_lo_thresholds_bypass_thresh_we = addr_hit[13] & reg_we & !reg_error;
+  assign adaptp_lo_thresholds_bypass_thresh_wd = reg_wdata[31:16];
+  assign adaptp_lo_thresholds_bypass_thresh_re = addr_hit[13] & reg_re & !reg_error;
 
-  assign bucket_thresholds_fips_bucket_thresh_we = addr_hit[14] & reg_we & !reg_error;
-  assign bucket_thresholds_fips_bucket_thresh_wd = reg_wdata[15:0];
+  assign bucket_thresholds_fips_thresh_we = addr_hit[14] & reg_we & !reg_error;
+  assign bucket_thresholds_fips_thresh_wd = reg_wdata[15:0];
+  assign bucket_thresholds_fips_thresh_re = addr_hit[14] & reg_re & !reg_error;
 
-  assign bucket_thresholds_bypass_bucket_thresh_we = addr_hit[14] & reg_we & !reg_error;
-  assign bucket_thresholds_bypass_bucket_thresh_wd = reg_wdata[31:16];
+  assign bucket_thresholds_bypass_thresh_we = addr_hit[14] & reg_we & !reg_error;
+  assign bucket_thresholds_bypass_thresh_wd = reg_wdata[31:16];
+  assign bucket_thresholds_bypass_thresh_re = addr_hit[14] & reg_re & !reg_error;
 
-  assign markov_hi_thresholds_fips_markov_hi_thresh_we = addr_hit[15] & reg_we & !reg_error;
-  assign markov_hi_thresholds_fips_markov_hi_thresh_wd = reg_wdata[15:0];
+  assign markov_hi_thresholds_fips_thresh_we = addr_hit[15] & reg_we & !reg_error;
+  assign markov_hi_thresholds_fips_thresh_wd = reg_wdata[15:0];
+  assign markov_hi_thresholds_fips_thresh_re = addr_hit[15] & reg_re & !reg_error;
 
-  assign markov_hi_thresholds_bypass_markov_hi_thresh_we = addr_hit[15] & reg_we & !reg_error;
-  assign markov_hi_thresholds_bypass_markov_hi_thresh_wd = reg_wdata[31:16];
+  assign markov_hi_thresholds_bypass_thresh_we = addr_hit[15] & reg_we & !reg_error;
+  assign markov_hi_thresholds_bypass_thresh_wd = reg_wdata[31:16];
+  assign markov_hi_thresholds_bypass_thresh_re = addr_hit[15] & reg_re & !reg_error;
 
-  assign markov_lo_thresholds_fips_markov_lo_thresh_we = addr_hit[16] & reg_we & !reg_error;
-  assign markov_lo_thresholds_fips_markov_lo_thresh_wd = reg_wdata[15:0];
+  assign markov_lo_thresholds_fips_thresh_we = addr_hit[16] & reg_we & !reg_error;
+  assign markov_lo_thresholds_fips_thresh_wd = reg_wdata[15:0];
+  assign markov_lo_thresholds_fips_thresh_re = addr_hit[16] & reg_re & !reg_error;
 
-  assign markov_lo_thresholds_bypass_markov_lo_thresh_we = addr_hit[16] & reg_we & !reg_error;
-  assign markov_lo_thresholds_bypass_markov_lo_thresh_wd = reg_wdata[31:16];
+  assign markov_lo_thresholds_bypass_thresh_we = addr_hit[16] & reg_we & !reg_error;
+  assign markov_lo_thresholds_bypass_thresh_wd = reg_wdata[31:16];
+  assign markov_lo_thresholds_bypass_thresh_re = addr_hit[16] & reg_re & !reg_error;
 
-  assign extht_hi_thresholds_fips_extht_hi_thresh_we = addr_hit[17] & reg_we & !reg_error;
-  assign extht_hi_thresholds_fips_extht_hi_thresh_wd = reg_wdata[15:0];
+  assign extht_hi_thresholds_fips_thresh_we = addr_hit[17] & reg_we & !reg_error;
+  assign extht_hi_thresholds_fips_thresh_wd = reg_wdata[15:0];
+  assign extht_hi_thresholds_fips_thresh_re = addr_hit[17] & reg_re & !reg_error;
 
-  assign extht_hi_thresholds_bypass_extht_hi_thresh_we = addr_hit[17] & reg_we & !reg_error;
-  assign extht_hi_thresholds_bypass_extht_hi_thresh_wd = reg_wdata[31:16];
+  assign extht_hi_thresholds_bypass_thresh_we = addr_hit[17] & reg_we & !reg_error;
+  assign extht_hi_thresholds_bypass_thresh_wd = reg_wdata[31:16];
+  assign extht_hi_thresholds_bypass_thresh_re = addr_hit[17] & reg_re & !reg_error;
 
-  assign extht_lo_thresholds_fips_extht_lo_thresh_we = addr_hit[18] & reg_we & !reg_error;
-  assign extht_lo_thresholds_fips_extht_lo_thresh_wd = reg_wdata[15:0];
+  assign extht_lo_thresholds_fips_thresh_we = addr_hit[18] & reg_we & !reg_error;
+  assign extht_lo_thresholds_fips_thresh_wd = reg_wdata[15:0];
+  assign extht_lo_thresholds_fips_thresh_re = addr_hit[18] & reg_re & !reg_error;
 
-  assign extht_lo_thresholds_bypass_extht_lo_thresh_we = addr_hit[18] & reg_we & !reg_error;
-  assign extht_lo_thresholds_bypass_extht_lo_thresh_wd = reg_wdata[31:16];
+  assign extht_lo_thresholds_bypass_thresh_we = addr_hit[18] & reg_we & !reg_error;
+  assign extht_lo_thresholds_bypass_thresh_wd = reg_wdata[31:16];
+  assign extht_lo_thresholds_bypass_thresh_re = addr_hit[18] & reg_re & !reg_error;
 
-  assign repcnt_hi_watermarks_fips_repcnt_hi_watermark_re = addr_hit[19] & reg_re & !reg_error;
+  assign repcnt_hi_watermarks_fips_watermark_re = addr_hit[19] & reg_re & !reg_error;
 
-  assign repcnt_hi_watermarks_bypass_repcnt_hi_watermark_re = addr_hit[19] & reg_re & !reg_error;
+  assign repcnt_hi_watermarks_bypass_watermark_re = addr_hit[19] & reg_re & !reg_error;
 
-  assign adaptp_hi_watermarks_fips_adaptp_hi_watermark_re = addr_hit[20] & reg_re & !reg_error;
+  assign adaptp_hi_watermarks_fips_watermark_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign adaptp_hi_watermarks_bypass_adaptp_hi_watermark_re = addr_hit[20] & reg_re & !reg_error;
+  assign adaptp_hi_watermarks_bypass_watermark_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign adaptp_lo_watermarks_fips_adaptp_lo_watermark_re = addr_hit[21] & reg_re & !reg_error;
+  assign adaptp_lo_watermarks_fips_watermark_re = addr_hit[21] & reg_re & !reg_error;
 
-  assign adaptp_lo_watermarks_bypass_adaptp_lo_watermark_re = addr_hit[21] & reg_re & !reg_error;
+  assign adaptp_lo_watermarks_bypass_watermark_re = addr_hit[21] & reg_re & !reg_error;
 
-  assign extht_hi_watermarks_fips_extht_hi_watermark_re = addr_hit[22] & reg_re & !reg_error;
+  assign extht_hi_watermarks_fips_watermark_re = addr_hit[22] & reg_re & !reg_error;
 
-  assign extht_hi_watermarks_bypass_extht_hi_watermark_re = addr_hit[22] & reg_re & !reg_error;
+  assign extht_hi_watermarks_bypass_watermark_re = addr_hit[22] & reg_re & !reg_error;
 
-  assign extht_lo_watermarks_fips_extht_lo_watermark_re = addr_hit[23] & reg_re & !reg_error;
+  assign extht_lo_watermarks_fips_watermark_re = addr_hit[23] & reg_re & !reg_error;
 
-  assign extht_lo_watermarks_bypass_extht_lo_watermark_re = addr_hit[23] & reg_re & !reg_error;
+  assign extht_lo_watermarks_bypass_watermark_re = addr_hit[23] & reg_re & !reg_error;
 
-  assign bucket_hi_watermarks_fips_bucket_hi_watermark_re = addr_hit[24] & reg_re & !reg_error;
+  assign bucket_hi_watermarks_fips_watermark_re = addr_hit[24] & reg_re & !reg_error;
 
-  assign bucket_hi_watermarks_bypass_bucket_hi_watermark_re = addr_hit[24] & reg_re & !reg_error;
+  assign bucket_hi_watermarks_bypass_watermark_re = addr_hit[24] & reg_re & !reg_error;
 
-  assign markov_hi_watermarks_fips_markov_hi_watermark_re = addr_hit[25] & reg_re & !reg_error;
+  assign markov_hi_watermarks_fips_watermark_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign markov_hi_watermarks_bypass_markov_hi_watermark_re = addr_hit[25] & reg_re & !reg_error;
+  assign markov_hi_watermarks_bypass_watermark_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign markov_lo_watermarks_fips_markov_lo_watermark_re = addr_hit[26] & reg_re & !reg_error;
+  assign markov_lo_watermarks_fips_watermark_re = addr_hit[26] & reg_re & !reg_error;
 
-  assign markov_lo_watermarks_bypass_markov_lo_watermark_re = addr_hit[26] & reg_re & !reg_error;
+  assign markov_lo_watermarks_bypass_watermark_re = addr_hit[26] & reg_re & !reg_error;
 
   assign repcnt_total_fails_re = addr_hit[27] & reg_re & !reg_error;
 
@@ -2873,83 +2745,83 @@ module entropy_src_reg_top (
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[15:0] = repcnt_thresholds_fips_repcnt_thresh_qs;
-        reg_rdata_next[31:16] = repcnt_thresholds_bypass_repcnt_thresh_qs;
+        reg_rdata_next[15:0] = repcnt_thresholds_fips_thresh_qs;
+        reg_rdata_next[31:16] = repcnt_thresholds_bypass_thresh_qs;
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[15:0] = adaptp_hi_thresholds_fips_adaptp_hi_thresh_qs;
-        reg_rdata_next[31:16] = adaptp_hi_thresholds_bypass_adaptp_hi_thresh_qs;
+        reg_rdata_next[15:0] = adaptp_hi_thresholds_fips_thresh_qs;
+        reg_rdata_next[31:16] = adaptp_hi_thresholds_bypass_thresh_qs;
       end
 
       addr_hit[13]: begin
-        reg_rdata_next[15:0] = adaptp_lo_thresholds_fips_adaptp_lo_thresh_qs;
-        reg_rdata_next[31:16] = adaptp_lo_thresholds_bypass_adaptp_lo_thresh_qs;
+        reg_rdata_next[15:0] = adaptp_lo_thresholds_fips_thresh_qs;
+        reg_rdata_next[31:16] = adaptp_lo_thresholds_bypass_thresh_qs;
       end
 
       addr_hit[14]: begin
-        reg_rdata_next[15:0] = bucket_thresholds_fips_bucket_thresh_qs;
-        reg_rdata_next[31:16] = bucket_thresholds_bypass_bucket_thresh_qs;
+        reg_rdata_next[15:0] = bucket_thresholds_fips_thresh_qs;
+        reg_rdata_next[31:16] = bucket_thresholds_bypass_thresh_qs;
       end
 
       addr_hit[15]: begin
-        reg_rdata_next[15:0] = markov_hi_thresholds_fips_markov_hi_thresh_qs;
-        reg_rdata_next[31:16] = markov_hi_thresholds_bypass_markov_hi_thresh_qs;
+        reg_rdata_next[15:0] = markov_hi_thresholds_fips_thresh_qs;
+        reg_rdata_next[31:16] = markov_hi_thresholds_bypass_thresh_qs;
       end
 
       addr_hit[16]: begin
-        reg_rdata_next[15:0] = markov_lo_thresholds_fips_markov_lo_thresh_qs;
-        reg_rdata_next[31:16] = markov_lo_thresholds_bypass_markov_lo_thresh_qs;
+        reg_rdata_next[15:0] = markov_lo_thresholds_fips_thresh_qs;
+        reg_rdata_next[31:16] = markov_lo_thresholds_bypass_thresh_qs;
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[15:0] = extht_hi_thresholds_fips_extht_hi_thresh_qs;
-        reg_rdata_next[31:16] = extht_hi_thresholds_bypass_extht_hi_thresh_qs;
+        reg_rdata_next[15:0] = extht_hi_thresholds_fips_thresh_qs;
+        reg_rdata_next[31:16] = extht_hi_thresholds_bypass_thresh_qs;
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[15:0] = extht_lo_thresholds_fips_extht_lo_thresh_qs;
-        reg_rdata_next[31:16] = extht_lo_thresholds_bypass_extht_lo_thresh_qs;
+        reg_rdata_next[15:0] = extht_lo_thresholds_fips_thresh_qs;
+        reg_rdata_next[31:16] = extht_lo_thresholds_bypass_thresh_qs;
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[15:0] = repcnt_hi_watermarks_fips_repcnt_hi_watermark_qs;
-        reg_rdata_next[31:16] = repcnt_hi_watermarks_bypass_repcnt_hi_watermark_qs;
+        reg_rdata_next[15:0] = repcnt_hi_watermarks_fips_watermark_qs;
+        reg_rdata_next[31:16] = repcnt_hi_watermarks_bypass_watermark_qs;
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[15:0] = adaptp_hi_watermarks_fips_adaptp_hi_watermark_qs;
-        reg_rdata_next[31:16] = adaptp_hi_watermarks_bypass_adaptp_hi_watermark_qs;
+        reg_rdata_next[15:0] = adaptp_hi_watermarks_fips_watermark_qs;
+        reg_rdata_next[31:16] = adaptp_hi_watermarks_bypass_watermark_qs;
       end
 
       addr_hit[21]: begin
-        reg_rdata_next[15:0] = adaptp_lo_watermarks_fips_adaptp_lo_watermark_qs;
-        reg_rdata_next[31:16] = adaptp_lo_watermarks_bypass_adaptp_lo_watermark_qs;
+        reg_rdata_next[15:0] = adaptp_lo_watermarks_fips_watermark_qs;
+        reg_rdata_next[31:16] = adaptp_lo_watermarks_bypass_watermark_qs;
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[15:0] = extht_hi_watermarks_fips_extht_hi_watermark_qs;
-        reg_rdata_next[31:16] = extht_hi_watermarks_bypass_extht_hi_watermark_qs;
+        reg_rdata_next[15:0] = extht_hi_watermarks_fips_watermark_qs;
+        reg_rdata_next[31:16] = extht_hi_watermarks_bypass_watermark_qs;
       end
 
       addr_hit[23]: begin
-        reg_rdata_next[15:0] = extht_lo_watermarks_fips_extht_lo_watermark_qs;
-        reg_rdata_next[31:16] = extht_lo_watermarks_bypass_extht_lo_watermark_qs;
+        reg_rdata_next[15:0] = extht_lo_watermarks_fips_watermark_qs;
+        reg_rdata_next[31:16] = extht_lo_watermarks_bypass_watermark_qs;
       end
 
       addr_hit[24]: begin
-        reg_rdata_next[15:0] = bucket_hi_watermarks_fips_bucket_hi_watermark_qs;
-        reg_rdata_next[31:16] = bucket_hi_watermarks_bypass_bucket_hi_watermark_qs;
+        reg_rdata_next[15:0] = bucket_hi_watermarks_fips_watermark_qs;
+        reg_rdata_next[31:16] = bucket_hi_watermarks_bypass_watermark_qs;
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[15:0] = markov_hi_watermarks_fips_markov_hi_watermark_qs;
-        reg_rdata_next[31:16] = markov_hi_watermarks_bypass_markov_hi_watermark_qs;
+        reg_rdata_next[15:0] = markov_hi_watermarks_fips_watermark_qs;
+        reg_rdata_next[31:16] = markov_hi_watermarks_bypass_watermark_qs;
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[15:0] = markov_lo_watermarks_fips_markov_lo_watermark_qs;
-        reg_rdata_next[31:16] = markov_lo_watermarks_bypass_markov_lo_watermark_qs;
+        reg_rdata_next[15:0] = markov_lo_watermarks_fips_watermark_qs;
+        reg_rdata_next[31:16] = markov_lo_watermarks_bypass_watermark_qs;
       end
 
       addr_hit[27]: begin
