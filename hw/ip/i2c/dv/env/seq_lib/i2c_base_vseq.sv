@@ -419,4 +419,11 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
   endfunction : print_format_flag
 
+  virtual function void bound_check(bit [TL_DW-1:0] x, uint low_bound, uint high_bound);
+    // check low_bound <= x <= high_bound
+    `DV_CHECK_GE(high_bound, low_bound);
+    `DV_CHECK_GE(x, low_bound);
+    `DV_CHECK_LE(x, high_bound);
+  endfunction : bound_check
+
 endclass : i2c_base_vseq
