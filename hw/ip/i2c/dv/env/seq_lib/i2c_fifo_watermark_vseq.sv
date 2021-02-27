@@ -106,23 +106,56 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
 
   task process_fmt_watermark_intr();
     bit fmt_watermark;
+    bit [TL_DW-1:0] fmt_lvl, fmt_ilvl, intr_enable;
 
     @(posedge cfg.clk_rst_vif.clk);
-    if (cfg.intr_vif.pins[FmtWatermark]) begin
+    csr_rd(.ptr(ral.intr_enable), .value(intr_enable), .backdoor(1'b1));
+    if (intr_enable[FmtWatermark] && cfg.intr_vif.pins[FmtWatermark]) begin
       cnt_fmt_watermark++;
+      // read registers via backdoor
+      csr_rd(.ptr(ral.fifo_ctrl.fmtilvl), .value(fmt_ilvl), .backdoor(1'b1));
+      csr_rd(.ptr(ral.fifo_status.fmtlvl), .value(fmt_lvl), .backdoor(1'b1));
+      `uvm_info(`gfn, $sformatf("\n fmtilvl %0d, fmtlvl %0d", fmt_ilvl, fmt_lvl), UVM_LOW)
+      // bound checking for fmt_lvl w.r.t fmt_ilvl because rx_fifo can received an extra data
+      // before fmt_watermark intr pin is asserted (corner case)
+      if (!cfg.under_reset) begin
+        case (fmt_ilvl)
+          0: bound_check(fmt_lvl, 1, 2);
+          1: bound_check(fmt_lvl, 4, 5);
+          2: bound_check(fmt_lvl, 8, 9);
+          default: bound_check(fmt_lvl, 16, 17);
+        endcase
+      end
       clear_interrupt(FmtWatermark);
     end
   endtask : process_fmt_watermark_intr
 
   task process_rx_watermark_intr();
     bit rx_watermark;
+    bit [TL_DW-1:0] rx_lvl, rx_ilvl, intr_enable;
 
     @(posedge cfg.clk_rst_vif.clk);
-    if (cfg.intr_vif.pins[RxWatermark]) begin
+    csr_rd(.ptr(ral.intr_enable), .value(intr_enable), .backdoor(1'b1));
+    if (intr_enable[RxWatermark] && cfg.intr_vif.pins[RxWatermark]) begin
       cnt_rx_watermark++;
+      // read registers via backdoor
+      csr_rd(.ptr(ral.fifo_status.rxlvl), .value(rx_lvl), .backdoor(1'b1));
+      csr_rd(.ptr(ral.fifo_ctrl.rxilvl), .value(rx_ilvl), .backdoor(1'b1));
+      // bound checking for rx_lvl w.r.t rx_ilvl because rx_fifo can received an extra data
+      // before rx_watermark intr pin is asserted (corner case)
+      if (!cfg.under_reset) begin
+        case (rx_ilvl)
+          0: bound_check(rx_lvl, 1, 2);
+          1: bound_check(rx_lvl, 4, 5);
+          2: bound_check(rx_lvl, 8, 9);
+          3: bound_check(rx_lvl, 16, 17);
+          4: bound_check(rx_lvl, 30, 31);
+          default: `uvm_error(`gfn, "\n Invalid rx_ilvl")
+        endcase
+      end
       clear_interrupt(RxWatermark);
     end
   endtask : process_rx_watermark_intr
-
+  
 endclass : i2c_fifo_watermark_vseq
 
