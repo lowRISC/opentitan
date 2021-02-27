@@ -22,27 +22,32 @@ module entropy_src_watermark_reg #(
 
   // signals
   logic [RegWidth-1:0] event_cntr_change;
+  logic [RegWidth-1:0] reg_reset;
 
   // flops
   logic [RegWidth-1:0] event_cntr_q, event_cntr_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
-      event_cntr_q       <= '0;
+      event_cntr_q       <= reg_reset;
     end else begin
       event_cntr_q       <= event_cntr_d;
     end
 
-  assign event_cntr_d = (!active_i || clear_i) ? '0 :
+  assign event_cntr_d = (!active_i || clear_i) ? reg_reset :
                         event_i ? event_cntr_change :
                         event_cntr_q;
 
   // Set mode of this counter to be either a high or low watermark
   if (HighWatermark) begin : gen_hi_wm
 
+    assign reg_reset = {RegWidth{1'b0}};
+
     assign event_cntr_change = (value_i > event_cntr_q) ? (value_i) : event_cntr_q;
 
   end else begin : gen_lo_wm
+
+    assign reg_reset = {RegWidth{1'b1}};
 
     assign event_cntr_change = (value_i < event_cntr_q) ? (value_i) : event_cntr_q;
 
