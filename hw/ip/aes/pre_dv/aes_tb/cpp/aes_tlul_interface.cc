@@ -23,9 +23,7 @@ AESTLULInterface::AESTLULInterface(Vaes_sim *rtl) : rtl_(rtl) {
   tl_i_.a_opcode = 0;
   tl_i_.a_size = 0;
   tl_i_.a_address = 0;
-  tl_i_.a_address = 0;
   tl_i_.a_mask = 0;
-  tl_i_.a_data = 0;
   tl_i_.a_data = 0;
   tl_i_.d_ready = false;
   tl_o_.d_valid = false;
@@ -153,10 +151,22 @@ bool AESTLULInterface::CheckResp() {
 }
 
 void AESTLULInterface::MonitorSignals() {
+  // tl_o bits:
+  // d_valid   - 1   - [65]      - [2][1]
+  // d_opcode  - 3   - [64:62]   - [1][31:30] - [2][0]
+  // d_param   - 3   - [61:59]   - [1][29:27]
+  // d_size    - 2   - [58:57]   - [1][26:25]
+  // d_source  - 8   - [56:49]   - [1][24:17]
+  // d_sink    - 1   - [48]      - [1][16]
+  // d_data    - 32  - [47:16]   - [0][31:16] - [1][15:0]
+  // d_user    - 14  - [15:2]    - [0][15:2]
+  // d_error   - 1   - [1]       - [0][1]
+  // a_ready   - 1   - [0]       - [0][0]
+
   // just montior handshakes, error and resp data
-  tl_o_.d_valid = (rtl_->tl_o[2] & 0x8) >> 3;
+  tl_o_.d_valid = (rtl_->tl_o[2] & 0x2) >> 1;
   tl_o_.d_data =
-      ((rtl_->tl_o[1] & 0x3FFFF) << 14) | ((rtl_->tl_o[0] >> 18) & 0x3FFF);
+      ((rtl_->tl_o[1] & 0xFFFF) << 16) | ((rtl_->tl_o[0] >> 16) & 0xFFFF);
   tl_o_.d_error = (rtl_->tl_o[0] & 0x2) >> 1;
   tl_o_.a_ready = rtl_->tl_o[0] & 0x1;
 
@@ -171,29 +181,33 @@ void AESTLULInterface::DriveSignals() {
   rtl_->tl_i[0] = 0;
 
   // tl_i bits:
-  // a_valid   - 1   - [96]    - [4][0]
-  // a_opcode  - 3   - [95:93] - [3][31:29]
-  // a_param   - 3   - [92:90] - [2][28:26]
-  // a_size    - 2   - [89:88] - [2][25:24]
-  // a_source  - 8   - [87:80] - [2][23:16]
-  // a_address - 32  - [79:48] - [1][31:16] - [2][15:0]
-  // a_mask    - 4   - [47:44] - [1][15:12]
-  // a_data    - 32  - [43:12] - [0][31:12] - [1][11:0]
-  // a_user    - 11  - [11:1]  - [0][11:1]
-  // d_ready   - 1   - [0]     - [0][0]
+  // a_valid   - 1   - [106]     - [3][10]
+  // a_opcode  - 3   - [105:103] - [3][9:7]
+  // a_param   - 3   - [102:100] - [3][6:4]
+  // a_size    - 2   - [99:98]   - [3][3:2]
+  // a_source  - 8   - [97:90]   - [2][31:26] - [3][1:0]
+  // a_address - 32  - [89:58]   - [1][31:26] - [2][25:0]
+  // a_mask    - 4   - [57:54]   - [1][25:22]
+  // a_data    - 32  - [53:22]   - [0][31:22] - [1][21:0]
+  // a_user    - 21  - [21:1]    - [0][21:1]
+  // d_ready   - 1   - [0]       - [0][0]
 
   // set required bits
-  rtl_->tl_i[3] |= (tl_i_.a_valid & 0x1);
-  rtl_->tl_i[2] |= (tl_i_.a_opcode & 0x7) << 29;
+  rtl_->tl_i[3] |= (tl_i_.a_valid & 0x1) << 10;
+  rtl_->tl_i[3] |= (tl_i_.a_opcode & 0x7) << 7;
   // param = 0
-  rtl_->tl_i[2] |= (tl_i_.a_size & 0x3) << 24;
+  rtl_->tl_i[3] |= (tl_i_.a_size & 0x3) << 2;
   // source = 0
-  rtl_->tl_i[2] |= (tl_i_.a_address & 0xFFFF0000) >> 16;
-  rtl_->tl_i[1] |= (tl_i_.a_address & 0x0000FFFF) << 16;
-  rtl_->tl_i[1] |= (tl_i_.a_mask & 0xF) << 12;
-  rtl_->tl_i[1] |= (tl_i_.a_data & 0xFFF00000) >> 20;
-  rtl_->tl_i[0] |= (tl_i_.a_data & 0x000FFFFF) << 12;
+  rtl_->tl_i[2] |= (tl_i_.a_address & 0xFFFFFFC0) >> 6;
+  rtl_->tl_i[1] |= (tl_i_.a_address & 0x0000003F) << 26;
+  rtl_->tl_i[1] |= (tl_i_.a_mask & 0xF) << 22;
+  rtl_->tl_i[1] |= (tl_i_.a_data & 0xFFFFFC00) >> 10;
+  rtl_->tl_i[0] |= (tl_i_.a_data & 0x000003FF) << 22;
   // a_user = 0
+  // a_user.tl_type = DataType
+  rtl_->tl_i[0] |= 0x2 << (2 + 7 + 7 + 1);
+  // a_user.chk_en = CheckDist
+  rtl_->tl_i[0] |= 0x1 << (7 + 7 + 1);
   rtl_->tl_i[0] |= (tl_i_.d_ready & 0x1);
 
   return;
