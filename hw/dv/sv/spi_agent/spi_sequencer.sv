@@ -7,4 +7,4 @@ class spi_sequencer extends dv_base_sequencer#(spi_item, spi_agent_cfg);
 
   `uvm_component_new
 
-endclass
+endclass : spi_sequencer

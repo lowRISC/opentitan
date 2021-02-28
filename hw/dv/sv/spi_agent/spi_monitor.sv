@@ -20,7 +20,7 @@ class spi_monitor extends dv_base_monitor#(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    host_analysis_port = new("host_analysis_port", this);
+    host_analysis_port   = new("host_analysis_port", this);
     device_analysis_port = new("device_analysis_port", this);
   endfunction
 
@@ -35,43 +35,40 @@ class spi_monitor extends dv_base_monitor#(
 
     forever begin
       @(negedge cfg.vif.csb);
-      if (cfg.en_monitor_collect_trans) collect_curr_trans();
+      collect_curr_trans();
     end
-  endtask
+  endtask : collect_trans
 
   virtual protected task collect_curr_trans();
-
     fork
       begin: isolation_thread
         fork
           begin: csb_deassert_thread
-            wait(cfg.vif.csb == 1'b1);
+            wait(cfg.vif.csb[0] == 1'b1);
           end
           begin: sample_thread
             // for mode 1 and 3, get the leading edges out of the way
             cfg.wait_sck_edge(LeadingEdge);
             forever begin
-              bit [7:0] host_byte;    // from sdi
-              bit [7:0] device_byte;  // from sdo
+              bit [7:0] host_byte;    // from sio
+              bit [7:0] device_byte;  // from sio
               int       which_bit;
               for (int i = 0; i < 8; i++) begin
                 // wait for the sampling edge
                 cfg.wait_sck_edge(SamplingEdge);
-                // check sdi/sdo not x or z
+                // check sio not x or z
                 if (cfg.en_monitor_checks) begin
-                  `DV_CHECK_CASE_NE(cfg.vif.sdi, 1'bx)
-                  `DV_CHECK_CASE_NE(cfg.vif.sdi, 1'bz)
-                  `DV_CHECK_CASE_NE(cfg.vif.sdo, 1'bx)
-                  `DV_CHECK_CASE_NE(cfg.vif.sdo, 1'bz)
+                  `DV_CHECK_CASE_NE(cfg.vif.sio[1:0], 2'bxx)
+                  `DV_CHECK_CASE_NE(cfg.vif.sio[1:0], 2'bxx)
                 end
-                // sample sdi
+                // sample sio[0] for tx
                 which_bit = cfg.host_bit_dir ? i : 7 - i;
-                host_byte[which_bit] = cfg.vif.sdi;
-                cfg.vif.host_bit = which_bit;
+                host_byte[which_bit] = cfg.vif.sio[0];
+                cfg.vif.host_bit  = which_bit;
                 cfg.vif.host_byte = host_byte;
-                // sample sdo
+                // sample sio[1] for rx
                 which_bit = cfg.device_bit_dir ? i : 7 - i;
-                device_byte[which_bit] = cfg.vif.sdo;
+                device_byte[which_bit] = cfg.vif.sio[1];
                 cfg.vif.device_bit = which_bit;
                 cfg.vif.device_byte = device_byte;
               end
@@ -96,13 +93,13 @@ class spi_monitor extends dv_base_monitor#(
         disable fork;
       end
     join
-  endtask
+  endtask : collect_curr_trans
 
   virtual task monitor_ready_to_end();
     forever begin
       @(cfg.vif.csb);
       ok_to_end = !cfg.vif.csb;
     end
-  endtask
+  endtask : monitor_ready_to_end
 
-endclass
+endclass : spi_monitor

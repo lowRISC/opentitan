@@ -21,8 +21,8 @@ class spi_host_driver extends spi_driver;
       @(negedge cfg.vif.rst_n);
       under_reset = 1'b1;
       cfg.vif.sck <= cfg.sck_polarity;
-      cfg.vif.csb <= 1'b1;
-      cfg.vif.sdi <= 1'bx;
+      cfg.vif.csb <= 'hf;
+      cfg.vif.sio <= 'hz;
       sck_pulses = 0;
       @(posedge cfg.vif.rst_n);
       under_reset = 1'b0;
@@ -80,7 +80,7 @@ class spi_host_driver extends spi_driver;
   endtask
 
   task drive_normal_item();
-    cfg.vif.csb <= 1'b0;
+    cfg.vif.csb[0] <= 1'b0;
     sck_pulses = req.data.size() * 8;
 
     // for mode 1 and 3, get the leading edges out of the way
@@ -93,13 +93,13 @@ class spi_host_driver extends spi_driver;
       int       which_bit;
       host_byte = req.data[i];
       for (int j = 0; j < 8; j++) begin
-        // drive sdi early so that it is stable at the sampling edge
+        // drive sio early so that it is stable at the sampling edge
         which_bit = cfg.host_bit_dir ? j : 7 - j;
-        cfg.vif.sdi <= host_byte[which_bit];
-        // wait for sampling edge to sample sdo (half cycle)
+        cfg.vif.sio[0] <= host_byte[which_bit];
+        // wait for sampling edge to sample sio (half cycle)
         cfg.wait_sck_edge(SamplingEdge);
         which_bit = cfg.device_bit_dir ? j : 7 - j;
-        device_byte[which_bit] = cfg.vif.sdo;
+        device_byte[which_bit] = cfg.vif.sio[1];
         // wait for driving edge to complete 1 cycle
         if (i != req.data.size() - 1 || j != 7) cfg.wait_sck_edge(DrivingEdge);
       end
@@ -107,8 +107,8 @@ class spi_host_driver extends spi_driver;
     end
 
     wait(sck_pulses == 0);
-    cfg.vif.csb <= 1'b1;
-    cfg.vif.sdi <= 1'bx;
+    cfg.vif.csb[0] <= 1'b1;
+    cfg.vif.sio[0] <= 1'bx;
   endtask
 
   task drive_sck_no_csb_item();
@@ -121,9 +121,9 @@ class spi_host_driver extends spi_driver;
   endtask
 
   task drive_csb_no_sck_item();
-    cfg.vif.csb <= 1'b0;
+    cfg.vif.csb[0] <= 1'b0;
     #(req.dummy_sck_length_ns * 1ns);
-    cfg.vif.csb <= 1'b1;
+    cfg.vif.csb[0] <= 1'b1;
   endtask
 
   function uint get_rand_extra_delay_ns_btw_sck();
