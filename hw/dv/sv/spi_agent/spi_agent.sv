@@ -19,8 +19,16 @@ class spi_agent extends dv_base_agent#(
     super.build_phase(phase);
 
     // get spi_if handle
-    if (!uvm_config_db#(virtual spi_if)::get(this, "", "vif", cfg.vif))
+    if (!uvm_config_db#(virtual spi_if)::get(this, "", "vif", cfg.vif)) begin
       `uvm_fatal(`gfn, "failed to get spi_if handle from uvm_config_db")
-  endfunction
+    end
+
+    if (cfg.if_mode == dv_utils_pkg::Device) begin
+      //monitor.mon_item_port.connect(sequencer.mon_item_fifo.analysis_export);
+      `uvm_info(`gfn, "spi agent is configure in Device mode", UVM_LOW)
+    end else begin
+      `uvm_info(`gfn, "spi agent is configure in Host mode", UVM_LOW)
+    end
+  endfunction : build_phase
 
 endclass

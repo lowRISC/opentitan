@@ -20,10 +20,15 @@ class spi_device_env extends cip_base_env #(
     m_spi_agent = spi_agent::type_id::create("m_spi_agent", this);
     uvm_config_db#(spi_agent_cfg)::set(this, "m_spi_agent*", "cfg", cfg.m_spi_agent_cfg);
     cfg.m_spi_agent_cfg.en_cov = cfg.en_cov;
+
+    // configure spi_agent to Device mode
+    cfg.m_spi_agent_cfg.if_mode = Device;
+    `uvm_info(`gfn, "\nset m_spi_agent_cfg.if_mode to Device", UVM_LOW)
   endfunction
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+    // connect monitor to scoreboard
     if (cfg.en_scb) begin
       m_spi_agent.monitor.host_analysis_port.connect(
           scoreboard.host_spi_data_fifo.analysis_export);
