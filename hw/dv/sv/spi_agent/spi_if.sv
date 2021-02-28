@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-interface spi_if (input rst_n);
+interface spi_if (
+  input rst_n
+);
 
   // standard spi interface pins
-  logic sck;
-  logic csb;
-  logic sdo;
-  logic sdi;
+  logic       sck;
+  logic [3:0] csb;
+  logic [3:0] sio;
 
   // debug signals
   logic [7:0] host_byte;
@@ -19,4 +20,4 @@ interface spi_if (input rst_n);
   bit         sck_polarity;
   bit         sck_phase;
 
-endinterface
+endinterface : spi_if

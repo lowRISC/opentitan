@@ -180,8 +180,8 @@ module tb;
 
   assign spi_device_sck     = spi_if.sck;
   assign spi_device_csb     = spi_if.csb;
-  assign spi_device_sdi_i   = spi_if.sdi;
-  assign spi_if.sdo         = spi_device_sdo_o;
+  assign spi_device_sdi_i   = spi_if.sio[0];
+  assign spi_if.sio[1]      = spi_device_sdo_o;
 
   // TODO: Replace this weak pull to a known value with initialization
   // in the agent/interface.
