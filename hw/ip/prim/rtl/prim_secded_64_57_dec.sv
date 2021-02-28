@@ -82,7 +82,8 @@ module prim_secded_64_57_dec (
   assign d_o[56] = (syndrome_o == 7'h7f) ^ in[56];
 
   // err_o calc. bit0: single error, bit1: double error
-  assign err_o[0] = ^syndrome_o;
-  assign err_o[1] = ~err_o[0] & (|syndrome_o);
+  // Verilator tends to throw UNOPTFLAT warnings if bit1 depends on bit0.
+  assign err_o[0] =   ^syndrome_o;
+  assign err_o[1] = ~(^syndrome_o) & (|syndrome_o);
 
 endmodule : prim_secded_64_57_dec

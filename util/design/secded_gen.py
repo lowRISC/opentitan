@@ -114,8 +114,9 @@ def print_dec(n, k, m, codes, codetype):
         outstr += "  assign err_o[1] = |syndrome_o[%d:0] & ~syndrome_o[%d];\n" % (
             m - 2, m - 1)
     else:
-        outstr += "  assign err_o[0] = ^syndrome_o;\n"
-        outstr += "  assign err_o[1] = ~err_o[0] & (|syndrome_o);\n"
+        outstr += "  // Verilator tends to throw UNOPTFLAT warnings if bit1 depends on bit0.\n"
+        outstr += "  assign err_o[0] =   ^syndrome_o;\n"
+        outstr += "  assign err_o[1] = ~(^syndrome_o) & (|syndrome_o);\n"
     return outstr
 
 
