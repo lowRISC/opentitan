@@ -9,7 +9,8 @@ import random
 from LocalLauncher import LocalLauncher
 from sim_utils import get_cov_summary_table
 from tabulate import tabulate
-from utils import VERBOSE, find_and_substitute_wildcards, rm_path
+from utils import (VERBOSE, clean_odirs, find_and_substitute_wildcards,
+                   rm_path, subst_wildcards)
 
 
 class Deploy():
@@ -475,22 +476,23 @@ class CovMerge(Deploy):
             if run.cov_db_dir not in self.cov_db_dirs:
                 self.cov_db_dirs.append(run.cov_db_dir)
 
-        super().__init__(sim_cfg)
+        # Early lookup the cov_merge_db_dir, which is a mandatory misc
+        # attribute anyway. We need it to compute additional cov db dirs.
+        self.cov_merge_db_dir = subst_wildcards("{cov_merge_db_dir}",
+                                                sim_cfg.__dict__)
 
+        # Prune previous merged cov directories, keeping past 7 dbs.
+        prev_cov_db_dirs = clean_odirs(odir=self.cov_merge_db_dir, max_odirs=7)
+
+        # If the --cov-merge-previous command line switch is passed, then
+        # merge coverage with the previous runs.
+        if sim_cfg.cov_merge_previous:
+            self.cov_db_dirs += [str(item) for item in prev_cov_db_dirs]
+
+        super().__init__(sim_cfg)
         self.dependencies += run_items
         # Run coverage merge even if one test passes.
         self.needs_all_dependencies_passing = False
-
-        # TODO: need to move this up.
-        # Prune previous merged cov directories.
-        prev_cov_db_dirs = self.launcher.clean_odirs(
-            odir=self.cov_merge_db_dir)
-
-        # If a merged cov data base exists from a previous run, then consider
-        # that as well for merging, if the --cov-merge-previous command line
-        # switch is passed.
-        if self.sim_cfg.cov_merge_previous:
-            self.cov_db_dirs += [str(item) for item in prev_cov_db_dirs]
 
         # Append cov_db_dirs to the list of exports.
         self.exports["cov_db_dirs"] = "\"{}\"".format(" ".join(

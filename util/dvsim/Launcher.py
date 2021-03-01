@@ -5,11 +5,9 @@
 import logging as log
 import os
 import re
-import shutil
-from datetime import datetime
 from pathlib import Path
 
-from utils import TS_FORMAT, VERBOSE, rm_path
+from utils import VERBOSE, clean_odirs, rm_path
 
 
 class LauncherError(Exception):
@@ -58,7 +56,7 @@ class Launcher:
 
         # If renew_odir flag is True - then move it.
         if self.renew_odir:
-            self.clean_odirs(odir=self.deploy.odir)
+            clean_odirs(odir=self.deploy.odir, max_odirs=self.max_odirs)
         os.makedirs(self.deploy.odir, exist_ok=True)
 
     def _dump_env_vars(self, exports):
@@ -232,32 +230,3 @@ class Launcher:
         if status != "D":
             old = Path(self.deploy.sim_cfg.links['D'], self.deploy.qual_name)
             rm_path(old)
-
-    def clean_odirs(self, odir):
-        """Clean previous output directories.
-
-        When running jobs, we may want to maintain a limited history of
-        previous invocations. This method finds and deletes the output
-        directories at the base of input arg 'odir' with the oldest timestamps,
-        if that limit is reached. It returns a list of directories that
-        remain after deletion.
-        """
-
-        if not os.path.exists(odir):
-            return []
-
-        # If output directory exists, back it up.
-        ts = datetime.fromtimestamp(os.stat(odir).st_ctime)
-        ts = ts.strftime(TS_FORMAT)
-        shutil.move(odir, odir + "_" + ts)
-
-        # Get list of past output directories sorted by creation time.
-        pdir = Path(odir).resolve().parent
-        dirs = sorted([old for old in pdir.iterdir() if old.is_dir()],
-                      key=os.path.getctime,
-                      reverse=True)
-
-        for old in dirs[self.max_odirs - 1:]:
-            rm_path(old)
-
-        return dirs[0:self.max_odirs - 2]
