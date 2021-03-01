@@ -112,7 +112,7 @@ def check_name(obj: object, what: str) -> str:
 
     # Allow the usual symbol constituents (alphanumeric plus underscore; no
     # leading numbers)
-    if not re.match(r'[a-zA-Z_][a-zA-Z_0-9]*', as_str):
+    if not re.match(r'[a-zA-Z_][a-zA-Z_0-9]*$', as_str):
         raise ValueError("{} is {!r}, which isn't a valid symbol in "
                          "C / Verilog, so isn't allowed as a name."
                          .format(what, as_str))
