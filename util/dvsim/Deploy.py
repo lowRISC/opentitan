@@ -16,7 +16,7 @@ from pathlib import Path
 
 from sim_utils import get_cov_summary_table
 from tabulate import tabulate
-from utils import VERBOSE, find_and_substitute_wildcards, rm_path
+from utils import TS_FORMAT, VERBOSE, find_and_substitute_wildcards, rm_path
 
 
 class DeployError(Exception):
@@ -290,7 +290,7 @@ class Deploy():
         if os.path.exists(odir):
             # If output directory exists, back it up.
             ts = datetime.fromtimestamp(os.stat(odir).st_ctime)
-            ts = ts.strftime(self.sim_cfg.ts_format)
+            ts = ts.strftime(TS_FORMAT)
             shutil.move(odir, odir + "_" + ts)
 
         # Get list of past output directories sorted by creation time.
