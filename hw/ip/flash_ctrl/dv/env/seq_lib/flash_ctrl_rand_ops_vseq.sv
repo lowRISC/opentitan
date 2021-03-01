@@ -37,8 +37,10 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
         };
 
     flash_op.partition dist {
-      flash_ctrl_pkg::FlashPartData :/ cfg.seq_cfg.op_on_data_partition_pc,
-      flash_ctrl_pkg::FlashPartInfo :/ (100 - cfg.seq_cfg.op_on_data_partition_pc)
+      FlashPartData  :/ cfg.seq_cfg.op_on_data_partition_pc,
+      FlashPartInfo  :/ cfg.seq_cfg.op_on_info_partition_pc,
+      FlashPartInfo1 :/ cfg.seq_cfg.op_on_info1_partition_pc,
+      FlashPartRed   :/ cfg.seq_cfg.op_on_red_partition_pc
     };
 
     if (flash_op.op inside {flash_ctrl_pkg::FlashOpRead, flash_ctrl_pkg::FlashOpProgram}) {
@@ -240,17 +242,17 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(poll_fifo_status)
             flash_ctrl_read(flash_op.num_words, flash_op_data, poll_fifo_status);
             wait_flash_op_done();
-            flash_mem_bkdr_read_check(flash_op, flash_op_data);
+            cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
           end
           flash_ctrl_pkg::FlashOpProgram: begin
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(poll_fifo_status)
             flash_ctrl_write(flash_op_data, poll_fifo_status);
             wait_flash_op_done();
-            flash_mem_bkdr_read_check(flash_op, flash_op_data);
+            cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
           end
           flash_ctrl_pkg::FlashOpErase: begin
-            wait_flash_op_done();
-            flash_mem_bkdr_erase_check(flash_op);
+            wait_flash_op_done(.timeout_ns(120_000_000));// Added because mass(bank) erase can be longer then default timeout.
+            cfg.flash_mem_bkdr_erase_check(flash_op);
           end
           default: begin
             // TODO: V2 test item.
@@ -266,16 +268,16 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
     // chunk of space. The rest of the flash mem is essentially dont-care. If the flash ctrl
     // does not work correctly, the check will result in an access from the invalidated mem
     // region exposing the issue.
-    flash_mem_bkdr_init(flash_op.partition, FlashMemInitInvalidate);
+    cfg.flash_mem_bkdr_init(flash_op.partition, FlashMemInitInvalidate);
     case (flash_op.op)
       flash_ctrl_pkg::FlashOpRead: begin
         // Initialize the targeted mem region with random data.
-        flash_mem_bkdr_write(.flash_op(flash_op), .flash_mem_init(FlashMemInitRandomize));
+        cfg.flash_mem_bkdr_write(.flash_op(flash_op), .flash_mem_init(FlashMemInitRandomize));
       end
       flash_ctrl_pkg::FlashOpProgram: begin
         // Initialize the targeted mem region with all 1s. This is required because the flash
         // needs to be erased to all 1s between each successive programming.
-        flash_mem_bkdr_write(.flash_op(flash_op), .flash_mem_init(FlashMemInitSet));
+        cfg.flash_mem_bkdr_write(.flash_op(flash_op), .flash_mem_init(FlashMemInitSet));
       end
     endcase
   endfunction

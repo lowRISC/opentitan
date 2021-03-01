@@ -30,7 +30,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     if (kind == "HARD") begin
       cfg.clk_rst_vif.wait_clks(cfg.post_reset_delay_clks);
     end
-    flash_mem_bkdr_init(flash_ctrl_pkg::FlashPartInfo, FlashMemInitSet);
+    cfg.flash_mem_bkdr_init(FlashPartInfo1, FlashMemInitSet);
 
     // Wait for flash_ctrl to finish initializing on every reset
     // We probably need a parameter to skip this for certain tests
@@ -85,7 +85,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   // Wait for flash_ctrl op to finish.
-  virtual task wait_flash_op_done(bit clear_op_status = 1'b1);
+  virtual task wait_flash_op_done(bit clear_op_status = 1'b1,
+                                 time timeout_ns = 10_000_000); // Added because mass(bank) erase is longer then default timeout.
     uvm_reg_data_t data;
     bit done;
     `DV_SPINWAIT(
@@ -93,7 +94,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         csr_rd(.ptr(ral.op_status), .value(data));
         done = get_field_val(ral.op_status.done, data);
       end while (done == 1'b0);,
-      "wait_flash_op_done timeout occurred!"
+      "wait_flash_op_done timeout occurred!",
+      timeout_ns
     )
     if (clear_op_status) begin
       data = get_csr_val_with_updated_field(ral.op_status.done, data, 0);
@@ -144,14 +146,28 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task flash_ctrl_start_op(flash_op_t flash_op);
     uvm_reg_data_t data;
+    flash_part_e partition_sel;
+    bit [InfoTypesWidth-1:0] info_sel;
+
 
     csr_wr(.csr(ral.addr), .value(flash_op.addr));
+
+    // flash_op.partition -> partition_sel  ,    info_sel         |
+    //  (flash_dv_part_e) | (flash_part_e)  | bit[InfoTypesWidth] |
+    // -------------------|-----------------|---------------------|
+    //  FlashPartData = 0 | FlashPartData=0 |         0           |
+    //  FlashPartInfo = 1 | FlashPartInfo=1 |         0           |
+    //  FlashPartInfo1= 2 | FlashPartInfo=1 |         1           |
+    //  FlashPartRed  = 4 | FlashPartInfo=1 |         2           |
+    partition_sel = |flash_op.partition;
+    info_sel = flash_op.partition >> 1;
 
     data =
         get_csr_val_with_updated_field(ral.control.start, data, 1'b1) |
         get_csr_val_with_updated_field(ral.control.op, data, flash_op.op) |
         get_csr_val_with_updated_field(ral.control.erase_sel, data, flash_op.erase_type) |
-        get_csr_val_with_updated_field(ral.control.partition_sel, data, flash_op.partition) |
+        get_csr_val_with_updated_field(ral.control.partition_sel, data, partition_sel) |
+        get_csr_val_with_updated_field(ral.control.info_sel, data, info_sel) |
         get_csr_val_with_updated_field(ral.control.num, data, flash_op.num_words - 1);
     csr_wr(.csr(ral.control), .value(data));
   endtask
@@ -184,125 +200,5 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  // Convenience function to clear / set / randomize flash memory. Operates in the entire
-  // flash memory.
-  virtual function void flash_mem_bkdr_init(flash_part_e part = flash_ctrl_pkg::FlashPartData,
-                                            flash_mem_init_e flash_mem_init);
-    case (flash_mem_init)
-      FlashMemInitSet: begin
-        foreach (cfg.mem_bkdr_vifs[part][i]) cfg.mem_bkdr_vifs[part][i].set_mem();
-      end
-      FlashMemInitClear: begin
-        foreach (cfg.mem_bkdr_vifs[part][i]) cfg.mem_bkdr_vifs[part][i].clear_mem();
-      end
-      FlashMemInitRandomize: begin
-        foreach (cfg.mem_bkdr_vifs[part][i]) cfg.mem_bkdr_vifs[part][i].randomize_mem();
-      end
-      FlashMemInitInvalidate: begin
-        foreach (cfg.mem_bkdr_vifs[part][i]) cfg.mem_bkdr_vifs[part][i].invalidate_mem();
-      end
-    endcase
-  endfunction
-
-  // Reads flash mem contents via backdoor.
-  // The addr arg need not be word aligned- its the same addr programmed into the `control` CSR.
-  // TODO: support for partition.
-  virtual function void flash_mem_bkdr_read(flash_op_t flash_op,
-                                            ref logic [TL_DW-1:0] data[$]);
-    flash_mem_addr_attrs addr_attrs = new(flash_op.addr);
-    data.delete();
-    for (int i = 0; i < flash_op.num_words; i++) begin
-      data[i] = cfg.mem_bkdr_vifs[flash_op.partition][addr_attrs.bank].read32(
-          addr_attrs.bank_addr);
-      `uvm_info(`gfn, $sformatf("flash_mem_bkdr_read: {%s} = 0x%0h",
-                                addr_attrs.sprint(), data[i]), UVM_MEDIUM)
-      addr_attrs.incr(TL_DBW);
-    end
-  endfunction
-
-  // Helper macro for the `flash_mem_bkdr_write` function below.
-`define FLASH_MEM_BKDR_WRITE_CASE(_data) \
-  for (int i = 0; i < flash_op.num_words; i++) begin \
-    logic [TL_DW-1:0] loc_data = _data; \
-    cfg.mem_bkdr_vifs[flash_op.partition][addr_attrs.bank].write32( \
-        addr_attrs.bank_addr, loc_data); \
-    `uvm_info(`gfn, $sformatf("flash_mem_bkdr_write: {%s} = 0x%0h", \
-                              addr_attrs.sprint(), loc_data), UVM_MEDIUM) \
-    addr_attrs.incr(TL_DBW); \
-  end
-
-  // Writes the flash mem contents via backdoor.
-  // The addr arg need not be word aligned- its the same addr programmed into the `control` CSR.
-  // TODO: support for partition.
-  virtual function void flash_mem_bkdr_write(flash_op_t flash_op,
-                                             flash_mem_init_e flash_mem_init,
-                                             logic [TL_DW-1:0] data[$] = {});
-    flash_mem_addr_attrs addr_attrs = new(flash_op.addr);
-    case (flash_mem_init)
-      FlashMemInitCustom: begin
-        flash_op.num_words = data.size();
-        `FLASH_MEM_BKDR_WRITE_CASE(data[i])
-      end
-      FlashMemInitSet: begin
-        `FLASH_MEM_BKDR_WRITE_CASE({TL_DW{1'b1}})
-      end
-      FlashMemInitClear: begin
-        `FLASH_MEM_BKDR_WRITE_CASE({TL_DW{1'b0}})
-      end
-      FlashMemInitRandomize: begin
-        `FLASH_MEM_BKDR_WRITE_CASE($urandom)
-      end
-      FlashMemInitInvalidate: begin
-        `FLASH_MEM_BKDR_WRITE_CASE({TL_DW{1'bx}})
-      end
-    endcase
-  endfunction
-
-`undef FLASH_MEM_BKDR_WRITE_CASE
-
-  // Checks flash mem contents via backdoor.
-  // The addr arg need not be word aligned- its the same addr programmed into the `control` CSR.
-  // TODO: support for partition.
-  virtual function void flash_mem_bkdr_read_check(flash_op_t flash_op,
-                                                  bit [TL_DW-1:0] exp_data[$]);
-    logic [TL_DW-1:0] data[$];
-    flash_mem_bkdr_read(flash_op, data);
-    foreach (data[i]) begin
-      `DV_CHECK_CASE_EQ(data[i], exp_data[i])
-    end
-  endfunction
-
-  // Ensure that the flash page / bank has indeed been erased.
-  virtual function void flash_mem_bkdr_erase_check(flash_op_t flash_op);
-    flash_mem_addr_attrs    addr_attrs = new(flash_op.addr);
-    bit [TL_AW-1:0]         erase_check_addr;
-    uint                    num_words;
-
-    case (flash_op.erase_type)
-      flash_ctrl_pkg::FlashErasePage: begin
-        erase_check_addr = addr_attrs.page_start_addr;
-        num_words = FlashNumBusWordsPerPage;
-      end
-      flash_ctrl_pkg::FlashEraseBank: begin
-        // TODO: check if bank erase was supported
-        erase_check_addr = addr_attrs.bank_start_addr;
-        num_words = FlashNumBusWordsPerBank;
-      end
-      default: begin
-        `uvm_fatal(`gfn, $sformatf("Invalid erase_type: %0s", flash_op.erase_type.name()))
-      end
-    endcase
-    `uvm_info(`gfn, $sformatf("flash_mem_bkdr_erase_check: addr = 0x%0h, num_words = %0d",
-                              erase_check_addr, num_words), UVM_MEDIUM)
-
-    for (int i = 0; i < num_words; i++) begin
-      logic [TL_DW-1:0] data;
-      data = cfg.mem_bkdr_vifs[flash_op.partition][addr_attrs.bank].read32(erase_check_addr);
-      `uvm_info(`gfn, $sformatf("flash_mem_bkdr_erase_check: bank: %0d, addr: 0x%0h, data: 0x%0h",
-                                addr_attrs.bank, erase_check_addr, data), UVM_MEDIUM)
-      `DV_CHECK_CASE_EQ(data, '1)
-      erase_check_addr += TL_DBW;
-    end
-  endfunction
 
 endclass : flash_ctrl_base_vseq

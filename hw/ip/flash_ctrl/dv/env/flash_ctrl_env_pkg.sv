@@ -62,6 +62,14 @@ package flash_ctrl_env_pkg;
     FlashMemInitInvalidate  // Initialize with Xs.
   } flash_mem_init_e;
 
+  // Partition select for DV
+  typedef enum logic [flash_ctrl_pkg::InfoTypes:0] { // Data partition and all info partitions
+    FlashPartData  = 0,
+    FlashPartInfo  = 1,
+    FlashPartInfo1 = 2,
+    FlashPartRed   = 4
+  } flash_dv_part_e;
+
   typedef struct packed {
     bit           en;         // enable this region
     bit           read_en;    // enable reads
@@ -73,7 +81,7 @@ package flash_ctrl_env_pkg;
   } flash_mp_region_cfg_t;
 
   typedef struct packed {
-    flash_part_e    partition;  // data or info partition
+    flash_dv_part_e partition;  // data or one of the info partitions
     flash_erase_e   erase_type; // erase page or the whole bank
     flash_op_e      op;         // read / program or erase
     uint            num_words;  // number of words to read or program (TL_DW)
