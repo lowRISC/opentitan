@@ -1,0 +1,13 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "google_verible_verilog_syntax_py",
+  target_dir: "google_verible_verilog_syntax_py",
+
+  upstream: {
+    url: "https://github.com/google/verible.git",
+    rev: "v0.0-943-ged1f3a9",
+    only_subdir: "verilog/tools/syntax/export_json_examples",
+  },
+}
