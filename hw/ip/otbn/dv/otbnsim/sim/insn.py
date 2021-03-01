@@ -776,7 +776,7 @@ class BNRSHI(OTBNInsn):
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
 
 
-class BNRSEL(OTBNInsn):
+class BNSEL(OTBNInsn):
     insn = insn_for_mnemonic('bn.sel', 5)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
@@ -995,7 +995,7 @@ INSN_CLASSES = [
     BNSUB, BNSUBB, BNSUBI, BNSUBM,
     BNAND, BNOR, BNNOT, BNXOR,
     BNRSHI,
-    BNRSEL,
+    BNSEL,
     BNCMP, BNCMPB,
     BNLID, BNSID,
     BNMOV, BNMOVR,
