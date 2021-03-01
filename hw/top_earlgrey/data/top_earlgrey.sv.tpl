@@ -343,6 +343,7 @@ module top_${top["name"]} #(
   % if m["type"] == "ram_1p_scr":
 <%
      data_width = int(top["datawidth"])
+     full_data_width = data_width + int(m["integ_width"])
      dw_byte = data_width // 8
      addr_width = ((int(m["size"], 0) // dw_byte) -1).bit_length()
      sram_depth = (int(m["size"], 0) // dw_byte)
@@ -353,9 +354,9 @@ module top_${top["name"]} #(
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_gnt;
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_we;
   logic ${lib.bitarray(addr_width, max_char)} ${m["name"]}_addr;
-  logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wdata;
-  logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wmask;
-  logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_rdata;
+  logic ${lib.bitarray(full_data_width, max_char)} ${m["name"]}_wdata;
+  logic ${lib.bitarray(full_data_width, max_char)} ${m["name"]}_wmask;
+  logic ${lib.bitarray(full_data_width, max_char)} ${m["name"]}_rdata;
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_rvalid;
   logic ${lib.bitarray(2,          max_char)} ${m["name"]}_rerror;
 
@@ -379,15 +380,15 @@ module top_${top["name"]} #(
     .addr_o      (${m["name"]}_addr),
     .wdata_o     (${m["name"]}_wdata),
     .wmask_o     (${m["name"]}_wmask),
-    .rdata_i     (${m["name"]}_rdata),
+    .rdata_i     (${m["name"]}_rdata[${data_width-1}:0]),
     .rvalid_i    (${m["name"]}_rvalid),
     .rerror_i    (${m["name"]}_rerror)
   );
 
   prim_ram_1p_scr #(
-    .Width(${data_width}),
+    .Width(${full_data_width}),
     .Depth(${sram_depth}),
-    .EnableParity(1),
+    .EnableParity(0),
     .CfgWidth(8)
   ) u_ram1p_${m["name"]} (
     % for key in clocks:
@@ -405,8 +406,8 @@ module top_${top["name"]} #(
     .gnt_o    (${m["name"]}_gnt),
     .write_i  (${m["name"]}_we),
     .addr_i   (${m["name"]}_addr),
-    .wdata_i  (${m["name"]}_wdata),
-    .wmask_i  (${m["name"]}_wmask),
+    .wdata_i  (${full_data_width}'(${m["name"]}_wdata)),
+    .wmask_i  (${full_data_width}'(${m["name"]}_wmask)),
     .rdata_o  (${m["name"]}_rdata),
     .rvalid_o (${m["name"]}_rvalid),
     .rerror_o (${m["name"]}_rerror),
@@ -419,6 +420,7 @@ module top_${top["name"]} #(
   % elif m["type"] == "rom":
 <%
      data_width = int(top["datawidth"])
+     full_data_width = data_width + int(m['integ_width'])
      dw_byte = data_width // 8
      addr_width = ((int(m["size"], 0) // dw_byte) -1).bit_length()
      rom_depth = (int(m["size"], 0) // dw_byte)
@@ -427,7 +429,7 @@ module top_${top["name"]} #(
   // ROM device
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_req;
   logic ${lib.bitarray(addr_width, max_char)} ${m["name"]}_addr;
-  logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_rdata;
+  logic ${lib.bitarray(full_data_width, max_char)} ${m["name"]}_rdata;
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_rvalid;
 
   tlul_adapter_sram #(
@@ -452,13 +454,13 @@ module top_${top["name"]} #(
     .addr_o      (${m["name"]}_addr),
     .wdata_o     (),
     .wmask_o     (),
-    .rdata_i     (${m["name"]}_rdata),
+    .rdata_i     (${m["name"]}_rdata[${data_width-1}:0]),
     .rvalid_i    (${m["name"]}_rvalid),
     .rerror_i    (2'b00)
   );
 
   prim_rom_adv #(
-    .Width(${data_width}),
+    .Width(${full_data_width}),
     .Depth(${rom_depth}),
     .MemInitFile(BootRomInitFile)
   ) u_rom_${m["name"]} (

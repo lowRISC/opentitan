@@ -726,7 +726,7 @@ module top_earlgrey #(
   // ROM device
   logic        rom_req;
   logic [11:0] rom_addr;
-  logic [31:0] rom_rdata;
+  logic [38:0] rom_rdata;
   logic        rom_rvalid;
 
   tlul_adapter_sram #(
@@ -747,13 +747,13 @@ module top_earlgrey #(
     .addr_o      (rom_addr),
     .wdata_o     (),
     .wmask_o     (),
-    .rdata_i     (rom_rdata),
+    .rdata_i     (rom_rdata[31:0]),
     .rvalid_i    (rom_rvalid),
     .rerror_i    (2'b00)
   );
 
   prim_rom_adv #(
-    .Width(32),
+    .Width(39),
     .Depth(4096),
     .MemInitFile(BootRomInitFile)
   ) u_rom_rom (
@@ -771,9 +771,9 @@ module top_earlgrey #(
   logic        ram_main_gnt;
   logic        ram_main_we;
   logic [14:0] ram_main_addr;
-  logic [31:0] ram_main_wdata;
-  logic [31:0] ram_main_wmask;
-  logic [31:0] ram_main_rdata;
+  logic [38:0] ram_main_wdata;
+  logic [38:0] ram_main_wmask;
+  logic [38:0] ram_main_rdata;
   logic        ram_main_rvalid;
   logic [1:0]  ram_main_rerror;
 
@@ -793,15 +793,15 @@ module top_earlgrey #(
     .addr_o      (ram_main_addr),
     .wdata_o     (ram_main_wdata),
     .wmask_o     (ram_main_wmask),
-    .rdata_i     (ram_main_rdata),
+    .rdata_i     (ram_main_rdata[31:0]),
     .rvalid_i    (ram_main_rvalid),
     .rerror_i    (ram_main_rerror)
   );
 
   prim_ram_1p_scr #(
-    .Width(32),
+    .Width(39),
     .Depth(32768),
-    .EnableParity(1),
+    .EnableParity(0),
     .CfgWidth(8)
   ) u_ram1p_ram_main (
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
@@ -815,8 +815,8 @@ module top_earlgrey #(
     .gnt_o    (ram_main_gnt),
     .write_i  (ram_main_we),
     .addr_i   (ram_main_addr),
-    .wdata_i  (ram_main_wdata),
-    .wmask_i  (ram_main_wmask),
+    .wdata_i  (39'(ram_main_wdata)),
+    .wmask_i  (39'(ram_main_wmask)),
     .rdata_o  (ram_main_rdata),
     .rvalid_o (ram_main_rvalid),
     .rerror_o (ram_main_rerror),
@@ -831,9 +831,9 @@ module top_earlgrey #(
   logic        ram_ret_aon_gnt;
   logic        ram_ret_aon_we;
   logic [9:0] ram_ret_aon_addr;
-  logic [31:0] ram_ret_aon_wdata;
-  logic [31:0] ram_ret_aon_wmask;
-  logic [31:0] ram_ret_aon_rdata;
+  logic [38:0] ram_ret_aon_wdata;
+  logic [38:0] ram_ret_aon_wmask;
+  logic [38:0] ram_ret_aon_rdata;
   logic        ram_ret_aon_rvalid;
   logic [1:0]  ram_ret_aon_rerror;
 
@@ -853,15 +853,15 @@ module top_earlgrey #(
     .addr_o      (ram_ret_aon_addr),
     .wdata_o     (ram_ret_aon_wdata),
     .wmask_o     (ram_ret_aon_wmask),
-    .rdata_i     (ram_ret_aon_rdata),
+    .rdata_i     (ram_ret_aon_rdata[31:0]),
     .rvalid_i    (ram_ret_aon_rvalid),
     .rerror_i    (ram_ret_aon_rerror)
   );
 
   prim_ram_1p_scr #(
-    .Width(32),
+    .Width(39),
     .Depth(1024),
-    .EnableParity(1),
+    .EnableParity(0),
     .CfgWidth(8)
   ) u_ram1p_ram_ret_aon (
     .clk_i   (clkmgr_aon_clocks.clk_io_div4_infra),
@@ -875,8 +875,8 @@ module top_earlgrey #(
     .gnt_o    (ram_ret_aon_gnt),
     .write_i  (ram_ret_aon_we),
     .addr_i   (ram_ret_aon_addr),
-    .wdata_i  (ram_ret_aon_wdata),
-    .wmask_i  (ram_ret_aon_wmask),
+    .wdata_i  (39'(ram_ret_aon_wdata)),
+    .wmask_i  (39'(ram_ret_aon_wmask)),
     .rdata_o  (ram_ret_aon_rdata),
     .rvalid_o (ram_ret_aon_rvalid),
     .rerror_o (ram_ret_aon_rerror),

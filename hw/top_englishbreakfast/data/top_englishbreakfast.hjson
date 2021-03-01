@@ -389,7 +389,8 @@
       type: "rom",
       base_addr: "0x00008000",
       swaccess: "ro",
-      size: "0x4000"
+      size: "0x4000",
+      integ_width: 7,
       inter_signal_list: [
         { struct: "tl"
           package: "tlul_pkg"
@@ -407,6 +408,7 @@
       base_addr: "0x10000000",
       size: "0x10000",
       byte_write: "true",
+      integ_width: 7,
       exec: "1",
       inter_signal_list: [
         { struct: "tl"
@@ -439,6 +441,7 @@
       base_addr: "0x40600000",
       size: "0x1000",
       byte_write: "true",
+      integ_width: 7,
       exec: "0",
       inter_signal_list: [
         { struct: "tl"
