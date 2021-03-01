@@ -15,7 +15,7 @@
 % for node in xbar.hosts:
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_${node.name}"
+      name:   "tl_${node.name.replace('.', '__')}"
       act:    "rsp"
       package: "tlul_pkg"
     }
@@ -24,7 +24,7 @@
 % for node in xbar.devices:
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_${node.name}"
+      name:   "tl_${node.name.replace('.', '__')}"
       act:    "req"
       package: "tlul_pkg"
     }

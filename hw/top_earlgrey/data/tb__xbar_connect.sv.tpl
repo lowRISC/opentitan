@@ -97,17 +97,18 @@ initial begin
   % for node in xbar["nodes"]:
 <%
 clk = 'clk_' + clk_src[node["clock"]]
-inst_sig_list = lib.find_otherside_modules(top, xbar["name"], 'tl_' + node["name"])
+esc_name = node['name'].replace('.', '__')
+inst_sig_list = lib.find_otherside_modules(top, xbar["name"], 'tl_' + esc_name)
 inst_name = inst_sig_list[0][1]
 sig_name = inst_sig_list[0][2]
 
 %>\
     % if node["type"] == "host" and not node["xbar"]:
-    `DRIVE_CHIP_TL_HOST_IF(${node["name"]}, ${inst_name}, ${sig_name})
+    `DRIVE_CHIP_TL_HOST_IF(${esc_name}, ${inst_name}, ${sig_name})
     % elif node["type"] == "device" and not node["xbar"] and node["stub"]:
-    `DRIVE_CHIP_TL_EXT_DEVICE_IF(${node["name"]}, ${inst_name}_${sig_name})
+    `DRIVE_CHIP_TL_EXT_DEVICE_IF(${esc_name}, ${inst_name}_${sig_name})
     % elif node["type"] == "device" and not node["xbar"]:
-    `DRIVE_CHIP_TL_DEVICE_IF(${node["name"]}, ${inst_name}, ${sig_name})
+    `DRIVE_CHIP_TL_DEVICE_IF(${esc_name}, ${inst_name}, ${sig_name})
     % endif
   % endfor
 % endfor

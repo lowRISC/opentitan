@@ -8,8 +8,9 @@ from collections import OrderedDict
 from enum import Enum
 from typing import Dict, List, Tuple
 
-from reggen.validate import check_int
+from reggen.block import Block
 from reggen.inter_signal import InterSignal
+from reggen.validate import check_int
 from topgen import lib
 
 IM_TYPES = ['uni', 'req_rsp']
@@ -110,10 +111,49 @@ def add_intermodule_connection(obj: OrderedDict, req_m: str, req_s: str,
     connect[req_key] = [rsp_key]
 
 
-def autoconnect_xbar(topcfg: OrderedDict, xbar: OrderedDict):
+def autoconnect_xbar(topcfg: OrderedDict,
+                     name_to_block: Dict[str, Block],
+                     xbar: OrderedDict) -> None:
+    # The crossbar is connecting to modules and memories in topcfg, plus
+    # possible external connections. Make indices for the modules and memories
+    # for quick lookup and add some assertions to make sure no name appears in
+    # multiple places.
+    name_to_module = {}
+    for mod in topcfg['module']:
+        assert mod['name'] not in name_to_module
+        if lib.is_inst(mod):
+            name_to_module[mod['name']] = mod
+
+    name_to_memory = {}
+    for mem in topcfg['memory']:
+        assert mem['name'] not in name_to_memory
+        if lib.is_inst(mem):
+            name_to_memory[mem['name']] = mem
+
+    # The names of modules and memories should be disjoint
+    assert not (set(name_to_module.keys()) & set(name_to_memory.keys()))
+
+    external_names = (set(topcfg['inter_module']['top']) |
+                      set(topcfg["inter_module"]["external"].keys()))
+
     ports = [x for x in xbar["nodes"] if x["type"] in ["host", "device"]]
     for port in ports:
+        # Here, we expect port_name to either be a single identifier (in which
+        # case, it's taken as the name of some module or memory) to be a dotted
+        # pair MOD.INAME where MOD is the name of some module and INAME is the
+        # associated interface name.
+        name_parts = port['name'].split('.', 1)
+        port_base = name_parts[0]
+        port_iname = name_parts[1] if len(name_parts) > 1 else None
+        esc_name = port['name'].replace('.', '__')
+
         if port["xbar"]:
+            if port_iname is not None:
+                log.error('A crossbar connection may not '
+                          'have a target of the form MOD.INAME (saw {!r})'
+                          .format(port['name']))
+                continue
+
             if port["type"] == "host":
                 # Skip as device will add connection
                 continue
@@ -121,65 +161,84 @@ def autoconnect_xbar(topcfg: OrderedDict, xbar: OrderedDict):
             # Device port adds signal
             add_intermodule_connection(obj=topcfg,
                                        req_m=xbar["name"],
-                                       req_s="tl_%s" % port["name"],
-                                       rsp_m=port["name"],
-                                       rsp_s="tl_%s" % xbar["name"])
+                                       req_s="tl_" + esc_name,
+                                       rsp_m=esc_name,
+                                       rsp_s="tl_" + xbar["name"])
             continue  # xbar port case
 
-        # check if name exists in ["module", "memory"]
-        ips = [
-            x for x in topcfg["module"] + topcfg["memory"]
-            if x["name"] == port["name"] and lib.is_inst(x)
-        ]
+        port_mod = name_to_module.get(port_base)
+        port_mem = name_to_memory.get(port_base)
+        assert port_mod is None or port_mem is None
 
-        assert len(ips) <= 1
-
-        if len(ips) == 0:
+        if not (port_mod or port_mem):
             # if not in module, memory, should be existed in top or ext field
-            module_key = "{}.tl_{}".format(xbar["name"], port["name"])
-            if module_key not in topcfg["inter_module"]["top"] + list(
-                    topcfg["inter_module"]["external"].keys()):
+            module_key = "{}.tl_{}".format(xbar["name"], esc_name)
+            if module_key not in external_names:
                 log.error("Inter-module key {} cannot be found in module, "
                           "memory, top, or external lists.".format(module_key))
+
             continue
 
-        ip = ips[0]
-        inter_signal_list = ip['inter_signal_list']
+        if port_iname is not None and port_mem is not None:
+            log.error('Cannot make connection for {!r}: the base of the name '
+                      'points to a memory but memories do not support '
+                      'interface names.'
+                      .format(port['name']))
 
-        # get the port name
-        def get_signame(act: str) -> OrderedDict:
-            ims = [
+        is_host = port['type'] == 'host'
+
+        # If the hit is a module, it originally came from reggen (via
+        # merge.py's amend_ip() function). In this case, we should have a
+        # BusInterfaces object as well as a list of InterSignal objects.
+        #
+        # If not, this is a memory that will just have a dictionary of inter
+        # signals.
+        if port_mod is not None:
+            block = name_to_block[port_mod['type']]
+            try:
+                sig_name = block.bus_interfaces.find_port_name(is_host,
+                                                               port_iname)
+            except KeyError:
+                log.error('Cannot make {} connection for {!r}: the base of '
+                          'the target module has no matching bus interface.'
+                          .format('host' if is_host else 'device',
+                                  port['name']))
+                continue
+        else:
+            inter_signal_list = port_mem['inter_signal_list']
+            act = 'req' if is_host else 'rsp'
+            matches = [
                 x for x in inter_signal_list
                 if (x.get('package') == 'tlul_pkg' and
                     x['struct'] == 'tl' and
                     x['act'] == act)
             ]
-            return ims
+            if not matches:
+                log.error('Cannot make {} connection for {!r}: the memory '
+                          'has no signal with an action of {}.'
+                          .format('host' if is_host else 'device',
+                                  port['name'],
+                                  act))
+                continue
 
-        if port["type"] == "device":
-            ims = get_signame("rsp")
-        else:  # host type
-            ims = get_signame("req")
-
-        assert len(ims) == 1
-        sig_name = ims[0]["name"]
+            assert len(matches) == 1
+            sig_name = matches[0]['name']
 
         add_intermodule_connection(obj=topcfg,
-                                   req_m=port["name"],
+                                   req_m=port_base,
                                    req_s=sig_name,
                                    rsp_m=xbar["name"],
-                                   rsp_s="tl_%s" % port["name"])
-        continue  # len() == 1
+                                   rsp_s="tl_" + esc_name)
 
 
-def autoconnect(topcfg: OrderedDict):
+def autoconnect(topcfg: OrderedDict, name_to_block: Dict[str, Block]):
     """Matching the connection based on the naming rule
     between {memory, module} <-> Xbar.
     """
 
     # Add xbar connection to the modules, memories
     for xbar in topcfg["xbar"]:
-        autoconnect_xbar(topcfg, xbar)
+        autoconnect_xbar(topcfg, name_to_block, xbar)
 
 
 def elab_intermodule(topcfg: OrderedDict):

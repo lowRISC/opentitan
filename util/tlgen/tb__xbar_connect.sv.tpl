@@ -21,10 +21,10 @@ initial force dut.${rst} = rst_n;
 
 // Host TileLink interface connections
 % for node in xbar.hosts:
-`CONNECT_TL_HOST_IF(${node.name}, dut, ${node.clocks[0]}, rst_n)
+`CONNECT_TL_HOST_IF(${node.name.replace('.', '__')}, dut, ${node.clocks[0]}, rst_n)
 % endfor
 
 // Device TileLink interface connections
 % for node in xbar.devices:
-`CONNECT_TL_DEVICE_IF(${node.name}, dut, ${node.clocks[0]}, rst_n)
+`CONNECT_TL_DEVICE_IF(${node.name.replace('.', '__')}, dut, ${node.clocks[0]}, rst_n)
 % endfor

@@ -226,10 +226,15 @@ def xbar_adddevice(top, xbar, device):
     - stub: There is no backing module / memory, instead a tlul port
             is created and forwarded above the current hierarchy
     """
-    deviceobj = list(
-        filter(lambda node: node["name"] == device,
-               top["module"] + top["memory"]))
-    nodeobj = list(filter(lambda node: node["name"] == device, xbar["nodes"]))
+    device_base = device.split('.', 1)[0]
+    deviceobj = [
+        node for node in top["module"] + top["memory"]
+        if node['name'] == device_base
+    ]
+    nodeobj = [
+        node for node in xbar['nodes']
+        if node['name'] == device_base
+    ]
 
     xbar_list = [x["name"] for x in top["xbar"] if x["name"] != xbar["name"]]
 

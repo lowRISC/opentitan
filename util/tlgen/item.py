@@ -72,3 +72,13 @@ class Node:
         self.us = []
         self.ds = []
         self.addr_range = []
+
+    def esc_name(self) -> str:
+        '''Return an "escaped name" for this node
+
+        This replaces '.' characters with '__'. Needed because the node name
+        might be of the form inst_name.if_name (which isn't a valid symbol name
+        in C or SystemVerilog)
+
+        '''
+        return self.name.replace('.', '__')
