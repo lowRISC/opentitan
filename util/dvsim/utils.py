@@ -14,6 +14,8 @@ import subprocess
 import sys
 import time
 from collections import OrderedDict
+from datetime import datetime
+from pathlib import Path
 
 import hjson
 import mistletoe
@@ -547,3 +549,34 @@ def rm_path(path, ignore_error=False):
         log.error("Failed to remove {}:\n{}.".format(path, e))
         if not ignore_error:
             raise e
+
+
+def clean_odirs(odir, max_odirs, ts_format=TS_FORMAT):
+    """Clean previous output directories.
+
+    When running jobs, we may want to maintain a limited history of
+    previous invocations. This method finds and deletes the output
+    directories at the base of input arg 'odir' with the oldest timestamps,
+    if that limit is reached. It returns a list of directories that
+    remain after deletion.
+    """
+
+    if os.path.exists(odir):
+        # If output directory exists, back it up.
+        ts = datetime.fromtimestamp(os.stat(odir).st_ctime).strftime(ts_format)
+        shutil.move(odir, "{}_{}".format(odir, ts))
+
+    # Get list of past output directories sorted by creation time.
+    pdir = Path(odir).resolve().parent
+    if not pdir.exists():
+        return []
+
+    dirs = sorted([old for old in pdir.iterdir() if old.is_dir()],
+                  key=os.path.getctime,
+                  reverse=True)
+
+    for old in dirs[max_odirs - 1:]:
+        if os.path.exists(old):
+            shutil.rmtree(old, ignore_errors=True)
+
+    return dirs[0:max_odirs - 2]
