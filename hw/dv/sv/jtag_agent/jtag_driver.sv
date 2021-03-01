@@ -48,6 +48,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       rsp.set_id_info(req);
       `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.sprint()), UVM_HIGH)
       cfg.set_tck_en(1'b1);
+      @(`HOST_CB); // wait one cycle to ensure clock is stable
       drive_jtag_req(req, rsp);
       cfg.set_tck_en(1'b0);
       `uvm_info(`gfn, "item sent", UVM_HIGH)
@@ -56,8 +57,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   endtask
 
   // drive jtag req and retrieve rsp
-  virtual task drive_jtag_req(input  jtag_item req,
-                              output jtag_item rsp);
+  virtual task drive_jtag_req(jtag_item req, jtag_item rsp);
     logic [JTAG_DRW-1:0] din;
     drive_jtag_ir(req.addr_len, req.addr);
     drive_jtag_dr(req.data_len, req.data, din);
