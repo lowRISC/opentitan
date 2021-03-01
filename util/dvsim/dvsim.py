@@ -33,7 +33,8 @@ from CfgFactory import make_cfg
 from Deploy import Deploy, RunTest
 from Scheduler import Scheduler
 from Timer import Timer
-from utils import VERBOSE, rm_path, run_cmd_with_timeout
+from utils import (TS_FORMAT, TS_FORMAT_LONG, VERBOSE, rm_path,
+                   run_cmd_with_timeout)
 
 # TODO: add dvsim_cfg.hjson to retrieve this info
 version = 0.1
@@ -620,16 +621,9 @@ def main():
         args.cfg = os.path.join(proj_root, cfg_path)
 
     # Add timestamp to args that all downstream objects can use.
-    # Static variables - indicate timestamp.
-    ts_format_long = "%A %B %d %Y %I:%M:%S%p UTC"
-    ts_format = "%a.%m.%d.%y__%I.%M.%S%p"
     curr_ts = datetime.datetime.utcnow()
-    timestamp_long = curr_ts.strftime(ts_format_long)
-    timestamp = curr_ts.strftime(ts_format)
-    setattr(args, "ts_format_long", ts_format_long)
-    setattr(args, "ts_format", ts_format)
-    setattr(args, "timestamp_long", timestamp_long)
-    setattr(args, "timestamp", timestamp)
+    setattr(args, "timestamp_long", curr_ts.strftime(TS_FORMAT_LONG))
+    setattr(args, "timestamp", curr_ts.strftime(TS_FORMAT))
 
     # Register the seeds from command line with RunTest class.
     RunTest.seeds = args.seeds

@@ -22,6 +22,12 @@ from premailer import transform
 # For verbose logging
 VERBOSE = 15
 
+# Timestamp format when creating directory backups.
+TS_FORMAT = "%y.%m.%d_%H.%M.%S"
+
+# Timestamp format when generating reports.
+TS_FORMAT_LONG = "%A %B %d %Y %H:%M:%S UTC"
+
 
 # Run a command and get the result. Exit with error if the command did not
 # succeed. This is a simpler version of the run_cmd function below.

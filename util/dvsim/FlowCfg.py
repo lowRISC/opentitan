@@ -73,9 +73,7 @@ class FlowCfg():
         self.deploy = []
 
         # Timestamp
-        self.ts_format_long = args.ts_format_long
         self.timestamp_long = args.timestamp_long
-        self.ts_format = args.ts_format
         self.timestamp = args.timestamp
 
         # Results
