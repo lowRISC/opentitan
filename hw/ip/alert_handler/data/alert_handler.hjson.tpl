@@ -260,7 +260,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   swaccess: "rw",
                   hwaccess: "hro",
                   regwen:   "REGWEN",
-                  cname:    "local alert",
+                  cname:    "LOC_ALERT",
                   fields: [
                     { bits: "0",
                       name: "EN_LA",
@@ -277,7 +277,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   swaccess: "rw",
                   hwaccess: "hro",
                   regwen:   "REGWEN",
-                  cname:    "local alert",
+                  cname:    "LOC_ALERT",
                   fields: [
                     {
                       # TODO: bitwidth should be parameterized with CLASS_DW
