@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class flash_ctrl_env extends cip_base_env #(
-    .CFG_T              (flash_ctrl_env_cfg),
+class flash_ctrl_env #(type CFG_T = flash_ctrl_env_cfg)
+                       extends cip_base_env #(
+    .CFG_T              (CFG_T),
     .COV_T              (flash_ctrl_env_cov),
     .VIRTUAL_SEQUENCER_T(flash_ctrl_virtual_sequencer),
     .SCOREBOARD_T       (flash_ctrl_scoreboard)
   );
-  `uvm_component_utils(flash_ctrl_env)
+  `uvm_component_param_utils(flash_ctrl_env #(CFG_T))
 
   tl_agent        m_eflash_tl_agent;
   tl_reg_adapter  m_eflash_tl_reg_adapter;
@@ -29,8 +30,8 @@ class flash_ctrl_env extends cip_base_env #(
     end
 
     // get the vifs from config db
-    begin
-      flash_part_e part = part.first();
+    if(`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin // If using open-source flash
+      flash_dv_part_e part = part.first(); 
       for (int i = 0; i < part.num(); i++, part = part.next()) begin
         foreach (cfg.mem_bkdr_vifs[, bank]) begin
           string vif_name = $sformatf("mem_bkdr_vifs[%0s][%0d]", part.name(), bank);
@@ -41,6 +42,7 @@ class flash_ctrl_env extends cip_base_env #(
         end
       end
     end
+
 
     // create components
     m_eflash_tl_agent = tl_agent::type_id::create("m_eflash_tl_agent", this);

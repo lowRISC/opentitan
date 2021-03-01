@@ -38,7 +38,13 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint max_flash_ops_per_cfg = 50;
 
   // Flash ctrl op randomization knobs.
-  uint op_on_data_partition_pc = 100;
+  
+  // Partition select. Make sure to keep sum equals to 100.
+  uint op_on_data_partition_pc = 100; // Choose data partition.
+  uint op_on_info_partition_pc = 0;   // Choose info partition.
+  uint op_on_info1_partition_pc = 0;  // Choose info1 partition.
+  uint op_on_red_partition_pc = 0;    // Choose redundancy partition.
+
   uint op_erase_type_bank_pc = 0;
   uint op_max_words = 512;
   bit  op_allow_invalid = 1'b0;
