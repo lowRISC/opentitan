@@ -67,6 +67,15 @@ def _get_additional_system_includes_command_line(ctx):
             command_line += ["-isystem", inc]
     return command_line
 
+def _get_additional_system_include_paths(ctx):
+    include_paths = []
+    for hdr_lib in ctx.attr.system_hdr_deps:
+        cc_ctx = hdr_lib[CcInfo].compilation_context
+        for inc in cc_ctx.system_includes.to_list():
+            if inc not in ".":
+                include_paths.append(inc)
+    return include_paths
+
 def _clang_toolchain_config_info_impl(ctx):
     tool_paths = [
         tool_path(
@@ -121,7 +130,7 @@ def _clang_toolchain_config_info_impl(ctx):
     toolchain_config_info = cc_common.create_cc_toolchain_config_info(
         ctx = ctx,
         toolchain_identifier = ctx.attr.toolchain_identifier,
-        cxx_builtin_include_directories = SYSTEM_INCLUDE_PATHS,
+        cxx_builtin_include_directories = SYSTEM_INCLUDE_PATHS + _get_additional_system_include_paths(ctx),
         host_system_name = "i686-unknown-linux-gnu",
         target_system_name = "arm-none-eabi",
         target_cpu = "x86_64",

@@ -41,7 +41,15 @@ def ClangIncludeFeature(include_paths, sysroot):
                 flag_groups = [
                     flag_group(
                         # Disable system includes, then re-enable includes using -I flag
-                        flags = [sysroot_command_line] + include_paths,
+                        flags = ["-nostdinc", sysroot_command_line] + include_paths,
+                    ),
+                ],
+            ),
+            flag_set(
+                actions = _CPP_ALL_COMPILE_ACTIONS,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-nostdinc++"],
                     ),
                 ],
             ),
@@ -303,6 +311,7 @@ _MISC = feature(
                     flags = [
                         "-fuse-ld=lld",
                         "-lstdc++",
+                        "-lm",
                     ],
                 ),
             ],
