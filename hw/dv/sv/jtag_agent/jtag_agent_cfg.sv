@@ -4,7 +4,7 @@
 
 class jtag_agent_cfg extends dv_base_agent_cfg;
 
-// interface handle used by driver, monitor & the sequencer, via cfg handle
+  // interface handle used by driver, monitor & the sequencer, via cfg handle
   virtual jtag_if vif;
 
   `uvm_object_utils_begin(jtag_agent_cfg)
