@@ -46,6 +46,8 @@
     toggle_bits = get_device_addr_toggle_bits(device.name)
     start_bit = 0
     saw_first_zero = 0
+
+    esc_name = device.name.replace('.', '__')
 %>\
     % for i in range(32):
       % if toggle_bits % 2 == 0:
@@ -56,7 +58,7 @@
 %>\
         % endif
       % elif saw_first_zero == 1:
--node tb.dut tl_${device.name}_o.a_address[${i-1}:${start_bit}]
+-node tb.dut tl_${esc_name}_o.a_address[${i-1}:${start_bit}]
 <%
         saw_first_zero = 0
 %>\
@@ -66,7 +68,7 @@
 %>\
     % endfor
     % if saw_first_zero == 1:
--node tb.dut tl_${device.name}_o.a_address[31:${start_bit}]
+-node tb.dut tl_${esc_name}_o.a_address[31:${start_bit}]
     % endif
   % endfor
 

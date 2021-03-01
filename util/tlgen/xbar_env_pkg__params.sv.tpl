@@ -11,7 +11,7 @@
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
 % for device in xbar.devices:
-    '{"${device.name}", '{
+    '{"${device.name.replace('.', '__')}", '{
     % for addr in device.addr_range:
         '{32'h${"%08x" % addr[0]}, 32'h${"%08x" % addr[1]}}${"," if not loop.last else ""}
     % endfor

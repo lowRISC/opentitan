@@ -1124,7 +1124,7 @@ def main():
 
     # All IPs are generated. Connect phase now
     # Find {memory, module} <-> {xbar} connections first.
-    im.autoconnect(completecfg)
+    im.autoconnect(completecfg, name_to_block)
 
     # Generic Inter-module connection
     im.elab_intermodule(completecfg)

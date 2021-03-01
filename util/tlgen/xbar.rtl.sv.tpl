@@ -23,14 +23,14 @@ module xbar_${xbar.name} (
 
   // Host interfaces
 % for node in xbar.hosts:
-  input  tlul_pkg::tl_h2d_t tl_${node.name}_i,
-  output tlul_pkg::tl_d2h_t tl_${node.name}_o,
+  input  tlul_pkg::tl_h2d_t tl_${node.name.replace('.', '__')}_i,
+  output tlul_pkg::tl_d2h_t tl_${node.name.replace('.', '__')}_o,
 % endfor
 
   // Device interfaces
 % for node in xbar.devices:
-  output tlul_pkg::tl_h2d_t tl_${node.name}_o,
-  input  tlul_pkg::tl_d2h_t tl_${node.name}_i,
+  output tlul_pkg::tl_h2d_t tl_${node.name.replace('.', '__')}_o,
+  input  tlul_pkg::tl_d2h_t tl_${node.name.replace('.', '__')}_i,
 % endfor
 
   input lc_ctrl_pkg::lc_tx_t scanmode_i
@@ -97,38 +97,41 @@ module xbar_${xbar.name} (
   ## sweep each entry of edges and find each end (us, ds) then connect between
   ## Connect upstream
 <%
+    ds_name = conn.ds.name.replace('.', '__')
+    us_name = conn.us.name.replace('.', '__')
+
     if conn.ds.node_type.name == "ASYNC_FIFO":
-      ds_h2d_name = 'tl_' + conn.ds.name + '_us_h2d'
-      ds_d2h_name = 'tl_' + conn.ds.name + '_us_d2h'
+      ds_h2d_name = 'tl_' + ds_name + '_us_h2d'
+      ds_d2h_name = 'tl_' + ds_name + '_us_d2h'
       ds_index = -1
     elif conn.ds.node_type.name == "SOCKET_1N":
-      ds_h2d_name = 'tl_' + conn.ds.name + '_us_h2d'
-      ds_d2h_name = 'tl_' + conn.ds.name + '_us_d2h'
+      ds_h2d_name = 'tl_' + ds_name + '_us_h2d'
+      ds_d2h_name = 'tl_' + ds_name + '_us_d2h'
       ds_index = -1
     elif conn.ds.node_type.name == "SOCKET_M1":
-      ds_h2d_name = 'tl_' + conn.ds.name + '_us_h2d'
-      ds_d2h_name = 'tl_' + conn.ds.name + '_us_d2h'
+      ds_h2d_name = 'tl_' + ds_name + '_us_h2d'
+      ds_d2h_name = 'tl_' + ds_name + '_us_d2h'
       ds_index = conn.ds.us.index(conn)
     elif conn.ds.node_type.name == "DEVICE":
-      ds_h2d_name = 'tl_' + conn.ds.name + '_o'
-      ds_d2h_name = 'tl_' + conn.ds.name + '_i'
+      ds_h2d_name = 'tl_' + ds_name + '_o'
+      ds_d2h_name = 'tl_' + ds_name + '_i'
       ds_index = -1
 
     if conn.us.node_type.name == "ASYNC_FIFO":
-      us_h2d_name = 'tl_' + conn.us.name + '_ds_h2d'
-      us_d2h_name = 'tl_' + conn.us.name + '_ds_d2h'
+      us_h2d_name = 'tl_' + us_name + '_ds_h2d'
+      us_d2h_name = 'tl_' + us_name + '_ds_d2h'
       us_index = -1
     elif conn.us.node_type.name == "SOCKET_1N":
-      us_h2d_name = 'tl_' + conn.us.name + '_ds_h2d'
-      us_d2h_name = 'tl_' + conn.us.name + '_ds_d2h'
+      us_h2d_name = 'tl_' + us_name + '_ds_h2d'
+      us_d2h_name = 'tl_' + us_name + '_ds_d2h'
       us_index = conn.us.ds.index(conn)
     elif conn.us.node_type.name == "SOCKET_M1":
-      us_h2d_name = 'tl_' + conn.us.name + '_ds_h2d'
-      us_d2h_name = 'tl_' + conn.us.name + '_ds_d2h'
+      us_h2d_name = 'tl_' + us_name + '_ds_h2d'
+      us_d2h_name = 'tl_' + us_name + '_ds_d2h'
       us_index = -1
     elif conn.us.node_type.name == "HOST":
-      us_h2d_name = 'tl_' + conn.us.name + '_i'
-      us_d2h_name = 'tl_' + conn.us.name + '_o'
+      us_h2d_name = 'tl_' + us_name + '_i'
+      us_d2h_name = 'tl_' + us_name + '_o'
       us_index = -1
 %>\
 
@@ -158,8 +161,10 @@ module xbar_${xbar.name} (
 % for i in block.ds:
 <%
   leaf = xbar.get_leaf_from_s1n(block, loop.index);
-  name_space = "ADDR_SPACE_" + leaf.name.upper();
-  name_mask  = "ADDR_MASK_" + leaf.name.upper();
+  leaf_name = leaf.name.upper().replace('.', '__')
+
+  name_space = "ADDR_SPACE_" + leaf_name;
+  name_mask  = "ADDR_MASK_" + leaf_name;
   prefix = "if (" if loop.first else "end else if ("
 %>\
   % if len(leaf.addr_range) == 1:
@@ -197,19 +202,22 @@ ${"end" if loop.last else ""}
 
   // Instantiation phase
 % for block in xbar.nodes:
+<%
+  stripped_name = block.name.replace('.', '__')
+%>\
   % if block.node_type.name   == "ASYNC_FIFO":
   tlul_fifo_async #(
     .ReqDepth        (4),// At least 4 to make async work
     .RspDepth        (4) // At least 4 to make async work
-  ) u_${block.name} (
+  ) u_${stripped_name} (
     .clk_h_i      (${block.clocks[0]}),
     .rst_h_ni     (${block.resets[0]}),
     .clk_d_i      (${block.clocks[1]}),
     .rst_d_ni     (${block.resets[1]}),
-    .tl_h_i       (tl_${block.name}_us_h2d),
-    .tl_h_o       (tl_${block.name}_us_d2h),
-    .tl_d_o       (tl_${block.name}_ds_h2d),
-    .tl_d_i       (tl_${block.name}_ds_d2h)
+    .tl_h_i       (tl_${stripped_name}_us_h2d),
+    .tl_h_o       (tl_${stripped_name}_us_d2h),
+    .tl_d_o       (tl_${stripped_name}_ds_h2d),
+    .tl_d_i       (tl_${stripped_name}_ds_d2h)
   );
   % elif block.node_type.name == "SOCKET_1N":
   tlul_socket_1n #(
@@ -230,14 +238,14 @@ ${"end" if loop.last else ""}
     .DRspDepth (${len(block.ds)*4}'h${"%x" % block.ddepth}),
     % endif
     .N         (${len(block.ds)})
-  ) u_${block.name} (
+  ) u_${stripped_name} (
     .clk_i        (${block.clocks[0]}),
     .rst_ni       (${block.resets[0]}),
-    .tl_h_i       (tl_${block.name}_us_h2d),
-    .tl_h_o       (tl_${block.name}_us_d2h),
-    .tl_d_o       (tl_${block.name}_ds_h2d),
-    .tl_d_i       (tl_${block.name}_ds_d2h),
-    .dev_select_i (dev_sel_${block.name})
+    .tl_h_i       (tl_${stripped_name}_us_h2d),
+    .tl_h_o       (tl_${stripped_name}_us_d2h),
+    .tl_d_o       (tl_${stripped_name}_ds_h2d),
+    .tl_d_i       (tl_${stripped_name}_ds_d2h),
+    .dev_select_i (dev_sel_${stripped_name})
   );
   % elif block.node_type.name == "SOCKET_M1":
   tlul_socket_m1 #(
@@ -258,13 +266,13 @@ ${"end" if loop.last else ""}
     .DRspDepth (4'h${block.ddepth}),
     % endif
     .M         (${len(block.us)})
-  ) u_${block.name} (
+  ) u_${stripped_name} (
     .clk_i        (${block.clocks[0]}),
     .rst_ni       (${block.resets[0]}),
-    .tl_h_i       (tl_${block.name}_us_h2d),
-    .tl_h_o       (tl_${block.name}_us_d2h),
-    .tl_d_o       (tl_${block.name}_ds_h2d),
-    .tl_d_i       (tl_${block.name}_ds_d2h)
+    .tl_h_i       (tl_${stripped_name}_us_h2d),
+    .tl_h_o       (tl_${stripped_name}_us_d2h),
+    .tl_d_o       (tl_${stripped_name}_ds_h2d),
+    .tl_d_i       (tl_${stripped_name}_ds_d2h)
   );
   % endif
 % endfor

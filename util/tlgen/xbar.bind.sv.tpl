@@ -7,21 +7,21 @@ module xbar_${xbar.name}_bind;
 
   // Host interfaces
 % for node in xbar.hosts:
-  bind xbar_${xbar.name} tlul_assert #(.EndpointType("Device")) tlul_assert_host_${node.name} (
+  bind xbar_${xbar.name} tlul_assert #(.EndpointType("Device")) tlul_assert_host_${node.esc_name()} (
     .clk_i  (${node.clocks[0]}),
     .rst_ni (${node.resets[0]}),
-    .h2d    (tl_${node.name}_i),
-    .d2h    (tl_${node.name}_o)
+    .h2d    (tl_${node.esc_name()}_i),
+    .d2h    (tl_${node.esc_name()}_o)
   );
 % endfor
 
   // Device interfaces
 % for node in xbar.devices:
-  bind xbar_${xbar.name} tlul_assert #(.EndpointType("Host")) tlul_assert_device_${node.name} (
+  bind xbar_${xbar.name} tlul_assert #(.EndpointType("Host")) tlul_assert_device_${node.esc_name()} (
     .clk_i  (${node.clocks[0]}),
     .rst_ni (${node.resets[0]}),
-    .h2d    (tl_${node.name}_o),
-    .d2h    (tl_${node.name}_i)
+    .h2d    (tl_${node.esc_name()}_o),
+    .d2h    (tl_${node.esc_name()}_i)
   );
 % endfor
 
