@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Keep sorted.
+anytree # dependency of sw/host/vendor/google_verible_verilog_syntax_py
 enlighten
 flake8
 gitpython
