@@ -521,4 +521,23 @@
   end
 `endif
 
+// Creates a SVA cover that can be used in a covergroup.
+//
+// This macro creates an unnamed SVA cover from the expression `__sva` and an event with the name
+// `__ev_name`. When the SVA cover is hit, the event is triggered. A coverpoint can cover the
+// `triggered` property of the event.
+`ifndef DV_FCOV_SVA
+`define DV_FCOV_SVA(__ev_name, __sva, __clk = clk_i, __rst = rst_ni) \
+  event __ev_name; \
+  cover property (@(posedge __clk) disable iff (__rst == 0) (__sva)) begin \
+    -> __ev_name; \
+  end
+`endif
+
+// Creates a coverpoint for an expression where only the expression true case is of interest for
+// coverage (e.g. where the expression indicates an event has occured).
+`ifndef DV_FCOV_EXPR_SEEN
+`define DV_FCOV_EXPR_SEEN(__cp_name, __expr) __cp_name: coverpoint __expr { bins seen = {1}; }
+`endif
+
 `endif // __DV_MACROS_SVH__
