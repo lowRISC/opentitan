@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:clock_buf
       - lowrisc:prim:clock_gating
       - lowrisc:prim:clock_inv
+      - lowrisc:prim:prim_pkg
       - lowrisc:prim:lc_dec
       - lowrisc:top_earlgrey:pinmux_reg
       - lowrisc:ip:pinmux_component
