@@ -33,6 +33,7 @@ module aes_sim import aes_pkg::*;
     .clk_i,
     .rst_ni,
     .idle_o     (          ),
+    .lc_escalate_en_i (lc_ctrl_pkg::Off),
     .tl_i,
     .tl_o,
     .alert_rx_i ( alert_rx ),
