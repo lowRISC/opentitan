@@ -58,14 +58,14 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
 
   // drive jtag req and retrieve rsp
   virtual task drive_jtag_req(jtag_item req, jtag_item rsp);
-    logic [JTAG_DRW-1:0] din;
-    drive_jtag_ir(req.addr_len, req.addr);
-    drive_jtag_dr(req.data_len, req.data, din);
-    if (!req.write) rsp.data = din;
+    logic [JTAG_DRW-1:0] dout;
+    if (req.select_ir) drive_jtag_ir(req.ir_len, req.ir);
+    else               drive_jtag_dr(req.dr_len, req.dr, dout);
+    rsp.dout = dout;
   endtask
 
   // task to drive req into the instruction register
-  task drive_jtag_ir(int len, bit [JTAG_DRW-1:0] addr);
+  task drive_jtag_ir(int len, bit [JTAG_DRW-1:0] ir);
     // Assume starting in RTI state
     // SelectDR
     `HOST_CB.tms <= 1'b1;
@@ -86,7 +86,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       @(`HOST_CB);
       // ExitIR if end of addr
       `HOST_CB.tms <= (i == len - 1) ? 1'b1 : 1'b0;
-      `HOST_CB.tdi <= addr[i];
+      `HOST_CB.tdi <= ir[i];
     end
     @(`HOST_CB);
     // UpdateIR
@@ -99,9 +99,10 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     @(`HOST_CB);
   endtask
 
-  task drive_jtag_dr(input int                    len,
-                     input logic [JTAG_DRW-1:0]   dout,
-                     output logic [JTAG_DRW-1:0]  din);
+  // task to drive req into the data register and collect data register output
+  task drive_jtag_dr(input  int                  len,
+                     input  logic [JTAG_DRW-1:0] dr,
+                     output logic [JTAG_DRW-1:0] dout);
     // assume starting in RTI
     // go to SelectDR
     `HOST_CB.tms <= 1'b1;
@@ -118,17 +119,17 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       @(`HOST_CB);
       // stay in ShiftDR
       `HOST_CB.tms <= 1'b0;
-      `HOST_CB.tdi <= dout[i];
-      @(`HOST_CB);
-      din[i] =`HOST_CB.tdo;
+      `HOST_CB.tdi <= dr[i];
+      // tdo is updated at negedge clock
+      if (i > 0) dout[i - 1] =`HOST_CB.tdo;
     end
     @(`HOST_CB);
     // go to Exit1DR
     `HOST_CB.tms <= 1'b1;
-    `HOST_CB.tdi <= dout[len - 1];
+    `HOST_CB.tdi <= dr[len - 1];
+    dout[len - 2] =`HOST_CB.tdo;
     @(`HOST_CB);
-    din[len - 1] =`HOST_CB.tdo;
-    @(`HOST_CB);
+    dout[len - 1] =`HOST_CB.tdo;
     // go to UpdateIR
     `HOST_CB.tms <= 1'b1;
     `HOST_CB.tdi <= 1'b0;

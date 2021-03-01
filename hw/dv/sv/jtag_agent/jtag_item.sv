@@ -5,27 +5,29 @@
 class jtag_item extends uvm_sequence_item;
 
   // random variables
-  rand uint addr_len;
-  rand uint data_len;
+  rand uint ir_len;
+  rand uint dr_len;
 
-  rand logic [JTAG_IRW-1:0] addr;   // address
-  rand logic [JTAG_DRW-1:0] data;   // data written or read
-  rand logic                write;  // write signal
+  rand logic [JTAG_IRW-1:0] ir;
+  rand logic [JTAG_DRW-1:0] dr;
+  rand logic [JTAG_DRW-1:0] dout;
+  rand bit                  select_ir;
 
-  constraint addr_len_c {
-    addr_len <= JTAG_IRW;
+  constraint ir_len_c {
+    ir_len <= JTAG_IRW;
   }
 
-  constraint data_len_c {
-    data_len <= JTAG_DRW;
+  constraint dr_len_c {
+    dr_len <= JTAG_DRW;
   }
 
   `uvm_object_utils_begin(jtag_item)
-    `uvm_field_int(addr_len,  UVM_DEFAULT)
-    `uvm_field_int(data_len,  UVM_DEFAULT)
-    `uvm_field_int(addr,      UVM_DEFAULT)
-    `uvm_field_int(data,      UVM_DEFAULT)
-    `uvm_field_int(write,     UVM_DEFAULT)
+    `uvm_field_int(ir_len, UVM_DEFAULT)
+    `uvm_field_int(dr_len, UVM_DEFAULT)
+    `uvm_field_int(ir,     UVM_DEFAULT)
+    `uvm_field_int(dr,     UVM_DEFAULT)
+    `uvm_field_int(dout,   UVM_DEFAULT)
+    `uvm_field_int(select_ir,   UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

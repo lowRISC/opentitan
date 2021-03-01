@@ -2,16 +2,32 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class jtag_base_seq extends dv_base_seq #(
+class jtag_ir_seq extends dv_base_seq #(
+    .REQ         (jtag_item),
     .CFG_T       (jtag_agent_cfg),
     .SEQUENCER_T (jtag_sequencer)
   );
-  `uvm_object_utils(jtag_base_seq)
 
+  rand logic [JTAG_IRW-1:0] ir;
+
+  `uvm_object_utils(jtag_ir_seq)
   `uvm_object_new
 
   virtual task body();
-    `uvm_fatal(`gtn, "Need to override this when you extend from this class!")
+    req = jtag_item::type_id::create("req");
+    start_item(req);
+    randomize_req(req);
+    finish_item(req);
+    get_response(rsp);
+    `uvm_info(`gfn, $sformatf("rcvd response:\n%0s", rsp.sprint()), UVM_HIGH)
   endtask
 
+  virtual function randomize_req(jtag_item req);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
+        ir_len    == DMI_IRW;
+        dr_len    == DMI_DRW;
+        ir        == local::ir;
+        select_ir == 1;
+    )
+  endfunction
 endclass
