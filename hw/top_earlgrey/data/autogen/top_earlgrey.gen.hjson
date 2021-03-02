@@ -457,6 +457,18 @@
           top_signame: rv_core_ibex_crashdump
           index: -1
         }
+        {
+          struct: lc_tx_t
+          type: uni
+          name: lc_cpu_en
+          act: rcv
+          package: lc_ctrl_pkg
+          inst_name: rv_core_ibex
+          width: 1
+          default: ""
+          top_signame: lc_ctrl_lc_cpu_en
+          index: -1
+        }
       ]
     }
   ]
@@ -3455,6 +3467,10 @@
           default: lc_ctrl_pkg::Off
           package: lc_ctrl_pkg
           inst_name: lc_ctrl
+          width: 1
+          end_idx: -1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_keymgr_en
           index: -1
         }
         {
@@ -6439,6 +6455,8 @@
           package: lc_ctrl_pkg
           default: lc_ctrl_pkg::On
           inst_name: keymgr
+          width: 1
+          top_signame: lc_ctrl_lc_keymgr_en
           index: -1
         }
         {
@@ -7895,7 +7913,14 @@
         sram_ctrl_ret_aon.lc_hw_debug_en
         pinmux_aon.lc_hw_debug_en
       ]
-      lc_ctrl.lc_cpu_en: []
+      lc_ctrl.lc_cpu_en:
+      [
+        rv_core_ibex.lc_cpu_en
+      ]
+      lc_ctrl.lc_keymgr_en:
+      [
+        keymgr.lc_keymgr_en
+      ]
       lc_ctrl.lc_escalate_en:
       [
         aes.lc_escalate_en
@@ -13186,6 +13211,10 @@
         default: lc_ctrl_pkg::Off
         package: lc_ctrl_pkg
         inst_name: lc_ctrl
+        width: 1
+        end_idx: -1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_keymgr_en
         index: -1
       }
       {
@@ -14665,6 +14694,8 @@
         package: lc_ctrl_pkg
         default: lc_ctrl_pkg::On
         inst_name: keymgr
+        width: 1
+        top_signame: lc_ctrl_lc_keymgr_en
         index: -1
       }
       {
@@ -15824,6 +15855,18 @@
         index: -1
       }
       {
+        struct: lc_tx_t
+        type: uni
+        name: lc_cpu_en
+        act: rcv
+        package: lc_ctrl_pkg
+        inst_name: rv_core_ibex
+        width: 1
+        default: ""
+        top_signame: lc_ctrl_lc_cpu_en
+        index: -1
+      }
+      {
         struct: edn
         type: req_rsp
         name: edn
@@ -16847,6 +16890,17 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: lc_ctrl_lc_cpu_en
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_keymgr_en
         width: 1
         type: uni
         end_idx: -1

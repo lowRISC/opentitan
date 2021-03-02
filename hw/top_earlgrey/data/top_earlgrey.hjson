@@ -195,6 +195,13 @@
           act:     "req",
           package: "rv_core_ibex_pkg",
         },
+
+        { struct:  "lc_tx_t",
+          type:    "uni",
+          name:    "lc_cpu_en",
+          act:     "rcv",
+          package: "lc_ctrl_pkg",
+        },
       ],
     }
 
@@ -806,8 +813,8 @@
       'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
                                       'sram_ctrl_ret_aon.lc_hw_debug_en',
                                       'pinmux_aon.lc_hw_debug_en'],
-      'lc_ctrl.lc_cpu_en'          : [],
-      //'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
+      'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en'],
+      'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
       'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',
                                       'otp_ctrl.lc_escalate_en',
                                       'sram_ctrl_main.lc_escalate_en',
