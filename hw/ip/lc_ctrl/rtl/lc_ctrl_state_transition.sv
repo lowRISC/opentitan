@@ -62,6 +62,11 @@ module lc_ctrl_state_transition
         LcCnt16:  trans_cnt_oflw_error_o = 1'b1;
         default:  trans_cnt_oflw_error_o = 1'b1;
       endcase // lc_cnt_i
+
+      // In case the transition target is SCRAP, max out the counter.
+      if (trans_target_i == DecLcStScrap) begin
+        next_lc_cnt_o = LcCnt16;
+      end
     end
 
     if (fsm_state_i inside {TransCheckSt, TokenCheck0St, TokenCheck1St, TransProgSt}) begin
