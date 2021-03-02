@@ -456,23 +456,6 @@ module lc_ctrl
   assign pwr_lc_o.lc_done = lc_done_q;
   assign pwr_lc_o.lc_idle = lc_idle_q;
 
-  // Life cycle ACK signals.
-  lc_tx_t [0:0] lc_clk_byp_ack;
-  prim_lc_sync u_prim_lc_sync_clk_byp_ack (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(lc_clk_byp_ack_i),
-    .lc_en_o(lc_clk_byp_ack)
-  );
-
-  lc_tx_t [0:0] lc_flash_rma_ack;
-  prim_lc_sync u_prim_lc_sync_flash_rma_ack (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(lc_flash_rma_ack_i),
-    .lc_en_o(lc_flash_rma_ack)
-  );
-
   ////////////
   // LC FSM //
   ////////////
@@ -532,9 +515,9 @@ module lc_ctrl
     .lc_escalate_en_o,
     .lc_check_byp_en_o,
     .lc_clk_byp_req_o,
-    .lc_clk_byp_ack_i      ( lc_clk_byp_ack[0]               ),
+    .lc_clk_byp_ack_i,
     .lc_flash_rma_req_o,
-    .lc_flash_rma_ack_i    ( lc_flash_rma_ack[0]             ),
+    .lc_flash_rma_ack_i,
     .lc_keymgr_div_o
   );
 
