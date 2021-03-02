@@ -2,8 +2,8 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:tlul:payload_chk:0.1"
-description: "TL-UL to Register interface adapter"
+name: "lowrisc:tlul:trans_intg:0.1"
+description: "Tlul transmission integrity"
 
 filesets:
   files_rtl:
@@ -12,8 +12,10 @@ filesets:
       - lowrisc:prim:secded
       - lowrisc:tlul:common
     files:
-      - rtl/tlul_payload_chk.sv
-      - rtl/tlul_gen_payload_chk.sv
+      - rtl/tlul_cmd_intg_gen.sv
+      - rtl/tlul_cmd_intg_chk.sv
+      - rtl/tlul_rsp_intg_gen.sv
+      - rtl/tlul_rsp_intg_chk.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
