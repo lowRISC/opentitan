@@ -5558,16 +5558,19 @@
       clock_srcs:
       {
         clk_i: main
+        clk_edn_i: main
       }
       clock_group: trans
       reset_connections:
       {
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
+        rst_edn_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x41100000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_aes
+        clk_edn_i: clkmgr_aon_clocks.clk_main_aes
       }
       domain: "0"
       size: 0x1000
@@ -5645,6 +5648,22 @@
           randcount: "0"
           randtype: none
           name_top: SecAesAllowForcingMasks
+        }
+        {
+          name: SecSkipPRNGReseeding
+          type: bit
+          default: 1'b0
+          desc:
+            '''
+            Perform (0) or skip (1) PRNG reseeding requests, useful for SCA measurements only.
+            The current SCA setup doesn't provide sufficient resources to implement the infrastructure required for PRNG reseeding (CSRNG, EDN).
+            To enable SCA resistance evaluations, we need to skip reseeding requests on the SCA platform.
+            '''
+          local: "false"
+          expose: "true"
+          randcount: "0"
+          randtype: none
+          name_top: SecAesSkipPRNGReseeding
         }
         {
           name: AlertAsyncOn
@@ -5765,6 +5784,18 @@
           width: 1
           top_signame: lc_ctrl_lc_escalate_en
           index: -1
+        }
+        {
+          struct: edn
+          type: req_rsp
+          name: edn
+          act: req
+          package: edn_pkg
+          inst_name: aes
+          width: 1
+          default: ""
+          top_signame: edn1_edn
+          index: 2
         }
         {
           struct: tl
@@ -6986,7 +7017,7 @@
             '''
           package: edn_pkg
           inst_name: edn1
-          end_idx: 2
+          end_idx: 3
           top_type: partial-one-to-N
           top_signame: edn1_edn
           index: -1
@@ -7781,6 +7812,7 @@
       [
         alert_handler.edn
         otbn.edn
+        aes.edn
       ]
       otp_ctrl.otp_keymgr_key:
       [
@@ -14396,6 +14428,18 @@
         index: -1
       }
       {
+        struct: edn
+        type: req_rsp
+        name: edn
+        act: req
+        package: edn_pkg
+        inst_name: aes
+        width: 1
+        default: ""
+        top_signame: edn1_edn
+        index: 2
+      }
+      {
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -14817,7 +14861,7 @@
           '''
         package: edn_pkg
         inst_name: edn1
-        end_idx: 2
+        end_idx: 3
         top_type: partial-one-to-N
         top_signame: edn1_edn
         index: -1
@@ -16570,7 +16614,7 @@
         signame: edn1_edn_req
         width: 4
         type: req_rsp
-        end_idx: 2
+        end_idx: 3
         act: rsp
         suffix: req
         default: "'0"
@@ -16581,7 +16625,7 @@
         signame: edn1_edn_rsp
         width: 4
         type: req_rsp
-        end_idx: 2
+        end_idx: 3
         act: rsp
         suffix: rsp
         default: "'0"

@@ -129,7 +129,16 @@ module top_englishbreakfast_verilator (
   // the rest of the logic generates reset based on the 'pok' signal.
   // for verilator purposes, make these two the same.
   // Top-level design
-  top_englishbreakfast top_englishbreakfast (
+  top_englishbreakfast #(
+    .AesMasking(1'b1),
+    .AesSBoxImpl(aes_pkg::SBoxImplDom),
+    .SecAesStartTriggerDelay(40),
+    .SecAesAllowForcingMasks(1'b1),
+    .SecAesSkipPRNGReseeding(1'b1),
+    .IbexICache(0),
+    .SramCtrlRetAonInstrExec(0),
+    .SramCtrlMainInstrExec(1)
+  ) top_englishbreakfast (
     .rst_ni                     (rst_ni),
     .clk_main_i                 (clk_i),
     .clk_io_i                   (clk_i),

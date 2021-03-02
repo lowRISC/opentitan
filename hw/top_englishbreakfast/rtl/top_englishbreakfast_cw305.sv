@@ -327,6 +327,7 @@ module top_englishbreakfast_cw305 #(
     .AesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(40),
     .SecAesAllowForcingMasks(1'b1),
+    .SecAesSkipPRNGReseeding(1'b1),
     .IbexRegFile(ibex_pkg::RegFileFPGA),
     .IbexICache(0),
     .IbexPipeLine(1),
