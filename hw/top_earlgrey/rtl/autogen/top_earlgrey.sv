@@ -465,6 +465,7 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_nvm_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_cpu_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_keymgr_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_check_byp_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_ack;
@@ -673,8 +674,7 @@ module top_earlgrey #(
     // crash dump interface
     .crash_dump_o         (rv_core_ibex_crash_dump),
     // CPU control signals
-    // TODO #5356
-    .fetch_enable_i       (lc_ctrl_pkg::On),
+    .lc_cpu_en_i          (lc_ctrl_lc_cpu_en),
     .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping)
   );
 
@@ -1463,7 +1463,7 @@ module top_earlgrey #(
       .lc_nvm_debug_en_o(lc_ctrl_lc_nvm_debug_en),
       .lc_hw_debug_en_o(lc_ctrl_lc_hw_debug_en),
       .lc_cpu_en_o(lc_ctrl_lc_cpu_en),
-      .lc_keymgr_en_o(),
+      .lc_keymgr_en_o(lc_ctrl_lc_keymgr_en),
       .lc_escalate_en_o(lc_ctrl_lc_escalate_en),
       .lc_clk_byp_req_o(lc_clk_byp_req_o),
       .lc_clk_byp_ack_i(lc_ctrl_lc_clk_byp_ack),
@@ -1910,7 +1910,7 @@ module top_earlgrey #(
       .otp_key_i(otp_ctrl_otp_keymgr_key),
       .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
       .flash_i(flash_ctrl_keymgr),
-      .lc_keymgr_en_i(lc_ctrl_pkg::On),
+      .lc_keymgr_en_i(lc_ctrl_lc_keymgr_en),
       .lc_keymgr_div_i(lc_ctrl_lc_keymgr_div),
       .tl_i(keymgr_tl_req),
       .tl_o(keymgr_tl_rsp),

@@ -293,8 +293,7 @@ module top_${top["name"]} #(
     // crash dump interface
     .crash_dump_o         (rv_core_ibex_crash_dump),
     // CPU control signals
-    // TODO #5356
-    .fetch_enable_i       (lc_ctrl_pkg::On),
+    .lc_cpu_en_i          (lc_ctrl_lc_cpu_en),
     .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping)
   );
 
