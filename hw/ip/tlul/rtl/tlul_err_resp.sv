@@ -57,7 +57,7 @@ module tlul_err_resp (
   end
 
   // Waive unused bits of tl_h_i
-  logic tl_h_unused = &{1'b0,
+  logic unused_tl_h = &{1'b0,
                         tl_h_i.a_param, tl_h_i.a_address, tl_h_i.a_mask,
                         tl_h_i.a_data, tl_h_i.a_user, tl_h_i.d_ready};
 
