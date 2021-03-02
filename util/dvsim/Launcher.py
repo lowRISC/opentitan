@@ -25,14 +25,76 @@ class Launcher:
     launcher object holds an instance of the deploy object.
     """
 
+    # Points to the python virtual env area.
+    python_venv = None
+
     # If a history of previous invocations is to be maintained, then keep no
     # more than this many directories.
     max_odirs = 5
+
+    # Flag indicating the workspace preparation steps are complete.
+    workspace_prepared = False
+    workspace_prepared_for_cfg = set()
+
+    @staticmethod
+    def set_python_venv(project):
+        '''Activate a python virtualenv if available.
+
+        The env variable <PROJECT>_PYTHON_VENV if set, points to the path
+        containing the python virtualenv created specifically for this
+        project. We can activate it if needed, before launching jobs using
+        external compute machines.
+
+        This is not applicable when running jobs locally on the user's machine.
+        '''
+
+        if Launcher.python_venv is not None:
+            return
+
+        # If project-specific python virtualenv path is set, then activate it
+        # before running downstream tools. This is more relevant when not
+        # launching locally, but on external machines in a compute farm, which
+        # may not have access to the default python installation area on the
+        # host machine.
+        Launcher.python_venv = os.environ.get("{}_PYTHON_VENV".format(
+            project.upper()))
+
+    @staticmethod
+    def prepare_workspace(project, repo_top, args):
+        '''Prepare the workspace based on the chosen launcher's needs.
+
+        This is done once for the entire duration for the flow run.
+        'project' is the name of the project.
+        'repo_top' is the path to the repository.
+        'args' are the command line args passed to dvsim.
+        '''
+        pass
+
+    @staticmethod
+    def prepare_workspace_for_cfg(cfg):
+        '''Prepare the workspace for a cfg.
+
+        This is invoked once for each cfg.
+        'cfg' is the flow configuration object.
+        '''
+        pass
 
     def __str__(self):
         return self.deploy.full_name + ":launcher"
 
     def __init__(self, deploy):
+        cfg = deploy.sim_cfg
+
+        # One-time preparation of the workspace.
+        if not Launcher.workspace_prepared:
+            self.prepare_workspace(cfg.project, cfg.proj_root, cfg.args)
+            Launcher.workspace_prepared = True
+
+        # One-time preparation of the workspace, specific to the cfg.
+        if cfg not in Launcher.workspace_prepared_for_cfg:
+            self.prepare_workspace_for_cfg(cfg)
+            Launcher.workspace_prepared_for_cfg.add(cfg)
+
         # Store the deploy object handle.
         self.deploy = deploy
 

@@ -6,7 +6,7 @@ import logging as log
 import pprint
 import random
 
-from LocalLauncher import LocalLauncher
+from LauncherFactory import get_launcher
 from sim_utils import get_cov_summary_table
 from tabulate import tabulate
 from utils import (VERBOSE, clean_odirs, find_and_substitute_wildcards,
@@ -64,7 +64,7 @@ class Deploy():
 
         # Create the launcher object. Launcher retains the handle to self for
         # lookup & callbacks.
-        self.launcher = LocalLauncher(self)
+        self.launcher = get_launcher(self)
 
     def _define_attrs(self):
         """Defines the attributes this instance needs to have.
@@ -132,6 +132,9 @@ class Deploy():
         # Full name disambiguates across multiple cfg being run (example:
         # 'aes:default', 'uart:default' builds.
         self.full_name = self.sim_cfg.name + ":" + self.qual_name
+
+        # Job name is used to group the job by cfg and target.
+        self.job_name = "{}_{}".format(self.sim_cfg.name, self.target)
 
         # Pass and fail patterns.
         self.pass_patterns = []
@@ -298,6 +301,8 @@ class CompileSim(Deploy):
 
         # 'build_mode' is used as a substitution variable in the HJson.
         self.build_mode = self.name
+        self.job_name = "{}_{}_{}".format(self.sim_cfg.name, self.target,
+                                          self.build_mode)
         self.pass_patterns = self.build_pass_patterns
         self.fail_patterns = self.build_fail_patterns
 
@@ -346,6 +351,8 @@ class CompileOneShot(Deploy):
 
         # 'build_mode' is used as a substitution variable in the HJson.
         self.build_mode = self.name
+        self.job_name = "{}_{}_{}".format(self.sim_cfg.name, self.target,
+                                          self.build_mode)
 
 
 class RunTest(Deploy):
@@ -365,6 +372,10 @@ class RunTest(Deploy):
 
         if build_job is not None:
             self.dependencies.append(build_job)
+
+        # We did something wrong if build_mode is not the same as the build_job
+        # arg's name.
+        assert self.build_mode == build_job.name
 
         self.launcher.renew_odir = True
 
@@ -402,6 +413,8 @@ class RunTest(Deploy):
         self.build_mode = self.test_obj.build_mode.name
         self.qual_name = self.run_dir_name + "." + str(self.seed)
         self.full_name = self.sim_cfg.name + ":" + self.qual_name
+        self.job_name = "{}_{}_{}".format(self.sim_cfg.name, self.target,
+                                          self.build_mode)
         self.pass_patterns = self.run_pass_patterns
         self.fail_patterns = self.run_fail_patterns
 
