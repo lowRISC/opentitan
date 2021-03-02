@@ -698,80 +698,80 @@ module lc_ctrl_reg_top (
     if (addr_hit[20] && reg_we && (LC_CTRL_PERMIT[20] != (LC_CTRL_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign alert_test_fatal_prog_error_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_fatal_prog_error_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_fatal_prog_error_wd = reg_wdata[0];
 
-  assign alert_test_fatal_state_error_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_fatal_state_error_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_fatal_state_error_wd = reg_wdata[1];
 
-  assign status_ready_re = addr_hit[1] && reg_re;
+  assign status_ready_re = addr_hit[1] & reg_re & !reg_error;
 
-  assign status_transition_successful_re = addr_hit[1] && reg_re;
+  assign status_transition_successful_re = addr_hit[1] & reg_re & !reg_error;
 
-  assign status_transition_count_error_re = addr_hit[1] && reg_re;
+  assign status_transition_count_error_re = addr_hit[1] & reg_re & !reg_error;
 
-  assign status_transition_error_re = addr_hit[1] && reg_re;
+  assign status_transition_error_re = addr_hit[1] & reg_re & !reg_error;
 
-  assign status_token_error_re = addr_hit[1] && reg_re;
+  assign status_token_error_re = addr_hit[1] & reg_re & !reg_error;
 
-  assign status_flash_rma_error_re = addr_hit[1] && reg_re;
+  assign status_flash_rma_error_re = addr_hit[1] & reg_re & !reg_error;
 
-  assign status_otp_error_re = addr_hit[1] && reg_re;
+  assign status_otp_error_re = addr_hit[1] & reg_re & !reg_error;
 
-  assign status_state_error_re = addr_hit[1] && reg_re;
+  assign status_state_error_re = addr_hit[1] & reg_re & !reg_error;
 
-  assign status_otp_partition_error_re = addr_hit[1] && reg_re;
+  assign status_otp_partition_error_re = addr_hit[1] & reg_re & !reg_error;
 
-  assign claim_transition_if_we = addr_hit[2] & reg_we & ~wr_err;
+  assign claim_transition_if_we = addr_hit[2] & reg_we & !reg_error;
   assign claim_transition_if_wd = reg_wdata[7:0];
-  assign claim_transition_if_re = addr_hit[2] && reg_re;
+  assign claim_transition_if_re = addr_hit[2] & reg_re & !reg_error;
 
-  assign transition_regwen_re = addr_hit[3] && reg_re;
+  assign transition_regwen_re = addr_hit[3] & reg_re & !reg_error;
 
-  assign transition_cmd_we = addr_hit[4] & reg_we & ~wr_err;
+  assign transition_cmd_we = addr_hit[4] & reg_we & !reg_error;
   assign transition_cmd_wd = reg_wdata[0];
 
-  assign transition_token_0_we = addr_hit[5] & reg_we & ~wr_err;
+  assign transition_token_0_we = addr_hit[5] & reg_we & !reg_error;
   assign transition_token_0_wd = reg_wdata[31:0];
-  assign transition_token_0_re = addr_hit[5] && reg_re;
+  assign transition_token_0_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign transition_token_1_we = addr_hit[6] & reg_we & ~wr_err;
+  assign transition_token_1_we = addr_hit[6] & reg_we & !reg_error;
   assign transition_token_1_wd = reg_wdata[31:0];
-  assign transition_token_1_re = addr_hit[6] && reg_re;
+  assign transition_token_1_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign transition_token_2_we = addr_hit[7] & reg_we & ~wr_err;
+  assign transition_token_2_we = addr_hit[7] & reg_we & !reg_error;
   assign transition_token_2_wd = reg_wdata[31:0];
-  assign transition_token_2_re = addr_hit[7] && reg_re;
+  assign transition_token_2_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign transition_token_3_we = addr_hit[8] & reg_we & ~wr_err;
+  assign transition_token_3_we = addr_hit[8] & reg_we & !reg_error;
   assign transition_token_3_wd = reg_wdata[31:0];
-  assign transition_token_3_re = addr_hit[8] && reg_re;
+  assign transition_token_3_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign transition_target_we = addr_hit[9] & reg_we & ~wr_err;
+  assign transition_target_we = addr_hit[9] & reg_we & !reg_error;
   assign transition_target_wd = reg_wdata[3:0];
-  assign transition_target_re = addr_hit[9] && reg_re;
+  assign transition_target_re = addr_hit[9] & reg_re & !reg_error;
 
-  assign lc_state_re = addr_hit[10] && reg_re;
+  assign lc_state_re = addr_hit[10] & reg_re & !reg_error;
 
-  assign lc_transition_cnt_re = addr_hit[11] && reg_re;
+  assign lc_transition_cnt_re = addr_hit[11] & reg_re & !reg_error;
 
-  assign lc_id_state_re = addr_hit[12] && reg_re;
+  assign lc_id_state_re = addr_hit[12] & reg_re & !reg_error;
 
-  assign device_id_0_re = addr_hit[13] && reg_re;
+  assign device_id_0_re = addr_hit[13] & reg_re & !reg_error;
 
-  assign device_id_1_re = addr_hit[14] && reg_re;
+  assign device_id_1_re = addr_hit[14] & reg_re & !reg_error;
 
-  assign device_id_2_re = addr_hit[15] && reg_re;
+  assign device_id_2_re = addr_hit[15] & reg_re & !reg_error;
 
-  assign device_id_3_re = addr_hit[16] && reg_re;
+  assign device_id_3_re = addr_hit[16] & reg_re & !reg_error;
 
-  assign device_id_4_re = addr_hit[17] && reg_re;
+  assign device_id_4_re = addr_hit[17] & reg_re & !reg_error;
 
-  assign device_id_5_re = addr_hit[18] && reg_re;
+  assign device_id_5_re = addr_hit[18] & reg_re & !reg_error;
 
-  assign device_id_6_re = addr_hit[19] && reg_re;
+  assign device_id_6_re = addr_hit[19] & reg_re & !reg_error;
 
-  assign device_id_7_re = addr_hit[20] && reg_re;
+  assign device_id_7_re = addr_hit[20] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin

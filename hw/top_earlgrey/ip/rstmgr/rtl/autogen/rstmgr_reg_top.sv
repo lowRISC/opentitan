@@ -775,86 +775,86 @@ module rstmgr_reg_top (
     if (addr_hit[8] && reg_we && (RSTMGR_PERMIT[8] != (RSTMGR_PERMIT[8] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign reset_info_por_we = addr_hit[0] & reg_we & ~wr_err;
+  assign reset_info_por_we = addr_hit[0] & reg_we & !reg_error;
   assign reset_info_por_wd = reg_wdata[0];
 
-  assign reset_info_low_power_exit_we = addr_hit[0] & reg_we & ~wr_err;
+  assign reset_info_low_power_exit_we = addr_hit[0] & reg_we & !reg_error;
   assign reset_info_low_power_exit_wd = reg_wdata[1];
 
-  assign reset_info_ndm_reset_we = addr_hit[0] & reg_we & ~wr_err;
+  assign reset_info_ndm_reset_we = addr_hit[0] & reg_we & !reg_error;
   assign reset_info_ndm_reset_wd = reg_wdata[2];
 
-  assign reset_info_hw_req_we = addr_hit[0] & reg_we & ~wr_err;
+  assign reset_info_hw_req_we = addr_hit[0] & reg_we & !reg_error;
   assign reset_info_hw_req_wd = reg_wdata[4:3];
 
-  assign alert_info_ctrl_en_we = addr_hit[1] & reg_we & ~wr_err;
+  assign alert_info_ctrl_en_we = addr_hit[1] & reg_we & !reg_error;
   assign alert_info_ctrl_en_wd = reg_wdata[0];
 
-  assign alert_info_ctrl_index_we = addr_hit[1] & reg_we & ~wr_err;
+  assign alert_info_ctrl_index_we = addr_hit[1] & reg_we & !reg_error;
   assign alert_info_ctrl_index_wd = reg_wdata[7:4];
 
-  assign alert_info_attr_re = addr_hit[2] && reg_re;
+  assign alert_info_attr_re = addr_hit[2] & reg_re & !reg_error;
 
-  assign alert_info_re = addr_hit[3] && reg_re;
+  assign alert_info_re = addr_hit[3] & reg_re & !reg_error;
 
-  assign cpu_info_ctrl_en_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cpu_info_ctrl_en_we = addr_hit[4] & reg_we & !reg_error;
   assign cpu_info_ctrl_en_wd = reg_wdata[0];
 
-  assign cpu_info_ctrl_index_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cpu_info_ctrl_index_we = addr_hit[4] & reg_we & !reg_error;
   assign cpu_info_ctrl_index_wd = reg_wdata[7:4];
 
-  assign cpu_info_attr_re = addr_hit[5] && reg_re;
+  assign cpu_info_attr_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign cpu_info_re = addr_hit[6] && reg_re;
+  assign cpu_info_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign sw_rst_regen_en_0_we = addr_hit[7] & reg_we & ~wr_err;
+  assign sw_rst_regen_en_0_we = addr_hit[7] & reg_we & !reg_error;
   assign sw_rst_regen_en_0_wd = reg_wdata[0];
 
-  assign sw_rst_regen_en_1_we = addr_hit[7] & reg_we & ~wr_err;
+  assign sw_rst_regen_en_1_we = addr_hit[7] & reg_we & !reg_error;
   assign sw_rst_regen_en_1_wd = reg_wdata[1];
 
-  assign sw_rst_regen_en_2_we = addr_hit[7] & reg_we & ~wr_err;
+  assign sw_rst_regen_en_2_we = addr_hit[7] & reg_we & !reg_error;
   assign sw_rst_regen_en_2_wd = reg_wdata[2];
 
-  assign sw_rst_regen_en_3_we = addr_hit[7] & reg_we & ~wr_err;
+  assign sw_rst_regen_en_3_we = addr_hit[7] & reg_we & !reg_error;
   assign sw_rst_regen_en_3_wd = reg_wdata[3];
 
-  assign sw_rst_regen_en_4_we = addr_hit[7] & reg_we & ~wr_err;
+  assign sw_rst_regen_en_4_we = addr_hit[7] & reg_we & !reg_error;
   assign sw_rst_regen_en_4_wd = reg_wdata[4];
 
-  assign sw_rst_regen_en_5_we = addr_hit[7] & reg_we & ~wr_err;
+  assign sw_rst_regen_en_5_we = addr_hit[7] & reg_we & !reg_error;
   assign sw_rst_regen_en_5_wd = reg_wdata[5];
 
-  assign sw_rst_regen_en_6_we = addr_hit[7] & reg_we & ~wr_err;
+  assign sw_rst_regen_en_6_we = addr_hit[7] & reg_we & !reg_error;
   assign sw_rst_regen_en_6_wd = reg_wdata[6];
 
-  assign sw_rst_ctrl_n_val_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign sw_rst_ctrl_n_val_0_we = addr_hit[8] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_0_wd = reg_wdata[0];
-  assign sw_rst_ctrl_n_val_0_re = addr_hit[8] && reg_re;
+  assign sw_rst_ctrl_n_val_0_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign sw_rst_ctrl_n_val_1_we = addr_hit[8] & reg_we & ~wr_err;
+  assign sw_rst_ctrl_n_val_1_we = addr_hit[8] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_1_wd = reg_wdata[1];
-  assign sw_rst_ctrl_n_val_1_re = addr_hit[8] && reg_re;
+  assign sw_rst_ctrl_n_val_1_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign sw_rst_ctrl_n_val_2_we = addr_hit[8] & reg_we & ~wr_err;
+  assign sw_rst_ctrl_n_val_2_we = addr_hit[8] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_2_wd = reg_wdata[2];
-  assign sw_rst_ctrl_n_val_2_re = addr_hit[8] && reg_re;
+  assign sw_rst_ctrl_n_val_2_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign sw_rst_ctrl_n_val_3_we = addr_hit[8] & reg_we & ~wr_err;
+  assign sw_rst_ctrl_n_val_3_we = addr_hit[8] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_3_wd = reg_wdata[3];
-  assign sw_rst_ctrl_n_val_3_re = addr_hit[8] && reg_re;
+  assign sw_rst_ctrl_n_val_3_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign sw_rst_ctrl_n_val_4_we = addr_hit[8] & reg_we & ~wr_err;
+  assign sw_rst_ctrl_n_val_4_we = addr_hit[8] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_4_wd = reg_wdata[4];
-  assign sw_rst_ctrl_n_val_4_re = addr_hit[8] && reg_re;
+  assign sw_rst_ctrl_n_val_4_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign sw_rst_ctrl_n_val_5_we = addr_hit[8] & reg_we & ~wr_err;
+  assign sw_rst_ctrl_n_val_5_we = addr_hit[8] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_5_wd = reg_wdata[5];
-  assign sw_rst_ctrl_n_val_5_re = addr_hit[8] && reg_re;
+  assign sw_rst_ctrl_n_val_5_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign sw_rst_ctrl_n_val_6_we = addr_hit[8] & reg_we & ~wr_err;
+  assign sw_rst_ctrl_n_val_6_we = addr_hit[8] & reg_we & !reg_error;
   assign sw_rst_ctrl_n_val_6_wd = reg_wdata[6];
-  assign sw_rst_ctrl_n_val_6_re = addr_hit[8] && reg_re;
+  assign sw_rst_ctrl_n_val_6_re = addr_hit[8] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin

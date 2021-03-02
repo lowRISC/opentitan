@@ -10585,990 +10585,990 @@ module flash_ctrl_reg_top (
     if (addr_hit[90] && reg_we && (FLASH_CTRL_PERMIT[90] != (FLASH_CTRL_PERMIT[90] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_prog_empty_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_prog_empty_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_prog_empty_wd = reg_wdata[0];
 
-  assign intr_state_prog_lvl_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_prog_lvl_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_prog_lvl_wd = reg_wdata[1];
 
-  assign intr_state_rd_full_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rd_full_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rd_full_wd = reg_wdata[2];
 
-  assign intr_state_rd_lvl_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rd_lvl_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rd_lvl_wd = reg_wdata[3];
 
-  assign intr_state_op_done_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_op_done_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_op_done_wd = reg_wdata[4];
 
-  assign intr_enable_prog_empty_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_prog_empty_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_prog_empty_wd = reg_wdata[0];
 
-  assign intr_enable_prog_lvl_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_prog_lvl_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_prog_lvl_wd = reg_wdata[1];
 
-  assign intr_enable_rd_full_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rd_full_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rd_full_wd = reg_wdata[2];
 
-  assign intr_enable_rd_lvl_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rd_lvl_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rd_lvl_wd = reg_wdata[3];
 
-  assign intr_enable_op_done_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_op_done_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_op_done_wd = reg_wdata[4];
 
-  assign intr_test_prog_empty_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_prog_empty_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_prog_empty_wd = reg_wdata[0];
 
-  assign intr_test_prog_lvl_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_prog_lvl_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_prog_lvl_wd = reg_wdata[1];
 
-  assign intr_test_rd_full_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rd_full_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rd_full_wd = reg_wdata[2];
 
-  assign intr_test_rd_lvl_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rd_lvl_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rd_lvl_wd = reg_wdata[3];
 
-  assign intr_test_op_done_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_op_done_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_op_done_wd = reg_wdata[4];
 
-  assign alert_test_recov_err_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_recov_err_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_recov_err_wd = reg_wdata[0];
 
-  assign alert_test_recov_mp_err_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_recov_mp_err_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_recov_mp_err_wd = reg_wdata[1];
 
-  assign alert_test_recov_ecc_err_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_recov_ecc_err_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_recov_ecc_err_wd = reg_wdata[2];
 
-  assign ctrl_regwen_re = addr_hit[4] && reg_re;
+  assign ctrl_regwen_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign control_start_we = addr_hit[5] & reg_we & ~wr_err;
+  assign control_start_we = addr_hit[5] & reg_we & !reg_error;
   assign control_start_wd = reg_wdata[0];
 
-  assign control_op_we = addr_hit[5] & reg_we & ~wr_err;
+  assign control_op_we = addr_hit[5] & reg_we & !reg_error;
   assign control_op_wd = reg_wdata[5:4];
 
-  assign control_prog_sel_we = addr_hit[5] & reg_we & ~wr_err;
+  assign control_prog_sel_we = addr_hit[5] & reg_we & !reg_error;
   assign control_prog_sel_wd = reg_wdata[6];
 
-  assign control_erase_sel_we = addr_hit[5] & reg_we & ~wr_err;
+  assign control_erase_sel_we = addr_hit[5] & reg_we & !reg_error;
   assign control_erase_sel_wd = reg_wdata[7];
 
-  assign control_partition_sel_we = addr_hit[5] & reg_we & ~wr_err;
+  assign control_partition_sel_we = addr_hit[5] & reg_we & !reg_error;
   assign control_partition_sel_wd = reg_wdata[8];
 
-  assign control_info_sel_we = addr_hit[5] & reg_we & ~wr_err;
+  assign control_info_sel_we = addr_hit[5] & reg_we & !reg_error;
   assign control_info_sel_wd = reg_wdata[10:9];
 
-  assign control_num_we = addr_hit[5] & reg_we & ~wr_err;
+  assign control_num_we = addr_hit[5] & reg_we & !reg_error;
   assign control_num_wd = reg_wdata[27:16];
 
-  assign addr_we = addr_hit[6] & reg_we & ~wr_err;
+  assign addr_we = addr_hit[6] & reg_we & !reg_error;
   assign addr_wd = reg_wdata[31:0];
 
-  assign prog_type_en_normal_we = addr_hit[7] & reg_we & ~wr_err;
+  assign prog_type_en_normal_we = addr_hit[7] & reg_we & !reg_error;
   assign prog_type_en_normal_wd = reg_wdata[0];
 
-  assign prog_type_en_repair_we = addr_hit[7] & reg_we & ~wr_err;
+  assign prog_type_en_repair_we = addr_hit[7] & reg_we & !reg_error;
   assign prog_type_en_repair_wd = reg_wdata[1];
 
-  assign erase_suspend_we = addr_hit[8] & reg_we & ~wr_err;
+  assign erase_suspend_we = addr_hit[8] & reg_we & !reg_error;
   assign erase_suspend_wd = reg_wdata[0];
 
-  assign region_cfg_regwen_0_we = addr_hit[9] & reg_we & ~wr_err;
+  assign region_cfg_regwen_0_we = addr_hit[9] & reg_we & !reg_error;
   assign region_cfg_regwen_0_wd = reg_wdata[0];
 
-  assign region_cfg_regwen_1_we = addr_hit[10] & reg_we & ~wr_err;
+  assign region_cfg_regwen_1_we = addr_hit[10] & reg_we & !reg_error;
   assign region_cfg_regwen_1_wd = reg_wdata[0];
 
-  assign region_cfg_regwen_2_we = addr_hit[11] & reg_we & ~wr_err;
+  assign region_cfg_regwen_2_we = addr_hit[11] & reg_we & !reg_error;
   assign region_cfg_regwen_2_wd = reg_wdata[0];
 
-  assign region_cfg_regwen_3_we = addr_hit[12] & reg_we & ~wr_err;
+  assign region_cfg_regwen_3_we = addr_hit[12] & reg_we & !reg_error;
   assign region_cfg_regwen_3_wd = reg_wdata[0];
 
-  assign region_cfg_regwen_4_we = addr_hit[13] & reg_we & ~wr_err;
+  assign region_cfg_regwen_4_we = addr_hit[13] & reg_we & !reg_error;
   assign region_cfg_regwen_4_wd = reg_wdata[0];
 
-  assign region_cfg_regwen_5_we = addr_hit[14] & reg_we & ~wr_err;
+  assign region_cfg_regwen_5_we = addr_hit[14] & reg_we & !reg_error;
   assign region_cfg_regwen_5_wd = reg_wdata[0];
 
-  assign region_cfg_regwen_6_we = addr_hit[15] & reg_we & ~wr_err;
+  assign region_cfg_regwen_6_we = addr_hit[15] & reg_we & !reg_error;
   assign region_cfg_regwen_6_wd = reg_wdata[0];
 
-  assign region_cfg_regwen_7_we = addr_hit[16] & reg_we & ~wr_err;
+  assign region_cfg_regwen_7_we = addr_hit[16] & reg_we & !reg_error;
   assign region_cfg_regwen_7_wd = reg_wdata[0];
 
-  assign mp_region_cfg_0_en_0_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_en_0_we = addr_hit[17] & reg_we & !reg_error;
   assign mp_region_cfg_0_en_0_wd = reg_wdata[0];
 
-  assign mp_region_cfg_0_rd_en_0_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_rd_en_0_we = addr_hit[17] & reg_we & !reg_error;
   assign mp_region_cfg_0_rd_en_0_wd = reg_wdata[1];
 
-  assign mp_region_cfg_0_prog_en_0_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_prog_en_0_we = addr_hit[17] & reg_we & !reg_error;
   assign mp_region_cfg_0_prog_en_0_wd = reg_wdata[2];
 
-  assign mp_region_cfg_0_erase_en_0_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_erase_en_0_we = addr_hit[17] & reg_we & !reg_error;
   assign mp_region_cfg_0_erase_en_0_wd = reg_wdata[3];
 
-  assign mp_region_cfg_0_scramble_en_0_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_scramble_en_0_we = addr_hit[17] & reg_we & !reg_error;
   assign mp_region_cfg_0_scramble_en_0_wd = reg_wdata[4];
 
-  assign mp_region_cfg_0_ecc_en_0_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_ecc_en_0_we = addr_hit[17] & reg_we & !reg_error;
   assign mp_region_cfg_0_ecc_en_0_wd = reg_wdata[5];
 
-  assign mp_region_cfg_0_he_en_0_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_he_en_0_we = addr_hit[17] & reg_we & !reg_error;
   assign mp_region_cfg_0_he_en_0_wd = reg_wdata[6];
 
-  assign mp_region_cfg_0_base_0_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_base_0_we = addr_hit[17] & reg_we & !reg_error;
   assign mp_region_cfg_0_base_0_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_0_size_0_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mp_region_cfg_0_size_0_we = addr_hit[17] & reg_we & !reg_error;
   assign mp_region_cfg_0_size_0_wd = reg_wdata[26:17];
 
-  assign mp_region_cfg_1_en_1_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_en_1_we = addr_hit[18] & reg_we & !reg_error;
   assign mp_region_cfg_1_en_1_wd = reg_wdata[0];
 
-  assign mp_region_cfg_1_rd_en_1_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_rd_en_1_we = addr_hit[18] & reg_we & !reg_error;
   assign mp_region_cfg_1_rd_en_1_wd = reg_wdata[1];
 
-  assign mp_region_cfg_1_prog_en_1_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_prog_en_1_we = addr_hit[18] & reg_we & !reg_error;
   assign mp_region_cfg_1_prog_en_1_wd = reg_wdata[2];
 
-  assign mp_region_cfg_1_erase_en_1_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_erase_en_1_we = addr_hit[18] & reg_we & !reg_error;
   assign mp_region_cfg_1_erase_en_1_wd = reg_wdata[3];
 
-  assign mp_region_cfg_1_scramble_en_1_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_scramble_en_1_we = addr_hit[18] & reg_we & !reg_error;
   assign mp_region_cfg_1_scramble_en_1_wd = reg_wdata[4];
 
-  assign mp_region_cfg_1_ecc_en_1_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_ecc_en_1_we = addr_hit[18] & reg_we & !reg_error;
   assign mp_region_cfg_1_ecc_en_1_wd = reg_wdata[5];
 
-  assign mp_region_cfg_1_he_en_1_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_he_en_1_we = addr_hit[18] & reg_we & !reg_error;
   assign mp_region_cfg_1_he_en_1_wd = reg_wdata[6];
 
-  assign mp_region_cfg_1_base_1_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_base_1_we = addr_hit[18] & reg_we & !reg_error;
   assign mp_region_cfg_1_base_1_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_1_size_1_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mp_region_cfg_1_size_1_we = addr_hit[18] & reg_we & !reg_error;
   assign mp_region_cfg_1_size_1_wd = reg_wdata[26:17];
 
-  assign mp_region_cfg_2_en_2_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_en_2_we = addr_hit[19] & reg_we & !reg_error;
   assign mp_region_cfg_2_en_2_wd = reg_wdata[0];
 
-  assign mp_region_cfg_2_rd_en_2_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_rd_en_2_we = addr_hit[19] & reg_we & !reg_error;
   assign mp_region_cfg_2_rd_en_2_wd = reg_wdata[1];
 
-  assign mp_region_cfg_2_prog_en_2_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_prog_en_2_we = addr_hit[19] & reg_we & !reg_error;
   assign mp_region_cfg_2_prog_en_2_wd = reg_wdata[2];
 
-  assign mp_region_cfg_2_erase_en_2_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_erase_en_2_we = addr_hit[19] & reg_we & !reg_error;
   assign mp_region_cfg_2_erase_en_2_wd = reg_wdata[3];
 
-  assign mp_region_cfg_2_scramble_en_2_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_scramble_en_2_we = addr_hit[19] & reg_we & !reg_error;
   assign mp_region_cfg_2_scramble_en_2_wd = reg_wdata[4];
 
-  assign mp_region_cfg_2_ecc_en_2_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_ecc_en_2_we = addr_hit[19] & reg_we & !reg_error;
   assign mp_region_cfg_2_ecc_en_2_wd = reg_wdata[5];
 
-  assign mp_region_cfg_2_he_en_2_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_he_en_2_we = addr_hit[19] & reg_we & !reg_error;
   assign mp_region_cfg_2_he_en_2_wd = reg_wdata[6];
 
-  assign mp_region_cfg_2_base_2_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_base_2_we = addr_hit[19] & reg_we & !reg_error;
   assign mp_region_cfg_2_base_2_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_2_size_2_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mp_region_cfg_2_size_2_we = addr_hit[19] & reg_we & !reg_error;
   assign mp_region_cfg_2_size_2_wd = reg_wdata[26:17];
 
-  assign mp_region_cfg_3_en_3_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_en_3_we = addr_hit[20] & reg_we & !reg_error;
   assign mp_region_cfg_3_en_3_wd = reg_wdata[0];
 
-  assign mp_region_cfg_3_rd_en_3_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_rd_en_3_we = addr_hit[20] & reg_we & !reg_error;
   assign mp_region_cfg_3_rd_en_3_wd = reg_wdata[1];
 
-  assign mp_region_cfg_3_prog_en_3_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_prog_en_3_we = addr_hit[20] & reg_we & !reg_error;
   assign mp_region_cfg_3_prog_en_3_wd = reg_wdata[2];
 
-  assign mp_region_cfg_3_erase_en_3_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_erase_en_3_we = addr_hit[20] & reg_we & !reg_error;
   assign mp_region_cfg_3_erase_en_3_wd = reg_wdata[3];
 
-  assign mp_region_cfg_3_scramble_en_3_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_scramble_en_3_we = addr_hit[20] & reg_we & !reg_error;
   assign mp_region_cfg_3_scramble_en_3_wd = reg_wdata[4];
 
-  assign mp_region_cfg_3_ecc_en_3_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_ecc_en_3_we = addr_hit[20] & reg_we & !reg_error;
   assign mp_region_cfg_3_ecc_en_3_wd = reg_wdata[5];
 
-  assign mp_region_cfg_3_he_en_3_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_he_en_3_we = addr_hit[20] & reg_we & !reg_error;
   assign mp_region_cfg_3_he_en_3_wd = reg_wdata[6];
 
-  assign mp_region_cfg_3_base_3_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_base_3_we = addr_hit[20] & reg_we & !reg_error;
   assign mp_region_cfg_3_base_3_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_3_size_3_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mp_region_cfg_3_size_3_we = addr_hit[20] & reg_we & !reg_error;
   assign mp_region_cfg_3_size_3_wd = reg_wdata[26:17];
 
-  assign mp_region_cfg_4_en_4_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_en_4_we = addr_hit[21] & reg_we & !reg_error;
   assign mp_region_cfg_4_en_4_wd = reg_wdata[0];
 
-  assign mp_region_cfg_4_rd_en_4_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_rd_en_4_we = addr_hit[21] & reg_we & !reg_error;
   assign mp_region_cfg_4_rd_en_4_wd = reg_wdata[1];
 
-  assign mp_region_cfg_4_prog_en_4_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_prog_en_4_we = addr_hit[21] & reg_we & !reg_error;
   assign mp_region_cfg_4_prog_en_4_wd = reg_wdata[2];
 
-  assign mp_region_cfg_4_erase_en_4_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_erase_en_4_we = addr_hit[21] & reg_we & !reg_error;
   assign mp_region_cfg_4_erase_en_4_wd = reg_wdata[3];
 
-  assign mp_region_cfg_4_scramble_en_4_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_scramble_en_4_we = addr_hit[21] & reg_we & !reg_error;
   assign mp_region_cfg_4_scramble_en_4_wd = reg_wdata[4];
 
-  assign mp_region_cfg_4_ecc_en_4_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_ecc_en_4_we = addr_hit[21] & reg_we & !reg_error;
   assign mp_region_cfg_4_ecc_en_4_wd = reg_wdata[5];
 
-  assign mp_region_cfg_4_he_en_4_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_he_en_4_we = addr_hit[21] & reg_we & !reg_error;
   assign mp_region_cfg_4_he_en_4_wd = reg_wdata[6];
 
-  assign mp_region_cfg_4_base_4_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_base_4_we = addr_hit[21] & reg_we & !reg_error;
   assign mp_region_cfg_4_base_4_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_4_size_4_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mp_region_cfg_4_size_4_we = addr_hit[21] & reg_we & !reg_error;
   assign mp_region_cfg_4_size_4_wd = reg_wdata[26:17];
 
-  assign mp_region_cfg_5_en_5_we = addr_hit[22] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_en_5_we = addr_hit[22] & reg_we & !reg_error;
   assign mp_region_cfg_5_en_5_wd = reg_wdata[0];
 
-  assign mp_region_cfg_5_rd_en_5_we = addr_hit[22] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_rd_en_5_we = addr_hit[22] & reg_we & !reg_error;
   assign mp_region_cfg_5_rd_en_5_wd = reg_wdata[1];
 
-  assign mp_region_cfg_5_prog_en_5_we = addr_hit[22] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_prog_en_5_we = addr_hit[22] & reg_we & !reg_error;
   assign mp_region_cfg_5_prog_en_5_wd = reg_wdata[2];
 
-  assign mp_region_cfg_5_erase_en_5_we = addr_hit[22] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_erase_en_5_we = addr_hit[22] & reg_we & !reg_error;
   assign mp_region_cfg_5_erase_en_5_wd = reg_wdata[3];
 
-  assign mp_region_cfg_5_scramble_en_5_we = addr_hit[22] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_scramble_en_5_we = addr_hit[22] & reg_we & !reg_error;
   assign mp_region_cfg_5_scramble_en_5_wd = reg_wdata[4];
 
-  assign mp_region_cfg_5_ecc_en_5_we = addr_hit[22] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_ecc_en_5_we = addr_hit[22] & reg_we & !reg_error;
   assign mp_region_cfg_5_ecc_en_5_wd = reg_wdata[5];
 
-  assign mp_region_cfg_5_he_en_5_we = addr_hit[22] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_he_en_5_we = addr_hit[22] & reg_we & !reg_error;
   assign mp_region_cfg_5_he_en_5_wd = reg_wdata[6];
 
-  assign mp_region_cfg_5_base_5_we = addr_hit[22] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_base_5_we = addr_hit[22] & reg_we & !reg_error;
   assign mp_region_cfg_5_base_5_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_5_size_5_we = addr_hit[22] & reg_we & ~wr_err;
+  assign mp_region_cfg_5_size_5_we = addr_hit[22] & reg_we & !reg_error;
   assign mp_region_cfg_5_size_5_wd = reg_wdata[26:17];
 
-  assign mp_region_cfg_6_en_6_we = addr_hit[23] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_en_6_we = addr_hit[23] & reg_we & !reg_error;
   assign mp_region_cfg_6_en_6_wd = reg_wdata[0];
 
-  assign mp_region_cfg_6_rd_en_6_we = addr_hit[23] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_rd_en_6_we = addr_hit[23] & reg_we & !reg_error;
   assign mp_region_cfg_6_rd_en_6_wd = reg_wdata[1];
 
-  assign mp_region_cfg_6_prog_en_6_we = addr_hit[23] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_prog_en_6_we = addr_hit[23] & reg_we & !reg_error;
   assign mp_region_cfg_6_prog_en_6_wd = reg_wdata[2];
 
-  assign mp_region_cfg_6_erase_en_6_we = addr_hit[23] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_erase_en_6_we = addr_hit[23] & reg_we & !reg_error;
   assign mp_region_cfg_6_erase_en_6_wd = reg_wdata[3];
 
-  assign mp_region_cfg_6_scramble_en_6_we = addr_hit[23] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_scramble_en_6_we = addr_hit[23] & reg_we & !reg_error;
   assign mp_region_cfg_6_scramble_en_6_wd = reg_wdata[4];
 
-  assign mp_region_cfg_6_ecc_en_6_we = addr_hit[23] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_ecc_en_6_we = addr_hit[23] & reg_we & !reg_error;
   assign mp_region_cfg_6_ecc_en_6_wd = reg_wdata[5];
 
-  assign mp_region_cfg_6_he_en_6_we = addr_hit[23] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_he_en_6_we = addr_hit[23] & reg_we & !reg_error;
   assign mp_region_cfg_6_he_en_6_wd = reg_wdata[6];
 
-  assign mp_region_cfg_6_base_6_we = addr_hit[23] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_base_6_we = addr_hit[23] & reg_we & !reg_error;
   assign mp_region_cfg_6_base_6_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_6_size_6_we = addr_hit[23] & reg_we & ~wr_err;
+  assign mp_region_cfg_6_size_6_we = addr_hit[23] & reg_we & !reg_error;
   assign mp_region_cfg_6_size_6_wd = reg_wdata[26:17];
 
-  assign mp_region_cfg_7_en_7_we = addr_hit[24] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_en_7_we = addr_hit[24] & reg_we & !reg_error;
   assign mp_region_cfg_7_en_7_wd = reg_wdata[0];
 
-  assign mp_region_cfg_7_rd_en_7_we = addr_hit[24] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_rd_en_7_we = addr_hit[24] & reg_we & !reg_error;
   assign mp_region_cfg_7_rd_en_7_wd = reg_wdata[1];
 
-  assign mp_region_cfg_7_prog_en_7_we = addr_hit[24] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_prog_en_7_we = addr_hit[24] & reg_we & !reg_error;
   assign mp_region_cfg_7_prog_en_7_wd = reg_wdata[2];
 
-  assign mp_region_cfg_7_erase_en_7_we = addr_hit[24] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_erase_en_7_we = addr_hit[24] & reg_we & !reg_error;
   assign mp_region_cfg_7_erase_en_7_wd = reg_wdata[3];
 
-  assign mp_region_cfg_7_scramble_en_7_we = addr_hit[24] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_scramble_en_7_we = addr_hit[24] & reg_we & !reg_error;
   assign mp_region_cfg_7_scramble_en_7_wd = reg_wdata[4];
 
-  assign mp_region_cfg_7_ecc_en_7_we = addr_hit[24] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_ecc_en_7_we = addr_hit[24] & reg_we & !reg_error;
   assign mp_region_cfg_7_ecc_en_7_wd = reg_wdata[5];
 
-  assign mp_region_cfg_7_he_en_7_we = addr_hit[24] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_he_en_7_we = addr_hit[24] & reg_we & !reg_error;
   assign mp_region_cfg_7_he_en_7_wd = reg_wdata[6];
 
-  assign mp_region_cfg_7_base_7_we = addr_hit[24] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_base_7_we = addr_hit[24] & reg_we & !reg_error;
   assign mp_region_cfg_7_base_7_wd = reg_wdata[16:8];
 
-  assign mp_region_cfg_7_size_7_we = addr_hit[24] & reg_we & ~wr_err;
+  assign mp_region_cfg_7_size_7_we = addr_hit[24] & reg_we & !reg_error;
   assign mp_region_cfg_7_size_7_wd = reg_wdata[26:17];
 
-  assign default_region_rd_en_we = addr_hit[25] & reg_we & ~wr_err;
+  assign default_region_rd_en_we = addr_hit[25] & reg_we & !reg_error;
   assign default_region_rd_en_wd = reg_wdata[0];
 
-  assign default_region_prog_en_we = addr_hit[25] & reg_we & ~wr_err;
+  assign default_region_prog_en_we = addr_hit[25] & reg_we & !reg_error;
   assign default_region_prog_en_wd = reg_wdata[1];
 
-  assign default_region_erase_en_we = addr_hit[25] & reg_we & ~wr_err;
+  assign default_region_erase_en_we = addr_hit[25] & reg_we & !reg_error;
   assign default_region_erase_en_wd = reg_wdata[2];
 
-  assign default_region_scramble_en_we = addr_hit[25] & reg_we & ~wr_err;
+  assign default_region_scramble_en_we = addr_hit[25] & reg_we & !reg_error;
   assign default_region_scramble_en_wd = reg_wdata[3];
 
-  assign default_region_ecc_en_we = addr_hit[25] & reg_we & ~wr_err;
+  assign default_region_ecc_en_we = addr_hit[25] & reg_we & !reg_error;
   assign default_region_ecc_en_wd = reg_wdata[4];
 
-  assign default_region_he_en_we = addr_hit[25] & reg_we & ~wr_err;
+  assign default_region_he_en_we = addr_hit[25] & reg_we & !reg_error;
   assign default_region_he_en_wd = reg_wdata[5];
 
-  assign bank0_info0_regwen_0_we = addr_hit[26] & reg_we & ~wr_err;
+  assign bank0_info0_regwen_0_we = addr_hit[26] & reg_we & !reg_error;
   assign bank0_info0_regwen_0_wd = reg_wdata[0];
 
-  assign bank0_info0_regwen_1_we = addr_hit[27] & reg_we & ~wr_err;
+  assign bank0_info0_regwen_1_we = addr_hit[27] & reg_we & !reg_error;
   assign bank0_info0_regwen_1_wd = reg_wdata[0];
 
-  assign bank0_info0_regwen_2_we = addr_hit[28] & reg_we & ~wr_err;
+  assign bank0_info0_regwen_2_we = addr_hit[28] & reg_we & !reg_error;
   assign bank0_info0_regwen_2_wd = reg_wdata[0];
 
-  assign bank0_info0_regwen_3_we = addr_hit[29] & reg_we & ~wr_err;
+  assign bank0_info0_regwen_3_we = addr_hit[29] & reg_we & !reg_error;
   assign bank0_info0_regwen_3_wd = reg_wdata[0];
 
-  assign bank0_info0_regwen_4_we = addr_hit[30] & reg_we & ~wr_err;
+  assign bank0_info0_regwen_4_we = addr_hit[30] & reg_we & !reg_error;
   assign bank0_info0_regwen_4_wd = reg_wdata[0];
 
-  assign bank0_info0_regwen_5_we = addr_hit[31] & reg_we & ~wr_err;
+  assign bank0_info0_regwen_5_we = addr_hit[31] & reg_we & !reg_error;
   assign bank0_info0_regwen_5_wd = reg_wdata[0];
 
-  assign bank0_info0_regwen_6_we = addr_hit[32] & reg_we & ~wr_err;
+  assign bank0_info0_regwen_6_we = addr_hit[32] & reg_we & !reg_error;
   assign bank0_info0_regwen_6_wd = reg_wdata[0];
 
-  assign bank0_info0_regwen_7_we = addr_hit[33] & reg_we & ~wr_err;
+  assign bank0_info0_regwen_7_we = addr_hit[33] & reg_we & !reg_error;
   assign bank0_info0_regwen_7_wd = reg_wdata[0];
 
-  assign bank0_info0_regwen_8_we = addr_hit[34] & reg_we & ~wr_err;
+  assign bank0_info0_regwen_8_we = addr_hit[34] & reg_we & !reg_error;
   assign bank0_info0_regwen_8_wd = reg_wdata[0];
 
-  assign bank0_info0_regwen_9_we = addr_hit[35] & reg_we & ~wr_err;
+  assign bank0_info0_regwen_9_we = addr_hit[35] & reg_we & !reg_error;
   assign bank0_info0_regwen_9_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_0_en_0_we = addr_hit[36] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_0_en_0_we = addr_hit[36] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_0_en_0_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_0_rd_en_0_we = addr_hit[36] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_0_rd_en_0_we = addr_hit[36] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_0_rd_en_0_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_0_prog_en_0_we = addr_hit[36] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_0_prog_en_0_we = addr_hit[36] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_0_prog_en_0_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_0_erase_en_0_we = addr_hit[36] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_0_erase_en_0_we = addr_hit[36] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_0_erase_en_0_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_0_scramble_en_0_we = addr_hit[36] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_0_scramble_en_0_we = addr_hit[36] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_0_scramble_en_0_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_0_ecc_en_0_we = addr_hit[36] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_0_ecc_en_0_we = addr_hit[36] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_0_ecc_en_0_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_0_he_en_0_we = addr_hit[36] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_0_he_en_0_we = addr_hit[36] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_0_he_en_0_wd = reg_wdata[6];
 
-  assign bank0_info0_page_cfg_1_en_1_we = addr_hit[37] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_1_en_1_we = addr_hit[37] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_1_en_1_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_1_rd_en_1_we = addr_hit[37] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_1_rd_en_1_we = addr_hit[37] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_1_rd_en_1_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_1_prog_en_1_we = addr_hit[37] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_1_prog_en_1_we = addr_hit[37] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_1_prog_en_1_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_1_erase_en_1_we = addr_hit[37] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_1_erase_en_1_we = addr_hit[37] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_1_erase_en_1_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_1_scramble_en_1_we = addr_hit[37] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_1_scramble_en_1_we = addr_hit[37] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_1_scramble_en_1_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_1_ecc_en_1_we = addr_hit[37] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_1_ecc_en_1_we = addr_hit[37] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_1_ecc_en_1_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_1_he_en_1_we = addr_hit[37] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_1_he_en_1_we = addr_hit[37] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_1_he_en_1_wd = reg_wdata[6];
 
-  assign bank0_info0_page_cfg_2_en_2_we = addr_hit[38] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_2_en_2_we = addr_hit[38] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_2_en_2_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_2_rd_en_2_we = addr_hit[38] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_2_rd_en_2_we = addr_hit[38] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_2_rd_en_2_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_2_prog_en_2_we = addr_hit[38] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_2_prog_en_2_we = addr_hit[38] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_2_prog_en_2_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_2_erase_en_2_we = addr_hit[38] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_2_erase_en_2_we = addr_hit[38] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_2_erase_en_2_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_2_scramble_en_2_we = addr_hit[38] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_2_scramble_en_2_we = addr_hit[38] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_2_scramble_en_2_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_2_ecc_en_2_we = addr_hit[38] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_2_ecc_en_2_we = addr_hit[38] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_2_ecc_en_2_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_2_he_en_2_we = addr_hit[38] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_2_he_en_2_we = addr_hit[38] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_2_he_en_2_wd = reg_wdata[6];
 
-  assign bank0_info0_page_cfg_3_en_3_we = addr_hit[39] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_3_en_3_we = addr_hit[39] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_3_en_3_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_3_rd_en_3_we = addr_hit[39] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_3_rd_en_3_we = addr_hit[39] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_3_rd_en_3_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_3_prog_en_3_we = addr_hit[39] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_3_prog_en_3_we = addr_hit[39] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_3_prog_en_3_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_3_erase_en_3_we = addr_hit[39] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_3_erase_en_3_we = addr_hit[39] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_3_erase_en_3_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_3_scramble_en_3_we = addr_hit[39] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_3_scramble_en_3_we = addr_hit[39] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_3_scramble_en_3_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_3_ecc_en_3_we = addr_hit[39] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_3_ecc_en_3_we = addr_hit[39] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_3_ecc_en_3_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_3_he_en_3_we = addr_hit[39] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_3_he_en_3_we = addr_hit[39] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_3_he_en_3_wd = reg_wdata[6];
 
-  assign bank0_info0_page_cfg_4_en_4_we = addr_hit[40] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_4_en_4_we = addr_hit[40] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_4_en_4_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_4_rd_en_4_we = addr_hit[40] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_4_rd_en_4_we = addr_hit[40] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_4_rd_en_4_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_4_prog_en_4_we = addr_hit[40] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_4_prog_en_4_we = addr_hit[40] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_4_prog_en_4_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_4_erase_en_4_we = addr_hit[40] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_4_erase_en_4_we = addr_hit[40] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_4_erase_en_4_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_4_scramble_en_4_we = addr_hit[40] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_4_scramble_en_4_we = addr_hit[40] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_4_scramble_en_4_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_4_ecc_en_4_we = addr_hit[40] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_4_ecc_en_4_we = addr_hit[40] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_4_ecc_en_4_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_4_he_en_4_we = addr_hit[40] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_4_he_en_4_we = addr_hit[40] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_4_he_en_4_wd = reg_wdata[6];
 
-  assign bank0_info0_page_cfg_5_en_5_we = addr_hit[41] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_5_en_5_we = addr_hit[41] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_5_en_5_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_5_rd_en_5_we = addr_hit[41] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_5_rd_en_5_we = addr_hit[41] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_5_rd_en_5_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_5_prog_en_5_we = addr_hit[41] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_5_prog_en_5_we = addr_hit[41] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_5_prog_en_5_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_5_erase_en_5_we = addr_hit[41] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_5_erase_en_5_we = addr_hit[41] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_5_erase_en_5_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_5_scramble_en_5_we = addr_hit[41] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_5_scramble_en_5_we = addr_hit[41] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_5_scramble_en_5_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_5_ecc_en_5_we = addr_hit[41] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_5_ecc_en_5_we = addr_hit[41] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_5_ecc_en_5_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_5_he_en_5_we = addr_hit[41] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_5_he_en_5_we = addr_hit[41] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_5_he_en_5_wd = reg_wdata[6];
 
-  assign bank0_info0_page_cfg_6_en_6_we = addr_hit[42] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_6_en_6_we = addr_hit[42] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_6_en_6_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_6_rd_en_6_we = addr_hit[42] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_6_rd_en_6_we = addr_hit[42] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_6_rd_en_6_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_6_prog_en_6_we = addr_hit[42] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_6_prog_en_6_we = addr_hit[42] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_6_prog_en_6_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_6_erase_en_6_we = addr_hit[42] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_6_erase_en_6_we = addr_hit[42] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_6_erase_en_6_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_6_scramble_en_6_we = addr_hit[42] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_6_scramble_en_6_we = addr_hit[42] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_6_scramble_en_6_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_6_ecc_en_6_we = addr_hit[42] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_6_ecc_en_6_we = addr_hit[42] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_6_ecc_en_6_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_6_he_en_6_we = addr_hit[42] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_6_he_en_6_we = addr_hit[42] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_6_he_en_6_wd = reg_wdata[6];
 
-  assign bank0_info0_page_cfg_7_en_7_we = addr_hit[43] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_7_en_7_we = addr_hit[43] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_7_en_7_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_7_rd_en_7_we = addr_hit[43] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_7_rd_en_7_we = addr_hit[43] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_7_rd_en_7_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_7_prog_en_7_we = addr_hit[43] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_7_prog_en_7_we = addr_hit[43] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_7_prog_en_7_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_7_erase_en_7_we = addr_hit[43] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_7_erase_en_7_we = addr_hit[43] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_7_erase_en_7_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_7_scramble_en_7_we = addr_hit[43] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_7_scramble_en_7_we = addr_hit[43] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_7_scramble_en_7_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_7_ecc_en_7_we = addr_hit[43] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_7_ecc_en_7_we = addr_hit[43] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_7_ecc_en_7_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_7_he_en_7_we = addr_hit[43] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_7_he_en_7_we = addr_hit[43] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_7_he_en_7_wd = reg_wdata[6];
 
-  assign bank0_info0_page_cfg_8_en_8_we = addr_hit[44] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_8_en_8_we = addr_hit[44] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_8_en_8_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_8_rd_en_8_we = addr_hit[44] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_8_rd_en_8_we = addr_hit[44] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_8_rd_en_8_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_8_prog_en_8_we = addr_hit[44] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_8_prog_en_8_we = addr_hit[44] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_8_prog_en_8_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_8_erase_en_8_we = addr_hit[44] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_8_erase_en_8_we = addr_hit[44] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_8_erase_en_8_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_8_scramble_en_8_we = addr_hit[44] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_8_scramble_en_8_we = addr_hit[44] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_8_scramble_en_8_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_8_ecc_en_8_we = addr_hit[44] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_8_ecc_en_8_we = addr_hit[44] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_8_ecc_en_8_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_8_he_en_8_we = addr_hit[44] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_8_he_en_8_we = addr_hit[44] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_8_he_en_8_wd = reg_wdata[6];
 
-  assign bank0_info0_page_cfg_9_en_9_we = addr_hit[45] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_9_en_9_we = addr_hit[45] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_9_en_9_wd = reg_wdata[0];
 
-  assign bank0_info0_page_cfg_9_rd_en_9_we = addr_hit[45] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_9_rd_en_9_we = addr_hit[45] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_9_rd_en_9_wd = reg_wdata[1];
 
-  assign bank0_info0_page_cfg_9_prog_en_9_we = addr_hit[45] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_9_prog_en_9_we = addr_hit[45] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_9_prog_en_9_wd = reg_wdata[2];
 
-  assign bank0_info0_page_cfg_9_erase_en_9_we = addr_hit[45] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_9_erase_en_9_we = addr_hit[45] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_9_erase_en_9_wd = reg_wdata[3];
 
-  assign bank0_info0_page_cfg_9_scramble_en_9_we = addr_hit[45] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_9_scramble_en_9_we = addr_hit[45] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_9_scramble_en_9_wd = reg_wdata[4];
 
-  assign bank0_info0_page_cfg_9_ecc_en_9_we = addr_hit[45] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_9_ecc_en_9_we = addr_hit[45] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_9_ecc_en_9_wd = reg_wdata[5];
 
-  assign bank0_info0_page_cfg_9_he_en_9_we = addr_hit[45] & reg_we & ~wr_err;
+  assign bank0_info0_page_cfg_9_he_en_9_we = addr_hit[45] & reg_we & !reg_error;
   assign bank0_info0_page_cfg_9_he_en_9_wd = reg_wdata[6];
 
-  assign bank0_info1_regwen_we = addr_hit[46] & reg_we & ~wr_err;
+  assign bank0_info1_regwen_we = addr_hit[46] & reg_we & !reg_error;
   assign bank0_info1_regwen_wd = reg_wdata[0];
 
-  assign bank0_info1_page_cfg_en_0_we = addr_hit[47] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_en_0_we = addr_hit[47] & reg_we & !reg_error;
   assign bank0_info1_page_cfg_en_0_wd = reg_wdata[0];
 
-  assign bank0_info1_page_cfg_rd_en_0_we = addr_hit[47] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_rd_en_0_we = addr_hit[47] & reg_we & !reg_error;
   assign bank0_info1_page_cfg_rd_en_0_wd = reg_wdata[1];
 
-  assign bank0_info1_page_cfg_prog_en_0_we = addr_hit[47] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_prog_en_0_we = addr_hit[47] & reg_we & !reg_error;
   assign bank0_info1_page_cfg_prog_en_0_wd = reg_wdata[2];
 
-  assign bank0_info1_page_cfg_erase_en_0_we = addr_hit[47] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_erase_en_0_we = addr_hit[47] & reg_we & !reg_error;
   assign bank0_info1_page_cfg_erase_en_0_wd = reg_wdata[3];
 
-  assign bank0_info1_page_cfg_scramble_en_0_we = addr_hit[47] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_scramble_en_0_we = addr_hit[47] & reg_we & !reg_error;
   assign bank0_info1_page_cfg_scramble_en_0_wd = reg_wdata[4];
 
-  assign bank0_info1_page_cfg_ecc_en_0_we = addr_hit[47] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_ecc_en_0_we = addr_hit[47] & reg_we & !reg_error;
   assign bank0_info1_page_cfg_ecc_en_0_wd = reg_wdata[5];
 
-  assign bank0_info1_page_cfg_he_en_0_we = addr_hit[47] & reg_we & ~wr_err;
+  assign bank0_info1_page_cfg_he_en_0_we = addr_hit[47] & reg_we & !reg_error;
   assign bank0_info1_page_cfg_he_en_0_wd = reg_wdata[6];
 
-  assign bank0_info2_regwen_0_we = addr_hit[48] & reg_we & ~wr_err;
+  assign bank0_info2_regwen_0_we = addr_hit[48] & reg_we & !reg_error;
   assign bank0_info2_regwen_0_wd = reg_wdata[0];
 
-  assign bank0_info2_regwen_1_we = addr_hit[49] & reg_we & ~wr_err;
+  assign bank0_info2_regwen_1_we = addr_hit[49] & reg_we & !reg_error;
   assign bank0_info2_regwen_1_wd = reg_wdata[0];
 
-  assign bank0_info2_page_cfg_0_en_0_we = addr_hit[50] & reg_we & ~wr_err;
+  assign bank0_info2_page_cfg_0_en_0_we = addr_hit[50] & reg_we & !reg_error;
   assign bank0_info2_page_cfg_0_en_0_wd = reg_wdata[0];
 
-  assign bank0_info2_page_cfg_0_rd_en_0_we = addr_hit[50] & reg_we & ~wr_err;
+  assign bank0_info2_page_cfg_0_rd_en_0_we = addr_hit[50] & reg_we & !reg_error;
   assign bank0_info2_page_cfg_0_rd_en_0_wd = reg_wdata[1];
 
-  assign bank0_info2_page_cfg_0_prog_en_0_we = addr_hit[50] & reg_we & ~wr_err;
+  assign bank0_info2_page_cfg_0_prog_en_0_we = addr_hit[50] & reg_we & !reg_error;
   assign bank0_info2_page_cfg_0_prog_en_0_wd = reg_wdata[2];
 
-  assign bank0_info2_page_cfg_0_erase_en_0_we = addr_hit[50] & reg_we & ~wr_err;
+  assign bank0_info2_page_cfg_0_erase_en_0_we = addr_hit[50] & reg_we & !reg_error;
   assign bank0_info2_page_cfg_0_erase_en_0_wd = reg_wdata[3];
 
-  assign bank0_info2_page_cfg_0_scramble_en_0_we = addr_hit[50] & reg_we & ~wr_err;
+  assign bank0_info2_page_cfg_0_scramble_en_0_we = addr_hit[50] & reg_we & !reg_error;
   assign bank0_info2_page_cfg_0_scramble_en_0_wd = reg_wdata[4];
 
-  assign bank0_info2_page_cfg_0_ecc_en_0_we = addr_hit[50] & reg_we & ~wr_err;
+  assign bank0_info2_page_cfg_0_ecc_en_0_we = addr_hit[50] & reg_we & !reg_error;
   assign bank0_info2_page_cfg_0_ecc_en_0_wd = reg_wdata[5];
 
-  assign bank0_info2_page_cfg_0_he_en_0_we = addr_hit[50] & reg_we & ~wr_err;
+  assign bank0_info2_page_cfg_0_he_en_0_we = addr_hit[50] & reg_we & !reg_error;
   assign bank0_info2_page_cfg_0_he_en_0_wd = reg_wdata[6];
 
-  assign bank0_info2_page_cfg_1_en_1_we = addr_hit[51] & reg_we & ~wr_err;
+  assign bank0_info2_page_cfg_1_en_1_we = addr_hit[51] & reg_we & !reg_error;
   assign bank0_info2_page_cfg_1_en_1_wd = reg_wdata[0];
 
-  assign bank0_info2_page_cfg_1_rd_en_1_we = addr_hit[51] & reg_we & ~wr_err;
+  assign bank0_info2_page_cfg_1_rd_en_1_we = addr_hit[51] & reg_we & !reg_error;
   assign bank0_info2_page_cfg_1_rd_en_1_wd = reg_wdata[1];
 
-  assign bank0_info2_page_cfg_1_prog_en_1_we = addr_hit[51] & reg_we & ~wr_err;
+  assign bank0_info2_page_cfg_1_prog_en_1_we = addr_hit[51] & reg_we & !reg_error;
   assign bank0_info2_page_cfg_1_prog_en_1_wd = reg_wdata[2];
 
-  assign bank0_info2_page_cfg_1_erase_en_1_we = addr_hit[51] & reg_we & ~wr_err;
+  assign bank0_info2_page_cfg_1_erase_en_1_we = addr_hit[51] & reg_we & !reg_error;
   assign bank0_info2_page_cfg_1_erase_en_1_wd = reg_wdata[3];
 
-  assign bank0_info2_page_cfg_1_scramble_en_1_we = addr_hit[51] & reg_we & ~wr_err;
+  assign bank0_info2_page_cfg_1_scramble_en_1_we = addr_hit[51] & reg_we & !reg_error;
   assign bank0_info2_page_cfg_1_scramble_en_1_wd = reg_wdata[4];
 
-  assign bank0_info2_page_cfg_1_ecc_en_1_we = addr_hit[51] & reg_we & ~wr_err;
+  assign bank0_info2_page_cfg_1_ecc_en_1_we = addr_hit[51] & reg_we & !reg_error;
   assign bank0_info2_page_cfg_1_ecc_en_1_wd = reg_wdata[5];
 
-  assign bank0_info2_page_cfg_1_he_en_1_we = addr_hit[51] & reg_we & ~wr_err;
+  assign bank0_info2_page_cfg_1_he_en_1_we = addr_hit[51] & reg_we & !reg_error;
   assign bank0_info2_page_cfg_1_he_en_1_wd = reg_wdata[6];
 
-  assign bank1_info0_regwen_0_we = addr_hit[52] & reg_we & ~wr_err;
+  assign bank1_info0_regwen_0_we = addr_hit[52] & reg_we & !reg_error;
   assign bank1_info0_regwen_0_wd = reg_wdata[0];
 
-  assign bank1_info0_regwen_1_we = addr_hit[53] & reg_we & ~wr_err;
+  assign bank1_info0_regwen_1_we = addr_hit[53] & reg_we & !reg_error;
   assign bank1_info0_regwen_1_wd = reg_wdata[0];
 
-  assign bank1_info0_regwen_2_we = addr_hit[54] & reg_we & ~wr_err;
+  assign bank1_info0_regwen_2_we = addr_hit[54] & reg_we & !reg_error;
   assign bank1_info0_regwen_2_wd = reg_wdata[0];
 
-  assign bank1_info0_regwen_3_we = addr_hit[55] & reg_we & ~wr_err;
+  assign bank1_info0_regwen_3_we = addr_hit[55] & reg_we & !reg_error;
   assign bank1_info0_regwen_3_wd = reg_wdata[0];
 
-  assign bank1_info0_regwen_4_we = addr_hit[56] & reg_we & ~wr_err;
+  assign bank1_info0_regwen_4_we = addr_hit[56] & reg_we & !reg_error;
   assign bank1_info0_regwen_4_wd = reg_wdata[0];
 
-  assign bank1_info0_regwen_5_we = addr_hit[57] & reg_we & ~wr_err;
+  assign bank1_info0_regwen_5_we = addr_hit[57] & reg_we & !reg_error;
   assign bank1_info0_regwen_5_wd = reg_wdata[0];
 
-  assign bank1_info0_regwen_6_we = addr_hit[58] & reg_we & ~wr_err;
+  assign bank1_info0_regwen_6_we = addr_hit[58] & reg_we & !reg_error;
   assign bank1_info0_regwen_6_wd = reg_wdata[0];
 
-  assign bank1_info0_regwen_7_we = addr_hit[59] & reg_we & ~wr_err;
+  assign bank1_info0_regwen_7_we = addr_hit[59] & reg_we & !reg_error;
   assign bank1_info0_regwen_7_wd = reg_wdata[0];
 
-  assign bank1_info0_regwen_8_we = addr_hit[60] & reg_we & ~wr_err;
+  assign bank1_info0_regwen_8_we = addr_hit[60] & reg_we & !reg_error;
   assign bank1_info0_regwen_8_wd = reg_wdata[0];
 
-  assign bank1_info0_regwen_9_we = addr_hit[61] & reg_we & ~wr_err;
+  assign bank1_info0_regwen_9_we = addr_hit[61] & reg_we & !reg_error;
   assign bank1_info0_regwen_9_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_0_en_0_we = addr_hit[62] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_0_en_0_we = addr_hit[62] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_0_en_0_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_0_rd_en_0_we = addr_hit[62] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_0_rd_en_0_we = addr_hit[62] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_0_rd_en_0_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_0_prog_en_0_we = addr_hit[62] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_0_prog_en_0_we = addr_hit[62] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_0_prog_en_0_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_0_erase_en_0_we = addr_hit[62] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_0_erase_en_0_we = addr_hit[62] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_0_erase_en_0_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_0_scramble_en_0_we = addr_hit[62] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_0_scramble_en_0_we = addr_hit[62] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_0_scramble_en_0_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_0_ecc_en_0_we = addr_hit[62] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_0_ecc_en_0_we = addr_hit[62] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_0_ecc_en_0_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_0_he_en_0_we = addr_hit[62] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_0_he_en_0_we = addr_hit[62] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_0_he_en_0_wd = reg_wdata[6];
 
-  assign bank1_info0_page_cfg_1_en_1_we = addr_hit[63] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_1_en_1_we = addr_hit[63] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_1_en_1_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_1_rd_en_1_we = addr_hit[63] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_1_rd_en_1_we = addr_hit[63] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_1_rd_en_1_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_1_prog_en_1_we = addr_hit[63] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_1_prog_en_1_we = addr_hit[63] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_1_prog_en_1_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_1_erase_en_1_we = addr_hit[63] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_1_erase_en_1_we = addr_hit[63] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_1_erase_en_1_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_1_scramble_en_1_we = addr_hit[63] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_1_scramble_en_1_we = addr_hit[63] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_1_scramble_en_1_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_1_ecc_en_1_we = addr_hit[63] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_1_ecc_en_1_we = addr_hit[63] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_1_ecc_en_1_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_1_he_en_1_we = addr_hit[63] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_1_he_en_1_we = addr_hit[63] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_1_he_en_1_wd = reg_wdata[6];
 
-  assign bank1_info0_page_cfg_2_en_2_we = addr_hit[64] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_2_en_2_we = addr_hit[64] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_2_en_2_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_2_rd_en_2_we = addr_hit[64] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_2_rd_en_2_we = addr_hit[64] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_2_rd_en_2_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_2_prog_en_2_we = addr_hit[64] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_2_prog_en_2_we = addr_hit[64] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_2_prog_en_2_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_2_erase_en_2_we = addr_hit[64] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_2_erase_en_2_we = addr_hit[64] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_2_erase_en_2_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_2_scramble_en_2_we = addr_hit[64] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_2_scramble_en_2_we = addr_hit[64] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_2_scramble_en_2_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_2_ecc_en_2_we = addr_hit[64] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_2_ecc_en_2_we = addr_hit[64] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_2_ecc_en_2_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_2_he_en_2_we = addr_hit[64] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_2_he_en_2_we = addr_hit[64] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_2_he_en_2_wd = reg_wdata[6];
 
-  assign bank1_info0_page_cfg_3_en_3_we = addr_hit[65] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_3_en_3_we = addr_hit[65] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_3_en_3_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_3_rd_en_3_we = addr_hit[65] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_3_rd_en_3_we = addr_hit[65] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_3_rd_en_3_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_3_prog_en_3_we = addr_hit[65] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_3_prog_en_3_we = addr_hit[65] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_3_prog_en_3_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_3_erase_en_3_we = addr_hit[65] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_3_erase_en_3_we = addr_hit[65] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_3_erase_en_3_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_3_scramble_en_3_we = addr_hit[65] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_3_scramble_en_3_we = addr_hit[65] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_3_scramble_en_3_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_3_ecc_en_3_we = addr_hit[65] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_3_ecc_en_3_we = addr_hit[65] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_3_ecc_en_3_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_3_he_en_3_we = addr_hit[65] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_3_he_en_3_we = addr_hit[65] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_3_he_en_3_wd = reg_wdata[6];
 
-  assign bank1_info0_page_cfg_4_en_4_we = addr_hit[66] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_4_en_4_we = addr_hit[66] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_4_en_4_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_4_rd_en_4_we = addr_hit[66] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_4_rd_en_4_we = addr_hit[66] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_4_rd_en_4_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_4_prog_en_4_we = addr_hit[66] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_4_prog_en_4_we = addr_hit[66] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_4_prog_en_4_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_4_erase_en_4_we = addr_hit[66] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_4_erase_en_4_we = addr_hit[66] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_4_erase_en_4_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_4_scramble_en_4_we = addr_hit[66] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_4_scramble_en_4_we = addr_hit[66] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_4_scramble_en_4_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_4_ecc_en_4_we = addr_hit[66] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_4_ecc_en_4_we = addr_hit[66] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_4_ecc_en_4_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_4_he_en_4_we = addr_hit[66] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_4_he_en_4_we = addr_hit[66] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_4_he_en_4_wd = reg_wdata[6];
 
-  assign bank1_info0_page_cfg_5_en_5_we = addr_hit[67] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_5_en_5_we = addr_hit[67] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_5_en_5_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_5_rd_en_5_we = addr_hit[67] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_5_rd_en_5_we = addr_hit[67] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_5_rd_en_5_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_5_prog_en_5_we = addr_hit[67] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_5_prog_en_5_we = addr_hit[67] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_5_prog_en_5_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_5_erase_en_5_we = addr_hit[67] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_5_erase_en_5_we = addr_hit[67] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_5_erase_en_5_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_5_scramble_en_5_we = addr_hit[67] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_5_scramble_en_5_we = addr_hit[67] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_5_scramble_en_5_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_5_ecc_en_5_we = addr_hit[67] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_5_ecc_en_5_we = addr_hit[67] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_5_ecc_en_5_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_5_he_en_5_we = addr_hit[67] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_5_he_en_5_we = addr_hit[67] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_5_he_en_5_wd = reg_wdata[6];
 
-  assign bank1_info0_page_cfg_6_en_6_we = addr_hit[68] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_6_en_6_we = addr_hit[68] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_6_en_6_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_6_rd_en_6_we = addr_hit[68] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_6_rd_en_6_we = addr_hit[68] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_6_rd_en_6_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_6_prog_en_6_we = addr_hit[68] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_6_prog_en_6_we = addr_hit[68] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_6_prog_en_6_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_6_erase_en_6_we = addr_hit[68] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_6_erase_en_6_we = addr_hit[68] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_6_erase_en_6_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_6_scramble_en_6_we = addr_hit[68] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_6_scramble_en_6_we = addr_hit[68] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_6_scramble_en_6_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_6_ecc_en_6_we = addr_hit[68] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_6_ecc_en_6_we = addr_hit[68] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_6_ecc_en_6_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_6_he_en_6_we = addr_hit[68] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_6_he_en_6_we = addr_hit[68] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_6_he_en_6_wd = reg_wdata[6];
 
-  assign bank1_info0_page_cfg_7_en_7_we = addr_hit[69] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_7_en_7_we = addr_hit[69] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_7_en_7_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_7_rd_en_7_we = addr_hit[69] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_7_rd_en_7_we = addr_hit[69] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_7_rd_en_7_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_7_prog_en_7_we = addr_hit[69] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_7_prog_en_7_we = addr_hit[69] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_7_prog_en_7_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_7_erase_en_7_we = addr_hit[69] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_7_erase_en_7_we = addr_hit[69] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_7_erase_en_7_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_7_scramble_en_7_we = addr_hit[69] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_7_scramble_en_7_we = addr_hit[69] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_7_scramble_en_7_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_7_ecc_en_7_we = addr_hit[69] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_7_ecc_en_7_we = addr_hit[69] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_7_ecc_en_7_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_7_he_en_7_we = addr_hit[69] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_7_he_en_7_we = addr_hit[69] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_7_he_en_7_wd = reg_wdata[6];
 
-  assign bank1_info0_page_cfg_8_en_8_we = addr_hit[70] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_8_en_8_we = addr_hit[70] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_8_en_8_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_8_rd_en_8_we = addr_hit[70] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_8_rd_en_8_we = addr_hit[70] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_8_rd_en_8_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_8_prog_en_8_we = addr_hit[70] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_8_prog_en_8_we = addr_hit[70] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_8_prog_en_8_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_8_erase_en_8_we = addr_hit[70] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_8_erase_en_8_we = addr_hit[70] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_8_erase_en_8_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_8_scramble_en_8_we = addr_hit[70] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_8_scramble_en_8_we = addr_hit[70] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_8_scramble_en_8_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_8_ecc_en_8_we = addr_hit[70] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_8_ecc_en_8_we = addr_hit[70] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_8_ecc_en_8_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_8_he_en_8_we = addr_hit[70] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_8_he_en_8_we = addr_hit[70] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_8_he_en_8_wd = reg_wdata[6];
 
-  assign bank1_info0_page_cfg_9_en_9_we = addr_hit[71] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_9_en_9_we = addr_hit[71] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_9_en_9_wd = reg_wdata[0];
 
-  assign bank1_info0_page_cfg_9_rd_en_9_we = addr_hit[71] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_9_rd_en_9_we = addr_hit[71] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_9_rd_en_9_wd = reg_wdata[1];
 
-  assign bank1_info0_page_cfg_9_prog_en_9_we = addr_hit[71] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_9_prog_en_9_we = addr_hit[71] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_9_prog_en_9_wd = reg_wdata[2];
 
-  assign bank1_info0_page_cfg_9_erase_en_9_we = addr_hit[71] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_9_erase_en_9_we = addr_hit[71] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_9_erase_en_9_wd = reg_wdata[3];
 
-  assign bank1_info0_page_cfg_9_scramble_en_9_we = addr_hit[71] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_9_scramble_en_9_we = addr_hit[71] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_9_scramble_en_9_wd = reg_wdata[4];
 
-  assign bank1_info0_page_cfg_9_ecc_en_9_we = addr_hit[71] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_9_ecc_en_9_we = addr_hit[71] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_9_ecc_en_9_wd = reg_wdata[5];
 
-  assign bank1_info0_page_cfg_9_he_en_9_we = addr_hit[71] & reg_we & ~wr_err;
+  assign bank1_info0_page_cfg_9_he_en_9_we = addr_hit[71] & reg_we & !reg_error;
   assign bank1_info0_page_cfg_9_he_en_9_wd = reg_wdata[6];
 
-  assign bank1_info1_regwen_we = addr_hit[72] & reg_we & ~wr_err;
+  assign bank1_info1_regwen_we = addr_hit[72] & reg_we & !reg_error;
   assign bank1_info1_regwen_wd = reg_wdata[0];
 
-  assign bank1_info1_page_cfg_en_0_we = addr_hit[73] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_en_0_we = addr_hit[73] & reg_we & !reg_error;
   assign bank1_info1_page_cfg_en_0_wd = reg_wdata[0];
 
-  assign bank1_info1_page_cfg_rd_en_0_we = addr_hit[73] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_rd_en_0_we = addr_hit[73] & reg_we & !reg_error;
   assign bank1_info1_page_cfg_rd_en_0_wd = reg_wdata[1];
 
-  assign bank1_info1_page_cfg_prog_en_0_we = addr_hit[73] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_prog_en_0_we = addr_hit[73] & reg_we & !reg_error;
   assign bank1_info1_page_cfg_prog_en_0_wd = reg_wdata[2];
 
-  assign bank1_info1_page_cfg_erase_en_0_we = addr_hit[73] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_erase_en_0_we = addr_hit[73] & reg_we & !reg_error;
   assign bank1_info1_page_cfg_erase_en_0_wd = reg_wdata[3];
 
-  assign bank1_info1_page_cfg_scramble_en_0_we = addr_hit[73] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_scramble_en_0_we = addr_hit[73] & reg_we & !reg_error;
   assign bank1_info1_page_cfg_scramble_en_0_wd = reg_wdata[4];
 
-  assign bank1_info1_page_cfg_ecc_en_0_we = addr_hit[73] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_ecc_en_0_we = addr_hit[73] & reg_we & !reg_error;
   assign bank1_info1_page_cfg_ecc_en_0_wd = reg_wdata[5];
 
-  assign bank1_info1_page_cfg_he_en_0_we = addr_hit[73] & reg_we & ~wr_err;
+  assign bank1_info1_page_cfg_he_en_0_we = addr_hit[73] & reg_we & !reg_error;
   assign bank1_info1_page_cfg_he_en_0_wd = reg_wdata[6];
 
-  assign bank1_info2_regwen_0_we = addr_hit[74] & reg_we & ~wr_err;
+  assign bank1_info2_regwen_0_we = addr_hit[74] & reg_we & !reg_error;
   assign bank1_info2_regwen_0_wd = reg_wdata[0];
 
-  assign bank1_info2_regwen_1_we = addr_hit[75] & reg_we & ~wr_err;
+  assign bank1_info2_regwen_1_we = addr_hit[75] & reg_we & !reg_error;
   assign bank1_info2_regwen_1_wd = reg_wdata[0];
 
-  assign bank1_info2_page_cfg_0_en_0_we = addr_hit[76] & reg_we & ~wr_err;
+  assign bank1_info2_page_cfg_0_en_0_we = addr_hit[76] & reg_we & !reg_error;
   assign bank1_info2_page_cfg_0_en_0_wd = reg_wdata[0];
 
-  assign bank1_info2_page_cfg_0_rd_en_0_we = addr_hit[76] & reg_we & ~wr_err;
+  assign bank1_info2_page_cfg_0_rd_en_0_we = addr_hit[76] & reg_we & !reg_error;
   assign bank1_info2_page_cfg_0_rd_en_0_wd = reg_wdata[1];
 
-  assign bank1_info2_page_cfg_0_prog_en_0_we = addr_hit[76] & reg_we & ~wr_err;
+  assign bank1_info2_page_cfg_0_prog_en_0_we = addr_hit[76] & reg_we & !reg_error;
   assign bank1_info2_page_cfg_0_prog_en_0_wd = reg_wdata[2];
 
-  assign bank1_info2_page_cfg_0_erase_en_0_we = addr_hit[76] & reg_we & ~wr_err;
+  assign bank1_info2_page_cfg_0_erase_en_0_we = addr_hit[76] & reg_we & !reg_error;
   assign bank1_info2_page_cfg_0_erase_en_0_wd = reg_wdata[3];
 
-  assign bank1_info2_page_cfg_0_scramble_en_0_we = addr_hit[76] & reg_we & ~wr_err;
+  assign bank1_info2_page_cfg_0_scramble_en_0_we = addr_hit[76] & reg_we & !reg_error;
   assign bank1_info2_page_cfg_0_scramble_en_0_wd = reg_wdata[4];
 
-  assign bank1_info2_page_cfg_0_ecc_en_0_we = addr_hit[76] & reg_we & ~wr_err;
+  assign bank1_info2_page_cfg_0_ecc_en_0_we = addr_hit[76] & reg_we & !reg_error;
   assign bank1_info2_page_cfg_0_ecc_en_0_wd = reg_wdata[5];
 
-  assign bank1_info2_page_cfg_0_he_en_0_we = addr_hit[76] & reg_we & ~wr_err;
+  assign bank1_info2_page_cfg_0_he_en_0_we = addr_hit[76] & reg_we & !reg_error;
   assign bank1_info2_page_cfg_0_he_en_0_wd = reg_wdata[6];
 
-  assign bank1_info2_page_cfg_1_en_1_we = addr_hit[77] & reg_we & ~wr_err;
+  assign bank1_info2_page_cfg_1_en_1_we = addr_hit[77] & reg_we & !reg_error;
   assign bank1_info2_page_cfg_1_en_1_wd = reg_wdata[0];
 
-  assign bank1_info2_page_cfg_1_rd_en_1_we = addr_hit[77] & reg_we & ~wr_err;
+  assign bank1_info2_page_cfg_1_rd_en_1_we = addr_hit[77] & reg_we & !reg_error;
   assign bank1_info2_page_cfg_1_rd_en_1_wd = reg_wdata[1];
 
-  assign bank1_info2_page_cfg_1_prog_en_1_we = addr_hit[77] & reg_we & ~wr_err;
+  assign bank1_info2_page_cfg_1_prog_en_1_we = addr_hit[77] & reg_we & !reg_error;
   assign bank1_info2_page_cfg_1_prog_en_1_wd = reg_wdata[2];
 
-  assign bank1_info2_page_cfg_1_erase_en_1_we = addr_hit[77] & reg_we & ~wr_err;
+  assign bank1_info2_page_cfg_1_erase_en_1_we = addr_hit[77] & reg_we & !reg_error;
   assign bank1_info2_page_cfg_1_erase_en_1_wd = reg_wdata[3];
 
-  assign bank1_info2_page_cfg_1_scramble_en_1_we = addr_hit[77] & reg_we & ~wr_err;
+  assign bank1_info2_page_cfg_1_scramble_en_1_we = addr_hit[77] & reg_we & !reg_error;
   assign bank1_info2_page_cfg_1_scramble_en_1_wd = reg_wdata[4];
 
-  assign bank1_info2_page_cfg_1_ecc_en_1_we = addr_hit[77] & reg_we & ~wr_err;
+  assign bank1_info2_page_cfg_1_ecc_en_1_we = addr_hit[77] & reg_we & !reg_error;
   assign bank1_info2_page_cfg_1_ecc_en_1_wd = reg_wdata[5];
 
-  assign bank1_info2_page_cfg_1_he_en_1_we = addr_hit[77] & reg_we & ~wr_err;
+  assign bank1_info2_page_cfg_1_he_en_1_we = addr_hit[77] & reg_we & !reg_error;
   assign bank1_info2_page_cfg_1_he_en_1_wd = reg_wdata[6];
 
-  assign bank_cfg_regwen_we = addr_hit[78] & reg_we & ~wr_err;
+  assign bank_cfg_regwen_we = addr_hit[78] & reg_we & !reg_error;
   assign bank_cfg_regwen_wd = reg_wdata[0];
 
-  assign mp_bank_cfg_erase_en_0_we = addr_hit[79] & reg_we & ~wr_err;
+  assign mp_bank_cfg_erase_en_0_we = addr_hit[79] & reg_we & !reg_error;
   assign mp_bank_cfg_erase_en_0_wd = reg_wdata[0];
 
-  assign mp_bank_cfg_erase_en_1_we = addr_hit[79] & reg_we & ~wr_err;
+  assign mp_bank_cfg_erase_en_1_we = addr_hit[79] & reg_we & !reg_error;
   assign mp_bank_cfg_erase_en_1_wd = reg_wdata[1];
 
-  assign op_status_done_we = addr_hit[80] & reg_we & ~wr_err;
+  assign op_status_done_we = addr_hit[80] & reg_we & !reg_error;
   assign op_status_done_wd = reg_wdata[0];
 
-  assign op_status_err_we = addr_hit[80] & reg_we & ~wr_err;
+  assign op_status_err_we = addr_hit[80] & reg_we & !reg_error;
   assign op_status_err_wd = reg_wdata[1];
 
 
@@ -11576,43 +11576,43 @@ module flash_ctrl_reg_top (
 
 
 
-  assign err_code_flash_err_we = addr_hit[82] & reg_we & ~wr_err;
+  assign err_code_flash_err_we = addr_hit[82] & reg_we & !reg_error;
   assign err_code_flash_err_wd = reg_wdata[0];
 
-  assign err_code_flash_alert_we = addr_hit[82] & reg_we & ~wr_err;
+  assign err_code_flash_alert_we = addr_hit[82] & reg_we & !reg_error;
   assign err_code_flash_alert_wd = reg_wdata[1];
 
-  assign err_code_mp_err_we = addr_hit[82] & reg_we & ~wr_err;
+  assign err_code_mp_err_we = addr_hit[82] & reg_we & !reg_error;
   assign err_code_mp_err_wd = reg_wdata[2];
 
-  assign err_code_ecc_single_err_we = addr_hit[82] & reg_we & ~wr_err;
+  assign err_code_ecc_single_err_we = addr_hit[82] & reg_we & !reg_error;
   assign err_code_ecc_single_err_wd = reg_wdata[3];
 
-  assign err_code_ecc_multi_err_we = addr_hit[82] & reg_we & ~wr_err;
+  assign err_code_ecc_multi_err_we = addr_hit[82] & reg_we & !reg_error;
   assign err_code_ecc_multi_err_wd = reg_wdata[4];
 
 
 
 
-  assign phy_alert_cfg_alert_ack_we = addr_hit[86] & reg_we & ~wr_err;
+  assign phy_alert_cfg_alert_ack_we = addr_hit[86] & reg_we & !reg_error;
   assign phy_alert_cfg_alert_ack_wd = reg_wdata[0];
 
-  assign phy_alert_cfg_alert_trig_we = addr_hit[86] & reg_we & ~wr_err;
+  assign phy_alert_cfg_alert_trig_we = addr_hit[86] & reg_we & !reg_error;
   assign phy_alert_cfg_alert_trig_wd = reg_wdata[1];
 
 
 
 
-  assign scratch_we = addr_hit[88] & reg_we & ~wr_err;
+  assign scratch_we = addr_hit[88] & reg_we & !reg_error;
   assign scratch_wd = reg_wdata[31:0];
 
-  assign fifo_lvl_prog_we = addr_hit[89] & reg_we & ~wr_err;
+  assign fifo_lvl_prog_we = addr_hit[89] & reg_we & !reg_error;
   assign fifo_lvl_prog_wd = reg_wdata[4:0];
 
-  assign fifo_lvl_rd_we = addr_hit[89] & reg_we & ~wr_err;
+  assign fifo_lvl_rd_we = addr_hit[89] & reg_we & !reg_error;
   assign fifo_lvl_rd_wd = reg_wdata[12:8];
 
-  assign fifo_rst_we = addr_hit[90] & reg_we & ~wr_err;
+  assign fifo_rst_we = addr_hit[90] & reg_we & !reg_error;
   assign fifo_rst_wd = reg_wdata[0];
 
   // Read data return

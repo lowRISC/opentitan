@@ -1776,49 +1776,49 @@ module spi_host_reg_top (
     if (addr_hit[10] && reg_we && (SPI_HOST_PERMIT[10] != (SPI_HOST_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_error_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_error_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_error_wd = reg_wdata[0];
 
-  assign intr_state_spi_event_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_spi_event_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_spi_event_wd = reg_wdata[1];
 
-  assign intr_enable_error_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_error_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_error_wd = reg_wdata[0];
 
-  assign intr_enable_spi_event_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_spi_event_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_spi_event_wd = reg_wdata[1];
 
-  assign intr_test_error_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_error_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_error_wd = reg_wdata[0];
 
-  assign intr_test_spi_event_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_spi_event_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_spi_event_wd = reg_wdata[1];
 
-  assign control_manual_cs_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_manual_cs_we = addr_hit[3] & reg_we & !reg_error;
   assign control_manual_cs_wd = reg_wdata[7:0];
 
-  assign control_mancs_en_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_mancs_en_we = addr_hit[3] & reg_we & !reg_error;
   assign control_mancs_en_wd = reg_wdata[8];
 
-  assign control_rx_watermark_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_rx_watermark_we = addr_hit[3] & reg_we & !reg_error;
   assign control_rx_watermark_wd = reg_wdata[15:9];
 
-  assign control_tx_watermark_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_tx_watermark_we = addr_hit[3] & reg_we & !reg_error;
   assign control_tx_watermark_wd = reg_wdata[24:16];
 
-  assign control_passthru_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_passthru_we = addr_hit[3] & reg_we & !reg_error;
   assign control_passthru_wd = reg_wdata[27];
 
-  assign control_rst_rxfifo_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_rst_rxfifo_we = addr_hit[3] & reg_we & !reg_error;
   assign control_rst_rxfifo_wd = reg_wdata[28];
 
-  assign control_rst_txfifo_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_rst_txfifo_we = addr_hit[3] & reg_we & !reg_error;
   assign control_rst_txfifo_wd = reg_wdata[29];
 
-  assign control_rst_fsm_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_rst_fsm_we = addr_hit[3] & reg_we & !reg_error;
   assign control_rst_fsm_wd = reg_wdata[30];
 
-  assign control_spien_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_spien_we = addr_hit[3] & reg_we & !reg_error;
   assign control_spien_wd = reg_wdata[31];
 
 
@@ -1834,90 +1834,90 @@ module spi_host_reg_top (
 
 
 
-  assign configopts_clkdiv_0_we = addr_hit[5] & reg_we & ~wr_err;
+  assign configopts_clkdiv_0_we = addr_hit[5] & reg_we & !reg_error;
   assign configopts_clkdiv_0_wd = reg_wdata[15:0];
 
-  assign configopts_csnidle_0_we = addr_hit[5] & reg_we & ~wr_err;
+  assign configopts_csnidle_0_we = addr_hit[5] & reg_we & !reg_error;
   assign configopts_csnidle_0_wd = reg_wdata[19:16];
 
-  assign configopts_csntrail_0_we = addr_hit[5] & reg_we & ~wr_err;
+  assign configopts_csntrail_0_we = addr_hit[5] & reg_we & !reg_error;
   assign configopts_csntrail_0_wd = reg_wdata[23:20];
 
-  assign configopts_csnlead_0_we = addr_hit[5] & reg_we & ~wr_err;
+  assign configopts_csnlead_0_we = addr_hit[5] & reg_we & !reg_error;
   assign configopts_csnlead_0_wd = reg_wdata[27:24];
 
-  assign configopts_csaat_0_we = addr_hit[5] & reg_we & ~wr_err;
+  assign configopts_csaat_0_we = addr_hit[5] & reg_we & !reg_error;
   assign configopts_csaat_0_wd = reg_wdata[28];
 
-  assign configopts_fullcyc_0_we = addr_hit[5] & reg_we & ~wr_err;
+  assign configopts_fullcyc_0_we = addr_hit[5] & reg_we & !reg_error;
   assign configopts_fullcyc_0_wd = reg_wdata[29];
 
-  assign configopts_cpha_0_we = addr_hit[5] & reg_we & ~wr_err;
+  assign configopts_cpha_0_we = addr_hit[5] & reg_we & !reg_error;
   assign configopts_cpha_0_wd = reg_wdata[30];
 
-  assign configopts_cpol_0_we = addr_hit[5] & reg_we & ~wr_err;
+  assign configopts_cpol_0_we = addr_hit[5] & reg_we & !reg_error;
   assign configopts_cpol_0_wd = reg_wdata[31];
 
-  assign command_tx1_cnt_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign command_tx1_cnt_0_we = addr_hit[6] & reg_we & !reg_error;
   assign command_tx1_cnt_0_wd = reg_wdata[3:0];
 
-  assign command_txn_cnt_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign command_txn_cnt_0_we = addr_hit[6] & reg_we & !reg_error;
   assign command_txn_cnt_0_wd = reg_wdata[12:4];
 
-  assign command_dummy_cycles_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign command_dummy_cycles_0_we = addr_hit[6] & reg_we & !reg_error;
   assign command_dummy_cycles_0_wd = reg_wdata[16:13];
 
-  assign command_rx_cnt_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign command_rx_cnt_0_we = addr_hit[6] & reg_we & !reg_error;
   assign command_rx_cnt_0_wd = reg_wdata[25:17];
 
-  assign command_fulldplx_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign command_fulldplx_0_we = addr_hit[6] & reg_we & !reg_error;
   assign command_fulldplx_0_wd = reg_wdata[26];
 
-  assign command_highz_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign command_highz_0_we = addr_hit[6] & reg_we & !reg_error;
   assign command_highz_0_wd = reg_wdata[27];
 
-  assign command_speed_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign command_speed_0_we = addr_hit[6] & reg_we & !reg_error;
   assign command_speed_0_wd = reg_wdata[30:29];
 
-  assign command_go_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign command_go_0_we = addr_hit[6] & reg_we & !reg_error;
   assign command_go_0_wd = reg_wdata[31];
 
-  assign rxdata_re = addr_hit[7] && reg_re;
+  assign rxdata_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign error_enable_cmderr_we = addr_hit[8] & reg_we & ~wr_err;
+  assign error_enable_cmderr_we = addr_hit[8] & reg_we & !reg_error;
   assign error_enable_cmderr_wd = reg_wdata[0];
 
-  assign error_enable_overflow_we = addr_hit[8] & reg_we & ~wr_err;
+  assign error_enable_overflow_we = addr_hit[8] & reg_we & !reg_error;
   assign error_enable_overflow_wd = reg_wdata[1];
 
-  assign error_enable_underflow_we = addr_hit[8] & reg_we & ~wr_err;
+  assign error_enable_underflow_we = addr_hit[8] & reg_we & !reg_error;
   assign error_enable_underflow_wd = reg_wdata[2];
 
-  assign error_status_cmderr_we = addr_hit[9] & reg_we & ~wr_err;
+  assign error_status_cmderr_we = addr_hit[9] & reg_we & !reg_error;
   assign error_status_cmderr_wd = reg_wdata[0];
 
-  assign error_status_overflow_we = addr_hit[9] & reg_we & ~wr_err;
+  assign error_status_overflow_we = addr_hit[9] & reg_we & !reg_error;
   assign error_status_overflow_wd = reg_wdata[1];
 
-  assign error_status_underflow_we = addr_hit[9] & reg_we & ~wr_err;
+  assign error_status_underflow_we = addr_hit[9] & reg_we & !reg_error;
   assign error_status_underflow_wd = reg_wdata[2];
 
-  assign event_enable_rxfull_we = addr_hit[10] & reg_we & ~wr_err;
+  assign event_enable_rxfull_we = addr_hit[10] & reg_we & !reg_error;
   assign event_enable_rxfull_wd = reg_wdata[2];
 
-  assign event_enable_txempty_we = addr_hit[10] & reg_we & ~wr_err;
+  assign event_enable_txempty_we = addr_hit[10] & reg_we & !reg_error;
   assign event_enable_txempty_wd = reg_wdata[3];
 
-  assign event_enable_rxwm_we = addr_hit[10] & reg_we & ~wr_err;
+  assign event_enable_rxwm_we = addr_hit[10] & reg_we & !reg_error;
   assign event_enable_rxwm_wd = reg_wdata[4];
 
-  assign event_enable_txwm_we = addr_hit[10] & reg_we & ~wr_err;
+  assign event_enable_txwm_we = addr_hit[10] & reg_we & !reg_error;
   assign event_enable_txwm_wd = reg_wdata[5];
 
-  assign event_enable_ready_we = addr_hit[10] & reg_we & ~wr_err;
+  assign event_enable_ready_we = addr_hit[10] & reg_we & !reg_error;
   assign event_enable_ready_wd = reg_wdata[6];
 
-  assign event_enable_idle_we = addr_hit[10] & reg_we & ~wr_err;
+  assign event_enable_idle_we = addr_hit[10] & reg_we & !reg_error;
   assign event_enable_idle_wd = reg_wdata[7];
 
   // Read data return

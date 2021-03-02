@@ -90,7 +90,7 @@ module tlul_adapter_reg import tlul_pkg::*; #(
       rdata  <= '0;
       error <= 1'b0;
     end else if (a_ack) begin
-      rdata <= (err_internal) ? '1 : rdata_i;
+      rdata <= (error_i || err_internal) ? '1 : rdata_i;
       error <= error_i | err_internal;
     end
   end

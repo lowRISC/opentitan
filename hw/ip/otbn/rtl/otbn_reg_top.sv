@@ -640,25 +640,25 @@ module otbn_reg_top (
     if (addr_hit[8] && reg_we && (OTBN_PERMIT[8] != (OTBN_PERMIT[8] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_wd = reg_wdata[0];
 
-  assign intr_enable_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_wd = reg_wdata[0];
 
-  assign intr_test_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_wd = reg_wdata[0];
 
-  assign alert_test_fatal_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_fatal_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_fatal_wd = reg_wdata[0];
 
-  assign alert_test_recov_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_recov_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_recov_wd = reg_wdata[1];
 
-  assign cmd_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cmd_we = addr_hit[4] & reg_we & !reg_error;
   assign cmd_wd = reg_wdata[0];
 
-  assign status_re = addr_hit[5] && reg_re;
+  assign status_re = addr_hit[5] & reg_re & !reg_error;
 
 
 
@@ -668,7 +668,7 @@ module otbn_reg_top (
 
 
 
-  assign start_addr_we = addr_hit[7] & reg_we & ~wr_err;
+  assign start_addr_we = addr_hit[7] & reg_we & !reg_error;
   assign start_addr_wd = reg_wdata[31:0];
 
 

@@ -6096,630 +6096,630 @@ module usbdev_reg_top (
     if (addr_hit[29] && reg_we && (USBDEV_PERMIT[29] != (USBDEV_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_pkt_received_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_pkt_received_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_pkt_received_wd = reg_wdata[0];
 
-  assign intr_state_pkt_sent_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_pkt_sent_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_pkt_sent_wd = reg_wdata[1];
 
-  assign intr_state_disconnected_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_disconnected_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_disconnected_wd = reg_wdata[2];
 
-  assign intr_state_host_lost_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_host_lost_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_host_lost_wd = reg_wdata[3];
 
-  assign intr_state_link_reset_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_link_reset_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_link_reset_wd = reg_wdata[4];
 
-  assign intr_state_link_suspend_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_link_suspend_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_link_suspend_wd = reg_wdata[5];
 
-  assign intr_state_link_resume_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_link_resume_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_link_resume_wd = reg_wdata[6];
 
-  assign intr_state_av_empty_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_av_empty_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_av_empty_wd = reg_wdata[7];
 
-  assign intr_state_rx_full_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rx_full_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_full_wd = reg_wdata[8];
 
-  assign intr_state_av_overflow_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_av_overflow_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_av_overflow_wd = reg_wdata[9];
 
-  assign intr_state_link_in_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_link_in_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_link_in_err_wd = reg_wdata[10];
 
-  assign intr_state_rx_crc_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rx_crc_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_crc_err_wd = reg_wdata[11];
 
-  assign intr_state_rx_pid_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rx_pid_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_pid_err_wd = reg_wdata[12];
 
-  assign intr_state_rx_bitstuff_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rx_bitstuff_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_bitstuff_err_wd = reg_wdata[13];
 
-  assign intr_state_frame_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_frame_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_frame_wd = reg_wdata[14];
 
-  assign intr_state_connected_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_connected_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_connected_wd = reg_wdata[15];
 
-  assign intr_state_link_out_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_link_out_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_link_out_err_wd = reg_wdata[16];
 
-  assign intr_enable_pkt_received_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_pkt_received_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_pkt_received_wd = reg_wdata[0];
 
-  assign intr_enable_pkt_sent_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_pkt_sent_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_pkt_sent_wd = reg_wdata[1];
 
-  assign intr_enable_disconnected_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_disconnected_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_disconnected_wd = reg_wdata[2];
 
-  assign intr_enable_host_lost_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_host_lost_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_host_lost_wd = reg_wdata[3];
 
-  assign intr_enable_link_reset_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_link_reset_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_link_reset_wd = reg_wdata[4];
 
-  assign intr_enable_link_suspend_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_link_suspend_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_link_suspend_wd = reg_wdata[5];
 
-  assign intr_enable_link_resume_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_link_resume_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_link_resume_wd = reg_wdata[6];
 
-  assign intr_enable_av_empty_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_av_empty_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_av_empty_wd = reg_wdata[7];
 
-  assign intr_enable_rx_full_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rx_full_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_full_wd = reg_wdata[8];
 
-  assign intr_enable_av_overflow_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_av_overflow_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_av_overflow_wd = reg_wdata[9];
 
-  assign intr_enable_link_in_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_link_in_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_link_in_err_wd = reg_wdata[10];
 
-  assign intr_enable_rx_crc_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rx_crc_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_crc_err_wd = reg_wdata[11];
 
-  assign intr_enable_rx_pid_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rx_pid_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_pid_err_wd = reg_wdata[12];
 
-  assign intr_enable_rx_bitstuff_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rx_bitstuff_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_bitstuff_err_wd = reg_wdata[13];
 
-  assign intr_enable_frame_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_frame_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_frame_wd = reg_wdata[14];
 
-  assign intr_enable_connected_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_connected_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_connected_wd = reg_wdata[15];
 
-  assign intr_enable_link_out_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_link_out_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_link_out_err_wd = reg_wdata[16];
 
-  assign intr_test_pkt_received_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_pkt_received_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_pkt_received_wd = reg_wdata[0];
 
-  assign intr_test_pkt_sent_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_pkt_sent_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_pkt_sent_wd = reg_wdata[1];
 
-  assign intr_test_disconnected_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_disconnected_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_disconnected_wd = reg_wdata[2];
 
-  assign intr_test_host_lost_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_host_lost_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_host_lost_wd = reg_wdata[3];
 
-  assign intr_test_link_reset_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_link_reset_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_link_reset_wd = reg_wdata[4];
 
-  assign intr_test_link_suspend_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_link_suspend_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_link_suspend_wd = reg_wdata[5];
 
-  assign intr_test_link_resume_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_link_resume_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_link_resume_wd = reg_wdata[6];
 
-  assign intr_test_av_empty_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_av_empty_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_av_empty_wd = reg_wdata[7];
 
-  assign intr_test_rx_full_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rx_full_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_full_wd = reg_wdata[8];
 
-  assign intr_test_av_overflow_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_av_overflow_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_av_overflow_wd = reg_wdata[9];
 
-  assign intr_test_link_in_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_link_in_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_link_in_err_wd = reg_wdata[10];
 
-  assign intr_test_rx_crc_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rx_crc_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_crc_err_wd = reg_wdata[11];
 
-  assign intr_test_rx_pid_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rx_pid_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_pid_err_wd = reg_wdata[12];
 
-  assign intr_test_rx_bitstuff_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rx_bitstuff_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_bitstuff_err_wd = reg_wdata[13];
 
-  assign intr_test_frame_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_frame_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_frame_wd = reg_wdata[14];
 
-  assign intr_test_connected_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_connected_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_connected_wd = reg_wdata[15];
 
-  assign intr_test_link_out_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_link_out_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_link_out_err_wd = reg_wdata[16];
 
-  assign usbctrl_enable_we = addr_hit[3] & reg_we & ~wr_err;
+  assign usbctrl_enable_we = addr_hit[3] & reg_we & !reg_error;
   assign usbctrl_enable_wd = reg_wdata[0];
 
-  assign usbctrl_device_address_we = addr_hit[3] & reg_we & ~wr_err;
+  assign usbctrl_device_address_we = addr_hit[3] & reg_we & !reg_error;
   assign usbctrl_device_address_wd = reg_wdata[22:16];
 
-  assign usbstat_frame_re = addr_hit[4] && reg_re;
+  assign usbstat_frame_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign usbstat_host_lost_re = addr_hit[4] && reg_re;
+  assign usbstat_host_lost_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign usbstat_link_state_re = addr_hit[4] && reg_re;
+  assign usbstat_link_state_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign usbstat_sense_re = addr_hit[4] && reg_re;
+  assign usbstat_sense_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign usbstat_av_depth_re = addr_hit[4] && reg_re;
+  assign usbstat_av_depth_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign usbstat_av_full_re = addr_hit[4] && reg_re;
+  assign usbstat_av_full_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign usbstat_rx_depth_re = addr_hit[4] && reg_re;
+  assign usbstat_rx_depth_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign usbstat_rx_empty_re = addr_hit[4] && reg_re;
+  assign usbstat_rx_empty_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign avbuffer_we = addr_hit[5] & reg_we & ~wr_err;
+  assign avbuffer_we = addr_hit[5] & reg_we & !reg_error;
   assign avbuffer_wd = reg_wdata[4:0];
 
-  assign rxfifo_buffer_re = addr_hit[6] && reg_re;
+  assign rxfifo_buffer_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign rxfifo_size_re = addr_hit[6] && reg_re;
+  assign rxfifo_size_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign rxfifo_setup_re = addr_hit[6] && reg_re;
+  assign rxfifo_setup_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign rxfifo_ep_re = addr_hit[6] && reg_re;
+  assign rxfifo_ep_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign rxenable_setup_setup_0_we = addr_hit[7] & reg_we & ~wr_err;
+  assign rxenable_setup_setup_0_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_0_wd = reg_wdata[0];
 
-  assign rxenable_setup_setup_1_we = addr_hit[7] & reg_we & ~wr_err;
+  assign rxenable_setup_setup_1_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_1_wd = reg_wdata[1];
 
-  assign rxenable_setup_setup_2_we = addr_hit[7] & reg_we & ~wr_err;
+  assign rxenable_setup_setup_2_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_2_wd = reg_wdata[2];
 
-  assign rxenable_setup_setup_3_we = addr_hit[7] & reg_we & ~wr_err;
+  assign rxenable_setup_setup_3_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_3_wd = reg_wdata[3];
 
-  assign rxenable_setup_setup_4_we = addr_hit[7] & reg_we & ~wr_err;
+  assign rxenable_setup_setup_4_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_4_wd = reg_wdata[4];
 
-  assign rxenable_setup_setup_5_we = addr_hit[7] & reg_we & ~wr_err;
+  assign rxenable_setup_setup_5_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_5_wd = reg_wdata[5];
 
-  assign rxenable_setup_setup_6_we = addr_hit[7] & reg_we & ~wr_err;
+  assign rxenable_setup_setup_6_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_6_wd = reg_wdata[6];
 
-  assign rxenable_setup_setup_7_we = addr_hit[7] & reg_we & ~wr_err;
+  assign rxenable_setup_setup_7_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_7_wd = reg_wdata[7];
 
-  assign rxenable_setup_setup_8_we = addr_hit[7] & reg_we & ~wr_err;
+  assign rxenable_setup_setup_8_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_8_wd = reg_wdata[8];
 
-  assign rxenable_setup_setup_9_we = addr_hit[7] & reg_we & ~wr_err;
+  assign rxenable_setup_setup_9_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_9_wd = reg_wdata[9];
 
-  assign rxenable_setup_setup_10_we = addr_hit[7] & reg_we & ~wr_err;
+  assign rxenable_setup_setup_10_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_10_wd = reg_wdata[10];
 
-  assign rxenable_setup_setup_11_we = addr_hit[7] & reg_we & ~wr_err;
+  assign rxenable_setup_setup_11_we = addr_hit[7] & reg_we & !reg_error;
   assign rxenable_setup_setup_11_wd = reg_wdata[11];
 
-  assign rxenable_out_out_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign rxenable_out_out_0_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_0_wd = reg_wdata[0];
 
-  assign rxenable_out_out_1_we = addr_hit[8] & reg_we & ~wr_err;
+  assign rxenable_out_out_1_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_1_wd = reg_wdata[1];
 
-  assign rxenable_out_out_2_we = addr_hit[8] & reg_we & ~wr_err;
+  assign rxenable_out_out_2_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_2_wd = reg_wdata[2];
 
-  assign rxenable_out_out_3_we = addr_hit[8] & reg_we & ~wr_err;
+  assign rxenable_out_out_3_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_3_wd = reg_wdata[3];
 
-  assign rxenable_out_out_4_we = addr_hit[8] & reg_we & ~wr_err;
+  assign rxenable_out_out_4_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_4_wd = reg_wdata[4];
 
-  assign rxenable_out_out_5_we = addr_hit[8] & reg_we & ~wr_err;
+  assign rxenable_out_out_5_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_5_wd = reg_wdata[5];
 
-  assign rxenable_out_out_6_we = addr_hit[8] & reg_we & ~wr_err;
+  assign rxenable_out_out_6_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_6_wd = reg_wdata[6];
 
-  assign rxenable_out_out_7_we = addr_hit[8] & reg_we & ~wr_err;
+  assign rxenable_out_out_7_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_7_wd = reg_wdata[7];
 
-  assign rxenable_out_out_8_we = addr_hit[8] & reg_we & ~wr_err;
+  assign rxenable_out_out_8_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_8_wd = reg_wdata[8];
 
-  assign rxenable_out_out_9_we = addr_hit[8] & reg_we & ~wr_err;
+  assign rxenable_out_out_9_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_9_wd = reg_wdata[9];
 
-  assign rxenable_out_out_10_we = addr_hit[8] & reg_we & ~wr_err;
+  assign rxenable_out_out_10_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_10_wd = reg_wdata[10];
 
-  assign rxenable_out_out_11_we = addr_hit[8] & reg_we & ~wr_err;
+  assign rxenable_out_out_11_we = addr_hit[8] & reg_we & !reg_error;
   assign rxenable_out_out_11_wd = reg_wdata[11];
 
-  assign in_sent_sent_0_we = addr_hit[9] & reg_we & ~wr_err;
+  assign in_sent_sent_0_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_0_wd = reg_wdata[0];
 
-  assign in_sent_sent_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign in_sent_sent_1_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_1_wd = reg_wdata[1];
 
-  assign in_sent_sent_2_we = addr_hit[9] & reg_we & ~wr_err;
+  assign in_sent_sent_2_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_2_wd = reg_wdata[2];
 
-  assign in_sent_sent_3_we = addr_hit[9] & reg_we & ~wr_err;
+  assign in_sent_sent_3_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_3_wd = reg_wdata[3];
 
-  assign in_sent_sent_4_we = addr_hit[9] & reg_we & ~wr_err;
+  assign in_sent_sent_4_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_4_wd = reg_wdata[4];
 
-  assign in_sent_sent_5_we = addr_hit[9] & reg_we & ~wr_err;
+  assign in_sent_sent_5_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_5_wd = reg_wdata[5];
 
-  assign in_sent_sent_6_we = addr_hit[9] & reg_we & ~wr_err;
+  assign in_sent_sent_6_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_6_wd = reg_wdata[6];
 
-  assign in_sent_sent_7_we = addr_hit[9] & reg_we & ~wr_err;
+  assign in_sent_sent_7_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_7_wd = reg_wdata[7];
 
-  assign in_sent_sent_8_we = addr_hit[9] & reg_we & ~wr_err;
+  assign in_sent_sent_8_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_8_wd = reg_wdata[8];
 
-  assign in_sent_sent_9_we = addr_hit[9] & reg_we & ~wr_err;
+  assign in_sent_sent_9_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_9_wd = reg_wdata[9];
 
-  assign in_sent_sent_10_we = addr_hit[9] & reg_we & ~wr_err;
+  assign in_sent_sent_10_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_10_wd = reg_wdata[10];
 
-  assign in_sent_sent_11_we = addr_hit[9] & reg_we & ~wr_err;
+  assign in_sent_sent_11_we = addr_hit[9] & reg_we & !reg_error;
   assign in_sent_sent_11_wd = reg_wdata[11];
 
-  assign stall_stall_0_we = addr_hit[10] & reg_we & ~wr_err;
+  assign stall_stall_0_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_0_wd = reg_wdata[0];
 
-  assign stall_stall_1_we = addr_hit[10] & reg_we & ~wr_err;
+  assign stall_stall_1_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_1_wd = reg_wdata[1];
 
-  assign stall_stall_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign stall_stall_2_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_2_wd = reg_wdata[2];
 
-  assign stall_stall_3_we = addr_hit[10] & reg_we & ~wr_err;
+  assign stall_stall_3_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_3_wd = reg_wdata[3];
 
-  assign stall_stall_4_we = addr_hit[10] & reg_we & ~wr_err;
+  assign stall_stall_4_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_4_wd = reg_wdata[4];
 
-  assign stall_stall_5_we = addr_hit[10] & reg_we & ~wr_err;
+  assign stall_stall_5_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_5_wd = reg_wdata[5];
 
-  assign stall_stall_6_we = addr_hit[10] & reg_we & ~wr_err;
+  assign stall_stall_6_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_6_wd = reg_wdata[6];
 
-  assign stall_stall_7_we = addr_hit[10] & reg_we & ~wr_err;
+  assign stall_stall_7_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_7_wd = reg_wdata[7];
 
-  assign stall_stall_8_we = addr_hit[10] & reg_we & ~wr_err;
+  assign stall_stall_8_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_8_wd = reg_wdata[8];
 
-  assign stall_stall_9_we = addr_hit[10] & reg_we & ~wr_err;
+  assign stall_stall_9_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_9_wd = reg_wdata[9];
 
-  assign stall_stall_10_we = addr_hit[10] & reg_we & ~wr_err;
+  assign stall_stall_10_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_10_wd = reg_wdata[10];
 
-  assign stall_stall_11_we = addr_hit[10] & reg_we & ~wr_err;
+  assign stall_stall_11_we = addr_hit[10] & reg_we & !reg_error;
   assign stall_stall_11_wd = reg_wdata[11];
 
-  assign configin_0_buffer_0_we = addr_hit[11] & reg_we & ~wr_err;
+  assign configin_0_buffer_0_we = addr_hit[11] & reg_we & !reg_error;
   assign configin_0_buffer_0_wd = reg_wdata[4:0];
 
-  assign configin_0_size_0_we = addr_hit[11] & reg_we & ~wr_err;
+  assign configin_0_size_0_we = addr_hit[11] & reg_we & !reg_error;
   assign configin_0_size_0_wd = reg_wdata[14:8];
 
-  assign configin_0_pend_0_we = addr_hit[11] & reg_we & ~wr_err;
+  assign configin_0_pend_0_we = addr_hit[11] & reg_we & !reg_error;
   assign configin_0_pend_0_wd = reg_wdata[30];
 
-  assign configin_0_rdy_0_we = addr_hit[11] & reg_we & ~wr_err;
+  assign configin_0_rdy_0_we = addr_hit[11] & reg_we & !reg_error;
   assign configin_0_rdy_0_wd = reg_wdata[31];
 
-  assign configin_1_buffer_1_we = addr_hit[12] & reg_we & ~wr_err;
+  assign configin_1_buffer_1_we = addr_hit[12] & reg_we & !reg_error;
   assign configin_1_buffer_1_wd = reg_wdata[4:0];
 
-  assign configin_1_size_1_we = addr_hit[12] & reg_we & ~wr_err;
+  assign configin_1_size_1_we = addr_hit[12] & reg_we & !reg_error;
   assign configin_1_size_1_wd = reg_wdata[14:8];
 
-  assign configin_1_pend_1_we = addr_hit[12] & reg_we & ~wr_err;
+  assign configin_1_pend_1_we = addr_hit[12] & reg_we & !reg_error;
   assign configin_1_pend_1_wd = reg_wdata[30];
 
-  assign configin_1_rdy_1_we = addr_hit[12] & reg_we & ~wr_err;
+  assign configin_1_rdy_1_we = addr_hit[12] & reg_we & !reg_error;
   assign configin_1_rdy_1_wd = reg_wdata[31];
 
-  assign configin_2_buffer_2_we = addr_hit[13] & reg_we & ~wr_err;
+  assign configin_2_buffer_2_we = addr_hit[13] & reg_we & !reg_error;
   assign configin_2_buffer_2_wd = reg_wdata[4:0];
 
-  assign configin_2_size_2_we = addr_hit[13] & reg_we & ~wr_err;
+  assign configin_2_size_2_we = addr_hit[13] & reg_we & !reg_error;
   assign configin_2_size_2_wd = reg_wdata[14:8];
 
-  assign configin_2_pend_2_we = addr_hit[13] & reg_we & ~wr_err;
+  assign configin_2_pend_2_we = addr_hit[13] & reg_we & !reg_error;
   assign configin_2_pend_2_wd = reg_wdata[30];
 
-  assign configin_2_rdy_2_we = addr_hit[13] & reg_we & ~wr_err;
+  assign configin_2_rdy_2_we = addr_hit[13] & reg_we & !reg_error;
   assign configin_2_rdy_2_wd = reg_wdata[31];
 
-  assign configin_3_buffer_3_we = addr_hit[14] & reg_we & ~wr_err;
+  assign configin_3_buffer_3_we = addr_hit[14] & reg_we & !reg_error;
   assign configin_3_buffer_3_wd = reg_wdata[4:0];
 
-  assign configin_3_size_3_we = addr_hit[14] & reg_we & ~wr_err;
+  assign configin_3_size_3_we = addr_hit[14] & reg_we & !reg_error;
   assign configin_3_size_3_wd = reg_wdata[14:8];
 
-  assign configin_3_pend_3_we = addr_hit[14] & reg_we & ~wr_err;
+  assign configin_3_pend_3_we = addr_hit[14] & reg_we & !reg_error;
   assign configin_3_pend_3_wd = reg_wdata[30];
 
-  assign configin_3_rdy_3_we = addr_hit[14] & reg_we & ~wr_err;
+  assign configin_3_rdy_3_we = addr_hit[14] & reg_we & !reg_error;
   assign configin_3_rdy_3_wd = reg_wdata[31];
 
-  assign configin_4_buffer_4_we = addr_hit[15] & reg_we & ~wr_err;
+  assign configin_4_buffer_4_we = addr_hit[15] & reg_we & !reg_error;
   assign configin_4_buffer_4_wd = reg_wdata[4:0];
 
-  assign configin_4_size_4_we = addr_hit[15] & reg_we & ~wr_err;
+  assign configin_4_size_4_we = addr_hit[15] & reg_we & !reg_error;
   assign configin_4_size_4_wd = reg_wdata[14:8];
 
-  assign configin_4_pend_4_we = addr_hit[15] & reg_we & ~wr_err;
+  assign configin_4_pend_4_we = addr_hit[15] & reg_we & !reg_error;
   assign configin_4_pend_4_wd = reg_wdata[30];
 
-  assign configin_4_rdy_4_we = addr_hit[15] & reg_we & ~wr_err;
+  assign configin_4_rdy_4_we = addr_hit[15] & reg_we & !reg_error;
   assign configin_4_rdy_4_wd = reg_wdata[31];
 
-  assign configin_5_buffer_5_we = addr_hit[16] & reg_we & ~wr_err;
+  assign configin_5_buffer_5_we = addr_hit[16] & reg_we & !reg_error;
   assign configin_5_buffer_5_wd = reg_wdata[4:0];
 
-  assign configin_5_size_5_we = addr_hit[16] & reg_we & ~wr_err;
+  assign configin_5_size_5_we = addr_hit[16] & reg_we & !reg_error;
   assign configin_5_size_5_wd = reg_wdata[14:8];
 
-  assign configin_5_pend_5_we = addr_hit[16] & reg_we & ~wr_err;
+  assign configin_5_pend_5_we = addr_hit[16] & reg_we & !reg_error;
   assign configin_5_pend_5_wd = reg_wdata[30];
 
-  assign configin_5_rdy_5_we = addr_hit[16] & reg_we & ~wr_err;
+  assign configin_5_rdy_5_we = addr_hit[16] & reg_we & !reg_error;
   assign configin_5_rdy_5_wd = reg_wdata[31];
 
-  assign configin_6_buffer_6_we = addr_hit[17] & reg_we & ~wr_err;
+  assign configin_6_buffer_6_we = addr_hit[17] & reg_we & !reg_error;
   assign configin_6_buffer_6_wd = reg_wdata[4:0];
 
-  assign configin_6_size_6_we = addr_hit[17] & reg_we & ~wr_err;
+  assign configin_6_size_6_we = addr_hit[17] & reg_we & !reg_error;
   assign configin_6_size_6_wd = reg_wdata[14:8];
 
-  assign configin_6_pend_6_we = addr_hit[17] & reg_we & ~wr_err;
+  assign configin_6_pend_6_we = addr_hit[17] & reg_we & !reg_error;
   assign configin_6_pend_6_wd = reg_wdata[30];
 
-  assign configin_6_rdy_6_we = addr_hit[17] & reg_we & ~wr_err;
+  assign configin_6_rdy_6_we = addr_hit[17] & reg_we & !reg_error;
   assign configin_6_rdy_6_wd = reg_wdata[31];
 
-  assign configin_7_buffer_7_we = addr_hit[18] & reg_we & ~wr_err;
+  assign configin_7_buffer_7_we = addr_hit[18] & reg_we & !reg_error;
   assign configin_7_buffer_7_wd = reg_wdata[4:0];
 
-  assign configin_7_size_7_we = addr_hit[18] & reg_we & ~wr_err;
+  assign configin_7_size_7_we = addr_hit[18] & reg_we & !reg_error;
   assign configin_7_size_7_wd = reg_wdata[14:8];
 
-  assign configin_7_pend_7_we = addr_hit[18] & reg_we & ~wr_err;
+  assign configin_7_pend_7_we = addr_hit[18] & reg_we & !reg_error;
   assign configin_7_pend_7_wd = reg_wdata[30];
 
-  assign configin_7_rdy_7_we = addr_hit[18] & reg_we & ~wr_err;
+  assign configin_7_rdy_7_we = addr_hit[18] & reg_we & !reg_error;
   assign configin_7_rdy_7_wd = reg_wdata[31];
 
-  assign configin_8_buffer_8_we = addr_hit[19] & reg_we & ~wr_err;
+  assign configin_8_buffer_8_we = addr_hit[19] & reg_we & !reg_error;
   assign configin_8_buffer_8_wd = reg_wdata[4:0];
 
-  assign configin_8_size_8_we = addr_hit[19] & reg_we & ~wr_err;
+  assign configin_8_size_8_we = addr_hit[19] & reg_we & !reg_error;
   assign configin_8_size_8_wd = reg_wdata[14:8];
 
-  assign configin_8_pend_8_we = addr_hit[19] & reg_we & ~wr_err;
+  assign configin_8_pend_8_we = addr_hit[19] & reg_we & !reg_error;
   assign configin_8_pend_8_wd = reg_wdata[30];
 
-  assign configin_8_rdy_8_we = addr_hit[19] & reg_we & ~wr_err;
+  assign configin_8_rdy_8_we = addr_hit[19] & reg_we & !reg_error;
   assign configin_8_rdy_8_wd = reg_wdata[31];
 
-  assign configin_9_buffer_9_we = addr_hit[20] & reg_we & ~wr_err;
+  assign configin_9_buffer_9_we = addr_hit[20] & reg_we & !reg_error;
   assign configin_9_buffer_9_wd = reg_wdata[4:0];
 
-  assign configin_9_size_9_we = addr_hit[20] & reg_we & ~wr_err;
+  assign configin_9_size_9_we = addr_hit[20] & reg_we & !reg_error;
   assign configin_9_size_9_wd = reg_wdata[14:8];
 
-  assign configin_9_pend_9_we = addr_hit[20] & reg_we & ~wr_err;
+  assign configin_9_pend_9_we = addr_hit[20] & reg_we & !reg_error;
   assign configin_9_pend_9_wd = reg_wdata[30];
 
-  assign configin_9_rdy_9_we = addr_hit[20] & reg_we & ~wr_err;
+  assign configin_9_rdy_9_we = addr_hit[20] & reg_we & !reg_error;
   assign configin_9_rdy_9_wd = reg_wdata[31];
 
-  assign configin_10_buffer_10_we = addr_hit[21] & reg_we & ~wr_err;
+  assign configin_10_buffer_10_we = addr_hit[21] & reg_we & !reg_error;
   assign configin_10_buffer_10_wd = reg_wdata[4:0];
 
-  assign configin_10_size_10_we = addr_hit[21] & reg_we & ~wr_err;
+  assign configin_10_size_10_we = addr_hit[21] & reg_we & !reg_error;
   assign configin_10_size_10_wd = reg_wdata[14:8];
 
-  assign configin_10_pend_10_we = addr_hit[21] & reg_we & ~wr_err;
+  assign configin_10_pend_10_we = addr_hit[21] & reg_we & !reg_error;
   assign configin_10_pend_10_wd = reg_wdata[30];
 
-  assign configin_10_rdy_10_we = addr_hit[21] & reg_we & ~wr_err;
+  assign configin_10_rdy_10_we = addr_hit[21] & reg_we & !reg_error;
   assign configin_10_rdy_10_wd = reg_wdata[31];
 
-  assign configin_11_buffer_11_we = addr_hit[22] & reg_we & ~wr_err;
+  assign configin_11_buffer_11_we = addr_hit[22] & reg_we & !reg_error;
   assign configin_11_buffer_11_wd = reg_wdata[4:0];
 
-  assign configin_11_size_11_we = addr_hit[22] & reg_we & ~wr_err;
+  assign configin_11_size_11_we = addr_hit[22] & reg_we & !reg_error;
   assign configin_11_size_11_wd = reg_wdata[14:8];
 
-  assign configin_11_pend_11_we = addr_hit[22] & reg_we & ~wr_err;
+  assign configin_11_pend_11_we = addr_hit[22] & reg_we & !reg_error;
   assign configin_11_pend_11_wd = reg_wdata[30];
 
-  assign configin_11_rdy_11_we = addr_hit[22] & reg_we & ~wr_err;
+  assign configin_11_rdy_11_we = addr_hit[22] & reg_we & !reg_error;
   assign configin_11_rdy_11_wd = reg_wdata[31];
 
-  assign iso_iso_0_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso_0_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_0_wd = reg_wdata[0];
 
-  assign iso_iso_1_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso_1_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_1_wd = reg_wdata[1];
 
-  assign iso_iso_2_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso_2_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_2_wd = reg_wdata[2];
 
-  assign iso_iso_3_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso_3_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_3_wd = reg_wdata[3];
 
-  assign iso_iso_4_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso_4_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_4_wd = reg_wdata[4];
 
-  assign iso_iso_5_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso_5_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_5_wd = reg_wdata[5];
 
-  assign iso_iso_6_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso_6_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_6_wd = reg_wdata[6];
 
-  assign iso_iso_7_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso_7_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_7_wd = reg_wdata[7];
 
-  assign iso_iso_8_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso_8_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_8_wd = reg_wdata[8];
 
-  assign iso_iso_9_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso_9_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_9_wd = reg_wdata[9];
 
-  assign iso_iso_10_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso_10_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_10_wd = reg_wdata[10];
 
-  assign iso_iso_11_we = addr_hit[23] & reg_we & ~wr_err;
+  assign iso_iso_11_we = addr_hit[23] & reg_we & !reg_error;
   assign iso_iso_11_wd = reg_wdata[11];
 
-  assign data_toggle_clear_clear_0_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear_0_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_0_wd = reg_wdata[0];
 
-  assign data_toggle_clear_clear_1_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear_1_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_1_wd = reg_wdata[1];
 
-  assign data_toggle_clear_clear_2_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear_2_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_2_wd = reg_wdata[2];
 
-  assign data_toggle_clear_clear_3_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear_3_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_3_wd = reg_wdata[3];
 
-  assign data_toggle_clear_clear_4_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear_4_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_4_wd = reg_wdata[4];
 
-  assign data_toggle_clear_clear_5_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear_5_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_5_wd = reg_wdata[5];
 
-  assign data_toggle_clear_clear_6_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear_6_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_6_wd = reg_wdata[6];
 
-  assign data_toggle_clear_clear_7_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear_7_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_7_wd = reg_wdata[7];
 
-  assign data_toggle_clear_clear_8_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear_8_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_8_wd = reg_wdata[8];
 
-  assign data_toggle_clear_clear_9_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear_9_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_9_wd = reg_wdata[9];
 
-  assign data_toggle_clear_clear_10_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear_10_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_10_wd = reg_wdata[10];
 
-  assign data_toggle_clear_clear_11_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_toggle_clear_clear_11_we = addr_hit[24] & reg_we & !reg_error;
   assign data_toggle_clear_clear_11_wd = reg_wdata[11];
 
-  assign phy_pins_sense_rx_dp_i_re = addr_hit[25] && reg_re;
+  assign phy_pins_sense_rx_dp_i_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign phy_pins_sense_rx_dn_i_re = addr_hit[25] && reg_re;
+  assign phy_pins_sense_rx_dn_i_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign phy_pins_sense_rx_d_i_re = addr_hit[25] && reg_re;
+  assign phy_pins_sense_rx_d_i_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign phy_pins_sense_tx_dp_o_re = addr_hit[25] && reg_re;
+  assign phy_pins_sense_tx_dp_o_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign phy_pins_sense_tx_dn_o_re = addr_hit[25] && reg_re;
+  assign phy_pins_sense_tx_dn_o_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign phy_pins_sense_tx_d_o_re = addr_hit[25] && reg_re;
+  assign phy_pins_sense_tx_d_o_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign phy_pins_sense_tx_se0_o_re = addr_hit[25] && reg_re;
+  assign phy_pins_sense_tx_se0_o_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign phy_pins_sense_tx_oe_o_re = addr_hit[25] && reg_re;
+  assign phy_pins_sense_tx_oe_o_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign phy_pins_sense_suspend_o_re = addr_hit[25] && reg_re;
+  assign phy_pins_sense_suspend_o_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign phy_pins_sense_pwr_sense_re = addr_hit[25] && reg_re;
+  assign phy_pins_sense_pwr_sense_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign phy_pins_drive_dp_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_dp_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_dp_o_wd = reg_wdata[0];
 
-  assign phy_pins_drive_dn_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_dn_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_dn_o_wd = reg_wdata[1];
 
-  assign phy_pins_drive_d_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_d_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_d_o_wd = reg_wdata[2];
 
-  assign phy_pins_drive_se0_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_se0_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_se0_o_wd = reg_wdata[3];
 
-  assign phy_pins_drive_oe_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_oe_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_oe_o_wd = reg_wdata[4];
 
-  assign phy_pins_drive_tx_mode_se_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_tx_mode_se_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_tx_mode_se_o_wd = reg_wdata[5];
 
-  assign phy_pins_drive_dp_pullup_en_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_dp_pullup_en_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_dp_pullup_en_o_wd = reg_wdata[6];
 
-  assign phy_pins_drive_dn_pullup_en_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_dn_pullup_en_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_dn_pullup_en_o_wd = reg_wdata[7];
 
-  assign phy_pins_drive_suspend_o_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_suspend_o_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_suspend_o_wd = reg_wdata[8];
 
-  assign phy_pins_drive_en_we = addr_hit[26] & reg_we & ~wr_err;
+  assign phy_pins_drive_en_we = addr_hit[26] & reg_we & !reg_error;
   assign phy_pins_drive_en_wd = reg_wdata[16];
 
-  assign phy_config_rx_differential_mode_we = addr_hit[27] & reg_we & ~wr_err;
+  assign phy_config_rx_differential_mode_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_rx_differential_mode_wd = reg_wdata[0];
 
-  assign phy_config_tx_differential_mode_we = addr_hit[27] & reg_we & ~wr_err;
+  assign phy_config_tx_differential_mode_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_tx_differential_mode_wd = reg_wdata[1];
 
-  assign phy_config_eop_single_bit_we = addr_hit[27] & reg_we & ~wr_err;
+  assign phy_config_eop_single_bit_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_eop_single_bit_wd = reg_wdata[2];
 
-  assign phy_config_override_pwr_sense_en_we = addr_hit[27] & reg_we & ~wr_err;
+  assign phy_config_override_pwr_sense_en_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_override_pwr_sense_en_wd = reg_wdata[3];
 
-  assign phy_config_override_pwr_sense_val_we = addr_hit[27] & reg_we & ~wr_err;
+  assign phy_config_override_pwr_sense_val_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_override_pwr_sense_val_wd = reg_wdata[4];
 
-  assign phy_config_pinflip_we = addr_hit[27] & reg_we & ~wr_err;
+  assign phy_config_pinflip_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_pinflip_wd = reg_wdata[5];
 
-  assign phy_config_usb_ref_disable_we = addr_hit[27] & reg_we & ~wr_err;
+  assign phy_config_usb_ref_disable_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_usb_ref_disable_wd = reg_wdata[6];
 
-  assign phy_config_tx_osc_test_mode_we = addr_hit[27] & reg_we & ~wr_err;
+  assign phy_config_tx_osc_test_mode_we = addr_hit[27] & reg_we & !reg_error;
   assign phy_config_tx_osc_test_mode_wd = reg_wdata[7];
 
-  assign wake_config_wake_en_we = addr_hit[28] & reg_we & ~wr_err;
+  assign wake_config_wake_en_we = addr_hit[28] & reg_we & !reg_error;
   assign wake_config_wake_en_wd = reg_wdata[0];
 
-  assign wake_config_wake_ack_we = addr_hit[28] & reg_we & ~wr_err;
+  assign wake_config_wake_ack_we = addr_hit[28] & reg_we & !reg_error;
   assign wake_config_wake_ack_wd = reg_wdata[1];
 
 

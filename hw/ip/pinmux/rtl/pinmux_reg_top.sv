@@ -14872,1507 +14872,1507 @@ module pinmux_reg_top (
     if (addr_hit[412] && reg_we && (PINMUX_PERMIT[412] != (PINMUX_PERMIT[412] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign mio_periph_insel_regwen_0_we = addr_hit[0] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_0_we = addr_hit[0] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_0_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_1_we = addr_hit[1] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_1_we = addr_hit[1] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_1_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_2_we = addr_hit[2] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_2_we = addr_hit[2] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_2_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_3_we = addr_hit[3] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_3_we = addr_hit[3] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_3_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_4_we = addr_hit[4] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_4_we = addr_hit[4] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_4_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_5_we = addr_hit[5] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_5_we = addr_hit[5] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_5_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_6_we = addr_hit[6] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_6_we = addr_hit[6] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_6_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_7_we = addr_hit[7] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_7_we = addr_hit[7] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_7_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_8_we = addr_hit[8] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_8_we = addr_hit[8] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_8_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_9_we = addr_hit[9] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_9_we = addr_hit[9] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_9_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_10_we = addr_hit[10] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_10_we = addr_hit[10] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_10_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_11_we = addr_hit[11] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_11_we = addr_hit[11] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_11_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_12_we = addr_hit[12] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_12_we = addr_hit[12] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_12_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_13_we = addr_hit[13] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_13_we = addr_hit[13] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_13_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_14_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_14_we = addr_hit[14] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_14_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_15_we = addr_hit[15] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_15_we = addr_hit[15] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_15_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_16_we = addr_hit[16] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_16_we = addr_hit[16] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_16_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_17_we = addr_hit[17] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_17_we = addr_hit[17] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_17_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_18_we = addr_hit[18] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_18_we = addr_hit[18] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_18_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_19_we = addr_hit[19] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_19_we = addr_hit[19] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_19_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_20_we = addr_hit[20] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_20_we = addr_hit[20] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_20_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_21_we = addr_hit[21] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_21_we = addr_hit[21] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_21_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_22_we = addr_hit[22] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_22_we = addr_hit[22] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_22_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_23_we = addr_hit[23] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_23_we = addr_hit[23] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_23_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_24_we = addr_hit[24] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_24_we = addr_hit[24] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_24_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_25_we = addr_hit[25] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_25_we = addr_hit[25] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_25_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_26_we = addr_hit[26] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_26_we = addr_hit[26] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_26_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_27_we = addr_hit[27] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_27_we = addr_hit[27] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_27_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_28_we = addr_hit[28] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_28_we = addr_hit[28] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_28_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_29_we = addr_hit[29] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_29_we = addr_hit[29] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_29_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_30_we = addr_hit[30] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_30_we = addr_hit[30] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_30_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_31_we = addr_hit[31] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_31_we = addr_hit[31] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_31_wd = reg_wdata[0];
 
-  assign mio_periph_insel_regwen_32_we = addr_hit[32] & reg_we & ~wr_err;
+  assign mio_periph_insel_regwen_32_we = addr_hit[32] & reg_we & !reg_error;
   assign mio_periph_insel_regwen_32_wd = reg_wdata[0];
 
-  assign mio_periph_insel_0_we = addr_hit[33] & reg_we & ~wr_err;
+  assign mio_periph_insel_0_we = addr_hit[33] & reg_we & !reg_error;
   assign mio_periph_insel_0_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_1_we = addr_hit[34] & reg_we & ~wr_err;
+  assign mio_periph_insel_1_we = addr_hit[34] & reg_we & !reg_error;
   assign mio_periph_insel_1_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_2_we = addr_hit[35] & reg_we & ~wr_err;
+  assign mio_periph_insel_2_we = addr_hit[35] & reg_we & !reg_error;
   assign mio_periph_insel_2_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_3_we = addr_hit[36] & reg_we & ~wr_err;
+  assign mio_periph_insel_3_we = addr_hit[36] & reg_we & !reg_error;
   assign mio_periph_insel_3_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_4_we = addr_hit[37] & reg_we & ~wr_err;
+  assign mio_periph_insel_4_we = addr_hit[37] & reg_we & !reg_error;
   assign mio_periph_insel_4_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_5_we = addr_hit[38] & reg_we & ~wr_err;
+  assign mio_periph_insel_5_we = addr_hit[38] & reg_we & !reg_error;
   assign mio_periph_insel_5_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_6_we = addr_hit[39] & reg_we & ~wr_err;
+  assign mio_periph_insel_6_we = addr_hit[39] & reg_we & !reg_error;
   assign mio_periph_insel_6_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_7_we = addr_hit[40] & reg_we & ~wr_err;
+  assign mio_periph_insel_7_we = addr_hit[40] & reg_we & !reg_error;
   assign mio_periph_insel_7_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_8_we = addr_hit[41] & reg_we & ~wr_err;
+  assign mio_periph_insel_8_we = addr_hit[41] & reg_we & !reg_error;
   assign mio_periph_insel_8_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_9_we = addr_hit[42] & reg_we & ~wr_err;
+  assign mio_periph_insel_9_we = addr_hit[42] & reg_we & !reg_error;
   assign mio_periph_insel_9_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_10_we = addr_hit[43] & reg_we & ~wr_err;
+  assign mio_periph_insel_10_we = addr_hit[43] & reg_we & !reg_error;
   assign mio_periph_insel_10_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_11_we = addr_hit[44] & reg_we & ~wr_err;
+  assign mio_periph_insel_11_we = addr_hit[44] & reg_we & !reg_error;
   assign mio_periph_insel_11_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_12_we = addr_hit[45] & reg_we & ~wr_err;
+  assign mio_periph_insel_12_we = addr_hit[45] & reg_we & !reg_error;
   assign mio_periph_insel_12_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_13_we = addr_hit[46] & reg_we & ~wr_err;
+  assign mio_periph_insel_13_we = addr_hit[46] & reg_we & !reg_error;
   assign mio_periph_insel_13_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_14_we = addr_hit[47] & reg_we & ~wr_err;
+  assign mio_periph_insel_14_we = addr_hit[47] & reg_we & !reg_error;
   assign mio_periph_insel_14_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_15_we = addr_hit[48] & reg_we & ~wr_err;
+  assign mio_periph_insel_15_we = addr_hit[48] & reg_we & !reg_error;
   assign mio_periph_insel_15_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_16_we = addr_hit[49] & reg_we & ~wr_err;
+  assign mio_periph_insel_16_we = addr_hit[49] & reg_we & !reg_error;
   assign mio_periph_insel_16_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_17_we = addr_hit[50] & reg_we & ~wr_err;
+  assign mio_periph_insel_17_we = addr_hit[50] & reg_we & !reg_error;
   assign mio_periph_insel_17_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_18_we = addr_hit[51] & reg_we & ~wr_err;
+  assign mio_periph_insel_18_we = addr_hit[51] & reg_we & !reg_error;
   assign mio_periph_insel_18_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_19_we = addr_hit[52] & reg_we & ~wr_err;
+  assign mio_periph_insel_19_we = addr_hit[52] & reg_we & !reg_error;
   assign mio_periph_insel_19_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_20_we = addr_hit[53] & reg_we & ~wr_err;
+  assign mio_periph_insel_20_we = addr_hit[53] & reg_we & !reg_error;
   assign mio_periph_insel_20_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_21_we = addr_hit[54] & reg_we & ~wr_err;
+  assign mio_periph_insel_21_we = addr_hit[54] & reg_we & !reg_error;
   assign mio_periph_insel_21_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_22_we = addr_hit[55] & reg_we & ~wr_err;
+  assign mio_periph_insel_22_we = addr_hit[55] & reg_we & !reg_error;
   assign mio_periph_insel_22_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_23_we = addr_hit[56] & reg_we & ~wr_err;
+  assign mio_periph_insel_23_we = addr_hit[56] & reg_we & !reg_error;
   assign mio_periph_insel_23_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_24_we = addr_hit[57] & reg_we & ~wr_err;
+  assign mio_periph_insel_24_we = addr_hit[57] & reg_we & !reg_error;
   assign mio_periph_insel_24_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_25_we = addr_hit[58] & reg_we & ~wr_err;
+  assign mio_periph_insel_25_we = addr_hit[58] & reg_we & !reg_error;
   assign mio_periph_insel_25_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_26_we = addr_hit[59] & reg_we & ~wr_err;
+  assign mio_periph_insel_26_we = addr_hit[59] & reg_we & !reg_error;
   assign mio_periph_insel_26_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_27_we = addr_hit[60] & reg_we & ~wr_err;
+  assign mio_periph_insel_27_we = addr_hit[60] & reg_we & !reg_error;
   assign mio_periph_insel_27_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_28_we = addr_hit[61] & reg_we & ~wr_err;
+  assign mio_periph_insel_28_we = addr_hit[61] & reg_we & !reg_error;
   assign mio_periph_insel_28_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_29_we = addr_hit[62] & reg_we & ~wr_err;
+  assign mio_periph_insel_29_we = addr_hit[62] & reg_we & !reg_error;
   assign mio_periph_insel_29_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_30_we = addr_hit[63] & reg_we & ~wr_err;
+  assign mio_periph_insel_30_we = addr_hit[63] & reg_we & !reg_error;
   assign mio_periph_insel_30_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_31_we = addr_hit[64] & reg_we & ~wr_err;
+  assign mio_periph_insel_31_we = addr_hit[64] & reg_we & !reg_error;
   assign mio_periph_insel_31_wd = reg_wdata[5:0];
 
-  assign mio_periph_insel_32_we = addr_hit[65] & reg_we & ~wr_err;
+  assign mio_periph_insel_32_we = addr_hit[65] & reg_we & !reg_error;
   assign mio_periph_insel_32_wd = reg_wdata[5:0];
 
-  assign mio_outsel_regwen_0_we = addr_hit[66] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_0_we = addr_hit[66] & reg_we & !reg_error;
   assign mio_outsel_regwen_0_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_1_we = addr_hit[67] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_1_we = addr_hit[67] & reg_we & !reg_error;
   assign mio_outsel_regwen_1_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_2_we = addr_hit[68] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_2_we = addr_hit[68] & reg_we & !reg_error;
   assign mio_outsel_regwen_2_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_3_we = addr_hit[69] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_3_we = addr_hit[69] & reg_we & !reg_error;
   assign mio_outsel_regwen_3_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_4_we = addr_hit[70] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_4_we = addr_hit[70] & reg_we & !reg_error;
   assign mio_outsel_regwen_4_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_5_we = addr_hit[71] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_5_we = addr_hit[71] & reg_we & !reg_error;
   assign mio_outsel_regwen_5_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_6_we = addr_hit[72] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_6_we = addr_hit[72] & reg_we & !reg_error;
   assign mio_outsel_regwen_6_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_7_we = addr_hit[73] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_7_we = addr_hit[73] & reg_we & !reg_error;
   assign mio_outsel_regwen_7_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_8_we = addr_hit[74] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_8_we = addr_hit[74] & reg_we & !reg_error;
   assign mio_outsel_regwen_8_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_9_we = addr_hit[75] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_9_we = addr_hit[75] & reg_we & !reg_error;
   assign mio_outsel_regwen_9_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_10_we = addr_hit[76] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_10_we = addr_hit[76] & reg_we & !reg_error;
   assign mio_outsel_regwen_10_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_11_we = addr_hit[77] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_11_we = addr_hit[77] & reg_we & !reg_error;
   assign mio_outsel_regwen_11_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_12_we = addr_hit[78] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_12_we = addr_hit[78] & reg_we & !reg_error;
   assign mio_outsel_regwen_12_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_13_we = addr_hit[79] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_13_we = addr_hit[79] & reg_we & !reg_error;
   assign mio_outsel_regwen_13_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_14_we = addr_hit[80] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_14_we = addr_hit[80] & reg_we & !reg_error;
   assign mio_outsel_regwen_14_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_15_we = addr_hit[81] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_15_we = addr_hit[81] & reg_we & !reg_error;
   assign mio_outsel_regwen_15_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_16_we = addr_hit[82] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_16_we = addr_hit[82] & reg_we & !reg_error;
   assign mio_outsel_regwen_16_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_17_we = addr_hit[83] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_17_we = addr_hit[83] & reg_we & !reg_error;
   assign mio_outsel_regwen_17_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_18_we = addr_hit[84] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_18_we = addr_hit[84] & reg_we & !reg_error;
   assign mio_outsel_regwen_18_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_19_we = addr_hit[85] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_19_we = addr_hit[85] & reg_we & !reg_error;
   assign mio_outsel_regwen_19_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_20_we = addr_hit[86] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_20_we = addr_hit[86] & reg_we & !reg_error;
   assign mio_outsel_regwen_20_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_21_we = addr_hit[87] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_21_we = addr_hit[87] & reg_we & !reg_error;
   assign mio_outsel_regwen_21_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_22_we = addr_hit[88] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_22_we = addr_hit[88] & reg_we & !reg_error;
   assign mio_outsel_regwen_22_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_23_we = addr_hit[89] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_23_we = addr_hit[89] & reg_we & !reg_error;
   assign mio_outsel_regwen_23_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_24_we = addr_hit[90] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_24_we = addr_hit[90] & reg_we & !reg_error;
   assign mio_outsel_regwen_24_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_25_we = addr_hit[91] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_25_we = addr_hit[91] & reg_we & !reg_error;
   assign mio_outsel_regwen_25_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_26_we = addr_hit[92] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_26_we = addr_hit[92] & reg_we & !reg_error;
   assign mio_outsel_regwen_26_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_27_we = addr_hit[93] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_27_we = addr_hit[93] & reg_we & !reg_error;
   assign mio_outsel_regwen_27_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_28_we = addr_hit[94] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_28_we = addr_hit[94] & reg_we & !reg_error;
   assign mio_outsel_regwen_28_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_29_we = addr_hit[95] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_29_we = addr_hit[95] & reg_we & !reg_error;
   assign mio_outsel_regwen_29_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_30_we = addr_hit[96] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_30_we = addr_hit[96] & reg_we & !reg_error;
   assign mio_outsel_regwen_30_wd = reg_wdata[0];
 
-  assign mio_outsel_regwen_31_we = addr_hit[97] & reg_we & ~wr_err;
+  assign mio_outsel_regwen_31_we = addr_hit[97] & reg_we & !reg_error;
   assign mio_outsel_regwen_31_wd = reg_wdata[0];
 
-  assign mio_outsel_0_we = addr_hit[98] & reg_we & ~wr_err;
+  assign mio_outsel_0_we = addr_hit[98] & reg_we & !reg_error;
   assign mio_outsel_0_wd = reg_wdata[5:0];
 
-  assign mio_outsel_1_we = addr_hit[99] & reg_we & ~wr_err;
+  assign mio_outsel_1_we = addr_hit[99] & reg_we & !reg_error;
   assign mio_outsel_1_wd = reg_wdata[5:0];
 
-  assign mio_outsel_2_we = addr_hit[100] & reg_we & ~wr_err;
+  assign mio_outsel_2_we = addr_hit[100] & reg_we & !reg_error;
   assign mio_outsel_2_wd = reg_wdata[5:0];
 
-  assign mio_outsel_3_we = addr_hit[101] & reg_we & ~wr_err;
+  assign mio_outsel_3_we = addr_hit[101] & reg_we & !reg_error;
   assign mio_outsel_3_wd = reg_wdata[5:0];
 
-  assign mio_outsel_4_we = addr_hit[102] & reg_we & ~wr_err;
+  assign mio_outsel_4_we = addr_hit[102] & reg_we & !reg_error;
   assign mio_outsel_4_wd = reg_wdata[5:0];
 
-  assign mio_outsel_5_we = addr_hit[103] & reg_we & ~wr_err;
+  assign mio_outsel_5_we = addr_hit[103] & reg_we & !reg_error;
   assign mio_outsel_5_wd = reg_wdata[5:0];
 
-  assign mio_outsel_6_we = addr_hit[104] & reg_we & ~wr_err;
+  assign mio_outsel_6_we = addr_hit[104] & reg_we & !reg_error;
   assign mio_outsel_6_wd = reg_wdata[5:0];
 
-  assign mio_outsel_7_we = addr_hit[105] & reg_we & ~wr_err;
+  assign mio_outsel_7_we = addr_hit[105] & reg_we & !reg_error;
   assign mio_outsel_7_wd = reg_wdata[5:0];
 
-  assign mio_outsel_8_we = addr_hit[106] & reg_we & ~wr_err;
+  assign mio_outsel_8_we = addr_hit[106] & reg_we & !reg_error;
   assign mio_outsel_8_wd = reg_wdata[5:0];
 
-  assign mio_outsel_9_we = addr_hit[107] & reg_we & ~wr_err;
+  assign mio_outsel_9_we = addr_hit[107] & reg_we & !reg_error;
   assign mio_outsel_9_wd = reg_wdata[5:0];
 
-  assign mio_outsel_10_we = addr_hit[108] & reg_we & ~wr_err;
+  assign mio_outsel_10_we = addr_hit[108] & reg_we & !reg_error;
   assign mio_outsel_10_wd = reg_wdata[5:0];
 
-  assign mio_outsel_11_we = addr_hit[109] & reg_we & ~wr_err;
+  assign mio_outsel_11_we = addr_hit[109] & reg_we & !reg_error;
   assign mio_outsel_11_wd = reg_wdata[5:0];
 
-  assign mio_outsel_12_we = addr_hit[110] & reg_we & ~wr_err;
+  assign mio_outsel_12_we = addr_hit[110] & reg_we & !reg_error;
   assign mio_outsel_12_wd = reg_wdata[5:0];
 
-  assign mio_outsel_13_we = addr_hit[111] & reg_we & ~wr_err;
+  assign mio_outsel_13_we = addr_hit[111] & reg_we & !reg_error;
   assign mio_outsel_13_wd = reg_wdata[5:0];
 
-  assign mio_outsel_14_we = addr_hit[112] & reg_we & ~wr_err;
+  assign mio_outsel_14_we = addr_hit[112] & reg_we & !reg_error;
   assign mio_outsel_14_wd = reg_wdata[5:0];
 
-  assign mio_outsel_15_we = addr_hit[113] & reg_we & ~wr_err;
+  assign mio_outsel_15_we = addr_hit[113] & reg_we & !reg_error;
   assign mio_outsel_15_wd = reg_wdata[5:0];
 
-  assign mio_outsel_16_we = addr_hit[114] & reg_we & ~wr_err;
+  assign mio_outsel_16_we = addr_hit[114] & reg_we & !reg_error;
   assign mio_outsel_16_wd = reg_wdata[5:0];
 
-  assign mio_outsel_17_we = addr_hit[115] & reg_we & ~wr_err;
+  assign mio_outsel_17_we = addr_hit[115] & reg_we & !reg_error;
   assign mio_outsel_17_wd = reg_wdata[5:0];
 
-  assign mio_outsel_18_we = addr_hit[116] & reg_we & ~wr_err;
+  assign mio_outsel_18_we = addr_hit[116] & reg_we & !reg_error;
   assign mio_outsel_18_wd = reg_wdata[5:0];
 
-  assign mio_outsel_19_we = addr_hit[117] & reg_we & ~wr_err;
+  assign mio_outsel_19_we = addr_hit[117] & reg_we & !reg_error;
   assign mio_outsel_19_wd = reg_wdata[5:0];
 
-  assign mio_outsel_20_we = addr_hit[118] & reg_we & ~wr_err;
+  assign mio_outsel_20_we = addr_hit[118] & reg_we & !reg_error;
   assign mio_outsel_20_wd = reg_wdata[5:0];
 
-  assign mio_outsel_21_we = addr_hit[119] & reg_we & ~wr_err;
+  assign mio_outsel_21_we = addr_hit[119] & reg_we & !reg_error;
   assign mio_outsel_21_wd = reg_wdata[5:0];
 
-  assign mio_outsel_22_we = addr_hit[120] & reg_we & ~wr_err;
+  assign mio_outsel_22_we = addr_hit[120] & reg_we & !reg_error;
   assign mio_outsel_22_wd = reg_wdata[5:0];
 
-  assign mio_outsel_23_we = addr_hit[121] & reg_we & ~wr_err;
+  assign mio_outsel_23_we = addr_hit[121] & reg_we & !reg_error;
   assign mio_outsel_23_wd = reg_wdata[5:0];
 
-  assign mio_outsel_24_we = addr_hit[122] & reg_we & ~wr_err;
+  assign mio_outsel_24_we = addr_hit[122] & reg_we & !reg_error;
   assign mio_outsel_24_wd = reg_wdata[5:0];
 
-  assign mio_outsel_25_we = addr_hit[123] & reg_we & ~wr_err;
+  assign mio_outsel_25_we = addr_hit[123] & reg_we & !reg_error;
   assign mio_outsel_25_wd = reg_wdata[5:0];
 
-  assign mio_outsel_26_we = addr_hit[124] & reg_we & ~wr_err;
+  assign mio_outsel_26_we = addr_hit[124] & reg_we & !reg_error;
   assign mio_outsel_26_wd = reg_wdata[5:0];
 
-  assign mio_outsel_27_we = addr_hit[125] & reg_we & ~wr_err;
+  assign mio_outsel_27_we = addr_hit[125] & reg_we & !reg_error;
   assign mio_outsel_27_wd = reg_wdata[5:0];
 
-  assign mio_outsel_28_we = addr_hit[126] & reg_we & ~wr_err;
+  assign mio_outsel_28_we = addr_hit[126] & reg_we & !reg_error;
   assign mio_outsel_28_wd = reg_wdata[5:0];
 
-  assign mio_outsel_29_we = addr_hit[127] & reg_we & ~wr_err;
+  assign mio_outsel_29_we = addr_hit[127] & reg_we & !reg_error;
   assign mio_outsel_29_wd = reg_wdata[5:0];
 
-  assign mio_outsel_30_we = addr_hit[128] & reg_we & ~wr_err;
+  assign mio_outsel_30_we = addr_hit[128] & reg_we & !reg_error;
   assign mio_outsel_30_wd = reg_wdata[5:0];
 
-  assign mio_outsel_31_we = addr_hit[129] & reg_we & ~wr_err;
+  assign mio_outsel_31_we = addr_hit[129] & reg_we & !reg_error;
   assign mio_outsel_31_wd = reg_wdata[5:0];
 
-  assign mio_pad_attr_regwen_0_we = addr_hit[130] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_0_we = addr_hit[130] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_0_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_1_we = addr_hit[131] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_1_we = addr_hit[131] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_1_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_2_we = addr_hit[132] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_2_we = addr_hit[132] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_2_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_3_we = addr_hit[133] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_3_we = addr_hit[133] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_3_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_4_we = addr_hit[134] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_4_we = addr_hit[134] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_4_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_5_we = addr_hit[135] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_5_we = addr_hit[135] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_5_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_6_we = addr_hit[136] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_6_we = addr_hit[136] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_6_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_7_we = addr_hit[137] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_7_we = addr_hit[137] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_7_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_8_we = addr_hit[138] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_8_we = addr_hit[138] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_8_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_9_we = addr_hit[139] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_9_we = addr_hit[139] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_9_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_10_we = addr_hit[140] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_10_we = addr_hit[140] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_10_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_11_we = addr_hit[141] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_11_we = addr_hit[141] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_11_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_12_we = addr_hit[142] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_12_we = addr_hit[142] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_12_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_13_we = addr_hit[143] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_13_we = addr_hit[143] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_13_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_14_we = addr_hit[144] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_14_we = addr_hit[144] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_14_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_15_we = addr_hit[145] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_15_we = addr_hit[145] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_15_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_16_we = addr_hit[146] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_16_we = addr_hit[146] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_16_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_17_we = addr_hit[147] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_17_we = addr_hit[147] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_17_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_18_we = addr_hit[148] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_18_we = addr_hit[148] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_18_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_19_we = addr_hit[149] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_19_we = addr_hit[149] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_19_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_20_we = addr_hit[150] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_20_we = addr_hit[150] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_20_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_21_we = addr_hit[151] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_21_we = addr_hit[151] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_21_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_22_we = addr_hit[152] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_22_we = addr_hit[152] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_22_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_23_we = addr_hit[153] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_23_we = addr_hit[153] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_23_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_24_we = addr_hit[154] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_24_we = addr_hit[154] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_24_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_25_we = addr_hit[155] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_25_we = addr_hit[155] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_25_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_26_we = addr_hit[156] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_26_we = addr_hit[156] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_26_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_27_we = addr_hit[157] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_27_we = addr_hit[157] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_27_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_28_we = addr_hit[158] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_28_we = addr_hit[158] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_28_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_29_we = addr_hit[159] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_29_we = addr_hit[159] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_29_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_30_we = addr_hit[160] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_30_we = addr_hit[160] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_30_wd = reg_wdata[0];
 
-  assign mio_pad_attr_regwen_31_we = addr_hit[161] & reg_we & ~wr_err;
+  assign mio_pad_attr_regwen_31_we = addr_hit[161] & reg_we & !reg_error;
   assign mio_pad_attr_regwen_31_wd = reg_wdata[0];
 
-  assign mio_pad_attr_0_we = addr_hit[162] & reg_we & ~wr_err;
+  assign mio_pad_attr_0_we = addr_hit[162] & reg_we & !reg_error;
   assign mio_pad_attr_0_wd = reg_wdata[9:0];
-  assign mio_pad_attr_0_re = addr_hit[162] && reg_re;
+  assign mio_pad_attr_0_re = addr_hit[162] & reg_re & !reg_error;
 
-  assign mio_pad_attr_1_we = addr_hit[163] & reg_we & ~wr_err;
+  assign mio_pad_attr_1_we = addr_hit[163] & reg_we & !reg_error;
   assign mio_pad_attr_1_wd = reg_wdata[9:0];
-  assign mio_pad_attr_1_re = addr_hit[163] && reg_re;
+  assign mio_pad_attr_1_re = addr_hit[163] & reg_re & !reg_error;
 
-  assign mio_pad_attr_2_we = addr_hit[164] & reg_we & ~wr_err;
+  assign mio_pad_attr_2_we = addr_hit[164] & reg_we & !reg_error;
   assign mio_pad_attr_2_wd = reg_wdata[9:0];
-  assign mio_pad_attr_2_re = addr_hit[164] && reg_re;
+  assign mio_pad_attr_2_re = addr_hit[164] & reg_re & !reg_error;
 
-  assign mio_pad_attr_3_we = addr_hit[165] & reg_we & ~wr_err;
+  assign mio_pad_attr_3_we = addr_hit[165] & reg_we & !reg_error;
   assign mio_pad_attr_3_wd = reg_wdata[9:0];
-  assign mio_pad_attr_3_re = addr_hit[165] && reg_re;
+  assign mio_pad_attr_3_re = addr_hit[165] & reg_re & !reg_error;
 
-  assign mio_pad_attr_4_we = addr_hit[166] & reg_we & ~wr_err;
+  assign mio_pad_attr_4_we = addr_hit[166] & reg_we & !reg_error;
   assign mio_pad_attr_4_wd = reg_wdata[9:0];
-  assign mio_pad_attr_4_re = addr_hit[166] && reg_re;
+  assign mio_pad_attr_4_re = addr_hit[166] & reg_re & !reg_error;
 
-  assign mio_pad_attr_5_we = addr_hit[167] & reg_we & ~wr_err;
+  assign mio_pad_attr_5_we = addr_hit[167] & reg_we & !reg_error;
   assign mio_pad_attr_5_wd = reg_wdata[9:0];
-  assign mio_pad_attr_5_re = addr_hit[167] && reg_re;
+  assign mio_pad_attr_5_re = addr_hit[167] & reg_re & !reg_error;
 
-  assign mio_pad_attr_6_we = addr_hit[168] & reg_we & ~wr_err;
+  assign mio_pad_attr_6_we = addr_hit[168] & reg_we & !reg_error;
   assign mio_pad_attr_6_wd = reg_wdata[9:0];
-  assign mio_pad_attr_6_re = addr_hit[168] && reg_re;
+  assign mio_pad_attr_6_re = addr_hit[168] & reg_re & !reg_error;
 
-  assign mio_pad_attr_7_we = addr_hit[169] & reg_we & ~wr_err;
+  assign mio_pad_attr_7_we = addr_hit[169] & reg_we & !reg_error;
   assign mio_pad_attr_7_wd = reg_wdata[9:0];
-  assign mio_pad_attr_7_re = addr_hit[169] && reg_re;
+  assign mio_pad_attr_7_re = addr_hit[169] & reg_re & !reg_error;
 
-  assign mio_pad_attr_8_we = addr_hit[170] & reg_we & ~wr_err;
+  assign mio_pad_attr_8_we = addr_hit[170] & reg_we & !reg_error;
   assign mio_pad_attr_8_wd = reg_wdata[9:0];
-  assign mio_pad_attr_8_re = addr_hit[170] && reg_re;
+  assign mio_pad_attr_8_re = addr_hit[170] & reg_re & !reg_error;
 
-  assign mio_pad_attr_9_we = addr_hit[171] & reg_we & ~wr_err;
+  assign mio_pad_attr_9_we = addr_hit[171] & reg_we & !reg_error;
   assign mio_pad_attr_9_wd = reg_wdata[9:0];
-  assign mio_pad_attr_9_re = addr_hit[171] && reg_re;
+  assign mio_pad_attr_9_re = addr_hit[171] & reg_re & !reg_error;
 
-  assign mio_pad_attr_10_we = addr_hit[172] & reg_we & ~wr_err;
+  assign mio_pad_attr_10_we = addr_hit[172] & reg_we & !reg_error;
   assign mio_pad_attr_10_wd = reg_wdata[9:0];
-  assign mio_pad_attr_10_re = addr_hit[172] && reg_re;
+  assign mio_pad_attr_10_re = addr_hit[172] & reg_re & !reg_error;
 
-  assign mio_pad_attr_11_we = addr_hit[173] & reg_we & ~wr_err;
+  assign mio_pad_attr_11_we = addr_hit[173] & reg_we & !reg_error;
   assign mio_pad_attr_11_wd = reg_wdata[9:0];
-  assign mio_pad_attr_11_re = addr_hit[173] && reg_re;
+  assign mio_pad_attr_11_re = addr_hit[173] & reg_re & !reg_error;
 
-  assign mio_pad_attr_12_we = addr_hit[174] & reg_we & ~wr_err;
+  assign mio_pad_attr_12_we = addr_hit[174] & reg_we & !reg_error;
   assign mio_pad_attr_12_wd = reg_wdata[9:0];
-  assign mio_pad_attr_12_re = addr_hit[174] && reg_re;
+  assign mio_pad_attr_12_re = addr_hit[174] & reg_re & !reg_error;
 
-  assign mio_pad_attr_13_we = addr_hit[175] & reg_we & ~wr_err;
+  assign mio_pad_attr_13_we = addr_hit[175] & reg_we & !reg_error;
   assign mio_pad_attr_13_wd = reg_wdata[9:0];
-  assign mio_pad_attr_13_re = addr_hit[175] && reg_re;
+  assign mio_pad_attr_13_re = addr_hit[175] & reg_re & !reg_error;
 
-  assign mio_pad_attr_14_we = addr_hit[176] & reg_we & ~wr_err;
+  assign mio_pad_attr_14_we = addr_hit[176] & reg_we & !reg_error;
   assign mio_pad_attr_14_wd = reg_wdata[9:0];
-  assign mio_pad_attr_14_re = addr_hit[176] && reg_re;
+  assign mio_pad_attr_14_re = addr_hit[176] & reg_re & !reg_error;
 
-  assign mio_pad_attr_15_we = addr_hit[177] & reg_we & ~wr_err;
+  assign mio_pad_attr_15_we = addr_hit[177] & reg_we & !reg_error;
   assign mio_pad_attr_15_wd = reg_wdata[9:0];
-  assign mio_pad_attr_15_re = addr_hit[177] && reg_re;
+  assign mio_pad_attr_15_re = addr_hit[177] & reg_re & !reg_error;
 
-  assign mio_pad_attr_16_we = addr_hit[178] & reg_we & ~wr_err;
+  assign mio_pad_attr_16_we = addr_hit[178] & reg_we & !reg_error;
   assign mio_pad_attr_16_wd = reg_wdata[9:0];
-  assign mio_pad_attr_16_re = addr_hit[178] && reg_re;
+  assign mio_pad_attr_16_re = addr_hit[178] & reg_re & !reg_error;
 
-  assign mio_pad_attr_17_we = addr_hit[179] & reg_we & ~wr_err;
+  assign mio_pad_attr_17_we = addr_hit[179] & reg_we & !reg_error;
   assign mio_pad_attr_17_wd = reg_wdata[9:0];
-  assign mio_pad_attr_17_re = addr_hit[179] && reg_re;
+  assign mio_pad_attr_17_re = addr_hit[179] & reg_re & !reg_error;
 
-  assign mio_pad_attr_18_we = addr_hit[180] & reg_we & ~wr_err;
+  assign mio_pad_attr_18_we = addr_hit[180] & reg_we & !reg_error;
   assign mio_pad_attr_18_wd = reg_wdata[9:0];
-  assign mio_pad_attr_18_re = addr_hit[180] && reg_re;
+  assign mio_pad_attr_18_re = addr_hit[180] & reg_re & !reg_error;
 
-  assign mio_pad_attr_19_we = addr_hit[181] & reg_we & ~wr_err;
+  assign mio_pad_attr_19_we = addr_hit[181] & reg_we & !reg_error;
   assign mio_pad_attr_19_wd = reg_wdata[9:0];
-  assign mio_pad_attr_19_re = addr_hit[181] && reg_re;
+  assign mio_pad_attr_19_re = addr_hit[181] & reg_re & !reg_error;
 
-  assign mio_pad_attr_20_we = addr_hit[182] & reg_we & ~wr_err;
+  assign mio_pad_attr_20_we = addr_hit[182] & reg_we & !reg_error;
   assign mio_pad_attr_20_wd = reg_wdata[9:0];
-  assign mio_pad_attr_20_re = addr_hit[182] && reg_re;
+  assign mio_pad_attr_20_re = addr_hit[182] & reg_re & !reg_error;
 
-  assign mio_pad_attr_21_we = addr_hit[183] & reg_we & ~wr_err;
+  assign mio_pad_attr_21_we = addr_hit[183] & reg_we & !reg_error;
   assign mio_pad_attr_21_wd = reg_wdata[9:0];
-  assign mio_pad_attr_21_re = addr_hit[183] && reg_re;
+  assign mio_pad_attr_21_re = addr_hit[183] & reg_re & !reg_error;
 
-  assign mio_pad_attr_22_we = addr_hit[184] & reg_we & ~wr_err;
+  assign mio_pad_attr_22_we = addr_hit[184] & reg_we & !reg_error;
   assign mio_pad_attr_22_wd = reg_wdata[9:0];
-  assign mio_pad_attr_22_re = addr_hit[184] && reg_re;
+  assign mio_pad_attr_22_re = addr_hit[184] & reg_re & !reg_error;
 
-  assign mio_pad_attr_23_we = addr_hit[185] & reg_we & ~wr_err;
+  assign mio_pad_attr_23_we = addr_hit[185] & reg_we & !reg_error;
   assign mio_pad_attr_23_wd = reg_wdata[9:0];
-  assign mio_pad_attr_23_re = addr_hit[185] && reg_re;
+  assign mio_pad_attr_23_re = addr_hit[185] & reg_re & !reg_error;
 
-  assign mio_pad_attr_24_we = addr_hit[186] & reg_we & ~wr_err;
+  assign mio_pad_attr_24_we = addr_hit[186] & reg_we & !reg_error;
   assign mio_pad_attr_24_wd = reg_wdata[9:0];
-  assign mio_pad_attr_24_re = addr_hit[186] && reg_re;
+  assign mio_pad_attr_24_re = addr_hit[186] & reg_re & !reg_error;
 
-  assign mio_pad_attr_25_we = addr_hit[187] & reg_we & ~wr_err;
+  assign mio_pad_attr_25_we = addr_hit[187] & reg_we & !reg_error;
   assign mio_pad_attr_25_wd = reg_wdata[9:0];
-  assign mio_pad_attr_25_re = addr_hit[187] && reg_re;
+  assign mio_pad_attr_25_re = addr_hit[187] & reg_re & !reg_error;
 
-  assign mio_pad_attr_26_we = addr_hit[188] & reg_we & ~wr_err;
+  assign mio_pad_attr_26_we = addr_hit[188] & reg_we & !reg_error;
   assign mio_pad_attr_26_wd = reg_wdata[9:0];
-  assign mio_pad_attr_26_re = addr_hit[188] && reg_re;
+  assign mio_pad_attr_26_re = addr_hit[188] & reg_re & !reg_error;
 
-  assign mio_pad_attr_27_we = addr_hit[189] & reg_we & ~wr_err;
+  assign mio_pad_attr_27_we = addr_hit[189] & reg_we & !reg_error;
   assign mio_pad_attr_27_wd = reg_wdata[9:0];
-  assign mio_pad_attr_27_re = addr_hit[189] && reg_re;
+  assign mio_pad_attr_27_re = addr_hit[189] & reg_re & !reg_error;
 
-  assign mio_pad_attr_28_we = addr_hit[190] & reg_we & ~wr_err;
+  assign mio_pad_attr_28_we = addr_hit[190] & reg_we & !reg_error;
   assign mio_pad_attr_28_wd = reg_wdata[9:0];
-  assign mio_pad_attr_28_re = addr_hit[190] && reg_re;
+  assign mio_pad_attr_28_re = addr_hit[190] & reg_re & !reg_error;
 
-  assign mio_pad_attr_29_we = addr_hit[191] & reg_we & ~wr_err;
+  assign mio_pad_attr_29_we = addr_hit[191] & reg_we & !reg_error;
   assign mio_pad_attr_29_wd = reg_wdata[9:0];
-  assign mio_pad_attr_29_re = addr_hit[191] && reg_re;
+  assign mio_pad_attr_29_re = addr_hit[191] & reg_re & !reg_error;
 
-  assign mio_pad_attr_30_we = addr_hit[192] & reg_we & ~wr_err;
+  assign mio_pad_attr_30_we = addr_hit[192] & reg_we & !reg_error;
   assign mio_pad_attr_30_wd = reg_wdata[9:0];
-  assign mio_pad_attr_30_re = addr_hit[192] && reg_re;
+  assign mio_pad_attr_30_re = addr_hit[192] & reg_re & !reg_error;
 
-  assign mio_pad_attr_31_we = addr_hit[193] & reg_we & ~wr_err;
+  assign mio_pad_attr_31_we = addr_hit[193] & reg_we & !reg_error;
   assign mio_pad_attr_31_wd = reg_wdata[9:0];
-  assign mio_pad_attr_31_re = addr_hit[193] && reg_re;
+  assign mio_pad_attr_31_re = addr_hit[193] & reg_re & !reg_error;
 
-  assign dio_pad_attr_regwen_0_we = addr_hit[194] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_0_we = addr_hit[194] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_0_wd = reg_wdata[0];
 
-  assign dio_pad_attr_regwen_1_we = addr_hit[195] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_1_we = addr_hit[195] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_1_wd = reg_wdata[0];
 
-  assign dio_pad_attr_regwen_2_we = addr_hit[196] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_2_we = addr_hit[196] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_2_wd = reg_wdata[0];
 
-  assign dio_pad_attr_regwen_3_we = addr_hit[197] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_3_we = addr_hit[197] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_3_wd = reg_wdata[0];
 
-  assign dio_pad_attr_regwen_4_we = addr_hit[198] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_4_we = addr_hit[198] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_4_wd = reg_wdata[0];
 
-  assign dio_pad_attr_regwen_5_we = addr_hit[199] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_5_we = addr_hit[199] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_5_wd = reg_wdata[0];
 
-  assign dio_pad_attr_regwen_6_we = addr_hit[200] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_6_we = addr_hit[200] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_6_wd = reg_wdata[0];
 
-  assign dio_pad_attr_regwen_7_we = addr_hit[201] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_7_we = addr_hit[201] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_7_wd = reg_wdata[0];
 
-  assign dio_pad_attr_regwen_8_we = addr_hit[202] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_8_we = addr_hit[202] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_8_wd = reg_wdata[0];
 
-  assign dio_pad_attr_regwen_9_we = addr_hit[203] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_9_we = addr_hit[203] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_9_wd = reg_wdata[0];
 
-  assign dio_pad_attr_regwen_10_we = addr_hit[204] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_10_we = addr_hit[204] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_10_wd = reg_wdata[0];
 
-  assign dio_pad_attr_regwen_11_we = addr_hit[205] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_11_we = addr_hit[205] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_11_wd = reg_wdata[0];
 
-  assign dio_pad_attr_regwen_12_we = addr_hit[206] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_12_we = addr_hit[206] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_12_wd = reg_wdata[0];
 
-  assign dio_pad_attr_regwen_13_we = addr_hit[207] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_13_we = addr_hit[207] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_13_wd = reg_wdata[0];
 
-  assign dio_pad_attr_regwen_14_we = addr_hit[208] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_14_we = addr_hit[208] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_14_wd = reg_wdata[0];
 
-  assign dio_pad_attr_regwen_15_we = addr_hit[209] & reg_we & ~wr_err;
+  assign dio_pad_attr_regwen_15_we = addr_hit[209] & reg_we & !reg_error;
   assign dio_pad_attr_regwen_15_wd = reg_wdata[0];
 
-  assign dio_pad_attr_0_we = addr_hit[210] & reg_we & ~wr_err;
+  assign dio_pad_attr_0_we = addr_hit[210] & reg_we & !reg_error;
   assign dio_pad_attr_0_wd = reg_wdata[9:0];
-  assign dio_pad_attr_0_re = addr_hit[210] && reg_re;
+  assign dio_pad_attr_0_re = addr_hit[210] & reg_re & !reg_error;
 
-  assign dio_pad_attr_1_we = addr_hit[211] & reg_we & ~wr_err;
+  assign dio_pad_attr_1_we = addr_hit[211] & reg_we & !reg_error;
   assign dio_pad_attr_1_wd = reg_wdata[9:0];
-  assign dio_pad_attr_1_re = addr_hit[211] && reg_re;
+  assign dio_pad_attr_1_re = addr_hit[211] & reg_re & !reg_error;
 
-  assign dio_pad_attr_2_we = addr_hit[212] & reg_we & ~wr_err;
+  assign dio_pad_attr_2_we = addr_hit[212] & reg_we & !reg_error;
   assign dio_pad_attr_2_wd = reg_wdata[9:0];
-  assign dio_pad_attr_2_re = addr_hit[212] && reg_re;
+  assign dio_pad_attr_2_re = addr_hit[212] & reg_re & !reg_error;
 
-  assign dio_pad_attr_3_we = addr_hit[213] & reg_we & ~wr_err;
+  assign dio_pad_attr_3_we = addr_hit[213] & reg_we & !reg_error;
   assign dio_pad_attr_3_wd = reg_wdata[9:0];
-  assign dio_pad_attr_3_re = addr_hit[213] && reg_re;
+  assign dio_pad_attr_3_re = addr_hit[213] & reg_re & !reg_error;
 
-  assign dio_pad_attr_4_we = addr_hit[214] & reg_we & ~wr_err;
+  assign dio_pad_attr_4_we = addr_hit[214] & reg_we & !reg_error;
   assign dio_pad_attr_4_wd = reg_wdata[9:0];
-  assign dio_pad_attr_4_re = addr_hit[214] && reg_re;
+  assign dio_pad_attr_4_re = addr_hit[214] & reg_re & !reg_error;
 
-  assign dio_pad_attr_5_we = addr_hit[215] & reg_we & ~wr_err;
+  assign dio_pad_attr_5_we = addr_hit[215] & reg_we & !reg_error;
   assign dio_pad_attr_5_wd = reg_wdata[9:0];
-  assign dio_pad_attr_5_re = addr_hit[215] && reg_re;
+  assign dio_pad_attr_5_re = addr_hit[215] & reg_re & !reg_error;
 
-  assign dio_pad_attr_6_we = addr_hit[216] & reg_we & ~wr_err;
+  assign dio_pad_attr_6_we = addr_hit[216] & reg_we & !reg_error;
   assign dio_pad_attr_6_wd = reg_wdata[9:0];
-  assign dio_pad_attr_6_re = addr_hit[216] && reg_re;
+  assign dio_pad_attr_6_re = addr_hit[216] & reg_re & !reg_error;
 
-  assign dio_pad_attr_7_we = addr_hit[217] & reg_we & ~wr_err;
+  assign dio_pad_attr_7_we = addr_hit[217] & reg_we & !reg_error;
   assign dio_pad_attr_7_wd = reg_wdata[9:0];
-  assign dio_pad_attr_7_re = addr_hit[217] && reg_re;
+  assign dio_pad_attr_7_re = addr_hit[217] & reg_re & !reg_error;
 
-  assign dio_pad_attr_8_we = addr_hit[218] & reg_we & ~wr_err;
+  assign dio_pad_attr_8_we = addr_hit[218] & reg_we & !reg_error;
   assign dio_pad_attr_8_wd = reg_wdata[9:0];
-  assign dio_pad_attr_8_re = addr_hit[218] && reg_re;
+  assign dio_pad_attr_8_re = addr_hit[218] & reg_re & !reg_error;
 
-  assign dio_pad_attr_9_we = addr_hit[219] & reg_we & ~wr_err;
+  assign dio_pad_attr_9_we = addr_hit[219] & reg_we & !reg_error;
   assign dio_pad_attr_9_wd = reg_wdata[9:0];
-  assign dio_pad_attr_9_re = addr_hit[219] && reg_re;
+  assign dio_pad_attr_9_re = addr_hit[219] & reg_re & !reg_error;
 
-  assign dio_pad_attr_10_we = addr_hit[220] & reg_we & ~wr_err;
+  assign dio_pad_attr_10_we = addr_hit[220] & reg_we & !reg_error;
   assign dio_pad_attr_10_wd = reg_wdata[9:0];
-  assign dio_pad_attr_10_re = addr_hit[220] && reg_re;
+  assign dio_pad_attr_10_re = addr_hit[220] & reg_re & !reg_error;
 
-  assign dio_pad_attr_11_we = addr_hit[221] & reg_we & ~wr_err;
+  assign dio_pad_attr_11_we = addr_hit[221] & reg_we & !reg_error;
   assign dio_pad_attr_11_wd = reg_wdata[9:0];
-  assign dio_pad_attr_11_re = addr_hit[221] && reg_re;
+  assign dio_pad_attr_11_re = addr_hit[221] & reg_re & !reg_error;
 
-  assign dio_pad_attr_12_we = addr_hit[222] & reg_we & ~wr_err;
+  assign dio_pad_attr_12_we = addr_hit[222] & reg_we & !reg_error;
   assign dio_pad_attr_12_wd = reg_wdata[9:0];
-  assign dio_pad_attr_12_re = addr_hit[222] && reg_re;
+  assign dio_pad_attr_12_re = addr_hit[222] & reg_re & !reg_error;
 
-  assign dio_pad_attr_13_we = addr_hit[223] & reg_we & ~wr_err;
+  assign dio_pad_attr_13_we = addr_hit[223] & reg_we & !reg_error;
   assign dio_pad_attr_13_wd = reg_wdata[9:0];
-  assign dio_pad_attr_13_re = addr_hit[223] && reg_re;
+  assign dio_pad_attr_13_re = addr_hit[223] & reg_re & !reg_error;
 
-  assign dio_pad_attr_14_we = addr_hit[224] & reg_we & ~wr_err;
+  assign dio_pad_attr_14_we = addr_hit[224] & reg_we & !reg_error;
   assign dio_pad_attr_14_wd = reg_wdata[9:0];
-  assign dio_pad_attr_14_re = addr_hit[224] && reg_re;
+  assign dio_pad_attr_14_re = addr_hit[224] & reg_re & !reg_error;
 
-  assign dio_pad_attr_15_we = addr_hit[225] & reg_we & ~wr_err;
+  assign dio_pad_attr_15_we = addr_hit[225] & reg_we & !reg_error;
   assign dio_pad_attr_15_wd = reg_wdata[9:0];
-  assign dio_pad_attr_15_re = addr_hit[225] && reg_re;
+  assign dio_pad_attr_15_re = addr_hit[225] & reg_re & !reg_error;
 
-  assign mio_pad_sleep_status_en_0_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_0_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_0_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_status_en_1_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_1_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_1_wd = reg_wdata[1];
 
-  assign mio_pad_sleep_status_en_2_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_2_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_2_wd = reg_wdata[2];
 
-  assign mio_pad_sleep_status_en_3_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_3_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_3_wd = reg_wdata[3];
 
-  assign mio_pad_sleep_status_en_4_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_4_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_4_wd = reg_wdata[4];
 
-  assign mio_pad_sleep_status_en_5_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_5_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_5_wd = reg_wdata[5];
 
-  assign mio_pad_sleep_status_en_6_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_6_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_6_wd = reg_wdata[6];
 
-  assign mio_pad_sleep_status_en_7_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_7_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_7_wd = reg_wdata[7];
 
-  assign mio_pad_sleep_status_en_8_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_8_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_8_wd = reg_wdata[8];
 
-  assign mio_pad_sleep_status_en_9_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_9_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_9_wd = reg_wdata[9];
 
-  assign mio_pad_sleep_status_en_10_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_10_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_10_wd = reg_wdata[10];
 
-  assign mio_pad_sleep_status_en_11_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_11_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_11_wd = reg_wdata[11];
 
-  assign mio_pad_sleep_status_en_12_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_12_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_12_wd = reg_wdata[12];
 
-  assign mio_pad_sleep_status_en_13_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_13_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_13_wd = reg_wdata[13];
 
-  assign mio_pad_sleep_status_en_14_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_14_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_14_wd = reg_wdata[14];
 
-  assign mio_pad_sleep_status_en_15_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_15_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_15_wd = reg_wdata[15];
 
-  assign mio_pad_sleep_status_en_16_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_16_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_16_wd = reg_wdata[16];
 
-  assign mio_pad_sleep_status_en_17_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_17_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_17_wd = reg_wdata[17];
 
-  assign mio_pad_sleep_status_en_18_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_18_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_18_wd = reg_wdata[18];
 
-  assign mio_pad_sleep_status_en_19_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_19_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_19_wd = reg_wdata[19];
 
-  assign mio_pad_sleep_status_en_20_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_20_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_20_wd = reg_wdata[20];
 
-  assign mio_pad_sleep_status_en_21_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_21_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_21_wd = reg_wdata[21];
 
-  assign mio_pad_sleep_status_en_22_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_22_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_22_wd = reg_wdata[22];
 
-  assign mio_pad_sleep_status_en_23_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_23_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_23_wd = reg_wdata[23];
 
-  assign mio_pad_sleep_status_en_24_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_24_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_24_wd = reg_wdata[24];
 
-  assign mio_pad_sleep_status_en_25_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_25_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_25_wd = reg_wdata[25];
 
-  assign mio_pad_sleep_status_en_26_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_26_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_26_wd = reg_wdata[26];
 
-  assign mio_pad_sleep_status_en_27_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_27_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_27_wd = reg_wdata[27];
 
-  assign mio_pad_sleep_status_en_28_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_28_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_28_wd = reg_wdata[28];
 
-  assign mio_pad_sleep_status_en_29_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_29_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_29_wd = reg_wdata[29];
 
-  assign mio_pad_sleep_status_en_30_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_30_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_30_wd = reg_wdata[30];
 
-  assign mio_pad_sleep_status_en_31_we = addr_hit[226] & reg_we & ~wr_err;
+  assign mio_pad_sleep_status_en_31_we = addr_hit[226] & reg_we & !reg_error;
   assign mio_pad_sleep_status_en_31_wd = reg_wdata[31];
 
-  assign mio_pad_sleep_regwen_0_we = addr_hit[227] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_0_we = addr_hit[227] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_0_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_1_we = addr_hit[228] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_1_we = addr_hit[228] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_1_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_2_we = addr_hit[229] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_2_we = addr_hit[229] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_2_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_3_we = addr_hit[230] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_3_we = addr_hit[230] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_3_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_4_we = addr_hit[231] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_4_we = addr_hit[231] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_4_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_5_we = addr_hit[232] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_5_we = addr_hit[232] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_5_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_6_we = addr_hit[233] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_6_we = addr_hit[233] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_6_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_7_we = addr_hit[234] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_7_we = addr_hit[234] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_7_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_8_we = addr_hit[235] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_8_we = addr_hit[235] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_8_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_9_we = addr_hit[236] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_9_we = addr_hit[236] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_9_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_10_we = addr_hit[237] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_10_we = addr_hit[237] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_10_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_11_we = addr_hit[238] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_11_we = addr_hit[238] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_11_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_12_we = addr_hit[239] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_12_we = addr_hit[239] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_12_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_13_we = addr_hit[240] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_13_we = addr_hit[240] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_13_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_14_we = addr_hit[241] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_14_we = addr_hit[241] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_14_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_15_we = addr_hit[242] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_15_we = addr_hit[242] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_15_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_16_we = addr_hit[243] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_16_we = addr_hit[243] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_16_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_17_we = addr_hit[244] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_17_we = addr_hit[244] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_17_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_18_we = addr_hit[245] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_18_we = addr_hit[245] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_18_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_19_we = addr_hit[246] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_19_we = addr_hit[246] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_19_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_20_we = addr_hit[247] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_20_we = addr_hit[247] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_20_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_21_we = addr_hit[248] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_21_we = addr_hit[248] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_21_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_22_we = addr_hit[249] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_22_we = addr_hit[249] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_22_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_23_we = addr_hit[250] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_23_we = addr_hit[250] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_23_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_24_we = addr_hit[251] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_24_we = addr_hit[251] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_24_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_25_we = addr_hit[252] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_25_we = addr_hit[252] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_25_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_26_we = addr_hit[253] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_26_we = addr_hit[253] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_26_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_27_we = addr_hit[254] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_27_we = addr_hit[254] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_27_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_28_we = addr_hit[255] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_28_we = addr_hit[255] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_28_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_29_we = addr_hit[256] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_29_we = addr_hit[256] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_29_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_30_we = addr_hit[257] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_30_we = addr_hit[257] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_30_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_regwen_31_we = addr_hit[258] & reg_we & ~wr_err;
+  assign mio_pad_sleep_regwen_31_we = addr_hit[258] & reg_we & !reg_error;
   assign mio_pad_sleep_regwen_31_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_0_we = addr_hit[259] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_0_we = addr_hit[259] & reg_we & !reg_error;
   assign mio_pad_sleep_en_0_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_1_we = addr_hit[260] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_1_we = addr_hit[260] & reg_we & !reg_error;
   assign mio_pad_sleep_en_1_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_2_we = addr_hit[261] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_2_we = addr_hit[261] & reg_we & !reg_error;
   assign mio_pad_sleep_en_2_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_3_we = addr_hit[262] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_3_we = addr_hit[262] & reg_we & !reg_error;
   assign mio_pad_sleep_en_3_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_4_we = addr_hit[263] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_4_we = addr_hit[263] & reg_we & !reg_error;
   assign mio_pad_sleep_en_4_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_5_we = addr_hit[264] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_5_we = addr_hit[264] & reg_we & !reg_error;
   assign mio_pad_sleep_en_5_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_6_we = addr_hit[265] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_6_we = addr_hit[265] & reg_we & !reg_error;
   assign mio_pad_sleep_en_6_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_7_we = addr_hit[266] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_7_we = addr_hit[266] & reg_we & !reg_error;
   assign mio_pad_sleep_en_7_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_8_we = addr_hit[267] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_8_we = addr_hit[267] & reg_we & !reg_error;
   assign mio_pad_sleep_en_8_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_9_we = addr_hit[268] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_9_we = addr_hit[268] & reg_we & !reg_error;
   assign mio_pad_sleep_en_9_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_10_we = addr_hit[269] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_10_we = addr_hit[269] & reg_we & !reg_error;
   assign mio_pad_sleep_en_10_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_11_we = addr_hit[270] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_11_we = addr_hit[270] & reg_we & !reg_error;
   assign mio_pad_sleep_en_11_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_12_we = addr_hit[271] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_12_we = addr_hit[271] & reg_we & !reg_error;
   assign mio_pad_sleep_en_12_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_13_we = addr_hit[272] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_13_we = addr_hit[272] & reg_we & !reg_error;
   assign mio_pad_sleep_en_13_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_14_we = addr_hit[273] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_14_we = addr_hit[273] & reg_we & !reg_error;
   assign mio_pad_sleep_en_14_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_15_we = addr_hit[274] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_15_we = addr_hit[274] & reg_we & !reg_error;
   assign mio_pad_sleep_en_15_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_16_we = addr_hit[275] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_16_we = addr_hit[275] & reg_we & !reg_error;
   assign mio_pad_sleep_en_16_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_17_we = addr_hit[276] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_17_we = addr_hit[276] & reg_we & !reg_error;
   assign mio_pad_sleep_en_17_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_18_we = addr_hit[277] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_18_we = addr_hit[277] & reg_we & !reg_error;
   assign mio_pad_sleep_en_18_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_19_we = addr_hit[278] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_19_we = addr_hit[278] & reg_we & !reg_error;
   assign mio_pad_sleep_en_19_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_20_we = addr_hit[279] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_20_we = addr_hit[279] & reg_we & !reg_error;
   assign mio_pad_sleep_en_20_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_21_we = addr_hit[280] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_21_we = addr_hit[280] & reg_we & !reg_error;
   assign mio_pad_sleep_en_21_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_22_we = addr_hit[281] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_22_we = addr_hit[281] & reg_we & !reg_error;
   assign mio_pad_sleep_en_22_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_23_we = addr_hit[282] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_23_we = addr_hit[282] & reg_we & !reg_error;
   assign mio_pad_sleep_en_23_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_24_we = addr_hit[283] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_24_we = addr_hit[283] & reg_we & !reg_error;
   assign mio_pad_sleep_en_24_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_25_we = addr_hit[284] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_25_we = addr_hit[284] & reg_we & !reg_error;
   assign mio_pad_sleep_en_25_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_26_we = addr_hit[285] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_26_we = addr_hit[285] & reg_we & !reg_error;
   assign mio_pad_sleep_en_26_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_27_we = addr_hit[286] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_27_we = addr_hit[286] & reg_we & !reg_error;
   assign mio_pad_sleep_en_27_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_28_we = addr_hit[287] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_28_we = addr_hit[287] & reg_we & !reg_error;
   assign mio_pad_sleep_en_28_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_29_we = addr_hit[288] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_29_we = addr_hit[288] & reg_we & !reg_error;
   assign mio_pad_sleep_en_29_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_30_we = addr_hit[289] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_30_we = addr_hit[289] & reg_we & !reg_error;
   assign mio_pad_sleep_en_30_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_en_31_we = addr_hit[290] & reg_we & ~wr_err;
+  assign mio_pad_sleep_en_31_we = addr_hit[290] & reg_we & !reg_error;
   assign mio_pad_sleep_en_31_wd = reg_wdata[0];
 
-  assign mio_pad_sleep_mode_0_we = addr_hit[291] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_0_we = addr_hit[291] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_0_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_1_we = addr_hit[292] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_1_we = addr_hit[292] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_1_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_2_we = addr_hit[293] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_2_we = addr_hit[293] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_2_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_3_we = addr_hit[294] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_3_we = addr_hit[294] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_3_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_4_we = addr_hit[295] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_4_we = addr_hit[295] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_4_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_5_we = addr_hit[296] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_5_we = addr_hit[296] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_5_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_6_we = addr_hit[297] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_6_we = addr_hit[297] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_6_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_7_we = addr_hit[298] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_7_we = addr_hit[298] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_7_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_8_we = addr_hit[299] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_8_we = addr_hit[299] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_8_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_9_we = addr_hit[300] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_9_we = addr_hit[300] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_9_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_10_we = addr_hit[301] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_10_we = addr_hit[301] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_10_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_11_we = addr_hit[302] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_11_we = addr_hit[302] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_11_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_12_we = addr_hit[303] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_12_we = addr_hit[303] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_12_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_13_we = addr_hit[304] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_13_we = addr_hit[304] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_13_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_14_we = addr_hit[305] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_14_we = addr_hit[305] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_14_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_15_we = addr_hit[306] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_15_we = addr_hit[306] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_15_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_16_we = addr_hit[307] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_16_we = addr_hit[307] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_16_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_17_we = addr_hit[308] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_17_we = addr_hit[308] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_17_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_18_we = addr_hit[309] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_18_we = addr_hit[309] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_18_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_19_we = addr_hit[310] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_19_we = addr_hit[310] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_19_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_20_we = addr_hit[311] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_20_we = addr_hit[311] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_20_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_21_we = addr_hit[312] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_21_we = addr_hit[312] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_21_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_22_we = addr_hit[313] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_22_we = addr_hit[313] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_22_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_23_we = addr_hit[314] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_23_we = addr_hit[314] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_23_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_24_we = addr_hit[315] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_24_we = addr_hit[315] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_24_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_25_we = addr_hit[316] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_25_we = addr_hit[316] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_25_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_26_we = addr_hit[317] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_26_we = addr_hit[317] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_26_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_27_we = addr_hit[318] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_27_we = addr_hit[318] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_27_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_28_we = addr_hit[319] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_28_we = addr_hit[319] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_28_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_29_we = addr_hit[320] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_29_we = addr_hit[320] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_29_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_30_we = addr_hit[321] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_30_we = addr_hit[321] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_30_wd = reg_wdata[1:0];
 
-  assign mio_pad_sleep_mode_31_we = addr_hit[322] & reg_we & ~wr_err;
+  assign mio_pad_sleep_mode_31_we = addr_hit[322] & reg_we & !reg_error;
   assign mio_pad_sleep_mode_31_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_status_en_0_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_0_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_0_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_status_en_1_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_1_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_1_wd = reg_wdata[1];
 
-  assign dio_pad_sleep_status_en_2_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_2_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_2_wd = reg_wdata[2];
 
-  assign dio_pad_sleep_status_en_3_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_3_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_3_wd = reg_wdata[3];
 
-  assign dio_pad_sleep_status_en_4_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_4_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_4_wd = reg_wdata[4];
 
-  assign dio_pad_sleep_status_en_5_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_5_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_5_wd = reg_wdata[5];
 
-  assign dio_pad_sleep_status_en_6_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_6_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_6_wd = reg_wdata[6];
 
-  assign dio_pad_sleep_status_en_7_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_7_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_7_wd = reg_wdata[7];
 
-  assign dio_pad_sleep_status_en_8_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_8_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_8_wd = reg_wdata[8];
 
-  assign dio_pad_sleep_status_en_9_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_9_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_9_wd = reg_wdata[9];
 
-  assign dio_pad_sleep_status_en_10_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_10_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_10_wd = reg_wdata[10];
 
-  assign dio_pad_sleep_status_en_11_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_11_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_11_wd = reg_wdata[11];
 
-  assign dio_pad_sleep_status_en_12_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_12_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_12_wd = reg_wdata[12];
 
-  assign dio_pad_sleep_status_en_13_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_13_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_13_wd = reg_wdata[13];
 
-  assign dio_pad_sleep_status_en_14_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_14_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_14_wd = reg_wdata[14];
 
-  assign dio_pad_sleep_status_en_15_we = addr_hit[323] & reg_we & ~wr_err;
+  assign dio_pad_sleep_status_en_15_we = addr_hit[323] & reg_we & !reg_error;
   assign dio_pad_sleep_status_en_15_wd = reg_wdata[15];
 
-  assign dio_pad_sleep_regwen_0_we = addr_hit[324] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_0_we = addr_hit[324] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_0_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_regwen_1_we = addr_hit[325] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_1_we = addr_hit[325] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_1_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_regwen_2_we = addr_hit[326] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_2_we = addr_hit[326] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_2_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_regwen_3_we = addr_hit[327] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_3_we = addr_hit[327] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_3_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_regwen_4_we = addr_hit[328] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_4_we = addr_hit[328] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_4_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_regwen_5_we = addr_hit[329] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_5_we = addr_hit[329] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_5_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_regwen_6_we = addr_hit[330] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_6_we = addr_hit[330] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_6_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_regwen_7_we = addr_hit[331] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_7_we = addr_hit[331] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_7_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_regwen_8_we = addr_hit[332] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_8_we = addr_hit[332] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_8_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_regwen_9_we = addr_hit[333] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_9_we = addr_hit[333] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_9_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_regwen_10_we = addr_hit[334] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_10_we = addr_hit[334] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_10_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_regwen_11_we = addr_hit[335] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_11_we = addr_hit[335] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_11_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_regwen_12_we = addr_hit[336] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_12_we = addr_hit[336] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_12_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_regwen_13_we = addr_hit[337] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_13_we = addr_hit[337] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_13_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_regwen_14_we = addr_hit[338] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_14_we = addr_hit[338] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_14_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_regwen_15_we = addr_hit[339] & reg_we & ~wr_err;
+  assign dio_pad_sleep_regwen_15_we = addr_hit[339] & reg_we & !reg_error;
   assign dio_pad_sleep_regwen_15_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_0_we = addr_hit[340] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_0_we = addr_hit[340] & reg_we & !reg_error;
   assign dio_pad_sleep_en_0_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_1_we = addr_hit[341] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_1_we = addr_hit[341] & reg_we & !reg_error;
   assign dio_pad_sleep_en_1_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_2_we = addr_hit[342] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_2_we = addr_hit[342] & reg_we & !reg_error;
   assign dio_pad_sleep_en_2_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_3_we = addr_hit[343] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_3_we = addr_hit[343] & reg_we & !reg_error;
   assign dio_pad_sleep_en_3_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_4_we = addr_hit[344] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_4_we = addr_hit[344] & reg_we & !reg_error;
   assign dio_pad_sleep_en_4_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_5_we = addr_hit[345] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_5_we = addr_hit[345] & reg_we & !reg_error;
   assign dio_pad_sleep_en_5_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_6_we = addr_hit[346] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_6_we = addr_hit[346] & reg_we & !reg_error;
   assign dio_pad_sleep_en_6_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_7_we = addr_hit[347] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_7_we = addr_hit[347] & reg_we & !reg_error;
   assign dio_pad_sleep_en_7_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_8_we = addr_hit[348] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_8_we = addr_hit[348] & reg_we & !reg_error;
   assign dio_pad_sleep_en_8_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_9_we = addr_hit[349] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_9_we = addr_hit[349] & reg_we & !reg_error;
   assign dio_pad_sleep_en_9_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_10_we = addr_hit[350] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_10_we = addr_hit[350] & reg_we & !reg_error;
   assign dio_pad_sleep_en_10_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_11_we = addr_hit[351] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_11_we = addr_hit[351] & reg_we & !reg_error;
   assign dio_pad_sleep_en_11_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_12_we = addr_hit[352] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_12_we = addr_hit[352] & reg_we & !reg_error;
   assign dio_pad_sleep_en_12_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_13_we = addr_hit[353] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_13_we = addr_hit[353] & reg_we & !reg_error;
   assign dio_pad_sleep_en_13_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_14_we = addr_hit[354] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_14_we = addr_hit[354] & reg_we & !reg_error;
   assign dio_pad_sleep_en_14_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_en_15_we = addr_hit[355] & reg_we & ~wr_err;
+  assign dio_pad_sleep_en_15_we = addr_hit[355] & reg_we & !reg_error;
   assign dio_pad_sleep_en_15_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_mode_0_we = addr_hit[356] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_0_we = addr_hit[356] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_0_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_mode_1_we = addr_hit[357] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_1_we = addr_hit[357] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_1_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_mode_2_we = addr_hit[358] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_2_we = addr_hit[358] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_2_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_mode_3_we = addr_hit[359] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_3_we = addr_hit[359] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_3_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_mode_4_we = addr_hit[360] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_4_we = addr_hit[360] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_4_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_mode_5_we = addr_hit[361] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_5_we = addr_hit[361] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_5_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_mode_6_we = addr_hit[362] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_6_we = addr_hit[362] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_6_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_mode_7_we = addr_hit[363] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_7_we = addr_hit[363] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_7_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_mode_8_we = addr_hit[364] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_8_we = addr_hit[364] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_8_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_mode_9_we = addr_hit[365] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_9_we = addr_hit[365] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_9_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_mode_10_we = addr_hit[366] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_10_we = addr_hit[366] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_10_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_mode_11_we = addr_hit[367] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_11_we = addr_hit[367] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_11_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_mode_12_we = addr_hit[368] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_12_we = addr_hit[368] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_12_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_mode_13_we = addr_hit[369] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_13_we = addr_hit[369] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_13_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_mode_14_we = addr_hit[370] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_14_we = addr_hit[370] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_14_wd = reg_wdata[1:0];
 
-  assign dio_pad_sleep_mode_15_we = addr_hit[371] & reg_we & ~wr_err;
+  assign dio_pad_sleep_mode_15_we = addr_hit[371] & reg_we & !reg_error;
   assign dio_pad_sleep_mode_15_wd = reg_wdata[1:0];
 
-  assign wkup_detector_regwen_0_we = addr_hit[372] & reg_we & ~wr_err;
+  assign wkup_detector_regwen_0_we = addr_hit[372] & reg_we & !reg_error;
   assign wkup_detector_regwen_0_wd = reg_wdata[0];
 
-  assign wkup_detector_regwen_1_we = addr_hit[373] & reg_we & ~wr_err;
+  assign wkup_detector_regwen_1_we = addr_hit[373] & reg_we & !reg_error;
   assign wkup_detector_regwen_1_wd = reg_wdata[0];
 
-  assign wkup_detector_regwen_2_we = addr_hit[374] & reg_we & ~wr_err;
+  assign wkup_detector_regwen_2_we = addr_hit[374] & reg_we & !reg_error;
   assign wkup_detector_regwen_2_wd = reg_wdata[0];
 
-  assign wkup_detector_regwen_3_we = addr_hit[375] & reg_we & ~wr_err;
+  assign wkup_detector_regwen_3_we = addr_hit[375] & reg_we & !reg_error;
   assign wkup_detector_regwen_3_wd = reg_wdata[0];
 
-  assign wkup_detector_regwen_4_we = addr_hit[376] & reg_we & ~wr_err;
+  assign wkup_detector_regwen_4_we = addr_hit[376] & reg_we & !reg_error;
   assign wkup_detector_regwen_4_wd = reg_wdata[0];
 
-  assign wkup_detector_regwen_5_we = addr_hit[377] & reg_we & ~wr_err;
+  assign wkup_detector_regwen_5_we = addr_hit[377] & reg_we & !reg_error;
   assign wkup_detector_regwen_5_wd = reg_wdata[0];
 
-  assign wkup_detector_regwen_6_we = addr_hit[378] & reg_we & ~wr_err;
+  assign wkup_detector_regwen_6_we = addr_hit[378] & reg_we & !reg_error;
   assign wkup_detector_regwen_6_wd = reg_wdata[0];
 
-  assign wkup_detector_regwen_7_we = addr_hit[379] & reg_we & ~wr_err;
+  assign wkup_detector_regwen_7_we = addr_hit[379] & reg_we & !reg_error;
   assign wkup_detector_regwen_7_wd = reg_wdata[0];
 
-  assign wkup_detector_en_0_we = addr_hit[380] & reg_we & ~wr_err;
+  assign wkup_detector_en_0_we = addr_hit[380] & reg_we & !reg_error;
   assign wkup_detector_en_0_wd = reg_wdata[0];
 
-  assign wkup_detector_en_1_we = addr_hit[381] & reg_we & ~wr_err;
+  assign wkup_detector_en_1_we = addr_hit[381] & reg_we & !reg_error;
   assign wkup_detector_en_1_wd = reg_wdata[0];
 
-  assign wkup_detector_en_2_we = addr_hit[382] & reg_we & ~wr_err;
+  assign wkup_detector_en_2_we = addr_hit[382] & reg_we & !reg_error;
   assign wkup_detector_en_2_wd = reg_wdata[0];
 
-  assign wkup_detector_en_3_we = addr_hit[383] & reg_we & ~wr_err;
+  assign wkup_detector_en_3_we = addr_hit[383] & reg_we & !reg_error;
   assign wkup_detector_en_3_wd = reg_wdata[0];
 
-  assign wkup_detector_en_4_we = addr_hit[384] & reg_we & ~wr_err;
+  assign wkup_detector_en_4_we = addr_hit[384] & reg_we & !reg_error;
   assign wkup_detector_en_4_wd = reg_wdata[0];
 
-  assign wkup_detector_en_5_we = addr_hit[385] & reg_we & ~wr_err;
+  assign wkup_detector_en_5_we = addr_hit[385] & reg_we & !reg_error;
   assign wkup_detector_en_5_wd = reg_wdata[0];
 
-  assign wkup_detector_en_6_we = addr_hit[386] & reg_we & ~wr_err;
+  assign wkup_detector_en_6_we = addr_hit[386] & reg_we & !reg_error;
   assign wkup_detector_en_6_wd = reg_wdata[0];
 
-  assign wkup_detector_en_7_we = addr_hit[387] & reg_we & ~wr_err;
+  assign wkup_detector_en_7_we = addr_hit[387] & reg_we & !reg_error;
   assign wkup_detector_en_7_wd = reg_wdata[0];
 
-  assign wkup_detector_0_mode_0_we = addr_hit[388] & reg_we & ~wr_err;
+  assign wkup_detector_0_mode_0_we = addr_hit[388] & reg_we & !reg_error;
   assign wkup_detector_0_mode_0_wd = reg_wdata[2:0];
 
-  assign wkup_detector_0_filter_0_we = addr_hit[388] & reg_we & ~wr_err;
+  assign wkup_detector_0_filter_0_we = addr_hit[388] & reg_we & !reg_error;
   assign wkup_detector_0_filter_0_wd = reg_wdata[3];
 
-  assign wkup_detector_0_miodio_0_we = addr_hit[388] & reg_we & ~wr_err;
+  assign wkup_detector_0_miodio_0_we = addr_hit[388] & reg_we & !reg_error;
   assign wkup_detector_0_miodio_0_wd = reg_wdata[4];
 
-  assign wkup_detector_1_mode_1_we = addr_hit[389] & reg_we & ~wr_err;
+  assign wkup_detector_1_mode_1_we = addr_hit[389] & reg_we & !reg_error;
   assign wkup_detector_1_mode_1_wd = reg_wdata[2:0];
 
-  assign wkup_detector_1_filter_1_we = addr_hit[389] & reg_we & ~wr_err;
+  assign wkup_detector_1_filter_1_we = addr_hit[389] & reg_we & !reg_error;
   assign wkup_detector_1_filter_1_wd = reg_wdata[3];
 
-  assign wkup_detector_1_miodio_1_we = addr_hit[389] & reg_we & ~wr_err;
+  assign wkup_detector_1_miodio_1_we = addr_hit[389] & reg_we & !reg_error;
   assign wkup_detector_1_miodio_1_wd = reg_wdata[4];
 
-  assign wkup_detector_2_mode_2_we = addr_hit[390] & reg_we & ~wr_err;
+  assign wkup_detector_2_mode_2_we = addr_hit[390] & reg_we & !reg_error;
   assign wkup_detector_2_mode_2_wd = reg_wdata[2:0];
 
-  assign wkup_detector_2_filter_2_we = addr_hit[390] & reg_we & ~wr_err;
+  assign wkup_detector_2_filter_2_we = addr_hit[390] & reg_we & !reg_error;
   assign wkup_detector_2_filter_2_wd = reg_wdata[3];
 
-  assign wkup_detector_2_miodio_2_we = addr_hit[390] & reg_we & ~wr_err;
+  assign wkup_detector_2_miodio_2_we = addr_hit[390] & reg_we & !reg_error;
   assign wkup_detector_2_miodio_2_wd = reg_wdata[4];
 
-  assign wkup_detector_3_mode_3_we = addr_hit[391] & reg_we & ~wr_err;
+  assign wkup_detector_3_mode_3_we = addr_hit[391] & reg_we & !reg_error;
   assign wkup_detector_3_mode_3_wd = reg_wdata[2:0];
 
-  assign wkup_detector_3_filter_3_we = addr_hit[391] & reg_we & ~wr_err;
+  assign wkup_detector_3_filter_3_we = addr_hit[391] & reg_we & !reg_error;
   assign wkup_detector_3_filter_3_wd = reg_wdata[3];
 
-  assign wkup_detector_3_miodio_3_we = addr_hit[391] & reg_we & ~wr_err;
+  assign wkup_detector_3_miodio_3_we = addr_hit[391] & reg_we & !reg_error;
   assign wkup_detector_3_miodio_3_wd = reg_wdata[4];
 
-  assign wkup_detector_4_mode_4_we = addr_hit[392] & reg_we & ~wr_err;
+  assign wkup_detector_4_mode_4_we = addr_hit[392] & reg_we & !reg_error;
   assign wkup_detector_4_mode_4_wd = reg_wdata[2:0];
 
-  assign wkup_detector_4_filter_4_we = addr_hit[392] & reg_we & ~wr_err;
+  assign wkup_detector_4_filter_4_we = addr_hit[392] & reg_we & !reg_error;
   assign wkup_detector_4_filter_4_wd = reg_wdata[3];
 
-  assign wkup_detector_4_miodio_4_we = addr_hit[392] & reg_we & ~wr_err;
+  assign wkup_detector_4_miodio_4_we = addr_hit[392] & reg_we & !reg_error;
   assign wkup_detector_4_miodio_4_wd = reg_wdata[4];
 
-  assign wkup_detector_5_mode_5_we = addr_hit[393] & reg_we & ~wr_err;
+  assign wkup_detector_5_mode_5_we = addr_hit[393] & reg_we & !reg_error;
   assign wkup_detector_5_mode_5_wd = reg_wdata[2:0];
 
-  assign wkup_detector_5_filter_5_we = addr_hit[393] & reg_we & ~wr_err;
+  assign wkup_detector_5_filter_5_we = addr_hit[393] & reg_we & !reg_error;
   assign wkup_detector_5_filter_5_wd = reg_wdata[3];
 
-  assign wkup_detector_5_miodio_5_we = addr_hit[393] & reg_we & ~wr_err;
+  assign wkup_detector_5_miodio_5_we = addr_hit[393] & reg_we & !reg_error;
   assign wkup_detector_5_miodio_5_wd = reg_wdata[4];
 
-  assign wkup_detector_6_mode_6_we = addr_hit[394] & reg_we & ~wr_err;
+  assign wkup_detector_6_mode_6_we = addr_hit[394] & reg_we & !reg_error;
   assign wkup_detector_6_mode_6_wd = reg_wdata[2:0];
 
-  assign wkup_detector_6_filter_6_we = addr_hit[394] & reg_we & ~wr_err;
+  assign wkup_detector_6_filter_6_we = addr_hit[394] & reg_we & !reg_error;
   assign wkup_detector_6_filter_6_wd = reg_wdata[3];
 
-  assign wkup_detector_6_miodio_6_we = addr_hit[394] & reg_we & ~wr_err;
+  assign wkup_detector_6_miodio_6_we = addr_hit[394] & reg_we & !reg_error;
   assign wkup_detector_6_miodio_6_wd = reg_wdata[4];
 
-  assign wkup_detector_7_mode_7_we = addr_hit[395] & reg_we & ~wr_err;
+  assign wkup_detector_7_mode_7_we = addr_hit[395] & reg_we & !reg_error;
   assign wkup_detector_7_mode_7_wd = reg_wdata[2:0];
 
-  assign wkup_detector_7_filter_7_we = addr_hit[395] & reg_we & ~wr_err;
+  assign wkup_detector_7_filter_7_we = addr_hit[395] & reg_we & !reg_error;
   assign wkup_detector_7_filter_7_wd = reg_wdata[3];
 
-  assign wkup_detector_7_miodio_7_we = addr_hit[395] & reg_we & ~wr_err;
+  assign wkup_detector_7_miodio_7_we = addr_hit[395] & reg_we & !reg_error;
   assign wkup_detector_7_miodio_7_wd = reg_wdata[4];
 
-  assign wkup_detector_cnt_th_0_we = addr_hit[396] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_0_we = addr_hit[396] & reg_we & !reg_error;
   assign wkup_detector_cnt_th_0_wd = reg_wdata[7:0];
 
-  assign wkup_detector_cnt_th_1_we = addr_hit[397] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_1_we = addr_hit[397] & reg_we & !reg_error;
   assign wkup_detector_cnt_th_1_wd = reg_wdata[7:0];
 
-  assign wkup_detector_cnt_th_2_we = addr_hit[398] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_2_we = addr_hit[398] & reg_we & !reg_error;
   assign wkup_detector_cnt_th_2_wd = reg_wdata[7:0];
 
-  assign wkup_detector_cnt_th_3_we = addr_hit[399] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_3_we = addr_hit[399] & reg_we & !reg_error;
   assign wkup_detector_cnt_th_3_wd = reg_wdata[7:0];
 
-  assign wkup_detector_cnt_th_4_we = addr_hit[400] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_4_we = addr_hit[400] & reg_we & !reg_error;
   assign wkup_detector_cnt_th_4_wd = reg_wdata[7:0];
 
-  assign wkup_detector_cnt_th_5_we = addr_hit[401] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_5_we = addr_hit[401] & reg_we & !reg_error;
   assign wkup_detector_cnt_th_5_wd = reg_wdata[7:0];
 
-  assign wkup_detector_cnt_th_6_we = addr_hit[402] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_6_we = addr_hit[402] & reg_we & !reg_error;
   assign wkup_detector_cnt_th_6_wd = reg_wdata[7:0];
 
-  assign wkup_detector_cnt_th_7_we = addr_hit[403] & reg_we & ~wr_err;
+  assign wkup_detector_cnt_th_7_we = addr_hit[403] & reg_we & !reg_error;
   assign wkup_detector_cnt_th_7_wd = reg_wdata[7:0];
 
-  assign wkup_detector_padsel_0_we = addr_hit[404] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_0_we = addr_hit[404] & reg_we & !reg_error;
   assign wkup_detector_padsel_0_wd = reg_wdata[5:0];
 
-  assign wkup_detector_padsel_1_we = addr_hit[405] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_1_we = addr_hit[405] & reg_we & !reg_error;
   assign wkup_detector_padsel_1_wd = reg_wdata[5:0];
 
-  assign wkup_detector_padsel_2_we = addr_hit[406] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_2_we = addr_hit[406] & reg_we & !reg_error;
   assign wkup_detector_padsel_2_wd = reg_wdata[5:0];
 
-  assign wkup_detector_padsel_3_we = addr_hit[407] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_3_we = addr_hit[407] & reg_we & !reg_error;
   assign wkup_detector_padsel_3_wd = reg_wdata[5:0];
 
-  assign wkup_detector_padsel_4_we = addr_hit[408] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_4_we = addr_hit[408] & reg_we & !reg_error;
   assign wkup_detector_padsel_4_wd = reg_wdata[5:0];
 
-  assign wkup_detector_padsel_5_we = addr_hit[409] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_5_we = addr_hit[409] & reg_we & !reg_error;
   assign wkup_detector_padsel_5_wd = reg_wdata[5:0];
 
-  assign wkup_detector_padsel_6_we = addr_hit[410] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_6_we = addr_hit[410] & reg_we & !reg_error;
   assign wkup_detector_padsel_6_wd = reg_wdata[5:0];
 
-  assign wkup_detector_padsel_7_we = addr_hit[411] & reg_we & ~wr_err;
+  assign wkup_detector_padsel_7_we = addr_hit[411] & reg_we & !reg_error;
   assign wkup_detector_padsel_7_wd = reg_wdata[5:0];
 
-  assign wkup_cause_cause_0_we = addr_hit[412] & reg_we & ~wr_err;
+  assign wkup_cause_cause_0_we = addr_hit[412] & reg_we & !reg_error;
   assign wkup_cause_cause_0_wd = reg_wdata[0];
-  assign wkup_cause_cause_0_re = addr_hit[412] && reg_re;
+  assign wkup_cause_cause_0_re = addr_hit[412] & reg_re & !reg_error;
 
-  assign wkup_cause_cause_1_we = addr_hit[412] & reg_we & ~wr_err;
+  assign wkup_cause_cause_1_we = addr_hit[412] & reg_we & !reg_error;
   assign wkup_cause_cause_1_wd = reg_wdata[1];
-  assign wkup_cause_cause_1_re = addr_hit[412] && reg_re;
+  assign wkup_cause_cause_1_re = addr_hit[412] & reg_re & !reg_error;
 
-  assign wkup_cause_cause_2_we = addr_hit[412] & reg_we & ~wr_err;
+  assign wkup_cause_cause_2_we = addr_hit[412] & reg_we & !reg_error;
   assign wkup_cause_cause_2_wd = reg_wdata[2];
-  assign wkup_cause_cause_2_re = addr_hit[412] && reg_re;
+  assign wkup_cause_cause_2_re = addr_hit[412] & reg_re & !reg_error;
 
-  assign wkup_cause_cause_3_we = addr_hit[412] & reg_we & ~wr_err;
+  assign wkup_cause_cause_3_we = addr_hit[412] & reg_we & !reg_error;
   assign wkup_cause_cause_3_wd = reg_wdata[3];
-  assign wkup_cause_cause_3_re = addr_hit[412] && reg_re;
+  assign wkup_cause_cause_3_re = addr_hit[412] & reg_re & !reg_error;
 
-  assign wkup_cause_cause_4_we = addr_hit[412] & reg_we & ~wr_err;
+  assign wkup_cause_cause_4_we = addr_hit[412] & reg_we & !reg_error;
   assign wkup_cause_cause_4_wd = reg_wdata[4];
-  assign wkup_cause_cause_4_re = addr_hit[412] && reg_re;
+  assign wkup_cause_cause_4_re = addr_hit[412] & reg_re & !reg_error;
 
-  assign wkup_cause_cause_5_we = addr_hit[412] & reg_we & ~wr_err;
+  assign wkup_cause_cause_5_we = addr_hit[412] & reg_we & !reg_error;
   assign wkup_cause_cause_5_wd = reg_wdata[5];
-  assign wkup_cause_cause_5_re = addr_hit[412] && reg_re;
+  assign wkup_cause_cause_5_re = addr_hit[412] & reg_re & !reg_error;
 
-  assign wkup_cause_cause_6_we = addr_hit[412] & reg_we & ~wr_err;
+  assign wkup_cause_cause_6_we = addr_hit[412] & reg_we & !reg_error;
   assign wkup_cause_cause_6_wd = reg_wdata[6];
-  assign wkup_cause_cause_6_re = addr_hit[412] && reg_re;
+  assign wkup_cause_cause_6_re = addr_hit[412] & reg_re & !reg_error;
 
-  assign wkup_cause_cause_7_we = addr_hit[412] & reg_we & ~wr_err;
+  assign wkup_cause_cause_7_we = addr_hit[412] & reg_we & !reg_error;
   assign wkup_cause_cause_7_wd = reg_wdata[7];
-  assign wkup_cause_cause_7_re = addr_hit[412] && reg_re;
+  assign wkup_cause_cause_7_re = addr_hit[412] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin

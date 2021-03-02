@@ -2818,303 +2818,303 @@ module i2c_reg_top (
     if (addr_hit[21] && reg_we && (I2C_PERMIT[21] != (I2C_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_fmt_watermark_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_fmt_watermark_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_fmt_watermark_wd = reg_wdata[0];
 
-  assign intr_state_rx_watermark_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rx_watermark_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_watermark_wd = reg_wdata[1];
 
-  assign intr_state_fmt_overflow_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_fmt_overflow_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_fmt_overflow_wd = reg_wdata[2];
 
-  assign intr_state_rx_overflow_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rx_overflow_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rx_overflow_wd = reg_wdata[3];
 
-  assign intr_state_nak_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_nak_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_nak_wd = reg_wdata[4];
 
-  assign intr_state_scl_interference_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_scl_interference_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_scl_interference_wd = reg_wdata[5];
 
-  assign intr_state_sda_interference_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_sda_interference_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_sda_interference_wd = reg_wdata[6];
 
-  assign intr_state_stretch_timeout_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_stretch_timeout_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_stretch_timeout_wd = reg_wdata[7];
 
-  assign intr_state_sda_unstable_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_sda_unstable_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_sda_unstable_wd = reg_wdata[8];
 
-  assign intr_state_trans_complete_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_trans_complete_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_trans_complete_wd = reg_wdata[9];
 
-  assign intr_state_tx_empty_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_tx_empty_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_tx_empty_wd = reg_wdata[10];
 
-  assign intr_state_tx_nonempty_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_tx_nonempty_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_tx_nonempty_wd = reg_wdata[11];
 
-  assign intr_state_tx_overflow_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_tx_overflow_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_tx_overflow_wd = reg_wdata[12];
 
-  assign intr_state_acq_overflow_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_acq_overflow_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_acq_overflow_wd = reg_wdata[13];
 
-  assign intr_state_ack_stop_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_ack_stop_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_ack_stop_wd = reg_wdata[14];
 
-  assign intr_state_host_timeout_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_host_timeout_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_host_timeout_wd = reg_wdata[15];
 
-  assign intr_enable_fmt_watermark_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_fmt_watermark_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_fmt_watermark_wd = reg_wdata[0];
 
-  assign intr_enable_rx_watermark_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rx_watermark_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_watermark_wd = reg_wdata[1];
 
-  assign intr_enable_fmt_overflow_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_fmt_overflow_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_fmt_overflow_wd = reg_wdata[2];
 
-  assign intr_enable_rx_overflow_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rx_overflow_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rx_overflow_wd = reg_wdata[3];
 
-  assign intr_enable_nak_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_nak_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_nak_wd = reg_wdata[4];
 
-  assign intr_enable_scl_interference_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_scl_interference_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_scl_interference_wd = reg_wdata[5];
 
-  assign intr_enable_sda_interference_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_sda_interference_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_sda_interference_wd = reg_wdata[6];
 
-  assign intr_enable_stretch_timeout_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_stretch_timeout_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_stretch_timeout_wd = reg_wdata[7];
 
-  assign intr_enable_sda_unstable_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_sda_unstable_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_sda_unstable_wd = reg_wdata[8];
 
-  assign intr_enable_trans_complete_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_trans_complete_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_trans_complete_wd = reg_wdata[9];
 
-  assign intr_enable_tx_empty_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_tx_empty_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_tx_empty_wd = reg_wdata[10];
 
-  assign intr_enable_tx_nonempty_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_tx_nonempty_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_tx_nonempty_wd = reg_wdata[11];
 
-  assign intr_enable_tx_overflow_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_tx_overflow_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_tx_overflow_wd = reg_wdata[12];
 
-  assign intr_enable_acq_overflow_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_acq_overflow_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_acq_overflow_wd = reg_wdata[13];
 
-  assign intr_enable_ack_stop_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_ack_stop_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_ack_stop_wd = reg_wdata[14];
 
-  assign intr_enable_host_timeout_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_host_timeout_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_host_timeout_wd = reg_wdata[15];
 
-  assign intr_test_fmt_watermark_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_fmt_watermark_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_fmt_watermark_wd = reg_wdata[0];
 
-  assign intr_test_rx_watermark_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rx_watermark_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_watermark_wd = reg_wdata[1];
 
-  assign intr_test_fmt_overflow_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_fmt_overflow_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_fmt_overflow_wd = reg_wdata[2];
 
-  assign intr_test_rx_overflow_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rx_overflow_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rx_overflow_wd = reg_wdata[3];
 
-  assign intr_test_nak_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_nak_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_nak_wd = reg_wdata[4];
 
-  assign intr_test_scl_interference_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_scl_interference_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_scl_interference_wd = reg_wdata[5];
 
-  assign intr_test_sda_interference_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_sda_interference_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_sda_interference_wd = reg_wdata[6];
 
-  assign intr_test_stretch_timeout_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_stretch_timeout_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_stretch_timeout_wd = reg_wdata[7];
 
-  assign intr_test_sda_unstable_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_sda_unstable_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_sda_unstable_wd = reg_wdata[8];
 
-  assign intr_test_trans_complete_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_trans_complete_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_trans_complete_wd = reg_wdata[9];
 
-  assign intr_test_tx_empty_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_tx_empty_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_tx_empty_wd = reg_wdata[10];
 
-  assign intr_test_tx_nonempty_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_tx_nonempty_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_tx_nonempty_wd = reg_wdata[11];
 
-  assign intr_test_tx_overflow_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_tx_overflow_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_tx_overflow_wd = reg_wdata[12];
 
-  assign intr_test_acq_overflow_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_acq_overflow_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_acq_overflow_wd = reg_wdata[13];
 
-  assign intr_test_ack_stop_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_ack_stop_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_ack_stop_wd = reg_wdata[14];
 
-  assign intr_test_host_timeout_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_host_timeout_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_host_timeout_wd = reg_wdata[15];
 
-  assign ctrl_enablehost_we = addr_hit[3] & reg_we & ~wr_err;
+  assign ctrl_enablehost_we = addr_hit[3] & reg_we & !reg_error;
   assign ctrl_enablehost_wd = reg_wdata[0];
 
-  assign ctrl_enabletarget_we = addr_hit[3] & reg_we & ~wr_err;
+  assign ctrl_enabletarget_we = addr_hit[3] & reg_we & !reg_error;
   assign ctrl_enabletarget_wd = reg_wdata[1];
 
-  assign status_fmtfull_re = addr_hit[4] && reg_re;
+  assign status_fmtfull_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_rxfull_re = addr_hit[4] && reg_re;
+  assign status_rxfull_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_fmtempty_re = addr_hit[4] && reg_re;
+  assign status_fmtempty_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_hostidle_re = addr_hit[4] && reg_re;
+  assign status_hostidle_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_targetidle_re = addr_hit[4] && reg_re;
+  assign status_targetidle_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_rxempty_re = addr_hit[4] && reg_re;
+  assign status_rxempty_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_txfull_re = addr_hit[4] && reg_re;
+  assign status_txfull_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_acqfull_re = addr_hit[4] && reg_re;
+  assign status_acqfull_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_txempty_re = addr_hit[4] && reg_re;
+  assign status_txempty_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_acqempty_re = addr_hit[4] && reg_re;
+  assign status_acqempty_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign rdata_re = addr_hit[5] && reg_re;
+  assign rdata_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign fdata_fbyte_we = addr_hit[6] & reg_we & ~wr_err;
+  assign fdata_fbyte_we = addr_hit[6] & reg_we & !reg_error;
   assign fdata_fbyte_wd = reg_wdata[7:0];
 
-  assign fdata_start_we = addr_hit[6] & reg_we & ~wr_err;
+  assign fdata_start_we = addr_hit[6] & reg_we & !reg_error;
   assign fdata_start_wd = reg_wdata[8];
 
-  assign fdata_stop_we = addr_hit[6] & reg_we & ~wr_err;
+  assign fdata_stop_we = addr_hit[6] & reg_we & !reg_error;
   assign fdata_stop_wd = reg_wdata[9];
 
-  assign fdata_read_we = addr_hit[6] & reg_we & ~wr_err;
+  assign fdata_read_we = addr_hit[6] & reg_we & !reg_error;
   assign fdata_read_wd = reg_wdata[10];
 
-  assign fdata_rcont_we = addr_hit[6] & reg_we & ~wr_err;
+  assign fdata_rcont_we = addr_hit[6] & reg_we & !reg_error;
   assign fdata_rcont_wd = reg_wdata[11];
 
-  assign fdata_nakok_we = addr_hit[6] & reg_we & ~wr_err;
+  assign fdata_nakok_we = addr_hit[6] & reg_we & !reg_error;
   assign fdata_nakok_wd = reg_wdata[12];
 
-  assign fifo_ctrl_rxrst_we = addr_hit[7] & reg_we & ~wr_err;
+  assign fifo_ctrl_rxrst_we = addr_hit[7] & reg_we & !reg_error;
   assign fifo_ctrl_rxrst_wd = reg_wdata[0];
 
-  assign fifo_ctrl_fmtrst_we = addr_hit[7] & reg_we & ~wr_err;
+  assign fifo_ctrl_fmtrst_we = addr_hit[7] & reg_we & !reg_error;
   assign fifo_ctrl_fmtrst_wd = reg_wdata[1];
 
-  assign fifo_ctrl_rxilvl_we = addr_hit[7] & reg_we & ~wr_err;
+  assign fifo_ctrl_rxilvl_we = addr_hit[7] & reg_we & !reg_error;
   assign fifo_ctrl_rxilvl_wd = reg_wdata[4:2];
 
-  assign fifo_ctrl_fmtilvl_we = addr_hit[7] & reg_we & ~wr_err;
+  assign fifo_ctrl_fmtilvl_we = addr_hit[7] & reg_we & !reg_error;
   assign fifo_ctrl_fmtilvl_wd = reg_wdata[6:5];
 
-  assign fifo_ctrl_acqrst_we = addr_hit[7] & reg_we & ~wr_err;
+  assign fifo_ctrl_acqrst_we = addr_hit[7] & reg_we & !reg_error;
   assign fifo_ctrl_acqrst_wd = reg_wdata[7];
 
-  assign fifo_ctrl_txrst_we = addr_hit[7] & reg_we & ~wr_err;
+  assign fifo_ctrl_txrst_we = addr_hit[7] & reg_we & !reg_error;
   assign fifo_ctrl_txrst_wd = reg_wdata[8];
 
-  assign fifo_status_fmtlvl_re = addr_hit[8] && reg_re;
+  assign fifo_status_fmtlvl_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign fifo_status_txlvl_re = addr_hit[8] && reg_re;
+  assign fifo_status_txlvl_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign fifo_status_rxlvl_re = addr_hit[8] && reg_re;
+  assign fifo_status_rxlvl_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign fifo_status_acqlvl_re = addr_hit[8] && reg_re;
+  assign fifo_status_acqlvl_re = addr_hit[8] & reg_re & !reg_error;
 
-  assign ovrd_txovrden_we = addr_hit[9] & reg_we & ~wr_err;
+  assign ovrd_txovrden_we = addr_hit[9] & reg_we & !reg_error;
   assign ovrd_txovrden_wd = reg_wdata[0];
 
-  assign ovrd_sclval_we = addr_hit[9] & reg_we & ~wr_err;
+  assign ovrd_sclval_we = addr_hit[9] & reg_we & !reg_error;
   assign ovrd_sclval_wd = reg_wdata[1];
 
-  assign ovrd_sdaval_we = addr_hit[9] & reg_we & ~wr_err;
+  assign ovrd_sdaval_we = addr_hit[9] & reg_we & !reg_error;
   assign ovrd_sdaval_wd = reg_wdata[2];
 
-  assign val_scl_rx_re = addr_hit[10] && reg_re;
+  assign val_scl_rx_re = addr_hit[10] & reg_re & !reg_error;
 
-  assign val_sda_rx_re = addr_hit[10] && reg_re;
+  assign val_sda_rx_re = addr_hit[10] & reg_re & !reg_error;
 
-  assign timing0_thigh_we = addr_hit[11] & reg_we & ~wr_err;
+  assign timing0_thigh_we = addr_hit[11] & reg_we & !reg_error;
   assign timing0_thigh_wd = reg_wdata[15:0];
 
-  assign timing0_tlow_we = addr_hit[11] & reg_we & ~wr_err;
+  assign timing0_tlow_we = addr_hit[11] & reg_we & !reg_error;
   assign timing0_tlow_wd = reg_wdata[31:16];
 
-  assign timing1_t_r_we = addr_hit[12] & reg_we & ~wr_err;
+  assign timing1_t_r_we = addr_hit[12] & reg_we & !reg_error;
   assign timing1_t_r_wd = reg_wdata[15:0];
 
-  assign timing1_t_f_we = addr_hit[12] & reg_we & ~wr_err;
+  assign timing1_t_f_we = addr_hit[12] & reg_we & !reg_error;
   assign timing1_t_f_wd = reg_wdata[31:16];
 
-  assign timing2_tsu_sta_we = addr_hit[13] & reg_we & ~wr_err;
+  assign timing2_tsu_sta_we = addr_hit[13] & reg_we & !reg_error;
   assign timing2_tsu_sta_wd = reg_wdata[15:0];
 
-  assign timing2_thd_sta_we = addr_hit[13] & reg_we & ~wr_err;
+  assign timing2_thd_sta_we = addr_hit[13] & reg_we & !reg_error;
   assign timing2_thd_sta_wd = reg_wdata[31:16];
 
-  assign timing3_tsu_dat_we = addr_hit[14] & reg_we & ~wr_err;
+  assign timing3_tsu_dat_we = addr_hit[14] & reg_we & !reg_error;
   assign timing3_tsu_dat_wd = reg_wdata[15:0];
 
-  assign timing3_thd_dat_we = addr_hit[14] & reg_we & ~wr_err;
+  assign timing3_thd_dat_we = addr_hit[14] & reg_we & !reg_error;
   assign timing3_thd_dat_wd = reg_wdata[31:16];
 
-  assign timing4_tsu_sto_we = addr_hit[15] & reg_we & ~wr_err;
+  assign timing4_tsu_sto_we = addr_hit[15] & reg_we & !reg_error;
   assign timing4_tsu_sto_wd = reg_wdata[15:0];
 
-  assign timing4_t_buf_we = addr_hit[15] & reg_we & ~wr_err;
+  assign timing4_t_buf_we = addr_hit[15] & reg_we & !reg_error;
   assign timing4_t_buf_wd = reg_wdata[31:16];
 
-  assign timeout_ctrl_val_we = addr_hit[16] & reg_we & ~wr_err;
+  assign timeout_ctrl_val_we = addr_hit[16] & reg_we & !reg_error;
   assign timeout_ctrl_val_wd = reg_wdata[30:0];
 
-  assign timeout_ctrl_en_we = addr_hit[16] & reg_we & ~wr_err;
+  assign timeout_ctrl_en_we = addr_hit[16] & reg_we & !reg_error;
   assign timeout_ctrl_en_wd = reg_wdata[31];
 
-  assign target_id_address0_we = addr_hit[17] & reg_we & ~wr_err;
+  assign target_id_address0_we = addr_hit[17] & reg_we & !reg_error;
   assign target_id_address0_wd = reg_wdata[6:0];
 
-  assign target_id_mask0_we = addr_hit[17] & reg_we & ~wr_err;
+  assign target_id_mask0_we = addr_hit[17] & reg_we & !reg_error;
   assign target_id_mask0_wd = reg_wdata[13:7];
 
-  assign target_id_address1_we = addr_hit[17] & reg_we & ~wr_err;
+  assign target_id_address1_we = addr_hit[17] & reg_we & !reg_error;
   assign target_id_address1_wd = reg_wdata[20:14];
 
-  assign target_id_mask1_we = addr_hit[17] & reg_we & ~wr_err;
+  assign target_id_mask1_we = addr_hit[17] & reg_we & !reg_error;
   assign target_id_mask1_wd = reg_wdata[27:21];
 
-  assign acqdata_abyte_re = addr_hit[18] && reg_re;
+  assign acqdata_abyte_re = addr_hit[18] & reg_re & !reg_error;
 
-  assign acqdata_signal_re = addr_hit[18] && reg_re;
+  assign acqdata_signal_re = addr_hit[18] & reg_re & !reg_error;
 
-  assign txdata_we = addr_hit[19] & reg_we & ~wr_err;
+  assign txdata_we = addr_hit[19] & reg_we & !reg_error;
   assign txdata_wd = reg_wdata[7:0];
 
-  assign stretch_ctrl_enableaddr_we = addr_hit[20] & reg_we & ~wr_err;
+  assign stretch_ctrl_enableaddr_we = addr_hit[20] & reg_we & !reg_error;
   assign stretch_ctrl_enableaddr_wd = reg_wdata[0];
 
-  assign stretch_ctrl_enabletx_we = addr_hit[20] & reg_we & ~wr_err;
+  assign stretch_ctrl_enabletx_we = addr_hit[20] & reg_we & !reg_error;
   assign stretch_ctrl_enabletx_wd = reg_wdata[1];
 
-  assign stretch_ctrl_enableacq_we = addr_hit[20] & reg_we & ~wr_err;
+  assign stretch_ctrl_enableacq_we = addr_hit[20] & reg_we & !reg_error;
   assign stretch_ctrl_enableacq_wd = reg_wdata[2];
 
-  assign stretch_ctrl_stop_we = addr_hit[20] & reg_we & ~wr_err;
+  assign stretch_ctrl_stop_we = addr_hit[20] & reg_we & !reg_error;
   assign stretch_ctrl_stop_wd = reg_wdata[3];
 
-  assign host_timeout_ctrl_we = addr_hit[21] & reg_we & ~wr_err;
+  assign host_timeout_ctrl_we = addr_hit[21] & reg_we & !reg_error;
   assign host_timeout_ctrl_wd = reg_wdata[31:0];
 
   // Read data return

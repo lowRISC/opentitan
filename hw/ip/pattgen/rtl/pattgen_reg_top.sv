@@ -699,64 +699,64 @@ module pattgen_reg_top (
     if (addr_hit[10] && reg_we && (PATTGEN_PERMIT[10] != (PATTGEN_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_done_ch0_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_done_ch0_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_done_ch0_wd = reg_wdata[0];
 
-  assign intr_state_done_ch1_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_done_ch1_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_done_ch1_wd = reg_wdata[1];
 
-  assign intr_enable_done_ch0_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_done_ch0_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_done_ch0_wd = reg_wdata[0];
 
-  assign intr_enable_done_ch1_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_done_ch1_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_done_ch1_wd = reg_wdata[1];
 
-  assign intr_test_done_ch0_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_done_ch0_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_done_ch0_wd = reg_wdata[0];
 
-  assign intr_test_done_ch1_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_done_ch1_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_done_ch1_wd = reg_wdata[1];
 
-  assign ctrl_enable_ch0_we = addr_hit[3] & reg_we & ~wr_err;
+  assign ctrl_enable_ch0_we = addr_hit[3] & reg_we & !reg_error;
   assign ctrl_enable_ch0_wd = reg_wdata[0];
 
-  assign ctrl_enable_ch1_we = addr_hit[3] & reg_we & ~wr_err;
+  assign ctrl_enable_ch1_we = addr_hit[3] & reg_we & !reg_error;
   assign ctrl_enable_ch1_wd = reg_wdata[1];
 
-  assign ctrl_polarity_ch0_we = addr_hit[3] & reg_we & ~wr_err;
+  assign ctrl_polarity_ch0_we = addr_hit[3] & reg_we & !reg_error;
   assign ctrl_polarity_ch0_wd = reg_wdata[2];
 
-  assign ctrl_polarity_ch1_we = addr_hit[3] & reg_we & ~wr_err;
+  assign ctrl_polarity_ch1_we = addr_hit[3] & reg_we & !reg_error;
   assign ctrl_polarity_ch1_wd = reg_wdata[3];
 
-  assign prediv_ch0_we = addr_hit[4] & reg_we & ~wr_err;
+  assign prediv_ch0_we = addr_hit[4] & reg_we & !reg_error;
   assign prediv_ch0_wd = reg_wdata[31:0];
 
-  assign prediv_ch1_we = addr_hit[5] & reg_we & ~wr_err;
+  assign prediv_ch1_we = addr_hit[5] & reg_we & !reg_error;
   assign prediv_ch1_wd = reg_wdata[31:0];
 
-  assign data_ch0_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign data_ch0_0_we = addr_hit[6] & reg_we & !reg_error;
   assign data_ch0_0_wd = reg_wdata[31:0];
 
-  assign data_ch0_1_we = addr_hit[7] & reg_we & ~wr_err;
+  assign data_ch0_1_we = addr_hit[7] & reg_we & !reg_error;
   assign data_ch0_1_wd = reg_wdata[31:0];
 
-  assign data_ch1_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign data_ch1_0_we = addr_hit[8] & reg_we & !reg_error;
   assign data_ch1_0_wd = reg_wdata[31:0];
 
-  assign data_ch1_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign data_ch1_1_we = addr_hit[9] & reg_we & !reg_error;
   assign data_ch1_1_wd = reg_wdata[31:0];
 
-  assign size_len_ch0_we = addr_hit[10] & reg_we & ~wr_err;
+  assign size_len_ch0_we = addr_hit[10] & reg_we & !reg_error;
   assign size_len_ch0_wd = reg_wdata[5:0];
 
-  assign size_reps_ch0_we = addr_hit[10] & reg_we & ~wr_err;
+  assign size_reps_ch0_we = addr_hit[10] & reg_we & !reg_error;
   assign size_reps_ch0_wd = reg_wdata[15:6];
 
-  assign size_len_ch1_we = addr_hit[10] & reg_we & ~wr_err;
+  assign size_len_ch1_we = addr_hit[10] & reg_we & !reg_error;
   assign size_len_ch1_wd = reg_wdata[21:16];
 
-  assign size_reps_ch1_we = addr_hit[10] & reg_we & ~wr_err;
+  assign size_reps_ch1_we = addr_hit[10] & reg_we & !reg_error;
   assign size_reps_ch1_wd = reg_wdata[31:22];
 
   // Read data return

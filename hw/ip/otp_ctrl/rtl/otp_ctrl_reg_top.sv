@@ -1507,152 +1507,152 @@ module otp_ctrl_reg_top (
     if (addr_hit[32] && reg_we && (OTP_CTRL_PERMIT[32] != (OTP_CTRL_PERMIT[32] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_otp_operation_done_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_otp_operation_done_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_otp_operation_done_wd = reg_wdata[0];
 
-  assign intr_state_otp_error_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_otp_error_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_otp_error_wd = reg_wdata[1];
 
-  assign intr_enable_otp_operation_done_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_otp_operation_done_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_otp_operation_done_wd = reg_wdata[0];
 
-  assign intr_enable_otp_error_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_otp_error_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_otp_error_wd = reg_wdata[1];
 
-  assign intr_test_otp_operation_done_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_otp_operation_done_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_otp_operation_done_wd = reg_wdata[0];
 
-  assign intr_test_otp_error_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_otp_error_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_otp_error_wd = reg_wdata[1];
 
-  assign alert_test_fatal_macro_error_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_fatal_macro_error_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_fatal_macro_error_wd = reg_wdata[0];
 
-  assign alert_test_fatal_check_error_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_fatal_check_error_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_fatal_check_error_wd = reg_wdata[1];
 
-  assign status_creator_sw_cfg_error_re = addr_hit[4] && reg_re;
+  assign status_creator_sw_cfg_error_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_owner_sw_cfg_error_re = addr_hit[4] && reg_re;
+  assign status_owner_sw_cfg_error_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_hw_cfg_error_re = addr_hit[4] && reg_re;
+  assign status_hw_cfg_error_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_secret0_error_re = addr_hit[4] && reg_re;
+  assign status_secret0_error_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_secret1_error_re = addr_hit[4] && reg_re;
+  assign status_secret1_error_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_secret2_error_re = addr_hit[4] && reg_re;
+  assign status_secret2_error_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_life_cycle_error_re = addr_hit[4] && reg_re;
+  assign status_life_cycle_error_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_dai_error_re = addr_hit[4] && reg_re;
+  assign status_dai_error_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_lci_error_re = addr_hit[4] && reg_re;
+  assign status_lci_error_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_timeout_error_re = addr_hit[4] && reg_re;
+  assign status_timeout_error_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_lfsr_fsm_error_re = addr_hit[4] && reg_re;
+  assign status_lfsr_fsm_error_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_scrambling_fsm_error_re = addr_hit[4] && reg_re;
+  assign status_scrambling_fsm_error_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_key_deriv_fsm_error_re = addr_hit[4] && reg_re;
+  assign status_key_deriv_fsm_error_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_dai_idle_re = addr_hit[4] && reg_re;
+  assign status_dai_idle_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign status_check_pending_re = addr_hit[4] && reg_re;
+  assign status_check_pending_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign err_code_err_code_0_re = addr_hit[5] && reg_re;
+  assign err_code_err_code_0_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign err_code_err_code_1_re = addr_hit[5] && reg_re;
+  assign err_code_err_code_1_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign err_code_err_code_2_re = addr_hit[5] && reg_re;
+  assign err_code_err_code_2_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign err_code_err_code_3_re = addr_hit[5] && reg_re;
+  assign err_code_err_code_3_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign err_code_err_code_4_re = addr_hit[5] && reg_re;
+  assign err_code_err_code_4_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign err_code_err_code_5_re = addr_hit[5] && reg_re;
+  assign err_code_err_code_5_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign err_code_err_code_6_re = addr_hit[5] && reg_re;
+  assign err_code_err_code_6_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign err_code_err_code_7_re = addr_hit[5] && reg_re;
+  assign err_code_err_code_7_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign err_code_err_code_8_re = addr_hit[5] && reg_re;
+  assign err_code_err_code_8_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign direct_access_regwen_re = addr_hit[6] && reg_re;
+  assign direct_access_regwen_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign direct_access_cmd_rd_we = addr_hit[7] & reg_we & ~wr_err;
+  assign direct_access_cmd_rd_we = addr_hit[7] & reg_we & !reg_error;
   assign direct_access_cmd_rd_wd = reg_wdata[0];
 
-  assign direct_access_cmd_wr_we = addr_hit[7] & reg_we & ~wr_err;
+  assign direct_access_cmd_wr_we = addr_hit[7] & reg_we & !reg_error;
   assign direct_access_cmd_wr_wd = reg_wdata[1];
 
-  assign direct_access_cmd_digest_we = addr_hit[7] & reg_we & ~wr_err;
+  assign direct_access_cmd_digest_we = addr_hit[7] & reg_we & !reg_error;
   assign direct_access_cmd_digest_wd = reg_wdata[2];
 
-  assign direct_access_address_we = addr_hit[8] & reg_we & ~wr_err;
+  assign direct_access_address_we = addr_hit[8] & reg_we & !reg_error;
   assign direct_access_address_wd = reg_wdata[10:0];
 
-  assign direct_access_wdata_0_we = addr_hit[9] & reg_we & ~wr_err;
+  assign direct_access_wdata_0_we = addr_hit[9] & reg_we & !reg_error;
   assign direct_access_wdata_0_wd = reg_wdata[31:0];
 
-  assign direct_access_wdata_1_we = addr_hit[10] & reg_we & ~wr_err;
+  assign direct_access_wdata_1_we = addr_hit[10] & reg_we & !reg_error;
   assign direct_access_wdata_1_wd = reg_wdata[31:0];
 
-  assign direct_access_rdata_0_re = addr_hit[11] && reg_re;
+  assign direct_access_rdata_0_re = addr_hit[11] & reg_re & !reg_error;
 
-  assign direct_access_rdata_1_re = addr_hit[12] && reg_re;
+  assign direct_access_rdata_1_re = addr_hit[12] & reg_re & !reg_error;
 
-  assign check_trigger_regwen_we = addr_hit[13] & reg_we & ~wr_err;
+  assign check_trigger_regwen_we = addr_hit[13] & reg_we & !reg_error;
   assign check_trigger_regwen_wd = reg_wdata[0];
 
-  assign check_trigger_integrity_we = addr_hit[14] & reg_we & ~wr_err;
+  assign check_trigger_integrity_we = addr_hit[14] & reg_we & !reg_error;
   assign check_trigger_integrity_wd = reg_wdata[0];
 
-  assign check_trigger_consistency_we = addr_hit[14] & reg_we & ~wr_err;
+  assign check_trigger_consistency_we = addr_hit[14] & reg_we & !reg_error;
   assign check_trigger_consistency_wd = reg_wdata[1];
 
-  assign check_regwen_we = addr_hit[15] & reg_we & ~wr_err;
+  assign check_regwen_we = addr_hit[15] & reg_we & !reg_error;
   assign check_regwen_wd = reg_wdata[0];
 
-  assign check_timeout_we = addr_hit[16] & reg_we & ~wr_err;
+  assign check_timeout_we = addr_hit[16] & reg_we & !reg_error;
   assign check_timeout_wd = reg_wdata[31:0];
 
-  assign integrity_check_period_we = addr_hit[17] & reg_we & ~wr_err;
+  assign integrity_check_period_we = addr_hit[17] & reg_we & !reg_error;
   assign integrity_check_period_wd = reg_wdata[31:0];
 
-  assign consistency_check_period_we = addr_hit[18] & reg_we & ~wr_err;
+  assign consistency_check_period_we = addr_hit[18] & reg_we & !reg_error;
   assign consistency_check_period_wd = reg_wdata[31:0];
 
-  assign creator_sw_cfg_read_lock_we = addr_hit[19] & reg_we & ~wr_err;
+  assign creator_sw_cfg_read_lock_we = addr_hit[19] & reg_we & !reg_error;
   assign creator_sw_cfg_read_lock_wd = reg_wdata[0];
 
-  assign owner_sw_cfg_read_lock_we = addr_hit[20] & reg_we & ~wr_err;
+  assign owner_sw_cfg_read_lock_we = addr_hit[20] & reg_we & !reg_error;
   assign owner_sw_cfg_read_lock_wd = reg_wdata[0];
 
-  assign creator_sw_cfg_digest_0_re = addr_hit[21] && reg_re;
+  assign creator_sw_cfg_digest_0_re = addr_hit[21] & reg_re & !reg_error;
 
-  assign creator_sw_cfg_digest_1_re = addr_hit[22] && reg_re;
+  assign creator_sw_cfg_digest_1_re = addr_hit[22] & reg_re & !reg_error;
 
-  assign owner_sw_cfg_digest_0_re = addr_hit[23] && reg_re;
+  assign owner_sw_cfg_digest_0_re = addr_hit[23] & reg_re & !reg_error;
 
-  assign owner_sw_cfg_digest_1_re = addr_hit[24] && reg_re;
+  assign owner_sw_cfg_digest_1_re = addr_hit[24] & reg_re & !reg_error;
 
-  assign hw_cfg_digest_0_re = addr_hit[25] && reg_re;
+  assign hw_cfg_digest_0_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign hw_cfg_digest_1_re = addr_hit[26] && reg_re;
+  assign hw_cfg_digest_1_re = addr_hit[26] & reg_re & !reg_error;
 
-  assign secret0_digest_0_re = addr_hit[27] && reg_re;
+  assign secret0_digest_0_re = addr_hit[27] & reg_re & !reg_error;
 
-  assign secret0_digest_1_re = addr_hit[28] && reg_re;
+  assign secret0_digest_1_re = addr_hit[28] & reg_re & !reg_error;
 
-  assign secret1_digest_0_re = addr_hit[29] && reg_re;
+  assign secret1_digest_0_re = addr_hit[29] & reg_re & !reg_error;
 
-  assign secret1_digest_1_re = addr_hit[30] && reg_re;
+  assign secret1_digest_1_re = addr_hit[30] & reg_re & !reg_error;
 
-  assign secret2_digest_0_re = addr_hit[31] && reg_re;
+  assign secret2_digest_0_re = addr_hit[31] & reg_re & !reg_error;
 
-  assign secret2_digest_1_re = addr_hit[32] && reg_re;
+  assign secret2_digest_1_re = addr_hit[32] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin

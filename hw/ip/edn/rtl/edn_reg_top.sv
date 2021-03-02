@@ -895,63 +895,63 @@ module edn_reg_top (
     if (addr_hit[13] && reg_we && (EDN_PERMIT[13] != (EDN_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_edn_cmd_req_done_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_edn_cmd_req_done_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_edn_cmd_req_done_wd = reg_wdata[0];
 
-  assign intr_state_edn_fatal_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_edn_fatal_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_edn_fatal_err_wd = reg_wdata[1];
 
-  assign intr_enable_edn_cmd_req_done_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_edn_cmd_req_done_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_edn_cmd_req_done_wd = reg_wdata[0];
 
-  assign intr_enable_edn_fatal_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_edn_fatal_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_edn_fatal_err_wd = reg_wdata[1];
 
-  assign intr_test_edn_cmd_req_done_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_edn_cmd_req_done_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_edn_cmd_req_done_wd = reg_wdata[0];
 
-  assign intr_test_edn_fatal_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_edn_fatal_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_edn_fatal_err_wd = reg_wdata[1];
 
-  assign alert_test_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_wd = reg_wdata[0];
 
-  assign regwen_we = addr_hit[4] & reg_we & ~wr_err;
+  assign regwen_we = addr_hit[4] & reg_we & !reg_error;
   assign regwen_wd = reg_wdata[0];
 
-  assign ctrl_edn_enable_we = addr_hit[5] & reg_we & ~wr_err;
+  assign ctrl_edn_enable_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_edn_enable_wd = reg_wdata[0];
 
-  assign ctrl_cmd_fifo_rst_we = addr_hit[5] & reg_we & ~wr_err;
+  assign ctrl_cmd_fifo_rst_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_cmd_fifo_rst_wd = reg_wdata[1];
 
-  assign ctrl_auto_req_mode_we = addr_hit[5] & reg_we & ~wr_err;
+  assign ctrl_auto_req_mode_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_auto_req_mode_wd = reg_wdata[2];
 
-  assign ctrl_boot_req_dis_we = addr_hit[5] & reg_we & ~wr_err;
+  assign ctrl_boot_req_dis_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_boot_req_dis_wd = reg_wdata[3];
 
-  assign sum_sts_req_mode_sm_sts_we = addr_hit[6] & reg_we & ~wr_err;
+  assign sum_sts_req_mode_sm_sts_we = addr_hit[6] & reg_we & !reg_error;
   assign sum_sts_req_mode_sm_sts_wd = reg_wdata[0];
 
-  assign sum_sts_boot_inst_ack_we = addr_hit[6] & reg_we & ~wr_err;
+  assign sum_sts_boot_inst_ack_we = addr_hit[6] & reg_we & !reg_error;
   assign sum_sts_boot_inst_ack_wd = reg_wdata[1];
 
-  assign sum_sts_internal_use_we = addr_hit[6] & reg_we & ~wr_err;
+  assign sum_sts_internal_use_we = addr_hit[6] & reg_we & !reg_error;
   assign sum_sts_internal_use_wd = reg_wdata[31];
 
-  assign sw_cmd_req_we = addr_hit[7] & reg_we & ~wr_err;
+  assign sw_cmd_req_we = addr_hit[7] & reg_we & !reg_error;
   assign sw_cmd_req_wd = reg_wdata[31:0];
 
 
 
-  assign reseed_cmd_we = addr_hit[9] & reg_we & ~wr_err;
+  assign reseed_cmd_we = addr_hit[9] & reg_we & !reg_error;
   assign reseed_cmd_wd = reg_wdata[31:0];
 
-  assign generate_cmd_we = addr_hit[10] & reg_we & ~wr_err;
+  assign generate_cmd_we = addr_hit[10] & reg_we & !reg_error;
   assign generate_cmd_wd = reg_wdata[31:0];
 
-  assign max_num_reqs_between_reseeds_we = addr_hit[11] & reg_we & ~wr_err;
+  assign max_num_reqs_between_reseeds_we = addr_hit[11] & reg_we & !reg_error;
   assign max_num_reqs_between_reseeds_wd = reg_wdata[31:0];
 
 
@@ -961,7 +961,7 @@ module edn_reg_top (
 
 
 
-  assign err_code_test_we = addr_hit[13] & reg_we & ~wr_err;
+  assign err_code_test_we = addr_hit[13] & reg_we & !reg_error;
   assign err_code_test_wd = reg_wdata[4:0];
 
   // Read data return

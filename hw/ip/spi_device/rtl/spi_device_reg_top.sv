@@ -1329,127 +1329,127 @@ module spi_device_reg_top (
     if (addr_hit[11] && reg_we && (SPI_DEVICE_PERMIT[11] != (SPI_DEVICE_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_rxf_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rxf_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rxf_wd = reg_wdata[0];
 
-  assign intr_state_rxlvl_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rxlvl_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rxlvl_wd = reg_wdata[1];
 
-  assign intr_state_txlvl_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_txlvl_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_txlvl_wd = reg_wdata[2];
 
-  assign intr_state_rxerr_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rxerr_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rxerr_wd = reg_wdata[3];
 
-  assign intr_state_rxoverflow_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_rxoverflow_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_rxoverflow_wd = reg_wdata[4];
 
-  assign intr_state_txunderflow_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_txunderflow_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_txunderflow_wd = reg_wdata[5];
 
-  assign intr_enable_rxf_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rxf_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rxf_wd = reg_wdata[0];
 
-  assign intr_enable_rxlvl_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rxlvl_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rxlvl_wd = reg_wdata[1];
 
-  assign intr_enable_txlvl_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_txlvl_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_txlvl_wd = reg_wdata[2];
 
-  assign intr_enable_rxerr_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rxerr_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rxerr_wd = reg_wdata[3];
 
-  assign intr_enable_rxoverflow_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_rxoverflow_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_rxoverflow_wd = reg_wdata[4];
 
-  assign intr_enable_txunderflow_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_txunderflow_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_txunderflow_wd = reg_wdata[5];
 
-  assign intr_test_rxf_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rxf_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rxf_wd = reg_wdata[0];
 
-  assign intr_test_rxlvl_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rxlvl_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rxlvl_wd = reg_wdata[1];
 
-  assign intr_test_txlvl_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_txlvl_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_txlvl_wd = reg_wdata[2];
 
-  assign intr_test_rxerr_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rxerr_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rxerr_wd = reg_wdata[3];
 
-  assign intr_test_rxoverflow_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_rxoverflow_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_rxoverflow_wd = reg_wdata[4];
 
-  assign intr_test_txunderflow_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_txunderflow_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_txunderflow_wd = reg_wdata[5];
 
-  assign control_abort_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_abort_we = addr_hit[3] & reg_we & !reg_error;
   assign control_abort_wd = reg_wdata[0];
 
-  assign control_mode_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_mode_we = addr_hit[3] & reg_we & !reg_error;
   assign control_mode_wd = reg_wdata[5:4];
 
-  assign control_rst_txfifo_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_rst_txfifo_we = addr_hit[3] & reg_we & !reg_error;
   assign control_rst_txfifo_wd = reg_wdata[16];
 
-  assign control_rst_rxfifo_we = addr_hit[3] & reg_we & ~wr_err;
+  assign control_rst_rxfifo_we = addr_hit[3] & reg_we & !reg_error;
   assign control_rst_rxfifo_wd = reg_wdata[17];
 
-  assign cfg_cpol_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_cpol_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_cpol_wd = reg_wdata[0];
 
-  assign cfg_cpha_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_cpha_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_cpha_wd = reg_wdata[1];
 
-  assign cfg_tx_order_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_tx_order_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_tx_order_wd = reg_wdata[2];
 
-  assign cfg_rx_order_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_rx_order_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_rx_order_wd = reg_wdata[3];
 
-  assign cfg_timer_v_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_timer_v_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_timer_v_wd = reg_wdata[15:8];
 
-  assign fifo_level_rxlvl_we = addr_hit[5] & reg_we & ~wr_err;
+  assign fifo_level_rxlvl_we = addr_hit[5] & reg_we & !reg_error;
   assign fifo_level_rxlvl_wd = reg_wdata[15:0];
 
-  assign fifo_level_txlvl_we = addr_hit[5] & reg_we & ~wr_err;
+  assign fifo_level_txlvl_we = addr_hit[5] & reg_we & !reg_error;
   assign fifo_level_txlvl_wd = reg_wdata[31:16];
 
-  assign async_fifo_level_rxlvl_re = addr_hit[6] && reg_re;
+  assign async_fifo_level_rxlvl_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign async_fifo_level_txlvl_re = addr_hit[6] && reg_re;
+  assign async_fifo_level_txlvl_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign status_rxf_full_re = addr_hit[7] && reg_re;
+  assign status_rxf_full_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_rxf_empty_re = addr_hit[7] && reg_re;
+  assign status_rxf_empty_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_txf_full_re = addr_hit[7] && reg_re;
+  assign status_txf_full_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_txf_empty_re = addr_hit[7] && reg_re;
+  assign status_txf_empty_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_abort_done_re = addr_hit[7] && reg_re;
+  assign status_abort_done_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign status_csb_re = addr_hit[7] && reg_re;
+  assign status_csb_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign rxf_ptr_rptr_we = addr_hit[8] & reg_we & ~wr_err;
+  assign rxf_ptr_rptr_we = addr_hit[8] & reg_we & !reg_error;
   assign rxf_ptr_rptr_wd = reg_wdata[15:0];
 
 
 
-  assign txf_ptr_wptr_we = addr_hit[9] & reg_we & ~wr_err;
+  assign txf_ptr_wptr_we = addr_hit[9] & reg_we & !reg_error;
   assign txf_ptr_wptr_wd = reg_wdata[31:16];
 
-  assign rxf_addr_base_we = addr_hit[10] & reg_we & ~wr_err;
+  assign rxf_addr_base_we = addr_hit[10] & reg_we & !reg_error;
   assign rxf_addr_base_wd = reg_wdata[15:0];
 
-  assign rxf_addr_limit_we = addr_hit[10] & reg_we & ~wr_err;
+  assign rxf_addr_limit_we = addr_hit[10] & reg_we & !reg_error;
   assign rxf_addr_limit_wd = reg_wdata[31:16];
 
-  assign txf_addr_base_we = addr_hit[11] & reg_we & ~wr_err;
+  assign txf_addr_base_we = addr_hit[11] & reg_we & !reg_error;
   assign txf_addr_base_wd = reg_wdata[15:0];
 
-  assign txf_addr_limit_we = addr_hit[11] & reg_we & ~wr_err;
+  assign txf_addr_limit_we = addr_hit[11] & reg_we & !reg_error;
   assign txf_addr_limit_wd = reg_wdata[31:16];
 
   // Read data return

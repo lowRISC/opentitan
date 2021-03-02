@@ -452,28 +452,28 @@ module clkmgr_reg_top (
     if (addr_hit[3] && reg_we && (CLKMGR_PERMIT[3] != (CLKMGR_PERMIT[3] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign jitter_enable_we = addr_hit[0] & reg_we & ~wr_err;
+  assign jitter_enable_we = addr_hit[0] & reg_we & !reg_error;
   assign jitter_enable_wd = reg_wdata[0];
 
-  assign clk_enables_clk_io_div4_peri_en_we = addr_hit[1] & reg_we & ~wr_err;
+  assign clk_enables_clk_io_div4_peri_en_we = addr_hit[1] & reg_we & !reg_error;
   assign clk_enables_clk_io_div4_peri_en_wd = reg_wdata[0];
 
-  assign clk_enables_clk_io_div2_peri_en_we = addr_hit[1] & reg_we & ~wr_err;
+  assign clk_enables_clk_io_div2_peri_en_we = addr_hit[1] & reg_we & !reg_error;
   assign clk_enables_clk_io_div2_peri_en_wd = reg_wdata[1];
 
-  assign clk_enables_clk_usb_peri_en_we = addr_hit[1] & reg_we & ~wr_err;
+  assign clk_enables_clk_usb_peri_en_we = addr_hit[1] & reg_we & !reg_error;
   assign clk_enables_clk_usb_peri_en_wd = reg_wdata[2];
 
-  assign clk_hints_clk_main_aes_hint_we = addr_hit[2] & reg_we & ~wr_err;
+  assign clk_hints_clk_main_aes_hint_we = addr_hit[2] & reg_we & !reg_error;
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
 
-  assign clk_hints_clk_main_hmac_hint_we = addr_hit[2] & reg_we & ~wr_err;
+  assign clk_hints_clk_main_hmac_hint_we = addr_hit[2] & reg_we & !reg_error;
   assign clk_hints_clk_main_hmac_hint_wd = reg_wdata[1];
 
-  assign clk_hints_clk_main_kmac_hint_we = addr_hit[2] & reg_we & ~wr_err;
+  assign clk_hints_clk_main_kmac_hint_we = addr_hit[2] & reg_we & !reg_error;
   assign clk_hints_clk_main_kmac_hint_wd = reg_wdata[2];
 
-  assign clk_hints_clk_main_otbn_hint_we = addr_hit[2] & reg_we & ~wr_err;
+  assign clk_hints_clk_main_otbn_hint_we = addr_hit[2] & reg_we & !reg_error;
   assign clk_hints_clk_main_otbn_hint_wd = reg_wdata[3];
 
 

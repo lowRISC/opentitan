@@ -2015,222 +2015,222 @@ module kmac_reg_top (
     if (addr_hit[54] && reg_we && (KMAC_PERMIT[54] != (KMAC_PERMIT[54] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_kmac_done_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_kmac_done_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_kmac_done_wd = reg_wdata[0];
 
-  assign intr_state_fifo_empty_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_fifo_empty_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_fifo_empty_wd = reg_wdata[1];
 
-  assign intr_state_kmac_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_kmac_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_kmac_err_wd = reg_wdata[2];
 
-  assign intr_enable_kmac_done_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_kmac_done_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_kmac_done_wd = reg_wdata[0];
 
-  assign intr_enable_fifo_empty_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_fifo_empty_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_fifo_empty_wd = reg_wdata[1];
 
-  assign intr_enable_kmac_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_kmac_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_kmac_err_wd = reg_wdata[2];
 
-  assign intr_test_kmac_done_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_kmac_done_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_kmac_done_wd = reg_wdata[0];
 
-  assign intr_test_fifo_empty_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_fifo_empty_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_fifo_empty_wd = reg_wdata[1];
 
-  assign intr_test_kmac_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_kmac_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_kmac_err_wd = reg_wdata[2];
 
-  assign cfg_regwen_re = addr_hit[3] && reg_re;
+  assign cfg_regwen_re = addr_hit[3] & reg_re & !reg_error;
 
-  assign cfg_kmac_en_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_kmac_en_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_kmac_en_wd = reg_wdata[0];
 
-  assign cfg_kstrength_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_kstrength_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_kstrength_wd = reg_wdata[3:1];
 
-  assign cfg_mode_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_mode_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_mode_wd = reg_wdata[5:4];
 
-  assign cfg_msg_endianness_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_msg_endianness_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_msg_endianness_wd = reg_wdata[8];
 
-  assign cfg_state_endianness_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_state_endianness_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_state_endianness_wd = reg_wdata[9];
 
-  assign cfg_sideload_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_sideload_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_sideload_wd = reg_wdata[12];
 
-  assign cfg_entropy_mode_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_entropy_mode_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_entropy_mode_wd = reg_wdata[17:16];
 
-  assign cfg_entropy_fast_process_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_entropy_fast_process_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_entropy_fast_process_wd = reg_wdata[19];
 
-  assign cfg_entropy_ready_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_entropy_ready_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_entropy_ready_wd = reg_wdata[24];
 
-  assign cfg_err_processed_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cfg_err_processed_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_err_processed_wd = reg_wdata[25];
 
-  assign cmd_we = addr_hit[5] & reg_we & ~wr_err;
+  assign cmd_we = addr_hit[5] & reg_we & !reg_error;
   assign cmd_wd = reg_wdata[3:0];
 
-  assign status_sha3_idle_re = addr_hit[6] && reg_re;
+  assign status_sha3_idle_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign status_sha3_absorb_re = addr_hit[6] && reg_re;
+  assign status_sha3_absorb_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign status_sha3_squeeze_re = addr_hit[6] && reg_re;
+  assign status_sha3_squeeze_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign status_fifo_depth_re = addr_hit[6] && reg_re;
+  assign status_fifo_depth_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign status_fifo_empty_re = addr_hit[6] && reg_re;
+  assign status_fifo_empty_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign status_fifo_full_re = addr_hit[6] && reg_re;
+  assign status_fifo_full_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign entropy_period_entropy_timer_we = addr_hit[7] & reg_we & ~wr_err;
+  assign entropy_period_entropy_timer_we = addr_hit[7] & reg_we & !reg_error;
   assign entropy_period_entropy_timer_wd = reg_wdata[15:0];
 
-  assign entropy_period_wait_timer_we = addr_hit[7] & reg_we & ~wr_err;
+  assign entropy_period_wait_timer_we = addr_hit[7] & reg_we & !reg_error;
   assign entropy_period_wait_timer_wd = reg_wdata[31:16];
 
-  assign entropy_seed_lower_we = addr_hit[8] & reg_we & ~wr_err;
+  assign entropy_seed_lower_we = addr_hit[8] & reg_we & !reg_error;
   assign entropy_seed_lower_wd = reg_wdata[31:0];
 
-  assign entropy_seed_upper_we = addr_hit[9] & reg_we & ~wr_err;
+  assign entropy_seed_upper_we = addr_hit[9] & reg_we & !reg_error;
   assign entropy_seed_upper_wd = reg_wdata[31:0];
 
-  assign key_share0_0_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_share0_0_we = addr_hit[10] & reg_we & !reg_error;
   assign key_share0_0_wd = reg_wdata[31:0];
 
-  assign key_share0_1_we = addr_hit[11] & reg_we & ~wr_err;
+  assign key_share0_1_we = addr_hit[11] & reg_we & !reg_error;
   assign key_share0_1_wd = reg_wdata[31:0];
 
-  assign key_share0_2_we = addr_hit[12] & reg_we & ~wr_err;
+  assign key_share0_2_we = addr_hit[12] & reg_we & !reg_error;
   assign key_share0_2_wd = reg_wdata[31:0];
 
-  assign key_share0_3_we = addr_hit[13] & reg_we & ~wr_err;
+  assign key_share0_3_we = addr_hit[13] & reg_we & !reg_error;
   assign key_share0_3_wd = reg_wdata[31:0];
 
-  assign key_share0_4_we = addr_hit[14] & reg_we & ~wr_err;
+  assign key_share0_4_we = addr_hit[14] & reg_we & !reg_error;
   assign key_share0_4_wd = reg_wdata[31:0];
 
-  assign key_share0_5_we = addr_hit[15] & reg_we & ~wr_err;
+  assign key_share0_5_we = addr_hit[15] & reg_we & !reg_error;
   assign key_share0_5_wd = reg_wdata[31:0];
 
-  assign key_share0_6_we = addr_hit[16] & reg_we & ~wr_err;
+  assign key_share0_6_we = addr_hit[16] & reg_we & !reg_error;
   assign key_share0_6_wd = reg_wdata[31:0];
 
-  assign key_share0_7_we = addr_hit[17] & reg_we & ~wr_err;
+  assign key_share0_7_we = addr_hit[17] & reg_we & !reg_error;
   assign key_share0_7_wd = reg_wdata[31:0];
 
-  assign key_share0_8_we = addr_hit[18] & reg_we & ~wr_err;
+  assign key_share0_8_we = addr_hit[18] & reg_we & !reg_error;
   assign key_share0_8_wd = reg_wdata[31:0];
 
-  assign key_share0_9_we = addr_hit[19] & reg_we & ~wr_err;
+  assign key_share0_9_we = addr_hit[19] & reg_we & !reg_error;
   assign key_share0_9_wd = reg_wdata[31:0];
 
-  assign key_share0_10_we = addr_hit[20] & reg_we & ~wr_err;
+  assign key_share0_10_we = addr_hit[20] & reg_we & !reg_error;
   assign key_share0_10_wd = reg_wdata[31:0];
 
-  assign key_share0_11_we = addr_hit[21] & reg_we & ~wr_err;
+  assign key_share0_11_we = addr_hit[21] & reg_we & !reg_error;
   assign key_share0_11_wd = reg_wdata[31:0];
 
-  assign key_share0_12_we = addr_hit[22] & reg_we & ~wr_err;
+  assign key_share0_12_we = addr_hit[22] & reg_we & !reg_error;
   assign key_share0_12_wd = reg_wdata[31:0];
 
-  assign key_share0_13_we = addr_hit[23] & reg_we & ~wr_err;
+  assign key_share0_13_we = addr_hit[23] & reg_we & !reg_error;
   assign key_share0_13_wd = reg_wdata[31:0];
 
-  assign key_share0_14_we = addr_hit[24] & reg_we & ~wr_err;
+  assign key_share0_14_we = addr_hit[24] & reg_we & !reg_error;
   assign key_share0_14_wd = reg_wdata[31:0];
 
-  assign key_share0_15_we = addr_hit[25] & reg_we & ~wr_err;
+  assign key_share0_15_we = addr_hit[25] & reg_we & !reg_error;
   assign key_share0_15_wd = reg_wdata[31:0];
 
-  assign key_share1_0_we = addr_hit[26] & reg_we & ~wr_err;
+  assign key_share1_0_we = addr_hit[26] & reg_we & !reg_error;
   assign key_share1_0_wd = reg_wdata[31:0];
 
-  assign key_share1_1_we = addr_hit[27] & reg_we & ~wr_err;
+  assign key_share1_1_we = addr_hit[27] & reg_we & !reg_error;
   assign key_share1_1_wd = reg_wdata[31:0];
 
-  assign key_share1_2_we = addr_hit[28] & reg_we & ~wr_err;
+  assign key_share1_2_we = addr_hit[28] & reg_we & !reg_error;
   assign key_share1_2_wd = reg_wdata[31:0];
 
-  assign key_share1_3_we = addr_hit[29] & reg_we & ~wr_err;
+  assign key_share1_3_we = addr_hit[29] & reg_we & !reg_error;
   assign key_share1_3_wd = reg_wdata[31:0];
 
-  assign key_share1_4_we = addr_hit[30] & reg_we & ~wr_err;
+  assign key_share1_4_we = addr_hit[30] & reg_we & !reg_error;
   assign key_share1_4_wd = reg_wdata[31:0];
 
-  assign key_share1_5_we = addr_hit[31] & reg_we & ~wr_err;
+  assign key_share1_5_we = addr_hit[31] & reg_we & !reg_error;
   assign key_share1_5_wd = reg_wdata[31:0];
 
-  assign key_share1_6_we = addr_hit[32] & reg_we & ~wr_err;
+  assign key_share1_6_we = addr_hit[32] & reg_we & !reg_error;
   assign key_share1_6_wd = reg_wdata[31:0];
 
-  assign key_share1_7_we = addr_hit[33] & reg_we & ~wr_err;
+  assign key_share1_7_we = addr_hit[33] & reg_we & !reg_error;
   assign key_share1_7_wd = reg_wdata[31:0];
 
-  assign key_share1_8_we = addr_hit[34] & reg_we & ~wr_err;
+  assign key_share1_8_we = addr_hit[34] & reg_we & !reg_error;
   assign key_share1_8_wd = reg_wdata[31:0];
 
-  assign key_share1_9_we = addr_hit[35] & reg_we & ~wr_err;
+  assign key_share1_9_we = addr_hit[35] & reg_we & !reg_error;
   assign key_share1_9_wd = reg_wdata[31:0];
 
-  assign key_share1_10_we = addr_hit[36] & reg_we & ~wr_err;
+  assign key_share1_10_we = addr_hit[36] & reg_we & !reg_error;
   assign key_share1_10_wd = reg_wdata[31:0];
 
-  assign key_share1_11_we = addr_hit[37] & reg_we & ~wr_err;
+  assign key_share1_11_we = addr_hit[37] & reg_we & !reg_error;
   assign key_share1_11_wd = reg_wdata[31:0];
 
-  assign key_share1_12_we = addr_hit[38] & reg_we & ~wr_err;
+  assign key_share1_12_we = addr_hit[38] & reg_we & !reg_error;
   assign key_share1_12_wd = reg_wdata[31:0];
 
-  assign key_share1_13_we = addr_hit[39] & reg_we & ~wr_err;
+  assign key_share1_13_we = addr_hit[39] & reg_we & !reg_error;
   assign key_share1_13_wd = reg_wdata[31:0];
 
-  assign key_share1_14_we = addr_hit[40] & reg_we & ~wr_err;
+  assign key_share1_14_we = addr_hit[40] & reg_we & !reg_error;
   assign key_share1_14_wd = reg_wdata[31:0];
 
-  assign key_share1_15_we = addr_hit[41] & reg_we & ~wr_err;
+  assign key_share1_15_we = addr_hit[41] & reg_we & !reg_error;
   assign key_share1_15_wd = reg_wdata[31:0];
 
-  assign key_len_we = addr_hit[42] & reg_we & ~wr_err;
+  assign key_len_we = addr_hit[42] & reg_we & !reg_error;
   assign key_len_wd = reg_wdata[2:0];
 
-  assign prefix_0_we = addr_hit[43] & reg_we & ~wr_err;
+  assign prefix_0_we = addr_hit[43] & reg_we & !reg_error;
   assign prefix_0_wd = reg_wdata[31:0];
 
-  assign prefix_1_we = addr_hit[44] & reg_we & ~wr_err;
+  assign prefix_1_we = addr_hit[44] & reg_we & !reg_error;
   assign prefix_1_wd = reg_wdata[31:0];
 
-  assign prefix_2_we = addr_hit[45] & reg_we & ~wr_err;
+  assign prefix_2_we = addr_hit[45] & reg_we & !reg_error;
   assign prefix_2_wd = reg_wdata[31:0];
 
-  assign prefix_3_we = addr_hit[46] & reg_we & ~wr_err;
+  assign prefix_3_we = addr_hit[46] & reg_we & !reg_error;
   assign prefix_3_wd = reg_wdata[31:0];
 
-  assign prefix_4_we = addr_hit[47] & reg_we & ~wr_err;
+  assign prefix_4_we = addr_hit[47] & reg_we & !reg_error;
   assign prefix_4_wd = reg_wdata[31:0];
 
-  assign prefix_5_we = addr_hit[48] & reg_we & ~wr_err;
+  assign prefix_5_we = addr_hit[48] & reg_we & !reg_error;
   assign prefix_5_wd = reg_wdata[31:0];
 
-  assign prefix_6_we = addr_hit[49] & reg_we & ~wr_err;
+  assign prefix_6_we = addr_hit[49] & reg_we & !reg_error;
   assign prefix_6_wd = reg_wdata[31:0];
 
-  assign prefix_7_we = addr_hit[50] & reg_we & ~wr_err;
+  assign prefix_7_we = addr_hit[50] & reg_we & !reg_error;
   assign prefix_7_wd = reg_wdata[31:0];
 
-  assign prefix_8_we = addr_hit[51] & reg_we & ~wr_err;
+  assign prefix_8_we = addr_hit[51] & reg_we & !reg_error;
   assign prefix_8_wd = reg_wdata[31:0];
 
-  assign prefix_9_we = addr_hit[52] & reg_we & ~wr_err;
+  assign prefix_9_we = addr_hit[52] & reg_we & !reg_error;
   assign prefix_9_wd = reg_wdata[31:0];
 
-  assign prefix_10_we = addr_hit[53] & reg_we & ~wr_err;
+  assign prefix_10_we = addr_hit[53] & reg_we & !reg_error;
   assign prefix_10_wd = reg_wdata[31:0];
 
 

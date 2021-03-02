@@ -991,104 +991,104 @@ module hmac_reg_top (
     if (addr_hit[25] && reg_we && (HMAC_PERMIT[25] != (HMAC_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_hmac_done_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_hmac_done_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_hmac_done_wd = reg_wdata[0];
 
-  assign intr_state_fifo_empty_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_fifo_empty_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_fifo_empty_wd = reg_wdata[1];
 
-  assign intr_state_hmac_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_hmac_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_hmac_err_wd = reg_wdata[2];
 
-  assign intr_enable_hmac_done_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_hmac_done_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_hmac_done_wd = reg_wdata[0];
 
-  assign intr_enable_fifo_empty_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_fifo_empty_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_fifo_empty_wd = reg_wdata[1];
 
-  assign intr_enable_hmac_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_hmac_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_hmac_err_wd = reg_wdata[2];
 
-  assign intr_test_hmac_done_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_hmac_done_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_hmac_done_wd = reg_wdata[0];
 
-  assign intr_test_fifo_empty_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_fifo_empty_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_fifo_empty_wd = reg_wdata[1];
 
-  assign intr_test_hmac_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_hmac_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_hmac_err_wd = reg_wdata[2];
 
-  assign cfg_hmac_en_we = addr_hit[3] & reg_we & ~wr_err;
+  assign cfg_hmac_en_we = addr_hit[3] & reg_we & !reg_error;
   assign cfg_hmac_en_wd = reg_wdata[0];
-  assign cfg_hmac_en_re = addr_hit[3] && reg_re;
+  assign cfg_hmac_en_re = addr_hit[3] & reg_re & !reg_error;
 
-  assign cfg_sha_en_we = addr_hit[3] & reg_we & ~wr_err;
+  assign cfg_sha_en_we = addr_hit[3] & reg_we & !reg_error;
   assign cfg_sha_en_wd = reg_wdata[1];
-  assign cfg_sha_en_re = addr_hit[3] && reg_re;
+  assign cfg_sha_en_re = addr_hit[3] & reg_re & !reg_error;
 
-  assign cfg_endian_swap_we = addr_hit[3] & reg_we & ~wr_err;
+  assign cfg_endian_swap_we = addr_hit[3] & reg_we & !reg_error;
   assign cfg_endian_swap_wd = reg_wdata[2];
-  assign cfg_endian_swap_re = addr_hit[3] && reg_re;
+  assign cfg_endian_swap_re = addr_hit[3] & reg_re & !reg_error;
 
-  assign cfg_digest_swap_we = addr_hit[3] & reg_we & ~wr_err;
+  assign cfg_digest_swap_we = addr_hit[3] & reg_we & !reg_error;
   assign cfg_digest_swap_wd = reg_wdata[3];
-  assign cfg_digest_swap_re = addr_hit[3] && reg_re;
+  assign cfg_digest_swap_re = addr_hit[3] & reg_re & !reg_error;
 
-  assign cmd_hash_start_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cmd_hash_start_we = addr_hit[4] & reg_we & !reg_error;
   assign cmd_hash_start_wd = reg_wdata[0];
 
-  assign cmd_hash_process_we = addr_hit[4] & reg_we & ~wr_err;
+  assign cmd_hash_process_we = addr_hit[4] & reg_we & !reg_error;
   assign cmd_hash_process_wd = reg_wdata[1];
 
-  assign status_fifo_empty_re = addr_hit[5] && reg_re;
+  assign status_fifo_empty_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign status_fifo_full_re = addr_hit[5] && reg_re;
+  assign status_fifo_full_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign status_fifo_depth_re = addr_hit[5] && reg_re;
+  assign status_fifo_depth_re = addr_hit[5] & reg_re & !reg_error;
 
 
-  assign wipe_secret_we = addr_hit[7] & reg_we & ~wr_err;
+  assign wipe_secret_we = addr_hit[7] & reg_we & !reg_error;
   assign wipe_secret_wd = reg_wdata[31:0];
 
-  assign key_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign key_0_we = addr_hit[8] & reg_we & !reg_error;
   assign key_0_wd = reg_wdata[31:0];
 
-  assign key_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign key_1_we = addr_hit[9] & reg_we & !reg_error;
   assign key_1_wd = reg_wdata[31:0];
 
-  assign key_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_2_we = addr_hit[10] & reg_we & !reg_error;
   assign key_2_wd = reg_wdata[31:0];
 
-  assign key_3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign key_3_we = addr_hit[11] & reg_we & !reg_error;
   assign key_3_wd = reg_wdata[31:0];
 
-  assign key_4_we = addr_hit[12] & reg_we & ~wr_err;
+  assign key_4_we = addr_hit[12] & reg_we & !reg_error;
   assign key_4_wd = reg_wdata[31:0];
 
-  assign key_5_we = addr_hit[13] & reg_we & ~wr_err;
+  assign key_5_we = addr_hit[13] & reg_we & !reg_error;
   assign key_5_wd = reg_wdata[31:0];
 
-  assign key_6_we = addr_hit[14] & reg_we & ~wr_err;
+  assign key_6_we = addr_hit[14] & reg_we & !reg_error;
   assign key_6_wd = reg_wdata[31:0];
 
-  assign key_7_we = addr_hit[15] & reg_we & ~wr_err;
+  assign key_7_we = addr_hit[15] & reg_we & !reg_error;
   assign key_7_wd = reg_wdata[31:0];
 
-  assign digest_0_re = addr_hit[16] && reg_re;
+  assign digest_0_re = addr_hit[16] & reg_re & !reg_error;
 
-  assign digest_1_re = addr_hit[17] && reg_re;
+  assign digest_1_re = addr_hit[17] & reg_re & !reg_error;
 
-  assign digest_2_re = addr_hit[18] && reg_re;
+  assign digest_2_re = addr_hit[18] & reg_re & !reg_error;
 
-  assign digest_3_re = addr_hit[19] && reg_re;
+  assign digest_3_re = addr_hit[19] & reg_re & !reg_error;
 
-  assign digest_4_re = addr_hit[20] && reg_re;
+  assign digest_4_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign digest_5_re = addr_hit[21] && reg_re;
+  assign digest_5_re = addr_hit[21] & reg_re & !reg_error;
 
-  assign digest_6_re = addr_hit[22] && reg_re;
+  assign digest_6_re = addr_hit[22] & reg_re & !reg_error;
 
-  assign digest_7_re = addr_hit[23] && reg_re;
+  assign digest_7_re = addr_hit[23] & reg_re & !reg_error;
 
 
 

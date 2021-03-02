@@ -475,16 +475,16 @@ ${bits.msb}\
 
 % if field.swaccess.allows_write():
   % if field.swaccess.swrd() != SwRdAccess.RC:
-  assign ${sig_name}_we = addr_hit[${idx}] & reg_we & ~wr_err;
+  assign ${sig_name}_we = addr_hit[${idx}] & reg_we & !reg_error;
   assign ${sig_name}_wd = reg_wdata[${str_bits_sv(field.bits)}];
   % else:
   ## Generate WE based on read request, read should clear
-  assign ${sig_name}_we = addr_hit[${idx}] & reg_re;
+  assign ${sig_name}_we = addr_hit[${idx}] & reg_re & !reg_error;
   assign ${sig_name}_wd = '1;
   % endif
 % endif
 % if (field.swaccess.allows_read() and hwext) or shadowed:
-  assign ${sig_name}_re = addr_hit[${idx}] && reg_re;
+  assign ${sig_name}_re = addr_hit[${idx}] & reg_re & !reg_error;
 % endif
 </%def>\
 <%def name="rdata_gen(field, sig_name)">\
