@@ -107,6 +107,7 @@ module lc_ctrl
     .tl_o,
     .reg2hw    ( reg2hw ),
     .hw2reg    ( hw2reg ),
+    .intg_err_o(        ),
     .devmode_i ( 1'b1   )
   );
 
@@ -126,6 +127,7 @@ module lc_ctrl
     .tl_o      ( tap_tl_d2h ),
     .reg2hw    ( tap_reg2hw ),
     .hw2reg    ( tap_hw2reg ),
+    .intg_err_o(            ),
     .devmode_i ( 1'b1       )
   );
 
@@ -190,7 +192,8 @@ module lc_ctrl
   // Unused
   assign tap_tl_h2d.a_param   = '0;
   assign tap_tl_h2d.a_source  = '0;
-  assign tap_tl_h2d.a_user    = tlul_pkg::TL_A_USER_DEFAULT;
+  // TODO need to add appropriate handling for integrity
+  assign tap_tl_h2d.a_user    = '0;
 
   // TL-UL to DMI transducing
   assign tap_tl_h2d.d_ready  = dmi_resp_ready;

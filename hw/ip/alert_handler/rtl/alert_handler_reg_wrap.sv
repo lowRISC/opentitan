@@ -36,6 +36,7 @@ module alert_handler_reg_wrap import alert_pkg::*; (
     .tl_o,
     .reg2hw,
     .hw2reg,
+    .intg_err_o(),
     .devmode_i(1'b1)
   );
 

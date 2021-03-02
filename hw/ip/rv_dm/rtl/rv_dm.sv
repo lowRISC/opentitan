@@ -212,6 +212,7 @@ module rv_dm #(
     .valid_o      (host_r_valid),
     .rdata_o      (host_r_rdata),
     .err_o        (host_r_err),
+    .intg_err_o   (),
     .tl_o         (tl_h_o),
     .tl_i         (tl_h_i)
   );
