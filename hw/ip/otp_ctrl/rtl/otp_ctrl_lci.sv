@@ -112,7 +112,7 @@ module otp_ctrl_lci
     otp_req_o = 1'b0;
     otp_cmd_o = prim_otp_pkg::Read;
 
-    // Respone to LC controller
+    // Response to LC controller
     lc_err_o = 1'b0;
     lc_ack_o = 1'b0;
 
@@ -156,23 +156,29 @@ module otp_ctrl_lci
         lci_prog_idle_o = 1'b0;
         if (otp_rvalid_i) begin
           // Check OTP return code.
-          // No errors are tolerated here.
+          // Note that if errors occur, we aggregate the error code
+          // but still attempt to program all remaining words.
+          // This is done to ensure that a life cycle state with
+          // ECC correctable errors in some words can still be scrapped.
           if (otp_err_e'(otp_err_i) != NoError) begin
             error_d = otp_err_e'(otp_err_i);
+          end
+
+          // Check whether we programmed all OTP words.
+          // If yes, we are done and can go back to idle.
+          if (cnt_q == NumLcOtpWords-1) begin
+            state_d = IdleSt;
             lc_ack_o = 1'b1;
-            lc_err_o = 1'b1;
-            state_d = ErrorSt;
-          end else begin
-            // Check whether we examined all OTP words.
-            // If yes, we are done and can go back to idle.
-            if (cnt_q == NumLcOtpWords-1) begin
-              state_d = IdleSt;
-              lc_ack_o = 1'b1;
-            // Otherwise we increase the OTP word counter.
-            end else begin
-              state_d = WriteSt;
-              cnt_en = 1'b1;
+            // If in any of the words a programming error has occurred,
+            // we signal that accordingly and go to the error state.
+            if (error_d != NoError) begin
+              lc_err_o = 1'b1;
+              state_d = ErrorSt;
             end
+          // Otherwise we increase the OTP word counter.
+          end else begin
+            state_d = WriteSt;
+            cnt_en = 1'b1;
           end
         end
       end
