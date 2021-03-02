@@ -10,6 +10,10 @@
   // Import the chip_sim_cfg.hjson to run the chip level simulations.
   import_cfgs: ["{proj_root}/hw/top_earlgrey/dv/chip_sim_cfg.hjson"]
 
+  // Pass the fileset_vendor flag to FuseSoC to swap the open source files with vendor
+  // implementations.
+  sv_flist_gen_opts: ["--flag=fileset_partner"]
+
   // Override the required keys to customize the simulation flow. For instance,
   // the FuseSoC core file or the search paths provided to FuseSoC to find the
   // dependencies can be overridden to customize the design / testbench, while
