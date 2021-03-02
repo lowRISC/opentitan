@@ -9,6 +9,7 @@ interface uart_cov_if (
 
   import uvm_pkg::*;
   import dv_utils_pkg::*;
+  `include "dv_fcov_macros.svh"
 
   bit en_full_cov = 1'b1;
   bit en_intg_cov = 1'b1;
@@ -50,6 +51,6 @@ interface uart_cov_if (
     cp_rx_enable:     coverpoint m_uart_cov_vifs_wrap.uart_core_cov_vif.rx_enable;
     cr_tx_rx_enable:  cross cp_tx_enable, cp_rx_enable;
   endgroup
-  `DV_INSTANTIATE_CG(uart_op_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(uart_op_cg, en_full_cov)
 
 endinterface

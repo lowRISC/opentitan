@@ -2,8 +2,8 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:dv_fcov"
-description: "DV FCOV utilities"
+name: "lowrisc:dv:dv_fcov_macros"
+description: "DV FCOV macros"
 
 filesets:
   files_fcov:
