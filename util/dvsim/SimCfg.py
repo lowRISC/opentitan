@@ -449,22 +449,16 @@ class SimCfg(FlowCfg):
         tests A, B with reseed values of 5 and 2, respectively, then the list
         will be ABABAAA).
 
-        build_map is either None or a dictionary from build name to a
-        CompileSim object. If None, this means that we're in "run only" mode,
-        so there are no builds involved at all. Otherwise, the build_mode of
-        each appears in the map to signify the test's dependency on its
-        corresponding CompileSim item (test cannot run until it has been
-        compiled).
-
+        build_map is a dictionary mapping a build mode to a CompileSim object.
         '''
         tagged = []
+
         for test in self.run_list:
-            build_job = (build_map[test.build_mode]
-                         if build_map is not None else None)
+            build_job = build_map[test.build_mode]
             for idx in range(test.reseed):
                 tagged.append((idx, RunTest(idx, test, build_job, self)))
 
-        # Stably sort the tagged list by the 1st coordinate
+        # Stably sort the tagged list by the 1st coordinate.
         tagged.sort(key=lambda x: x[0])
 
         # Return the sorted list of RunTest objects, discarding the indices by
@@ -507,12 +501,15 @@ class SimCfg(FlowCfg):
                 test.build_mode = Modes.find_mode(
                     build_map[test.build_mode].name, self.build_modes)
 
-        if self.run_only:
-            self.builds = []
-            build_map = None
-
         self.runs = ([]
                      if self.build_only else self._expand_run_list(build_map))
+
+        # Discard the build_job dependency that was added earlier if --run-only
+        # switch is passed.
+        if self.run_only:
+            self.builds = []
+            for run in self.runs:
+                run.dependencies = []
 
         self.deploy = self.builds + self.runs
 
@@ -548,7 +545,7 @@ class SimCfg(FlowCfg):
         '''
         # TODO, Only support VCS
         if self.tool not in ['vcs', 'xcelium']:
-            log.error("Currently only support VCS and Xcelium for coverage UNR")    
+            log.error("Currently only support VCS and Xcelium for coverage UNR")
             sys.exit(1)
         # Create initial set of directories, such as dispatched, passed etc.
         self._create_dirs()
