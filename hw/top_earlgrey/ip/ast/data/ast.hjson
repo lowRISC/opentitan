@@ -11,6 +11,23 @@
   bus_host: "",
   regwidth: "32",
   registers: [
+    { name: "REVID",
+      desc: '''
+	    AST Revision Identification Register <br>
+	    Reset: TLUL Reset
+	    '''
+      swaccess: "ro",
+      hwaccess: "hro",
+      fields: [
+        { bits: "7:0",
+          desc: "Revision",
+          resval: "0x01",
+	}
+	//
+        // bits: "31:8", Reserved
+	//
+      ]
+    }
     { name: "RWTYPE0",
       desc: "RW type with one field",
       swaccess: "rw",

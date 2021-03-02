@@ -5,61 +5,48 @@
 // *Name: io_clk
 // *Module Description: IO Clock
 //############################################################################
-`timescale 1ns / 10ps
 
-module io_clk
-#(
-`ifndef VERILATOR
-// synopsys translate_off
-  parameter time IO_EN_RDLY = 5us
-// synopsys translate_on
-`endif
-) (
-  input clk_src_io_en_i,           // IO Source Clock Enable
-  input clk_io_pd_ni,              // IO Clock Power-down
-  input rst_io_clk_ni,             // IO Clock Logic reset
-  input vcore_pok_h_i,             // VCORE POK @3.3V (for OSC)
-  output logic clk_src_io_o,       // IO Source Clock
-  output logic clk_src_io_val_o    // IO Source Clock Valid
+module io_clk (
+  input vcore_pok_h_i,                     // VCORE POK @3.3V (for OSC)
+  input clk_io_pd_ni,                      // IO Clock Power-down
+  input rst_io_clk_ni,                     // IO Clock Logic reset
+  input clk_src_io_en_i,                   // IO Source Clock Enable
+  output logic clk_src_io_o,               // IO Source Clock
+  output logic clk_src_io_val_o            // IO Source Clock Valid
 );
 
-logic clk, io_clk_en, io_clk_val, rst_n;
+logic clk, io_clk_en, rst_n;
 
-assign rst_n = rst_io_clk_ni;
-
-assign io_clk_en = clk_src_io_en_i && clk_io_pd_ni;
-
-// Behavioral Model
+assign rst_n = rst_io_clk_ni;  // Scan enabled
+assign io_clk_en = clk_src_io_en_i && clk_io_pd_ni && rst_io_clk_ni;
 
 // Clock Oscilator
-io_osc #(
-`ifndef VERILATOR
-// synopsys translate_off
-/*P*/ .IO_EN_RDLY ( IO_EN_RDLY )
-// synopsys translate_on
-`endif
-) u_io_osc (
-/*I*/ .vcore_pok_h_i ( vcore_pok_h_i ),
-/*I*/ .io_en_i ( io_clk_en ),
-/*O*/ .io_clk_o ( clk )
-);
-
+///////////////////////////////////////
+io_osc u_io_osc (
+  .vcore_pok_h_i ( vcore_pok_h_i ),
+  .io_en_i ( io_clk_en ),
+  .io_clk_o ( clk )
+);  // of u_io_osc
 
 // Clock & Valid
-assign clk_src_io_o = clk;
+///////////////////////////////////////
+prim_clock_buf u_clk_io_buf(
+  .clk_i ( clk ),
+  .clk_o ( clk_src_io_o )
+);
 
-wire rst_val_n = rst_n && io_clk_en;
+// 2-stage de-assertion
+logic rst_val_n;
+assign rst_val_n = rst_n && io_clk_en;
 
-// 2-stage deassertion
-always_ff @( posedge clk, negedge rst_val_n ) begin
-  if ( !rst_val_n )  begin
-    io_clk_val       <= 1'b0;
-    clk_src_io_val_o <= 1'b0;
-  end else begin
-    io_clk_val       <= 1'b1;
-    clk_src_io_val_o <= io_clk_val;
-  end
-end
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_val_sync (
+  .clk_i ( clk ),
+  .rst_ni ( rst_val_n ),
+  .d_i ( 1'b1 ),
+  .q_o ( clk_src_io_val_o )
+);
 
-
-endmodule  // of io_clk
+endmodule : io_clk
