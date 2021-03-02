@@ -49,6 +49,7 @@ package clkmgr_pkg;
     logic clk_ast_usbdev_io_div4_peri;
     logic clk_ast_usbdev_aon_peri;
     logic clk_ast_usbdev_usb_peri;
+    logic clk_ast_ast_io_div4_secure;
     logic clk_ast_sensor_ctrl_aon_io_div4_secure;
     logic clk_ast_entropy_src_main_secure;
     logic clk_ast_edn0_main_secure;

@@ -422,6 +422,24 @@ extern "C" {
 #define TOP_EARLGREY_AON_TIMER_AON_SIZE_BYTES 0x1000u
 
 /**
+ * Peripheral base address for ast in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_AST_BASE_ADDR 0x40480000u
+
+/**
+ * Peripheral size for ast in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_AST_BASE_ADDR and
+ * `TOP_EARLGREY_AST_BASE_ADDR + TOP_EARLGREY_AST_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_AST_SIZE_BYTES 0x1000u
+
+/**
  * Peripheral base address for sensor_ctrl_aon in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped

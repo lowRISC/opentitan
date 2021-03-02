@@ -23,7 +23,7 @@ module ast_reg_top (
 
   import ast_reg_pkg::* ;
 
-  localparam int AW = 4;
+  localparam int AW = 3;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -43,8 +43,22 @@ module ast_reg_top (
   tlul_pkg::tl_h2d_t tl_reg_h2d;
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
+  // incoming payload check
+  logic chk_err;
+  tlul_payload_chk u_chk (
+    .tl_i,
+    .err_o(chk_err)
+  );
+
+  // outgoing payload generation
+  tlul_pkg::tl_d2h_t tl_o_pre;
+  tlul_gen_payload_chk u_gen_chk (
+    .tl_i(tl_o_pre),
+    .tl_o
+  );
+
   assign tl_reg_h2d = tl_i;
-  assign tl_o       = tl_reg_d2h;
+  assign tl_o_pre   = tl_reg_d2h;
 
   tlul_adapter_reg #(
     .RegAw(AW),
@@ -66,12 +80,11 @@ module ast_reg_top (
   );
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = (devmode_i & addrmiss) | wr_err ;
+  assign reg_error = (devmode_i & addrmiss) | wr_err | chk_err;
 
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic [7:0] revid_qs;
   logic [31:0] rwtype0_qs;
   logic [31:0] rwtype0_wd;
   logic rwtype0_we;
@@ -89,32 +102,6 @@ module ast_reg_top (
   logic rwtype1_field15_8_we;
 
   // Register instances
-  // R[revid]: V(False)
-
-  prim_subreg #(
-    .DW      (8),
-    .SWACCESS("RO"),
-    .RESVAL  (8'h1)
-  ) u_revid (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    .we     (1'b0),
-    .wd     ('0  ),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.revid.q ),
-
-    // to register interface (read)
-    .qs     (revid_qs)
-  );
-
-
   // R[rwtype0]: V(False)
 
   prim_subreg #(
@@ -250,12 +237,11 @@ module ast_reg_top (
 
 
 
-  logic [2:0] addr_hit;
+  logic [1:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == AST_REVID_OFFSET);
-    addr_hit[1] = (reg_addr == AST_RWTYPE0_OFFSET);
-    addr_hit[2] = (reg_addr == AST_RWTYPE1_OFFSET);
+    addr_hit[0] = (reg_addr == AST_RWTYPE0_OFFSET);
+    addr_hit[1] = (reg_addr == AST_RWTYPE1_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -265,23 +251,21 @@ module ast_reg_top (
     wr_err = 1'b0;
     if (addr_hit[0] && reg_we && (AST_PERMIT[0] != (AST_PERMIT[0] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[1] && reg_we && (AST_PERMIT[1] != (AST_PERMIT[1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[2] && reg_we && (AST_PERMIT[2] != (AST_PERMIT[2] & reg_be))) wr_err = 1'b1 ;
   end
 
-
-  assign rwtype0_we = addr_hit[1] & reg_we & ~wr_err;
+  assign rwtype0_we = addr_hit[0] & reg_we & ~wr_err;
   assign rwtype0_wd = reg_wdata[31:0];
 
-  assign rwtype1_field0_we = addr_hit[2] & reg_we & ~wr_err;
+  assign rwtype1_field0_we = addr_hit[1] & reg_we & ~wr_err;
   assign rwtype1_field0_wd = reg_wdata[0];
 
-  assign rwtype1_field1_we = addr_hit[2] & reg_we & ~wr_err;
+  assign rwtype1_field1_we = addr_hit[1] & reg_we & ~wr_err;
   assign rwtype1_field1_wd = reg_wdata[1];
 
-  assign rwtype1_field4_we = addr_hit[2] & reg_we & ~wr_err;
+  assign rwtype1_field4_we = addr_hit[1] & reg_we & ~wr_err;
   assign rwtype1_field4_wd = reg_wdata[4];
 
-  assign rwtype1_field15_8_we = addr_hit[2] & reg_we & ~wr_err;
+  assign rwtype1_field15_8_we = addr_hit[1] & reg_we & ~wr_err;
   assign rwtype1_field15_8_wd = reg_wdata[15:8];
 
   // Read data return
@@ -289,14 +273,10 @@ module ast_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[7:0] = revid_qs;
-      end
-
-      addr_hit[1]: begin
         reg_rdata_next[31:0] = rwtype0_qs;
       end
 
-      addr_hit[2]: begin
+      addr_hit[1]: begin
         reg_rdata_next[0] = rwtype1_field0_qs;
         reg_rdata_next[1] = rwtype1_field1_qs;
         reg_rdata_next[4] = rwtype1_field4_qs;
@@ -309,6 +289,15 @@ module ast_reg_top (
     endcase
   end
 
+  // Unused signal tieoff
+
+  // wdata / byte enable are not always fully used
+  // add a blanket unused statement to handle lint waivers
+  logic unused_wdata;
+  logic unused_be;
+  assign unused_wdata = ^reg_wdata;
+  assign unused_be = ^reg_be;
+
   // Assertions for Register Interface
   `ASSERT_PULSE(wePulse, reg_we)
   `ASSERT_PULSE(rePulse, reg_re)
@@ -319,10 +308,6 @@ module ast_reg_top (
 
   // this is formulated as an assumption such that the FPV testbenches do disprove this
   // property by mistake
-  // this is formulated as an assumption such that the FPV testbenches do disprove this
-  // property by mistake
-  // TODO may need to change this soon
-  `ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.chk_en == tlul_pkg::CheckDis)
-
+  //`ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.chk_en == tlul_pkg::CheckDis)
 
 endmodule

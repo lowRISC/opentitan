@@ -2422,9 +2422,9 @@ module top_earlgrey #(
     .tl_aon_timer_aon_o(aon_timer_aon_tl_req),
     .tl_aon_timer_aon_i(aon_timer_aon_tl_rsp),
 
-    // port: tl_ast_wrapper
-    .tl_ast_wrapper_o(ast_tl_req_o),
-    .tl_ast_wrapper_i(ast_tl_rsp_i),
+    // port: tl_ast
+    .tl_ast_o(ast_tl_req_o),
+    .tl_ast_i(ast_tl_rsp_i),
 
 
     .scanmode_i
