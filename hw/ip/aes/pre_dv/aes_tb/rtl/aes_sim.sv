@@ -10,7 +10,8 @@ module aes_sim import aes_pkg::*;
   parameter bit          Masking              = 1,
   parameter sbox_impl_e  SBoxImpl             = SBoxImplDom,
   parameter int unsigned SecStartTriggerDelay = 40,
-  parameter bit          SecAllowForcingMasks = 0
+  parameter bit          SecAllowForcingMasks = 0,
+  parameter bit          SecSkipPRNGReseeding = 0
 ) (
   input                     clk_i,
   input                     rst_ni,
@@ -22,22 +23,29 @@ module aes_sim import aes_pkg::*;
 
   import aes_reg_pkg::*;
 
+  logic edn_req;
+
   // Instantiate top-level
   aes #(
     .AES192Enable         ( AES192Enable         ),
     .Masking              ( Masking              ),
     .SBoxImpl             ( SBoxImpl             ),
     .SecStartTriggerDelay ( SecStartTriggerDelay ),
-    .SecAllowForcingMasks ( SecAllowForcingMasks )
+    .SecAllowForcingMasks ( SecAllowForcingMasks ),
+    .SecSkipPRNGReseeding ( SecSkipPRNGReseeding )
   ) u_aes (
     .clk_i,
     .rst_ni,
-    .idle_o     (          ),
-    .lc_escalate_en_i (lc_ctrl_pkg::Off),
+    .idle_o           (                               ),
+    .lc_escalate_en_i ( lc_ctrl_pkg::Off              ),
+    .clk_edn_i        ( clk_i                         ),
+    .rst_edn_ni       ( rst_ni                        ),
+    .edn_o            ( edn_req                       ),
+    .edn_i            ( {edn_req, 1'b1, 32'h12345678} ),
     .tl_i,
     .tl_o,
-    .alert_rx_i ( alert_rx ),
-    .alert_tx_o ( alert_tx )
+    .alert_rx_i       ( alert_rx                      ),
+    .alert_tx_o       ( alert_tx                      )
   );
 
   // Signals for controlling model checker
