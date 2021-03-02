@@ -50,7 +50,7 @@
       lc_ctrl
       sensor_ctrl_aon
       alert_handler
-      ast_wrapper
+      ast
       sram_ctrl_ret_aon
       aon_timer_aon
     ]
@@ -519,12 +519,12 @@
       pipeline_byp: "true"
     }
     {
-      name: ast_wrapper
+      name: ast
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
       pipeline: "false"
-      stub: true
+      inst_type: ast
       addr_range:
       [
         {
@@ -533,6 +533,7 @@
         }
       ]
       xbar: false
+      stub: true
       pipeline_byp: "true"
     }
   ]

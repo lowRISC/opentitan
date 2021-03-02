@@ -232,6 +232,16 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_AON_TIMER_AON_SIZE_BYTES = 32'h1000;
 
   /**
+   * Peripheral base address for ast in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_AST_BASE_ADDR = 32'h40480000;
+
+  /**
+   * Peripheral size in bytes for ast in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_AST_SIZE_BYTES = 32'h1000;
+
+  /**
    * Peripheral base address for sensor_ctrl_aon in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR = 32'h40490000;

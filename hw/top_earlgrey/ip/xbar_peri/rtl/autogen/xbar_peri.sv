@@ -31,7 +31,7 @@
 //     -> lc_ctrl
 //     -> sensor_ctrl_aon
 //     -> alert_handler
-//     -> ast_wrapper
+//     -> ast
 //     -> sram_ctrl_ret_aon
 //     -> aon_timer_aon
 
@@ -94,8 +94,8 @@ module xbar_peri (
   input  tlul_pkg::tl_d2h_t tl_sram_ctrl_ret_aon_i,
   output tlul_pkg::tl_h2d_t tl_aon_timer_aon_o,
   input  tlul_pkg::tl_d2h_t tl_aon_timer_aon_i,
-  output tlul_pkg::tl_h2d_t tl_ast_wrapper_o,
-  input  tlul_pkg::tl_d2h_t tl_ast_wrapper_i,
+  output tlul_pkg::tl_h2d_t tl_ast_o,
+  input  tlul_pkg::tl_d2h_t tl_ast_i,
 
   input lc_ctrl_pkg::lc_tx_t scanmode_i
 );
@@ -189,8 +189,8 @@ module xbar_peri (
   assign tl_alert_handler_o = tl_s1n_27_ds_h2d[22];
   assign tl_s1n_27_ds_d2h[22] = tl_alert_handler_i;
 
-  assign tl_ast_wrapper_o = tl_s1n_27_ds_h2d[23];
-  assign tl_s1n_27_ds_d2h[23] = tl_ast_wrapper_i;
+  assign tl_ast_o = tl_s1n_27_ds_h2d[23];
+  assign tl_s1n_27_ds_d2h[23] = tl_ast_i;
 
   assign tl_sram_ctrl_ret_aon_o = tl_s1n_27_ds_h2d[24];
   assign tl_s1n_27_ds_d2h[24] = tl_sram_ctrl_ret_aon_i;
@@ -273,7 +273,7 @@ module xbar_peri (
     end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_ALERT_HANDLER)) == ADDR_SPACE_ALERT_HANDLER) begin
       dev_sel_s1n_27 = 5'd22;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_AST_WRAPPER)) == ADDR_SPACE_AST_WRAPPER) begin
+    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_AST)) == ADDR_SPACE_AST) begin
       dev_sel_s1n_27 = 5'd23;
 
     end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_SRAM_CTRL_RET_AON)) == ADDR_SPACE_SRAM_CTRL_RET_AON) begin

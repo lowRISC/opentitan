@@ -42,4 +42,4 @@ initial force dut.rst_peri_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(alert_handler, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(sram_ctrl_ret_aon, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(aon_timer_aon, dut, clk_peri_i, rst_n)
-`CONNECT_TL_DEVICE_IF(ast_wrapper, dut, clk_peri_i, rst_n)
+`CONNECT_TL_DEVICE_IF(ast, dut, clk_peri_i, rst_n)

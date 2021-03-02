@@ -3674,7 +3674,7 @@
         rst_edn_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x40150000
-      generated: "true"
+      attr: templated
       localparam:
       {
         EscCntDw: 32
@@ -3863,7 +3863,7 @@
       }
       domain: Aon
       base_addr: 0x40400000
-      generated: "true"
+      attr: templated
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
@@ -4103,7 +4103,7 @@
       }
       domain: Aon
       base_addr: 0x40410000
-      generated: "true"
+      attr: templated
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
@@ -4236,7 +4236,7 @@
       }
       domain: Aon
       base_addr: 0x40420000
-      generated: "true"
+      attr: templated
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
@@ -4428,7 +4428,7 @@
       }
       domain: Aon
       base_addr: 0x40460000
-      generated: "true"
+      attr: templated
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
@@ -4665,7 +4665,7 @@
       }
       domain: Aon
       base_addr: 0x40470000
-      generated: "true"
+      attr: templated
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
@@ -4771,6 +4771,55 @@
       ]
     }
     {
+      name: ast
+      type: ast
+      clock_srcs:
+      {
+        clk_i: io_div4
+      }
+      clock_group: secure
+      clock_reset_export:
+      [
+        ast
+      ]
+      reset_connections:
+      {
+        rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
+      }
+      base_addr: 0x40480000
+      attr: reggen_only
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_io_div4_secure
+      }
+      domain: "0"
+      size: 0x1000
+      bus_device: tlul
+      bus_host: none
+      available_input_list: []
+      available_output_list: []
+      available_inout_list: []
+      param_list: []
+      interrupt_list: []
+      alert_list: []
+      wakeup_list: []
+      reset_request_list: []
+      scan: "false"
+      scan_reset: "false"
+      inter_signal_list:
+      [
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+          inst_name: ast
+          index: -1
+        }
+      ]
+    }
+    {
       name: sensor_ctrl_aon
       type: sensor_ctrl
       clock_srcs:
@@ -4788,7 +4837,7 @@
       }
       domain: Aon
       base_addr: 0x40490000
-      top_only: "true"
+      attr: reggen_top
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
@@ -5135,7 +5184,7 @@
         rst_otp_ni: rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x41000000
-      generated: "true"
+      attr: templated
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
@@ -5516,7 +5565,7 @@
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       base_addr: 0x41010000
-      generated: "true"
+      attr: templated
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
@@ -8079,7 +8128,7 @@
       sensor_ctrl_aon.ast_status: sensor_ctrl_ast_status
       usbdev.usb_ref_val: ""
       usbdev.usb_ref_pulse: ""
-      peri.tl_ast_wrapper: ast_tl
+      peri.tl_ast: ast_tl
       otp_ctrl.otp_ast_pwr_seq: ""
       otp_ctrl.otp_ast_pwr_seq_h: ""
       eflash.flash_bist_enable: flash_bist_enable
@@ -8797,7 +8846,7 @@
           lc_ctrl
           sensor_ctrl_aon
           alert_handler
-          ast_wrapper
+          ast
           sram_ctrl_ret_aon
           aon_timer_aon
         ]
@@ -9266,12 +9315,12 @@
           pipeline_byp: "true"
         }
         {
-          name: ast_wrapper
+          name: ast
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
           pipeline: "false"
-          stub: true
+          inst_type: ast
           addr_range:
           [
             {
@@ -9280,6 +9329,7 @@
             }
           ]
           xbar: false
+          stub: true
           pipeline_byp: "true"
         }
       ]
@@ -9602,7 +9652,7 @@
         {
           struct: tl
           type: req_rsp
-          name: tl_ast_wrapper
+          name: tl_ast
           act: req
           package: tlul_pkg
           inst_name: peri
@@ -12361,6 +12411,10 @@
         aon_peri
         usb_peri
       ]
+      ast:
+      [
+        io_div4_secure
+      ]
       sensor_ctrl_aon:
       [
         io_div4_secure
@@ -12409,6 +12463,10 @@
         sys_io_div4
         sys_aon
         usb
+      ]
+      ast:
+      [
+        sys_io_div4
       ]
       sensor_ctrl_aon:
       [
@@ -14065,6 +14123,15 @@
         index: -1
       }
       {
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        name: tl
+        inst_name: ast
+        index: -1
+      }
+      {
         struct: ast_alert
         type: req_rsp
         name: ast_alert
@@ -15705,7 +15772,7 @@
       {
         struct: tl
         type: req_rsp
-        name: tl_ast_wrapper
+        name: tl_ast
         act: req
         package: tlul_pkg
         inst_name: peri
