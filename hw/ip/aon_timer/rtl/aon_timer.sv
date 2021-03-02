@@ -133,7 +133,7 @@ module aon_timer (
   prim_fifo_async #(.Width (13), .Depth (4)) wkup_ctrl_wr_data_sync (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
-    .wvalid_i  (reg2hw.wkup_ctrl.enable.qe),
+    .wvalid_i  (reg2hw.wkup_ctrl.prescaler.qe | reg2hw.wkup_ctrl.enable.qe),
     .wready_o  (), // TODO no way of feeding this back to TLUL currently
     .wdata_i   ({reg2hw.wkup_ctrl.prescaler.q, reg2hw.wkup_ctrl.enable.q}),
     .wdepth_o  (),
@@ -178,7 +178,7 @@ module aon_timer (
   prim_fifo_async #(.Width (2), .Depth (4)) wdog_ctrl_wr_data_sync (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
-    .wvalid_i  (reg2hw.wdog_ctrl.enable.qe),
+    .wvalid_i  (reg2hw.wdog_ctrl.pause_in_sleep.qe | reg2hw.wdog_ctrl.enable.qe),
     .wready_o  (), // TODO no way of feeding this back to TLUL currently
     .wdata_i   ({reg2hw.wdog_ctrl.pause_in_sleep.q, reg2hw.wdog_ctrl.enable.q}),
     .wdepth_o  (),
