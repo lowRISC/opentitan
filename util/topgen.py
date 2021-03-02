@@ -22,6 +22,7 @@ import tlgen
 from reggen import access, gen_dv, gen_rtl, validate, window
 from topgen import amend_clocks, get_hjsonobj_xbars
 from topgen import intermodule as im
+from topgen import lib as lib
 from topgen import merge_top, search_ips, validate_top
 from topgen.c import TopGenC
 
@@ -872,7 +873,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     # These modules are generated through topgen
     generated_list = [
         module['type'] for module in topcfg['module']
-        if 'generated' in module and module['generated'] == 'true'
+        if lib.is_templated(module)
     ]
     log.info("Filtered list is {}".format(generated_list))
 
@@ -880,7 +881,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     # and therefore not part of "hw/ip"
     top_only_list = [
         module['type'] for module in topcfg['module']
-        if 'top_only' in module and module['top_only'] == 'true'
+        if lib.is_top_reggen(module)
     ]
     log.info("Filtered list is {}".format(top_only_list))
 

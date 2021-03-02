@@ -345,8 +345,6 @@ module top_englishbreakfast_cw305 #(
     .sensor_ctrl_ast_status_i     ( ast_base_status ),
     .usbdev_usb_ref_val_o         (                 ),
     .usbdev_usb_ref_pulse_o       (                 ),
-    .ast_tl_req_o                 (                 ),
-    .ast_tl_rsp_i                 ( '0              ),
     .flash_bist_enable_i          ( 1'b0            ),
     .flash_power_down_h_i         ( 1'b0            ),
     .flash_power_ready_h_i        ( 1'b1            ),

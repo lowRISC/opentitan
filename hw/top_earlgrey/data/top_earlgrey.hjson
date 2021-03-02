@@ -203,8 +203,13 @@
   // `module` defines the peripherals.
   // Details are coming from each modules' config file `ip.hjson`
   // TODO: Define parameter here
-  // generated: A module is templated and generated as part of topgen
-  // top_only: A module is not templated but is specific to 'top_*' instead of 'ip'
+  // attr: There are a few types of modules supported
+     //   normal(default): Normal, non-templated modules that will be instantiated
+     //   templated:   These modules are templated and must be run through topgen
+     //   reggen_top:  These modules are not templated, but need to have reggen run
+     //                because they live exclusively in hw/top_* instead of hw/ip_*.
+     //                These modules are also instantiated in the top level.
+     //   reggen_only: Similar to reggen_top, but are not instantiated in the top level.
   module: [
     { name: "uart0",    // instance name
       type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
@@ -357,7 +362,7 @@
       clock_group: "timers",
       reset_connections: {rst_ni: "sys_io_div4", rst_edn_ni: "sys"},
       base_addr: "0x40150000",
-      generated: "true"         // Indicate this module is generated in the topgen
+      attr: "templated",
       localparam: {
         EscCntDw:  32,
         AccuCntDw: 16,
@@ -380,7 +385,7 @@
       reset_connections: {rst_ni: "por", rst_slow_ni: "por_aon"},
       domain: "Aon",
       base_addr: "0x40400000",
-      generated: "true"         // Indicate this module is generated in the topgen
+      attr: "templated",
 
     },
     { name: "rstmgr_aon",
@@ -391,7 +396,7 @@
       reset_connections: {rst_ni: "rst_ni"},
       domain: "Aon",
       base_addr: "0x40410000",
-      generated: "true"         // Indicate this module is generated in the topgen
+      attr: "templated",
     },
     { name: "clkmgr_aon",
       type: "clkmgr",
@@ -401,7 +406,7 @@
                           rst_io_div2_ni: "por_io_div2", rst_io_div4_ni: "por_io_div4"},
       domain: "Aon",
       base_addr: "0x40420000",
-      generated: "true"
+      attr: "templated",
     },
     { name: "pinmux_aon",
       type: "pinmux",
@@ -410,7 +415,7 @@
       reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
       domain: "Aon",
       base_addr: "0x40460000",
-      generated: "true"
+      attr: "templated",
     },
     { name: "aon_timer_aon",
       type: "aon_timer",
@@ -419,7 +424,16 @@
       reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
       domain: "Aon",
       base_addr: "0x40470000",
-      generated: "true"
+      attr: "templated",
+    },
+    { name: "ast",
+      type: "ast",
+      clock_srcs: {clk_i: "io_div4"},
+      clock_group: "secure",
+      clock_reset_export: ["ast"],
+      reset_connections: {rst_ni: "sys_io_div4"},
+      base_addr: "0x40480000",
+      attr: "reggen_only",
     },
     { name: "sensor_ctrl_aon",
       type: "sensor_ctrl",
@@ -429,7 +443,7 @@
       reset_connections: {rst_ni: "sys_io_div4"},
       domain: "Aon",
       base_addr: "0x40490000",
-      top_only: "true"
+      attr: "reggen_top",
     },
     { name: "sram_ctrl_ret_aon",
       type: "sram_ctrl",
@@ -445,7 +459,7 @@
       clock_group: "infra",
       reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
       base_addr: "0x41000000",
-      generated: "true" // Indicate this module is generated in the topgen
+      attr: "templated",
     },
     { name: "rv_plic",
       type: "rv_plic",
@@ -453,7 +467,7 @@
       clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
       base_addr: "0x41010000",
-      generated: "true"         // Indicate this module is generated in the topgen
+      attr: "templated",
     },
     { name: "aes",
       type: "aes",
@@ -829,7 +843,7 @@
         'sensor_ctrl_aon.ast_status'   : 'sensor_ctrl_ast_status',
         'usbdev.usb_ref_val'           : '',
         'usbdev.usb_ref_pulse'         : '',
-        'peri.tl_ast_wrapper'          : 'ast_tl',
+        'peri.tl_ast'                  : 'ast_tl',
         'otp_ctrl.otp_ast_pwr_seq'     : '',
         'otp_ctrl.otp_ast_pwr_seq_h'   : '',
         'eflash.flash_bist_enable'     : 'flash_bist_enable',

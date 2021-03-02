@@ -128,7 +128,7 @@ def autoconnect_xbar(topcfg: OrderedDict, xbar: OrderedDict):
         # check if name exists in ["module", "memory"]
         ips = [
             x for x in topcfg["module"] + topcfg["memory"]
-            if x["name"] == port["name"]
+            if x["name"] == port["name"] and lib.is_inst(x)
         ]
 
         assert len(ips) <= 1
@@ -555,7 +555,7 @@ def find_otherside_modules(topcfg: OrderedDict, m,
         ('main', 'tl_cored'): ('rv_core_ibex', 'tl_d'),
         ('main', 'tl_dm_sba'): ('dm_top', 'tl_h'),
         ('main', 'tl_debug_mem'): ('dm_top', 'tl_d'),
-        ('peri', 'tl_ast_wrapper'): ('ast', 'tl')
+        ('peri', 'tl_ast'): ('ast', 'tl')
     }
     for pair in special_inst_names:
         if pair == (m, s):
