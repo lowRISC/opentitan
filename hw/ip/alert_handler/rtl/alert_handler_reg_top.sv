@@ -3647,359 +3647,359 @@ module alert_handler_reg_top (
     if (addr_hit[58] && reg_we && (ALERT_HANDLER_PERMIT[58] != (ALERT_HANDLER_PERMIT[58] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_classa_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_classa_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_classa_wd = reg_wdata[0];
 
-  assign intr_state_classb_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_classb_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_classb_wd = reg_wdata[1];
 
-  assign intr_state_classc_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_classc_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_classc_wd = reg_wdata[2];
 
-  assign intr_state_classd_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_classd_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_classd_wd = reg_wdata[3];
 
-  assign intr_enable_classa_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_classa_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_classa_wd = reg_wdata[0];
 
-  assign intr_enable_classb_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_classb_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_classb_wd = reg_wdata[1];
 
-  assign intr_enable_classc_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_classc_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_classc_wd = reg_wdata[2];
 
-  assign intr_enable_classd_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_classd_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_classd_wd = reg_wdata[3];
 
-  assign intr_test_classa_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_classa_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_classa_wd = reg_wdata[0];
 
-  assign intr_test_classb_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_classb_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_classb_wd = reg_wdata[1];
 
-  assign intr_test_classc_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_classc_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_classc_wd = reg_wdata[2];
 
-  assign intr_test_classd_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_classd_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_classd_wd = reg_wdata[3];
 
-  assign regwen_we = addr_hit[3] & reg_we & ~wr_err;
+  assign regwen_we = addr_hit[3] & reg_we & !reg_error;
   assign regwen_wd = reg_wdata[0];
 
-  assign ping_timeout_cyc_we = addr_hit[4] & reg_we & ~wr_err;
+  assign ping_timeout_cyc_we = addr_hit[4] & reg_we & !reg_error;
   assign ping_timeout_cyc_wd = reg_wdata[23:0];
 
-  assign alert_en_en_a_0_we = addr_hit[5] & reg_we & ~wr_err;
+  assign alert_en_en_a_0_we = addr_hit[5] & reg_we & !reg_error;
   assign alert_en_en_a_0_wd = reg_wdata[0];
 
-  assign alert_en_en_a_1_we = addr_hit[5] & reg_we & ~wr_err;
+  assign alert_en_en_a_1_we = addr_hit[5] & reg_we & !reg_error;
   assign alert_en_en_a_1_wd = reg_wdata[1];
 
-  assign alert_en_en_a_2_we = addr_hit[5] & reg_we & ~wr_err;
+  assign alert_en_en_a_2_we = addr_hit[5] & reg_we & !reg_error;
   assign alert_en_en_a_2_wd = reg_wdata[2];
 
-  assign alert_en_en_a_3_we = addr_hit[5] & reg_we & ~wr_err;
+  assign alert_en_en_a_3_we = addr_hit[5] & reg_we & !reg_error;
   assign alert_en_en_a_3_wd = reg_wdata[3];
 
-  assign alert_class_class_a_0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_class_a_0_we = addr_hit[6] & reg_we & !reg_error;
   assign alert_class_class_a_0_wd = reg_wdata[1:0];
 
-  assign alert_class_class_a_1_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_class_a_1_we = addr_hit[6] & reg_we & !reg_error;
   assign alert_class_class_a_1_wd = reg_wdata[3:2];
 
-  assign alert_class_class_a_2_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_class_a_2_we = addr_hit[6] & reg_we & !reg_error;
   assign alert_class_class_a_2_wd = reg_wdata[5:4];
 
-  assign alert_class_class_a_3_we = addr_hit[6] & reg_we & ~wr_err;
+  assign alert_class_class_a_3_we = addr_hit[6] & reg_we & !reg_error;
   assign alert_class_class_a_3_wd = reg_wdata[7:6];
 
-  assign alert_cause_a_0_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_0_we = addr_hit[7] & reg_we & !reg_error;
   assign alert_cause_a_0_wd = reg_wdata[0];
 
-  assign alert_cause_a_1_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_1_we = addr_hit[7] & reg_we & !reg_error;
   assign alert_cause_a_1_wd = reg_wdata[1];
 
-  assign alert_cause_a_2_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_2_we = addr_hit[7] & reg_we & !reg_error;
   assign alert_cause_a_2_wd = reg_wdata[2];
 
-  assign alert_cause_a_3_we = addr_hit[7] & reg_we & ~wr_err;
+  assign alert_cause_a_3_we = addr_hit[7] & reg_we & !reg_error;
   assign alert_cause_a_3_wd = reg_wdata[3];
 
-  assign loc_alert_en_en_la_0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign loc_alert_en_en_la_0_we = addr_hit[8] & reg_we & !reg_error;
   assign loc_alert_en_en_la_0_wd = reg_wdata[0];
 
-  assign loc_alert_en_en_la_1_we = addr_hit[8] & reg_we & ~wr_err;
+  assign loc_alert_en_en_la_1_we = addr_hit[8] & reg_we & !reg_error;
   assign loc_alert_en_en_la_1_wd = reg_wdata[1];
 
-  assign loc_alert_en_en_la_2_we = addr_hit[8] & reg_we & ~wr_err;
+  assign loc_alert_en_en_la_2_we = addr_hit[8] & reg_we & !reg_error;
   assign loc_alert_en_en_la_2_wd = reg_wdata[2];
 
-  assign loc_alert_en_en_la_3_we = addr_hit[8] & reg_we & ~wr_err;
+  assign loc_alert_en_en_la_3_we = addr_hit[8] & reg_we & !reg_error;
   assign loc_alert_en_en_la_3_wd = reg_wdata[3];
 
-  assign loc_alert_class_class_la_0_we = addr_hit[9] & reg_we & ~wr_err;
+  assign loc_alert_class_class_la_0_we = addr_hit[9] & reg_we & !reg_error;
   assign loc_alert_class_class_la_0_wd = reg_wdata[1:0];
 
-  assign loc_alert_class_class_la_1_we = addr_hit[9] & reg_we & ~wr_err;
+  assign loc_alert_class_class_la_1_we = addr_hit[9] & reg_we & !reg_error;
   assign loc_alert_class_class_la_1_wd = reg_wdata[3:2];
 
-  assign loc_alert_class_class_la_2_we = addr_hit[9] & reg_we & ~wr_err;
+  assign loc_alert_class_class_la_2_we = addr_hit[9] & reg_we & !reg_error;
   assign loc_alert_class_class_la_2_wd = reg_wdata[5:4];
 
-  assign loc_alert_class_class_la_3_we = addr_hit[9] & reg_we & ~wr_err;
+  assign loc_alert_class_class_la_3_we = addr_hit[9] & reg_we & !reg_error;
   assign loc_alert_class_class_la_3_wd = reg_wdata[7:6];
 
-  assign loc_alert_cause_la_0_we = addr_hit[10] & reg_we & ~wr_err;
+  assign loc_alert_cause_la_0_we = addr_hit[10] & reg_we & !reg_error;
   assign loc_alert_cause_la_0_wd = reg_wdata[0];
 
-  assign loc_alert_cause_la_1_we = addr_hit[10] & reg_we & ~wr_err;
+  assign loc_alert_cause_la_1_we = addr_hit[10] & reg_we & !reg_error;
   assign loc_alert_cause_la_1_wd = reg_wdata[1];
 
-  assign loc_alert_cause_la_2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign loc_alert_cause_la_2_we = addr_hit[10] & reg_we & !reg_error;
   assign loc_alert_cause_la_2_wd = reg_wdata[2];
 
-  assign loc_alert_cause_la_3_we = addr_hit[10] & reg_we & ~wr_err;
+  assign loc_alert_cause_la_3_we = addr_hit[10] & reg_we & !reg_error;
   assign loc_alert_cause_la_3_wd = reg_wdata[3];
 
-  assign classa_ctrl_en_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_en_we = addr_hit[11] & reg_we & !reg_error;
   assign classa_ctrl_en_wd = reg_wdata[0];
 
-  assign classa_ctrl_lock_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_lock_we = addr_hit[11] & reg_we & !reg_error;
   assign classa_ctrl_lock_wd = reg_wdata[1];
 
-  assign classa_ctrl_en_e0_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_en_e0_we = addr_hit[11] & reg_we & !reg_error;
   assign classa_ctrl_en_e0_wd = reg_wdata[2];
 
-  assign classa_ctrl_en_e1_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_en_e1_we = addr_hit[11] & reg_we & !reg_error;
   assign classa_ctrl_en_e1_wd = reg_wdata[3];
 
-  assign classa_ctrl_en_e2_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_en_e2_we = addr_hit[11] & reg_we & !reg_error;
   assign classa_ctrl_en_e2_wd = reg_wdata[4];
 
-  assign classa_ctrl_en_e3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_en_e3_we = addr_hit[11] & reg_we & !reg_error;
   assign classa_ctrl_en_e3_wd = reg_wdata[5];
 
-  assign classa_ctrl_map_e0_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_map_e0_we = addr_hit[11] & reg_we & !reg_error;
   assign classa_ctrl_map_e0_wd = reg_wdata[7:6];
 
-  assign classa_ctrl_map_e1_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_map_e1_we = addr_hit[11] & reg_we & !reg_error;
   assign classa_ctrl_map_e1_wd = reg_wdata[9:8];
 
-  assign classa_ctrl_map_e2_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_map_e2_we = addr_hit[11] & reg_we & !reg_error;
   assign classa_ctrl_map_e2_wd = reg_wdata[11:10];
 
-  assign classa_ctrl_map_e3_we = addr_hit[11] & reg_we & ~wr_err;
+  assign classa_ctrl_map_e3_we = addr_hit[11] & reg_we & !reg_error;
   assign classa_ctrl_map_e3_wd = reg_wdata[13:12];
 
-  assign classa_regwen_we = addr_hit[12] & reg_we & ~wr_err;
+  assign classa_regwen_we = addr_hit[12] & reg_we & !reg_error;
   assign classa_regwen_wd = reg_wdata[0];
 
-  assign classa_clr_we = addr_hit[13] & reg_we & ~wr_err;
+  assign classa_clr_we = addr_hit[13] & reg_we & !reg_error;
   assign classa_clr_wd = reg_wdata[0];
 
-  assign classa_accum_cnt_re = addr_hit[14] && reg_re;
+  assign classa_accum_cnt_re = addr_hit[14] & reg_re & !reg_error;
 
-  assign classa_accum_thresh_we = addr_hit[15] & reg_we & ~wr_err;
+  assign classa_accum_thresh_we = addr_hit[15] & reg_we & !reg_error;
   assign classa_accum_thresh_wd = reg_wdata[15:0];
 
-  assign classa_timeout_cyc_we = addr_hit[16] & reg_we & ~wr_err;
+  assign classa_timeout_cyc_we = addr_hit[16] & reg_we & !reg_error;
   assign classa_timeout_cyc_wd = reg_wdata[31:0];
 
-  assign classa_phase0_cyc_we = addr_hit[17] & reg_we & ~wr_err;
+  assign classa_phase0_cyc_we = addr_hit[17] & reg_we & !reg_error;
   assign classa_phase0_cyc_wd = reg_wdata[31:0];
 
-  assign classa_phase1_cyc_we = addr_hit[18] & reg_we & ~wr_err;
+  assign classa_phase1_cyc_we = addr_hit[18] & reg_we & !reg_error;
   assign classa_phase1_cyc_wd = reg_wdata[31:0];
 
-  assign classa_phase2_cyc_we = addr_hit[19] & reg_we & ~wr_err;
+  assign classa_phase2_cyc_we = addr_hit[19] & reg_we & !reg_error;
   assign classa_phase2_cyc_wd = reg_wdata[31:0];
 
-  assign classa_phase3_cyc_we = addr_hit[20] & reg_we & ~wr_err;
+  assign classa_phase3_cyc_we = addr_hit[20] & reg_we & !reg_error;
   assign classa_phase3_cyc_wd = reg_wdata[31:0];
 
-  assign classa_esc_cnt_re = addr_hit[21] && reg_re;
+  assign classa_esc_cnt_re = addr_hit[21] & reg_re & !reg_error;
 
-  assign classa_state_re = addr_hit[22] && reg_re;
+  assign classa_state_re = addr_hit[22] & reg_re & !reg_error;
 
-  assign classb_ctrl_en_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_en_we = addr_hit[23] & reg_we & !reg_error;
   assign classb_ctrl_en_wd = reg_wdata[0];
 
-  assign classb_ctrl_lock_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_lock_we = addr_hit[23] & reg_we & !reg_error;
   assign classb_ctrl_lock_wd = reg_wdata[1];
 
-  assign classb_ctrl_en_e0_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_en_e0_we = addr_hit[23] & reg_we & !reg_error;
   assign classb_ctrl_en_e0_wd = reg_wdata[2];
 
-  assign classb_ctrl_en_e1_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_en_e1_we = addr_hit[23] & reg_we & !reg_error;
   assign classb_ctrl_en_e1_wd = reg_wdata[3];
 
-  assign classb_ctrl_en_e2_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_en_e2_we = addr_hit[23] & reg_we & !reg_error;
   assign classb_ctrl_en_e2_wd = reg_wdata[4];
 
-  assign classb_ctrl_en_e3_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_en_e3_we = addr_hit[23] & reg_we & !reg_error;
   assign classb_ctrl_en_e3_wd = reg_wdata[5];
 
-  assign classb_ctrl_map_e0_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_map_e0_we = addr_hit[23] & reg_we & !reg_error;
   assign classb_ctrl_map_e0_wd = reg_wdata[7:6];
 
-  assign classb_ctrl_map_e1_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_map_e1_we = addr_hit[23] & reg_we & !reg_error;
   assign classb_ctrl_map_e1_wd = reg_wdata[9:8];
 
-  assign classb_ctrl_map_e2_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_map_e2_we = addr_hit[23] & reg_we & !reg_error;
   assign classb_ctrl_map_e2_wd = reg_wdata[11:10];
 
-  assign classb_ctrl_map_e3_we = addr_hit[23] & reg_we & ~wr_err;
+  assign classb_ctrl_map_e3_we = addr_hit[23] & reg_we & !reg_error;
   assign classb_ctrl_map_e3_wd = reg_wdata[13:12];
 
-  assign classb_regwen_we = addr_hit[24] & reg_we & ~wr_err;
+  assign classb_regwen_we = addr_hit[24] & reg_we & !reg_error;
   assign classb_regwen_wd = reg_wdata[0];
 
-  assign classb_clr_we = addr_hit[25] & reg_we & ~wr_err;
+  assign classb_clr_we = addr_hit[25] & reg_we & !reg_error;
   assign classb_clr_wd = reg_wdata[0];
 
-  assign classb_accum_cnt_re = addr_hit[26] && reg_re;
+  assign classb_accum_cnt_re = addr_hit[26] & reg_re & !reg_error;
 
-  assign classb_accum_thresh_we = addr_hit[27] & reg_we & ~wr_err;
+  assign classb_accum_thresh_we = addr_hit[27] & reg_we & !reg_error;
   assign classb_accum_thresh_wd = reg_wdata[15:0];
 
-  assign classb_timeout_cyc_we = addr_hit[28] & reg_we & ~wr_err;
+  assign classb_timeout_cyc_we = addr_hit[28] & reg_we & !reg_error;
   assign classb_timeout_cyc_wd = reg_wdata[31:0];
 
-  assign classb_phase0_cyc_we = addr_hit[29] & reg_we & ~wr_err;
+  assign classb_phase0_cyc_we = addr_hit[29] & reg_we & !reg_error;
   assign classb_phase0_cyc_wd = reg_wdata[31:0];
 
-  assign classb_phase1_cyc_we = addr_hit[30] & reg_we & ~wr_err;
+  assign classb_phase1_cyc_we = addr_hit[30] & reg_we & !reg_error;
   assign classb_phase1_cyc_wd = reg_wdata[31:0];
 
-  assign classb_phase2_cyc_we = addr_hit[31] & reg_we & ~wr_err;
+  assign classb_phase2_cyc_we = addr_hit[31] & reg_we & !reg_error;
   assign classb_phase2_cyc_wd = reg_wdata[31:0];
 
-  assign classb_phase3_cyc_we = addr_hit[32] & reg_we & ~wr_err;
+  assign classb_phase3_cyc_we = addr_hit[32] & reg_we & !reg_error;
   assign classb_phase3_cyc_wd = reg_wdata[31:0];
 
-  assign classb_esc_cnt_re = addr_hit[33] && reg_re;
+  assign classb_esc_cnt_re = addr_hit[33] & reg_re & !reg_error;
 
-  assign classb_state_re = addr_hit[34] && reg_re;
+  assign classb_state_re = addr_hit[34] & reg_re & !reg_error;
 
-  assign classc_ctrl_en_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_en_we = addr_hit[35] & reg_we & !reg_error;
   assign classc_ctrl_en_wd = reg_wdata[0];
 
-  assign classc_ctrl_lock_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_lock_we = addr_hit[35] & reg_we & !reg_error;
   assign classc_ctrl_lock_wd = reg_wdata[1];
 
-  assign classc_ctrl_en_e0_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_en_e0_we = addr_hit[35] & reg_we & !reg_error;
   assign classc_ctrl_en_e0_wd = reg_wdata[2];
 
-  assign classc_ctrl_en_e1_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_en_e1_we = addr_hit[35] & reg_we & !reg_error;
   assign classc_ctrl_en_e1_wd = reg_wdata[3];
 
-  assign classc_ctrl_en_e2_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_en_e2_we = addr_hit[35] & reg_we & !reg_error;
   assign classc_ctrl_en_e2_wd = reg_wdata[4];
 
-  assign classc_ctrl_en_e3_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_en_e3_we = addr_hit[35] & reg_we & !reg_error;
   assign classc_ctrl_en_e3_wd = reg_wdata[5];
 
-  assign classc_ctrl_map_e0_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_map_e0_we = addr_hit[35] & reg_we & !reg_error;
   assign classc_ctrl_map_e0_wd = reg_wdata[7:6];
 
-  assign classc_ctrl_map_e1_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_map_e1_we = addr_hit[35] & reg_we & !reg_error;
   assign classc_ctrl_map_e1_wd = reg_wdata[9:8];
 
-  assign classc_ctrl_map_e2_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_map_e2_we = addr_hit[35] & reg_we & !reg_error;
   assign classc_ctrl_map_e2_wd = reg_wdata[11:10];
 
-  assign classc_ctrl_map_e3_we = addr_hit[35] & reg_we & ~wr_err;
+  assign classc_ctrl_map_e3_we = addr_hit[35] & reg_we & !reg_error;
   assign classc_ctrl_map_e3_wd = reg_wdata[13:12];
 
-  assign classc_regwen_we = addr_hit[36] & reg_we & ~wr_err;
+  assign classc_regwen_we = addr_hit[36] & reg_we & !reg_error;
   assign classc_regwen_wd = reg_wdata[0];
 
-  assign classc_clr_we = addr_hit[37] & reg_we & ~wr_err;
+  assign classc_clr_we = addr_hit[37] & reg_we & !reg_error;
   assign classc_clr_wd = reg_wdata[0];
 
-  assign classc_accum_cnt_re = addr_hit[38] && reg_re;
+  assign classc_accum_cnt_re = addr_hit[38] & reg_re & !reg_error;
 
-  assign classc_accum_thresh_we = addr_hit[39] & reg_we & ~wr_err;
+  assign classc_accum_thresh_we = addr_hit[39] & reg_we & !reg_error;
   assign classc_accum_thresh_wd = reg_wdata[15:0];
 
-  assign classc_timeout_cyc_we = addr_hit[40] & reg_we & ~wr_err;
+  assign classc_timeout_cyc_we = addr_hit[40] & reg_we & !reg_error;
   assign classc_timeout_cyc_wd = reg_wdata[31:0];
 
-  assign classc_phase0_cyc_we = addr_hit[41] & reg_we & ~wr_err;
+  assign classc_phase0_cyc_we = addr_hit[41] & reg_we & !reg_error;
   assign classc_phase0_cyc_wd = reg_wdata[31:0];
 
-  assign classc_phase1_cyc_we = addr_hit[42] & reg_we & ~wr_err;
+  assign classc_phase1_cyc_we = addr_hit[42] & reg_we & !reg_error;
   assign classc_phase1_cyc_wd = reg_wdata[31:0];
 
-  assign classc_phase2_cyc_we = addr_hit[43] & reg_we & ~wr_err;
+  assign classc_phase2_cyc_we = addr_hit[43] & reg_we & !reg_error;
   assign classc_phase2_cyc_wd = reg_wdata[31:0];
 
-  assign classc_phase3_cyc_we = addr_hit[44] & reg_we & ~wr_err;
+  assign classc_phase3_cyc_we = addr_hit[44] & reg_we & !reg_error;
   assign classc_phase3_cyc_wd = reg_wdata[31:0];
 
-  assign classc_esc_cnt_re = addr_hit[45] && reg_re;
+  assign classc_esc_cnt_re = addr_hit[45] & reg_re & !reg_error;
 
-  assign classc_state_re = addr_hit[46] && reg_re;
+  assign classc_state_re = addr_hit[46] & reg_re & !reg_error;
 
-  assign classd_ctrl_en_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_en_we = addr_hit[47] & reg_we & !reg_error;
   assign classd_ctrl_en_wd = reg_wdata[0];
 
-  assign classd_ctrl_lock_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_lock_we = addr_hit[47] & reg_we & !reg_error;
   assign classd_ctrl_lock_wd = reg_wdata[1];
 
-  assign classd_ctrl_en_e0_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_en_e0_we = addr_hit[47] & reg_we & !reg_error;
   assign classd_ctrl_en_e0_wd = reg_wdata[2];
 
-  assign classd_ctrl_en_e1_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_en_e1_we = addr_hit[47] & reg_we & !reg_error;
   assign classd_ctrl_en_e1_wd = reg_wdata[3];
 
-  assign classd_ctrl_en_e2_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_en_e2_we = addr_hit[47] & reg_we & !reg_error;
   assign classd_ctrl_en_e2_wd = reg_wdata[4];
 
-  assign classd_ctrl_en_e3_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_en_e3_we = addr_hit[47] & reg_we & !reg_error;
   assign classd_ctrl_en_e3_wd = reg_wdata[5];
 
-  assign classd_ctrl_map_e0_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_map_e0_we = addr_hit[47] & reg_we & !reg_error;
   assign classd_ctrl_map_e0_wd = reg_wdata[7:6];
 
-  assign classd_ctrl_map_e1_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_map_e1_we = addr_hit[47] & reg_we & !reg_error;
   assign classd_ctrl_map_e1_wd = reg_wdata[9:8];
 
-  assign classd_ctrl_map_e2_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_map_e2_we = addr_hit[47] & reg_we & !reg_error;
   assign classd_ctrl_map_e2_wd = reg_wdata[11:10];
 
-  assign classd_ctrl_map_e3_we = addr_hit[47] & reg_we & ~wr_err;
+  assign classd_ctrl_map_e3_we = addr_hit[47] & reg_we & !reg_error;
   assign classd_ctrl_map_e3_wd = reg_wdata[13:12];
 
-  assign classd_regwen_we = addr_hit[48] & reg_we & ~wr_err;
+  assign classd_regwen_we = addr_hit[48] & reg_we & !reg_error;
   assign classd_regwen_wd = reg_wdata[0];
 
-  assign classd_clr_we = addr_hit[49] & reg_we & ~wr_err;
+  assign classd_clr_we = addr_hit[49] & reg_we & !reg_error;
   assign classd_clr_wd = reg_wdata[0];
 
-  assign classd_accum_cnt_re = addr_hit[50] && reg_re;
+  assign classd_accum_cnt_re = addr_hit[50] & reg_re & !reg_error;
 
-  assign classd_accum_thresh_we = addr_hit[51] & reg_we & ~wr_err;
+  assign classd_accum_thresh_we = addr_hit[51] & reg_we & !reg_error;
   assign classd_accum_thresh_wd = reg_wdata[15:0];
 
-  assign classd_timeout_cyc_we = addr_hit[52] & reg_we & ~wr_err;
+  assign classd_timeout_cyc_we = addr_hit[52] & reg_we & !reg_error;
   assign classd_timeout_cyc_wd = reg_wdata[31:0];
 
-  assign classd_phase0_cyc_we = addr_hit[53] & reg_we & ~wr_err;
+  assign classd_phase0_cyc_we = addr_hit[53] & reg_we & !reg_error;
   assign classd_phase0_cyc_wd = reg_wdata[31:0];
 
-  assign classd_phase1_cyc_we = addr_hit[54] & reg_we & ~wr_err;
+  assign classd_phase1_cyc_we = addr_hit[54] & reg_we & !reg_error;
   assign classd_phase1_cyc_wd = reg_wdata[31:0];
 
-  assign classd_phase2_cyc_we = addr_hit[55] & reg_we & ~wr_err;
+  assign classd_phase2_cyc_we = addr_hit[55] & reg_we & !reg_error;
   assign classd_phase2_cyc_wd = reg_wdata[31:0];
 
-  assign classd_phase3_cyc_we = addr_hit[56] & reg_we & ~wr_err;
+  assign classd_phase3_cyc_we = addr_hit[56] & reg_we & !reg_error;
   assign classd_phase3_cyc_wd = reg_wdata[31:0];
 
-  assign classd_esc_cnt_re = addr_hit[57] && reg_re;
+  assign classd_esc_cnt_re = addr_hit[57] & reg_re & !reg_error;
 
-  assign classd_state_re = addr_hit[58] && reg_re;
+  assign classd_state_re = addr_hit[58] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin

@@ -845,75 +845,75 @@ module pwrmgr_reg_top (
     if (addr_hit[14] && reg_we && (PWRMGR_PERMIT[14] != (PWRMGR_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_wd = reg_wdata[0];
 
-  assign intr_enable_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_wd = reg_wdata[0];
 
-  assign intr_test_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_wd = reg_wdata[0];
 
-  assign ctrl_cfg_regwen_re = addr_hit[3] && reg_re;
+  assign ctrl_cfg_regwen_re = addr_hit[3] & reg_re & !reg_error;
 
-  assign control_low_power_hint_we = addr_hit[4] & reg_we & ~wr_err;
+  assign control_low_power_hint_we = addr_hit[4] & reg_we & !reg_error;
   assign control_low_power_hint_wd = reg_wdata[0];
 
-  assign control_core_clk_en_we = addr_hit[4] & reg_we & ~wr_err;
+  assign control_core_clk_en_we = addr_hit[4] & reg_we & !reg_error;
   assign control_core_clk_en_wd = reg_wdata[4];
 
-  assign control_io_clk_en_we = addr_hit[4] & reg_we & ~wr_err;
+  assign control_io_clk_en_we = addr_hit[4] & reg_we & !reg_error;
   assign control_io_clk_en_wd = reg_wdata[5];
 
-  assign control_usb_clk_en_lp_we = addr_hit[4] & reg_we & ~wr_err;
+  assign control_usb_clk_en_lp_we = addr_hit[4] & reg_we & !reg_error;
   assign control_usb_clk_en_lp_wd = reg_wdata[6];
 
-  assign control_usb_clk_en_active_we = addr_hit[4] & reg_we & ~wr_err;
+  assign control_usb_clk_en_active_we = addr_hit[4] & reg_we & !reg_error;
   assign control_usb_clk_en_active_wd = reg_wdata[7];
 
-  assign control_main_pd_n_we = addr_hit[4] & reg_we & ~wr_err;
+  assign control_main_pd_n_we = addr_hit[4] & reg_we & !reg_error;
   assign control_main_pd_n_wd = reg_wdata[8];
 
-  assign cfg_cdc_sync_we = addr_hit[5] & reg_we & ~wr_err;
+  assign cfg_cdc_sync_we = addr_hit[5] & reg_we & !reg_error;
   assign cfg_cdc_sync_wd = reg_wdata[0];
 
-  assign wakeup_en_regwen_we = addr_hit[6] & reg_we & ~wr_err;
+  assign wakeup_en_regwen_we = addr_hit[6] & reg_we & !reg_error;
   assign wakeup_en_regwen_wd = reg_wdata[0];
 
-  assign wakeup_en_en_0_we = addr_hit[7] & reg_we & ~wr_err;
+  assign wakeup_en_en_0_we = addr_hit[7] & reg_we & !reg_error;
   assign wakeup_en_en_0_wd = reg_wdata[0];
 
-  assign wakeup_en_en_1_we = addr_hit[7] & reg_we & ~wr_err;
+  assign wakeup_en_en_1_we = addr_hit[7] & reg_we & !reg_error;
   assign wakeup_en_en_1_wd = reg_wdata[1];
 
-  assign wakeup_en_en_2_we = addr_hit[7] & reg_we & ~wr_err;
+  assign wakeup_en_en_2_we = addr_hit[7] & reg_we & !reg_error;
   assign wakeup_en_en_2_wd = reg_wdata[2];
 
 
 
 
-  assign reset_en_regwen_we = addr_hit[9] & reg_we & ~wr_err;
+  assign reset_en_regwen_we = addr_hit[9] & reg_we & !reg_error;
   assign reset_en_regwen_wd = reg_wdata[0];
 
-  assign reset_en_we = addr_hit[10] & reg_we & ~wr_err;
+  assign reset_en_we = addr_hit[10] & reg_we & !reg_error;
   assign reset_en_wd = reg_wdata[0];
 
 
 
-  assign wake_info_capture_dis_we = addr_hit[13] & reg_we & ~wr_err;
+  assign wake_info_capture_dis_we = addr_hit[13] & reg_we & !reg_error;
   assign wake_info_capture_dis_wd = reg_wdata[0];
 
-  assign wake_info_reasons_we = addr_hit[14] & reg_we & ~wr_err;
+  assign wake_info_reasons_we = addr_hit[14] & reg_we & !reg_error;
   assign wake_info_reasons_wd = reg_wdata[2:0];
-  assign wake_info_reasons_re = addr_hit[14] && reg_re;
+  assign wake_info_reasons_re = addr_hit[14] & reg_re & !reg_error;
 
-  assign wake_info_fall_through_we = addr_hit[14] & reg_we & ~wr_err;
+  assign wake_info_fall_through_we = addr_hit[14] & reg_we & !reg_error;
   assign wake_info_fall_through_wd = reg_wdata[3];
-  assign wake_info_fall_through_re = addr_hit[14] && reg_re;
+  assign wake_info_fall_through_re = addr_hit[14] & reg_re & !reg_error;
 
-  assign wake_info_abort_we = addr_hit[14] & reg_we & ~wr_err;
+  assign wake_info_abort_we = addr_hit[14] & reg_we & !reg_error;
   assign wake_info_abort_wd = reg_wdata[4];
-  assign wake_info_abort_re = addr_hit[14] && reg_re;
+  assign wake_info_abort_re = addr_hit[14] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin

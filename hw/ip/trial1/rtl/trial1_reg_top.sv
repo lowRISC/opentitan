@@ -1076,97 +1076,97 @@ module trial1_reg_top (
     if (addr_hit[19] && reg_we && (TRIAL1_PERMIT[19] != (TRIAL1_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign rwtype0_we = addr_hit[0] & reg_we & ~wr_err;
+  assign rwtype0_we = addr_hit[0] & reg_we & !reg_error;
   assign rwtype0_wd = reg_wdata[31:0];
 
-  assign rwtype1_field0_we = addr_hit[1] & reg_we & ~wr_err;
+  assign rwtype1_field0_we = addr_hit[1] & reg_we & !reg_error;
   assign rwtype1_field0_wd = reg_wdata[0];
 
-  assign rwtype1_field1_we = addr_hit[1] & reg_we & ~wr_err;
+  assign rwtype1_field1_we = addr_hit[1] & reg_we & !reg_error;
   assign rwtype1_field1_wd = reg_wdata[1];
 
-  assign rwtype1_field4_we = addr_hit[1] & reg_we & ~wr_err;
+  assign rwtype1_field4_we = addr_hit[1] & reg_we & !reg_error;
   assign rwtype1_field4_wd = reg_wdata[4];
 
-  assign rwtype1_field15_8_we = addr_hit[1] & reg_we & ~wr_err;
+  assign rwtype1_field15_8_we = addr_hit[1] & reg_we & !reg_error;
   assign rwtype1_field15_8_wd = reg_wdata[15:8];
 
-  assign rwtype2_we = addr_hit[2] & reg_we & ~wr_err;
+  assign rwtype2_we = addr_hit[2] & reg_we & !reg_error;
   assign rwtype2_wd = reg_wdata[31:0];
 
-  assign rwtype3_field0_we = addr_hit[3] & reg_we & ~wr_err;
+  assign rwtype3_field0_we = addr_hit[3] & reg_we & !reg_error;
   assign rwtype3_field0_wd = reg_wdata[15:0];
 
-  assign rwtype3_field1_we = addr_hit[3] & reg_we & ~wr_err;
+  assign rwtype3_field1_we = addr_hit[3] & reg_we & !reg_error;
   assign rwtype3_field1_wd = reg_wdata[31:16];
 
-  assign rwtype4_field0_we = addr_hit[4] & reg_we & ~wr_err;
+  assign rwtype4_field0_we = addr_hit[4] & reg_we & !reg_error;
   assign rwtype4_field0_wd = reg_wdata[15:0];
 
-  assign rwtype4_field1_we = addr_hit[4] & reg_we & ~wr_err;
+  assign rwtype4_field1_we = addr_hit[4] & reg_we & !reg_error;
   assign rwtype4_field1_wd = reg_wdata[31:16];
 
 
-  assign w1ctype0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign w1ctype0_we = addr_hit[6] & reg_we & !reg_error;
   assign w1ctype0_wd = reg_wdata[31:0];
 
-  assign w1ctype1_field0_we = addr_hit[7] & reg_we & ~wr_err;
+  assign w1ctype1_field0_we = addr_hit[7] & reg_we & !reg_error;
   assign w1ctype1_field0_wd = reg_wdata[15:0];
 
-  assign w1ctype1_field1_we = addr_hit[7] & reg_we & ~wr_err;
+  assign w1ctype1_field1_we = addr_hit[7] & reg_we & !reg_error;
   assign w1ctype1_field1_wd = reg_wdata[31:16];
 
-  assign w1ctype2_we = addr_hit[8] & reg_we & ~wr_err;
+  assign w1ctype2_we = addr_hit[8] & reg_we & !reg_error;
   assign w1ctype2_wd = reg_wdata[31:0];
 
-  assign w1stype2_we = addr_hit[9] & reg_we & ~wr_err;
+  assign w1stype2_we = addr_hit[9] & reg_we & !reg_error;
   assign w1stype2_wd = reg_wdata[31:0];
 
-  assign w0ctype2_we = addr_hit[10] & reg_we & ~wr_err;
+  assign w0ctype2_we = addr_hit[10] & reg_we & !reg_error;
   assign w0ctype2_wd = reg_wdata[31:0];
 
-  assign r0w1ctype2_we = addr_hit[11] & reg_we & ~wr_err;
+  assign r0w1ctype2_we = addr_hit[11] & reg_we & !reg_error;
   assign r0w1ctype2_wd = reg_wdata[31:0];
 
-  assign rctype0_we = addr_hit[12] & reg_re;
+  assign rctype0_we = addr_hit[12] & reg_re & !reg_error;
   assign rctype0_wd = '1;
 
-  assign wotype0_we = addr_hit[13] & reg_we & ~wr_err;
+  assign wotype0_we = addr_hit[13] & reg_we & !reg_error;
   assign wotype0_wd = reg_wdata[31:0];
 
-  assign mixtype0_field0_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mixtype0_field0_we = addr_hit[14] & reg_we & !reg_error;
   assign mixtype0_field0_wd = reg_wdata[3:0];
 
-  assign mixtype0_field1_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mixtype0_field1_we = addr_hit[14] & reg_we & !reg_error;
   assign mixtype0_field1_wd = reg_wdata[7:4];
 
 
 
-  assign mixtype0_field4_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mixtype0_field4_we = addr_hit[14] & reg_we & !reg_error;
   assign mixtype0_field4_wd = reg_wdata[19:16];
 
-  assign mixtype0_field5_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mixtype0_field5_we = addr_hit[14] & reg_we & !reg_error;
   assign mixtype0_field5_wd = reg_wdata[23:20];
 
-  assign mixtype0_field6_we = addr_hit[14] & reg_re;
+  assign mixtype0_field6_we = addr_hit[14] & reg_re & !reg_error;
   assign mixtype0_field6_wd = '1;
 
-  assign mixtype0_field7_we = addr_hit[14] & reg_we & ~wr_err;
+  assign mixtype0_field7_we = addr_hit[14] & reg_we & !reg_error;
   assign mixtype0_field7_wd = reg_wdata[31:28];
 
-  assign rwtype5_we = addr_hit[15] & reg_we & ~wr_err;
+  assign rwtype5_we = addr_hit[15] & reg_we & !reg_error;
   assign rwtype5_wd = reg_wdata[31:0];
 
-  assign rwtype6_we = addr_hit[16] & reg_we & ~wr_err;
+  assign rwtype6_we = addr_hit[16] & reg_we & !reg_error;
   assign rwtype6_wd = reg_wdata[31:0];
-  assign rwtype6_re = addr_hit[16] && reg_re;
+  assign rwtype6_re = addr_hit[16] & reg_re & !reg_error;
 
-  assign rotype1_re = addr_hit[17] && reg_re;
-
-
+  assign rotype1_re = addr_hit[17] & reg_re & !reg_error;
 
 
-  assign rwtype7_we = addr_hit[19] & reg_we & ~wr_err;
+
+
+  assign rwtype7_we = addr_hit[19] & reg_we & !reg_error;
   assign rwtype7_wd = reg_wdata[31:0];
 
   // Read data return

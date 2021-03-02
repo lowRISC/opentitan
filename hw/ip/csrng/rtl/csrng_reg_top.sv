@@ -1585,80 +1585,80 @@ module csrng_reg_top (
     if (addr_hit[17] && reg_we && (CSRNG_PERMIT[17] != (CSRNG_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_cs_cmd_req_done_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_cs_cmd_req_done_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_cs_cmd_req_done_wd = reg_wdata[0];
 
-  assign intr_state_cs_entropy_req_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_cs_entropy_req_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_cs_entropy_req_wd = reg_wdata[1];
 
-  assign intr_state_cs_hw_inst_exc_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_cs_hw_inst_exc_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_cs_hw_inst_exc_wd = reg_wdata[2];
 
-  assign intr_state_cs_fatal_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_cs_fatal_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_cs_fatal_err_wd = reg_wdata[3];
 
-  assign intr_enable_cs_cmd_req_done_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_cs_cmd_req_done_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_cs_cmd_req_done_wd = reg_wdata[0];
 
-  assign intr_enable_cs_entropy_req_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_cs_entropy_req_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_cs_entropy_req_wd = reg_wdata[1];
 
-  assign intr_enable_cs_hw_inst_exc_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_cs_hw_inst_exc_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_cs_hw_inst_exc_wd = reg_wdata[2];
 
-  assign intr_enable_cs_fatal_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_cs_fatal_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_cs_fatal_err_wd = reg_wdata[3];
 
-  assign intr_test_cs_cmd_req_done_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_cs_cmd_req_done_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_cs_cmd_req_done_wd = reg_wdata[0];
 
-  assign intr_test_cs_entropy_req_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_cs_entropy_req_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_cs_entropy_req_wd = reg_wdata[1];
 
-  assign intr_test_cs_hw_inst_exc_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_cs_hw_inst_exc_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_cs_hw_inst_exc_wd = reg_wdata[2];
 
-  assign intr_test_cs_fatal_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_cs_fatal_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_cs_fatal_err_wd = reg_wdata[3];
 
-  assign alert_test_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_wd = reg_wdata[0];
 
-  assign regwen_we = addr_hit[4] & reg_we & ~wr_err;
+  assign regwen_we = addr_hit[4] & reg_we & !reg_error;
   assign regwen_wd = reg_wdata[0];
 
-  assign ctrl_enable_we = addr_hit[5] & reg_we & ~wr_err;
+  assign ctrl_enable_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_enable_wd = reg_wdata[0];
 
-  assign ctrl_aes_cipher_disable_we = addr_hit[5] & reg_we & ~wr_err;
+  assign ctrl_aes_cipher_disable_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_aes_cipher_disable_wd = reg_wdata[1];
 
-  assign ctrl_fifo_depth_sts_sel_we = addr_hit[5] & reg_we & ~wr_err;
+  assign ctrl_fifo_depth_sts_sel_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_fifo_depth_sts_sel_wd = reg_wdata[19:16];
 
 
 
-  assign cmd_req_we = addr_hit[7] & reg_we & ~wr_err;
+  assign cmd_req_we = addr_hit[7] & reg_we & !reg_error;
   assign cmd_req_wd = reg_wdata[31:0];
 
 
 
-  assign genbits_vld_genbits_vld_re = addr_hit[9] && reg_re;
+  assign genbits_vld_genbits_vld_re = addr_hit[9] & reg_re & !reg_error;
 
-  assign genbits_vld_genbits_fips_re = addr_hit[9] && reg_re;
+  assign genbits_vld_genbits_fips_re = addr_hit[9] & reg_re & !reg_error;
 
-  assign genbits_re = addr_hit[10] && reg_re;
+  assign genbits_re = addr_hit[10] & reg_re & !reg_error;
 
-  assign halt_main_sm_we = addr_hit[11] & reg_we & ~wr_err;
+  assign halt_main_sm_we = addr_hit[11] & reg_we & !reg_error;
   assign halt_main_sm_wd = reg_wdata[0];
 
 
-  assign int_state_num_we = addr_hit[13] & reg_we & ~wr_err;
+  assign int_state_num_we = addr_hit[13] & reg_we & !reg_error;
   assign int_state_num_wd = reg_wdata[3:0];
 
-  assign int_state_val_re = addr_hit[14] && reg_re;
+  assign int_state_val_re = addr_hit[14] & reg_re & !reg_error;
 
-  assign hw_exc_sts_we = addr_hit[15] & reg_we & ~wr_err;
+  assign hw_exc_sts_we = addr_hit[15] & reg_we & !reg_error;
   assign hw_exc_sts_wd = reg_wdata[14:0];
 
 
@@ -1686,7 +1686,7 @@ module csrng_reg_top (
 
 
 
-  assign err_code_test_we = addr_hit[17] & reg_we & ~wr_err;
+  assign err_code_test_we = addr_hit[17] & reg_we & !reg_error;
   assign err_code_test_wd = reg_wdata[4:0];
 
   // Read data return

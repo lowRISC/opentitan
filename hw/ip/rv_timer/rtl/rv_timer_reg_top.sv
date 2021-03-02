@@ -415,34 +415,34 @@ module rv_timer_reg_top (
     if (addr_hit[8] && reg_we && (RV_TIMER_PERMIT[8] != (RV_TIMER_PERMIT[8] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign ctrl_we = addr_hit[0] & reg_we & ~wr_err;
+  assign ctrl_we = addr_hit[0] & reg_we & !reg_error;
   assign ctrl_wd = reg_wdata[0];
 
-  assign cfg0_prescale_we = addr_hit[1] & reg_we & ~wr_err;
+  assign cfg0_prescale_we = addr_hit[1] & reg_we & !reg_error;
   assign cfg0_prescale_wd = reg_wdata[11:0];
 
-  assign cfg0_step_we = addr_hit[1] & reg_we & ~wr_err;
+  assign cfg0_step_we = addr_hit[1] & reg_we & !reg_error;
   assign cfg0_step_wd = reg_wdata[23:16];
 
-  assign timer_v_lower0_we = addr_hit[2] & reg_we & ~wr_err;
+  assign timer_v_lower0_we = addr_hit[2] & reg_we & !reg_error;
   assign timer_v_lower0_wd = reg_wdata[31:0];
 
-  assign timer_v_upper0_we = addr_hit[3] & reg_we & ~wr_err;
+  assign timer_v_upper0_we = addr_hit[3] & reg_we & !reg_error;
   assign timer_v_upper0_wd = reg_wdata[31:0];
 
-  assign compare_lower0_0_we = addr_hit[4] & reg_we & ~wr_err;
+  assign compare_lower0_0_we = addr_hit[4] & reg_we & !reg_error;
   assign compare_lower0_0_wd = reg_wdata[31:0];
 
-  assign compare_upper0_0_we = addr_hit[5] & reg_we & ~wr_err;
+  assign compare_upper0_0_we = addr_hit[5] & reg_we & !reg_error;
   assign compare_upper0_0_wd = reg_wdata[31:0];
 
-  assign intr_enable0_we = addr_hit[6] & reg_we & ~wr_err;
+  assign intr_enable0_we = addr_hit[6] & reg_we & !reg_error;
   assign intr_enable0_wd = reg_wdata[0];
 
-  assign intr_state0_we = addr_hit[7] & reg_we & ~wr_err;
+  assign intr_state0_we = addr_hit[7] & reg_we & !reg_error;
   assign intr_state0_wd = reg_wdata[0];
 
-  assign intr_test0_we = addr_hit[8] & reg_we & ~wr_err;
+  assign intr_test0_we = addr_hit[8] & reg_we & !reg_error;
   assign intr_test0_wd = reg_wdata[0];
 
   // Read data return

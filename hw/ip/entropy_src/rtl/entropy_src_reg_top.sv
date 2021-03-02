@@ -2550,233 +2550,233 @@ module entropy_src_reg_top (
     if (addr_hit[46] && reg_we && (ENTROPY_SRC_PERMIT[46] != (ENTROPY_SRC_PERMIT[46] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_es_entropy_valid_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_es_entropy_valid_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_es_entropy_valid_wd = reg_wdata[0];
 
-  assign intr_state_es_health_test_failed_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_es_health_test_failed_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_es_health_test_failed_wd = reg_wdata[1];
 
-  assign intr_state_es_fatal_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_es_fatal_err_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_es_fatal_err_wd = reg_wdata[2];
 
-  assign intr_enable_es_entropy_valid_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_es_entropy_valid_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_es_entropy_valid_wd = reg_wdata[0];
 
-  assign intr_enable_es_health_test_failed_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_es_health_test_failed_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_es_health_test_failed_wd = reg_wdata[1];
 
-  assign intr_enable_es_fatal_err_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_es_fatal_err_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_es_fatal_err_wd = reg_wdata[2];
 
-  assign intr_test_es_entropy_valid_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_es_entropy_valid_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_es_entropy_valid_wd = reg_wdata[0];
 
-  assign intr_test_es_health_test_failed_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_es_health_test_failed_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_es_health_test_failed_wd = reg_wdata[1];
 
-  assign intr_test_es_fatal_err_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_es_fatal_err_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_es_fatal_err_wd = reg_wdata[2];
 
-  assign alert_test_recov_alert_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_recov_alert_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_recov_alert_wd = reg_wdata[0];
 
-  assign alert_test_fatal_alert_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_test_fatal_alert_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_fatal_alert_wd = reg_wdata[1];
 
-  assign regwen_we = addr_hit[4] & reg_we & ~wr_err;
+  assign regwen_we = addr_hit[4] & reg_we & !reg_error;
   assign regwen_wd = reg_wdata[0];
 
 
 
 
-  assign conf_enable_we = addr_hit[6] & reg_we & ~wr_err;
+  assign conf_enable_we = addr_hit[6] & reg_we & !reg_error;
   assign conf_enable_wd = reg_wdata[1:0];
 
-  assign conf_boot_bypass_disable_we = addr_hit[6] & reg_we & ~wr_err;
+  assign conf_boot_bypass_disable_we = addr_hit[6] & reg_we & !reg_error;
   assign conf_boot_bypass_disable_wd = reg_wdata[3];
 
-  assign conf_repcnt_disable_we = addr_hit[6] & reg_we & ~wr_err;
+  assign conf_repcnt_disable_we = addr_hit[6] & reg_we & !reg_error;
   assign conf_repcnt_disable_wd = reg_wdata[4];
 
-  assign conf_adaptp_disable_we = addr_hit[6] & reg_we & ~wr_err;
+  assign conf_adaptp_disable_we = addr_hit[6] & reg_we & !reg_error;
   assign conf_adaptp_disable_wd = reg_wdata[5];
 
-  assign conf_bucket_disable_we = addr_hit[6] & reg_we & ~wr_err;
+  assign conf_bucket_disable_we = addr_hit[6] & reg_we & !reg_error;
   assign conf_bucket_disable_wd = reg_wdata[6];
 
-  assign conf_markov_disable_we = addr_hit[6] & reg_we & ~wr_err;
+  assign conf_markov_disable_we = addr_hit[6] & reg_we & !reg_error;
   assign conf_markov_disable_wd = reg_wdata[7];
 
-  assign conf_health_test_clr_we = addr_hit[6] & reg_we & ~wr_err;
+  assign conf_health_test_clr_we = addr_hit[6] & reg_we & !reg_error;
   assign conf_health_test_clr_wd = reg_wdata[8];
 
-  assign conf_rng_bit_en_we = addr_hit[6] & reg_we & ~wr_err;
+  assign conf_rng_bit_en_we = addr_hit[6] & reg_we & !reg_error;
   assign conf_rng_bit_en_wd = reg_wdata[9];
 
-  assign conf_rng_bit_sel_we = addr_hit[6] & reg_we & ~wr_err;
+  assign conf_rng_bit_sel_we = addr_hit[6] & reg_we & !reg_error;
   assign conf_rng_bit_sel_wd = reg_wdata[11:10];
 
-  assign conf_extht_enable_we = addr_hit[6] & reg_we & ~wr_err;
+  assign conf_extht_enable_we = addr_hit[6] & reg_we & !reg_error;
   assign conf_extht_enable_wd = reg_wdata[12];
 
-  assign rate_we = addr_hit[7] & reg_we & ~wr_err;
+  assign rate_we = addr_hit[7] & reg_we & !reg_error;
   assign rate_wd = reg_wdata[15:0];
 
-  assign entropy_control_es_route_we = addr_hit[8] & reg_we & ~wr_err;
+  assign entropy_control_es_route_we = addr_hit[8] & reg_we & !reg_error;
   assign entropy_control_es_route_wd = reg_wdata[0];
 
-  assign entropy_control_es_type_we = addr_hit[8] & reg_we & ~wr_err;
+  assign entropy_control_es_type_we = addr_hit[8] & reg_we & !reg_error;
   assign entropy_control_es_type_wd = reg_wdata[1];
 
-  assign entropy_data_re = addr_hit[9] && reg_re;
+  assign entropy_data_re = addr_hit[9] & reg_re & !reg_error;
 
-  assign health_test_windows_fips_window_we = addr_hit[10] & reg_we & ~wr_err;
+  assign health_test_windows_fips_window_we = addr_hit[10] & reg_we & !reg_error;
   assign health_test_windows_fips_window_wd = reg_wdata[15:0];
 
-  assign health_test_windows_bypass_window_we = addr_hit[10] & reg_we & ~wr_err;
+  assign health_test_windows_bypass_window_we = addr_hit[10] & reg_we & !reg_error;
   assign health_test_windows_bypass_window_wd = reg_wdata[31:16];
 
-  assign repcnt_thresholds_fips_repcnt_thresh_we = addr_hit[11] & reg_we & ~wr_err;
+  assign repcnt_thresholds_fips_repcnt_thresh_we = addr_hit[11] & reg_we & !reg_error;
   assign repcnt_thresholds_fips_repcnt_thresh_wd = reg_wdata[15:0];
 
-  assign repcnt_thresholds_bypass_repcnt_thresh_we = addr_hit[11] & reg_we & ~wr_err;
+  assign repcnt_thresholds_bypass_repcnt_thresh_we = addr_hit[11] & reg_we & !reg_error;
   assign repcnt_thresholds_bypass_repcnt_thresh_wd = reg_wdata[31:16];
 
-  assign adaptp_hi_thresholds_fips_adaptp_hi_thresh_we = addr_hit[12] & reg_we & ~wr_err;
+  assign adaptp_hi_thresholds_fips_adaptp_hi_thresh_we = addr_hit[12] & reg_we & !reg_error;
   assign adaptp_hi_thresholds_fips_adaptp_hi_thresh_wd = reg_wdata[15:0];
 
-  assign adaptp_hi_thresholds_bypass_adaptp_hi_thresh_we = addr_hit[12] & reg_we & ~wr_err;
+  assign adaptp_hi_thresholds_bypass_adaptp_hi_thresh_we = addr_hit[12] & reg_we & !reg_error;
   assign adaptp_hi_thresholds_bypass_adaptp_hi_thresh_wd = reg_wdata[31:16];
 
-  assign adaptp_lo_thresholds_fips_adaptp_lo_thresh_we = addr_hit[13] & reg_we & ~wr_err;
+  assign adaptp_lo_thresholds_fips_adaptp_lo_thresh_we = addr_hit[13] & reg_we & !reg_error;
   assign adaptp_lo_thresholds_fips_adaptp_lo_thresh_wd = reg_wdata[15:0];
 
-  assign adaptp_lo_thresholds_bypass_adaptp_lo_thresh_we = addr_hit[13] & reg_we & ~wr_err;
+  assign adaptp_lo_thresholds_bypass_adaptp_lo_thresh_we = addr_hit[13] & reg_we & !reg_error;
   assign adaptp_lo_thresholds_bypass_adaptp_lo_thresh_wd = reg_wdata[31:16];
 
-  assign bucket_thresholds_fips_bucket_thresh_we = addr_hit[14] & reg_we & ~wr_err;
+  assign bucket_thresholds_fips_bucket_thresh_we = addr_hit[14] & reg_we & !reg_error;
   assign bucket_thresholds_fips_bucket_thresh_wd = reg_wdata[15:0];
 
-  assign bucket_thresholds_bypass_bucket_thresh_we = addr_hit[14] & reg_we & ~wr_err;
+  assign bucket_thresholds_bypass_bucket_thresh_we = addr_hit[14] & reg_we & !reg_error;
   assign bucket_thresholds_bypass_bucket_thresh_wd = reg_wdata[31:16];
 
-  assign markov_hi_thresholds_fips_markov_hi_thresh_we = addr_hit[15] & reg_we & ~wr_err;
+  assign markov_hi_thresholds_fips_markov_hi_thresh_we = addr_hit[15] & reg_we & !reg_error;
   assign markov_hi_thresholds_fips_markov_hi_thresh_wd = reg_wdata[15:0];
 
-  assign markov_hi_thresholds_bypass_markov_hi_thresh_we = addr_hit[15] & reg_we & ~wr_err;
+  assign markov_hi_thresholds_bypass_markov_hi_thresh_we = addr_hit[15] & reg_we & !reg_error;
   assign markov_hi_thresholds_bypass_markov_hi_thresh_wd = reg_wdata[31:16];
 
-  assign markov_lo_thresholds_fips_markov_lo_thresh_we = addr_hit[16] & reg_we & ~wr_err;
+  assign markov_lo_thresholds_fips_markov_lo_thresh_we = addr_hit[16] & reg_we & !reg_error;
   assign markov_lo_thresholds_fips_markov_lo_thresh_wd = reg_wdata[15:0];
 
-  assign markov_lo_thresholds_bypass_markov_lo_thresh_we = addr_hit[16] & reg_we & ~wr_err;
+  assign markov_lo_thresholds_bypass_markov_lo_thresh_we = addr_hit[16] & reg_we & !reg_error;
   assign markov_lo_thresholds_bypass_markov_lo_thresh_wd = reg_wdata[31:16];
 
-  assign extht_hi_thresholds_fips_extht_hi_thresh_we = addr_hit[17] & reg_we & ~wr_err;
+  assign extht_hi_thresholds_fips_extht_hi_thresh_we = addr_hit[17] & reg_we & !reg_error;
   assign extht_hi_thresholds_fips_extht_hi_thresh_wd = reg_wdata[15:0];
 
-  assign extht_hi_thresholds_bypass_extht_hi_thresh_we = addr_hit[17] & reg_we & ~wr_err;
+  assign extht_hi_thresholds_bypass_extht_hi_thresh_we = addr_hit[17] & reg_we & !reg_error;
   assign extht_hi_thresholds_bypass_extht_hi_thresh_wd = reg_wdata[31:16];
 
-  assign extht_lo_thresholds_fips_extht_lo_thresh_we = addr_hit[18] & reg_we & ~wr_err;
+  assign extht_lo_thresholds_fips_extht_lo_thresh_we = addr_hit[18] & reg_we & !reg_error;
   assign extht_lo_thresholds_fips_extht_lo_thresh_wd = reg_wdata[15:0];
 
-  assign extht_lo_thresholds_bypass_extht_lo_thresh_we = addr_hit[18] & reg_we & ~wr_err;
+  assign extht_lo_thresholds_bypass_extht_lo_thresh_we = addr_hit[18] & reg_we & !reg_error;
   assign extht_lo_thresholds_bypass_extht_lo_thresh_wd = reg_wdata[31:16];
 
-  assign repcnt_hi_watermarks_fips_repcnt_hi_watermark_re = addr_hit[19] && reg_re;
+  assign repcnt_hi_watermarks_fips_repcnt_hi_watermark_re = addr_hit[19] & reg_re & !reg_error;
 
-  assign repcnt_hi_watermarks_bypass_repcnt_hi_watermark_re = addr_hit[19] && reg_re;
+  assign repcnt_hi_watermarks_bypass_repcnt_hi_watermark_re = addr_hit[19] & reg_re & !reg_error;
 
-  assign adaptp_hi_watermarks_fips_adaptp_hi_watermark_re = addr_hit[20] && reg_re;
+  assign adaptp_hi_watermarks_fips_adaptp_hi_watermark_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign adaptp_hi_watermarks_bypass_adaptp_hi_watermark_re = addr_hit[20] && reg_re;
+  assign adaptp_hi_watermarks_bypass_adaptp_hi_watermark_re = addr_hit[20] & reg_re & !reg_error;
 
-  assign adaptp_lo_watermarks_fips_adaptp_lo_watermark_re = addr_hit[21] && reg_re;
+  assign adaptp_lo_watermarks_fips_adaptp_lo_watermark_re = addr_hit[21] & reg_re & !reg_error;
 
-  assign adaptp_lo_watermarks_bypass_adaptp_lo_watermark_re = addr_hit[21] && reg_re;
+  assign adaptp_lo_watermarks_bypass_adaptp_lo_watermark_re = addr_hit[21] & reg_re & !reg_error;
 
-  assign extht_hi_watermarks_fips_extht_hi_watermark_re = addr_hit[22] && reg_re;
+  assign extht_hi_watermarks_fips_extht_hi_watermark_re = addr_hit[22] & reg_re & !reg_error;
 
-  assign extht_hi_watermarks_bypass_extht_hi_watermark_re = addr_hit[22] && reg_re;
+  assign extht_hi_watermarks_bypass_extht_hi_watermark_re = addr_hit[22] & reg_re & !reg_error;
 
-  assign extht_lo_watermarks_fips_extht_lo_watermark_re = addr_hit[23] && reg_re;
+  assign extht_lo_watermarks_fips_extht_lo_watermark_re = addr_hit[23] & reg_re & !reg_error;
 
-  assign extht_lo_watermarks_bypass_extht_lo_watermark_re = addr_hit[23] && reg_re;
+  assign extht_lo_watermarks_bypass_extht_lo_watermark_re = addr_hit[23] & reg_re & !reg_error;
 
-  assign bucket_hi_watermarks_fips_bucket_hi_watermark_re = addr_hit[24] && reg_re;
+  assign bucket_hi_watermarks_fips_bucket_hi_watermark_re = addr_hit[24] & reg_re & !reg_error;
 
-  assign bucket_hi_watermarks_bypass_bucket_hi_watermark_re = addr_hit[24] && reg_re;
+  assign bucket_hi_watermarks_bypass_bucket_hi_watermark_re = addr_hit[24] & reg_re & !reg_error;
 
-  assign markov_hi_watermarks_fips_markov_hi_watermark_re = addr_hit[25] && reg_re;
+  assign markov_hi_watermarks_fips_markov_hi_watermark_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign markov_hi_watermarks_bypass_markov_hi_watermark_re = addr_hit[25] && reg_re;
+  assign markov_hi_watermarks_bypass_markov_hi_watermark_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign markov_lo_watermarks_fips_markov_lo_watermark_re = addr_hit[26] && reg_re;
+  assign markov_lo_watermarks_fips_markov_lo_watermark_re = addr_hit[26] & reg_re & !reg_error;
 
-  assign markov_lo_watermarks_bypass_markov_lo_watermark_re = addr_hit[26] && reg_re;
+  assign markov_lo_watermarks_bypass_markov_lo_watermark_re = addr_hit[26] & reg_re & !reg_error;
 
-  assign repcnt_total_fails_re = addr_hit[27] && reg_re;
+  assign repcnt_total_fails_re = addr_hit[27] & reg_re & !reg_error;
 
-  assign adaptp_hi_total_fails_re = addr_hit[28] && reg_re;
+  assign adaptp_hi_total_fails_re = addr_hit[28] & reg_re & !reg_error;
 
-  assign adaptp_lo_total_fails_re = addr_hit[29] && reg_re;
+  assign adaptp_lo_total_fails_re = addr_hit[29] & reg_re & !reg_error;
 
-  assign bucket_total_fails_re = addr_hit[30] && reg_re;
+  assign bucket_total_fails_re = addr_hit[30] & reg_re & !reg_error;
 
-  assign markov_hi_total_fails_re = addr_hit[31] && reg_re;
+  assign markov_hi_total_fails_re = addr_hit[31] & reg_re & !reg_error;
 
-  assign markov_lo_total_fails_re = addr_hit[32] && reg_re;
+  assign markov_lo_total_fails_re = addr_hit[32] & reg_re & !reg_error;
 
-  assign extht_hi_total_fails_re = addr_hit[33] && reg_re;
+  assign extht_hi_total_fails_re = addr_hit[33] & reg_re & !reg_error;
 
-  assign extht_lo_total_fails_re = addr_hit[34] && reg_re;
+  assign extht_lo_total_fails_re = addr_hit[34] & reg_re & !reg_error;
 
-  assign alert_threshold_we = addr_hit[35] & reg_we & ~wr_err;
+  assign alert_threshold_we = addr_hit[35] & reg_we & !reg_error;
   assign alert_threshold_wd = reg_wdata[3:0];
 
-  assign alert_fail_counts_any_fail_count_re = addr_hit[36] && reg_re;
+  assign alert_fail_counts_any_fail_count_re = addr_hit[36] & reg_re & !reg_error;
 
-  assign alert_fail_counts_repcnt_fail_count_re = addr_hit[36] && reg_re;
+  assign alert_fail_counts_repcnt_fail_count_re = addr_hit[36] & reg_re & !reg_error;
 
-  assign alert_fail_counts_adaptp_hi_fail_count_re = addr_hit[36] && reg_re;
+  assign alert_fail_counts_adaptp_hi_fail_count_re = addr_hit[36] & reg_re & !reg_error;
 
-  assign alert_fail_counts_adaptp_lo_fail_count_re = addr_hit[36] && reg_re;
+  assign alert_fail_counts_adaptp_lo_fail_count_re = addr_hit[36] & reg_re & !reg_error;
 
-  assign alert_fail_counts_bucket_fail_count_re = addr_hit[36] && reg_re;
+  assign alert_fail_counts_bucket_fail_count_re = addr_hit[36] & reg_re & !reg_error;
 
-  assign alert_fail_counts_markov_hi_fail_count_re = addr_hit[36] && reg_re;
+  assign alert_fail_counts_markov_hi_fail_count_re = addr_hit[36] & reg_re & !reg_error;
 
-  assign alert_fail_counts_markov_lo_fail_count_re = addr_hit[36] && reg_re;
+  assign alert_fail_counts_markov_lo_fail_count_re = addr_hit[36] & reg_re & !reg_error;
 
-  assign extht_fail_counts_extht_hi_fail_count_re = addr_hit[37] && reg_re;
+  assign extht_fail_counts_extht_hi_fail_count_re = addr_hit[37] & reg_re & !reg_error;
 
-  assign extht_fail_counts_extht_lo_fail_count_re = addr_hit[37] && reg_re;
+  assign extht_fail_counts_extht_lo_fail_count_re = addr_hit[37] & reg_re & !reg_error;
 
-  assign fw_ov_control_fw_ov_mode_we = addr_hit[38] & reg_we & ~wr_err;
+  assign fw_ov_control_fw_ov_mode_we = addr_hit[38] & reg_we & !reg_error;
   assign fw_ov_control_fw_ov_mode_wd = reg_wdata[0];
 
-  assign fw_ov_control_fw_ov_fifo_reg_rd_we = addr_hit[38] & reg_we & ~wr_err;
+  assign fw_ov_control_fw_ov_fifo_reg_rd_we = addr_hit[38] & reg_we & !reg_error;
   assign fw_ov_control_fw_ov_fifo_reg_rd_wd = reg_wdata[1];
 
-  assign fw_ov_control_fw_ov_fifo_reg_wr_we = addr_hit[38] & reg_we & ~wr_err;
+  assign fw_ov_control_fw_ov_fifo_reg_wr_we = addr_hit[38] & reg_we & !reg_error;
   assign fw_ov_control_fw_ov_fifo_reg_wr_wd = reg_wdata[2];
 
-  assign fw_ov_rd_data_re = addr_hit[39] && reg_re;
+  assign fw_ov_rd_data_re = addr_hit[39] & reg_re & !reg_error;
 
-  assign fw_ov_wr_data_we = addr_hit[40] & reg_we & ~wr_err;
+  assign fw_ov_wr_data_we = addr_hit[40] & reg_we & !reg_error;
   assign fw_ov_wr_data_wd = reg_wdata[31:0];
 
-  assign fw_ov_fifo_sts_re = addr_hit[41] && reg_re;
+  assign fw_ov_fifo_sts_re = addr_hit[41] & reg_re & !reg_error;
 
-  assign pre_cond_fifo_depth_we = addr_hit[42] & reg_we & ~wr_err;
+  assign pre_cond_fifo_depth_we = addr_hit[42] & reg_we & !reg_error;
   assign pre_cond_fifo_depth_wd = reg_wdata[6:0];
 
-  assign debug_status_entropy_fifo_depth_re = addr_hit[43] && reg_re;
+  assign debug_status_entropy_fifo_depth_re = addr_hit[43] & reg_re & !reg_error;
 
-  assign debug_status_diag_re = addr_hit[43] && reg_re;
+  assign debug_status_diag_re = addr_hit[43] & reg_re & !reg_error;
 
-  assign seed_we = addr_hit[44] & reg_we & ~wr_err;
+  assign seed_we = addr_hit[44] & reg_we & !reg_error;
   assign seed_wd = reg_wdata[3:0];
 
 
@@ -2787,7 +2787,7 @@ module entropy_src_reg_top (
 
 
 
-  assign err_code_test_we = addr_hit[46] & reg_we & ~wr_err;
+  assign err_code_test_we = addr_hit[46] & reg_we & !reg_error;
   assign err_code_test_wd = reg_wdata[4:0];
 
   // Read data return

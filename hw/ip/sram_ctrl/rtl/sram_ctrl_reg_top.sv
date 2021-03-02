@@ -339,27 +339,27 @@ module sram_ctrl_reg_top (
     if (addr_hit[6] && reg_we && (SRAM_CTRL_PERMIT[6] != (SRAM_CTRL_PERMIT[6] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign alert_test_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_wd = reg_wdata[0];
 
-  assign status_error_re = addr_hit[1] && reg_re;
+  assign status_error_re = addr_hit[1] & reg_re & !reg_error;
 
-  assign status_escalated_re = addr_hit[1] && reg_re;
+  assign status_escalated_re = addr_hit[1] & reg_re & !reg_error;
 
-  assign status_scr_key_valid_re = addr_hit[1] && reg_re;
+  assign status_scr_key_valid_re = addr_hit[1] & reg_re & !reg_error;
 
-  assign status_scr_key_seed_valid_re = addr_hit[1] && reg_re;
+  assign status_scr_key_seed_valid_re = addr_hit[1] & reg_re & !reg_error;
 
-  assign exec_regwen_we = addr_hit[2] & reg_we & ~wr_err;
+  assign exec_regwen_we = addr_hit[2] & reg_we & !reg_error;
   assign exec_regwen_wd = reg_wdata[0];
 
-  assign exec_we = addr_hit[3] & reg_we & ~wr_err;
+  assign exec_we = addr_hit[3] & reg_we & !reg_error;
   assign exec_wd = reg_wdata[2:0];
 
-  assign ctrl_regwen_we = addr_hit[4] & reg_we & ~wr_err;
+  assign ctrl_regwen_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_regwen_wd = reg_wdata[0];
 
-  assign ctrl_we = addr_hit[5] & reg_we & ~wr_err;
+  assign ctrl_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_wd = reg_wdata[0];
 
 

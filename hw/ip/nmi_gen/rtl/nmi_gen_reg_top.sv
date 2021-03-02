@@ -338,31 +338,31 @@ module nmi_gen_reg_top (
     if (addr_hit[2] && reg_we && (NMI_GEN_PERMIT[2] != (NMI_GEN_PERMIT[2] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign intr_state_esc0_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_esc0_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_esc0_wd = reg_wdata[0];
 
-  assign intr_state_esc1_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_esc1_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_esc1_wd = reg_wdata[1];
 
-  assign intr_state_esc2_we = addr_hit[0] & reg_we & ~wr_err;
+  assign intr_state_esc2_we = addr_hit[0] & reg_we & !reg_error;
   assign intr_state_esc2_wd = reg_wdata[2];
 
-  assign intr_enable_esc0_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_esc0_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_esc0_wd = reg_wdata[0];
 
-  assign intr_enable_esc1_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_esc1_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_esc1_wd = reg_wdata[1];
 
-  assign intr_enable_esc2_we = addr_hit[1] & reg_we & ~wr_err;
+  assign intr_enable_esc2_we = addr_hit[1] & reg_we & !reg_error;
   assign intr_enable_esc2_wd = reg_wdata[2];
 
-  assign intr_test_esc0_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_esc0_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_esc0_wd = reg_wdata[0];
 
-  assign intr_test_esc1_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_esc1_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_esc1_wd = reg_wdata[1];
 
-  assign intr_test_esc2_we = addr_hit[2] & reg_we & ~wr_err;
+  assign intr_test_esc2_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_esc2_wd = reg_wdata[2];
 
   // Read data return

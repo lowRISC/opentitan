@@ -281,16 +281,16 @@ module clkmgr_reg_top (
     if (addr_hit[2] && reg_we && (CLKMGR_PERMIT[2] != (CLKMGR_PERMIT[2] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign clk_enables_clk_fixed_peri_en_we = addr_hit[0] & reg_we & ~wr_err;
+  assign clk_enables_clk_fixed_peri_en_we = addr_hit[0] & reg_we & !reg_error;
   assign clk_enables_clk_fixed_peri_en_wd = reg_wdata[0];
 
-  assign clk_enables_clk_usb_48mhz_peri_en_we = addr_hit[0] & reg_we & ~wr_err;
+  assign clk_enables_clk_usb_48mhz_peri_en_we = addr_hit[0] & reg_we & !reg_error;
   assign clk_enables_clk_usb_48mhz_peri_en_wd = reg_wdata[1];
 
-  assign clk_hints_clk_main_aes_hint_we = addr_hit[1] & reg_we & ~wr_err;
+  assign clk_hints_clk_main_aes_hint_we = addr_hit[1] & reg_we & !reg_error;
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
 
-  assign clk_hints_clk_main_hmac_hint_we = addr_hit[1] & reg_we & ~wr_err;
+  assign clk_hints_clk_main_hmac_hint_we = addr_hit[1] & reg_we & !reg_error;
   assign clk_hints_clk_main_hmac_hint_wd = reg_wdata[1];
 
 

@@ -1146,122 +1146,122 @@ module aes_reg_top (
     if (addr_hit[31] && reg_we && (AES_PERMIT[31] != (AES_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign alert_test_recov_ctrl_update_err_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recov_ctrl_update_err_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_ctrl_update_err_wd = reg_wdata[0];
 
-  assign alert_test_fatal_fault_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_fatal_fault_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_fatal_fault_wd = reg_wdata[1];
 
-  assign key_share0_0_we = addr_hit[1] & reg_we & ~wr_err;
+  assign key_share0_0_we = addr_hit[1] & reg_we & !reg_error;
   assign key_share0_0_wd = reg_wdata[31:0];
 
-  assign key_share0_1_we = addr_hit[2] & reg_we & ~wr_err;
+  assign key_share0_1_we = addr_hit[2] & reg_we & !reg_error;
   assign key_share0_1_wd = reg_wdata[31:0];
 
-  assign key_share0_2_we = addr_hit[3] & reg_we & ~wr_err;
+  assign key_share0_2_we = addr_hit[3] & reg_we & !reg_error;
   assign key_share0_2_wd = reg_wdata[31:0];
 
-  assign key_share0_3_we = addr_hit[4] & reg_we & ~wr_err;
+  assign key_share0_3_we = addr_hit[4] & reg_we & !reg_error;
   assign key_share0_3_wd = reg_wdata[31:0];
 
-  assign key_share0_4_we = addr_hit[5] & reg_we & ~wr_err;
+  assign key_share0_4_we = addr_hit[5] & reg_we & !reg_error;
   assign key_share0_4_wd = reg_wdata[31:0];
 
-  assign key_share0_5_we = addr_hit[6] & reg_we & ~wr_err;
+  assign key_share0_5_we = addr_hit[6] & reg_we & !reg_error;
   assign key_share0_5_wd = reg_wdata[31:0];
 
-  assign key_share0_6_we = addr_hit[7] & reg_we & ~wr_err;
+  assign key_share0_6_we = addr_hit[7] & reg_we & !reg_error;
   assign key_share0_6_wd = reg_wdata[31:0];
 
-  assign key_share0_7_we = addr_hit[8] & reg_we & ~wr_err;
+  assign key_share0_7_we = addr_hit[8] & reg_we & !reg_error;
   assign key_share0_7_wd = reg_wdata[31:0];
 
-  assign key_share1_0_we = addr_hit[9] & reg_we & ~wr_err;
+  assign key_share1_0_we = addr_hit[9] & reg_we & !reg_error;
   assign key_share1_0_wd = reg_wdata[31:0];
 
-  assign key_share1_1_we = addr_hit[10] & reg_we & ~wr_err;
+  assign key_share1_1_we = addr_hit[10] & reg_we & !reg_error;
   assign key_share1_1_wd = reg_wdata[31:0];
 
-  assign key_share1_2_we = addr_hit[11] & reg_we & ~wr_err;
+  assign key_share1_2_we = addr_hit[11] & reg_we & !reg_error;
   assign key_share1_2_wd = reg_wdata[31:0];
 
-  assign key_share1_3_we = addr_hit[12] & reg_we & ~wr_err;
+  assign key_share1_3_we = addr_hit[12] & reg_we & !reg_error;
   assign key_share1_3_wd = reg_wdata[31:0];
 
-  assign key_share1_4_we = addr_hit[13] & reg_we & ~wr_err;
+  assign key_share1_4_we = addr_hit[13] & reg_we & !reg_error;
   assign key_share1_4_wd = reg_wdata[31:0];
 
-  assign key_share1_5_we = addr_hit[14] & reg_we & ~wr_err;
+  assign key_share1_5_we = addr_hit[14] & reg_we & !reg_error;
   assign key_share1_5_wd = reg_wdata[31:0];
 
-  assign key_share1_6_we = addr_hit[15] & reg_we & ~wr_err;
+  assign key_share1_6_we = addr_hit[15] & reg_we & !reg_error;
   assign key_share1_6_wd = reg_wdata[31:0];
 
-  assign key_share1_7_we = addr_hit[16] & reg_we & ~wr_err;
+  assign key_share1_7_we = addr_hit[16] & reg_we & !reg_error;
   assign key_share1_7_wd = reg_wdata[31:0];
 
-  assign iv_0_we = addr_hit[17] & reg_we & ~wr_err;
+  assign iv_0_we = addr_hit[17] & reg_we & !reg_error;
   assign iv_0_wd = reg_wdata[31:0];
 
-  assign iv_1_we = addr_hit[18] & reg_we & ~wr_err;
+  assign iv_1_we = addr_hit[18] & reg_we & !reg_error;
   assign iv_1_wd = reg_wdata[31:0];
 
-  assign iv_2_we = addr_hit[19] & reg_we & ~wr_err;
+  assign iv_2_we = addr_hit[19] & reg_we & !reg_error;
   assign iv_2_wd = reg_wdata[31:0];
 
-  assign iv_3_we = addr_hit[20] & reg_we & ~wr_err;
+  assign iv_3_we = addr_hit[20] & reg_we & !reg_error;
   assign iv_3_wd = reg_wdata[31:0];
 
-  assign data_in_0_we = addr_hit[21] & reg_we & ~wr_err;
+  assign data_in_0_we = addr_hit[21] & reg_we & !reg_error;
   assign data_in_0_wd = reg_wdata[31:0];
 
-  assign data_in_1_we = addr_hit[22] & reg_we & ~wr_err;
+  assign data_in_1_we = addr_hit[22] & reg_we & !reg_error;
   assign data_in_1_wd = reg_wdata[31:0];
 
-  assign data_in_2_we = addr_hit[23] & reg_we & ~wr_err;
+  assign data_in_2_we = addr_hit[23] & reg_we & !reg_error;
   assign data_in_2_wd = reg_wdata[31:0];
 
-  assign data_in_3_we = addr_hit[24] & reg_we & ~wr_err;
+  assign data_in_3_we = addr_hit[24] & reg_we & !reg_error;
   assign data_in_3_wd = reg_wdata[31:0];
 
-  assign data_out_0_re = addr_hit[25] && reg_re;
+  assign data_out_0_re = addr_hit[25] & reg_re & !reg_error;
 
-  assign data_out_1_re = addr_hit[26] && reg_re;
+  assign data_out_1_re = addr_hit[26] & reg_re & !reg_error;
 
-  assign data_out_2_re = addr_hit[27] && reg_re;
+  assign data_out_2_re = addr_hit[27] & reg_re & !reg_error;
 
-  assign data_out_3_re = addr_hit[28] && reg_re;
+  assign data_out_3_re = addr_hit[28] & reg_re & !reg_error;
 
-  assign ctrl_shadowed_operation_we = addr_hit[29] & reg_we & ~wr_err;
+  assign ctrl_shadowed_operation_we = addr_hit[29] & reg_we & !reg_error;
   assign ctrl_shadowed_operation_wd = reg_wdata[0];
-  assign ctrl_shadowed_operation_re = addr_hit[29] && reg_re;
+  assign ctrl_shadowed_operation_re = addr_hit[29] & reg_re & !reg_error;
 
-  assign ctrl_shadowed_mode_we = addr_hit[29] & reg_we & ~wr_err;
+  assign ctrl_shadowed_mode_we = addr_hit[29] & reg_we & !reg_error;
   assign ctrl_shadowed_mode_wd = reg_wdata[6:1];
-  assign ctrl_shadowed_mode_re = addr_hit[29] && reg_re;
+  assign ctrl_shadowed_mode_re = addr_hit[29] & reg_re & !reg_error;
 
-  assign ctrl_shadowed_key_len_we = addr_hit[29] & reg_we & ~wr_err;
+  assign ctrl_shadowed_key_len_we = addr_hit[29] & reg_we & !reg_error;
   assign ctrl_shadowed_key_len_wd = reg_wdata[9:7];
-  assign ctrl_shadowed_key_len_re = addr_hit[29] && reg_re;
+  assign ctrl_shadowed_key_len_re = addr_hit[29] & reg_re & !reg_error;
 
-  assign ctrl_shadowed_manual_operation_we = addr_hit[29] & reg_we & ~wr_err;
+  assign ctrl_shadowed_manual_operation_we = addr_hit[29] & reg_we & !reg_error;
   assign ctrl_shadowed_manual_operation_wd = reg_wdata[10];
-  assign ctrl_shadowed_manual_operation_re = addr_hit[29] && reg_re;
+  assign ctrl_shadowed_manual_operation_re = addr_hit[29] & reg_re & !reg_error;
 
-  assign ctrl_shadowed_force_zero_masks_we = addr_hit[29] & reg_we & ~wr_err;
+  assign ctrl_shadowed_force_zero_masks_we = addr_hit[29] & reg_we & !reg_error;
   assign ctrl_shadowed_force_zero_masks_wd = reg_wdata[11];
-  assign ctrl_shadowed_force_zero_masks_re = addr_hit[29] && reg_re;
+  assign ctrl_shadowed_force_zero_masks_re = addr_hit[29] & reg_re & !reg_error;
 
-  assign trigger_start_we = addr_hit[30] & reg_we & ~wr_err;
+  assign trigger_start_we = addr_hit[30] & reg_we & !reg_error;
   assign trigger_start_wd = reg_wdata[0];
 
-  assign trigger_key_iv_data_in_clear_we = addr_hit[30] & reg_we & ~wr_err;
+  assign trigger_key_iv_data_in_clear_we = addr_hit[30] & reg_we & !reg_error;
   assign trigger_key_iv_data_in_clear_wd = reg_wdata[1];
 
-  assign trigger_data_out_clear_we = addr_hit[30] & reg_we & ~wr_err;
+  assign trigger_data_out_clear_we = addr_hit[30] & reg_we & !reg_error;
   assign trigger_data_out_clear_wd = reg_wdata[2];
 
-  assign trigger_prng_reseed_we = addr_hit[30] & reg_we & ~wr_err;
+  assign trigger_prng_reseed_we = addr_hit[30] & reg_we & !reg_error;
   assign trigger_prng_reseed_wd = reg_wdata[3];
 
 

@@ -915,91 +915,91 @@ module sensor_ctrl_reg_top (
     if (addr_hit[5] && reg_we && (SENSOR_CTRL_PERMIT[5] != (SENSOR_CTRL_PERMIT[5] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign alert_test_recov_as_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recov_as_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_as_wd = reg_wdata[0];
 
-  assign alert_test_recov_cg_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recov_cg_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_cg_wd = reg_wdata[1];
 
-  assign alert_test_recov_gd_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recov_gd_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_gd_wd = reg_wdata[2];
 
-  assign alert_test_recov_ts_hi_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recov_ts_hi_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_ts_hi_wd = reg_wdata[3];
 
-  assign alert_test_recov_ts_lo_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recov_ts_lo_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_ts_lo_wd = reg_wdata[4];
 
-  assign alert_test_recov_ls_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recov_ls_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_ls_wd = reg_wdata[5];
 
-  assign alert_test_recov_ot_we = addr_hit[0] & reg_we & ~wr_err;
+  assign alert_test_recov_ot_we = addr_hit[0] & reg_we & !reg_error;
   assign alert_test_recov_ot_wd = reg_wdata[6];
 
-  assign cfg_regwen_we = addr_hit[1] & reg_we & ~wr_err;
+  assign cfg_regwen_we = addr_hit[1] & reg_we & !reg_error;
   assign cfg_regwen_wd = reg_wdata[0];
 
-  assign ack_mode_val_0_we = addr_hit[2] & reg_we & ~wr_err;
+  assign ack_mode_val_0_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_0_wd = reg_wdata[1:0];
 
-  assign ack_mode_val_1_we = addr_hit[2] & reg_we & ~wr_err;
+  assign ack_mode_val_1_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_1_wd = reg_wdata[3:2];
 
-  assign ack_mode_val_2_we = addr_hit[2] & reg_we & ~wr_err;
+  assign ack_mode_val_2_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_2_wd = reg_wdata[5:4];
 
-  assign ack_mode_val_3_we = addr_hit[2] & reg_we & ~wr_err;
+  assign ack_mode_val_3_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_3_wd = reg_wdata[7:6];
 
-  assign ack_mode_val_4_we = addr_hit[2] & reg_we & ~wr_err;
+  assign ack_mode_val_4_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_4_wd = reg_wdata[9:8];
 
-  assign ack_mode_val_5_we = addr_hit[2] & reg_we & ~wr_err;
+  assign ack_mode_val_5_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_5_wd = reg_wdata[11:10];
 
-  assign ack_mode_val_6_we = addr_hit[2] & reg_we & ~wr_err;
+  assign ack_mode_val_6_we = addr_hit[2] & reg_we & !reg_error;
   assign ack_mode_val_6_wd = reg_wdata[13:12];
 
-  assign alert_trig_val_0_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_trig_val_0_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_0_wd = reg_wdata[0];
 
-  assign alert_trig_val_1_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_trig_val_1_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_1_wd = reg_wdata[1];
 
-  assign alert_trig_val_2_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_trig_val_2_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_2_wd = reg_wdata[2];
 
-  assign alert_trig_val_3_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_trig_val_3_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_3_wd = reg_wdata[3];
 
-  assign alert_trig_val_4_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_trig_val_4_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_4_wd = reg_wdata[4];
 
-  assign alert_trig_val_5_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_trig_val_5_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_5_wd = reg_wdata[5];
 
-  assign alert_trig_val_6_we = addr_hit[3] & reg_we & ~wr_err;
+  assign alert_trig_val_6_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_trig_val_6_wd = reg_wdata[6];
 
-  assign alert_state_val_0_we = addr_hit[4] & reg_we & ~wr_err;
+  assign alert_state_val_0_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_0_wd = reg_wdata[0];
 
-  assign alert_state_val_1_we = addr_hit[4] & reg_we & ~wr_err;
+  assign alert_state_val_1_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_1_wd = reg_wdata[1];
 
-  assign alert_state_val_2_we = addr_hit[4] & reg_we & ~wr_err;
+  assign alert_state_val_2_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_2_wd = reg_wdata[2];
 
-  assign alert_state_val_3_we = addr_hit[4] & reg_we & ~wr_err;
+  assign alert_state_val_3_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_3_wd = reg_wdata[3];
 
-  assign alert_state_val_4_we = addr_hit[4] & reg_we & ~wr_err;
+  assign alert_state_val_4_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_4_wd = reg_wdata[4];
 
-  assign alert_state_val_5_we = addr_hit[4] & reg_we & ~wr_err;
+  assign alert_state_val_5_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_5_wd = reg_wdata[5];
 
-  assign alert_state_val_6_we = addr_hit[4] & reg_we & ~wr_err;
+  assign alert_state_val_6_we = addr_hit[4] & reg_we & !reg_error;
   assign alert_state_val_6_wd = reg_wdata[6];
 
 

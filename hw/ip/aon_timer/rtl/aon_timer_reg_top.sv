@@ -495,68 +495,68 @@ module aon_timer_reg_top (
     if (addr_hit[11] && reg_we && (AON_TIMER_PERMIT[11] != (AON_TIMER_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign wkup_ctrl_enable_we = addr_hit[0] & reg_we & ~wr_err;
+  assign wkup_ctrl_enable_we = addr_hit[0] & reg_we & !reg_error;
   assign wkup_ctrl_enable_wd = reg_wdata[0];
-  assign wkup_ctrl_enable_re = addr_hit[0] && reg_re;
+  assign wkup_ctrl_enable_re = addr_hit[0] & reg_re & !reg_error;
 
-  assign wkup_ctrl_prescaler_we = addr_hit[0] & reg_we & ~wr_err;
+  assign wkup_ctrl_prescaler_we = addr_hit[0] & reg_we & !reg_error;
   assign wkup_ctrl_prescaler_wd = reg_wdata[12:1];
-  assign wkup_ctrl_prescaler_re = addr_hit[0] && reg_re;
+  assign wkup_ctrl_prescaler_re = addr_hit[0] & reg_re & !reg_error;
 
-  assign wkup_thold_we = addr_hit[1] & reg_we & ~wr_err;
+  assign wkup_thold_we = addr_hit[1] & reg_we & !reg_error;
   assign wkup_thold_wd = reg_wdata[31:0];
-  assign wkup_thold_re = addr_hit[1] && reg_re;
+  assign wkup_thold_re = addr_hit[1] & reg_re & !reg_error;
 
-  assign wkup_count_we = addr_hit[2] & reg_we & ~wr_err;
+  assign wkup_count_we = addr_hit[2] & reg_we & !reg_error;
   assign wkup_count_wd = reg_wdata[31:0];
-  assign wkup_count_re = addr_hit[2] && reg_re;
+  assign wkup_count_re = addr_hit[2] & reg_re & !reg_error;
 
-  assign wdog_regwen_we = addr_hit[3] & reg_we & ~wr_err;
+  assign wdog_regwen_we = addr_hit[3] & reg_we & !reg_error;
   assign wdog_regwen_wd = reg_wdata[0];
 
-  assign wdog_ctrl_enable_we = addr_hit[4] & reg_we & ~wr_err;
+  assign wdog_ctrl_enable_we = addr_hit[4] & reg_we & !reg_error;
   assign wdog_ctrl_enable_wd = reg_wdata[0];
-  assign wdog_ctrl_enable_re = addr_hit[4] && reg_re;
+  assign wdog_ctrl_enable_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign wdog_ctrl_pause_in_sleep_we = addr_hit[4] & reg_we & ~wr_err;
+  assign wdog_ctrl_pause_in_sleep_we = addr_hit[4] & reg_we & !reg_error;
   assign wdog_ctrl_pause_in_sleep_wd = reg_wdata[1];
-  assign wdog_ctrl_pause_in_sleep_re = addr_hit[4] && reg_re;
+  assign wdog_ctrl_pause_in_sleep_re = addr_hit[4] & reg_re & !reg_error;
 
-  assign wdog_bark_thold_we = addr_hit[5] & reg_we & ~wr_err;
+  assign wdog_bark_thold_we = addr_hit[5] & reg_we & !reg_error;
   assign wdog_bark_thold_wd = reg_wdata[31:0];
-  assign wdog_bark_thold_re = addr_hit[5] && reg_re;
+  assign wdog_bark_thold_re = addr_hit[5] & reg_re & !reg_error;
 
-  assign wdog_bite_thold_we = addr_hit[6] & reg_we & ~wr_err;
+  assign wdog_bite_thold_we = addr_hit[6] & reg_we & !reg_error;
   assign wdog_bite_thold_wd = reg_wdata[31:0];
-  assign wdog_bite_thold_re = addr_hit[6] && reg_re;
+  assign wdog_bite_thold_re = addr_hit[6] & reg_re & !reg_error;
 
-  assign wdog_count_we = addr_hit[7] & reg_we & ~wr_err;
+  assign wdog_count_we = addr_hit[7] & reg_we & !reg_error;
   assign wdog_count_wd = reg_wdata[31:0];
-  assign wdog_count_re = addr_hit[7] && reg_re;
+  assign wdog_count_re = addr_hit[7] & reg_re & !reg_error;
 
-  assign intr_state_wkup_timer_expired_we = addr_hit[8] & reg_we & ~wr_err;
+  assign intr_state_wkup_timer_expired_we = addr_hit[8] & reg_we & !reg_error;
   assign intr_state_wkup_timer_expired_wd = reg_wdata[0];
 
-  assign intr_state_wdog_timer_expired_we = addr_hit[8] & reg_we & ~wr_err;
+  assign intr_state_wdog_timer_expired_we = addr_hit[8] & reg_we & !reg_error;
   assign intr_state_wdog_timer_expired_wd = reg_wdata[1];
 
-  assign intr_enable_wkup_timer_expired_we = addr_hit[9] & reg_we & ~wr_err;
+  assign intr_enable_wkup_timer_expired_we = addr_hit[9] & reg_we & !reg_error;
   assign intr_enable_wkup_timer_expired_wd = reg_wdata[0];
-  assign intr_enable_wkup_timer_expired_re = addr_hit[9] && reg_re;
+  assign intr_enable_wkup_timer_expired_re = addr_hit[9] & reg_re & !reg_error;
 
-  assign intr_enable_wdog_timer_expired_we = addr_hit[9] & reg_we & ~wr_err;
+  assign intr_enable_wdog_timer_expired_we = addr_hit[9] & reg_we & !reg_error;
   assign intr_enable_wdog_timer_expired_wd = reg_wdata[1];
-  assign intr_enable_wdog_timer_expired_re = addr_hit[9] && reg_re;
+  assign intr_enable_wdog_timer_expired_re = addr_hit[9] & reg_re & !reg_error;
 
-  assign intr_test_wkup_timer_expired_we = addr_hit[10] & reg_we & ~wr_err;
+  assign intr_test_wkup_timer_expired_we = addr_hit[10] & reg_we & !reg_error;
   assign intr_test_wkup_timer_expired_wd = reg_wdata[0];
 
-  assign intr_test_wdog_timer_expired_we = addr_hit[10] & reg_we & ~wr_err;
+  assign intr_test_wdog_timer_expired_we = addr_hit[10] & reg_we & !reg_error;
   assign intr_test_wdog_timer_expired_wd = reg_wdata[1];
 
-  assign wkup_cause_we = addr_hit[11] & reg_we & ~wr_err;
+  assign wkup_cause_we = addr_hit[11] & reg_we & !reg_error;
   assign wkup_cause_wd = reg_wdata[0];
-  assign wkup_cause_re = addr_hit[11] && reg_re;
+  assign wkup_cause_re = addr_hit[11] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
