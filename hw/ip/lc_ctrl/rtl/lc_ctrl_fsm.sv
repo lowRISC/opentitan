@@ -70,7 +70,7 @@ module lc_ctrl_fsm
   output lc_tx_t                lc_keymgr_en_o,
   output lc_tx_t                lc_escalate_en_o,
   output lc_tx_t                lc_check_byp_en_o,
-    // Request and feedback to/from clock manager and AST.
+  // Request and feedback to/from clock manager and AST.
   output lc_tx_t                lc_clk_byp_req_o,
   input  lc_tx_t                lc_clk_byp_ack_i,
   // Request and feedback to/from flash controller
@@ -97,9 +97,9 @@ module lc_ctrl_fsm
   // Working register for hashed token.
   lc_token_t hashed_token_d, hashed_token_q;
 
-  // Feed the lc state reg back to the programming interface of OTP.
-  assign otp_prog_lc_state_o = lc_state_q;
-  assign otp_prog_lc_cnt_o   = lc_cnt_q;
+  // Feed the next lc state reg back to the programming interface of OTP.
+  assign otp_prog_lc_state_o = next_lc_state;
+  assign otp_prog_lc_cnt_o   = next_lc_cnt;
 
   // Conditional LC signal outputs
   lc_tx_t lc_clk_byp_req, lc_flash_rma_req, lc_check_byp_en;
@@ -166,10 +166,8 @@ module lc_ctrl_fsm
       // in the lc_ctrl_signal_decode submodule.
       IdleSt: begin
         idle_o = 1'b1;
-        lc_clk_byp_req   = Off;
-        lc_flash_rma_req = Off;
-        lc_check_byp_en  = Off;
         // Continuously fetch LC state vector from OTP.
+        // The state is locked in once a transition is started.
         lc_state_d    = lc_state_i;
         lc_cnt_d      = lc_cnt_i;
         lc_id_state_d = lc_id_state_i;
@@ -209,7 +207,6 @@ module lc_ctrl_fsm
           fsm_state_d = PostTransSt;
         end else begin
           fsm_state_d = CntProgSt;
-          lc_cnt_d = next_lc_cnt;
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -292,7 +289,6 @@ module lc_ctrl_fsm
                 // This is the only way we can get into the
                 // programming state.
                 fsm_state_d = TransProgSt;
-                lc_state_d = next_lc_state;
               end else begin
                 fsm_state_d = TokenCheck1St;
               end
