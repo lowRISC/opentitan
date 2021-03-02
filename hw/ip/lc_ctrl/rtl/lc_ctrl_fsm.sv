@@ -80,6 +80,33 @@ module lc_ctrl_fsm
   output lc_keymgr_div_t        lc_keymgr_div_o
 );
 
+  /////////////////////////////
+  // Synchronizers / Buffers //
+  /////////////////////////////
+
+  // We use multiple copies of these signals in the
+  // FSM checks below.
+  lc_tx_t [2:0] lc_clk_byp_ack;
+  lc_tx_t [1:0] lc_flash_rma_ack;
+
+  prim_lc_sync #(
+    .NumCopies(3)
+  ) u_prim_lc_sync_clk_byp_ack (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_clk_byp_ack_i),
+    .lc_en_o(lc_clk_byp_ack)
+  );
+
+  prim_lc_sync #(
+    .NumCopies(2)
+  ) u_prim_lc_sync_flash_rma_ack (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_flash_rma_ack_i),
+    .lc_en_o(lc_flash_rma_ack)
+  );
+
   ///////////////
   // FSM Logic //
   ///////////////
@@ -192,7 +219,7 @@ module lc_ctrl_fsm
                                LcStTestLocked1,
                                LcStTestLocked2}) begin
           lc_clk_byp_req = On;
-          if (lc_clk_byp_ack_i == On) begin
+          if (lc_clk_byp_ack[0] == On) begin
             fsm_state_d = CntIncrSt;
           end
         end else begin
@@ -213,7 +240,16 @@ module lc_ctrl_fsm
       // This programs the life cycle counter state.
       CntProgSt: begin
         otp_prog_req_o = 1'b1;
-        // Check return value and
+
+        // If the clock mux has been steered, double check that this is still the case.
+        // Otherwise abort the transition operation.
+        if (lc_clk_byp_req != lc_clk_byp_ack[1]) begin
+            fsm_state_d = PostTransSt;
+            otp_prog_error_o = 1'b1;
+        end
+
+        // Check return value and abort if there
+        // was an error.
         if (otp_prog_ack_i) begin
           if (otp_prog_err_i) begin
             fsm_state_d = PostTransSt;
@@ -260,7 +296,7 @@ module lc_ctrl_fsm
       FlashRmaSt: begin
         if (trans_target_i == DecLcStRma) begin
           lc_flash_rma_req = On;
-          if (lc_flash_rma_ack_i == On) begin
+          if (lc_flash_rma_ack[0] == On) begin
             fsm_state_d = TokenCheck0St;
           end
         end else begin
@@ -280,10 +316,10 @@ module lc_ctrl_fsm
           // all of them must be true at the same time.
           if ((trans_target_i != DecLcStRma &&
                lc_flash_rma_req_o == Off    &&
-               lc_flash_rma_ack_i == Off)   ||
+               lc_flash_rma_ack[1] == Off)   ||
               (trans_target_i == DecLcStRma &&
                lc_flash_rma_req_o == On     &&
-               lc_flash_rma_ack_i == On)) begin
+               lc_flash_rma_ack[1] == On)) begin
             if (hashed_token_i == hashed_token_mux) begin
               if (fsm_state_q == TokenCheck1St) begin
                 // This is the only way we can get into the
@@ -310,6 +346,14 @@ module lc_ctrl_fsm
       // done with the transition and can go into the terminal PosTransSt.
       TransProgSt: begin
         otp_prog_req_o = 1'b1;
+
+        // If the clock mux has been steered, double check that this is still the case.
+        // Otherwise abort the transition operation.
+        if (lc_clk_byp_req != lc_clk_byp_ack[2]) begin
+            fsm_state_d = PostTransSt;
+            otp_prog_error_o = 1'b1;
+        end
+
         if (otp_prog_ack_i) begin
           fsm_state_d = PostTransSt;
           otp_prog_error_o = otp_prog_err_i;
