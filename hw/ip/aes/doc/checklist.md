@@ -35,24 +35,24 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 
 Type          | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]        | Not Started |
-Documentation | [BLOCK_DIAGRAM][]       | Not Started |
+Documentation | [NEW_FEATURES][]        | In progress | Security review pending
+Documentation | [BLOCK_DIAGRAM][]       | In progress | Security review pending
 Documentation | [DOC_INTERFACE][]       | Done        |
-Documentation | [MISSING_FUNC][]        | Not Started |
-Documentation | [FEATURE_FROZEN][]      | Not Started |
-RTL           | [FEATURE_COMPLETE][]    | Not Started |
-RTL           | [AREA_CHECK][]          | Not Started |
+Documentation | [MISSING_FUNC][]        | Done        |
+Documentation | [FEATURE_FROZEN][]      | Done        |
+RTL           | [FEATURE_COMPLETE][]    | Done        |
+RTL           | [AREA_CHECK][]          | Done        |
 RTL           | [PORT_FROZEN][]         | Done        |
-RTL           | [ARCHITECTURE_FROZEN][] | Not Started |
+RTL           | [ARCHITECTURE_FROZEN][] | In progress | SCA/FI hardening in progress
 RTL           | [REVIEW_TODO][]         | Done        |
-RTL           | [STYLE_X][]             | Not Started |
-Code Quality  | [LINT_PASS][]           | Not Started |
-Code Quality  | [CDC_SETUP][]           | Not Started |
-Code Quality  | [FPGA_TIMING][]         | Not Started |
+RTL           | [STYLE_X][]             | Done        |
+Code Quality  | [LINT_PASS][]           | Done        |
+Code Quality  | [CDC_SETUP][]           | Waived      | CDC flow is not available yet.
+Code Quality  | [FPGA_TIMING][]         | Done        |
 Code Quality  | [CDC_SYNCMACRO][]       | Done        |
-Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
+Security      | [SEC_CM_IMPLEMENTED][]  | In progress | SCA/FI hardening in progress
 Security      | [SEC_NON_RESET_FLOPS][] | Done        |
-Security      | [SEC_SHADOW_REGS][]     | Not Started |
+Security      | [SEC_SHADOW_REGS][]     | Done        |
 Security      | [SEC_RND_CNST][]        | Done        |
 
 [NEW_FEATURES]:        {{<relref "/doc/project/checklist.md#new_features" >}}
