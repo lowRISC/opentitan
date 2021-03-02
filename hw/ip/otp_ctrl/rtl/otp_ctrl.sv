@@ -108,6 +108,7 @@ module otp_ctrl
     .tl_win_i  ( tl_win_d2h ),
     .reg2hw    ( reg2hw     ),
     .hw2reg    ( hw2reg     ),
+    .intg_err_o(            ),
     .devmode_i ( 1'b1       )
   );
 
