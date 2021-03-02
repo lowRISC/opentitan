@@ -473,6 +473,7 @@ module top_earlgrey_nexysvideo #(
     .AesSBoxImpl(aes_pkg::SBoxImplLut),
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b0),
+    .SecAesSkipPRNGReseeding(1'b0),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .IbexRegFile(ibex_pkg::RegFileFPGA),
     .IbexPipeLine(1),

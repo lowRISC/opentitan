@@ -18,6 +18,7 @@ module top_earlgrey #(
   parameter aes_pkg::sbox_impl_e AesSBoxImpl = aes_pkg::SBoxImplDom,
   parameter int unsigned SecAesStartTriggerDelay = 0,
   parameter bit SecAesAllowForcingMasks = 1'b0,
+  parameter bit SecAesSkipPRNGReseeding = 1'b0,
   parameter bit KmacEnMasking = 0,
   parameter int KmacReuseShare = 0,
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
@@ -576,13 +577,10 @@ module top_earlgrey #(
   assign ast_edn_edn_rsp_o = edn0_edn_rsp[2];
 
   // define partial inter-module tie-off
-  edn_pkg::edn_rsp_t unused_edn1_edn_rsp2;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp3;
 
   // assign partial inter-module tie-off
-  assign unused_edn1_edn_rsp2 = edn1_edn_rsp[2];
   assign unused_edn1_edn_rsp3 = edn1_edn_rsp[3];
-  assign edn1_edn_req[2] = '0;
   assign edn1_edn_req[3] = '0;
 
 
@@ -1808,6 +1806,7 @@ module top_earlgrey #(
     .SBoxImpl(AesSBoxImpl),
     .SecStartTriggerDelay(SecAesStartTriggerDelay),
     .SecAllowForcingMasks(SecAesAllowForcingMasks),
+    .SecSkipPRNGReseeding(SecAesSkipPRNGReseeding),
     .AlertAsyncOn({aes_reg_pkg::NumAlerts{1'b1}}),
     .RndCnstClearingLfsrSeed(RndCnstAesClearingLfsrSeed),
     .RndCnstClearingLfsrPerm(RndCnstAesClearingLfsrPerm),
@@ -1823,12 +1822,16 @@ module top_earlgrey #(
       // Inter-module signals
       .idle_o(clkmgr_aon_idle[0]),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+      .edn_o(edn1_edn_req[2]),
+      .edn_i(edn1_edn_rsp[2]),
       .tl_i(aes_tl_req),
       .tl_o(aes_tl_rsp),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_aes),
-      .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
+      .clk_edn_i (clkmgr_aon_clocks.clk_main_aes),
+      .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+      .rst_edn_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
   hmac u_hmac (

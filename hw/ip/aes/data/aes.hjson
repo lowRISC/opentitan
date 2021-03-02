@@ -6,6 +6,13 @@
 {
   name: "aes",
   clock_primary: "clk_i",
+  other_clock_list: [
+    "clk_edn_i"
+  ],
+  reset_primary: "rst_ni",
+  other_reset_list: [
+    "rst_edn_ni"
+  ]
   bus_device: "tlul",
   param_list: [
     # Regular parameters
@@ -54,6 +61,17 @@
         Forbid (0) or allow (1) forcing the mask to zero via FORCE_ZERO_MASK bit in the Control Register.
         Useful for SCA measurements.
         Meaningful only if masking is enabled.
+      '''
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "SecSkipPRNGReseeding",
+      type:    "bit",
+      default: "1'b0",
+      desc:    '''
+        Perform (0) or skip (1) PRNG reseeding requests, useful for SCA measurements only.
+        The current SCA setup doesn't provide sufficient resources to implement the infrastructure required for PRNG reseeding (CSRNG, EDN).
+        To enable SCA resistance evaluations, we need to skip reseeding requests on the SCA platform.
       '''
       local:   "false",
       expose:  "true"
@@ -135,6 +153,12 @@
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
+    }
+    { struct:  "edn"
+      type:    "req_rsp"
+      name:    "edn"
+      act:     "req"
+      package: "edn_pkg"
     }
   ],
   alert_list: [

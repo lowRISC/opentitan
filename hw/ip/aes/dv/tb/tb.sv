@@ -16,6 +16,7 @@ module tb;
   wire clk, rst_n;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  wire edn_req;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -28,17 +29,21 @@ module tb;
 
   // dut
   aes dut (
-    .clk_i                (clk        ),
-    .rst_ni               (rst_n      ),
+    .clk_i            ( clk                           ),
+    .rst_ni           ( rst_n                         ),
 
-    .idle_o               (           ),
-    .lc_escalate_en_i     (lc_ctrl_pkg::Off),
+    .idle_o           (                               ),
+    .lc_escalate_en_i ( lc_ctrl_pkg::Off              ),
+    .clk_edn_i        ( clk                           ),
+    .rst_edn_ni       ( rst_n                         ),
+    .edn_o            ( edn_req                       ),
+    .edn_i            ( {edn_req, 1'b0, 32'h12345678} ),
 
-    .tl_i                 (tl_if.h2d  ),
-    .tl_o                 (tl_if.d2h  ),
+    .tl_i             ( tl_if.h2d                     ),
+    .tl_o             ( tl_if.d2h                     ),
 
-    .alert_rx_i           ( alert_rx  ),
-    .alert_tx_o           ( alert_tx  )
+    .alert_rx_i       ( alert_rx                      ),
+    .alert_tx_o       ( alert_tx                      )
   );
 
   initial begin

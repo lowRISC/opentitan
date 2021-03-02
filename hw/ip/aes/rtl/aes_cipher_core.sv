@@ -94,12 +94,14 @@
 
 module aes_cipher_core import aes_pkg::*;
 #(
-  parameter bit         AES192Enable         = 1,
-  parameter bit         Masking              = 0,
-  parameter sbox_impl_e SBoxImpl             = SBoxImplLut,
-  parameter bit         SecAllowForcingMasks = 0,
+  parameter bit          AES192Enable         = 1,
+  parameter bit          Masking              = 0,
+  parameter sbox_impl_e  SBoxImpl             = SBoxImplLut,
+  parameter bit          SecAllowForcingMasks = 0,
+  parameter bit          SecSkipPRNGReseeding = 0,
+  parameter int unsigned EntropyWidth         = edn_pkg::ENDPOINT_BUS_WIDTH,
 
-  localparam int        NumShares            = Masking ? 2 : 1, // derived parameter
+  localparam int         NumShares            = Masking ? 2 : 1, // derived parameter
 
   parameter masking_lfsr_seed_t    RndCnstMaskingLfsrSeed   = RndCnstMaskingLfsrSeedDefault,
   parameter mskg_chunk_lfsr_perm_t RndCnstMskgChunkLfsrPerm = RndCnstMskgChunkLfsrPermDefault
@@ -137,7 +139,7 @@ module aes_cipher_core import aes_pkg::*;
   output logic        [3:0][3:0][7:0] data_in_mask_o,
   output logic                        entropy_req_o,
   input  logic                        entropy_ack_i,
-  input  logic  [WidthPRDMasking-1:0] entropy_i,
+  input  logic     [EntropyWidth-1:0] entropy_i,
 
   // I/O data & initial key
   input  logic        [3:0][3:0][7:0] state_init_i [NumShares],
@@ -261,7 +263,7 @@ module aes_cipher_core import aes_pkg::*;
 
     // Tie-off unused signals.
     logic unused_entropy_ack;
-    logic [WidthPRDMasking-1:0] unused_entropy;
+    logic [EntropyWidth-1:0] unused_entropy;
     assign unused_entropy_ack = entropy_ack_i;
     assign unused_entropy     = entropy_i;
     assign entropy_req_o      = 1'b0;
@@ -287,7 +289,9 @@ module aes_cipher_core import aes_pkg::*;
     aes_prng_masking #(
       .Width                ( WidthPRDMasking          ),
       .ChunkSize            ( ChunkSizePRDMasking      ),
+      .EntropyWidth         ( EntropyWidth             ),
       .SecAllowForcingMasks ( SecAllowForcingMasks     ),
+      .SecSkipPRNGReseeding ( SecSkipPRNGReseeding     ),
       .RndCnstLfsrSeed      ( RndCnstMaskingLfsrSeed   ),
       .RndCnstChunkLfsrPerm ( RndCnstMskgChunkLfsrPerm )
     ) u_aes_prng_masking (

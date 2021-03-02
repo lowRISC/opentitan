@@ -109,8 +109,8 @@ module aes_control import aes_pkg::*;
 
   import aes_pkg::*;
 
-  // Types
-  // $ ./sparse-fsm-encode.py -d 3 -m 6 -n 6 \
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 6 \
   //      -s 31468618 --language=sv
   //
   // Hamming distance histogram:
@@ -118,22 +118,25 @@ module aes_control import aes_pkg::*;
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (53.33%)
-  //  4: ||||||||||||||| (40.00%)
-  //  5: || (6.67%)
+  //  3: |||||||||||||||||||| (57.14%)
+  //  4: ||||||||||||||| (42.86%)
+  //  5: --
   //  6: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 5
+  // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 5
   //
   localparam int StateWidth = 6;
   typedef enum logic [StateWidth-1:0] {
-    IDLE        = 6'b011101,
-    LOAD        = 6'b110000,
-    UPDATE_PRNG = 6'b001000,
-    FINISH      = 6'b000011,
-    CLEAR       = 6'b111110,
-    ERROR       = 6'b100101
+    IDLE        = 6'b111100,
+    LOAD        = 6'b101001,
+    PRNG_UPDATE = 6'b010000,
+    PRNG_RESEED = 6'b100010,
+    FINISH      = 6'b011011,
+    CLEAR       = 6'b110111,
+    ERROR       = 6'b001110
   } aes_ctrl_e;
 
   aes_ctrl_e aes_ctrl_ns, aes_ctrl_cs;
@@ -363,16 +366,12 @@ module aes_control import aes_pkg::*;
         end
 
         if (prng_reseed_i) begin
-          // Request a reseed of the PRNG, perform handshake.
-          prng_reseed_req_o = 1'b1;
-          if (prng_reseed_ack_i) begin
-            // Clear the trigger.
-            prng_reseed_we_o = 1'b1;
-          end
+          // PRNG reseeding has highest priority.
+          aes_ctrl_ns = PRNG_RESEED;
 
         end else if (key_iv_data_in_clear_i || data_out_clear_i) begin
           // To clear registers, we must first request fresh pseudo-random data.
-          aes_ctrl_ns = UPDATE_PRNG;
+          aes_ctrl_ns = PRNG_UPDATE;
 
         end else if (start_chk == SP2V_HIGH) begin
           // Signal that we want to start encryption/decryption.
@@ -434,10 +433,10 @@ module aes_control import aes_pkg::*;
         ctr_incr_o   = doing_ctr_chk;
 
         // Unless we are just generating the start key for decryption, we must update the PRNG.
-        aes_ctrl_ns  = (cipher_dec_key_gen == SP2V_LOW) ? UPDATE_PRNG : FINISH;
+        aes_ctrl_ns  = (cipher_dec_key_gen == SP2V_LOW) ? PRNG_UPDATE : FINISH;
       end
 
-      UPDATE_PRNG: begin
+      PRNG_UPDATE: begin
         // Fresh pseudo-random data is used to:
         // - clear the state in the final cipher round,
         // - clear any other registers in the CLEAR state.
@@ -470,6 +469,16 @@ module aes_control import aes_pkg::*;
             end
           end // cipher_crypt
         end // prng_data_ack_i
+      end
+
+      PRNG_RESEED: begin
+        // Request a reseed of the PRNG, perform handshake.
+        prng_reseed_req_o = 1'b1;
+        if (prng_reseed_ack_i) begin
+          // Clear the trigger and return.
+          prng_reseed_we_o = 1'b1;
+          aes_ctrl_ns      = IDLE;
+        end
       end
 
       FINISH: begin
@@ -875,7 +884,8 @@ module aes_control import aes_pkg::*;
   `ASSERT(AesControlStateValid, !alert_o |-> aes_ctrl_cs inside {
       IDLE,
       LOAD,
-      UPDATE_PRNG,
+      PRNG_UPDATE,
+      PRNG_RESEED,
       FINISH,
       CLEAR
       })

@@ -4,9 +4,16 @@
 
 #include "sw/device/lib/aes.h"
 
+#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
 #include "sw/device/lib/testing/test_main.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+#define ENTROPY_SRC_CONF_REG_OFFSET 0x18
+#define CSRNG_CTRL_REG_OFFSET 0x14
+#define EDN_CTRL_REG_OFFSET 0x14
 
 // TODO:
 // 1) Use the dif_aes directly.
@@ -39,6 +46,14 @@ static const uint8_t kKeyShare1[32] = {
 const test_config_t kTestConfig;
 
 bool test_main(void) {
+  // First of all, we need to get the entropy complex up and running.
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
+                      ENTROPY_SRC_CONF_REG_OFFSET, 0x2);
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
+                      CSRNG_CTRL_REG_OFFSET, 0x1);
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
+                      EDN_CTRL_REG_OFFSET, 0x1);
+
   // Wait for AES unit being idle
   while (!aes_idle()) {
   }
@@ -56,7 +71,9 @@ bool test_main(void) {
 
   // Setup AES config
   aes_cfg_t aes_cfg = {
-      .mode = kAesEcb, .key_len = kAes256, .manual_operation = false,
+      .mode = kAesEcb,
+      .key_len = kAes256,
+      .manual_operation = false,
   };
 
   // Encode
@@ -72,6 +89,14 @@ bool test_main(void) {
           "Encrypted cipher_text[%d] mismatched: exp = %x, actual = %x", i,
           kCipherTextGold[i], buffer[i]);
   }
+
+  // Disable and re-enable EDN1 to get some more entropy out of it. This is
+  // dirty and needs to be reworked. We need to setup CSRNG/EDN to continously
+  // provide entropy.
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
+                      EDN_CTRL_REG_OFFSET, 0x0);
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
+                      EDN_CTRL_REG_OFFSET, 0x1);
 
   // Decode
   aes_cfg.operation = kAesDec;
