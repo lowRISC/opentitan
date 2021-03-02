@@ -9,6 +9,7 @@
  */
 
 module tlul_adapter_reg import tlul_pkg::*; #(
+  parameter  bit EnableDataIntgGen = 1'b0,
   parameter  int RegAw = 8,
   parameter  int RegDw = 32, // Shall be matched with TL_DW
   localparam int RegBw = RegDw/8
@@ -95,6 +96,18 @@ module tlul_adapter_reg import tlul_pkg::*; #(
     end
   end
 
+  logic [DataIntgWidth-1:0] data_intg;
+  if (EnableDataIntgGen) begin : gen_data_intg
+    logic [DataMaxWidth-1:0] unused_data;
+
+    prim_secded_64_57_enc u_data_gen (
+      .in(DataMaxWidth'(rdata_i)),
+      .out({data_intg, unused_data})
+    );
+  end else begin : gen_tieoff_data_intg
+    assign data_intg = '0;
+  end
+
   assign tl_o = '{
     a_ready:  ~outstanding,
     d_valid:  outstanding,
@@ -104,8 +117,8 @@ module tlul_adapter_reg import tlul_pkg::*; #(
     d_source: reqid,
     d_sink:   '0,
     d_data:   rdata,
-    d_user:  '0,
-    d_error: error
+    d_user:   '{default: '0, data_intg: data_intg},
+    d_error:  error
   };
 
   ////////////////////

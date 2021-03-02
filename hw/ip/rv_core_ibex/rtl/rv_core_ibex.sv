@@ -266,18 +266,19 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
   ) tl_adapter_host_i_ibex (
     .clk_i,
     .rst_ni,
-    .req_i   (instr_req),
-    .type_i  (tlul_pkg::InstrType),
-    .gnt_o   (instr_gnt),
-    .addr_i  (instr_addr),
-    .we_i    (1'b0),
-    .wdata_i (32'b0),
-    .be_i    (4'hF),
-    .valid_o (instr_rvalid),
-    .rdata_o (instr_rdata),
-    .err_o   (instr_err),
-    .tl_o    (tl_i_ibex2fifo),
-    .tl_i    (tl_i_fifo2ibex)
+    .req_i      (instr_req),
+    .type_i     (tlul_pkg::InstrType),
+    .gnt_o      (instr_gnt),
+    .addr_i     (instr_addr),
+    .we_i       (1'b0),
+    .wdata_i    (32'b0),
+    .be_i       (4'hF),
+    .valid_o    (instr_rvalid),
+    .rdata_o    (instr_rdata),
+    .err_o      (instr_err),
+    .intg_err_o (),
+    .tl_o       (tl_i_ibex2fifo),
+    .tl_i       (tl_i_fifo2ibex)
   );
 
   tlul_fifo_sync #(
@@ -302,18 +303,19 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
   ) tl_adapter_host_d_ibex (
     .clk_i,
     .rst_ni,
-    .req_i   (data_req),
-    .type_i  (tlul_pkg::DataType),
-    .gnt_o   (data_gnt),
-    .addr_i  (data_addr),
-    .we_i    (data_we),
-    .wdata_i (data_wdata),
-    .be_i    (data_be),
-    .valid_o (data_rvalid),
-    .rdata_o (data_rdata),
-    .err_o   (data_err),
-    .tl_o    (tl_d_ibex2fifo),
-    .tl_i    (tl_d_fifo2ibex)
+    .req_i      (data_req),
+    .type_i     (tlul_pkg::DataType),
+    .gnt_o      (data_gnt),
+    .addr_i     (data_addr),
+    .we_i       (data_we),
+    .wdata_i    (data_wdata),
+    .be_i       (data_be),
+    .valid_o    (data_rvalid),
+    .rdata_o    (data_rdata),
+    .err_o      (data_err),
+    .intg_err_o (),
+    .tl_o       (tl_d_ibex2fifo),
+    .tl_i       (tl_d_fifo2ibex)
   );
 
   tlul_fifo_sync #(
