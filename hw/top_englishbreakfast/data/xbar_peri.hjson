@@ -113,25 +113,17 @@
       reset:     "rst_peri_ni",
       pipeline:  "false",
     }
-    { name:      "ast_wrapper",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  "false",
-      stub:      true,
-      addr_range:
-      [
-        {
-          base_addr: 0x40490000
-          size_byte: 0x1000
-        }
-      ]
-    },
+//    { name:      "ast",
+//      type:      "device",
+//      clock:     "clk_peri_i",
+//      reset:     "rst_peri_ni",
+//      pipeline:  "false",
+//    },
   ],
   connections: {
     main:  ["uart0", "gpio", "spi_device", "spi_host0", "rv_timer", "usbdev",
             "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon", "ram_ret_aon",
-            "lc_ctrl", "sensor_ctrl_aon", "alert_handler", "nmi_gen", "ast_wrapper",
+            "lc_ctrl", "sensor_ctrl_aon", "alert_handler", "nmi_gen",
             "sram_ctrl_ret_aon"],
   },
 }

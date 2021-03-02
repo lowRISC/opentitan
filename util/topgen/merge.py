@@ -377,28 +377,10 @@ def xbar_adddevice(top, xbar, device):
         # case 3: not defined
         else:
             # Crossbar check
-            if len(nodeobj) == 0:
-                log.error("""
-                    Device %s doesn't exist in 'module', 'memory', predefined,
-                    or as a node object
-                    """ % device)
-            else:
-                node = nodeobj[0]
-                node["xbar"] = False
-                required_keys = ["addr_range"]
-                if "stub" in node and node["stub"]:
-                    log.info("""
-                        Device %s definition is a stub and does not exist in
-                        'module', 'memory' or predefined
-                        """ % device)
-
-                    if all(key in required_keys for key in node.keys()):
-                        log.error(
-                            "{}, The xbar only node is missing fields, see {}".
-                            format(node['name'], required_keys))
-                    process_pipeline_var(node)
-                else:
-                    log.error("Device {} definition is not a stub!")
+            log.error("""
+            Device %s doesn't exist in 'module', 'memory', predefined,
+            or as a node object
+            """ % device)
 
             return
 
@@ -417,7 +399,7 @@ def xbar_adddevice(top, xbar, device):
             "pipeline": "true",
             "pipeline_byp": "true",
             "xbar": True if device in xbar_list else False,
-            "stub": False
+            "stub": not lib.is_inst(deviceobj[0])
         })  # yapf: disable
 
     else:
@@ -429,7 +411,7 @@ def xbar_adddevice(top, xbar, device):
                          ("size_byte", deviceobj[0]["size"])])
         ]
         node["xbar"] = True if device in xbar_list else False
-        node["stub"] = False
+        node["stub"] = not lib.is_inst(deviceobj[0])
         process_pipeline_var(node)
 
 
@@ -678,7 +660,6 @@ def amend_resets(top):
        intermodule.
     """
 
-    rstmgr = [m for m in top['module'] if m['type'] == 'rstmgr']
     rstmgr_name = _find_module_name(top['module'], 'rstmgr')
 
     # Generate exported reset list
@@ -705,7 +686,7 @@ def amend_resets(top):
     # add entry to inter_module automatically
     for intf in top['exported_rsts']:
         top['inter_module']['external']['{}.resets_{}'.format(
-            rstmgr_name,intf)] = "rsts_{}".format(intf)
+            rstmgr_name, intf)] = "rsts_{}".format(intf)
     """Discover the full path and selection to each reset connection.
        This is done by modifying the reset connection of each end point.
     """

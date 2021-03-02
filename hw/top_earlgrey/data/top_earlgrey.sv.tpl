@@ -37,6 +37,9 @@ unused_im_defs, undriven_im_defs = lib.get_dangling_im_def(top["inter_signal"]["
 module top_${top["name"]} #(
   // Auto-inferred parameters
 % for m in top["module"]:
+  % if not lib.is_inst(m):
+<% continue %>
+  % endif
   % for p_exp in filter(lambda p: p["expose"] == "true", m["param_list"]):
   parameter ${p_exp["type"]} ${p_exp["name_top"]} = ${p_exp["default"]},
   % endfor
@@ -117,6 +120,9 @@ module top_${top["name"]} #(
   logic [${num_dio - 1}:0] dio_d2p;
   logic [${num_dio - 1}:0] dio_d2p_en;
 % for m in top["module"]:
+  % if not lib.is_inst(m):
+<% continue %>
+  % endif
   // ${m["name"]}
   % for p_in in m["available_input_list"] + m["available_inout_list"]:
     ## assume it passed validate and have available input list always
@@ -147,6 +153,9 @@ module top_${top["name"]} #(
   logic [${interrupt_num-1}:0]  intr_vector;
   // Interrupt source list
 % for m in top["module"]:
+    % if not lib.is_inst(m):
+<% continue %>
+    % endif
     % for intr in m["interrupt_list"] if "interrupt_list" in m else []:
         % if "width" in intr and int(intr["width"]) != 1:
   logic [${int(intr["width"])-1}:0] intr_${m["name"]}_${intr["name"]};
@@ -550,6 +559,9 @@ module top_${top["name"]} #(
 <% alert_idx = 0 %>
 % for m in top["module"]:
 <%
+if not lib.is_inst(m):
+     continue
+
 port_list = m["available_input_list"] + m["available_output_list"] + m["available_inout_list"]
 if len(port_list) == 0:
     max_sigwidth = 0

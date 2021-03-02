@@ -274,3 +274,49 @@ def get_unused_resets(top):
 
     log.debug("Unused resets are {}".format(unused_resets))
     return unused_resets
+
+
+def is_templated(module):
+    """Returns an indication where a particular module is templated
+    """
+    if "attr" not in module:
+        return False
+    elif module["attr"] in ["templated"]:
+        return True
+    else:
+        return False
+
+
+def is_top_reggen(module):
+    """Returns an indication where a particular module is NOT templated
+       and requires top level specific reggen
+    """
+    if "attr" not in module:
+        return False
+    elif module["attr"] in ["reggen_top", "reggen_only"]:
+        return True
+    else:
+        return False
+
+
+def is_inst(module):
+    """Returns an indication where a particular module should be instantiated
+       in the top level
+    """
+    top_level_module = False
+    top_level_mem = False
+
+    if "attr" not in module:
+        top_level_module = True
+    elif module["attr"] in ["normal", "templated", "reggen_top"]:
+        top_level_module = True
+    elif module["attr"] in ["reggen_only"]:
+        top_level_module = False
+    else:
+        raise ValueError('Attribute {} in {} is not valid'
+                         .format(module['attr'], module['name']))
+
+    if module['type'] in ['rom', 'ram_1p_scr', 'eflash']:
+        top_level_mem = True
+
+    return top_level_mem or top_level_module

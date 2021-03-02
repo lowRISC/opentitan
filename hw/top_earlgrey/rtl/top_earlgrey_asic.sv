@@ -446,12 +446,15 @@ module top_earlgrey_asic (
   logic unused_usb_usb_rst;
   logic [PowerDomains-1:0] unused_usb_sys_io_div4_rst;
   logic [PowerDomains-1:0] unused_usb_sys_aon_rst;
+  logic unused_ast_sys_io_div4_rst;
   logic unused_sensor_ctrl_sys_io_div4_rst;
   logic unused_entropy_sys_rst;
   logic unused_edn_sys_rst;
   assign unused_usb_usb_rst = rsts_ast.rst_ast_usbdev_usb_n[DomainAonSel];
   assign unused_usb_sys_io_div4_rst = rsts_ast.rst_ast_usbdev_sys_io_div4_n;
   assign unused_usb_sys_aon_rst = rsts_ast.rst_ast_usbdev_sys_aon_n;
+  assign unused_ast_sys_io_div4_rst =
+    rsts_ast.rst_ast_ast_sys_io_div4_n[Domain0Sel];
   assign unused_sensor_ctrl_sys_io_div4_rst =
     rsts_ast.rst_ast_sensor_ctrl_aon_sys_io_div4_n[Domain0Sel];
   assign unused_entropy_sys_rst = rsts_ast.rst_ast_entropy_src_sys_n[DomainAonSel];
@@ -479,8 +482,8 @@ module top_earlgrey_asic (
     .rst_ast_es_ni         ( rsts_ast.rst_ast_edn0_sys_n[Domain0Sel] ),
     .clk_ast_rng_i         ( clks_ast.clk_ast_entropy_src_main_secure ),
     .rst_ast_rng_ni        ( rsts_ast.rst_ast_entropy_src_sys_n[Domain0Sel] ),
-    .clk_ast_tlul_i        ( clks_ast.clk_ast_sensor_ctrl_aon_io_div4_secure ),
-    .rst_ast_tlul_ni       ( rsts_ast.rst_ast_sensor_ctrl_aon_sys_io_div4_n[DomainAonSel] ),
+    .clk_ast_tlul_i        ( clks_ast.clk_ast_ast_io_div4_secure ),
+    .rst_ast_tlul_ni       ( rsts_ast.rst_ast_ast_sys_io_div4_n[DomainAonSel] ),
     .clk_ast_usb_i         ( clks_ast.clk_ast_usbdev_usb_peri ),
     .rst_ast_usb_ni        ( rsts_ast.rst_ast_usbdev_usb_n[Domain0Sel] ),
     .clk_ast_ext_i         ( ext_clk ),
