@@ -2,17 +2,19 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 """
-Generate HTML documentation from validated register Hjson tree
+Generate HTML documentation from IpBlock
 """
 
-from .html_helpers import expand_paras, render_td
+from typing import Set, TextIO
 
+from .ip_block import IpBlock
+from .html_helpers import expand_paras, render_td
 from .multi_register import MultiRegister
 from .register import Register
 from .window import Window
 
 
-def genout(outfile, msg):
+def genout(outfile: TextIO, msg: str) -> None:
     outfile.write(msg)
 
 
@@ -20,7 +22,7 @@ def genout(outfile, msg):
 # Max 16-bit wide on one line
 
 
-def gen_tbl_row(outfile, msb, width, close):
+def gen_tbl_row(outfile: TextIO, msb: int, width: int, close: bool) -> None:
     if (close):
         genout(outfile, "</tr>\n")
     genout(outfile, "<tr>")
@@ -30,7 +32,7 @@ def gen_tbl_row(outfile, msb, width, close):
     genout(outfile, "</tr><tr>")
 
 
-def gen_html_reg_pic(outfile, reg, width):
+def gen_html_reg_pic(outfile: TextIO, reg: Register, width: int) -> None:
 
     if (width > 32):
         bsize = 3
@@ -121,9 +123,11 @@ def gen_html_reg_pic(outfile, reg, width):
 # Generation of HTML table with header, register picture and details
 
 
-def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
-    assert isinstance(reg, Register)
-
+def gen_html_register(outfile: TextIO,
+                      reg: Register,
+                      comp: str,
+                      width: int,
+                      rnames: Set[str]) -> None:
     rname = reg.name
     offset = reg.offset
     regwen_div = ''
@@ -158,8 +162,6 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
                '<tr><td colspan=5>{}</td></tr>'
                .format(''.join(desc_body)))
 
-    if toc is not None:
-        toc.append((toclvl, comp + "." + rname, "Reg_" + rname.lower()))
     genout(outfile, "<tr><td colspan=5>")
     gen_html_reg_pic(outfile, reg, width)
     genout(outfile, "</td></tr>\n")
@@ -221,10 +223,12 @@ def gen_html_register(outfile, reg, comp, width, rnames, toc, toclvl):
 
     genout(outfile, "</table>\n<br>\n")
 
-    return
 
-
-def gen_html_window(outfile, win, comp, regwidth, rnames, toc, toclvl):
+def gen_html_window(outfile: TextIO,
+                    win: Window,
+                    comp: str,
+                    regwidth: int,
+                    rnames: Set[str]) -> None:
     wname = win.name or '(unnamed window)'
     offset = win.offset
     genout(outfile,
@@ -279,29 +283,22 @@ def gen_html_window(outfile, win, comp, regwidth, rnames, toc, toclvl):
     genout(outfile,
            '<tr>{}</tr>'.format(render_td(win.desc, rnames, 'regde')))
     genout(outfile, "</table>\n<br>\n")
-    if toc is not None:
-        toc.append((toclvl, comp + "." + wname, "Reg_" + wname.lower()))
 
 
-# Must have called validate, so should have no errors
-
-
-def gen_html(block, outfile, toclist=None, toclevel=3):
-    rnames = list(block.regs.name_to_offset.keys())
+def gen_html(block: IpBlock, outfile: TextIO) -> int:
+    rnames = set(block.regs.name_to_offset.keys())
 
     for x in block.regs.entries:
         if isinstance(x, Register):
-            gen_html_register(outfile, x, block.name, block.regwidth, rnames,
-                              toclist, toclevel)
+            gen_html_register(outfile, x, block.name, block.regwidth, rnames)
             continue
         if isinstance(x, MultiRegister):
             for reg in x.regs:
                 gen_html_register(outfile, reg, block.name, block.regwidth,
-                                  rnames, toclist, toclevel)
+                                  rnames)
             continue
         if isinstance(x, Window):
-            gen_html_window(outfile, x, block.name, block.regwidth, rnames,
-                            toclist, toclevel)
+            gen_html_window(outfile, x, block.name, block.regwidth, rnames)
             continue
 
     return 0
