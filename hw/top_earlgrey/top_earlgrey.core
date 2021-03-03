@@ -12,7 +12,7 @@ filesets:
       - lowrisc:ip:gpio
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
-      - lowrisc:top_earlgrey:rv_plic
+      - lowrisc:opentitan:top_earlgrey_rv_plic
       - lowrisc:top_earlgrey:pinmux_reg
       - lowrisc:ip:pinmux_component
       - lowrisc:ip:rv_timer

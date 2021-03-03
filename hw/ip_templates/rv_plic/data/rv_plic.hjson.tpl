@@ -11,6 +11,7 @@
 #  - prio:   Max value of interrupt priorities
 {
   name: "RV_PLIC",
+  fusesoc_core_name: "${unique_vlnv("lowrisc:ip:rv_plic")}",
   clock_primary: "clk_i",
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }

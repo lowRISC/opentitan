@@ -2,14 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
-// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
-// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson --plic-only -o hw/top_earlgrey/
-
-// Copyright lowRISC contributors.
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
-//
 # RV_PLIC register template
 #
 # Parameter (given by Python tool)
@@ -18,6 +10,7 @@
 #  - prio:   Max value of interrupt priorities
 {
   name: "RV_PLIC",
+  fusesoc_core_name: "lowrisc:opentitan:top_earlgrey_rv_plic",
   clock_primary: "clk_i",
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
