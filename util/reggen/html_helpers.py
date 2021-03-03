@@ -4,9 +4,10 @@
 
 import logging as log
 import re
+from typing import List, Match, Optional, Set
 
 
-def expand_paras(s, rnames):
+def expand_paras(s: str, rnames: Set[str]) -> List[str]:
     '''Expand a description field to HTML.
 
     This supports a sort of simple pseudo-markdown. Supported Markdown
@@ -35,9 +36,9 @@ def expand_paras(s, rnames):
     return paras
 
 
-def _expand_paragraph(s, rnames):
+def _expand_paragraph(s: str, rnames: Set[str]) -> str:
     '''Expand a single paragraph, as described in _get_desc_paras'''
-    def fieldsub(match):
+    def fieldsub(match: Match[str]) -> str:
         base = match.group(1).partition('.')[0].lower()
         if base in rnames:
             if match.group(1)[-1] == ".":
@@ -71,7 +72,7 @@ def _expand_paragraph(s, rnames):
     return '<p>{}</p>'.format(''.join(expanded_parts))
 
 
-def render_td(s, rnames, td_class):
+def render_td(s: str, rnames: Set[str], td_class: Optional[str]) -> str:
     '''Expand a description field and put it in a <td>.
 
     Returns a string. See _get_desc_paras for the format that gets expanded.
