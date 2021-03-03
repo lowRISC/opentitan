@@ -434,6 +434,12 @@
           name:    "en_ifetch",
           act:     "rcv",
         },
+        { struct:  "logic",
+          package: ""
+          type:    "uni",
+          name:    "intg_error",
+          act:     "req",
+        },
       ]
     },
     { name: "ram_ret_aon",
@@ -466,6 +472,12 @@
           type:    "uni",
           name:    "en_ifetch",
           act:     "rcv",
+        },
+        { struct:  "logic",
+          package: ""
+          type:    "uni",
+          name:    "intg_error",
+          act:     "req",
         },
       ]
     },
@@ -560,6 +572,8 @@
       'sram_ctrl_ret_aon.sram_scr' : ['ram_ret_aon.sram_scr'],
       'sram_ctrl_main.en_ifetch' : ['ram_main.en_ifetch']
       'sram_ctrl_ret_aon.en_ifetch' : ['ram_ret_aon.en_ifetch']
+      'ram_main.intg_error'     : ['sram_ctrl_main.intg_error'],
+      'ram_ret_aon.intg_error'  : ['sram_ctrl_ret_aon.intg_error'],
       'pwrmgr_aon.pwr_flash'    : ['flash_ctrl.pwrmgr'],
       'pwrmgr_aon.pwr_rst'      : ['rstmgr_aon.pwr'],
       'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],

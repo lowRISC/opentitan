@@ -649,6 +649,7 @@ module kmac
     .addr_o      (tlram_addr),
     .wdata_o     (tlram_wdata),
     .wmask_o     (tlram_wmask),
+    .intg_error_o(           ),
     .rdata_i     (tlram_rdata),
     .rvalid_i    (tlram_rvalid),
     .rerror_i    (tlram_rerror)

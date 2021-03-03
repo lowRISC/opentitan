@@ -348,6 +348,7 @@ module rv_dm #(
     .addr_o      (addr_w),
     .wdata_o     (wdata),
     .wmask_o     (),
+    .intg_error_o(),
     .rdata_i     (rdata),
     .rvalid_i    (rvalid),
     .rerror_i    (2'b00),

@@ -5076,7 +5076,7 @@
       alert_list:
       [
         {
-          name: fatal_parity_error
+          name: fatal_intg_error
           width: 1
           bits: "0"
           bitinfo:
@@ -5084,6 +5084,19 @@
             1
             1
             0
+          ]
+          type: alert
+          async: 0
+        }
+        {
+          name: fatal_parity_error
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
           ]
           type: alert
           async: 0
@@ -5168,6 +5181,18 @@
           end_idx: -1
           top_type: broadcast
           top_signame: sram_ctrl_ret_aon_en_ifetch
+          index: -1
+        }
+        {
+          struct: logic
+          type: uni
+          name: intg_error
+          act: rcv
+          package: ""
+          inst_name: sram_ctrl_ret_aon
+          width: 1
+          default: ""
+          top_signame: ram_ret_aon_intg_error
           index: -1
         }
         {
@@ -7173,7 +7198,7 @@
       alert_list:
       [
         {
-          name: fatal_parity_error
+          name: fatal_intg_error
           width: 1
           bits: "0"
           bitinfo:
@@ -7181,6 +7206,19 @@
             1
             1
             0
+          ]
+          type: alert
+          async: 1
+        }
+        {
+          name: fatal_parity_error
+          width: 1
+          bits: "1"
+          bitinfo:
+          [
+            2
+            1
+            1
           ]
           type: alert
           async: 1
@@ -7265,6 +7303,18 @@
           end_idx: -1
           top_type: broadcast
           top_signame: sram_ctrl_main_en_ifetch
+          index: -1
+        }
+        {
+          struct: logic
+          type: uni
+          name: intg_error
+          act: rcv
+          package: ""
+          inst_name: sram_ctrl_main
+          width: 1
+          default: ""
+          top_signame: ram_main_intg_error
           index: -1
         }
         {
@@ -7509,6 +7559,20 @@
           top_signame: sram_ctrl_main_en_ifetch
           index: -1
         }
+        {
+          struct: logic
+          package: ""
+          type: uni
+          name: intg_error
+          act: req
+          inst_name: ram_main
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: ram_main_intg_error
+          index: -1
+        }
       ]
       clock_connections:
       {
@@ -7571,6 +7635,20 @@
           width: 1
           default: ""
           top_signame: sram_ctrl_ret_aon_en_ifetch
+          index: -1
+        }
+        {
+          struct: logic
+          package: ""
+          type: uni
+          name: intg_error
+          act: req
+          inst_name: ram_ret_aon
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: ram_ret_aon_intg_error
           index: -1
         }
       ]
@@ -7812,6 +7890,14 @@
       sram_ctrl_ret_aon.en_ifetch:
       [
         ram_ret_aon.en_ifetch
+      ]
+      ram_main.intg_error:
+      [
+        sram_ctrl_main.intg_error
+      ]
+      ram_ret_aon.intg_error:
+      [
+        sram_ctrl_ret_aon.intg_error
       ]
       otp_ctrl.sram_otp_key:
       [
@@ -11875,7 +11961,7 @@
       module_name: edn1
     }
     {
-      name: sram_ctrl_main_fatal_parity_error
+      name: sram_ctrl_main_fatal_intg_error
       width: 1
       bits: "0"
       bitinfo:
@@ -11889,7 +11975,21 @@
       module_name: sram_ctrl_main
     }
     {
-      name: sram_ctrl_ret_aon_fatal_parity_error
+      name: sram_ctrl_main_fatal_parity_error
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
+      ]
+      type: alert
+      async: 1
+      module_name: sram_ctrl_main
+    }
+    {
+      name: sram_ctrl_ret_aon_fatal_intg_error
       width: 1
       bits: "0"
       bitinfo:
@@ -11897,6 +11997,20 @@
         1
         1
         0
+      ]
+      type: alert
+      async: 0
+      module_name: sram_ctrl_ret_aon
+    }
+    {
+      name: sram_ctrl_ret_aon_fatal_parity_error
+      width: 1
+      bits: "1"
+      bitinfo:
+      [
+        2
+        1
+        1
       ]
       type: alert
       async: 0
@@ -14310,6 +14424,18 @@
         index: -1
       }
       {
+        struct: logic
+        type: uni
+        name: intg_error
+        act: rcv
+        package: ""
+        inst_name: sram_ctrl_ret_aon
+        width: 1
+        default: ""
+        top_signame: ram_ret_aon_intg_error
+        index: -1
+      }
+      {
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -15056,6 +15182,18 @@
         index: -1
       }
       {
+        struct: logic
+        type: uni
+        name: intg_error
+        act: rcv
+        package: ""
+        inst_name: sram_ctrl_main
+        width: 1
+        default: ""
+        top_signame: ram_main_intg_error
+        index: -1
+      }
+      {
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -15156,6 +15294,20 @@
         index: -1
       }
       {
+        struct: logic
+        package: ""
+        type: uni
+        name: intg_error
+        act: req
+        inst_name: ram_main
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: ram_main_intg_error
+        index: -1
+      }
+      {
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -15190,6 +15342,20 @@
         width: 1
         default: ""
         top_signame: sram_ctrl_ret_aon_en_ifetch
+        index: -1
+      }
+      {
+        struct: logic
+        package: ""
+        type: uni
+        name: intg_error
+        act: req
+        inst_name: ram_ret_aon
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: ram_ret_aon_intg_error
         index: -1
       }
       {
@@ -16472,6 +16638,28 @@
         package: tlul_pkg
         struct: tl_instr_en
         signame: sram_ctrl_ret_aon_en_ifetch
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: ""
+      }
+      {
+        package: ""
+        struct: logic
+        signame: ram_main_intg_error
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: ""
+      }
+      {
+        package: ""
+        struct: logic
+        signame: ram_ret_aon_intg_error
         width: 1
         type: uni
         end_idx: -1

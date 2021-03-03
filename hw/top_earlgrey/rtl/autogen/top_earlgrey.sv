@@ -424,6 +424,8 @@ module top_earlgrey #(
   sram_ctrl_pkg::sram_scr_rsp_t       sram_ctrl_ret_aon_sram_scr_rsp;
   tlul_pkg::tl_instr_en_t       sram_ctrl_main_en_ifetch;
   tlul_pkg::tl_instr_en_t       sram_ctrl_ret_aon_en_ifetch;
+  logic       ram_main_intg_error;
+  logic       ram_ret_aon_intg_error;
   otp_ctrl_pkg::sram_otp_key_req_t [1:0] otp_ctrl_sram_otp_key_req;
   otp_ctrl_pkg::sram_otp_key_rsp_t [1:0] otp_ctrl_sram_otp_key_rsp;
   pwrmgr_pkg::pwr_flash_req_t       pwrmgr_aon_pwr_flash_req;
@@ -731,7 +733,10 @@ module top_earlgrey #(
     .SramAw(12),
     .SramDw(32),
     .Outstanding(2),
-    .ErrOnWrite(1)
+    .ErrOnWrite(1),
+    .CmdIntgCheck(1),
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(1) // TODO: Needs to be updated for intgerity passthrough
   ) u_tl_adapter_rom (
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
@@ -745,6 +750,7 @@ module top_earlgrey #(
     .addr_o      (rom_addr),
     .wdata_o     (),
     .wmask_o     (),
+    .intg_error_o(), // Connect to ROM checker and ROM scramble later
     .rdata_i     (rom_rdata[31:0]),
     .rvalid_i    (rom_rvalid),
     .rerror_i    (2'b00)
@@ -768,6 +774,7 @@ module top_earlgrey #(
   logic        ram_main_req;
   logic        ram_main_gnt;
   logic        ram_main_we;
+  logic        ram_main_intg_err;
   logic [14:0] ram_main_addr;
   logic [31:0] ram_main_wdata;
   logic [31:0] ram_main_wmask;
@@ -778,7 +785,10 @@ module top_earlgrey #(
   tlul_adapter_sram #(
     .SramAw(15),
     .SramDw(32),
-    .Outstanding(2)
+    .Outstanding(2),
+    .CmdIntgCheck(1),
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(1)  // TODO: Needs to be updated for integrity passthrough
   ) u_tl_adapter_ram_main (
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
@@ -791,6 +801,7 @@ module top_earlgrey #(
     .addr_o      (ram_main_addr),
     .wdata_o     (ram_main_wdata),
     .wmask_o     (ram_main_wmask),
+    .intg_error_o(ram_main_intg_err),
     .rdata_i     (ram_main_rdata[31:0]),
     .rvalid_i    (ram_main_rvalid),
     .rerror_i    (ram_main_rerror)
@@ -805,21 +816,23 @@ module top_earlgrey #(
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
 
-    .key_valid_i ( sram_ctrl_main_sram_scr_req.valid ),
-    .key_i       ( sram_ctrl_main_sram_scr_req.key   ),
-    .nonce_i     ( sram_ctrl_main_sram_scr_req.nonce ),
+    .key_valid_i (sram_ctrl_main_sram_scr_req.valid),
+    .key_i       (sram_ctrl_main_sram_scr_req.key),
+    .nonce_i     (sram_ctrl_main_sram_scr_req.nonce),
 
-    .req_i    (ram_main_req),
-    .gnt_o    (ram_main_gnt),
-    .write_i  (ram_main_we),
-    .addr_i   (ram_main_addr),
-    .wdata_i  (39'(ram_main_wdata)),
-    .wmask_i  (39'(ram_main_wmask)),
-    .rdata_o  (ram_main_rdata),
-    .rvalid_o (ram_main_rvalid),
-    .rerror_o (ram_main_rerror),
-    .raddr_o  ( sram_ctrl_main_sram_scr_rsp.raddr ),
-    .cfg_i    ( '0 )
+    .req_i       (ram_main_req),
+    .intg_error_i(ram_main_intg_err),
+    .gnt_o       (ram_main_gnt),
+    .write_i     (ram_main_we),
+    .addr_i      (ram_main_addr),
+    .wdata_i     (39'(ram_main_wdata)),
+    .wmask_i     (39'(ram_main_wmask)),
+    .rdata_o     (ram_main_rdata),
+    .rvalid_o    (ram_main_rvalid),
+    .rerror_o    (ram_main_rerror),
+    .raddr_o     (sram_ctrl_main_sram_scr_rsp.raddr),
+    .intg_error_o(ram_main_intg_error),
+    .cfg_i       ( '0 )
   );
 
   assign sram_ctrl_main_sram_scr_rsp.rerror = ram_main_rerror;
@@ -828,6 +841,7 @@ module top_earlgrey #(
   logic        ram_ret_aon_req;
   logic        ram_ret_aon_gnt;
   logic        ram_ret_aon_we;
+  logic        ram_ret_aon_intg_err;
   logic [9:0] ram_ret_aon_addr;
   logic [31:0] ram_ret_aon_wdata;
   logic [31:0] ram_ret_aon_wmask;
@@ -838,7 +852,10 @@ module top_earlgrey #(
   tlul_adapter_sram #(
     .SramAw(10),
     .SramDw(32),
-    .Outstanding(2)
+    .Outstanding(2),
+    .CmdIntgCheck(1),
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(1)  // TODO: Needs to be updated for integrity passthrough
   ) u_tl_adapter_ram_ret_aon (
     .clk_i   (clkmgr_aon_clocks.clk_io_div4_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
@@ -851,6 +868,7 @@ module top_earlgrey #(
     .addr_o      (ram_ret_aon_addr),
     .wdata_o     (ram_ret_aon_wdata),
     .wmask_o     (ram_ret_aon_wmask),
+    .intg_error_o(ram_ret_aon_intg_err),
     .rdata_i     (ram_ret_aon_rdata[31:0]),
     .rvalid_i    (ram_ret_aon_rvalid),
     .rerror_i    (ram_ret_aon_rerror)
@@ -865,21 +883,23 @@ module top_earlgrey #(
     .clk_i   (clkmgr_aon_clocks.clk_io_div4_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
 
-    .key_valid_i ( sram_ctrl_ret_aon_sram_scr_req.valid ),
-    .key_i       ( sram_ctrl_ret_aon_sram_scr_req.key   ),
-    .nonce_i     ( sram_ctrl_ret_aon_sram_scr_req.nonce ),
+    .key_valid_i (sram_ctrl_ret_aon_sram_scr_req.valid),
+    .key_i       (sram_ctrl_ret_aon_sram_scr_req.key),
+    .nonce_i     (sram_ctrl_ret_aon_sram_scr_req.nonce),
 
-    .req_i    (ram_ret_aon_req),
-    .gnt_o    (ram_ret_aon_gnt),
-    .write_i  (ram_ret_aon_we),
-    .addr_i   (ram_ret_aon_addr),
-    .wdata_i  (39'(ram_ret_aon_wdata)),
-    .wmask_i  (39'(ram_ret_aon_wmask)),
-    .rdata_o  (ram_ret_aon_rdata),
-    .rvalid_o (ram_ret_aon_rvalid),
-    .rerror_o (ram_ret_aon_rerror),
-    .raddr_o  ( sram_ctrl_ret_aon_sram_scr_rsp.raddr ),
-    .cfg_i    ( '0 )
+    .req_i       (ram_ret_aon_req),
+    .intg_error_i(ram_ret_aon_intg_err),
+    .gnt_o       (ram_ret_aon_gnt),
+    .write_i     (ram_ret_aon_we),
+    .addr_i      (ram_ret_aon_addr),
+    .wdata_i     (39'(ram_ret_aon_wdata)),
+    .wmask_i     (39'(ram_ret_aon_wmask)),
+    .rdata_o     (ram_ret_aon_rdata),
+    .rvalid_o    (ram_ret_aon_rvalid),
+    .rerror_o    (ram_ret_aon_rerror),
+    .raddr_o     (sram_ctrl_ret_aon_sram_scr_rsp.raddr),
+    .intg_error_o(ram_ret_aon_intg_error),
+    .cfg_i       ( '0 )
   );
 
   assign sram_ctrl_ret_aon_sram_scr_rsp.rerror = ram_ret_aon_rerror;
@@ -898,7 +918,10 @@ module top_earlgrey #(
     .SramDw(flash_ctrl_pkg::BusWidth),
     .Outstanding(2),
     .ByteAccess(0),
-    .ErrOnWrite(1)
+    .ErrOnWrite(1),
+    .CmdIntgCheck(1),
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(1)
   ) u_tl_adapter_eflash (
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni   (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
@@ -912,6 +935,7 @@ module top_earlgrey #(
     .addr_o      (flash_host_addr),
     .wdata_o     (),
     .wmask_o     (),
+    .intg_error_o(),  // TODO: connect to flash controller and flash scramble later
     .rdata_i     (flash_host_rdata),
     .rvalid_i    (flash_host_req_done),
     .rerror_i    ({flash_host_rderr,1'b0})
@@ -1706,9 +1730,10 @@ module top_earlgrey #(
     .InstrExec(SramCtrlRetAonInstrExec)
   ) u_sram_ctrl_ret_aon (
 
-      // [11]: fatal_parity_error
-      .alert_tx_o  ( alert_tx[11:11] ),
-      .alert_rx_i  ( alert_rx[11:11] ),
+      // [11]: fatal_intg_error
+      // [12]: fatal_parity_error
+      .alert_tx_o  ( alert_tx[12:11] ),
+      .alert_rx_i  ( alert_rx[12:11] ),
 
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[1]),
@@ -1719,6 +1744,7 @@ module top_earlgrey #(
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
       .en_ifetch_o(sram_ctrl_ret_aon_en_ifetch),
+      .intg_error_i(ram_ret_aon_intg_error),
       .tl_i(sram_ctrl_ret_aon_tl_req),
       .tl_o(sram_ctrl_ret_aon_tl_rsp),
 
@@ -1752,11 +1778,11 @@ module top_earlgrey #(
       .intr_rd_lvl_o     (intr_flash_ctrl_rd_lvl),
       .intr_op_done_o    (intr_flash_ctrl_op_done),
 
-      // [12]: recov_err
-      // [13]: recov_mp_err
-      // [14]: recov_ecc_err
-      .alert_tx_o  ( alert_tx[14:12] ),
-      .alert_rx_i  ( alert_rx[14:12] ),
+      // [13]: recov_err
+      // [14]: recov_mp_err
+      // [15]: recov_ecc_err
+      .alert_tx_o  ( alert_tx[15:13] ),
+      .alert_rx_i  ( alert_rx[15:13] ),
 
       // Inter-module signals
       .flash_o(flash_ctrl_flash_req),
@@ -1814,10 +1840,10 @@ module top_earlgrey #(
     .RndCnstMskgChunkLfsrPerm(RndCnstAesMskgChunkLfsrPerm)
   ) u_aes (
 
-      // [15]: recov_ctrl_update_err
-      // [16]: fatal_fault
-      .alert_tx_o  ( alert_tx[16:15] ),
-      .alert_rx_i  ( alert_rx[16:15] ),
+      // [16]: recov_ctrl_update_err
+      // [17]: fatal_fault
+      .alert_tx_o  ( alert_tx[17:16] ),
+      .alert_rx_i  ( alert_rx[17:16] ),
 
       // Inter-module signals
       .idle_o(clkmgr_aon_idle[0]),
@@ -1897,10 +1923,10 @@ module top_earlgrey #(
       // Interrupt
       .intr_op_done_o (intr_keymgr_op_done),
 
-      // [17]: fatal_fault_err
-      // [18]: recov_operation_err
-      .alert_tx_o  ( alert_tx[18:17] ),
-      .alert_rx_i  ( alert_rx[18:17] ),
+      // [18]: fatal_fault_err
+      // [19]: recov_operation_err
+      .alert_tx_o  ( alert_tx[19:18] ),
+      .alert_rx_i  ( alert_rx[19:18] ),
 
       // Inter-module signals
       .edn_o(edn0_edn_req[0]),
@@ -1935,9 +1961,9 @@ module top_earlgrey #(
       .intr_cs_hw_inst_exc_o  (intr_csrng_cs_hw_inst_exc),
       .intr_cs_fatal_err_o    (intr_csrng_cs_fatal_err),
 
-      // [19]: fatal_alert
-      .alert_tx_o  ( alert_tx[19:19] ),
-      .alert_rx_i  ( alert_rx[19:19] ),
+      // [20]: fatal_alert
+      .alert_tx_o  ( alert_tx[20:20] ),
+      .alert_rx_i  ( alert_rx[20:20] ),
 
       // Inter-module signals
       .csrng_cmd_i(csrng_csrng_cmd_req),
@@ -1961,10 +1987,10 @@ module top_earlgrey #(
       .intr_es_health_test_failed_o (intr_entropy_src_es_health_test_failed),
       .intr_es_fatal_err_o          (intr_entropy_src_es_fatal_err),
 
-      // [20]: recov_alert
-      // [21]: fatal_alert
-      .alert_tx_o  ( alert_tx[21:20] ),
-      .alert_rx_i  ( alert_rx[21:20] ),
+      // [21]: recov_alert
+      // [22]: fatal_alert
+      .alert_tx_o  ( alert_tx[22:21] ),
+      .alert_rx_i  ( alert_rx[22:21] ),
 
       // Inter-module signals
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_req),
@@ -1988,9 +2014,9 @@ module top_earlgrey #(
       .intr_edn_cmd_req_done_o (intr_edn0_edn_cmd_req_done),
       .intr_edn_fatal_err_o    (intr_edn0_edn_fatal_err),
 
-      // [22]: fatal_alert
-      .alert_tx_o  ( alert_tx[22:22] ),
-      .alert_rx_i  ( alert_rx[22:22] ),
+      // [23]: fatal_alert
+      .alert_tx_o  ( alert_tx[23:23] ),
+      .alert_rx_i  ( alert_rx[23:23] ),
 
       // Inter-module signals
       .csrng_cmd_o(csrng_csrng_cmd_req[0]),
@@ -2011,9 +2037,9 @@ module top_earlgrey #(
       .intr_edn_cmd_req_done_o (intr_edn1_edn_cmd_req_done),
       .intr_edn_fatal_err_o    (intr_edn1_edn_fatal_err),
 
-      // [23]: fatal_alert
-      .alert_tx_o  ( alert_tx[23:23] ),
-      .alert_rx_i  ( alert_rx[23:23] ),
+      // [24]: fatal_alert
+      .alert_tx_o  ( alert_tx[24:24] ),
+      .alert_rx_i  ( alert_rx[24:24] ),
 
       // Inter-module signals
       .csrng_cmd_o(csrng_csrng_cmd_req[1]),
@@ -2034,9 +2060,10 @@ module top_earlgrey #(
     .InstrExec(SramCtrlMainInstrExec)
   ) u_sram_ctrl_main (
 
-      // [24]: fatal_parity_error
-      .alert_tx_o  ( alert_tx[24:24] ),
-      .alert_rx_i  ( alert_rx[24:24] ),
+      // [25]: fatal_intg_error
+      // [26]: fatal_parity_error
+      .alert_tx_o  ( alert_tx[26:25] ),
+      .alert_rx_i  ( alert_rx[26:25] ),
 
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[0]),
@@ -2047,6 +2074,7 @@ module top_earlgrey #(
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
       .en_ifetch_o(sram_ctrl_main_en_ifetch),
+      .intg_error_i(ram_main_intg_error),
       .tl_i(sram_ctrl_main_tl_req),
       .tl_o(sram_ctrl_main_tl_rsp),
 
@@ -2064,10 +2092,10 @@ module top_earlgrey #(
       // Interrupt
       .intr_done_o (intr_otbn_done),
 
-      // [25]: fatal
-      // [26]: recov
-      .alert_tx_o  ( alert_tx[26:25] ),
-      .alert_rx_i  ( alert_rx[26:25] ),
+      // [27]: fatal
+      // [28]: recov
+      .alert_tx_o  ( alert_tx[28:27] ),
+      .alert_rx_i  ( alert_rx[28:27] ),
 
       // Inter-module signals
       .edn_o(edn1_edn_req[1]),

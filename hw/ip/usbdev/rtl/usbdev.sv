@@ -677,6 +677,7 @@ module usbdev import usbdev_pkg::*; (
     .addr_o      (mem_a_addr),
     .wdata_o     (mem_a_wdata),
     .wmask_o     (),           // Not used
+    .intg_error_o(),
     .rdata_i     (mem_a_rdata),
     .rvalid_i    (mem_a_rvalid),
     .rerror_i    (mem_a_rerror)

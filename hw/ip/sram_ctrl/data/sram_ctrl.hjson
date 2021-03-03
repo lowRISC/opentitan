@@ -19,9 +19,12 @@
   ///////////////////////////
 
   alert_list: [
+    { name: "fatal_intg_error",
+      desc: "An integrity error has occurred in the SRAM."
+    },
     { name: "fatal_parity_error",
-      desc: "An uncorrectable parity error has occurred in the SRAM."
-    }
+      desc: "An parity error has occurred in the SRAM."
+    },
   ],
 
   ////////////////
@@ -96,6 +99,12 @@
       name:    "en_ifetch",
       act:     "req",
       package: "tlul_pkg",
+    },
+    { struct:  "logic",
+      type:    "uni",
+      name:    "intg_error",
+      act:     "rcv",
+      package: ""
     },
   ] // inter_signal_list
 
