@@ -190,7 +190,7 @@ module lc_ctrl
   // Unused
   assign tap_tl_h2d.a_param   = '0;
   assign tap_tl_h2d.a_source  = '0;
-  assign tap_tl_h2d.a_user    = '0;
+  assign tap_tl_h2d.a_user    = tlul_pkg::TL_A_USER_DEFAULT;
 
   // TL-UL to DMI transducing
   assign tap_tl_h2d.d_ready  = dmi_resp_ready;
