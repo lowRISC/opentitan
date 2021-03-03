@@ -96,6 +96,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .reg2hw,
     .hw2reg,
 
+    .intg_err_o (),
     .devmode_i  (1'b1)
   );
 
