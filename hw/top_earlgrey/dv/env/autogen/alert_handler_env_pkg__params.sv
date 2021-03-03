@@ -27,11 +27,13 @@ parameter string LIST_OF_ALERTS[] = {
   "csrng_fatal_alert",
   "edn0_fatal_alert",
   "edn1_fatal_alert",
+  "sram_ctrl_main_fatal_intg_error",
   "sram_ctrl_main_fatal_parity_error",
+  "sram_ctrl_ret_aon_fatal_intg_error",
   "sram_ctrl_ret_aon_fatal_parity_error",
   "flash_ctrl_recov_err",
   "flash_ctrl_recov_mp_err",
   "flash_ctrl_recov_ecc_err"
 };
 
-parameter uint NUM_ALERTS = 27;
+parameter uint NUM_ALERTS = 29;

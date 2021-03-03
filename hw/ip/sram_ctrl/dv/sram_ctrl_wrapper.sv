@@ -50,6 +50,7 @@ module sram_ctrl_wrapper
   wire [DataWidth-1:0]  wmask;
   wire [DataWidth-1:0]  rdata;
   wire                  rvalid;
+  wire                  intg_error;
 
   // SRAM Controller
   sram_ctrl u_sram_ctrl (
@@ -72,7 +73,9 @@ module sram_ctrl_wrapper
     .sram_otp_key_i   (sram_otp_key_i   ),
     // Interface with SRAM memory scrambling
     .sram_scr_o       (scr_req          ),
-    .sram_scr_i       (scr_rsp          )
+    .sram_scr_i       (scr_rsp          ),
+    // Integrity error
+    .intg_error_i     (intg_error)
   );
 
   // TLUL Adapter SRAM
@@ -102,24 +105,26 @@ module sram_ctrl_wrapper
     .Width(DataWidth),
     .Depth(2 ** AddrWidth)
   ) u_ram1p_sram (
-    .clk_i      (clk_i          ),
-    .rst_ni     (rst_ni         ),
+    .clk_i        (clk_i          ),
+    .rst_ni       (rst_ni         ),
     // Key interface
-    .key_valid_i(scr_req.valid  ),
-    .key_i      (scr_req.key    ),
-    .nonce_i    (scr_req.nonce  ),
+    .key_valid_i  (scr_req.valid  ),
+    .key_i        (scr_req.key    ),
+    .nonce_i      (scr_req.nonce  ),
     // SRAM response interface to TLUL adapter
-    .req_i      (req            ),
-    .gnt_o      (gnt            ),
-    .write_i    (we             ),
-    .addr_i     (addr           ),
-    .wdata_i    (wdata          ),
-    .wmask_i    (wmask          ),
-    .rdata_o    (rdata          ),
-    .rvalid_o   (rvalid         ),
-    .rerror_o   (scr_rsp.rerror ),
-    .raddr_o    (scr_rsp.raddr  ),
-    .cfg_i      ('0             )
+    .req_i        (req            ),
+    .gnt_o        (gnt            ),
+    .write_i      (we             ),
+    .addr_i       (addr           ),
+    .wdata_i      (wdata          ),
+    .wmask_i      (wmask          ),
+    .intg_error_i ('0             ),
+    .rdata_o      (rdata          ),
+    .rvalid_o     (rvalid         ),
+    .rerror_o     (scr_rsp.rerror ),
+    .intg_error_o (intg_error     ),
+    .raddr_o      (scr_rsp.raddr  ),
+    .cfg_i        ('0             )
   );
 
 endmodule

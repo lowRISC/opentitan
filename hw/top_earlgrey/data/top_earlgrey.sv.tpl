@@ -361,6 +361,7 @@ module top_${top["name"]} #(
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_req;
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_gnt;
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_we;
+  logic ${lib.bitarray(1,          max_char)} ${m["name"]}_intg_err;
   logic ${lib.bitarray(addr_width, max_char)} ${m["name"]}_addr;
   logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wdata;
   logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wmask;
@@ -371,7 +372,10 @@ module top_${top["name"]} #(
   tlul_adapter_sram #(
     .SramAw(${addr_width}),
     .SramDw(${data_width}),
-    .Outstanding(2)
+    .Outstanding(2),
+    .CmdIntgCheck(1),
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(1)  // TODO: Needs to be updated for integrity passthrough
   ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
@@ -388,6 +392,7 @@ module top_${top["name"]} #(
     .addr_o      (${m["name"]}_addr),
     .wdata_o     (${m["name"]}_wdata),
     .wmask_o     (${m["name"]}_wmask),
+    .intg_error_o(${m["name"]}_intg_err),
     .rdata_i     (${m["name"]}_rdata[${data_width-1}:0]),
     .rvalid_i    (${m["name"]}_rvalid),
     .rerror_i    (${m["name"]}_rerror)
@@ -406,21 +411,23 @@ module top_${top["name"]} #(
     .${key}   (${value}),
     % endfor
 
-    .key_valid_i ( ${m["inter_signal_list"][1]["top_signame"]}_req.valid ),
-    .key_i       ( ${m["inter_signal_list"][1]["top_signame"]}_req.key   ),
-    .nonce_i     ( ${m["inter_signal_list"][1]["top_signame"]}_req.nonce ),
+    .key_valid_i (${m["inter_signal_list"][1]["top_signame"]}_req.valid),
+    .key_i       (${m["inter_signal_list"][1]["top_signame"]}_req.key),
+    .nonce_i     (${m["inter_signal_list"][1]["top_signame"]}_req.nonce),
 
-    .req_i    (${m["name"]}_req),
-    .gnt_o    (${m["name"]}_gnt),
-    .write_i  (${m["name"]}_we),
-    .addr_i   (${m["name"]}_addr),
-    .wdata_i  (${full_data_width}'(${m["name"]}_wdata)),
-    .wmask_i  (${full_data_width}'(${m["name"]}_wmask)),
-    .rdata_o  (${m["name"]}_rdata),
-    .rvalid_o (${m["name"]}_rvalid),
-    .rerror_o (${m["name"]}_rerror),
-    .raddr_o  ( ${m["inter_signal_list"][1]["top_signame"]}_rsp.raddr ),
-    .cfg_i    ( '0 )
+    .req_i       (${m["name"]}_req),
+    .intg_error_i(${m["name"]}_intg_err),
+    .gnt_o       (${m["name"]}_gnt),
+    .write_i     (${m["name"]}_we),
+    .addr_i      (${m["name"]}_addr),
+    .wdata_i     (${full_data_width}'(${m["name"]}_wdata)),
+    .wmask_i     (${full_data_width}'(${m["name"]}_wmask)),
+    .rdata_o     (${m["name"]}_rdata),
+    .rvalid_o    (${m["name"]}_rvalid),
+    .rerror_o    (${m["name"]}_rerror),
+    .raddr_o     (${m["inter_signal_list"][1]["top_signame"]}_rsp.raddr),
+    .intg_error_o(${m["inter_signal_list"][3]["top_signame"]}),
+    .cfg_i       ( '0 )
   );
 
   assign ${m["inter_signal_list"][1]["top_signame"]}_rsp.rerror = ${m["name"]}_rerror;
@@ -444,7 +451,10 @@ module top_${top["name"]} #(
     .SramAw(${addr_width}),
     .SramDw(${data_width}),
     .Outstanding(2),
-    .ErrOnWrite(1)
+    .ErrOnWrite(1),
+    .CmdIntgCheck(1),
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(1) // TODO: Needs to be updated for intgerity passthrough
   ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
@@ -462,6 +472,7 @@ module top_${top["name"]} #(
     .addr_o      (${m["name"]}_addr),
     .wdata_o     (),
     .wmask_o     (),
+    .intg_error_o(), // Connect to ROM checker and ROM scramble later
     .rdata_i     (${m["name"]}_rdata[${data_width-1}:0]),
     .rvalid_i    (${m["name"]}_rvalid),
     .rerror_i    (2'b00)
@@ -500,7 +511,10 @@ module top_${top["name"]} #(
     .SramDw(flash_ctrl_pkg::BusWidth),
     .Outstanding(2),
     .ByteAccess(0),
-    .ErrOnWrite(1)
+    .ErrOnWrite(1),
+    .CmdIntgCheck(1),
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(1)
   ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
@@ -518,6 +532,7 @@ module top_${top["name"]} #(
     .addr_o      (flash_host_addr),
     .wdata_o     (),
     .wmask_o     (),
+    .intg_error_o(),  // TODO: connect to flash controller and flash scramble later
     .rdata_i     (flash_host_rdata),
     .rvalid_i    (flash_host_req_done),
     .rerror_i    ({flash_host_rderr,1'b0})

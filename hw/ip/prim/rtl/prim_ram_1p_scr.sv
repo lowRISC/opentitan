@@ -75,10 +75,16 @@ module prim_ram_1p_scr #(
   input        [AddrWidth-1:0]      addr_i,
   input        [Width-1:0]          wdata_i,
   input        [Width-1:0]          wmask_i,  // Needs to be byte-aligned for parity
+  // The incoming transaction contains an integrity error and the module should alter
+  // its behavior appropriately.
+  // On integrity errors, the primitive reverses the bit-order of the nonce and surpresses
+  // any real transaction to the memory.
+  input                             intg_error_i,
   output logic [Width-1:0]          rdata_o,
   output logic                      rvalid_o, // Read response (rdata_o) is valid
   output logic [1:0]                rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
   output logic [31:0]               raddr_o,  // Read address for error reporting.
+  output logic                      intg_error_o,
 
   // config
   input [CfgWidth-1:0]              cfg_i
@@ -92,6 +98,24 @@ module prim_ram_1p_scr #(
   `ASSERT_INIT(DepthPow2Check_A, NumAddrScrRounds <= '0 || 2**$clog2(Depth) == Depth)
   `ASSERT_INIT(DiffWidthAligned_A, (DataBitsPerMask % DiffWidth) == 0)
   `ASSERT_INIT(DiffWidthWithParity_A, EnableParity && (DiffWidth == 8) || !EnableParity)
+
+  //////////////////////////////
+  // Integrity error latching //
+  //////////////////////////////
+
+  logic intg_err_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      intg_err_q <= '0;
+    end else if (intg_error_i) begin
+      intg_err_q <= 1'b1;
+    end
+  end
+
+  prim_buf u_intg_err_out (
+    .in_i(intg_error_i | intg_err_q),
+    .out_o(intg_error_o)
+  );
 
   /////////////////////////////////////////
   // Pending Write and Address Registers //
@@ -118,8 +142,14 @@ module prim_ram_1p_scr #(
   assign addr_collision_d = read_en & (write_en_q | write_pending_q) & (addr_i == waddr_q);
 
   // Macro requests and write strobe
+  // The macro operation is silenced if an integrity error is seen
   logic macro_req;
-  assign macro_req   = read_en | write_en_q | write_pending_q;
+  logic intg_err_macro_req;
+  prim_buf u_intg_err_macro_req (
+    .in_i(intg_error_i | intg_err_q),
+    .out_o(intg_err_macro_req)
+  );
+  assign macro_req   = ~intg_err_macro_req & (read_en | write_en_q | write_pending_q);
   // We are allowed to write a pending write transaction to the memory if there is no incoming read
   logic macro_write;
   assign macro_write = (write_en_q | write_pending_q) & ~read_en;
@@ -138,18 +168,34 @@ module prim_ram_1p_scr #(
   // This creates a bijective address mapping using a substitution / permutation network.
   logic [AddrWidth-1:0] addr_scr;
   if (NumAddrScrRounds > 0) begin : gen_addr_scr
+
+    // TODO, expand this into copies with another primitive
+    logic intg_err_addr_scr;
+    prim_buf u_intg_err_addr_scr (
+      .in_i(intg_error_i | intg_err_q),
+      .out_o(intg_err_addr_scr)
+    );
+
+    // If there is an intergirty error, the nonce used is reversed
+    logic [AddrWidth-1:0] addr_scr_nonce;
+    for (genvar j = 0; j < AddrWidth; j++) begin : gen_addr_scr_nonce
+      assign addr_scr_nonce[j] = intg_err_addr_scr ?
+                                 nonce_i[NonceWidth - 1 - j] :
+                                 nonce_i[NonceWidth - AddrWidth + j];
+    end
+
     prim_subst_perm #(
       .DataWidth ( AddrWidth        ),
       .NumRounds ( NumAddrScrRounds ),
       .Decrypt   ( 0                )
     ) u_prim_subst_perm (
-      .data_i ( addr_mux ),
+      .data_i ( addr_mux       ),
       // Since the counter mode concatenates {nonce_i[NonceWidth-1-AddrWidth:0], addr_i} to form
       // the IV, the upper AddrWidth bits of the nonce are not used and can be used for address
       // scrambling. In cases where N parallel PRINCE blocks are used due to a data
       // width > 64bit, N*AddrWidth nonce bits are left dangling.
-      .key_i  ( nonce_i[NonceWidth - 1 : NonceWidth - AddrWidth] ),
-      .data_o ( addr_scr )
+      .key_i  ( addr_scr_nonce ),
+      .data_o ( addr_scr       )
     );
   end else begin : gen_no_addr_scr
     assign addr_scr = addr_mux;
@@ -166,8 +212,26 @@ module prim_ram_1p_scr #(
   // This encrypts the IV consisting of the nonce and address using the key provided in order to
   // generate the keystream for the data. Note that we instantiate a register halfway within this
   // primitive to balance the delay between request and response side.
+  localparam int DataNonceWidth = 64 - AddrWidth;
   logic [NumParScr*64-1:0] keystream;
+  logic [NumParScr-1:0][DataNonceWidth-1:0] data_scr_nonce;
+
+  // TODO, expand this into copies with another primitive
+  logic intg_err_data_scr;
+  prim_buf u_intg_err_data_scr (
+    .in_i(intg_error_i | intg_err_q),
+    .out_o(intg_err_data_scr)
+  );
+
   for (genvar k = 0; k < NumParScr; k++) begin : gen_par_scr
+
+    for (genvar j = 0; j < DataNonceWidth; j++) begin : gen_data_nonce
+      assign data_scr_nonce[k][j] = intg_err_data_scr ?
+                                    nonce_i[(k + 1) * DataNonceWidth - j] :
+                                    nonce_i[k * DataNonceWidth + j];
+    end
+
+
     prim_prince #(
       .DataWidth      (64),
       .KeyWidth       (128),
@@ -180,7 +244,8 @@ module prim_ram_1p_scr #(
       .rst_ni,
       .valid_i ( gnt_o ),
       // The IV is composed of a nonce and the row address
-      .data_i  ( {nonce_i[k * (64 - AddrWidth) +: (64 - AddrWidth)], addr_i} ),
+      //.data_i  ( {nonce_i[k * (64 - AddrWidth) +: (64 - AddrWidth)], addr_i} ),
+      .data_i  ( {data_scr_nonce[k], addr_i} ),
       // All parallel scramblers use the same key
       .key_i,
       // Since we operate in counter mode, this can always be set to encryption mode

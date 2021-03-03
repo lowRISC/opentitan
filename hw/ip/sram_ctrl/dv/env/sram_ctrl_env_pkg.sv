@@ -23,8 +23,8 @@ package sram_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[] = { "fatal_parity_error" };
-  parameter uint   NUM_ALERTS = 1;
+  parameter string LIST_OF_ALERTS[] = { "fatal_intg_error", "fatal_parity_error"};
+  parameter uint   NUM_ALERTS = 2;
 
   // Number of bits in the otp_ctrl_pkg::sram_otp_key_rsp_t struct:
   // 1 bit for valid, SramKeyWidth bits for the key, SramNonceWidth bits for the nonce.

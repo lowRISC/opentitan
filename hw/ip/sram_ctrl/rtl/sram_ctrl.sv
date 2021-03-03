@@ -39,6 +39,8 @@ module sram_ctrl
   // Key request to OTP (running on clk_fixed)
   output otp_ctrl_pkg::sram_otp_key_req_t            sram_otp_key_o,
   input  otp_ctrl_pkg::sram_otp_key_rsp_t            sram_otp_key_i,
+  // Integrity error detection on corresponding sram
+  input                                              intg_error_i,
   // Interface with SRAM scrambling wrapper
   output sram_scr_req_t                              sram_scr_o,
   input  sram_scr_rsp_t                              sram_scr_i,
@@ -101,25 +103,37 @@ module sram_ctrl
   // Alert Sender //
   //////////////////
 
-  logic alert;
-  logic alert_test;
-  assign alert = parity_error_q;
-  assign alert_test = reg2hw.alert_test.q &
-                      reg2hw.alert_test.qe;
+  logic [NumAlerts-1:0] alert, alert_test;
 
-  prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn[0]),
-    .IsFatal(1)
-  ) u_prim_alert_sender (
-    .clk_i,
-    .rst_ni,
-    .alert_test_i  ( alert_test    ),
-    .alert_req_i   ( alert         ),
-    .alert_ack_o   (               ),
-    .alert_state_o (               ),
-    .alert_rx_i    ( alert_rx_i[0] ),
-    .alert_tx_o    ( alert_tx_o[0] )
-  );
+  assign alert = {
+                   parity_error_q,
+                   intg_error_i
+                 };
+
+
+  assign alert_test = {
+                        reg2hw.alert_test.fatal_parity_error.q &
+                        reg2hw.alert_test.fatal_parity_error.qe,
+                        reg2hw.alert_test.fatal_intg_error.q &
+                        reg2hw.alert_test.fatal_intg_error.qe
+                      };
+
+  for (genvar i=0; i < NumAlerts; i++) begin : gen_alerts
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(1)
+    ) u_prim_alert_sender_parity (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i  ( alert_test[i] ),
+      .alert_req_i   ( alert[i]      ),
+      .alert_ack_o   (               ),
+      .alert_state_o (               ),
+      .alert_rx_i    ( alert_rx_i[i] ),
+      .alert_tx_o    ( alert_tx_o[i] )
+    );
+  end
+
 
   //////////////////////////////////////////
   // Lifecycle Escalation Synchronization //
