@@ -17,6 +17,9 @@ module alert_handler_reg_top (
   output alert_handler_reg_pkg::alert_handler_reg2hw_t reg2hw, // Write
   input  alert_handler_reg_pkg::alert_handler_hw2reg_t hw2reg, // Read
 
+  // Integrity check errors
+  output logic intg_err_o,
+
   // Config
   input devmode_i // If 1, explicit error return for unmapped register access
 );
@@ -44,15 +47,26 @@ module alert_handler_reg_top (
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
   // incoming payload check
-  logic chk_err;
-  tlul_payload_chk u_chk (
+  logic intg_err;
+  tlul_cmd_intg_chk u_chk (
     .tl_i,
-    .err_o(chk_err)
+    // connect this to intg_err later when all DV / hosts are hooked up
+    .err_o()
   );
+  assign intg_err = 1'b0;
 
-  // outgoing payload generation
+  // Once integrity error is detected, it does not let go until reset.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      intg_err_o <= '0;
+    end else if (intg_err) begin
+      intg_err_o <= 1'b1;
+    end
+  end
+
+  // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
-  tlul_gen_payload_chk u_gen_chk (
+  tlul_rsp_intg_gen u_rsp_intg_gen (
     .tl_i(tl_o_pre),
     .tl_o
   );
@@ -80,7 +94,7 @@ module alert_handler_reg_top (
   );
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = (devmode_i & addrmiss) | wr_err | chk_err;
+  assign reg_error = (devmode_i & addrmiss) | wr_err | intg_err;
 
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}

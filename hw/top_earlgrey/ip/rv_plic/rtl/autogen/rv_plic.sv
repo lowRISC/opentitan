@@ -363,6 +363,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
     .reg2hw,
     .hw2reg,
 
+    .intg_err_o (),
     .devmode_i  (1'b1)
   );
 
