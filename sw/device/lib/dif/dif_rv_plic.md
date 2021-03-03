@@ -2,7 +2,7 @@
 title: "PLIC DIF Checklist"
 ---
 
-This checklist is for [Development Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [PLIC DIF]({{< relref "hw/ip/rv_plic/doc" >}}).
+This checklist is for [Development Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [PLIC DIF]({{< relref "hw/top_earlgrey/ip_autogen/rv_plic/doc" >}}).
 All checklist items refer to the content in the [Checklist]({{< relref "/doc/project/checklist.md" >}}).
 
 ## DIF Checklist

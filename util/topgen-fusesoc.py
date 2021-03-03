@@ -78,12 +78,11 @@ def main():
         'pinmux': '',
         'pwrmgr': '',
         'rstmgr': '',
-        'rv_plic': '',
     }
 
     # reg-only
     for ip in ['alert_handler', 'clkmgr', 'flash_ctrl', 'pinmux', 'pwrmgr',
-                'rstmgr', 'rv_plic']:
+               'rstmgr']:
         core_filepath = os.path.abspath(os.path.join(files_out, 'generated-%s.core' % ip))
         name = 'lowrisc:ip:%s_reggen' % ip,
         files = ['ip/%s/rtl/autogen/%s_reg_pkg.sv' % (ip, ip),
@@ -153,7 +152,6 @@ def main():
                     'ip/flash_ctrl/rtl/autogen/flash_ctrl_region_cfg.sv',
                     'ip/rstmgr/rtl/autogen/rstmgr_pkg.sv',
                     'ip/rstmgr/rtl/autogen/rstmgr.sv',
-                    'ip/rv_plic/rtl/autogen/rv_plic.sv',
                     # Top
                     'rtl/autogen/%s_rnd_cnst_pkg.sv' % topname,
                     'rtl/autogen/%s_pkg.sv' % topname,

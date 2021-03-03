@@ -13,6 +13,7 @@ filesets:
       # Manually instantiated
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
+      - lowrisc:opentitan:top_englishbreakfast_rv_plic
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:ram_1p_adv
@@ -24,7 +25,6 @@ filesets:
       - lowrisc:ip:uart:0.1
       - lowrisc:ip:alert_handler
       - lowrisc:ip:gpio
-      - lowrisc:ip:rv_plic_component
       - lowrisc:ip:pinmux_component
       - lowrisc:ip:rv_timer
       - lowrisc:ip:spi_device

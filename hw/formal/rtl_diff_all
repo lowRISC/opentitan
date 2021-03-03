@@ -49,7 +49,7 @@ for block in "${blocks[@]}" ; do
   elif [[ $block =~ "tlul" ]]; then
     block_full="../ip/tlul/rtl/${block}.sv"
   elif [[ $block == "rv_plic" ]]; then
-    block_full="../top_earlgrey/rtl/${block}.sv"
+    block_full="../top_earlgrey/ip_autogen/${block}/rtl/${block}.sv"
   else
     block_full="../ip/${block}/rtl/${block}.sv"
   fi

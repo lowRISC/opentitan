@@ -78,17 +78,10 @@
                rel_path: "hw/ip/pinmux/fpv/lint/{tool}"
              }
              {
-               name: rv_plic_fpv
-               fusesoc_core: lowrisc:fpv:rv_plic_fpv
+               name: top_earlgrey_rv_plic_fpv
+               fusesoc_core: lowrisc:opentitan:top_earlgrey_rv_plic_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-               rel_path: "hw/top_earlgrey/ip/rv_plic/fpv/lint/{tool}"
-             }
-             {
-               name: rv_plic_generic_fpv
-               fusesoc_core: lowrisc:fpv:rv_plic_generic_fpv
-               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-               rel_path: "hw/ip/prim/fpv/lint/{tool}"
-               rel_path: "hw/ip/rv_plic/fpv/lint/{tool}"
+               rel_path: "hw/top_earlgrey/ip_autogen/rv_plic/fpv/lint/{tool}"
              }
              {
                name: sha3pad_fpv
@@ -98,4 +91,3 @@
              }
             ]
 }
-
