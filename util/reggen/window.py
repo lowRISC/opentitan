@@ -2,13 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from .access import SWAccess
 from .lib import (check_keys, check_str, check_bool, check_int,
                   expand_parameter)
 
 REQUIRED_FIELDS = {
+    'name': ['s', "name of the window"],
     'desc': ['t', "description of the window"],
     'items': ['d', "size in fieldaccess width words of the window"],
     'swaccess': ['s', "software access permitted"],
@@ -17,7 +18,6 @@ REQUIRED_FIELDS = {
 # TODO potential for additional optional to give more type info?
 # eg sram-hw-port: "none", "sync", "async"
 OPTIONAL_FIELDS = {
-    'name': ['s', "Name of the window"],
     'byte-write': [
         's', "True if byte writes are supported. "
         "Defaults to false if not present."
@@ -42,7 +42,7 @@ OPTIONAL_FIELDS = {
 class Window:
     '''A class representing a memory window'''
     def __init__(self,
-                 name: Optional[str],
+                 name: str,
                  desc: str,
                  unusual: bool,
                  byte_write: bool,
@@ -78,13 +78,9 @@ class Window:
                         list(REQUIRED_FIELDS.keys()),
                         list(OPTIONAL_FIELDS.keys()))
 
-        r_name = rd.get('name')
         wind_desc = 'window at offset {:#x}'.format(offset)
-        if r_name is None:
-            name = None
-        else:
-            name = check_str(r_name, wind_desc)
-            wind_desc = '{!r} {}'.format(name, wind_desc)
+        name = check_str(rd['name'], wind_desc)
+        wind_desc = '{!r} {}'.format(name, wind_desc)
 
         desc = check_str(rd['desc'], 'desc field for ' + wind_desc)
 
