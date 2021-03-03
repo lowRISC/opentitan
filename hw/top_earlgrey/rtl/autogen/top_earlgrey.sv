@@ -771,8 +771,8 @@ module top_earlgrey #(
   logic        ram_main_gnt;
   logic        ram_main_we;
   logic [14:0] ram_main_addr;
-  logic [38:0] ram_main_wdata;
-  logic [38:0] ram_main_wmask;
+  logic [31:0] ram_main_wdata;
+  logic [31:0] ram_main_wmask;
   logic [38:0] ram_main_rdata;
   logic        ram_main_rvalid;
   logic [1:0]  ram_main_rerror;
@@ -831,8 +831,8 @@ module top_earlgrey #(
   logic        ram_ret_aon_gnt;
   logic        ram_ret_aon_we;
   logic [9:0] ram_ret_aon_addr;
-  logic [38:0] ram_ret_aon_wdata;
-  logic [38:0] ram_ret_aon_wmask;
+  logic [31:0] ram_ret_aon_wdata;
+  logic [31:0] ram_ret_aon_wmask;
   logic [38:0] ram_ret_aon_rdata;
   logic        ram_ret_aon_rvalid;
   logic [1:0]  ram_ret_aon_rerror;

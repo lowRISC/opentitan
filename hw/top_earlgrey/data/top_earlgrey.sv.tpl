@@ -363,8 +363,8 @@ module top_${top["name"]} #(
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_gnt;
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_we;
   logic ${lib.bitarray(addr_width, max_char)} ${m["name"]}_addr;
-  logic ${lib.bitarray(full_data_width, max_char)} ${m["name"]}_wdata;
-  logic ${lib.bitarray(full_data_width, max_char)} ${m["name"]}_wmask;
+  logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wdata;
+  logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wmask;
   logic ${lib.bitarray(full_data_width, max_char)} ${m["name"]}_rdata;
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_rvalid;
   logic ${lib.bitarray(2,          max_char)} ${m["name"]}_rerror;
