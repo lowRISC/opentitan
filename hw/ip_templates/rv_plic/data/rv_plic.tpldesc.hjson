@@ -1,0 +1,25 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "template_param_list": [
+    {
+      "name": "src",
+      "desc": "Number of interrupt sources",
+      "type": "int",
+      "default": 32
+    },
+    {
+      "name": "target",
+      "desc": "Number of interrupt targets",
+      "type": "int",
+      "default": 1
+    },
+    {
+      "name": "prio",
+      "desc": "Max value of interrupt priorities"
+      "type": "int"
+      "default": 7
+    },
+  ],
+}

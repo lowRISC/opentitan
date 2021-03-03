@@ -59,7 +59,9 @@ TOPGEN_TEMPLATE_PATH = Path(__file__).parent / 'topgen/templates'
 
 # List of IP templates which use ipgen to instantiate the template.
 # TODO: Remove once all IP templates use ipgen.
-IPS_USING_IPGEN = []
+IPS_USING_IPGEN = [
+    'rv_plic',
+]
 
 
 def ipgen_render(template_name: str, topname: str, params: Dict,
@@ -263,75 +265,19 @@ def generate_alert_handler(top, out_path):
 
 def generate_plic(top, out_path):
     topname = top["name"]
+    params = {}
+
     # Count number of interrupts
     # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
     # So, total number of interrupts are the number of entries in the list + 1
-    src = sum([x["width"] if "width" in x else 1
-               for x in top["interrupt"]]) + 1
+    params['src'] = sum([x["width"] if "width" in x else 1
+                        for x in top["interrupt"]]) + 1
 
     # Target and priority: Currently fixed
-    target = int(top["num_cores"], 0) if "num_cores" in top else 1
-    prio = 3
+    params['target'] = int(top["num_cores"], 0) if "num_cores" in top else 1
+    params['prio'] = 3
 
-    # Define target path
-    #   rtl: rv_plic.sv & rv_plic_reg_pkg.sv & rv_plic_reg_top.sv
-    #   data: rv_plic.hjson
-    rtl_path = out_path / 'ip/rv_plic/rtl/autogen'
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    doc_path = out_path / 'ip/rv_plic/data/autogen'
-    doc_path.mkdir(parents=True, exist_ok=True)
-    hjson_path = out_path / 'ip/rv_plic/data/autogen'
-    hjson_path.mkdir(parents=True, exist_ok=True)
-
-    # Generating IP top module script is not generalized yet.
-    # So, topgen reads template files from rv_plic directory directly.
-    # Next, if the ip top gen tool is placed in util/ we can import the library.
-    tpl_path = Path(__file__).resolve().parent / '../hw/ip/rv_plic/data'
-    hjson_tpl_path = tpl_path / 'rv_plic.hjson.tpl'
-    rtl_tpl_path = tpl_path / 'rv_plic.sv.tpl'
-
-    # Generate Register Package and RTLs
-    out = StringIO()
-    with hjson_tpl_path.open(mode='r', encoding='UTF-8') as fin:
-        hjson_tpl = Template(fin.read())
-        try:
-            out = hjson_tpl.render(src=src, target=target, prio=prio)
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-        log.info("RV_PLIC hjson: %s" % out)
-
-    if out == "":
-        log.error("Cannot generate interrupt controller config file")
-        return
-
-    hjson_gen_path = hjson_path / "rv_plic.hjson"
-    gencmd = (
-        "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --plic-only "
-        "-o hw/top_{topname}/\n\n".format(topname=topname))
-    with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
-        fout.write(genhdr + gencmd + out)
-
-    # Generate register RTLs (currently using shell execute)
-    # TODO: More secure way to generate RTL
-    gen_rtl.gen_rtl(IpBlock.from_text(out, [], str(hjson_gen_path)),
-                    str(rtl_path))
-
-    # Generate RV_PLIC Top Module
-    with rtl_tpl_path.open(mode='r', encoding='UTF-8') as fin:
-        rtl_tpl = Template(fin.read())
-        try:
-            out = rtl_tpl.render(src=src, target=target, prio=prio)
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-        log.info("RV_PLIC RTL: %s" % out)
-
-    if out == "":
-        log.error("Cannot generate interrupt controller RTL")
-        return
-
-    rtl_gen_path = rtl_path / "rv_plic.sv"
-    with rtl_gen_path.open(mode='w', encoding='UTF-8') as fout:
-        fout.write(genhdr + gencmd + out)
+    ipgen_render('rv_plic', topname, params, out_path)
 
 
 def generate_pinmux(top, out_path):

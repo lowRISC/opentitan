@@ -33,7 +33,6 @@ IPS ?= aes           \
        rstmgr        \
        rv_core_ibex  \
        rv_dm         \
-       rv_plic       \
        rv_timer      \
        sensor_ctrl   \
        spi_device    \

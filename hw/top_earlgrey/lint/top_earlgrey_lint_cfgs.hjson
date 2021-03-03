@@ -202,10 +202,10 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/rv_dm/lint/{tool}"
              },
-             {    name: rv_plic_example
-                  fusesoc_core: lowrisc:ip:rv_plic_example
+             {    name: top_earlgrey_rv_plic
+                  fusesoc_core: lowrisc:opentitan:top_earlgrey_rv_plic
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/rv_plic_example/lint/{tool}"
+                  rel_path: "hw/top_earlgrey/ip_autogen/rv_plic/lint/{tool}"
              },
              {    name: rv_timer
                   fusesoc_core: lowrisc:ip:rv_timer

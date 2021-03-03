@@ -199,7 +199,7 @@ Full details can be found in the [rv_dm specification]({{< relref "hw/ip/rv_dm/d
 
 Adjacent to the Ibex core is an interrupt controller that implements the RISC-V PLIC standard.
 This accepts a vector of interrupt sources within the device, and assigns leveling and priority to them before sending to the core for handling.
-See the details in the [rv_plic specification]({{< relref "hw/ip/rv_plic/doc" >}}).
+See the details in the [rv_plic specification]({{< relref "../ip_autogen/rv_plic/doc" >}}).
 
 #### Performance
 

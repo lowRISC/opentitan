@@ -14,7 +14,6 @@ filesets:
       - lowrisc:ip:pinmux_reggen
       - lowrisc:ip:pwrmgr_reggen
       - lowrisc:ip:rstmgr_reggen
-      - lowrisc:ip:rv_plic_reggen
 
 targets:
   default: &default

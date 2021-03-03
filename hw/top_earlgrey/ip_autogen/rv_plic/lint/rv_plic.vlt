@@ -1,0 +1,16 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// waiver file for rv_plic
+
+`verilator_config
+
+// Tell the Verilator scheduler to split up these variables into
+// separate pieces when it's figuring out process scheduling. This
+// avoids spurious UNOPTFLAT warnings caused by the fact that the
+// arrays feed into themselves (with different bits for different
+// positions in the tree).
+split_var -module "rv_plic_target" -var "is_tree"
+split_var -module "rv_plic_target" -var "id_tree"
+split_var -module "rv_plic_target" -var "max_tree"
