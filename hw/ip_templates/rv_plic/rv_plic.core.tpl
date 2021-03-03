@@ -2,9 +2,8 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:rv_plic_example:0.1"
+name: ${instance_vlnv("lowrisc:ip:rv_plic")}
 description: "RISC-V Platform Interrupt Controller (PLIC)"
-
 filesets:
   files_rtl:
     depend:
