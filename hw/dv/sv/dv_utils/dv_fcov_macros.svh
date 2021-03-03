@@ -57,6 +57,23 @@
 `endif
 `endif
 
+// Creates a SVA cover that can be used in a covergroup.
+//
+// This macro creates an unnamed SVA cover from the property (or an expression) `PROP_` and an event
+// with the name `EV_NAME_`. When the SVA cover is hit, the event is triggered. A coverpoint can
+// cover the `triggered` property of the event.
+`ifndef DV_FCOV_SVA
+`ifdef DV_FCOV_DISABLE
+  `define DV_FCOV_SVA(EV_NAME_, PROP_, CLK_ = clk_i, RST_ = rst_ni)
+`else
+  `define DV_FCOV_SVA(EV_NAME_, PROP_, CLK_ = clk_i, RST_ = rst_ni) \
+    event EV_NAME_; \
+    cover property (@(posedge CLK_) disable iff (RST_ == 0) (PROP_)) begin \
+      -> EV_NAME_; \
+    end
+`endif
+`endif
+
 // Coverage support is not always available but it's useful to include extra fcov signals for
 // linting purposes. They need to be marked as unused to avoid warnings.
 `ifndef DV_FCOV_MARK_UNUSED
