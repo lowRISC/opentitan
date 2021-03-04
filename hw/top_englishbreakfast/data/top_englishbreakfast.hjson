@@ -185,11 +185,11 @@
           package: "prim_esc_pkg",
         },
 
-        { struct:  "crashdump",
+        { struct:  "crash_dump",
           type:    "uni",
-          name:    "crashdump",
+          name:    "crash_dump",
           act:     "req",
-          package: "rv_core_ibex_pkg",
+          package: "ibex_pkg",
         },
       ],
     }
@@ -564,7 +564,7 @@
       'pwrmgr_aon.pwr_rst'      : ['rstmgr_aon.pwr'],
       'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],
       'pwrmgr_aon.pwr_lc'       : ['lc_ctrl.pwr_lc'],
-      'rv_core_ibex.crashdump'  : ['rstmgr_aon.cpu_dump'],
+      'rv_core_ibex.crash_dump'  : ['rstmgr_aon.cpu_dump'],
 
       // usbdev connection to pinmux
       'usbdev.usb_out_of_rst'   : ['pinmux_aon.usb_out_of_rst'],
