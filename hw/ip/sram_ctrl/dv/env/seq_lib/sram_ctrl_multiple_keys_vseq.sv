@@ -10,7 +10,7 @@ class sram_ctrl_multiple_keys_vseq extends sram_ctrl_smoke_vseq;
   // Use 2 as the low end since `num_trans == 1` is the default for the smoke test.
   constraint num_trans_c {
     num_trans dist {
-      [2 : 13] :/ 2,
+      [2  : 13] :/ 2,
       [14 : 25] :/ 3,
       [25 : 37] :/ 4,
       [38 : 50] :/ 1

@@ -29,7 +29,6 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task dut_shutdown();
     // check for pending sram_ctrl operations and wait for them to complete
-    // TODO
   endtask
 
   // setup basic sram_ctrl features
@@ -76,7 +75,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
     bit we;
     repeat (num_ops) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(we, we inside {0, 1};)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(we)
       `DV_CHECK_STD_RANDOMIZE_FATAL(addr)
 
       tl_access(.addr(addr),
