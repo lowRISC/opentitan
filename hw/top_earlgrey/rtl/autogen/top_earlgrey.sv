@@ -726,7 +726,7 @@ module top_earlgrey #(
   // ROM device
   logic        rom_req;
   logic [11:0] rom_addr;
-  logic [38:0] rom_rdata;
+  logic [39:0] rom_rdata;
   logic        rom_rvalid;
 
   tlul_adapter_sram #(
@@ -753,7 +753,7 @@ module top_earlgrey #(
   );
 
   prim_rom_adv #(
-    .Width(39),
+    .Width(40),
     .Depth(4096),
     .MemInitFile(BootRomInitFile)
   ) u_rom_rom (
