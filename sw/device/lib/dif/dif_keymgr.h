@@ -27,11 +27,11 @@ typedef enum dif_keymgr_toggle {
   /**
    * Enabled state.
    */
-  kDifKeymgrToggleEnable,
+  kDifKeymgrToggleEnabled,
   /**
    * Disabled state.
    */
-  kDifKeymgrToggleDisable,
+  kDifKeymgrToggleDisabled,
 } dif_keymgr_toggle_t;
 
 /**
@@ -118,7 +118,7 @@ typedef enum dif_keymgr_lockable_result {
   /**
    * The register that needs to be written to is locked.
    */
-  kDifKeyMgrLockableLocked,
+  kDifKeymgrLockableLocked,
 } dif_keymgr_lockable_result_t;
 
 /**
@@ -133,6 +133,10 @@ typedef enum dif_keymgr_irq {
    * manager operation was successful or not.
    */
   kDifKeymgrIrqDone,
+  /**
+   * \internal Last key manager interrupt.
+   */
+  kDifKeymgrIrqLast = kDifKeymgrIrqDone,
 } dif_keymgr_irq_t;
 
 /**
@@ -168,12 +172,17 @@ typedef enum dif_keymgr_alert {
    * version.
    */
   kDifKeymgrAlertSoftware,
+
+  /**
+   * \internal Last key manager alert.
+   */
+  kDifKeymgrAlertLast = kDifKeymgrAlertSoftware,
 } dif_keymgr_alert_t;
 
 /**
  * Key manager states.
  *
- * Key manager has six states that control its operation. During secure boot,
+ * Key manager has seven states that control its operation. During secure boot,
  * key manager transitions between these states sequentially and these
  * transitions are irreversible until a power cycle.
  *
@@ -238,6 +247,12 @@ typedef enum dif_keymgr_state {
    * this state, the secret value of key manager is a random value.
    */
   kDifKeymgrStateDisabled,
+  /**
+   * Invalid state.
+   *
+   * Keymgr is in an invalid state and must be reset.
+   */
+  kDifKeymgrStateInvalid,
 } dif_keymgr_state_t;
 
 /**
@@ -283,7 +298,7 @@ dif_keymgr_result_t dif_keymgr_init(dif_keymgr_params_t params,
  */
 DIF_WARN_UNUSED_RESULT
 dif_keymgr_result_t dif_keymgr_configure(const dif_keymgr_t *keymgr,
-                                         dif_keymgr_config_t *config);
+                                         dif_keymgr_config_t config);
 
 /**
  * Parameters for a key manager state.
@@ -360,25 +375,25 @@ dif_keymgr_lockable_result_t dif_keymgr_disable(const dif_keymgr_t *keymgr);
  */
 typedef enum dif_keymgr_status_code {
   /**
+   * Key manager is idle.
+   */
+  kDifKeymgrStatusCodeIdle = 1 << 0,
+  /**
    * Software invoked an invalid operation.
    */
-  kDifKeymgrStatusCodeInvalidOperation = 1 << 0,
+  kDifKeymgrStatusCodeInvalidOperation = 1 << 1,
   /**
    * Key manager issued an invalid command to KMAC interface.
    */
-  kDifKeymgrStatusInvalidKmacCommand = 1 << 1,
+  kDifKeymgrStatusCodeInvalidKmacCommand = 1 << 2,
   /**
    * Key manager issued invalid data to KMAC interface.
    */
-  kDifKeymgrStatusInvalidKmacInput = 1 << 2,
+  kDifKeymgrStatusCodeInvalidKmacInput = 1 << 3,
   /**
    * KMAC returned an invalid output.
    */
-  kDifKeymgrStatusInvalidKmacOutput = 1 << 3,
-  /**
-   * Key manager is idle.
-   */
-  kDifKeymgrStatusCodeIdle = 1 << 4,
+  kDifKeymgrStatusCodeInvalidKmacOutput = 1 << 4,
 } dif_keymgr_status_code_t;
 
 /**
@@ -399,6 +414,9 @@ typedef uint8_t dif_keymgr_status_codes_t;
 
 /**
  * Gets the operational status of key manager.
+ *
+ * This function also clears OP_STATUS and ERR_CODE registers after reading
+ * them.
  *
  * @param keymgr A key manager handle.
  * @param[out] status_codes Out-param for key manager status codes.
@@ -467,6 +485,10 @@ typedef enum dif_keymgr_versioned_key_dest {
    * Sideload the generated versioned key to KMAC device.
    */
   kDifKeymgrVersionedKeyDestKmac,
+  /**
+   * \internal Last key destination.
+   */
+  kDifKeymgrVersionedKeyDestLast = kDifKeymgrVersionedKeyDestKmac,
 } dif_keymgr_versioned_key_dest_t;
 
 /**
@@ -508,17 +530,32 @@ dif_keymgr_lockable_result_t dif_keymgr_generate_versioned_key(
     const dif_keymgr_t *keymgr, dif_keymgr_versioned_key_params_t params);
 
 /**
- * Clears sideload keys.
+ * Starts or stops clearing of sideload keys.
  *
  * When a key is generated to be sideloaded to a hardware peripheral, key
- * manager stores it in a set of storage registers. This functions clears all
- * sideload keys using random values from the entropy source.
+ * manager stores it in a set of storage registers. Calling this function with
+ * `state` set to `kDifKeymgrToggleEnabled` causes key manager to clear sideload
+ * keys continously using random values from the entropty source. Callers must
+ * disable clearing of sideload keys to resume normal sideload operation.
  *
  * @param keymgr A key manager handle.
+ * @param state The new toggle state for sideload clear.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_keymgr_result_t dif_keymgr_clear_sideload_keys(const dif_keymgr_t *keymgr);
+dif_keymgr_result_t dif_keymgr_sideload_clear_set_enabled(
+    const dif_keymgr_t *keymgr, dif_keymgr_toggle_t state);
+
+/**
+ * Checks whether clearing of sideload keys is enabled or not.
+ *
+ * @param keymgr A key manager handle.
+ * @param[out] Out-param for the current toggle state of sideload clear.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_keymgr_result_t dif_keymgr_sideload_clear_get_enabled(
+    const dif_keymgr_t *keymgr, dif_keymgr_toggle_t *state);
 
 /**
  * Output of a key manager operation.
