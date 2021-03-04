@@ -130,6 +130,22 @@ test('dif_pwrmgr_unittest', executable(
   cpp_args: ['-DMOCK_MMIO'],
 ))
 
+test('dif_keymgr_unittest', executable(
+  'dif_keymgr_unittest',
+  sources: [
+    hw_ip_keymgr_reg_h,
+    meson.source_root() / 'sw/device/lib/dif/dif_keymgr.c',
+    'dif_keymgr_unittest.cc',
+  ],
+  dependencies: [
+    sw_vendor_gtest,
+    sw_lib_testing_mock_mmio,
+  ],
+  native: true,
+  c_args: ['-DMOCK_MMIO'],
+  cpp_args: ['-DMOCK_MMIO'],
+))
+
 test('dif_rstmgr_unittest', executable(
   'dif_rstmgr_unittest',
   sources: [
