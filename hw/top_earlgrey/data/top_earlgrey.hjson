@@ -189,11 +189,11 @@
           package: "prim_esc_pkg",
         },
 
-        { struct:  "crashdump",
+        { struct:  "crash_dump",
           type:    "uni",
-          name:    "crashdump",
+          name:    "crash_dump",
           act:     "req",
-          package: "rv_core_ibex_pkg",
+          package: "ibex_pkg",
         },
       ],
     }
@@ -754,7 +754,7 @@
       'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en','aon_timer_aon.sleep_mode'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
-      'rv_core_ibex.crashdump'  : ['rstmgr_aon.cpu_dump'],
+      'rv_core_ibex.crash_dump'  : ['rstmgr_aon.cpu_dump'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
 
       // usbdev connection to pinmux

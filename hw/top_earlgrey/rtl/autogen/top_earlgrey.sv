@@ -437,7 +437,7 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_lc_rsp_t       pwrmgr_aon_pwr_lc_rsp;
   logic       pwrmgr_aon_strap;
   logic       pwrmgr_aon_low_power;
-  rv_core_ibex_pkg::crashdump_t       rv_core_ibex_crashdump;
+  ibex_pkg::crash_dump_t       rv_core_ibex_crash_dump;
   logic       usbdev_usb_out_of_rst;
   logic       usbdev_usb_aon_wake_en;
   logic       usbdev_usb_aon_wake_ack;
@@ -671,7 +671,7 @@ module top_earlgrey #(
     // debug interface
     .debug_req_i          (debug_req),
     // crash dump interface
-    .crash_dump_o         (rv_core_ibex_crashdump),
+    .crash_dump_o         (rv_core_ibex_crash_dump),
     // CPU control signals
     // TODO #5356
     .fetch_enable_i       (lc_ctrl_pkg::On),
@@ -1560,7 +1560,7 @@ module top_earlgrey #(
       .resets_o(rstmgr_aon_resets),
       .cpu_i(rstmgr_aon_cpu),
       .alert_dump_i(alert_handler_crashdump),
-      .cpu_dump_i(rv_core_ibex_crashdump),
+      .cpu_dump_i(rv_core_ibex_crash_dump),
       .resets_ast_o(rsts_ast_o),
       .tl_i(rstmgr_aon_tl_req),
       .tl_o(rstmgr_aon_tl_rsp),

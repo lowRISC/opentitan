@@ -12,7 +12,7 @@ filesets:
       - lowrisc:ip:rstmgr_reg
       - lowrisc:ip:alert_handler_reg
       - lowrisc:ip:alert_handler_component
-      - lowrisc:ip:rv_core_ibex_pkg
+      - lowrisc:ibex:ibex_pkg
       - "fileset_top    ? (lowrisc:systems:rstmgr_pkg)"
       - "fileset_topgen ? (lowrisc:systems:topgen)"
     files:

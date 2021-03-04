@@ -291,7 +291,7 @@ module top_${top["name"]} #(
     // debug interface
     .debug_req_i          (debug_req),
     // crash dump interface
-    .crash_dump_o         (rv_core_ibex_crashdump),
+    .crash_dump_o         (rv_core_ibex_crash_dump),
     // CPU control signals
     // TODO #5356
     .fetch_enable_i       (lc_ctrl_pkg::On),

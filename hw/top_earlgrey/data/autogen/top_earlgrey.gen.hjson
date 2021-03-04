@@ -444,17 +444,17 @@
           index: 0
         }
         {
-          struct: crashdump
+          struct: crash_dump
           type: uni
-          name: crashdump
+          name: crash_dump
           act: req
-          package: rv_core_ibex_pkg
+          package: ibex_pkg
           inst_name: rv_core_ibex
           width: 1
           default: ""
           end_idx: -1
           top_type: broadcast
-          top_signame: rv_core_ibex_crashdump
+          top_signame: rv_core_ibex_crash_dump
           index: -1
         }
       ]
@@ -4178,15 +4178,15 @@
           index: -1
         }
         {
-          struct: crashdump
+          struct: crash_dump
           type: uni
           name: cpu_dump
           act: rcv
-          package: rv_core_ibex_pkg
+          package: ibex_pkg
           inst_name: rstmgr_aon
           width: 1
           default: ""
-          top_signame: rv_core_ibex_crashdump
+          top_signame: rv_core_ibex_crash_dump
           index: -1
         }
         {
@@ -7798,7 +7798,7 @@
         pinmux_aon.sleep_en
         aon_timer_aon.sleep_mode
       ]
-      rv_core_ibex.crashdump:
+      rv_core_ibex.crash_dump:
       [
         rstmgr_aon.cpu_dump
       ]
@@ -13687,15 +13687,15 @@
         index: -1
       }
       {
-        struct: crashdump
+        struct: crash_dump
         type: uni
         name: cpu_dump
         act: rcv
-        package: rv_core_ibex_pkg
+        package: ibex_pkg
         inst_name: rstmgr_aon
         width: 1
         default: ""
-        top_signame: rv_core_ibex_crashdump
+        top_signame: rv_core_ibex_crash_dump
         index: -1
       }
       {
@@ -15810,17 +15810,17 @@
         index: 0
       }
       {
-        struct: crashdump
+        struct: crash_dump
         type: uni
-        name: crashdump
+        name: crash_dump
         act: req
-        package: rv_core_ibex_pkg
+        package: ibex_pkg
         inst_name: rv_core_ibex
         width: 1
         default: ""
         end_idx: -1
         top_type: broadcast
-        top_signame: rv_core_ibex_crashdump
+        top_signame: rv_core_ibex_crash_dump
         index: -1
       }
       {
@@ -16547,9 +16547,9 @@
         default: ""
       }
       {
-        package: rv_core_ibex_pkg
-        struct: crashdump
-        signame: rv_core_ibex_crashdump
+        package: ibex_pkg
+        struct: crash_dump
+        signame: rv_core_ibex_crash_dump
         width: 1
         type: uni
         end_idx: -1

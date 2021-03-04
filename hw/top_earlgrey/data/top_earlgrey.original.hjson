@@ -1,0 +1,874 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+
+// This file has been automatically created from top_earlgrey.hjson.
+// This is a reformatted copy of top_earlgrey.hjson
+{
+  name: earlgrey
+  type: top
+  rnd_cnst_seed: 4881560218908238235
+  datawidth: "32"
+  clocks:
+  {
+    hier_paths:
+    {
+      top: clkmgr_clocks.
+      ext: ""
+    }
+    srcs:
+    [
+      {
+        name: main
+        aon: no
+        freq: "100000000"
+      }
+      {
+        name: io
+        aon: no
+        freq: "96000000"
+      }
+      {
+        name: usb
+        aon: no
+        freq: "48000000"
+      }
+      {
+        name: aon
+        aon: yes
+        freq: "200000"
+      }
+    ]
+    derived_srcs:
+    [
+      {
+        name: io_div2
+        aon: no
+        div: 2
+        src: io
+        freq: "48000000"
+      }
+      {
+        name: io_div4
+        aon: no
+        div: 4
+        src: io
+        freq: "24000000"
+      }
+    ]
+    groups:
+    [
+      {
+        name: powerup
+        src: top
+        sw_cg: no
+      }
+      {
+        name: trans
+        src: top
+        sw_cg: hint
+        unique: yes
+      }
+      {
+        name: infra
+        src: top
+        sw_cg: no
+      }
+      {
+        name: secure
+        src: top
+        sw_cg: no
+      }
+      {
+        name: peri
+        src: top
+        sw_cg: yes
+        unique: no
+      }
+      {
+        name: timers
+        src: top
+        sw_cg: no
+      }
+      {
+        name: proc
+        src: no
+        sw_cg: no
+        unique: no
+        clocks:
+        {
+          clk_proc_main: main
+        }
+      }
+    ]
+  }
+  resets:
+  {
+    hier_paths:
+    {
+      top: rstmgr_resets.
+      ext: ""
+    }
+    nodes:
+    [
+      {
+        name: rst_ni
+        gen: false
+        type: ext
+      }
+      {
+        name: por_aon
+        gen: false
+        type: top
+        parent: rst_ni
+        clk: aon
+      }
+      {
+        name: lc_src
+        gen: false
+        type: int
+        parent: por
+        clk: io_div2
+      }
+      {
+        name: sys_src
+        gen: false
+        type: int
+        parent: por
+        clk: io_div2
+      }
+      {
+        name: por
+        gen: true
+        type: top
+        parent: por_aon
+        clk: main
+      }
+      {
+        name: por_io
+        gen: true
+        type: top
+        parent: por_aon
+        clk: io
+      }
+      {
+        name: por_io_div2
+        gen: true
+        type: top
+        parent: por_aon
+        clk: io_div2
+      }
+      {
+        name: por_io_div4
+        gen: true
+        type: top
+        parent: por_aon
+        clk: io_div4
+      }
+      {
+        name: por_usb
+        gen: true
+        type: top
+        parent: por_aon
+        clk: usb
+      }
+      {
+        name: lc
+        gen: true
+        type: top
+        domain: "0"
+        parent: lc_src
+        clk: main
+      }
+      {
+        name: lc_io
+        gen: true
+        type: top
+        domain: "0"
+        parent: lc_src
+        clk: io_div4
+      }
+      {
+        name: sys
+        gen: true
+        type: top
+        domain: "0"
+        parent: sys_src
+        clk: main
+      }
+      {
+        name: sys_io
+        gen: true
+        type: top
+        domain: "0"
+        parent: sys_src
+        clk: io_div2
+      }
+      {
+        name: sys_io_div4
+        gen: true
+        type: top
+        domain: "0"
+        parent: sys_src
+        clk: io_div4
+      }
+      {
+        name: sys_aon
+        gen: true
+        type: top
+        domain: "0"
+        parent: sys_src
+        clk: aon
+      }
+      {
+        name: spi_device
+        gen: true
+        type: top
+        domain: "0"
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: usb
+        gen: true
+        type: top
+        domain: "0"
+        parent: sys_src
+        clk: usb
+        sw: 1
+      }
+    ]
+  }
+  num_cores: "1"
+  module:
+  [
+    {
+      name: uart
+      type: uart
+      clock_srcs:
+      {
+        clk_i: io_div4
+      }
+      reset_connections:
+      {
+        rst_ni: sys_io_div4
+      }
+      base_addr: 0x40000000
+    }
+    {
+      name: gpio
+      type: gpio
+      clock_srcs:
+      {
+        clk_i: io_div4
+      }
+      clock_group: peri
+      reset_connections:
+      {
+        rst_ni: sys_io_div4
+      }
+      base_addr: 0x40010000
+    }
+    {
+      name: spi_device
+      type: spi_device
+      clock_srcs:
+      {
+        clk_i: io_div4
+      }
+      clock_group: peri
+      reset_connections:
+      {
+        rst_ni: spi_device
+      }
+      base_addr: 0x40020000
+    }
+    {
+      name: flash_ctrl
+      type: flash_ctrl
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni: lc
+      }
+      base_addr: 0x40030000
+      generated: "true"
+    }
+    {
+      name: rv_timer
+      type: rv_timer
+      clock_srcs:
+      {
+        clk_i: io_div4
+      }
+      clock_group: timers
+      reset_connections:
+      {
+        rst_ni: sys_io_div4
+      }
+      base_addr: 0x40080000
+    }
+    {
+      name: aes
+      type: aes
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: trans
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x40110000
+    }
+    {
+      name: hmac
+      type: hmac
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: trans
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x40120000
+    }
+    {
+      name: rv_plic
+      type: rv_plic
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x40090000
+      generated: "true"
+    }
+    {
+      name: pinmux
+      type: pinmux
+      clock: main
+      clock_srcs:
+      {
+        clk_i: main
+        clk_aon_i: aon
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: sys
+        rst_aon_ni: sys_aon
+      }
+      base_addr: 0x40070000
+      generated: "true"
+    }
+    {
+      name: padctrl
+      type: padctrl
+      clock: main
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x40160000
+      generated: "true"
+    }
+    {
+      name: alert_handler
+      type: alert_handler
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x40130000
+      generated: "true"
+      localparam:
+      {
+        EscCntDw: 32
+        AccuCntDw: 16
+        LfsrSeed: 0x7FFFFFFF
+      }
+    }
+    {
+      name: pwrmgr
+      type: pwrmgr
+      clock_srcs:
+      {
+        clk_i: io_div4
+        clk_slow_i: aon
+      }
+      clock_group: powerup
+      reset_connections:
+      {
+        rst_ni: por
+        rst_slow_ni: por_aon
+      }
+      base_addr: 0x400A0000
+      generated: "true"
+    }
+    {
+      name: rstmgr
+      type: rstmgr
+      clock_srcs:
+      {
+        clk_i: io_div4
+        clk_aon_i: aon
+        clk_main_i: main
+        clk_io_i: io
+        clk_usb_i: usb
+        clk_io_div2_i: io_div2
+        clk_io_div4_i: io_div4
+      }
+      clock_group: powerup
+      reset_connections:
+      {
+        rst_ni: rst_ni
+      }
+      base_addr: 0x400B0000
+      generated: "true"
+    }
+    {
+      name: clkmgr
+      type: clkmgr
+      clock_srcs:
+      {
+        clk_i: io_div4
+      }
+      clock_group: powerup
+      reset_connections:
+      {
+        rst_ni: por_io
+        rst_main_ni: por
+        rst_io_ni: por_io
+        rst_usb_ni: por_usb
+        rst_io_div2_ni: por_io_div2
+        rst_io_div4_ni: por_io_div4
+      }
+      base_addr: 0x400C0000
+      generated: "true"
+    }
+    {
+      name: nmi_gen
+      type: nmi_gen
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x40140000
+    }
+    {
+      name: usbdev
+      type: usbdev
+      clock_srcs:
+      {
+        clk_i: io_div4
+        clk_usb_48mhz_i: usb
+      }
+      clock_group: peri
+      clock_reset_export:
+      [
+        ast
+      ]
+      reset_connections:
+      {
+        rst_ni: sys_io_div4
+        rst_usb_48mhz_ni: usb
+      }
+      base_addr: 0x40150000
+    }
+    {
+      name: sensor_ctrl
+      type: sensor_ctrl
+      clock_srcs:
+      {
+        clk_i: io_div4
+      }
+      clock_group: secure
+      clock_reset_export:
+      [
+        ast
+      ]
+      reset_connections:
+      {
+        rst_ni: sys_io_div4
+      }
+      base_addr: 0x40170000
+      top_only: "true"
+    }
+    {
+      name: keymgr
+      type: keymgr
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x401a0000
+    }
+    {
+      name: otp_ctrl
+      type: otp_ctrl
+      clock_srcs:
+      {
+        clk_i: io_div4
+      }
+      clock_group: timers
+      reset_connections:
+      {
+        rst_ni: lc_io
+      }
+      base_addr: 0x401b0000
+    }
+    {
+      name: otbn
+      type: otbn
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: trans
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      base_addr: 0x50000000
+    }
+  ]
+  memory:
+  [
+    {
+      name: rom
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      type: rom
+      base_addr: 0x00008000
+      swaccess: ro
+      size: 0x4000
+      inter_signal_list:
+      [
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+        }
+      ]
+    }
+    {
+      name: ram_main
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni: sys
+      }
+      type: ram_1p
+      base_addr: 0x10000000
+      size: 0x10000
+      inter_signal_list:
+      [
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+        }
+      ]
+    }
+    {
+      name: ram_ret
+      clock_srcs:
+      {
+        clk_i: io_div4
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni: sys_io_div4
+      }
+      type: ram_1p
+      base_addr: 0x18000000
+      size: 0x1000
+      inter_signal_list:
+      [
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+        }
+      ]
+    }
+    {
+      name: eflash
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni: lc
+      }
+      type: eflash
+      base_addr: 0x20000000
+      banks: 2
+      pages_per_bank: 256
+      swaccess: ro
+      inter_signal_list:
+      [
+        {
+          struct: flash
+          type: req_rsp
+          name: flash_ctrl
+          act: rsp
+        }
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+        }
+      ]
+    }
+  ]
+  inter_module:
+  {
+    connect:
+    {
+      flash_ctrl.flash:
+      [
+        eflash.flash_ctrl
+      ]
+      pwrmgr.pwr_flash:
+      [
+        flash_ctrl.pwrmgr
+      ]
+      pwrmgr.pwr_rst:
+      [
+        rstmgr.pwr
+      ]
+      pwrmgr.pwr_clk:
+      [
+        clkmgr.pwr
+      ]
+      pwrmgr.pwr_otp:
+      [
+        otp_ctrl.pwr_otp
+      ]
+      flash_ctrl.keymgr:
+      [
+        keymgr.flash
+      ]
+      alert_handler.crashdump:
+      [
+        rstmgr.alert_dump
+      ]
+      clkmgr.idle: []
+    }
+    top:
+    [
+      rstmgr.resets
+      rstmgr.cpu
+      pwrmgr.pwr_cpu
+      clkmgr.clocks
+      main.tl_corei
+      main.tl_cored
+      main.tl_dm_sba
+      main.tl_debug_mem
+    ]
+    external:
+    {
+      clkmgr.clk_main: clk_main
+      clkmgr.clk_io: clk_io
+      clkmgr.clk_usb: clk_usb
+      clkmgr.clk_aon: clk_aon
+      rstmgr.ast: ""
+      pwrmgr.pwr_ast: ""
+      sensor_ctrl.ast_alert: ""
+      sensor_ctrl.ast_status: ""
+      usbdev.usb_ref_val: ""
+      usbdev.usb_ref_pulse: ""
+      peri.tl_ast_wrapper: ast_tl
+      otp_ctrl.otp_ast_pwr_seq: ""
+      otp_ctrl.otp_ast_pwr_seq_h: ""
+    }
+  }
+  debug_mem_base_addr: 0x1A110000
+  xbar:
+  [
+    {
+      name: main
+      clock_srcs:
+      {
+        clk_main_i: main
+        clk_fixed_i: io_div4
+      }
+      clock_group: infra
+      reset: sys
+      reset_connections:
+      {
+        rst_main_ni: sys
+        rst_fixed_ni: sys_io_div4
+      }
+    }
+    {
+      name: peri
+      clock_srcs:
+      {
+        clk_peri_i: io_div4
+      }
+      clock_group: infra
+      reset: sys_io_div4
+      reset_connections:
+      {
+        rst_peri_ni: sys_io_div4
+      }
+    }
+  ]
+  interrupt_module:
+  [
+    gpio
+    uart
+    spi_device
+    flash_ctrl
+    hmac
+    alert_handler
+    nmi_gen
+    usbdev
+    pwrmgr
+    otbn
+    keymgr
+  ]
+  interrupt: []
+  alert_module:
+  [
+    aes
+    otbn
+    sensor_ctrl
+    keymgr
+    otp_ctrl
+  ]
+  alert: []
+  pinmux:
+  {
+    num_mio: 32
+    dio_modules:
+    [
+      {
+        name: spi_device
+        pad:
+        [
+          ChB[0..3]
+        ]
+      }
+      {
+        name: uart
+        pad:
+        [
+          ChA[0..1]
+        ]
+      }
+      {
+        name: usbdev
+        pad:
+        [
+          ChC[0..8]
+        ]
+      }
+    ]
+    mio_modules:
+    [
+      uart
+      gpio
+    ]
+    nc_modules:
+    [
+      rv_timer
+      hmac
+    ]
+    num_wkup_detect: 8
+    wkup_cnt_width: 8
+  }
+  padctrl:
+  {
+    attr_default:
+    [
+      STRONG
+    ]
+    pads:
+    [
+      {
+        name: ChA
+        type: IO_33V
+        count: 32
+      }
+      {
+        name: ChB
+        type: IO_33V
+        count: 4
+        attr:
+        [
+          KEEP
+          WEAK
+        ]
+      }
+      {
+        name: ChC
+        type: IO_33V
+        count: 4
+        attr:
+        [
+          KEEP
+          STRONG
+        ]
+      }
+    ]
+  }
+}
