@@ -46,6 +46,9 @@
   uvm_test: aes_base_test
   uvm_test_seq: aes_wake_up_vseq
 
+  // AES specific exclusions
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/aes/dv/cov/aes_cov.vRefine"]
+
   // Update all builds to add options specific to AES C model compilation.
   en_build_modes: ["{tool}_aes_model_build_opts"]
 
