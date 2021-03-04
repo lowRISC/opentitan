@@ -27,7 +27,7 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
   //       If this is too much, modify the constraint.
   constraint num_ops_c {
     num_ops dist {
-      [1 : 999]     :/ 1,
+      [1    : 999 ] :/ 1,
       [1000 : 4999] :/ 3,
       [5000 : 9999] :/ 5,
       10_000        :/ 1
