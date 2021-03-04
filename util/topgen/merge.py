@@ -8,8 +8,10 @@ from collections import OrderedDict
 from copy import deepcopy
 from functools import partial
 from math import ceil, log2
+from typing import Dict, List
 
 from topgen import c, lib
+from reggen.ip_block import IpBlock
 from reggen.params import LocalParam, Parameter, RandParameter
 
 
@@ -35,12 +37,46 @@ def _get_random_perm_hex_literal(numel):
     return literal_str
 
 
-def amend_ip(top, ip):
-    """ Amend additional information into top module
+def elaborate_instances(top, blocks: List[IpBlock]):
+    '''Add additional fields to the elements of top['module']
+
+    These elements represent instantiations of IP blocks. This function adds
+    extra fields to them to carry across information from the IpBlock objects
+    that represent the blocks being instantiated. See elaborate_instance for
+    more details of what gets added.
+
+    '''
+    name_to_block = {}  # type: Dict[str, IpBlock]
+    for block in blocks:
+        lblock = block.name.lower()
+        assert lblock not in name_to_block
+        name_to_block[lblock] = block
+
+    # Initialize RNG for compile-time netlist constants.
+    random.seed(int(top['rnd_cnst_seed']))
+
+    # Find the alert handler and extract the name of its clock
+    alert_clock = None
+    for instance in top['module']:
+        if instance['type'].lower() == 'alert_handler':
+            alert_clock = instance['clock_srcs']['clk_i']
+            break
+    assert alert_clock is not None
+
+    for instance in top['module']:
+        block = name_to_block[instance['type']]
+        elaborate_instance(instance, block, alert_clock)
+
+
+def elaborate_instance(instance, block: IpBlock, alert_clock: str):
+    """Add additional fields to a single instance of a module.
+
+    instance is the instance to be filled in. block is the block that it's
+    instantiating. alert_clock is the name of the clock signal used for the
+    alert handler.
 
     Amended fields:
         - size: register space
-        - clock: converted into ip_clock
         - bus_device
         - bus_host: none if doesn't exist
         - available_input_list: empty list if doesn't exist
@@ -50,152 +86,138 @@ def amend_ip(top, ip):
         - interrupt_list: empty list if doesn't exist
         - alert_list: empty list if doesn't exist
         - wakeup_list: empty list if doesn't exist
+
     """
-    ip_list_in_top = [x["type"].lower() for x in top["module"]]
-    # TODO make set
-    ipname = ip.name.lower()
-    if ipname not in ip_list_in_top:
-        log.info("TOP doens't use the IP %s. Skip" % ip.name)
-        return
+    mod_name = instance["name"]
 
-    # Initialize RNG for compile-time netlist constants.
-    random.seed(int(top['rnd_cnst_seed']))
+    # Fill in the size field if it's missing. If it existed already, check that
+    # there's enough space for the block.
+    min_size = 1 << block.regs.get_addr_width()
+    dflt_size = max(min_size, 0x1000)
+    decl_size = instance.get('size')
+    if decl_size is None:
+        instance['size'] = '{:#x}'.format(dflt_size)
+    else:
+        if int(decl_size, 0) < min_size:
+            log.error("Instance {} of block {} has a size field of {}, but"
+                      "the block needs at least {} bytes."
+                      .format(mod_name, block.name, decl_size, min_size))
 
-    # Needed to detect async alert transitions below
-    ah_idx = ip_list_in_top.index("alert_handler")
+    instance["bus_device"] = block.bus_device or 'none'
+    instance["bus_host"] = block.bus_host or 'none'
 
-    # Find multiple IPs
-    # Find index of the IP
-    ip_modules = list(
-        filter(lambda module: module["type"] == ipname, top["module"]))
+    inouts, inputs, outputs = block.xputs
+    instance['available_inout_list'] = [
+        {'name': signal.name,
+         'width': signal.bits.width(),
+         'type': 'inout'}
+        for signal in inouts
+    ]
+    instance['available_input_list'] = [
+        {'name': signal.name,
+         'width': signal.bits.width(),
+         'type': 'input'}
+        for signal in inputs
+    ]
+    instance['available_output_list'] = [
+        {'name': signal.name,
+         'width': signal.bits.width(),
+         'type': 'output'}
+        for signal in outputs
+    ]
 
-    ip_size = 1 << ip.regs.get_addr_width()
+    # param_list
+    new_params = []
+    for param in block.params.by_name.values():
+        if isinstance(param, LocalParam):
+            # Remove local parameters.
+            continue
 
-    for ip_module in ip_modules:
-        mod_name = ip_module["name"]
+        new_param = param.as_dict()
 
-        # Size
-        if "size" not in ip_module:
-            ip_module["size"] = "0x%x" % max(ip_size, 0x1000)
-        elif int(ip_module["size"], 0) < ip_size:
-            log.error(
-                "given 'size' field in IP %s is smaller than the required space"
-                % mod_name)
+        param_expose = param.expose if isinstance(param, Parameter) else False
 
-        ip_module["bus_device"] = ip.bus_device or 'none'
-        ip_module["bus_host"] = ip.bus_host or 'none'
+        # Check for security-relevant parameters that are not exposed,
+        # adding a top-level name.
+        if param.name.lower().startswith("sec") and not param_expose:
+            log.warning("{} has security-critical parameter {} "
+                        "not exposed to top".format(
+                            mod_name, param.name))
 
-        inouts, inputs, outputs = ip.xputs
-        ip_module['available_inout_list'] = [
-            {'name': signal.name,
-             'width': signal.bits.width(),
-             'type': 'inout'}
-            for signal in inouts
-        ]
-        ip_module['available_input_list'] = [
-            {'name': signal.name,
-             'width': signal.bits.width(),
-             'type': 'input'}
-            for signal in inputs
-        ]
-        ip_module['available_output_list'] = [
-            {'name': signal.name,
-             'width': signal.bits.width(),
-             'type': 'output'}
-            for signal in outputs
-        ]
+        # Move special prefixes to the beginnining of the parameter name.
+        param_prefixes = ["Sec", "RndCnst"]
+        cc_mod_name = c.Name.from_snake_case(mod_name).as_camel_case()
+        name_top = cc_mod_name + param.name
+        for prefix in param_prefixes:
+            if param.name.lower().startswith(prefix.lower()):
+                name_top = (prefix + cc_mod_name +
+                            param.name[len(prefix):])
+                break
 
-        # param_list
-        new_params = []
-        for param in ip.params.by_name.values():
-            if isinstance(param, LocalParam):
-                # Remove local parameters.
-                continue
+        new_param['name_top'] = name_top
 
-            new_param = param.as_dict()
+        # Generate random bits or permutation, if needed
+        if isinstance(param, RandParameter):
+            if param.randtype == 'data':
+                new_default = _get_random_data_hex_literal(param.randcount)
+                # Effective width of the random vector
+                randwidth = param.randcount
+            else:
+                assert param.randtype == 'perm'
+                new_default = _get_random_perm_hex_literal(param.randcount)
+                # Effective width of the random vector
+                randwidth = param.randcount * ceil(log2(param.randcount))
 
-            param_expose = param.expose if isinstance(param, Parameter) else False
+            new_param['default'] = new_default
+            new_param['randwidth'] = randwidth
 
-            # Check for security-relevant parameters that are not exposed,
-            # adding a top-level name.
-            if param.name.lower().startswith("sec") and not param_expose:
-                log.warning("{} has security-critical parameter {} "
-                            "not exposed to top".format(
-                                mod_name, param.name))
+        new_params.append(new_param)
 
-            # Move special prefixes to the beginnining of the parameter name.
-            param_prefixes = ["Sec", "RndCnst"]
-            cc_mod_name = c.Name.from_snake_case(mod_name).as_camel_case()
-            name_top = cc_mod_name + param.name
-            for prefix in param_prefixes:
-                if param.name.lower().startswith(prefix.lower()):
-                    name_top = (prefix + cc_mod_name +
-                                param.name[len(prefix):])
-                    break
+    instance["param_list"] = new_params
 
-            new_param['name_top'] = name_top
+    # interrupt_list
+    instance["interrupt_list"] = [
+        {'name': i.name,
+         'width': i.bits.width(),
+         'type': 'interrupt'}
+        for i in block.interrupts
+    ]
 
-            # Generate random bits or permutation, if needed
-            if isinstance(param, RandParameter):
-                if param.randtype == 'data':
-                    new_default = _get_random_data_hex_literal(param.randcount)
-                    # Effective width of the random vector
-                    randwidth = param.randcount
-                else:
-                    assert param.randtype == 'perm'
-                    new_default = _get_random_perm_hex_literal(param.randcount)
-                    # Effective width of the random vector
-                    randwidth = param.randcount * ceil(log2(param.randcount))
+    # alert_list. An alert is considered asynchronous if the clock name for the
+    # instance's clk_i doesn't match alert_clock (which is the clock name for
+    # the alert handler's clk_i).
+    async_alerts = (instance["clock_srcs"]["clk_i"] != alert_clock)
+    instance["alert_list"] = [
+        {'name': i.name,
+         'type': 'alert',
+         'width': 1,
+         'async': '1' if async_alerts else '0'}
+        for i in block.alerts
+    ]
 
-                new_param['default'] = new_default
-                new_param['randwidth'] = randwidth
+    # wkup_list
+    instance["wakeup_list"] = [
+        {'name': signal.name,
+         'width': str(signal.bits.width())}
+        for signal in block.wakeups
+    ]
 
-            new_params.append(new_param)
+    # reset request
+    instance["reset_request_list"] = [
+        {'name': signal.name,
+         'width': str(signal.bits.width())}
+        for signal in block.reset_requests
+    ]
 
-        ip_module["param_list"] = new_params
+    # scan
+    instance['scan'] = 'true' if block.scan else 'false'
 
-        # interrupt_list
-        ip_module["interrupt_list"] = [
-            {'name': i.name,
-             'width': i.bits.width(),
-             'type': 'interrupt'}
-            for i in ip.interrupts
-        ]
+    # scan_reset
+    instance['scan_reset'] = 'true' if block.scan_reset else 'false'
 
-        # alert_list
-        async_alerts = (ip_module["clock_srcs"]["clk_i"] !=
-                        top["module"][ah_idx]["clock_srcs"]["clk_i"])
-        ip_module["alert_list"] = [
-            {'name': i.name,
-             'type': 'alert',
-             'width': 1,
-             'async': '1' if async_alerts else '0'}
-            for i in ip.alerts
-        ]
-
-        # wkup_list
-        ip_module["wakeup_list"] = [
-            {'name': signal.name,
-             'width': str(signal.bits.width())}
-            for signal in ip.wakeups
-        ]
-
-        # reset request
-        ip_module["reset_request_list"] = [
-            {'name': signal.name,
-             'width': str(signal.bits.width())}
-            for signal in ip.reset_requests
-        ]
-
-        # scan
-        ip_module['scan'] = 'true' if ip.scan else 'false'
-
-        # scan_reset
-        ip_module['scan_reset'] = 'true' if ip.scan_reset else 'false'
-
-        # inter-module
-        ip_module["inter_signal_list"] = ip.inter_signals.copy()
-        # TODO: validate
+    # inter-module
+    instance["inter_signal_list"] = block.inter_signals.copy()
+    # TODO: validate
 
 
 # TODO: Replace this part to be configurable from Hjson or template
@@ -928,47 +950,46 @@ def amend_pinmux_io(top):
                 format(e))
 
 
-def merge_top(topcfg: OrderedDict, ipobjs: OrderedDict,
+def merge_top(topcfg: OrderedDict,
+              blocks: List[IpBlock],
               xbarobjs: OrderedDict) -> OrderedDict:
-    gencfg = topcfg
 
     # Combine ip cfg into topcfg
-    for ip in ipobjs:
-        amend_ip(gencfg, ip)
+    elaborate_instances(topcfg, blocks)
 
     # Create clock connections for each block
     # Assign clocks into appropriate groups
-    # Note, amend_ip references clock information to establish async handling
+    # Note, elaborate_instances references clock information to establish async handling
     # as part of alerts.
-    # amend_clocks(gencfg)
+    # amend_clocks(topcfg)
 
     # Combine the wakeups
-    amend_wkup(gencfg)
-    amend_reset_request(gencfg)
+    amend_wkup(topcfg)
+    amend_reset_request(topcfg)
 
     # Combine the interrupt (should be processed prior to xbar)
-    amend_interrupt(gencfg)
+    amend_interrupt(topcfg)
 
     # Combine the alert (should be processed prior to xbar)
-    amend_alert(gencfg)
+    amend_alert(topcfg)
 
     # Creates input/output list in the pinmux
     log.info("Processing PINMUX")
-    amend_pinmux_io(gencfg)
+    amend_pinmux_io(topcfg)
 
     # Combine xbar into topcfg
     for xbar in xbarobjs:
-        amend_xbar(gencfg, xbar)
+        amend_xbar(topcfg, xbar)
 
     # 2nd phase of xbar (gathering the devices address range)
-    for xbar in gencfg["xbar"]:
-        xbar_cross(xbar, gencfg["xbar"])
+    for xbar in topcfg["xbar"]:
+        xbar_cross(xbar, topcfg["xbar"])
 
     # Add path names to declared resets.
     # Declare structure for exported resets.
-    amend_resets(gencfg)
+    amend_resets(topcfg)
 
     # remove unwanted fields 'debug_mem_base_addr'
-    gencfg.pop('debug_mem_base_addr', None)
+    topcfg.pop('debug_mem_base_addr', None)
 
-    return gencfg
+    return topcfg
