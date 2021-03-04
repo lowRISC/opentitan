@@ -109,8 +109,7 @@
         { bits: "1",
           name: "bad_insn_addr"
           desc: '''
-            An IMEM read or write occurred with an out of bounds or unaligned
-            address.
+            An IMEM read occurred with an out of bounds or unaligned address.
           '''
         }
         { bits: "2",
