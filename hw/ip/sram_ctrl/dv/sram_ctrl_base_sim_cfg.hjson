@@ -69,8 +69,10 @@
       name: "{variant}_smoke"
       uvm_test_seq: sram_ctrl_smoke_vseq
     }
-
-    // TODO: add more tests here
+    {
+      name: "{variant}_multiple_keys"
+      uvm_test_seq: sram_ctrl_multiple_keys_vseq
+    }
   ]
 
   // List of regressions.
