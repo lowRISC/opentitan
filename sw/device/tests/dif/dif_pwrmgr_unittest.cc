@@ -55,7 +55,7 @@ TEST_F(InitTest, Init) {
 }
 
 // Base class for the rest of the tests in this file, provides a
-// `dif_gpio_t` instance.
+// `dif_pwrmgr_t` instance.
 class DifPwrmgrInitialized : public DifPwrmgrTest {
  protected:
   /**
