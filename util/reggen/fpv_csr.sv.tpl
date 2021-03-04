@@ -56,8 +56,6 @@ module ${block.name}_csr_assert_fpv import tlul_pkg::*; import ${block.name}_reg
   assign a_mask_bit[23:16] = h2d.a_mask[2] ? '1 : '0;
   assign a_mask_bit[31:24] = h2d.a_mask[3] ? '1 : '0;
 
-  // TODO: temp disable ECC check
-  `ASSUME_FPV(DisEcc_S, h2d.a_user.chk_en == CheckDis)
 <%
   addr_msb   = block.addr_width - 1
   reg_width  = block.addr_width
