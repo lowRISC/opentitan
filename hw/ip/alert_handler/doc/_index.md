@@ -935,13 +935,6 @@ In order to generate the register file for four alert sources, from
 $ ./reg_alert_handler.py alert_handler.hjson.tpl -n 4 > alert_handler.hjson
 ```
 
-Note that you should also update the regfile wrapper after updating the
-regfile using
-
-```console
-$ ./alert_handler_reg_wrap.sv.tpl -n 4 > ../rtl/alert_handler_reg_wrap.sv
-```
-
 {{< registers "hw/top_earlgrey/ip/alert_handler/data/autogen/alert_handler.hjson" >}}
 
 
