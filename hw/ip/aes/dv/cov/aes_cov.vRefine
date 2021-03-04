@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<refinement-file-root>
+  <information comment-version="1" creation-time="Thu 04 Mar 2021 01:47:06 PST" creator="rasmus.madsen" csCheck="false" modified-by="rasmus.madsen" modify-time="Wed 10 Mar 2021 01:54:48 PST" save-ref-method="seq" tool-version="Cadence vManager20.09" rules-signature-c="e2743b896ba5cfea53f1e8edcd36a1">
+    <ucm-files>
+    </ucm-files>
+    <ccf-files>
+    </ccf-files>
+  </information>
+  <rules>
+    <rule ccType="inst" comment="0" domain="icc" entityName="aes/&quot;tl_i.a_param&quot;" entityType="toggle" excTime="1615370069" name="exclude" reviewer="rasmus" user="1" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="aes/&quot;tl_o.d_param&quot;" entityType="toggle" excTime="1615369582" name="exclude" reviewer="unknown" user="1" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="aes/&quot;tl_o.d_sink&quot;" entityType="toggle" excTime="1615369582" name="exclude" reviewer="unknown" user="1" vscope="default"></rule>
+  </rules>
+  <cache-map>
+    <cache-entry key="0" value="[NOT SUPPORTED] This is excluded from the common exclusion file
+as the port is not used in the design"></cache-entry>
+    <cache-entry key="1" value="rasmus.madsen"></cache-entry>
+  </cache-map>
+</refinement-file-root>
