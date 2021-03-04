@@ -214,6 +214,7 @@ def gen_setup(test_file):
     test_file.write(".section .text.init\n")
     test_file.write(".globl _start\n")
     test_file.write(".option norvc\n")
+    test_file.write(".org 0x80\n")
     test_file.write("_start:\n")
 
 

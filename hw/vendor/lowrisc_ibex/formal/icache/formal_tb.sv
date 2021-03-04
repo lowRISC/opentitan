@@ -12,24 +12,27 @@
 `define IS_ONE_HOT(expr, width) \
   !((expr) & ((expr) - {{(width)-1{1'b0}}, 1'b1}))
 
+`define ASSUME_ZERO_IN_RESET(name) \
+  `ASSUME(name``_zero_in_reset, `IMPLIES(!rst_ni, ~|(name)), clk_i, 1'b0)
+
 module formal_tb #(
   // DUT parameters
-  parameter int unsigned BusWidth       = 32,
-  parameter int unsigned CacheSizeBytes = 4*1024,
-  parameter bit          ICacheECC      = 1'b0,
-  parameter int unsigned LineSize       = 64,
-  parameter int unsigned NumWays        = 2,
-  parameter bit          SpecRequest    = 1'b0,
-  parameter bit          BranchCache    = 1'b0,
+  parameter bit          BranchPredictor = 1'b0,
+  parameter int unsigned BusWidth        = 32,
+  parameter int unsigned CacheSizeBytes  = 4*1024,
+  parameter bit          ICacheECC       = 1'b0,
+  parameter int unsigned LineSize        = 64,
+  parameter int unsigned NumWays         = 2,
+  parameter bit          BranchCache     = 1'b0,
 
   // Internal parameters / localparams
-  parameter int unsigned ADDR_W         = 32,
-  parameter int unsigned NUM_FB         = 4,
-  parameter int unsigned LINE_W         = 3,
-  parameter int unsigned BUS_BYTES      = BusWidth/8,
-  parameter int unsigned BUS_W          = $clog2(BUS_BYTES),
-  parameter int unsigned LINE_BEATS     = 2,
-  parameter int unsigned LINE_BEATS_W   = 1
+  parameter int unsigned ADDR_W          = 32,
+  parameter int unsigned NUM_FB          = 4,
+  parameter int unsigned LINE_W          = 3,
+  parameter int unsigned BUS_BYTES       = BusWidth/8,
+  parameter int unsigned BUS_W           = $clog2(BUS_BYTES),
+  parameter int unsigned LINE_BEATS      = 2,
+  parameter int unsigned LINE_BEATS_W    = 1
 ) (
    // Top-level ports
    input logic                                clk_i,
@@ -37,6 +40,8 @@ module formal_tb #(
    input logic                                req_i,
    input logic                                branch_i,
    input logic                                branch_spec_i,
+   input logic                                predicted_branch_i,
+   input logic                                branch_mispredict_i,
    input logic [31:0]                         addr_i,
    input logic                                ready_i,
    input logic                                valid_o,
@@ -63,7 +68,8 @@ module formal_tb #(
    input logic [NUM_FB-1:0]                   fill_hit_q,
    input logic [NUM_FB-1:0][LINE_BEATS_W:0]   fill_ext_cnt_q,
    input logic [NUM_FB-1:0]                   fill_ext_hold_q,
-   input logic [NUM_FB-1:0]                   fill_ext_done,
+   input logic [NUM_FB-1:0]                   fill_ext_done_d,
+   input logic [NUM_FB-1:0]                   fill_ext_done_q,
    input logic [NUM_FB-1:0][LINE_BEATS_W:0]   fill_rvd_cnt_q,
    input logic [NUM_FB-1:0]                   fill_rvd_done,
    input logic [NUM_FB-1:0][LINE_BEATS_W:0]   fill_out_cnt_q,
@@ -119,6 +125,17 @@ module formal_tb #(
       end
     end
   end
+
+  // Reset assumptions
+  //
+  // We assume that req_i isn't asserted to the block when in reset (which avoids it making requests
+  // on the external bus).
+  `ASSUME_ZERO_IN_RESET(req_i)
+
+  // Parameter assumptions
+  //
+  // If BranchPredictor = 1'b0, the branch_mispredict_i signal will never go high
+  `ASSUME(no_mispred_without_branch_pred, `IMPLIES(branch_mispredict_i, BranchPredictor))
 
   // Protocol assumptions
   //
@@ -344,7 +361,7 @@ module formal_tb #(
                         (fill_ext_cnt_q[fb] != '0) &&
                         fill_older_q[fb][fb2] &&
                         fill_busy_q[fb2]),
-                       fill_ext_done[fb2]))
+                       fill_ext_done_q[fb2]))
 
       // Similarly, if J is older than I then we should see fill_rvd_done[J] before
       // fill_rvd_cnt_q[I] is nonzero.
@@ -654,7 +671,7 @@ module formal_tb #(
   //    for beat b and the memory request was squashed by a PMP error.
   //
   // The former case is easy (bit b should be set in f_fill_rvd_mask). In the latter case,
-  // fill_ext_done will be true, fill_ext_cnt_q will be less than LINE_BEATS, and fill_ext_off (the
+  // fill_ext_done_d will be true, fill_ext_cnt_q will be less than LINE_BEATS, and fill_ext_off (the
   // next beat to fetch) will equal b. We define explicit masks for the bits allowed in each case.
   logic [NUM_FB-1:0][LINE_BEATS-1:0] f_rvd_err_mask, f_pmp_err_mask, f_err_mask;
   always_comb begin
@@ -663,7 +680,7 @@ module formal_tb #(
     for (int i = 0; i < NUM_FB; i++) begin
       f_rvd_err_mask[i] = f_fill_rvd_mask[i];
       for (int b = 0; b < LINE_BEATS; b++) begin
-        f_pmp_err_mask[i][b] = (fill_ext_done[i] &&
+        f_pmp_err_mask[i][b] = (fill_ext_done_d[i] &&
                                 !fill_ext_cnt_q[i][LINE_BEATS_W] &&
                                 (fill_ext_off[i] == b[LINE_BEATS_W-1:0]));
       end

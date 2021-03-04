@@ -52,14 +52,6 @@ The following table describes the available configuration parameters.
 +-------------------------+-----------+-----------------------------------------------+
 | ``NumWays``             | ``2``     | The number of ways.                           |
 +-------------------------+-----------+-----------------------------------------------+
-| ``SpecRequest``         | ``1'b0``  | When set, the system will attempt to          |
-|                         |           | speculatively request data from memory in     |
-|                         |           | parallel with the cache lookup. This can give |
-|                         |           | improved performance for workloads which      |
-|                         |           | cache poorly (at the expense of power).       |
-|                         |           | When not set, only branches will make         |
-|                         |           | speculative requests.                         |
-+-------------------------+-----------+-----------------------------------------------+
 | ``BranchCache``         | ``1'b0``  | When set, the cache will only allocate the    |
 |                         |           | targets of branches + two subsequent cache    |
 |                         |           | lines. This gives improved performance in     |

@@ -8,6 +8,17 @@
  */
 package ibex_pkg;
 
+////////////////
+// IO Structs //
+////////////////
+
+typedef struct packed {
+  logic [31:0] current_pc;
+  logic [31:0] next_pc;
+  logic [31:0] last_data_addr;
+  logic [31:0] exception_addr;
+} crash_dump_t;
+
 /////////////////////
 // Parameter Enums //
 /////////////////////
@@ -330,6 +341,13 @@ typedef struct packed {
   logic          read;
 } pmp_cfg_t;
 
+// Machine Security Configuration (ePMP)
+typedef struct packed {
+  logic rlb;  // Rule Locking Bypass
+  logic mmwp; // Machine Mode Whitelist Policy
+  logic mml;  // Machine Mode Lockdown
+} pmp_mseccfg_t;
+
 // CSRs
 typedef enum logic[11:0] {
   // Machine information
@@ -340,6 +358,7 @@ typedef enum logic[11:0] {
   CSR_MISA      = 12'h301,
   CSR_MIE       = 12'h304,
   CSR_MTVEC     = 12'h305,
+  CSR_MCOUNTEREN= 12'h306,
 
   // Machine trap handling
   CSR_MSCRATCH  = 12'h340,
@@ -347,6 +366,8 @@ typedef enum logic[11:0] {
   CSR_MCAUSE    = 12'h342,
   CSR_MTVAL     = 12'h343,
   CSR_MIP       = 12'h344,
+
+  CSR_MSECCFG   = 12'h390,
 
   // Physical memory protection
   CSR_PMPCFG0   = 12'h3A0,
@@ -504,5 +525,10 @@ parameter int unsigned CSR_MTIX_BIT      = 7;
 parameter int unsigned CSR_MEIX_BIT      = 11;
 parameter int unsigned CSR_MFIX_BIT_LOW  = 16;
 parameter int unsigned CSR_MFIX_BIT_HIGH = 30;
+
+// CSR Machine Security Configuration bits
+parameter int unsigned CSR_MSECCFG_MML_BIT  = 0;
+parameter int unsigned CSR_MSECCFG_MMWP_BIT = 1;
+parameter int unsigned CSR_MSECCFG_RLB_BIT  = 2;
 
 endpackage

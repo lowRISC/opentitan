@@ -88,7 +88,7 @@ module ibex_branch_predict (
     endcase
   end
 
-  `ASSERT_IF(BranchInsTypeOneHot, $onehot0({instr_j, instr_b, instr_cj, instr_cb}), fetch_valid_i);
+  `ASSERT_IF(BranchInsTypeOneHot, $onehot0({instr_j, instr_b, instr_cj, instr_cb}), fetch_valid_i)
 
   // Determine branch prediction, taken if offset is negative
   assign instr_b_taken = (instr_b & imm_b_type[31]) | (instr_cb & imm_cb_type[31]);

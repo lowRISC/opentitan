@@ -139,9 +139,10 @@ class riscv_instr:
             if instr_name in [riscv_instr_name_t.FENCE, riscv_instr_name_t.FENCE_I,
                               riscv_instr_name_t.SFENCE_VMA]:
                 continue
-            if (instr_inst.group.name in rcs.supported_isa and
+            if (instr_inst.group in rcs.supported_isa and
                     not(cfg.disable_compressed_instr and
-                    instr_inst.group.name in ["RV32C", "RV64C", "RV32DC", "RV32FC", "RV128C"]) and
+                    instr_inst.group.name in ["RV32C", "RV64C", "RV32DC",
+                                              "RV32FC", "RV128C"]) and
                     not(not(cfg.enable_floating_point) and instr_inst.group.name in
                     ["RV32F", "RV64F", "RV32D", "RV64D"])):
                 cls.instr_category[instr_inst.category.name].append(instr_name)
@@ -169,8 +170,9 @@ class riscv_instr:
                            cls.instr_category["LOGICAL"] + cls.instr_category["COMPARE"])
         if cfg.no_ebreak == 0:
             cls.basic_instr.append("EBREAK")
-            for items in rcs.supported_isa:
-                if("RV32C" in rcs.supported_isa and not(cfg.disable_compressed_instr)):
+            for _ in rcs.supported_isa:
+                if(riscv_instr_group_t.RV32C in rcs.supported_isa and
+                   not(cfg.disable_compressed_instr)):
                     cls.basic_instr.append("C_EBREAK")
                     break
         if cfg.no_dret == 0:

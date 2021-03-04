@@ -15,6 +15,7 @@
  */
 
 `include "prim_assert.sv"
+`include "dv_fcov_macros.svh"
 
 module ibex_id_stage #(
     parameter bit               RV32E           = 0,
@@ -167,6 +168,7 @@ module ibex_id_stage #(
 
     output  logic                     en_wb_o,
     output  ibex_pkg::wb_instr_type_e instr_type_wb_o,
+    output  logic                     instr_perf_count_id_o,
     input logic                       ready_wb_i,
     input logic                       outstanding_load_wb_i,
     input logic                       outstanding_store_wb_i,
@@ -179,8 +181,7 @@ module ibex_id_stage #(
                                                          // access to finish before proceeding
     output logic                      perf_mul_wait_o,
     output logic                      perf_div_wait_o,
-    output logic                      instr_id_done_o,
-    output logic                      instr_id_done_compressed_o
+    output logic                      instr_id_done_o
 );
 
   import ibex_pkg::*;
@@ -196,15 +197,17 @@ module ibex_id_stage #(
   logic        wb_exception;
 
   logic        branch_in_dec;
-  logic        branch_spec, branch_set_spec;
-  logic        branch_set, branch_set_d;
+  logic        branch_spec, branch_set_spec, branch_set_raw_spec;
+  logic        branch_set, branch_set_raw, branch_set_raw_d;
+  logic        branch_jump_set_done_q, branch_jump_set_done_d;
   logic        branch_not_set;
   logic        branch_taken;
   logic        jump_in_dec;
   logic        jump_set_dec;
-  logic        jump_set;
+  logic        jump_set, jump_set_raw;
 
   logic        instr_first_cycle;
+  logic        instr_executing_spec;
   logic        instr_executing;
   logic        instr_done;
   logic        controller_run;
@@ -650,28 +653,51 @@ module ibex_id_stage #(
   if (BranchTargetALU && !DataIndTiming) begin : g_branch_set_direct
     // Branch set fed straight to controller with branch target ALU
     // (condition pass/fail used same cycle as generated instruction request)
-    assign branch_set      = branch_set_d;
-    assign branch_set_spec = branch_spec;
+    assign branch_set_raw      = branch_set_raw_d;
+    assign branch_set_raw_spec = branch_spec;
   end else begin : g_branch_set_flop
     // Branch set flopped without branch target ALU, or in fixed time execution mode
     // (condition pass/fail used next cycle where branch target is calculated)
-    logic branch_set_q;
+    logic branch_set_raw_q;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        branch_set_q <= 1'b0;
+        branch_set_raw_q <= 1'b0;
       end else begin
-        branch_set_q <= branch_set_d;
+        branch_set_raw_q <= branch_set_raw_d;
       end
     end
 
     // Branches always take two cycles in fixed time execution mode, with or without the branch
     // target ALU (to avoid a path from the branch decision into the branch target ALU operand
     // muxing).
-    assign branch_set      = (BranchTargetALU && !data_ind_timing_i) ? branch_set_d : branch_set_q;
+    assign branch_set_raw      = (BranchTargetALU && !data_ind_timing_i) ? branch_set_raw_d : branch_set_raw_q;
     // Use the speculative branch signal when BTALU is enabled
-    assign branch_set_spec = (BranchTargetALU && !data_ind_timing_i) ? branch_spec : branch_set_q;
+    assign branch_set_raw_spec = (BranchTargetALU && !data_ind_timing_i) ? branch_spec : branch_set_raw_q;
   end
+
+  // Track whether the current instruction in ID/EX has done a branch or jump set.
+  assign branch_jump_set_done_d = (branch_set_raw | jump_set_raw | branch_jump_set_done_q) &
+    ~instr_valid_clear_o;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      branch_jump_set_done_q <= 1'b0;
+    end else begin
+      branch_jump_set_done_q <= branch_jump_set_done_d;
+    end
+  end
+
+  // the _raw signals from the state machine may be asserted for multiple cycles when
+  // instr_executing_spec is asserted and instr_executing is not asserted. This may occur where
+  // a memory error is seen or a there are outstanding memory accesses (indicate a load or store is
+  // in the WB stage). The branch or jump speculatively begins the fetch but is held back from completing
+  // until it is certain the outstanding access hasn't seen a memory error. This logic ensures only
+  // the first cycle of a branch or jump set is sent to the controller to prevent needless extra IF
+  // flushes and fetches.
+  assign jump_set        = jump_set_raw        & ~branch_jump_set_done_q;
+  assign branch_set      = branch_set_raw      & ~branch_jump_set_done_q;
+  assign branch_set_spec = branch_set_raw_spec & ~branch_jump_set_done_q;
 
   // Branch condition is calculated in the first cycle and flopped for use in the second cycle
   // (only used in fixed time execution mode to determine branch destination).
@@ -690,7 +716,7 @@ module ibex_id_stage #(
 
   end else begin : g_nosec_branch_taken
 
-    // Signal unused without fixed time execution mode - only taken branches will trigger branch_set
+    // Signal unused without fixed time execution mode - only taken branches will trigger branch_set_raw
     assign branch_taken = 1'b1;
 
   end
@@ -710,9 +736,9 @@ module ibex_id_stage #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : id_pipeline_reg
     if (!rst_ni) begin
-      id_fsm_q            <= FIRST_CYCLE;
-    end else begin
-      id_fsm_q            <= id_fsm_d;
+      id_fsm_q <= FIRST_CYCLE;
+    end else if (instr_executing) begin
+      id_fsm_q <= id_fsm_d;
     end
   end
 
@@ -728,13 +754,13 @@ module ibex_id_stage #(
     stall_jump              = 1'b0;
     stall_branch            = 1'b0;
     stall_alu               = 1'b0;
-    branch_set_d            = 1'b0;
+    branch_set_raw_d        = 1'b0;
     branch_spec             = 1'b0;
     branch_not_set          = 1'b0;
-    jump_set                = 1'b0;
+    jump_set_raw            = 1'b0;
     perf_branch_o           = 1'b0;
 
-    if (instr_executing) begin
+    if (instr_executing_spec) begin
       unique case (id_fsm_q)
         FIRST_CYCLE: begin
           unique case (1'b1)
@@ -762,10 +788,10 @@ module ibex_id_stage #(
               // cond branch operation
               // All branches take two cycles in fixed time execution mode, regardless of branch
               // condition.
-              id_fsm_d      = (data_ind_timing_i || (!BranchTargetALU && branch_decision_i)) ?
-                                  MULTI_CYCLE : FIRST_CYCLE;
-              stall_branch  = (~BranchTargetALU & branch_decision_i) | data_ind_timing_i;
-              branch_set_d  = branch_decision_i | data_ind_timing_i;
+              id_fsm_d         = (data_ind_timing_i || (!BranchTargetALU && branch_decision_i)) ?
+                                     MULTI_CYCLE : FIRST_CYCLE;
+              stall_branch     = (~BranchTargetALU & branch_decision_i) | data_ind_timing_i;
+              branch_set_raw_d = (branch_decision_i | data_ind_timing_i);
 
               if (BranchPredictor) begin
                 branch_not_set = ~branch_decision_i;
@@ -780,7 +806,7 @@ module ibex_id_stage #(
               // BTALU means jumps only need one cycle
               id_fsm_d      = BranchTargetALU ? FIRST_CYCLE : MULTI_CYCLE;
               stall_jump    = ~BranchTargetALU;
-              jump_set      = jump_set_dec;
+              jump_set_raw  = jump_set_dec;
             end
             alu_multicycle_dec: begin
               stall_alu     = 1'b1;
@@ -873,13 +899,31 @@ module ibex_id_stage #(
     // - A load/store error
     //   This will cause a precise exception for the instruction in WB so ID/EX instruction must not
     //   execute
+    //
+    // instr_executing_spec is a speculative signal. It indicates an instruction can execute
+    // assuming there are no exceptions from writeback and any outstanding memory access won't
+    // receive an error. It is required so branch and jump requests don't factor in an incoming dmem
+    // error (that in turn would factor directly into imem requests leading to a feedthrough path).
+    //
+    // instr_executing is the full signal, it will only allow execution once any potential
+    // exceptions from writeback have been resolved.
+    assign instr_executing_spec = instr_valid_i      &
+                                  ~instr_fetch_err_i &
+                                  controller_run     &
+                                  ~stall_ld_hz;
+
     assign instr_executing = instr_valid_i              &
                              ~instr_kill                &
                              ~stall_ld_hz               &
                              ~outstanding_memory_access;
 
+    `ASSERT(IbexExecutingSpecIfExecuting, instr_executing |-> instr_executing_spec)
+
     `ASSERT(IbexStallIfValidInstrNotExecuting,
       instr_valid_i & ~instr_kill & ~instr_executing |-> stall_id)
+
+    `ASSERT(IbexCannotRetireWithPendingExceptions,
+      instr_done |-> ~(wb_exception | outstanding_memory_access))
 
     // Stall for reasons related to memory:
     // * There is an outstanding memory access that won't resolve this cycle (need to wait to allow
@@ -917,8 +961,6 @@ module ibex_id_stage #(
                               lsu_we      ? WB_INSTR_STORE :
                                             WB_INSTR_LOAD;
 
-    assign en_wb_o = instr_done;
-
     assign instr_id_done_o = en_wb_o & ready_wb_i;
 
     // Stall ID/EX as instruction in ID/EX cannot proceed to writeback yet
@@ -940,7 +982,8 @@ module ibex_id_stage #(
     assign stall_ld_hz   = 1'b0;
 
     // Without writeback stage any valid instruction that hasn't seen an error will execute
-    assign instr_executing = instr_valid_i & ~instr_fetch_err_i & controller_run;
+    assign instr_executing_spec = instr_valid_i & ~instr_fetch_err_i & controller_run;
+    assign instr_executing = instr_executing_spec;
 
     `ASSERT(IbexStallIfValidInstrNotExecuting,
       instr_valid_i & ~instr_fetch_err_i & ~instr_executing & controller_run |-> stall_id)
@@ -977,14 +1020,31 @@ module ibex_id_stage #(
 
     assign perf_dside_wait_o = instr_executing & lsu_req_dec & ~lsu_resp_valid_i;
 
-    assign en_wb_o         = 1'b0;
     assign instr_id_done_o = instr_done;
   end
+
+  // Signal which instructions to count as retired in minstret, all traps along with ebrk and
+  // ecall instructions are not counted.
+  assign instr_perf_count_id_o = ~ebrk_insn & ~ecall_insn_dec & ~illegal_insn_dec &
+      ~illegal_csr_insn_i & ~instr_fetch_err_i;
+
+  // An instruction is ready to move to the writeback stage (or retire if there is no writeback
+  // stage)
+  assign en_wb_o = instr_done;
 
   assign perf_mul_wait_o = stall_multdiv & mult_en_dec;
   assign perf_div_wait_o = stall_multdiv & div_en_dec;
 
-  assign instr_id_done_compressed_o = instr_id_done_o & instr_is_compressed_i;
+  //////////
+  // FCOV //
+  //////////
+
+  `DV_FCOV_SIGNAL_GEN_IF(logic, rf_rd_wb_hz,
+    (gen_stall_mem.rf_rd_a_hz | gen_stall_mem.rf_rd_b_hz) & instr_valid_i, WritebackStage)
+  `DV_FCOV_SIGNAL(logic, branch_taken,
+    instr_executing & (id_fsm_q == FIRST_CYCLE) & branch_decision_i)
+  `DV_FCOV_SIGNAL(logic, branch_not_taken,
+    instr_executing & (id_fsm_q == FIRST_CYCLE) & ~branch_decision_i)
 
   ////////////////
   // Assertions //

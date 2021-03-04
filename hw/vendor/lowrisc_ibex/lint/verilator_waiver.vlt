@@ -64,11 +64,6 @@ lint_off -rule UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -match "*rst_ni*"
 lint_off -rule UNUSED -file "*/rtl/ibex_decoder.sv" -match "*rst_ni*"
 lint_off -rule UNUSED -file "*/rtl/ibex_branch_predict.sv" -match "*rst_ni*"
 
-// Signal unoptimizable: Feedback to clock or circular logic:
-// ibex_core.cs_registers_i.mie_q
-// Issue lowrisc/ibex#212
-lint_off -rule UNOPTFLAT -file "*/rtl/ibex_csr.sv" -match "*ibex_core.cs_registers_i.u_mie_csr.rdata_q*"
-
 // Temporary waivers until OpenTitan primitives are lint-clean
 // https://github.com/lowRISC/opentitan/issues/2313
 lint_off -file "*/lowrisc_prim_*/rtl/*.sv"

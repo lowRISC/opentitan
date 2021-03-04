@@ -46,6 +46,45 @@ class riscv_directed_instr_stream(riscv_rand_instr_stream):
 
 
 @vsc.randobj
+class riscv_mem_access_stream(riscv_directed_instr_stream):
+    def __init__(self):
+        super().__init__()
+        self.max_data_page_id = vsc.int32_t()
+        self.load_store_shared_memory = 0
+        self.data_page = {}
+
+    def pre_randomize(self):
+        if self.load_store_shared_memory:
+            self.data_page = cfg.amo_region
+        elif self.kernel_mode:
+            self.data_page = cfg.s_mem_region
+        else:
+            self.data_page = cfg.mem_region
+        self.max_data_page_id = len(self.data_page)
+
+    def add_rs1_init_la_instr(self, gpr, idx, base = 0):
+        la_instr = riscv_pseudo_instr()
+        la_instr.pseudo_instr_name = riscv_pseudo_instr_name_t.LA
+        la_instr.rd = gpr
+        if self.load_store_shared_memory:
+            la_instr.imm_str = "{}+{}".format(cfg.amo_region[idx]['name'], base)
+        elif self.kernel_mode:
+            la_instr.imm_str = "{}{}+{}".format(pkg_ins.hart_prefix(self.hart),
+                                                cfg.s_mem_region[idx]['name'], base)
+        else:
+            la_instr.imm_str = "{}{}+{}".format(pkg_ins.hart_prefix(self.hart),
+                                                cfg.mem_region[idx]['name'], base)
+        self.instr_list.insert(0, la_instr)
+
+    def add_mixed_instr(self, instr_cnt):
+        self.setup_allowed_instr(1, 1)
+        for i in range(instr_cnt):
+            instr = riscv_instr()
+            instr = self.randomize_instr(instr)
+            self.insert_instr(instr)
+
+
+@vsc.randobj
 class riscv_jal_instr(riscv_rand_instr_stream):
     def __init__(self):
         super().__init__()
@@ -73,7 +112,7 @@ class riscv_jal_instr(riscv_rand_instr_stream):
             jal.append(riscv_instr_name_t.C_J)
             if rcs.XLEN == 32:
                 jal.append(riscv_instr_name_t.C_JAL)
-        self.jump_start = riscv_instr.get_instr(riscv_instr_name_t.JAL.name)
+        self.jump_start = riscv_instr.get_instr(riscv_instr_name_t.JAL)
         with self.jump_start.randomize_with() as it:
             self.jump_start.rd == RA
         self.jump_start.imm_str = "{}f".format(order[0])
@@ -83,7 +122,7 @@ class riscv_jal_instr(riscv_rand_instr_stream):
         self.jump_end = self.randomize_instr(self.jump_end)
         self.jump_end.label = "{}".format(self.num_of_jump_instr)
         for i in range(self.num_of_jump_instr):
-            self.jump[i] = riscv_instr.get_rand_instr(include_instr = [jal[0].name])
+            self.jump[i] = riscv_instr.get_rand_instr(include_instr = [jal[0]])
             with self.jump[i].randomize_with() as it:
                 if self.jump[i].has_rd:
                     vsc.dist(self.jump[i].rd, [vsc.weight(riscv_reg_t.RA, 5), vsc.weight(
@@ -119,23 +158,24 @@ class int_numeric_e(IntEnum):
 class riscv_int_numeric_corner_stream(riscv_directed_instr_stream):
     def __init__(self):
         super().__init__()
-        self.num_of_avail_regs = 10
+        self.num_of_avail_regs = vsc.uint32_t(10)
         self.num_of_instr = vsc.rand_uint8_t()
-        self.init_val = vsc.rand_list_t(vsc.rand_bit_t(rcs.XLEN - 1), sz = 10)
-        self.init_val_type = vsc.rand_list_t(vsc.enum_t(int_numeric_e), sz =10)
+        self.init_val = vsc.randsz_list_t(vsc.rand_bit_t(rcs.XLEN - 1))
+        self.init_val_type = vsc.randsz_list_t(vsc.enum_t(int_numeric_e))
         self.init_instr = []
 
     @vsc.constraint
     def init_val_c(self):
-        # TO DO
-        # solve init_val_type before init_val;
-        self.init_val_type.size == self.num_of_avail_regs
-        self.init_val.size == self.num_of_avail_regs
+        # TODO
+        vsc.solve_order(self.init_val_type, self.init_val)
+        self.init_val_type.size == 10  # self.num_of_avail_regs
+        self.init_val.size == 10  # self.num_of_avail_regs
         self.num_of_instr in vsc.rangelist(vsc.rng(15, 30))
 
     @vsc.constraint
     def avail_regs_c(self):
-        self.avail_regs.size == self.num_of_avail_regs
+        # TODO
+        self.avail_regs.size == 10  # self.num_of_avail_regs
         vsc.unique(self.avail_regs)
         with vsc.foreach(self.avail_regs, idx = True) as i:
             self.avail_regs[i].not_inside(cfg.reserved_regs)
@@ -177,8 +217,8 @@ class riscv_push_stack_instr(riscv_rand_instr_stream):
         self.num_of_redundant_instr = 0
         self.push_stack_instr = []
         self.saved_regs = []
-        self.branch_instr = riscv_instr()
-        self.enable_branch = vsc.rand_bit_t()
+        self.branch_instr = vsc.attr(riscv_instr())
+        self.enable_branch = vsc.rand_bit_t(1)
         self.push_start_label = ''
 
     def init(self):
@@ -203,7 +243,7 @@ class riscv_push_stack_instr(riscv_rand_instr_stream):
         with self.push_stack_instr[0].randomize_with() as it:
             self.push_stack_instr[0].rd == cfg.sp
             self.push_stack_instr[0].rs1 == cfg.sp
-            self.push_stack_instr[0].imm == (~cfg.stack_len) + 1
+            self.push_stack_instr[0].imm == (~cfg.stack_len + 1)
 
         self.push_stack_instr[0].imm_str = '-{}'.format(self.stack_len)
         for i in range(len(self.saved_regs)):
@@ -222,14 +262,15 @@ class riscv_push_stack_instr(riscv_rand_instr_stream):
 
             self.push_stack_instr[i + 1].process_load_store = 0
         if allow_branch:
-            # TODO `DV_CHECK_STD_RANDOMIZE_FATAL(enable_branch)
+            # TODO
+            # vsc.randomize(self.enable_branch)
             pass
         else:
             self.enable_branch = 0
         if self.enable_branch:
             self.branch_instr = \
                 riscv_instr.get_rand_instr(include_category=[riscv_instr_name_t.BRANCH.name])
-            # `DV_CHECK_STD_RANDOMIZE_FATAL(branch_instr)
+            self.branch_instr.randomize()
             self.branch_instr.imm_str = self.push_start_label
             self.branch_instr.brach_assigned = 1
             self.push_stack_instr[0].label = self.push_start_label
@@ -250,7 +291,7 @@ class riscv_pop_stack_instr(riscv_rand_instr_stream):
         self.stack_len = 0
         self.num_of_reg_to_save = 0
         self.num_of_redundant_instr = 0
-        self.pop_stack_instr = []
+        self.pop_stack_instr = vsc.list_t(vsc.attr(riscv_instr()))
         self.saved_regs = []
 
     def init(self):
@@ -286,12 +327,14 @@ class riscv_pop_stack_instr(riscv_rand_instr_stream):
                     self.imm == 8 * (i + 1)
             self.pop_stack_instr[i].process_load_store = 0
         # addi sp,sp,imm
-        ''' TODO `DV_CHECK_RANDOMIZE_WITH_FATAL(pop_stack_instr[num_of_reg_to_save],
-                                   rd == cfg.sp; rs1 == cfg.sp; imm == stack_len;) '''
+        with self.pop_stack_instr[self.num_of_reg_to_save].randomize_with() as it:
+            self.rd == cfg.sp
+            self.rs1 == cfg.sp
+            self.imm == self.stack_len
         self.pop_stack_instr[self.num_of_reg_to_save] = riscv_instr.get_instr(
             riscv_instr_name_t.ADDI.name)
         self.pop_stack_instr[self.num_of_reg_to_save].imm_str = pkg_ins.format_string(
-            '{}', self.stack_len)
+            '{}'.format(self.stack_len))
         self.mix_instr_stream(self.pop_stack_instr)
         for i in range(len(self.instr_list)):
             self.instr_list[i].atomic = 1

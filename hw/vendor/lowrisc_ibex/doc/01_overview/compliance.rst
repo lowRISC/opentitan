@@ -9,6 +9,7 @@ It follows these specifications:
   Ibex implements the Machine ISA version 1.11.
 * `RISC-V External Debug Support, version 0.13.2 <https://content.riscv.org/wp-content/uploads/2019/03/riscv-debug-release.pdf>`_
 * `RISC-V Bit Manipulation Extension, version 0.92 (draft from November 8, 2019) <https://github.com/riscv/riscv-bitmanip/blob/master/bitmanip-0.92.pdf>`_
+* :download:`PMP Enhancements for memory access and execution prevention on Machine mode <../03_reference/pdfs/riscv-epmp.pdf>`
 
 Many features in the RISC-V specification are optional, and Ibex can be parametrized to enable or disable some of them.
 
@@ -53,6 +54,8 @@ Ibex currently supports the following features according to the RISC-V Privilege
 * All CSRs listed in :ref:`cs-registers`
 * Performance counters as described in :ref:`performance-counters`
 * Vectorized trap handling as described at :ref:`exceptions-interrupts`
+
+See :ref:`PMP Enhancements<pmp-enhancements>` for more information on Ibex's experimental and optional support for the PMP Enhancement proposal from the Trusted Execution Environment (TEE) working group.
 
 .. rubric:: Footnotes
 

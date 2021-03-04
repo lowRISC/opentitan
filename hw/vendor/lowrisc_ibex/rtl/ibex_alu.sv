@@ -228,11 +228,12 @@ module ibex_alu #(
   logic [5:0] shift_amt;
   logic [5:0] shift_amt_compl; // complementary shift amount (32 - shift_amt)
 
-  logic [31:0] shift_operand;
-  logic [32:0] shift_result_ext;
-  logic        unused_shift_result_ext;
-  logic [31:0] shift_result;
-  logic [31:0] shift_result_rev;
+  logic        [31:0] shift_operand;
+  logic signed [32:0] shift_result_ext_signed;
+  logic        [32:0] shift_result_ext;
+  logic               unused_shift_result_ext;
+  logic        [31:0] shift_result;
+  logic        [31:0] shift_result_rev;
 
   // zbf
   logic bfp_op;
@@ -319,9 +320,9 @@ module ibex_alu #(
       endcase
     end
 
-    shift_result_ext =
-        $unsigned($signed({shift_ones | (shift_arith & shift_operand[31]), shift_operand}) >>>
-                  shift_amt[4:0]);
+    shift_result_ext_signed =
+        $signed({shift_ones | (shift_arith & shift_operand[31]), shift_operand}) >>> shift_amt[4:0];
+    shift_result_ext = $unsigned(shift_result_ext_signed);
 
     shift_result            = shift_result_ext[31:0];
     unused_shift_result_ext = shift_result_ext[32];

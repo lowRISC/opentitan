@@ -32,16 +32,16 @@ case "$ID-$VERSION_ID" in
     $SUDO_CMD sh -c "echo 'deb http://download.opensuse.org/repositories/home:/phiwag:/edatools/xUbuntu_$VERSION_ID/ /' > /etc/apt/sources.list.d/edatools.list"
     $SUDO_CMD apt-get update
 
-    # Uninstall distribution-provided version to get a newer version through pip
-    $SUDO_CMD apt-get remove -y python3-yaml
-
     # Packaged dependencies
+    # Install python3-yaml through apt to get a version with libyaml bindings,
+    # which is significantly faster than the pure Python version.
     $SUDO_CMD apt-get install -y \
         device-tree-compiler \
         python3 \
         python3-pip \
         python3-setuptools \
         python3-wheel \
+        python3-yaml \
         srecord \
         zlib1g-dev \
         git \
@@ -57,23 +57,14 @@ case "$ID-$VERSION_ID" in
 
       # Python dependencies
       #
-      # Installing six is a workaround for pip dependency resolution: six is
-      # already installed as system package with a version below the required
-      # one. Explicitly installing six through pip gets us a supported version.
-      #
       # Updating pip and setuptools is required to have these tools properly
       # parse Python-version metadata, which some packages uses to specify that
       # an older version of a package must be used for a certain Python version.
       # If that information is not read, pip installs the latest version, which
       # then fails to run.
-      $SUDO_CMD pip3 install -U pip six
+      $SUDO_CMD pip3 install -U pip setuptools
 
-      # There's been a bit of a kerfuffle about setuptools version 50, which
-      # breaks importing distutils on Debian/Ubuntu systems. Make sure we don't
-      # pick it up until the dust has settled and things work again.
-      $SUDO_CMD pip3 install -U 'setuptools < 50.0.0'
-
-      $SUDO_CMD pip3 install -U -r python-requirements.txt
+      $SUDO_CMD pip3 install -r python-requirements.txt
 
       # Install Verible
       mkdir -p build/verible

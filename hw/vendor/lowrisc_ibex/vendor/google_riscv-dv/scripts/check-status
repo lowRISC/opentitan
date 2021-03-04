@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Check the return code of run.py in order to give a pass/fail indication to Metrics
+echo "run.py return code:" $1
+
+if [ $1 == 0 ]; then
+  echo "Test passed";
+else
+  echo "Test failed";
+fi

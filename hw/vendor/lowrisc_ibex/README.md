@@ -42,6 +42,9 @@ Notes:
   Amber indicates that some verification has been performed, but the configuration is still experimental.
   Red indicates a configuration with minimal/no verification.
   Users must make their own assessment of verification readiness for any tapeout.
+* v0.92 of the RISC-V Bit Manipulation Extension is supported.
+  This is *not ratified* and there may be changes for the v1.0 ratified version.
+  See [Standards Compliance](https://ibex-core.readthedocs.io/en/latest/01_overview/compliance.html) in the Ibex documentation for more information.
 
 ## Documentation
 

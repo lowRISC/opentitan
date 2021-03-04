@@ -228,7 +228,7 @@ def run_csr_test(cmd_list, cwd, csr_file, isa, iterations, lsf_cmd,
           (" --xlen {}".format(
               re.search(r"(?P<xlen>[0-9]+)", isa).group("xlen"))) + \
           (" --iterations {}".format(iterations)) + \
-          (" --out {}/asm_tests".format(output_dir)) + \
+          (" --out {}/asm_test".format(output_dir)) + \
           (" --end_signature_addr {}".format(end_signature_addr))
     if lsf_cmd:
         cmd_list.append(cmd)
@@ -297,7 +297,7 @@ def do_simulate(sim_cmd, simulator, test_list, cwd, sim_opts, seed_gen,
                         cmd = lsf_cmd + " " + sim_cmd.rstrip() + \
                               (" --num_of_tests={}".format(test_cnt)) + \
                               (" --start_idx={}".format(i * batch_size)) + \
-                              (" --asm_file_name={}/asm_tests/{}".format(
+                              (" --asm_file_name={}/asm_test/{}".format(
                                   output_dir, test['test'])) + \
                               (" --log_file_name={}/sim_{}_{}{}.log ".format(
                                   output_dir,
@@ -308,7 +308,7 @@ def do_simulate(sim_cmd, simulator, test_list, cwd, sim_opts, seed_gen,
                               (" +UVM_TESTNAME={} ".format(test['gen_test'])) + \
                               (" +num_of_tests={} ".format(test_cnt)) + \
                               (" +start_idx={} ".format(i * batch_size)) + \
-                              (" +asm_file_name={}/asm_tests/{} ".format(
+                              (" +asm_file_name={}/asm_test/{} ".format(
                                   output_dir, test['test'])) + \
                               (" -l {}/sim_{}_{}{}.log ".format(
                                   output_dir, test['test'], i, log_suffix))
@@ -403,7 +403,7 @@ def gcc_compile(test_list, output_dir, isa, mabi, opts, debug_cmd):
         for i in range(0, test['iterations']):
             if 'no_gcc' in test and test['no_gcc'] == 1:
                 continue
-            prefix = ("{}/asm_tests/{}_{}".format(output_dir, test['test'], i))
+            prefix = ("{}/asm_test/{}_{}".format(output_dir, test['test'], i))
             asm = prefix + ".S"
             elf = prefix + ".o"
             binary = prefix + ".bin"
@@ -463,11 +463,11 @@ def run_assembly(asm_test, iss_yaml, isa, mabi, gcc_opts, iss_opts, output_dir,
     report = ("{}/iss_regr.log".format(output_dir)).rstrip()
     asm = re.sub(r"^.*\/", "", asm_test)
     asm = re.sub(r"\.S$", "", asm)
-    prefix = ("{}/directed_asm_tests/{}".format(output_dir, asm))
+    prefix = ("{}/directed_asm_test/{}".format(output_dir, asm))
     elf = prefix + ".o"
     binary = prefix + ".bin"
     iss_list = iss_opts.split(",")
-    run_cmd("mkdir -p {}/directed_asm_tests".format(output_dir))
+    run_cmd("mkdir -p {}/directed_asm_test".format(output_dir))
     logging.info("Compiling assembly test : {}".format(asm_test))
 
     # gcc compilation
@@ -556,11 +556,11 @@ def run_c(c_test, iss_yaml, isa, mabi, gcc_opts, iss_opts, output_dir,
     report = ("{}/iss_regr.log".format(output_dir)).rstrip()
     c = re.sub(r"^.*\/", "", c_test)
     c = re.sub(r"\.c$", "", c)
-    prefix = ("{}/directed_c_tests/{}".format(output_dir, c))
+    prefix = ("{}/directed_c_test/{}".format(output_dir, c))
     elf = prefix + ".o"
     binary = prefix + ".bin"
     iss_list = iss_opts.split(",")
-    run_cmd("mkdir -p {}/directed_c_tests".format(output_dir))
+    run_cmd("mkdir -p {}/directed_c_test".format(output_dir))
     logging.info("Compiling c test : {}".format(c_test))
 
     # gcc compilation
@@ -647,7 +647,7 @@ def iss_sim(test_list, output_dir, iss_list, iss_yaml, iss_opts,
                 continue
             else:
                 for i in range(0, test['iterations']):
-                    prefix = ("{}/asm_tests/{}_{}".format(
+                    prefix = ("{}/asm_test/{}_{}".format(
                         output_dir, test['test'], i))
                     elf = prefix + ".o"
                     log = ("{}/{}.{}.log".format(log_dir, test['test'], i))
@@ -683,7 +683,7 @@ def iss_cmp(test_list, iss, output_dir, stop_on_first_error, exp, debug_cmd):
     run_cmd("rm -rf {}".format(report))
     for test in test_list:
         for i in range(0, test['iterations']):
-            elf = ("{}/asm_tests/{}_{}.o".format(output_dir, test['test'], i))
+            elf = ("{}/asm_test/{}_{}.o".format(output_dir, test['test'], i))
             logging.info("Comparing ISS sim result {}/{} : {}".format(
                 iss_list[0], iss_list[1], elf))
             log_list = []
@@ -756,7 +756,7 @@ def parse_args(cwd):
 
     parser.add_argument("--target", type=str, default="rv32imc",
                         help="Run the generator with pre-defined targets: \
-                            rv32imc, rv32i, rv32imfdc, rv64imc, rv64gc")
+                            rv32imc, rv32i, rv32imafdc, rv64imc, rv64gc")
     parser.add_argument("-o", "--output", type=str,
                         help="Output directory name", dest="o")
     parser.add_argument("-tl", "--testlist", type=str, default="",
@@ -817,9 +817,9 @@ def parse_args(cwd):
                         help="Path for the riscv_core_setting.sv")
     parser.add_argument("-ext", "--user_extension_dir", type=str, default="",
                         help="Path for the user extension directory")
-    parser.add_argument("--asm_tests", type=str, default="",
+    parser.add_argument("--asm_test", type=str, default="",
                         help="Directed assembly tests")
-    parser.add_argument("--c_tests", type=str, default="",
+    parser.add_argument("--c_test", type=str, default="",
                         help="Directed c tests")
     parser.add_argument("--log_suffix", type=str, default="",
                         help="Simulation log name suffix")
@@ -918,9 +918,9 @@ def load_config(args, cwd):
         if args.target == "rv32imc":
             args.mabi = "ilp32"
             args.isa = "rv32imc"
-        elif args.target == "rv32imfdc":
+        elif args.target == "rv32imafdc":
             args.mabi = "ilp32"
-            args.isa = "rv32imfdc"
+            args.isa = "rv32imafdc"
         elif args.target == "rv32imc_sv32":
             args.mabi = "ilp32"
             args.isa = "rv32imc"
@@ -979,9 +979,9 @@ def main():
             if style_err: logging.info(
                 "Found style error: \nERROR: " + style_err)
 
-        # Run any handcoded/directed assembly tests specified by args.asm_tests
-        if args.asm_tests != "":
-            asm_test = args.asm_tests.split(',')
+        # Run any handcoded/directed assembly tests specified by args.asm_test
+        if args.asm_test != "":
+            asm_test = args.asm_test.split(',')
             for path_asm_test in asm_test:
                 full_path = os.path.expanduser(path_asm_test)
                 # path_asm_test is a directory
@@ -1001,9 +1001,9 @@ def main():
                     sys.exit(RET_FAIL)
             return
 
-        # Run any handcoded/directed c tests specified by args.c_tests
-        if args.c_tests != "":
-            c_test = args.c_tests.split(',')
+        # Run any handcoded/directed c tests specified by args.c_test
+        if args.c_test != "":
+            c_test = args.c_test.split(',')
             for path_c_test in c_test:
                 full_path = os.path.expanduser(path_c_test)
                 # path_c_test is a directory
@@ -1023,7 +1023,7 @@ def main():
                     sys.exit(RET_FAIL)
             return
 
-        run_cmd_output(["mkdir", "-p", ("{}/asm_tests".format(output_dir))])
+        run_cmd_output(["mkdir", "-p", ("{}/asm_test".format(output_dir))])
         # Process regression test list
         matched_list = []
         # Any tests in the YAML test list that specify a directed assembly test
@@ -1035,21 +1035,21 @@ def main():
             process_regression_list(args.testlist, args.test, args.iterations,
                                     matched_list, cwd)
             for t in list(matched_list):
-                # Check mutual exclusive between gen_test, asm_tests, and c_tests
-                if 'asm_tests' in t:
-                    if 'gen_test' in t or 'c_tests' in t:
+                # Check mutual exclusive between gen_test, asm_test, and c_test
+                if 'asm_test' in t:
+                    if 'gen_test' in t or 'c_test' in t:
                         logging.error(
-                            'asm_tests must not be defined in the testlist '
-                            'together with the gen_test or c_tests field')
+                            'asm_test must not be defined in the testlist '
+                            'together with the gen_test or c_test field')
                         sys.exit(RET_FATAL)
                     asm_directed_list.append(t)
                     matched_list.remove(t)
 
-                if 'c_tests' in t:
-                    if 'gen_test' in t or 'asm_tests' in t:
+                if 'c_test' in t:
+                    if 'gen_test' in t or 'asm_test' in t:
                         logging.error(
-                            'c_tests must not be defined in the testlist '
-                            'together with the gen_test or asm_tests field')
+                            'c_test must not be defined in the testlist '
+                            'together with the gen_test or asm_test field')
                         sys.exit(RET_FATAL)
                     c_directed_list.append(t)
                     matched_list.remove(t)
@@ -1066,7 +1066,7 @@ def main():
                     gcc_opts = args.gcc_opts
                     gcc_opts += test_entry.get('gcc_opts', '')
                     path_asm_test = os.path.expanduser(
-                        test_entry.get('asm_tests'))
+                        test_entry.get('asm_test'))
                     if path_asm_test:
                         # path_asm_test is a directory
                         if os.path.isdir(path_asm_test):
@@ -1093,7 +1093,7 @@ def main():
                 for test_entry in c_directed_list:
                     gcc_opts = args.gcc_opts
                     gcc_opts += test_entry.get('gcc_opts', '')
-                    path_c_test = os.path.expanduser(test_entry.get('c_tests'))
+                    path_c_test = os.path.expanduser(test_entry.get('c_test'))
                     if path_c_test:
                         # path_c_test is a directory
                         if os.path.isdir(path_c_test):

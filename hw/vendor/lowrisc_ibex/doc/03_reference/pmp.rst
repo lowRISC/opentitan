@@ -3,7 +3,7 @@
 Physical Memory Protection (PMP)
 ================================
 
-The Physical Memory Protection (PMP) unit implements region-based memory access checking in-accordance with the RISC-V Privileged Specification, version 1.11.
+The Physical Memory Protection (PMP) unit implements region-based memory access checking in-accordance with the RISC-V Privileged Specification, version 1.11 and includes the Trusted Execution Environment (TEE) working group proposal :download:`PMP Enhancements for memory access and execution prevention on Machine mode <pdfs/riscv-epmp.pdf>`.
 The following configuration parameters are available to control PMP checking:
 
 +----------------+---------------+----------------------------------------------------------+
@@ -30,3 +30,17 @@ PMP Granularity
 
 The PMP granularity parameter is used to reduce the size of the address matching comparators by increasing the minimum region size.
 When the granularity is greater than zero, NA4 mode is not available and will be treated as OFF mode.
+
+.. _pmp-enhancements:
+
+PMP Enhancements
+----------------
+
+These are described in more detail in :download:`PMP Enhancements for memory access and execution prevention on Machine mode <pdfs/riscv-epmp.pdf>`.
+If Ibex is configured to include PMP (PMPEnable is not zero) the PMP enhancements are always included.
+Use of the enhanced behavior is optional, if no writes to ``mseccfg`` occur PMP behavior will remain exactly as specified in the RISC-V privileged specification.
+The enhancements add:
+
+* A new CSR ``mseccfg`` providing functionality to allow locked regions to be modified and to implement default deny for M-mode accesses.
+* New PMP region configurations which are U-Mode or M-Mode accessible only with varying read/write/execute settings along with some shared U and M mode accessible configurations.
+  These new configurations supersede the original ones and are enabled via ``mseccfg``.

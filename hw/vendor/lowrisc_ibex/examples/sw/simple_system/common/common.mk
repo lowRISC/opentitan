@@ -33,15 +33,20 @@ OBJS := ${C_SRCS:.c=.o} ${ASM_SRCS:.S=.o} ${CRT:.S=.o}
 DEPS = $(OBJS:%.o=%.d)
 
 ifdef PROGRAM
-OUTFILES := $(PROGRAM).elf $(PROGRAM).vmem $(PROGRAM).bin $(PROGRAM).dis
+OUTFILES := $(PROGRAM).elf $(PROGRAM).vmem $(PROGRAM).bin
 else
 OUTFILES := $(OBJS)
 endif
 
 all: $(OUTFILES)
 
+ifdef PROGRAM
 $(PROGRAM).elf: $(OBJS) $(LINKER_SCRIPT)
 	$(CC) $(CFLAGS) -T $(LINKER_SCRIPT) $(OBJS) -o $@ $(LIBS)
+
+.PHONY: disassemble
+disassemble: $(PROGRAM).dis
+endif
 
 %.dis: %.elf
 	$(OBJDUMP) -fhSD $^ > $@

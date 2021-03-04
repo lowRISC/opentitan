@@ -19,19 +19,21 @@ import vsc
 from importlib import import_module
 from pygen_src.riscv_instr_pkg import (mtvec_mode_t, f_rounding_mode_t,
                                        riscv_reg_t, privileged_mode_t,
-                                       riscv_instr_group_t, data_pattern_t)
+                                       riscv_instr_group_t, data_pattern_t,
+                                       riscv_instr_category_t, satp_mode_t)
 
 
 @vsc.randobj
 class riscv_instr_gen_config:
     def __init__(self):
-        # TODO Support for command line argument
-        self.main_program_instr_cnt = 100  # count of main_prog
+        self.main_program_instr_cnt = vsc.rand_int32_t()  # count of main_prog
         self.sub_program_instr_cnt = []  # count of sub_prog
         self.debug_program_instr_cnt = 0  # count of debug_rom
         self.debug_sub_program_instr_cnt = []  # count of debug sub_progrms
         self.max_directed_instr_stream_seq = 20
         self.data_page_pattern = vsc.rand_enum_t(data_pattern_t)
+
+        self.init_delegation()
         self.argv = self.parse_args()
         self.args_dict = vars(self.argv)
 
@@ -65,13 +67,7 @@ class riscv_instr_gen_config:
 
         self.fcsr_rm = vsc.rand_enum_t(f_rounding_mode_t)
         self.enable_sfence = vsc.rand_bit_t(1)
-        self.gpr = []
-
-        # Helper fields for gpr
-        self.gpr0 = vsc.rand_enum_t(riscv_reg_t)
-        self.gpr1 = vsc.rand_enum_t(riscv_reg_t)
-        self.gpr2 = vsc.rand_enum_t(riscv_reg_t)
-        self.gpr3 = vsc.rand_enum_t(riscv_reg_t)
+        self.gpr = vsc.rand_list_t(vsc.enum_t(riscv_reg_t), sz=4)
 
         self.scratch_reg = vsc.rand_enum_t(riscv_reg_t)
         self.pmp_reg = vsc.rand_enum_t(riscv_reg_t)
@@ -179,9 +175,15 @@ class riscv_instr_gen_config:
         self.march_isa = self.argv.march_isa
 
         if len(self.march_isa) != 0:
-            rcs.supported_isa = self.march_isa
-        if "RV32C" not in rcs.supported_isa:
+            rcs.supported_isa.append(self.march_isa)
+        if riscv_instr_group_t.RV32C not in rcs.supported_isa:
             self.disable_compressed_instr = 1
+        self.setup_instr_distribution()
+        self.get_invalid_priv_lvl_csr()
+
+    @vsc.constraint
+    def default_c(self):
+        self.main_program_instr_cnt in vsc.rangelist(vsc.rng(10, self.instr_cnt))
 
     @vsc.constraint
     def sp_tp_c(self):
@@ -189,21 +191,16 @@ class riscv_instr_gen_config:
             self.sp == riscv_reg_t.SP
         self.sp != self.tp
         self.sp.not_inside(vsc.rangelist(riscv_reg_t.GP,
-                           riscv_reg_t.RA, riscv_reg_t.ZERO))
+                                         riscv_reg_t.RA, riscv_reg_t.ZERO))
         self.tp.not_inside(vsc.rangelist(riscv_reg_t.GP,
-                           riscv_reg_t.RA, riscv_reg_t.ZERO))
+                                         riscv_reg_t.RA, riscv_reg_t.ZERO))
 
     @vsc.constraint
     def gpr_c(self):
-        self.gpr0.not_inside(vsc.rangelist(self.sp, self.tp, self.scratch_reg, self.pmp_reg,
-                                           riscv_reg_t.ZERO, riscv_reg_t.RA, riscv_reg_t.GP))
-        self.gpr1.not_inside(vsc.rangelist(self.sp, self.tp, self.scratch_reg, self.pmp_reg,
-                                           riscv_reg_t.ZERO, riscv_reg_t.RA, riscv_reg_t.GP))
-        self.gpr2.not_inside(vsc.rangelist(self.sp, self.tp, self.scratch_reg, self.pmp_reg,
-                                           riscv_reg_t.ZERO, riscv_reg_t.RA, riscv_reg_t.GP))
-        self.gpr3.not_inside(vsc.rangelist(self.sp, self.tp, self.scratch_reg, self.pmp_reg,
-                                           riscv_reg_t.ZERO, riscv_reg_t.RA, riscv_reg_t.GP))
-        vsc.unique(self.gpr0, self.gpr1, self.gpr2, self.gpr3)
+        with vsc.foreach(self.gpr, idx = True) as i:
+            self.gpr[i].not_inside(vsc.rangelist(self.sp, self.tp, self.scratch_reg, self.pmp_reg,
+                                                 riscv_reg_t.ZERO, riscv_reg_t.RA, riscv_reg_t.GP))
+        vsc.unique(self.gpr)
 
     @vsc.constraint
     def ra_c(self):
@@ -214,21 +211,21 @@ class riscv_instr_gen_config:
     @vsc.constraint
     def reserve_scratch_reg_c(self):
         self.scratch_reg.not_inside(vsc.rangelist(riscv_reg_t.ZERO, self.sp,
-                                    self.tp, self.ra, riscv_reg_t.GP))
+                                                  self.tp, self.ra, riscv_reg_t.GP))
 
     @vsc.constraint
     def mtvec_c(self):
         self.mtvec_mode.inside(vsc.rangelist(mtvec_mode_t.DIRECT, mtvec_mode_t.VECTORED))
-        if(self.mtvec_mode == mtvec_mode_t.DIRECT):
+        with vsc.if_then(self.mtvec_mode == mtvec_mode_t.DIRECT):
             vsc.soft(self.tvec_alignment == 2)
-        else:
-            vsc.soft(self.tvec_alignment == (rcs.XLEN * 4) / 8)
+        with vsc.else_then():
+            vsc.soft(self.tvec_alignment == (rcs.XLEN * 4) // 8)
 
     @vsc.constraint
     def floating_point_c(self):
-        if self.enable_floating_point:
+        with vsc.if_then(self.enable_floating_point):
             self.mstatus_fs == 1
-        else:
+        with vsc.else_then():
             self.mstatus_fs == 0
 
     @vsc.constraint
@@ -237,7 +234,7 @@ class riscv_instr_gen_config:
             self.mstatus_mprv == 1
         else:
             self.mstatus_mprv == 0
-        if rcs.SATP_MODE == "BARE":
+        if rcs.SATP_MODE == satp_mode_t.BARE:
             self.mstatus_mxr == 0
             self.mstatus_sum == 0
             self.mstatus_tvm == 0
@@ -247,15 +244,18 @@ class riscv_instr_gen_config:
         support_128b = 0
 
         # check the valid isa support
-        for x in rcs.supported_isa:
-            if x in ["RV64I", "RV64M", "RV64A", "RV64F", "RV64D", "RV64C", "RV64B"]:
+        for group in rcs.supported_isa:
+            if group in [riscv_instr_group_t.RV64I, riscv_instr_group_t.RV64M,
+                         riscv_instr_group_t.RV64A, riscv_instr_group_t.RV64F,
+                         riscv_instr_group_t.RV64D, riscv_instr_group_t.RV64C,
+                         riscv_instr_group_t.RV64B]:
                 support_64b = 1
                 logging.info("support_64b = {}".format(support_64b))
-                logging.debug("Supported ISA = {}".format(x))
-            elif x in ["RV128I", "RV128C"]:
+                logging.debug("Supported ISA = {}".format(group.name))
+            elif group in [riscv_instr_group_t.RV128I, riscv_instr_group_t.RV128C]:
                 support_128b = 1
                 logging.info("support_128b = {}".format(support_128b))
-                logging.debug("Supported ISA = {}".format(x))
+                logging.debug("Supported ISA = {}".format(group.name))
 
         if support_128b and rcs.XLEN != 128:
             logging.critical("XLEN should be set to 128 based on \
@@ -275,43 +275,41 @@ class riscv_instr_gen_config:
             logging.info("XLEN Value = {}".format(rcs.XLEN))
             sys.exit("XLEN is not equal to 32, set it Accordingly!")
 
-        if not(support_128b or support_64b) and not(rcs.SATP_MODE in ['SV32', "BARE"]):
-            logging.critical("SATP mode {} is not supported for RV32G ISA".format(rcs.SATP_MODE))
+        if not(support_128b or support_64b) and \
+                not(rcs.SATP_MODE in [satp_mode_t.SV32, satp_mode_t.BARE]):
+            logging.critical("SATP mode {} is not supported for RV32G ISA"
+                             .format(rcs.SATP_MODE.name))
             sys.exit("Supported SATP mode is not provided")
 
-    # TODO
     def setup_instr_distribution(self):
+        if self.dist_control_mode:
+            category_iter = iter([x for x in riscv_instr_category_t.__members__])
+            category = riscv_instr_category_t(0)
+            while True:
+                opts = "dist_{}".format(category.name)
+                opts = opts.lower()
+                if self.args_dict[opts]:
+                    self.category_dist[category] = self.args_dict[opts]
+                else:
+                    self.category_dist[category] = 10
+                logging.info("Set dist[{}] = {}".format(category, self.category_dist[category]))
+                category = next(category_iter)
+                if category != riscv_instr_category_t(0):
+                    break
+
+    # TODO
+    def init_delegation(self):
         pass
 
-    def init_delegation(self):
-        for i in self.mode_exp_lst:
-            if i == self.mode_exp_lst[0]:
-                continue
-            self.m_mode_exception_delegation[i] = 0
-            self.s_mode_exception_delegation[i] = 0
-
-        for j in self.mode_intrpt_lst:
-            if j == self.mode_intrpt_lst[0]:
-                continue
-            self.m_mode_interrupt_delegation[j] = 0
-            self.s_mode_interrupt_delegation[j] = 0
-
     def pre_randomize(self):
-        # Clearing the contents of self.gpr after each randomization.
-        # As it is being extended in post_randomize function.
-        self.gpr.clear()
-        for x in rcs.supported_privileged_mode:
-            if x == privileged_mode_t.SUPERVISOR_MODE:
+        for mode in rcs.supported_privileged_mode:
+            if mode == privileged_mode_t.SUPERVISOR_MODE:
                 self.support_supervisor_mode = 1
 
     def get_non_reserved_gpr(self):
         pass
 
     def post_randomize(self):
-        self.reserved_regs = []
-        # Temporary fix for gpr_c constraint.
-        self.gpr.extend((self.gpr0, self.gpr1, self.gpr2, self.gpr3))
-
         self.reserved_regs.append(self.tp)
         self.reserved_regs.append(self.sp)
         self.reserved_regs.append(self.scratch_reg)
@@ -328,36 +326,26 @@ class riscv_instr_gen_config:
         invalid_lvl = []
         # Debug CSRs are inaccessible from all but Debug Mode
         # and we cannot boot into Debug Mode.
-        invalid_lvl.append('D')
-
-        # TODO Need to change the logic once the constraints are up.
-        for mode in self.init_privileged_mode:
-            if mode == privileged_mode_t.MACHINE_MODE:
-                continue
-            if mode == privileged_mode_t.SUPERVISOR_MODE:
-                invalid_lvl.append('M')
-                logging.info("supr_mode---")
-                logging.debug(invalid_lvl)
-            elif mode == privileged_mode_t.USER_MODE:
-                invalid_lvl.append('S')
-                invalid_lvl.append('M')
-                logging.info("usr_mode---")
-                logging.debug(invalid_lvl)
-            else:
-                logging.critical("Unsupported initialization privilege mode")
+        invalid_lvl.append("D")
+        if self.init_privileged_mode == privileged_mode_t.MACHINE_MODE:
+            pass
+        elif self.init_privileged_mode == privileged_mode_t.SUPERVISOR_MODE:
+            invalid_lvl.append("M")
+            logging.info("supr_mode---")
+            logging.debug(invalid_lvl)
+        elif self.init_privileged_mode == privileged_mode_t.USER_MODE:
+            invalid_lvl.append("S")
+            invalid_lvl.append("M")
+            logging.info("usr_mode---")
+            logging.debug(invalid_lvl)
+        else:
+            logging.critical("Unsupported initialization privilege mode")
+            sys.exit(1)
 
         # implemented_csr from riscv_core_setting.py
-        for x in rcs.implemented_csr:
-            if x[0] in invalid_lvl:
-                self.invalid_priv_mode_csrs.append(x)
-
-    # This function calls all the above defined function which should
-    # be called in init function as per SV logic.This function as to be
-    # called after every instance of the gen_config handle
-    def func_call_init(self):
-        self.init_delegation()
-        # self.setup_instr_distribution()  # TODO
-        self.get_invalid_priv_lvl_csr()
+        for csr in rcs.implemented_csr:
+            if csr in invalid_lvl:
+                self.invalid_priv_mode_csrs.append(csr)
 
     def parse_args(self):
         parse = argparse.ArgumentParser()

@@ -1,0 +1,12 @@
+diff --git a/scripts/gen_csr_test.py b/scripts/gen_csr_test.py
+index 9a51a1a9..76c6bd19 100644
+--- a/scripts/gen_csr_test.py
++++ b/scripts/gen_csr_test.py
+@@ -214,6 +214,7 @@ def gen_setup(test_file):
+     test_file.write(".section .text.init\n")
+     test_file.write(".globl _start\n")
+     test_file.write(".option norvc\n")
++    test_file.write(".org 0x80\n")
+     test_file.write("_start:\n")
+
+
