@@ -8,19 +8,19 @@
 // Using a wildcard (.*) for ports allows the testbench to inspect internal signals of the cache.
 
 formal_tb #(
-  .BusWidth       (BusWidth),
-  .CacheSizeBytes (CacheSizeBytes),
-  .ICacheECC      (ICacheECC),
-  .LineSize       (LineSize),
-  .NumWays        (NumWays),
-  .SpecRequest    (SpecRequest),
-  .BranchCache    (BranchCache),
+  .BranchPredictor (BranchPredictor),
+  .BusWidth        (BusWidth),
+  .CacheSizeBytes  (CacheSizeBytes),
+  .ICacheECC       (ICacheECC),
+  .LineSize        (LineSize),
+  .NumWays         (NumWays),
+  .BranchCache     (BranchCache),
 
-  .ADDR_W         (ADDR_W),
-  .NUM_FB         (NUM_FB),
-  .LINE_W         (LINE_W),
-  .BUS_BYTES      (BUS_BYTES),
-  .BUS_W          (BUS_W),
-  .LINE_BEATS     (LINE_BEATS),
-  .LINE_BEATS_W   (LINE_BEATS_W)
+  .ADDR_W          (ADDR_W),
+  .NUM_FB          (NUM_FB),
+  .LINE_W          (LINE_W),
+  .BUS_BYTES       (BUS_BYTES),
+  .BUS_W           (BUS_W),
+  .LINE_BEATS      (LINE_BEATS),
+  .LINE_BEATS_W    (LINE_BEATS_W)
 ) tb_i (.*);

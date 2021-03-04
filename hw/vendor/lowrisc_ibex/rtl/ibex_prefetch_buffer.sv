@@ -286,7 +286,7 @@ module ibex_prefetch_buffer #(
   // Push a new entry to the FIFO once complete (and not cancelled by a branch)
   assign fifo_valid = rvalid_or_pmp_err & ~branch_discard_q[0];
 
-  assign fifo_addr = branch_mispredict_i ? branch_mispredict_addr : addr_i;
+  assign fifo_addr = branch_i ? addr_i : branch_mispredict_addr;
 
   ///////////////
   // Registers //

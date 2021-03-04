@@ -25,7 +25,8 @@ module ibex_cs_registers #(
     parameter int unsigned      PMPGranularity    = 0,
     parameter int unsigned      PMPNumRegions     = 4,
     parameter bit               RV32E             = 0,
-    parameter ibex_pkg::rv32m_e RV32M             = ibex_pkg::RV32MFast
+    parameter ibex_pkg::rv32m_e RV32M             = ibex_pkg::RV32MFast,
+    parameter ibex_pkg::rv32b_e RV32B             = ibex_pkg::RV32BNone
 ) (
     // Clock and Reset
     input  logic                 clk_i,
@@ -65,8 +66,9 @@ module ibex_cs_registers #(
     output logic [31:0]          csr_mepc_o,
 
     // PMP
-    output ibex_pkg::pmp_cfg_t   csr_pmp_cfg_o  [PMPNumRegions],
-    output logic [33:0]          csr_pmp_addr_o [PMPNumRegions],
+    output ibex_pkg::pmp_cfg_t     csr_pmp_cfg_o  [PMPNumRegions],
+    output logic [33:0]            csr_pmp_addr_o [PMPNumRegions],
+    output ibex_pkg::pmp_mseccfg_t csr_pmp_mseccfg_o,
 
     // debug
     input  logic                 debug_mode_i,
@@ -119,11 +121,14 @@ module ibex_cs_registers #(
 
   import ibex_pkg::*;
 
+  localparam int unsigned RV32BEnabled = (RV32B == RV32BNone) ? 0 : 1;
   localparam int unsigned RV32MEnabled = (RV32M == RV32MNone) ? 0 : 1;
+  localparam int unsigned PMPAddrWidth = (PMPGranularity > 0) ? 33 - PMPGranularity : 32;
 
   // misa
   localparam logic [31:0] MISA_VALUE =
       (0                 <<  0)  // A - Atomic Instructions extension
+    | (RV32BEnabled      <<  1)  // B - Bit-Manipulation extension
     | (1                 <<  2)  // C - Compressed extension
     | (0                 <<  3)  // D - Double precision floating-point extension
     | (32'(RV32E)        <<  4)  // E - RV32E base ISA
@@ -216,6 +221,7 @@ module ibex_cs_registers #(
   logic [31:0]                 pmp_addr_rdata  [PMP_MAX_REGIONS];
   logic [PMP_CFG_W-1:0]        pmp_cfg_rdata   [PMP_MAX_REGIONS];
   logic                        pmp_csr_err;
+  pmp_mseccfg_t                pmp_mseccfg;
 
   // Hardware performance monitor signals
   logic [31:0]                 mcountinhibit;
@@ -313,6 +319,12 @@ module ibex_cs_registers #(
         csr_rdata_int[CSR_MFIX_BIT_HIGH:CSR_MFIX_BIT_LOW] = mie_q.irq_fast;
       end
 
+      // mcounteren: machine counter enable
+      CSR_MCOUNTEREN: begin
+        csr_rdata_int = '0;
+        illegal_csr   = ~DbgTriggerEn;
+      end
+
       CSR_MSCRATCH: csr_rdata_int = mscratch_q;
 
       // mtvec: trap-vector base address
@@ -334,6 +346,13 @@ module ibex_cs_registers #(
         csr_rdata_int[CSR_MTIX_BIT]                       = mip.irq_timer;
         csr_rdata_int[CSR_MEIX_BIT]                       = mip.irq_external;
         csr_rdata_int[CSR_MFIX_BIT_HIGH:CSR_MFIX_BIT_LOW] = mip.irq_fast;
+      end
+
+      CSR_MSECCFG: begin
+        csr_rdata_int                       = '0;
+        csr_rdata_int[CSR_MSECCFG_MML_BIT]  = pmp_mseccfg.mml;
+        csr_rdata_int[CSR_MSECCFG_MMWP_BIT] = pmp_mseccfg.mmwp;
+        csr_rdata_int[CSR_MSECCFG_RLB_BIT]  = pmp_mseccfg.rlb;
       end
 
       // PMP registers
@@ -952,13 +971,18 @@ module ibex_cs_registers #(
   // -----------------
 
   if (PMPEnable) begin : g_pmp_registers
+    pmp_mseccfg_t                pmp_mseccfg_q, pmp_mseccfg_d;
+    logic                        pmp_mseccfg_we;
+    logic                        pmp_mseccfg_err;
     pmp_cfg_t                    pmp_cfg         [PMPNumRegions];
+    logic [PMPNumRegions-1:0]    pmp_cfg_locked;
     pmp_cfg_t                    pmp_cfg_wdata   [PMPNumRegions];
-    logic [31:0]                 pmp_addr        [PMPNumRegions];
+    logic [PMPAddrWidth-1:0]     pmp_addr        [PMPNumRegions];
     logic [PMPNumRegions-1:0]    pmp_cfg_we;
     logic [PMPNumRegions-1:0]    pmp_cfg_err;
     logic [PMPNumRegions-1:0]    pmp_addr_we;
     logic [PMPNumRegions-1:0]    pmp_addr_err;
+    logic                        any_pmp_entry_locked;
 
     // Expanded / qualified register read data
     for (genvar i = 0; i < PMP_MAX_REGIONS; i++) begin : g_exp_rd_data
@@ -985,13 +1009,12 @@ module ibex_cs_registers #(
         end else begin : g_pmp_g2
           // For G >= 2, bits are masked to one or zero depending on the mode
           always_comb begin
-            pmp_addr_rdata[i] = pmp_addr[i];
+            // In NAPOT mode, bits [G-2:0] must read as one
+            pmp_addr_rdata[i] = {pmp_addr[i], {PMPGranularity-1{1'b1}}};
+
             if ((pmp_cfg[i].mode == PMP_MODE_OFF) || (pmp_cfg[i].mode == PMP_MODE_TOR)) begin
               // In TOR or OFF mode, bits [G-1:0] must read as zero
               pmp_addr_rdata[i][PMPGranularity-1:0] = '0;
-            end else if (pmp_cfg[i].mode == PMP_MODE_NAPOT) begin
-              // In NAPOT mode, bits [G-2:0] must read as one
-              pmp_addr_rdata[i][PMPGranularity-2:0] = '1;
             end
           end
         end
@@ -1008,7 +1031,7 @@ module ibex_cs_registers #(
       // -------------------------
       // Instantiate cfg registers
       // -------------------------
-      assign pmp_cfg_we[i] = csr_we_int & ~pmp_cfg[i].lock &
+      assign pmp_cfg_we[i] = csr_we_int & ~pmp_cfg_locked[i] &
                              (csr_addr == (CSR_OFF_PMP_CFG + (i[11:0] >> 2)));
 
       // Select the correct WDATA (each CSR contains 4 CFG fields, each with 2 RES bits)
@@ -1025,8 +1048,10 @@ module ibex_cs_registers #(
         endcase
       end
       assign pmp_cfg_wdata[i].exec  = csr_wdata_int[(i%4)*PMP_CFG_W+2];
-      // W = 1, R = 0 is a reserved combination. For now, we force W to 0 if R == 0
-      assign pmp_cfg_wdata[i].write = &csr_wdata_int[(i%4)*PMP_CFG_W+:2];
+      // When MSECCFG.MML is unset, W = 1, R = 0 is a reserved combination, so force W to 0 if R ==
+      // 0. Otherwise allow all possible values to be written.
+      assign pmp_cfg_wdata[i].write = pmp_mseccfg_q.mml ? csr_wdata_int[(i%4)*PMP_CFG_W+1] :
+                                                          &csr_wdata_int[(i%4)*PMP_CFG_W+:2];
       assign pmp_cfg_wdata[i].read  = csr_wdata_int[(i%4)*PMP_CFG_W];
 
       ibex_csr #(
@@ -1042,36 +1067,68 @@ module ibex_cs_registers #(
         .rd_error_o (pmp_cfg_err[i])
       );
 
+      // MSECCFG.RLB allows the lock bit to be bypassed (allowing cfg writes when MSECCFG.RLB is
+      // set).
+      assign pmp_cfg_locked[i] = pmp_cfg[i].lock & ~pmp_mseccfg_q.rlb;
+
       // --------------------------
       // Instantiate addr registers
       // --------------------------
       if (i < PMPNumRegions - 1) begin : g_lower
-        assign pmp_addr_we[i] = csr_we_int & ~pmp_cfg[i].lock &
-                                (~pmp_cfg[i+1].lock | (pmp_cfg[i+1].mode != PMP_MODE_TOR)) &
+        assign pmp_addr_we[i] = csr_we_int & ~pmp_cfg_locked[i] &
+                                (~pmp_cfg_locked[i+1] | (pmp_cfg[i+1].mode != PMP_MODE_TOR)) &
                                 (csr_addr == (CSR_OFF_PMP_ADDR + i[11:0]));
       end else begin : g_upper
-        assign pmp_addr_we[i] = csr_we_int & ~pmp_cfg[i].lock &
+        assign pmp_addr_we[i] = csr_we_int & ~pmp_cfg_locked[i] &
                                 (csr_addr == (CSR_OFF_PMP_ADDR + i[11:0]));
       end
 
       ibex_csr #(
-        .Width      (32),
+        .Width      (PMPAddrWidth),
         .ShadowCopy (ShadowCSR),
         .ResetValue ('0)
       ) u_pmp_addr_csr (
         .clk_i      (clk_i),
         .rst_ni     (rst_ni),
-        .wr_data_i  (csr_wdata_int),
+        .wr_data_i  (csr_wdata_int[31-:PMPAddrWidth]),
         .wr_en_i    (pmp_addr_we[i]),
         .rd_data_o  (pmp_addr[i]),
         .rd_error_o (pmp_addr_err[i])
       );
 
       assign csr_pmp_cfg_o[i]  = pmp_cfg[i];
-      assign csr_pmp_addr_o[i] = {pmp_addr[i],2'b00};
+      assign csr_pmp_addr_o[i] = {pmp_addr_rdata[i], 2'b00};
     end
 
-    assign pmp_csr_err = (|pmp_cfg_err) | (|pmp_addr_err);
+    assign pmp_mseccfg_we = csr_we_int & (csr_addr == CSR_MSECCFG);
+
+    // MSECCFG.MML/MSECCFG.MMWP cannot be unset once set
+    assign pmp_mseccfg_d.mml  = pmp_mseccfg_q.mml  ? 1'b1 : csr_wdata_int[CSR_MSECCFG_MML_BIT];
+    assign pmp_mseccfg_d.mmwp = pmp_mseccfg_q.mmwp ? 1'b1 : csr_wdata_int[CSR_MSECCFG_MMWP_BIT];
+
+    // pmp_cfg_locked factors in MSECCFG.RLB so any_pmp_entry_locked will only be set if MSECCFG.RLB
+    // is unset
+    assign any_pmp_entry_locked = |pmp_cfg_locked;
+
+    // When any PMP entry is locked (A PMP entry has the L bit set and MSECCFG.RLB is unset),
+    // MSECCFG.RLB cannot be set again
+    assign pmp_mseccfg_d.rlb = any_pmp_entry_locked ? 1'b0 : csr_wdata_int[CSR_MSECCFG_RLB_BIT];
+
+    ibex_csr #(
+      .Width      ($bits(pmp_mseccfg_t)),
+      .ShadowCopy (ShadowCSR),
+      .ResetValue ('0)
+    ) u_pmp_mseccfg (
+      .clk_i      (clk_i),
+      .rst_ni     (rst_ni),
+      .wr_data_i  (pmp_mseccfg_d),
+      .wr_en_i    (pmp_mseccfg_we),
+      .rd_data_o  (pmp_mseccfg_q),
+      .rd_error_o (pmp_mseccfg_err)
+    );
+
+    assign pmp_csr_err = (|pmp_cfg_err) | (|pmp_addr_err) | pmp_mseccfg_err;
+    assign pmp_mseccfg = pmp_mseccfg_q;
 
   end else begin : g_no_pmp_tieoffs
     // Generate tieoffs when PMP is not configured
@@ -1084,7 +1141,10 @@ module ibex_cs_registers #(
       assign csr_pmp_addr_o[i] = '0;
     end
     assign pmp_csr_err = 1'b0;
+    assign pmp_mseccfg = '0;
   end
+
+  assign csr_pmp_mseccfg_o = pmp_mseccfg;
 
   //////////////////////////
   //  Performance monitor //
@@ -1222,12 +1282,17 @@ module ibex_cs_registers #(
 
   if (DbgTriggerEn) begin : gen_trigger_regs
     localparam int unsigned DbgHwNumLen = DbgHwBreakNum > 1 ? $clog2(DbgHwBreakNum) : 1;
+    localparam int MaxTselect = DbgHwBreakNum - 1;
+
     // Register values
     logic [DbgHwNumLen-1:0]   tselect_d, tselect_q;
     logic                     tmatch_control_d;
     logic [DbgHwBreakNum-1:0] tmatch_control_q;
     logic [31:0]              tmatch_value_d;
     logic [31:0]              tmatch_value_q[DbgHwBreakNum];
+    logic                     selected_tmatch_control;
+    logic [31:0]              selected_tmatch_value;
+
     // Write enables
     logic                     tselect_we;
     logic [DbgHwBreakNum-1:0] tmatch_control_we;
@@ -1247,7 +1312,7 @@ module ibex_cs_registers #(
     // Debug interface tests the available number of triggers by writing and reading the trigger
     // select register. Only allow changes to the register if it is within the supported region.
     assign tselect_d = (csr_wdata_int < DbgHwBreakNum) ? csr_wdata_int[DbgHwNumLen-1:0] :
-                                                         DbgHwBreakNum-1;
+                                                         MaxTselect[DbgHwNumLen-1:0];
     // tmatch_control is enabled when the execute bit is set
     assign tmatch_control_d = csr_wdata_int[2];
     assign tmatch_value_d   = csr_wdata_int[31:0];
@@ -1299,26 +1364,35 @@ module ibex_cs_registers #(
     localparam int unsigned TSelectRdataPadlen = DbgHwNumLen >= 32 ? 0 : (32 - DbgHwNumLen);
     assign tselect_rdata = {{TSelectRdataPadlen{1'b0}}, tselect_q};
 
+    if (DbgHwBreakNum > 1) begin : g_dbg_tmatch_multiple_select
+      assign selected_tmatch_control = tmatch_control_q[tselect_q];
+      assign selected_tmatch_value   = tmatch_value_q[tselect_q];
+    end else begin : g_dbg_tmatch_single_select
+      assign selected_tmatch_control = tmatch_control_q[0];
+      assign selected_tmatch_value   = tmatch_value_q[0];
+    end
+
     // TDATA0 - only support simple address matching
-    assign tmatch_control_rdata = {4'h2,                         // type    : address/data match
-                                   1'b1,                         // dmode   : access from D mode only
-                                   6'h00,                        // maskmax : exact match only
-                                   1'b0,                         // hit     : not supported
-                                   1'b0,                         // select  : address match only
-                                   1'b0,                         // timing  : match before execution
-                                   2'b00,                        // sizelo  : match any access
-                                   4'h1,                         // action  : enter debug mode
-                                   1'b0,                         // chain   : not supported
-                                   4'h0,                         // match   : simple match
-                                   1'b1,                         // m       : match in m-mode
-                                   1'b0,                         // 0       : zero
-                                   1'b0,                         // s       : not supported
-                                   1'b1,                         // u       : match in u-mode
-                                   tmatch_control_q[tselect_q],  // execute : match instruction address
-                                   1'b0,                         // store   : not supported
-                                   1'b0};                        // load    : not supported
+    assign tmatch_control_rdata = {4'h2,                    // type    : address/data match
+                                   1'b1,                    // dmode   : access from D mode only
+                                   6'h00,                   // maskmax : exact match only
+                                   1'b0,                    // hit     : not supported
+                                   1'b0,                    // select  : address match only
+                                   1'b0,                    // timing  : match before execution
+                                   2'b00,                   // sizelo  : match any access
+                                   4'h1,                    // action  : enter debug mode
+                                   1'b0,                    // chain   : not supported
+                                   4'h0,                    // match   : simple match
+                                   1'b1,                    // m       : match in m-mode
+                                   1'b0,                    // 0       : zero
+                                   1'b0,                    // s       : not supported
+                                   1'b1,                    // u       : match in u-mode
+                                   selected_tmatch_control, // execute : match instruction address
+                                   1'b0,                    // store   : not supported
+                                   1'b0};                   // load    : not supported
+
     // TDATA1 - address match value only
-    assign tmatch_value_rdata = tmatch_value_q[tselect_q];
+    assign tmatch_value_rdata = selected_tmatch_value;
 
     // Breakpoint matching
     // We match against the next address, as the breakpoint must be taken before execution

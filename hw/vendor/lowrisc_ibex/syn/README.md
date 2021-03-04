@@ -31,8 +31,9 @@ The following must be installed:
 * Yosys - https://github.com/YosysHQ/yosys
 * OpenSTA - https://github.com/The-OpenROAD-Project/OpenSTA
 
-A standard cell library is also required in the liberty (.lib) format. The
-following Open Libraries can be used:
+The flow was tested with yosys 0.9 and OpenSTA 2.2 but may work with other
+versions.  A standard cell library is also required in the liberty (.lib)
+format. The following Open Libraries can be used:
 
 * Nangate45 - https://github.com/The-OpenROAD-Project/OpenROAD-flow/tree/master/flow/platforms/nangate45
 
@@ -55,7 +56,7 @@ The environment variables that must be set in `syn_setup.sh` are
 
 # Running the synthesis flow
 
-Once `syn_setup.sh` has been created the `syn_yosys.sh` will run the entire
+Once `syn_setup.sh` has been created, call `syn_yosys.sh` to run the entire
 flow. All outputs are placed under the `syn/syn_out` directory with the prefix
 `ibex_` with the current date/time forming the rest of the name, e.g.
 `syn/syn_out/ibex_06_01_2020_11_19_15`

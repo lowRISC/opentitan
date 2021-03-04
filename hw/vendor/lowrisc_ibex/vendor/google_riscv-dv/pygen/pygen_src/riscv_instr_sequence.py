@@ -21,7 +21,7 @@ from collections import defaultdict
 from pygen_src.riscv_instr_stream import riscv_rand_instr_stream
 from pygen_src.riscv_instr_gen_config import cfg
 from pygen_src.riscv_instr_pkg import (pkg_ins, riscv_instr_name_t, riscv_reg_t,
-                                      riscv_instr_category_t)
+                                       riscv_instr_category_t)
 from pygen_src.riscv_directed_instr_lib import riscv_pop_stack_instr, riscv_push_stack_instr
 rcs = import_module("pygen_src.target." + cfg.argv.target + ".riscv_core_setting")
 
@@ -35,7 +35,7 @@ class riscv_instr_sequence:
         self.is_debug_program = 0
         self.label_name = ""
         self.instr_string_list = []  # Save the instruction list
-        self.program_stack_len = 0  # Stack space allocated for this program
+        self.program_stack_len = vsc.int32_t(0)  # Stack space allocated for this program
         self.directed_instr = []    # List of all directed instruction stream
         self.illegal_instr_pct = 0  # Percentage of illegal instructions
         self.hint_instr_pct = 0     # Percentage of hint instructions
@@ -54,9 +54,21 @@ class riscv_instr_sequence:
             self.gen_stack_enter_instr()
             self.gen_stack_exit_instr()
 
-    # TODO
     def gen_stack_enter_instr(self):
-        pass
+        allow_branch = 0 if (self.illegal_instr_pct > 0 or self.hint_instr_pct > 0) else 1
+        allow_branch &= not cfg.no_branch_jump
+        try:
+            with vsc.randomize_with(self.program_stack_len):
+                self.program_stack_len in vsc.rangelist(vsc.rng(cfg.min_stack_len_per_program,
+                                                                cfg.max_stack_len_per_program))
+                self.program_stack_len % (rcs.XLEN // 8) == 0
+        except Exception:
+            logging.critical("Cannot randomize program_stack_len")
+            sys.exit(1)
+        self.instr_stack_enter.push_start_label = self.label_name + "_stack_p"
+        self.instr_stack_enter.gen_push_stack_instr(self.program_stack_len,
+                                                    allow_branch = allow_branch)
+        self.instr_stream.instr_list.extend((self.instr_stack_enter.instr_list))
 
     # Recover the saved GPR from the stack
     # Advance the stack pointer(SP) to release the allocated stack space.
@@ -151,7 +163,6 @@ class riscv_instr_sequence:
                 logging.info("Processing branch instruction[%0d]:%0s # %0d -> %0d", j,
                              self.instr_stream.instr_list[j].convert2asm(),
                              self.instr_stream.instr_list[j].idx, branch_target_label)
-                logging.info("Branch", branch_target_label)
                 self.instr_stream.instr_list[j].imm_str = "{}f".format(branch_target_label)
                 self.instr_stream.instr_list[j].branch_assigned = 1
                 branch_target[branch_target_label] = 1
@@ -166,7 +177,20 @@ class riscv_instr_sequence:
         logging.info("Finished post-processing instructions")
 
     def insert_jump_instr(self):
-        pass  # TODO
+        # TODO riscv_jump_instr class implementation
+        """
+        jump_instr = riscv_jump_instr()
+        jump_instr.target_program_label = target_label
+        if(not self.is_main_program):
+            jump_instr.stack_exit_instr = self.instr_stack_exit.pop_stack_instr
+        jump_instr.label = self.label_name
+        jump_instr.idx = idx
+        jump_instr.use_jalr = self.is_main_program
+        jump_instr.randomize()
+        self.instr_stream.insert_instr_stream(jump_instr.instr_list)
+        logging.info("{} -> {}...done".format(jump_instr.jump.instr_name.name, target_label))
+        """
+        pass
 
     def generate_instr_stream(self, no_label = 0):
         prefix = ''
@@ -201,9 +225,14 @@ class riscv_instr_sequence:
         string = ''
         jump_instr = [riscv_instr_name_t.JALR]
         rand_lsb = random.randrange(0, 1)
-        ra = vsc.enum_t(riscv_reg_t)
-        # TODO
-        # `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(ra,!(ra inside {cfg.reserved_regs}) ra != ZERO)
+        ra = vsc.rand_enum_t(riscv_reg_t)
+        try:
+            with vsc.randomize_with(ra):
+                ra.not_inside(vsc.rangelist(cfg.reserved_regs))
+                ra != riscv_reg_t.ZERO
+        except Exception:
+            logging.critical("Cannot randomize ra")
+            sys.exit(1)
         string = (prefix + pkg_ins.format_string("{}addi x{} x{} {}".format(ra.name,
                                                                             cfg.ra.name, rand_lsb)))
         self.instr_string_list.append(string)

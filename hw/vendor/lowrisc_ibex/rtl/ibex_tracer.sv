@@ -759,17 +759,17 @@ module ibex_tracer (
     if (rvfi_insn[1:0] != 2'b11) begin
       insn_is_compressed = 1;
       // Separate case to avoid overlapping decoding
-      if (rvfi_insn[15:13] == 3'b100 && rvfi_insn[1:0] == 2'b10) begin
-        if (rvfi_insn[12]) begin
-          if (rvfi_insn[11:2] == 10'h0) begin
+      if (rvfi_insn[15:13] == INSN_CMV[15:13] && rvfi_insn[1:0] == OPCODE_C2) begin
+        if (rvfi_insn[12] == INSN_CADD[12]) begin
+          if (rvfi_insn[11:2] == INSN_CEBREAK[11:2]) begin
             decode_mnemonic("c.ebreak");
-          end else if (rvfi_insn[6:2] == 5'b0) begin
+          end else if (rvfi_insn[6:2] == INSN_CJALR[6:2]) begin
             decode_cr_insn("c.jalr");
           end else begin
             decode_cr_insn("c.add");
           end
         end else begin
-          if (rvfi_insn[6:2] == 5'h0) begin
+          if (rvfi_insn[6:2] == INSN_CJR[6:2]) begin
             decode_cr_insn("c.jr");
           end else begin
             decode_cr_insn("c.mv");

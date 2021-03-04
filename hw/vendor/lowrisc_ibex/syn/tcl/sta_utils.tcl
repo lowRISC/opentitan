@@ -40,8 +40,8 @@ proc timing_report {path_group rpt_out path_count} {
   set sta_csv_out [open $sta_csv_out_filename "w"]
 
   foreach path $paths {
-    set startpoint_name [get_name [get_property $path startpoint]]
-    set endpoint_name [get_name [get_property $path endpoint]]
+    set startpoint_name [get_property [get_property $path startpoint] full_name]
+    set endpoint_name [get_property [get_property $path endpoint] full_name]
     set slack [get_property $path slack]
     puts $sta_csv_out [format "$startpoint_name,$endpoint_name,%.4f" $slack]
   }

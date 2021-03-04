@@ -15,4 +15,5 @@
     "sample/sample_rv32imc_test.tar.gz",
   ]
 
+  patch_dir: "patches/google_riscv-dv"
 }

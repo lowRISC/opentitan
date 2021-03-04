@@ -15,7 +15,7 @@ run stand-alone binaries. It contains:
   Note Linux package managers may have Verilator but often a very old version
   that is not suitable. It is recommended Verilator is built from source.
 * The Python dependencies of this repository.
-  Install them with `pip3 install -U python3-requirements.txt` from the
+  Install them with `pip3 install -U -r python-requirements.txt` from the
   repository root.
 * RISC-V Compiler Toolchain - lowRISC provides a pre-built GCC based toolchain
   <https://github.com/lowRISC/lowrisc-toolchains/releases>

@@ -66,6 +66,7 @@ Instantiation Template
 
       // Debug interface
       .debug_req_i    (),
+      .crash_dump_o   (),
 
       // Special control signals
       .fetch_enable_i (),
@@ -171,6 +172,8 @@ Interfaces
 | ``irq_*``               | Interrupt inputs, see :ref:`exceptions-interrupts`                     |
 +-------------------------+------------------------------------------------------------------------+
 | ``debug_*``             | Debug interface, see :ref:`debug-support`                              |
++-------------------------+------------------------------------------------------------------------+
+| ``crash_dump_o``        | A set of signals that can be captured on reset to aid crash debugging. |
 +-------------------------+-------------------------+-----+----------------------------------------+
 | ``fetch_enable_i``      | 1                       | in  | When it comes out of reset, the core   |
 |                         |                         |     | will not start fetching and executing  |

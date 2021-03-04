@@ -30,7 +30,7 @@ privileged_mode_t supported_privileged_mode[] = {MACHINE_MODE};
 riscv_instr_name_t unsupported_instr[];
 
 // ISA supported by the processor
-riscv_instr_group_t supported_isa[$] = {RV32I, RV32M, RV32C, RV32F, RV32FC};
+riscv_instr_group_t supported_isa[$] = {RV32I, RV32M, RV32C, RV32F, RV32FC, RV32D, RV32DC, RV32A};
 
 // Interrupt mode support
 mtvec_mode_t supported_interrupt_mode[$] = {DIRECT, VECTORED};
@@ -96,8 +96,8 @@ parameter int NUM_HARTS = 1;
 privileged_reg_t implemented_csr[] = {
 `else
 const privileged_reg_t implemented_csr[] = {
-`endif //
-    Machine mode mode CSR
+`endif
+    // Machine mode mode CSR
     MVENDORID, // Vendor ID
     MARCHID, // Architecture ID
     MIMPID, // Implementation ID
@@ -119,8 +119,8 @@ bit[11:0] custom_csr[] = {
 };
 
 // ----------------------------------------------------------------------------
-// Supported interrupt / exception setting, used for functional coverage //
-----------------------------------------------------------------------------
+// Supported interrupt / exception setting, used for functional coverage
+// ----------------------------------------------------------------------------
 
 `ifdef DSIM
 interrupt_cause_t implemented_interrupt[] = {

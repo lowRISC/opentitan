@@ -187,16 +187,16 @@ corner cases::
 
 
     # Run a single/multiple assembly/C test
-    run --asm_tests asm_test_path1/asm_test1.S,asm_test_path2/asm_test2.S
-    run --c_tests c_test_path1/c_test1.c,c_test_path2/c_test2.c
+    run --asm_test asm_test_path1/asm_test1.S,asm_test_path2/asm_test2.S
+    run --c_test c_test_path1/c_test1.c,c_test_path2/c_test2.c
 
-    # Run regression with all assembly tests(*.S)/ C tests(*.c) under a given directory
-    run --asm_tests asm_test_path1,asm_test_path2
-    run --c_tests c_test_path1,c_test_path2
+    # Run regression with all assembly test(*.S)/ C test(*.c) under a given directory
+    run --asm_test asm_test_path1,asm_test_path2
+    run --c_test c_test_path1,c_test_path2
 
-    # Run mix between the assembly/C test and assembly/C tests under a directory
-    run --asm_tests asm_test_path1/asm_test1.S,asm_test_path2
-    run --c_tests c_test_path1/c_test1.c,c_test_path2
+    # Run mix between the assembly/C test and assembly/C test under a directory
+    run --asm_test asm_test_path1/asm_test1.S,asm_test_path2
+    run --c_test c_test_path1/c_test1.c,c_test_path2
 
 You could also use this approach to integrate the assembly/C tests
 from other sources to riscv-dv flow.

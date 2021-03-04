@@ -10,18 +10,24 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
+from pygen_src.riscv_instr_pkg import (privileged_reg_t, satp_mode_t,
+                                       riscv_instr_group_t, privileged_mode_t)
+
 
 XLEN = 32
 
-implemented_csr = ['MVENDORID', 'MARCHID', 'MIMPID', 'MHARTID', 'MSTATUS', 'MISA', 'MIE',
-                   'MTVEC', 'MCOUNTEREN', 'MSCRATCH', 'MEPC', 'MCAUSE', 'MTVAL', 'MIP']
+implemented_csr = [privileged_reg_t.MVENDORID, privileged_reg_t.MARCHID, privileged_reg_t.MIMPID,
+                   privileged_reg_t.MHARTID, privileged_reg_t.MSTATUS,
+                   privileged_reg_t.MISA, privileged_reg_t.MIE,
+                   privileged_reg_t.MTVEC, privileged_reg_t.MCOUNTEREN, privileged_reg_t.MSCRATCH,
+                   privileged_reg_t.MEPC, privileged_reg_t.MCAUSE,
+                   privileged_reg_t.MTVAL, privileged_reg_t.MIP]
 
-SATP_MODE = 'BARE'
+SATP_MODE = satp_mode_t.BARE
 
-supported_isa = ['RV32I']
+supported_isa = [riscv_instr_group_t.RV32I]
 
-supported_privileged_mode = ['MACHINE_MODE']
-
+supported_privileged_mode = [privileged_mode_t.MACHINE_MODE]
 NUM_HARTS = 1
 
 support_pmp = 0

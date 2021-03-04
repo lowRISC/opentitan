@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:lfsr
       - lowrisc:ibex:ibex_pkg
       - lowrisc:ibex:ibex_icache
+      - lowrisc:dv:dv_fcov_macros
     files:
       - rtl/ibex_alu.sv
       - rtl/ibex_branch_predict.sv

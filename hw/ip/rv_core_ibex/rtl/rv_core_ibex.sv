@@ -224,6 +224,7 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
     .irq_nm_i       ( irq_nm       ),
 
     .debug_req_i,
+    .crash_dump_o   (              ),
 
 `ifdef RVFI
     .rvfi_valid,

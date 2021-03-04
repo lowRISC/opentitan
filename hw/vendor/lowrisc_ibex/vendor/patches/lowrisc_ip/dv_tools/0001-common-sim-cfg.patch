@@ -1,0 +1,15 @@
+--- a/dvsim/common_sim_cfg.hjson
++++ b/dvsim/common_sim_cfg.hjson
+@@ -4,10 +4,10 @@
+ {
+   flow:             sim
+   // Where to find DV code
+-  dv_root:          "{proj_root}/hw/dv"
++  dv_root:          "{proj_root}/vendor/lowrisc_ip/dv"
+   flow_makefile:    "{dv_root}/tools/dvsim/sim.mk"
+
+-  import_cfgs:      ["{proj_root}/hw/data/common_project_cfg.hjson",
++  import_cfgs:      ["{proj_root}/dv/uvm/common_project_cfg.hjson",
+                      "{dv_root}/tools/dvsim/common_modes.hjson",
+                      "{dv_root}/tools/dvsim/fusesoc.hjson",
+                      "{dv_root}/tools/dvsim/{tool}.hjson"]

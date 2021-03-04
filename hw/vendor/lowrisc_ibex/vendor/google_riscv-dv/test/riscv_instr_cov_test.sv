@@ -7,10 +7,11 @@ class riscv_instr_cov_test extends uvm_test;
   riscv_instr_cover_group   instr_cg;
   string                    trace_csv[$];
   string                    trace[string];
+  bit                       report_illegal_instr;
   int unsigned              entry_cnt;
   int unsigned              total_entry_cnt;
   int unsigned              skipped_cnt;
-  int unsigned              unexpected_illegal_instr_cnt;
+  int unsigned              illegal_instr_cnt;
 
   `uvm_component_utils(riscv_instr_cov_test)
   `uvm_component_new
@@ -23,6 +24,7 @@ class riscv_instr_cov_test extends uvm_test;
     string header[$];
     string entry[$];
     int fd;
+    void'($value$plusargs("report_illegal_instr=%0d", report_illegal_instr));
     while(1) begin
       args = {$sformatf("trace_csv_%0d", i), "=%s"};
       if ($value$plusargs(args, csv)) begin
@@ -42,9 +44,6 @@ class riscv_instr_cov_test extends uvm_test;
       bit expect_illegal_instr;
       entry_cnt = 0;
       instr_cg.reset();
-      if (uvm_is_match("*illegal*", trace_csv[i]) || uvm_is_match("*unknown*", trace_csv[i]) ) begin
-        expect_illegal_instr = 1;
-      end
       `uvm_info(`gfn, $sformatf("Processing CSV trace[%0d]: %s", i, trace_csv[i]), UVM_LOW)
       fd = $fopen(trace_csv[i], "r");
       if (fd) begin
@@ -79,11 +78,11 @@ class riscv_instr_cov_test extends uvm_test;
               continue;
             end
             if (!sample()) begin
-              if (!expect_illegal_instr) begin
+              if (report_illegal_instr) begin
                `uvm_error(`gfn, $sformatf("Found unexpected illegal instr: %0s [%0s]",
                                           trace["instr"], line))
-                unexpected_illegal_instr_cnt++;
               end
+              illegal_instr_cnt++;
             end
           end
           entry_cnt += 1;
@@ -97,9 +96,9 @@ class riscv_instr_cov_test extends uvm_test;
     end
     `uvm_info(`gfn, $sformatf("Finished processing %0d trace CSV, %0d instructions",
                      trace_csv.size(), total_entry_cnt), UVM_LOW)
-    if ((skipped_cnt > 0) || (unexpected_illegal_instr_cnt > 0)) begin
+    if ((skipped_cnt > 0) || ((illegal_instr_cnt > 0) && report_illegal_instr)) begin
       `uvm_error(`gfn, $sformatf("%0d instructions skipped, %0d illegal instruction",
-                       skipped_cnt, unexpected_illegal_instr_cnt))
+                       skipped_cnt, illegal_instr_cnt))
 
     end else begin
       `uvm_info(`gfn, "TEST PASSED", UVM_NONE);
