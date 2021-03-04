@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Breakout / remapping wrapper for register file. Generated from template.
+// Breakout / remapping wrapper for register file.
 
 module alert_handler_reg_wrap import alert_pkg::*; (
   input                                   clk_i,
