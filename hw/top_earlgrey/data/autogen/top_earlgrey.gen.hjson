@@ -7381,7 +7381,7 @@
       base_addr: 0x00008000
       swaccess: ro
       size: 0x4000
-      integ_width: 7
+      integ_width: 8
       inter_signal_list:
       [
         {

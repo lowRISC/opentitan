@@ -555,7 +555,7 @@
       swaccess: "ro",
       size: "0x4000",
       // data integrity width
-      integ_width: 7,
+      integ_width: 8,
       inter_signal_list: [
         { struct: "tl"
           package: "tlul_pkg"
