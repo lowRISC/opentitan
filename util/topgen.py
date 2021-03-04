@@ -1081,7 +1081,10 @@ def main():
         '--alert-handler-only',
         action='store_true',
         help="If defined, the tool generates alert handler hjson only")
+
     # Generator options: generate dv ral model
+    parser.add_argument('--dump', action='store_true',
+                        help='Dump hjson for the whole chip.')
     parser.add_argument(
         '--top_ral',
         '-r',
@@ -1092,6 +1095,7 @@ def main():
                         default='dv_base',
                         help='Prefix for the DV register classes from which '
                         'the register models are derived.')
+
     # Generator options for compile time random netlist constants
     parser.add_argument(
         '--rnd_cnst_seed',
@@ -1190,21 +1194,22 @@ def main():
 
     top_name = completecfg["name"]
 
-    # Generate top.gen.hjson right before rendering
-    genhjson_dir = Path(out_path) / "data/autogen"
-    genhjson_dir.mkdir(parents=True, exist_ok=True)
-    genhjson_path = genhjson_dir / ("top_%s.gen.hjson" % completecfg["name"])
+    # If required, generate top.gen.hjson right before rendering
+    if args.dump:
+        genhjson_dir = Path(out_path) / "data/autogen"
+        genhjson_dir.mkdir(parents=True, exist_ok=True)
+        genhjson_path = genhjson_dir / ("top_%s.gen.hjson" % completecfg["name"])
 
-    # Header for HJSON
-    gencmd = '''//
-// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
-//                -o hw/top_{topname}/ \\
-//                --hjson-only \\
-//                --rnd_cnst_seed {seed}
-'''.format(topname=topname, seed=completecfg['rnd_cnst_seed'])
+        # Header for HJSON
+        gencmd = '''//
+    // util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
+    //                -o hw/top_{topname}/ \\
+    //                --hjson-only \\
+    //                --rnd_cnst_seed {seed}
+    '''.format(topname=topname, seed=completecfg['rnd_cnst_seed'])
 
-    genhjson_path.write_text(genhdr + gencmd +
-                             hjson.dumps(completecfg, for_json=True))
+        genhjson_path.write_text(genhdr + gencmd +
+                                 hjson.dumps(completecfg, for_json=True))
 
     if not args.no_top or args.top_only:
         tpl_path = Path(args.tpl)
