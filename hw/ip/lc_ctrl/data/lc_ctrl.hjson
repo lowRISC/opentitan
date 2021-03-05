@@ -296,7 +296,7 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
-      tags: [ // Life cycle internal HW will update status so could not auto-predict its value,
+      tags: [ // Life cycle internal HW will update status so can not auto-predict its value,
               // After reset, the field READY will be set to 1, so it is excluded from reset CSR test
               "excl:CsrAllTests:CsrExclCheck"],
       fields: [
@@ -465,7 +465,7 @@
         regwen:   "TRANSITION_REGWEN",
         cname:    "WORD",
         tags: [ // To update this register, SW needs to claim the associated hardware mutex via
-                // CLAIM_TRANSITION_IF, so could not auto predict its value.
+                // CLAIM_TRANSITION_IF, so can not auto predict its value.
                 "excl:CsrNonInitTests:CsrExclCheck"],
         fields: [
           { bits: "31:0"
@@ -489,7 +489,7 @@
                 hardware mutex via !!CLAIM_TRANSITION_IF.
                 '''
           tags: [ // To update this register, SW needs to claim the associated hardware mutex via
-                  // CLAIM_TRANSITION_IF, so could not auto predict its value.
+                  // CLAIM_TRANSITION_IF, so can not auto predict its value.
                   "excl:CsrNonInitTests:CsrExclCheck"],
           enum: [
             { value: "0",
@@ -558,6 +558,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
+      tags: [ // Life cycle internal HW will update status so can not auto-predict its value.
+              "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits: "CsrLcStateWidth-1:0"
           name: "STATE"
@@ -634,8 +636,6 @@
           ]
         }
       ],
-      tags: [ // This value is driven by hardware.
-        "excl:CsrNonInitTests:CsrExclCheck"],
     }
 
     { name: "LC_TRANSITION_CNT",
@@ -643,6 +643,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
+      tags: [ // Life cycle internal HW will update status so can not auto-predict its value.
+              "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits: "CsrLcCountWidth-1:0"
           name: "CNT"
@@ -657,8 +659,6 @@
           '''
         }
       ],
-      tags: [ // This value is driven by hardware.
-        "excl:CsrNonInitTests:CsrExclCheck"],
     }
 
     { name: "LC_ID_STATE",
@@ -666,6 +666,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
+      tags: [ // Life cycle internal HW will update status so can not auto-predict its value.
+              "excl:CsrAllTests:CsrExclCheck"],
       fields: [
         { bits: "1:0"
           name: "STATE"
@@ -686,8 +688,6 @@
           ]
         }
       ],
-      tags: [ // This value is driven by hardware.
-        "excl:CsrNonInitTests:CsrExclCheck"],
     }
 
     ///////////////
@@ -705,8 +705,8 @@
         hwaccess: "hwo",
         hwext:    "true",
         cname:    "WORD",
-        tags: [ // This value is driven by hardware.
-                "excl:CsrNonInitTests:CsrExclCheck"],
+        tags: [ // Life cycle internal HW will update status so can not auto-predict its value.
+                "excl:CsrAllTests:CsrExclCheck"],
         fields: [
           { bits: "31:0"
           }
