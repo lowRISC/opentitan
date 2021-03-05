@@ -44,24 +44,31 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   // Task to perform a single SRAM read at the specified location
-  virtual task do_single_read(bit [TL_AW-1:0] addr,
-                              bit             blocking = $urandom_range(0, 1));
-    logic [TL_DW-1:0] rdata;
+  virtual task do_single_read(input bit [TL_AW-1:0]    addr,
+                              input bit [TL_DBW-1:0]   mask = get_rand_contiguous_mask(),
+                              input bit                blocking = $urandom_range(0, 1),
+                              input bit                check_rdata = 0,
+                              input bit [TL_DW-1:0]    exp_rdata = '0,
+                              output logic [TL_DW-1:0] rdata);
     tl_access(.addr(addr),
               .data(rdata),
-              .mask(get_rand_contiguous_mask()),
+              .mask(mask),
               .write(1'b0),
               .blocking(blocking),
+              .check_exp_data(check_rdata),
+              .exp_data(exp_rdata),
+              .compare_mask(mask),
               .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));
   endtask
 
   // Task to perform a single SRAM write at the specified location
-  virtual task do_single_write(bit [TL_AW-1:0] addr,
-                               bit [TL_DW-1:0] data,
-                               bit             blocking = $urandom_range(0, 1));
+  virtual task do_single_write(bit [TL_AW-1:0]  addr,
+                               bit [TL_DW-1:0]  data,
+                               bit [TL_DBW-1:0] mask = get_rand_contiguous_mask(),
+                               bit              blocking = $urandom_range(0, 1));
     tl_access(.addr(addr),
               .data(data),
-              .mask(get_rand_contiguous_mask()),
+              .mask(mask),
               .write(1'b1),
               .blocking(blocking),
               .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));

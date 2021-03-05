@@ -6,3 +6,4 @@
 `include "sram_ctrl_smoke_vseq.sv"
 `include "sram_ctrl_common_vseq.sv"
 `include "sram_ctrl_multiple_keys_vseq.sv"
+`include "sram_ctrl_bijection_vseq.sv"
