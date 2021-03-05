@@ -831,7 +831,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       end
     end
 
-    repeat (num_accesses * num_times) begin
+    num_accesses = num_accesses * num_times;
+    while (num_accesses) begin
       fork
         begin
           bit [BUS_AW-1:0]  addr;
@@ -866,11 +867,16 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               // get all the programmed addresses and randomly pick one
               addr_mask_t addr_mask = mem_exist_addr_q[$urandom_range(0,
                                                                       mem_exist_addr_q.size - 1)];
-              addr = addr_mask.addr;
-              if (get_mem_access_by_addr(ral, addr) != "WO") begin
-                mask = get_rand_contiguous_mask(addr_mask.mask);
-                tl_access_w_abort(.addr(addr), .write(0), .data(data), .status(status), .mask(mask),
-                                  .blocking(1), .req_abort_pct($urandom_range(0, 100)));
+              // TODO, Remove this if condition when #5262 is solved
+              // Only read when it's fully written
+              if (addr_mask.mask == '1) begin
+                addr = addr_mask.addr;
+                if (get_mem_access_by_addr(ral, addr) != "WO") begin
+                  mask = get_rand_contiguous_mask(addr_mask.mask);
+                  tl_access_w_abort(.addr(addr), .write(0), .data(data), .status(status), .mask(mask),
+                                    .blocking(1), .req_abort_pct($urandom_range(0, 100)));
+                end
+                num_accesses--;
               end
             end
           endcase
