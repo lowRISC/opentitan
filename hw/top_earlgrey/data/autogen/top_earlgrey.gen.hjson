@@ -3875,7 +3875,7 @@
           index: -1
         }
         {
-          name: lc_escalate_en
+          name: lc_cpu_en
           struct: lc_tx
           package: lc_ctrl_pkg
           type: uni
@@ -3883,6 +3883,7 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: aon_timer_aon
+          top_signame: lc_ctrl_lc_cpu_en
           index: -1
         }
         {
@@ -6731,6 +6732,7 @@
       lc_ctrl.lc_cpu_en:
       [
         rv_core_ibex.lc_cpu_en
+        aon_timer_aon.lc_cpu_en
       ]
       lc_ctrl.lc_keymgr_en:
       [
@@ -11790,7 +11792,7 @@
         index: -1
       }
       {
-        name: lc_escalate_en
+        name: lc_cpu_en
         struct: lc_tx
         package: lc_ctrl_pkg
         type: uni
@@ -11798,6 +11800,7 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: aon_timer_aon
+        top_signame: lc_ctrl_lc_cpu_en
         index: -1
       }
       {
