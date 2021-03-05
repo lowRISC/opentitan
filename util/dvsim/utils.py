@@ -536,19 +536,23 @@ def rm_path(path, ignore_error=False):
     operation is raised, else it is ignored.
     '''
 
+    exc = None
     try:
-        if os.path.islink(path):
-            os.remove(path)
-        elif os.path.isdir(path):
-            shutil.rmtree(path)
-        else:
-            os.remove(path)
+        os.remove(path)
     except FileNotFoundError:
         pass
+    except IsADirectoryError:
+        try:
+            shutil.rmtree(path)
+        except OSError as e:
+            exc = e
     except OSError as e:
-        log.error("Failed to remove {}:\n{}.".format(path, e))
+        exc = e
+
+    if exc:
+        log.error("Failed to remove {}:\n{}.".format(path, exc))
         if not ignore_error:
-            raise e
+            raise exc
 
 
 def clean_odirs(odir, max_odirs, ts_format=TS_FORMAT):
@@ -576,7 +580,6 @@ def clean_odirs(odir, max_odirs, ts_format=TS_FORMAT):
                   reverse=True)
 
     for old in dirs[max_odirs - 1:]:
-        if os.path.exists(old):
-            shutil.rmtree(old, ignore_errors=True)
+        shutil.rmtree(old, ignore_errors=True)
 
     return dirs[0:max_odirs - 2]
