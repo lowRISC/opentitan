@@ -20,12 +20,18 @@
   bn.lid    x2++, 32(x0)
 
   /*
-    Check wrapping and incrementing on the grd side. Set x3 to 32+2 and load
-    with increment from address 0x40. We should get data from 0x40 in w2 and x3
-    should equal 3
+    Check incrementing on the grd side. Set x3 to 31 and load with increment
+    from address 0x40. We should get data from 0x40 in w31 and x3 should equal
+    32.
   */
-  addi      x3, x0, 34
+  addi      x3, x0, 31
   bn.lid    x3++, 64(x0)
+
+  /*
+    Check error due to <grd> greater than 31. No register writes should occur,
+    in particular x3 must remain 32.
+  */
+  bn.lid    x3++, 128(x0)
 
   ecall
 
@@ -64,3 +70,12 @@
   .word 0x57565554
   .word 0x5b5a5958
   .word 0x5f5e5d5c
+  /* Address 0x80: */
+  .word 0x63626160
+  .word 0x67666564
+  .word 0x6b6a6968
+  .word 0x6f6e6d6c
+  .word 0x73727170
+  .word 0x77767574
+  .word 0x7b7a7978
+  .word 0x7f7e7d7c

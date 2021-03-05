@@ -594,11 +594,12 @@
     After the operation, either the value in the GPR `grs1`, or the value in `grd` can be optionally incremented.
     Specifying both `grd_inc` and `grs1_inc` results in an error (with error code `ErrCodeIllegalInsn`).
 
-    - If `grd_inc` is set, `grd` is updated to be `(*grd + 1) & 0x1f`.
+    - If `grd_inc` is set, `grd` is updated to be `*grd + 1`.
     - If `grs1_inc` is set, the value in `grs1` is incremented by value WLEN/8 (one word).
 
     The memory address must be aligned to WLEN bits.
     Any address that is unaligned or is above the top of memory results in an error (setting bit `bad_data_addr` in `ERR_BITS`).
+    Any `*grd` value greater than 31 before executing the instruction results in an error (setting bit `illegal_insn` in `ERR_BITS`) and no load or optional increment occurring.
     This instruction takes 2 cycles.
   lsu:
     type: mem-load
@@ -653,10 +654,11 @@
     Specifying both `grs1_inc` and `grs2_inc` results in an error (with error code `ErrCodeIllegalInsn`).
 
     - If `grs1_inc` is set, the value in `grs1` is incremented by the value WLEN/8 (one word).
-    - If `grs2_inc` is set, the value in `grs2` is updated to be `(*grs2 + 1) & 0x1f`.
+    - If `grs2_inc` is set, the value in `grs2` is updated to be `*grs2 + 1`.
 
     The memory address must be aligned to WLEN bits.
     Any address that is unaligned or is above the top of memory results in an error (setting bit `bad_data_addr` in `ERR_BITS`).
+    Any `*grs2` value greater than 31 before executing the instruction results in an error (setting bit `illegal_insn` in `ERR_BITS`) and no store or optional increment occurring.
   lsu:
     type: mem-store
     target: [offset, grs1]
@@ -709,8 +711,10 @@
     After the operation, either the value in the GPR `grd`, or the value in `grs` can be optionally incremented.
     Specifying both `grd_inc` and `grs_inc` results in an error (with error code `ErrCodeIllegalInsn`).
 
-    - If `grd_inc` is set, `grd` is updated to be `(*grd + 1) & 0x1f`.
-    - If `grs_inc` is set, `grs` is updated to be `(*grs + 1) & 0x1f`.
+    - If `grd_inc` is set, `grd` is updated to be `*grd + 1`.
+    - If `grs_inc` is set, `grs` is updated to be `*grs + 1`.
+
+    Any `*grd` or `*grs` value greater than 31 results in an error (setting bit `illegal_insn` in `ERR_BITS`)
   encoding:
     scheme: bnmovr
     mapping:

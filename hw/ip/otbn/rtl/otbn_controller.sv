@@ -151,8 +151,8 @@ module otbn_controller
 
   // Computed increments for indirect register index and memory address in BN.LID/BN.SID/BN.MOVR
   // instructions.
-  logic [4:0]  rf_base_rd_data_a_inc;
-  logic [4:0]  rf_base_rd_data_b_inc;
+  logic [5:0]  rf_base_rd_data_a_inc;
+  logic [5:0]  rf_base_rd_data_b_inc;
   logic [26:0] rf_base_rd_data_a_wlen_word_inc;
 
   // Output of mux taking the above increments as inputs and choosing one to write back to base
@@ -175,6 +175,8 @@ module otbn_controller
   logic csr_illegal_addr, wsr_illegal_addr, ispr_illegal_addr;
   logic imem_addr_err, loop_err, ispr_err;
   logic dmem_addr_err, dmem_addr_unaligned_base, dmem_addr_unaligned_bignum, dmem_addr_overflow;
+
+  logic rf_a_indirect_err, rf_b_indirect_err, rf_d_indirect_err, rf_indirect_err;
 
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
@@ -285,7 +287,7 @@ module otbn_controller
   assign err_bits_o.fatal_reg     = 1'b0;
   assign err_bits_o.fatal_imem    = insn_fetch_err_i;
   assign err_bits_o.fatal_dmem    = lsu_rdata_err_i;
-  assign err_bits_o.illegal_insn  = insn_illegal_i | ispr_err;
+  assign err_bits_o.illegal_insn  = insn_illegal_i | ispr_err | rf_indirect_err;
   assign err_bits_o.bad_data_addr = dmem_addr_err;
   assign err_bits_o.loop          = loop_err;
   assign err_bits_o.call_stack    = rf_base_call_stack_err_i;
@@ -358,13 +360,13 @@ module otbn_controller
   always_comb begin
     unique case (1'b1)
       insn_dec_bignum_i.a_inc: begin
-        increment_out = {27'b0, rf_base_rd_data_a_inc};
+        increment_out = {26'b0, rf_base_rd_data_a_inc};
       end
       insn_dec_bignum_i.b_inc: begin
-        increment_out = {27'b0, rf_base_rd_data_b_inc};
+        increment_out = {26'b0, rf_base_rd_data_b_inc};
       end
       insn_dec_bignum_i.d_inc: begin
-        increment_out = {27'b0, rf_base_rd_data_b_inc};
+        increment_out = {26'b0, rf_base_rd_data_b_inc};
       end
       insn_dec_bignum_i.a_wlen_word_inc: begin
         increment_out = {rf_base_rd_data_a_wlen_word_inc, 5'b0};
@@ -374,7 +376,7 @@ module otbn_controller
         // increment selector signals is high. To prevent the automatic inference of latches in
         // case nothing is written back (rf_wdata_sel != RfWdSelIncr) and to save logic, we choose
         // a valid output as default.
-        increment_out = {27'b0, rf_base_rd_data_a_inc};
+        increment_out = {26'b0, rf_base_rd_data_a_inc};
       end
     endcase
   end
@@ -433,7 +435,7 @@ module otbn_controller
   // only available in the stall state.
   assign rf_base_wr_en_o = insn_valid_i & insn_dec_base_i.rf_we &
       ~(insn_dec_shared_i.ld_insn & (state_q != OtbnStateStall));
-  assign rf_base_wr_commit_o = insn_executing;
+  assign rf_base_wr_commit_o = insn_executing & ~err;
 
   always_comb begin
     unique case (insn_dec_base_i.rf_wdata_sel)
@@ -489,8 +491,8 @@ module otbn_controller
     // By default write nothing
     rf_bignum_wr_en_o = 2'b00;
 
-    // Only write if executing instruction wants a bignum rf write
-    if (insn_executing && insn_dec_bignum_i.rf_we) begin
+    // Only write if executing instruction wants a bignum rf write and there is no error
+    if (insn_executing && insn_dec_bignum_i.rf_we && !err) begin
       if (insn_dec_bignum_i.mac_en && insn_dec_bignum_i.mac_shift_out) begin
         // Special handling for BN.MULQACC.SO, only enable upper or lower half depending on
         // mac_wr_hw_sel_upper.
@@ -512,6 +514,7 @@ module otbn_controller
 
   assign rf_bignum_wr_addr_o = insn_dec_bignum_i.rf_d_indirect ? rf_base_rd_data_b_i[4:0] :
                                                                  insn_dec_bignum_i.d;
+
 
   // For the shift-out variant of BN.MULQACC the bottom half of the MAC result is written to one
   // half of a desintation register specified by the instruction (mac_wr_hw_sel_upper). The bottom
@@ -535,6 +538,13 @@ module otbn_controller
       default:     rf_bignum_wr_data_o = alu_bignum_operation_result_i;
     endcase
   end
+
+  assign rf_a_indirect_err = insn_dec_bignum_i.rf_a_indirect & (|rf_base_rd_data_a_i[31:5]);
+  assign rf_b_indirect_err = insn_dec_bignum_i.rf_b_indirect & (|rf_base_rd_data_b_i[31:5]);
+  assign rf_d_indirect_err = insn_dec_bignum_i.rf_d_indirect & (|rf_base_rd_data_b_i[31:5]);
+
+  assign rf_indirect_err =
+      insn_valid_i & (rf_a_indirect_err | rf_b_indirect_err | rf_d_indirect_err);
 
   // CSR/WSR/ISPR handling
   // ISPRs (Internal Special Purpose Registers) are the internal registers. CSRs and WSRs are the
