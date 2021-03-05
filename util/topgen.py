@@ -1300,15 +1300,15 @@ def main():
             with rendered_path.open(mode='w', encoding='UTF-8') as fout:
                 fout.write(template_contents)
 
-        # generate chip level alert_handler pkg
-        tpl_fname = 'alert_handler_env_pkg__params.sv.tpl'
+        # generate parameters for chip-level environment package
+        tpl_fname = 'chip_env_pkg__params.sv.tpl'
         alert_handler_chip_data_path = tpl_path / tpl_fname
         template_contents = generate_top(completecfg,
                                          str(alert_handler_chip_data_path))
 
         rendered_dir = Path(out_path) / 'dv/env/autogen'
         rendered_dir.mkdir(parents=True, exist_ok=True)
-        rendered_path = rendered_dir / 'alert_handler_env_pkg__params.sv'
+        rendered_path = rendered_dir / 'chip_env_pkg__params.sv'
 
         with rendered_path.open(mode='w', encoding='UTF-8') as fout:
             fout.write(template_contents)
