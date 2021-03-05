@@ -44,11 +44,11 @@ genhdr = '''// Copyright lowRISC contributors.
 SRCTREE_TOP = Path(__file__).parent.parent.resolve()
 
 
-def generate_top(top, tpl_filename, **kwargs):
+def generate_top(top, name_to_block, tpl_filename, **kwargs):
     top_tpl = Template(filename=tpl_filename)
 
     try:
-        return top_tpl.render(top=top, **kwargs)
+        return top_tpl.render(top=top, name_to_block=name_to_block, **kwargs)
     except:  # noqa: E722
         log.error(exceptions.text_error_template().render())
         return ""
@@ -926,7 +926,13 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     if error != 0:
         raise SystemExit("Error occured while validating top.hjson")
 
-    completecfg = merge_top(topcfg, ip_objs, xbar_objs)
+    name_to_block = {}  # type: Dict[str, IpBlock]
+    for block in ip_objs:
+        lblock = block.name.lower()
+        assert lblock not in name_to_block
+        name_to_block[lblock] = block
+
+    completecfg = merge_top(topcfg, name_to_block, xbar_objs)
 
     # Generate flash controller and flash memory
     generate_flash(topcfg, out_path)
@@ -962,7 +968,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
         generate_top_ral(completecfg, ip_objs, args.dv_base_prefix, out_path)
         sys.exit()
 
-    return completecfg
+    return completecfg, name_to_block
 
 
 def main():
@@ -1108,7 +1114,7 @@ def main():
             cfg_copy = deepcopy(topcfg)
             _process_top(cfg_copy, args, cfg_path, out_path, pass_idx)
         else:
-            completecfg = _process_top(topcfg, args, cfg_path, out_path, pass_idx)
+            completecfg, name_to_block = _process_top(topcfg, args, cfg_path, out_path, pass_idx)
 
     topname = topcfg["name"]
 
@@ -1146,8 +1152,8 @@ def main():
 
         def render_template(out_name_tpl, out_dir, **other_info):
             top_tplpath = tpl_path / ((out_name_tpl + '.tpl') % (top_name))
-            template_contents = generate_top(completecfg, str(top_tplpath),
-                                             **other_info)
+            template_contents = generate_top(completecfg, name_to_block,
+                                             str(top_tplpath), **other_info)
 
             rendered_dir = out_path / out_dir
             rendered_dir.mkdir(parents=True, exist_ok=True)
@@ -1244,7 +1250,7 @@ def main():
         for fname in tb_files:
             tpl_fname = "%s.tpl" % (fname)
             xbar_chip_data_path = tpl_path / tpl_fname
-            template_contents = generate_top(completecfg,
+            template_contents = generate_top(completecfg, name_to_block,
                                              str(xbar_chip_data_path))
 
             rendered_dir = Path(out_path) / 'dv/autogen'
@@ -1257,7 +1263,7 @@ def main():
         # generate parameters for chip-level environment package
         tpl_fname = 'chip_env_pkg__params.sv.tpl'
         alert_handler_chip_data_path = tpl_path / tpl_fname
-        template_contents = generate_top(completecfg,
+        template_contents = generate_top(completecfg, name_to_block,
                                          str(alert_handler_chip_data_path))
 
         rendered_dir = Path(out_path) / 'dv/env/autogen'

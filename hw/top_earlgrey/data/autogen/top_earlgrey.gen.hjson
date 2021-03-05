@@ -493,74 +493,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list:
-      [
-        {
-          name: rx
-          width: 1
-          type: input
-        }
-      ]
-      available_output_list:
-      [
-        {
-          name: tx
-          width: 1
-          type: output
-        }
-      ]
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: tx_watermark
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_watermark
-          width: 1
-          type: interrupt
-        }
-        {
-          name: tx_empty
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_frame_err
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_break_err
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_timeout
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_parity_err
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -597,74 +530,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list:
-      [
-        {
-          name: rx
-          width: 1
-          type: input
-        }
-      ]
-      available_output_list:
-      [
-        {
-          name: tx
-          width: 1
-          type: output
-        }
-      ]
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: tx_watermark
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_watermark
-          width: 1
-          type: interrupt
-        }
-        {
-          name: tx_empty
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_frame_err
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_break_err
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_timeout
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_parity_err
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -701,74 +567,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list:
-      [
-        {
-          name: rx
-          width: 1
-          type: input
-        }
-      ]
-      available_output_list:
-      [
-        {
-          name: tx
-          width: 1
-          type: output
-        }
-      ]
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: tx_watermark
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_watermark
-          width: 1
-          type: interrupt
-        }
-        {
-          name: tx_empty
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_frame_err
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_break_err
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_timeout
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_parity_err
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -805,74 +604,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list:
-      [
-        {
-          name: rx
-          width: 1
-          type: input
-        }
-      ]
-      available_output_list:
-      [
-        {
-          name: tx
-          width: 1
-          type: output
-        }
-      ]
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: tx_watermark
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_watermark
-          width: 1
-          type: interrupt
-        }
-        {
-          name: tx_empty
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_frame_err
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_break_err
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_timeout
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_parity_err
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -909,32 +641,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list:
-      [
-        {
-          name: gpio
-          width: 32
-          type: inout
-        }
-      ]
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: gpio
-          width: 32
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -973,69 +680,7 @@
       }
       domain: "0"
       size: 0x2000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list:
-      [
-        {
-          name: sd
-          width: 4
-          type: inout
-        }
-      ]
-      available_input_list:
-      [
-        {
-          name: sck
-          width: 1
-          type: input
-        }
-        {
-          name: csb
-          width: 1
-          type: input
-        }
-      ]
-      available_output_list: []
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: rxf
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rxlvl
-          width: 1
-          type: interrupt
-        }
-        {
-          name: txlvl
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rxerr
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rxoverflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: txunderflow
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "true"
-      scan_reset: "true"
       inter_signal_list:
       [
         {
@@ -1075,49 +720,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list:
-      [
-        {
-          name: sd
-          width: 4
-          type: inout
-        }
-      ]
-      available_input_list: []
-      available_output_list:
-      [
-        {
-          name: sck
-          width: 1
-          type: output
-        }
-        {
-          name: csb
-          width: 1
-          type: output
-        }
-      ]
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: error
-          width: 1
-          type: interrupt
-        }
-        {
-          name: spi_event
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -1157,49 +760,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list:
-      [
-        {
-          name: sd
-          width: 4
-          type: inout
-        }
-      ]
-      available_input_list: []
-      available_output_list:
-      [
-        {
-          name: sck
-          width: 1
-          type: output
-        }
-        {
-          name: csb
-          width: 1
-          type: output
-        }
-      ]
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: error
-          width: 1
-          type: interrupt
-        }
-        {
-          name: spi_event
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -1236,112 +797,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list:
-      [
-        {
-          name: sda
-          width: 1
-          type: inout
-        }
-        {
-          name: scl
-          width: 1
-          type: inout
-        }
-      ]
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: fmt_watermark
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_watermark
-          width: 1
-          type: interrupt
-        }
-        {
-          name: fmt_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: nak
-          width: 1
-          type: interrupt
-        }
-        {
-          name: scl_interference
-          width: 1
-          type: interrupt
-        }
-        {
-          name: sda_interference
-          width: 1
-          type: interrupt
-        }
-        {
-          name: stretch_timeout
-          width: 1
-          type: interrupt
-        }
-        {
-          name: sda_unstable
-          width: 1
-          type: interrupt
-        }
-        {
-          name: trans_complete
-          width: 1
-          type: interrupt
-        }
-        {
-          name: tx_empty
-          width: 1
-          type: interrupt
-        }
-        {
-          name: tx_nonempty
-          width: 1
-          type: interrupt
-        }
-        {
-          name: tx_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: acq_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: ack_stop
-          width: 1
-          type: interrupt
-        }
-        {
-          name: host_timeout
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -1378,112 +834,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list:
-      [
-        {
-          name: sda
-          width: 1
-          type: inout
-        }
-        {
-          name: scl
-          width: 1
-          type: inout
-        }
-      ]
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: fmt_watermark
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_watermark
-          width: 1
-          type: interrupt
-        }
-        {
-          name: fmt_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: nak
-          width: 1
-          type: interrupt
-        }
-        {
-          name: scl_interference
-          width: 1
-          type: interrupt
-        }
-        {
-          name: sda_interference
-          width: 1
-          type: interrupt
-        }
-        {
-          name: stretch_timeout
-          width: 1
-          type: interrupt
-        }
-        {
-          name: sda_unstable
-          width: 1
-          type: interrupt
-        }
-        {
-          name: trans_complete
-          width: 1
-          type: interrupt
-        }
-        {
-          name: tx_empty
-          width: 1
-          type: interrupt
-        }
-        {
-          name: tx_nonempty
-          width: 1
-          type: interrupt
-        }
-        {
-          name: tx_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: acq_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: ack_stop
-          width: 1
-          type: interrupt
-        }
-        {
-          name: host_timeout
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -1520,112 +871,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list:
-      [
-        {
-          name: sda
-          width: 1
-          type: inout
-        }
-        {
-          name: scl
-          width: 1
-          type: inout
-        }
-      ]
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: fmt_watermark
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_watermark
-          width: 1
-          type: interrupt
-        }
-        {
-          name: fmt_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: nak
-          width: 1
-          type: interrupt
-        }
-        {
-          name: scl_interference
-          width: 1
-          type: interrupt
-        }
-        {
-          name: sda_interference
-          width: 1
-          type: interrupt
-        }
-        {
-          name: stretch_timeout
-          width: 1
-          type: interrupt
-        }
-        {
-          name: sda_unstable
-          width: 1
-          type: interrupt
-        }
-        {
-          name: trans_complete
-          width: 1
-          type: interrupt
-        }
-        {
-          name: tx_empty
-          width: 1
-          type: interrupt
-        }
-        {
-          name: tx_nonempty
-          width: 1
-          type: interrupt
-        }
-        {
-          name: tx_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: acq_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: ack_stop
-          width: 1
-          type: interrupt
-        }
-        {
-          name: host_timeout
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -1662,52 +908,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list:
-      [
-        {
-          name: pda0_tx
-          width: 1
-          type: output
-        }
-        {
-          name: pcl0_tx
-          width: 1
-          type: output
-        }
-        {
-          name: pda1_tx
-          width: 1
-          type: output
-        }
-        {
-          name: pcl1_tx
-          width: 1
-          type: output
-        }
-      ]
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: done_ch0
-          width: 1
-          type: interrupt
-        }
-        {
-          name: done_ch1
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -1744,25 +945,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: timer_expired_0_0
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -1809,156 +992,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list:
-      [
-        {
-          name: d
-          width: 1
-          type: inout
-        }
-        {
-          name: dp
-          width: 1
-          type: inout
-        }
-        {
-          name: dn
-          width: 1
-          type: inout
-        }
-      ]
-      available_input_list:
-      [
-        {
-          name: sense
-          width: 1
-          type: input
-        }
-      ]
-      available_output_list:
-      [
-        {
-          name: se0
-          width: 1
-          type: output
-        }
-        {
-          name: dp_pullup
-          width: 1
-          type: output
-        }
-        {
-          name: dn_pullup
-          width: 1
-          type: output
-        }
-        {
-          name: tx_mode_se
-          width: 1
-          type: output
-        }
-        {
-          name: suspend
-          width: 1
-          type: output
-        }
-      ]
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: pkt_received
-          width: 1
-          type: interrupt
-        }
-        {
-          name: pkt_sent
-          width: 1
-          type: interrupt
-        }
-        {
-          name: disconnected
-          width: 1
-          type: interrupt
-        }
-        {
-          name: host_lost
-          width: 1
-          type: interrupt
-        }
-        {
-          name: link_reset
-          width: 1
-          type: interrupt
-        }
-        {
-          name: link_suspend
-          width: 1
-          type: interrupt
-        }
-        {
-          name: link_resume
-          width: 1
-          type: interrupt
-        }
-        {
-          name: av_empty
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_full
-          width: 1
-          type: interrupt
-        }
-        {
-          name: av_overflow
-          width: 1
-          type: interrupt
-        }
-        {
-          name: link_in_err
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_crc_err
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_pid_err
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rx_bitstuff_err
-          width: 1
-          type: interrupt
-        }
-        {
-          name: frame
-          width: 1
-          type: interrupt
-        }
-        {
-          name: connected
-          width: 1
-          type: interrupt
-        }
-        {
-          name: link_out_err
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -2086,11 +1120,6 @@
       }
       domain: "0"
       size: 0x4000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list:
       [
         {
@@ -2122,38 +1151,6 @@
           randwidth: 240
         }
       ]
-      interrupt_list:
-      [
-        {
-          name: otp_operation_done
-          width: 1
-          type: interrupt
-        }
-        {
-          name: otp_error
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list:
-      [
-        {
-          name: fatal_macro_error
-          type: alert
-          width: 1
-          async: "0"
-        }
-        {
-          name: fatal_check_error
-          type: alert
-          width: 1
-          async: "0"
-        }
-      ]
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -2403,11 +1400,6 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list:
       [
         {
@@ -2441,26 +1433,6 @@
           randwidth: 64
         }
       ]
-      interrupt_list: []
-      alert_list:
-      [
-        {
-          name: fatal_prog_error
-          type: alert
-          width: 1
-          async: "0"
-        }
-        {
-          name: fatal_state_error
-          type: alert
-          width: 1
-          async: "0"
-        }
-      ]
-      wakeup_list: []
-      reset_request_list: []
-      scan: "true"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -2874,11 +1846,6 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list:
       [
         {
@@ -2902,34 +1869,6 @@
           randwidth: 160
         }
       ]
-      interrupt_list:
-      [
-        {
-          name: classa
-          width: 1
-          type: interrupt
-        }
-        {
-          name: classb
-          width: 1
-          type: interrupt
-        }
-        {
-          name: classc
-          width: 1
-          type: interrupt
-        }
-        {
-          name: classd
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -3024,25 +1963,7 @@
         clk_slow_i: clkmgr_aon_clocks.clk_aon_powerup
       }
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: wakeup
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -3258,18 +2179,7 @@
         clk_io_div4_i: clkmgr_aon_clocks.clk_io_div4_powerup
       }
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list: []
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "true"
-      scan_reset: "true"
       inter_signal_list:
       [
         {
@@ -3385,18 +2295,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
       }
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list: []
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "true"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -3572,28 +2471,7 @@
         clk_aon_i: clkmgr_aon_clocks.clk_aon_powerup
       }
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list: []
-      alert_list: []
-      wakeup_list:
-      [
-        {
-          name: aon_wkup_req
-          width: "1"
-        }
-        {
-          name: usb_wkup_req
-          width: "1"
-        }
-      ]
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -3812,42 +2690,7 @@
         clk_aon_i: clkmgr_aon_clocks.clk_aon_timers
       }
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: wkup_timer_expired
-          width: 1
-          type: interrupt
-        }
-        {
-          name: wdog_timer_bark
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list:
-      [
-        {
-          name: aon_timer_wkup_req
-          width: "1"
-        }
-      ]
-      reset_request_list:
-      [
-        {
-          name: aon_timer_rst_req
-          width: "1"
-        }
-      ]
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -3937,18 +2780,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list: []
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -3987,62 +2819,7 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list: []
-      alert_list:
-      [
-        {
-          name: recov_as
-          type: alert
-          width: 1
-          async: "0"
-        }
-        {
-          name: recov_cg
-          type: alert
-          width: 1
-          async: "0"
-        }
-        {
-          name: recov_gd
-          type: alert
-          width: 1
-          async: "0"
-        }
-        {
-          name: recov_ts_hi
-          type: alert
-          width: 1
-          async: "0"
-        }
-        {
-          name: recov_ts_lo
-          type: alert
-          width: 1
-          async: "0"
-        }
-        {
-          name: recov_ls
-          type: alert
-          width: 1
-          async: "0"
-        }
-        {
-          name: recov_ot
-          type: alert
-          width: 1
-          async: "0"
-        }
-      ]
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -4108,11 +2885,6 @@
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list:
       [
         {
@@ -4144,26 +2916,6 @@
           name_top: SramCtrlRetAonInstrExec
         }
       ]
-      interrupt_list: []
-      alert_list:
-      [
-        {
-          name: fatal_intg_error
-          type: alert
-          width: 1
-          async: "0"
-        }
-        {
-          name: fatal_parity_error
-          type: alert
-          width: 1
-          async: "0"
-        }
-      ]
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -4291,35 +3043,6 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list:
-      [
-        {
-          name: tck
-          width: 1
-          type: input
-        }
-        {
-          name: tms
-          width: 1
-          type: input
-        }
-        {
-          name: tdi
-          width: 1
-          type: input
-        }
-      ]
-      available_output_list:
-      [
-        {
-          name: tdo
-          width: 1
-          type: output
-        }
-      ]
       param_list:
       [
         {
@@ -4363,59 +3086,6 @@
           randwidth: 160
         }
       ]
-      interrupt_list:
-      [
-        {
-          name: prog_empty
-          width: 1
-          type: interrupt
-        }
-        {
-          name: prog_lvl
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rd_full
-          width: 1
-          type: interrupt
-        }
-        {
-          name: rd_lvl
-          width: 1
-          type: interrupt
-        }
-        {
-          name: op_done
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list:
-      [
-        {
-          name: recov_err
-          type: alert
-          width: 1
-          async: "1"
-        }
-        {
-          name: recov_mp_err
-          type: alert
-          width: 1
-          async: "1"
-        }
-        {
-          name: recov_ecc_err
-          type: alert
-          width: 1
-          async: "1"
-        }
-      ]
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -4607,18 +3277,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list: []
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -4658,11 +3317,6 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list:
       [
         {
@@ -4780,26 +3434,6 @@
           randwidth: 160
         }
       ]
-      interrupt_list: []
-      alert_list:
-      [
-        {
-          name: recov_ctrl_update_err
-          type: alert
-          width: 1
-          async: "1"
-        }
-        {
-          name: fatal_fault
-          type: alert
-          width: 1
-          async: "1"
-        }
-      ]
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -4872,35 +3506,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: hmac_done
-          width: 1
-          type: interrupt
-        }
-        {
-          name: fifo_empty
-          width: 1
-          type: interrupt
-        }
-        {
-          name: hmac_err
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -4952,11 +3558,6 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list:
       [
         {
@@ -4989,29 +3590,6 @@
           name_top: KmacReuseShare
         }
       ]
-      interrupt_list:
-      [
-        {
-          name: kmac_done
-          width: 1
-          type: interrupt
-        }
-        {
-          name: fifo_empty
-          width: 1
-          type: interrupt
-        }
-        {
-          name: kmac_err
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list: []
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -5099,11 +3677,6 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list:
       [
         {
@@ -5237,33 +3810,6 @@
           randwidth: 256
         }
       ]
-      interrupt_list:
-      [
-        {
-          name: op_done
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list:
-      [
-        {
-          name: fatal_fault_err
-          type: alert
-          width: 1
-          async: "1"
-        }
-        {
-          name: recov_operation_err
-          type: alert
-          width: 1
-          async: "1"
-        }
-      ]
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -5419,11 +3965,6 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list:
       [
         {
@@ -5435,42 +3976,6 @@
           name_top: CsrngSBoxImpl
         }
       ]
-      interrupt_list:
-      [
-        {
-          name: cs_cmd_req_done
-          width: 1
-          type: interrupt
-        }
-        {
-          name: cs_entropy_req
-          width: 1
-          type: interrupt
-        }
-        {
-          name: cs_hw_inst_exc
-          width: 1
-          type: interrupt
-        }
-        {
-          name: cs_fatal_err
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list:
-      [
-        {
-          name: fatal_alert
-          type: alert
-          width: 1
-          async: "1"
-        }
-      ]
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -5558,49 +4063,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: es_entropy_valid
-          width: 1
-          type: interrupt
-        }
-        {
-          name: es_health_test_failed
-          width: 1
-          type: interrupt
-        }
-        {
-          name: es_fatal_err
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list:
-      [
-        {
-          name: recov_alert
-          type: alert
-          width: 1
-          async: "1"
-        }
-        {
-          name: fatal_alert
-          type: alert
-          width: 1
-          async: "1"
-        }
-      ]
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -5685,38 +4148,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: edn_cmd_req_done
-          width: 1
-          type: interrupt
-        }
-        {
-          name: edn_fatal_err
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list:
-      [
-        {
-          name: fatal_alert
-          type: alert
-          width: 1
-          async: "1"
-        }
-      ]
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -5788,38 +4220,7 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list: []
-      interrupt_list:
-      [
-        {
-          name: edn_cmd_req_done
-          width: 1
-          type: interrupt
-        }
-        {
-          name: edn_fatal_err
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list:
-      [
-        {
-          name: fatal_alert
-          type: alert
-          width: 1
-          async: "1"
-        }
-      ]
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -5894,11 +4295,6 @@
       }
       domain: "0"
       size: 0x1000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list:
       [
         {
@@ -5930,26 +4326,6 @@
           name_top: SramCtrlMainInstrExec
         }
       ]
-      interrupt_list: []
-      alert_list:
-      [
-        {
-          name: fatal_intg_error
-          type: alert
-          width: 1
-          async: "1"
-        }
-        {
-          name: fatal_parity_error
-          type: alert
-          width: 1
-          async: "1"
-        }
-      ]
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -6076,11 +4452,6 @@
       }
       domain: "0"
       size: 0x10000
-      bus_device: tlul
-      bus_host: none
-      available_inout_list: []
-      available_input_list: []
-      available_output_list: []
       param_list:
       [
         {
@@ -6092,33 +4463,6 @@
           name_top: OtbnRegFile
         }
       ]
-      interrupt_list:
-      [
-        {
-          name: done
-          width: 1
-          type: interrupt
-        }
-      ]
-      alert_list:
-      [
-        {
-          name: fatal
-          type: alert
-          width: 1
-          async: "1"
-        }
-        {
-          name: recov
-          type: alert
-          width: 1
-          async: "1"
-        }
-      ]
-      wakeup_list: []
-      reset_request_list: []
-      scan: "false"
-      scan_reset: "false"
       inter_signal_list:
       [
         {
@@ -9394,204 +7738,204 @@
   [
     {
       name: aes_recov_ctrl_update_err
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: aes
     }
     {
       name: aes_fatal_fault
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: aes
     }
     {
       name: otbn_fatal
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: otbn
     }
     {
       name: otbn_recov
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: otbn
     }
     {
       name: sensor_ctrl_aon_recov_as
-      type: alert
       width: 1
+      type: alert
       async: "0"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_cg
-      type: alert
       width: 1
+      type: alert
       async: "0"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_gd
-      type: alert
       width: 1
+      type: alert
       async: "0"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_ts_hi
-      type: alert
       width: 1
+      type: alert
       async: "0"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_ts_lo
-      type: alert
       width: 1
+      type: alert
       async: "0"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_ls
-      type: alert
       width: 1
+      type: alert
       async: "0"
       module_name: sensor_ctrl_aon
     }
     {
       name: sensor_ctrl_aon_recov_ot
-      type: alert
       width: 1
+      type: alert
       async: "0"
       module_name: sensor_ctrl_aon
     }
     {
       name: keymgr_fatal_fault_err
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: keymgr
     }
     {
       name: keymgr_recov_operation_err
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: keymgr
     }
     {
       name: otp_ctrl_fatal_macro_error
-      type: alert
       width: 1
+      type: alert
       async: "0"
       module_name: otp_ctrl
     }
     {
       name: otp_ctrl_fatal_check_error
-      type: alert
       width: 1
+      type: alert
       async: "0"
       module_name: otp_ctrl
     }
     {
       name: lc_ctrl_fatal_prog_error
-      type: alert
       width: 1
+      type: alert
       async: "0"
       module_name: lc_ctrl
     }
     {
       name: lc_ctrl_fatal_state_error
-      type: alert
       width: 1
+      type: alert
       async: "0"
       module_name: lc_ctrl
     }
     {
       name: entropy_src_recov_alert
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: entropy_src
     }
     {
       name: entropy_src_fatal_alert
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: entropy_src
     }
     {
       name: csrng_fatal_alert
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: csrng
     }
     {
       name: edn0_fatal_alert
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: edn0
     }
     {
       name: edn1_fatal_alert
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: edn1
     }
     {
       name: sram_ctrl_main_fatal_intg_error
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: sram_ctrl_main
     }
     {
       name: sram_ctrl_main_fatal_parity_error
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: sram_ctrl_main
     }
     {
       name: sram_ctrl_ret_aon_fatal_intg_error
-      type: alert
       width: 1
+      type: alert
       async: "0"
       module_name: sram_ctrl_ret_aon
     }
     {
       name: sram_ctrl_ret_aon_fatal_parity_error
-      type: alert
       width: 1
+      type: alert
       async: "0"
       module_name: sram_ctrl_ret_aon
     }
     {
       name: flash_ctrl_recov_err
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: flash_ctrl
     }
     {
       name: flash_ctrl_recov_mp_err
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: flash_ctrl
     }
     {
       name: flash_ctrl_recov_ecc_err
-      type: alert
       width: 1
+      type: alert
       async: "1"
       module_name: flash_ctrl
     }

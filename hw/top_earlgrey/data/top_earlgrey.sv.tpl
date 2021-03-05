@@ -123,24 +123,17 @@ module top_${top["name"]} #(
   % if not lib.is_inst(m):
 <% continue %>
   % endif
+<%
+  block = name_to_block[m['type']]
+  inouts, inputs, outputs = block.xputs
+%>\
   // ${m["name"]}
-  % for p_in in m["available_input_list"] + m["available_inout_list"]:
-    ## assume it passed validate and have available input list always
-    % if "width" in p_in:
-  logic ${lib.bitarray(int(p_in["width"]), max_sigwidth)} cio_${m["name"]}_${p_in["name"]}_p2d;
-    % else:
-  logic ${lib.bitarray(1, max_sigwidth)} cio_${m["name"]}_${p_in["name"]}_p2d;
-    % endif
+  % for p_in in inputs + inouts:
+  logic ${lib.bitarray(p_in.bits.width(), max_sigwidth)} cio_${m["name"]}_${p_in.name}_p2d;
   % endfor
-  % for p_out in m["available_output_list"] + m["available_inout_list"]:
-    ## assume it passed validate and have available output list always
-    % if "width" in p_out:
-  logic ${lib.bitarray(int(p_out["width"]), max_sigwidth)} cio_${m["name"]}_${p_out["name"]}_d2p;
-  logic ${lib.bitarray(int(p_out["width"]), max_sigwidth)} cio_${m["name"]}_${p_out["name"]}_en_d2p;
-    % else:
-  logic ${lib.bitarray(1, max_sigwidth)} cio_${m["name"]}_${p_out["name"]}_d2p;
-  logic ${lib.bitarray(1, max_sigwidth)} cio_${m["name"]}_${p_out["name"]}_en_d2p;
-    % endif
+  % for p_out in outputs + inouts:
+  logic ${lib.bitarray(p_out.bits.width(), max_sigwidth)} cio_${m["name"]}_${p_out.name}_d2p;
+  logic ${lib.bitarray(p_out.bits.width(), max_sigwidth)} cio_${m["name"]}_${p_out.name}_en_d2p;
   % endfor
 % endfor
 
@@ -153,14 +146,17 @@ module top_${top["name"]} #(
   logic [${interrupt_num-1}:0]  intr_vector;
   // Interrupt source list
 % for m in top["module"]:
+<%
+  block = name_to_block[m['type']]
+%>\
     % if not lib.is_inst(m):
 <% continue %>
     % endif
-    % for intr in m["interrupt_list"] if "interrupt_list" in m else []:
-        % if "width" in intr and int(intr["width"]) != 1:
-  logic [${int(intr["width"])-1}:0] intr_${m["name"]}_${intr["name"]};
+    % for intr in block.interrupts:
+        % if intr.bits.width() != 1:
+  logic [${intr.bits.width()-1}:0] intr_${m["name"]}_${intr.name};
         % else:
-  logic intr_${m["name"]}_${intr["name"]};
+  logic intr_${m["name"]}_${intr.name};
         % endif
     % endfor
 % endfor
@@ -576,18 +572,13 @@ module top_${top["name"]} #(
 if not lib.is_inst(m):
      continue
 
-port_list = m["available_input_list"] + m["available_output_list"] + m["available_inout_list"]
-if len(port_list) == 0:
-    max_sigwidth = 0
-else:
-    max_sigwidth = max([len(x["name"]) for x
-      in m["available_input_list"] + m["available_inout_list"] + m["available_output_list"]])
+block = name_to_block[m['type']]
+inouts, inputs, outputs = block.xputs
 
-if len(m["interrupt_list"]) == 0:
-    max_intrwidth = 0
-else:
-    max_intrwidth = max([len(x["name"]) for x
-        in m["interrupt_list"]])
+port_list = inputs + outputs + inouts
+max_sigwidth = max(len(x.name) for x in port_list) if port_list else 0
+max_intrwidth = (max(len(x.name) for x in block.interrupts)
+                 if block.interrupts else 0)
 %>\
   % if m["param_list"]:
   ${m["type"]} #(
@@ -598,46 +589,44 @@ else:
   % else:
   ${m["type"]} u_${m["name"]} (
   % endif
-    % for p_in in m["available_input_list"] + m["available_inout_list"]:
+    % for p_in in inputs + inouts:
       % if loop.first:
 
       // Input
       % endif
-      .${lib.ljust("cio_"+p_in["name"]+"_i",max_sigwidth+9)} (cio_${m["name"]}_${p_in["name"]}_p2d),
+      .${lib.ljust("cio_"+p_in.name+"_i",max_sigwidth+9)} (cio_${m["name"]}_${p_in.name}_p2d),
     % endfor
-    % for p_out in m["available_output_list"] + m["available_inout_list"]:
+    % for p_out in outputs + inouts:
       % if loop.first:
 
       // Output
       % endif
-      .${lib.ljust("cio_"+p_out["name"]+"_o",   max_sigwidth+9)} (cio_${m["name"]}_${p_out["name"]}_d2p),
-      .${lib.ljust("cio_"+p_out["name"]+"_en_o",max_sigwidth+9)} (cio_${m["name"]}_${p_out["name"]}_en_d2p),
+      .${lib.ljust("cio_"+p_out.name+"_o",   max_sigwidth+9)} (cio_${m["name"]}_${p_out.name}_d2p),
+      .${lib.ljust("cio_"+p_out.name+"_en_o",max_sigwidth+9)} (cio_${m["name"]}_${p_out.name}_en_d2p),
     % endfor
-    % for intr in m["interrupt_list"] if "interrupt_list" in m else []:
+    % for intr in block.interrupts:
       % if loop.first:
 
       // Interrupt
       % endif
-      .${lib.ljust("intr_"+intr["name"]+"_o",max_intrwidth+7)} (intr_${m["name"]}_${intr["name"]}),
+      .${lib.ljust("intr_"+intr.name+"_o",max_intrwidth+7)} (intr_${m["name"]}_${intr.name}),
     % endfor
-    % if m["alert_list"]:
+    % if block.alerts:
 <%
-w = sum([x["width"] if "width" in x else 1 for x in m["alert_list"]])
+w = len(block.alerts)
 slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 %>
-      % for alert in m["alert_list"] if "alert_list" in m else []:
-        % for i in range(alert["width"]):
-      // [${alert_idx}]: ${alert["name"]}<% alert_idx += 1 %>
-        % endfor
+      % for alert in block.alerts:
+      // [${alert_idx}]: ${alert.name}<% alert_idx += 1 %>
       % endfor
       .alert_tx_o  ( alert_tx[${slice}] ),
       .alert_rx_i  ( alert_rx[${slice}] ),
     % endif
     ## TODO: Inter-module Connection
-    % if "inter_signal_list" in m:
+    % if m.get('inter_signal_list'):
 
       // Inter-module signals
-      % for sig in m["inter_signal_list"]:
+      % for sig in m['inter_signal_list']:
         ## TODO: handle below condition in lib.py
         % if sig['type'] == "req_rsp":
       .${lib.im_portname(sig,"req")}(${lib.im_netname(sig, "req")}),
@@ -682,10 +671,10 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .alert_rx_o  ( alert_rx ),
       .alert_tx_i  ( alert_tx ),
     % endif
-    % if m["scan"] == "true":
+    % if block.scan:
       .scanmode_i,
     % endif
-    % if m["scan_reset"] == "true":
+    % if block.scan_reset:
       .scan_rst_ni  (scan_rst_ni),
     % endif
 
