@@ -66,6 +66,8 @@ module i2c_fsm (
   input logic [6:0] target_address1_i,
   input logic [6:0] target_mask1_i,
 
+  output logic stretch_stop_clr_o,       // hardware to deassert stretch_stop bit
+
   output logic event_nak_o,              // target didn't Ack when expected
   output logic event_scl_interference_o, // other device forcing SCL low
   output logic event_sda_interference_o, // other device forcing SDA low
@@ -115,12 +117,14 @@ module i2c_fsm (
   logic [7:0]  input_byte;    // register for reads from host
   logic        input_byte_clr;// clear input_byte contents
   logic [31:0] scl_high_cnt;  // counter for continuously released scl_i
+  logic        addr_stop;     // indicates stretch_stop and stretch_en_addr are both asserted
+  logic        stretch_stop_clr;
 
   // Target bit counter variables
   logic [3:0]  bit_idx;       // bit index including ack/nack
   logic        bit_ack;       // indicates ACK bit been sent or received
   logic        rw_bit;        // indicates host wants to read (1) or write (0)
-  logic        host_ack;      // indicates host acqnowledged transmitted byte
+  logic        host_ack;      // indicates host acknowledged transmitted byte
 
   // Clock counter implementation
   typedef enum logic [3:0] {
@@ -266,16 +270,17 @@ module i2c_fsm (
   end
 
   // Bit counter on the target side
-  assign bit_ack = (bit_idx == 4'd8) && !start_det; // ack
+  assign bit_ack = (bit_idx == 4'd9) && !start_det; // ack
 
   // Increment counter on negative SCL edge
   always_ff @ (posedge clk_i or negedge rst_ni) begin : tgt_bit_counter
     if (!rst_ni) begin
       bit_idx <= 4'd0;
-    end else if (start_det || bit_ack) begin
+    end else if (start_det) begin
       bit_idx <= 4'd0;
     end else if (scl_i_q && !scl_i) begin
-      bit_idx <= bit_idx + 1'b1;
+      if (bit_ack) bit_idx <= 4'd0;
+      else bit_idx <= bit_idx + 1'b1;
     end else begin
       bit_idx <= bit_idx;
     end
@@ -318,6 +323,17 @@ module i2c_fsm (
     end
   end
 
+  // Deasserting stretch_stop bit after the first target address match
+  always_ff @ (posedge clk_i or negedge rst_ni) begin : stretch_addr_sp
+    if (!rst_ni) begin
+      stretch_stop_clr <= 1'b0;
+    end else if (addr_stop) begin
+      stretch_stop_clr <= 1'b1;
+    end
+  end
+
+  assign stretch_stop_clr_o = stretch_stop_clr;
+
   // State definitions
   typedef enum logic [5:0] {
     Idle, PopFmtFifo, SetupStart, HoldStart, SetupStop, HoldStop,
@@ -326,11 +342,11 @@ module i2c_fsm (
         ReadClockLow, ReadSetupBit, ReadClockPulse, ReadHoldBit,
         HostClockLowAck, HostSetupBitAck, HostClockPulseAck, HostHoldBitAck,
         Active, ClockStart, ClockStop,
-        AddrRead, AddrAckWait, AddrAckSetup, AddrAckPulse, AddrAckHold,
+        AcquireStart, AddrRead, AddrAckWait, AddrAckSetup, AddrAckPulse, AddrAckHold,
         TransmitWait, TransmitSetup, TransmitPulse, TransmitHold, TransmitAck,
         AcquireByte, AcquireAckWait, AcquireAckSetup, AcquireAckPulse, AcquireAckHold,
         PopTxFifo, AcquireSrP, StretchTxEmpty, StretchAcqFull, StretchAddr,
-        StretchAcquire, StretchTransmit
+        StretchAcquire, StretchTransmit, StretchTransmitWait
   } state_e;
 
   state_e state_q, state_d;
@@ -433,7 +449,7 @@ module i2c_fsm (
         host_idle_o = 1'b0;
         sda_temp = 1'b1;
         scl_temp = 1'b1;
-        if (!sda_i && !fmt_flag_nak_ok_i) event_nak_o = 1'b1;
+        if (sda_i && !fmt_flag_nak_ok_i) event_nak_o = 1'b1;
         if ((stretch > stretch_timeout_i) && timeout_enable_i) begin
           event_stretch_timeout_o = 1'b1;
         end
@@ -546,6 +562,10 @@ module i2c_fsm (
         else scl_temp = 1'b0;
         fmt_fifo_rready_o = 1'b1;
       end
+      // AcquireStart: hold start condition
+      AcquireStart : begin
+        target_idle_o = 1'b0;
+      end
       // AddrRead: read and compare target address
       AddrRead : begin
         target_idle_o = 1'b0;
@@ -648,6 +668,10 @@ module i2c_fsm (
         target_idle_o = 1'b0;
         scl_temp = 1'b0;
       end
+      // StretchTransmitWait: target waits for host to pull SCL low before stretching the clock
+      StretchTransmitWait : begin
+        target_idle_o = 1'b0;
+      end
       // StretchTransmit: target stretches the clock after transmitting a byte
       StretchTransmit : begin
         target_idle_o = 1'b0;
@@ -705,6 +729,7 @@ module i2c_fsm (
     log_stop = 1'b0;
     restart = 1'b0;
     input_byte_clr = 1'b0;
+    addr_stop = 1'b0;
 
     unique case (state_q)
       // Idle: initial state, SDA and SCL are released (high)
@@ -715,10 +740,7 @@ module i2c_fsm (
           else state_d = Active;
         end else if (target_enable_i) begin
           if (!start_det) state_d = Idle;
-          else begin
-            state_d = AddrRead;
-            input_byte_clr = 1'b1;
-          end
+          else state_d = AcquireStart;
         end
       end
 
@@ -981,6 +1003,14 @@ module i2c_fsm (
         end
       end
 
+      // AcquireStart: hold start condition
+      AcquireStart : begin
+        if (scl_i_q && !scl_i) begin
+          state_d = AddrRead;
+          input_byte_clr = 1'b1;
+        end
+      end
+
       // AddrRead: read and compare target address
       AddrRead : begin
         if (bit_ack) begin
@@ -995,8 +1025,13 @@ module i2c_fsm (
       // AddrAckWait: pause before acknowledging
       AddrAckWait : begin
         if (tcount_q == 20'd1) begin
-          if (stretch_en_addr_i) state_d = StretchAddr;
-          else state_d = AddrAckSetup;
+          if (!scl_i) begin
+            if (stretch_en_addr_i && !stretch_stop_i) state_d = StretchAddr;
+            else if (stretch_en_addr_i && stretch_stop_i) begin
+              state_d = AddrAckSetup;
+              addr_stop = 1'b1;
+            end else state_d = AddrAckSetup;
+          end
         end
       end
       // AddrAckSetup: target pulls SDA low while SCL is low
@@ -1061,7 +1096,7 @@ module i2c_fsm (
       TransmitAck : begin
         if (scl_i) begin
           if (host_ack) begin
-            if (stretch_en_tx_i) state_d = StretchTransmit;
+            if (stretch_en_tx_i) state_d = StretchTransmitWait;
             else state_d = PopTxFifo;
           end else begin
             if (start_det || stop_det) state_d = AcquireSrP;
@@ -1094,8 +1129,10 @@ module i2c_fsm (
       // AcquireAckWait: pause before acknowledging
       AcquireAckWait : begin
         if (tcount_q == 20'd1) begin
-          if (stretch_en_acq_i) state_d = StretchAcquire;
-          else state_d = AcquireAckSetup;
+          if (!scl_i) begin
+            if (stretch_en_acq_i) state_d = StretchAcquire;
+            else state_d = AcquireAckSetup;
+          end
         end
       end
       // AcquireAckSetup: target pulls SDA low while SCL is low
@@ -1137,6 +1174,11 @@ module i2c_fsm (
         else state_d = AcquireAckSetup;
       end
 
+      // StretchTransmitWait: target waits for host to pull SCL low before stretching the clock
+      StretchTransmitWait : begin
+        if (!scl_i) state_d = StretchTransmit;
+      end
+
       // StretchTransmit: target stretches the clock after transmitting a byte
       StretchTransmit : begin
         if (!stretch_stop_i) state_d = StretchTransmit;
@@ -1175,6 +1217,7 @@ module i2c_fsm (
         log_stop = 1'b0;
         restart = 1'b0;
         input_byte_clr = 1'b0;
+        addr_stop = 1'b0;
       end
     endcase
   end

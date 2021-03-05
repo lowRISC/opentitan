@@ -87,6 +87,14 @@
                 Enable Target I2C functionality
                 '''
         }
+        { bits: "2"
+          resval: "0"
+          name: "LLPBK"
+          desc: '''
+                Enable I2C line loopback test
+                If line loopback is enabled, the internal design sees ACQ and RX data as "1"
+                '''
+        }
       ]
     }
     { name:     "STATUS"
@@ -500,21 +508,24 @@
     { name: "STRETCH_CTRL"
       desc: "I2C target clock stretching control"
       swaccess: "rw"
-      hwaccess: "hro"
       fields: [
         { bits: "0"
+          hwaccess: "hro"
           name: "ENABLEADDR"
           desc: "Enable clock stretching after address matching completes"
         }
         { bits: "1"
+          hwaccess: "hro"
           name: "ENABLETX"
           desc: "Enable clock stretching after ongoing transmit (read) transaction completes"
         }
         { bits: "2"
+          hwaccess: "hro"
           name: "ENABLEACQ"
           desc: "Enable clock stretching after ongoing acquire (write) transaction completes"
         }
         { bits: "3"
+          hwaccess: "hrw"
           name: "STOP"
           desc: "Stop clock stretching and resume normal operation"
         }
