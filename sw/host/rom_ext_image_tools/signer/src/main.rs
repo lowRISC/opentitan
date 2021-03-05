@@ -40,15 +40,19 @@ fn main() {
     // Update "signed" manifest fields.
     image.update_static_fields(&config);
 
-    let exponent = &signature_key_public_exponent_le();
-    image.update_exponent_field(exponent);
-
-    let modulus = &signature_key_modulus_le();
-    image.update_modulus_field(modulus);
-
     // Convert ASN.1 DER private key into Mundane RsaPrivKey.
     let private_key =
         RsaPrivKey::parse_from_der(&private_key_der).expect("Failed to parse private key!");
+
+    let mut exponent = private_key.public_exponent_be();
+    // Encode public key components in little-endian byte order.
+    exponent.reverse();
+    image.update_exponent_field(&exponent);
+
+    let mut modulus = private_key.public_modulus_be();
+    // Encode public key components in little-endian byte order.
+    modulus.reverse();
+    image.update_modulus_field(&modulus);
 
     // Produce the signature from concatenated system_state_value,
     // device_usage_value and the portion of the "signed" portion of the image.
@@ -69,20 +73,6 @@ fn main() {
 
     // The whole image has been updated and signed, write the result to disk.
     image.write_file();
-}
-
-/// Generate a dummy signature key public exponent.
-///
-/// Eventually this value will be obtained from the private key.
-fn signature_key_public_exponent_le() -> Vec<u8> {
-    vec![0xA5; 1]
-}
-
-/// Generate a dummy signature key modulus.
-///
-/// Eventually this value will be obtained from the private key.
-fn signature_key_modulus_le() -> Vec<u8> {
-    vec![0xA5; 384]
 }
 
 /// Generates the device usage value.
