@@ -43,6 +43,8 @@ genhdr = '''// Copyright lowRISC contributors.
 
 SRCTREE_TOP = Path(__file__).parent.parent.resolve()
 
+TOPGEN_TEMPLATE_PATH = Path(__file__).parent / 'topgen/templates'
+
 
 def generate_top(top, name_to_block, tpl_filename, **kwargs):
     top_tpl = Template(filename=tpl_filename)
@@ -988,11 +990,6 @@ def main():
                         required=True,
                         help="`top_{name}.hjson` file.")
     parser.add_argument(
-        '--tpl',
-        '-c',
-        help=
-        "The directory having top_{name}_core.sv.tpl and top_{name}.tpl.sv.")
-    parser.add_argument(
         '--outdir',
         '-o',
         help='''Target TOP directory.
@@ -1061,12 +1058,6 @@ def main():
                                args.plic_only or args.alert_handler_only):
         log.error(
             "'no' series options cannot be used with 'only' series options")
-        raise SystemExit(sys.exc_info()[1])
-
-    if not (args.top_ral or args.plic_only or args.alert_handler_only or
-            args.tpl):
-        log.error(
-            "Template file can be omitted only if '--hjson-only' is true")
         raise SystemExit(sys.exc_info()[1])
 
     if args.verbose:
@@ -1142,7 +1133,7 @@ def main():
     top_name = completecfg["name"]
 
     # Generate top.gen.hjson right before rendering
-    genhjson_dir = Path(out_path) / "data/autogen"
+    genhjson_dir = out_path / "data/autogen"
     genhjson_dir.mkdir(parents=True, exist_ok=True)
     genhjson_path = genhjson_dir / ("top_%s.gen.hjson" % completecfg["name"])
 
@@ -1158,46 +1149,41 @@ def main():
                              hjson.dumps(completecfg, for_json=True))
 
     if not args.no_top or args.top_only:
-        tpl_path = Path(args.tpl)
-
-        def render_template(out_name_tpl, out_dir, **other_info):
-            top_tplpath = tpl_path / ((out_name_tpl + '.tpl') % (top_name))
+        def render_template(template_path: str, rendered_path: Path, **other_info):
             template_contents = generate_top(completecfg, name_to_block,
-                                             str(top_tplpath), **other_info)
+                                             str(template_path), **other_info)
 
-            rendered_dir = out_path / out_dir
-            rendered_dir.mkdir(parents=True, exist_ok=True)
-            rendered_path = rendered_dir / (out_name_tpl % (top_name))
-
+            rendered_path.parent.mkdir(exist_ok=True, parents=True)
             with rendered_path.open(mode='w', encoding='UTF-8') as fout:
                 fout.write(template_contents)
-
-            return rendered_path.resolve()
 
         # Header for SV files
         gencmd = warnhdr + '''//
 // util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
-//                --tpl hw/top_{topname}/data/ \\
 //                -o hw/top_{topname}/ \\
 //                --rnd_cnst_seed {seed}
 '''.format(topname=topname, seed=topcfg['rnd_cnst_seed'])
 
         # SystemVerilog Top:
-        render_template('top_%s.sv', 'rtl/autogen', gencmd=gencmd)
-        # 'top_{topname}.sv.tpl' -> 'rtl/autogen/top_{topname}.sv'
+        # 'toplevel.sv.tpl' -> 'rtl/autogen/top_{topname}.sv'
+        render_template(TOPGEN_TEMPLATE_PATH / "toplevel.sv.tpl",
+                        out_path / f"rtl/autogen/top_{topname}.sv",
+                        gencmd=gencmd)
 
         # The C / SV file needs some complex information, so we initialize this
         # object to store it.
         c_helper = TopGenC(completecfg, name_to_block)
 
-        # 'top_{topname}_pkg.sv.tpl' -> 'rtl/autogen/top_{topname}_pkg.sv'
-        render_template('top_%s_pkg.sv',
-                        'rtl/autogen',
+        # 'toplevel_pkg.sv.tpl' -> 'rtl/autogen/top_{topname}_pkg.sv'
+        render_template(TOPGEN_TEMPLATE_PATH / "toplevel_pkg.sv.tpl",
+                        out_path / f"rtl/autogen/top_{topname}_pkg.sv",
                         helper=c_helper,
                         gencmd=gencmd)
 
         # compile-time random netlist constants
-        render_template('top_%s_rnd_cnst_pkg.sv', 'rtl/autogen', gencmd=gencmd)
+        render_template(TOPGEN_TEMPLATE_PATH / "toplevel_rnd_cnst_pkg.sv.tpl",
+                        out_path / f"rtl/autogen/top_{topname}_rnd_cnst_pkg.sv",
+                        gencmd=gencmd)
 
         # C Header + C File + Clang-format file
 
@@ -1206,33 +1192,39 @@ def main():
         # twice:
         # - Once under out_path/sw/autogen
         # - Once under hw/top_{topname}/sw/autogen
-        for path in [Path(out_path).resolve(),
+        for path in [out_path.resolve(),
                      (SRCTREE_TOP / 'hw/top_{}/'.format(topname)).resolve()]:
 
             # 'clang-format' -> 'sw/autogen/.clang-format'
-            cformat_tplpath = tpl_path / 'clang-format'
+            cformat_tplpath = TOPGEN_TEMPLATE_PATH / 'clang-format'
             cformat_dir = path / 'sw/autogen'
             cformat_dir.mkdir(parents=True, exist_ok=True)
             cformat_path = cformat_dir / '.clang-format'
             cformat_path.write_text(cformat_tplpath.read_text())
 
             # 'top_{topname}.h.tpl' -> 'sw/autogen/top_{topname}.h'
-            cheader_path = render_template('top_%s.h',
-                                           cformat_dir,
-                                           helper=c_helper)
+            cheader_path = cformat_dir / f"top_{topname}.h"
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel.h.tpl",
+                            cheader_path,
+                            helper=c_helper)
 
             # Save the relative header path into `c_gen_info`
             rel_header_path = cheader_path.relative_to(path.parents[1])
             c_helper.header_path = str(rel_header_path)
 
-            # 'top_{topname}.c.tpl' -> 'sw/autogen/top_{topname}.c'
-            render_template('top_%s.c', cformat_dir, helper=c_helper)
+            # 'toplevel.c.tpl' -> 'sw/autogen/top_{topname}.c'
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel.c.tpl",
+                            cformat_dir / f"top_{topname}.c",
+                            helper=c_helper)
 
-            # 'top_{topname}_memory.ld.tpl' -> 'sw/autogen/top_{topname}_memory.ld'
-            render_template('top_%s_memory.ld', cformat_dir)
+            # 'toplevel_memory.ld.tpl' -> 'sw/autogen/top_{topname}_memory.ld'
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.ld.tpl",
+                            cformat_dir / f"top_{topname}_memory.ld")
 
-            # 'top_{topname}_memory.h.tpl' -> 'sw/autogen/top_{topname}_memory.h'
-            memory_cheader_path = render_template('top_%s_memory.h', cformat_dir)
+            # 'toplevel_memory.h.tpl' -> 'sw/autogen/top_{topname}_memory.h'
+            memory_cheader_path = cformat_dir / f"top_{topname}_memory.h"
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.h.tpl",
+                            memory_cheader_path)
 
             try:
                 cheader_path.relative_to(SRCTREE_TOP)
@@ -1259,11 +1251,11 @@ def main():
         ]
         for fname in tb_files:
             tpl_fname = "%s.tpl" % (fname)
-            xbar_chip_data_path = tpl_path / tpl_fname
+            xbar_chip_data_path = TOPGEN_TEMPLATE_PATH / tpl_fname
             template_contents = generate_top(completecfg, name_to_block,
                                              str(xbar_chip_data_path))
 
-            rendered_dir = Path(out_path) / 'dv/autogen'
+            rendered_dir = out_path / 'dv/autogen'
             rendered_dir.mkdir(parents=True, exist_ok=True)
             rendered_path = rendered_dir / fname
 
@@ -1272,11 +1264,11 @@ def main():
 
         # generate parameters for chip-level environment package
         tpl_fname = 'chip_env_pkg__params.sv.tpl'
-        alert_handler_chip_data_path = tpl_path / tpl_fname
+        alert_handler_chip_data_path = TOPGEN_TEMPLATE_PATH / tpl_fname
         template_contents = generate_top(completecfg, name_to_block,
                                          str(alert_handler_chip_data_path))
 
-        rendered_dir = Path(out_path) / 'dv/env/autogen'
+        rendered_dir = out_path / 'dv/env/autogen'
         rendered_dir.mkdir(parents=True, exist_ok=True)
         rendered_path = rendered_dir / 'chip_env_pkg__params.sv'
 

@@ -42,7 +42,6 @@ def main():
     path_out = path_root + '/hw/' + topname
     cmd = [path_root + '/util/topgen.py',  # "--verbose",
            "-t", path_in + topname + '.hjson',
-           "-c", path_in,
            "-o", path_out]
 
     try:

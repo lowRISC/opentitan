@@ -1,1 +1,0 @@
-../../top_earlgrey/data/tb__alert_handler_connect.sv.tpl
