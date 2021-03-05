@@ -39,10 +39,13 @@ package tlul_pkg;
 
   parameter int H2DCmdMaxWidth  = 57;
   parameter int H2DCmdIntgWidth = 7;
+  parameter int H2DCmdFullWidth = H2DCmdMaxWidth + H2DCmdIntgWidth;
   parameter int D2HRspMaxWidth  = 57;
   parameter int D2HRspIntgWidth = 7;
+  parameter int D2HRspFullWidth = D2HRspMaxWidth + D2HRspIntgWidth;
   parameter int DataMaxWidth    = 57;
   parameter int DataIntgWidth   = 7;
+  parameter int DataFullWidth   = DataMaxWidth + DataIntgWidth;
 
   typedef struct packed {
     logic [4:0]                 rsvd;
@@ -114,7 +117,11 @@ package tlul_pkg;
   typedef struct packed {
     tl_d_op_e                     opcode;
     logic  [top_pkg::TL_SZW-1:0]  size;
-    logic  [top_pkg::TL_AIW-1:0]  source;
+    // Temporarily removed because source changes throughout the fabric
+    // and thus cannot be used for end-to-end checking.
+    // A different PR will propose a work-around (a hoaky one) to see if
+    // it gets the job done.
+    //logic  [top_pkg::TL_AIW-1:0]  source;
     logic                         error;
   } tl_d2h_rsp_intg_t;
 
@@ -153,7 +160,7 @@ package tlul_pkg;
     unused_tlul = ^tl;
     payload.opcode = tl.d_opcode;
     payload.size   = tl.d_size;
-    payload.source = tl.d_source;
+    //payload.source = tl.d_source;
     payload.error  = tl.d_error;
     return payload;
   endfunction // extract_d2h_rsp_intg

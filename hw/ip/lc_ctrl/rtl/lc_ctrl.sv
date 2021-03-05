@@ -115,7 +115,7 @@ module lc_ctrl
   // Life Cycle TAP //
   ////////////////////
 
-  tlul_pkg::tl_h2d_t tap_tl_h2d_pre, tap_tl_h2d;
+  tlul_pkg::tl_h2d_t tap_tl_h2d;
   tlul_pkg::tl_d2h_t tap_tl_d2h;
   lc_ctrl_reg_pkg::lc_ctrl_reg2hw_t tap_reg2hw;
   lc_ctrl_reg_pkg::lc_ctrl_hw2reg_t tap_hw2reg;
@@ -157,6 +157,8 @@ module lc_ctrl
     .clk_o (tck_muxed)
   );
 
+  logic req_ready;
+  assign req_ready = dmi_req_ready & dmi_resp_ready;
   dmi_jtag #(
     .IdcodeValue(IdcodeValue)
   ) u_dmi_jtag (
@@ -166,7 +168,8 @@ module lc_ctrl
     .dmi_rst_no       (                   ), // unused
     .dmi_req_o        ( dmi_req           ),
     .dmi_req_valid_o  ( dmi_req_valid     ),
-    .dmi_req_ready_i  ( dmi_req_ready     ),
+    // unless there is room for response, stall
+    .dmi_req_ready_i  ( req_ready         ),
     .dmi_resp_i       ( dmi_resp          ),
     .dmi_resp_ready_o ( dmi_resp_ready    ),
     .dmi_resp_valid_i ( dmi_resp_valid    ),
@@ -179,32 +182,27 @@ module lc_ctrl
   );
 
   // DMI to TL-UL transducing
-  assign dmi_req_ready            = tap_tl_d2h.a_ready;
-  assign tap_tl_h2d_pre.a_valid   = dmi_req_valid;
-  assign tap_tl_h2d_pre.a_opcode  = (dmi_req.op == dm::DTM_WRITE) ? tlul_pkg::PutFullData :
-                                                               tlul_pkg::Get;
-  // Always read/write 32bit
-  assign tap_tl_h2d_pre.a_size    = top_pkg::TL_SZW'(2'h2);
-  assign tap_tl_h2d_pre.a_mask    = {top_pkg::TL_DBW{1'b1}};
-  // Need to transform register address into byte address.
-  assign tap_tl_h2d_pre.a_address = top_pkg::TL_AW'({dmi_req.addr, 2'b00});
-  assign tap_tl_h2d_pre.a_data    = dmi_req.data;
-  // Unused
-  assign tap_tl_h2d_pre.a_param   = '0;
-  assign tap_tl_h2d_pre.a_source  = '0;
-  // TODO need to add appropriate handling for integrity
-  assign tap_tl_h2d_pre.a_user    = '0;
-
-  tlul_cmd_intg_gen u_tap_intg_gen (
-    .tl_i(tap_tl_h2d_pre),
-    .tl_o(tap_tl_h2d)
+  tlul_adapter_host u_tap_tlul_host (
+    .clk_i,
+    .rst_ni,
+    // do not make a request unless there is room for the response
+    .req_i      ( dmi_req_valid & dmi_resp_ready         ),
+    .gnt_o      ( dmi_req_ready                          ),
+    .addr_i     ( top_pkg::TL_AW'({dmi_req.addr, 2'b00}) ),
+    .we_i       ( dmi_req.op == dm::DTM_WRITE            ),
+    .wdata_i    ( dmi_req.data                           ),
+    .be_i       ( {top_pkg::TL_DBW{1'b1}}                ),
+    .type_i     ( tlul_pkg::DataType                     ),
+    .valid_o    ( dmi_resp_valid                         ),
+    .rdata_o    ( dmi_resp.data                          ),
+    .err_o      (                                        ),
+    .intg_err_o (                                        ),
+    .tl_o       ( tap_tl_h2d                             ),
+    .tl_i       ( tap_tl_d2h                             )
   );
 
   // TL-UL to DMI transducing
-  assign tap_tl_h2d_pre.d_ready  = dmi_resp_ready;
-  assign dmi_resp_valid          = tap_tl_d2h.d_valid;
-  assign dmi_resp.data           = tap_tl_d2h.d_data;
-  assign dmi_resp.resp           = '0; // unused inside dmi_jtag
+  assign dmi_resp.resp = '0; // unused inside dmi_jtag
 
   // These signals are unused
   logic unused_tap_tl_d2h;

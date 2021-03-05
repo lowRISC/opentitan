@@ -337,7 +337,8 @@ module rv_dm #(
     .SramAw(AddressWidthWords),
     .SramDw(BusWidth),
     .Outstanding(1),
-    .ByteAccess(0)
+    .ByteAccess(0),
+    .EnableRspIntgGen(1)
   ) tl_adapter_device_mem (
     .clk_i,
     .rst_ni,
