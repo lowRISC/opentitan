@@ -10,6 +10,7 @@ from .isa import (DecodeError, OTBNInsn, OTBNLDInsn, RV32RegReg, RV32RegImm,
                   RV32ImmShift, insn_for_mnemonic, logical_byte_shift,
                   extract_quarter_word)
 from .state import OTBNState
+from .err_bits import ILLEGAL_INSN
 
 
 class ADD(RV32RegReg):
@@ -865,17 +866,20 @@ class BNLID(OTBNLDInsn):
         addr = (grs1_val + self.offset) & ((1 << 32) - 1)
         grd_val = state.gprs.get_reg(self.grd).read_unsigned()
 
-        wrd = grd_val & 0x1f
-        value = state.dmem.load_u256(addr)
-        state.wdrs.get_reg(wrd).write_unsigned(value)
+        if grd_val > 31:
+            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+        else:
+            wrd = grd_val & 0x1f
+            value = state.dmem.load_u256(addr)
+            state.wdrs.get_reg(wrd).write_unsigned(value)
 
-        if self.grd_inc:
-            new_grd_val = (grd_val + 1) & 0x1f
-            state.gprs.get_reg(self.grd).write_unsigned(new_grd_val)
+            if self.grd_inc:
+                new_grd_val = grd_val + 1
+                state.gprs.get_reg(self.grd).write_unsigned(new_grd_val)
 
-        if self.grs1_inc:
-            new_grs1_val = (grs1_val + 32) & ((1 << 32) - 1)
-            state.gprs.get_reg(self.grs1).write_unsigned(new_grs1_val)
+            if self.grs1_inc:
+                new_grs1_val = (grs1_val + 32) & ((1 << 32) - 1)
+                state.gprs.get_reg(self.grs1).write_unsigned(new_grs1_val)
 
 
 class BNSID(OTBNInsn):
@@ -897,18 +901,22 @@ class BNSID(OTBNInsn):
         addr = (grs1_val + self.offset) & ((1 << 32) - 1)
 
         grs2_val = state.gprs.get_reg(self.grs2).read_unsigned()
-        wrs = grs2_val & 0x1f
-        wrs_val = state.wdrs.get_reg(wrs).read_unsigned()
 
-        state.dmem.store_u256(addr, wrs_val)
+        if grs2_val > 31:
+            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+        else:
+            wrs = grs2_val & 0x1f
+            wrs_val = state.wdrs.get_reg(wrs).read_unsigned()
 
-        if self.grs1_inc:
-            new_grs1_val = (grs1_val + 32) & ((1 << 32) - 1)
-            state.gprs.get_reg(self.grs1).write_unsigned(new_grs1_val)
+            state.dmem.store_u256(addr, wrs_val)
 
-        if self.grs2_inc:
-            new_grs2_val = (grs2_val + 1) & 0x1f
-            state.gprs.get_reg(self.grs2).write_unsigned(new_grs2_val)
+            if self.grs1_inc:
+                new_grs1_val = (grs1_val + 32) & ((1 << 32) - 1)
+                state.gprs.get_reg(self.grs1).write_unsigned(new_grs1_val)
+
+            if self.grs2_inc:
+                new_grs2_val = grs2_val + 1
+                state.gprs.get_reg(self.grs2).write_unsigned(new_grs2_val)
 
 
 class BNMOV(OTBNInsn):
@@ -941,19 +949,24 @@ class BNMOVR(OTBNInsn):
         grd_val = state.gprs.get_reg(self.grd).read_unsigned()
         grs_val = state.gprs.get_reg(self.grs).read_unsigned()
 
-        wrd = grd_val & 0x1f
-        wrs = grs_val & 0x1f
+        if grd_val > 31:
+            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+        elif grs_val > 31:
+            state.stop_at_end_of_cycle(ILLEGAL_INSN)
+        else:
+            wrd = grd_val & 0x1f
+            wrs = grs_val & 0x1f
 
-        value = state.wdrs.get_reg(wrs).read_unsigned()
-        state.wdrs.get_reg(wrd).write_unsigned(value)
+            value = state.wdrs.get_reg(wrs).read_unsigned()
+            state.wdrs.get_reg(wrd).write_unsigned(value)
 
-        if self.grd_inc:
-            new_grd_val = (grd_val + 1) & 0x1f
-            state.gprs.get_reg(self.grd).write_unsigned(new_grd_val)
+            if self.grd_inc:
+                new_grd_val = grd_val + 1
+                state.gprs.get_reg(self.grd).write_unsigned(new_grd_val)
 
-        if self.grs_inc:
-            new_grs_val = (grs_val + 1) & 0x1f
-            state.gprs.get_reg(self.grs).write_unsigned(new_grs_val)
+            if self.grs_inc:
+                new_grs_val = grs_val + 1
+                state.gprs.get_reg(self.grs).write_unsigned(new_grs_val)
 
 
 class BNWSRR(OTBNInsn):
