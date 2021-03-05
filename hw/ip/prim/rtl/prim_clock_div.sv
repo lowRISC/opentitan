@@ -21,6 +21,11 @@ module prim_clock_div #(
   // For odd divide we need to introduce more parameters to control duty cycle
   `ASSERT_INIT(DivEven_A, (Divisor % 2) == 0)
 
+  // It is assumed the flops in this module are NOT on the scan-chain, as a result only
+  // the input values are guarded
+  logic step_down_req;
+  assign step_down_req = test_en_i ? '0 : step_down_req_i;
+
   logic clk_int;
 
   if (Divisor == 2) begin : gen_div2
@@ -49,7 +54,7 @@ module prim_clock_div #(
       if (!rst_ni) begin
         step_down_nq <= 1'b0;
       end else begin
-        step_down_nq <= step_down_req_i;
+        step_down_nq <= step_down_req;
       end
     end
 
@@ -72,7 +77,7 @@ module prim_clock_div #(
     logic [CntWidth-1:0] cnt;
     logic [CntWidth-1:0] limit;
 
-    assign limit = !step_down_req_i     ? ToggleCnt - 1 :
+    assign limit = !step_down_req       ? ToggleCnt - 1 :
                    (ToggleCnt / 2) == 2 ? '0 : (ToggleCnt / 2) - 1;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -91,25 +96,22 @@ module prim_clock_div #(
       if (!rst_ni) begin
         step_down_ack_o <= 1'b0;
       end else begin
-        step_down_ack_o <= step_down_req_i;
+        step_down_ack_o <= step_down_req;
       end
     end
   end
 
-  // when in scanmode, bypass the dividers completely
-  // also anchor point for constraints
+  // anchor points for constraints
   logic clk_muxed;
-
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_clk_mux (
     .clk0_i(clk_int),
     .clk1_i(clk_i),
-    .sel_i(test_en_i),
+    .sel_i('0),
     .clk_o(clk_muxed)
   );
 
-  // anchor point for constraints
   prim_clock_buf u_clk_div_buf (
     .clk_i(clk_muxed),
     .clk_o
