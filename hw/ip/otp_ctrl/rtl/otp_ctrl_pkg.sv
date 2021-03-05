@@ -101,12 +101,15 @@ package otp_ctrl_pkg;
     lc_ctrl_state_pkg::lc_id_state_e id_state;
   } otp_lc_data_t;
 
-  // Default for dangling connection
+  // Default for dangling connection.
+  // Note that we put the life cycle into
+  // TEST_UNLOCKED0 by default such that top levels without
+  // the OTP controller can still function.
   parameter otp_lc_data_t OTP_LC_DATA_DEFAULT = '{
     valid: 1'b1,
     error: 1'b0,
-    state: lc_ctrl_state_pkg::LcStRaw,
-    count: lc_ctrl_state_pkg::LcCnt0,
+    state: lc_ctrl_state_pkg::LcStTestUnlocked0,
+    count: lc_ctrl_state_pkg::LcCnt1,
     test_unlock_token: '0,
     test_exit_token: '0,
     rma_token: '0,
