@@ -18,11 +18,8 @@ package alert_handler_env_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // this file could be auto-generated for top_earlgrey alert_handler
-  // the path to this file should be provided in alert_handler*_sim.core
-  `include "alert_handler_env_pkg__params.sv"
-
   // parameters
+  parameter uint NUM_ALERTS                  = alert_handler_reg_pkg::NAlerts;
   parameter uint NUM_ESCS                    = 4;
   parameter uint NUM_MAX_ESC_SEV             = 8;
   parameter uint NUM_ESC_SIGNALS             = 4;
@@ -31,6 +28,7 @@ package alert_handler_env_pkg;
   parameter uint NUM_ALERT_HANDLER_CLASS_MSB = $clog2(NUM_ALERT_HANDLER_CLASSES) - 1;
   parameter uint MIN_CYCLE_PER_PHASE         = 2;
   parameter uint NUM_LOCAL_ALERT             = 4;
+  parameter bit  [NUM_ALERTS-1:0] ASYNC_ON   = alert_handler_reg_pkg::AsyncOn;
   // ignore esc signal cycle count after ping occurs - as ping response might ended up adding one
   // extra cycle to the calculated cnt, or even combine two signals into one.
   parameter uint IGNORE_CNT_CHECK_NS         = 100_000_000;
