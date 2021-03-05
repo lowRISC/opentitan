@@ -40,6 +40,7 @@ interface otbn_trace_if
   input logic rf_base_rd_en_a,
   input logic rf_base_rd_en_b,
   input logic rf_base_wr_en,
+  input logic rf_base_wr_commit,
 
   input logic [31:0] rf_base_rd_data_a,
   input logic [31:0] rf_base_rd_data_b,
@@ -74,13 +75,27 @@ interface otbn_trace_if
 
   localparam int DmemSubWordAddrWidth = prim_util_pkg::vbits(WLEN/8);
 
+  // `insn_stall` isn't a signal that exists in the design so needs creating here. To keep things
+  // consistent `insn_X` signals are provided here that are simply assigned to `otbn_core` signals.
+  // To prevent the tracer needing to deal with differing Imem sizes the address is padded out to
+  // 32-bits.
+  logic        insn_valid;
+  logic [31:0] insn_addr;
+  logic [31:0] insn_data;
+  logic        insn_stall;
+
+  assign insn_valid = insn_fetch_resp_valid;
+  assign insn_addr  = {{(32-ImemAddrWidth){1'b0}}, insn_fetch_resp_addr};
+  assign insn_data  = insn_fetch_resp_data;
+  assign insn_stall = u_otbn_core.u_otbn_controller.state_d == OtbnStateStall;
+
   logic rf_ren_a_bignum;
   logic rf_ren_b_bignum;
 
   // Read enables for bignum are only inside the decoder with the current design, so bring them out
   // here for access by the tracer.
-  assign rf_ren_a_bignum = u_otbn_decoder.rf_ren_a_bignum;
-  assign rf_ren_b_bignum = u_otbn_decoder.rf_ren_b_bignum;
+  assign rf_ren_a_bignum = u_otbn_decoder.rf_ren_a_bignum & insn_valid;
+  assign rf_ren_b_bignum = u_otbn_decoder.rf_ren_b_bignum & insn_valid;
 
   // The bignum register file is capable of half register writes. To avoid the tracer having to deal
   // with this, slightly modified rf_bignum_wr_en and rf_bignum_wr_data signals are provided here.
@@ -105,20 +120,6 @@ interface otbn_trace_if
       u_otbn_controller.rf_bignum_wr_data_o[(WLEN/2)*i +: WLEN/2] :
       rf_bignum_wr_old_data[(WLEN/2)*i +: WLEN/2];
   end
-
-  // `insn_stall` isn't a signal that exists in the design so needs creating here. To keep things
-  // consistent `insn_X` signals are provided here that are simply assigned to `otbn_core` signals.
-  // To prevent the tracer needing to deal with differing Imem sizes the address is padded out to
-  // 32-bits.
-  logic        insn_valid;
-  logic [31:0] insn_addr;
-  logic [31:0] insn_data;
-  logic        insn_stall;
-
-  assign insn_valid = insn_fetch_resp_valid;
-  assign insn_addr  = {{(32-ImemAddrWidth){1'b0}}, insn_fetch_resp_addr};
-  assign insn_data  = insn_fetch_resp_data;
-  assign insn_stall = u_otbn_core.u_otbn_controller.state_d == OtbnStateStall;
 
   // Take Dmem interface and present it as two seperate read and write sets of signals. To ease
   // tracer implementation a small tracker tracks reads so the whole transaction (address + data
