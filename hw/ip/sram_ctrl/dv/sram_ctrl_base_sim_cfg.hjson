@@ -73,6 +73,10 @@
       name: "{variant}_multiple_keys"
       uvm_test_seq: sram_ctrl_multiple_keys_vseq
     }
+    {
+      name: "{variant}_bijection"
+      uvm_test_seq: sram_ctrl_bijection_vseq
+    }
   ]
 
   // List of regressions.
