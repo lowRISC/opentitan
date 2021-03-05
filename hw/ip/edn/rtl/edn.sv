@@ -13,7 +13,7 @@ module edn
   parameter int NumEndPoints = 4,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter int BootInsCmd = 32'h0000_0001,
-  parameter int BootGenCmd = 32'h0000_3003
+  parameter int BootGenCmd = 32'h00ff_f003
 ) (
   input logic clk_i,
   input logic rst_ni,
