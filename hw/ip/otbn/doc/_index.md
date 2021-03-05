@@ -103,6 +103,7 @@ Providing the stack has at least one element, this is allowed, even if the stack
 Control and Status Registers (CSRs) are 32b wide registers used for "special" purposes, as detailed in their description;
 they are not related to the GPRs.
 CSRs can be accessed through dedicated instructions, `CSRRS` and `CSRRW`.
+Writes to read-only registers are ignored; they do not signal an error.
 All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.start" >}}).
 
 <table>
@@ -286,6 +287,7 @@ GPRs are accessible from the base instruction subset, and WDRs are accessible fr
 OTBN has 256b Wide Special purpose Registers (WSRs).
 These are analogous to the 32b CSRs, but are used by big number instructions.
 They can be accessed with the [`BN.WSRRS`]({{< relref "isa#bnwsrrs" >}}) and [`BN.WSRRW`]({{< relref "isa#bnwsrrw" >}}) instructions.
+Writes to read-only registers are ignored; they do not signal an error.
 All RW WSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.start" >}}).
 
 <table>
