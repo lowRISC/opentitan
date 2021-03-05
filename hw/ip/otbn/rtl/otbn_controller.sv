@@ -249,17 +249,21 @@ module otbn_controller
         end
       end
       OtbnStateStall: begin
-        // Only ever stall for a single cycle
-        // TODO: Any more than one cycle stall cases?
         insn_fetch_req_valid_raw = 1'b1;
 
-        if (loop_jump) begin
-          insn_fetch_req_addr_o = loop_jump_addr;
+        // When stalling refetch the same instruction to keep decode inputs constant
+        if (stall) begin
+          state_raw             = OtbnStateStall;
+          insn_fetch_req_addr_o = insn_addr_i;
         end else begin
-          insn_fetch_req_addr_o = next_insn_addr;
-        end
+          if (loop_jump) begin
+            insn_fetch_req_addr_o = loop_jump_addr;
+          end else begin
+            insn_fetch_req_addr_o = next_insn_addr;
+          end
 
-        state_raw = OtbnStateRun;
+          state_raw = OtbnStateRun;
+        end
       end
       default: ;
     endcase
@@ -392,7 +396,15 @@ module otbn_controller
     rf_base_rd_addr_b_o = insn_dec_base_i.b;
     rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & insn_valid_i;
     rf_base_wr_addr_o   = insn_dec_base_i.d;
-    rf_base_rd_commit_o = ~stall & ~err;
+
+    if (insn_dec_shared_i.ld_insn || insn_dec_shared_i.st_insn) begin
+      // For loads and stores the read commit happens in the same cycle as the request because the
+      // read is used to form the request (the address and data if executing a store).
+      rf_base_rd_commit_o = (lsu_load_req_o | lsu_store_req_o) & ~err;
+    end else begin
+      // For all other instructions the read commit happens when the instruction commits.
+      rf_base_rd_commit_o = ~err & ~stall;
+    end
 
     if (insn_dec_shared_i.subset == InsnSubsetBignum) begin
       unique case (1'b1)
@@ -436,10 +448,8 @@ module otbn_controller
   assign alu_base_comparison_o.op = insn_dec_base_i.comparison_op;
 
   // Register file write MUX
-  // Suppress write for loads when controller isn't in stall state as load data for writeback is
-  // only available in the stall state.
-  assign rf_base_wr_en_o = insn_valid_i & insn_dec_base_i.rf_we &
-      ~(insn_dec_shared_i.ld_insn & (state_q != OtbnStateStall));
+  // Only enable writes when unstalled
+  assign rf_base_wr_en_o = insn_valid_i & insn_dec_base_i.rf_we & ~stall;
   assign rf_base_wr_commit_o = insn_executing & ~err;
 
   always_comb begin
@@ -496,20 +506,13 @@ module otbn_controller
     // By default write nothing
     rf_bignum_wr_en_o = 2'b00;
 
-    // Only write if executing instruction wants a bignum rf write and there is no error
-    if (insn_executing && insn_dec_bignum_i.rf_we && !err) begin
+    // Only write if executing instruction wants a bignum rf write and it isn't stalled and there is
+    // no error
+    if (insn_executing && insn_dec_bignum_i.rf_we && !err && !stall) begin
       if (insn_dec_bignum_i.mac_en && insn_dec_bignum_i.mac_shift_out) begin
         // Special handling for BN.MULQACC.SO, only enable upper or lower half depending on
         // mac_wr_hw_sel_upper.
         rf_bignum_wr_en_o = insn_dec_bignum_i.mac_wr_hw_sel_upper ? 2'b10 : 2'b01;
-      end else if (insn_dec_shared_i.ld_insn) begin
-        // Special handling for BN.LID. Load data is requested in the first cycle of the instruction
-        // (where state_q == OtbnStateRun) and is available in the second cycle following the
-        // request (where state_q == OtbnStateStall), so only enable writes for BN.LID when in
-        // OtbnStateStall.
-        if (state_q == OtbnStateStall) begin
-          rf_bignum_wr_en_o = 2'b11;
-        end
       end else begin
         // For everything else write both halves immediately.
         rf_bignum_wr_en_o = 2'b11;
