@@ -84,7 +84,7 @@ It is possible to restrict what the tool should generate.
 ```console
 $ cd ${REPO_TOP}
 $ ./util/topgen.py -h
-usage: topgen [-h] --topcfg TOPCFG [--tpl TPL] [--outdir OUTDIR] [--verbose] [--no-top]
+usage: topgen [-h] --topcfg TOPCFG [--outdir OUTDIR] [--verbose] [--no-top]
               [--no-xbar] [--no-plic] [--no-gen-hjson] [--top-only] [--xbar-only]
               [--plic-only] [--hjson-only] [--top_ral]
 
@@ -92,8 +92,6 @@ optional arguments:
   -h, --help            show this help message and exit
   --topcfg TOPCFG, -t TOPCFG
                         `top_{name}.hjson` file.
-  --tpl TPL, -c TPL     The directory having top_{name}_core.sv.tpl and
-                        top_{name}.tpl.sv.
   --outdir OUTDIR, -o OUTDIR
                         Target TOP directory. Module is created under rtl/. (default:
                         dir(topcfg)/..)

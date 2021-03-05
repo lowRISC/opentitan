@@ -108,7 +108,6 @@ top: $(tops_gen) $(tops_reg)
 $(tops_gen):
 	$(eval $@_TOP := $(strip $(foreach top,$(TOPS),$(findstring $(top),$@))))
 	${PRJ_DIR}/util/topgen.py -t ${PRJ_DIR}/hw/$($@_TOP)/data/$($@_TOP).hjson \
-		--tpl ${PRJ_DIR}/hw/$($@_TOP)/data/ \
 		-o ${PRJ_DIR}/hw/$($@_TOP)/ ${toolflags}
 
 $(tops_reg): pre_reg

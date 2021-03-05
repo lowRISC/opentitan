@@ -1,1 +1,0 @@
-../../top_earlgrey/data/chip_env_pkg__params.sv.tpl
