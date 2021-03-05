@@ -762,6 +762,8 @@
         hwaccess:  "hwo",
         hwext:     "true",
         cname:     "WORD",
+        tags: [ // OTP internal HW will update status so can not auto-predict its value.
+                "excl:CsrAllTests:CsrExclCheck"],
         fields: [
           { bits: "31:0"
           }
@@ -781,6 +783,8 @@
         hwaccess:  "hwo",
         hwext:     "true",
         cname:     "WORD",
+        tags: [ // OTP internal HW will update status so can not auto-predict its value.
+                "excl:CsrAllTests:CsrExclCheck"],
         fields: [
           { bits: "31:0"
           }
