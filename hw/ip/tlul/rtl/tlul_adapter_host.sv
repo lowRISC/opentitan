@@ -110,14 +110,28 @@ module tlul_adapter_host import tlul_pkg::*; #(
   assign valid_o = tl_i.d_valid;
   assign rdata_o = tl_i.d_data;
 
+  logic intg_err;
   tlul_rsp_intg_chk u_rsp_chk (
     .tl_i,
-    .err_o(intg_err_o)
+    .err_o(intg_err)
   );
 
-  //TODO, fully connect error once DV and memory initialization is ready
-  //assign err_o   = tl_i.d_error | intg_err_o;
-  assign err_o   = tl_i.d_error;
+  logic intg_err_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      intg_err_q <= '0;
+    end else if (intg_err) begin
+      intg_err_q <= 1'b1;
+    end
+  end
+
+  // err_o is transactional.  This allows the host to continue
+  // debug without receiving an endless stream of errors.
+  assign err_o   = tl_i.d_error | intg_err;
+
+  // intg_err_o is permanent once detected, and should be used
+  // to trigger alerts
+  assign intg_err_o = intg_err_q | intg_err;
 
   // Addresses are assumed to be word-aligned, and the bottom bits are ignored
   logic unused_addr_bottom_bits;

@@ -27,7 +27,9 @@ module tlul_cmd_intg_chk import tlul_pkg::*; (
     .err_o(err)
   );
 
-  assign err_o = |err;
+  // error output is transactional, it is up to the instantiating module
+  // to determine if a permanent latch is feasible
+  assign err_o = tl_i.a_valid & |err;
 
   logic unused_tl;
   assign unused_tl = |tl_i;

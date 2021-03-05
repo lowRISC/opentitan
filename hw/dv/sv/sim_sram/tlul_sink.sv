@@ -75,7 +75,8 @@ module tlul_sink import tlul_pkg::*; (
   //////////////////
   // Final Output //
   //////////////////
-  assign tl_o = '{
+  tlul_pkg::tl_d2h_t tl_o_pre;
+  assign tl_o_pre = '{
     a_ready:  ~pending,
     d_valid:  pending,
     d_opcode: d_opcode_q,
@@ -87,5 +88,10 @@ module tlul_sink import tlul_pkg::*; (
     d_user:   '0,
     d_error:  d_error_q
   };
+
+  tlul_rsp_intg_gen u_gen (
+    .tl_i(tl_o_pre),
+    .tl_o
+  );
 
 endmodule

@@ -27,7 +27,12 @@ module tlul_rsp_intg_chk import tlul_pkg::*; (
     .err_o(err)
   );
 
-  assign err_o = |err;
+  // error is not permanently latched as rsp_intg_chk is typically
+  // used near the host.
+  // if the error is permanent, it would imply the host could forever
+  // receive bus errors and lose all ability to debug.
+  // It should be up to the host to determine the permanence of this error.
+  assign err_o = tl_i.d_valid & |err;
 
   logic unused_tl;
   assign unused_tl = |tl_i;

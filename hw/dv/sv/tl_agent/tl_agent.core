@@ -9,6 +9,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:tlul:headers:0.1
+      - lowrisc:prim:secded
       - lowrisc:dv:mem_model
       - lowrisc:dv:dv_lib
       - lowrisc:opentitan:bus_params_pkg

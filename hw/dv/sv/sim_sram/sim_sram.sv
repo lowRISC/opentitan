@@ -96,7 +96,9 @@ module sim_sram #(
       .SramAw     (SramAddrWidth),
       .SramDw     (Width),
       .ErrOnRead  (ErrOnRead),
-      .Outstanding(2)
+      .Outstanding(2),
+      .EnableRspIntgGen(1),
+      .EnableDataIntgGen(1)
     ) u_tl_adapter_sim_sram (
       .clk_i,
       .rst_ni,

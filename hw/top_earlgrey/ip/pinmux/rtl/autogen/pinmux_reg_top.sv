@@ -50,19 +50,21 @@ module pinmux_reg_top (
   logic intg_err;
   tlul_cmd_intg_chk u_chk (
     .tl_i,
-    // connect this to intg_err later when all DV / hosts are hooked up
-    .err_o()
+    .err_o(intg_err)
   );
-  assign intg_err = 1'b0;
 
-  // Once integrity error is detected, it does not let go until reset.
+  logic intg_err_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intg_err_o <= '0;
+      intg_err_q <= '0;
     end else if (intg_err) begin
-      intg_err_o <= 1'b1;
+      intg_err_q <= 1'b1;
     end
   end
+
+  // integrity error output is permanent and should be used for alert generation
+  // register errors are transactional
+  assign intg_err_o = intg_err_q | intg_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
