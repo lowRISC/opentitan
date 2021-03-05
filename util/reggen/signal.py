@@ -49,3 +49,15 @@ class Signal:
             'desc': self.desc,
             'width': str(self.bits.width())
         }
+
+    def as_nwt_dict(self, type_field: str) -> Dict[str, object]:
+        '''Return a view of the signal as a dictionary
+
+        The dictionary has fields "name", "width" and "type", the last
+        of which comes from the type_field argument. Used for topgen
+        integration.
+
+        '''
+        return {'name': self.name,
+                'width': self.bits.width(),
+                'type': type_field}

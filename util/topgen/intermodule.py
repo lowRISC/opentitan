@@ -6,7 +6,7 @@ import logging as log
 import re
 from collections import OrderedDict
 from enum import Enum
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple
 
 from reggen.validate import check_int
 from reggen.inter_signal import InterSignal
@@ -144,15 +144,7 @@ def autoconnect_xbar(topcfg: OrderedDict, xbar: OrderedDict):
             continue
 
         ip = ips[0]
-
-        # Depending on whether ip came from reggen or topgen, it might be an
-        # InterSignal object or it might be a dict. Extract the fields we need
-        # so that the code below can treat it as a dict.
-        isl = ip['inter_signal_list']
-        if not isl or isinstance(isl[0], InterSignal):
-            inter_signal_list = [signal.as_dict() for signal in isl]
-        else:
-            inter_signal_list = isl
+        inter_signal_list = ip['inter_signal_list']
 
         # get the port name
         def get_signame(act: str) -> OrderedDict:
@@ -208,23 +200,22 @@ def elab_intermodule(topcfg: OrderedDict):
     instances = topcfg["module"] + topcfg["memory"] + topcfg["xbar"] + \
         topcfg["host"] + topcfg["port"]
 
-    intermodule_instances = [x for x in instances if "inter_signal_list" in x]
+    for x in instances:
+        old_isl = x.get('inter_signal_list')
+        if old_isl is None:
+            continue
 
-    # Collect up all intermodule signals, operating in place on each of the
-    # instances and converting back from an InterSignal object to a dict if
-    # necessary.
-    for x in intermodule_instances:
         new_isl = []
-        for sig in x["inter_signal_list"]:
-            if isinstance(sig, InterSignal):
-                sig_dict = sig.as_dict()
-            else:
-                sig_dict = sig
+        for entry in old_isl:
+            # Convert any InterSignal objects to the expected dictionary format.
+            sig = (entry.as_dict()
+                   if isinstance(entry, InterSignal)
+                   else entry.copy())
 
             # Add instance name to the entry and add to list_of_intersignals
-            sig_dict["inst_name"] = x["name"]
-            list_of_intersignals.append(sig_dict)
-            new_isl.append(sig_dict)
+            sig["inst_name"] = x["name"]
+            list_of_intersignals.append(sig)
+            new_isl.append(sig)
 
         x['inter_signal_list'] = new_isl
 
@@ -511,14 +502,9 @@ def find_intermodule_signal(sig_list, m_name, s_name) -> Dict:
 
 
 # Validation
-def check_intermodule_field(obj: Union[InterSignal, OrderedDict],
+def check_intermodule_field(sig: OrderedDict,
                             prefix: str = "") -> Tuple[int, OrderedDict]:
     error = 0
-
-    if isinstance(obj, InterSignal):
-        sig = obj.as_dict()
-    else:
-        sig = obj
 
     # type check
     if sig["type"] not in IM_TYPES:
@@ -792,7 +778,7 @@ def im_defname(obj: OrderedDict) -> str:
                                           struct=obj["struct"])
 
 
-def im_netname(sig: Union[InterSignal, OrderedDict],
+def im_netname(sig: OrderedDict,
                suffix: str = "", default_name=False) -> str:
     """return top signal name with index
 
@@ -869,19 +855,22 @@ def im_netname(sig: Union[InterSignal, OrderedDict],
         index=lib.index(obj["index"]))
 
 
-def im_portname(obj: InterSignal, suffix: str = "") -> str:
+def im_portname(obj: OrderedDict, suffix: str = "") -> str:
     """return IP's port name
 
     e.g signame_o for requester req signal
     """
-    if suffix == "":
-        suffix_s = "_o" if obj['act'] == "req" else "_i"
-    elif suffix == "req":
-        suffix_s = "_o" if obj['act'] == "req" else "_i"
-    else:
-        suffix_s = "_o" if obj['act'] == "rsp" else "_i"
+    act = obj['act']
+    name = obj['name']
 
-    return "{signame}{suffix}".format(signame=obj['name'], suffix=suffix_s)
+    if suffix == "":
+        suffix_s = "_o" if act == "req" else "_i"
+    elif suffix == "req":
+        suffix_s = "_o" if act == "req" else "_i"
+    else:
+        suffix_s = "_o" if act == "rsp" else "_i"
+
+    return name + suffix_s
 
 
 def get_dangling_im_def(objs: OrderedDict) -> str:
