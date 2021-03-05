@@ -354,6 +354,10 @@ module otp_ctrl_part_buf
                 error_d = CheckFailError;
               end
             end
+            // Signal ECC soft errors, but do not go into terminal error state.
+            if (otp_err_e'(otp_err_i) == MacroEccCorrError) begin
+              error_d = otp_err_e'(otp_err_i);
+            end
           end
         end
       end
