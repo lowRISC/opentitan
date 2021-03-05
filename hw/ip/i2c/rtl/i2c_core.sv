@@ -50,8 +50,11 @@ module  i2c_core (
   logic        stretch_en_tx;
   logic        stretch_en_acq;
   logic        stretch_stop;
+  logic        stretch_stop_clr;
   logic [31:0] host_timeout;
 
+  logic scl_sync;
+  logic sda_sync;
   logic scl_out_fsm;
   logic sda_out_fsm;
 
@@ -133,6 +136,7 @@ module  i2c_core (
 
   logic        host_enable;
   logic        target_enable;
+  logic        line_loopback;
 
   logic [6:0]  target_address0;
   logic [6:0]  target_mask0;
@@ -152,7 +156,7 @@ module  i2c_core (
   assign hw2reg.status.hostidle.d = host_idle;
   assign hw2reg.status.targetidle.d = target_idle;
   assign hw2reg.status.rxempty.d = ~rx_fifo_rvalid;
-  assign hw2reg.rdata.d = rx_fifo_rdata;
+  assign hw2reg.rdata.d = line_loopback ? 8'hff : rx_fifo_rdata;
   assign hw2reg.fifo_status.fmtlvl.d = fmt_fifo_depth;
   assign hw2reg.fifo_status.rxlvl.d = rx_fifo_depth;
   assign hw2reg.val.scl_rx.d = scl_rx_val;
@@ -164,8 +168,10 @@ module  i2c_core (
   assign hw2reg.status.acqempty.d = ~acq_fifo_rvalid;
   assign hw2reg.fifo_status.txlvl.d = tx_fifo_depth;
   assign hw2reg.fifo_status.acqlvl.d = acq_fifo_depth;
-  assign hw2reg.acqdata.abyte.d = acq_fifo_rdata[7:0];
-  assign hw2reg.acqdata.signal.d = acq_fifo_rdata[9:8];
+  assign hw2reg.acqdata.abyte.d = line_loopback ? 8'hff : acq_fifo_rdata[7:0];
+  assign hw2reg.acqdata.signal.d = line_loopback ? 2'b11 : acq_fifo_rdata[9:8];
+  assign hw2reg.stretch_ctrl.stop.d = 1'b0;
+  assign hw2reg.stretch_ctrl.stop.de = stretch_stop_clr;
 
   assign override = reg2hw.ovrd.txovrden;
 
@@ -174,6 +180,7 @@ module  i2c_core (
 
   assign host_enable = reg2hw.ctrl.enablehost.q;
   assign target_enable = reg2hw.ctrl.enabletarget.q;
+  assign line_loopback = reg2hw.ctrl.llpbk.q;
 
   assign target_address0 = reg2hw.target_id.address0.q;
   assign target_mask0 = reg2hw.target_id.mask0.q;
@@ -257,18 +264,19 @@ module  i2c_core (
   // The fifo write enable is controlled by fbyte, start, stop, read, rcont,
   // and nakok field qe bits.
   // When all qe bits are asserted, fdata is injected into the fifo.
-  assign fmt_fifo_wvalid     = reg2hw.fdata.fbyte.qe &
+  assign fmt_fifo_wvalid     = line_loopback ? 1'b1 :
+                               reg2hw.fdata.fbyte.qe &
                                reg2hw.fdata.start.qe &
                                reg2hw.fdata.stop.qe  &
                                reg2hw.fdata.read.qe  &
                                reg2hw.fdata.rcont.qe &
                                reg2hw.fdata.nakok.qe;
-  assign fmt_fifo_wdata[7:0] = reg2hw.fdata.fbyte.q;
-  assign fmt_fifo_wdata[8]   = reg2hw.fdata.start.q;
-  assign fmt_fifo_wdata[9]   = reg2hw.fdata.stop.q;
-  assign fmt_fifo_wdata[10]  = reg2hw.fdata.read.q;
-  assign fmt_fifo_wdata[11]  = reg2hw.fdata.rcont.q;
-  assign fmt_fifo_wdata[12]  = reg2hw.fdata.nakok.q;
+  assign fmt_fifo_wdata[7:0] = line_loopback ? rx_fifo_rdata : reg2hw.fdata.fbyte.q;
+  assign fmt_fifo_wdata[8]   = line_loopback ? 1'b0 : reg2hw.fdata.start.q;
+  assign fmt_fifo_wdata[9]   = line_loopback ? 1'b0 : reg2hw.fdata.stop.q;
+  assign fmt_fifo_wdata[10]  = line_loopback ? 1'b0 : reg2hw.fdata.read.q;
+  assign fmt_fifo_wdata[11]  = line_loopback ? 1'b0 : reg2hw.fdata.rcont.q;
+  assign fmt_fifo_wdata[12]  = line_loopback ? 1'b1 : reg2hw.fdata.nakok.q;
 
   assign fmt_byte               = fmt_fifo_rvalid ? fmt_fifo_rdata[7:0] : '0;
   assign fmt_flag_start_before  = fmt_fifo_rvalid ? fmt_fifo_rdata[8] : '0;
@@ -287,7 +295,7 @@ module  i2c_core (
   prim_fifo_sync #(
     .Width   (13),
     .Pass    (1'b1),
-    .Depth   (32)
+    .Depth   (64)
   ) u_i2c_fmtfifo (
     .clk_i,
     .rst_ni,
@@ -307,7 +315,7 @@ module  i2c_core (
   prim_fifo_sync #(
     .Width   (8),
     .Pass    (1'b0),
-    .Depth   (32)
+    .Depth   (64)
   ) u_i2c_rxfifo (
     .clk_i,
     .rst_ni,
@@ -326,13 +334,13 @@ module  i2c_core (
   assign event_tx_overflow = tx_fifo_wvalid & ~tx_fifo_wready;
   assign event_acq_overflow = acq_fifo_wvalid & ~acq_fifo_wready;
 
-  assign tx_fifo_wvalid = reg2hw.txdata.qe;
-  assign tx_fifo_wdata  = reg2hw.txdata.q;
+  assign tx_fifo_wvalid = line_loopback ? 1'b1 : reg2hw.txdata.qe;
+  assign tx_fifo_wdata  = line_loopback ? acq_fifo_rdata[7:0] : reg2hw.txdata.q;
 
   prim_fifo_sync #(
     .Width(8),
     .Pass(1'b1),
-    .Depth(32)
+    .Depth(64)
   ) u_i2c_txfifo (
     .clk_i,
     .rst_ni,
@@ -352,7 +360,7 @@ module  i2c_core (
   prim_fifo_sync #(
     .Width(10),
     .Pass(1'b0),
-    .Depth(32)
+    .Depth(64)
   ) u_i2c_acqfifo (
     .clk_i,
     .rst_ni,
@@ -367,13 +375,34 @@ module  i2c_core (
     .full_o  ()
   );
 
+  // sync the incoming SCL and SDA signals
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(1'b1)
+  ) u_i2c_sync_scl (
+    .clk_i,
+    .rst_ni,
+    .d_i (scl_i),
+    .q_o (scl_sync)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(1'b1)
+  ) u_i2c_sync_sda (
+    .clk_i,
+    .rst_ni,
+    .d_i (sda_i),
+    .q_o (sda_sync)
+  );
+
   i2c_fsm u_i2c_fsm (
     .clk_i,
     .rst_ni,
 
-    .scl_i,
+    .scl_i                   (scl_sync),
     .scl_o                   (scl_out_fsm),
-    .sda_i,
+    .sda_i                   (sda_sync),
     .sda_o                   (sda_out_fsm),
 
     .host_enable_i           (host_enable),
@@ -429,6 +458,8 @@ module  i2c_core (
     .target_mask0_i          (target_mask0),
     .target_address1_i       (target_address1),
     .target_mask1_i          (target_mask1),
+
+    .stretch_stop_clr_o      (stretch_stop_clr),
 
     .event_nak_o             (event_nak),
     .event_scl_interference_o(event_scl_interference),

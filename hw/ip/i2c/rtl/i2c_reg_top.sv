@@ -238,6 +238,9 @@ module i2c_reg_top (
   logic ctrl_enabletarget_qs;
   logic ctrl_enabletarget_wd;
   logic ctrl_enabletarget_we;
+  logic ctrl_llpbk_qs;
+  logic ctrl_llpbk_wd;
+  logic ctrl_llpbk_we;
   logic status_fmtfull_qs;
   logic status_fmtfull_re;
   logic status_rxfull_qs;
@@ -1510,6 +1513,32 @@ module i2c_reg_top (
   );
 
 
+  //   F[llpbk]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_ctrl_llpbk (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (ctrl_llpbk_we),
+    .wd     (ctrl_llpbk_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ctrl.llpbk.q ),
+
+    // to register interface (read)
+    .qs     (ctrl_llpbk_qs)
+  );
+
+
   // R[status]: V(True)
 
   //   F[fmtfull]: 0:0
@@ -2740,8 +2769,8 @@ module i2c_reg_top (
     .wd     (stretch_ctrl_stop_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.stretch_ctrl.stop.de),
+    .d      (hw2reg.stretch_ctrl.stop.d ),
 
     // to internal hardware
     .qe     (),
@@ -2987,6 +3016,9 @@ module i2c_reg_top (
   assign ctrl_enabletarget_we = addr_hit[3] & reg_we & !reg_error;
   assign ctrl_enabletarget_wd = reg_wdata[1];
 
+  assign ctrl_llpbk_we = addr_hit[3] & reg_we & !reg_error;
+  assign ctrl_llpbk_wd = reg_wdata[2];
+
   assign status_fmtfull_re = addr_hit[4] & reg_re & !reg_error;
 
   assign status_rxfull_re = addr_hit[4] & reg_re & !reg_error;
@@ -3200,6 +3232,7 @@ module i2c_reg_top (
       addr_hit[3]: begin
         reg_rdata_next[0] = ctrl_enablehost_qs;
         reg_rdata_next[1] = ctrl_enabletarget_qs;
+        reg_rdata_next[2] = ctrl_llpbk_qs;
       end
 
       addr_hit[4]: begin
