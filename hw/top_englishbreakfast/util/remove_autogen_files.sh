@@ -15,7 +15,6 @@ top_path=$(dirname $(realpath $0))/../
 find ${top_path} -depth -type d -name "autogen" -exec rm -rf {} \;
 
 # Some autogen files are not in autogen folders.
-rm -rf ${top_path}/ip/alert_handler/dv/alert_handler_env_pkg__params.sv
 rm -rf ${top_path}/ip/sensor_ctrl/rtl/*
 rm -rf ${top_path}/ip/xbar_main/xbar_main.core
 rm -rf ${top_path}/ip/xbar_peri/xbar_peri.core

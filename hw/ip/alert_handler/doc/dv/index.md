@@ -34,7 +34,7 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 * Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 
-In chip level testing, alert_handler testbench environment can be reused with a chip-level paramter package located at `hw/$CHIP/ip/alert_handler/dv/alert_handler_env_pkg__params.sv`
+The alert_handler testbench environment can be reused in chip level testing.
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
