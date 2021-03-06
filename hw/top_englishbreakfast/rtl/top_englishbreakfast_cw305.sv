@@ -60,12 +60,12 @@ module top_englishbreakfast_cw305 #(
   logic clk_main, clk_usb_48mhz, clk_aon, rst_n;
   logic [pinmux_reg_pkg::NMioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] mio_attr;
   logic [pinmux_reg_pkg::NDioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] dio_attr;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_padring;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_core;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe_core;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_core;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_umux;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_umux;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_umux;
 
   padring #(
     // MIOs 43:34 and 31:20 are currently not
@@ -204,86 +204,25 @@ module top_englishbreakfast_cw305 #(
                              IO_USB_DP0,
                              IO_USB_DN0 } ),
     // Muxed IOs
-    .mio_in_o            ( mio_in_padring   ),
-    .mio_out_i           ( mio_out_padring  ),
-    .mio_oe_i            ( mio_oe_padring   ),
+    .mio_in_o            ( mio_in_core   ),
+    .mio_out_i           ( mio_out_core  ),
+    .mio_oe_i            ( mio_oe_core   ),
     // Dedicated IOs
-    .dio_in_o            ( dio_in_padring   ),
-    .dio_out_i           ( dio_out_padring  ),
-    .dio_oe_i            ( dio_oe_padring   ),
+    .dio_in_o            ( dio_in_umux   ),
+    .dio_out_i           ( dio_out_umux  ),
+    .dio_oe_i            ( dio_oe_umux   ),
     // Pad Attributes
-    .mio_attr_i          ( mio_attr         ),
-    .dio_attr_i          ( dio_attr         )
-  );
-
-  //////////////////////
-  // JTAG Overlay Mux //
-  //////////////////////
-
-  logic jtag_trst_n, jtag_srst_n;
-  logic jtag_tck, jtag_tck_buf, jtag_tms, jtag_tdi, jtag_tdo;
-
-  localparam int NumIOs = pinmux_reg_pkg::NMioPads +
-                          pinmux_reg_pkg::NDioPads;
-
-  // This specifies the tie-off values of the muxed MIO/DIOs
-  // when the JTAG is active. SPI CSB is active low.
-  localparam logic [NumIOs-1:0] TieOffValues = NumIOs'(1'b1 << (
-      pinmux_reg_pkg::NMioPads + top_englishbreakfast_pkg::TopEnglishbreakfastDioPinSpiDeviceCsb));
-
-  // TODO: this is a temporary solution. JTAG will eventually be selected and
-  // qualified inside the pinmux, based on strap and lifecycle state.
-  // Parameterizeable JTAG overlay mux.
-  // Unaffected indices are just passed through.
-  jtag_mux #(
-    .NumIOs         (                   NumIOs       ),
-    .TieOffValues   (                   TieOffValues ),
-    .JtagEnIdx      (                             16 ), // MIO 16
-    .JtagEnPolarity (                              1 ),
-    .TckIdx         ( pinmux_reg_pkg::NMioPads +
-                      top_englishbreakfast_pkg::TopEnglishbreakfastDioPinSpiDeviceSck ),
-    .TmsIdx         ( pinmux_reg_pkg::NMioPads +
-                      top_englishbreakfast_pkg::TopEnglishbreakfastDioPinSpiDeviceCsb ),
-    .TrstIdx        (                             18 ), // MIO 18
-    .SrstIdx        (                             19 ), // MIO 19
-    .TdiIdx         ( pinmux_reg_pkg::NMioPads +
-                      top_englishbreakfast_pkg::TopEnglishbreakfastDioPinSpiDeviceSd0 ),
-    .TdoIdx         ( pinmux_reg_pkg::NMioPads +
-                      top_englishbreakfast_pkg::TopEnglishbreakfastDioPinSpiDeviceSd1 )
-  ) jtag_mux (
-    // To JTAG inside core
-    .jtag_tck_o   ( jtag_tck        ),
-    .jtag_tms_o   ( jtag_tms        ),
-    .jtag_trst_no ( jtag_trst_n     ),
-    .jtag_srst_no ( jtag_srst_n     ),
-    .jtag_tdi_o   ( jtag_tdi        ),
-    .jtag_tdo_i   ( jtag_tdo        ),
-    // To core side
-    .out_core_i   ( {dio_out_core, mio_out}      ),
-    .oe_core_i    ( {dio_oe_core,  mio_oe_core}  ),
-    .in_core_o    ( {dio_in_core,  mio_in_core}  ),
-    // To padring side
-    .out_padring_o ( {dio_out_padring, mio_out_padring} ),
-    .oe_padring_o  ( {dio_oe_padring, mio_oe_padring } ),
-    .in_padring_i  ( {dio_in_padring, mio_in_padring } ),
-    // USB breakouts
-    .usb_pullup_p_en_o (      ),
-    .usb_pullup_n_en_o (      ),
-    .usb_diff_input_i  ( 1'b0 )
-  );
-
-  ////////////////////////////////
-  // JTAG clock buffer for FPGA //
-  ////////////////////////////////
-
-  BUFG jtag_buf (
-    .I (jtag_tck),
-    .O (jtag_tck_buf)
+    .mio_attr_i          ( mio_attr      ),
+    .dio_attr_i          ( dio_attr      )
   );
 
   //////////////////
   // PLL for FPGA //
   //////////////////
+
+  // TODO: This needs to become a dedicated custom pin for FPGAs
+  logic jtag_srst_n;
+  assign jtag_srst_n = mio_in_core[19];
 
   clkgen_xil7series # (
     .AddClkBuf(0)
@@ -322,6 +261,33 @@ module top_englishbreakfast_cw305 #(
   // for verilator purposes, make these two the same.
   lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
 
+  // TODO: this is temporary and will be removed in the future.
+  // This specifies the tie-off values of the muxed MIO/DIOs
+  // when the JTAG is active. SPI CSB is active low.
+  localparam logic [pinmux_pkg::NumIOs-1:0] TieOffValues = pinmux_pkg::NumIOs'(1'b1 << (
+      pinmux_reg_pkg::NMioPads + top_englishbreakfast_pkg::TopEnglishbreakfastDioPinSpiDeviceCsb));
+
+  // DFT and Debug signal positions in the pinout.
+  // TODO: generate these indices from the target-specific
+  // pinout configuration.
+  localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
+    const_sampling: 1'b1,
+    tie_offs:       TieOffValues,
+    tck_idx:        pinmux_reg_pkg::NMioPads +
+                    top_englishbreakfast_pkg::TopEnglishbreakfastDioPinSpiDeviceSck,
+    tms_idx:        pinmux_reg_pkg::NMioPads +
+                    top_englishbreakfast_pkg::TopEnglishbreakfastDioPinSpiDeviceCsb,
+    trst_idx:       18, // MIO 18
+    tdi_idx:        pinmux_reg_pkg::NMioPads +
+                    top_englishbreakfast_pkg::TopEnglishbreakfastDioPinSpiDeviceSd0,
+    tdo_idx:        pinmux_reg_pkg::NMioPads +
+                    top_englishbreakfast_pkg::TopEnglishbreakfastDioPinSpiDeviceSd1,
+    tap_strap0_idx: 20, // MIO 20 (tied off)
+    tap_strap1_idx: 16, // MIO 16 (used as JTAG/SPI select signal)
+    dft_strap0_idx: 21, // MIO 21 (tied off)
+    dft_strap1_idx: 22  // MIO 22 (tied off)
+  };
+
   top_englishbreakfast #(
     .AesMasking(1'b1),
     .AesSBoxImpl(aes_pkg::SBoxImplDom),
@@ -331,7 +297,8 @@ module top_englishbreakfast_cw305 #(
     .IbexRegFile(ibex_pkg::RegFileFPGA),
     .IbexICache(0),
     .IbexPipeLine(1),
-    .BootRomInitFile(BootRomInitFile)
+    .BootRomInitFile(BootRomInitFile),
+    .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_englishbreakfast (
     // Clocks, resets
     .rst_ni                       ( rst_n           ),
@@ -355,13 +322,6 @@ module top_englishbreakfast_cw305 #(
     .lc_clk_byp_ack_i             ( lc_clk_bypass   ),
     .clks_ast_o                   (                 ),
     .rsts_ast_o                   (                 ),
-
-    // JTAG
-    .jtag_tck_i      ( jtag_tck_buf  ),
-    .jtag_tms_i      ( jtag_tms      ),
-    .jtag_trst_ni    ( jtag_trst_n   ),
-    .jtag_tdi_i      ( jtag_tdi      ),
-    .jtag_tdo_o      ( jtag_tdo      ),
 
     // Multiplexed I/O
     .mio_in_i        ( mio_in_core   ),
