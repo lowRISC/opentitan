@@ -10,7 +10,11 @@
 module pinmux
   import pinmux_pkg::*;
   import pinmux_reg_pkg::*;
-(
+#(
+  // Taget-specific pinmux configuration passed down from the
+  // target-specific top-level.
+  parameter target_cfg_t TargetCfg = DefaultTargetCfg
+) (
   input                            clk_i,
   input                            rst_ni,
   // Slow always-on clock
@@ -131,6 +135,44 @@ module pinmux
   end
 
 
+  //////////////////////////
+  // Strap Sampling Logic //
+  //////////////////////////
+
+  // Local versions of the input signals
+  logic [NMioPads-1:0] mio_out, mio_oe, mio_in;
+  logic [NDioPads-1:0] dio_out, dio_oe, dio_in;
+
+  // This module contains the strap sampling and JTAG mux.
+  // Affected inputs are intercepted/tapped before they go to the pinmux
+  // matrix. Likewise, affected outputs are intercepted/tapped after the
+  // retention registers.
+  pinmux_strap_sampling #(
+    .TargetCfg (TargetCfg)
+  ) u_pinmux_strap_sampling (
+    .clk_i,
+    .rst_ni,
+    // To padring side
+    .out_padring_o ( {dio_out_o, mio_out_o} ),
+    .oe_padring_o  ( {dio_oe_o , mio_oe_o } ),
+    .in_padring_i  ( {dio_in_i , mio_in_i } ),
+    // To core side
+    .out_core_i    ( {dio_out, mio_out} ),
+    .oe_core_i     ( {dio_oe,  mio_oe}  ),
+    .in_core_o     ( {dio_in,  mio_in}  ),
+    // Strap and JTAG signals
+    .strap_en_i,
+    .lc_dft_en_i,
+    .lc_hw_debug_en_i,
+    .dft_strap_test_o,
+    .lc_jtag_o,
+    .lc_jtag_i,
+    .rv_jtag_o,
+    .rv_jtag_i,
+    .dft_jtag_o,
+    .dft_jtag_i
+  );
+
   ///////////////////////////////////////
   // USB wake detect module connection //
   ///////////////////////////////////////
@@ -209,14 +251,14 @@ module pinmux
   localparam int AlignedMuxSize = (NMioPads + 2 > NDioPads) ? 2**$clog2(NMioPads + 2) :
                                                               2**$clog2(NDioPads);
 
-  // stack input and default signals for convenient indexing below possible defaults: constant 0 or
-  // 1. make sure mux is aligned to a power of 2 to avoid Xes.
-  logic [AlignedMuxSize-1:0] mio_data_mux;
-  assign mio_data_mux = AlignedMuxSize'({mio_in_i, 1'b1, 1'b0});
+  // stack input and default signals for convenient indexing below possible defaults:
+  // constant 0 or 1. make sure mux is aligned to a power of 2 to avoid Xes.
+  logic [AlignedMuxSize-1:0] mio_mux;
+  assign mio_mux = AlignedMuxSize'({mio_in, 1'b1, 1'b0});
 
   for (genvar k = 0; k < NMioPeriphIn; k++) begin : gen_mio_periph_in
     // index using configured insel
-    assign mio_to_periph_o[k] = mio_data_mux[reg2hw.mio_periph_insel[k].q];
+    assign mio_to_periph_o[k] = mio_mux[reg2hw.mio_periph_insel[k].q];
   end
 
   //////////////////////
@@ -231,13 +273,13 @@ module pinmux
 
   for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_out
     // Check individual sleep enable status bits
-    assign mio_out_o[k] = reg2hw.mio_pad_sleep_status[k].q ?
-                          mio_out_retreg_q[k]              :
-                          periph_data_mux[reg2hw.mio_outsel[k].q];
+    assign mio_out[k] = reg2hw.mio_pad_sleep_status[k].q ?
+                        mio_out_retreg_q[k]              :
+                        periph_data_mux[reg2hw.mio_outsel[k].q];
 
-    assign mio_oe_o[k]  = reg2hw.mio_pad_sleep_status[k].q ?
-                          mio_oe_retreg_q[k]               :
-                          periph_oe_mux[reg2hw.mio_outsel[k].q];
+    assign mio_oe[k]  = reg2hw.mio_pad_sleep_status[k].q ?
+                        mio_oe_retreg_q[k]               :
+                        periph_oe_mux[reg2hw.mio_outsel[k].q];
 
     // latch state when going to sleep
     // 0: drive low
@@ -246,11 +288,11 @@ module pinmux
     // 3: previous value
     assign mio_out_retreg_d[k] = (reg2hw.mio_pad_sleep_mode[k].q == 0) ? 1'b0 :
                                  (reg2hw.mio_pad_sleep_mode[k].q == 1) ? 1'b1 :
-                                 (reg2hw.mio_pad_sleep_mode[k].q == 2) ? 1'b0 : mio_out_o[k];
+                                 (reg2hw.mio_pad_sleep_mode[k].q == 2) ? 1'b0 : mio_out[k];
 
     assign mio_oe_retreg_d[k] = (reg2hw.mio_pad_sleep_mode[k].q == 0) ? 1'b1 :
                                 (reg2hw.mio_pad_sleep_mode[k].q == 1) ? 1'b1 :
-                                (reg2hw.mio_pad_sleep_mode[k].q == 2) ? 1'b0 : mio_oe_o[k];
+                                (reg2hw.mio_pad_sleep_mode[k].q == 2) ? 1'b0 : mio_oe[k];
 
     // Activate sleep behavior only if it has been enabled
     assign mio_sleep_trig[k] = reg2hw.mio_pad_sleep_en[k].q & sleep_trig;
@@ -263,17 +305,17 @@ module pinmux
   /////////////////////
 
   // Inputs are just fed through
-  assign dio_to_periph_o = dio_in_i;
+  assign dio_to_periph_o = dio_in;
 
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_out
     // Check individual sleep enable status bits
-    assign dio_out_o[k] = reg2hw.dio_pad_sleep_status[k].q ?
-                          dio_out_retreg_q[k]              :
-                          periph_to_dio_i[k];
+    assign dio_out[k] = reg2hw.dio_pad_sleep_status[k].q ?
+                        dio_out_retreg_q[k]              :
+                        periph_to_dio_i[k];
 
-    assign dio_oe_o[k]  = reg2hw.dio_pad_sleep_status[k].q ?
-                          dio_oe_retreg_q[k]               :
-                          periph_to_dio_oe_i[k];
+    assign dio_oe[k]  = reg2hw.dio_pad_sleep_status[k].q ?
+                        dio_oe_retreg_q[k]               :
+                        periph_to_dio_oe_i[k];
 
     // latch state when going to sleep
     // 0: drive low
@@ -282,11 +324,11 @@ module pinmux
     // 3: previous value
     assign dio_out_retreg_d[k] = (reg2hw.dio_pad_sleep_mode[k].q == 0) ? 1'b0 :
                                  (reg2hw.dio_pad_sleep_mode[k].q == 1) ? 1'b1 :
-                                 (reg2hw.dio_pad_sleep_mode[k].q == 2) ? 1'b0 : dio_out_o[k];
+                                 (reg2hw.dio_pad_sleep_mode[k].q == 2) ? 1'b0 : dio_out[k];
 
     assign dio_oe_retreg_d[k] = (reg2hw.dio_pad_sleep_mode[k].q == 0) ? 1'b1 :
                                 (reg2hw.dio_pad_sleep_mode[k].q == 1) ? 1'b1 :
-                                (reg2hw.dio_pad_sleep_mode[k].q == 2) ? 1'b0 : dio_oe_o[k];
+                                (reg2hw.dio_pad_sleep_mode[k].q == 2) ? 1'b0 : dio_oe[k];
 
     // Activate sleep behavior only if it has been enabled
     assign dio_sleep_trig[k] = reg2hw.dio_pad_sleep_en[k].q & sleep_trig;
@@ -298,15 +340,20 @@ module pinmux
   // Wakeup detectors //
   //////////////////////
 
-  logic [AlignedMuxSize-1:0] dio_data_mux;
-  assign dio_data_mux = AlignedMuxSize'(dio_in_i);
+  // Wakeup detector taps are not affected by JTAG/strap
+  // selection mux. I.e., we always sample the unmuxed inputs
+  // that come directly from the pads.
+  logic [AlignedMuxSize-1:0] dio_wkup_mux;
+  logic [AlignedMuxSize-1:0] mio_wkup_mux;
+  assign dio_wkup_mux = AlignedMuxSize'(dio_in_i);
+  assign mio_wkup_mux = AlignedMuxSize'(mio_in_i);
 
   logic [NWkupDetect-1:0] aon_wkup_req;
   for (genvar k = 0; k < NWkupDetect; k++) begin : gen_wkup_detect
     logic pin_value;
     assign pin_value = (reg2hw.wkup_detector[k].miodio.q)           ?
-                       dio_data_mux[reg2hw.wkup_detector_padsel[k]] :
-                       mio_data_mux[reg2hw.wkup_detector_padsel[k]];
+                       dio_wkup_mux[reg2hw.wkup_detector_padsel[k]] :
+                       mio_wkup_mux[reg2hw.wkup_detector_padsel[k]];
 
     pinmux_wkup u_pinmux_wkup (
       .clk_i,
@@ -331,26 +378,6 @@ module pinmux
   // OR' together all wakeup requests
   assign aon_wkup_req_o = |aon_wkup_req;
 
-  //////////////////////////
-  // Strap Sampling Logic //
-  //////////////////////////
-
-  pinmux_strap_sampling u_pinmux_strap_sampling (
-    .clk_i,
-    .rst_ni,
-    .mio_in_i,
-    .strap_en_i,
-    .lc_dft_en_i,
-    .lc_hw_debug_en_i,
-    .dft_strap_test_o,
-    .lc_jtag_o,
-    .lc_jtag_i,
-    .rv_jtag_o,
-    .rv_jtag_i,
-    .dft_jtag_o,
-    .dft_jtag_i
-  );
-
   ////////////////
   // Assertions //
   ////////////////
@@ -374,9 +401,18 @@ module pinmux
   `ASSERT_KNOWN(MioKnownO_A, mio_attr_o)
   `ASSERT_KNOWN(DioKnownO_A, dio_attr_o)
 
-  `ASSERT_KNOWN(LcJtagKnown_A, lc_jtag_o)
-  `ASSERT_KNOWN(RvJtagKnown_A, rv_jtag_o)
-  `ASSERT_KNOWN(DftJtagKnown_A, dft_jtag_o)
+  `ASSERT_KNOWN(LcJtagTckKnown_A, lc_jtag_o.tck)
+  `ASSERT_KNOWN(LcJtagTrstKnown_A, lc_jtag_o.trst_n)
+  `ASSERT_KNOWN(LcJtagTmsKnown_A, lc_jtag_o.tms)
+
+  `ASSERT_KNOWN(RvJtagTckKnown_A, rv_jtag_o.tck)
+  `ASSERT_KNOWN(RvJtagTrstKnown_A, rv_jtag_o.trst_n)
+  `ASSERT_KNOWN(RvJtagTmsKnown_A, rv_jtag_o.tms)
+
+  `ASSERT_KNOWN(DftJtagTckKnown_A, dft_jtag_o.tck)
+  `ASSERT_KNOWN(DftJtagTrstKnown_A, dft_jtag_o.trst_n)
+  `ASSERT_KNOWN(DftJtagTmsKnown_A, dft_jtag_o.tms)
+
   `ASSERT_KNOWN(DftStrapsKnown_A, dft_strap_test_o)
 
   // running on slow AON clock
