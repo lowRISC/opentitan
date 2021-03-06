@@ -205,9 +205,7 @@ void AESTLULInterface::DriveSignals() {
   rtl_->tl_i[0] |= (tl_i_.a_data & 0x000003FF) << 22;
   // a_user = 0
   // a_user.tl_type = DataType
-  rtl_->tl_i[0] |= 0x2 << (2 + 7 + 7 + 1);
-  // a_user.chk_en = CheckDist
-  rtl_->tl_i[0] |= 0x1 << (7 + 7 + 1);
+  rtl_->tl_i[0] |= 0x2 << (7 + 7 + 1);
   rtl_->tl_i[0] |= (tl_i_.d_ready & 0x1);
 
   return;
