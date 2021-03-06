@@ -8,6 +8,7 @@ description: "SECDED ECC primitives"
 filesets:
   files_rtl:
     files:
+      - rtl/prim_secded_pkg.sv
       - rtl/prim_secded_22_16_dec.sv
       - rtl/prim_secded_22_16_enc.sv
       - rtl/prim_secded_28_22_dec.sv
