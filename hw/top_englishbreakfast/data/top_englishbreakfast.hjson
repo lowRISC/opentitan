@@ -191,9 +191,26 @@
           act:     "req",
           package: "ibex_pkg",
         },
+
+        { struct:  "lc_tx_t",
+          type:    "uni",
+          name:    "lc_cpu_en",
+          act:     "rcv",
+          package: "lc_ctrl_pkg",
+        },
       ],
     }
-
+    { name: "rv_dm",
+      type: "rv_dm",
+      inter_signal_list: [
+        { struct:  "jtag",
+          type:    "req_rsp",
+          name:    "jtag",
+          act:     "rsp",
+          package: "jtag_pkg",
+        },
+      ]
+    }
   ]
 
   // `module` defines the peripherals.
@@ -596,17 +613,24 @@
       // an empty list.
       'clkmgr_aon.idle'         : [],
 
+      // Pinmux JTAG signals
+      // Note that the DFT TAP will be connected
+      // automatically by the DFT insertion tool,
+      // hence it does not have to be connected here.
+      'pinmux_aon.lc_jtag' : ['lc_ctrl.jtag'],
+      'pinmux_aon.rv_jtag' : ['rv_dm.jtag'],
+
       // LC function control signal broadcast
-      // TODO(#3920): connect all these signals once top-level sim and FPGA can backload LC state
-      'lc_ctrl.lc_dft_en'          : [],
+      'lc_ctrl.lc_dft_en'          : ['pinmux_aon.lc_dft_en'],
       'lc_ctrl.lc_nvm_debug_en'    : ['eflash.lc_nvm_debug_en'],
       'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
-                                      'sram_ctrl_ret_aon.lc_hw_debug_en'],
-      'lc_ctrl.lc_cpu_en'          : [],
-      'lc_ctrl.lc_escalate_en'     : ['sram_ctrl_main.lc_escalate_en',
-                                      'sram_ctrl_ret_aon.lc_escalate_en'],
-      'lc_ctrl.lc_check_byp_en'    : [],
-      // TODO: OTP Clock bypass signal going from LC to AST/clkmgr
+                                      'sram_ctrl_ret_aon.lc_hw_debug_en',
+                                      'pinmux_aon.lc_hw_debug_en'],
+      'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en'],
+      'lc_ctrl.lc_keymgr_en'       : [],
+      'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',
+                                      'sram_ctrl_main.lc_escalate_en',
+                                      'sram_ctrl_ret_aon.lc_escalate_en'],      // TODO: OTP Clock bypass signal going from LC to AST/clkmgr
       'lc_ctrl.lc_clk_byp_ack'     : ['clkmgr_aon.lc_clk_bypass_ack'],
 
       // LC access control signal broadcast
