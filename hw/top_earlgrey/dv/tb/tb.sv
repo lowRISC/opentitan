@@ -326,7 +326,7 @@ module tb;
     string common_seq_type, csr_seq_type;
     void'($value$plusargs("run_%0s", common_seq_type));
     void'($value$plusargs("csr_%0s", csr_seq_type));
-    if (common_seq_type inside {"mem_partial_access", "tl_errors"} ||
+    if (common_seq_type inside {"mem_partial_access", "csr_mem_rw_with_rand_reset", "tl_errors"} ||
         csr_seq_type == "mem_walk") begin
       force tb.dut.top_earlgrey.u_otp_ctrl.lc_dft_en_i = 4'b1010;
     end
