@@ -13,9 +13,9 @@ module pinmux_jtag_buf (
     .clk_i(req_i.tck),
     .clk_o(req_o.tck)
   );
-  prim_clock_buf prim_clock_buf_trst_n (
-    .clk_i(req_i.trst_n),
-    .clk_o(req_o.trst_n)
+  prim_buf prim_buf_trst_n (
+    .in_i(req_i.trst_n),
+    .out_o(req_o.trst_n)
   );
   prim_buf prim_buf_tms (
     .in_i(req_i.tms),

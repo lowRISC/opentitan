@@ -5,12 +5,21 @@
 module pinmux_strap_sampling
   import pinmux_pkg::*;
   import pinmux_reg_pkg::*;
-(
+#(
+  // Taget-specific pinmux configuration passed down from the
+  // target-specific top-level.
+  parameter target_cfg_t TargetCfg = DefaultTargetCfg
+) (
   input                            clk_i,
   input                            rst_ni,
-  // MIO inputs.
-  // TODO(#5221): need tapped IOs for JTAG mux.
-  input  logic [NMioPads-1:0]      mio_in_i,
+  // To padring side
+  output logic [NumIOs-1:0]        out_padring_o,
+  output logic [NumIOs-1:0]        oe_padring_o,
+  input  logic [NumIOs-1:0]        in_padring_i,
+  // To core side
+  input  logic [NumIOs-1:0]        out_core_i,
+  input  logic [NumIOs-1:0]        oe_core_i,
+  output logic [NumIOs-1:0]        in_core_o,
   // Used for TAP qualification
   input  logic                     strap_en_i,
   input  lc_ctrl_pkg::lc_tx_t      lc_dft_en_i,
@@ -53,42 +62,29 @@ module pinmux_strap_sampling
   // Strap Sampling Logic //
   //////////////////////////
 
-  typedef enum logic [NTapStraps-1:0] {
-    FuncSel   = 2'b00,
-    LcTapSel  = 2'b01,
-    RvTapSel  = 2'b10,
-    DftTapSel = 2'b11
-  } tap_strap_t;
-
   logic strap_en_q;
   logic dft_strap_valid_d, dft_strap_valid_q;
   logic lc_strap_sample_en, rv_strap_sample_en, dft_strap_sample_en;
-  logic [1:0] tap_strap_sample_en;
   logic [NTapStraps-1:0] tap_strap_d, tap_strap_q;
   logic [NDFTStraps-1:0] dft_strap_d, dft_strap_q;
   lc_ctrl_pkg::lc_tx_e continue_sampling_d, continue_sampling_q;
 
-  // Not all MIOs are used.
-  logic unused_mio_in;
-  assign unused_mio_in = ^mio_in_i;
-
   // The LC strap at index 0 has a slightly different
   // enable condition than the DFT strap at index 1.
-  for (genvar k = 0; k < NTapStraps; k++) begin : gen_lc_strap_taps
-    assign tap_strap_d[k] = (tap_strap_sample_en[k]) ? mio_in_i[TapStrapPos[k]] : tap_strap_q[k];
-  end
+  assign tap_strap_d[0] = (lc_strap_sample_en) ? in_padring_i[TargetCfg.tap_strap0_idx] :
+                                                 tap_strap_q[0];
+  assign tap_strap_d[1] = (rv_strap_sample_en) ? in_padring_i[TargetCfg.tap_strap1_idx] :
+                                                 tap_strap_q[1];
 
   // We're always using the DFT strap sample enable for the DFT straps.
-  for (genvar k = 0; k < NDFTStraps; k++) begin : gen_dft_strap_taps
-    assign dft_strap_d[k] = (dft_strap_sample_en) ? mio_in_i[DftStrapPos[k]] : dft_strap_q[k];
-  end
+  assign dft_strap_d = (dft_strap_sample_en) ? {in_padring_i[TargetCfg.dft_strap1_idx],
+                                                in_padring_i[TargetCfg.dft_strap0_idx]} :
+                                               dft_strap_q;
 
   assign dft_strap_valid_d = dft_strap_sample_en | dft_strap_valid_q;
   assign dft_strap_test_o.valid  = dft_strap_valid_q;
   assign dft_strap_test_o.straps = dft_strap_q;
 
-  assign tap_strap_sample_en = {rv_strap_sample_en,
-                                lc_strap_sample_en};
 
   always_comb begin : p_strap_sampling
     lc_strap_sample_en = 1'b0;
@@ -119,6 +115,11 @@ module pinmux_strap_sampling
         continue_sampling_d = lc_ctrl_pkg::On;
       end
     end
+    // TODO: this can currently be overridden with a parameter for legacy reasons.
+    // This parameter will be removed in the future.
+    if (TargetCfg.const_sampling) begin
+      continue_sampling_d = lc_ctrl_pkg::On;
+    end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_strap_sample
@@ -137,50 +138,49 @@ module pinmux_strap_sampling
     end
   end
 
-  ////////////////////
-  // TAP Selection  //
-  ////////////////////
+  ///////////////////////
+  // TAP Selection Mux //
+  ///////////////////////
 
+  logic jtag_en;
+  tap_strap_t tap_strap;
   jtag_pkg::jtag_req_t jtag_req, lc_jtag_req, rv_jtag_req, dft_jtag_req;
   jtag_pkg::jtag_rsp_t jtag_rsp, lc_jtag_rsp, rv_jtag_rsp, dft_jtag_rsp;
-
-  // TODO(#5221): need to mux this with the correct MIOs.
-  // But first, the jtag_mux from the chip level hierarchy needs
-  // to be pulled into pinmux, and the FPGA emulation and the simulation
-  // environments need to be adapted such that this does not break our
-  // regressions.
-  logic unused_jtag_rsp;
-  assign jtag_req = '0;
-  assign unused_jtag_rsp = ^jtag_rsp;
 
   // This muxes the JTAG signals to the correct TAP, based on the
   // sampled straps. Further, the individual JTAG signals are gated
   // using the corresponding life cycle signal.
-  tap_strap_t tap_strap;
   assign tap_strap = tap_strap_t'(tap_strap_q);
   `ASSERT_KNOWN(TapStrapKnown_A, tap_strap)
 
   always_comb begin : p_tap_mux
     jtag_rsp     = '0;
+    // Note that this holds the JTAGs in reset
+    // when they are not selected.
     lc_jtag_req  = '0;
     rv_jtag_req  = '0;
     dft_jtag_req = '0;
+    // This activates the TDO override further below.
+    jtag_en      = 1'b0;
 
     unique case (tap_strap)
       LcTapSel: begin
         lc_jtag_req = jtag_req;
-        jtag_rsp = lc_jtag_rsp;
+        jtag_rsp    = lc_jtag_rsp;
+        jtag_en     = 1'b1;
       end
       RvTapSel: begin
         if (lc_hw_debug_en[1] == lc_ctrl_pkg::On) begin
           rv_jtag_req = jtag_req;
-          jtag_rsp = rv_jtag_rsp;
+          jtag_rsp    = rv_jtag_rsp;
+          jtag_en     = 1'b1;
         end
       end
       DftTapSel: begin
         if (lc_dft_en[1] == lc_ctrl_pkg::On) begin
           dft_jtag_req = jtag_req;
-          jtag_rsp = dft_jtag_rsp;
+          jtag_rsp     = dft_jtag_rsp;
+          jtag_en      = 1'b1;
         end
       end
       default: ;
@@ -208,15 +208,64 @@ module pinmux_strap_sampling
     .rsp_o(dft_jtag_rsp)
   );
 
+  //////////////////////
+  // TAP Input Muxes  //
+  //////////////////////
+
+  // Inputs connections
+  assign jtag_req.tck    = in_padring_i[TargetCfg.tck_idx];
+  assign jtag_req.tms    = in_padring_i[TargetCfg.tms_idx];
+  assign jtag_req.trst_n = in_padring_i[TargetCfg.trst_idx];
+  assign jtag_req.tdi    = in_padring_i[TargetCfg.tdi_idx];
+
+  // Input tie-off muxes
+  for (genvar k = 0; k < NumIOs; k++) begin : gen_input_tie_off
+    if (k == TargetCfg.tck_idx  ||
+        k == TargetCfg.tms_idx  ||
+        k == TargetCfg.trst_idx ||
+        k == TargetCfg.tdi_idx  ||
+        k == TargetCfg.tdo_idx) begin : gen_jtag_signal
+      assign in_core_o[k] = (jtag_en) ? TargetCfg.tie_offs[k] : in_padring_i[k];
+    end else begin : gen_other_inputs
+      assign in_core_o[k] = in_padring_i[k];
+    end
+  end
+
+  // Override TDO output
+  for (genvar k = 0; k < NumIOs; k++) begin : gen_output_mux
+    if (k == TargetCfg.tdo_idx) begin : gen_tdo
+      assign out_padring_o[k] = (jtag_en) ? jtag_rsp.tdo    : out_core_i[k];
+      assign oe_padring_o[k]  = (jtag_en) ? jtag_rsp.tdo_oe : oe_core_i[k];
+    end else begin : gen_other_outputs
+      assign out_padring_o[k] = out_core_i[k];
+      assign oe_padring_o[k]  = oe_core_i[k];
+    end
+  end
+
   ////////////////
   // Assertions //
   ////////////////
 
+  `ASSERT_INIT(tck_idxRange_A,  TargetCfg.tck_idx  >= 0 && TargetCfg.tck_idx  < NumIOs)
+  `ASSERT_INIT(tms_idxRange_A,  TargetCfg.tms_idx  >= 0 && TargetCfg.tms_idx  < NumIOs)
+  `ASSERT_INIT(trst_idxRange_A, TargetCfg.trst_idx >= 0 && TargetCfg.trst_idx < NumIOs)
+  `ASSERT_INIT(tdi_idxRange_A,  TargetCfg.tdi_idx  >= 0 && TargetCfg.tdi_idx  < NumIOs)
+  `ASSERT_INIT(tdo_idxRange_A,  TargetCfg.tdo_idx  >= 0 && TargetCfg.tdo_idx  < NumIOs)
+
+  `ASSERT_INIT(tap_strap0_idxRange_A, TargetCfg.tap_strap0_idx >= 0 &&
+                                      TargetCfg.tap_strap0_idx < NumIOs)
+  `ASSERT_INIT(tap_strap1_idxRange_A, TargetCfg.tap_strap1_idx >= 0 &&
+                                      TargetCfg.tap_strap1_idx < NumIOs)
+  `ASSERT_INIT(dft_strap0_idxRange_A, TargetCfg.dft_strap0_idx >= 0 &&
+                                      TargetCfg.dft_strap0_idx < NumIOs)
+  `ASSERT_INIT(dft_strap1_idxRange_A, TargetCfg.dft_strap1_idx >= 0 &&
+                                      TargetCfg.dft_strap1_idx < NumIOs)
+
   // The strap sampling enable input shall be pulsed high exactly once after cold boot.
   `ASSERT(PwrMgrStrapSampleOnce_A, strap_en_i |=> ##0 !strap_en_i [*])
 
-  `ASSERT(RvTapOff0_A, lc_hw_debug_en_i == lc_ctrl_pkg::Off |-> ##2 rv_jtag_o == '0)
-  `ASSERT(RvTapOff1_A, lc_hw_debug_en_i == lc_ctrl_pkg::Off |-> ##2 rv_jtag_i == '0)
+  `ASSERT(RvTapOff0_A,  lc_hw_debug_en_i == lc_ctrl_pkg::Off |-> ##2 rv_jtag_o == '0)
+  `ASSERT(RvTapOff1_A,  lc_hw_debug_en_i == lc_ctrl_pkg::Off |-> ##2 rv_jtag_i == '0)
   `ASSERT(DftTapOff0_A, lc_dft_en_i == lc_ctrl_pkg::Off |-> ##2 dft_jtag_o == '0)
   `ASSERT(DftTapOff1_A, lc_dft_en_i == lc_ctrl_pkg::Off |-> ##2 dft_jtag_i == '0)
 

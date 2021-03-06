@@ -224,6 +224,17 @@
       default: "${usb_dn_pull_sel}",
       local: "true"
     },
+    // Since the target-specific top-levels often have slightly
+    // different debug signal positions, we need a way to pass
+    // this info from the target specific top-level into the pinmux
+    // logic. The parameter struct below serves this purpose.
+   { name: "TargetCfg",
+      desc:    "Target specific pinmux configuration.",
+      type:    "pinmux_pkg::target_cfg_t",
+      default: "pinmux_pkg::DefaultTargetCfg",
+      local:   "false",
+      expose:  "true"
+    },
   ],
   registers: [
 //////////////////////////
