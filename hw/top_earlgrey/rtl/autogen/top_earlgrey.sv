@@ -13,6 +13,7 @@
 module top_earlgrey #(
   // Auto-inferred parameters
   parameter  OtpCtrlMemInitFile = "",
+  parameter pinmux_pkg::target_cfg_t PinmuxAonTargetCfg = pinmux_pkg::DefaultTargetCfg,
   parameter bit SramCtrlRetAonInstrExec = 1,
   parameter bit AesMasking = 1'b1,
   parameter aes_pkg::sbox_impl_e AesSBoxImpl = aes_pkg::SBoxImplDom,
@@ -33,13 +34,6 @@ module top_earlgrey #(
 ) (
   // Reset, clocks defined as part of intermodule
   input               rst_ni,
-
-  // JTAG interface
-  input               jtag_tck_i,
-  input               jtag_tms_i,
-  input               jtag_trst_ni,
-  input               jtag_tdi_i,
-  output              jtag_tdo_o,
 
   // Multiplexed I/O
   input        [43:0] mio_in_i,
@@ -457,6 +451,8 @@ module top_earlgrey #(
   logic [3:0] clkmgr_aon_idle;
   jtag_pkg::jtag_req_t       pinmux_aon_lc_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_aon_lc_jtag_rsp;
+  jtag_pkg::jtag_req_t       pinmux_aon_rv_jtag_req;
+  jtag_pkg::jtag_rsp_t       pinmux_aon_rv_jtag_rsp;
   otp_ctrl_pkg::otp_lc_data_t       otp_ctrl_otp_lc_data;
   otp_ctrl_pkg::lc_otp_program_req_t       lc_ctrl_lc_otp_program_req;
   otp_ctrl_pkg::lc_otp_program_rsp_t       lc_ctrl_lc_otp_program_rsp;
@@ -693,19 +689,6 @@ module top_earlgrey #(
   // Debug Module (RISC-V Debug Spec 0.13)
   //
 
-  // TODO: this will be routed to the pinmux for TAP selection
-  // based on straps and LC control signals.
-  jtag_pkg::jtag_req_t jtag_req;
-  jtag_pkg::jtag_rsp_t jtag_rsp;
-  logic unused_jtag_tdo_oe_o;
-
-  assign jtag_req.tck    = jtag_tck_i;
-  assign jtag_req.tms    = jtag_tms_i;
-  assign jtag_req.trst_n = jtag_trst_ni;
-  assign jtag_req.tdi    = jtag_tdi_i;
-  assign jtag_tdo_o      = jtag_rsp.tdo;
-  assign unused_jtag_tdo_oe_o = jtag_rsp.tdo_oe;
-
   rv_dm #(
     .NrHarts     (1),
     .IdcodeValue (JTAG_IDCODE)
@@ -728,8 +711,8 @@ module top_earlgrey #(
     .tl_h_i        (main_tl_dm_sba_rsp),
 
     //JTAG
-    .jtag_req_i    (jtag_req),
-    .jtag_rsp_o    (jtag_rsp)
+    .jtag_req_i    (pinmux_aon_rv_jtag_req),
+    .jtag_rsp_o    (pinmux_aon_rv_jtag_rsp)
   );
 
   assign rstmgr_aon_cpu.ndmreset_req = ndmreset_req;
@@ -1643,15 +1626,17 @@ module top_earlgrey #(
       .rst_io_div4_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel])
   );
 
-  pinmux u_pinmux_aon (
+  pinmux #(
+    .TargetCfg(PinmuxAonTargetCfg)
+  ) u_pinmux_aon (
 
       // Inter-module signals
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .lc_dft_en_i(lc_ctrl_lc_dft_en),
       .lc_jtag_o(pinmux_aon_lc_jtag_req),
       .lc_jtag_i(pinmux_aon_lc_jtag_rsp),
-      .rv_jtag_o(),
-      .rv_jtag_i(jtag_pkg::JTAG_RSP_DEFAULT),
+      .rv_jtag_o(pinmux_aon_rv_jtag_req),
+      .rv_jtag_i(pinmux_aon_rv_jtag_rsp),
       .dft_jtag_o(),
       .dft_jtag_i(jtag_pkg::JTAG_RSP_DEFAULT),
       .dft_strap_test_o(),
