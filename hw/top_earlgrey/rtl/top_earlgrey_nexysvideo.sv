@@ -78,12 +78,12 @@ module top_earlgrey_nexysvideo #(
   logic clk_main, clk_usb_48mhz, clk_aon, rst_n;
   logic [pinmux_reg_pkg::NMioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] mio_attr;
   logic [pinmux_reg_pkg::NDioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] dio_attr;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_umux, dio_out_padring;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_umux, dio_oe_padring;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_umux, dio_in_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_core;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe_core;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_core;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_umux;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_umux;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_umux;
 
   padring #(
     // MIOs 43:34 and 23:20 are currently not
@@ -230,73 +230,24 @@ module top_earlgrey_nexysvideo #(
                              IO_USB_DP0,
                              IO_USB_DN0 } ),
     // Muxed IOs
-    .mio_in_o            ( mio_in_padring   ),
-    .mio_out_i           ( mio_out_padring  ),
-    .mio_oe_i            ( mio_oe_padring   ),
+    .mio_in_o            ( mio_in_core   ),
+    .mio_out_i           ( mio_out_core  ),
+    .mio_oe_i            ( mio_oe_core   ),
     // Dedicated IOs
-    .dio_in_o            ( dio_in_padring   ),
-    .dio_out_i           ( dio_out_padring  ),
-    .dio_oe_i            ( dio_oe_padring   ),
+    .dio_in_o            ( dio_in_umux   ),
+    .dio_out_i           ( dio_out_umux  ),
+    .dio_oe_i            ( dio_oe_umux   ),
     // Pad Attributes
-    .mio_attr_i          ( mio_attr         ),
-    .dio_attr_i          ( dio_attr         )
+    .mio_attr_i          ( mio_attr      ),
+    .dio_attr_i          ( dio_attr      )
   );
 
-  //////////////////////
-  // JTAG Overlay Mux //
-  //////////////////////
 
-  logic jtag_trst_n, jtag_srst_n;
-  logic jtag_tck, jtag_tck_buf, jtag_tms, jtag_tdi, jtag_tdo;
+  /////////////////////
+  // USB Overlay Mux //
+  /////////////////////
 
-  localparam int NumIOs = pinmux_reg_pkg::NMioPads +
-                          pinmux_reg_pkg::NDioPads;
-
-  // This specifies the tie-off values of the muxed MIO/DIOs
-  // when the JTAG is active. SPI CSB is active low.
-  localparam logic [NumIOs-1:0] TieOffValues = NumIOs'(1'b1 << (
-      pinmux_reg_pkg::NMioPads + top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb));
-
-  // TODO: this is a temporary solution. JTAG will eventually be selected and
-  // qualified inside the pinmux, based on strap and lifecycle state.
-  // Parameterizeable JTAG overlay mux.
-  // Unaffected indices are just passed through.
-  jtag_mux #(
-    .NumIOs         (                   NumIOs       ),
-    .TieOffValues   (                   TieOffValues ),
-    .JtagEnIdx      (                             16 ), // MIO 16
-    .JtagEnPolarity (                              1 ),
-    .TckIdx         ( pinmux_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSck ),
-    .TmsIdx         ( pinmux_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb ),
-    .TrstIdx        (                             18 ), // MIO 18
-    .SrstIdx        (                             19 ), // MIO 19
-    .TdiIdx         ( pinmux_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd0 ),
-    .TdoIdx         ( pinmux_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd1 )
-  ) jtag_mux (
-    // To JTAG inside core
-    .jtag_tck_o   ( jtag_tck        ),
-    .jtag_tms_o   ( jtag_tms        ),
-    .jtag_trst_no ( jtag_trst_n     ),
-    .jtag_srst_no ( jtag_srst_n     ),
-    .jtag_tdi_o   ( jtag_tdi        ),
-    .jtag_tdo_i   ( jtag_tdo        ),
-    // To core side via usbmux for DIOs
-    .out_core_i   ( {dio_out_umux, mio_out_core} ),
-    .oe_core_i    ( {dio_oe_umux,  mio_oe_core}  ),
-    .in_core_o    ( {dio_in_umux,  mio_in_core}  ),
-    // To padring side
-    .out_padring_o ( {dio_out_padring, mio_out_padring} ),
-    .oe_padring_o  ( {dio_oe_padring, mio_oe_padring } ),
-    .in_padring_i  ( {dio_in_padring, mio_in_padring } ),
-    // USB breakouts
-    .usb_pullup_p_en_o (      ),
-    .usb_pullup_n_en_o (      ),
-    .usb_diff_input_i  ( 1'b0 )
-  );
+  // TODO: generalize this USB mux code and align with other tops.
 
   // Software can enable the pinflip feature inside usbdev.
   // The example hello_usbdev does this based on GPIO0 (a switch on the board)
@@ -365,7 +316,7 @@ module top_earlgrey_nexysvideo #(
   // GPIO[2] = Switch 2 on board is used to select using the UPHY
   // Keep GPIO[1] for selecting differential in sw
   logic use_uphy;
-  assign use_uphy = mio_in_padring[2];
+  assign use_uphy = mio_in_core[2];
 
   for (genvar i = 0; i < pinmux_reg_pkg::NDioPads; i++) begin : gen_dio
     if (i == DioIdxUsbDn0) begin
@@ -417,18 +368,13 @@ module top_earlgrey_nexysvideo #(
     end
   end
 
-  ////////////////////////////////
-  // JTAG clock buffer for FPGA //
-  ////////////////////////////////
-
-  BUFG jtag_buf (
-    .I (jtag_tck),
-    .O (jtag_tck_buf)
-  );
-
   //////////////////
   // PLL for FPGA //
   //////////////////
+
+  // TODO: This needs to become a dedicated custom pin for FPGAs
+  logic jtag_srst_n;
+  assign jtag_srst_n = mio_in_core[19];
 
   clkgen_xil7series # (
     .AddClkBuf(0)
@@ -468,6 +414,33 @@ module top_earlgrey_nexysvideo #(
   // for verilator purposes, make these two the same.
   lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
 
+  // TODO: this is temporary and will be removed in the future.
+  // This specifies the tie-off values of the muxed MIO/DIOs
+  // when the JTAG is active. SPI CSB is active low.
+  localparam logic [pinmux_pkg::NumIOs-1:0] TieOffValues = pinmux_pkg::NumIOs'(1'b1 << (
+      pinmux_reg_pkg::NMioPads + top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb));
+
+  // DFT and Debug signal positions in the pinout.
+  // TODO: generate these indices from the target-specific
+  // pinout configuration.
+  localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
+    const_sampling: 1'b1,
+    tie_offs:       TieOffValues,
+    tck_idx:        pinmux_reg_pkg::NMioPads +
+                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSck,
+    tms_idx:        pinmux_reg_pkg::NMioPads +
+                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb,
+    trst_idx:       18, // MIO 18
+    tdi_idx:        pinmux_reg_pkg::NMioPads +
+                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd0,
+    tdo_idx:        pinmux_reg_pkg::NMioPads +
+                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd1,
+    tap_strap0_idx: 20, // MIO 20 (tied off)
+    tap_strap1_idx: 16, // MIO 16 (used as JTAG/SPI select signal)
+    dft_strap0_idx: 21, // MIO 21 (tied off)
+    dft_strap1_idx: 22  // MIO 22 (tied off)
+  };
+
   top_earlgrey #(
     .AesMasking(1'b0),
     .AesSBoxImpl(aes_pkg::SBoxImplLut),
@@ -481,7 +454,8 @@ module top_earlgrey_nexysvideo #(
     .BootRomInitFile(BootRomInitFile),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .SramCtrlRetAonInstrExec(0),
-    .SramCtrlMainInstrExec(1)
+    .SramCtrlMainInstrExec(1),
+    .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
     // Clocks, resets
     .rst_ni                       ( rst_n           ),
@@ -515,13 +489,6 @@ module top_earlgrey_nexysvideo #(
     .lc_clk_byp_ack_i             ( lc_clk_bypass   ),
     .flash_test_mode_a_i          ('0               ),
     .flash_test_voltage_h_i       ('0               ),
-
-    // JTAG
-    .jtag_tck_i      ( jtag_tck_buf  ),
-    .jtag_tms_i      ( jtag_tms      ),
-    .jtag_trst_ni    ( jtag_trst_n   ),
-    .jtag_tdi_i      ( jtag_tdi      ),
-    .jtag_tdo_o      ( jtag_tdo      ),
 
     // Multiplexed I/O
     .mio_in_i        ( mio_in_core   ),

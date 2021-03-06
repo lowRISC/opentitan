@@ -8,9 +8,6 @@ module top_earlgrey_verilator (
   input rst_ni
 );
 
-  logic cio_jtag_tck, cio_jtag_tms, cio_jtag_tdi, cio_jtag_tdo;
-  logic cio_jtag_trst_n, cio_jtag_srst_n;
-
   logic [31:0]  cio_gpio_p2d, cio_gpio_d2p, cio_gpio_en_d2p;
   logic cio_uart_rx_p2d, cio_uart_tx_d2p, cio_uart_tx_en_d2p;
 
@@ -130,12 +127,33 @@ module top_earlgrey_verilator (
     .clk_o(clk_aon)
   );
 
+  // DFT and Debug signal positions in the pinout.
+  // TODO: generate these indices from the target-specific
+  // pinout configuration.
+  localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
+    const_sampling: 1'b1,
+    tie_offs:       '0,
+    tck_idx:        pinmux_reg_pkg::NMioPads +
+                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSck,
+    tms_idx:        pinmux_reg_pkg::NMioPads +
+                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb,
+    trst_idx:       18, // MIO 18
+    tdi_idx:        pinmux_reg_pkg::NMioPads +
+                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd0,
+    tdo_idx:        pinmux_reg_pkg::NMioPads +
+                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd1,
+    tap_strap0_idx: 26, // MIO 26
+    tap_strap1_idx: 16, // MIO 16 (this is different in the ASIC top)
+    dft_strap0_idx: 21, // MIO 21
+    dft_strap1_idx: 22  // MIO 22
+  };
 
   lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
   // Top-level design
   top_earlgrey #(
     .SramCtrlRetAonInstrExec(0),
-    .SramCtrlMainInstrExec(1)
+    .SramCtrlMainInstrExec(1),
+    .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
     .rst_ni                       (rst_ni            ),
     .clk_main_i                   (clk_i             ),
@@ -168,11 +186,6 @@ module top_earlgrey_verilator (
     .lc_clk_byp_ack_i             ( lc_clk_bypass    ),
     .flash_test_mode_a_i          ('0),
     .flash_test_voltage_h_i       ('0),
-    .jtag_tck_i                   (cio_jtag_tck),
-    .jtag_tms_i                   (cio_jtag_tms),
-    .jtag_trst_ni                 (cio_jtag_trst_n),
-    .jtag_tdi_i                   (cio_jtag_tdi),
-    .jtag_tdo_o                   (cio_jtag_tdo),
 
     // Multiplexed I/O
     .mio_in_i                     (mio_in),
@@ -234,18 +247,22 @@ module top_earlgrey_verilator (
     .dmi_rst_n      (dmi_rst_n)
   );
 `else
-  // JTAG DPI for OpenOCD
-  jtagdpi u_jtagdpi (
-    .clk_i,
-    .rst_ni,
+  // TODO: this is currently not supported.
+  // connect this to the correct pins once pinout is final and once the
+  // verilator testbench supports DFT/Debug strap sampling.
+  // See also #5221.
+  //
+  // jtagdpi u_jtagdpi (
+  //   .clk_i,
+  //   .rst_ni,
 
-    .jtag_tck    (cio_jtag_tck),
-    .jtag_tms    (cio_jtag_tms),
-    .jtag_tdi    (cio_jtag_tdi),
-    .jtag_tdo    (cio_jtag_tdo),
-    .jtag_trst_n (cio_jtag_trst_n),
-    .jtag_srst_n (cio_jtag_srst_n)
-  );
+  //   .jtag_tck    (cio_jtag_tck),
+  //   .jtag_tms    (cio_jtag_tms),
+  //   .jtag_tdi    (cio_jtag_tdi),
+  //   .jtag_tdo    (cio_jtag_tdo),
+  //   .jtag_trst_n (cio_jtag_trst_n),
+  //   .jtag_srst_n (cio_jtag_srst_n)
+  // );
 `endif
 
   // SPI DPI

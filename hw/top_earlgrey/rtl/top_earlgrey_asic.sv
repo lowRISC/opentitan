@@ -90,12 +90,12 @@ module top_earlgrey_asic (
   logic rst_n;
   logic [pinmux_reg_pkg::NMioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] mio_attr;
   logic [pinmux_reg_pkg::NDioPads-1:0][pinmux_reg_pkg::AttrDw-1:0] dio_attr;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_core, mio_out_padring;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe_core, mio_oe_padring;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_core, mio_in_padring;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_padring;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_padring;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_padring;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_core;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe_core;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_core;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_umux;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_umux;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_umux;
 
   // unused pad signals. need to hook these wires up since lint does not like module ports that are
   // tied to 1'bz.
@@ -272,86 +272,48 @@ module top_earlgrey_asic (
                              USB_N                        // cio_usbdev_aon_dn_p2d
                            } ),
     // Muxed IOs
-    .mio_in_o            ( mio_in_padring   ),
-    .mio_out_i           ( mio_out_padring  ),
-    .mio_oe_i            ( mio_oe_padring   ),
+    .mio_in_o            ( mio_in_core   ),
+    .mio_out_i           ( mio_out_core  ),
+    .mio_oe_i            ( mio_oe_core   ),
     // Dedicated IOs
-    .dio_in_o            ( dio_in_padring   ),
-    .dio_out_i           ( dio_out_padring  ),
-    .dio_oe_i            ( dio_oe_padring   ),
+    .dio_in_o            ( dio_in_umux   ),
+    .dio_out_i           ( dio_out_umux  ),
+    .dio_oe_i            ( dio_oe_umux   ),
     // Pad Attributes
-    .mio_attr_i          ( mio_attr         ),
-    .dio_attr_i          ( dio_attr         )
+    .mio_attr_i          ( mio_attr      ),
+    .dio_attr_i          ( dio_attr      )
   );
 
-  //////////////////////
-  // JTAG Overlay Mux //
-  //////////////////////
 
+  /////////////////////
+  // USB Overlay Mux //
+  /////////////////////
+
+  // TODO: generalize this USB mux code and align with other tops.
   logic usbdev_aon_usb_rx_enable;
   logic usb_pullup_p_en;
   logic usb_pullup_n_en;
   logic usb_diff_input;
   logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
 
-  logic jtag_trst_n, jtag_srst_n;
-  logic jtag_tck, jtag_tms, jtag_tdi, jtag_tdo;
+  assign usb_pullup_p_en_o = dio_out_core[top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDpPullup] &
+                             dio_oe_core[top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDpPullup];
+  assign usb_pullup_n_en_o = dio_out_core[top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDnPullup] &
+                             dio_oe_core[top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDnPullup];
 
-  localparam int NumIOs = pinmux_reg_pkg::NMioPads +
-                          pinmux_reg_pkg::NDioPads;
+  // Input tie-off muxes
+  for (genvar k = 0; k < pinmux_reg_pkg::NDioPads; k++) begin : gen_input_tie_off
+    if (k == top_earlgrey_pkg::TopEarlgreyDioPinUsbdevD) begin : gen_usb_diff_in
+      logic unused_in;
+      assign unused_in = dio_in_umux[k];
+      assign dio_in_core[k] = usb_diff_input;
+    end else begin : gen_other_inputs
+      assign dio_in_core[k] = dio_in_umux[k];
+    end
+  end
 
-  // This specifies the tie-off values of the muxed MIO/DIOs
-  // when the JTAG is active. SPI CSB is active low.
-  localparam logic [NumIOs-1:0] TieOffValues =NumIOs'(1'b1 << (
-      pinmux_reg_pkg::NMioPads + top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb));
-
-  // TODO: this is a temporary solution. JTAG will eventually be selected and
-  // qualified inside the pinmux, based on strap and lifecycle state.
-  // Parameterizeable JTAG overlay mux.
-  // Unaffected indices are just passed through.
-  jtag_mux #(
-    .NumIOs         (                   NumIOs       ),
-    .TieOffValues   (                   TieOffValues ),
-    .JtagEnIdx      (                             16 ), // MIO 16
-    .JtagEnPolarity (                              1 ),
-    .TckIdx         ( pinmux_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSck ),
-    .TmsIdx         ( pinmux_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb ),
-    .TrstIdx        (                             18 ), // MIO 18
-    .SrstIdx        (                             19 ), // MIO 19
-    .TdiIdx         ( pinmux_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd0 ),
-    .TdoIdx         ( pinmux_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd1 ),
-    .UsbDpPuIdx     ( pinmux_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDpPullup ),
-    .UsbDnPuIdx     ( pinmux_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDnPullup ),
-    .UsbDIdx        ( pinmux_reg_pkg::NMioPads +
-                      top_earlgrey_pkg::TopEarlgreyDioPinUsbdevD ),
-    .ConnectUSB     (1)
-  ) jtag_mux (
-    // To JTAG inside core
-    .jtag_tck_o   ( jtag_tck        ),
-    .jtag_tms_o   ( jtag_tms        ),
-    .jtag_trst_no ( jtag_trst_n     ),
-    .jtag_srst_no ( jtag_srst_n     ),
-    .jtag_tdi_o   ( jtag_tdi        ),
-    .jtag_tdo_i   ( jtag_tdo        ),
-    // To core side
-    .out_core_i   ( {dio_out_core, mio_out_core} ),
-    .oe_core_i    ( {dio_oe_core,  mio_oe_core}  ),
-    .in_core_o    ( {dio_in_core,  mio_in_core}  ),
-    // To padring side
-    .out_padring_o ( {dio_out_padring, mio_out_padring} ),
-    .oe_padring_o  ( {dio_oe_padring , mio_oe_padring } ),
-    .in_padring_i  ( {dio_in_padring , mio_in_padring } ),
-    // USB breakouts
-    .usb_pullup_p_en_o ( usb_pullup_p_en ),
-    .usb_pullup_n_en_o ( usb_pullup_n_en ),
-    .usb_diff_input_i  ( usb_diff_input  )
-  );
+  assign dio_out_umux = dio_out_core;
+  assign dio_oe_umux = dio_oe_core;
 
   //////////////////////
   // AST              //
@@ -616,6 +578,33 @@ module top_earlgrey_asic (
   // Top-level design //
   //////////////////////
 
+  // TODO: this is temporary and will be removed in the future.
+  // This specifies the tie-off values of the muxed MIO/DIOs
+  // when the JTAG is active. SPI CSB is active low.
+  localparam logic [pinmux_pkg::NumIOs-1:0] TieOffValues = pinmux_pkg::NumIOs'(1'b1 << (
+      pinmux_reg_pkg::NMioPads + top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb));
+
+  // DFT and Debug signal positions in the pinout.
+  // TODO: generate these indices from the target-specific
+  // pinout configuration.
+  localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
+    const_sampling: 1'b1,
+    tie_offs:       TieOffValues,
+    tck_idx:        pinmux_reg_pkg::NMioPads +
+                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSck,
+    tms_idx:        pinmux_reg_pkg::NMioPads +
+                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb,
+    trst_idx:       18, // MIO 18
+    tdi_idx:        pinmux_reg_pkg::NMioPads +
+                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd0,
+    tdo_idx:        pinmux_reg_pkg::NMioPads +
+                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd1,
+    tap_strap0_idx: 26, // MIO 26
+    tap_strap1_idx: 23, // MIO 23
+    dft_strap0_idx: 21, // MIO 21
+    dft_strap1_idx: 22  // MIO 22
+  };
+
   top_earlgrey #(
     .AesMasking(1'b1),
     .AesSBoxImpl(aes_pkg::SBoxImplDom),
@@ -624,7 +613,8 @@ module top_earlgrey_asic (
     .KmacEnMasking(1),  // DOM AND + Masking scheme
     .KmacReuseShare(0),
     .SramCtrlRetAonInstrExec(0),
-    .SramCtrlMainInstrExec(1)
+    .SramCtrlMainInstrExec(1),
+    .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
     .rst_ni                       ( aon_pok                    ),
     // ast connections
@@ -658,12 +648,6 @@ module top_earlgrey_asic (
     // TODO: connect these
     .flash_test_mode_a_i          ('0                          ),
     .flash_test_voltage_h_i       ('0                          ),
-    // JTAG
-    .jtag_tck_i                   ( jtag_tck                   ),
-    .jtag_tms_i                   ( jtag_tms                   ),
-    .jtag_trst_ni                 ( jtag_trst_n                ),
-    .jtag_tdi_i                   ( jtag_tdi                   ),
-    .jtag_tdo_o                   ( jtag_tdo                   ),
 
     // Multiplexed I/O
     .mio_in_i                     ( mio_in_core                ),

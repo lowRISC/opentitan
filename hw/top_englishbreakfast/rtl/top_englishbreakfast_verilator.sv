@@ -125,6 +125,27 @@ module top_englishbreakfast_verilator (
     .clk_o(clk_aon)
   );
 
+  // DFT and Debug signal positions in the pinout.
+  // TODO: generate these indices from the target-specific
+  // pinout configuration.
+  localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
+    const_sampling: 1'b1,
+    tie_offs:       '0,
+    tck_idx:        pinmux_reg_pkg::NMioPads +
+                    top_englishbreakfast_pkg::TopEnglishbreakfastDioPinSpiDeviceSck,
+    tms_idx:        pinmux_reg_pkg::NMioPads +
+                    top_englishbreakfast_pkg::TopEnglishbreakfastDioPinSpiDeviceCsb,
+    trst_idx:       18, // MIO 18
+    tdi_idx:        pinmux_reg_pkg::NMioPads +
+                    top_englishbreakfast_pkg::TopEnglishbreakfastDioPinSpiDeviceSd0,
+    tdo_idx:        pinmux_reg_pkg::NMioPads +
+                    top_englishbreakfast_pkg::TopEnglishbreakfastDioPinSpiDeviceSd1,
+    tap_strap0_idx: 26, // MIO 26
+    tap_strap1_idx: 16, // MIO 16 (this is different in the ASIC top)
+    dft_strap0_idx: 21, // MIO 21
+    dft_strap1_idx: 22  // MIO 22
+  };
+
   // the rst_ni pin only goes to AST
   // the rest of the logic generates reset based on the 'pok' signal.
   // for verilator purposes, make these two the same.
@@ -137,7 +158,8 @@ module top_englishbreakfast_verilator (
     .SecAesSkipPRNGReseeding(1'b1),
     .IbexICache(0),
     .SramCtrlRetAonInstrExec(0),
-    .SramCtrlMainInstrExec(1)
+    .SramCtrlMainInstrExec(1),
+    .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_englishbreakfast (
     .rst_ni                     (rst_ni),
     .clk_main_i                 (clk_i),
@@ -153,12 +175,6 @@ module top_englishbreakfast_verilator (
     .usbdev_usb_ref_pulse_o       (                 ),
     .flash_power_down_h_i         ( '0              ),
     .flash_power_ready_h_i        ( 1'b1            ),
-
-    .jtag_tck_i                 (cio_jtag_tck),
-    .jtag_tms_i                 (cio_jtag_tms),
-    .jtag_trst_ni               (cio_jtag_trst_n),
-    .jtag_tdi_i                 (cio_jtag_tdi),
-    .jtag_tdo_o                 (cio_jtag_tdo),
 
     // Multiplexed I/O
     .mio_in_i                   (mio_in),

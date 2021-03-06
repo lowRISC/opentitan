@@ -128,10 +128,10 @@ module tb;
     .IOC2(tie_off[0]),     // MIO 20
     .IOC3(tie_off[1]),     // MIO 21
     .IOC4(tie_off[2]),     // MIO 22
-    .IOC5(tie_off[3]),     // MIO 23
+    .IOC5(jtag_spi_n),     // MIO 23 -- TAP_STRAP_SEL1
     .IOC6(tie_off[4]),     // MIO 24
     .IOC7(tie_off[5]),     // MIO 25
-    .IOC8(tie_off[6]),     // MIO 26
+    .IOC8(tie_off[6]),     // MIO 26 -- TAP_STRAP_SEL0
     .IOC9(tie_off[7]),     // MIO 27
     .IOC10(tie_off[8]),    // MIO 28
     .IOC11(tie_off[9]),    // MIO 29
@@ -165,7 +165,7 @@ module tb;
   assign io_dps[0]  = jtag_spi_n ? jtag_tck : spi_device_sck;
   assign io_dps[1]  = jtag_spi_n ? jtag_tdi : spi_device_sdi_i;
   assign io_dps[3]  = jtag_spi_n ? jtag_tms : spi_device_csb;
-  assign io_dps[4]  = jtag_trst_n;
+  assign (weak0, weak1) io_dps[4] = 1'b0;
   assign io_dps[5]  = srst_n;
   assign io_dps[6]  = jtag_spi_n;
   assign io_dps[7]  = bootstrap;

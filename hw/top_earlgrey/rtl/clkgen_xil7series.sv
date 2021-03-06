@@ -6,9 +6,9 @@ module clkgen_xil7series # (
   // Add BUFG if not done by downstream logic
   parameter bit AddClkBuf = 1
 ) (
-  input IO_CLK,
-  input IO_RST_N,
-  input jtag_srst_n,
+  input  IO_CLK,
+  input  IO_RST_N,
+  input  jtag_srst_n,
   output clk_main,
   output clk_48MHz,
   output clk_aon,
