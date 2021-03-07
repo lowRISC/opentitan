@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:pattgen_test
       - lowrisc:dv:pattgen_sva
+      - lowrisc:dv:pattgen_cov
     files:
       - tb.sv
     file_type: systemVerilogSource

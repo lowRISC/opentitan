@@ -10,10 +10,6 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(pattgen_scoreboard)
   `uvm_component_new
 
-  //****************************************************
-  // TODO: This is still WIP (cleaned up later)
-  //****************************************************
-
   // TLM fifos hold the transactions sent by monitor
   uvm_tlm_analysis_fifo #(pattgen_item) item_fifo[NUM_PATTGEN_CHANNELS];
 
@@ -23,6 +19,7 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
   local pattgen_item exp_item_q[NUM_PATTGEN_CHANNELS][$];
   // local variables
   local pattgen_channel_cfg channel_cfg[NUM_PATTGEN_CHANNELS-1:0];
+  local bit [NumPattgenIntr-1:0] intr_exp_at_addr_phase;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -34,11 +31,17 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
-    for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
-      fork
-        automatic uint channel = i;
-        compare_trans(channel);
-      join_none
+    forever begin
+      `DV_SPINWAIT_EXIT(
+        for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
+          fork
+            automatic uint channel = i;
+            compare_trans(channel);
+          join_none
+        end
+        wait fork;,
+        @(negedge cfg.clk_rst_vif.rst_n),
+      )
     end
   endtask : run_phase
 
@@ -47,6 +50,9 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
     bit [TL_DW-1:0] reg_value;
     bit             do_read_check = 1'b1;
     bit             write = item.is_write();
+
+    bit addr_phase_write = (write && channel  == AddrChannel);
+    bit data_phase_read  = (!write && channel == DataChannel);
 
     uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
     // if access was to a valid csr, get the csr handle
@@ -58,7 +64,7 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
     end
 
     // address write phase
-    if (write  && channel == AddrChannel) begin
+    if (addr_phase_write) begin
       // if incoming access is a write to a valid csr, then make updates right away
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
 
@@ -131,7 +137,12 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
           // no special handle is needed
         end
         "intr_state": begin
-          // TODO: add coverage
+          bit[TL_DW-1:0] intr_wdata = item.a_data;
+          fork begin
+            bit [NumPattgenIntr-1:0] pre_intr = intr_exp;
+            cfg.clk_rst_vif.wait_clks(1);
+            intr_exp &= ~intr_wdata;
+          end join_none
         end
         default: begin
           `uvm_fatal(`gfn, $sformatf("\n  scb: write to invalid csr: %0s", csr.get_full_name()))
@@ -139,10 +150,13 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
       endcase
     end
 
-    // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-    if (!write && channel == DataChannel) begin
+    // On reads and & data phase, if do_read_check, is set, then
+    // check mirrored_value against item.d_data
+    if (data_phase_read) begin
       case (csr.get_name())
         "intr_state": begin
+          pattgen_intr_e     intr;
+          bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
           do_read_check = 1'b0;
           // done_ch0/done_ch1 is asserted to indicate a pattern is completely generated
           reg_value = item.d_data;
@@ -152,6 +166,13 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
               channel_cfg[1].stop, channel_cfg[0].stop), UVM_DEBUG)
           for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
             generate_exp_items(.channel(i), .error_injected(1'b0));
+          end
+          foreach (intr_exp[i]) begin
+            intr = pattgen_intr_e'(i); // cast to enum to get interrupt name
+            if (cfg.en_cov) begin
+              cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
+              cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
+            end
           end
         end
         "ctrl", "size", "intr_test", "intr_enable",

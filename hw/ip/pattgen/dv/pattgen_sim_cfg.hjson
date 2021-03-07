@@ -41,7 +41,13 @@
 
   // Default UVM test and seq class name.
   uvm_test: pattgen_base_test
-  uvm_test_seq: pattgen_base_vseq
+  uvm_test_seq: pattgen_base_vseq,
+
+  // additional top for coverage
+  sim_tops: [ "pattgen_bind", "pattgen_cov_bind"]
+  
+  // Pattgen functional coverage
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/pattgen/dv/cov/pattgen_cov.vRefine"]
 
   // List of test specifications.
   tests: [
