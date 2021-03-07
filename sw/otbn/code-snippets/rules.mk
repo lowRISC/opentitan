@@ -125,6 +125,12 @@ $(otbn-code-snippets-bin-dir)/p256_ecdsa.elf: \
 $(otbn-code-snippets-bin-dir)/p256_ecdsa.elf: \
   otbn-libs += $(otbn-code-snippets-obj-dir)/p256.o
 
+# p256 point addition test depends on proj_add defined in p256.s
+$(otbn-code-snippets-bin-dir)/p256_proj_add_test.elf: \
+  $(otbn-code-snippets-obj-dir)/p256.o
+$(otbn-code-snippets-bin-dir)/p256_proj_add_test.elf: \
+  otbn-libs += $(otbn-code-snippets-obj-dir)/p256.o
+
 # rsa depends on code defined in modexp.s
 $(otbn-code-snippets-bin-dir)/rsa.elf: \
   $(otbn-code-snippets-obj-dir)/modexp.o
