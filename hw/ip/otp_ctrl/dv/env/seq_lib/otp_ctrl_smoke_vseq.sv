@@ -90,7 +90,9 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       // set consistency and integrity checks
       csr_wr(ral.check_regwen, check_regwen_val);
       csr_wr(ral.check_trigger_regwen, check_trigger_regwen_val);
-      csr_wr(ral.check_timeout, check_timeout_val);
+      if (check_trigger_val && `gmv(ral.check_trigger_regwen)) begin
+        csr_wr(ral.check_timeout, check_timeout_val);
+      end
       trigger_checks(.val(check_trigger_val), .wait_done(1));
 
       if (do_req_keys) begin

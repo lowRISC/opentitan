@@ -86,6 +86,8 @@ package otp_ctrl_env_pkg;
   parameter uint NUM_SRAM_EDN_REQ = 10;
   parameter uint NUM_OTBN_EDN_REQ = 16;
 
+  parameter uint CHK_TIMEOUT_CYC = 40;
+
   // lc does not have digest
   parameter int PART_BASE_ADDRS [NumPart-1] = {
     CreatorSwCfgOffset,
