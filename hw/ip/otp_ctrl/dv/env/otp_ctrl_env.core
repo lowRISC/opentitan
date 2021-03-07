@@ -28,6 +28,7 @@ filesets:
       - seq_lib/otp_ctrl_dai_lock_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_dai_errs_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_macro_errs_vseq.sv: {is_include_file: true}
+      - seq_lib/otp_ctrl_check_fail_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_parallel_base_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_regwen_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_parallel_key_req_vseq.sv: {is_include_file: true}

@@ -69,7 +69,7 @@
             - Check if the error_code register is set correctly
             '''
       milestone: V2
-      tests: []
+      tests: ["otp_ctrl_check_fail"]
     }
     {
       name: regwen_during_otp_init

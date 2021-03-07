@@ -550,7 +550,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           if (item.d_data[OtpDaiIdleIdx]) check_otp_idle(1);
 
           // Mask out check_pending field - we do not know how long it takes to process checks.
-          if (under_chk) status_mask[OtpCheckPendingIdx] = 1;
+          // Check failure can trigger all kinds of errors.
+          if (under_chk) status_mask = '1;
+
+          if (!under_chk && `gmv(ral.status.check_pending)) status_mask[OtpTimeoutErrIdx] = 1;
 
           // Mask out otp_dai access related field - we do not know how long it takes to finish
           // DAI access.
@@ -587,6 +590,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       "check_trigger": begin
         if (addr_phase_write && `gmv(ral.check_trigger_regwen) && item.a_data inside {[1:3]}) begin
           exp_status[OtpCheckPendingIdx] = 1;
+          if (`gmv(ral.check_timeout) > 0 && `gmv(ral.check_timeout) <= CHK_TIMEOUT_CYC) begin
+            set_exp_alert("fatal_check_error", 1, `gmv(ral.check_timeout));
+            predict_status_err(.timeout_err(1));
+          end
         end
       end
       "hw_cfg_digest_0", "hw_cfg_digest_1", "", "secret0_digest_0", "secret0_digest_1",
@@ -855,13 +862,14 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                                                                       dai_addr >> 2;
   endfunction
 
-  virtual function void predict_status_err(bit dai_err = 0, bit lc_err = 0);
+  virtual function void predict_status_err(bit dai_err = 0, bit lc_err = 0, bit timeout_err = 0);
     void'(ral.intr_state.otp_error.predict(.value(1), .kind(UVM_PREDICT_READ)));
     if (dai_err) begin
       exp_status[OtpDaiIdleIdx] = 1;
       exp_status[OtpDaiErrIdx]  = 1;
     end
     if (lc_err) exp_status[OtpLciErrIdx] = 1;
+    if (timeout_err) exp_status[OtpTimeoutErrIdx] = 1;
   endfunction
 
   virtual function void predict_dai_idle_status_wo_err();
