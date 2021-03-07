@@ -13,6 +13,7 @@
 .globl p256_scalar_base_mult
 .globl p256_sign
 .globl p256_verify
+.globl proj_add
 
 .text
 
