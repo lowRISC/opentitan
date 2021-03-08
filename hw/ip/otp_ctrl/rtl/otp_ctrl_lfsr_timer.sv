@@ -208,7 +208,7 @@ module otp_ctrl_lfsr_timer
     set_all_cnsty_reqs = '0;
 
     // Status signals going to CSRs and error logic.
-    chk_timeout_d = 1'b0;
+    chk_timeout_d = chk_timeout_q;
     chk_pending_o = cnsty_chk_trig_q || integ_chk_trig_q;
     fsm_err_o = 1'b0;
 
