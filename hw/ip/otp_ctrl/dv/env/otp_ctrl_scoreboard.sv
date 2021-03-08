@@ -13,7 +13,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   bit [TL_DW-1:0] otp_a [OTP_ARRAY_SIZE];
 
   // lc_state and lc_cnt that stored in OTP
-  bit [LC_PROG_DATA_SIZE-1:0] otp_lc_data;
+  bit [7:0] otp_lc_data[LifeCycleSize];
   bit key_size_80 = SCRAMBLE_KEY_SIZE == 80;
   bit [EDN_BUS_WIDTH-1:0] edn_data_q[$];
 
@@ -28,7 +28,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // Status related variables
   bit under_chk, under_dai_access;
-  bit [TL_DW-1:0] exp_status;
+  bit [TL_DW-1:0] exp_status, status_mask;
 
   bit macro_alert_triggered;
 
@@ -85,9 +85,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       @(posedge cfg.otp_ctrl_vif.pwr_otp_init_i) begin
         if (cfg.backdoor_clear_mem && cfg.en_scb) begin
           bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, Secret0Idx);
-          otp_a   = '{default:0};
-          digests = '{default:0};
-          otp_lc_data = 0;
+          otp_a        = '{default:0};
+          digests      = '{default:0};
+          otp_lc_data  = '{default:0};
           sw_read_lock = 0;
           // secret partitions have been scrambled before writing to OTP.
           // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
@@ -143,27 +143,25 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   virtual task process_lc_prog_req();
     forever begin
       push_pull_item#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE)) rcv_item;
-      bit exp_err_bit;
-      string err_msg;
+      bit       exp_err_bit;
+      bit [7:0] lc_wr_data[LifeCycleSize];
 
       lc_prog_fifo.get(rcv_item);
-      err_msg = $sformatf("current lc_data %0h, request program lc_data %0h",
-                          otp_lc_data, rcv_item.h_data);
 
-      // LC program request data is valid, no OTP macro error
-      if ((otp_lc_data & rcv_item.h_data) == otp_lc_data) begin
-        `DV_CHECK_EQ(rcv_item.d_data, 0, err_msg)
-        otp_lc_data = rcv_item.h_data;
-        exp_status[OtpLciErrIdx] = 0;
-      end else begin
-        `DV_CHECK_EQ(rcv_item.d_data, 1, err_msg)
-        fork
-          begin
-            cfg.clk_rst_vif.wait_n_clks(1);
-            predict_status_err(.dai_err(0), .lc_err(1));
-          end
-        join
+      // Even if lci_error happened, design will continue to program the rest of LC partitions.
+      lc_wr_data = {>>byte{rcv_item.h_data}};
+      foreach (otp_lc_data[i]) begin
+        if ((otp_lc_data[i] & lc_wr_data[i]) == otp_lc_data[i]) begin
+          otp_lc_data[i] = lc_wr_data[i];
+        end else begin
+          exp_err_bit = 1;
+        end
       end
+
+      // LC program request data is valid means no OTP macro error.
+      `DV_CHECK_EQ(rcv_item.d_data, exp_err_bit)
+      if (exp_err_bit) predict_status_err(.dai_err(0), .lc_err(1));
+      else exp_status[OtpLciErrIdx] = 0;
     end
   endtask
 
@@ -545,10 +543,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       "status": begin
         if (addr_phase_read) begin
           void'(ral.status.predict(.value(exp_status), .kind(UVM_PREDICT_READ)));
-        end else if (data_phase_read) begin
-          bit [TL_DW-1:0] status_mask;
-          if (item.d_data[OtpDaiIdleIdx]) check_otp_idle(1);
 
+          // update status mask
+          status_mask = 0;
           // Mask out check_pending field - we do not know how long it takes to process checks.
           if (under_chk) status_mask[OtpCheckPendingIdx] = 1;
 
@@ -558,6 +555,12 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
             status_mask[OtpDaiIdleIdx] = 1;
             status_mask[OtpDaiErrIdx]  = 1;
           end
+
+          // Mask out LCI error bit if lc_req is set.
+          if (cfg.otp_ctrl_vif.lc_prog_no_sta_check) status_mask[OtpLciErrIdx] = 1;
+
+        end else if (data_phase_read) begin
+          if (item.d_data[OtpDaiIdleIdx]) check_otp_idle(1);
 
           // STATUS register check with mask
           `DV_CHECK_EQ((csr.get_mirrored_value() | status_mask), (item.d_data | status_mask),
