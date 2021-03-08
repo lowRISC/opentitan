@@ -1894,8 +1894,8 @@
           width: 1
           inst_name: alert_handler
           default: ""
-          top_signame: edn1_edn
-          index: 0
+          top_signame: edn0_edn
+          index: 4
         }
         {
           name: esc_rx
@@ -3469,8 +3469,8 @@
           width: 1
           inst_name: aes
           default: ""
-          top_signame: edn1_edn
-          index: 2
+          top_signame: edn0_edn
+          index: 5
         }
         {
           name: tl
@@ -4178,7 +4178,7 @@
           package: edn_pkg
           type: req_rsp
           act: rsp
-          width: 4
+          width: 6
           default: "'0"
           inst_name: edn0
           end_idx: -1
@@ -4250,10 +4250,10 @@
           package: edn_pkg
           type: req_rsp
           act: rsp
-          width: 4
+          width: 6
           default: "'0"
           inst_name: edn1
-          end_idx: 3
+          end_idx: 1
           top_type: partial-one-to-N
           top_signame: edn1_edn
           index: -1
@@ -4475,7 +4475,7 @@
           inst_name: otbn
           default: ""
           top_signame: edn1_edn
-          index: 1
+          index: 0
         }
         {
           name: idle
@@ -5005,12 +5005,12 @@
         otp_ctrl.edn
         ast_edn.edn
         kmac.entropy
+        alert_handler.edn
+        aes.edn
       ]
       edn1.edn:
       [
-        alert_handler.edn
         otbn.edn
-        aes.edn
       ]
       otp_ctrl.otp_keymgr_key:
       [
@@ -9463,8 +9463,8 @@
         width: 1
         inst_name: alert_handler
         default: ""
-        top_signame: edn1_edn
-        index: 0
+        top_signame: edn0_edn
+        index: 4
       }
       {
         name: esc_rx
@@ -10534,8 +10534,8 @@
         width: 1
         inst_name: aes
         default: ""
-        top_signame: edn1_edn
-        index: 2
+        top_signame: edn0_edn
+        index: 5
       }
       {
         name: tl
@@ -10912,7 +10912,7 @@
         package: edn_pkg
         type: req_rsp
         act: rsp
-        width: 4
+        width: 6
         default: "'0"
         inst_name: edn0
         end_idx: -1
@@ -10960,10 +10960,10 @@
         package: edn_pkg
         type: req_rsp
         act: rsp
-        width: 4
+        width: 6
         default: "'0"
         inst_name: edn1
-        end_idx: 3
+        end_idx: 1
         top_type: partial-one-to-N
         top_signame: edn1_edn
         index: -1
@@ -11091,7 +11091,7 @@
         inst_name: otbn
         default: ""
         top_signame: edn1_edn
-        index: 1
+        index: 0
       }
       {
         name: idle
@@ -12766,7 +12766,7 @@
         package: edn_pkg
         struct: edn_req
         signame: edn0_edn_req
-        width: 4
+        width: 6
         type: req_rsp
         end_idx: -1
         act: rsp
@@ -12777,7 +12777,7 @@
         package: edn_pkg
         struct: edn_rsp
         signame: edn0_edn_rsp
-        width: 4
+        width: 6
         type: req_rsp
         end_idx: -1
         act: rsp
@@ -12788,9 +12788,9 @@
         package: edn_pkg
         struct: edn_req
         signame: edn1_edn_req
-        width: 4
+        width: 6
         type: req_rsp
-        end_idx: 3
+        end_idx: 1
         act: rsp
         suffix: req
         default: "'0"
@@ -12799,9 +12799,9 @@
         package: edn_pkg
         struct: edn_rsp
         signame: edn1_edn_rsp
-        width: 4
+        width: 6
         type: req_rsp
-        end_idx: 3
+        end_idx: 1
         act: rsp
         suffix: rsp
         default: "'0"
