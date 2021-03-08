@@ -36,24 +36,30 @@ def lint_commit_author(commit):
     success = True
     if commit.author.email.endswith('users.noreply.github.com'):
         error(
-            'Commit author has no valid email address set: %s. '
+            f'Commit author has no valid email address set: '
+            '{commit.author.email!r}. '
             'Use "git config user.email user@example.com" to '
             'set a valid email address, then update the commit '
             'with "git rebase -i" and/or '
-            '"git commit --amend --reset-author". '
+            '"git commit --amend --signoff --reset-author". '
             'Also check your GitHub settings at '
             'https://github.com/settings/emails: your email address '
             'must be verified, and the option "Keep my email address '
-            'private" must be disabled.' % (commit.author.email, ), commit)
+            'private" must be disabled. '
+            'This command will also sign off your commit indicating agreement '
+            'to the Contributor License Agreement. See CONTRIBUTING.md for '
+            'more details.', commit)
         success = False
 
     if ' ' not in commit.author.name:
         warning(
-            'The commit author name "%s" contains no space. '
+            f'The commit author name {commit.author.name!r} contains no space. '
             'Use "git config user.name \'Johnny English\'" to '
             'set your real name, and update the commit with "git rebase -i " '
-            'and/or "git commit --amend --reset-author".' %
-            (commit.author.name, ), commit)
+            'and/or "git commit --amend --signoff --reset-author". '
+            'This command will also sign off your commit indicating agreement '
+            'to the Contributor License Agreement. See CONTRIBUTING.md for '
+            'more details.', commit)
         # A warning doesn't fail lint.
 
     return success
@@ -108,8 +114,8 @@ def lint_commit_message(commit):
                        'that matches the commit author name and email, '
                        'indicating agreement to the Contributor License '
                        'Agreement. See CONTRIBUTING.md for more details. '
-                       'You can use "git commit -s" to ask git to add this '
-                       'line for you.')
+                       'You can use "git commit --signoff" to ask git to add '
+                       'this line for you.')
 
     if not signoff_lines:
         error('Commit has no Signed-off-by line. ' + signoff_req_msg)
