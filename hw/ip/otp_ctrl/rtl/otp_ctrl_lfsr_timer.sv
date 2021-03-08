@@ -283,6 +283,9 @@ module otp_ctrl_lfsr_timer
       ///////////////////////////////////////////////////////////////////
       // Terminal error state. This raises an alert.
       ErrorSt: begin
+        // Continuously clear pending checks.
+        clr_integ_chk_trig = 1'b1;
+        clr_cnsty_chk_trig = 1'b1;
         if (!chk_timeout_q) begin
           fsm_err_o = 1'b1;
         end
