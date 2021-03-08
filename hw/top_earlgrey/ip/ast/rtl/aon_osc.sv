@@ -5,9 +5,7 @@
 // *Name: aon_osc
 // *Module Description: AON Clock Oscilator
 //############################################################################
-`ifndef SYNTHESIS
-`timescale 1ns / 10ps
-`else
+`ifdef SYNTHESIS
 `ifndef PRIM_DEFAULT_IMPL
 `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
 `endif
@@ -20,6 +18,7 @@ module aon_osc (
 );
 
 `ifndef SYNTHESIS
+timeunit 1ns / 10ps;
 import ast_bhv_pkg::* ;
 
 // Behavioral Model

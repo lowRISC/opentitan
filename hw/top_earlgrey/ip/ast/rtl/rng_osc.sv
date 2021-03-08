@@ -5,9 +5,7 @@
 // *Name: rng_osc
 // *Module Description: RNG Clock Oscilator
 //############################################################################
-`ifndef SYNTHESIS
-`timescale 1ns / 1ps
-`else
+`ifdef SYNTHESIS
 `ifndef PRIM_DEFAULT_IMPL
 `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
 `endif
@@ -20,6 +18,7 @@ module rng_osc (
 );
 
 `ifndef SYNTHESIS
+timeunit 1ns / 1ps;
 import ast_bhv_pkg::* ;
 
 // Behavioral Model
