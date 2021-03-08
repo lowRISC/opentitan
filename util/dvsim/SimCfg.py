@@ -547,8 +547,8 @@ class SimCfg(FlowCfg):
         coverage exclusions.
         '''
         # TODO, Only support VCS
-        if self.tool != 'vcs':
-            log.error("Currently only support VCS for coverage UNR")
+        if self.tool not in ['vcs', 'xcelium']:
+            log.error("Currently only support VCS and Xcelium for coverage UNR")    
             sys.exit(1)
         # Create initial set of directories, such as dispatched, passed etc.
         self._create_dirs()

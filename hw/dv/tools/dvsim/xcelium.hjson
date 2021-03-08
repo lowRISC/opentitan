@@ -119,6 +119,34 @@
                      "-init {xcelium_common_excl_file}",
                      " {eval_cmd} echo {xcelium_cov_refine_files} | sed -E 's/(\\S+)/-load_refinement \\1/g' "]
 
+  cov_unr_dir:     "{scratch_path}/cov_unr"
+
+  // not needed we can reuse the last build snapshot
+  cov_unr_build_opts:[]
+  cov_unr_build_cmd:[]
+  
+  cov_unr_run_cmd: "{job_prefix} xrun"
+
+               
+  cov_unr_run_opts: [// use xrun in UNR mode
+                     "-unr",
+                     // jason gold switch (use formal)
+                     "-jg",
+                     // use the same snapshot as used for regression
+                     "-r {tb}",
+                     // pointer to the merged coverage data from the regression
+                     "-covdb {cov_merge_db_dir}",
+                     // what metrics to use
+                     "-jg_coverage {cov_metrics}",
+                     "-64bit",
+                     "-xmlibdirname {build_dir}/xcelium.d",
+                     // overwrite previous results 
+                     "-covoverwrite",
+                     "-inst_top {dut_instance}",
+                     // UNR Configurations
+                     "-input {xcelium_unr_cfg_file} "]
+
+
   // pass and fail patterns
   build_fail_patterns: ["\\*E.*$"]
   run_fail_patterns:   ["\\*E.*$"] // Null pointer error
