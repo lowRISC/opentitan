@@ -8,8 +8,11 @@ import sys
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
+from typing import Dict, Optional, Tuple
 
 import hjson
+
+from reggen.ip_block import IpBlock
 
 # Ignore flake8 warning as the function is used in the template
 # disable isort formating, as conflicting with flake8
@@ -320,3 +323,45 @@ def is_inst(module):
         top_level_mem = True
 
     return top_level_mem or top_level_module
+
+
+def get_base_and_size(name_to_block: Dict[str, IpBlock],
+                      inst: Dict[str, object],
+                      ifname: Optional[str]) -> Tuple[int, int]:
+    min_device_spacing = 0x1000
+
+    block = name_to_block.get(inst['type'])
+    if block is None:
+        # If inst isn't the instantiation of a block, it came from some memory.
+        # Memories have their sizes defined, so we can just look it up there.
+        bytes_used = int(inst['size'], 0)
+
+        # Memories don't have multiple or named interfaces, so this will only
+        # work if ifname is None.
+        assert ifname is None
+        base_addr = inst['base_addr']
+
+    else:
+        # If inst is the instantiation of some block, find the register block
+        # that corresponds to ifname
+        rb = block.reg_blocks.get(ifname)
+        if rb is None:
+            log.error('Cannot connect to non-existent {} device interface '
+                      'on {!r} (an instance of the {!r} block)'
+                      .format('default' if ifname is None else repr(ifname),
+                              inst['name'], block.name))
+            bytes_used = 0
+        else:
+            bytes_used = 1 << rb.get_addr_width()
+
+        base_addr = inst['base_addrs'][ifname]
+
+    # Round up to min_device_spacing if necessary
+    size_byte = max(bytes_used, min_device_spacing)
+
+    if isinstance(base_addr, str):
+        base_addr = int(base_addr, 0)
+    else:
+        assert isinstance(base_addr, int)
+
+    return (base_addr, size_byte)

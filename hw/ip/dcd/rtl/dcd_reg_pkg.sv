@@ -10,12 +10,13 @@ package dcd_reg_pkg;
   parameter int NumAdcFilter = 8;
   parameter int NumAdcChannel = 2;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 7;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     logic        q;
   } dcd_reg2hw_intr_state_reg_t;
@@ -170,7 +171,6 @@ package dcd_reg_pkg;
     } oneshot_intr_en;
   } dcd_reg2hw_adc_intr_ctl_reg_t;
 
-
   typedef struct packed {
     logic        d;
     logic        de;
@@ -269,10 +269,7 @@ package dcd_reg_pkg;
     } oneshot;
   } dcd_hw2reg_adc_intr_status_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     dcd_reg2hw_intr_state_reg_t intr_state; // [561:561]
     dcd_reg2hw_intr_enable_reg_t intr_enable; // [560:560]
@@ -288,9 +285,7 @@ package dcd_reg_pkg;
     dcd_reg2hw_adc_intr_ctl_reg_t adc_intr_ctl; // [8:0]
   } dcd_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     dcd_hw2reg_intr_state_reg_t intr_state; // [91:90]
     dcd_hw2reg_adc_chn_val_mreg_t [1:0] adc_chn_val; // [89:34]
@@ -298,7 +293,7 @@ package dcd_reg_pkg;
     dcd_hw2reg_adc_intr_status_reg_t adc_intr_status; // [17:0]
   } dcd_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] DCD_INTR_STATE_OFFSET = 7'h 0;
   parameter logic [BlockAw-1:0] DCD_INTR_ENABLE_OFFSET = 7'h 4;
   parameter logic [BlockAw-1:0] DCD_INTR_TEST_OFFSET = 7'h 8;
@@ -334,7 +329,7 @@ package dcd_reg_pkg;
   parameter logic [0:0] DCD_INTR_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] DCD_INTR_TEST_DEBUG_CABLE_UPDATE_RESVAL = 1'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     DCD_INTR_STATE,
     DCD_INTR_ENABLE,
@@ -401,5 +396,6 @@ package dcd_reg_pkg;
     4'b 0011, // index[28] DCD_ADC_INTR_CTL
     4'b 0011  // index[29] DCD_ADC_INTR_STATUS
   };
+
 endpackage
 

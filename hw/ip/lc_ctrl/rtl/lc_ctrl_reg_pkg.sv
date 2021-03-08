@@ -14,12 +14,13 @@ package lc_ctrl_reg_pkg;
   parameter int NumDeviceIdWords = 8;
   parameter int NumAlerts = 2;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 7;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -50,7 +51,6 @@ package lc_ctrl_reg_pkg;
     logic [3:0]  q;
     logic        qe;
   } lc_ctrl_reg2hw_transition_target_reg_t;
-
 
   typedef struct packed {
     struct packed {
@@ -114,10 +114,7 @@ package lc_ctrl_reg_pkg;
     logic [31:0] d;
   } lc_ctrl_hw2reg_device_id_mreg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     lc_ctrl_reg2hw_alert_test_reg_t alert_test; // [151:148]
     lc_ctrl_reg2hw_claim_transition_if_reg_t claim_transition_if; // [147:139]
@@ -126,9 +123,7 @@ package lc_ctrl_reg_pkg;
     lc_ctrl_reg2hw_transition_target_reg_t transition_target; // [4:0]
   } lc_ctrl_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     lc_ctrl_hw2reg_status_reg_t status; // [416:408]
     lc_ctrl_hw2reg_claim_transition_if_reg_t claim_transition_if; // [407:400]
@@ -141,7 +136,7 @@ package lc_ctrl_reg_pkg;
     lc_ctrl_hw2reg_device_id_mreg_t [7:0] device_id; // [255:0]
   } lc_ctrl_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] LC_CTRL_ALERT_TEST_OFFSET = 7'h 0;
   parameter logic [BlockAw-1:0] LC_CTRL_STATUS_OFFSET = 7'h 4;
   parameter logic [BlockAw-1:0] LC_CTRL_CLAIM_TRANSITION_IF_OFFSET = 7'h 8;
@@ -190,7 +185,7 @@ package lc_ctrl_reg_pkg;
   parameter logic [31:0] LC_CTRL_DEVICE_ID_6_RESVAL = 32'h 0;
   parameter logic [31:0] LC_CTRL_DEVICE_ID_7_RESVAL = 32'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     LC_CTRL_ALERT_TEST,
     LC_CTRL_STATUS,
@@ -239,5 +234,6 @@ package lc_ctrl_reg_pkg;
     4'b 1111, // index[19] LC_CTRL_DEVICE_ID_6
     4'b 1111  // index[20] LC_CTRL_DEVICE_ID_7
   };
+
 endpackage
 

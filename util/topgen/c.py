@@ -5,9 +5,13 @@
 `top_{name}.h`.
 """
 from collections import OrderedDict
-from math import ceil
+from typing import Dict, List, Optional, Tuple
 
 from mako.template import Template
+
+from .lib import get_base_and_size
+
+from reggen.ip_block import IpBlock
 
 
 class Name(object):
@@ -52,11 +56,12 @@ class Name(object):
 
 
 class MemoryRegion(object):
-    def __init__(self, name, base_addr, size_bytes):
+    def __init__(self, name: Name, base_addr: int, size_bytes: int):
+        assert isinstance(base_addr, int)
         self.name = name
         self.base_addr = base_addr
         self.size_bytes = size_bytes
-        self.size_words = ceil(int(str(size_bytes), 0) / 4)
+        self.size_words = (size_bytes + 3) // 4
 
     def base_addr_name(self):
         return self.name + Name(["base", "addr"])
@@ -137,10 +142,11 @@ class CArrayMapping(object):
         return Template(template).render(mapping=self)
 
 
-class TopGenC(object):
-    def __init__(self, top_info):
+class TopGenC:
+    def __init__(self, top_info, name_to_block: Dict[str, IpBlock]):
         self.top = top_info
         self._top_name = Name(["top"]) + Name.from_snake_case(top_info["name"])
+        self._name_to_block = name_to_block
 
         # The .c file needs the .h file's relative path, store it here
         self.header_path = None
@@ -154,16 +160,38 @@ class TopGenC(object):
         self._init_pwrmgr_reset_requests()
         self._init_clkmgr_clocks()
 
-    def modules(self):
-        return [(m["name"],
-                 MemoryRegion(self._top_name + Name.from_snake_case(m["name"]),
-                              m["base_addr"], m["size"]))
-                for m in self.top["module"]]
+    def devices(self) -> List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]:
+        '''Return a list of MemoryRegion objects for devices on the bus
+
+        The list returned is pairs (full_if, region) where full_if is itself a
+        pair (inst_name, if_name). inst_name is the name of some IP block
+        instantiation. if_name is the name of the interface (may be None).
+        region is a MemoryRegion object representing the device.
+
+        '''
+        ret = []  # type: List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]
+        for inst in self.top['module']:
+            block = self._name_to_block[inst['type']]
+            for if_name, rb in block.reg_blocks.items():
+                full_if = (inst['name'], if_name)
+                full_if_name = Name.from_snake_case(full_if[0])
+                if if_name is not None:
+                    full_if_name += Name.from_snake_case(if_name)
+
+                name = self._top_name + full_if_name
+                base, size = get_base_and_size(self._name_to_block,
+                                               inst, if_name)
+
+                region = MemoryRegion(name, base, size)
+                ret.append((full_if, region))
+
+        return ret
 
     def memories(self):
         return [(m["name"],
                  MemoryRegion(self._top_name + Name.from_snake_case(m["name"]),
-                              m["base_addr"], m["size"]))
+                              int(m["base_addr"], 0),
+                              int(m["size"], 0)))
                 for m in self.top["memory"]]
 
     def _init_plic_targets(self):

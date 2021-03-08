@@ -10,12 +10,13 @@ package rv_plic_reg_pkg;
   parameter int NumSrc = 32;
   parameter int NumTarget = 1;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 9;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     logic        q;
   } rv_plic_reg2hw_le_mreg_t;
@@ -166,7 +167,6 @@ package rv_plic_reg_pkg;
     logic        q;
   } rv_plic_reg2hw_msip0_reg_t;
 
-
   typedef struct packed {
     logic        d;
     logic        de;
@@ -176,10 +176,7 @@ package rv_plic_reg_pkg;
     logic [5:0]  d;
   } rv_plic_hw2reg_cc0_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     rv_plic_reg2hw_le_mreg_t [31:0] le; // [171:140]
     rv_plic_reg2hw_prio0_reg_t prio0; // [139:137]
@@ -220,15 +217,13 @@ package rv_plic_reg_pkg;
     rv_plic_reg2hw_msip0_reg_t msip0; // [0:0]
   } rv_plic_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     rv_plic_hw2reg_ip_mreg_t [31:0] ip; // [69:6]
     rv_plic_hw2reg_cc0_reg_t cc0; // [5:0]
   } rv_plic_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] RV_PLIC_IP_OFFSET = 9'h 0;
   parameter logic [BlockAw-1:0] RV_PLIC_LE_OFFSET = 9'h 4;
   parameter logic [BlockAw-1:0] RV_PLIC_PRIO0_OFFSET = 9'h 8;
@@ -271,7 +266,7 @@ package rv_plic_reg_pkg;
   // Reset values for hwext registers and their fields
   parameter logic [5:0] RV_PLIC_CC0_RESVAL = 6'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     RV_PLIC_IP,
     RV_PLIC_LE,
@@ -354,5 +349,6 @@ package rv_plic_reg_pkg;
     4'b 0001, // index[36] RV_PLIC_CC0
     4'b 0001  // index[37] RV_PLIC_MSIP0
   };
+
 endpackage
 

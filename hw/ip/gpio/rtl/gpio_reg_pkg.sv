@@ -6,12 +6,13 @@
 
 package gpio_reg_pkg;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 6;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     logic [31:0] q;
   } gpio_reg2hw_intr_state_reg_t;
@@ -99,7 +100,6 @@ package gpio_reg_pkg;
     logic [31:0] q;
   } gpio_reg2hw_ctrl_en_input_filter_reg_t;
 
-
   typedef struct packed {
     logic [31:0] d;
     logic        de;
@@ -154,10 +154,7 @@ package gpio_reg_pkg;
     } mask;
   } gpio_hw2reg_masked_oe_upper_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     gpio_reg2hw_intr_state_reg_t intr_state; // [458:427]
     gpio_reg2hw_intr_enable_reg_t intr_enable; // [426:395]
@@ -175,9 +172,7 @@ package gpio_reg_pkg;
     gpio_reg2hw_ctrl_en_input_filter_reg_t ctrl_en_input_filter; // [31:0]
   } gpio_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     gpio_hw2reg_intr_state_reg_t intr_state; // [257:225]
     gpio_hw2reg_data_in_reg_t data_in; // [224:192]
@@ -189,7 +184,7 @@ package gpio_reg_pkg;
     gpio_hw2reg_masked_oe_upper_reg_t masked_oe_upper; // [31:0]
   } gpio_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] GPIO_INTR_STATE_OFFSET = 6'h 0;
   parameter logic [BlockAw-1:0] GPIO_INTR_ENABLE_OFFSET = 6'h 4;
   parameter logic [BlockAw-1:0] GPIO_INTR_TEST_OFFSET = 6'h 8;
@@ -216,7 +211,7 @@ package gpio_reg_pkg;
   parameter logic [31:0] GPIO_MASKED_OE_LOWER_RESVAL = 32'h 0;
   parameter logic [31:0] GPIO_MASKED_OE_UPPER_RESVAL = 32'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     GPIO_INTR_STATE,
     GPIO_INTR_ENABLE,
@@ -253,5 +248,6 @@ package gpio_reg_pkg;
     4'b 1111, // index[13] GPIO_INTR_CTRL_EN_LVLLOW
     4'b 1111  // index[14] GPIO_CTRL_EN_INPUT_FILTER
   };
+
 endpackage
 

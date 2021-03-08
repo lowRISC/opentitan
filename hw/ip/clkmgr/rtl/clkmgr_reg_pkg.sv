@@ -9,12 +9,13 @@ package clkmgr_reg_pkg;
   // Param list
   parameter int NumGroups = 7;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 4;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -33,7 +34,6 @@ package clkmgr_reg_pkg;
     } clk_main_hmac_hint;
   } clkmgr_reg2hw_clk_hints_reg_t;
 
-
   typedef struct packed {
     struct packed {
       logic        d;
@@ -45,28 +45,23 @@ package clkmgr_reg_pkg;
     } clk_main_hmac_val;
   } clkmgr_hw2reg_clk_hints_status_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [3:2]
     clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [1:0]
   } clkmgr_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [3:0]
   } clkmgr_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] CLKMGR_CLK_ENABLES_OFFSET = 4'h 0;
   parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_OFFSET = 4'h 4;
   parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_STATUS_OFFSET = 4'h 8;
 
-  // Register Index
+  // Register index
   typedef enum int {
     CLKMGR_CLK_ENABLES,
     CLKMGR_CLK_HINTS,
@@ -79,5 +74,6 @@ package clkmgr_reg_pkg;
     4'b 0001, // index[1] CLKMGR_CLK_HINTS
     4'b 0001  // index[2] CLKMGR_CLK_HINTS_STATUS
   };
+
 endpackage
 

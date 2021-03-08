@@ -11,7 +11,7 @@ from .alert import Alert
 from .access import SWAccess, HWAccess
 from .field import Field
 from .signal import Signal
-from .lib import check_int, check_list, check_str_dict
+from .lib import check_int, check_list, check_str_dict, check_str
 from .multi_register import MultiRegister
 from .params import Params
 from .register import Register
@@ -49,7 +49,59 @@ class RegBlock:
         # A list of all write enable names
         self.wennames = []  # type: List[str]
 
-    def add_raw_registers(self, raw: object) -> None:
+    @staticmethod
+    def build_blocks(block: 'RegBlock',
+                     raw: object) -> Dict[Optional[str], 'RegBlock']:
+        '''Build a dictionary of blocks for a 'registers' field in the hjson
+
+        There are two different syntaxes we might see here. The simple syntax
+        just consists of a list of entries (register, multireg, window,
+        skipto). If we see that, each entry gets added to init_block and then
+        we return {None: init_block}.
+
+        The more complicated syntax is a dictionary. This parses from hjson as
+        an OrderedDict which we walk in document order. Entries from the first
+        key/value pair in the dictionary will be added to init_block. Later
+        key/value pairs start empty RegBlocks. The return value is a dictionary
+        mapping the keys we saw to their respective RegBlocks.
+
+        '''
+        if isinstance(raw, list):
+            # This is the simple syntax
+            block.add_raw_registers(raw, 'registers field at top-level')
+            return {None: block}
+
+        # This is the more complicated syntax
+        if not isinstance(raw, dict):
+            raise ValueError('registers field at top-level is '
+                             'neither a list or a dictionary.')
+
+        ret = {}  # type: Dict[Optional[str], RegBlock]
+        for idx, (r_key, r_val) in enumerate(raw.items()):
+            if idx > 0:
+                block = RegBlock(block._reg_width, block._params)
+
+            rb_key = check_str(r_key,
+                               'the key for item {} of '
+                               'the registers dictionary at top-level'
+                               .format(idx + 1))
+            rb_val = check_list(r_val,
+                                'the value for item {} of '
+                                'the registers dictionary at top-level'
+                                .format(idx + 1))
+
+            block.add_raw_registers(rb_val,
+                                    'item {} of the registers '
+                                    'dictionary at top-level'
+                                    .format(idx + 1))
+            block.validate()
+
+            assert rb_key not in ret
+            ret[rb_key] = block
+
+        return ret
+
+    def add_raw_registers(self, raw: object, what: str) -> None:
         rl = check_list(raw, 'registers field at top-level')
         for entry_idx, entry_raw in enumerate(rl):
             where = ('entry {} of the top-level registers field'

@@ -10,12 +10,13 @@ package kmac_reg_pkg;
   parameter int NumWordsKey = 16;
   parameter int NumWordsPrefix = 11;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 12;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -130,7 +131,6 @@ package kmac_reg_pkg;
     logic [31:0] q;
   } kmac_reg2hw_prefix_mreg_t;
 
-
   typedef struct packed {
     struct packed {
       logic        d;
@@ -187,10 +187,7 @@ package kmac_reg_pkg;
     logic        de;
   } kmac_hw2reg_err_code_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     kmac_reg2hw_intr_state_reg_t intr_state; // [1539:1537]
     kmac_reg2hw_intr_enable_reg_t intr_enable; // [1536:1534]
@@ -206,9 +203,7 @@ package kmac_reg_pkg;
     kmac_reg2hw_prefix_mreg_t [10:0] prefix; // [351:0]
   } kmac_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     kmac_hw2reg_intr_state_reg_t intr_state; // [53:48]
     kmac_hw2reg_cfg_regwen_reg_t cfg_regwen; // [47:47]
@@ -217,7 +212,7 @@ package kmac_reg_pkg;
     kmac_hw2reg_err_code_reg_t err_code; // [32:0]
   } kmac_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] KMAC_INTR_STATE_OFFSET = 12'h 0;
   parameter logic [BlockAw-1:0] KMAC_INTR_ENABLE_OFFSET = 12'h 4;
   parameter logic [BlockAw-1:0] KMAC_INTR_TEST_OFFSET = 12'h 8;
@@ -318,13 +313,13 @@ package kmac_reg_pkg;
   parameter logic [31:0] KMAC_KEY_SHARE1_14_RESVAL = 32'h 0;
   parameter logic [31:0] KMAC_KEY_SHARE1_15_RESVAL = 32'h 0;
 
-  // Window parameter
+  // Window parameters
   parameter logic [BlockAw-1:0] KMAC_STATE_OFFSET = 12'h 400;
   parameter int unsigned        KMAC_STATE_SIZE   = 'h 200;
   parameter logic [BlockAw-1:0] KMAC_MSG_FIFO_OFFSET = 12'h 800;
   parameter int unsigned        KMAC_MSG_FIFO_SIZE   = 'h 800;
 
-  // Register Index
+  // Register index
   typedef enum int {
     KMAC_INTR_STATE,
     KMAC_INTR_ENABLE,
@@ -441,5 +436,6 @@ package kmac_reg_pkg;
     4'b 1111, // index[53] KMAC_PREFIX_10
     4'b 1111  // index[54] KMAC_ERR_CODE
   };
+
 endpackage
 

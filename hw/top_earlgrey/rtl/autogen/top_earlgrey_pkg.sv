@@ -384,7 +384,7 @@ package top_earlgrey_pkg;
   /**
    * Memory base address for rom in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_BASE_ADDR = 32'h00008000;
+  parameter int unsigned TOP_EARLGREY_ROM_BASE_ADDR = 32'h8000;
 
   /**
    * Memory size for rom in top earlgrey.

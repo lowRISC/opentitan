@@ -4,12 +4,11 @@
 
 '''Code representing an IP block for reggen'''
 
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 import hjson  # type: ignore
 
 from .alert import Alert
-from .block import Block
 from .bus_interfaces import BusInterfaces
 from .inter_signal import InterSignal
 from .lib import (check_keys, check_name, check_int, check_bool,
@@ -71,12 +70,12 @@ OPTIONAL_FIELDS = {
 }
 
 
-class IpBlock(Block):
+class IpBlock:
     def __init__(self,
                  name: str,
                  regwidth: int,
                  params: Params,
-                 regs: RegBlock,
+                 reg_blocks: Dict[Optional[str], RegBlock],
                  interrupts: Sequence[Signal],
                  no_auto_intr: bool,
                  alerts: List[Alert],
@@ -93,11 +92,21 @@ class IpBlock(Block):
                  wakeups: Sequence[Signal],
                  reset_requests: Sequence[Signal],
                  scan_reset: bool):
+        assert reg_blocks
         assert clock_signals
         assert reset_signals
 
-        super().__init__(name, regwidth, regs)
+        # Check that register blocks are in bijection with device interfaces
+        reg_block_names = reg_blocks.keys()
+        dev_if_names = []  # type: List[Optional[str]]
+        dev_if_names += bus_interfaces.named_devices
+        if bus_interfaces.has_unnamed_device:
+            dev_if_names.append(None)
+        assert set(reg_block_names) == set(dev_if_names)
 
+        self.name = name
+        self.regwidth = regwidth
+        self.reg_blocks = reg_blocks
         self.params = params
         self.interrupts = interrupts
         self.no_auto_intr = no_auto_intr
@@ -145,7 +154,7 @@ class IpBlock(Block):
             raise ValueError('Failed to apply defaults to params: {}'
                              .format(err)) from None
 
-        regs = RegBlock(regwidth, params)
+        init_block = RegBlock(regwidth, params)
 
         interrupts = Signal.from_raw_list('interrupt_list for block {}'
                                           .format(name),
@@ -167,7 +176,7 @@ class IpBlock(Block):
                                  "regwidth of {}."
                                  .format(what,
                                          interrupts[-1].bits.msb, regwidth))
-            regs.make_intr_regs(interrupts)
+            init_block.make_intr_regs(interrupts)
 
         if alerts:
             if not no_auto_alert:
@@ -175,7 +184,7 @@ class IpBlock(Block):
                     raise ValueError("Interrupt list for {} is too wide: "
                                      "{} alerts don't fit with a regwidth of {}."
                                      .format(what, len(alerts), regwidth))
-                regs.make_alert_regs(alerts)
+                init_block.make_alert_regs(alerts)
 
             # Generate a NumAlerts parameter
             existing_param = params.get('NumAlerts')
@@ -193,8 +202,7 @@ class IpBlock(Block):
 
         scan = check_bool(rd.get('scan', False), 'scan field of ' + what)
 
-        regs.add_raw_registers(rd['registers'])
-        regs.validate()
+        reg_blocks = RegBlock.build_blocks(init_block, rd['registers'])
 
         r_inter_signals = check_list(rd.get('inter_signal_list', []),
                                      'inter_signal_list field')
@@ -241,7 +249,20 @@ class IpBlock(Block):
         scan_reset = check_bool(rd.get('scan_reset', False),
                                 'scan_reset field of ' + what)
 
-        return IpBlock(name, regwidth, params, regs,
+        # Check that register blocks are in bijection with device interfaces
+        reg_block_names = reg_blocks.keys()
+        dev_if_names = []  # type: List[Optional[str]]
+        dev_if_names += bus_interfaces.named_devices
+        if bus_interfaces.has_unnamed_device:
+            dev_if_names.append(None)
+        if set(reg_block_names) != set(dev_if_names):
+            raise ValueError("IP block {} defines device interfaces, named {} "
+                             "but its registers don't match (they are keyed "
+                             "by {})."
+                             .format(name, dev_if_names,
+                                     list(reg_block_names)))
+
+        return IpBlock(name, regwidth, params, reg_blocks,
                        interrupts, no_auto_intr, alerts, no_auto_alert,
                        scan, inter_signals, bus_interfaces,
                        hier_path, clock_signals, reset_signals,
@@ -265,7 +286,16 @@ class IpBlock(Block):
                                      'file at {!r}'.format(path))
 
     def _asdict(self) -> Dict[str, object]:
-        ret = super()._asdict()
+        ret = {
+            'name': self.name,
+            'regwidth': self.regwidth
+        }
+        if len(self.reg_blocks) == 1 and None in self.reg_blocks:
+            ret['registers'] = self.reg_blocks[None].as_dicts()
+        else:
+            ret['registers'] = {k: v.as_dicts()
+                                for k, v in self.reg_blocks.items()}
+
         ret['param_list'] = self.params.as_dicts()
         ret['interrupt_list'] = self.interrupts
         ret['no_auto_intr_regs'] = self.no_auto_intr
@@ -301,4 +331,10 @@ class IpBlock(Block):
 
         ret['scan_reset'] = self.scan_reset
 
+        return ret
+
+    def get_rnames(self) -> Set[str]:
+        ret = set()  # type: Set[str]
+        for rb in self.reg_blocks.values():
+            ret = ret.union(set(rb.name_to_offset.keys()))
         return ret

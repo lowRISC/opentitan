@@ -6,12 +6,13 @@
 
 package i2c_reg_pkg;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 7;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -365,7 +366,6 @@ package i2c_reg_pkg;
     logic [31:0] q;
   } i2c_reg2hw_host_timeout_ctrl_reg_t;
 
-
   typedef struct packed {
     struct packed {
       logic        d;
@@ -503,10 +503,7 @@ package i2c_reg_pkg;
     } signal;
   } i2c_hw2reg_acqdata_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     i2c_reg2hw_intr_state_reg_t intr_state; // [388:373]
     i2c_reg2hw_intr_enable_reg_t intr_enable; // [372:357]
@@ -529,9 +526,7 @@ package i2c_reg_pkg;
     i2c_reg2hw_host_timeout_ctrl_reg_t host_timeout_ctrl; // [31:0]
   } i2c_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     i2c_hw2reg_intr_state_reg_t intr_state; // [115:84]
     i2c_hw2reg_status_reg_t status; // [83:74]
@@ -541,7 +536,7 @@ package i2c_reg_pkg;
     i2c_hw2reg_acqdata_reg_t acqdata; // [9:0]
   } i2c_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] I2C_INTR_STATE_OFFSET = 7'h 0;
   parameter logic [BlockAw-1:0] I2C_INTR_ENABLE_OFFSET = 7'h 4;
   parameter logic [BlockAw-1:0] I2C_INTR_TEST_OFFSET = 7'h 8;
@@ -595,7 +590,7 @@ package i2c_reg_pkg;
   parameter logic [31:0] I2C_VAL_RESVAL = 32'h 0;
   parameter logic [9:0] I2C_ACQDATA_RESVAL = 10'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     I2C_INTR_STATE,
     I2C_INTR_ENABLE,
@@ -646,5 +641,6 @@ package i2c_reg_pkg;
     4'b 0001, // index[20] I2C_STRETCH_CTRL
     4'b 1111  // index[21] I2C_HOST_TIMEOUT_CTRL
   };
+
 endpackage
 

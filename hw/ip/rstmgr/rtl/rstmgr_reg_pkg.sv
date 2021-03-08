@@ -11,12 +11,13 @@ package rstmgr_reg_pkg;
   parameter int IdxWidth = 4;
   parameter int NumSwResets = 2;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 5;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -40,7 +41,6 @@ package rstmgr_reg_pkg;
     logic        q;
     logic        qe;
   } rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t;
-
 
   typedef struct packed {
     struct packed {
@@ -76,10 +76,7 @@ package rstmgr_reg_pkg;
     logic        d;
   } rstmgr_hw2reg_sw_rst_ctrl_n_mreg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     rstmgr_reg2hw_reset_info_reg_t reset_info; // [11:11]
     rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [10:6]
@@ -87,9 +84,7 @@ package rstmgr_reg_pkg;
     rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [1:0] sw_rst_ctrl_n; // [3:0]
   } rstmgr_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     rstmgr_hw2reg_reset_info_reg_t reset_info; // [45:40]
     rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [39:38]
@@ -98,7 +93,7 @@ package rstmgr_reg_pkg;
     rstmgr_hw2reg_sw_rst_ctrl_n_mreg_t [1:0] sw_rst_ctrl_n; // [1:0]
   } rstmgr_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] RSTMGR_RESET_INFO_OFFSET = 5'h 0;
   parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_CTRL_OFFSET = 5'h 4;
   parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_ATTR_OFFSET = 5'h 8;
@@ -115,7 +110,7 @@ package rstmgr_reg_pkg;
   parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_0_RESVAL = 1'h 1;
   parameter logic [0:0] RSTMGR_SW_RST_CTRL_N_VAL_1_RESVAL = 1'h 1;
 
-  // Register Index
+  // Register index
   typedef enum int {
     RSTMGR_RESET_INFO,
     RSTMGR_ALERT_INFO_CTRL,
@@ -134,5 +129,6 @@ package rstmgr_reg_pkg;
     4'b 0001, // index[4] RSTMGR_SW_RST_REGEN
     4'b 0001  // index[5] RSTMGR_SW_RST_CTRL_N
   };
+
 endpackage
 

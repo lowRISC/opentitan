@@ -630,10 +630,9 @@ def find_otherside_modules(topcfg: OrderedDict, m,
         ('main', 'tl_debug_mem'): ('dm_top', 'tl_d'),
         ('peri', 'tl_ast'): ('ast', 'tl')
     }
-    for pair in special_inst_names:
-        if pair == (m, s):
-            result = special_inst_names.get(pair)
-            return [('top', result[0], result[1])]
+    special_result = special_inst_names.get((m, s))
+    if special_result is not None:
+        return [('top', special_result[0], special_result[1])]
 
     signame = "{}.{}".format(m, s)
     for req, rsps in topcfg["inter_module"]["connect"].items():

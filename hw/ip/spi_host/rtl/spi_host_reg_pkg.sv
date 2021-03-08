@@ -10,12 +10,13 @@ package spi_host_reg_pkg;
   parameter int ByteOrder = 0;
   parameter int MaxCS = 1;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 6;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -170,7 +171,6 @@ package spi_host_reg_pkg;
     } idle;
   } spi_host_reg2hw_event_enable_reg_t;
 
-
   typedef struct packed {
     struct packed {
       logic        d;
@@ -263,10 +263,7 @@ package spi_host_reg_pkg;
     } underflow;
   } spi_host_hw2reg_error_status_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     spi_host_reg2hw_intr_state_reg_t intr_state; // [117:116]
     spi_host_reg2hw_intr_enable_reg_t intr_enable; // [115:114]
@@ -278,9 +275,7 @@ package spi_host_reg_pkg;
     spi_host_reg2hw_event_enable_reg_t event_enable; // [5:0]
   } spi_host_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     spi_host_hw2reg_intr_state_reg_t intr_state; // [85:82]
     spi_host_hw2reg_status_reg_t status; // [81:40]
@@ -289,7 +284,7 @@ package spi_host_reg_pkg;
     spi_host_hw2reg_error_status_reg_t error_status; // [5:0]
   } spi_host_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] SPI_HOST_INTR_STATE_OFFSET = 6'h 0;
   parameter logic [BlockAw-1:0] SPI_HOST_INTR_ENABLE_OFFSET = 6'h 4;
   parameter logic [BlockAw-1:0] SPI_HOST_INTR_TEST_OFFSET = 6'h 8;
@@ -309,11 +304,11 @@ package spi_host_reg_pkg;
   parameter logic [31:0] SPI_HOST_RXDATA_RESVAL = 32'h 0;
   parameter logic [31:0] SPI_HOST_RXDATA_DATA_RESVAL = 32'h 0;
 
-  // Window parameter
+  // Window parameters
   parameter logic [BlockAw-1:0] SPI_HOST_TXDATA_OFFSET = 6'h 1c;
   parameter int unsigned        SPI_HOST_TXDATA_SIZE   = 'h 4;
 
-  // Register Index
+  // Register index
   typedef enum int {
     SPI_HOST_INTR_STATE,
     SPI_HOST_INTR_ENABLE,
@@ -342,5 +337,6 @@ package spi_host_reg_pkg;
     4'b 0001, // index[ 9] SPI_HOST_ERROR_STATUS
     4'b 0001  // index[10] SPI_HOST_EVENT_ENABLE
   };
+
 endpackage
 

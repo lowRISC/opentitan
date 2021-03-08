@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # # Lint as: python3
 #
-"""Generate FPV CSR read and write assertions from validated register JSON tree
+"""Generate FPV CSR read and write assertions from IpBlock
 """
 
 import logging as log
@@ -14,18 +14,7 @@ from mako import exceptions
 from mako.template import Template
 from pkg_resources import resource_filename
 
-from .access import HwAccess, SwRdAccess, SwWrAccess
 from .ip_block import IpBlock
-
-
-# function get write property name
-def wpname(r):
-    return r.name + "_wr_p"
-
-
-# function get read property name
-def rpname(r):
-    return r.name + "_rd_p"
 
 
 def gen_fpv(block: IpBlock, outdir):
@@ -33,20 +22,34 @@ def gen_fpv(block: IpBlock, outdir):
     fpv_csr_tpl = Template(
         filename=resource_filename('reggen', 'fpv_csr.sv.tpl'))
 
-    # Generate pkg.sv with block name
+    # Generate a module with CSR assertions for each device interface. For a
+    # device interface with no name, we generate <block>_csr_assert_fpv. For a
+    # named interface, we generate <block>_<ifname>_csr_assert_fpv.
     lblock = block.name.lower()
-    mod_name = lblock + '_csr_assert_fpv'
-    file_name = mod_name + '.sv'
-    with open(os.path.join(outdir, file_name), 'w') as fout:
-        try:
-            fout.write(
-                fpv_csr_tpl.render(block=block,
-                                   HwAccess=HwAccess,
-                                   SwRdAccess=SwRdAccess,
-                                   SwWrAccess=SwWrAccess))
-        except:  # noqa: 722
-            log.error(exceptions.text_error_template().render())
-            return 1
+    generated = []
+    for if_name, rb in block.reg_blocks.items():
+        if not rb.flat_regs:
+            # No registers to check!
+            continue
+
+        if if_name is None:
+            mod_base = lblock
+        else:
+            mod_base = lblock + '_' + if_name.lower()
+
+        mod_name = mod_base + '_csr_assert_fpv'
+        filename = mod_name + '.sv'
+        generated.append(filename)
+        reg_top_path = os.path.join(outdir, filename)
+        with open(reg_top_path, 'w', encoding='UTF-8') as fout:
+            try:
+                fout.write(fpv_csr_tpl.render(block=block,
+                                              mod_base=mod_base,
+                                              if_name=if_name,
+                                              rb=rb))
+            except:  # noqa F722 for template Exception handling
+                log.error(exceptions.text_error_template().render())
+                return 1
 
     # Generate a fusesoc core file that points at the files we've just
     # generated.
@@ -59,7 +62,7 @@ def gen_fpv(block: IpBlock, outdir):
                     "lowrisc:tlul:headers",
                     "lowrisc:prim:assert",
                 ],
-                'files': [file_name],
+                'files': generated,
                 'file_type': 'systemVerilogSource'
             },
         },

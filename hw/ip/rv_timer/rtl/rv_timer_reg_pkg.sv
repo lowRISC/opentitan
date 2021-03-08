@@ -10,12 +10,13 @@ package rv_timer_reg_pkg;
   parameter int N_HARTS = 1;
   parameter int N_TIMERS = 1;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 9;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     logic        q;
   } rv_timer_reg2hw_ctrl_mreg_t;
@@ -60,7 +61,6 @@ package rv_timer_reg_pkg;
     logic        qe;
   } rv_timer_reg2hw_intr_test0_mreg_t;
 
-
   typedef struct packed {
     logic [31:0] d;
     logic        de;
@@ -76,10 +76,7 @@ package rv_timer_reg_pkg;
     logic        de;
   } rv_timer_hw2reg_intr_state0_mreg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     rv_timer_reg2hw_ctrl_mreg_t [0:0] ctrl; // [154:154]
     rv_timer_reg2hw_cfg0_reg_t cfg0; // [153:134]
@@ -92,16 +89,14 @@ package rv_timer_reg_pkg;
     rv_timer_reg2hw_intr_test0_mreg_t [0:0] intr_test0; // [1:0]
   } rv_timer_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     rv_timer_hw2reg_timer_v_lower0_reg_t timer_v_lower0; // [67:35]
     rv_timer_hw2reg_timer_v_upper0_reg_t timer_v_upper0; // [34:2]
     rv_timer_hw2reg_intr_state0_mreg_t [0:0] intr_state0; // [1:0]
   } rv_timer_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] RV_TIMER_CTRL_OFFSET = 9'h 0;
   parameter logic [BlockAw-1:0] RV_TIMER_CFG0_OFFSET = 9'h 100;
   parameter logic [BlockAw-1:0] RV_TIMER_TIMER_V_LOWER0_OFFSET = 9'h 104;
@@ -115,7 +110,7 @@ package rv_timer_reg_pkg;
   // Reset values for hwext registers and their fields
   parameter logic [0:0] RV_TIMER_INTR_TEST0_RESVAL = 1'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     RV_TIMER_CTRL,
     RV_TIMER_CFG0,
@@ -140,5 +135,6 @@ package rv_timer_reg_pkg;
     4'b 0001, // index[7] RV_TIMER_INTR_STATE0
     4'b 0001  // index[8] RV_TIMER_INTR_TEST0
   };
+
 endpackage
 

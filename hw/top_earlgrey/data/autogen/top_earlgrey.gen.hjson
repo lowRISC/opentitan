@@ -504,14 +504,12 @@
       {
         rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40000000
       clock_group: secure
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -529,6 +527,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40000000
+      }
     }
     {
       name: uart1
@@ -541,14 +543,12 @@
       {
         rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40010000
       clock_group: secure
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -566,6 +566,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40010000
+      }
     }
     {
       name: uart2
@@ -578,14 +582,12 @@
       {
         rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40020000
       clock_group: secure
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -603,6 +605,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40020000
+      }
     }
     {
       name: uart3
@@ -615,14 +621,12 @@
       {
         rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40030000
       clock_group: secure
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -640,6 +644,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40030000
+      }
     }
     {
       name: gpio
@@ -653,13 +661,11 @@
       {
         rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40040000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -677,6 +683,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40040000
+      }
     }
     {
       name: spi_device
@@ -691,14 +701,12 @@
       {
         rst_ni: rstmgr_aon_resets.rst_spi_device_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40050000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
         scan_clk_i: clkmgr_aon_clocks.clk_io_div2_peri
       }
       domain: "0"
-      size: 0x2000
       param_list: []
       inter_signal_list:
       [
@@ -716,6 +724,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40050000
+      }
     }
     {
       name: spi_host0
@@ -731,14 +743,12 @@
         rst_ni: rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel]
         rst_core_ni: rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40060000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
         clk_core_i: clkmgr_aon_clocks.clk_io_div2_peri
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -756,6 +766,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40060000
+      }
     }
     {
       name: spi_host1
@@ -771,14 +785,12 @@
         rst_ni: rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::Domain0Sel]
         rst_core_ni: rstmgr_aon_resets.rst_spi_host1_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40070000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
         clk_core_i: clkmgr_aon_clocks.clk_io_div2_peri
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -796,6 +808,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40070000
+      }
     }
     {
       name: i2c0
@@ -809,13 +825,11 @@
       {
         rst_ni: rstmgr_aon_resets.rst_i2c0_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40080000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -833,6 +847,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40080000
+      }
     }
     {
       name: i2c1
@@ -846,13 +864,11 @@
       {
         rst_ni: rstmgr_aon_resets.rst_i2c1_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40090000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -870,6 +886,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40090000
+      }
     }
     {
       name: i2c2
@@ -883,13 +903,11 @@
       {
         rst_ni: rstmgr_aon_resets.rst_i2c2_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x400A0000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -907,6 +925,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x400A0000
+      }
     }
     {
       name: pattgen
@@ -920,13 +942,11 @@
       {
         rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x400E0000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -944,6 +964,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x400E0000
+      }
     }
     {
       name: rv_timer
@@ -957,13 +981,11 @@
       {
         rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40100000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -981,6 +1003,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40100000
+      }
     }
     {
       name: usbdev
@@ -1002,7 +1028,6 @@
         rst_aon_ni: rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::Domain0Sel]
         rst_usb_48mhz_ni: rstmgr_aon_resets.rst_usb_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40110000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -1010,7 +1035,6 @@
         clk_usb_48mhz_i: clkmgr_aon_clocks.clk_usb_peri
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -1116,6 +1140,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40110000
+      }
     }
     {
       name: otp_ctrl
@@ -1131,14 +1159,12 @@
         rst_ni: rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
         rst_edn_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40130000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
         clk_edn_i: clkmgr_aon_clocks.clk_main_timers
       }
       domain: "0"
-      size: 0x4000
       param_list:
       [
         {
@@ -1399,6 +1425,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40130000
+      }
     }
     {
       name: lc_ctrl
@@ -1412,13 +1442,11 @@
       {
         rst_ni: rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40140000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
       }
       domain: "0"
-      size: 0x1000
       param_list:
       [
         {
@@ -1835,6 +1863,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40140000
+      }
     }
     {
       name: alert_handler
@@ -1850,7 +1882,6 @@
         rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
         rst_edn_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40150000
       attr: templated
       localparam:
       {
@@ -1864,7 +1895,6 @@
         clk_edn_i: clkmgr_aon_clocks.clk_main_timers
       }
       domain: "0"
-      size: 0x1000
       param_list:
       [
         {
@@ -1958,6 +1988,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40150000
+      }
     }
     {
       name: pwrmgr_aon
@@ -1974,14 +2008,12 @@
         rst_slow_ni: rstmgr_aon_resets.rst_por_aon_n[rstmgr_pkg::DomainAonSel]
       }
       domain: Aon
-      base_addr: 0x40400000
       attr: templated
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
         clk_slow_i: clkmgr_aon_clocks.clk_aon_powerup
       }
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -2165,6 +2197,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40400000
+      }
     }
     {
       name: rstmgr_aon
@@ -2185,7 +2221,6 @@
         rst_ni: rst_ni
       }
       domain: Aon
-      base_addr: 0x40410000
       attr: templated
       clock_connections:
       {
@@ -2197,7 +2232,6 @@
         clk_io_div2_i: clkmgr_aon_clocks.clk_io_div2_powerup
         clk_io_div4_i: clkmgr_aon_clocks.clk_io_div4_powerup
       }
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -2288,6 +2322,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40410000
+      }
     }
     {
       name: clkmgr_aon
@@ -2307,13 +2345,11 @@
         rst_io_div4_ni: rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]
       }
       domain: Aon
-      base_addr: 0x40420000
       attr: templated
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
       }
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -2466,6 +2502,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40420000
+      }
     }
     {
       name: pinmux_aon
@@ -2482,14 +2522,12 @@
         rst_aon_ni: rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel]
       }
       domain: Aon
-      base_addr: 0x40460000
       attr: templated
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
         clk_aon_i: clkmgr_aon_clocks.clk_aon_powerup
       }
-      size: 0x1000
       param_list:
       [
         {
@@ -2698,6 +2736,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40460000
+      }
     }
     {
       name: aon_timer_aon
@@ -2714,14 +2756,12 @@
         rst_aon_ni: rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel]
       }
       domain: Aon
-      base_addr: 0x40470000
       attr: templated
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
         clk_aon_i: clkmgr_aon_clocks.clk_aon_timers
       }
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -2787,6 +2827,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40470000
+      }
     }
     {
       name: ast
@@ -2804,14 +2848,12 @@
       {
         rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x40480000
       attr: reggen_only
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -2826,6 +2868,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40480000
+      }
     }
     {
       name: sensor_ctrl_aon
@@ -2844,13 +2890,11 @@
         rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]
       }
       domain: Aon
-      base_addr: 0x40490000
       attr: reggen_top
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -2894,6 +2938,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40490000
+      }
     }
     {
       name: sram_ctrl_ret_aon
@@ -2910,13 +2958,11 @@
         rst_otp_ni: rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]
       }
       domain: Aon
-      base_addr: 0x40500000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
-      size: 0x1000
       param_list:
       [
         {
@@ -3051,6 +3097,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x40500000
+      }
     }
     {
       name: flash_ctrl
@@ -3066,7 +3116,6 @@
         rst_ni: rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]
         rst_otp_ni: rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x41000000
       attr: templated
       clock_connections:
       {
@@ -3074,7 +3123,6 @@
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
       domain: "0"
-      size: 0x1000
       param_list:
       [
         {
@@ -3288,6 +3336,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x41000000
+      }
     }
     {
       name: rv_plic
@@ -3301,14 +3353,12 @@
       {
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x41010000
       attr: templated
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -3326,6 +3376,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x41010000
+      }
     }
     {
       name: aes
@@ -3341,14 +3395,12 @@
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
         rst_edn_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x41100000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_aes
         clk_edn_i: clkmgr_aon_clocks.clk_main_aes
       }
       domain: "0"
-      size: 0x1000
       param_list:
       [
         {
@@ -3518,6 +3570,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x41100000
+      }
     }
     {
       name: hmac
@@ -3531,13 +3587,11 @@
       {
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x41110000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_hmac
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -3567,6 +3621,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x41110000
+      }
     }
     {
       name: kmac
@@ -3582,14 +3640,12 @@
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
         rst_edn_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x41120000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_kmac
         clk_edn_i: clkmgr_aon_clocks.clk_main_kmac
       }
       domain: "0"
-      size: 0x1000
       param_list:
       [
         {
@@ -3686,6 +3742,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x41120000
+      }
     }
     {
       name: keymgr
@@ -3701,14 +3761,12 @@
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
         rst_edn_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x41130000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
         clk_edn_i: clkmgr_aon_clocks.clk_main_secure
       }
       domain: "0"
-      size: 0x1000
       param_list:
       [
         {
@@ -3977,6 +4035,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x41130000
+      }
     }
     {
       name: csrng
@@ -3990,13 +4052,11 @@
       {
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x41150000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       domain: "0"
-      size: 0x1000
       param_list:
       [
         {
@@ -4071,6 +4131,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x41150000
+      }
     }
     {
       name: entropy_src
@@ -4088,13 +4152,11 @@
       [
         ast
       ]
-      base_addr: 0x41160000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -4156,6 +4218,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x41160000
+      }
     }
     {
       name: edn0
@@ -4173,13 +4239,11 @@
       [
         ast
       ]
-      base_addr: 0x41170000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -4232,6 +4296,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x41170000
+      }
     }
     {
       name: edn1
@@ -4245,13 +4313,11 @@
       {
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x41180000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       domain: "0"
-      size: 0x1000
       param_list: []
       inter_signal_list:
       [
@@ -4304,6 +4370,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x41180000
+      }
     }
     {
       name: sram_ctrl_main
@@ -4319,14 +4389,12 @@
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
         rst_otp_ni: rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x411C0000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       domain: "0"
-      size: 0x1000
       param_list:
       [
         {
@@ -4461,6 +4529,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x411C0000
+      }
     }
     {
       name: otbn
@@ -4476,14 +4548,12 @@
         rst_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
         rst_edn_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
-      base_addr: 0x411D0000
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_otbn
         clk_edn_i: clkmgr_aon_clocks.clk_main_otbn
       }
       domain: "0"
-      size: 0x10000
       param_list:
       [
         {
@@ -4547,6 +4617,10 @@
           index: -1
         }
       ]
+      base_addrs:
+      {
+        null: 0x411D0000
+      }
     }
   ]
   memory:
@@ -5497,7 +5571,7 @@
           addr_range:
           [
             {
-              base_addr: 0x00008000
+              base_addr: 0x8000
               size_byte: 0x4000
             }
           ]
@@ -5748,7 +5822,7 @@
           addr_range:
           [
             {
-              base_addr: 0x411D0000
+              base_addr: 0x411d0000
               size_byte: 0x10000
             }
           ]
@@ -5784,7 +5858,7 @@
           addr_range:
           [
             {
-              base_addr: 0x411C0000
+              base_addr: 0x411c0000
               size_byte: 0x1000
             }
           ]
@@ -6220,7 +6294,7 @@
           addr_range:
           [
             {
-              base_addr: 0x400A0000
+              base_addr: 0x400a0000
               size_byte: 0x1000
             }
           ]
@@ -6238,7 +6312,7 @@
           addr_range:
           [
             {
-              base_addr: 0x400E0000
+              base_addr: 0x400e0000
               size_byte: 0x1000
             }
           ]

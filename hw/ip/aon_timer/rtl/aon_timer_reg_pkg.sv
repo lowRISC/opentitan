@@ -6,12 +6,13 @@
 
 package aon_timer_reg_pkg;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 6;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -84,7 +85,6 @@ package aon_timer_reg_pkg;
     logic        qe;
   } aon_timer_reg2hw_wkup_cause_reg_t;
 
-
   typedef struct packed {
     struct packed {
       logic        d;
@@ -138,10 +138,7 @@ package aon_timer_reg_pkg;
     logic        d;
   } aon_timer_hw2reg_wkup_cause_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     aon_timer_reg2hw_wkup_ctrl_reg_t wkup_ctrl; // [191:177]
     aon_timer_reg2hw_wkup_thold_reg_t wkup_thold; // [176:144]
@@ -155,9 +152,7 @@ package aon_timer_reg_pkg;
     aon_timer_reg2hw_wkup_cause_reg_t wkup_cause; // [1:0]
   } aon_timer_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     aon_timer_hw2reg_wkup_ctrl_reg_t wkup_ctrl; // [179:167]
     aon_timer_hw2reg_wkup_thold_reg_t wkup_thold; // [166:135]
@@ -170,7 +165,7 @@ package aon_timer_reg_pkg;
     aon_timer_hw2reg_wkup_cause_reg_t wkup_cause; // [0:0]
   } aon_timer_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] AON_TIMER_WKUP_CTRL_OFFSET = 6'h 0;
   parameter logic [BlockAw-1:0] AON_TIMER_WKUP_THOLD_OFFSET = 6'h 4;
   parameter logic [BlockAw-1:0] AON_TIMER_WKUP_COUNT_OFFSET = 6'h 8;
@@ -194,7 +189,7 @@ package aon_timer_reg_pkg;
   parameter logic [1:0] AON_TIMER_INTR_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] AON_TIMER_WKUP_CAUSE_RESVAL = 1'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     AON_TIMER_WKUP_CTRL,
     AON_TIMER_WKUP_THOLD,
@@ -223,5 +218,6 @@ package aon_timer_reg_pkg;
     4'b 0001, // index[ 9] AON_TIMER_INTR_TEST
     4'b 0001  // index[10] AON_TIMER_WKUP_CAUSE
   };
+
 endpackage
 

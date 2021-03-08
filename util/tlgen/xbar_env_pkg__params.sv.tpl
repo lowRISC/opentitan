@@ -11,7 +11,7 @@
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
 % for device in xbar.devices:
-    '{"${device.name.replace('.', '__')}", '{
+    '{"${device.esc_name()}", '{
     % for addr in device.addr_range:
         '{32'h${"%08x" % addr[0]}, 32'h${"%08x" % addr[1]}}${"," if not loop.last else ""}
     % endfor
@@ -26,15 +26,8 @@ tl_device_t xbar_devices[$] = '{
 tl_host_t xbar_hosts[$] = '{
 % for host in xbar.hosts:
     '{"${host.name}", ${loop.index}, '{
-<%
-  host_devices = xbar.get_devices_from_host(host)
-%>\
-  % for device in host_devices:
-    % if loop.last:
-        "${device.name}"}}
-    % else:
-        "${device.name}",
-    % endif
+  % for device in xbar.get_devices_from_host(host):
+        "${device.esc_name()}"${'}}' if loop.last else ','}
   % endfor
   % if loop.last:
 };

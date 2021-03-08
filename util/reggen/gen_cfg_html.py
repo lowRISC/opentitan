@@ -2,30 +2,34 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 """
-Generate HTML documentation from validated configuration Hjson tree
+Generate HTML documentation from Block
 """
 
+from typing import TextIO
+
+from .block import Block
 from .html_helpers import render_td
+from .signal import Signal
 
 
-def genout(outfile, msg):
+def genout(outfile: TextIO, msg: str) -> None:
     outfile.write(msg)
 
 
-def name_width(x):
+def name_width(x: Signal) -> str:
     if x.bits.width() == 1:
         return x.name
 
     return '{}[{}:0]'.format(x.name, x.bits.msb)
 
 
-def gen_kv(outfile, key, value):
+def gen_kv(outfile: TextIO, key: str, value: str) -> None:
     genout(outfile,
            '<p><i>{}:</i> {}</p>\n'.format(key, value))
 
 
-def gen_cfg_html(cfgs, outfile):
-    rnames = list(cfgs.regs.name_to_offset.keys())
+def gen_cfg_html(cfgs: Block, outfile: TextIO) -> None:
+    rnames = cfgs.get_rnames()
 
     ot_server = 'https://docs.opentitan.org'
     comport_url = ot_server + '/doc/rm/comportability_specification'

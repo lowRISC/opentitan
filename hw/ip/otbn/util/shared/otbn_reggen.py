@@ -59,7 +59,7 @@ def load_registers() -> Tuple[int, object]:
     assert isinstance(reg_bit_width, int) and reg_bit_width >= 0
     reg_byte_width = (reg_bit_width + 7) // 8
 
-    registers = obj.regs
+    registers = obj.reg_blocks[None]
     assert isinstance(registers, RegBlock)
     _LR_RETVAL = (reg_byte_width, registers)
     return _LR_RETVAL

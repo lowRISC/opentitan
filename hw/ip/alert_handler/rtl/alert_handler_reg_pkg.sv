@@ -19,12 +19,13 @@ package alert_handler_reg_pkg;
   parameter int PHASE_DW = 2;
   parameter int CLASS_DW = 2;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 10;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -354,7 +355,6 @@ package alert_handler_reg_pkg;
     logic [31:0] q;
   } alert_handler_reg2hw_classd_phase3_cyc_reg_t;
 
-
   typedef struct packed {
     struct packed {
       logic        d;
@@ -452,10 +452,7 @@ package alert_handler_reg_pkg;
     logic [2:0]  d;
   } alert_handler_hw2reg_classd_state_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     alert_handler_reg2hw_intr_state_reg_t intr_state; // [840:837]
     alert_handler_reg2hw_intr_enable_reg_t intr_enable; // [836:833]
@@ -502,9 +499,7 @@ package alert_handler_reg_pkg;
     alert_handler_reg2hw_classd_phase3_cyc_reg_t classd_phase3_cyc; // [31:0]
   } alert_handler_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     alert_handler_hw2reg_intr_state_reg_t intr_state; // [235:228]
     alert_handler_hw2reg_alert_cause_mreg_t [3:0] alert_cause; // [227:220]
@@ -527,7 +522,7 @@ package alert_handler_reg_pkg;
     alert_handler_hw2reg_classd_state_reg_t classd_state; // [2:0]
   } alert_handler_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] ALERT_HANDLER_INTR_STATE_OFFSET = 10'h 0;
   parameter logic [BlockAw-1:0] ALERT_HANDLER_INTR_ENABLE_OFFSET = 10'h 4;
   parameter logic [BlockAw-1:0] ALERT_HANDLER_INTR_TEST_OFFSET = 10'h 8;
@@ -607,7 +602,7 @@ package alert_handler_reg_pkg;
   parameter logic [31:0] ALERT_HANDLER_CLASSD_ESC_CNT_RESVAL = 32'h 0;
   parameter logic [2:0] ALERT_HANDLER_CLASSD_STATE_RESVAL = 3'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     ALERT_HANDLER_INTR_STATE,
     ALERT_HANDLER_INTR_ENABLE,
@@ -732,5 +727,6 @@ package alert_handler_reg_pkg;
     4'b 1111, // index[57] ALERT_HANDLER_CLASSD_ESC_CNT
     4'b 0001  // index[58] ALERT_HANDLER_CLASSD_STATE
   };
+
 endpackage
 

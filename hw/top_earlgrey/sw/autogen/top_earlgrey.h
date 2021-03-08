@@ -695,7 +695,7 @@ extern "C" {
 /**
  * Memory base address for rom in top earlgrey.
  */
-#define TOP_EARLGREY_ROM_BASE_ADDR 0x00008000u
+#define TOP_EARLGREY_ROM_BASE_ADDR 0x8000u
 
 /**
  * Memory size for rom in top earlgrey.

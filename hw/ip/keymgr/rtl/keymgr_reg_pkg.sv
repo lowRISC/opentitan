@@ -13,12 +13,13 @@ package keymgr_reg_pkg;
   parameter int NumKeyVersion = 1;
   parameter int NumAlerts = 2;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 8;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     logic        q;
   } keymgr_reg2hw_intr_state_reg_t;
@@ -107,7 +108,6 @@ package keymgr_reg_pkg;
     } invalid_kmac_data;
   } keymgr_reg2hw_err_code_reg_t;
 
-
   typedef struct packed {
     logic        d;
     logic        de;
@@ -167,10 +167,7 @@ package keymgr_reg_pkg;
     } invalid_kmac_data;
   } keymgr_hw2reg_err_code_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     keymgr_reg2hw_intr_state_reg_t intr_state; // [420:420]
     keymgr_reg2hw_intr_enable_reg_t intr_enable; // [419:419]
@@ -189,9 +186,7 @@ package keymgr_reg_pkg;
     keymgr_reg2hw_err_code_reg_t err_code; // [3:0]
   } keymgr_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     keymgr_hw2reg_intr_state_reg_t intr_state; // [548:547]
     keymgr_hw2reg_cfg_regwen_reg_t cfg_regwen; // [546:546]
@@ -204,7 +199,7 @@ package keymgr_reg_pkg;
     keymgr_hw2reg_err_code_reg_t err_code; // [7:0]
   } keymgr_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] KEYMGR_INTR_STATE_OFFSET = 8'h 0;
   parameter logic [BlockAw-1:0] KEYMGR_INTR_ENABLE_OFFSET = 8'h 4;
   parameter logic [BlockAw-1:0] KEYMGR_INTR_TEST_OFFSET = 8'h 8;
@@ -260,7 +255,7 @@ package keymgr_reg_pkg;
   parameter logic [0:0] KEYMGR_SW_BINDING_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] KEYMGR_SW_BINDING_REGWEN_EN_RESVAL = 1'h 1;
 
-  // Register Index
+  // Register index
   typedef enum int {
     KEYMGR_INTR_STATE,
     KEYMGR_INTR_ENABLE,
@@ -353,5 +348,6 @@ package keymgr_reg_pkg;
     4'b 0001, // index[41] KEYMGR_OP_STATUS
     4'b 0001  // index[42] KEYMGR_ERR_CODE
   };
+
 endpackage
 

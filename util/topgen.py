@@ -13,7 +13,7 @@ from collections import OrderedDict
 from copy import deepcopy
 from io import StringIO
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 import hjson
 from mako import exceptions
@@ -773,22 +773,31 @@ def generate_top_only(top_only_list, out_path, topname):
         gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []), str(genrtl_dir))
 
 
-def generate_top_ral(top, ip_objs, dv_base_prefix, out_path):
+def generate_top_ral(top: Dict[str, object],
+                     ip_objs: Dict[str, object],
+                     name_to_block: Dict[str, IpBlock],
+                     dv_base_prefix: str,
+                     out_path: str):
     # construct top ral block
 
     regwidth = int(top['datawidth'])
     assert regwidth % 8 == 0
     addrsep = regwidth // 8
 
-    # Get sub-block base addresses and instance names from top cfg
-    sub_blocks = {}  # type: Dict[int, Tuple[str, IpBlock]]
-    for block in ip_objs:
-        block_lname = block.name.lower()
-        for module in top["module"]:
-            if block_lname == module["type"]:
-                block_addr = int(module["base_addr"], 0)
-                assert block_addr not in sub_blocks
-                sub_blocks[block_addr] = (module["name"], block)
+    # Generate a map from instance name to the block that it instantiates,
+    # together with a map of interface addresses.
+    inst_to_block = {}  # type: Dict[str, str]
+    if_addrs = {}  # type: Dict[Tuple[str, Optional[str]], int],
+
+    for module in top['module']:
+        inst_name = module['name']
+        block_name = module['type']
+        block = name_to_block[block_name]
+
+        inst_to_block[inst_name] = block_name
+        for if_name in block.reg_blocks.keys():
+            if_addr = int(module["base_addrs"][if_name], 0)
+            if_addrs[(inst_name, if_name)] = if_addr
 
     # Collect up the memories to add
     mems = []
@@ -810,7 +819,7 @@ def generate_top_ral(top, ip_objs, dv_base_prefix, out_path):
                                   offset=int(item["base_addr"], 0),
                                   swaccess=swaccess))
 
-    chip = Top(regwidth, sub_blocks, mems)
+    chip = Top(regwidth, name_to_block, inst_to_block, if_addrs, mems)
 
     # generate the top ral model with template
     gen_dv.gen_ral(chip, dv_base_prefix, str(out_path))
@@ -965,7 +974,8 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     generate_top_only(top_only_list, out_path, topname)
 
     if pass_idx > 0 and args.top_ral:
-        generate_top_ral(completecfg, ip_objs, args.dv_base_prefix, out_path)
+        generate_top_ral(completecfg, ip_objs, name_to_block,
+                         args.dv_base_prefix, out_path)
         sys.exit()
 
     return completecfg, name_to_block
@@ -1178,7 +1188,7 @@ def main():
 
         # The C / SV file needs some complex information, so we initialize this
         # object to store it.
-        c_helper = TopGenC(completecfg)
+        c_helper = TopGenC(completecfg, name_to_block)
 
         # 'top_{topname}_pkg.sv.tpl' -> 'rtl/autogen/top_{topname}_pkg.sv'
         render_template('top_%s_pkg.sv',

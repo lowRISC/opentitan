@@ -13,12 +13,13 @@ package pwrmgr_reg_pkg;
   parameter int AON_TIMER_WKUP_REQ_IDX = 2;
   parameter int NumRstReqs = 1;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 6;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     logic        q;
   } pwrmgr_reg2hw_intr_state_reg_t;
@@ -85,7 +86,6 @@ package pwrmgr_reg_pkg;
     } abort;
   } pwrmgr_reg2hw_wake_info_reg_t;
 
-
   typedef struct packed {
     logic        d;
     logic        de;
@@ -134,10 +134,7 @@ package pwrmgr_reg_pkg;
     } abort;
   } pwrmgr_hw2reg_wake_info_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     pwrmgr_reg2hw_intr_state_reg_t intr_state; // [24:24]
     pwrmgr_reg2hw_intr_enable_reg_t intr_enable; // [23:23]
@@ -150,9 +147,7 @@ package pwrmgr_reg_pkg;
     pwrmgr_reg2hw_wake_info_reg_t wake_info; // [7:0]
   } pwrmgr_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     pwrmgr_hw2reg_intr_state_reg_t intr_state; // [21:20]
     pwrmgr_hw2reg_ctrl_cfg_regwen_reg_t ctrl_cfg_regwen; // [19:19]
@@ -164,7 +159,7 @@ package pwrmgr_reg_pkg;
     pwrmgr_hw2reg_wake_info_reg_t wake_info; // [4:0]
   } pwrmgr_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] PWRMGR_INTR_STATE_OFFSET = 6'h 0;
   parameter logic [BlockAw-1:0] PWRMGR_INTR_ENABLE_OFFSET = 6'h 4;
   parameter logic [BlockAw-1:0] PWRMGR_INTR_TEST_OFFSET = 6'h 8;
@@ -191,7 +186,7 @@ package pwrmgr_reg_pkg;
   parameter logic [0:0] PWRMGR_WAKE_INFO_FALL_THROUGH_RESVAL = 1'h 0;
   parameter logic [0:0] PWRMGR_WAKE_INFO_ABORT_RESVAL = 1'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     PWRMGR_INTR_STATE,
     PWRMGR_INTR_ENABLE,
@@ -228,5 +223,6 @@ package pwrmgr_reg_pkg;
     4'b 0001, // index[13] PWRMGR_WAKE_INFO_CAPTURE_DIS
     4'b 0001  // index[14] PWRMGR_WAKE_INFO
   };
+
 endpackage
 

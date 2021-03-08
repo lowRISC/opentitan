@@ -9,12 +9,13 @@ package pattgen_reg_pkg;
   // Param list
   parameter int NumRegsData = 2;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 6;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -90,7 +91,6 @@ package pattgen_reg_pkg;
     } reps_ch1;
   } pattgen_reg2hw_size_reg_t;
 
-
   typedef struct packed {
     struct packed {
       logic        d;
@@ -102,10 +102,7 @@ package pattgen_reg_pkg;
     } done_ch1;
   } pattgen_hw2reg_intr_state_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     pattgen_reg2hw_intr_state_reg_t intr_state; // [235:234]
     pattgen_reg2hw_intr_enable_reg_t intr_enable; // [233:232]
@@ -118,14 +115,12 @@ package pattgen_reg_pkg;
     pattgen_reg2hw_size_reg_t size; // [31:0]
   } pattgen_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     pattgen_hw2reg_intr_state_reg_t intr_state; // [3:0]
   } pattgen_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] PATTGEN_INTR_STATE_OFFSET = 6'h 0;
   parameter logic [BlockAw-1:0] PATTGEN_INTR_ENABLE_OFFSET = 6'h 4;
   parameter logic [BlockAw-1:0] PATTGEN_INTR_TEST_OFFSET = 6'h 8;
@@ -143,7 +138,7 @@ package pattgen_reg_pkg;
   parameter logic [0:0] PATTGEN_INTR_TEST_DONE_CH0_RESVAL = 1'h 0;
   parameter logic [0:0] PATTGEN_INTR_TEST_DONE_CH1_RESVAL = 1'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     PATTGEN_INTR_STATE,
     PATTGEN_INTR_ENABLE,
@@ -172,5 +167,6 @@ package pattgen_reg_pkg;
     4'b 1111, // index[ 9] PATTGEN_DATA_CH1_1
     4'b 1111  // index[10] PATTGEN_SIZE
   };
+
 endpackage
 

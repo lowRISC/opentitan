@@ -10,12 +10,13 @@ package entropy_src_reg_pkg;
   parameter int EsFifoDepth = 4;
   parameter int NumAlerts = 2;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 8;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -256,7 +257,6 @@ package entropy_src_reg_pkg;
     logic [4:0]  q;
     logic        qe;
   } entropy_src_reg2hw_err_code_test_reg_t;
-
 
   typedef struct packed {
     struct packed {
@@ -538,10 +538,7 @@ package entropy_src_reg_pkg;
     } fifo_state_err;
   } entropy_src_hw2reg_err_code_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     entropy_src_reg2hw_intr_state_reg_t intr_state; // [473:471]
     entropy_src_reg2hw_intr_enable_reg_t intr_enable; // [470:468]
@@ -570,9 +567,7 @@ package entropy_src_reg_pkg;
     entropy_src_reg2hw_err_code_test_reg_t err_code_test; // [5:0]
   } entropy_src_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     entropy_src_hw2reg_intr_state_reg_t intr_state; // [899:894]
     entropy_src_hw2reg_entropy_data_reg_t entropy_data; // [893:862]
@@ -608,7 +603,7 @@ package entropy_src_reg_pkg;
     entropy_src_hw2reg_err_code_reg_t err_code; // [15:0]
   } entropy_src_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] ENTROPY_SRC_INTR_STATE_OFFSET = 8'h 0;
   parameter logic [BlockAw-1:0] ENTROPY_SRC_INTR_ENABLE_OFFSET = 8'h 4;
   parameter logic [BlockAw-1:0] ENTROPY_SRC_INTR_TEST_OFFSET = 8'h 8;
@@ -719,7 +714,7 @@ package entropy_src_reg_pkg;
   parameter logic [6:0] ENTROPY_SRC_FW_OV_FIFO_STS_RESVAL = 7'h 0;
   parameter logic [31:0] ENTROPY_SRC_DEBUG_STATUS_RESVAL = 32'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     ENTROPY_SRC_INTR_STATE,
     ENTROPY_SRC_INTR_ENABLE,
@@ -820,5 +815,6 @@ package entropy_src_reg_pkg;
     4'b 1111, // index[45] ENTROPY_SRC_ERR_CODE
     4'b 0001  // index[46] ENTROPY_SRC_ERR_CODE_TEST
   };
+
 endpackage
 

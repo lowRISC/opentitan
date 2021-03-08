@@ -6,12 +6,13 @@
 
 package uart_reg_pkg;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 6;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -205,7 +206,6 @@ package uart_reg_pkg;
     } en;
   } uart_reg2hw_timeout_ctrl_reg_t;
 
-
   typedef struct packed {
     struct packed {
       logic        d;
@@ -290,10 +290,7 @@ package uart_reg_pkg;
     logic [15:0] d;
   } uart_hw2reg_val_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     uart_reg2hw_intr_state_reg_t intr_state; // [124:117]
     uart_reg2hw_intr_enable_reg_t intr_enable; // [116:109]
@@ -307,9 +304,7 @@ package uart_reg_pkg;
     uart_reg2hw_timeout_ctrl_reg_t timeout_ctrl; // [24:0]
   } uart_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     uart_hw2reg_intr_state_reg_t intr_state; // [64:49]
     uart_hw2reg_status_reg_t status; // [48:43]
@@ -319,7 +314,7 @@ package uart_reg_pkg;
     uart_hw2reg_val_reg_t val; // [15:0]
   } uart_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] UART_INTR_STATE_OFFSET = 6'h 0;
   parameter logic [BlockAw-1:0] UART_INTR_ENABLE_OFFSET = 6'h 4;
   parameter logic [BlockAw-1:0] UART_INTR_TEST_OFFSET = 6'h 8;
@@ -352,7 +347,7 @@ package uart_reg_pkg;
   parameter logic [21:0] UART_FIFO_STATUS_RESVAL = 22'h 0;
   parameter logic [15:0] UART_VAL_RESVAL = 16'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     UART_INTR_STATE,
     UART_INTR_ENABLE,
@@ -383,5 +378,6 @@ package uart_reg_pkg;
     4'b 0011, // index[10] UART_VAL
     4'b 1111  // index[11] UART_TIMEOUT_CTRL
   };
+
 endpackage
 

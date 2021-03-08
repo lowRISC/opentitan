@@ -8,7 +8,7 @@ from collections import OrderedDict
 from copy import deepcopy
 from functools import partial
 from math import ceil, log2
-from typing import Dict
+from typing import Dict, List
 
 from topgen import c, lib
 from reggen.ip_block import IpBlock
@@ -60,26 +60,16 @@ def elaborate_instance(instance, block: IpBlock):
     instance is the instance to be filled in. block is the block that it's
     instantiating.
 
-    Amended fields:
-        - size (the number of bytes taken up in the address space)
+    Altered fields:
         - param_list (list of parameters for the instance)
         - inter_signal_list (list of inter-module signals)
+        - base_addrs (a map from interface name to its base address)
+
+    Removed fields:
+        - base_addr (this is reflected in base_addrs)
 
     """
     mod_name = instance["name"]
-
-    # Fill in the size field if it's missing. If it existed already, check that
-    # there's enough space for the block.
-    min_size = 1 << block.regs.get_addr_width()
-    dflt_size = max(min_size, 0x1000)
-    decl_size = instance.get('size')
-    if decl_size is None:
-        instance['size'] = '{:#x}'.format(dflt_size)
-    else:
-        if int(decl_size, 0) < min_size:
-            log.error("Instance {} of block {} has a size field of {}, but"
-                      "the block needs at least {} bytes."
-                      .format(mod_name, block.name, decl_size, min_size))
 
     # param_list
     new_params = []
@@ -133,6 +123,54 @@ def elaborate_instance(instance, block: IpBlock):
     # These objects get added-to in place by code in intermodule.py, so we have
     # to convert and copy them here.
     instance["inter_signal_list"] = [s.as_dict() for s in block.inter_signals]
+
+    # An instance must either have a 'base_addr' address or a 'base_addrs'
+    # address, but can't have both.
+    base_addrs = instance.get('base_addrs')
+    if base_addrs is None:
+        if 'base_addr' not in instance:
+            log.error('Instance {!r} has neither a base_addr '
+                      'nor a base_addrs field.'
+                      .format(instance['name']))
+        else:
+            # If the instance has a base_addr field, make sure that the block
+            # has just one device interface.
+            if len(block.reg_blocks) != 1:
+                log.error('Instance {!r} has a base_addr field but it '
+                          'instantiates the block {!r}, which has {} '
+                          'device interfaces.'
+                          .format(instance['name'],
+                                  block.name, len(block.reg_blocks)))
+            else:
+                if_name = next(iter(block.reg_blocks))
+                base_addrs = {if_name: instance['base_addr']}
+
+        # Fill in a bogus base address (we don't have proper error handling, so
+        # have to do *something*)
+        if base_addrs is None:
+            base_addrs = {None: 0}
+
+        instance['base_addrs'] = base_addrs
+    else:
+        if 'base_addr' in instance:
+            log.error('Instance {!r} has both a base_addr '
+                      'and a base_addrs field.'
+                      .format(instance['name']))
+
+        # Since the instance already has a base_addrs field, make sure that
+        # it's got the same set of keys as the name of the interfaces in the
+        # block.
+        inst_if_names = set(base_addrs.keys())
+        block_if_names = set(block.reg_blocks.keys())
+        if block_if_names != inst_if_names:
+            log.error('Instance {!r} has a base_addrs field with keys {} '
+                      'but the block it instantiates ({!r}) has device '
+                      'interfaces {}.'
+                      .format(instance['name'], inst_if_names,
+                              block.name, block_if_names))
+
+    if 'base_addr' in instance:
+        del instance['base_addr']
 
 
 # TODO: Replace this part to be configurable from Hjson or template
@@ -214,8 +252,12 @@ def process_pipeline_var(node):
         "pipeline_byp"] if "pipeline_byp" in node else "true"
 
 
-def xbar_adddevice(top, xbar, device):
-    """Add device nodes information
+def xbar_adddevice(top: Dict[str, object],
+                   name_to_block: Dict[str, IpBlock],
+                   xbar: Dict[str, object],
+                   other_xbars: List[str],
+                   device: str) -> None:
+    """Add or amend an entry in xbar['nodes'] to represent the device interface
 
     - clock: comes from module if exist, use xbar default otherwise
     - reset: comes from module if exist, use xbar default otherwise
@@ -226,46 +268,57 @@ def xbar_adddevice(top, xbar, device):
     - stub: There is no backing module / memory, instead a tlul port
             is created and forwarded above the current hierarchy
     """
-    device_base = device.split('.', 1)[0]
-    deviceobj = [
+    device_parts = device.split('.', 1)
+    device_base = device_parts[0]
+    device_ifname = device_parts[1] if len(device_parts) > 1 else None
+
+    # Try to find a block or memory instance with name device_base. Object
+    # names should be unique, so there should never be more than one hit.
+    instances = [
         node for node in top["module"] + top["memory"]
         if node['name'] == device_base
     ]
-    nodeobj = [
-        node for node in xbar['nodes']
-        if node['name'] == device_base
-    ]
+    assert len(instances) <= 1
+    inst = instances[0] if instances else None
 
-    xbar_list = [x["name"] for x in top["xbar"] if x["name"] != xbar["name"]]
+    # Try to find a node in the crossbar called device. Node names should be
+    # unique, so there should never be more than one hit.
+    nodes = [
+        node for node in xbar['nodes']
+        if node['name'] == device
+    ]
+    assert len(nodes) <= 1
+    node = nodes[0] if nodes else None
+
+    log.info("Handling xbar device {} (matches instance? {}; matches node? {})"
+             .format(device, inst is not None, node is not None))
 
     # case 1: another xbar --> check in xbar list
-    log.info("Handling xbar device {}, devlen {}, nodelen {}".format(
-        device, len(deviceobj), len(nodeobj)))
-    if device in xbar_list and len(nodeobj) == 0:
+    if node is None and device in other_xbars:
         log.error(
             "Another crossbar %s needs to be specified in the 'nodes' list" %
             device)
         return
 
-    if len(deviceobj) == 0:
-        # doesn't exist,
-
+    # If there is no module or memory with the right name, this might still be
+    # ok: we might be connecting to another crossbar or to a predefined module.
+    if inst is None:
         # case 1: Crossbar handling
-        if device in xbar_list:
+        if device in other_xbars:
             log.info(
                 "device {} in Xbar {} is connected to another Xbar".format(
                     device, xbar["name"]))
-            assert len(nodeobj) == 1
-            nodeobj[0]["xbar"] = True
-            nodeobj[0]["stub"] = False
-            process_pipeline_var(nodeobj[0])
+            assert node is not None
+            node["xbar"] = True
+            node["stub"] = False
+            process_pipeline_var(node)
             return
 
         # case 2: predefined_modules (debug_mem, rv_plic)
         # TODO: Find configurable solution not from predefined but from object?
         if device in predefined_modules:
             if device == "debug_mem":
-                if len(nodeobj) == 0:
+                if node is None:
                     # Add new debug_mem
                     xbar["nodes"].append({
                         "name": "debug_mem",
@@ -284,7 +337,6 @@ def xbar_adddevice(top, xbar, device):
                     })  # yapf: disable
                 else:
                     # Update if exists
-                    node = nodeobj[0]
                     node["inst_type"] = predefined_modules["debug_mem"]
                     node["addr_range"] = [
                         OrderedDict([("base_addr", top["debug_mem_base_addr"]),
@@ -295,49 +347,40 @@ def xbar_adddevice(top, xbar, device):
                     process_pipeline_var(node)
             else:
                 log.error("device %s shouldn't be host type" % device)
-                return
-        # case 3: not defined
-        else:
-            # Crossbar check
-            log.error("""
-            Device %s doesn't exist in 'module', 'memory', predefined,
-            or as a node object
-            """ % device)
 
             return
 
-    # Search object from module or memory
-    elif len(nodeobj) == 0:
-        # found in module or memory but node object doesn't exist.
-        xbar["nodes"].append({
-            "name": device,
-            "type": "device",
-            "clock": deviceobj[0]["clock"],
-            "reset": deviceobj[0]["reset"],
-            "inst_type": deviceobj[0]["type"],
-            "addr_range": [OrderedDict([
-                ("base_addr", deviceobj[0]["base_addr"]),
-                ("size_byte", deviceobj[0]["size"])])],
-            "pipeline": "true",
-            "pipeline_byp": "true",
-            "xbar": True if device in xbar_list else False,
-            "stub": not lib.is_inst(deviceobj[0])
-        })  # yapf: disable
+        # case 3: not defined
+        # Crossbar check
+        log.error("Device %s doesn't exist in 'module', 'memory', predefined, "
+                  "or as a node object" % device)
+        return
 
-    else:
-        # found and exist in the nodes too
-        node = nodeobj[0]
-        node["inst_type"] = deviceobj[0]["type"]
-        node["addr_range"] = [
-            OrderedDict([("base_addr", deviceobj[0]["base_addr"]),
-                         ("size_byte", deviceobj[0]["size"])])
-        ]
-        node["xbar"] = True if device in xbar_list else False
-        node["stub"] = not lib.is_inst(deviceobj[0])
-        process_pipeline_var(node)
+    # If we get here, inst points an instance of some block or memory. It
+    # shouldn't point at a crossbar (because that would imply a naming clash)
+    assert device_base not in other_xbars
+    base_addr, size_byte = lib.get_base_and_size(name_to_block,
+                                                 inst, device_ifname)
+    addr_range = {"base_addr": hex(base_addr), "size_byte": hex(size_byte)}
+
+    stub = not lib.is_inst(inst)
+
+    if node is None:
+        log.error('Cannot connect to {!r} because '
+                  'the crossbar defines no node for {!r}.'
+                  .format(device, device_base))
+        return
+
+    node["inst_type"] = inst["type"]
+    node["addr_range"] = [addr_range]
+    node["xbar"] = False
+    node["stub"] = stub
+    process_pipeline_var(node)
 
 
-def amend_xbar(top, xbar):
+def amend_xbar(top: Dict[str, object],
+               name_to_block: Dict[str, IpBlock],
+               xbar: Dict[str, object]):
     """Amend crossbar informations to the top list
 
     Amended fields
@@ -376,9 +419,13 @@ def amend_xbar(top, xbar):
         # add device if doesn't exist
         device_nodes.update(devices)
 
+    other_xbars = [x["name"]
+                   for x in top["xbar"]
+                   if x["name"] != xbar["name"]]
+
     log.info(device_nodes)
     for device in device_nodes:
-        xbar_adddevice(top, topxbar, device)
+        xbar_adddevice(top, name_to_block, topxbar, other_xbars, device)
 
 
 def xbar_cross(xbar, xbars):
@@ -957,7 +1004,7 @@ def merge_top(topcfg: OrderedDict,
 
     # Combine xbar into topcfg
     for xbar in xbarobjs:
-        amend_xbar(topcfg, xbar)
+        amend_xbar(topcfg, name_to_block, xbar)
 
     # 2nd phase of xbar (gathering the devices address range)
     for xbar in topcfg["xbar"]:

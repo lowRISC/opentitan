@@ -147,24 +147,25 @@ class BusInterfaces:
         return [self._if_inter_signal(is_host, name)
                 for is_host, name in self._interfaces()]
 
+    def has_interface(self, is_host: bool, name: Optional[str]) -> bool:
+        if is_host:
+            if name is None:
+                return self.has_unnamed_host
+            else:
+                return name in self.named_hosts
+        else:
+            if name is None:
+                return self.has_unnamed_device
+            else:
+                return name in self.named_devices
+
     def find_port_name(self, is_host: bool, name: Optional[str]) -> str:
         '''Look up the given host/name pair and return its port name.
 
         Raises a KeyError if there is no match.
 
         '''
-        if is_host:
-            if name is None:
-                exists = self.has_unnamed_host
-            else:
-                exists = name in self.named_hosts
-        else:
-            if name is None:
-                exists = self.has_unnamed_device
-            else:
-                exists = name in self.named_devices
-
-        if not exists:
+        if not self.has_interface(is_host, name):
             called = ('with no name'
                       if name is None else 'called {!r}'.format(name))
             raise KeyError('There is no {} bus interface {}.'
