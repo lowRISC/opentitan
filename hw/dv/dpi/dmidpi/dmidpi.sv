@@ -43,7 +43,7 @@ module dmidpi #(
 
   final begin
     dmidpi_close(ctx);
-    ctx = 0;
+    ctx = null;
   end
 
   always_ff @(posedge clk_i, negedge rst_ni) begin

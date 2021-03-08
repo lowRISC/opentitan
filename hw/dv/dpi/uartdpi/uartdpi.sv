@@ -44,7 +44,7 @@ module uartdpi #(
 
   final begin
     uartdpi_close(ctx);
-    ctx = 0;
+    ctx = null;
   end
 
   // TX
