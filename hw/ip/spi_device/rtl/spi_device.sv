@@ -81,23 +81,15 @@ module spi_device (
   logic [SramDw-1:0] mem_b_rdata;
   logic [1:0]        mem_b_rerror;
 
-  // Request from FwMode: peri clock domain when active
-  logic              fwm_req;
-  logic              fwm_write;
-  logic [SramAw-1:0] fwm_addr;
-  logic [SramDw-1:0] fwm_wdata;
-  logic              fwm_rvalid;
-  logic [SramDw-1:0] fwm_rdata;
-  logic [1:0]        fwm_rerror;
 
-  // TODO: Add real mux for FlashMode & PassThrough
-  assign mem_b_req   = fwm_req     ;
-  assign mem_b_write = fwm_write   ;
-  assign mem_b_addr  = fwm_addr    ;
-  assign mem_b_wdata = fwm_wdata   ;
-  assign fwm_rvalid  = mem_b_rvalid;
-  assign fwm_rdata   = mem_b_rdata ;
-  assign fwm_rerror  = mem_b_rerror;
+  // Submoule SRAM Requests
+  logic              sub_sram_req    [IoModeEnd];
+  logic              sub_sram_write  [IoModeEnd];
+  logic [SramAw-1:0] sub_sram_addr   [IoModeEnd];
+  logic [SramDw-1:0] sub_sram_wdata  [IoModeEnd];
+  logic              sub_sram_rvalid [IoModeEnd];
+  logic [SramDw-1:0] sub_sram_rdata  [IoModeEnd];
+  logic [1:0]        sub_sram_rerror [IoModeEnd];
 
   /////////////////////
   // Control signals //
@@ -120,6 +112,7 @@ module spi_device (
   //spi_addr_size_e addr_size; // Not used in fwmode
   spi_mode_e spi_mode;
   //spi_byte_t fw_dummy_byte;
+  logic [255:0] cfg_upload_mask;
 
   logic intr_sram_rxf_full, intr_fwm_rxerr;
   logic intr_fwm_rxlvl, rxlvl, rxlvl_d, intr_fwm_txlvl, txlvl, txlvl_d;
@@ -143,14 +136,24 @@ module spi_device (
   // SPI S2P signals
   // io_mode: Determine s2p/p2s behavior. As of now, only fwmode exists.
   // TODO: Add FlashMode IO, passthrough IO
-  io_mode_e    io_mode, fw_io_mode;
-  logic        s2p_data_valid;
-  spi_byte_t   s2p_data;
-  logic [11:0] s2p_bitcnt;
+  io_mode_e           io_mode;
+  io_mode_e           sub_iomode[IoModeEnd];
+  logic               s2p_data_valid;
+  spi_byte_t          s2p_data;
+  logic [BitCntW-1:0] s2p_bitcnt;
 
   logic        p2s_valid;
   spi_byte_t   p2s_data;
   logic        p2s_sent;
+
+  logic        sub_p2s_valid[IoModeEnd];
+  spi_byte_t   sub_p2s_data[IoModeEnd];
+  logic        sub_p2s_sent[IoModeEnd];
+
+  // CMD interface
+  sel_datapath_e cmd_dp_sel;
+  spi_byte_t     cmd_opcode;
+
 
   //////////////////////////////////////////////////////////////////////
   // Connect phase (between control signals above and register module //
@@ -223,6 +226,9 @@ module spi_device (
   );
 
   assign spi_mode = spi_mode_e'(reg2hw.control.mode.q);
+
+  // TODO: Define and connect masks.
+  assign cfg_upload_mask = '0;
 
   // Async FIFO level
   //  rx rdepth, tx wdepth to be in main clock domain
@@ -474,15 +480,78 @@ module spi_device (
   // io_mode to spi_s2p
   always_comb begin
     io_mode = SingleIO;
+    p2s_valid = 1'b 0;
+    p2s_data  = 8'h 0;
+    sub_p2s_sent = '{default: 1'b 0};
+
+    mem_b_req   = 1'b 0;
+    mem_b_write = 1'b 0;
+    mem_b_addr  = '0;
+    mem_b_wdata = '0;
+    sub_sram_rvalid = '{default:  1'b 0};
+    sub_sram_rdata  = '{default:     '0};
+    sub_sram_rerror = '{default: 2'b 00};
 
     unique case (spi_mode)
       FwMode: begin
-        io_mode = fw_io_mode;
+        io_mode = sub_iomode[IoModeFw];
+
+        p2s_valid = sub_p2s_valid[IoModeFw];
+        p2s_data  = sub_p2s_data[IoModeFw];
+        sub_p2s_sent[IoModeFw] = p2s_sent;
+
+        // SRAM:: Remember this has glitch
+        // switch should happen only when clock gate is disabled.
+        mem_b_req   = sub_sram_req   [IoModeFw];
+        mem_b_write = sub_sram_write [IoModeFw];
+        mem_b_addr  = sub_sram_addr  [IoModeFw];
+        mem_b_wdata = sub_sram_wdata [IoModeFw];
+        sub_sram_rvalid [IoModeFw] = mem_b_rvalid;
+        sub_sram_rdata  [IoModeFw] = mem_b_rdata;
+        sub_sram_rerror [IoModeFw] = mem_b_rerror;
       end
 
       FlashMode: begin
-        // TODO: Revise when implementing FlashMode
-        io_mode = SingleIO;
+        unique case (cmd_dp_sel)
+          DpNone: begin
+            io_mode = sub_iomode[IoModeCmdParse];
+
+            p2s_valid = sub_p2s_valid[IoModeCmdParse];
+            p2s_data  = sub_p2s_data[IoModeCmdParse];
+            sub_p2s_sent[IoModeCmdParse] = p2s_sent;
+
+            // Leave SRAM default;
+          end
+          DpReadCmd: begin
+            io_mode = sub_iomode[IoModeReadCmd];
+
+            p2s_valid = sub_p2s_valid[IoModeReadCmd];
+            p2s_data  = sub_p2s_data[IoModeReadCmd];
+            sub_p2s_sent[IoModeReadCmd] = p2s_sent;
+
+            // SRAM:: Remember this has glitch
+            // switch should happen only when clock gate is disabled.
+            mem_b_req   = sub_sram_req   [IoModeReadCmd];
+            mem_b_write = sub_sram_write [IoModeReadCmd];
+            mem_b_addr  = sub_sram_addr  [IoModeReadCmd];
+            mem_b_wdata = sub_sram_wdata [IoModeReadCmd];
+            sub_sram_rvalid [IoModeReadCmd] = mem_b_rvalid;
+            sub_sram_rdata  [IoModeReadCmd] = mem_b_rdata;
+            sub_sram_rerror [IoModeReadCmd] = mem_b_rerror;
+          end
+          // DpReadStatus:
+          // DpReadSFDP:
+          // DpReadJEDEC:
+          // DpUpload:
+          // DpUnknown:
+          default: begin
+            io_mode = sub_iomode[IoModeCmdParse];
+
+            p2s_valid = sub_p2s_valid[IoModeCmdParse];
+            p2s_data  = sub_p2s_data[IoModeCmdParse];
+            sub_p2s_sent[IoModeCmdParse] = p2s_sent;
+          end
+        endcase
       end
 
       PassThrough: begin
@@ -556,25 +625,25 @@ module spi_device (
     .txf_underflow_o (txf_underflow),
 
     // SRAM interface
-    .fwm_req_o    (fwm_req    ),
-    .fwm_write_o  (fwm_write  ),
-    .fwm_addr_o   (fwm_addr   ),
-    .fwm_wdata_o  (fwm_wdata  ),
-    .fwm_rvalid_i (fwm_rvalid ),
-    .fwm_rdata_i  (fwm_rdata  ),
-    .fwm_rerror_i (fwm_rerror ),
+    .fwm_req_o    (sub_sram_req    [IoModeFw]),
+    .fwm_write_o  (sub_sram_write  [IoModeFw]),
+    .fwm_addr_o   (sub_sram_addr   [IoModeFw]),
+    .fwm_wdata_o  (sub_sram_wdata  [IoModeFw]),
+    .fwm_rvalid_i (sub_sram_rvalid [IoModeFw]),
+    .fwm_rdata_i  (sub_sram_rdata  [IoModeFw]),
+    .fwm_rerror_i (sub_sram_rerror [IoModeFw]),
 
     // Input from S2P
     .rx_data_valid_i (s2p_data_valid),
     .rx_data_i       (s2p_data),
 
     // Output to S2P (mode select)
-    .io_mode_o       (fw_io_mode),
+    .io_mode_o       (sub_iomode[IoModeFw]),
 
     // P2S
-    .tx_wvalid_o (p2s_valid),
-    .tx_data_o   (p2s_data),
-    .tx_wready_i (p2s_sent),
+    .tx_wvalid_o (sub_p2s_valid [IoModeFw]),
+    .tx_data_o   (sub_p2s_data  [IoModeFw]),
+    .tx_wready_i (sub_p2s_sent  [IoModeFw]),
 
     // CSRs
     .timer_v_i   (timer_v),
@@ -602,6 +671,87 @@ module spi_device (
     .txf_full_o  (txf_full)
 
   );
+
+  ////////////////////
+  // SPI Flash Mode //
+  ////////////////////
+
+  spi_cmdparse u_cmdparse (
+    .clk_i  (clk_spi_in_buf),
+    .rst_ni (rst_spi_n),
+
+    .data_valid_i (s2p_data_valid),
+    .data_i       (s2p_data),
+
+    .spi_mode_i   (spi_mode),
+
+    .upload_mask_i (cfg_upload_mask),
+
+    .io_mode_o    (sub_iomode[IoModeCmdParse]),
+
+    .sel_dp_o     (cmd_dp_sel),
+    .opcode_o     (cmd_opcode),
+
+    // Not used for now
+    .cmd_config_req_o (),
+    .cmd_config_idx_o ()
+  );
+
+  spi_readcmd #(
+    .SramAw(SramAw),
+    .SramDw(SramDw)
+    // BaseAddr / Depth use spi_device_pkg parameters
+  ) u_readcmd (
+    .clk_i  (clk_spi_in_buf),
+    .rst_ni (rst_spi_n),
+
+    .clk_out_i (clk_spi_out_buf),
+
+    .sys_rst_ni (rst_ni),
+
+    .sel_dp_i   (cmd_dp_sel),
+    .opcode_i   (cmd_opcode),
+
+    // SRAM interface
+    .sram_req_o    (sub_sram_req      [IoModeReadCmd]),
+    .sram_we_o     (sub_sram_write    [IoModeReadCmd]),
+    .sram_addr_o   (sub_sram_addr     [IoModeReadCmd]),
+    .sram_wdata_o  (sub_sram_wdata    [IoModeReadCmd]),
+    .sram_rvalid_i (sub_sram_rvalid   [IoModeReadCmd]),
+    .sram_rdata_i  (sub_sram_rdata    [IoModeReadCmd]),
+    .sram_rerror_i (sub_sram_rerror   [IoModeReadCmd]),
+
+    // S2P
+    .s2p_valid_i   (s2p_data_valid),
+    .s2p_byte_i    (s2p_data),
+    .s2p_bitcnt_i  (s2p_bitcnt),
+
+    // P2S
+    .p2s_valid_o   (sub_p2s_valid [IoModeReadCmd]),
+    .p2s_byte_o    (sub_p2s_data  [IoModeReadCmd]),
+    .p2s_sent_i    (sub_p2s_sent  [IoModeReadCmd]),
+
+    .spi_mode_i       (spi_mode),
+    // TODO: connect to reg intf
+    .fastread_dummy_i (3'h 7),
+    .dualread_dummy_i (3'h 3),
+    .quadread_dummy_i (3'h 1),
+
+    .readbuf_threshold_i ('0), //$clog2(ReadBufferDepth)-1
+
+    .addr_4b_en_i (1'b 0),
+
+    .mailbox_en_i   (1'b 0),
+    .mailbox_addr_i ('0), // 32
+
+    .io_mode_o (sub_iomode [IoModeReadCmd]),
+
+    .read_watermark_o ()
+  );
+
+  ////////////////////
+  // Common modules //
+  ////////////////////
 
   tlul_adapter_sram #(
     .SramAw      (SramAw),

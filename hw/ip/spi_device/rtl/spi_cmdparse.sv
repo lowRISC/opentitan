@@ -16,9 +16,8 @@ module spi_cmdparse
   input rst_ni,
 
   // Data from spi_s2p
-  input              data_valid_i,
-  input spi_byte_t   data_i,
-  input logic [11:0] bitcnt_i,
+  input                     data_valid_i,
+  input spi_byte_t          data_i,
 
   // Configurations
   input spi_mode_e spi_mode_i,
@@ -38,6 +37,7 @@ module spi_cmdparse
 
   // Activate downstream modules
   output sel_datapath_e sel_dp_o,
+  output spi_byte_t     opcode_o,
 
   // Command Config is not implemented yet.
   // Indicator of command config. The pulse is generated at 3rd bit position
@@ -103,7 +103,16 @@ module spi_cmdparse
 
   // the logic operates only when module_active condition is met
   logic module_active;
-  logic in_flashmode, in_passthroughmode;
+  logic in_flashmode, in_passthrough;
+
+  // Opcode out
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      opcode_o <= spi_byte_t'(0);
+    end else if (st == StIdle && data_valid_i) begin
+      opcode_o <=  data_i;
+    end
+  end
 
   ///////////////////
   // State Machine //
@@ -111,7 +120,7 @@ module spi_cmdparse
 
   assign in_flashmode   = spi_mode_i == FlashMode ;
   assign in_passthrough = spi_mode_i == PassThrough ;
-  assign module_active  = in_flashmode || in_passthroughmode ;
+  assign module_active  = in_flashmode || in_passthrough ;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

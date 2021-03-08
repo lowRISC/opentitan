@@ -14,9 +14,9 @@ module spi_s2p
   input [3:0] s_i,
 
   // to following logic
-  output logic        data_valid_o,
-  output spi_byte_t   data_o,
-  output logic [11:0] bitcnt_o, // up to 256B payload
+  output logic               data_valid_o,
+  output spi_byte_t          data_o,
+  output logic [BitCntW-1:0] bitcnt_o, // up to 256B payload
 
   // Configuration
   input                             order_i,
@@ -29,13 +29,12 @@ module spi_s2p
   // Maximum Length of a transaction is:
   // 8 bit opcode + 24 or 32 bit address +
   // max 8 bit dummy cycle + 256B payload
-  localparam int unsigned Length   = 8 + 32 + 8 + 2048;
-  localparam int unsigned BitCntW  = $clog2(Length+1);
+  // Or in FwMode, half of DPSRAM
   localparam int unsigned Bits     = $bits(spi_byte_t);
   localparam int unsigned BitWidth = $clog2(Bits);
 
   typedef logic [BitWidth-1:0] count_t;
-  typedef logic [$clog2(Length+1)-1:0] bitcount_t;
+  typedef logic [BitCntW-1:0] bitcount_t;
 
   count_t cnt;
   bitcount_t bitcnt;
@@ -121,6 +120,9 @@ module spi_s2p
   // Right after reset (CSb assert), the io_mode_i shall be Single IO
   // to decode SPI Opcode.
   `ASSERT(IoModeDefault_A, $rose(rst_ni) |-> io_mode_i == SingleIO, clk_i, 0)
+
+  // Bitcnd shall not exceed 2**12
+  `ASSERT(BitcountOverflow_A, bitcnt != '1)
 
 
 endmodule

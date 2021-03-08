@@ -20,6 +20,12 @@ package spi_device_pkg;
     DualIO   = 2'h 1,
     QuadIO   = 2'h 2
   } io_mode_e;
+  typedef enum int unsigned {
+    IoModeFw       = 0,
+    IoModeCmdParse = 1,
+    IoModeReadCmd  = 2,
+    IoModeEnd      = 3 // Indicate of Length
+  } sub_io_mode_e;
 
   // SPI Line Mode (Mode0 <-> Mode3)
   // This HWIP does not support Mode1 and Mode2
@@ -70,6 +76,42 @@ package spi_device_pkg;
     DpUnknown    = 'b 100000
   } sel_datapath_e;
 
+  typedef enum spi_byte_t {
+    CmdNone = 8'h 00,
+
+    CmdWriteStatus1 = 8'h 01,
+    CmdWriteStatus2 = 8'h 31,
+    CmdWriteStatus3 = 8'h 11,
+
+    CmdReadStatus1 = 8'h 05,
+    CmdReadStatus2 = 8'h 35,
+    CmdReadStatus3 = 8'h 15,
+
+    CmdJedecId = 8'h 9F,
+
+    CmdPageProgram     = 8'h 02,
+    CmdQuadPageProgram = 8'h 32, // Not supported
+
+    CmdSectorErase  = 8'h 20, // 4kB erase
+    CmdBlockErase32 = 8'h 52, // 32kB
+    CmdBlockErase64 = 8'h D8, // 64kB
+
+    CmdReadData   = 8'h 03,
+    CmdReadFast   = 8'h 0B, // with Dummy
+    CmdReadDual   = 8'h 3B,
+    CmdReadQuad   = 8'h 6B,
+    CmdReadDualIO = 8'h BB,
+    CmdReadQuadIO = 8'h EB,
+
+    CmdWriteDisable = 8'h 04,
+    CmdWriteEnable  = 8'h 06,
+
+    CmdReadSfdp = 8'h 5A,
+
+    CmdEnableReset = 8'h 66,
+    CmdResetDevice = 8'h 99
+  } spi_cmd_e;
+
   // Sram parameters
   parameter int unsigned SramDw = 32;
 
@@ -94,6 +136,38 @@ package spi_device_pkg;
   //parameter int unsigned SramDepth = 1024;
 
   parameter int unsigned SramAw = $clog2(spi_device_reg_pkg::SramDepth);
+
+  typedef logic [SramAw-1:0] sram_addr_t;
+  typedef struct packed {
+    logic [SramDw-1:0]   data;
+  } sram_data_t;
+  typedef struct packed {
+    logic uncorr;
+    logic corr;
+  } sram_err_t;
+
+  // Calculate each space's base and size
+  parameter sram_addr_t SramReadBufferIdx  = sram_addr_t'(0);
+  parameter sram_addr_t SramReadBufferSize = sram_addr_t'(SramMsgDepth);
+
+  parameter sram_addr_t SramMailboxIdx  = SramReadBufferIdx + SramReadBufferSize;
+  parameter sram_addr_t SramMailboxSize = sram_addr_t'(SramMailboxDepth);
+
+  parameter sram_addr_t SramSfdpIdx  = SramMailboxIdx + SramMailboxSize;
+  parameter sram_addr_t SramSfdpSize = sram_addr_t'(SramSfdpDepth);
+
+  parameter sram_addr_t SramPayloadIdx  = SramSfdpIdx + SramSfdpSize;
+  parameter sram_addr_t SramPayloadSize = sram_addr_t'(SramPayloadDepth);
+
+  parameter sram_addr_t SramCmdFifoIdx  = SramPayloadIdx + SramPayloadSize ;
+  parameter sram_addr_t SramCmdFifoSize = sram_addr_t'(SramCmdFifoDepth);
+
+  parameter sram_addr_t SramAddrFifoIdx  = SramCmdFifoIdx + SramCmdFifoSize ;
+  parameter sram_addr_t SramAddrFifoSize = sram_addr_t'(SramAddrFifoDepth);
+
+  // Max BitCount in a transaction
+  parameter int unsigned BitLength = SramMsgDepth * 32;
+  parameter int unsigned BitCntW   = $clog2(BitLength + 1);
 
   // spi device scanmode usage
   typedef enum logic [2:0] {
