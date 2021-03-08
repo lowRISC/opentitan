@@ -22,12 +22,13 @@ package flash_ctrl_reg_pkg;
   parameter int BytesPerBank = 524288;
   parameter int NumAlerts = 3;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 9;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -368,7 +369,6 @@ package flash_ctrl_reg_pkg;
     logic        q;
   } flash_ctrl_reg2hw_fifo_rst_reg_t;
 
-
   typedef struct packed {
     struct packed {
       logic        d;
@@ -490,10 +490,7 @@ package flash_ctrl_reg_pkg;
     } prog_repair_avail;
   } flash_ctrl_hw2reg_phy_status_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [523:519]
     flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [518:514]
@@ -518,9 +515,7 @@ package flash_ctrl_reg_pkg;
     flash_ctrl_reg2hw_fifo_rst_reg_t fifo_rst; // [0:0]
   } flash_ctrl_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     flash_ctrl_hw2reg_intr_state_reg_t intr_state; // [96:87]
     flash_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [86:86]
@@ -534,7 +529,7 @@ package flash_ctrl_reg_pkg;
     flash_ctrl_hw2reg_phy_status_reg_t phy_status; // [5:0]
   } flash_ctrl_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] FLASH_CTRL_INTR_STATE_OFFSET = 9'h 0;
   parameter logic [BlockAw-1:0] FLASH_CTRL_INTR_ENABLE_OFFSET = 9'h 4;
   parameter logic [BlockAw-1:0] FLASH_CTRL_INTR_TEST_OFFSET = 9'h 8;
@@ -641,7 +636,7 @@ package flash_ctrl_reg_pkg;
   parameter logic [0:0] FLASH_CTRL_CTRL_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] FLASH_CTRL_CTRL_REGWEN_EN_RESVAL = 1'h 1;
 
-  // Window parameter
+  // Window parameters
   parameter logic [BlockAw-1:0] FLASH_CTRL_PROG_FIFO_OFFSET = 9'h 16c;
   parameter int unsigned        FLASH_CTRL_PROG_FIFO_SIZE   = 'h 4;
   parameter logic [BlockAw-1:0] FLASH_CTRL_RD_FIFO_OFFSET = 9'h 170;
@@ -649,7 +644,7 @@ package flash_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] FLASH_CTRL_PRIM_FLASH_CFG_OFFSET = 9'h 180;
   parameter int unsigned        FLASH_CTRL_PRIM_FLASH_CFG_SIZE   = 'h 54;
 
-  // Register Index
+  // Register index
   typedef enum int {
     FLASH_CTRL_INTR_STATE,
     FLASH_CTRL_INTR_ENABLE,
@@ -838,5 +833,6 @@ package flash_ctrl_reg_pkg;
     4'b 0011, // index[89] FLASH_CTRL_FIFO_LVL
     4'b 0001  // index[90] FLASH_CTRL_FIFO_RST
   };
+
 endpackage
 

@@ -10,12 +10,13 @@ package csrng_reg_pkg;
   parameter int NHwApps = 2;
   parameter int NumAlerts = 1;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 7;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -114,7 +115,6 @@ package csrng_reg_pkg;
     logic [4:0]  q;
     logic        qe;
   } csrng_reg2hw_err_code_test_reg_t;
-
 
   typedef struct packed {
     struct packed {
@@ -287,10 +287,7 @@ package csrng_reg_pkg;
     } fifo_state_err;
   } csrng_hw2reg_err_code_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     csrng_reg2hw_intr_state_reg_t intr_state; // [135:132]
     csrng_reg2hw_intr_enable_reg_t intr_enable; // [131:128]
@@ -306,9 +303,7 @@ package csrng_reg_pkg;
     csrng_reg2hw_err_code_test_reg_t err_code_test; // [5:0]
   } csrng_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     csrng_hw2reg_intr_state_reg_t intr_state; // [172:165]
     csrng_hw2reg_sum_sts_reg_t sum_sts; // [164:138]
@@ -321,7 +316,7 @@ package csrng_reg_pkg;
     csrng_hw2reg_err_code_reg_t err_code; // [49:0]
   } csrng_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] CSRNG_INTR_STATE_OFFSET = 7'h 0;
   parameter logic [BlockAw-1:0] CSRNG_INTR_ENABLE_OFFSET = 7'h 4;
   parameter logic [BlockAw-1:0] CSRNG_INTR_TEST_OFFSET = 7'h 8;
@@ -353,7 +348,7 @@ package csrng_reg_pkg;
   parameter logic [31:0] CSRNG_GENBITS_RESVAL = 32'h 0;
   parameter logic [31:0] CSRNG_INT_STATE_VAL_RESVAL = 32'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     CSRNG_INTR_STATE,
     CSRNG_INTR_ENABLE,
@@ -396,5 +391,6 @@ package csrng_reg_pkg;
     4'b 1111, // index[16] CSRNG_ERR_CODE
     4'b 0001  // index[17] CSRNG_ERR_CODE_TEST
   };
+
 endpackage
 

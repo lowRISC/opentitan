@@ -12,12 +12,13 @@ package edn_reg_pkg;
   parameter int BootGenCmd = 12291;
   parameter int NumAlerts = 1;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 6;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -96,7 +97,6 @@ package edn_reg_pkg;
     logic        qe;
   } edn_reg2hw_err_code_test_reg_t;
 
-
   typedef struct packed {
     struct packed {
       logic        d;
@@ -165,10 +165,7 @@ package edn_reg_pkg;
     } fifo_state_err;
   } edn_hw2reg_err_code_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     edn_reg2hw_intr_state_reg_t intr_state; // [152:151]
     edn_reg2hw_intr_enable_reg_t intr_enable; // [150:149]
@@ -183,9 +180,7 @@ package edn_reg_pkg;
     edn_reg2hw_err_code_test_reg_t err_code_test; // [5:0]
   } edn_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     edn_hw2reg_intr_state_reg_t intr_state; // [27:24]
     edn_hw2reg_sum_sts_reg_t sum_sts; // [23:18]
@@ -193,7 +188,7 @@ package edn_reg_pkg;
     edn_hw2reg_err_code_reg_t err_code; // [13:0]
   } edn_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] EDN_INTR_STATE_OFFSET = 6'h 0;
   parameter logic [BlockAw-1:0] EDN_INTR_ENABLE_OFFSET = 6'h 4;
   parameter logic [BlockAw-1:0] EDN_INTR_TEST_OFFSET = 6'h 8;
@@ -219,7 +214,7 @@ package edn_reg_pkg;
   parameter logic [31:0] EDN_RESEED_CMD_RESVAL = 32'h 0;
   parameter logic [31:0] EDN_GENERATE_CMD_RESVAL = 32'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     EDN_INTR_STATE,
     EDN_INTR_ENABLE,
@@ -254,5 +249,6 @@ package edn_reg_pkg;
     4'b 1111, // index[12] EDN_ERR_CODE
     4'b 0001  // index[13] EDN_ERR_CODE_TEST
   };
+
 endpackage
 

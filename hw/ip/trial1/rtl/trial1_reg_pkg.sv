@@ -6,12 +6,13 @@
 
 package trial1_reg_pkg;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 10;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     logic [31:0] q;
   } trial1_reg2hw_rwtype0_reg_t;
@@ -135,7 +136,6 @@ package trial1_reg_pkg;
     logic [31:0] q;
   } trial1_reg2hw_rotype1_reg_t;
 
-
   typedef struct packed {
     logic [31:0] d;
     logic        de;
@@ -218,10 +218,7 @@ package trial1_reg_pkg;
     logic [31:0] d;
   } trial1_hw2reg_rotype1_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     trial1_reg2hw_rwtype0_reg_t rwtype0; // [556:525]
     trial1_reg2hw_rwtype1_reg_t rwtype1; // [524:514]
@@ -243,9 +240,7 @@ package trial1_reg_pkg;
     trial1_reg2hw_rotype1_reg_t rotype1; // [31:0]
   } trial1_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     trial1_hw2reg_rwtype2_reg_t rwtype2; // [386:354]
     trial1_hw2reg_rwtype3_reg_t rwtype3; // [353:320]
@@ -261,7 +256,7 @@ package trial1_reg_pkg;
     trial1_hw2reg_rotype1_reg_t rotype1; // [31:0]
   } trial1_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] TRIAL1_RWTYPE0_OFFSET = 10'h 0;
   parameter logic [BlockAw-1:0] TRIAL1_RWTYPE1_OFFSET = 10'h 4;
   parameter logic [BlockAw-1:0] TRIAL1_RWTYPE2_OFFSET = 10'h 8;
@@ -289,7 +284,7 @@ package trial1_reg_pkg;
   parameter logic [31:0] TRIAL1_ROTYPE1_RESVAL = 32'h 66aa66aa;
   parameter logic [31:0] TRIAL1_ROTYPE1_ROTYPE1_RESVAL = 32'h 66aa66aa;
 
-  // Register Index
+  // Register index
   typedef enum int {
     TRIAL1_RWTYPE0,
     TRIAL1_RWTYPE1,
@@ -336,5 +331,6 @@ package trial1_reg_pkg;
     4'b 1111, // index[18] TRIAL1_ROTYPE2
     4'b 1111  // index[19] TRIAL1_RWTYPE7
   };
+
 endpackage
 

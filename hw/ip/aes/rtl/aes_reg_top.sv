@@ -10,7 +10,6 @@ module aes_reg_top (
   input clk_i,
   input rst_ni,
 
-  // Below Regster interface can be changed
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW

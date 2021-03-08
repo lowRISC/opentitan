@@ -10,7 +10,6 @@ module kmac_reg_top (
   input clk_i,
   input rst_ni,
 
-  // Below Regster interface can be changed
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
@@ -122,7 +121,6 @@ module kmac_reg_top (
       reg_steer = 0;
     end
     if (tl_i.a_address[AW-1:0] >= 2048) begin
-      // Exceed or meet the address range. Removed the comparison of limit addr 'h 1000
       reg_steer = 1;
     end
     if (intg_err) begin

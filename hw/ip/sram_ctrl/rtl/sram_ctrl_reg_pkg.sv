@@ -9,12 +9,13 @@ package sram_ctrl_reg_pkg;
   // Param list
   parameter int NumAlerts = 2;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 5;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -34,7 +35,6 @@ package sram_ctrl_reg_pkg;
     logic        q;
     logic        qe;
   } sram_ctrl_reg2hw_ctrl_reg_t;
-
 
   typedef struct packed {
     struct packed {
@@ -56,25 +56,20 @@ package sram_ctrl_reg_pkg;
     logic        de;
   } sram_ctrl_hw2reg_error_address_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     sram_ctrl_reg2hw_alert_test_reg_t alert_test; // [8:5]
     sram_ctrl_reg2hw_exec_reg_t exec; // [4:2]
     sram_ctrl_reg2hw_ctrl_reg_t ctrl; // [1:0]
   } sram_ctrl_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     sram_ctrl_hw2reg_status_reg_t status; // [36:33]
     sram_ctrl_hw2reg_error_address_reg_t error_address; // [32:0]
   } sram_ctrl_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] SRAM_CTRL_ALERT_TEST_OFFSET = 5'h 0;
   parameter logic [BlockAw-1:0] SRAM_CTRL_STATUS_OFFSET = 5'h 4;
   parameter logic [BlockAw-1:0] SRAM_CTRL_EXEC_REGWEN_OFFSET = 5'h 8;
@@ -90,7 +85,7 @@ package sram_ctrl_reg_pkg;
   parameter logic [3:0] SRAM_CTRL_STATUS_RESVAL = 4'h 0;
   parameter logic [0:0] SRAM_CTRL_CTRL_RESVAL = 1'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     SRAM_CTRL_ALERT_TEST,
     SRAM_CTRL_STATUS,
@@ -111,5 +106,6 @@ package sram_ctrl_reg_pkg;
     4'b 0001, // index[5] SRAM_CTRL_CTRL
     4'b 1111  // index[6] SRAM_CTRL_ERROR_ADDRESS
   };
+
 endpackage
 

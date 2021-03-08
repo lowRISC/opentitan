@@ -6,12 +6,13 @@
 
 package nmi_gen_reg_pkg;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 4;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -51,7 +52,6 @@ package nmi_gen_reg_pkg;
     } esc2;
   } nmi_gen_reg2hw_intr_test_reg_t;
 
-
   typedef struct packed {
     struct packed {
       logic        d;
@@ -67,24 +67,19 @@ package nmi_gen_reg_pkg;
     } esc2;
   } nmi_gen_hw2reg_intr_state_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     nmi_gen_reg2hw_intr_state_reg_t intr_state; // [11:9]
     nmi_gen_reg2hw_intr_enable_reg_t intr_enable; // [8:6]
     nmi_gen_reg2hw_intr_test_reg_t intr_test; // [5:0]
   } nmi_gen_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     nmi_gen_hw2reg_intr_state_reg_t intr_state; // [5:0]
   } nmi_gen_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] NMI_GEN_INTR_STATE_OFFSET = 4'h 0;
   parameter logic [BlockAw-1:0] NMI_GEN_INTR_ENABLE_OFFSET = 4'h 4;
   parameter logic [BlockAw-1:0] NMI_GEN_INTR_TEST_OFFSET = 4'h 8;
@@ -95,7 +90,7 @@ package nmi_gen_reg_pkg;
   parameter logic [0:0] NMI_GEN_INTR_TEST_ESC1_RESVAL = 1'h 0;
   parameter logic [0:0] NMI_GEN_INTR_TEST_ESC2_RESVAL = 1'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     NMI_GEN_INTR_STATE,
     NMI_GEN_INTR_ENABLE,
@@ -108,5 +103,6 @@ package nmi_gen_reg_pkg;
     4'b 0001, // index[1] NMI_GEN_INTR_ENABLE
     4'b 0001  // index[2] NMI_GEN_INTR_TEST
   };
+
 endpackage
 

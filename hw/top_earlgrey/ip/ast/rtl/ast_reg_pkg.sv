@@ -6,12 +6,13 @@
 
 package ast_reg_pkg;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 4;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     logic [7:0]  q;
   } ast_reg2hw_revid_reg_t;
@@ -35,35 +36,29 @@ package ast_reg_pkg;
     } field15_8;
   } ast_reg2hw_rwtype1_reg_t;
 
-
   typedef struct packed {
     logic [31:0] d;
     logic        de;
   } ast_hw2reg_rwtype0_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     ast_reg2hw_revid_reg_t revid; // [50:43]
     ast_reg2hw_rwtype0_reg_t rwtype0; // [42:11]
     ast_reg2hw_rwtype1_reg_t rwtype1; // [10:0]
   } ast_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     ast_hw2reg_rwtype0_reg_t rwtype0; // [32:0]
   } ast_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] AST_REVID_OFFSET = 4'h 0;
   parameter logic [BlockAw-1:0] AST_RWTYPE0_OFFSET = 4'h 4;
   parameter logic [BlockAw-1:0] AST_RWTYPE1_OFFSET = 4'h 8;
 
-  // Register Index
+  // Register index
   typedef enum int {
     AST_REVID,
     AST_RWTYPE0,
@@ -76,5 +71,6 @@ package ast_reg_pkg;
     4'b 1111, // index[1] AST_RWTYPE0
     4'b 0011  // index[2] AST_RWTYPE1
   };
+
 endpackage
 

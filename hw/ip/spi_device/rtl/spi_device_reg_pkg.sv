@@ -9,12 +9,13 @@ package spi_device_reg_pkg;
   // Param list
   parameter int unsigned SramDepth = 1024;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 13;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -159,7 +160,6 @@ package spi_device_reg_pkg;
     } limit;
   } spi_device_reg2hw_txf_addr_reg_t;
 
-
   typedef struct packed {
     struct packed {
       logic        d;
@@ -231,10 +231,7 @@ package spi_device_reg_pkg;
     } rptr;
   } spi_device_hw2reg_txf_ptr_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     spi_device_reg2hw_intr_state_reg_t intr_state; // [169:164]
     spi_device_reg2hw_intr_enable_reg_t intr_enable; // [163:158]
@@ -248,9 +245,7 @@ package spi_device_reg_pkg;
     spi_device_reg2hw_txf_addr_reg_t txf_addr; // [31:0]
   } spi_device_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     spi_device_hw2reg_intr_state_reg_t intr_state; // [67:56]
     spi_device_hw2reg_async_fifo_level_reg_t async_fifo_level; // [55:40]
@@ -259,7 +254,7 @@ package spi_device_reg_pkg;
     spi_device_hw2reg_txf_ptr_reg_t txf_ptr; // [16:0]
   } spi_device_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] SPI_DEVICE_INTR_STATE_OFFSET = 13'h 0;
   parameter logic [BlockAw-1:0] SPI_DEVICE_INTR_ENABLE_OFFSET = 13'h 4;
   parameter logic [BlockAw-1:0] SPI_DEVICE_INTR_TEST_OFFSET = 13'h 8;
@@ -288,11 +283,11 @@ package spi_device_reg_pkg;
   parameter logic [0:0] SPI_DEVICE_STATUS_ABORT_DONE_RESVAL = 1'h 1;
   parameter logic [0:0] SPI_DEVICE_STATUS_CSB_RESVAL = 1'h 1;
 
-  // Window parameter
+  // Window parameters
   parameter logic [BlockAw-1:0] SPI_DEVICE_BUFFER_OFFSET = 13'h 1000;
   parameter int unsigned        SPI_DEVICE_BUFFER_SIZE   = 'h 1000;
 
-  // Register Index
+  // Register index
   typedef enum int {
     SPI_DEVICE_INTR_STATE,
     SPI_DEVICE_INTR_ENABLE,
@@ -323,5 +318,6 @@ package spi_device_reg_pkg;
     4'b 1111, // index[10] SPI_DEVICE_RXF_ADDR
     4'b 1111  // index[11] SPI_DEVICE_TXF_ADDR
   };
+
 endpackage
 

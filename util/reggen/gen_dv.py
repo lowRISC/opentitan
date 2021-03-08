@@ -4,50 +4,53 @@
 '''Generate DV code for an IP block'''
 
 import logging as log
+from typing import Optional, Tuple, Union
 
-from mako import exceptions
-from mako.template import Template
+from mako import exceptions  # type: ignore
+from mako.template import Template  # type: ignore
 from pkg_resources import resource_filename
 
 from .access import HwAccess, SwRdAccess, SwWrAccess
-from .block import Block
-from .top import Top
 from .ip_block import IpBlock
+from .register import Register
+from .top import Top
+from .window import Window
 
 
-def bcname(b):
+def bcname(b: Union[IpBlock, Top]) -> str:
     '''Get the name of the dv_base_reg_block subclass for this block'''
     return b.name.lower() + "_reg_block"
 
 
-def rcname(b, r):
+def rcname(b: Union[IpBlock, Top], r: Register) -> str:
     '''Get the name of the dv_base_reg subclass for this register'''
     return b.name.lower() + "_reg_" + r.name.lower()
 
 
-def mcname(b, m):
+def mcname(b: Union[IpBlock, Top], m: Window) -> str:
     '''Get the name of the dv_base_mem subclass for this memory'''
     return b.name.lower() + "_mem_" + m.name.lower()
 
 
-def miname(m):
+def miname(m: Window) -> str:
     '''Get the lower-case name of a memory block'''
     return m.name.lower()
 
 
-def sv_base_addr(top: Top, inst_name: str):
-    '''Get the base address of a block in SV syntax'''
-    return "{}'h{:x}".format(top.regwidth,
-                             top.by_inst_name[inst_name][0])
+def sv_base_addr(top: Top, if_name: Tuple[str, Optional[str]]) -> str:
+    '''Get the base address of a device interface in SV syntax'''
+    return "{}'h{:x}".format(top.regwidth, top.if_addrs[if_name])
 
 
-def gen_dv(block: IpBlock, dv_base_prefix, outdir):
+def gen_dv(block: IpBlock, dv_base_prefix: str, outdir: str) -> int:
     '''Generate DV files for an IpBlock'''
-    gen_ral(block, dv_base_prefix, outdir)
+    return gen_ral(block, dv_base_prefix, outdir)
 
 
-def gen_ral(block: Block, dv_base_prefix, outdir):
-    '''Generate DV RAL model for a Block'''
+def gen_ral(block: Union[IpBlock, Top],
+            dv_base_prefix: str,
+            outdir: str) -> int:
+    '''Generate DV RAL model for an IpBlock or Top'''
     # Read template
     tpl_filename = resource_filename('reggen', 'uvm_reg.sv.tpl')
     uvm_reg_tpl = Template(filename=tpl_filename)

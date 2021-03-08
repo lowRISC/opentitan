@@ -9,12 +9,13 @@ package hmac_reg_pkg;
   // Param list
   parameter int NumWords = 8;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 12;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -94,7 +95,6 @@ package hmac_reg_pkg;
     logic        qe;
   } hmac_reg2hw_key_mreg_t;
 
-
   typedef struct packed {
     struct packed {
       logic        d;
@@ -160,10 +160,7 @@ package hmac_reg_pkg;
     logic        de;
   } hmac_hw2reg_msg_length_upper_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     hmac_reg2hw_intr_state_reg_t intr_state; // [320:318]
     hmac_reg2hw_intr_enable_reg_t intr_enable; // [317:315]
@@ -174,9 +171,7 @@ package hmac_reg_pkg;
     hmac_reg2hw_key_mreg_t [7:0] key; // [263:0]
   } hmac_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     hmac_hw2reg_intr_state_reg_t intr_state; // [627:622]
     hmac_hw2reg_cfg_reg_t cfg; // [621:618]
@@ -188,7 +183,7 @@ package hmac_reg_pkg;
     hmac_hw2reg_msg_length_upper_reg_t msg_length_upper; // [32:0]
   } hmac_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] HMAC_INTR_STATE_OFFSET = 12'h 0;
   parameter logic [BlockAw-1:0] HMAC_INTR_ENABLE_OFFSET = 12'h 4;
   parameter logic [BlockAw-1:0] HMAC_INTR_TEST_OFFSET = 12'h 8;
@@ -245,11 +240,11 @@ package hmac_reg_pkg;
   parameter logic [31:0] HMAC_DIGEST_6_RESVAL = 32'h 0;
   parameter logic [31:0] HMAC_DIGEST_7_RESVAL = 32'h 0;
 
-  // Window parameter
+  // Window parameters
   parameter logic [BlockAw-1:0] HMAC_MSG_FIFO_OFFSET = 12'h 800;
   parameter int unsigned        HMAC_MSG_FIFO_SIZE   = 'h 800;
 
-  // Register Index
+  // Register index
   typedef enum int {
     HMAC_INTR_STATE,
     HMAC_INTR_ENABLE,
@@ -308,5 +303,6 @@ package hmac_reg_pkg;
     4'b 1111, // index[24] HMAC_MSG_LENGTH_LOWER
     4'b 1111  // index[25] HMAC_MSG_LENGTH_UPPER
   };
+
 endpackage
 

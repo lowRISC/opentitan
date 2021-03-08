@@ -71,12 +71,13 @@ package otp_ctrl_reg_pkg;
   parameter int LcTransitionCntSize = 32;
   parameter int NumAlerts = 2;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 14;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -170,7 +171,6 @@ package otp_ctrl_reg_pkg;
   typedef struct packed {
     logic        q;
   } otp_ctrl_reg2hw_owner_sw_cfg_read_lock_reg_t;
-
 
   typedef struct packed {
     struct packed {
@@ -267,10 +267,7 @@ package otp_ctrl_reg_pkg;
     logic [31:0] d;
   } otp_ctrl_hw2reg_secret2_digest_mreg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     otp_ctrl_reg2hw_intr_state_reg_t intr_state; // [194:193]
     otp_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [192:191]
@@ -287,9 +284,7 @@ package otp_ctrl_reg_pkg;
     otp_ctrl_reg2hw_owner_sw_cfg_read_lock_reg_t owner_sw_cfg_read_lock; // [0:0]
   } otp_ctrl_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     otp_ctrl_hw2reg_intr_state_reg_t intr_state; // [494:491]
     otp_ctrl_hw2reg_status_reg_t status; // [490:476]
@@ -304,7 +299,7 @@ package otp_ctrl_reg_pkg;
     otp_ctrl_hw2reg_secret2_digest_mreg_t [1:0] secret2_digest; // [63:0]
   } otp_ctrl_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] OTP_CTRL_INTR_STATE_OFFSET = 14'h 0;
   parameter logic [BlockAw-1:0] OTP_CTRL_INTR_ENABLE_OFFSET = 14'h 4;
   parameter logic [BlockAw-1:0] OTP_CTRL_INTR_TEST_OFFSET = 14'h 8;
@@ -367,13 +362,13 @@ package otp_ctrl_reg_pkg;
   parameter logic [31:0] OTP_CTRL_SECRET2_DIGEST_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_SECRET2_DIGEST_1_RESVAL = 32'h 0;
 
-  // Window parameter
+  // Window parameters
   parameter logic [BlockAw-1:0] OTP_CTRL_SW_CFG_WINDOW_OFFSET = 14'h 1000;
   parameter int unsigned        OTP_CTRL_SW_CFG_WINDOW_SIZE   = 'h 800;
   parameter logic [BlockAw-1:0] OTP_CTRL_TEST_ACCESS_OFFSET = 14'h 2000;
   parameter int unsigned        OTP_CTRL_TEST_ACCESS_SIZE   = 'h 40;
 
-  // Register Index
+  // Register index
   typedef enum int {
     OTP_CTRL_INTR_STATE,
     OTP_CTRL_INTR_ENABLE,
@@ -446,5 +441,6 @@ package otp_ctrl_reg_pkg;
     4'b 1111, // index[31] OTP_CTRL_SECRET2_DIGEST_0
     4'b 1111  // index[32] OTP_CTRL_SECRET2_DIGEST_1
   };
+
 endpackage
 

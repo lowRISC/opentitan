@@ -28,6 +28,10 @@ for xbar in top["xbar"]:
       hosts[node["name"]] = "clk_" + clk_src[node["clock"]]
     elif node["type"] == "device" and not node["xbar"]:
       devices[node["name"]] = "clk_" + clk_src[node["clock"]]
+
+def escape_if_name(qual_if_name):
+    return qual_if_name.replace('.', '__')
+
 %>\
 <%text>
 `define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name) \
@@ -57,11 +61,11 @@ clk_rst_if clk_rst_if_${c}(.clk(clk_${c}), .rst_n(rst_n));
 % endfor
 
 % for i, clk in hosts.items():
-tl_if ${i}_tl_if(${clk}, rst_n);
+tl_if ${escape_if_name(i)}_tl_if(${clk}, rst_n);
 % endfor
 
 % for i, clk in devices.items():
-tl_if ${i}_tl_if(${clk}, rst_n);
+tl_if ${escape_if_name(i)}_tl_if(${clk}, rst_n);
 % endfor
 
 initial begin

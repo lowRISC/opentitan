@@ -6,12 +6,13 @@
 
 package usbuart_reg_pkg;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 6;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -178,7 +179,6 @@ package usbuart_reg_pkg;
     } en;
   } usbuart_reg2hw_timeout_ctrl_reg_t;
 
-
   typedef struct packed {
     struct packed {
       logic        d;
@@ -295,10 +295,7 @@ package usbuart_reg_pkg;
     } parity_req;
   } usbuart_hw2reg_usbparam_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     usbuart_reg2hw_intr_state_reg_t intr_state; // [112:105]
     usbuart_reg2hw_intr_enable_reg_t intr_enable; // [104:97]
@@ -311,9 +308,7 @@ package usbuart_reg_pkg;
     usbuart_reg2hw_timeout_ctrl_reg_t timeout_ctrl; // [24:0]
   } usbuart_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     usbuart_hw2reg_intr_state_reg_t intr_state; // [106:91]
     usbuart_hw2reg_status_reg_t status; // [90:85]
@@ -325,7 +320,7 @@ package usbuart_reg_pkg;
     usbuart_hw2reg_usbparam_reg_t usbparam; // [17:0]
   } usbuart_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] USBUART_INTR_STATE_OFFSET = 6'h 0;
   parameter logic [BlockAw-1:0] USBUART_INTR_ENABLE_OFFSET = 6'h 4;
   parameter logic [BlockAw-1:0] USBUART_INTR_TEST_OFFSET = 6'h 8;
@@ -358,7 +353,7 @@ package usbuart_reg_pkg;
   parameter logic [22:0] USBUART_USBSTAT_RESVAL = 23'h 0;
   parameter logic [17:0] USBUART_USBPARAM_RESVAL = 18'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     USBUART_INTR_STATE,
     USBUART_INTR_ENABLE,
@@ -393,5 +388,6 @@ package usbuart_reg_pkg;
     4'b 0111, // index[12] USBUART_USBSTAT
     4'b 0111  // index[13] USBUART_USBPARAM
   };
+
 endpackage
 

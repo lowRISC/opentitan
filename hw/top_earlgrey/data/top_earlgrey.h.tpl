@@ -25,37 +25,54 @@
 extern "C" {
 #endif
 
-% for name, region in helper.modules():
+% for (inst_name, if_name), region in helper.devices():
+<%
+    if_desc = inst_name if if_name is None else '{} device on {}'.format(if_name, inst_name)
+    hex_base_addr = "0x{:X}u".format(region.base_addr)
+    hex_size_bytes = "0x{:X}u".format(region.size_bytes)
+
+    base_addr_name = region.base_addr_name().as_c_define()
+    size_bytes_name = region.size_bytes_name().as_c_define()
+
+%>\
 /**
- * Peripheral base address for ${name} in top ${top["name"]}.
+ * Peripheral base address for ${if_desc} in top ${top["name"]}.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define ${region.base_addr_name().as_c_define()} ${region.base_addr}u
+#define ${base_addr_name} ${hex_base_addr}
 
 /**
- * Peripheral size for ${name} in top ${top["name"]}.
+ * Peripheral size for ${if_desc} in top ${top["name"]}.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #${region.base_addr_name().as_c_define()} and
- * `${region.base_addr_name().as_c_define()} + ${region.size_bytes_name().as_c_define()}`.
+ * address between #${base_addr_name} and
+ * `${base_addr_name} + ${size_bytes_name}`.
  */
-#define ${region.size_bytes_name().as_c_define()} ${region.size_bytes}u
+#define ${size_bytes_name} ${hex_size_bytes}
 
 % endfor
 
 % for name, region in helper.memories():
+<%
+    hex_base_addr = "0x{:X}u".format(region.base_addr)
+    hex_size_bytes = "0x{:X}u".format(region.size_bytes)
+
+    base_addr_name = region.base_addr_name().as_c_define()
+    size_bytes_name = region.size_bytes_name().as_c_define()
+
+%>\
 /**
  * Memory base address for ${name} in top ${top["name"]}.
  */
-#define ${region.base_addr_name().as_c_define()} ${region.base_addr}u
+#define ${base_addr_name} ${hex_base_addr}
 
 /**
  * Memory size for ${name} in top ${top["name"]}.
  */
-#define ${region.size_bytes_name().as_c_define()} ${region.size_bytes}u
+#define ${size_bytes_name} ${hex_size_bytes}
 
 % endfor
 

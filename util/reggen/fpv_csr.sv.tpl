@@ -12,6 +12,11 @@
   from topgen import lib
 
   lblock = block.name.lower()
+
+  # This template shouldn't be instantiated if the device interface
+  # doesn't actually have any registers.
+  assert rb.flat_regs
+
 %>\
 <%def name="construct_classes(block)">\
 
@@ -21,7 +26,7 @@
 `endif
 
 // Block: ${lblock}
-module ${lblock}_csr_assert_fpv import tlul_pkg::*; import ${lblock}_reg_pkg::*;
+module ${mod_base}_csr_assert_fpv import tlul_pkg::*; import ${lblock}_reg_pkg::*;
     import top_pkg::*;(
   input clk_i,
   input rst_ni,
@@ -31,8 +36,8 @@ module ${lblock}_csr_assert_fpv import tlul_pkg::*; import ${lblock}_reg_pkg::*;
   input tl_d2h_t d2h,
 
   // reg and hw ports
-  input ${lblock}_reg2hw_t reg2hw,
-  input ${lblock}_hw2reg_t hw2reg
+  input ${mod_base}_reg2hw_t reg2hw,
+  input ${mod_base}_hw2reg_t hw2reg
 );
 
 `ifndef VERILATOR
@@ -56,9 +61,9 @@ module ${lblock}_csr_assert_fpv import tlul_pkg::*; import ${lblock}_reg_pkg::*;
   assign a_mask_bit[31:24] = h2d.a_mask[3] ? '1 : '0;
 
 <%
-  addr_width = block.regs.get_addr_width()
+  addr_width = rb.get_addr_width()
   addr_msb  = addr_width - 1
-  block_size = ((block.regs.flat_regs[-1].offset) >> 2) + 1
+  block_size = ((rb.flat_regs[-1].offset) >> 2) + 1
 %>\
   // store internal expected values for HW ReadOnly registers
   logic [TL_DW-1:0] exp_vals[${block_size}];
@@ -68,12 +73,9 @@ module ${lblock}_csr_assert_fpv import tlul_pkg::*; import ${lblock}_reg_pkg::*;
   bit [${addr_msb}:0] normalized_addr;
   assign normalized_addr = {h2d.a_address[${addr_msb}:2], 2'b0};
 
-<% hro_regs_list = list(); %>\
-% for r in block.regs.flat_regs:
-  % if not r.hwaccess.allows_write():
-<% hro_regs_list.append(r) %>\
-  % endif
-% endfor
+<%
+  hro_regs_list = [r for r in rb.flat_regs if not r.hwaccess.allows_write()]
+%>\
 % if len(hro_regs_list) > 0:
   // for write HRO registers, store the write data into exp_vals
   always_ff @(negedge clk_i or negedge rst_ni) begin
@@ -114,13 +116,12 @@ module ${lblock}_csr_assert_fpv import tlul_pkg::*; import ${lblock}_reg_pkg::*;
     reg_addr_hex = format(reg_addr, 'x')
     regwen       = hro_reg.regwen
     reg_mask     = 0
+
+    for f in hro_reg.get_field_list():
+      f_access = f.swaccess.key.lower()
+      if f_access == "rw" and regwen == None:
+        reg_mask = reg_mask | f.bits.bitmask()
 %>\
-    % for f in hro_reg.get_field_list():
-<%  f_access = f.swaccess.key.lower() %>\
-      % if f_access == "rw" and regwen == None:
-<%  reg_mask = reg_mask | f.bits.bitmask() %>\
-      % endif
-    % endfor
     % if reg_mask != 0:
 <%  reg_mask_hex = format(reg_mask, 'x') %>\
     `ASSERT(${r_name}_rd_A, d2h.d_valid && pend_trans[d2h.d_source].rd_pending &&

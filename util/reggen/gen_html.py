@@ -10,6 +10,7 @@ from typing import Set, TextIO
 from .ip_block import IpBlock
 from .html_helpers import expand_paras, render_td
 from .multi_register import MultiRegister
+from .reg_block import RegBlock
 from .register import Register
 from .window import Window
 
@@ -285,20 +286,40 @@ def gen_html_window(outfile: TextIO,
     genout(outfile, "</table>\n<br>\n")
 
 
-def gen_html(block: IpBlock, outfile: TextIO) -> int:
-    rnames = set(block.regs.name_to_offset.keys())
-
-    for x in block.regs.entries:
+def gen_html_reg_block(outfile: TextIO,
+                       rb: RegBlock,
+                       comp: str,
+                       width: int,
+                       rnames: Set[str]) -> None:
+    for x in rb.entries:
         if isinstance(x, Register):
-            gen_html_register(outfile, x, block.name, block.regwidth, rnames)
-            continue
-        if isinstance(x, MultiRegister):
+            gen_html_register(outfile, x, comp, width, rnames)
+        elif isinstance(x, MultiRegister):
             for reg in x.regs:
-                gen_html_register(outfile, reg, block.name, block.regwidth,
-                                  rnames)
-            continue
-        if isinstance(x, Window):
-            gen_html_window(outfile, x, block.name, block.regwidth, rnames)
-            continue
+                gen_html_register(outfile, reg, comp, width, rnames)
+        else:
+            assert isinstance(x, Window)
+            gen_html_window(outfile, x, comp, width, rnames)
+
+
+def gen_html(block: IpBlock, outfile: TextIO) -> int:
+    rnames = block.get_rnames()
+
+    assert block.reg_blocks
+    # Handle the case where there's just one interface
+    if len(block.reg_blocks) == 1:
+        rb = list(block.reg_blocks.values())[0]
+        gen_html_reg_block(outfile, rb, block.name, block.regwidth, rnames)
+        return 0
+
+    # Handle the case where there is more than one device interface and,
+    # correspondingly, more than one reg block.
+    for iface_name, rb in block.reg_blocks.items():
+        iface_desc = ('device interface <code>{}</code>'.format(iface_name)
+                      if iface_name is not None
+                      else 'the unnamed device interface')
+        genout(outfile,
+               '<h3>Registers visible under {}</h3>'.format(iface_desc))
+        gen_html_reg_block(outfile, rb, block.name, block.regwidth, rnames)
 
     return 0

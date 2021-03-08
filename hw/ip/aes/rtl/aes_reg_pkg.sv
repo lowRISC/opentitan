@@ -12,12 +12,13 @@ package aes_reg_pkg;
   parameter int NumRegsData = 4;
   parameter int NumAlerts = 2;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 7;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -102,7 +103,6 @@ package aes_reg_pkg;
       logic        q;
     } output_lost;
   } aes_reg2hw_status_reg_t;
-
 
   typedef struct packed {
     logic [31:0] d;
@@ -193,10 +193,7 @@ package aes_reg_pkg;
     } alert_fatal_fault;
   } aes_hw2reg_status_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     aes_reg2hw_alert_test_reg_t alert_test; // [949:946]
     aes_reg2hw_key_share0_mreg_t [7:0] key_share0; // [945:682]
@@ -209,9 +206,7 @@ package aes_reg_pkg;
     aes_reg2hw_status_reg_t status; // [0:0]
   } aes_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     aes_hw2reg_key_share0_mreg_t [7:0] key_share0; // [933:678]
     aes_hw2reg_key_share1_mreg_t [7:0] key_share1; // [677:422]
@@ -223,7 +218,7 @@ package aes_reg_pkg;
     aes_hw2reg_status_reg_t status; // [13:0]
   } aes_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] AES_ALERT_TEST_OFFSET = 7'h 0;
   parameter logic [BlockAw-1:0] AES_KEY_SHARE0_0_OFFSET = 7'h 4;
   parameter logic [BlockAw-1:0] AES_KEY_SHARE0_1_OFFSET = 7'h 8;
@@ -290,7 +285,7 @@ package aes_reg_pkg;
   parameter logic [2:0] AES_CTRL_SHADOWED_KEY_LEN_RESVAL = 3'h 1;
   parameter logic [0:0] AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_RESVAL = 1'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     AES_ALERT_TEST,
     AES_KEY_SHARE0_0,
@@ -361,5 +356,6 @@ package aes_reg_pkg;
     4'b 0001, // index[30] AES_TRIGGER
     4'b 0001  // index[31] AES_STATUS
   };
+
 endpackage
 

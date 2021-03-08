@@ -21,12 +21,13 @@ package pinmux_reg_pkg;
   parameter int UsbDpPullUpSel = 6;
   parameter int UsbDnPullUpSel = 5;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 12;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     logic [5:0]  q;
   } pinmux_reg2hw_mio_periph_insel_mreg_t;
@@ -98,7 +99,6 @@ package pinmux_reg_pkg;
     logic        qe;
   } pinmux_reg2hw_wkup_cause_mreg_t;
 
-
   typedef struct packed {
     logic [9:0] d;
   } pinmux_hw2reg_mio_pad_attr_mreg_t;
@@ -121,10 +121,7 @@ package pinmux_reg_pkg;
     logic        d;
   } pinmux_hw2reg_wkup_cause_mreg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     pinmux_reg2hw_mio_periph_insel_mreg_t [48:0] mio_periph_insel; // [1708:1415]
     pinmux_reg2hw_mio_outsel_mreg_t [43:0] mio_outsel; // [1414:1151]
@@ -143,9 +140,7 @@ package pinmux_reg_pkg;
     pinmux_reg2hw_wkup_cause_mreg_t [7:0] wkup_cause; // [15:0]
   } pinmux_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     pinmux_hw2reg_mio_pad_attr_mreg_t [43:0] mio_pad_attr; // [787:348]
     pinmux_hw2reg_dio_pad_attr_mreg_t [20:0] dio_pad_attr; // [347:138]
@@ -154,7 +149,7 @@ package pinmux_reg_pkg;
     pinmux_hw2reg_wkup_cause_mreg_t [7:0] wkup_cause; // [7:0]
   } pinmux_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_0_OFFSET = 12'h 0;
   parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_1_OFFSET = 12'h 4;
   parameter logic [BlockAw-1:0] PINMUX_MIO_PERIPH_INSEL_REGWEN_2_OFFSET = 12'h 8;
@@ -852,7 +847,7 @@ package pinmux_reg_pkg;
   parameter logic [0:0] PINMUX_WKUP_CAUSE_CAUSE_6_RESVAL = 1'h 0;
   parameter logic [0:0] PINMUX_WKUP_CAUSE_CAUSE_7_RESVAL = 1'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     PINMUX_MIO_PERIPH_INSEL_REGWEN_0,
     PINMUX_MIO_PERIPH_INSEL_REGWEN_1,
@@ -1969,5 +1964,6 @@ package pinmux_reg_pkg;
     4'b 0001, // index[553] PINMUX_WKUP_DETECTOR_PADSEL_7
     4'b 0001  // index[554] PINMUX_WKUP_CAUSE
   };
+
 endpackage
 

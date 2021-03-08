@@ -9,12 +9,13 @@ package usbdev_reg_pkg;
   // Param list
   parameter int NEndpoints = 12;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 12;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     struct packed {
       logic        q;
@@ -332,7 +333,6 @@ package usbdev_reg_pkg;
     } wake_ack;
   } usbdev_reg2hw_wake_config_reg_t;
 
-
   typedef struct packed {
     struct packed {
       logic        d;
@@ -512,10 +512,7 @@ package usbdev_reg_pkg;
     logic        de;
   } usbdev_hw2reg_wake_debug_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     usbdev_reg2hw_intr_state_reg_t intr_state; // [362:346]
     usbdev_reg2hw_intr_enable_reg_t intr_enable; // [345:329]
@@ -534,9 +531,7 @@ package usbdev_reg_pkg;
     usbdev_reg2hw_wake_config_reg_t wake_config; // [1:0]
   } usbdev_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     usbdev_hw2reg_intr_state_reg_t intr_state; // [192:159]
     usbdev_hw2reg_usbctrl_reg_t usbctrl; // [158:151]
@@ -549,7 +544,7 @@ package usbdev_reg_pkg;
     usbdev_hw2reg_wake_debug_reg_t wake_debug; // [3:0]
   } usbdev_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] USBDEV_INTR_STATE_OFFSET = 12'h 0;
   parameter logic [BlockAw-1:0] USBDEV_INTR_ENABLE_OFFSET = 12'h 4;
   parameter logic [BlockAw-1:0] USBDEV_INTR_TEST_OFFSET = 12'h 8;
@@ -605,11 +600,11 @@ package usbdev_reg_pkg;
   parameter logic [23:0] USBDEV_RXFIFO_RESVAL = 24'h 0;
   parameter logic [16:0] USBDEV_PHY_PINS_SENSE_RESVAL = 17'h 0;
 
-  // Window parameter
+  // Window parameters
   parameter logic [BlockAw-1:0] USBDEV_BUFFER_OFFSET = 12'h 800;
   parameter int unsigned        USBDEV_BUFFER_SIZE   = 'h 800;
 
-  // Register Index
+  // Register index
   typedef enum int {
     USBDEV_INTR_STATE,
     USBDEV_INTR_ENABLE,
@@ -676,5 +671,6 @@ package usbdev_reg_pkg;
     4'b 0001, // index[28] USBDEV_WAKE_CONFIG
     4'b 0001  // index[29] USBDEV_WAKE_DEBUG
   };
+
 endpackage
 

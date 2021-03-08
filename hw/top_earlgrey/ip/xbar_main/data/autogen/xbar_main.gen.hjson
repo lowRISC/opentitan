@@ -119,7 +119,7 @@
       addr_range:
       [
         {
-          base_addr: 0x00008000
+          base_addr: 0x8000
           size_byte: 0x4000
         }
       ]
@@ -370,7 +370,7 @@
       addr_range:
       [
         {
-          base_addr: 0x411D0000
+          base_addr: 0x411d0000
           size_byte: 0x10000
         }
       ]
@@ -406,7 +406,7 @@
       addr_range:
       [
         {
-          base_addr: 0x411C0000
+          base_addr: 0x411c0000
           size_byte: 0x1000
         }
       ]

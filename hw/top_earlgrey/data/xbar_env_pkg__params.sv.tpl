@@ -53,7 +53,7 @@ tl_device_t xbar_devices[$] = '{
 % for xbar in top["xbar"]:
   % for device in xbar["nodes"]:
     % if device["type"] == "device" and not device["xbar"]:
-    '{"${device["name"]}", '{
+    '{"${device["name"].replace('.', '__')}", '{
       % for addr in device["addr_range"]:
 <%
          start_addr = int(addr["base_addr"], 0)
