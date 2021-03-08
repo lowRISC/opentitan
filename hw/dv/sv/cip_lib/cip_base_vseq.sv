@@ -645,6 +645,23 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     gen_storage_err_val = gen_storage_err_val << shift_bits >> shift_bits;
   endfunction
 
+  virtual task check_fatal_alert_nonblocking(string alert_name);
+    fork
+      `DV_SPINWAIT_EXIT(
+          forever begin
+            // 1 extra cycle to make sure no race condition
+            repeat(alert_esc_agent_pkg::ALERT_B2B_DELAY + 1) begin
+              cfg.clk_rst_vif.wait_n_clks(1);
+              if (cfg.m_alert_agent_cfg[alert_name].vif.get_alert() == 1) break;
+            end
+            `DV_CHECK_EQ(cfg.m_alert_agent_cfg[alert_name].vif.get_alert(), 1,
+                         $sformatf("fatal error %0s does not trigger!", alert_name))
+            cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();
+          end,
+          wait(cfg.under_reset);)
+    join_none
+  endtask
+
   virtual task run_shadow_reg_errors(int num_times);
     csr_excl_item      csr_excl = add_and_return_csr_excl("csr_excl");
     dv_base_reg        shadowed_csrs[$], test_csrs[$];
@@ -731,22 +748,28 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
                 if (has_storage_error && do_lock_shadow_reg) begin
                   shadowed_csrs[index].lock_shadow_reg();
+                  check_fatal_alert_nonblocking(alert_name);
+
+                  // Wait two clock cycles then backdoor write back original value.
+                  // This won't stop fatal alert from firing.
+                  cfg.clk_rst_vif.wait_clks(2);
+                  csr_poke(.csr(shadowed_csrs[index]), .value(origin_val), .kind(kind), .predict(1));
+                end else begin
+                  `DV_CHECK_EQ(has_storage_error, 1,
+                               "dv_base_reg did not predict shadow storage error");
+                  `DV_SPINWAIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
+                               cfg.clk_rst_vif.wait_clks(1);,
+                               $sformatf("%0s shadow_reg storage_err alert not detected",
+                                         shadowed_csrs[index].get_name()));
+
+                  // backdoor write back original value to avoid alert keep firing
+                  csr_poke(.csr(shadowed_csrs[index]), .value(origin_val), .kind(kind), .predict(1));
+                  `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
+                               $sformatf("timeout for alert:%0s", alert_name))
+
+                  // wait at least two clock cycle between alert_handshakes
+                  cfg.clk_rst_vif.wait_clks(2);
                 end
-
-                `DV_CHECK_EQ(has_storage_error, 1,
-                             "dv_base_reg did not predict shadow storage error");
-                `DV_SPINWAIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
-                             cfg.clk_rst_vif.wait_clks(1);,
-                             $sformatf("%0s shadow_reg storage_err alert not detected",
-                                       shadowed_csrs[index].get_name()));
-
-                // backdoor write back original value to avoid alert keep firing
-                csr_poke(.csr(shadowed_csrs[index]), .value(origin_val), .kind(kind), .predict(1));
-                `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
-                             $sformatf("timeout for alert:%0s", alert_name))
-
-                // wait at least two clock cycle between alert_handshakes
-                cfg.clk_rst_vif.wait_clks(2);
               end
             end
           end

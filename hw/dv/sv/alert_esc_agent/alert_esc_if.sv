@@ -79,6 +79,11 @@ interface alert_esc_if(input clk, input rst_n);
     input esc_rx;
   endclocking
 
+  assign alert_tx = (if_mode == dv_utils_pkg::Host && is_alert)    ? alert_tx_int : 'z;
+  assign alert_rx = (if_mode == dv_utils_pkg::Device && is_alert)  ? alert_rx_int : 'z;
+  assign esc_tx   = (if_mode == dv_utils_pkg::Host && !is_alert)   ? esc_tx_int   : 'z;
+  assign esc_rx   = (if_mode == dv_utils_pkg::Device && !is_alert) ? esc_rx_int   : 'z;
+
   task automatic wait_ack_complete();
     while (alert_tx_final.alert_p === 1'b1) @(monitor_cb);
     while (alert_rx_final.ack_p === 1'b1)   @(monitor_cb);
@@ -91,11 +96,6 @@ interface alert_esc_if(input clk, input rst_n);
   function automatic bit get_alert();
     get_alert = (alert_tx_final.alert_p === 1'b1 && alert_tx_final.alert_n === 1'b0);
   endfunction : get_alert
-
-  assign alert_tx = (if_mode == dv_utils_pkg::Host && is_alert)    ? alert_tx_int : 'z;
-  assign alert_rx = (if_mode == dv_utils_pkg::Device && is_alert)  ? alert_rx_int : 'z;
-  assign esc_tx   = (if_mode == dv_utils_pkg::Host && !is_alert)   ? esc_tx_int   : 'z;
-  assign esc_rx   = (if_mode == dv_utils_pkg::Device && !is_alert) ? esc_rx_int   : 'z;
 
   // this task wait for alert_ping request.
   // alert_ping request is detected by level triggered "alert_rx.ping_p/n" signals pairs
