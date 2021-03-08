@@ -155,9 +155,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endtask
 
   virtual task check_alert_triggered(string alert_name);
-    // 2 clock cycles between two alert handshakes, 1 clock cycle to go back to `Idle` state,
-    // 1 clock cycle for monitor to detect alert, 1 negedge edge to make sure no race condition.
-    repeat(5 + alert_chk_max_delay[alert_name]) begin
+    // Add 1 extra negedge edge clock to make sure no race condition.
+    repeat(alert_esc_agent_pkg::ALERT_B2B_DELAY + 1 + alert_chk_max_delay[alert_name]) begin
       cfg.clk_rst_vif.wait_n_clks(1);
       if (under_alert_handshake[alert_name] || cfg.under_reset) return;
     end

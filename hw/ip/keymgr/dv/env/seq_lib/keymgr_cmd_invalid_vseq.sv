@@ -23,7 +23,12 @@ class keymgr_cmd_invalid_vseq extends keymgr_lc_disable_vseq;
       keymgr_operations(.clr_output(0), .wait_done(0));
     end
 
-    repeat (100) @(cfg.m_alert_agent_cfg["fatal_fault_err"].vif.alert_tx.alert_p);
+    // could not accurately predict when first fatal alert happen, so wait for the first fatal
+    // alert to trigger
+    wait(cfg.m_alert_agent_cfg["fatal_fault_err"].vif.alert_tx_final.alert_p);
+    check_fatal_alert_nonblocking("fatal_fault_err");
+
+    cfg.clk_rst_vif.wait_clks($urandom_range(1, 500));
     csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StDisabled));
   endtask : trigger_error
 
