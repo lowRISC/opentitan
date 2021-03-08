@@ -21,7 +21,7 @@
 
 module aes_prng_masking import aes_pkg::*;
 #(
-  parameter  int unsigned Width        = WidthPRDMasking,     // Must be divisble by ChunkSize and 8.
+  parameter  int unsigned Width        = WidthPRDMasking,     // Must be divisble by ChunkSize and 8
   parameter  int unsigned ChunkSize    = ChunkSizePRDMasking, // Width of the LFSR primitives
   parameter  int unsigned EntropyWidth = edn_pkg::ENDPOINT_BUS_WIDTH,
   parameter  bit          SecAllowForcingMasks  = 0, // Allow forcing masks to 0 using

@@ -90,7 +90,8 @@ module rv_plic_target #(
         // See also originating issue:
         // https://github.com/lowRISC/opentitan/issues/1355
         // Xilinx issue:
-        // https://forums.xilinx.com/t5/Synthesis/Simulation-Synthesis-Mismatch-with-Vivado-2018-3/m-p/1065923#M33849
+        // https://forums.xilinx.com/t5/Synthesis/
+        // Simulation-Synthesis-Mismatch-with-Vivado-2018-3/m-p/1065923#M33849
 
         logic sel; // local helper variable
         // in case only one of the parent has a pending irq_o, forward that one
@@ -98,9 +99,12 @@ module rv_plic_target #(
         assign sel = (~is_tree[C0] & is_tree[C1]) |
                      (is_tree[C0] & is_tree[C1] & logic'(max_tree[C1] > max_tree[C0]));
         // forwarding muxes
-        assign is_tree[Pa]  = (sel              & is_tree[C1])  | ((~sel)            & is_tree[C0]);
-        assign id_tree[Pa]  = ({SrcWidth{sel}}  & id_tree[C1])  | ({SrcWidth{~sel}}  & id_tree[C0]);
-        assign max_tree[Pa] = ({PrioWidth{sel}} & max_tree[C1]) | ({PrioWidth{~sel}} & max_tree[C0]);
+        assign is_tree[Pa]  = (sel               & is_tree[C1])  |
+                              ((~sel)            & is_tree[C0]);
+        assign id_tree[Pa]  = ({SrcWidth{sel}}   & id_tree[C1])  |
+                              ({SrcWidth{~sel}}  & id_tree[C0]);
+        assign max_tree[Pa] = ({PrioWidth{sel}}  & max_tree[C1]) |
+                              ({PrioWidth{~sel}} & max_tree[C0]);
       end
     end : gen_level
   end : gen_tree
