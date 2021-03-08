@@ -164,7 +164,8 @@ module xbar_${xbar.name} (
 %>\
   % if len(leaf.addr_range) == 1:
       % if lib.is_pow2((leaf.addr_range[0][1]-leaf.addr_range[0][0])+1):
-    ${prefix}(${addr_sig} & ~(${name_mask})) == ${name_space}) begin
+    ${prefix}(${addr_sig} &
+    ${" " * len(prefix)} ~(${name_mask})) == ${name_space}) begin
       % else:
     ${prefix}((${addr_sig} <= (${name_mask} + ${name_space})) &&
        (${addr_sig} >= ${name_space}))) begin

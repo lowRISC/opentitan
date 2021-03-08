@@ -287,8 +287,8 @@ module prim_ram_1p_scr #(
     localparam int LocalWidth = (Width - k * DiffWidth >= DiffWidth) ? DiffWidth :
                                                                        (Width - k * DiffWidth);
 
-    // Write path. Note that since this does not fan out into the interconnect, the write path is not
-    // as critical as the read path below in terms of timing.
+    // Write path. Note that since this does not fan out into the interconnect, the write path is
+    // not as critical as the read path below in terms of timing.
     // Apply the keystream first
     logic [LocalWidth-1:0] wdata_xor;
     assign wdata_xor = wdata_q[k*DiffWidth +: LocalWidth] ^
