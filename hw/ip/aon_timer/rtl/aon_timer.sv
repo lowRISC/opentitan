@@ -36,7 +36,7 @@ module aon_timer (
   // Register structs
   aon_timer_reg2hw_t         reg2hw;
   aon_timer_hw2reg_t         hw2reg, aon_hw2reg, hw2reg_sync;
-  logic [5:0]                unused_intr_state_bits;
+  logic [1:0]                unused_intr_state_bits;
   // Register read signals
   logic                      wkup_enable;
   logic [11:0]               wkup_prescaler;
@@ -95,7 +95,6 @@ module aon_timer (
   assign aon_hw2reg.wdog_count.d               = wdog_count;
   assign aon_hw2reg.wkup_cause.d               = aon_wkup_req_q;
   assign aon_hw2reg.intr_state                 = '0; // Doesn't come from AON domain
-  assign aon_hw2reg.intr_enable                = '0; // dummy assignment due to #5260
 
   // Register read values sampled into clk_i domain. These are sampled with a special slow to fast
   // synchronizer which captures the value on the negative edge of the slow clock.
@@ -117,7 +116,7 @@ module aon_timer (
   assign hw2reg.wdog_bite_thold.d          = hw2reg_sync.wdog_bite_thold.d;
   assign hw2reg.wdog_count.d               = hw2reg_sync.wdog_count.d;
   assign hw2reg.wkup_cause.d               = hw2reg_sync.wkup_cause.d;
-  assign unused_intr_state_bits            = {hw2reg_sync.intr_state, hw2reg_sync.intr_enable};
+  assign unused_intr_state_bits            = hw2reg_sync.intr_state;
 
   //////////////////////////////
   // Register Write Interface //
@@ -371,9 +370,6 @@ module aon_timer (
   assign hw2reg.intr_state.wkup_timer_expired.de = intr_aon_state_de;
   assign hw2reg.intr_state.wdog_timer_expired.d  = intr_aon_state_d[AON_WDOG];
   assign hw2reg.intr_state.wdog_timer_expired.de = intr_aon_state_de;
-
-  // Dummy interrupt enable to get around #5260
-  assign hw2reg.intr_enable = '0;
 
   prim_intr_hw #(
     .Width (2)
