@@ -238,9 +238,10 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task rd_and_clear_intrs();
     bit [TL_DW-1:0] val;
-    wait(cfg.otp_ctrl_vif.lc_prog_no_intr_check == 0);
-    csr_rd(ral.intr_state, val);
-    csr_wr(ral.intr_state, val);
+    if (cfg.otp_ctrl_vif.lc_prog_no_sta_check == 0) begin
+      csr_rd(ral.intr_state, val);
+      csr_wr(ral.intr_state, val);
+    end
   endtask
 
   virtual task req_sram_key(int index);
