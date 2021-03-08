@@ -24,7 +24,7 @@ COPYRIGHT = """// Copyright lowRISC contributors.
 //
 """
 CODE_OPTIONS = {'hsiao': '', 'hamming': '_hamming'}
-PRINT_OPTIONS = {"logic": "assign ", "function": ""}
+PRINT_OPTIONS = {"logic": "assign ", "function": "  "}
 
 # secded configurations
 SECDED_CFG_FILE = "util/design/data/secded_cfg.hjson"
@@ -82,6 +82,7 @@ def calc_bitmasks(k, m, codes, dec):
 
 def print_fn(n, k, m, codes, suffix, codetype):
     enc_out = print_enc(n, k, m, codes)
+    dec_out = print_dec(n, k, m, codes, codetype, "function")
 
     module_name = "prim_secded%s_%d_%d" % (suffix, n, k)
 
@@ -90,7 +91,17 @@ def print_fn(n, k, m, codes, suffix, codetype):
     logic [{}:0] out;
 {}    return out;
   endfunction
-'''.format((n - 1), module_name, (k - 1), (n - 1), enc_out)
+
+  function automatic {}_dec (
+    input  logic [{}:0] in,
+    output logic [{}:0] d_o,
+    output logic [{}:0] syndrome_o,
+    output logic [1:0]  err_o
+  );
+{}
+  endfunction
+'''.format((n - 1), module_name, (k - 1), (n - 1), enc_out,
+           module_name, (n - 1), (k - 1), (m - 1), dec_out)
 
     return outstr
 
@@ -116,10 +127,12 @@ def print_dec(n, k, m, codes, codetype, print_type="logic"):
 
     outstr = ""
     if codetype == "hsiao":
-        outstr += "  logic single_error;\n"
+      outstr += "  {}logic single_error;\n".format(
+          preamble if print_type == "function" else "")
 
     outstr += "\n"
-    outstr += "  // Syndrome calculation\n"
+    outstr += "  {}// Syndrome calculation\n".format(
+        preamble if print_type == "function" else "")
     format_str = "  {}".format(preamble) + "syndrome_o[{}] = ^(in & " \
         + str(n) + "'h{:0" + str((n + 3) // 4) + "X});\n"
 
@@ -127,12 +140,14 @@ def print_dec(n, k, m, codes, codetype, print_type="logic"):
     for j, mask in enumerate(calc_bitmasks(k, m, codes, True)):
         outstr += format_str.format(j, mask)
     outstr += "\n"
-    outstr += "  // Corrected output calculation\n"
+    outstr += "  {}// Corrected output calculation\n".format(
+        preamble if print_type == "function" else "")
     for i in range(k):
         outstr += "  {}".format(preamble) + "d_o[%d] = (syndrome_o == %d'h%x) ^ in[%d];\n" % (
             i, m, calc_syndrome(codes[i]), i)
     outstr += "\n"
-    outstr += "  // err_o calc. bit0: single error, bit1: double error\n"
+    outstr += "  {}// err_o calc. bit0: single error, bit1: double error\n".format(
+        preamble if print_type == "function" else "")
     # The Hsiao and Hamming syndromes are interpreted slightly differently.
     if codetype == "hamming":
         outstr += "  {}".format(preamble) + "err_o[0] = syndrome_o[%d];\n" % (m - 1)
@@ -156,6 +171,12 @@ def is_odd(n):
 
 def verify(cfgs):
     error = 0
+
+    # Check that the provided seed is 32-bit int
+    if (cfgs['seed'].bit_length() > 31):
+        error += 1
+        log.error("Seed {} must be a 32-bit integer".format(cfgs['seed']))
+
     for cfg in cfgs['cfgs']:
         if (cfg['k'] <= 1 or cfg['k'] > 120):
             error += 1
@@ -181,7 +202,7 @@ def verify(cfgs):
     return error
 
 
-def generate(cfgs, args):
+def generate(cfgs, args, seed):
     pkg_out_str = ""
     for cfg in cfgs['cfgs']:
         log.debug("Working on {}".format(cfg))
@@ -196,7 +217,7 @@ def generate(cfgs, args):
         codes = globals()["{}_code".format(codetype)](cfg['k'], cfg['m'])
 
         # write out rtl files
-        write_enc_dec_files(n, k, m, args.s, codes, suffix, args.outdir, codetype)
+        write_enc_dec_files(n, k, m, seed, codes, suffix, args.outdir, codetype)
 
         # print out functions
         pkg_out_str += print_fn(n, k, m, codes, suffix, codetype)
@@ -205,7 +226,7 @@ def generate(cfgs, args):
             write_fpv_files(n, k, m, codes, codetype, args.fpv_outdir)
 
     # write out package file
-    write_pkg_file(args.s, args.outdir, pkg_out_str)
+    write_pkg_file(seed, args.outdir, pkg_out_str)
 
 
 # k = data bits
@@ -557,15 +578,6 @@ def main():
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
 
-    # If no seed has been provided, we choose a seed and print it
-    # into the generated output later on such that this run can be
-    # reproduced.
-    if args.s is None:
-        random.seed()
-        args.s = random.getrandbits(32)
-
-    random.seed(args.s)
-
     with open(SECDED_CFG_FILE, 'r') as infile:
         config = hjson.load(infile)
 
@@ -574,8 +586,15 @@ def main():
     if (error):
         exit(1)
 
+    # If no seed is provided from the command line, use the seed provided in
+    # data/secded_cfg.hjson by default, such that runs of this script can be
+    # reproduced.
+    random.seed()
+    rand_seed = config['seed'] if args.s is None else args.s
+    random.seed(rand_seed)
+
     # Generate outputs
-    generate(config, args)
+    generate(config, args, rand_seed)
 
 
 if __name__ == "__main__":
