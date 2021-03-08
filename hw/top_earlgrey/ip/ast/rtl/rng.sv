@@ -13,6 +13,8 @@ module rng #(
   input rst_ni,
   input vcaon_pok_i,
   input rng_en_i,
+  input scan_mode_i,
+  input scan_reset_ni,
   output logic [EntropyStreams-1:0] rng_b_o,
   output logic rng_val_o
 );
@@ -20,8 +22,7 @@ module rng #(
 ///////////////////////////////////////
 // Clock Oscilator
 ///////////////////////////////////////
-logic clk, rng_clk_en, rng_clk, rst_n;
-assign rst_n = vcaon_pok_i;
+logic clk, rng_clk_en, rng_clk;
 
 // clock Oschilator
 ////////////////////////////////////////
@@ -39,7 +40,7 @@ rng_osc u_rng_osc (
 logic rng_rst_n;
 logic[32-1:0] lfsr_val;
 
-assign rng_rst_n = rst_ni && rng_en_i;
+assign rng_rst_n = scan_mode_i ? scan_reset_ni : rst_ni && rng_en_i;
 
 always_ff @(posedge rng_clk_o, negedge rng_rst_n ) begin
   if ( !rng_rst_n ) begin
