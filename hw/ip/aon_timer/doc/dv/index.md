@@ -1,20 +1,11 @@
 ---
-title: "AON_TIMER DV Plan"
+title: "AON_TIMER DV document"
 ---
-
-<!-- Copy this file to hw/ip/aon_timer/doc/aon_timer_dv_plan.md and make changes as needed.
-For convenience 'aon_timer' in the document can be searched and replaced easily with the
-desired IP (with case sensitivity!). Also, use the testbench block diagram
-located at OpenTitan team drive / 'design verification'
-as a starting point and modify it to reflect your aon_timer testbench and save it
-to hw/ip/aon_timer/doc/tb.svg. It should get linked and rendered under the block
-diagram section below. Please update / modify / remove sections below as
-applicable. Once done, remove this comment before making a PR. -->
 
 ## Goals
 * **DV**
   * Verify all AON_TIMER IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
@@ -113,6 +104,5 @@ Here's how to run a smoke test:
 $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson -i aon_timer_smoke
 ```
 
-## Testplan
-<!-- TODO: uncomment the line below after adding the testplan -->
-{{</* testplan "hw/ip/aon_timer/data/aon_timer_testplan.hjson" */>}}
+## DV plan
+{{< testplan "hw/ip/aon_timer/data/aon_timer_testplan.hjson" >}}
