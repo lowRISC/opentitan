@@ -9,7 +9,7 @@ param_list: [
     { name: "EsFifoDepth",
       desc: "Depth of the entropy FIFO",
       type: "int",
-      default: "32",
+      default: "4",
       local: "true"
     },
   ],
