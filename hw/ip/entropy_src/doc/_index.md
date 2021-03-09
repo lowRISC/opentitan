@@ -228,7 +228,6 @@ The conditions that cause this to happen are either when there is a push to a fu
 ## Future Features
 
 - Timer to pace health checks only when there is no demand for entropy seeds
-- One-way threshold values if regen register cannot be used
 - Support for golden test pattern
 
 ### Entropy Source Hardware Interface
@@ -399,6 +398,8 @@ int entropy_src_entropy(unsigned int numEntropyBits) {
 }
 ```
 
+Note that when software makes frequent re-seed requests to CSRNG, any stored up entropy seeds in the final entropy FIFO will quickly consumed.
+Once the FIFO is empty, subsequent entropy seed requests will have to wait the worst case latency time while new entropy is being created.
 
 ## Error conditions
 

@@ -379,11 +379,11 @@
 		</g>
 		<g id="shape960-198" v:mID="960" v:groupContext="shape" transform="translate(668.102,-336.462)">
 			<title>Sheet.960</title>
-			<desc>2 deep FIFO</desc>
+			<desc>4 deep FIFO</desc>
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="26.0234" cy="599.18" width="52.05" height="25.6401"/>
 			<rect x="0" y="586.36" width="52.0468" height="25.6401" class="st4"/>
-			<text x="10.73" y="596.18" class="st2" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>2 deep <tspan
+			<text x="10.73" y="596.18" class="st2" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>4 deep <tspan
 						x="14.64" dy="1.2em" class="st3">FIFO</tspan></text>		</g>
 		<g id="shape965-202" v:mID="965" v:groupContext="shape" transform="translate(605.061,-344.053)">
 			<title>Sheet.965</title>

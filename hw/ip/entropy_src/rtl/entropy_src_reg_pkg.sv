@@ -7,7 +7,7 @@
 package entropy_src_reg_pkg;
 
   // Param list
-  parameter int EsFifoDepth = 32;
+  parameter int EsFifoDepth = 4;
   parameter int NumAlerts = 2;
 
   // Address width within the block
