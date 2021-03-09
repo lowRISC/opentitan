@@ -694,14 +694,6 @@
   ],
 
   // ===== INTERRUPT CTRL =====================================================
-  // `rv_plic`  will be instantiate (need to be defined in `module` field
-  // If interrupt is not defined, it uses the order from the module list
-  // and include every modules.
-  // first item goes to LSB of the interrupt source
-  interrupt_module: ["uart0",
-                     "gpio", "spi_device",
-                     "flash_ctrl", "hmac", "alert_handler", "nmi_gen", "usbdev", "pwrmgr_aon"]
-
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
   // Choose depends on the criteria. Currently it is set to "matrix" to meet FPGA timing @ 50MHz
@@ -711,14 +703,6 @@
   ]
 
   // ===== ALERT HANDLER ======================================================
-  // list all modules that expose alerts
-  // first item goes to LSB of the alert source
-  alert_module: [ "aes", "sensor_ctrl_aon", "lc_ctrl",
-                  "sram_ctrl_main", "sram_ctrl_ret_aon", "flash_ctrl"]
-
-  // generated list of alerts:
-  alert: [
-  ]
 
   // TODO: need to overhaul this datastructure.
   pinmux: {

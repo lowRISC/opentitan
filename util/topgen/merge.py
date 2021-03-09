@@ -638,11 +638,29 @@ def amend_resets(top):
     return
 
 
+def ensure_interrupt_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
+    '''Populate top['interrupt_module'] if necessary
+
+    Do this by adding each module in top['modules'] that defines at least one
+    interrupt.
+
+    '''
+    if 'interrupt_module' in top:
+        return
+
+    modules = []
+    for module in top['module']:
+        block = name_to_block[module['type']]
+        if block.interrupts:
+            modules.append(module['name'])
+
+    top['interrupt_module'] = modules
+
+
 def amend_interrupt(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
     """Check interrupt_module if exists, or just use all modules
     """
-    if "interrupt_module" not in top:
-        top["interrupt_module"] = [x["name"] for x in top["module"]]
+    ensure_interrupt_modules(top, name_to_block)
 
     if "interrupt" not in top or top["interrupt"] == "":
         top["interrupt"] = []
@@ -665,11 +683,29 @@ def amend_interrupt(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
             top["interrupt"].append(qual)
 
 
+def ensure_alert_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
+    '''Populate top['alert_module'] if necessary
+
+    Do this by adding each module in top['modules'] that defines at least one
+    alert.
+
+    '''
+    if 'alert_module' in top:
+        return
+
+    modules = []
+    for module in top['module']:
+        block = name_to_block[module['type']]
+        if block.alerts:
+            modules.append(module['name'])
+
+    top['alert_module'] = modules
+
+
 def amend_alert(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
     """Check interrupt_module if exists, or just use all modules
     """
-    if "alert_module" not in top:
-        top["alert_module"] = [x["name"] for x in top["module"]]
+    ensure_alert_modules(top, name_to_block)
 
     if "alert" not in top or top["alert"] == "":
         top["alert"] = []

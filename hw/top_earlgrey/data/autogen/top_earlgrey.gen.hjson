@@ -6890,1092 +6890,6 @@
       ]
     }
   ]
-  interrupt_module:
-  [
-    uart0
-    uart1
-    uart2
-    uart3
-    gpio
-    spi_device
-    i2c0
-    i2c1
-    i2c2
-    pattgen
-    flash_ctrl
-    hmac
-    alert_handler
-    usbdev
-    pwrmgr_aon
-    otbn
-    keymgr
-    kmac
-    otp_ctrl
-    csrng
-    edn0
-    edn1
-    aon_timer_aon
-    entropy_src
-  ]
-  interrupt:
-  [
-    {
-      name: uart0_tx_watermark
-      width: 1
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart0_rx_watermark
-      width: 1
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart0_tx_empty
-      width: 1
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart0_rx_overflow
-      width: 1
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart0_rx_frame_err
-      width: 1
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart0_rx_break_err
-      width: 1
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart0_rx_timeout
-      width: 1
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart0_rx_parity_err
-      width: 1
-      type: interrupt
-      module_name: uart0
-    }
-    {
-      name: uart1_tx_watermark
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_watermark
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_tx_empty
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_overflow
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_frame_err
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_break_err
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_timeout
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_parity_err
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart2_tx_watermark
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_watermark
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_tx_empty
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_overflow
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_frame_err
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_break_err
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_timeout
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_parity_err
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart3_tx_watermark
-      width: 1
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_watermark
-      width: 1
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_tx_empty
-      width: 1
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_overflow
-      width: 1
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_frame_err
-      width: 1
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_break_err
-      width: 1
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_timeout
-      width: 1
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_parity_err
-      width: 1
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: gpio_gpio
-      width: 32
-      type: interrupt
-      module_name: gpio
-    }
-    {
-      name: spi_device_rxf
-      width: 1
-      type: interrupt
-      module_name: spi_device
-    }
-    {
-      name: spi_device_rxlvl
-      width: 1
-      type: interrupt
-      module_name: spi_device
-    }
-    {
-      name: spi_device_txlvl
-      width: 1
-      type: interrupt
-      module_name: spi_device
-    }
-    {
-      name: spi_device_rxerr
-      width: 1
-      type: interrupt
-      module_name: spi_device
-    }
-    {
-      name: spi_device_rxoverflow
-      width: 1
-      type: interrupt
-      module_name: spi_device
-    }
-    {
-      name: spi_device_txunderflow
-      width: 1
-      type: interrupt
-      module_name: spi_device
-    }
-    {
-      name: i2c0_fmt_watermark
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c0_rx_watermark
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c0_fmt_overflow
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c0_rx_overflow
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c0_nak
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c0_scl_interference
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c0_sda_interference
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c0_stretch_timeout
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c0_sda_unstable
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c0_trans_complete
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c0_tx_empty
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c0_tx_nonempty
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c0_tx_overflow
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c0_acq_overflow
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c0_ack_stop
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c0_host_timeout
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
-      name: i2c1_fmt_watermark
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c1_rx_watermark
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c1_fmt_overflow
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c1_rx_overflow
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c1_nak
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c1_scl_interference
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c1_sda_interference
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c1_stretch_timeout
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c1_sda_unstable
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c1_trans_complete
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c1_tx_empty
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c1_tx_nonempty
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c1_tx_overflow
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c1_acq_overflow
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c1_ack_stop
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c1_host_timeout
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
-      name: i2c2_fmt_watermark
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_rx_watermark
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_fmt_overflow
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_rx_overflow
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_nak
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_scl_interference
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_sda_interference
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_stretch_timeout
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_sda_unstable
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_trans_complete
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_tx_empty
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_tx_nonempty
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_tx_overflow
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_acq_overflow
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_ack_stop
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_host_timeout
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: pattgen_done_ch0
-      width: 1
-      type: interrupt
-      module_name: pattgen
-    }
-    {
-      name: pattgen_done_ch1
-      width: 1
-      type: interrupt
-      module_name: pattgen
-    }
-    {
-      name: flash_ctrl_prog_empty
-      width: 1
-      type: interrupt
-      module_name: flash_ctrl
-    }
-    {
-      name: flash_ctrl_prog_lvl
-      width: 1
-      type: interrupt
-      module_name: flash_ctrl
-    }
-    {
-      name: flash_ctrl_rd_full
-      width: 1
-      type: interrupt
-      module_name: flash_ctrl
-    }
-    {
-      name: flash_ctrl_rd_lvl
-      width: 1
-      type: interrupt
-      module_name: flash_ctrl
-    }
-    {
-      name: flash_ctrl_op_done
-      width: 1
-      type: interrupt
-      module_name: flash_ctrl
-    }
-    {
-      name: hmac_hmac_done
-      width: 1
-      type: interrupt
-      module_name: hmac
-    }
-    {
-      name: hmac_fifo_empty
-      width: 1
-      type: interrupt
-      module_name: hmac
-    }
-    {
-      name: hmac_hmac_err
-      width: 1
-      type: interrupt
-      module_name: hmac
-    }
-    {
-      name: alert_handler_classa
-      width: 1
-      type: interrupt
-      module_name: alert_handler
-    }
-    {
-      name: alert_handler_classb
-      width: 1
-      type: interrupt
-      module_name: alert_handler
-    }
-    {
-      name: alert_handler_classc
-      width: 1
-      type: interrupt
-      module_name: alert_handler
-    }
-    {
-      name: alert_handler_classd
-      width: 1
-      type: interrupt
-      module_name: alert_handler
-    }
-    {
-      name: usbdev_pkt_received
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_pkt_sent
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_disconnected
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_host_lost
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_link_reset
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_link_suspend
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_link_resume
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_av_empty
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_rx_full
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_av_overflow
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_link_in_err
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_rx_crc_err
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_rx_pid_err
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_rx_bitstuff_err
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_frame
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_connected
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_link_out_err
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: pwrmgr_aon_wakeup
-      width: 1
-      type: interrupt
-      module_name: pwrmgr_aon
-    }
-    {
-      name: otbn_done
-      width: 1
-      type: interrupt
-      module_name: otbn
-    }
-    {
-      name: keymgr_op_done
-      width: 1
-      type: interrupt
-      module_name: keymgr
-    }
-    {
-      name: kmac_kmac_done
-      width: 1
-      type: interrupt
-      module_name: kmac
-    }
-    {
-      name: kmac_fifo_empty
-      width: 1
-      type: interrupt
-      module_name: kmac
-    }
-    {
-      name: kmac_kmac_err
-      width: 1
-      type: interrupt
-      module_name: kmac
-    }
-    {
-      name: otp_ctrl_otp_operation_done
-      width: 1
-      type: interrupt
-      module_name: otp_ctrl
-    }
-    {
-      name: otp_ctrl_otp_error
-      width: 1
-      type: interrupt
-      module_name: otp_ctrl
-    }
-    {
-      name: csrng_cs_cmd_req_done
-      width: 1
-      type: interrupt
-      module_name: csrng
-    }
-    {
-      name: csrng_cs_entropy_req
-      width: 1
-      type: interrupt
-      module_name: csrng
-    }
-    {
-      name: csrng_cs_hw_inst_exc
-      width: 1
-      type: interrupt
-      module_name: csrng
-    }
-    {
-      name: csrng_cs_fatal_err
-      width: 1
-      type: interrupt
-      module_name: csrng
-    }
-    {
-      name: edn0_edn_cmd_req_done
-      width: 1
-      type: interrupt
-      module_name: edn0
-    }
-    {
-      name: edn0_edn_fatal_err
-      width: 1
-      type: interrupt
-      module_name: edn0
-    }
-    {
-      name: edn1_edn_cmd_req_done
-      width: 1
-      type: interrupt
-      module_name: edn1
-    }
-    {
-      name: edn1_edn_fatal_err
-      width: 1
-      type: interrupt
-      module_name: edn1
-    }
-    {
-      name: aon_timer_aon_wkup_timer_expired
-      width: 1
-      type: interrupt
-      module_name: aon_timer_aon
-    }
-    {
-      name: aon_timer_aon_wdog_timer_bark
-      width: 1
-      type: interrupt
-      module_name: aon_timer_aon
-    }
-    {
-      name: entropy_src_es_entropy_valid
-      width: 1
-      type: interrupt
-      module_name: entropy_src
-    }
-    {
-      name: entropy_src_es_health_test_failed
-      width: 1
-      type: interrupt
-      module_name: entropy_src
-    }
-    {
-      name: entropy_src_es_fatal_err
-      width: 1
-      type: interrupt
-      module_name: entropy_src
-    }
-  ]
-  alert_module:
-  [
-    aes
-    otbn
-    sensor_ctrl_aon
-    keymgr
-    otp_ctrl
-    lc_ctrl
-    entropy_src
-    csrng
-    edn0
-    edn1
-    sram_ctrl_main
-    sram_ctrl_ret_aon
-    flash_ctrl
-  ]
-  alert:
-  [
-    {
-      name: aes_recov_ctrl_update_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: aes
-    }
-    {
-      name: aes_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: aes
-    }
-    {
-      name: otbn_fatal
-      width: 1
-      type: alert
-      async: "1"
-      module_name: otbn
-    }
-    {
-      name: otbn_recov
-      width: 1
-      type: alert
-      async: "1"
-      module_name: otbn
-    }
-    {
-      name: sensor_ctrl_aon_recov_as
-      width: 1
-      type: alert
-      async: "0"
-      module_name: sensor_ctrl_aon
-    }
-    {
-      name: sensor_ctrl_aon_recov_cg
-      width: 1
-      type: alert
-      async: "0"
-      module_name: sensor_ctrl_aon
-    }
-    {
-      name: sensor_ctrl_aon_recov_gd
-      width: 1
-      type: alert
-      async: "0"
-      module_name: sensor_ctrl_aon
-    }
-    {
-      name: sensor_ctrl_aon_recov_ts_hi
-      width: 1
-      type: alert
-      async: "0"
-      module_name: sensor_ctrl_aon
-    }
-    {
-      name: sensor_ctrl_aon_recov_ts_lo
-      width: 1
-      type: alert
-      async: "0"
-      module_name: sensor_ctrl_aon
-    }
-    {
-      name: sensor_ctrl_aon_recov_ls
-      width: 1
-      type: alert
-      async: "0"
-      module_name: sensor_ctrl_aon
-    }
-    {
-      name: sensor_ctrl_aon_recov_ot
-      width: 1
-      type: alert
-      async: "0"
-      module_name: sensor_ctrl_aon
-    }
-    {
-      name: keymgr_fatal_fault_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: keymgr
-    }
-    {
-      name: keymgr_recov_operation_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: keymgr
-    }
-    {
-      name: otp_ctrl_fatal_macro_error
-      width: 1
-      type: alert
-      async: "0"
-      module_name: otp_ctrl
-    }
-    {
-      name: otp_ctrl_fatal_check_error
-      width: 1
-      type: alert
-      async: "0"
-      module_name: otp_ctrl
-    }
-    {
-      name: lc_ctrl_fatal_prog_error
-      width: 1
-      type: alert
-      async: "0"
-      module_name: lc_ctrl
-    }
-    {
-      name: lc_ctrl_fatal_state_error
-      width: 1
-      type: alert
-      async: "0"
-      module_name: lc_ctrl
-    }
-    {
-      name: entropy_src_recov_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: entropy_src
-    }
-    {
-      name: entropy_src_fatal_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: entropy_src
-    }
-    {
-      name: csrng_fatal_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: csrng
-    }
-    {
-      name: edn0_fatal_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: edn0
-    }
-    {
-      name: edn1_fatal_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: edn1
-    }
-    {
-      name: sram_ctrl_main_fatal_intg_error
-      width: 1
-      type: alert
-      async: "1"
-      module_name: sram_ctrl_main
-    }
-    {
-      name: sram_ctrl_main_fatal_parity_error
-      width: 1
-      type: alert
-      async: "1"
-      module_name: sram_ctrl_main
-    }
-    {
-      name: sram_ctrl_ret_aon_fatal_intg_error
-      width: 1
-      type: alert
-      async: "0"
-      module_name: sram_ctrl_ret_aon
-    }
-    {
-      name: sram_ctrl_ret_aon_fatal_parity_error
-      width: 1
-      type: alert
-      async: "0"
-      module_name: sram_ctrl_ret_aon
-    }
-    {
-      name: flash_ctrl_recov_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: flash_ctrl
-    }
-    {
-      name: flash_ctrl_recov_mp_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: flash_ctrl
-    }
-    {
-      name: flash_ctrl_recov_ecc_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: flash_ctrl
-    }
-  ]
   pinmux:
   {
     num_mio: 44
@@ -8544,6 +7458,1125 @@
       name: aon_timer_rst_req
       width: "1"
       module: aon_timer_aon
+    }
+  ]
+  interrupt_module:
+  [
+    uart0
+    uart1
+    uart2
+    uart3
+    gpio
+    spi_device
+    spi_host0
+    spi_host1
+    i2c0
+    i2c1
+    i2c2
+    pattgen
+    rv_timer
+    usbdev
+    otp_ctrl
+    alert_handler
+    pwrmgr_aon
+    aon_timer_aon
+    flash_ctrl
+    hmac
+    kmac
+    keymgr
+    csrng
+    entropy_src
+    edn0
+    edn1
+    otbn
+  ]
+  interrupt:
+  [
+    {
+      name: uart0_tx_watermark
+      width: 1
+      type: interrupt
+      module_name: uart0
+    }
+    {
+      name: uart0_rx_watermark
+      width: 1
+      type: interrupt
+      module_name: uart0
+    }
+    {
+      name: uart0_tx_empty
+      width: 1
+      type: interrupt
+      module_name: uart0
+    }
+    {
+      name: uart0_rx_overflow
+      width: 1
+      type: interrupt
+      module_name: uart0
+    }
+    {
+      name: uart0_rx_frame_err
+      width: 1
+      type: interrupt
+      module_name: uart0
+    }
+    {
+      name: uart0_rx_break_err
+      width: 1
+      type: interrupt
+      module_name: uart0
+    }
+    {
+      name: uart0_rx_timeout
+      width: 1
+      type: interrupt
+      module_name: uart0
+    }
+    {
+      name: uart0_rx_parity_err
+      width: 1
+      type: interrupt
+      module_name: uart0
+    }
+    {
+      name: uart1_tx_watermark
+      width: 1
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart1_rx_watermark
+      width: 1
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart1_tx_empty
+      width: 1
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart1_rx_overflow
+      width: 1
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart1_rx_frame_err
+      width: 1
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart1_rx_break_err
+      width: 1
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart1_rx_timeout
+      width: 1
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart1_rx_parity_err
+      width: 1
+      type: interrupt
+      module_name: uart1
+    }
+    {
+      name: uart2_tx_watermark
+      width: 1
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart2_rx_watermark
+      width: 1
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart2_tx_empty
+      width: 1
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart2_rx_overflow
+      width: 1
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart2_rx_frame_err
+      width: 1
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart2_rx_break_err
+      width: 1
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart2_rx_timeout
+      width: 1
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart2_rx_parity_err
+      width: 1
+      type: interrupt
+      module_name: uart2
+    }
+    {
+      name: uart3_tx_watermark
+      width: 1
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: uart3_rx_watermark
+      width: 1
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: uart3_tx_empty
+      width: 1
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: uart3_rx_overflow
+      width: 1
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: uart3_rx_frame_err
+      width: 1
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: uart3_rx_break_err
+      width: 1
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: uart3_rx_timeout
+      width: 1
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: uart3_rx_parity_err
+      width: 1
+      type: interrupt
+      module_name: uart3
+    }
+    {
+      name: gpio_gpio
+      width: 32
+      type: interrupt
+      module_name: gpio
+    }
+    {
+      name: spi_device_rxf
+      width: 1
+      type: interrupt
+      module_name: spi_device
+    }
+    {
+      name: spi_device_rxlvl
+      width: 1
+      type: interrupt
+      module_name: spi_device
+    }
+    {
+      name: spi_device_txlvl
+      width: 1
+      type: interrupt
+      module_name: spi_device
+    }
+    {
+      name: spi_device_rxerr
+      width: 1
+      type: interrupt
+      module_name: spi_device
+    }
+    {
+      name: spi_device_rxoverflow
+      width: 1
+      type: interrupt
+      module_name: spi_device
+    }
+    {
+      name: spi_device_txunderflow
+      width: 1
+      type: interrupt
+      module_name: spi_device
+    }
+    {
+      name: spi_host0_error
+      width: 1
+      type: interrupt
+      module_name: spi_host0
+    }
+    {
+      name: spi_host0_spi_event
+      width: 1
+      type: interrupt
+      module_name: spi_host0
+    }
+    {
+      name: spi_host1_error
+      width: 1
+      type: interrupt
+      module_name: spi_host1
+    }
+    {
+      name: spi_host1_spi_event
+      width: 1
+      type: interrupt
+      module_name: spi_host1
+    }
+    {
+      name: i2c0_fmt_watermark
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_rx_watermark
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_fmt_overflow
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_rx_overflow
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_nak
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_scl_interference
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_sda_interference
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_stretch_timeout
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_sda_unstable
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_trans_complete
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_tx_empty
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_tx_nonempty
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_tx_overflow
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_acq_overflow
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_ack_stop
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c0_host_timeout
+      width: 1
+      type: interrupt
+      module_name: i2c0
+    }
+    {
+      name: i2c1_fmt_watermark
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_rx_watermark
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_fmt_overflow
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_rx_overflow
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_nak
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_scl_interference
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_sda_interference
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_stretch_timeout
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_sda_unstable
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_trans_complete
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_tx_empty
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_tx_nonempty
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_tx_overflow
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_acq_overflow
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_ack_stop
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c1_host_timeout
+      width: 1
+      type: interrupt
+      module_name: i2c1
+    }
+    {
+      name: i2c2_fmt_watermark
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_rx_watermark
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_fmt_overflow
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_rx_overflow
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_nak
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_scl_interference
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_sda_interference
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_stretch_timeout
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_sda_unstable
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_trans_complete
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_tx_empty
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_tx_nonempty
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_tx_overflow
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_acq_overflow
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_ack_stop
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: i2c2_host_timeout
+      width: 1
+      type: interrupt
+      module_name: i2c2
+    }
+    {
+      name: pattgen_done_ch0
+      width: 1
+      type: interrupt
+      module_name: pattgen
+    }
+    {
+      name: pattgen_done_ch1
+      width: 1
+      type: interrupt
+      module_name: pattgen
+    }
+    {
+      name: rv_timer_timer_expired_0_0
+      width: 1
+      type: interrupt
+      module_name: rv_timer
+    }
+    {
+      name: usbdev_pkt_received
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_pkt_sent
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_disconnected
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_host_lost
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_link_reset
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_link_suspend
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_link_resume
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_av_empty
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_rx_full
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_av_overflow
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_link_in_err
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_rx_crc_err
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_rx_pid_err
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_rx_bitstuff_err
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_frame
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_connected
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: usbdev_link_out_err
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
+      name: otp_ctrl_otp_operation_done
+      width: 1
+      type: interrupt
+      module_name: otp_ctrl
+    }
+    {
+      name: otp_ctrl_otp_error
+      width: 1
+      type: interrupt
+      module_name: otp_ctrl
+    }
+    {
+      name: alert_handler_classa
+      width: 1
+      type: interrupt
+      module_name: alert_handler
+    }
+    {
+      name: alert_handler_classb
+      width: 1
+      type: interrupt
+      module_name: alert_handler
+    }
+    {
+      name: alert_handler_classc
+      width: 1
+      type: interrupt
+      module_name: alert_handler
+    }
+    {
+      name: alert_handler_classd
+      width: 1
+      type: interrupt
+      module_name: alert_handler
+    }
+    {
+      name: pwrmgr_aon_wakeup
+      width: 1
+      type: interrupt
+      module_name: pwrmgr_aon
+    }
+    {
+      name: aon_timer_aon_wkup_timer_expired
+      width: 1
+      type: interrupt
+      module_name: aon_timer_aon
+    }
+    {
+      name: aon_timer_aon_wdog_timer_bark
+      width: 1
+      type: interrupt
+      module_name: aon_timer_aon
+    }
+    {
+      name: flash_ctrl_prog_empty
+      width: 1
+      type: interrupt
+      module_name: flash_ctrl
+    }
+    {
+      name: flash_ctrl_prog_lvl
+      width: 1
+      type: interrupt
+      module_name: flash_ctrl
+    }
+    {
+      name: flash_ctrl_rd_full
+      width: 1
+      type: interrupt
+      module_name: flash_ctrl
+    }
+    {
+      name: flash_ctrl_rd_lvl
+      width: 1
+      type: interrupt
+      module_name: flash_ctrl
+    }
+    {
+      name: flash_ctrl_op_done
+      width: 1
+      type: interrupt
+      module_name: flash_ctrl
+    }
+    {
+      name: hmac_hmac_done
+      width: 1
+      type: interrupt
+      module_name: hmac
+    }
+    {
+      name: hmac_fifo_empty
+      width: 1
+      type: interrupt
+      module_name: hmac
+    }
+    {
+      name: hmac_hmac_err
+      width: 1
+      type: interrupt
+      module_name: hmac
+    }
+    {
+      name: kmac_kmac_done
+      width: 1
+      type: interrupt
+      module_name: kmac
+    }
+    {
+      name: kmac_fifo_empty
+      width: 1
+      type: interrupt
+      module_name: kmac
+    }
+    {
+      name: kmac_kmac_err
+      width: 1
+      type: interrupt
+      module_name: kmac
+    }
+    {
+      name: keymgr_op_done
+      width: 1
+      type: interrupt
+      module_name: keymgr
+    }
+    {
+      name: csrng_cs_cmd_req_done
+      width: 1
+      type: interrupt
+      module_name: csrng
+    }
+    {
+      name: csrng_cs_entropy_req
+      width: 1
+      type: interrupt
+      module_name: csrng
+    }
+    {
+      name: csrng_cs_hw_inst_exc
+      width: 1
+      type: interrupt
+      module_name: csrng
+    }
+    {
+      name: csrng_cs_fatal_err
+      width: 1
+      type: interrupt
+      module_name: csrng
+    }
+    {
+      name: entropy_src_es_entropy_valid
+      width: 1
+      type: interrupt
+      module_name: entropy_src
+    }
+    {
+      name: entropy_src_es_health_test_failed
+      width: 1
+      type: interrupt
+      module_name: entropy_src
+    }
+    {
+      name: entropy_src_es_fatal_err
+      width: 1
+      type: interrupt
+      module_name: entropy_src
+    }
+    {
+      name: edn0_edn_cmd_req_done
+      width: 1
+      type: interrupt
+      module_name: edn0
+    }
+    {
+      name: edn0_edn_fatal_err
+      width: 1
+      type: interrupt
+      module_name: edn0
+    }
+    {
+      name: edn1_edn_cmd_req_done
+      width: 1
+      type: interrupt
+      module_name: edn1
+    }
+    {
+      name: edn1_edn_fatal_err
+      width: 1
+      type: interrupt
+      module_name: edn1
+    }
+    {
+      name: otbn_done
+      width: 1
+      type: interrupt
+      module_name: otbn
+    }
+  ]
+  alert_module:
+  [
+    otp_ctrl
+    lc_ctrl
+    sensor_ctrl_aon
+    sram_ctrl_ret_aon
+    flash_ctrl
+    aes
+    keymgr
+    csrng
+    entropy_src
+    edn0
+    edn1
+    sram_ctrl_main
+    otbn
+  ]
+  alert:
+  [
+    {
+      name: otp_ctrl_fatal_macro_error
+      width: 1
+      type: alert
+      async: "0"
+      module_name: otp_ctrl
+    }
+    {
+      name: otp_ctrl_fatal_check_error
+      width: 1
+      type: alert
+      async: "0"
+      module_name: otp_ctrl
+    }
+    {
+      name: lc_ctrl_fatal_prog_error
+      width: 1
+      type: alert
+      async: "0"
+      module_name: lc_ctrl
+    }
+    {
+      name: lc_ctrl_fatal_state_error
+      width: 1
+      type: alert
+      async: "0"
+      module_name: lc_ctrl
+    }
+    {
+      name: sensor_ctrl_aon_recov_as
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sensor_ctrl_aon
+    }
+    {
+      name: sensor_ctrl_aon_recov_cg
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sensor_ctrl_aon
+    }
+    {
+      name: sensor_ctrl_aon_recov_gd
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sensor_ctrl_aon
+    }
+    {
+      name: sensor_ctrl_aon_recov_ts_hi
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sensor_ctrl_aon
+    }
+    {
+      name: sensor_ctrl_aon_recov_ts_lo
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sensor_ctrl_aon
+    }
+    {
+      name: sensor_ctrl_aon_recov_ls
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sensor_ctrl_aon
+    }
+    {
+      name: sensor_ctrl_aon_recov_ot
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sensor_ctrl_aon
+    }
+    {
+      name: sram_ctrl_ret_aon_fatal_intg_error
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sram_ctrl_ret_aon
+    }
+    {
+      name: sram_ctrl_ret_aon_fatal_parity_error
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sram_ctrl_ret_aon
+    }
+    {
+      name: flash_ctrl_recov_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: flash_ctrl
+    }
+    {
+      name: flash_ctrl_recov_mp_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: flash_ctrl
+    }
+    {
+      name: flash_ctrl_recov_ecc_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: flash_ctrl
+    }
+    {
+      name: aes_recov_ctrl_update_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: aes
+    }
+    {
+      name: aes_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: aes
+    }
+    {
+      name: keymgr_fatal_fault_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: keymgr
+    }
+    {
+      name: keymgr_recov_operation_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: keymgr
+    }
+    {
+      name: csrng_fatal_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: csrng
+    }
+    {
+      name: entropy_src_recov_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: entropy_src
+    }
+    {
+      name: entropy_src_fatal_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: entropy_src
+    }
+    {
+      name: edn0_fatal_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: edn0
+    }
+    {
+      name: edn1_fatal_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: edn1
+    }
+    {
+      name: sram_ctrl_main_fatal_intg_error
+      width: 1
+      type: alert
+      async: "1"
+      module_name: sram_ctrl_main
+    }
+    {
+      name: sram_ctrl_main_fatal_parity_error
+      width: 1
+      type: alert
+      async: "1"
+      module_name: sram_ctrl_main
+    }
+    {
+      name: otbn_fatal
+      width: 1
+      type: alert
+      async: "1"
+      module_name: otbn
+    }
+    {
+      name: otbn_recov
+      width: 1
+      type: alert
+      async: "1"
+      module_name: otbn
     }
   ]
   exported_rsts:

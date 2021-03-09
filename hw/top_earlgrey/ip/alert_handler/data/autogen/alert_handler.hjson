@@ -64,7 +64,7 @@
     { name: "AsyncOn",
       desc: "Number of peripheral outputs",
       type: "logic [NAlerts-1:0]",
-      default: "29'b11100111111100001100000001111",
+      default: "29'b11111111111111110000000000000",
       local: "true"
     },
     { name: "N_CLASSES",
