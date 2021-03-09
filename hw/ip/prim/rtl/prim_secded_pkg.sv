@@ -7,6 +7,54 @@
 
 package prim_secded_pkg;
 
+  typedef struct packed {
+    logic [15:0] data;
+    logic [5:0] syndrome;
+    logic [1:0]  err;
+  } secded_22_16_t;
+
+  typedef struct packed {
+    logic [21:0] data;
+    logic [5:0] syndrome;
+    logic [1:0]  err;
+  } secded_28_22_t;
+
+  typedef struct packed {
+    logic [31:0] data;
+    logic [6:0] syndrome;
+    logic [1:0]  err;
+  } secded_39_32_t;
+
+  typedef struct packed {
+    logic [56:0] data;
+    logic [6:0] syndrome;
+    logic [1:0]  err;
+  } secded_64_57_t;
+
+  typedef struct packed {
+    logic [63:0] data;
+    logic [7:0] syndrome;
+    logic [1:0]  err;
+  } secded_72_64_t;
+
+  typedef struct packed {
+    logic [15:0] data;
+    logic [5:0] syndrome;
+    logic [1:0]  err;
+  } secded_hamming_22_16_t;
+
+  typedef struct packed {
+    logic [31:0] data;
+    logic [6:0] syndrome;
+    logic [1:0]  err;
+  } secded_hamming_39_32_t;
+
+  typedef struct packed {
+    logic [63:0] data;
+    logic [7:0] syndrome;
+    logic [1:0]  err;
+  } secded_hamming_72_64_t;
+
   function automatic logic [21:0] prim_secded_22_16_enc (logic [15:0] in);
     logic [21:0] out;
     out = 22'(in);
@@ -19,12 +67,13 @@ package prim_secded_pkg;
     return out;
   endfunction
 
-  function automatic prim_secded_22_16_dec (
-    input  logic [21:0] in,
-    output logic [15:0] d_o,
-    output logic [5:0] syndrome_o,
-    output logic [1:0]  err_o
-  );
+  function automatic secded_22_16_t prim_secded_22_16_dec (logic [21:0] in);
+    logic [15:0] d_o;
+    logic [5:0] syndrome_o;
+    logic [1:0]  err_o;
+
+    secded_22_16_t dec;
+
     logic single_error;
 
     // Syndrome calculation
@@ -58,6 +107,11 @@ package prim_secded_pkg;
     err_o[0] = single_error;
     err_o[1] = ~single_error & (|syndrome_o);
 
+    dec.data      = d_o;
+    dec.syndrome  = syndrome_o;
+    dec.err       = err_o;
+    return dec;
+
   endfunction
 
   function automatic logic [27:0] prim_secded_28_22_enc (logic [21:0] in);
@@ -72,12 +126,13 @@ package prim_secded_pkg;
     return out;
   endfunction
 
-  function automatic prim_secded_28_22_dec (
-    input  logic [27:0] in,
-    output logic [21:0] d_o,
-    output logic [5:0] syndrome_o,
-    output logic [1:0]  err_o
-  );
+  function automatic secded_28_22_t prim_secded_28_22_dec (logic [27:0] in);
+    logic [21:0] d_o;
+    logic [5:0] syndrome_o;
+    logic [1:0]  err_o;
+
+    secded_28_22_t dec;
+
     logic single_error;
 
     // Syndrome calculation
@@ -117,6 +172,11 @@ package prim_secded_pkg;
     err_o[0] = single_error;
     err_o[1] = ~single_error & (|syndrome_o);
 
+    dec.data      = d_o;
+    dec.syndrome  = syndrome_o;
+    dec.err       = err_o;
+    return dec;
+
   endfunction
 
   function automatic logic [38:0] prim_secded_39_32_enc (logic [31:0] in);
@@ -132,12 +192,13 @@ package prim_secded_pkg;
     return out;
   endfunction
 
-  function automatic prim_secded_39_32_dec (
-    input  logic [38:0] in,
-    output logic [31:0] d_o,
-    output logic [6:0] syndrome_o,
-    output logic [1:0]  err_o
-  );
+  function automatic secded_39_32_t prim_secded_39_32_dec (logic [38:0] in);
+    logic [31:0] d_o;
+    logic [6:0] syndrome_o;
+    logic [1:0]  err_o;
+
+    secded_39_32_t dec;
+
     logic single_error;
 
     // Syndrome calculation
@@ -188,6 +249,11 @@ package prim_secded_pkg;
     err_o[0] = single_error;
     err_o[1] = ~single_error & (|syndrome_o);
 
+    dec.data      = d_o;
+    dec.syndrome  = syndrome_o;
+    dec.err       = err_o;
+    return dec;
+
   endfunction
 
   function automatic logic [63:0] prim_secded_64_57_enc (logic [56:0] in);
@@ -203,12 +269,13 @@ package prim_secded_pkg;
     return out;
   endfunction
 
-  function automatic prim_secded_64_57_dec (
-    input  logic [63:0] in,
-    output logic [56:0] d_o,
-    output logic [6:0] syndrome_o,
-    output logic [1:0]  err_o
-  );
+  function automatic secded_64_57_t prim_secded_64_57_dec (logic [63:0] in);
+    logic [56:0] d_o;
+    logic [6:0] syndrome_o;
+    logic [1:0]  err_o;
+
+    secded_64_57_t dec;
+
     logic single_error;
 
     // Syndrome calculation
@@ -284,6 +351,11 @@ package prim_secded_pkg;
     err_o[0] = single_error;
     err_o[1] = ~single_error & (|syndrome_o);
 
+    dec.data      = d_o;
+    dec.syndrome  = syndrome_o;
+    dec.err       = err_o;
+    return dec;
+
   endfunction
 
   function automatic logic [71:0] prim_secded_72_64_enc (logic [63:0] in);
@@ -300,12 +372,13 @@ package prim_secded_pkg;
     return out;
   endfunction
 
-  function automatic prim_secded_72_64_dec (
-    input  logic [71:0] in,
-    output logic [63:0] d_o,
-    output logic [7:0] syndrome_o,
-    output logic [1:0]  err_o
-  );
+  function automatic secded_72_64_t prim_secded_72_64_dec (logic [71:0] in);
+    logic [63:0] d_o;
+    logic [7:0] syndrome_o;
+    logic [1:0]  err_o;
+
+    secded_72_64_t dec;
+
     logic single_error;
 
     // Syndrome calculation
@@ -389,6 +462,11 @@ package prim_secded_pkg;
     err_o[0] = single_error;
     err_o[1] = ~single_error & (|syndrome_o);
 
+    dec.data      = d_o;
+    dec.syndrome  = syndrome_o;
+    dec.err       = err_o;
+    return dec;
+
   endfunction
 
   function automatic logic [21:0] prim_secded_hamming_22_16_enc (logic [15:0] in);
@@ -403,12 +481,13 @@ package prim_secded_pkg;
     return out;
   endfunction
 
-  function automatic prim_secded_hamming_22_16_dec (
-    input  logic [21:0] in,
-    output logic [15:0] d_o,
-    output logic [5:0] syndrome_o,
-    output logic [1:0]  err_o
-  );
+  function automatic secded_hamming_22_16_t prim_secded_hamming_22_16_dec (logic [21:0] in);
+    logic [15:0] d_o;
+    logic [5:0] syndrome_o;
+    logic [1:0]  err_o;
+
+    secded_hamming_22_16_t dec;
+
 
     // Syndrome calculation
     syndrome_o[0] = ^(in & 22'h01AD5B);
@@ -440,6 +519,11 @@ package prim_secded_pkg;
     err_o[0] = syndrome_o[5];
     err_o[1] = |syndrome_o[4:0] & ~syndrome_o[5];
 
+    dec.data      = d_o;
+    dec.syndrome  = syndrome_o;
+    dec.err       = err_o;
+    return dec;
+
   endfunction
 
   function automatic logic [38:0] prim_secded_hamming_39_32_enc (logic [31:0] in);
@@ -455,12 +539,13 @@ package prim_secded_pkg;
     return out;
   endfunction
 
-  function automatic prim_secded_hamming_39_32_dec (
-    input  logic [38:0] in,
-    output logic [31:0] d_o,
-    output logic [6:0] syndrome_o,
-    output logic [1:0]  err_o
-  );
+  function automatic secded_hamming_39_32_t prim_secded_hamming_39_32_dec (logic [38:0] in);
+    logic [31:0] d_o;
+    logic [6:0] syndrome_o;
+    logic [1:0]  err_o;
+
+    secded_hamming_39_32_t dec;
+
 
     // Syndrome calculation
     syndrome_o[0] = ^(in & 39'h0156AAAD5B);
@@ -509,6 +594,11 @@ package prim_secded_pkg;
     err_o[0] = syndrome_o[6];
     err_o[1] = |syndrome_o[5:0] & ~syndrome_o[6];
 
+    dec.data      = d_o;
+    dec.syndrome  = syndrome_o;
+    dec.err       = err_o;
+    return dec;
+
   endfunction
 
   function automatic logic [71:0] prim_secded_hamming_72_64_enc (logic [63:0] in);
@@ -525,12 +615,13 @@ package prim_secded_pkg;
     return out;
   endfunction
 
-  function automatic prim_secded_hamming_72_64_dec (
-    input  logic [71:0] in,
-    output logic [63:0] d_o,
-    output logic [7:0] syndrome_o,
-    output logic [1:0]  err_o
-  );
+  function automatic secded_hamming_72_64_t prim_secded_hamming_72_64_dec (logic [71:0] in);
+    logic [63:0] d_o;
+    logic [7:0] syndrome_o;
+    logic [1:0]  err_o;
+
+    secded_hamming_72_64_t dec;
+
 
     // Syndrome calculation
     syndrome_o[0] = ^(in & 72'h01AB55555556AAAD5B);
@@ -611,6 +702,11 @@ package prim_secded_pkg;
     // err_o calc. bit0: single error, bit1: double error
     err_o[0] = syndrome_o[7];
     err_o[1] = |syndrome_o[6:0] & ~syndrome_o[7];
+
+    dec.data      = d_o;
+    dec.syndrome  = syndrome_o;
+    dec.err       = err_o;
+    return dec;
 
   endfunction
 
