@@ -93,6 +93,25 @@
             '''
           resval: "0",
         },
+        { bits: "31"
+          name: "sram_clk_en",
+          desc: '''SRAM Clock Enable.
+
+            This controls the clock gating cell lying on DP SRAM clock. As the
+            nature of absent of SPI_CLK in idle state, the clock mux for SRAM
+            B port cannot be glitch-free MUX. So, it is up to SW to change the
+            clock safely.
+
+            Programming sequence:
+
+              1. Check if SPI line is idle
+              2. Clear sram_clk_en to 0.
+              3. Change mode to FwMode for peri clk, FlashMode or PassThrough
+                 for SPI_CLK.
+              4. Set sram_clk_en to 1.
+          '''
+          resval: "1"
+        }
       ]
     },
     { name: "CFG",

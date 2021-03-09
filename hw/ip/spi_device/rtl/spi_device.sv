@@ -55,6 +55,12 @@ module spi_device (
   tlul_pkg::tl_d2h_t tl_sram_d2h [1];
 
   // Dual-port SRAM Interface: Refer prim_ram_2p_wrapper.sv
+  logic              sram_clk;
+  logic              sram_clk_en;
+  logic              sram_clk_ungated;
+  logic              sram_rst_n;
+  logic              sram_rst_n_noscan;
+
   logic              mem_a_req;
   logic              mem_a_write;
   logic [SramAw-1:0] mem_a_addr;
@@ -163,6 +169,8 @@ module spi_device (
 
   assign rst_txfifo_reg = reg2hw.control.rst_txfifo.q;
   assign rst_rxfifo_reg = reg2hw.control.rst_rxfifo.q;
+
+  assign sram_clk_en = reg2hw.control.sram_clk_en.q;
 
   assign timer_v = reg2hw.cfg.timer_v.q;
 
@@ -397,6 +405,59 @@ module spi_device (
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode[RxRstMuxSel] == lc_ctrl_pkg::On),
     .clk_o(rst_rxfifo_n)
+  );
+
+  // SRAM clock
+  // If FwMode, SRAM clock for B port uses peripheral clock (clk_i)
+  // If FlashMode or PassThrough, SRAM clock for B port uses SPI_CLK
+  // To remove glitch, CG cell is put after clock mux
+  // The enable signal is not synchronized to SRAM_CLK when clock is
+  // switched into SPI_CLK. So, change the clock only when SPI_CLK is
+  // not toggle.
+  //
+  // Programming sequence:
+  // Change to SPI_CLK
+  //  1. Check if SPI line is idle.
+  //  2. Clear sram_clk_en to 0.
+  //  3. Change mode to FlashMode or PassThrough
+  //  4. Set sram_clk_en to 1.
+  // Change to peripheral clk
+  //  1. Check if SPI_CLK is idle
+  //  2. Clear sram_clk_en to 0.
+  //  3. Change mode to FwMode
+  //  4. Set sram_clk_en to 1.
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_sram_clk_sel (
+    .clk0_i (clk_spi_in_muxed),
+    .clk1_i (clk_i),
+    .sel_i  (spi_mode == FwMode),
+    .clk_o  (sram_clk_ungated)
+  );
+
+  prim_clock_gating u_sram_clk_cg (
+    .clk_i  (sram_clk_ungated),
+    .en_i   (sram_clk_en),
+    .test_en_i (scanmode[ClkSramSel] == lc_ctrl_pkg::On),
+    .clk_o  (sram_clk)
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG (1'b1)
+  ) u_sram_rst_sel (
+    .clk0_i (rst_spi_n),
+    .clk1_i (rst_ni),
+    .sel_i  (spi_mode == FwMode),
+    .clk_o  (sram_rst_n_noscan)
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG (1'b1)
+  ) u_sram_rst_scanmux (
+    .clk0_i (sram_rst_n_noscan),
+    .clk1_i (scan_rst_ni),
+    .sel_i  (scanmode[RstSramSel] == lc_ctrl_pkg::On),
+    .clk_o  (sram_rst_n)
   );
 
   //////////////////////////////
@@ -662,7 +723,7 @@ module spi_device (
   );
 
   // SRAM Wrapper
-  prim_ram_2p_adv #(
+  prim_ram_2p_async_adv #(
     .Depth (SramDepth),
     .Width (SramDw),    // 32 x 512 --> 2kB
     .DataBitsPerMask (8),
@@ -673,8 +734,12 @@ module spi_device (
     .EnableInputPipeline (0),
     .EnableOutputPipeline(0)
   ) u_memory_2p (
-    .clk_i,
-    .rst_ni,
+    .clk_a_i    (clk_i),
+    .rst_a_ni   (rst_ni),
+
+    .clk_b_i    (sram_clk),
+    .rst_b_ni   (sram_rst_n),
+
     .a_req_i    (mem_a_req),
     .a_write_i  (mem_a_write),
     .a_addr_i   (mem_a_addr),
