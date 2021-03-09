@@ -60,7 +60,7 @@ class otbn_base_vseq extends cip_base_vseq #(
   protected function automatic void
   get_queue_entries(bit for_imem, ref otbn_loaded_word entries[$]);
     // Get the size of this memory (to make sure the number of loaded words makes sense)
-    logic [21:0] mem_size = for_imem ? OTBN_IMEM_SIZE   : OTBN_DMEM_SIZE;
+    int unsigned mem_size = for_imem ? OTBN_IMEM_SIZE : OTBN_DMEM_SIZE;
 
     // Iterate over the segments for this memory
     int seg_count = OtbnMemUtilGetSegCount(cfg.mem_util, for_imem);
@@ -89,7 +89,7 @@ class otbn_base_vseq extends cip_base_vseq #(
 
         // OtbnMemUtil should have checked that this address was valid for the given memory, but it
         // can't hurt to check again.
-        `DV_CHECK_FATAL({word_off, 2'b00} < {12'b0, mem_size})
+        `DV_CHECK_FATAL({word_off, 2'b00} < {2'b00, mem_size})
 
         entry.for_imem = for_imem;
         entry.offset   = word_off[21:0];

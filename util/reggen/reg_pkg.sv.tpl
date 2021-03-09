@@ -271,10 +271,10 @@ def field_resname(reg, field):
 <%
     win_pfx = '{}_{}'.format(ublock, w.name.upper())
     base_txt_val = "{}'h {:x}".format(addr_width, w.offset)
-    size_txt_val = "{}'h {:x}".format(addr_width, w.size_in_bytes)
+    size_txt_val = "'h {:x}".format(w.size_in_bytes)
 %>\
   parameter logic [BlockAw-1:0] ${win_pfx}_OFFSET = ${base_txt_val};
-  parameter logic [BlockAw-1:0] ${win_pfx}_SIZE   = ${size_txt_val};
+  parameter int unsigned        ${win_pfx}_SIZE   = ${size_txt_val};
 % endfor
 
 % endif

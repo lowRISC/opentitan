@@ -643,11 +643,11 @@ package flash_ctrl_reg_pkg;
 
   // Window parameter
   parameter logic [BlockAw-1:0] FLASH_CTRL_PROG_FIFO_OFFSET = 9'h 16c;
-  parameter logic [BlockAw-1:0] FLASH_CTRL_PROG_FIFO_SIZE   = 9'h 4;
+  parameter int unsigned        FLASH_CTRL_PROG_FIFO_SIZE   = 'h 4;
   parameter logic [BlockAw-1:0] FLASH_CTRL_RD_FIFO_OFFSET = 9'h 170;
-  parameter logic [BlockAw-1:0] FLASH_CTRL_RD_FIFO_SIZE   = 9'h 4;
+  parameter int unsigned        FLASH_CTRL_RD_FIFO_SIZE   = 'h 4;
   parameter logic [BlockAw-1:0] FLASH_CTRL_PRIM_FLASH_CFG_OFFSET = 9'h 180;
-  parameter logic [BlockAw-1:0] FLASH_CTRL_PRIM_FLASH_CFG_SIZE   = 9'h 54;
+  parameter int unsigned        FLASH_CTRL_PRIM_FLASH_CFG_SIZE   = 'h 54;
 
   // Register Index
   typedef enum int {

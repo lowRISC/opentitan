@@ -287,7 +287,7 @@ package spi_device_reg_pkg;
 
   // Window parameter
   parameter logic [BlockAw-1:0] SPI_DEVICE_BUFFER_OFFSET = 13'h 1000;
-  parameter logic [BlockAw-1:0] SPI_DEVICE_BUFFER_SIZE   = 13'h 1000;
+  parameter int unsigned        SPI_DEVICE_BUFFER_SIZE   = 'h 1000;
 
   // Register Index
   typedef enum int {
