@@ -320,9 +320,9 @@ package kmac_reg_pkg;
 
   // Window parameter
   parameter logic [BlockAw-1:0] KMAC_STATE_OFFSET = 12'h 400;
-  parameter logic [BlockAw-1:0] KMAC_STATE_SIZE   = 12'h 200;
+  parameter int unsigned        KMAC_STATE_SIZE   = 'h 200;
   parameter logic [BlockAw-1:0] KMAC_MSG_FIFO_OFFSET = 12'h 800;
-  parameter logic [BlockAw-1:0] KMAC_MSG_FIFO_SIZE   = 12'h 800;
+  parameter int unsigned        KMAC_MSG_FIFO_SIZE   = 'h 800;
 
   // Register Index
   typedef enum int {

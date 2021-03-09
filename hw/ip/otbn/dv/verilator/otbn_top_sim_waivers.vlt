@@ -4,7 +4,5 @@
 
 `verilator_config
 
-lint_off -rule WIDTH -file "*/otbn_top_sim.sv" -match "*'OTBN_IMEM_SIZE' generates * bits*"
-lint_off -rule WIDTH -file "*/otbn_top_sim.sv" -match "*'OTBN_DMEM_SIZE' generates * bits*"
 lint_off -rule WIDTH -file "*/otbn_top_sim.sv" -match "*'ImemStartAddr' generates 32 bits*"
 lint_off -rule WIDTH -file "*/otbn_top_sim.sv" -match "*'stack_wr_ptr_q' generates 4 bits*"
