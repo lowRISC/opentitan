@@ -10,26 +10,38 @@ rom_linkfile = files(['mask_rom.ld'])
 rom_link_args = [
   '-Wl,-L,@0@'.format(meson.source_root()),
   '-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_linkfile[0]),
-  embedded_target_extra_link_args
+  # Flatten the array, otherwise `mask_rom_lib` generation fails.
+  ''.join(embedded_target_extra_link_args),
 ]
 rom_link_deps = [rom_linkfile]
 
+# MaskROM library.
+mask_rom_lib = declare_dependency(
+  sources: [
+    'mask_rom_start.S',
+  ],
+    link_args: rom_link_args,
+    dependencies: [
+      freestanding_headers,
+      rom_ext_manifest_parser,
+      sw_lib_crt,
+      sw_lib_pinmux,
+    ],
+    link_with: static_library(
+      'mask_rom_lib',
+      sources: ['mask_rom.c'],
+      link_depends: [rom_linkfile],
+  )
+)
+
+# Production MaskROM images
 foreach device_name, device_lib : sw_lib_arch_core_devices
   mask_rom_elf = executable(
     'mask_rom_' + device_name,
-    sources: [
-      'mask_rom_start.S',
-      'mask_rom.c',
-    ],
     name_suffix: 'elf',
-    link_args: rom_link_args,
     link_depends: rom_link_deps,
     dependencies: [
-      chip_info_h,
-      device_lib,
-      rom_ext_manifest_parser,
-      sw_lib_pinmux,
-      sw_lib_crt,
+      mask_rom_lib,
     ],
   )
 
