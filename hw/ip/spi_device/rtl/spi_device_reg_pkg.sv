@@ -97,6 +97,9 @@ package spi_device_reg_pkg;
     struct packed {
       logic        q;
     } rst_rxfifo;
+    struct packed {
+      logic        q;
+    } sram_clk_en;
   } spi_device_reg2hw_control_reg_t;
 
   typedef struct packed {
@@ -233,10 +236,10 @@ package spi_device_reg_pkg;
   // Register to internal design logic //
   ///////////////////////////////////////
   typedef struct packed {
-    spi_device_reg2hw_intr_state_reg_t intr_state; // [168:163]
-    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [162:157]
-    spi_device_reg2hw_intr_test_reg_t intr_test; // [156:145]
-    spi_device_reg2hw_control_reg_t control; // [144:140]
+    spi_device_reg2hw_intr_state_reg_t intr_state; // [169:164]
+    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [163:158]
+    spi_device_reg2hw_intr_test_reg_t intr_test; // [157:146]
+    spi_device_reg2hw_control_reg_t control; // [145:140]
     spi_device_reg2hw_cfg_reg_t cfg; // [139:128]
     spi_device_reg2hw_fifo_level_reg_t fifo_level; // [127:96]
     spi_device_reg2hw_rxf_ptr_reg_t rxf_ptr; // [95:80]
@@ -310,7 +313,7 @@ package spi_device_reg_pkg;
     4'b 0001, // index[ 0] SPI_DEVICE_INTR_STATE
     4'b 0001, // index[ 1] SPI_DEVICE_INTR_ENABLE
     4'b 0001, // index[ 2] SPI_DEVICE_INTR_TEST
-    4'b 0111, // index[ 3] SPI_DEVICE_CONTROL
+    4'b 1111, // index[ 3] SPI_DEVICE_CONTROL
     4'b 0011, // index[ 4] SPI_DEVICE_CFG
     4'b 1111, // index[ 5] SPI_DEVICE_FIFO_LEVEL
     4'b 0111, // index[ 6] SPI_DEVICE_ASYNC_FIFO_LEVEL

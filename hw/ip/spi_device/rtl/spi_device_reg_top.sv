@@ -210,6 +210,9 @@ module spi_device_reg_top (
   logic control_rst_rxfifo_qs;
   logic control_rst_rxfifo_wd;
   logic control_rst_rxfifo_we;
+  logic control_sram_clk_en_qs;
+  logic control_sram_clk_en_wd;
+  logic control_sram_clk_en_we;
   logic cfg_cpol_qs;
   logic cfg_cpol_wd;
   logic cfg_cpol_we;
@@ -780,6 +783,32 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (control_rst_rxfifo_qs)
+  );
+
+
+  //   F[sram_clk_en]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_control_sram_clk_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (control_sram_clk_en_we),
+    .wd     (control_sram_clk_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.control.sram_clk_en.q ),
+
+    // to register interface (read)
+    .qs     (control_sram_clk_en_qs)
   );
 
 
@@ -1411,6 +1440,9 @@ module spi_device_reg_top (
   assign control_rst_rxfifo_we = addr_hit[3] & reg_we & !reg_error;
   assign control_rst_rxfifo_wd = reg_wdata[17];
 
+  assign control_sram_clk_en_we = addr_hit[3] & reg_we & !reg_error;
+  assign control_sram_clk_en_wd = reg_wdata[31];
+
   assign cfg_cpol_we = addr_hit[4] & reg_we & !reg_error;
   assign cfg_cpol_wd = reg_wdata[0];
 
@@ -1504,6 +1536,7 @@ module spi_device_reg_top (
         reg_rdata_next[5:4] = control_mode_qs;
         reg_rdata_next[16] = control_rst_txfifo_qs;
         reg_rdata_next[17] = control_rst_rxfifo_qs;
+        reg_rdata_next[31] = control_sram_clk_en_qs;
       end
 
       addr_hit[4]: begin

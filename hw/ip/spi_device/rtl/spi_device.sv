@@ -58,6 +58,7 @@ module spi_device (
   logic              sram_clk;
   logic              sram_clk_en;
   logic              sram_clk_ungated;
+  logic              sram_clk_muxed;
   logic              sram_rst_n;
   logic              sram_rst_n_noscan;
 
@@ -435,8 +436,17 @@ module spi_device (
     .clk_o  (sram_clk_ungated)
   );
 
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_sram_clk_scan (
+    .clk0_i (sram_clk_ungated),
+    .clk1_i (scan_clk_i),
+    .sel_i  (scanmode[ClkSramSel] == lc_ctrl_pkg::On),
+    .clk_o  (sram_clk_muxed)
+  );
+
   prim_clock_gating u_sram_clk_cg (
-    .clk_i  (sram_clk_ungated),
+    .clk_i  (sram_clk_muxed),
     .en_i   (sram_clk_en),
     .test_en_i (scanmode[ClkSramSel] == lc_ctrl_pkg::On),
     .clk_o  (sram_clk)
