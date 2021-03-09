@@ -14,6 +14,8 @@
 
 static dif_uart_t uart;
 
+int main(int argc, char *argv[]);
+
 // TODO - need to decide what happens to the peripherals during the
 //        Mask ROM to ROM_EXT handover (for example, does UART need
 //        re-configuring, etc...). It is possible that the signature of
@@ -45,6 +47,9 @@ void rom_ext_boot(void) {
   base_uart_stdout(&uart);
 
   base_printf("Hello World!\n");
+
+  // TODO - there might be another level before jumping into main.
+  (void)main(0, NULL);
 
   // TODO - is this a correct way of handling the "return"?
   while (true) {
