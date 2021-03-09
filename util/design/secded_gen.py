@@ -80,10 +80,25 @@ def calc_bitmasks(k, m, codes, dec):
     return fanin_masks
 
 
+def print_pkg_types(n, k, m, codes, suffix, codetype):
+    typename = "secded%s_%d_%d_t" % (suffix, n, k)
+
+    typestr = '''
+  typedef struct packed {{
+    logic [{}:0] data;
+    logic [{}:0] syndrome;
+    logic [1:0]  err;
+  }} {};
+'''.format((k - 1), (m - 1), typename)
+
+    return typestr
+
+
 def print_fn(n, k, m, codes, suffix, codetype):
     enc_out = print_enc(n, k, m, codes)
     dec_out = print_dec(n, k, m, codes, codetype, "function")
 
+    typename = "secded%s_%d_%d_t" % (suffix, n, k)
     module_name = "prim_secded%s_%d_%d" % (suffix, n, k)
 
     outstr = '''
@@ -92,16 +107,22 @@ def print_fn(n, k, m, codes, suffix, codetype):
 {}    return out;
   endfunction
 
-  function automatic {}_dec (
-    input  logic [{}:0] in,
-    output logic [{}:0] d_o,
-    output logic [{}:0] syndrome_o,
-    output logic [1:0]  err_o
-  );
+  function automatic {} {}_dec (logic [{}:0] in);
+    logic [{}:0] d_o;
+    logic [{}:0] syndrome_o;
+    logic [1:0]  err_o;
+
+    {} dec;
+
 {}
+    dec.data      = d_o;
+    dec.syndrome  = syndrome_o;
+    dec.err       = err_o;
+    return dec;
+
   endfunction
 '''.format((n - 1), module_name, (k - 1), (n - 1), enc_out,
-           module_name, (n - 1), (k - 1), (m - 1), dec_out)
+           typename, module_name, (n - 1), (k - 1), (m - 1), typename, dec_out)
 
     return outstr
 
@@ -127,8 +148,8 @@ def print_dec(n, k, m, codes, codetype, print_type="logic"):
 
     outstr = ""
     if codetype == "hsiao":
-      outstr += "  {}logic single_error;\n".format(
-          preamble if print_type == "function" else "")
+        outstr += "  {}logic single_error;\n".format(
+            preamble if print_type == "function" else "")
 
     outstr += "\n"
     outstr += "  {}// Syndrome calculation\n".format(
@@ -204,6 +225,7 @@ def verify(cfgs):
 
 def generate(cfgs, args, seed):
     pkg_out_str = ""
+    pkg_type_str = ""
     for cfg in cfgs['cfgs']:
         log.debug("Working on {}".format(cfg))
         k = cfg['k']
@@ -219,6 +241,8 @@ def generate(cfgs, args, seed):
         # write out rtl files
         write_enc_dec_files(n, k, m, seed, codes, suffix, args.outdir, codetype)
 
+        # write out package typedefs
+        pkg_type_str += print_pkg_types(n, k, m, codes, suffix, codetype)
         # print out functions
         pkg_out_str += print_fn(n, k, m, codes, suffix, codetype)
 
@@ -226,7 +250,8 @@ def generate(cfgs, args, seed):
             write_fpv_files(n, k, m, codes, codetype, args.fpv_outdir)
 
     # write out package file
-    write_pkg_file(seed, args.outdir, pkg_out_str)
+    full_pkg_str = pkg_type_str + pkg_out_str
+    write_pkg_file(seed, args.outdir, full_pkg_str)
 
 
 # k = data bits
