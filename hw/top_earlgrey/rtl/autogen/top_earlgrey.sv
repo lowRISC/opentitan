@@ -1161,6 +1161,7 @@ module top_earlgrey #(
       // Inter-module signals
       .tl_i(spi_host0_tl_req),
       .tl_o(spi_host0_tl_rsp),
+      .scanmode_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
@@ -1189,6 +1190,7 @@ module top_earlgrey #(
       // Inter-module signals
       .tl_i(spi_host1_tl_req),
       .tl_o(spi_host1_tl_rsp),
+      .scanmode_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
