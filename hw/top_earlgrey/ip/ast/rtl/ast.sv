@@ -170,7 +170,8 @@ import ast_pkg::* ;
 import ast_reg_pkg::* ;
 import ast_bhv_pkg::* ;
 
-logic vcaon_pok, vcaon_pok_h;
+logic vcaon_pok, vcaon_pok_h, scan_mode, scan_reset_n;
+assign scan_reset_n = scan_reset_no;
 
 
 
@@ -198,19 +199,20 @@ assign vcaon_pok_h = vcaon_pok_h_int && vcaon_supp_i;
 assign vcaon_pok = vcaon_pok_h;  // Level Shifter
 
 // 'por_sync_n' reset deasetion synchronizer output
-logic por_syn_rst_n, por_sync0_n, por_sync_n;
+logic por_rst_n, por_synco_n, por_sync_n;
 
-assign por_syn_rst_n = por_ni && vcc_pok && vcaon_pok;
-
-always_ff @( posedge clk_src_aon_o, negedge por_syn_rst_n ) begin
-  if ( !por_syn_rst_n ) begin
-    por_sync0_n <= 1'b0;
-    por_sync_n  <= 1'b0;
-  end else begin
-    por_sync0_n <= 1'b1;
-    por_sync_n  <= por_sync0_n;
-  end
-end
+assign por_rst_n = scan_mode ? scan_reset_n : por_ni && vcc_pok && vcaon_pok;
+// Reset De-Assert Sync
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_por_dasrt (
+  .clk_i ( clk_src_aon_o ),
+  .rst_ni ( por_rst_n ),
+  .d_i ( 1'b1 ),
+  .q_o ( por_synco_n )
+);
+assign por_sync_n = scan_mode ? scan_reset_n : por_synco_n;
 
 assign vcaon_pok_por = por_sync_n && vcc_pok && vcaon_pok;
 assign vcaon_pok_o   = vcaon_pok_por;
@@ -288,7 +290,7 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
 // System Clock (Always ON)
 ///////////////////////////////////////
 logic rst_sys_clk_n;
-assign rst_sys_clk_n = vcmain_pok_por;
+assign rst_sys_clk_n = vcmain_pok_por;  // Scan reset included
 
 sys_clk u_sys_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
@@ -305,7 +307,7 @@ sys_clk u_sys_clk (
 // USB Clock (Always ON)
 ///////////////////////////////////////
 logic rst_usb_clk_n;
-assign rst_usb_clk_n = vcmain_pok_por;
+assign rst_usb_clk_n = vcmain_pok_por;  // Scan reset included
 
 usb_clk u_usb_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
@@ -339,7 +341,7 @@ aon_clk  u_aon_clk (
 // IO Clock (Always ON)
 ///////////////////////////////////////
 logic rst_io_clk_n;
-assign rst_io_clk_n = vcmain_pok_por;
+assign rst_io_clk_n = vcmain_pok_por;  // scan reset included
 
 io_clk u_io_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
@@ -387,6 +389,8 @@ ast_entropy #(
   .rst_ast_es_ni ( rst_ast_es_ni ),
   .clk_src_sys_en_i ( clk_src_sys_en_i ),
   .clk_src_sys_jen_i ( clk_src_sys_jen_i ),
+  .scan_mode_i ( scan_mode ),
+  .scan_reset_ni ( scan_reset_n ),
   .entropy_req_o ( entropy_req_o )
 );  // of u_entropy
 
@@ -401,6 +405,8 @@ rng #(
   .rst_ni ( rst_ast_rng_ni ),
   .vcaon_pok_i ( vcaon_pok ),
   .rng_en_i ( rng_en_i ),
+  .scan_mode_i ( scan_mode ),
+  .scan_reset_ni ( scan_reset_n ),
   .rng_b_o ( rng_b_o[EntropyStreams-1:0] ),
   .rng_val_o ( rng_val_o )
 );  // of u_rng
@@ -522,6 +528,7 @@ ast_reg_top u_reg (
   .tl_o ( tl_o ),
   .reg2hw ( reg2hw ),
   .hw2reg ( hw2reg ),
+  .intg_err_o ( ),
   .devmode_i ( 1'b0 )
 );  // u_reg
 
@@ -560,6 +567,7 @@ assign sprgf_rm_o       = 5'h00;
 assign sprom_rm_o       = 5'h00;
 //
 assign dft_scan_md_o    = lc_ctrl_pkg::Off;
+assign scan_mode        = 1'b0;
 assign scan_shift_en_o  = 1'b0;
 assign scan_reset_no    = 1'b1;
 

@@ -15,6 +15,8 @@ module ast_entropy #(
   input rst_ast_es_ni,                             // Entropy Reset
   input clk_src_sys_en_i,                          // System Source Clock Enable
   input clk_src_sys_jen_i,                         // System Source Clock Jitter Enable
+  input scan_mode_i,                               // Scan Mode
+  input scan_reset_ni,                             // Scan Reset
   output edn_pkg::edn_req_t entropy_req_o          // Entropy Request
 );
 
@@ -25,8 +27,9 @@ module ast_entropy #(
 // Reset De-Assert syncronizer
 logic entropy_reset_n, sync_rst_es_n, rst_es_n;
 
-assign entropy_reset_n = (rst_ast_es_ni && clk_src_sys_en_i && clk_src_sys_jen_i);
-
+// To eable Syncronizer FFs reset in Scan Mode
+assign entropy_reset_n = scan_mode_i ? scan_reset_ni :
+          (rst_ast_es_ni && clk_src_sys_en_i && clk_src_sys_jen_i);
 prim_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
@@ -36,7 +39,7 @@ prim_flop_2sync #(
   .d_i ( 1'b1 ),
   .q_o ( sync_rst_es_n )
 );
-assign rst_es_n = sync_rst_es_n;
+assign rst_es_n = scan_mode_i ? scan_reset_ni : sync_rst_es_n;
 
 
 ///////////////////////////////////////
