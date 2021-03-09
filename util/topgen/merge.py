@@ -8,8 +8,11 @@ from collections import OrderedDict
 from copy import deepcopy
 from functools import partial
 from math import ceil, log2
+from typing import Dict
 
 from topgen import c, lib
+from reggen.ip_block import IpBlock
+from reggen.params import LocalParam, Parameter, RandParameter
 
 
 def _get_random_data_hex_literal(width):
@@ -34,188 +37,102 @@ def _get_random_perm_hex_literal(numel):
     return literal_str
 
 
-def amend_ip(top, ip):
-    """ Amend additional information into top module
+def elaborate_instances(top, name_to_block: Dict[str, IpBlock]):
+    '''Add additional fields to the elements of top['module']
 
-    Amended fields:
-        - size: register space
-        - clock: converted into ip_clock
-        - bus_device
-        - bus_host: none if doesn't exist
-        - available_input_list: empty list if doesn't exist
-        - available_output_list: empty list if doesn't exist
-        - available_inout_list: empty list if doesn't exist
-        - param_list: empty list if doesn't exist
-        - interrupt_list: empty list if doesn't exist
-        - alert_list: empty list if doesn't exist
-        - wakeup_list: empty list if doesn't exist
-    """
-    ip_list_in_top = [x["type"].lower() for x in top["module"]]
-    # TODO make set
-    ipname = ip["name"].lower()
-    if ipname not in ip_list_in_top:
-        log.info("TOP doens't use the IP %s. Skip" % ip["name"])
-        return
+    These elements represent instantiations of IP blocks. This function adds
+    extra fields to them to carry across information from the IpBlock objects
+    that represent the blocks being instantiated. See elaborate_instance for
+    more details of what gets added.
 
+    '''
     # Initialize RNG for compile-time netlist constants.
     random.seed(int(top['rnd_cnst_seed']))
 
-    # Needed to detect async alert transitions below
-    ah_idx = ip_list_in_top.index("alert_handler")
+    for instance in top['module']:
+        block = name_to_block[instance['type']]
+        elaborate_instance(instance, block)
 
-    # Find multiple IPs
-    # Find index of the IP
-    ip_modules = list(
-        filter(lambda module: module["type"] == ipname, top["module"]))
 
-    for ip_module in ip_modules:
-        mod_name = ip_module["name"]
+def elaborate_instance(instance, block: IpBlock):
+    """Add additional fields to a single instance of a module.
 
-        # Size
-        if "size" not in ip_module:
-            ip_module["size"] = "0x%x" % max(ip["gensize"], 0x1000)
-        elif int(ip_module["size"], 0) < ip["gensize"]:
-            log.error(
-                "given 'size' field in IP %s is smaller than the required space"
-                % mod_name)
+    instance is the instance to be filled in. block is the block that it's
+    instantiating.
 
-        # bus_device
-        ip_module["bus_device"] = ip["bus_device"]
+    Amended fields:
+        - size (the number of bytes taken up in the address space)
+        - param_list (list of parameters for the instance)
+        - inter_signal_list (list of inter-module signals)
 
-        # bus_host
-        if "bus_host" in ip and ip["bus_host"] != "":
-            ip_module["bus_host"] = ip["bus_host"]
-        else:
-            ip_module["bus_host"] = "none"
+    """
+    mod_name = instance["name"]
 
-        # available_input_list , available_output_list, available_inout_list
-        if "available_input_list" in ip:
-            ip_module["available_input_list"] = deepcopy(
-                ip["available_input_list"])
-            for i in ip_module["available_input_list"]:
-                i.pop('desc', None)
-                i["type"] = "input"
-                i["width"] = int(i["width"])
-        else:
-            ip_module["available_input_list"] = []
-        if "available_output_list" in ip:
-            ip_module["available_output_list"] = deepcopy(
-                ip["available_output_list"])
-            for i in ip_module["available_output_list"]:
-                i.pop('desc', None)
-                i["type"] = "output"
-                i["width"] = int(i["width"])
-        else:
-            ip_module["available_output_list"] = []
-        if "available_inout_list" in ip:
-            ip_module["available_inout_list"] = deepcopy(
-                ip["available_inout_list"])
-            for i in ip_module["available_inout_list"]:
-                i.pop('desc', None)
-                i["type"] = "inout"
-                i["width"] = int(i["width"])
-        else:
-            ip_module["available_inout_list"] = []
+    # Fill in the size field if it's missing. If it existed already, check that
+    # there's enough space for the block.
+    min_size = 1 << block.regs.get_addr_width()
+    dflt_size = max(min_size, 0x1000)
+    decl_size = instance.get('size')
+    if decl_size is None:
+        instance['size'] = '{:#x}'.format(dflt_size)
+    else:
+        if int(decl_size, 0) < min_size:
+            log.error("Instance {} of block {} has a size field of {}, but"
+                      "the block needs at least {} bytes."
+                      .format(mod_name, block.name, decl_size, min_size))
 
-        # param_list
-        if "param_list" in ip:
-            ip_module["param_list"] = deepcopy(ip["param_list"])
-            # Removing local parameters.
-            for i in ip["param_list"]:
-                if i["local"] == "true":
-                    ip_module["param_list"].remove(i)
-            # Checking for security-relevant parameters
-            # that are not exposed, adding a top-level name.
-            for i in ip_module["param_list"]:
-                par_name = i["name"]
-                if par_name.lower().startswith("sec") and not i["expose"]:
-                    log.warning("{} has security-critical parameter {} "
-                                "not exposed to top".format(
-                                    mod_name, par_name))
-                # Move special prefixes to the beginnining of the parameter name.
-                param_prefixes = ["Sec", "RndCnst"]
-                cc_mod_name = c.Name.from_snake_case(mod_name).as_camel_case()
-                for prefix in param_prefixes:
-                    if par_name.lower().startswith(prefix.lower()):
-                        i["name_top"] = prefix + cc_mod_name + par_name[
-                            len(prefix):]
-                        break
-                else:
-                    i["name_top"] = cc_mod_name + par_name
+    # param_list
+    new_params = []
+    for param in block.params.by_name.values():
+        if isinstance(param, LocalParam):
+            # Remove local parameters.
+            continue
 
-                # Generate random bits or permutation, if needed
-                if i["randtype"] == "data":
-                    i["default"] = _get_random_data_hex_literal(i["randcount"])
-                    # Effective width of the random vector
-                    i["randwidth"] = int(i["randcount"])
-                elif i["randtype"] == "perm":
-                    i["default"] = _get_random_perm_hex_literal(i["randcount"])
-                    # Effective width of the random vector
-                    i["randwidth"] = int(i["randcount"]) * int(
-                        ceil(log2(float(i["randcount"]))))
-        else:
-            ip_module["param_list"] = []
+        new_param = param.as_dict()
 
-        # interrupt_list
-        if "interrupt_list" in ip:
-            ip_module["interrupt_list"] = deepcopy(ip["interrupt_list"])
-            for i in ip_module["interrupt_list"]:
-                i.pop('desc', None)
-                i["type"] = "interrupt"
-                i["width"] = int(i["width"])
-        else:
-            ip_module["interrupt_list"] = []
+        param_expose = param.expose if isinstance(param, Parameter) else False
 
-        # alert_list
-        if "alert_list" in ip:
-            ip_module["alert_list"] = deepcopy(ip["alert_list"])
-            for i in ip_module["alert_list"]:
-                i.pop('desc', None)
-                i["type"] = "alert"
-                i["width"] = int(i["width"])
-                # automatically insert asynchronous transition if necessary
-                if ip_module["clock_srcs"]["clk_i"] == \
-                   top["module"][ah_idx]["clock_srcs"]["clk_i"]:
-                    i["async"] = 0
-                else:
-                    i["async"] = 1
-        else:
-            ip_module["alert_list"] = []
+        # Check for security-relevant parameters that are not exposed,
+        # adding a top-level name.
+        if param.name.lower().startswith("sec") and not param_expose:
+            log.warning("{} has security-critical parameter {} "
+                        "not exposed to top".format(
+                            mod_name, param.name))
 
-        # wkup_list
-        if "wakeup_list" in ip:
-            ip_module["wakeup_list"] = deepcopy(ip["wakeup_list"])
-            for i in ip_module["wakeup_list"]:
-                i.pop('desc', None)
-        else:
-            ip_module["wakeup_list"] = []
+        # Move special prefixes to the beginnining of the parameter name.
+        param_prefixes = ["Sec", "RndCnst"]
+        cc_mod_name = c.Name.from_snake_case(mod_name).as_camel_case()
+        name_top = cc_mod_name + param.name
+        for prefix in param_prefixes:
+            if param.name.lower().startswith(prefix.lower()):
+                name_top = (prefix + cc_mod_name +
+                            param.name[len(prefix):])
+                break
 
-        # reset request
-        if "reset_request_list" in ip:
-            ip_module["reset_request_list"] = deepcopy(
-                ip["reset_request_list"])
-            for i in ip_module["reset_request_list"]:
-                i.pop('desc', None)
-        else:
-            ip_module["reset_request_list"] = []
+        new_param['name_top'] = name_top
 
-        # scan
-        if "scan" in ip:
-            ip_module["scan"] = ip["scan"]
-        else:
-            ip_module["scan"] = "false"
+        # Generate random bits or permutation, if needed
+        if isinstance(param, RandParameter):
+            if param.randtype == 'data':
+                new_default = _get_random_data_hex_literal(param.randcount)
+                # Effective width of the random vector
+                randwidth = param.randcount
+            else:
+                assert param.randtype == 'perm'
+                new_default = _get_random_perm_hex_literal(param.randcount)
+                # Effective width of the random vector
+                randwidth = param.randcount * ceil(log2(param.randcount))
 
-        # scan_reset
-        if "scan_reset" in ip:
-            ip_module["scan_reset"] = ip["scan_reset"]
-        else:
-            ip_module["scan_reset"] = "false"
+            new_param['default'] = new_default
+            new_param['randwidth'] = randwidth
 
-        # inter-module
-        if "inter_signal_list" in ip:
-            ip_module["inter_signal_list"] = deepcopy(ip["inter_signal_list"])
+        new_params.append(new_param)
 
-            # TODO: validate
+    instance["param_list"] = new_params
+
+    # These objects get added-to in place by code in intermodule.py, so we have
+    # to convert and copy them here.
+    instance["inter_signal_list"] = [s.as_dict() for s in block.inter_signals]
 
 
 # TODO: Replace this part to be configurable from Hjson or template
@@ -721,7 +638,7 @@ def amend_resets(top):
     return
 
 
-def amend_interrupt(top):
+def amend_interrupt(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
     """Check interrupt_module if exists, or just use all modules
     """
     if "interrupt_module" not in top:
@@ -731,19 +648,24 @@ def amend_interrupt(top):
         top["interrupt"] = []
 
     for m in top["interrupt_module"]:
-        ip = list(filter(lambda module: module["name"] == m, top["module"]))
-        if len(ip) == 0:
+        ips = list(filter(lambda module: module["name"] == m, top["module"]))
+        if len(ips) == 0:
             log.warning(
                 "Cannot find IP %s which is used in the interrupt_module" % m)
             continue
 
-        log.info("Adding interrupts from module %s" % ip[0]["name"])
-        top["interrupt"] += list(
-            map(partial(lib.add_module_prefix_to_signal, module=m.lower()),
-                ip[0]["interrupt_list"]))
+        ip = ips[0]
+        block = name_to_block[ip['type']]
+
+        log.info("Adding interrupts from module %s" % ip["name"])
+        for signal in block.interrupts:
+            sig_dict = signal.as_nwt_dict('interrupt')
+            qual = lib.add_module_prefix_to_signal(sig_dict,
+                                                   module=m.lower())
+            top["interrupt"].append(qual)
 
 
-def amend_alert(top):
+def amend_alert(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
     """Check interrupt_module if exists, or just use all modules
     """
     if "alert_module" not in top:
@@ -752,20 +674,35 @@ def amend_alert(top):
     if "alert" not in top or top["alert"] == "":
         top["alert"] = []
 
+    # Find the alert handler and extract the name of its clock
+    alert_clock = None
+    for instance in top['module']:
+        if instance['type'].lower() == 'alert_handler':
+            alert_clock = instance['clock_srcs']['clk_i']
+            break
+    assert alert_clock is not None
+
     for m in top["alert_module"]:
-        ip = list(filter(lambda module: module["name"] == m, top["module"]))
-        if len(ip) == 0:
+        ips = list(filter(lambda module: module["name"] == m, top["module"]))
+        if len(ips) == 0:
             log.warning("Cannot find IP %s which is used in the alert_module" %
                         m)
             continue
 
-        log.info("Adding alert from module %s" % ip[0]["name"])
-        top["alert"] += list(
-            map(partial(lib.add_module_prefix_to_signal, module=m.lower()),
-                ip[0]["alert_list"]))
+        ip = ips[0]
+        block = name_to_block[ip['type']]
+
+        log.info("Adding alert from module %s" % ip["name"])
+        has_async_alerts = ip['clock_srcs']['clk_i'] != alert_clock
+        for alert in block.alerts:
+            alert_dict = alert.as_nwt_dict('alert')
+            alert_dict['async'] = '1' if has_async_alerts else '0'
+            qual_sig = lib.add_module_prefix_to_signal(alert_dict,
+                                                       module=m.lower())
+            top["alert"].append(qual_sig)
 
 
-def amend_wkup(topcfg: OrderedDict):
+def amend_wkup(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):
 
     pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
 
@@ -775,11 +712,14 @@ def amend_wkup(topcfg: OrderedDict):
     # create list of wakeup signals
     for m in topcfg["module"]:
         log.info("Adding wakeup from module %s" % m["name"])
-        for entry in m["wakeup_list"]:
-            log.info("Adding singal %s" % entry["name"])
-            signal = deepcopy(entry)
-            signal["module"] = m["name"]
-            topcfg["wakeups"].append(signal)
+        block = name_to_block[m['type']]
+        for signal in block.wakeups:
+            log.info("Adding signal %s" % signal.name)
+            topcfg["wakeups"].append({
+                'name': signal.name,
+                'width': str(signal.bits.width()),
+                'module': m["name"]
+            })
 
     # add wakeup signals to pwrmgr connections
     signal_names = [
@@ -793,7 +733,8 @@ def amend_wkup(topcfg: OrderedDict):
 
 
 # Handle reset requests from modules
-def amend_reset_request(topcfg: OrderedDict):
+def amend_reset_request(topcfg: OrderedDict,
+                        name_to_block: Dict[str, IpBlock]):
 
     pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
 
@@ -803,11 +744,14 @@ def amend_reset_request(topcfg: OrderedDict):
     # create list of reset signals
     for m in topcfg["module"]:
         log.info("Adding reset requests from module %s" % m["name"])
-        for entry in m["reset_request_list"]:
-            log.info("Adding singal %s" % entry["name"])
-            signal = deepcopy(entry)
-            signal["module"] = m["name"]
-            topcfg["reset_requests"].append(signal)
+        block = name_to_block[m['type']]
+        for signal in block.reset_requests:
+            log.info("Adding signal %s" % signal.name)
+            topcfg["reset_requests"].append({
+                'name': signal.name,
+                'width': str(signal.bits.width()),
+                'module': m["name"]
+            })
 
     # add reset requests to pwrmgr connections
     signal_names = [
@@ -820,7 +764,7 @@ def amend_reset_request(topcfg: OrderedDict):
         topcfg["inter_module"]["connect"]))
 
 
-def amend_pinmux_io(top):
+def amend_pinmux_io(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
     """ Check dio_modules/ mio_modules. If not exists, add all modules to mio
     """
     pinmux = top["pinmux"]
@@ -845,9 +789,11 @@ def amend_pinmux_io(top):
             signals = deepcopy([lib.get_signal_by_name(m, sname)])
         else:
             # Get all module signals
-            signals = deepcopy(m["available_input_list"] +
-                               m["available_output_list"] +
-                               m["available_inout_list"])
+            block = name_to_block[m['type']]
+            inouts, inputs, outputs = block.xputs
+            signals = ([s.as_nwt_dict('input') for s in inputs] +
+                       [s.as_nwt_dict('output') for s in outputs] +
+                       [s.as_nwt_dict('inout') for s in inouts])
 
         sig_width = sum([s["width"] for s in signals])
 
@@ -909,36 +855,29 @@ def amend_pinmux_io(top):
         if m is None:
             raise SystemExit("Module {} doesn't exist".format(tokens[0]))
 
-        if len(tokens) == 1:
-            pinmux["inputs"] += list(
-                filter(
-                    lambda x: x["name"] not in dio_names,
-                    map(
-                        partial(lib.add_module_prefix_to_signal,
-                                module=m["name"].lower()),
-                        m["available_inout_list"])))
-            pinmux["inputs"] += list(
-                filter(
-                    lambda x: x["name"] not in dio_names,
-                    map(
-                        partial(lib.add_module_prefix_to_signal,
-                                module=m["name"].lower()),
-                        m["available_input_list"])))
+        mod_name = m['name'].lower()
 
-            pinmux["outputs"] += list(
-                filter(
-                    lambda x: x["name"] not in dio_names,
-                    map(
-                        partial(lib.add_module_prefix_to_signal,
-                                module=m["name"].lower()),
-                        m["available_inout_list"])))
-            pinmux["outputs"] += list(
-                filter(
-                    lambda x: x["name"] not in dio_names,
-                    map(
-                        partial(lib.add_module_prefix_to_signal,
-                                module=m["name"].lower()),
-                        m["available_output_list"])))
+        if len(tokens) == 1:
+            block = name_to_block[m['type']]
+            inouts, inputs, outputs = block.xputs
+            for signal in inouts:
+                rel = signal.as_nwt_dict('inout')
+                qual = lib.add_module_prefix_to_signal(rel, mod_name)
+                if qual['name'] not in dio_names:
+                    pinmux['inputs'].append(qual)
+                    pinmux['outputs'].append(qual)
+
+            for signal in inputs:
+                rel = signal.as_nwt_dict('input')
+                qual = lib.add_module_prefix_to_signal(rel, mod_name)
+                if qual['name'] not in dio_names:
+                    pinmux['inputs'].append(qual)
+
+            for signal in outputs:
+                rel = signal.as_nwt_dict('output')
+                qual = lib.add_module_prefix_to_signal(rel, mod_name)
+                if qual['name'] not in dio_names:
+                    pinmux['outputs'].append(qual)
 
         elif len(tokens) == 2:
             # Current version doesn't consider signal in mio_modules
@@ -948,47 +887,46 @@ def amend_pinmux_io(top):
                 format(e))
 
 
-def merge_top(topcfg: OrderedDict, ipobjs: OrderedDict,
+def merge_top(topcfg: OrderedDict,
+              name_to_block: Dict[str, IpBlock],
               xbarobjs: OrderedDict) -> OrderedDict:
-    gencfg = topcfg
 
     # Combine ip cfg into topcfg
-    for ip in ipobjs:
-        amend_ip(gencfg, ip)
+    elaborate_instances(topcfg, name_to_block)
 
     # Create clock connections for each block
     # Assign clocks into appropriate groups
-    # Note, amend_ip references clock information to establish async handling
+    # Note, elaborate_instances references clock information to establish async handling
     # as part of alerts.
-    # amend_clocks(gencfg)
+    # amend_clocks(topcfg)
 
     # Combine the wakeups
-    amend_wkup(gencfg)
-    amend_reset_request(gencfg)
+    amend_wkup(topcfg, name_to_block)
+    amend_reset_request(topcfg, name_to_block)
 
     # Combine the interrupt (should be processed prior to xbar)
-    amend_interrupt(gencfg)
+    amend_interrupt(topcfg, name_to_block)
 
     # Combine the alert (should be processed prior to xbar)
-    amend_alert(gencfg)
+    amend_alert(topcfg, name_to_block)
 
     # Creates input/output list in the pinmux
     log.info("Processing PINMUX")
-    amend_pinmux_io(gencfg)
+    amend_pinmux_io(topcfg, name_to_block)
 
     # Combine xbar into topcfg
     for xbar in xbarobjs:
-        amend_xbar(gencfg, xbar)
+        amend_xbar(topcfg, xbar)
 
     # 2nd phase of xbar (gathering the devices address range)
-    for xbar in gencfg["xbar"]:
-        xbar_cross(xbar, gencfg["xbar"])
+    for xbar in topcfg["xbar"]:
+        xbar_cross(xbar, topcfg["xbar"])
 
     # Add path names to declared resets.
     # Declare structure for exported resets.
-    amend_resets(gencfg)
+    amend_resets(topcfg)
 
     # remove unwanted fields 'debug_mem_base_addr'
-    gencfg.pop('debug_mem_base_addr', None)
+    topcfg.pop('debug_mem_base_addr', None)
 
-    return gencfg
+    return topcfg

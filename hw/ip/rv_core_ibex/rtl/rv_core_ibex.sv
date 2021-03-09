@@ -8,7 +8,7 @@
  * 32 bit RISC-V core supporting the RV32I + optionally EMC instruction sets.
  * Instruction and data bus are 32 bit wide TileLink-UL (TL-UL).
  */
-module rv_core_ibex import rv_core_ibex_pkg::*; #(
+module rv_core_ibex #(
   parameter bit                 PMPEnable         = 1'b0,
   parameter int unsigned        PMPGranularity    = 0,
   parameter int unsigned        PMPNumRegions     = 4,
@@ -62,10 +62,10 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
   input  logic        debug_req_i,
 
   // Crash dump information
-  output crashdump_t  crash_dump_o,
+  output ibex_pkg::crash_dump_t crash_dump_o,
 
   // CPU Control Signals
-  input lc_ctrl_pkg::lc_tx_t fetch_enable_i,
+  input lc_ctrl_pkg::lc_tx_t lc_cpu_en_i,
   output logic        core_sleep_o
 );
 
@@ -164,12 +164,12 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
   assign unused_alert_minor = alert_minor;
   assign unused_alert_major = alert_major;
 
-  lc_ctrl_pkg::lc_tx_t fetch_enable;
+  lc_ctrl_pkg::lc_tx_t [0:0] lc_cpu_en;
   prim_lc_sync u_lc_sync (
     .clk_i,
     .rst_ni,
-    .lc_en_i(fetch_enable_i),
-    .lc_en_o(fetch_enable)
+    .lc_en_i(lc_cpu_en_i),
+    .lc_en_o(lc_cpu_en)
   );
 
   ibex_core #(
@@ -224,6 +224,7 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
     .irq_nm_i       ( irq_nm       ),
 
     .debug_req_i,
+    .crash_dump_o,
 
 `ifdef RVFI
     .rvfi_valid,
@@ -251,7 +252,7 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
     .rvfi_mem_wdata,
 `endif
 
-    .fetch_enable_i   (fetch_enable == lc_ctrl_pkg::On),
+    .fetch_enable_i   (lc_cpu_en[0] == lc_ctrl_pkg::On),
     .alert_minor_o    (alert_minor),
     .alert_major_o    (alert_major),
     .core_sleep_o
@@ -266,18 +267,19 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
   ) tl_adapter_host_i_ibex (
     .clk_i,
     .rst_ni,
-    .req_i   (instr_req),
-    .type_i  (tlul_pkg::InstrType),
-    .gnt_o   (instr_gnt),
-    .addr_i  (instr_addr),
-    .we_i    (1'b0),
-    .wdata_i (32'b0),
-    .be_i    (4'hF),
-    .valid_o (instr_rvalid),
-    .rdata_o (instr_rdata),
-    .err_o   (instr_err),
-    .tl_o    (tl_i_ibex2fifo),
-    .tl_i    (tl_i_fifo2ibex)
+    .req_i      (instr_req),
+    .type_i     (tlul_pkg::InstrType),
+    .gnt_o      (instr_gnt),
+    .addr_i     (instr_addr),
+    .we_i       (1'b0),
+    .wdata_i    (32'b0),
+    .be_i       (4'hF),
+    .valid_o    (instr_rvalid),
+    .rdata_o    (instr_rdata),
+    .err_o      (instr_err),
+    .intg_err_o (),
+    .tl_o       (tl_i_ibex2fifo),
+    .tl_i       (tl_i_fifo2ibex)
   );
 
   tlul_fifo_sync #(
@@ -302,18 +304,19 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
   ) tl_adapter_host_d_ibex (
     .clk_i,
     .rst_ni,
-    .req_i   (data_req),
-    .type_i  (tlul_pkg::DataType),
-    .gnt_o   (data_gnt),
-    .addr_i  (data_addr),
-    .we_i    (data_we),
-    .wdata_i (data_wdata),
-    .be_i    (data_be),
-    .valid_o (data_rvalid),
-    .rdata_o (data_rdata),
-    .err_o   (data_err),
-    .tl_o    (tl_d_ibex2fifo),
-    .tl_i    (tl_d_fifo2ibex)
+    .req_i      (data_req),
+    .type_i     (tlul_pkg::DataType),
+    .gnt_o      (data_gnt),
+    .addr_i     (data_addr),
+    .we_i       (data_we),
+    .wdata_i    (data_wdata),
+    .be_i       (data_be),
+    .valid_o    (data_rvalid),
+    .rdata_o    (data_rdata),
+    .err_o      (data_err),
+    .intg_err_o (),
+    .tl_o       (tl_d_ibex2fifo),
+    .tl_i       (tl_d_fifo2ibex)
   );
 
   tlul_fifo_sync #(
@@ -332,10 +335,6 @@ module rv_core_ibex import rv_core_ibex_pkg::*; #(
     .spare_req_o (),
     .spare_rsp_i (1'b0),
     .spare_rsp_o ());
-
-
-  //hardwire crashdump for now
-  assign crash_dump_o = '0;
 
   //
   // Interception point for connecting simulation SRAM by disconnecting the tl_d output. The

@@ -5,10 +5,13 @@
 {
     name:               "aes",
     design_spec:        "hw/ip/aes/doc",
-    dv_doc:            "hw/ip/aes/doc/dv",
+    dv_doc:             "hw/ip/aes/doc/dv",
     hw_checklist:       "hw/ip/aes/doc/checklist",
+    sw_checklist:       "sw/device/lib/dif/dif_aes",
     version:            "1.0",
     life_stage:         "L1",
     design_stage:       "D1",
     verification_stage: "V1",
+    dif_stage:          "S0",
+    notes:              "D2 except for SEC_CM_IMPLEMENTED; SCA/FI hardening in progress",
 }

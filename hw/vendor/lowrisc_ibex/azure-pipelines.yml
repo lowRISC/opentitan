@@ -30,7 +30,7 @@ jobs:
 - job: lint_dv
   displayName: Run quality checks (Lint and DV)
   pool:
-    vmImage: "ubuntu-16.04"
+    vmImage: "ubuntu-18.04"
   steps:
   - bash: |
       ci/install-build-deps.sh

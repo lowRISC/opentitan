@@ -28,8 +28,7 @@ module otbn_core_model
   // real implementation running alongside and we check DMEM contents on completion.
   parameter string DesignScope = "",
 
-  localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte),
-  localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte)
+  localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte)
 )(
   input  logic  clk_i,
   input  logic  rst_ni,

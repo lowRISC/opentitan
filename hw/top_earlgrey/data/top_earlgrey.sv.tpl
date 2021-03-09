@@ -40,7 +40,7 @@ module top_${top["name"]} #(
   % if not lib.is_inst(m):
 <% continue %>
   % endif
-  % for p_exp in filter(lambda p: p["expose"] == "true", m["param_list"]):
+  % for p_exp in filter(lambda p: p.get("expose") == "true", m["param_list"]):
   parameter ${p_exp["type"]} ${p_exp["name_top"]} = ${p_exp["default"]},
   % endfor
 % endfor
@@ -123,24 +123,17 @@ module top_${top["name"]} #(
   % if not lib.is_inst(m):
 <% continue %>
   % endif
+<%
+  block = name_to_block[m['type']]
+  inouts, inputs, outputs = block.xputs
+%>\
   // ${m["name"]}
-  % for p_in in m["available_input_list"] + m["available_inout_list"]:
-    ## assume it passed validate and have available input list always
-    % if "width" in p_in:
-  logic ${lib.bitarray(int(p_in["width"]), max_sigwidth)} cio_${m["name"]}_${p_in["name"]}_p2d;
-    % else:
-  logic ${lib.bitarray(1, max_sigwidth)} cio_${m["name"]}_${p_in["name"]}_p2d;
-    % endif
+  % for p_in in inputs + inouts:
+  logic ${lib.bitarray(p_in.bits.width(), max_sigwidth)} cio_${m["name"]}_${p_in.name}_p2d;
   % endfor
-  % for p_out in m["available_output_list"] + m["available_inout_list"]:
-    ## assume it passed validate and have available output list always
-    % if "width" in p_out:
-  logic ${lib.bitarray(int(p_out["width"]), max_sigwidth)} cio_${m["name"]}_${p_out["name"]}_d2p;
-  logic ${lib.bitarray(int(p_out["width"]), max_sigwidth)} cio_${m["name"]}_${p_out["name"]}_en_d2p;
-    % else:
-  logic ${lib.bitarray(1, max_sigwidth)} cio_${m["name"]}_${p_out["name"]}_d2p;
-  logic ${lib.bitarray(1, max_sigwidth)} cio_${m["name"]}_${p_out["name"]}_en_d2p;
-    % endif
+  % for p_out in outputs + inouts:
+  logic ${lib.bitarray(p_out.bits.width(), max_sigwidth)} cio_${m["name"]}_${p_out.name}_d2p;
+  logic ${lib.bitarray(p_out.bits.width(), max_sigwidth)} cio_${m["name"]}_${p_out.name}_en_d2p;
   % endfor
 % endfor
 
@@ -153,14 +146,17 @@ module top_${top["name"]} #(
   logic [${interrupt_num-1}:0]  intr_vector;
   // Interrupt source list
 % for m in top["module"]:
+<%
+  block = name_to_block[m['type']]
+%>\
     % if not lib.is_inst(m):
 <% continue %>
     % endif
-    % for intr in m["interrupt_list"] if "interrupt_list" in m else []:
-        % if "width" in intr and int(intr["width"]) != 1:
-  logic [${int(intr["width"])-1}:0] intr_${m["name"]}_${intr["name"]};
+    % for intr in block.interrupts:
+        % if intr.bits.width() != 1:
+  logic [${intr.bits.width()-1}:0] intr_${m["name"]}_${intr.name};
         % else:
-  logic intr_${m["name"]}_${intr["name"]};
+  logic intr_${m["name"]}_${intr.name};
         % endif
     % endfor
 % endfor
@@ -291,10 +287,9 @@ module top_${top["name"]} #(
     // debug interface
     .debug_req_i          (debug_req),
     // crash dump interface
-    .crash_dump_o         (rv_core_ibex_crashdump),
+    .crash_dump_o         (rv_core_ibex_crash_dump),
     // CPU control signals
-    // TODO #5356
-    .fetch_enable_i       (lc_ctrl_pkg::On),
+    .lc_cpu_en_i          (lc_ctrl_lc_cpu_en),
     .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping)
   );
 
@@ -362,6 +357,7 @@ module top_${top["name"]} #(
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_req;
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_gnt;
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_we;
+  logic ${lib.bitarray(1,          max_char)} ${m["name"]}_intg_err;
   logic ${lib.bitarray(addr_width, max_char)} ${m["name"]}_addr;
   logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wdata;
   logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wmask;
@@ -372,7 +368,10 @@ module top_${top["name"]} #(
   tlul_adapter_sram #(
     .SramAw(${addr_width}),
     .SramDw(${data_width}),
-    .Outstanding(2)
+    .Outstanding(2),
+    .CmdIntgCheck(1),
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(1)  // TODO: Needs to be updated for integrity passthrough
   ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
@@ -389,6 +388,7 @@ module top_${top["name"]} #(
     .addr_o      (${m["name"]}_addr),
     .wdata_o     (${m["name"]}_wdata),
     .wmask_o     (${m["name"]}_wmask),
+    .intg_error_o(${m["name"]}_intg_err),
     .rdata_i     (${m["name"]}_rdata[${data_width-1}:0]),
     .rvalid_i    (${m["name"]}_rvalid),
     .rerror_i    (${m["name"]}_rerror)
@@ -407,21 +407,23 @@ module top_${top["name"]} #(
     .${key}   (${value}),
     % endfor
 
-    .key_valid_i ( ${m["inter_signal_list"][1]["top_signame"]}_req.valid ),
-    .key_i       ( ${m["inter_signal_list"][1]["top_signame"]}_req.key   ),
-    .nonce_i     ( ${m["inter_signal_list"][1]["top_signame"]}_req.nonce ),
+    .key_valid_i (${m["inter_signal_list"][1]["top_signame"]}_req.valid),
+    .key_i       (${m["inter_signal_list"][1]["top_signame"]}_req.key),
+    .nonce_i     (${m["inter_signal_list"][1]["top_signame"]}_req.nonce),
 
-    .req_i    (${m["name"]}_req),
-    .gnt_o    (${m["name"]}_gnt),
-    .write_i  (${m["name"]}_we),
-    .addr_i   (${m["name"]}_addr),
-    .wdata_i  (${full_data_width}'(${m["name"]}_wdata)),
-    .wmask_i  (${full_data_width}'(${m["name"]}_wmask)),
-    .rdata_o  (${m["name"]}_rdata),
-    .rvalid_o (${m["name"]}_rvalid),
-    .rerror_o (${m["name"]}_rerror),
-    .raddr_o  ( ${m["inter_signal_list"][1]["top_signame"]}_rsp.raddr ),
-    .cfg_i    ( '0 )
+    .req_i       (${m["name"]}_req),
+    .intg_error_i(${m["name"]}_intg_err),
+    .gnt_o       (${m["name"]}_gnt),
+    .write_i     (${m["name"]}_we),
+    .addr_i      (${m["name"]}_addr),
+    .wdata_i     (${full_data_width}'(${m["name"]}_wdata)),
+    .wmask_i     (${full_data_width}'(${m["name"]}_wmask)),
+    .rdata_o     (${m["name"]}_rdata),
+    .rvalid_o    (${m["name"]}_rvalid),
+    .rerror_o    (${m["name"]}_rerror),
+    .raddr_o     (${m["inter_signal_list"][1]["top_signame"]}_rsp.raddr),
+    .intg_error_o(${m["inter_signal_list"][3]["top_signame"]}),
+    .cfg_i       ( '0 )
   );
 
   assign ${m["inter_signal_list"][1]["top_signame"]}_rsp.rerror = ${m["name"]}_rerror;
@@ -445,7 +447,10 @@ module top_${top["name"]} #(
     .SramAw(${addr_width}),
     .SramDw(${data_width}),
     .Outstanding(2),
-    .ErrOnWrite(1)
+    .ErrOnWrite(1),
+    .CmdIntgCheck(1),
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(1) // TODO: Needs to be updated for intgerity passthrough
   ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
@@ -463,6 +468,7 @@ module top_${top["name"]} #(
     .addr_o      (${m["name"]}_addr),
     .wdata_o     (),
     .wmask_o     (),
+    .intg_error_o(), // Connect to ROM checker and ROM scramble later
     .rdata_i     (${m["name"]}_rdata[${data_width-1}:0]),
     .rvalid_i    (${m["name"]}_rvalid),
     .rerror_i    (2'b00)
@@ -501,7 +507,10 @@ module top_${top["name"]} #(
     .SramDw(flash_ctrl_pkg::BusWidth),
     .Outstanding(2),
     .ByteAccess(0),
-    .ErrOnWrite(1)
+    .ErrOnWrite(1),
+    .CmdIntgCheck(1),
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(1)
   ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
@@ -519,6 +528,7 @@ module top_${top["name"]} #(
     .addr_o      (flash_host_addr),
     .wdata_o     (),
     .wmask_o     (),
+    .intg_error_o(),  // TODO: connect to flash controller and flash scramble later
     .rdata_i     (flash_host_rdata),
     .rvalid_i    (flash_host_req_done),
     .rerror_i    ({flash_host_rderr,1'b0})
@@ -562,73 +572,66 @@ module top_${top["name"]} #(
 if not lib.is_inst(m):
      continue
 
-port_list = m["available_input_list"] + m["available_output_list"] + m["available_inout_list"]
-if len(port_list) == 0:
-    max_sigwidth = 0
-else:
-    max_sigwidth = max([len(x["name"]) for x
-      in m["available_input_list"] + m["available_inout_list"] + m["available_output_list"]])
+block = name_to_block[m['type']]
+inouts, inputs, outputs = block.xputs
 
-if len(m["interrupt_list"]) == 0:
-    max_intrwidth = 0
-else:
-    max_intrwidth = max([len(x["name"]) for x
-        in m["interrupt_list"]])
+port_list = inputs + outputs + inouts
+max_sigwidth = max(len(x.name) for x in port_list) if port_list else 0
+max_intrwidth = (max(len(x.name) for x in block.interrupts)
+                 if block.interrupts else 0)
 %>\
   % if m["param_list"]:
   ${m["type"]} #(
     % for i in m["param_list"]:
-    .${i["name"]}(${i["name_top" if i["expose"] == "true" or i["randtype"] != "none" else "default"]})${"," if not loop.last else ""}
+    .${i["name"]}(${i["name_top" if i.get("expose") == "true" or i.get("randtype", "none") != "none" else "default"]})${"," if not loop.last else ""}
     % endfor
   ) u_${m["name"]} (
   % else:
   ${m["type"]} u_${m["name"]} (
   % endif
-    % for p_in in m["available_input_list"] + m["available_inout_list"]:
+    % for p_in in inputs + inouts:
       % if loop.first:
 
       // Input
       % endif
-      .${lib.ljust("cio_"+p_in["name"]+"_i",max_sigwidth+9)} (cio_${m["name"]}_${p_in["name"]}_p2d),
+      .${lib.ljust("cio_"+p_in.name+"_i",max_sigwidth+9)} (cio_${m["name"]}_${p_in.name}_p2d),
     % endfor
-    % for p_out in m["available_output_list"] + m["available_inout_list"]:
+    % for p_out in outputs + inouts:
       % if loop.first:
 
       // Output
       % endif
-      .${lib.ljust("cio_"+p_out["name"]+"_o",   max_sigwidth+9)} (cio_${m["name"]}_${p_out["name"]}_d2p),
-      .${lib.ljust("cio_"+p_out["name"]+"_en_o",max_sigwidth+9)} (cio_${m["name"]}_${p_out["name"]}_en_d2p),
+      .${lib.ljust("cio_"+p_out.name+"_o",   max_sigwidth+9)} (cio_${m["name"]}_${p_out.name}_d2p),
+      .${lib.ljust("cio_"+p_out.name+"_en_o",max_sigwidth+9)} (cio_${m["name"]}_${p_out.name}_en_d2p),
     % endfor
-    % for intr in m["interrupt_list"] if "interrupt_list" in m else []:
+    % for intr in block.interrupts:
       % if loop.first:
 
       // Interrupt
       % endif
-      .${lib.ljust("intr_"+intr["name"]+"_o",max_intrwidth+7)} (intr_${m["name"]}_${intr["name"]}),
+      .${lib.ljust("intr_"+intr.name+"_o",max_intrwidth+7)} (intr_${m["name"]}_${intr.name}),
     % endfor
-    % if m["alert_list"]:
+    % if block.alerts:
 <%
-w = sum([x["width"] if "width" in x else 1 for x in m["alert_list"]])
+w = len(block.alerts)
 slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 %>
-      % for alert in m["alert_list"] if "alert_list" in m else []:
-        % for i in range(alert["width"]):
-      // [${alert_idx}]: ${alert["name"]}<% alert_idx += 1 %>
-        % endfor
+      % for alert in block.alerts:
+      // [${alert_idx}]: ${alert.name}<% alert_idx += 1 %>
       % endfor
       .alert_tx_o  ( alert_tx[${slice}] ),
       .alert_rx_i  ( alert_rx[${slice}] ),
     % endif
     ## TODO: Inter-module Connection
-    % if "inter_signal_list" in m:
+    % if m.get('inter_signal_list'):
 
       // Inter-module signals
-      % for sig in m["inter_signal_list"]:
+      % for sig in m['inter_signal_list']:
         ## TODO: handle below condition in lib.py
-        % if sig["type"] == "req_rsp":
+        % if sig['type'] == "req_rsp":
       .${lib.im_portname(sig,"req")}(${lib.im_netname(sig, "req")}),
       .${lib.im_portname(sig,"rsp")}(${lib.im_netname(sig, "rsp")}),
-        % elif sig["type"] == "uni":
+        % elif sig['type'] == "uni":
           ## TODO: Broadcast type
           ## TODO: default for logic type
       .${lib.im_portname(sig)}(${lib.im_netname(sig)}),
@@ -668,10 +671,10 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .alert_rx_o  ( alert_rx ),
       .alert_tx_i  ( alert_tx ),
     % endif
-    % if m["scan"] == "true":
+    % if block.scan:
       .scanmode_i,
     % endif
-    % if m["scan_reset"] == "true":
+    % if block.scan_reset:
       .scan_rst_ni  (scan_rst_ni),
     % endif
 
@@ -708,7 +711,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 
   ## Inter-module signal
   % for sig in xbar["inter_signal_list"]:
-<% assert sig["type"] == "req_rsp" %>\
+<% assert sig['type'] == "req_rsp" %>\
     // port: ${sig['name']}
     .${lib.im_portname(sig,"req")}(${lib.im_netname(sig, "req")}),
     .${lib.im_portname(sig,"rsp")}(${lib.im_netname(sig, "rsp")}),

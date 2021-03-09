@@ -18,10 +18,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // knobs to lock shadow register write access if fatal storage error occurred
   bit do_lock_shadow_reg = 1'b1;
 
-  // csr queue for intr test/enable/state
-  dv_base_reg intr_test_csrs[$];
+  // csr queues
+  dv_base_reg all_csrs[$];
   dv_base_reg intr_state_csrs[$];
-  dv_base_reg intr_enable_csrs[$];
 
   // user can set the name of common seq to run directly without using $value$plusargs
   string common_seq_type;
@@ -228,31 +227,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
   endfunction
 
-  // function to extract common csrs and fill the respective queue
-  // for ex. intr_test_csr, intr_enable_csr, intr_state_csr etc.
   local function void extract_common_csrs();
-    uvm_reg all_csrs[$];
-    intr_test_csrs.delete();
-    intr_state_csrs.delete();
-    intr_enable_csrs.delete();
-    // Get all interrupt test/state/enable registers
-    ral.get_registers(all_csrs);
+    foreach (cfg.ral_models[i]) cfg.ral_models[i].get_dv_base_regs(all_csrs);
     foreach (all_csrs[i]) begin
       string csr_name = all_csrs[i].get_name();
-      if (!uvm_re_match("intr_test*", csr_name)) begin
-        intr_test_csrs.push_back(get_interrupt_csr(csr_name));
-      end
-      else if (!uvm_re_match("intr_enable*", csr_name)) begin
-        intr_enable_csrs.push_back(get_interrupt_csr(csr_name));
-      end
-      else if (!uvm_re_match("intr_state*", csr_name)) begin
+      if (!uvm_re_match("intr_state*", csr_name)) begin
         intr_state_csrs.push_back(get_interrupt_csr(csr_name));
       end
     end
-    all_csrs.delete();
-    // check intr test, enable and state queue sizes are equal
-    `DV_CHECK_EQ_FATAL(intr_enable_csrs.size(), intr_test_csrs.size())
-    `DV_CHECK_EQ_FATAL(intr_state_csrs.size(), intr_test_csrs.size())
   endfunction
 
   // task to enable multiple interrupts
@@ -330,79 +312,64 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // generic task to check interrupt test reg functionality
   virtual task run_intr_test_vseq(int num_times = 1);
-    bit [BUS_DW-1:0] exp_intr_state[$];
-    int test_index[$];
+    dv_base_reg all_intr_csrs[$];
 
-    foreach (intr_test_csrs[i]) begin
-      test_index.push_back(i);
-      //Place holder for expected intr state value
-      exp_intr_state.push_back(0);
+    foreach (all_csrs[i]) begin
+      string csr_name = all_csrs[i].get_name();
+      if (!uvm_re_match("intr_test*", csr_name) ||
+          !uvm_re_match("intr_enable*", csr_name) ||
+          !uvm_re_match("intr_state*", csr_name)) begin
+        all_intr_csrs.push_back(get_interrupt_csr(csr_name));
+      end
     end
 
+    num_times = num_times * all_intr_csrs.size;
     for (int trans = 1; trans <= num_times; trans++) begin
       bit [BUS_DW-1:0] num_used_bits;
       bit [BUS_DW-1:0] intr_enable_val[$];
       `uvm_info(`gfn, $sformatf("Running intr test iteration %0d/%0d", trans, num_times), UVM_LOW)
-      // Random Write to all intr enable registers
-      test_index.shuffle();
-      foreach (test_index[i]) begin
-        bit [BUS_DW-1:0] wr_data;
-        wr_data = $urandom_range(0, ((1 << intr_enable_csrs[test_index[i]].get_n_used_bits()) - 1));
-        intr_enable_val.insert(test_index[i], wr_data);
-        csr_wr(.csr(intr_enable_csrs[test_index[i]]), .value(wr_data));
+
+      // Random Write to all intr related registers
+      all_intr_csrs.shuffle();
+      foreach (all_intr_csrs[i]) begin
+        uvm_reg_data_t data = $urandom;
+        `uvm_info(`gfn, $sformatf("Write intr CSR %s: 0x%0h", all_intr_csrs[i].get_name(), data),
+                  UVM_MEDIUM)
+        csr_wr(.csr(all_intr_csrs[i]), .value(data));
       end
 
-      // Random write to all interrupt test reg
-      test_index.shuffle();
-      foreach (test_index[i]) begin
-        bit [BUS_DW-1:0] wr_data;
-        wr_data = $urandom_range(0, ((1 << intr_test_csrs[test_index[i]].get_n_used_bits()) - 1));
-        // Add wr_data to expected state queue
-        exp_intr_state[test_index[i]] |= wr_data;
-        csr_wr(.csr(intr_test_csrs[test_index[i]]), .value(wr_data));
-      end
+      // Read all intr related csr and check interrupt pins
+      all_intr_csrs.shuffle();
+      foreach (all_intr_csrs[i]) begin
+        dv_base_reg csr = all_intr_csrs[i];
+        uvm_reg_data_t act_val;
+        string csr_name = csr.get_name();
 
-      // Read all intr state
-      test_index.shuffle();
-      foreach (test_index[i]) begin
-        bit [BUS_DW-1:0] dut_intr_state;
-        `uvm_info(`gtn, $sformatf("Verifying %0s", intr_test_csrs[test_index[i]].get_full_name()),
-            UVM_LOW)
-        csr_rd(.ptr(intr_state_csrs[test_index[i]]), .value(dut_intr_state));
-        if (!cfg.under_reset) `DV_CHECK_EQ(dut_intr_state, exp_intr_state[test_index[i]])
-      end
+        csr_rd(.ptr(csr), .value(act_val));
+        `uvm_info(`gfn, $sformatf("Read %s: 0x%0h", csr.get_full_name(), act_val),
+            UVM_MEDIUM)
 
-      // check interrupt pins
-      if (!cfg.under_reset) begin
-        foreach (intr_test_csrs[i]) begin
-          bit [BUS_DW-1:0] exp_intr_pin;
-          exp_intr_pin = exp_intr_state[i] & intr_enable_val[i];
-          for (int j = 0; j < intr_test_csrs[i].get_n_used_bits(); j++) begin
-            bit act_intr_pin_val = cfg.intr_vif.sample_pin(j + num_used_bits);
-            `DV_CHECK_CASE_EQ(act_intr_pin_val, exp_intr_pin[j], $sformatf(
-                "exp_intr_state: 0x%0h, en_intr: 0x%0h", exp_intr_state[i], intr_enable_val[i]))
-          end
-          num_used_bits += intr_test_csrs[i].get_n_used_bits();
-        end
-      end
+        if (!cfg.under_reset) continue;
 
-      // clear random bits of intr state
-      test_index.shuffle();
-      foreach (test_index[i]) begin
-        if ($urandom_range(0, 1)) begin
-          bit [BUS_DW-1:0] wr_data;
-          wr_data = $urandom_range((1 << intr_state_csrs[test_index[i]].get_n_used_bits()) - 1);
-          exp_intr_state[test_index[i]] &= (~wr_data);
-          csr_wr(.csr(intr_state_csrs[test_index[i]]), .value(wr_data));
-        end
-      end
-    end
+        `DV_CHECK_EQ(act_val, `gmv(csr))
+
+        // if it's intr_state, also check the interrupt pin value
+        if (!uvm_re_match("intr_state*", csr_name)) begin
+          uvm_reg_data_t exp_intr_pin = csr.get_intr_pins_exp_value();
+
+          for (int j = 0; j < csr.get_n_used_bits(); j++) begin
+            bit act_intr_pin_val = cfg.intr_vif.sample_pin(j);
+            `DV_CHECK_CASE_EQ(act_intr_pin_val, exp_intr_pin[j])
+          end // for
+        end // if (!uvm_re_match
+      end // foreach (all_intr_csrs[i])
+    end // for (int trans = 1; ...
   endtask
 
   // Task to clear register intr status bits
   virtual task clear_all_interrupts();
-    bit [BUS_DW-1:0] data;
     foreach (intr_state_csrs[i]) begin
+      bit [BUS_DW-1:0] data;
       csr_rd(.ptr(intr_state_csrs[i]), .value(data));
       if (data != 0) begin
         `uvm_info(`gtn, $sformatf("Clearing %0s", intr_state_csrs[i].get_name()), UVM_HIGH)
@@ -680,12 +647,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   virtual task run_shadow_reg_errors(int num_times);
     csr_excl_item      csr_excl = add_and_return_csr_excl("csr_excl");
-    dv_base_reg        shadowed_csrs[$], all_csrs[$], test_csrs[$];
+    dv_base_reg        shadowed_csrs[$], test_csrs[$];
     uvm_reg_data_t     wdata;
     bit                alert_triggered;
 
     ral.get_shadowed_regs(shadowed_csrs);
-    ral.get_dv_base_regs(all_csrs);
 
     for (int trans = 1; trans <= num_times; trans++) begin
       `uvm_info(`gfn, $sformatf("Running shadow reg error test iteration %0d/%0d", trans,
@@ -831,7 +797,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       end
     end
 
-    repeat (num_accesses * num_times) begin
+    num_accesses = num_accesses * num_times;
+    while (num_accesses) begin
       fork
         begin
           bit [BUS_AW-1:0]  addr;
@@ -866,11 +833,16 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               // get all the programmed addresses and randomly pick one
               addr_mask_t addr_mask = mem_exist_addr_q[$urandom_range(0,
                                                                       mem_exist_addr_q.size - 1)];
-              addr = addr_mask.addr;
-              if (get_mem_access_by_addr(ral, addr) != "WO") begin
-                mask = get_rand_contiguous_mask(addr_mask.mask);
-                tl_access_w_abort(.addr(addr), .write(0), .data(data), .status(status), .mask(mask),
-                                  .blocking(1), .req_abort_pct($urandom_range(0, 100)));
+              // TODO, Remove this if condition when #5262 is solved
+              // Only read when it's fully written
+              if (addr_mask.mask == '1) begin
+                addr = addr_mask.addr;
+                if (get_mem_access_by_addr(ral, addr) != "WO") begin
+                  mask = get_rand_contiguous_mask(addr_mask.mask);
+                  tl_access_w_abort(.addr(addr), .write(0), .data(data), .status(status), .mask(mask),
+                                    .blocking(1), .req_abort_pct($urandom_range(0, 100)));
+                end
+                num_accesses--;
               end
             end
           endcase

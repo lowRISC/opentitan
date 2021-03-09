@@ -11,6 +11,10 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#define ENTROPY_SRC_CONF_REG_OFFSET 0x18
+#define CSRNG_CTRL_REG_OFFSET 0x14
+#define EDN_CTRL_REG_OFFSET 0x14
+
 // The following plaintext, key and ciphertext are extracted from Appendix C of
 // the Advanced Encryption Standard (AES) FIPS Publication 197 available at
 // https://www.nist.gov/publications/advanced-encryption-standard-aes
@@ -66,6 +70,14 @@ bool test_main(void) {
 
   LOG_INFO("Running AES test");
 
+  // First of all, we need to get the entropy complex up and running.
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR),
+                      ENTROPY_SRC_CONF_REG_OFFSET, 0x2);
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
+                      CSRNG_CTRL_REG_OFFSET, 0x1);
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
+                      EDN_CTRL_REG_OFFSET, 0x1);
+
   // Initialise AES.
   dif_aes_params_t params = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR),
@@ -119,6 +131,14 @@ bool test_main(void) {
           "Encrypted cipher text mismatched: exp = %x, actual = %x",
           cipher_text_gold_words[i], out_data_cipher.data[i]);
   }
+
+  // Disable and re-enable EDN1 to get some more entropy out of it. This is
+  // dirty and needs to be reworked. We need to setup CSRNG/EDN to continously
+  // provide entropy.
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
+                      EDN_CTRL_REG_OFFSET, 0x0);
+  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
+                      EDN_CTRL_REG_OFFSET, 0x1);
 
   // Setup ECB decryption transaction.
   transaction.mode = kDifAesModeDecrypt;

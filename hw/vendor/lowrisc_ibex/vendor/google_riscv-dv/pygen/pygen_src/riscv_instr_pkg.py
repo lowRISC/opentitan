@@ -1455,7 +1455,7 @@ class riscv_instr_pkg:
     indent = LABEL_STR_LEN * " "
 
     def hart_prefix(self, hart=0):
-        if (rcs.NUM_HARTS <= 1):
+        if rcs.NUM_HARTS <= 1:
             return ""
         else:
             return f"h{hart}_"
@@ -1481,11 +1481,11 @@ class riscv_instr_pkg:
 
     def push_gpr_to_kernel_stack(self, status, scratch, mprv, sp, tp, instr):
         store_instr = ''
-        if(rcs.XLEN == 32):
+        if rcs.XLEN == 32:
             store_instr = "sw"
         else:
             store_instr = "sd"
-        if (scratch.name in rcs.implemented_csr):
+        if scratch in rcs.implemented_csr:
             # Use kernal stack for handling exceptions. Save the user mode stack
             # pointer to the scratch register
             instr.append(pkg_ins.format_string(
@@ -1495,10 +1495,10 @@ class riscv_instr_pkg:
         # If MPRV is set and MPP is S/U mode, it means the address translation and
         # memory protection for load/store instruction is the same as the mode indicated
         # by MPP. In this case, we need to use the virtual address to access the kernel stack.
-        if((status.name == "MSTATUS") and (rcs.SATP_MODE != "BARE")):
+        if(status.name == privileged_reg_t.MSTATUS and rcs.SATP_MODE != satp_mode_t.BARE):
             # We temporarily use tp to check mstatus to avoid changing other GPR. The value
             # of sp has been saved to xScratch and can be restored later.
-            if(mprv):
+            if mprv:
                 instr.append(pkg_ins.format_string(
                     "csrr x{}, 0x{} // MSTATUS".format(tp, status.value)))
                 instr.append(pkg_ins.format_string(
@@ -1526,7 +1526,7 @@ class riscv_instr_pkg:
 
     def pop_gpr_from_kernel_stack(self, status, scratch, mprv, sp, tp, instr):
         load_instr = ''
-        if(rcs.XLEN == 32):
+        if rcs.XLEN == 32:
             load_instr = "lw"
         else:
             load_instr = "ld"
@@ -1537,7 +1537,7 @@ class riscv_instr_pkg:
         # Restore kernel stack pointer
         instr.append(pkg_ins.format_string(
             "addi x{}, x{}, {}".format(sp, sp, int(31 * (rcs.XLEN / 8)))))
-        if (scratch in rcs.implemented_csr):
+        if scratch in rcs.implemented_csr:
             # Move SP to TP
             instr.append(pkg_ins.format_string("add x{}, x{}, zero".format(tp, sp)))
             # Restore user mode stack pointer

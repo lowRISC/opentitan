@@ -27,6 +27,13 @@ package spi_agent_pkg;
     SamplingEdge
   } sck_edge_type_e;
 
+  // spi mode
+  typedef enum {
+    Single = 0,  // Full duplex, tx: sio[0], rx: sio[1]
+    Dual   = 1,  // Half duplex, tx and rx: sio[1:0]
+    Quad   = 2   // Half duplex, tx and rx: sio[3:0]
+  } spi_mode_e;
+
   // functions
 
   // package sources

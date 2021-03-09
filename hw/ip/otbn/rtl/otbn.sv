@@ -183,6 +183,7 @@ module otbn
     .addr_o      (imem_index_bus ),
     .wdata_o     (imem_wdata_bus ),
     .wmask_o     (imem_wmask_bus ),
+    .intg_error_o(               ),
     .rdata_i     (imem_rdata_bus ),
     .rvalid_i    (imem_rvalid_bus),
     .rerror_i    (imem_rerror_bus)
@@ -317,6 +318,7 @@ module otbn
     .addr_o      (dmem_index_bus ),
     .wdata_o     (dmem_wdata_bus ),
     .wmask_o     (dmem_wmask_bus ),
+    .intg_error_o(               ),
     .rdata_i     (dmem_rdata_bus ),
     .rvalid_i    (dmem_rvalid_bus),
     .rerror_i    (dmem_rerror_bus)
@@ -358,6 +360,7 @@ module otbn
     .reg2hw,
     .hw2reg,
 
+    .intg_err_o(),
     .devmode_i (1'b1)
   );
 

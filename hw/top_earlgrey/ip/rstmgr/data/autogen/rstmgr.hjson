@@ -88,11 +88,11 @@
       package: "alert_pkg",
     },
 
-    { struct:  "crashdump",
+    { struct:  "crash_dump",
       type:    "uni",
       name:    "cpu_dump",
       act:     "rcv",
-      package: "rv_core_ibex_pkg",
+      package: "ibex_pkg",
     },
 
     // Exported resets

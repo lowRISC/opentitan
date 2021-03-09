@@ -33,7 +33,7 @@ assign entropy_reset_n = scan_mode_i ? scan_reset_ni :
 prim_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
-) u_rst_es_da_sync (
+) u_rst_es_da_sync(
   .clk_i ( clk_ast_es_i ),
   .rst_ni ( entropy_reset_n ),
   .d_i ( 1'b1 ),

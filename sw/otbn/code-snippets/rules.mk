@@ -125,8 +125,28 @@ $(otbn-code-snippets-bin-dir)/p256_ecdsa.elf: \
 $(otbn-code-snippets-bin-dir)/p256_ecdsa.elf: \
   otbn-libs += $(otbn-code-snippets-obj-dir)/p256.o
 
+# p256 point addition test depends on proj_add defined in p256.s
+$(otbn-code-snippets-bin-dir)/p256_proj_add_test.elf: \
+  $(otbn-code-snippets-obj-dir)/p256.o
+$(otbn-code-snippets-bin-dir)/p256_proj_add_test.elf: \
+  otbn-libs += $(otbn-code-snippets-obj-dir)/p256.o
+
 # rsa depends on code defined in modexp.s
 $(otbn-code-snippets-bin-dir)/rsa.elf: \
   $(otbn-code-snippets-obj-dir)/modexp.o
 $(otbn-code-snippets-bin-dir)/rsa.elf: \
   otbn-libs += $(otbn-code-snippets-obj-dir)/modexp.o
+
+# p384_proj_add depends on barrett384_p384 defined in barrett384_p384.s
+$(otbn-code-snippets-bin-dir)/p384_proj_add.elf: \
+  $(otbn-code-snippets-obj-dir)/barrett384_p384.o
+$(otbn-code-snippets-bin-dir)/p384_proj_add.elf: \
+  otbn-libs += $(otbn-code-snippets-obj-dir)/barrett384_p384.o
+
+# p384_proj_add_test depends on p384_proj_add defined in p384_proj_add.s
+$(otbn-code-snippets-bin-dir)/p384_proj_add_test.elf: \
+  $(otbn-code-snippets-obj-dir)/p384_proj_add.o \
+  $(otbn-code-snippets-obj-dir)/barrett384_p384.o
+$(otbn-code-snippets-bin-dir)/p384_proj_add_test.elf: \
+  otbn-libs += $(otbn-code-snippets-obj-dir)/p384_proj_add.o \
+  $(otbn-code-snippets-obj-dir)/barrett384_p384.o

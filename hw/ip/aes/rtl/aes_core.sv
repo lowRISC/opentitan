@@ -15,6 +15,8 @@ module aes_core
   parameter sbox_impl_e  SBoxImpl             = SBoxImplLut,
   parameter int unsigned SecStartTriggerDelay = 0,
   parameter bit          SecAllowForcingMasks = 0,
+  parameter bit          SecSkipPRNGReseeding = 0,
+  parameter int unsigned EntropyWidth         = edn_pkg::ENDPOINT_BUS_WIDTH,
 
   localparam int         NumShares            = Masking ? 2 : 1, // derived parameter
 
@@ -29,10 +31,10 @@ module aes_core
   // Entropy request interfaces for clearing and masking PRNGs
   output logic                        entropy_clearing_req_o,
   input  logic                        entropy_clearing_ack_i,
-  input  logic [WidthPRDClearing-1:0] entropy_clearing_i,
+  input  logic     [EntropyWidth-1:0] entropy_clearing_i,
   output logic                        entropy_masking_req_o,
   input  logic                        entropy_masking_ack_i,
-  input  logic  [WidthPRDMasking-1:0] entropy_masking_i,
+  input  logic     [EntropyWidth-1:0] entropy_masking_i,
 
   // Life cycle
   input  lc_ctrl_pkg::lc_tx_t         lc_escalate_en_i,
@@ -166,9 +168,11 @@ module aes_core
 
   // The clearing PRNG provides pseudo-random data for register clearing purposes.
   aes_prng_clearing #(
-    .Width           ( WidthPRDClearing        ),
-    .RndCnstLfsrSeed ( RndCnstClearingLfsrSeed ),
-    .RndCnstLfsrPerm ( RndCnstClearingLfsrPerm )
+    .Width                ( WidthPRDClearing        ),
+    .EntropyWidth         ( EntropyWidth            ),
+    .SecSkipPRNGReseeding ( SecSkipPRNGReseeding    ),
+    .RndCnstLfsrSeed      ( RndCnstClearingLfsrSeed ),
+    .RndCnstLfsrPerm      ( RndCnstClearingLfsrPerm )
   ) u_aes_prng_clearing (
     .clk_i         ( clk_i                  ),
     .rst_ni        ( rst_ni                 ),
@@ -372,6 +376,7 @@ module aes_core
     .Masking                  ( Masking                  ),
     .SBoxImpl                 ( SBoxImpl                 ),
     .SecAllowForcingMasks     ( SecAllowForcingMasks     ),
+    .SecSkipPRNGReseeding     ( SecSkipPRNGReseeding     ),
     .RndCnstMaskingLfsrSeed   ( RndCnstMaskingLfsrSeed   ),
     .RndCnstMskgChunkLfsrPerm ( RndCnstMskgChunkLfsrPerm )
   ) u_aes_cipher_core (

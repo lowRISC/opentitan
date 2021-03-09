@@ -50,8 +50,9 @@ class chip_base_vseq extends cip_base_vseq #(
     // Initialize flash seeds
     cfg.flash_info0_bkdr_vif.set_mem();
     cfg.flash_info1_bkdr_vif.set_mem();
+    // Backdoor load the OTP image.
+    cfg.otp_bkdr_vif.load_mem_from_file({cfg.sw_images[SwTypeOtp], ".vmem"});
     // Bring the chip out of reset.
-    cfg.otp_bkdr_vif.clear_mem();
     super.dut_init(reset_kind);
   endtask
 

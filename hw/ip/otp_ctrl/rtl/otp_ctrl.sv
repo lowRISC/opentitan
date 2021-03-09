@@ -108,6 +108,7 @@ module otp_ctrl
     .tl_win_i  ( tl_win_d2h ),
     .reg2hw    ( reg2hw     ),
     .hw2reg    ( hw2reg     ),
+    .intg_err_o(            ),
     .devmode_i ( 1'b1       )
   );
 
@@ -193,6 +194,7 @@ module otp_ctrl
     .addr_o      (  tlul_addr         ),
     .wdata_o     (                    ), // unused
     .wmask_o     (                    ), // unused
+    .intg_error_o(                    ),
     .rdata_i     (  tlul_rdata        ),
     .rvalid_i    (  tlul_rvalid       ),
     .rerror_i    (  tlul_rerror       )

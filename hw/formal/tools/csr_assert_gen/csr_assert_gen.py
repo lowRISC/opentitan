@@ -36,15 +36,10 @@ def main():
     # Retrieve the parameters from the yml.
     files_root_dir = gapi['files_root']
     spec = gapi['parameters'].get('spec')
-    name = os.path.basename(spec).replace(".hjson", "")
-    depend = gapi['parameters'].get('depend') or "lowrisc:ip:{}".format(name)
 
-    if not name or not spec:
+    if not spec:
         print("Error: \"spec\" parameter missing or invalid: {}".format(spec))
         sys.exit(1)
-
-    # Generate the CSR assert file.
-    csr_assert_file = name + "_csr_assert_fpv.sv"
 
     # Convert spec (partial path relative to `files_root_dir`) into absolute
     # path so that we can pass it to `regtool.py`.
@@ -61,40 +56,6 @@ def main():
     except subprocess.CalledProcessError as e:
         print("Error: CSR assert gen failed:\n{}".format(str(e)))
         sys.exit(e.returncode)
-    print("CSR assert file written to {}".format(
-        os.path.abspath(csr_assert_file)))
-
-    # Generate the FuseSoc core file.
-    csr_assert_core_text = {
-        'name': "lowrisc:fpv:{}_csr_assert".format(name),
-        'filesets': {
-            'files_dv': {
-                'depend': [
-                    depend,
-                    "lowrisc:tlul:headers",
-                    "lowrisc:prim:assert",
-                ],
-                'files': [
-                    csr_assert_file,
-                ],
-                'file_type': 'systemVerilogSource'
-            },
-        },
-        'targets': {
-            'default': {
-                'filesets': [
-                    'files_dv',
-                ],
-            },
-        },
-    }
-    csr_assert_core_file = os.path.abspath(name + "_csr_assert_fpv.core")
-    with open(csr_assert_core_file, 'w') as f:
-        f.write("CAPI=2:\n")
-        yaml.dump(csr_assert_core_text,
-                  f,
-                  encoding="utf-8")
-    print("CSR assert core file written to {}".format(csr_assert_core_file))
 
 
 if __name__ == '__main__':

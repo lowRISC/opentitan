@@ -51,7 +51,7 @@
     // Broadcast from LC
     { struct:  "lc_tx"
       type:    "uni"
-      name:    "lc_escalate_en"
+      name:    "lc_cpu_en"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
@@ -218,25 +218,6 @@
       ]
       tags: [// interrupt could be updated by HW
         "excl:CsrNonInitTests:CsrExclWriteCheck"],
-    },
-    { name: "INTR_ENABLE",
-      desc: "Dummy interrupt enable register.  This is only here because of #5260.  DO NOT USE",
-      swaccess: "rw",
-      hwaccess: "hwo",
-      hwqe: "true",
-      hwext: "true",
-      fields: [
-        { bits: "0",
-          name: "wkup_timer_expired",
-          desc: "Raised if the wakeup timer has hit the specified threshold",
-        }
-        { bits: "1",
-          name: "wdog_timer_expired",
-          desc: "Raised if the watchdog timer has hit the bark threshold",
-        }
-      ],
-      tags: [// dummy register due to #5260, don't bother checking
-        "excl:CsrAllTests:CsrExclAll"],
     },
     { name: "INTR_TEST",
       desc: "Interrupt Test Register",

@@ -467,16 +467,20 @@ module xbar_main (
   always_comb begin
     // default steering to generate error response if address is not within the range
     dev_sel_s1n_20 = 3'd4;
-    if ((tl_s1n_20_us_h2d.a_address & ~(ADDR_MASK_ROM)) == ADDR_SPACE_ROM) begin
+    if ((tl_s1n_20_us_h2d.a_address &
+         ~(ADDR_MASK_ROM)) == ADDR_SPACE_ROM) begin
       dev_sel_s1n_20 = 3'd0;
 
-    end else if ((tl_s1n_20_us_h2d.a_address & ~(ADDR_MASK_DEBUG_MEM)) == ADDR_SPACE_DEBUG_MEM) begin
+    end else if ((tl_s1n_20_us_h2d.a_address &
+                  ~(ADDR_MASK_DEBUG_MEM)) == ADDR_SPACE_DEBUG_MEM) begin
       dev_sel_s1n_20 = 3'd1;
 
-    end else if ((tl_s1n_20_us_h2d.a_address & ~(ADDR_MASK_RAM_MAIN)) == ADDR_SPACE_RAM_MAIN) begin
+    end else if ((tl_s1n_20_us_h2d.a_address &
+                  ~(ADDR_MASK_RAM_MAIN)) == ADDR_SPACE_RAM_MAIN) begin
       dev_sel_s1n_20 = 3'd2;
 
-    end else if ((tl_s1n_20_us_h2d.a_address & ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
+    end else if ((tl_s1n_20_us_h2d.a_address &
+                  ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
       dev_sel_s1n_20 = 3'd3;
 end
   end
@@ -484,55 +488,72 @@ end
   always_comb begin
     // default steering to generate error response if address is not within the range
     dev_sel_s1n_25 = 5'd17;
-    if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_ROM)) == ADDR_SPACE_ROM) begin
+    if ((tl_s1n_25_us_h2d.a_address &
+         ~(ADDR_MASK_ROM)) == ADDR_SPACE_ROM) begin
       dev_sel_s1n_25 = 5'd0;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_DEBUG_MEM)) == ADDR_SPACE_DEBUG_MEM) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_DEBUG_MEM)) == ADDR_SPACE_DEBUG_MEM) begin
       dev_sel_s1n_25 = 5'd1;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_RAM_MAIN)) == ADDR_SPACE_RAM_MAIN) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_RAM_MAIN)) == ADDR_SPACE_RAM_MAIN) begin
       dev_sel_s1n_25 = 5'd2;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
       dev_sel_s1n_25 = 5'd3;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_PERI)) == ADDR_SPACE_PERI) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_PERI)) == ADDR_SPACE_PERI) begin
       dev_sel_s1n_25 = 5'd4;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_FLASH_CTRL)) == ADDR_SPACE_FLASH_CTRL) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_FLASH_CTRL)) == ADDR_SPACE_FLASH_CTRL) begin
       dev_sel_s1n_25 = 5'd5;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_AES)) == ADDR_SPACE_AES) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_AES)) == ADDR_SPACE_AES) begin
       dev_sel_s1n_25 = 5'd6;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_ENTROPY_SRC)) == ADDR_SPACE_ENTROPY_SRC) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_ENTROPY_SRC)) == ADDR_SPACE_ENTROPY_SRC) begin
       dev_sel_s1n_25 = 5'd7;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_CSRNG)) == ADDR_SPACE_CSRNG) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_CSRNG)) == ADDR_SPACE_CSRNG) begin
       dev_sel_s1n_25 = 5'd8;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_EDN0)) == ADDR_SPACE_EDN0) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_EDN0)) == ADDR_SPACE_EDN0) begin
       dev_sel_s1n_25 = 5'd9;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_EDN1)) == ADDR_SPACE_EDN1) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_EDN1)) == ADDR_SPACE_EDN1) begin
       dev_sel_s1n_25 = 5'd10;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_HMAC)) == ADDR_SPACE_HMAC) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_HMAC)) == ADDR_SPACE_HMAC) begin
       dev_sel_s1n_25 = 5'd11;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_RV_PLIC)) == ADDR_SPACE_RV_PLIC) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_RV_PLIC)) == ADDR_SPACE_RV_PLIC) begin
       dev_sel_s1n_25 = 5'd12;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_OTBN)) == ADDR_SPACE_OTBN) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_OTBN)) == ADDR_SPACE_OTBN) begin
       dev_sel_s1n_25 = 5'd13;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_KEYMGR)) == ADDR_SPACE_KEYMGR) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_KEYMGR)) == ADDR_SPACE_KEYMGR) begin
       dev_sel_s1n_25 = 5'd14;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_KMAC)) == ADDR_SPACE_KMAC) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_KMAC)) == ADDR_SPACE_KMAC) begin
       dev_sel_s1n_25 = 5'd15;
 
-    end else if ((tl_s1n_25_us_h2d.a_address & ~(ADDR_MASK_SRAM_CTRL_MAIN)) == ADDR_SPACE_SRAM_CTRL_MAIN) begin
+    end else if ((tl_s1n_25_us_h2d.a_address &
+                  ~(ADDR_MASK_SRAM_CTRL_MAIN)) == ADDR_SPACE_SRAM_CTRL_MAIN) begin
       dev_sel_s1n_25 = 5'd16;
 end
   end
@@ -540,49 +561,64 @@ end
   always_comb begin
     // default steering to generate error response if address is not within the range
     dev_sel_s1n_39 = 4'd15;
-    if ((tl_s1n_39_us_h2d.a_address & ~(ADDR_MASK_ROM)) == ADDR_SPACE_ROM) begin
+    if ((tl_s1n_39_us_h2d.a_address &
+         ~(ADDR_MASK_ROM)) == ADDR_SPACE_ROM) begin
       dev_sel_s1n_39 = 4'd0;
 
-    end else if ((tl_s1n_39_us_h2d.a_address & ~(ADDR_MASK_RAM_MAIN)) == ADDR_SPACE_RAM_MAIN) begin
+    end else if ((tl_s1n_39_us_h2d.a_address &
+                  ~(ADDR_MASK_RAM_MAIN)) == ADDR_SPACE_RAM_MAIN) begin
       dev_sel_s1n_39 = 4'd1;
 
-    end else if ((tl_s1n_39_us_h2d.a_address & ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
+    end else if ((tl_s1n_39_us_h2d.a_address &
+                  ~(ADDR_MASK_EFLASH)) == ADDR_SPACE_EFLASH) begin
       dev_sel_s1n_39 = 4'd2;
 
-    end else if ((tl_s1n_39_us_h2d.a_address & ~(ADDR_MASK_PERI)) == ADDR_SPACE_PERI) begin
+    end else if ((tl_s1n_39_us_h2d.a_address &
+                  ~(ADDR_MASK_PERI)) == ADDR_SPACE_PERI) begin
       dev_sel_s1n_39 = 4'd3;
 
-    end else if ((tl_s1n_39_us_h2d.a_address & ~(ADDR_MASK_FLASH_CTRL)) == ADDR_SPACE_FLASH_CTRL) begin
+    end else if ((tl_s1n_39_us_h2d.a_address &
+                  ~(ADDR_MASK_FLASH_CTRL)) == ADDR_SPACE_FLASH_CTRL) begin
       dev_sel_s1n_39 = 4'd4;
 
-    end else if ((tl_s1n_39_us_h2d.a_address & ~(ADDR_MASK_AES)) == ADDR_SPACE_AES) begin
+    end else if ((tl_s1n_39_us_h2d.a_address &
+                  ~(ADDR_MASK_AES)) == ADDR_SPACE_AES) begin
       dev_sel_s1n_39 = 4'd5;
 
-    end else if ((tl_s1n_39_us_h2d.a_address & ~(ADDR_MASK_ENTROPY_SRC)) == ADDR_SPACE_ENTROPY_SRC) begin
+    end else if ((tl_s1n_39_us_h2d.a_address &
+                  ~(ADDR_MASK_ENTROPY_SRC)) == ADDR_SPACE_ENTROPY_SRC) begin
       dev_sel_s1n_39 = 4'd6;
 
-    end else if ((tl_s1n_39_us_h2d.a_address & ~(ADDR_MASK_CSRNG)) == ADDR_SPACE_CSRNG) begin
+    end else if ((tl_s1n_39_us_h2d.a_address &
+                  ~(ADDR_MASK_CSRNG)) == ADDR_SPACE_CSRNG) begin
       dev_sel_s1n_39 = 4'd7;
 
-    end else if ((tl_s1n_39_us_h2d.a_address & ~(ADDR_MASK_EDN0)) == ADDR_SPACE_EDN0) begin
+    end else if ((tl_s1n_39_us_h2d.a_address &
+                  ~(ADDR_MASK_EDN0)) == ADDR_SPACE_EDN0) begin
       dev_sel_s1n_39 = 4'd8;
 
-    end else if ((tl_s1n_39_us_h2d.a_address & ~(ADDR_MASK_EDN1)) == ADDR_SPACE_EDN1) begin
+    end else if ((tl_s1n_39_us_h2d.a_address &
+                  ~(ADDR_MASK_EDN1)) == ADDR_SPACE_EDN1) begin
       dev_sel_s1n_39 = 4'd9;
 
-    end else if ((tl_s1n_39_us_h2d.a_address & ~(ADDR_MASK_HMAC)) == ADDR_SPACE_HMAC) begin
+    end else if ((tl_s1n_39_us_h2d.a_address &
+                  ~(ADDR_MASK_HMAC)) == ADDR_SPACE_HMAC) begin
       dev_sel_s1n_39 = 4'd10;
 
-    end else if ((tl_s1n_39_us_h2d.a_address & ~(ADDR_MASK_RV_PLIC)) == ADDR_SPACE_RV_PLIC) begin
+    end else if ((tl_s1n_39_us_h2d.a_address &
+                  ~(ADDR_MASK_RV_PLIC)) == ADDR_SPACE_RV_PLIC) begin
       dev_sel_s1n_39 = 4'd11;
 
-    end else if ((tl_s1n_39_us_h2d.a_address & ~(ADDR_MASK_OTBN)) == ADDR_SPACE_OTBN) begin
+    end else if ((tl_s1n_39_us_h2d.a_address &
+                  ~(ADDR_MASK_OTBN)) == ADDR_SPACE_OTBN) begin
       dev_sel_s1n_39 = 4'd12;
 
-    end else if ((tl_s1n_39_us_h2d.a_address & ~(ADDR_MASK_KMAC)) == ADDR_SPACE_KMAC) begin
+    end else if ((tl_s1n_39_us_h2d.a_address &
+                  ~(ADDR_MASK_KMAC)) == ADDR_SPACE_KMAC) begin
       dev_sel_s1n_39 = 4'd13;
 
-    end else if ((tl_s1n_39_us_h2d.a_address & ~(ADDR_MASK_SRAM_CTRL_MAIN)) == ADDR_SPACE_SRAM_CTRL_MAIN) begin
+    end else if ((tl_s1n_39_us_h2d.a_address &
+                  ~(ADDR_MASK_SRAM_CTRL_MAIN)) == ADDR_SPACE_SRAM_CTRL_MAIN) begin
       dev_sel_s1n_39 = 4'd14;
 end
   end

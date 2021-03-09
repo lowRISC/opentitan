@@ -212,6 +212,7 @@ module rv_dm #(
     .valid_o      (host_r_valid),
     .rdata_o      (host_r_rdata),
     .err_o        (host_r_err),
+    .intg_err_o   (),
     .tl_o         (tl_h_o),
     .tl_i         (tl_h_i)
   );
@@ -336,7 +337,8 @@ module rv_dm #(
     .SramAw(AddressWidthWords),
     .SramDw(BusWidth),
     .Outstanding(1),
-    .ByteAccess(0)
+    .ByteAccess(0),
+    .EnableRspIntgGen(1)
   ) tl_adapter_device_mem (
     .clk_i,
     .rst_ni,
@@ -347,6 +349,7 @@ module rv_dm #(
     .addr_o      (addr_w),
     .wdata_o     (wdata),
     .wmask_o     (),
+    .intg_error_o(),
     .rdata_i     (rdata),
     .rvalid_i    (rvalid),
     .rerror_i    (2'b00),

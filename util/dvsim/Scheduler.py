@@ -7,7 +7,7 @@ import threading
 from collections import OrderedDict
 from signal import SIGINT, signal
 
-from Deploy import DeployError
+from Launcher import LauncherError
 from Timer import Timer
 from utils import VERBOSE
 
@@ -42,32 +42,31 @@ class TargetScheduler:
     def _kill_item(self, item):
         '''Kill a running item'''
         self._running.remove(item)
-        item.kill()
+        item.launcher.kill()
         self._killed.add(item)
         self.item_to_status[item] = 'K'
 
     def _poll(self, hms):
-        '''Check for running items that have finished
+        '''Check for running items that have finished.
 
         Returns True if something changed.
-
         '''
         to_pass = []
         to_fail = []
 
         for item in self._running:
-            status = item.poll()
+            status = item.launcher.poll()
             assert status in ['D', 'P', 'F']
             if status == 'D':
                 # Still running
                 continue
             elif status == 'P':
                 log.log(VERBOSE, "[%s]: [%s]: [status] [%s: P]", hms,
-                        item.target, item.identifier)
+                        item.target, item.full_name)
                 to_pass.append(item)
             else:
                 log.error("[%s]: [%s]: [status] [%s: F]", hms, item.target,
-                          item.identifier)
+                          item.full_name)
                 to_fail.append(item)
 
         for item in to_pass:
@@ -85,7 +84,6 @@ class TargetScheduler:
         '''Dispatch some queued items if possible.
 
         See run() for the format of old_results.
-
         '''
         num_slots = min(Scheduler.slot_limit,
                         Scheduler.max_parallel - len(self._running),
@@ -131,14 +129,14 @@ class TargetScheduler:
             return
 
         log.log(VERBOSE, "[%s]: [%s]: [dispatch]:\n%s", hms, self.name,
-                ", ".join(item.identifier for item in to_dispatch))
+                ", ".join(item.full_name for item in to_dispatch))
 
         for item in to_dispatch:
             self._running.add(item)
             self.item_to_status[item] = 'D'
             try:
-                item.dispatch_cmd()
-            except DeployError as err:
+                item.launcher.launch()
+            except LauncherError as err:
                 log.error('{}'.format(err))
                 self._kill_item(item)
 
@@ -167,7 +165,6 @@ class TargetScheduler:
 
         If print_status or we've reached a time interval then print current
         status for those jobs that weren't known to be finished already.
-
         '''
         if timer.check_time():
             print_status = True
@@ -195,10 +192,7 @@ class TargetScheduler:
         statuses. Every job that appears as a dependency will be in this list
         (because it ran as part of a previous target).
 
-        is_first_tgt is true if this is the first target to run.
-
         Returns the results from this target (in the same format).
-
         '''
         # Catch one SIGINT and tell the runner to quit. On a second, die.
         stop_now = threading.Event()
@@ -271,7 +265,6 @@ class Scheduler:
         '''Run all items
 
         Returns a map from item to status.
-
         '''
         timer = Timer()
 

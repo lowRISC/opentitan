@@ -300,6 +300,7 @@ module hmac
     .addr_o      (msg_fifo_addr  ), // Doesn't care the address other than sub-word
     .wdata_o     (msg_fifo_wdata ),
     .wmask_o     (msg_fifo_wmask ),
+    .intg_error_o(               ),
     .rdata_i     (msg_fifo_rdata ),
     .rvalid_i    (msg_fifo_rvalid),
     .rerror_i    (msg_fifo_rerror)
@@ -435,6 +436,7 @@ module hmac
     .reg2hw,
     .hw2reg,
 
+    .intg_err_o (),
     .devmode_i  (1'b1)
   );
 

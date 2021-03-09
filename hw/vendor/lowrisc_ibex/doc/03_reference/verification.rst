@@ -51,7 +51,7 @@ Memory Model
 """"""""""""
 
 The code is vendored from OpenTitan and can be found in the
-`vendor/lowrisc_ip/mem_model <https://github.com/lowRISC/ibex/tree/master/vendor/lowrisc_ip/mem_model>`_
+`vendor/lowrisc_ip/dv/sv/mem_model <https://github.com/lowRISC/ibex/tree/master/vendor/lowrisc_ip/dv/sv/mem_model>`_
 directory.
 The testbench instantiates a single instance of this memory model that it loads the compiled
 assembly test program into at the beginning of each test.
@@ -89,22 +89,28 @@ Prerequisites & Environment Setup
 
 In order to run the co-simulation flow, you'll need:
 
-- A SystemVerilog simulator that supports UVM. The flow is currently
-  tested with VCS.
+- A SystemVerilog simulator that supports UVM.
 
-- A RISC-V instruction set simulator, such as Spike_ or OVPsim_.
-  Note that Spike must be configured with
-  ``--enable-commitlog`` and ``--enable-misaligned``. The commit log
-  is needed to track the instructions that were executed and
-  ``--enable-misaligned`` tells Spike to simulate a core that
-  handles misaligned accesses in hardware (rather than jumping to a
-  trap handler).
-  In addition, Spike does not support the `RISC-V Bit Manipulation Extension <bitmanip_>`_  (Bitmanip) by default.
-  To support this draft extension implemented in Ibex, the `riscv-bitmanip branch <Spike_>`_ of Spike needs to be used.
-  If it is desired to simulate the core with the Icache enabled, a lowRISC-specific branch
-  of Spike must be used, `found here <https://github.com/lowRISC/riscv-isa-sim/tree/ibex>`_.
+  The flow is currently tested with VCS.
+
+- A RISC-V instruction set simulator, such as Spike or OVPsim.
+
+  Ibex is tested using Spike.
+
+  To use Spike_, it must be built with the ``--enable-commitlog`` and ``--enable-misaligned`` options.
+  ``--enable-commitlog`` is needed to produce log output to track the instructions that were executed.
+  ``--enable-misaligned`` tells Spike to simulate a core that handles misaligned accesses in hardware (rather than jumping to a trap handler).
+
+  Ibex supports version 0.92 of the draft Bitmanip specification.
+  The ``master`` branch of Spike may support a different version.
+  lowRISC maintains a `lowRISC-specific branch of Spike <LRSpike_>`_ that matches the supported Bitmanip specification.
+  This branch must also be used in order to to simulate the core with the Icache enabled.
+
+  OVPsim_ is a commercial instruction set simulator with RISC-V support.
+  To specify the v0.92 Bitmanip specification, you need "riscvOVPsimPlus", which can be downloaded free of charge with registration.
 
 - A working RISC-V toolchain (to compile / assemble the generated programs before simulating them).
+
   Either download a `pre-built toolchain <riscv-toolchain-releases_>`_ (quicker) or download and build the `RISC-V GNU compiler toolchain <riscv-toolchain-source_>`_.
   For the latter, the Bitmanip patches have to be manually installed to enable support for the Bitmanip draft extension.
   For further information, checkout the `Bitmanip Extension on GitHub <bitmanip_>`_ and `how we create the pre-built toolchains <bitmanip-patches_>`_.
@@ -123,8 +129,9 @@ to tell the RISCV-DV code where to find them:
 (Obviously, you only need to set ``SPIKE_PATH`` or ``OVPSIM_PATH`` if
 you have installed the corresponding instruction set simulator)
 
-.. _Spike: https://github.com/riscv/riscv-isa-sim/tree/riscv-bitmanip
-.. _OVPsim: https://github.com/riscv/riscv-ovpsim
+.. _Spike: https://github.com/riscv/riscv-isa-sim
+.. _LRSpike: https://github.com/lowRISC/riscv-isa-sim/tree/ibex
+.. _OVPsim: https://www.ovpworld.org/riscvOVPsimPlus/
 .. _riscv-toolchain-source: https://github.com/riscv/riscv-gnu-toolchain
 .. _riscv-toolchain-releases: https://github.com/lowRISC/lowrisc-toolchains/releases
 .. _bitmanip-patches: https://github.com/lowRISC/lowrisc-toolchains#how-to-generate-the-bitmanip-patches
@@ -256,7 +263,7 @@ the Ibex repository:
 
 .. code-block:: bash
 
-   ./vendor/lowrisc_ip/dvsim/dvsim.py dv/uvm/icache/dv/ibex_icache_sim_cfg.hjson --build-only
+   ./vendor/lowrisc_ip/util/dvsim/dvsim.py dv/uvm/icache/dv/ibex_icache_sim_cfg.hjson --build-only
    --skip-ral --purge --sr sim_out
 
 Specify the intended output directory using either the ``--sr`` or ``-scratch-root`` option.

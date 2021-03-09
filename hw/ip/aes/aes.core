@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:lfsr
       - lowrisc:ip:tlul
       - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:ip:edn_pkg
     files:
       - rtl/aes_pkg.sv
       - rtl/aes_reg_pkg.sv

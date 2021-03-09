@@ -25,6 +25,12 @@ module aes
   parameter bit          SecAllowForcingMasks  = 0, // Allow forcing masks to 0 using
                                                     // FORCE_ZERO_MASK bit in Control Register.
                                                     // Useful for SCA only.
+  parameter bit          SecSkipPRNGReseeding  = 0, // The current SCA setup doesn't provide enough
+                                                    // resources to implement the infrastucture
+                                                    // required for PRNG reseeding (CSRNG, EDN).
+                                                    // To enable SCA resistance evaluations, we
+                                                    // need to skip reseeding requests.
+                                                    // Useful for SCA only.
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter clearing_lfsr_seed_t   RndCnstClearingLfsrSeed  = RndCnstClearingLfsrSeedDefault,
   parameter clearing_lfsr_perm_t   RndCnstClearingLfsrPerm  = RndCnstClearingLfsrPermDefault,
@@ -34,21 +40,17 @@ module aes
   input  logic                                      clk_i,
   input  logic                                      rst_ni,
 
-  // Entropy source interfaces
-  // TODO: This still needs to be connected to the entropy source.
-  // See https://github.com/lowRISC/opentitan/issues/1005
-  //output logic                                    entropy_clearing_req_o,
-  //input  logic                                    entropy_clearing_ack_i,
-  //input  logic             [WidthPRDClearing-1:0] entropy_clearing_i,
-  //output logic                                    entropy_masking_req_o,
-  //input  logic                                    entropy_masking_ack_i,
-  //input  logic              [WidthPRDMasking-1:0] entropy_masking_i,
-
   // Idle indicator for clock manager
   output logic                                      idle_o,
 
   // Life cycle
   input  lc_ctrl_pkg::lc_tx_t                       lc_escalate_en_i,
+
+  // Entropy distribution network (EDN) interface
+  input  logic                                      clk_edn_i,
+  input  logic                                      rst_edn_ni,
+  output edn_pkg::edn_req_t                         edn_o,
+  input  edn_pkg::edn_rsp_t                         edn_i,
 
   // Bus interface
   input  tlul_pkg::tl_h2d_t                         tl_i,
@@ -59,12 +61,27 @@ module aes
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o
 );
 
-  aes_reg2hw_t reg2hw;
-  aes_hw2reg_t hw2reg;
+  localparam int unsigned EntropyWidth = edn_pkg::ENDPOINT_BUS_WIDTH;
 
-  logic [NumAlerts-1:0] alert;
+  // Signals
+  aes_reg2hw_t               reg2hw;
+  aes_hw2reg_t               hw2reg;
+
+  logic      [NumAlerts-1:0] alert;
   lc_ctrl_pkg::lc_tx_t [0:0] lc_escalate_en; // Need a degenerate array for FPV tool.
 
+  logic                      edn_req;
+  logic                      edn_ack;
+  logic   [EntropyWidth-1:0] edn_data;
+  logic                      unused_edn_fips;
+  logic                      entropy_clearing_req, entropy_masking_req;
+  logic                      entropy_clearing_ack, entropy_masking_ack;
+
+  ////////////
+  // Inputs //
+  ////////////
+
+  // Register interface
   aes_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -72,9 +89,11 @@ module aes
     .tl_o,
     .reg2hw,
     .hw2reg,
+    .intg_err_o(),
     .devmode_i(1'b1)
   );
 
+  // Synchronize life cycle input
   prim_lc_sync #(
     .NumCopies (1)
   ) u_prim_lc_sync (
@@ -84,39 +103,80 @@ module aes
     .lc_en_o ( lc_escalate_en   )
   );
 
+  // Synchronize EDN interface
+  prim_sync_reqack_data #(
+    .Width(EntropyWidth),
+    .DataSrc2Dst(1'b0),
+    .DataReg(1'b0)
+  ) u_prim_sync_reqack_data (
+    .clk_src_i  ( clk_i         ),
+    .rst_src_ni ( rst_ni        ),
+    .clk_dst_i  ( clk_edn_i     ),
+    .rst_dst_ni ( rst_edn_ni    ),
+    .src_req_i  ( edn_req       ),
+    .src_ack_o  ( edn_ack       ),
+    .dst_req_o  ( edn_o.edn_req ),
+    .dst_ack_i  ( edn_i.edn_ack ),
+    .data_i     ( edn_i.edn_bus ),
+    .data_o     ( edn_data      )
+  );
+  // We don't track whether the entropy is pre-FIPS or not inside AES.
+  assign unused_edn_fips = edn_i.edn_fips;
+
+  //////////
+  // Core //
+  //////////
+
+  // Entropy distribution
+  // Internally, we have up to two PRNGs that share the EDN interface for reseeding. Here, we just
+  // arbitrate the requests. Upsizing of the entropy to the correct width is performed inside the
+  // PRNGs.
+  // Reseed operations for the clearing PRNG are initiated by software. Reseed operations for the
+  // masking PRNG are automatically initiated. Reseeding operations of the two PRNGs are not
+  // expected to take place simultaneously.
+  assign edn_req              = entropy_clearing_req | entropy_masking_req;
+  // Only forward ACK to PRNG currently requesting entropy. Give higher priority to clearing PRNG.
+  assign entropy_clearing_ack =  entropy_clearing_req & edn_ack;
+  assign entropy_masking_ack  = ~entropy_clearing_req & entropy_masking_req & edn_ack;
+
+  // AES core
   aes_core #(
     .AES192Enable             ( AES192Enable             ),
     .Masking                  ( Masking                  ),
     .SBoxImpl                 ( SBoxImpl                 ),
     .SecStartTriggerDelay     ( SecStartTriggerDelay     ),
     .SecAllowForcingMasks     ( SecAllowForcingMasks     ),
+    .SecSkipPRNGReseeding     ( SecSkipPRNGReseeding     ),
+    .EntropyWidth             ( EntropyWidth             ),
     .RndCnstClearingLfsrSeed  ( RndCnstClearingLfsrSeed  ),
     .RndCnstClearingLfsrPerm  ( RndCnstClearingLfsrPerm  ),
     .RndCnstMaskingLfsrSeed   ( RndCnstMaskingLfsrSeed   ),
     .RndCnstMskgChunkLfsrPerm ( RndCnstMskgChunkLfsrPerm )
   ) u_aes_core (
-    .clk_i                  ( clk_i                          ),
-    .rst_ni                 ( rst_ni                         ),
+    .clk_i                  ( clk_i                ),
+    .rst_ni                 ( rst_ni               ),
 
-    // TODO: This still needs to be connected to the entropy source.
-    // See https://github.com/lowRISC/opentitan/issues/1005
-    .entropy_clearing_req_o (                                ),
-    .entropy_clearing_ack_i ( 1'b1                           ),
-    .entropy_clearing_i     ( RndCnstClearingLfsrSeedDefault ),
-    .entropy_masking_req_o  (                                ),
-    .entropy_masking_ack_i  ( 1'b1                           ),
-    .entropy_masking_i      ( RndCnstMaskingLfsrSeedDefault  ),
+    .entropy_clearing_req_o ( entropy_clearing_req ),
+    .entropy_clearing_ack_i ( entropy_clearing_ack ),
+    .entropy_clearing_i     ( edn_data             ),
+    .entropy_masking_req_o  ( entropy_masking_req  ),
+    .entropy_masking_ack_i  ( entropy_masking_ack  ),
+    .entropy_masking_i      ( edn_data             ),
 
-    .lc_escalate_en_i       ( lc_escalate_en                 ),
+    .lc_escalate_en_i       ( lc_escalate_en       ),
 
-    .alert_recov_o          ( alert[0]                       ),
-    .alert_fatal_o          ( alert[1]                       ),
+    .alert_recov_o          ( alert[0]             ),
+    .alert_fatal_o          ( alert[1]             ),
 
-    .reg2hw                 ( reg2hw                         ),
-    .hw2reg                 ( hw2reg                         )
+    .reg2hw                 ( reg2hw               ),
+    .hw2reg                 ( hw2reg               )
   );
 
   assign idle_o = hw2reg.status.idle.d;
+
+  ////////////
+  // Alerts //
+  ////////////
 
   logic [NumAlerts-1:0] alert_test;
   assign alert_test = {
@@ -142,10 +202,15 @@ module aes
     );
   end
 
+  ////////////////
+  // Assertions //
+  ////////////////
+
   // All outputs should have a known value after reset
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
   `ASSERT_KNOWN(IdleKnown, idle_o)
+  `ASSERT_KNOWN(EdnReqKnown, edn_o)
   `ASSERT_KNOWN(AlertTxKnown, alert_tx_o)
 
 endmodule

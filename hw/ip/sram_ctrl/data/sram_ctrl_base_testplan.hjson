@@ -39,14 +39,14 @@
                 - Perform a number of random memory accesses to the SRAM
               - Verify that all memory access succeed even if the scrambling key changes at arbitrary
                 intervals
-            ''
+            '''
       milestone: V2
       tests: ["{name}_multiple_keys"]
     }
     {
       name: stress_pipeline
       desc: '''
-            This test is the same as the multiple_keys_test, but we now do a series of back-to-back
+            This test is the same as the multiple_keys_test but we now do a series of back-to-back
             memory accesses at each random address in order to create read/write conflicts and
             stress the encryption pipeline.
             '''

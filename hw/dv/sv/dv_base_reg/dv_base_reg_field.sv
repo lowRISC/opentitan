@@ -6,6 +6,7 @@
 class dv_base_reg_field extends uvm_reg_field;
   local string m_original_access;
   local dv_base_reg_field lockable_flds[$];
+  local bit is_intr_test_fld;
 
   `uvm_object_utils(dv_base_reg_field)
   `uvm_object_new
@@ -31,11 +32,28 @@ class dv_base_reg_field extends uvm_reg_field;
                       .is_rand  (is_rand),
                       .individually_accessible(individually_accessible));
       value.rand_mode(is_rand);
+
+      is_intr_test_fld = !(uvm_re_match("intr_test*", get_parent().get_name()));
     endfunction
 
   virtual function dv_base_reg get_dv_base_reg_parent();
     uvm_reg csr = get_parent();
     `downcast(get_dv_base_reg_parent, csr)
+  endfunction
+
+  virtual function void do_predict (uvm_reg_item      rw,
+                                    uvm_predict_e     kind = UVM_PREDICT_DIRECT,
+                                    uvm_reg_byte_en_t be = -1);
+    uvm_reg_data_t field_val = rw.value[0] & ((1 << get_n_bits())-1);
+
+    // update intr_state mirrored value if this is an intr_test reg
+    if (is_intr_test_fld) begin
+      uvm_reg_field intr_state_fld = get_intr_state_field();
+      // use UVM_PREDICT_READ to avoid uvm_warning due to UVM_PREDICT_DIRECT
+      intr_state_fld.predict(field_val | `gmv(intr_state_fld), .kind(UVM_PREDICT_READ));
+    end
+
+    super.do_predict(rw, kind, be);
   endfunction
 
   // when use UVM_PREDICT_WRITE and the CSR access is WO, this function will return the default
@@ -113,6 +131,28 @@ class dv_base_reg_field extends uvm_reg_field;
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     set_fld_access(0);
+  endfunction
+
+  // this function can only be called when this reg is intr_test reg
+  // Example: ral.intr_test.get_intr_state_field()
+  local function uvm_reg_field get_intr_state_field();
+    uvm_reg_block blk = get_parent().get_parent();
+    uvm_reg       intr_state_csr;
+    uvm_reg_field fields[$];
+    string        intr_state_csr_name;
+    string        intr_test_csr_name = get_parent().get_name();
+    bit           is_intr_state_csr = !(uvm_re_match("intr_test*", intr_test_csr_name));
+
+    `DV_CHECK_EQ_FATAL(is_intr_state_csr, 1)
+
+    // intr_enable and intr_state have the same suffix
+    intr_state_csr_name = str_utils_pkg::str_replace(intr_test_csr_name, "test", "state");
+
+    intr_state_csr = blk.get_reg_by_name(intr_state_csr_name);
+    intr_state_csr.get_fields(fields);
+
+    // the field location for intr_state and intr_test should be the same
+    return fields[get_lsb_pos()];
   endfunction
 
 endclass

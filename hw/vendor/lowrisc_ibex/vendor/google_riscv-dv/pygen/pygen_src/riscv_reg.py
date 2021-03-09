@@ -107,13 +107,14 @@ class riscv_reg:
         logging.critical("Cannot match found field {}".format(fld_name))
         sys.exit(1)
 
-    # TODO
     def rand_field(self, fld_name):
-        pass
+        fld_hd = self.get_field_by_name(fld_name)
+        fld_hd.randomize()
 
-    # TODO
     def set_field_rand_mode(self, fld_name, rand_on):
-        pass
+        fld_hd = self.get_field_by_name(fld_name)
+        with vsc.raw_mode():
+            fld_hd.rand_mode = bool(rand_on)
 
     def reset(self):
         for i in range((len(self.fld) - 1), -1, -1):

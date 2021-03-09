@@ -51,11 +51,11 @@
   build_modes: [
     {
       name: sram_ctrl_main
-      build_opts: ["+define+SRAM_ADDR_WIDTH=14", "+define+SRAM_DATA_WIDTH=32"]
+      build_opts: ["+define+SRAM_ADDR_WIDTH=14"]
     }
     {
       name: sram_ctrl_ret
-      build_opts: ["+define+SRAM_ADDR_WIDTH=10", "+define+SRAM_DATA_WIDTH=32"]
+      build_opts: ["+define+SRAM_ADDR_WIDTH=10"]
     }
   ]
 
@@ -69,8 +69,14 @@
       name: "{variant}_smoke"
       uvm_test_seq: sram_ctrl_smoke_vseq
     }
-
-    // TODO: add more tests here
+    {
+      name: "{variant}_multiple_keys"
+      uvm_test_seq: sram_ctrl_multiple_keys_vseq
+    }
+    {
+      name: "{variant}_bijection"
+      uvm_test_seq: sram_ctrl_bijection_vseq
+    }
   ]
 
   // List of regressions.

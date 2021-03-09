@@ -204,82 +204,108 @@ module xbar_peri (
   always_comb begin
     // default steering to generate error response if address is not within the range
     dev_sel_s1n_27 = 5'd26;
-    if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_UART0)) == ADDR_SPACE_UART0) begin
+    if ((tl_s1n_27_us_h2d.a_address &
+         ~(ADDR_MASK_UART0)) == ADDR_SPACE_UART0) begin
       dev_sel_s1n_27 = 5'd0;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_UART1)) == ADDR_SPACE_UART1) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_UART1)) == ADDR_SPACE_UART1) begin
       dev_sel_s1n_27 = 5'd1;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_UART2)) == ADDR_SPACE_UART2) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_UART2)) == ADDR_SPACE_UART2) begin
       dev_sel_s1n_27 = 5'd2;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_UART3)) == ADDR_SPACE_UART3) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_UART3)) == ADDR_SPACE_UART3) begin
       dev_sel_s1n_27 = 5'd3;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_I2C0)) == ADDR_SPACE_I2C0) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_I2C0)) == ADDR_SPACE_I2C0) begin
       dev_sel_s1n_27 = 5'd4;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_I2C1)) == ADDR_SPACE_I2C1) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_I2C1)) == ADDR_SPACE_I2C1) begin
       dev_sel_s1n_27 = 5'd5;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_I2C2)) == ADDR_SPACE_I2C2) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_I2C2)) == ADDR_SPACE_I2C2) begin
       dev_sel_s1n_27 = 5'd6;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_PATTGEN)) == ADDR_SPACE_PATTGEN) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_PATTGEN)) == ADDR_SPACE_PATTGEN) begin
       dev_sel_s1n_27 = 5'd7;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_GPIO)) == ADDR_SPACE_GPIO) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_GPIO)) == ADDR_SPACE_GPIO) begin
       dev_sel_s1n_27 = 5'd8;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_SPI_DEVICE)) == ADDR_SPACE_SPI_DEVICE) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_SPI_DEVICE)) == ADDR_SPACE_SPI_DEVICE) begin
       dev_sel_s1n_27 = 5'd9;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_SPI_HOST0)) == ADDR_SPACE_SPI_HOST0) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_SPI_HOST0)) == ADDR_SPACE_SPI_HOST0) begin
       dev_sel_s1n_27 = 5'd10;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_SPI_HOST1)) == ADDR_SPACE_SPI_HOST1) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_SPI_HOST1)) == ADDR_SPACE_SPI_HOST1) begin
       dev_sel_s1n_27 = 5'd11;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_RV_TIMER)) == ADDR_SPACE_RV_TIMER) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_RV_TIMER)) == ADDR_SPACE_RV_TIMER) begin
       dev_sel_s1n_27 = 5'd12;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_USBDEV)) == ADDR_SPACE_USBDEV) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_USBDEV)) == ADDR_SPACE_USBDEV) begin
       dev_sel_s1n_27 = 5'd13;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_PWRMGR_AON)) == ADDR_SPACE_PWRMGR_AON) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_PWRMGR_AON)) == ADDR_SPACE_PWRMGR_AON) begin
       dev_sel_s1n_27 = 5'd14;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_RSTMGR_AON)) == ADDR_SPACE_RSTMGR_AON) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_RSTMGR_AON)) == ADDR_SPACE_RSTMGR_AON) begin
       dev_sel_s1n_27 = 5'd15;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_CLKMGR_AON)) == ADDR_SPACE_CLKMGR_AON) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_CLKMGR_AON)) == ADDR_SPACE_CLKMGR_AON) begin
       dev_sel_s1n_27 = 5'd16;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_PINMUX_AON)) == ADDR_SPACE_PINMUX_AON) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_PINMUX_AON)) == ADDR_SPACE_PINMUX_AON) begin
       dev_sel_s1n_27 = 5'd17;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_RAM_RET_AON)) == ADDR_SPACE_RAM_RET_AON) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_RAM_RET_AON)) == ADDR_SPACE_RAM_RET_AON) begin
       dev_sel_s1n_27 = 5'd18;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_OTP_CTRL)) == ADDR_SPACE_OTP_CTRL) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_OTP_CTRL)) == ADDR_SPACE_OTP_CTRL) begin
       dev_sel_s1n_27 = 5'd19;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_LC_CTRL)) == ADDR_SPACE_LC_CTRL) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_LC_CTRL)) == ADDR_SPACE_LC_CTRL) begin
       dev_sel_s1n_27 = 5'd20;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_SENSOR_CTRL_AON)) == ADDR_SPACE_SENSOR_CTRL_AON) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_SENSOR_CTRL_AON)) == ADDR_SPACE_SENSOR_CTRL_AON) begin
       dev_sel_s1n_27 = 5'd21;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_ALERT_HANDLER)) == ADDR_SPACE_ALERT_HANDLER) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_ALERT_HANDLER)) == ADDR_SPACE_ALERT_HANDLER) begin
       dev_sel_s1n_27 = 5'd22;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_AST)) == ADDR_SPACE_AST) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_AST)) == ADDR_SPACE_AST) begin
       dev_sel_s1n_27 = 5'd23;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_SRAM_CTRL_RET_AON)) == ADDR_SPACE_SRAM_CTRL_RET_AON) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_SRAM_CTRL_RET_AON)) == ADDR_SPACE_SRAM_CTRL_RET_AON) begin
       dev_sel_s1n_27 = 5'd24;
 
-    end else if ((tl_s1n_27_us_h2d.a_address & ~(ADDR_MASK_AON_TIMER_AON)) == ADDR_SPACE_AON_TIMER_AON) begin
+    end else if ((tl_s1n_27_us_h2d.a_address &
+                  ~(ADDR_MASK_AON_TIMER_AON)) == ADDR_SPACE_AON_TIMER_AON) begin
       dev_sel_s1n_27 = 5'd25;
 end
   end

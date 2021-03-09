@@ -9,6 +9,7 @@ from enum import Enum
 from typing import Dict, List, Tuple
 
 from reggen.validate import check_int
+from reggen.inter_signal import InterSignal
 from topgen import lib
 
 IM_TYPES = ['uni', 'req_rsp']
@@ -143,21 +144,22 @@ def autoconnect_xbar(topcfg: OrderedDict, xbar: OrderedDict):
             continue
 
         ip = ips[0]
+        inter_signal_list = ip['inter_signal_list']
 
         # get the port name
-        def get_signame(ip: OrderedDict, package: str, struct: str,
-                        act: str) -> OrderedDict:
+        def get_signame(act: str) -> OrderedDict:
             ims = [
-                x for x in ip["inter_signal_list"]
-                if (x['package'] == package if 'package' in x else False) and
-                x['struct'] == struct and x['act'] == act
+                x for x in inter_signal_list
+                if (x.get('package') == 'tlul_pkg' and
+                    x['struct'] == 'tl' and
+                    x['act'] == act)
             ]
             return ims
 
         if port["type"] == "device":
-            ims = get_signame(ip, "tlul_pkg", "tl", "rsp")
+            ims = get_signame("rsp")
         else:  # host type
-            ims = get_signame(ip, "tlul_pkg", "tl", "req")
+            ims = get_signame("req")
 
         assert len(ims) == 1
         sig_name = ims[0]["name"]
@@ -198,13 +200,24 @@ def elab_intermodule(topcfg: OrderedDict):
     instances = topcfg["module"] + topcfg["memory"] + topcfg["xbar"] + \
         topcfg["host"] + topcfg["port"]
 
-    intermodule_instances = [x for x in instances if "inter_signal_list" in x]
+    for x in instances:
+        old_isl = x.get('inter_signal_list')
+        if old_isl is None:
+            continue
 
-    for x in intermodule_instances:
-        for sig in x["inter_signal_list"]:
+        new_isl = []
+        for entry in old_isl:
+            # Convert any InterSignal objects to the expected dictionary format.
+            sig = (entry.as_dict()
+                   if isinstance(entry, InterSignal)
+                   else entry.copy())
+
             # Add instance name to the entry and add to list_of_intersignals
             sig["inst_name"] = x["name"]
             list_of_intersignals.append(sig)
+            new_isl.append(sig)
+
+        x['inter_signal_list'] = new_isl
 
     # Add field to the topcfg
     topcfg["inter_signal"]["signals"] = list_of_intersignals
@@ -427,7 +440,7 @@ def elab_intermodule(topcfg: OrderedDict):
             else:
                 sigsuffix = "_i"
             topcfg["inter_signal"]["external"].append(
-                OrderedDict([('package', sig["package"]),
+                OrderedDict([('package', sig.get("package", "")),
                              ('struct', sig["struct"]),
                              ('signame', sig_name + sigsuffix),
                              ('width', sig["width"]), ('type', sig["type"]),
@@ -489,56 +502,57 @@ def find_intermodule_signal(sig_list, m_name, s_name) -> Dict:
 
 
 # Validation
-def check_intermodule_field(obj: OrderedDict, prefix: str = "") -> int:
+def check_intermodule_field(sig: OrderedDict,
+                            prefix: str = "") -> Tuple[int, OrderedDict]:
     error = 0
 
     # type check
-    if obj["type"] not in IM_TYPES:
+    if sig["type"] not in IM_TYPES:
         log.error("{prefix} Inter_signal {name} "
                   "type {type} is incorrect.".format(prefix=prefix,
-                                                     name=obj["name"],
-                                                     type=obj["type"]))
+                                                     name=sig["name"],
+                                                     type=sig["type"]))
         error += 1
 
-    if obj["act"] not in IM_ACTS:
+    if sig["act"] not in IM_ACTS:
         log.error("{prefix} Inter_signal {name} "
                   "act {act} is incorrect.".format(prefix=prefix,
-                                                   name=obj["name"],
-                                                   act=obj["act"]))
+                                                   name=sig["name"],
+                                                   act=sig["act"]))
         error += 1
 
     # Check if type and act are matched
     if error == 0:
-        if obj["act"] not in IM_VALID_TYPEACT[obj['type']]:
+        if sig["act"] not in IM_VALID_TYPEACT[sig['type']]:
             log.error("{type} and {act} of {name} are not a valid pair."
-                      "".format(type=obj['type'],
-                                act=obj['act'],
-                                name=obj['name']))
+                      "".format(type=sig['type'],
+                                act=sig['act'],
+                                name=sig['name']))
             error += 1
     # Check 'width' field
     width = 1
-    if "width" not in obj:
-        obj["width"] = 1
-    elif not isinstance(obj["width"], int):
-        width, err = check_int(obj["width"], obj["name"])
+    if "width" not in sig:
+        sig["width"] = 1
+    elif not isinstance(sig["width"], int):
+        width, err = check_int(sig["width"], sig["name"])
         if err:
             log.error("{prefix} Inter-module {inst}.{sig} 'width' "
                       "should be int type.".format(prefix=prefix,
-                                                   inst=obj["inst_name"],
-                                                   sig=obj["name"]))
+                                                   inst=sig["inst_name"],
+                                                   sig=sig["name"]))
             error += 1
         else:
             # convert to int value
-            obj["width"] = width
+            sig["width"] = width
 
     # Add empty string if no explicit default for dangling pins is given.
     # In that case, dangling pins of type struct will be tied to the default
     # parameter in the corresponding package, and dangling pins of type logic
     # will be tied off to '0.
-    if "default" not in obj:
-        obj["default"] = ""
+    if "default" not in sig:
+        sig["default"] = ""
 
-    return error
+    return error, sig
 
 
 def find_otherside_modules(topcfg: OrderedDict, m,
@@ -628,7 +642,8 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
         req_struct = find_intermodule_signal(topcfg["inter_signal"]["signals"],
                                              req_m, req_s)
 
-        error += check_intermodule_field(req_struct)
+        err, req_struct = check_intermodule_field(req_struct)
+        error += err
 
         if req_i != -1 and len(rsps) != 1:
             # Array format should have one entry
@@ -652,14 +667,15 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
             rsp_struct = find_intermodule_signal(
                 topcfg["inter_signal"]["signals"], rsp_m, rsp_s)
 
-            error += check_intermodule_field(rsp_struct)
+            err, rsp_struct = check_intermodule_field(rsp_struct)
+            error += err
 
             total_width += rsp_struct["width"]
             widths.append(rsp_struct["width"])
 
             # Type check
             if "package" not in rsp_struct:
-                rsp_struct["package"] = req_struct["package"]
+                rsp_struct["package"] = req_struct.get("package", "")
             elif req_struct["package"] != rsp_struct["package"]:
                 log.error(
                     "Inter-module package should be matched: "
@@ -742,7 +758,8 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
             total_error += 1
         sig_struct = find_intermodule_signal(topcfg["inter_signal"]["signals"],
                                              sig_m, sig_s)
-        total_error += check_intermodule_field(sig_struct)
+        err, sig_struct = check_intermodule_field(sig_struct)
+        total_error += err
 
     return total_error
 
@@ -761,7 +778,8 @@ def im_defname(obj: OrderedDict) -> str:
                                           struct=obj["struct"])
 
 
-def im_netname(obj: OrderedDict, suffix: str = "", default_name=False) -> str:
+def im_netname(sig: OrderedDict,
+               suffix: str = "", default_name=False) -> str:
     """return top signal name with index
 
     It also adds suffix for external signal.
@@ -771,7 +789,8 @@ def im_netname(obj: OrderedDict, suffix: str = "", default_name=False) -> str:
     """
 
     # Basic check and add missing fields
-    check_intermodule_field(obj)
+    err, obj = check_intermodule_field(sig)
+    assert not err
 
     # Floating signals
     # TODO: Find smarter way to assign default?
@@ -793,11 +812,11 @@ def im_netname(obj: OrderedDict, suffix: str = "", default_name=False) -> str:
             # custom default has been specified
             if obj["default"]:
                 return obj["default"]
-            if obj["package"] == "tlul_pkg" and obj["struct"] == "tl":
+            if obj.get("package") == "tlul_pkg" and obj["struct"] == "tl":
                 return "{package}::{struct}_H2D_DEFAULT".format(
                     package=obj["package"], struct=obj["struct"].upper())
             return "{package}::{struct}_REQ_DEFAULT".format(
-                package=obj["package"], struct=obj["struct"].upper())
+                package=obj.get("package", ''), struct=obj["struct"].upper())
         if obj["act"] == "rcv" and suffix == "" and obj["struct"] == "logic":
             # custom default has been specified
             if obj["default"]:
@@ -841,14 +860,17 @@ def im_portname(obj: OrderedDict, suffix: str = "") -> str:
 
     e.g signame_o for requester req signal
     """
-    if suffix == "":
-        suffix_s = "_o" if obj["act"] == "req" else "_i"
-    elif suffix == "req":
-        suffix_s = "_o" if obj["act"] == "req" else "_i"
-    else:
-        suffix_s = "_o" if obj["act"] == "rsp" else "_i"
+    act = obj['act']
+    name = obj['name']
 
-    return "{signame}{suffix}".format(signame=obj["name"], suffix=suffix_s)
+    if suffix == "":
+        suffix_s = "_o" if act == "req" else "_i"
+    elif suffix == "req":
+        suffix_s = "_o" if act == "req" else "_i"
+    else:
+        suffix_s = "_o" if act == "rsp" else "_i"
+
+    return name + suffix_s
 
 
 def get_dangling_im_def(objs: OrderedDict) -> str:

@@ -9,6 +9,7 @@ from .bits import Bits
 from .enum_entry import EnumEntry
 from .lib import (check_keys, check_str, check_name,
                   check_list, check_str_list, check_xint)
+from .params import Params
 
 REQUIRED_FIELDS = {
     'bits': ['b', "bit or bit range (msb:lsb)"]
@@ -75,7 +76,7 @@ class Field:
                  reg_width: int,
                  reg_hwqe: bool,
                  reg_hwre: bool,
-                 params: List[Dict[str, object]],
+                 params: Params,
                  raw: object) -> 'Field':
         where = 'field {} of {} register'.format(field_idx, reg_name)
         rd = check_keys(raw, where,

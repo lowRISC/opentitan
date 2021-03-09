@@ -33,10 +33,10 @@ module tb;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
+  tl_if tl_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
   pins_if #(1) devmode_if(devmode);
-  tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  spi_if spi_if(.rst_n(rst_n));
+  spi_if  spi_if(.rst_n(rst_n));
 
   // dut
   spi_device dut (
@@ -61,11 +61,11 @@ module tb;
     .scanmode_i     (lc_ctrl_pkg::Off)
   );
 
-  assign sck          = spi_if.sck;
-  assign csb          = spi_if.csb;
+  assign sck           = spi_if.sck;
+  assign csb           = spi_if.csb[0];
   // TODO: quad SPI mode is currently not yet implemented
-  assign sd_in        = {3'b000, spi_if.sdi};
-  assign spi_if.sdo   = sd_out_en[1] ? sd_out[1] : 1'bz;
+  assign sd_in         = {3'b000, spi_if.sio[0]};
+  assign spi_if.sio[1] = sd_out_en[1] ? sd_out[1] : 1'bz;
 
   assign interrupts[RxFifoFull]      = intr_rxf;
   assign interrupts[RxFifoGeLevel]   = intr_rxlvl;

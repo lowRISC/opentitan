@@ -16,13 +16,18 @@ import itertools
 import logging as log
 import math
 import random
+import hjson
 
 COPYRIGHT = """// Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
 """
-CODE_OPTIONS = ['hsiao', 'hamming']
+CODE_OPTIONS = {'hsiao': '', 'hamming': '_hamming'}
+PRINT_OPTIONS = {"logic": "assign ", "function": "  "}
+
+# secded configurations
+SECDED_CFG_FILE = "util/design/data/secded_cfg.hjson"
 
 
 def min_paritysize(k):
@@ -75,15 +80,60 @@ def calc_bitmasks(k, m, codes, dec):
     return fanin_masks
 
 
+def print_pkg_types(n, k, m, codes, suffix, codetype):
+    typename = "secded%s_%d_%d_t" % (suffix, n, k)
+
+    typestr = '''
+  typedef struct packed {{
+    logic [{}:0] data;
+    logic [{}:0] syndrome;
+    logic [1:0]  err;
+  }} {};
+'''.format((k - 1), (m - 1), typename)
+
+    return typestr
+
+
+def print_fn(n, k, m, codes, suffix, codetype):
+    enc_out = print_enc(n, k, m, codes)
+    dec_out = print_dec(n, k, m, codes, codetype, "function")
+
+    typename = "secded%s_%d_%d_t" % (suffix, n, k)
+    module_name = "prim_secded%s_%d_%d" % (suffix, n, k)
+
+    outstr = '''
+  function automatic logic [{}:0] {}_enc (logic [{}:0] in);
+    logic [{}:0] out;
+{}    return out;
+  endfunction
+
+  function automatic {} {}_dec (logic [{}:0] in);
+    logic [{}:0] d_o;
+    logic [{}:0] syndrome_o;
+    logic [1:0]  err_o;
+
+    {} dec;
+
+{}
+    dec.data      = d_o;
+    dec.syndrome  = syndrome_o;
+    dec.err       = err_o;
+    return dec;
+
+  endfunction
+'''.format((n - 1), module_name, (k - 1), (n - 1), enc_out,
+           typename, module_name, (n - 1), (k - 1), (m - 1), typename, dec_out)
+
+    return outstr
+
+
 def print_enc(n, k, m, codes):
-    outstr = "  always_comb begin : p_encode\n"
-    outstr += "    out = {}'(in);\n".format(n)
+    outstr = "    out = {}'(in);\n".format(n)
     format_str = "    out[{}] = ^(out & " + str(n) + "'h{:0" + str(
         (n + 3) // 4) + "X});\n"
     # Print parity computation
     for j, mask in enumerate(calc_bitmasks(k, m, codes, False)):
         outstr += format_str.format(j + k, mask)
-    outstr += "  end\n"
     return outstr
 
 
@@ -92,32 +142,42 @@ def calc_syndrome(code):
     return sum(map((lambda x: 2**x), code))
 
 
-def print_dec(n, k, m, codes, codetype):
+def print_dec(n, k, m, codes, codetype, print_type="logic"):
+
+    preamble = PRINT_OPTIONS[print_type]
+
     outstr = ""
-    outstr += "  logic single_error;\n"
+    if codetype == "hsiao":
+        outstr += "  {}logic single_error;\n".format(
+            preamble if print_type == "function" else "")
+
     outstr += "\n"
-    outstr += "  // Syndrome calculation\n"
-    format_str = "  assign syndrome_o[{}] = ^(in & " + str(n) + "'h{:0" + str(
-        (n + 3) // 4) + "X});\n"
+    outstr += "  {}// Syndrome calculation\n".format(
+        preamble if print_type == "function" else "")
+    format_str = "  {}".format(preamble) + "syndrome_o[{}] = ^(in & " \
+        + str(n) + "'h{:0" + str((n + 3) // 4) + "X});\n"
+
     # Print syndrome computation
     for j, mask in enumerate(calc_bitmasks(k, m, codes, True)):
         outstr += format_str.format(j, mask)
     outstr += "\n"
-    outstr += "  // Corrected output calculation\n"
+    outstr += "  {}// Corrected output calculation\n".format(
+        preamble if print_type == "function" else "")
     for i in range(k):
-        outstr += "  assign d_o[%d] = (syndrome_o == %d'h%x) ^ in[%d];\n" % (
+        outstr += "  {}".format(preamble) + "d_o[%d] = (syndrome_o == %d'h%x) ^ in[%d];\n" % (
             i, m, calc_syndrome(codes[i]), i)
     outstr += "\n"
-    outstr += "  // err_o calc. bit0: single error, bit1: double error\n"
+    outstr += "  {}// err_o calc. bit0: single error, bit1: double error\n".format(
+        preamble if print_type == "function" else "")
     # The Hsiao and Hamming syndromes are interpreted slightly differently.
     if codetype == "hamming":
-        outstr += "  assign err_o[0] = syndrome_o[%d];\n" % (m - 1)
-        outstr += "  assign err_o[1] = |syndrome_o[%d:0] & ~syndrome_o[%d];\n" % (
+        outstr += "  {}".format(preamble) + "err_o[0] = syndrome_o[%d];\n" % (m - 1)
+        outstr += "  {}".format(preamble) + "err_o[1] = |syndrome_o[%d:0] & ~syndrome_o[%d];\n" % (
             m - 2, m - 1)
     else:
-        outstr += "  assign single_error = ^syndrome_o;\n"
-        outstr += "  assign err_o[0] = single_error;\n"
-        outstr += "  assign err_o[1] = ~single_error & (|syndrome_o);\n"
+        outstr += "  {}".format(preamble) + "single_error = ^syndrome_o;\n"
+        outstr += "  {}".format(preamble) + "err_o[0] = single_error;\n"
+        outstr += "  {}".format(preamble) + "err_o[1] = ~single_error & (|syndrome_o);\n"
     return outstr
 
 
@@ -128,6 +188,70 @@ def is_pow2(n):
 
 def is_odd(n):
     return (n % 2) > 0
+
+
+def verify(cfgs):
+    error = 0
+
+    # Check that the provided seed is 32-bit int
+    if (cfgs['seed'].bit_length() > 31):
+        error += 1
+        log.error("Seed {} must be a 32-bit integer".format(cfgs['seed']))
+
+    for cfg in cfgs['cfgs']:
+        if (cfg['k'] <= 1 or cfg['k'] > 120):
+            error += 1
+            log.error("Current tool doesn't support the value k (%d)", cfg['k'])
+
+        if (cfg['m'] <= 1 or cfg['m'] > 20):
+            error += 1
+            log.error("Current tool doesn't support the value m (%d)", cfg['m'])
+
+        # Calculate 'm' (parity size)
+        min_m = min_paritysize(cfg['k'])
+        if (cfg['m'] < min_m):
+            error += 1
+            log.error("given \'m\' argument is smaller than minimum requirement " +
+                      "using calculated minimum (%d)", min_m)
+
+        # Error check code selection
+        if (cfg['code_type'] not in CODE_OPTIONS):
+            error += 1
+            log.error("Invalid code {} selected, use one of {}".format(
+                cfg['code_type'], CODE_OPTIONS))
+
+    return error
+
+
+def generate(cfgs, args, seed):
+    pkg_out_str = ""
+    pkg_type_str = ""
+    for cfg in cfgs['cfgs']:
+        log.debug("Working on {}".format(cfg))
+        k = cfg['k']
+        m = cfg['m']
+        n = k + m
+        codetype = cfg['code_type']
+        suffix = CODE_OPTIONS[codetype]
+        codes = []
+
+        # update value based on target selection
+        codes = globals()["{}_code".format(codetype)](cfg['k'], cfg['m'])
+
+        # write out rtl files
+        write_enc_dec_files(n, k, m, seed, codes, suffix, args.outdir, codetype)
+
+        # write out package typedefs
+        pkg_type_str += print_pkg_types(n, k, m, codes, suffix, codetype)
+        # print out functions
+        pkg_out_str += print_fn(n, k, m, codes, suffix, codetype)
+
+        if not args.no_fpv:
+            write_fpv_files(n, k, m, codes, codetype, args.fpv_outdir)
+
+    # write out package file
+    full_pkg_str = pkg_type_str + pkg_out_str
+    write_pkg_file(seed, args.outdir, full_pkg_str)
 
 
 # k = data bits
@@ -220,7 +344,9 @@ def hsiao_code(k, m):
 # k = data bits
 # m = parity bits
 # generate hamming code
-def hamming_code(n, k, m):
+def hamming_code(k, m):
+
+    n = k + m
 
     # construct a list of code tuples.
     # Tuple corresponds to each bit position and shows which parity bit it participates in
@@ -259,6 +385,20 @@ def hamming_code(n, k, m):
     return codes
 
 
+def write_pkg_file(s, outdir, pkg_str):
+
+    with open(outdir + "/" + "prim_secded_pkg.sv", "w") as f:
+        outstr = '''{}// SECDED Encoder generated by
+// util/design/secded_gen.py -s {} from {}
+
+package prim_secded_pkg;
+{}
+
+endpackage
+'''.format(COPYRIGHT, s, SECDED_CFG_FILE, pkg_str)
+        f.write(outstr)
+
+
 def write_enc_dec_files(n, k, m, s, codes, suffix, outdir, codetype):
     enc_out = print_enc(n, k, m, codes)
 
@@ -273,7 +413,9 @@ module {}_enc (
   output logic [{}:0] out
 );
 
-{}
+  always_comb begin : p_encode
+{}  end
+
 endmodule : {}_enc
 '''.format(COPYRIGHT, m, k, s, codetype, module_name, (k - 1), (n - 1),
            enc_out, module_name)
@@ -433,24 +575,6 @@ def main():
         description='''This tool generates Single Error Correction Double Error
         Detection(SECDED) encoder and decoder modules in SystemVerilog.
         ''')
-    parser.add_argument(
-        '-m',
-        type=int,
-        default=7,
-        help=
-        'Parity length. If fan-in is too big, increasing m helps. (default: %(default)s)'
-    )
-    parser.add_argument(
-        '-k',
-        type=int,
-        default=32,
-        help=
-        'Code length. Minimum \'m\' is calculated by the tool (default: %(default)s)'
-    )
-    parser.add_argument(
-        '-c',
-        default='hsiao',
-        help='ECC code used. Options: hsiao / hamming (default: %(default)s)')
     parser.add_argument('-s',
                         type=int,
                         metavar='<seed>',
@@ -479,58 +603,23 @@ def main():
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
 
+    with open(SECDED_CFG_FILE, 'r') as infile:
+        config = hjson.load(infile)
+
     # Error checking
-    if (args.k <= 1 or args.k > 120):
-        log.error("Current tool doesn't support the value k (%d)", args.k)
-    k = args.k
+    error = verify(config)
+    if (error):
+        exit(1)
 
-    if (args.m <= 1 or args.m > 20):
-        log.error("Current tool doesn't support the value m (%d)", args.m)
-
-    # Calculate 'm' (parity size)
-    min_m = min_paritysize(k)
-    if (args.m < min_m):
-        log.warning(
-            "given \'m\' argument is smaller than minimum requirement " +
-            "using calculated minimum")
-        m = min_m
-    else:
-        m = args.m
-
-    n = m + k
-    log.info("n(%d), k(%d), m(%d)", n, k, m)
-
-    if args.s is None:
-        random.seed()
-        args.s = random.getrandbits(32)
-
-    # If no seed has been provided, we choose a seed and print it
-    # into the generated output later on such that this run can be
+    # If no seed is provided from the command line, use the seed provided in
+    # data/secded_cfg.hjson by default, such that runs of this script can be
     # reproduced.
-    if args.s is None:
-        random.seed()
-        args.s = random.getrandbits(32)
+    random.seed()
+    rand_seed = config['seed'] if args.s is None else args.s
+    random.seed(rand_seed)
 
-    random.seed(args.s)
-
-    # Error check code selection
-    codes = []
-    suffix = ''
-    if (args.c == 'hsiao'):
-        codes = hsiao_code(k, m)
-    elif (args.c == 'hamming'):
-        suffix = '_hamming'
-        codes = hamming_code(n, k, m)
-    else:
-        log.error("Invalid code {} selected, use one of {}".format(
-            args.c, CODE_OPTIONS))
-        return
-
-    write_enc_dec_files(n, k, m, args.s, codes, suffix, args.outdir, args.c)
-
-    # Print out FPV testbench by default.
-    if not args.no_fpv:
-        write_fpv_files(n, k, m, codes, suffix, args.fpv_outdir)
+    # Generate outputs
+    generate(config, args, rand_seed)
 
 
 if __name__ == "__main__":

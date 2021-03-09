@@ -17,6 +17,9 @@ module sram_ctrl_reg_top (
   output sram_ctrl_reg_pkg::sram_ctrl_reg2hw_t reg2hw, // Write
   input  sram_ctrl_reg_pkg::sram_ctrl_hw2reg_t hw2reg, // Read
 
+  // Integrity check errors
+  output logic intg_err_o,
+
   // Config
   input devmode_i // If 1, explicit error return for unmapped register access
 );
@@ -44,15 +47,28 @@ module sram_ctrl_reg_top (
   tlul_pkg::tl_d2h_t tl_reg_d2h;
 
   // incoming payload check
-  logic chk_err;
-  tlul_payload_chk u_chk (
+  logic intg_err;
+  tlul_cmd_intg_chk u_chk (
     .tl_i,
-    .err_o(chk_err)
+    .err_o(intg_err)
   );
 
-  // outgoing payload generation
+  logic intg_err_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      intg_err_q <= '0;
+    end else if (intg_err) begin
+      intg_err_q <= 1'b1;
+    end
+  end
+
+  // integrity error output is permanent and should be used for alert generation
+  // register errors are transactional
+  assign intg_err_o = intg_err_q | intg_err;
+
+  // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
-  tlul_gen_payload_chk u_gen_chk (
+  tlul_rsp_intg_gen u_rsp_intg_gen (
     .tl_i(tl_o_pre),
     .tl_o
   );
@@ -80,13 +96,15 @@ module sram_ctrl_reg_top (
   );
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = (devmode_i & addrmiss) | wr_err | chk_err;
+  assign reg_error = (devmode_i & addrmiss) | wr_err | intg_err;
 
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic alert_test_wd;
-  logic alert_test_we;
+  logic alert_test_fatal_intg_error_wd;
+  logic alert_test_fatal_intg_error_we;
+  logic alert_test_fatal_parity_error_wd;
+  logic alert_test_fatal_parity_error_we;
   logic status_error_qs;
   logic status_error_re;
   logic status_escalated_qs;
@@ -111,16 +129,32 @@ module sram_ctrl_reg_top (
   // Register instances
   // R[alert_test]: V(True)
 
+  //   F[fatal_intg_error]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test (
+  ) u_alert_test_fatal_intg_error (
     .re     (1'b0),
-    .we     (alert_test_we),
-    .wd     (alert_test_wd),
+    .we     (alert_test_fatal_intg_error_we),
+    .wd     (alert_test_fatal_intg_error_wd),
     .d      ('0),
     .qre    (),
-    .qe     (reg2hw.alert_test.qe),
-    .q      (reg2hw.alert_test.q ),
+    .qe     (reg2hw.alert_test.fatal_intg_error.qe),
+    .q      (reg2hw.alert_test.fatal_intg_error.q ),
+    .qs     ()
+  );
+
+
+  //   F[fatal_parity_error]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_fatal_parity_error (
+    .re     (1'b0),
+    .we     (alert_test_fatal_parity_error_we),
+    .wd     (alert_test_fatal_parity_error_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.fatal_parity_error.qe),
+    .q      (reg2hw.alert_test.fatal_parity_error.q ),
     .qs     ()
   );
 
@@ -339,8 +373,11 @@ module sram_ctrl_reg_top (
     if (addr_hit[6] && reg_we && (SRAM_CTRL_PERMIT[6] != (SRAM_CTRL_PERMIT[6] & reg_be))) wr_err = 1'b1 ;
   end
 
-  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
-  assign alert_test_wd = reg_wdata[0];
+  assign alert_test_fatal_intg_error_we = addr_hit[0] & reg_we & !reg_error;
+  assign alert_test_fatal_intg_error_wd = reg_wdata[0];
+
+  assign alert_test_fatal_parity_error_we = addr_hit[0] & reg_we & !reg_error;
+  assign alert_test_fatal_parity_error_wd = reg_wdata[1];
 
   assign status_error_re = addr_hit[1] & reg_re & !reg_error;
 
@@ -369,6 +406,7 @@ module sram_ctrl_reg_top (
     unique case (1'b1)
       addr_hit[0]: begin
         reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
       end
 
       addr_hit[1]: begin

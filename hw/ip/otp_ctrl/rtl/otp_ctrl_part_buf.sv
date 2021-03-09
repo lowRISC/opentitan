@@ -322,6 +322,8 @@ module otp_ctrl_part_buf
           if (!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError})) begin
             state_d = ErrorSt;
             error_d = otp_err_e'(otp_err_i);
+            // The check has finished and found an error.
+            cnsty_chk_ack_o = 1'b1;
           end else begin
             // Check whether we need to compare the digest or the full partition
             // contents here.
@@ -334,6 +336,8 @@ module otp_ctrl_part_buf
               end else begin
                 state_d = ErrorSt;
                 error_d = CheckFailError;
+                // The check has finished and found an error.
+                cnsty_chk_ack_o = 1'b1;
               end
             end else begin
               // Check whether the read data corresponds with the data buffered in regs.
@@ -352,7 +356,13 @@ module otp_ctrl_part_buf
               end else begin
                 state_d = ErrorSt;
                 error_d = CheckFailError;
+                // The check has finished and found an error.
+                cnsty_chk_ack_o = 1'b1;
               end
+            end
+            // Signal ECC soft errors, but do not go into terminal error state.
+            if (otp_err_e'(otp_err_i) == MacroEccCorrError) begin
+              error_d = otp_err_e'(otp_err_i);
             end
           end
         end
@@ -496,6 +506,8 @@ module otp_ctrl_part_buf
           end else begin
             state_d = ErrorSt;
             error_d = CheckFailError;
+            // The check has finished and found an error.
+            integ_chk_ack_o = 1'b1;
           end
         end
       end
@@ -508,6 +520,10 @@ module otp_ctrl_part_buf
         if (!error_q) begin
           error_d = FsmStateError;
         end
+        // If we are in error state, we cannot execute the checks anymore.
+        // Hence the acknowledgements are returned immediately.
+        cnsty_chk_ack_o = 1'b1;
+        integ_chk_ack_o = 1'b1;
       end
       ///////////////////////////////////////////////////////////////////
       // We should never get here. If we do (e.g. via a malicious

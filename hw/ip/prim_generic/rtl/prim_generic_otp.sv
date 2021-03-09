@@ -78,6 +78,7 @@ module prim_generic_otp
     .addr_o      ( tlul_addr          ),
     .wdata_o     ( tlul_wdata         ),
     .wmask_o     (                    ),
+    .intg_error_o(                    ),
     .rdata_i     ( tlul_rdata_q       ),
     .rvalid_i    ( tlul_rvalid_q      ),
     .rerror_i    ( '0                 )

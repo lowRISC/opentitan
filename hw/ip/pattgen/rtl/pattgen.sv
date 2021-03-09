@@ -36,6 +36,7 @@ module pattgen
     .tl_o,
     .reg2hw,
     .hw2reg,
+    .intg_err_o(),
     .devmode_i(1'b1)
   );
 

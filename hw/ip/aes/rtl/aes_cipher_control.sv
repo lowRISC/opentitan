@@ -335,6 +335,9 @@ module aes_cipher_control import aes_pkg::*;
         // Skip mix_columns
         add_rk_sel_o = ADD_RK_FINAL;
 
+        // Keep requesting PRNG reseeding until it is acknowledged.
+        prng_reseed_req_o = Masking & ~prng_reseed_done_q;
+
         // Once we're done, we won't need the state anymore. We actually clear it when progressing
         // to the next state.
         state_sel_o = STATE_CLEAR;

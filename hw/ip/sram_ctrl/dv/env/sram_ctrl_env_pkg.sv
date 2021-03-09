@@ -23,16 +23,15 @@ package sram_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[] = { "fatal_parity_error" };
-  parameter uint   NUM_ALERTS = 1;
+  parameter string LIST_OF_ALERTS[] = { "fatal_intg_error", "fatal_parity_error"};
+  parameter uint   NUM_ALERTS = 2;
 
   // Number of bits in the otp_ctrl_pkg::sram_otp_key_rsp_t struct:
   // 1 bit for valid, SramKeyWidth bits for the key, SramNonceWidth bits for the nonce.
   parameter int KDI_DATA_SIZE = 1 + otp_ctrl_pkg::SramKeyWidth + otp_ctrl_pkg::SramNonceWidth;
 
   // types
-  typedef virtual mem_bkdr_if #(.MEM_ADDR_WIDTH(`SRAM_ADDR_WIDTH),
-                                .MEM_BYTES_PER_WORD(`SRAM_DATA_WIDTH >> 3)) mem_bkdr_vif;
+  typedef virtual mem_bkdr_if #(.MEM_PARITY(1)) mem_bkdr_vif;
   typedef virtual sram_ctrl_lc_if lc_vif;
 
   // package sources

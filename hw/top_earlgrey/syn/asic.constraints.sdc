@@ -70,12 +70,12 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
 
 # generated clocks (div2/div4)
 create_generated_clock -name IO_DIV2_CLK -divide_by 2 \
-    -source [get_pins top_earlgrey/u_clkmgr_aon/u_io_div2_div/u_clk_mux/gen_*u_impl*/u_size_only_mux2/D1] \
-    [get_pins top_earlgrey/u_clkmgr_aon/u_io_div2_div/u_clk_mux/gen_*u_impl*/u_size_only_inv/${DRIVING_CELL_PIN}]
+    -source [get_pins top_earlgrey/u_clkmgr_aon/u_no_scan_io_div2_div/u_clk_mux/gen_*u_impl*/u_size_only_mux2/D1] \
+    [get_pins top_earlgrey/u_clkmgr_aon/u_no_scan_io_div2_div/u_clk_mux/gen_*u_impl*/u_size_only_inv/${DRIVING_CELL_PIN}]
 
 create_generated_clock -name IO_DIV4_CLK -divide_by 4 \
-    -source [get_pins top_earlgrey/u_clkmgr_aon/u_io_div4_div/u_clk_mux/gen_*u_impl*/u_size_only_mux2/D1] \
-    [get_pins top_earlgrey/u_clkmgr_aon/u_io_div4_div/u_clk_mux/gen_*u_impl*/u_size_only_inv/${DRIVING_CELL_PIN}]
+    -source [get_pins top_earlgrey/u_clkmgr_aon/u_no_scan_io_div4_div/u_clk_mux/gen_*u_impl*/u_size_only_mux2/D1] \
+    [get_pins top_earlgrey/u_clkmgr_aon/u_no_scan_io_div4_div/u_clk_mux/gen_*u_impl*/u_size_only_inv/${DRIVING_CELL_PIN}]
 
 # TODO: these are dummy constraints and likely incorrect, need to properly constrain min/max
 # note that due to the muxing, additional timing views with set_case_analysis may be needed.

@@ -12,6 +12,7 @@ import textwrap
 import warnings
 
 
+from .ip_block import IpBlock
 from .register import Register
 from .multi_register import MultiRegister
 from .window import Window
@@ -169,25 +170,19 @@ def gen_cdefine_window(outstr, win, comp, regwidth, rnames, existing_defines):
 
 
 def gen_cdefines_module_param(outstr, param, module_name, existing_defines):
-    param_type = param['type']
-
-    # Do not generate C defines for parameters that are not localparams defined
-    # in the corresponding SystemVerilog package.
-    if param["local"].lower() == "false":
-        return
-
     # Presently there is only one type (int), however if the new types are
     # added, they potentially need to be handled differently.
     known_types = ["int"]
-    if param_type not in known_types:
-        warnings.warn(
-            "Cannot generate a module define of type {}".format(param_type))
+    if param.param_type not in known_types:
+        warnings.warn("Cannot generate a module define of type {}"
+                      .format(param.param_type))
         return
 
-    genout(outstr, format_comment(first_line(param['desc'])))
-    define_name = as_define(module_name + '_PARAM_' + param['name'])
-    if param_type == "int":
-        define = gen_define(define_name, [], param['default'],
+    if param.desc is not None:
+        genout(outstr, format_comment(first_line(param.desc)))
+    define_name = as_define(module_name + '_PARAM_' + param.name)
+    if param.param_type == "int":
+        define = gen_define(define_name, [], param.value,
                             existing_defines)
 
     genout(outstr, define)
@@ -196,12 +191,9 @@ def gen_cdefines_module_param(outstr, param, module_name, existing_defines):
 
 def gen_cdefines_module_params(outstr, module_data, module_name,
                                register_width, existing_defines):
-    module_params = set()
+    module_params = module_data.params
 
-    if 'param_list' in module_data:
-        module_params = module_data['param_list']
-
-    for param in module_params:
+    for param in module_params.get_localparams():
         gen_cdefines_module_param(outstr, param, module_name, existing_defines)
 
     genout(outstr, format_comment(first_line("Register width")))
@@ -250,19 +242,19 @@ def gen_cdefine_multireg(outstr, multireg, component, regwidth, rnames,
 
 def gen_cdefines_interrupt_field(outstr, interrupt, component, regwidth,
                                  existing_defines):
-    fieldlsb = interrupt['bitinfo'][2]
-    iname = interrupt['name']
+    fieldlsb = interrupt.bits.lsb
+    iname = interrupt.name
     defname = as_define(component + '_INTR_COMMON_' + iname)
 
-    if interrupt['bitinfo'][1] == 1:
+    if interrupt.bits.width() == 1:
         # single bit
         genout(
             outstr,
             gen_define(defname + '_BIT', [], str(fieldlsb), existing_defines))
     else:
         # multiple bits (unless it is the whole register)
-        if interrupt['bitinfo'][1] != regwidth:
-            mask = interrupt['bitinfo'][0] >> fieldlsb
+        if interrupt.bits.width() != regwidth:
+            mask = interrupt.bits.msb >> fieldlsb
             genout(
                 outstr,
                 gen_define(defname + '_MASK', [], hex(mask), existing_defines))
@@ -278,77 +270,55 @@ def gen_cdefines_interrupt_field(outstr, interrupt, component, regwidth,
                     .format(dname=defname), existing_defines))
 
 
-def gen_cdefines_interrupts(outstr, regs, component, regwidth,
+def gen_cdefines_interrupts(outstr, block, component, regwidth,
                             existing_defines):
-    # no_auto_intr_regs controls whether interrupt registers are automatically
-    # generated from the interrupt_list. This key could be 'true' or 'false',
-    # but might also be True or False (the python booleans).
-    no_auto_i = False
-    if 'no_auto_intr_regs' in regs:
-        no_auto_intr_regs_val = regs['no_auto_intr_regs']
-        if isinstance(no_auto_intr_regs_val, bool):
-            no_auto_i = no_auto_intr_regs_val
-        elif no_auto_intr_regs_val.lower() in ["true", "false"]:
-            no_auto_i = no_auto_intr_regs_val == "true"
-        else:
-            pass
-
     # If no_auto_intr_regs is true, then we do not generate common defines,
     # because the bit offsets for a particular interrupt may differ between
     # the interrupt enable/state/test registers.
-    if no_auto_i:
+    if block.no_auto_intr:
         return
 
-    interrupts = regs.get('interrupt_list', [])
     genout(outstr, format_comment(first_line("Common Interrupt Offsets")))
-    for intr in interrupts:
+    for intr in block.interrupts:
         gen_cdefines_interrupt_field(outstr, intr, component, regwidth,
                                      existing_defines)
     genout(outstr, '\n')
 
 
-# Must have called validate, so should have no errors
-def gen_cdefines(regs, outfile, src_lic, src_copy):
-    component = regs['name']
-    registers = regs['registers']
-    rnames = regs['genrnames']
+def gen_cdefines(block: IpBlock, outfile, src_lic, src_copy):
+    rnames = list(block.regs.name_to_offset.keys())
     outstr = io.StringIO()
 
     # This tracks the defines that have been generated so far, so we
     # can error if we attempt to duplicate a definition
     existing_defines = set()
 
-    if 'regwidth' in regs:
-        regwidth = int(regs['regwidth'], 0)
-    else:
-        regwidth = 32
-
-    gen_cdefines_module_params(outstr, regs, component, regwidth,
+    gen_cdefines_module_params(outstr, block, block.name, block.regwidth,
                                existing_defines)
 
-    gen_cdefines_interrupts(outstr, regs, component, regwidth,
+    gen_cdefines_interrupts(outstr, block, block.name, block.regwidth,
                             existing_defines)
 
-    for x in registers.entries:
+    for x in block.regs.entries:
         if isinstance(x, Register):
-            gen_cdefine_register(outstr, x, component, regwidth, rnames,
+            gen_cdefine_register(outstr, x, block.name, block.regwidth, rnames,
                                  existing_defines)
             continue
 
         if isinstance(x, MultiRegister):
-            gen_cdefine_multireg(outstr, x, component, regwidth, rnames,
+            gen_cdefine_multireg(outstr, x, block.name, block.regwidth, rnames,
                                  existing_defines)
             continue
 
         if isinstance(x, Window):
-            gen_cdefine_window(outstr, x, component, regwidth,
+            gen_cdefine_window(outstr, x, block.name, block.regwidth,
                                rnames, existing_defines)
             continue
 
     generated = outstr.getvalue()
     outstr.close()
 
-    genout(outfile, '// Generated register defines for ' + component + '\n\n')
+    genout(outfile, '// Generated register defines for ' + block.name + '\n\n')
     if src_copy != '':
         genout(outfile, '// Copyright information found in source file:\n')
         genout(outfile, '// ' + src_copy + '\n\n')
@@ -359,8 +329,8 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
         genout(outfile, '\n')
 
     # Header Include Guard
-    genout(outfile, '#ifndef _' + as_define(component) + '_REG_DEFS_\n')
-    genout(outfile, '#define _' + as_define(component) + '_REG_DEFS_\n\n')
+    genout(outfile, '#ifndef _' + as_define(block.name) + '_REG_DEFS_\n')
+    genout(outfile, '#define _' + as_define(block.name) + '_REG_DEFS_\n\n')
 
     # Header Extern Guard (so header can be used from C and C++)
     genout(outfile, '#ifdef __cplusplus\n')
@@ -375,9 +345,9 @@ def gen_cdefines(regs, outfile, src_lic, src_copy):
     genout(outfile, '#endif\n')
 
     # Header Include Guard
-    genout(outfile, '#endif  // _' + as_define(component) + '_REG_DEFS_\n')
+    genout(outfile, '#endif  // _' + as_define(block.name) + '_REG_DEFS_\n')
 
-    genout(outfile, '// End generated register defines for ' + component)
+    genout(outfile, '// End generated register defines for ' + block.name)
 
     return 0
 

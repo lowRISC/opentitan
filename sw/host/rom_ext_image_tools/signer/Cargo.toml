@@ -29,5 +29,5 @@ rom_ext_config = { path = "config" }
 rom_ext_image = { path = "image" }
 
 [dependencies.mundane]
-version = "0.4.3"
+version = "0.4.4"
 features = ["rsa-pkcs1v15"]

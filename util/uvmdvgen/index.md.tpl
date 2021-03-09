@@ -1,20 +1,20 @@
 ---
-title: "${name.upper()} DV Plan"
+title: "${name.upper()} DV document"
 ---
 
-<!-- Copy this file to hw/ip/${name}/doc/${name}_dv_plan.md and make changes as needed.
+<!-- Copy this file to hw/ip/${name}/doc/dv/index.md and make changes as needed.
 For convenience '${name}' in the document can be searched and replaced easily with the
 desired IP (with case sensitivity!). Also, use the testbench block diagram
 located at OpenTitan team drive / 'design verification'
 as a starting point and modify it to reflect your ${name} testbench and save it
-to hw/ip/${name}/doc/tb.svg. It should get linked and rendered under the block
+to hw/ip/${name}/doc/dv/tb.svg. It should get linked and rendered under the block
 diagram section below. Please update / modify / remove sections below as
 applicable. Once done, remove this comment before making a PR. -->
 
 ${'##'} Goals
 * **DV**
   * Verify all ${name.upper()} IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
@@ -122,6 +122,6 @@ Here's how to run a smoke test:
 $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/${name}/dv/${name}_sim_cfg.hjson -i ${name}_smoke
 ```
 
-${'##'} Testplan
+${'##'} DV plan
 <!-- TODO: uncomment the line below after adding the testplan -->
 {{</* testplan "hw/ip/${name}/data/${name}_testplan.hjson" */>}}

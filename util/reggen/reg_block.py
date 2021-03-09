@@ -5,21 +5,23 @@
 '''Code representing the registers, windows etc. for a block'''
 
 import re
-from typing import Dict, List, Union
+from typing import Callable, Dict, List, Optional, Sequence, Union
 
+from .alert import Alert
+from .access import SWAccess, HWAccess
+from .field import Field
+from .signal import Signal
 from .lib import check_int, check_list, check_str_dict
 from .multi_register import MultiRegister
+from .params import Params
 from .register import Register
 from .window import Window
 
 
 class RegBlock:
-    def __init__(self,
-                 addrsep: int,
-                 reg_width: int,
-                 params: List[Dict[str, object]]):
+    def __init__(self, reg_width: int, params: Params):
 
-        self._addrsep = addrsep
+        self._addrsep = (reg_width + 7) // 8
         self._reg_width = reg_width
         self._params = params
 
@@ -261,3 +263,112 @@ class RegBlock:
             offset = entry.next_offset(self._addrsep)
 
         return entries
+
+    _FieldFormatter = Callable[[bool, str], str]
+
+    def _add_intr_alert_reg(self,
+                            signals: Sequence[Signal],
+                            reg_name: str,
+                            reg_desc: str,
+                            field_desc_fmt: Optional[Union[str, _FieldFormatter]],
+                            swaccess: str,
+                            hwaccess: str,
+                            is_testreg: bool,
+                            reg_tags: List[str]) -> None:
+        swaccess_obj = SWAccess('RegBlock._make_intr_alert_reg()', swaccess)
+        hwaccess_obj = HWAccess('RegBlock._make_intr_alert_reg()', hwaccess)
+
+        fields = []
+        for signal in signals:
+            if field_desc_fmt is None:
+                field_desc = signal.desc
+            elif isinstance(field_desc_fmt, str):
+                field_desc = field_desc_fmt
+            else:
+                width = signal.bits.width()
+                field_desc = field_desc_fmt(width > 1, signal.name)
+
+            fields.append(Field(signal.name,
+                                field_desc or signal.desc,
+                                tags=[],
+                                swaccess=swaccess_obj,
+                                hwaccess=hwaccess_obj,
+                                hwqe=is_testreg,
+                                hwre=False,
+                                bits=signal.bits,
+                                resval=0,
+                                enum=None))
+
+        reg = Register(self.offset,
+                       reg_name,
+                       reg_desc,
+                       swaccess_obj,
+                       hwaccess_obj,
+                       hwext=is_testreg,
+                       hwqe=is_testreg,
+                       hwre=False,
+                       regwen=None,
+                       tags=reg_tags,
+                       resval=None,
+                       shadowed=False,
+                       fields=fields,
+                       update_err_alert=None,
+                       storage_err_alert=None)
+        self.add_register(reg)
+
+    def make_intr_regs(self, interrupts: Sequence[Signal]) -> None:
+        assert interrupts
+        assert interrupts[-1].bits.msb < self._reg_width
+
+        self._add_intr_alert_reg(interrupts,
+                                 'INTR_STATE',
+                                 'Interrupt State Register',
+                                 None,
+                                 'rw1c',
+                                 'hrw',
+                                 False,
+                                 # intr_state csr is affected by writes to
+                                 # other csrs - skip write-check
+                                 ["excl:CsrNonInitTests:CsrExclWriteCheck"])
+        self._add_intr_alert_reg(interrupts,
+                                 'INTR_ENABLE',
+                                 'Interrupt Enable Register',
+                                 lambda w, n: ('Enable interrupt when '
+                                               '{}!!INTR_STATE.{} is set.'
+                                               .format('corresponding bit in '
+                                                       if w else '',
+                                                       n)),
+                                 'rw',
+                                 'hro',
+                                 False,
+                                 [])
+        self._add_intr_alert_reg(interrupts,
+                                 'INTR_TEST',
+                                 'Interrupt Test Register',
+                                 lambda w, n: ('Write 1 to force '
+                                               '{}!!INTR_STATE.{} to 1.'
+                                               .format('corresponding bit in '
+                                                       if w else '',
+                                                       n)),
+                                 'wo',
+                                 'hro',
+                                 True,
+                                 # intr_test csr is WO so reads back 0s
+                                 ["excl:CsrNonInitTests:CsrExclWrite"])
+
+    def make_alert_regs(self, alerts: List[Alert]) -> None:
+        assert alerts
+        assert len(alerts) < self._reg_width
+        self._add_intr_alert_reg(alerts,
+                                 'ALERT_TEST',
+                                 'Alert Test Register',
+                                 ('Write 1 to trigger '
+                                  'one alert event of this kind.'),
+                                 'wo',
+                                 'hro',
+                                 True,
+                                 [])
+
+    def get_addr_width(self) -> int:
+        '''Calculate the number of bits to address every byte of the block'''
+        return (self.offset - 1).bit_length()

@@ -15,6 +15,7 @@ The SRAM controller interfaces with the SRAM data and address scrambling device 
 
 - Key request logic for the lightweight memory and address scrambling device.
 - Reporting CSRs and alert trigger for SRAM integrity errors.
+- Security hardening when integrity error has been detected.
 
 # Theory of Operations
 
@@ -121,6 +122,15 @@ Another CTR mode augmentation that is aimed at breaking the linear address space
 The same two-layer S&P network that is used for byte diffusion is leveraged to non-linearly remap the SRAM address as shown in the block diagram above.
 As opposed to the byte diffusion S&P networks, this particular address scrambling network additionally XOR's in a nonce that has the same width as the address.
 
+### Integrity Error Handling
+
+The `prim_ram_1p_scr` primitive contains an input to indicate whether upstream logic has detected an integrity error (The generation of the integrity error is determined by system integration).
+When an integrity error is encountered, the prim memory module does the following:
+*  Latch the error condition until reset.
+*  Reverse the nonce used during the address and CTR scrambling.
+*  Disallow any transaction (read or write) on the actual memory macro.
+
+This behavior, combined with other top level defenses, form a multi-layered defense when integrity errors are seen in the system.
 
 ### Read and Write Sequencing
 
@@ -221,7 +231,7 @@ Parameter                   | Default (Max)         | Top Earlgrey | Description
 
 Signal                     | Direction        | Type                               | Description
 ---------------------------|------------------|------------------------------------|---------------
-`key_valid_i`              | `input`          | `logic `                           | Indicates whether the key and nonce are considered valid. New memory requests are blocked if this is set to 0.
+`key_valid_i`              | `input`          | `logic`                            | Indicates whether the key and nonce are considered valid. New memory requests are blocked if this is set to 0.
 `key_i`                    | `input`          | `logic [127:0]`                    | Scrambling key.
 `nonce_i`                  | `input`          | `logic [NonceWidth-1:0]`           | Scrambling nonce.
 `req_i`                    | `input`          | `logic`                            | Memory request indication signal (from TL-UL SRAM adapter).
@@ -230,9 +240,11 @@ Signal                     | Direction        | Type                            
 `addr_i`                   | `input`          | `logic [AddrWidth-1:0]`            | Address for memory op (from TL-UL SRAM adapter).
 `wdata_i`                  | `input`          | `logic [Width-1:0]`                | Write data (from TL-UL SRAM adapter).
 `wmask_i`                  | `input`          | `logic [Width-1:0]`                | Write mask (from TL-UL SRAM adapter).
+`intg_error_i`             | `input`          | `logic`                            | Indicates whether the incoming transaction has an integrity error
 `rdata_o`                  | `output`         | `logic [Width-1:0]`                | Read data output (to TL-UL SRAM adapter).
 `rvalid_o`                 | `output`         | `logic`                            | Read data valid indication (to TL-UL SRAM adapter).
 `rerror_o`                 | `output`         | `logic [1:0]`                      | Error indication (to TL-UL SRAM adapter). Bit 0 indicates a correctable and bit 1 an uncorrectable error. Note that at this time, only uncorrectable errors are reported, since the scrambling device only supports byte parity.
+`intg_error_o`             | `output`         | `logic`                            | Forwards latched integrity error indication to the sram controller.
 `raddr_o`                  | `output`         | `logic [31:0]`                     | Address of the faulty read operation.
 `cfg_i`                    | `input`          | `logic [CfgWidth-1:0]`             | Attributes for physical memory macro.
 
@@ -262,7 +274,7 @@ It should also be noted that data and address scrambling is never entirely disab
 ## Error Handling
 
 Data in the SRAM is integrity protected with byte parity.
-In case an integrity failure is detected, the SRAM controller sets the {{< regref "STATUS.ERROR" >}} bit in the CSRs and continuously sends out a `fatal_parity_error` alert.
+In case an integrity failure is detected, the SRAM controller sets the {{< regref "STATUS.ERROR" >}} bit in the CSRs and continuously sends out a `fatal_parity_error` or `fatal_intg_error` alert.
 At the same time, the affected TL-UL transaction will error out.
 
 SRAM integrity failures are considered unrecoverable and cannot be cleared.

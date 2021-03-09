@@ -151,6 +151,13 @@ module ibex_decoder #(
       end
     end
   end else begin : gen_no_rs3_flop
+    logic unused_clk;
+    logic unused_rst_n;
+
+    // Clock and reset unused when there's no rs3 flop
+    assign unused_clk = clk_i;
+    assign unused_rst_n = rst_ni;
+
     // always zero
     assign use_rs3_q = use_rs3_d;
   end

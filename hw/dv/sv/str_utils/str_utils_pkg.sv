@@ -5,6 +5,8 @@
 package str_utils_pkg;
   `include "dv_macros.svh"
 
+  string msg_id = "str_utils_pkg";
+
   // Returns 1 if string 's' has substring 'sub' within the given index range. 0 Otherwise.
   function automatic bit str_has_substr(string s, string sub, int range_lo = 0, int range_hi = -1);
     if (range_hi < 0 || range_hi >= s.len()) range_hi = s.len() - 1;
@@ -39,6 +41,22 @@ package str_utils_pkg;
     end
     return -1;
   endfunction : str_rfind
+
+  // Find the first match string 'sub' in 's' and replace it with 'new_sub'.
+  // TODO: Add support for global replacement.
+  function automatic string str_replace(string s, string sub, string new_sub);
+    string str_before_sub, str_after_sub;
+    int lo_idx = str_find(s, sub);
+
+    // check sub string exists
+    `DV_CHECK_NE_FATAL(lo_idx, -1, $sformatf("sub string %s doesn't exist in %s", sub, s), msg_id)
+
+    // the new_str contains 3 portions {str_before_sub, new_sub, str_after_sub}
+    if (lo_idx > 0) str_before_sub = s.substr(0, lo_idx - 1);
+    if (lo_idx + sub.len() < s.len()) str_after_sub = s.substr(lo_idx + sub.len(), s.len() - 1);
+
+    return {str_before_sub, new_sub, str_after_sub};
+  endfunction : str_replace
 
   // Strips a given set of characters in string 's'.
   //

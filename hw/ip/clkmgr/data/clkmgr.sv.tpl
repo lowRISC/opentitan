@@ -75,6 +75,7 @@ module clkmgr import clkmgr_pkg::*; (
     .tl_o,
     .reg2hw,
     .hw2reg,
+    .intg_err_o(),
     .devmode_i(1'b1)
   );
 
@@ -111,7 +112,7 @@ module clkmgr import clkmgr_pkg::*; (
 
   prim_clock_div #(
     .Divisor(${src['div']})
-  ) u_${src['name']}_div (
+  ) u_no_scan_${src['name']}_div (
     .clk_i(clk_${src['src']}_i),
     .rst_ni(rst_${src['src']}_ni),
     .step_down_req_i(step_down_req == lc_ctrl_pkg::On),

@@ -189,11 +189,18 @@
           package: "prim_esc_pkg",
         },
 
-        { struct:  "crashdump",
+        { struct:  "crash_dump",
           type:    "uni",
-          name:    "crashdump",
+          name:    "crash_dump",
           act:     "req",
-          package: "rv_core_ibex_pkg",
+          package: "ibex_pkg",
+        },
+
+        { struct:  "lc_tx_t",
+          type:    "uni",
+          name:    "lc_cpu_en",
+          act:     "rcv",
+          package: "lc_ctrl_pkg",
         },
       ],
     }
@@ -471,9 +478,9 @@
     },
     { name: "aes",
       type: "aes",
-      clock_srcs: {clk_i: "main"},
+      clock_srcs: {clk_i: "main", clk_edn_i: "main"},
       clock_group: "trans",
-      reset_connections: {rst_ni: "sys"},
+      reset_connections: {rst_ni: "sys", rst_edn_ni: "sys"},
       base_addr: "0x41100000",
     },
     { name: "hmac",
@@ -596,6 +603,12 @@
           name:    "en_ifetch",
           act:     "rcv",
         },
+        { struct:  "logic",
+          package: ""
+          type:    "uni",
+          name:    "intg_error",
+          act:     "req",
+        },
       ]
     },
     { name: "ram_ret_aon",
@@ -629,6 +642,12 @@
           type:    "uni",
           name:    "en_ifetch",
           act:     "rcv",
+        },
+        { struct:  "logic",
+          package: ""
+          type:    "uni",
+          name:    "intg_error",
+          act:     "req",
         },
       ]
     },
@@ -740,9 +759,11 @@
       'flash_ctrl.rma_ack'      : ['lc_ctrl.lc_flash_rma_ack'],
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
       'sram_ctrl_main.sram_scr' : ['ram_main.sram_scr'],
-      'sram_ctrl_ret_aon.sram_scr' : ['ram_ret_aon.sram_scr'],
-      'sram_ctrl_main.en_ifetch' : ['ram_main.en_ifetch']
-      'sram_ctrl_ret_aon.en_ifetch' : ['ram_ret_aon.en_ifetch']
+      'sram_ctrl_ret_aon.sram_scr'  : ['ram_ret_aon.sram_scr'],
+      'sram_ctrl_main.en_ifetch'    : ['ram_main.en_ifetch'],
+      'sram_ctrl_ret_aon.en_ifetch' : ['ram_ret_aon.en_ifetch'],
+      'ram_main.intg_error'     : ['sram_ctrl_main.intg_error'],
+      'ram_ret_aon.intg_error'  : ['sram_ctrl_ret_aon.intg_error'],
       'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
                                    'sram_ctrl_ret_aon.sram_otp_key']
       'pwrmgr_aon.pwr_flash'    : ['flash_ctrl.pwrmgr'],
@@ -754,7 +775,7 @@
       'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en','aon_timer_aon.sleep_mode'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
-      'rv_core_ibex.crashdump'  : ['rstmgr_aon.cpu_dump'],
+      'rv_core_ibex.crash_dump'  : ['rstmgr_aon.cpu_dump'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
 
       // usbdev connection to pinmux
@@ -766,7 +787,7 @@
 
       // TODO see #4447
       'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn', 'ast_edn.edn', 'kmac.entropy'],
-      'edn1.edn'              : ['alert_handler.edn', 'otbn.edn'],
+      'edn1.edn'              : ['alert_handler.edn', 'otbn.edn', 'aes.edn'],
 
       // KeyMgr Sideload & KDF function
       'otp_ctrl.otp_keymgr_key' : ['keymgr.otp_key'],
@@ -806,8 +827,8 @@
       'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
                                       'sram_ctrl_ret_aon.lc_hw_debug_en',
                                       'pinmux_aon.lc_hw_debug_en'],
-      'lc_ctrl.lc_cpu_en'          : [],
-      //'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
+      'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en', 'aon_timer_aon.lc_cpu_en'],
+      'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
       'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',
                                       'otp_ctrl.lc_escalate_en',
                                       'sram_ctrl_main.lc_escalate_en',

@@ -189,6 +189,19 @@ def check_str_list(obj: object, what: str) -> List[str]:
     return cast(List[str], lst)
 
 
+def check_name_list(obj: object, what: str) -> List[str]:
+    '''Check that the given object is a list of valid names
+
+    If not, raise a ValueError; the what argument names the object.
+
+    '''
+    lst = check_list(obj, what)
+    for idx, elt in enumerate(lst):
+        check_name(elt, 'Element {} of {}'.format(idx + 1, what))
+
+    return cast(List[str], lst)
+
+
 def check_int(obj: object, what: str) -> int:
     '''Check that obj is an integer or a string that parses to an integer.
 
@@ -234,45 +247,16 @@ def check_xint(obj: object, what: str) -> Optional[int]:
                      .format(what, type(obj).__name__))
 
 
-def expand_parameter(params: List[Dict[str, object]],
-                     value: str,
-                     when: str) -> int:
-    # Check whether the 'parameter' is already an integer: if so, return that.
-    try:
-        return int(value, 0)
-    except ValueError:
-        pass
+def check_optional_str(obj: object, what: str) -> Optional[str]:
+    '''Check that obj is a string or None'''
+    return None if obj is None else check_str(obj, what)
 
-    found = None
-    for param in params:
-        if param['name'] == value:
-            found = param
-            break
-    if found is None:
-        raise ValueError('Cannot find a parameter called {} when {}. '
-                         'Known parameters: {}.'
-                         .format(value,
-                                 when,
-                                 ', '.join(str(p['name'])
-                                           for p in params)))
 
-    # Only allow localparams in the expansion (because otherwise we're at
-    # the mercy of whatever instantiates the block)
-    if param['local'] != 'true':
-        raise ValueError("When {}, {} is a parameter, "
-                         "not a localparam."
-                         .format(when, value))
-
-    default = param['default']
-    if isinstance(default, int):
-        return default
-
-    default_str = check_str(default,
-                            'default field in {!r} parameter'
-                            .format(value))
-    try:
-        return int(default_str, 0)
-    except ValueError:
-        raise ValueError("When {}, the {} value expanded as "
-                         "{}, which doesn't parse as an integer."
-                         .format(when, value, param['default'])) from None
+def get_basename(name: str) -> str:
+    '''Strip trailing _number (used as multireg suffix) from name'''
+    # TODO: This is a workaround, should solve this as part of parsing a
+    # multi-reg.
+    match = re.search(r'_[0-9]+$', name)
+    assert match
+    assert match.start() > 0
+    return name[0:match.start()]

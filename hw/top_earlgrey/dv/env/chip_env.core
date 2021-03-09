@@ -36,7 +36,7 @@ filesets:
       - seq_lib/chip_sw_gpio_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_gpio_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_spi_tx_rx_vseq.sv: {is_include_file: true}
-      - autogen/alert_handler_env_pkg__params.sv: {is_include_file: true}
+      - autogen/chip_env_pkg__params.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

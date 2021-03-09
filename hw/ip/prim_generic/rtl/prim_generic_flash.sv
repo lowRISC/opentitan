@@ -151,6 +151,7 @@ module prim_generic_flash #(
     .addr_o(cfg_addr),
     .wdata_o(cfg_wdata),
     .wmask_o(),
+    .intg_error_o(),
     .rdata_i(cfg_rdata),
     .rvalid_i(cfg_rvalid),
     .rerror_i('0)

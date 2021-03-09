@@ -751,10 +751,10 @@ class riscv_asm_program_gen extends uvm_object;
     end
     // Setup mepc register, jump to init entry
     setup_epc(hart);
-    // Setup initial privilege mode
-    gen_privileged_mode_switch_routine(hart);
     // Initialization of any implementation-specific custom CSRs
     setup_custom_csrs(hart);
+    // Setup initial privilege mode
+    gen_privileged_mode_switch_routine(hart);
   endfunction
 
   virtual function void gen_privileged_mode_switch_routine(int hart);

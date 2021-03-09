@@ -7,7 +7,7 @@ Generates the documentation for the register tool
 """
 from .access import SWACCESS_PERMITTED, HWACCESS_PERMITTED
 from reggen import (validate,
-                    enum_entry, field,
+                    ip_block, enum_entry, field,
                     register, multi_register, window)
 
 
@@ -248,12 +248,10 @@ def document(outfile):
         outfile, "\n\nThe top level of the JSON is a group containing "
         "the following keys:\n")
     doc_tbl_head(outfile, 1)
-    for x in validate.top_required:
-        doc_tbl_line(outfile, x, 'r', validate.top_required[x])
-    for x in validate.top_optional:
-        doc_tbl_line(outfile, x, 'o', validate.top_optional[x])
-    for x in validate.top_added:
-        doc_tbl_line(outfile, x, 'a', validate.top_added[x])
+    for k, v in ip_block.REQUIRED_FIELDS.items():
+        doc_tbl_line(outfile, k, 'r', v)
+    for k, v in ip_block.OPTIONAL_FIELDS.items():
+        doc_tbl_line(outfile, k, 'o', v)
     genout(outfile, top_example)
 
     genout(

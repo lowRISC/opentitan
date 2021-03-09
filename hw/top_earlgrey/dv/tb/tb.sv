@@ -180,8 +180,8 @@ module tb;
 
   assign spi_device_sck     = spi_if.sck;
   assign spi_device_csb     = spi_if.csb;
-  assign spi_device_sdi_i   = spi_if.sdi;
-  assign spi_if.sdo         = spi_device_sdo_o;
+  assign spi_device_sdi_i   = spi_if.sio[0];
+  assign spi_if.sio[1]      = spi_device_sdo_o;
 
   // TODO: Replace this weak pull to a known value with initialization
   // in the agent/interface.
@@ -326,7 +326,7 @@ module tb;
     string common_seq_type, csr_seq_type;
     void'($value$plusargs("run_%0s", common_seq_type));
     void'($value$plusargs("csr_%0s", csr_seq_type));
-    if (common_seq_type inside {"mem_partial_access", "tl_errors"} ||
+    if (common_seq_type inside {"mem_partial_access", "csr_mem_rw_with_rand_reset", "tl_errors"} ||
         csr_seq_type == "mem_walk") begin
       force tb.dut.top_earlgrey.u_otp_ctrl.lc_dft_en_i = 4'b1010;
     end

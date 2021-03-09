@@ -438,7 +438,6 @@ module spi_device (
   ////////////////////////////
   // SPI Serial to Parallel //
   ////////////////////////////
-
   spi_s2p u_s2p (
     .clk_i        (clk_spi_in_buf),
     .rst_ni       (rst_spi_n),
@@ -656,6 +655,7 @@ module spi_device (
     .addr_o      (mem_a_addr),
     .wdata_o     (mem_a_wdata),
     .wmask_o     (),           // Not used
+    .intg_error_o(),
     .rdata_i     (mem_a_rdata),
     .rvalid_i    (mem_a_rvalid),
     .rerror_i    (mem_a_rerror)
@@ -710,6 +710,7 @@ module spi_device (
     .reg2hw,
     .hw2reg,
 
+    .intg_err_o (),
     .devmode_i  (1'b1)
   );
 

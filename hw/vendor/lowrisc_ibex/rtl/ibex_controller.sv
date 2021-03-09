@@ -8,6 +8,7 @@
  */
 
 `include "prim_assert.sv"
+`include "dv_fcov_macros.svh"
 
 module ibex_controller #(
     parameter bit WritebackStage  = 0,
@@ -141,9 +142,11 @@ module ibex_controller #(
   logic illegal_dret;
   logic illegal_umode;
   logic exc_req_lsu;
-  logic special_req_all;
-  logic special_req_branch;
-  logic enter_debug_mode;
+  logic special_req;
+  logic special_req_pc_change;
+  logic special_req_flush_only;
+  logic enter_debug_mode_d;
+  logic enter_debug_mode_q;
   logic ebreak_into_debug;
   logic handle_irq;
 
@@ -217,29 +220,18 @@ module ibex_controller #(
 
 
   // special requests: special instructions, pipeline flushes, exceptions...
+  // All terms in these expressions are qualified by instr_valid_i except exc_req_lsu which can come
+  // from the Writeback stage with no instr_valid_i from the ID stage
 
-  // To avoid creating a path from data_err_i -> instr_req_o and to help timing the below
-  // special_req_all has a version that only applies to branches. For a branch the controller needs
-  // to set pc_set_o but only if there is no special request. If the generic special_req_all signal
-  // is used then a variety of signals that will never cause a special request during a branch
-  // instruction end up factored into pc_set_o. The special_req_branch only considers the special
-  // request reasons that are relevant to a branch.
+  // These special requests only cause a pipeline flush and in particular don't cause a PC change
+  // that is outside the normal execution flow
+  assign special_req_flush_only = wfi_insn | csr_pipe_flush;
+
+  // These special requests cause a change in PC
+  assign special_req_pc_change = mret_insn | dret_insn | exc_req_d | exc_req_lsu;
 
   // generic special request signal, applies to all instructions
-  // All terms in this expression are qualified by instr_valid_i except exc_req_lsu which can come
-  // from the Writeback stage with no instr_valid_i from the ID stage
-  assign special_req_all = mret_insn | dret_insn | wfi_insn | csr_pipe_flush |
-      exc_req_d | exc_req_lsu;
-
-  // special request that can specifically occur during branch instructions
-  // All terms in this expression are qualified by instr_valid_i
-  assign special_req_branch = instr_fetch_err & (ctrl_fsm_cs != FLUSH);
-
-  `ASSERT(SpecialReqBranchGivesSpecialReqAll,
-    special_req_branch |-> special_req_all)
-
-  `ASSERT(SpecialReqAllGivesSpecialReqBranchIfBranchInst,
-    special_req_all && (branch_set_i || jump_set_i) |-> special_req_branch)
+  assign special_req = special_req_pc_change | special_req_flush_only;
 
   // Exception/fault prioritisation is taken from Table 3.7 of Priviledged Spec v1.11
   if (WritebackStage) begin : g_wb_exceptions
@@ -316,8 +308,8 @@ module ibex_controller #(
   // due to a recently flushed IF (or a delay in an instruction returning from
   // memory) before it has had anything to single step.
   // Also enter debug mode on a trigger match (hardware breakpoint)
-  assign enter_debug_mode = (debug_req_i | (debug_single_step_i & instr_valid_i) |
-                             trigger_match_i) & ~debug_mode_q;
+  assign enter_debug_mode_d = (debug_req_i | (debug_single_step_i & instr_valid_i) |
+                               trigger_match_i) & ~debug_mode_q;
 
   // Set when an ebreak should enter debug mode rather than jump to exception
   // handler
@@ -460,7 +452,7 @@ module ibex_controller #(
         end
 
         // enter debug mode
-        if (enter_debug_mode) begin
+        if (enter_debug_mode_d) begin
           ctrl_fsm_ns = DBG_TAKEN_IF;
           // Halt IF only for now, ID will be flushed in DBG_TAKEN_IF as the
           // ID state is needed for correct debug mode entry
@@ -484,7 +476,7 @@ module ibex_controller #(
 
 
         // Get ready for special instructions, exceptions, pipeline flushes
-        if (special_req_all) begin
+        if (special_req) begin
           // Halt IF but don't flush ID. This leaves a valid instruction in
           // ID so controller can determine appropriate action in the
           // FLUSH state.
@@ -501,26 +493,24 @@ module ibex_controller #(
           end
         end
 
-        if (!special_req_branch) begin
-          if (branch_set_i || jump_set_i) begin
-            // Only set the PC if the branch predictor hasn't already done the branch for us
-            pc_set_o       = BranchPredictor ? ~instr_bp_taken_i : 1'b1;
+        if (branch_set_i || jump_set_i) begin
+          // Only set the PC if the branch predictor hasn't already done the branch for us
+          pc_set_o       = BranchPredictor ? ~instr_bp_taken_i : 1'b1;
 
-            perf_tbranch_o = branch_set_i;
-            perf_jump_o    = jump_set_i;
-          end
+          perf_tbranch_o = branch_set_i;
+          perf_jump_o    = jump_set_i;
+        end
 
-          if (BranchPredictor) begin
-            if (instr_bp_taken_i & branch_not_set_i) begin
-              // If the instruction is a branch that was predicted to be taken but was not taken
-              // signal a mispredict.
-              nt_branch_mispredict_o = 1'b1;
-            end
+        if (BranchPredictor) begin
+          if (instr_bp_taken_i & branch_not_set_i) begin
+            // If the instruction is a branch that was predicted to be taken but was not taken
+            // signal a mispredict.
+            nt_branch_mispredict_o = 1'b1;
           end
         end
 
         // pc_set signal excluding branch taken condition
-        if ((branch_set_spec_i || jump_set_i) && !special_req_branch) begin
+        if (branch_set_spec_i || jump_set_i) begin
           // Only speculatively set the PC if the branch predictor hasn't already done the branch
           // for us
           pc_set_spec_o = BranchPredictor ? ~instr_bp_taken_i : 1'b1;
@@ -529,12 +519,12 @@ module ibex_controller #(
         // If entering debug mode or handling an IRQ the core needs to wait
         // until the current instruction has finished executing. Stall IF
         // during that time.
-        if ((enter_debug_mode || handle_irq) && stall) begin
+        if ((enter_debug_mode_d || handle_irq) && stall) begin
           halt_if = 1'b1;
         end
 
-        if (!stall && !special_req_all) begin
-          if (enter_debug_mode) begin
+        if (!stall && !special_req) begin
+          if (enter_debug_mode_d) begin
             // enter debug mode
             ctrl_fsm_ns = DBG_TAKEN_IF;
             // Halt IF only for now, ID will be flushed in DBG_TAKEN_IF as the
@@ -593,26 +583,24 @@ module ibex_controller #(
 
         // enter debug mode and save PC in IF to dpc
         // jump to debug exception handler in debug memory
-        if (debug_single_step_i || debug_req_i || trigger_match_i) begin
-          flush_id         = 1'b1;
-          pc_set_o         = 1'b1;
-          pc_set_spec_o    = 1'b1;
+        flush_id         = 1'b1;
+        pc_set_o         = 1'b1;
+        pc_set_spec_o    = 1'b1;
 
-          csr_save_if_o    = 1'b1;
-          debug_csr_save_o = 1'b1;
+        csr_save_if_o    = 1'b1;
+        debug_csr_save_o = 1'b1;
 
-          csr_save_cause_o = 1'b1;
-          if (trigger_match_i) begin
-            debug_cause_o = DBG_CAUSE_TRIGGER;
-          end else if (debug_single_step_i) begin
-            debug_cause_o = DBG_CAUSE_STEP;
-          end else begin
-            debug_cause_o = DBG_CAUSE_HALTREQ;
-          end
-
-          // enter debug mode
-          debug_mode_d = 1'b1;
+        csr_save_cause_o = 1'b1;
+        if (trigger_match_i) begin
+          debug_cause_o = DBG_CAUSE_TRIGGER;
+        end else if (debug_single_step_i) begin
+          debug_cause_o = DBG_CAUSE_STEP;
+        end else begin
+          debug_cause_o = DBG_CAUSE_HALTREQ;
         end
+
+        // enter debug mode
+        debug_mode_d = 1'b1;
 
         ctrl_fsm_ns  = DECODE;
       end
@@ -769,7 +757,7 @@ module ibex_controller #(
         // If an EBREAK instruction is causing us to enter debug mode on the
         // same cycle as a debug_req or single step, honor the EBREAK and
         // proceed to DBG_TAKEN_ID.
-        if (enter_debug_mode && !(ebrk_insn_prio && ebreak_into_debug)) begin
+        if (enter_debug_mode_q && !(ebrk_insn_prio && ebreak_into_debug)) begin
           ctrl_fsm_ns = DBG_TAKEN_IF;
         end
       end // FLUSH
@@ -811,29 +799,42 @@ module ibex_controller #(
   // update registers
   always_ff @(posedge clk_i or negedge rst_ni) begin : update_regs
     if (!rst_ni) begin
-      ctrl_fsm_cs    <= RESET;
-      nmi_mode_q     <= 1'b0;
-      debug_mode_q   <= 1'b0;
-      load_err_q     <= 1'b0;
-      store_err_q    <= 1'b0;
-      exc_req_q      <= 1'b0;
-      illegal_insn_q <= 1'b0;
+      ctrl_fsm_cs        <= RESET;
+      nmi_mode_q         <= 1'b0;
+      debug_mode_q       <= 1'b0;
+      enter_debug_mode_q <= 1'b0;
+      load_err_q         <= 1'b0;
+      store_err_q        <= 1'b0;
+      exc_req_q          <= 1'b0;
+      illegal_insn_q     <= 1'b0;
     end else begin
-      ctrl_fsm_cs    <= ctrl_fsm_ns;
-      nmi_mode_q     <= nmi_mode_d;
-      debug_mode_q   <= debug_mode_d;
-      load_err_q     <= load_err_d;
-      store_err_q    <= store_err_d;
-      exc_req_q      <= exc_req_d;
-      illegal_insn_q <= illegal_insn_d;
+      ctrl_fsm_cs        <= ctrl_fsm_ns;
+      nmi_mode_q         <= nmi_mode_d;
+      debug_mode_q       <= debug_mode_d;
+      enter_debug_mode_q <= enter_debug_mode_d;
+      load_err_q         <= load_err_d;
+      store_err_q        <= store_err_d;
+      exc_req_q          <= exc_req_d;
+      illegal_insn_q     <= illegal_insn_d;
     end
   end
+
+  //////////
+  // FCOV //
+  //////////
+
+  `DV_FCOV_SIGNAL(logic, interrupt_taken, (ctrl_fsm_cs != IRQ_TAKEN) & (ctrl_fsm_ns == IRQ_TAKEN))
+  `DV_FCOV_SIGNAL(logic, debug_entry_if,
+      (ctrl_fsm_cs != DBG_TAKEN_IF) & (ctrl_fsm_ns == DBG_TAKEN_IF))
+  `DV_FCOV_SIGNAL(logic, debug_entry_id,
+      (ctrl_fsm_cs != DBG_TAKEN_ID) & (ctrl_fsm_ns == DBG_TAKEN_ID))
+  `DV_FCOV_SIGNAL(logic, pipe_flush, (ctrl_fsm_cs != FLUSH) & (ctrl_fsm_ns == FLUSH))
 
   ////////////////
   // Assertions //
   ////////////////
 
-  `ASSERT(AlwaysInstrClearOnMispredict, nt_branch_mispredict_o -> instr_valid_clear_o)
+  `ASSERT(AlwaysInstrClearOnMispredict, nt_branch_mispredict_o |-> instr_valid_clear_o)
 
   // Selectors must be known/valid.
   `ASSERT(IbexCtrlStateValid, ctrl_fsm_cs inside {
@@ -843,4 +844,77 @@ module ibex_controller #(
   // The speculative branch signal should be set whenever the actual branch signal is set
   `ASSERT(IbexSpecImpliesSetPC, pc_set_o |-> pc_set_spec_o)
 
+  `ifdef INC_ASSERT
+    // If something that causes a jump into an exception handler is seen that jump must occur before
+    // the next instruction executes. The logic tracks whether a jump into an exception handler is
+    // expected. Assertions check the jump occurs.
+
+    logic exception_req, exception_req_pending, exception_req_accepted, exception_req_done;
+    logic exception_pc_set, seen_exception_pc_set, expect_exception_pc_set;
+    logic exception_req_needs_pc_set;
+
+    assign exception_req = (special_req | enter_debug_mode_d | handle_irq);
+    // Any exception rquest will cause a transition out of DECODE, once the controller transitions
+    // back into DECODE we're done handling the request.
+    assign exception_req_done =
+      exception_req_pending & (ctrl_fsm_cs != DECODE) & (ctrl_fsm_ns == DECODE);
+
+    assign exception_req_needs_pc_set = enter_debug_mode_d | handle_irq | special_req_pc_change;
+
+    // An exception PC set uses specific PC types
+    assign exception_pc_set =
+      exception_req_pending & (pc_set_o & (pc_mux_o inside {PC_EXC, PC_ERET, PC_DRET}));
+
+    always @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        exception_req_pending   <= 1'b0;
+        exception_req_accepted  <= 1'b0;
+        expect_exception_pc_set <= 1'b0;
+        seen_exception_pc_set   <= 1'b0;
+      end else begin
+        // Keep `exception_req_pending` asserted once an exception_req is seen until it is done
+        exception_req_pending <= (exception_req_pending | exception_req) & ~exception_req_done;
+
+        // The exception req has been accepted once the controller transitions out of decode
+        exception_req_accepted <= (exception_req_accepted & ~exception_req_done) |
+          (exception_req & ctrl_fsm_ns != DECODE);
+
+        // Set `expect_exception_pc_set` if exception req needs one and keep it asserted until
+        // exception req is done
+        expect_exception_pc_set <= (expect_exception_pc_set | exception_req_needs_pc_set) &
+          ~exception_req_done;
+
+        // Keep `seen_exception_pc_set` asserted once an exception PC set is seen until the
+        // exception req is done
+        seen_exception_pc_set <= (seen_exception_pc_set | exception_pc_set) & ~exception_req_done;
+      end
+    end
+
+    // Once an exception request has been accepted it must be handled before controller goes back to
+    // DECODE
+    `ASSERT(IbexNoDoubleExceptionReq, exception_req_accepted |-> ctrl_fsm_cs != DECODE)
+
+    // Only signal ready, allowing a new instruction into ID, if there is no exception request
+    // pending or it is done this cycle.
+    `ASSERT(IbexDontSkipExceptionReq,
+      id_in_ready_o |-> !exception_req_pending || exception_req_done)
+
+    // Once a PC set has been performed for an exception request there must not be any other
+    // excepting those to move into debug mode.
+    `ASSERT(IbexNoDoubleSpecialReqPCSet,
+      seen_exception_pc_set &&
+        !((ctrl_fsm_cs inside {DBG_TAKEN_IF, DBG_TAKEN_ID}) &&
+          (pc_mux_o == PC_EXC) && (exc_pc_mux_o == EXC_PC_DBD))
+      |-> !pc_set_o)
+
+    // When an exception request is done there must have been an appropriate PC set (either this
+    // cycle or a previous one).
+    `ASSERT(IbexSetExceptionPCOnSpecialReqIfExpected,
+      exception_req_pending && expect_exception_pc_set && exception_req_done |->
+      seen_exception_pc_set || exception_pc_set)
+
+    // If there's a pending exception req that doesn't need a PC set we must not see one
+    `ASSERT(IbexNoPCSetOnSpecialReqIfNotExpected,
+      exception_req_pending && !expect_exception_pc_set |-> ~pc_set_o)
+  `endif
 endmodule

@@ -43,6 +43,7 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
     .tl_o,
     .reg2hw,
     .hw2reg,
+    .intg_err_o(),
     .devmode_i(1'b1)
   );
 

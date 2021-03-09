@@ -15,6 +15,7 @@
   // Maintain alphabetical order below.
   use_cfgs: [// IPs.
              "{proj_root}/hw/ip/aes/dv/aes_sim_cfg.hjson",
+             "{proj_root}/hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson",
              "{proj_root}/hw/ip/csrng/dv/csrng_sim_cfg.hjson",
              "{proj_root}/hw/ip/entropy_src/dv/entropy_src_sim_cfg.hjson",
              "{proj_root}/hw/ip/flash_ctrl/dv/flash_ctrl_sim_cfg.hjson",
@@ -33,6 +34,8 @@
              "{proj_root}/hw/ip/prim/dv/prim_prince/prim_prince_sim_cfg.hjson",
              "{proj_root}/hw/ip/rv_timer/dv/rv_timer_sim_cfg.hjson",
              "{proj_root}/hw/ip/spi_device/dv/spi_device_sim_cfg.hjson",
+             "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_main_sim_cfg.hjson",
+             "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_ret_sim_cfg.hjson",
              "{proj_root}/hw/ip/uart/dv/uart_sim_cfg.hjson",
              "{proj_root}/hw/ip/usbdev/dv/usbdev_sim_cfg.hjson",
              // Top level IPs.

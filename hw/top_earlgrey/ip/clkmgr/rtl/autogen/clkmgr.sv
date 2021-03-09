@@ -76,6 +76,7 @@ module clkmgr import clkmgr_pkg::*; (
     .tl_o,
     .reg2hw,
     .hw2reg,
+    .intg_err_o(),
     .devmode_i(1'b1)
   );
 
@@ -110,7 +111,7 @@ module clkmgr import clkmgr_pkg::*; (
 
   prim_clock_div #(
     .Divisor(2)
-  ) u_io_div2_div (
+  ) u_no_scan_io_div2_div (
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
     .step_down_req_i(step_down_req == lc_ctrl_pkg::On),
@@ -132,7 +133,7 @@ module clkmgr import clkmgr_pkg::*; (
 
   prim_clock_div #(
     .Divisor(4)
-  ) u_io_div4_div (
+  ) u_no_scan_io_div4_div (
     .clk_i(clk_io_i),
     .rst_ni(rst_io_ni),
     .step_down_req_i(step_down_req == lc_ctrl_pkg::On),

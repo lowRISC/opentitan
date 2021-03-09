@@ -1021,12 +1021,14 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdCsrngFatalAlert = 19, /**< csrng_fatal_alert */
   kTopEarlgreyAlertIdEdn0FatalAlert = 20, /**< edn0_fatal_alert */
   kTopEarlgreyAlertIdEdn1FatalAlert = 21, /**< edn1_fatal_alert */
-  kTopEarlgreyAlertIdSramCtrlMainFatalParityError = 22, /**< sram_ctrl_main_fatal_parity_error */
-  kTopEarlgreyAlertIdSramCtrlRetAonFatalParityError = 23, /**< sram_ctrl_ret_aon_fatal_parity_error */
-  kTopEarlgreyAlertIdFlashCtrlRecovErr = 24, /**< flash_ctrl_recov_err */
-  kTopEarlgreyAlertIdFlashCtrlRecovMpErr = 25, /**< flash_ctrl_recov_mp_err */
-  kTopEarlgreyAlertIdFlashCtrlRecovEccErr = 26, /**< flash_ctrl_recov_ecc_err */
-  kTopEarlgreyAlertIdLast = 26, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdSramCtrlMainFatalIntgError = 22, /**< sram_ctrl_main_fatal_intg_error */
+  kTopEarlgreyAlertIdSramCtrlMainFatalParityError = 23, /**< sram_ctrl_main_fatal_parity_error */
+  kTopEarlgreyAlertIdSramCtrlRetAonFatalIntgError = 24, /**< sram_ctrl_ret_aon_fatal_intg_error */
+  kTopEarlgreyAlertIdSramCtrlRetAonFatalParityError = 25, /**< sram_ctrl_ret_aon_fatal_parity_error */
+  kTopEarlgreyAlertIdFlashCtrlRecovErr = 26, /**< flash_ctrl_recov_err */
+  kTopEarlgreyAlertIdFlashCtrlRecovMpErr = 27, /**< flash_ctrl_recov_mp_err */
+  kTopEarlgreyAlertIdFlashCtrlRecovEccErr = 28, /**< flash_ctrl_recov_ecc_err */
+  kTopEarlgreyAlertIdLast = 28, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -1036,7 +1038,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[27];
+    top_earlgrey_alert_for_peripheral[29];
 
 #define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 

@@ -20,17 +20,15 @@ import sys
 import textwrap
 from pathlib import Path
 
-import hjson
-
 import check_tool_requirements
 import dashboard.gen_dashboard_entry as gen_dashboard_entry
 import difgen.gen_dif_listing as gen_dif_listing
 import reggen.gen_cfg_html as gen_cfg_html
 import reggen.gen_html as gen_html
-import reggen.validate as validate
 import reggen.gen_selfdoc as reggen_selfdoc
 import dvsim.testplanner.testplan_utils as testplan_utils
 import tlgen
+from reggen.ip_block import IpBlock
 
 USAGE = """
   build_docs [options]
@@ -95,6 +93,7 @@ config = {
     "testplan_definitions": [
         "hw/ip/aes/data/aes_testplan.hjson",
         "hw/ip/alert_handler/data/alert_handler_testplan.hjson",
+        "hw/ip/aon_timer/data/aon_timer_testplan.hjson",
         "hw/ip/entropy_src/data/entropy_src_testplan.hjson",
         "hw/ip/csrng/data/csrng_testplan.hjson",
         "hw/ip/edn/data/edn_testplan.hjson",
@@ -110,6 +109,7 @@ config = {
         "hw/ip/rv_plic/data/rv_plic_fpv_testplan.hjson",
         "hw/ip/rv_timer/data/rv_timer_testplan.hjson",
         "hw/ip/spi_device/data/spi_device_testplan.hjson",
+        "hw/ip/sram_ctrl/data/sram_ctrl_base_testplan.hjson",
         "hw/ip/uart/data/uart_testplan.hjson",
         "hw/ip/usbdev/data/usbdev_testplan.hjson",
         "hw/ip/tlul/data/tlul_testplan.hjson",
@@ -150,28 +150,19 @@ def generate_dashboards():
 
 def generate_hardware_blocks():
     for hardware in config["hardware_definitions"]:
-        hardware_file = open(str(SRCTREE_TOP.joinpath(hardware)))
-        regs = hjson.load(hardware_file,
-                          use_decimal=True,
-                          object_pairs_hook=validate.checking_dict)
-        if validate.validate(regs) == 0:
-            logging.info("Parsed %s" % (hardware))
-        else:
-            logging.fatal("Failed to parse %s" % (hardware))
+        regs = IpBlock.from_path(str(SRCTREE_TOP.joinpath(hardware)), [])
 
-        base_path = config["outdir-generated"].joinpath(hardware)
-        base_path.parent.mkdir(parents=True, exist_ok=True)
+        hw_path = config["outdir-generated"].joinpath(hardware)
+        dst_path = hw_path.parent
+        dst_path.mkdir(parents=True, exist_ok=True)
 
-        regs_html = open(str(base_path.parent.joinpath(base_path.name +
-                                                       '.registers')),
-                         mode='w')
-        gen_html.gen_html(regs, regs_html)
-        regs_html.close()
+        regs_path = dst_path.joinpath(hw_path.name + '.registers')
+        with open(regs_path, 'w') as regs_file:
+            gen_html.gen_html(regs, regs_file)
 
-        hwcfg_html = open(str(base_path.parent.joinpath(base_path.name + '.hwcfg')),
-                          mode='w')
-        gen_cfg_html.gen_cfg_html(regs, hwcfg_html)
-        hwcfg_html.close()
+        hwcfg_path = dst_path.joinpath(hw_path.name + '.hwcfg')
+        with open(hwcfg_path, 'w') as hwcfg_file:
+            gen_cfg_html.gen_cfg_html(regs, hwcfg_file)
 
 
 def generate_testplans():

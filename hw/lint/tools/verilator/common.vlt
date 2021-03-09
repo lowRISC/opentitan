@@ -13,3 +13,8 @@ lint_off -rule PINCONNECTEMPTY
 // This warning gives wrong results with blackboxed embedded modules, see
 // https://github.com/verilator/verilator/issues/2430
 lint_off -rule DECLFILENAME -file "*" -match "Filename '*' does not match NOTFOUNDMODULE name:*"
+
+// Don't generate lint errors for unused parameters in packages. The point is
+// that a user of a package might not want to use all of the parameters it
+// defines.
+lint_off -rule UNUSED -file "*_pkg.sv" -match "*Parameter is not used*"

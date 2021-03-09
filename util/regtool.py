@@ -11,10 +11,9 @@ import re
 import sys
 from pathlib import PurePath
 
-import hjson
-
 from reggen import (gen_cheader, gen_dv, gen_fpv, gen_html,
-                    gen_json, gen_rtl, gen_selfdoc, validate, version)
+                    gen_json, gen_rtl, gen_selfdoc, version)
+from reggen.ip_block import IpBlock
 
 DESC = """regtool, generate register info from Hjson source"""
 
@@ -132,7 +131,18 @@ def main():
         format = 'hjson'
 
     infile = args.input
-    params = args.param.split(';')
+
+    # Split parameters into key=value pairs.
+    raw_params = args.param.split(';') if args.param else []
+    params = []
+    for idx, raw_param in enumerate(raw_params):
+        tokens = raw_param.split('=')
+        if len(tokens) != 2:
+            raise ValueError('Entry {} in list of parameter defaults to '
+                             'apply is {!r}, which is not of the form '
+                             'param=value.'
+                             .format(idx, raw_param))
+        params.append((tokens[0], tokens[1]))
 
     # Define either outfile or outdir (but not both), depending on the output
     # format.
@@ -169,23 +179,19 @@ def main():
             gen_selfdoc.document(outfile)
         exit(0)
 
+    srcfull = infile.read()
+
     try:
-        srcfull = infile.read()
-        obj = hjson.loads(srcfull,
-                          use_decimal=True,
-                          object_pairs_hook=validate.checking_dict)
-    except ValueError:
-        raise SystemExit(sys.exc_info()[1])
+        obj = IpBlock.from_text(srcfull, params, infile.name)
+    except ValueError as err:
+        log.error(str(err))
+        exit(1)
 
     if args.novalidate:
         with outfile:
             gen_json.gen_json(obj, outfile, format)
             outfile.write('\n')
-    elif (validate.validate(obj, params=params) == 0):
-        if (verbose):
-            log.info("Second validate pass (should show added optional keys)")
-            validate.validate(obj, params=params)
-
+    else:
         if format == 'rtl':
             return gen_rtl.gen_rtl(obj, outdir)
         if format == 'dv':

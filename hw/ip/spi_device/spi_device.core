@@ -23,6 +23,7 @@ filesets:
       - rtl/spi_fwm_rxf_ctrl.sv
       - rtl/spi_fwm_txf_ctrl.sv
       - rtl/spi_fwmode.sv
+      - rtl/spi_cmdparse.sv
       - rtl/spi_s2p.sv
       - rtl/spi_p2s.sv
       - rtl/spi_device.sv

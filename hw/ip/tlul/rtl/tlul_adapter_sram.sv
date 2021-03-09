@@ -12,12 +12,15 @@
  *   than SRAM size
  */
 module tlul_adapter_sram import tlul_pkg::*; #(
-  parameter int SramAw      = 12,
-  parameter int SramDw      = 32, // Must be multiple of the TL width
-  parameter int Outstanding = 1,  // Only one request is accepted
-  parameter bit ByteAccess  = 1,  // 1: true, 0: false
-  parameter bit ErrOnWrite  = 0,  // 1: Writes not allowed, automatically error
-  parameter bit ErrOnRead   = 0   // 1: Reads not allowed, automatically error
+  parameter int SramAw            = 12,
+  parameter int SramDw            = 32, // Must be multiple of the TL width
+  parameter int Outstanding       = 1,  // Only one request is accepted
+  parameter bit ByteAccess        = 1,  // 1: true, 0: false
+  parameter bit ErrOnWrite        = 0,  // 1: Writes not allowed, automatically error
+  parameter bit ErrOnRead         = 0,  // 1: Reads not allowed, automatically error
+  parameter bit CmdIntgCheck      = 0,  // 1: Enable command integrity check
+  parameter bit EnableRspIntgGen  = 0,  // 1: Generate response integrity
+  parameter bit EnableDataIntgGen = 0   // 1: Generate data integrity
 ) (
   input   clk_i,
   input   rst_ni,
@@ -36,6 +39,7 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   output logic [SramAw-1:0] addr_o,
   output logic [SramDw-1:0] wdata_o,
   output logic [SramDw-1:0] wmask_o,
+  output logic              intg_error_o,
   input        [SramDw-1:0] rdata_i,
   input                     rvalid_i,
   input        [1:0]        rerror_i // 2 bit error [1]: Uncorrectable, [0]: Correctable
@@ -91,6 +95,7 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   rsp_t rspfifo_wdata,  rspfifo_rdata;
 
   logic error_internal; // Internal protocol error checker
+  logic intg_error;
   logic wr_attr_error;
   logic instr_error;
   logic wr_vld_error;
@@ -136,7 +141,9 @@ module tlul_adapter_sram import tlul_pkg::*; #(
     end
   end
 
-  assign tl_o = '{
+
+  tl_d2h_t tl_out;
+  assign tl_out = '{
       d_valid  : d_valid ,
       d_opcode : (d_valid && reqfifo_rdata.op != OpRead) ? AccessAck : AccessAckData,
       d_param  : '0,
@@ -150,6 +157,15 @@ module tlul_adapter_sram import tlul_pkg::*; #(
 
       a_ready  : (gnt_i | error_internal) & reqfifo_wready & sramreqfifo_wready
   };
+
+
+  tlul_rsp_intg_gen #(
+    .EnableRspIntgGen(EnableRspIntgGen),
+    .EnableDataIntgGen(EnableDataIntgGen)
+  ) u_rsp_gen (
+    .tl_i(tl_out),
+    .tl_o
+  );
 
   // a_ready depends on the FIFO full condition and grant from SRAM (or SRAM arbiter)
   // assemble response, including read response, write response, and error for unsupported stuff
@@ -216,6 +232,30 @@ module tlul_adapter_sram import tlul_pkg::*; #(
     assign rd_vld_error = 1'b0;
   end
 
+  if (CmdIntgCheck) begin : gen_cmd_intg_check
+    tlul_cmd_intg_chk u_cmd_intg_chk (
+      .tl_i,
+      .err_o ()
+    );
+
+    // TODO, hook up err_o once memory initialization is done
+    assign intg_error = '0;
+  end else begin : gen_no_cmd_intg_check
+    assign intg_error = '0;
+  end
+
+
+  // permanently latch integrity error until reset
+  logic intg_error_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      intg_error_q <= '0;
+    end else if (intg_error) begin
+      intg_error_q <= 1'b1;
+    end
+  end
+  assign intg_error_o = intg_error_q;
+
   tlul_err u_err (
     .clk_i,
     .rst_ni,
@@ -223,7 +263,8 @@ module tlul_adapter_sram import tlul_pkg::*; #(
     .err_o (tlul_error)
   );
 
-  assign error_internal = wr_attr_error | wr_vld_error | rd_vld_error | instr_error | tlul_error;
+  assign error_internal = wr_attr_error | wr_vld_error | rd_vld_error | instr_error |
+                          tlul_error    | intg_error   | intg_error_q;
   // End: Request Error Detection
 
   assign reqfifo_wvalid = a_ack ; // Push to FIFO only when granted

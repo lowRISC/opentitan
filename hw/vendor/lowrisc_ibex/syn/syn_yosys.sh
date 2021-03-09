@@ -7,10 +7,20 @@
 # This script drives the experimental Ibex synthesis flow. More details can be
 # found in README.md
 
+set -e
+set -o pipefail
+
+error () {
+    echo >&2 "$@"
+    exit 1
+}
+
+teelog () {
+    tee "$LR_SYNTH_OUT_DIR/log/$1.log"
+}
+
 if [ ! -f syn_setup.sh ]; then
-  echo "Must provide syn_setup.sh file"
-  echo "See example in syn_setup.example.sh and README.md for instructions"
-  exit 1
+    error "No syn_setup.sh file: see README.md for instructions"
 fi
 
 #-------------------------------------------------------------------------
@@ -28,16 +38,20 @@ mkdir -p "$LR_SYNTH_OUT_DIR/reports/timing"
 
 for file in ../rtl/*.sv; do
   module=`basename -s .sv $file`
+
+  # Skip packages
+  if echo "$module" | grep -q '_pkg$'; then
+      continue
+  fi
+
   sv2v \
     --define=SYNTHESIS \
     ../rtl/*_pkg.sv \
-    -I../vendor/lowrisc_ip/prim/rtl \
+    -I../vendor/lowrisc_ip/ip/prim/rtl \
+    -I../dv/fcov \
     $file \
     > $LR_SYNTH_OUT_DIR/generated/${module}.v
 done
-
-# remove generated *pkg.v files (they are empty files and not needed)
-rm -f $LR_SYNTH_OUT_DIR/generated/*_pkg.v
 
 # remove tracer (not needed for synthesis)
 rm -f $LR_SYNTH_OUT_DIR/generated/ibex_tracer.v
@@ -47,9 +61,13 @@ rm -f $LR_SYNTH_OUT_DIR/generated/ibex_tracer.v
 rm -f $LR_SYNTH_OUT_DIR/generated/ibex_register_file_ff.v
 rm -f $LR_SYNTH_OUT_DIR/generated/ibex_register_file_fpga.v
 
-yosys -c ./tcl/yosys_run_synth.tcl | tee ./$LR_SYNTH_OUT_DIR/log/syn.log
+yosys -c ./tcl/yosys_run_synth.tcl |& teelog syn || {
+    error "Failed to synthesize RTL with Yosys"
+}
 
-sta ./tcl/sta_run_reports.tcl | tee ./$LR_SYNTH_OUT_DIR/log/sta.log
+sta ./tcl/sta_run_reports.tcl |& teelog sta || {
+    error "Failed to run static timing analysis"
+}
 
 ./translate_timing_rpts.sh
 

@@ -90,6 +90,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .reg2hw,
     .hw2reg,
 
+    .intg_err_o (),
     .devmode_i  (1'b1)
   );
 
@@ -444,6 +445,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .we_o        (sw_wen),
     .addr_o      (),
     .wmask_o     (),
+    .intg_error_o(),
     .wdata_o     (sw_wdata),
     .rdata_i     (BusWidth'(0)),
     .rvalid_i    (1'b0),
@@ -528,6 +530,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
     .addr_o      (),
     .wmask_o     (),
     .wdata_o     (),
+    .intg_error_o(),
     .rdata_i     (rd_fifo_rdata),
     .rvalid_i    (adapter_rvalid),
     .rerror_i    (2'b0)
