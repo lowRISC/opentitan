@@ -123,7 +123,18 @@ package otp_ctrl_env_pkg;
     OtpCheckPendingIdx
   } otp_status_e;
 
-typedef enum bit [1:0] {
+  typedef enum bit [2:0] {
+    OtpNoError,
+    OtpMacroError,
+    OtpMacroEccCorrError,
+    OtpMacroEccUncorrError,
+    OtpMacroWriteBlankError,
+    OtpAccessError,
+    OtpCheckFailError,
+    OtpFsmStateError
+  } otp_err_code_e;
+
+  typedef enum bit [1:0] {
     OtpNoEccErr,
     OtpEccCorrErr,
     OtpEccUncorrErr
