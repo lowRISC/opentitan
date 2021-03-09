@@ -10,7 +10,7 @@ package alert_handler_reg_pkg;
   parameter int NAlerts = 29;
   parameter int EscCntDw = 32;
   parameter int AccuCntDw = 16;
-  parameter logic [NAlerts-1:0] AsyncOn = 29'b11100111111100001100000001111;
+  parameter logic [NAlerts-1:0] AsyncOn = 29'b11111111111111110000000000000;
   parameter int N_CLASSES = 4;
   parameter int N_ESC_SEV = 4;
   parameter int N_PHASES = 4;
