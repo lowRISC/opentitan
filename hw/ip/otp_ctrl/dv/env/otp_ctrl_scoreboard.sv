@@ -160,8 +160,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
       // LC program request data is valid means no OTP macro error.
       `DV_CHECK_EQ(rcv_item.d_data, exp_err_bit)
-      if (exp_err_bit) predict_status_err(.dai_err(0), .lc_err(1));
-      else exp_status[OtpLciErrIdx] = 0;
+      if (exp_err_bit) predict_err(OtpLciErrIdx, OtpMacroWriteBlankError);
+      else             predict_no_err(OtpLciErrIdx);
     end
   endtask
 
@@ -441,7 +441,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
           // LC partition cannot be access via DAI
           if (part_idx == LifeCycleIdx) begin
-            predict_status_err(.dai_err(1));
+            predict_err(OtpDaiErrIdx, OtpAccessError);
             if (item.a_data == DaiRead) predict_rdata(is_secret(dai_addr), 0, 0);
           end else begin
             case (item.a_data)
@@ -452,23 +452,26 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                 // However, digest is always readable
                 if ((part_idx inside {CreatorSwCfgIdx, OwnerSwCfgIdx} && sw_read_lock[part_idx]) ||
                     (is_secret(dai_addr) && digests[part_idx] != 0) && !is_digest(dai_addr)) begin
-                  predict_status_err(.dai_err(1));
+                  predict_err(OtpDaiErrIdx, OtpAccessError);
                   predict_rdata(is_secret(dai_addr), 0, 0);
                 end else begin
                   bit [TL_AW-1:0] otp_addr = get_scb_otp_addr();
-                  if (cfg.ecc_err == OtpNoEccErr) predict_dai_idle_status_wo_err();
-                  else                            predict_status_err(.dai_err(1));
-
+                  if (cfg.ecc_err == OtpNoEccErr) begin
+                    predict_no_err(OtpDaiErrIdx);
+                    predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
+                                  otp_a[otp_addr], otp_a[otp_addr+1]);
+                  end else if (cfg.ecc_err == OtpEccCorrErr) begin
+                    predict_err(OtpDaiErrIdx, OtpMacroEccCorrError);
+                    predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
+                                  otp_a[otp_addr], otp_a[otp_addr+1]);
                   // OTP macro uncorrectable error: DAI interface goes to error state
-                  if (cfg.ecc_err == OtpEccUncorrErr) begin
+                  end else begin
+                    predict_err(OtpDaiErrIdx, OtpMacroEccUncorrError);
                     // Max wait 20 clock cycles because scb did not know when exactly OTP will
                     // finish reading and reporting the uncorrectable error.
                     set_exp_alert("fatal_macro_error", 1, 20);
                     macro_alert_triggered = 1;
                     predict_rdata(1, 0, 0);
-                  end else begin
-                    predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
-                                  otp_a[otp_addr], otp_a[otp_addr+1]);
                   end
                 end
               end
@@ -476,9 +479,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                 bit[TL_AW-1:0] otp_addr = get_scb_otp_addr();
                 // check if write locked
                 if (get_digest_reg_val(part_idx) != 0) begin
-                  predict_status_err(.dai_err(1));
+                  predict_err(OtpDaiErrIdx, OtpAccessError);
                 end else begin
-                  predict_dai_idle_status_wo_err();
+                  predict_no_err(OtpDaiErrIdx);
                   // write digest
                   if (is_sw_digest(dai_addr)) begin
                     bit [TL_DW*2-1:0] curr_digest, prev_digest;
@@ -492,10 +495,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                       // wait a reset
                       update_sw_digests_to_otp(part_idx);
                     end else begin
-                      predict_status_err(.dai_err(1));
+                      predict_err(OtpDaiErrIdx, OtpMacroWriteBlankError);
                     end
                   end else if (is_digest(dai_addr)) begin
-                    predict_status_err(.dai_err(1));
+                    predict_err(OtpDaiErrIdx, OtpAccessError);
                   // write OTP memory
                   end else begin
                     if (!is_secret(dai_addr)) begin
@@ -504,8 +507,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                       if ((otp_a[otp_addr] & wr_data) == otp_a[otp_addr]) begin
                         otp_a[otp_addr] = wr_data;
                         check_otp_idle(.val(0), .wait_clks(3));
+                      end else begin
+                        predict_err(OtpDaiErrIdx, OtpMacroWriteBlankError);
                       end
-                      else predict_status_err(.dai_err(1));
                     end else begin
                       bit [SCRAMBLE_DATA_SIZE-1:0] secret_data = {otp_a[otp_addr + 1],
                                                                   otp_a[otp_addr]};
@@ -519,7 +523,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                         // wait until secret scrambling is done
                         check_otp_idle(.val(0), .wait_clks(34));
                       end else begin
-                        predict_status_err(.dai_err(1));
+                        predict_err(OtpDaiErrIdx, OtpMacroWriteBlankError);
                       end
                     end
                   end
@@ -595,16 +599,17 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           exp_status[OtpCheckPendingIdx] = 1;
           if (`gmv(ral.check_timeout) > 0 && `gmv(ral.check_timeout) <= CHK_TIMEOUT_CYC) begin
             set_exp_alert("fatal_check_error", 1, `gmv(ral.check_timeout));
-            predict_status_err(.timeout_err(1));
+            predict_err(OtpTimeoutErrIdx);
           end
         end
       end
-      "hw_cfg_digest_0", "hw_cfg_digest_1", "", "secret0_digest_0", "secret0_digest_1",
+      "hw_cfg_digest_0", "hw_cfg_digest_1", "secret0_digest_0", "secret0_digest_1",
       "secret1_digest_0", "secret1_digest_1", "secret2_digest_0", "secret2_digest_1",
       "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1", "owner_sw_cfg_digest_0",
-      "owner_sw_cfg_digest_1", "direct_access_regwen", "direct_access_wdata_0", "check_timeout",
-      "direct_access_wdata_1", "direct_access_address", "direct_access_rdata_0", "intr_enable",
-      "direct_access_rdata_1", "check_regwen", "check_trigger_regwen", "check_trigger": begin
+      "owner_sw_cfg_digest_1", "direct_access_regwen", "direct_access_wdata_0",
+      "direct_access_wdata_1", "direct_access_address", "direct_access_rdata_0",
+      "direct_access_rdata_1", "check_regwen", "check_trigger_regwen", "check_trigger",
+      "check_timeout", "intr_enable", "err_code": begin
         // Do nothing
       end
       default: begin
@@ -657,8 +662,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
             // use negedge to avoid race condition
             cfg.clk_rst_vif.wait_n_clks(wait_clks + 1);
             `uvm_error(`gfn,
-                       $sformatf("pwr_otp_idle output is %0b while expect %0b within %0d cycles %0b",
-                       cfg.otp_ctrl_vif.pwr_otp_idle_o, val, wait_clks, cfg.m_edn_pull_agent_cfg.vif.req))
+                       $sformatf("pwr_otp_idle output is %0b while expect %0b within %0d cycles",
+                       cfg.otp_ctrl_vif.pwr_otp_idle_o, val, wait_clks))
           end
           begin
             wait(cfg.under_reset || cfg.otp_ctrl_vif.pwr_otp_idle_o == val ||
@@ -748,10 +753,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
     if (digests[part_idx] != 0 ||
         part_idx inside {CreatorSwCfgIdx, OwnerSwCfgIdx, LifeCycleIdx}) begin
-      predict_status_err(.dai_err(1));
+      predict_err(OtpDaiErrIdx, OtpAccessError);
       return;
     end else begin
-      predict_dai_idle_status_wo_err();
+      predict_no_err(OtpDaiErrIdx);
     end
     case (part_idx)
       HwCfgIdx:   mem_q = otp_a[HW_CFG_START_ADDR:HW_CFG_END_ADDR];
@@ -865,19 +870,37 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                                                                       dai_addr >> 2;
   endfunction
 
-  virtual function void predict_status_err(bit dai_err = 0, bit lc_err = 0, bit timeout_err = 0);
+  // This function predict OTP error related registers: intr_state, status, and err_code
+  virtual function void predict_err(otp_status_e   status_err_idx,
+                                    otp_err_code_e err_code = OtpNoError);
+    // Update intr_state
     void'(ral.intr_state.otp_error.predict(.value(1), .kind(UVM_PREDICT_READ)));
-    if (dai_err) begin
-      exp_status[OtpDaiIdleIdx] = 1;
-      exp_status[OtpDaiErrIdx]  = 1;
+
+    // Update status
+    exp_status[status_err_idx] = 1;
+
+    // Only first 8 status errors have corresponding err_code
+    if (status_err_idx <= OtpLciErrIdx) begin
+      dv_base_reg_field err_code_flds[$];
+      if (err_code == OtpNoError) begin
+        `uvm_error(`gfn, $sformatf("please set status error: %0s error code", status_err_idx.name))
+      end
+      ral.err_code.get_dv_base_reg_fields(err_code_flds);
+      void'(err_code_flds[status_err_idx].predict(err_code));
     end
-    if (lc_err) exp_status[OtpLciErrIdx] = 1;
-    if (timeout_err) exp_status[OtpTimeoutErrIdx] = 1;
+
   endfunction
 
-  virtual function void predict_dai_idle_status_wo_err();
-    exp_status[OtpDaiIdleIdx] = 1;
-    exp_status[OtpDaiErrIdx]  = 0;
+  // TODO: consider combine it with function predict_err()
+  virtual function void predict_no_err(otp_status_e status_err_idx);
+    exp_status[status_err_idx] = 0;
+    if (status_err_idx == OtpDaiErrIdx) exp_status[OtpDaiIdleIdx] = 1;
+
+    if (status_err_idx <= OtpLciErrIdx) begin
+      dv_base_reg_field err_code_flds[$];
+      ral.err_code.get_dv_base_reg_fields(err_code_flds);
+      void'(err_code_flds[status_err_idx].predict(OtpNoError));
+    end
   endfunction
 
   virtual function void predict_rdata(bit is_64_bits, bit [TL_DW-1:0] rdata0,

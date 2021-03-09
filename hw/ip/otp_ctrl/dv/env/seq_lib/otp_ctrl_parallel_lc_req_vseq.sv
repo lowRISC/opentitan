@@ -19,6 +19,11 @@ class otp_ctrl_parallel_lc_req_vseq extends otp_ctrl_parallel_base_vseq;
     do_lc_trans == 0;
   }
 
+  // disable err_code check because cannot accurately predict when LC error is detected
+  constraint no_err_code_c {
+    check_err_code == 0;
+  }
+
   virtual task run_parallel_seq(ref bit base_vseq_done);
     forever
       begin

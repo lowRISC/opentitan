@@ -13,7 +13,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
   bit collect_used_addr = 1;
 
-  rand bit                           do_req_keys, do_lc_trans;
+  rand bit                           do_req_keys, do_lc_trans, check_err_code;
   rand bit                           access_locked_parts;
   rand bit [TL_AW-1:0]               dai_addr;
   rand bit [TL_DW-1:0]               wdata0, wdata1;
@@ -133,11 +133,13 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
         if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(tlul_val));
         if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
+        if (check_err_code) csr_rd(.ptr(ral.err_code), .value(tlul_val));
       end
 
       if (do_lc_trans) begin
         req_lc_transition(do_lc_trans);
         req_lc_token();
+        if (check_err_code) csr_rd(.ptr(ral.err_code), .value(tlul_val));
       end
 
       // lock digests
@@ -147,6 +149,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       write_sw_digests();
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
       write_sw_rd_locks();
+
+      if (check_err_code) csr_rd(.ptr(ral.err_code), .value(tlul_val));
 
       if ($urandom_range(0, 1)) rd_digests();
       dut_init();
