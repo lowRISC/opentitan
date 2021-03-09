@@ -10,10 +10,7 @@
 
 module spi_host
   import spi_host_reg_pkg::*;
-#(
-  parameter int ByteOrder = 0,
-  parameter int MaxCS = 1
-) (
+ (
   input              clk_i,
   input              rst_ni,
   input              clk_core_i,
