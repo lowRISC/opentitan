@@ -15,6 +15,7 @@ from uvmdvgen import VENDOR_DEFAULT
 def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, has_edn,
             env_agents, root_dir, vendor):
     # yapf: disable
+    # flake8: noqa
     # 4-tuple - sub-path, ip name, class name, file ext
     env_srcs = [('dv/env',          name + '_', 'env_cfg',            '.sv'),
                 ('dv/env',          name + '_', 'env_cov',            '.sv'),
@@ -35,7 +36,7 @@ def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, has_edn,
                 ('dv/tests',        name + '_', 'test',               '.core'),
                 ('dv/cov',          '',         '',                   ''),
                 ('dv',              name + '_', 'sim_cfg',            '.hjson'),
-                ('doc/dv_plan',     '',         'index',              '.md'),
+                ('doc/dv',          '',         'index',              '.md'),
                 ('doc',             '',         'checklist',          '.md'),
                 ('data',            name + '_', 'testplan',           '.hjson'),
                 ('dv',              name + '_', 'sim',                '.core')]
