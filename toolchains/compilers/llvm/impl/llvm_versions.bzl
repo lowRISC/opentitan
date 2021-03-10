@@ -23,7 +23,7 @@
 _WINDOWS = {
     "full_version": "11.0",
     "remote_compiler": {
-        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.0.1-win64.exe",
+        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.1.0-win64.exe",
         "sha256": "",
         "strip_prefix": "",
     },

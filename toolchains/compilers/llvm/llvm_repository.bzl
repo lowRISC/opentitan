@@ -15,13 +15,9 @@ def _llvm_repository_impl(repository_ctx):
         )
     else:
         repository_ctx.download(
-            url = "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.0.1-win64.exe",
+            url = "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/LLVM-11.1.0-win64.exe",
             output = "clang_installer.exe",
         )
-        installer_path = repository_ctx.path("clang_installer.exe").realpath
-        out = repository_ctx.execute(["powershell", "-c", "'clang_installer.exe \\S \\D=$(pwd)'"])
-        print("clang_installer_stdout", out.stdout)
-        print("clang_installer_stderr", out.stderr)
     sysroot_args = []
     sysroot_path = ""
     if repository_ctx.attr.sysroot != None:
