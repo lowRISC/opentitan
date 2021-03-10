@@ -36,13 +36,21 @@
   ]
 
   inter_signal_list: [
-    // EDN interface
+    // EDN interface for RND
     { struct:  "edn"
       type:    "req_rsp"
-      name:    "edn"
+      name:    "edn_rnd"
       act:     "req"
       package: "edn_pkg"
-    }
+    },
+
+    // EDN interface for URND
+    { struct:  "edn"
+      type:    "req_rsp"
+      name:    "edn_urnd"
+      act:     "req"
+      package: "edn_pkg"
+    },
 
     // OTBN is not performing any operation and can be clock/power-gated.
     { name:    "idle",

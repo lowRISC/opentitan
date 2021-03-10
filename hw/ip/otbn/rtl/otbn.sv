@@ -34,8 +34,11 @@ module otbn
   // EDN clock and interface
   input                                              clk_edn_i,
   input                                              rst_edn_ni,
-  output edn_pkg::edn_req_t                          edn_o,
-  input  edn_pkg::edn_rsp_t                          edn_i
+  output edn_pkg::edn_req_t                          edn_rnd_o,
+  input  edn_pkg::edn_rsp_t                          edn_rnd_i,
+
+  output edn_pkg::edn_req_t                          edn_urnd_o,
+  input  edn_pkg::edn_rsp_t                          edn_urnd_i
 );
 
   import prim_util_pkg::vbits;
@@ -443,25 +446,44 @@ module otbn
   end
 
 
-  // EDN Connection ============================================================
-  logic edn_req, edn_ack;
-  logic [EdnDataWidth-1:0] edn_data;
+  // EDN Connections ============================================================
+  logic edn_rnd_req, edn_rnd_ack;
+  logic [EdnDataWidth-1:0] edn_rnd_data;
 
-  // This synchronizes the data coming from EDN and stacks the
-  // 32bit EDN words to achieve an internal entropy width of 256 bit.
+  logic edn_urnd_req, edn_urnd_ack;
+  logic [EdnDataWidth-1:0] edn_urnd_data;
+
+  // These synchronize the data coming from EDN and stack the 32 bit EDN words to achieve an
+  // internal entropy width of 256 bit.
+
   prim_edn_req #(
     .OutWidth(EdnDataWidth)
-  ) u_prim_edn_req (
+  ) u_prim_edn_rnd_req (
     .clk_i,
     .rst_ni,
-    .req_i      ( edn_req  ),
-    .ack_o      ( edn_ack  ),
-    .data_o     ( edn_data ),
-    .fips_o     (          ), // unused
+    .req_i      ( edn_rnd_req  ),
+    .ack_o      ( edn_rnd_ack  ),
+    .data_o     ( edn_rnd_data ),
+    .fips_o     (              ), // unused
     .clk_edn_i,
     .rst_edn_ni,
-    .edn_o,
-    .edn_i
+    .edn_o      ( edn_rnd_o    ),
+    .edn_i      ( edn_rnd_i    )
+  );
+
+  prim_edn_req #(
+    .OutWidth(EdnDataWidth)
+  ) u_prim_edn_urnd_req (
+    .clk_i,
+    .rst_ni,
+    .req_i      ( edn_urnd_req  ),
+    .ack_o      ( edn_urnd_ack  ),
+    .data_o     ( edn_urnd_data ),
+    .fips_o     (               ), // unused
+    .clk_edn_i,
+    .rst_edn_ni,
+    .edn_o      ( edn_urnd_o    ),
+    .edn_i      ( edn_urnd_i    )
   );
 
 
@@ -561,32 +583,36 @@ module otbn
       .clk_i,
       .rst_ni,
 
-      .start_i (start),
-      .done_o  (done),
+      .start_i         (start),
+      .done_o          (done),
 
-      .err_bits_o (err_bits),
+      .err_bits_o      (err_bits),
 
-      .start_addr_i  (start_addr),
+      .start_addr_i    (start_addr),
 
-      .imem_req_o    (imem_req_core),
-      .imem_addr_o   (imem_addr_core),
-      .imem_wdata_o  (imem_wdata_core),
-      .imem_rdata_i  (imem_rdata_core),
-      .imem_rvalid_i (imem_rvalid_core),
-      .imem_rerror_i (imem_rerror_core),
+      .imem_req_o      (imem_req_core),
+      .imem_addr_o     (imem_addr_core),
+      .imem_wdata_o    (imem_wdata_core),
+      .imem_rdata_i    (imem_rdata_core),
+      .imem_rvalid_i   (imem_rvalid_core),
+      .imem_rerror_i   (imem_rerror_core),
 
-      .dmem_req_o    (dmem_req_core),
-      .dmem_write_o  (dmem_write_core),
-      .dmem_addr_o   (dmem_addr_core),
-      .dmem_wdata_o  (dmem_wdata_core),
-      .dmem_wmask_o  (dmem_wmask_core),
-      .dmem_rdata_i  (dmem_rdata_core),
-      .dmem_rvalid_i (dmem_rvalid_core),
-      .dmem_rerror_i (dmem_rerror_core),
+      .dmem_req_o      (dmem_req_core),
+      .dmem_write_o    (dmem_write_core),
+      .dmem_addr_o     (dmem_addr_core),
+      .dmem_wdata_o    (dmem_wdata_core),
+      .dmem_wmask_o    (dmem_wmask_core),
+      .dmem_rdata_i    (dmem_rdata_core),
+      .dmem_rvalid_i   (dmem_rvalid_core),
+      .dmem_rerror_i   (dmem_rerror_core),
 
-      .edn_req_o     (edn_req),
-      .edn_ack_i     (edn_ack),
-      .edn_data_i    (edn_data)
+      .edn_rnd_req_o   (edn_rnd_req),
+      .edn_rnd_ack_i   (edn_rnd_ack),
+      .edn_rnd_data_i  (edn_rnd_data),
+
+      .edn_urnd_req_o  (edn_urnd_req),
+      .edn_urnd_ack_i  (edn_urnd_ack),
+      .edn_urnd_data_i (edn_urnd_data)
     );
   `endif
 
