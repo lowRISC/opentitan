@@ -189,11 +189,17 @@ module top_${top["name"]} #(
 ## whereas an index of 0 means a port is directly driven by a module
   // define mixed connection to port
 % for port in top['inter_signal']['external']:
-  % if port['index'] > 0:
+  % if port['conn_type'] and port['index'] > 0:
     % if port['direction'] == 'in':
   assign ${port['netname']}[${port['index']}] = ${port['signame']};
     % else:
   assign ${port['signame']} = ${port['netname']}[${port['index']}];
+    % endif
+  % elif port['conn_type']:
+    % if port['direction'] == 'in':
+  assign ${port['netname']} = ${port['signame']};
+    % else:
+  assign ${port['signame']} = ${port['netname']};
     % endif
   % endif
 % endfor
@@ -377,8 +383,7 @@ module top_${top["name"]} #(
   prim_ram_1p_scr #(
     .Width(${full_data_width}),
     .Depth(${sram_depth}),
-    .EnableParity(0),
-    .CfgWidth(8)
+    .EnableParity(0)
   ) u_ram1p_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
@@ -403,7 +408,7 @@ module top_${top["name"]} #(
     .rerror_o    (${m["name"]}_rerror),
     .raddr_o     (${m["inter_signal_list"][1]["top_signame"]}_rsp.raddr),
     .intg_error_o(${m["inter_signal_list"][3]["top_signame"]}),
-    .cfg_i       ( '0 )
+    .cfg_i       (ram_1p_cfg_i)
   );
 
   assign ${m["inter_signal_list"][1]["top_signame"]}_rsp.rerror = ${m["name"]}_rerror;
@@ -469,7 +474,7 @@ module top_${top["name"]} #(
     .addr_i   (${m["name"]}_addr),
     .rdata_o  (${m["name"]}_rdata),
     .rvalid_o (${m["name"]}_rvalid),
-    .cfg_i    ('0) // tied off for now
+    .cfg_i    (rom_cfg_i)
   );
 
   % elif m["type"] == "eflash":

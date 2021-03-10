@@ -23,12 +23,11 @@
 
 `include "prim_assert.sv"
 
-module prim_ram_1p_scr #(
+module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   parameter  int Depth               = 16*1024, // Needs to be a power of 2 if NumAddrScrRounds > 0.
   parameter  int Width               = 32, // Needs to be byte aligned if byte parity is enabled.
   parameter  int DataBitsPerMask     = 8, // Needs to be set to 8 in case of byte parity.
   parameter  bit EnableParity        = 1, // Enable byte parity.
-  parameter  int CfgWidth            = 8, // WTC, RTC, etc
 
   // Scrambling parameters. Note that this needs to be low-latency, hence we have to keep the
   // amount of cipher rounds low. PRINCE has 5 half rounds in its original form, which corresponds
@@ -87,7 +86,7 @@ module prim_ram_1p_scr #(
   output logic                      intg_error_o,
 
   // config
-  input [CfgWidth-1:0]              cfg_i
+  input ram_1p_cfg_t                cfg_i
 );
 
   //////////////////////
@@ -422,7 +421,6 @@ module prim_ram_1p_scr #(
     .Depth(Depth),
     .Width(Width),
     .DataBitsPerMask(DataBitsPerMask),
-    .CfgW(CfgWidth),
     .EnableECC(1'b0),
     .EnableParity(EnableParity),
     .EnableInputPipeline(1'b0),

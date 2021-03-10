@@ -31,6 +31,9 @@ module otbn
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
+  // Memory configuration
+  input prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
+
   // EDN clock and interface
   input                                              clk_edn_i,
   input                                              rst_edn_ni,
@@ -143,8 +146,7 @@ module otbn
   prim_ram_1p_adv #(
     .Width           (39),
     .Depth           (ImemSizeWords),
-    .DataBitsPerMask (32), // Write masks are not supported.
-    .CfgW            (8)
+    .DataBitsPerMask (32) // Write masks are not supported.
   ) u_imem (
     .clk_i,
     .rst_ni,
@@ -156,7 +158,7 @@ module otbn
     .rdata_o  (imem_rdata),
     .rvalid_o (imem_rvalid),
     .rerror_o (imem_rerror_vec),
-    .cfg_i    ('0)
+    .cfg_i    (ram_cfg_i)
   );
 
   // imem_rerror_vec is 2 bits wide and is used to report ECC errors. Bit 1 is set if there's an
@@ -278,8 +280,7 @@ module otbn
   prim_ram_1p_adv #(
     .Width           (WLEN+7*8),
     .Depth           (DmemSizeWords),
-    .DataBitsPerMask (32), // 32b write masks for 32b word writes from bus
-    .CfgW            (8)
+    .DataBitsPerMask (32) // 32b write masks for 32b word writes from bus
   ) u_dmem (
     .clk_i,
     .rst_ni,
@@ -291,7 +292,7 @@ module otbn
     .rdata_o  (dmem_rdata),
     .rvalid_o (dmem_rvalid),
     .rerror_o (dmem_rerror_vec),
-    .cfg_i    ('0)
+    .cfg_i    (ram_cfg_i)
   );
 
   // Combine uncorrectable / correctable errors. See note above definition of imem_rerror for

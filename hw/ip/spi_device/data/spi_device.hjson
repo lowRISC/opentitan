@@ -38,7 +38,15 @@
       default: "1024"
       local:   "true"
     }
-  ]
+  ],
+  inter_signal_list: [
+    { struct:  "ram_2p_cfg",
+      package: "prim_ram_2p_pkg",
+      type:    "uni",
+      name:    "ram_cfg",
+      act:     "rcv"
+    }
+  ],
   regwidth: "32",
   registers: [
     { name: "CONTROL",

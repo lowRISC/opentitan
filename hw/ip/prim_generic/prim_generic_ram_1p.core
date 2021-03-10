@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:ram_1p_pkg
       - lowrisc:prim:util_memload
     files:
       - rtl/prim_generic_ram_1p.sv

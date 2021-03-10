@@ -15,11 +15,10 @@
 
 `include "prim_assert.sv"
 
-module prim_ram_2p_async_adv #(
+module prim_ram_2p_async_adv import prim_ram_2p_pkg::*; #(
   parameter  int Depth                = 512,
   parameter  int Width                = 32,
   parameter  int DataBitsPerMask      = 1,  // Number of data bits per bit of write mask
-  parameter  int CfgW                 = 8,  // WTC, RTC, etc
   parameter      MemInitFile          = "", // VMEM file to initialize the memory with
 
   // Configurations
@@ -59,11 +58,9 @@ module prim_ram_2p_async_adv #(
   output logic [1:0]       b_rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
 
   // config
-  input [CfgW-1:0] cfg_i
+  input ram_2p_cfg_t       cfg_i
 );
 
-  logic [CfgW-1:0] unused_cfg;
-  assign unused_cfg = cfg_i;
 
   `ASSERT_INIT(CannotHaveEccAndParity_A, !(EnableParity && EnableECC))
 
@@ -130,7 +127,9 @@ module prim_ram_2p_async_adv #(
     .b_addr_i   (b_addr_q),
     .b_wdata_i  (b_wdata_q),
     .b_wmask_i  (b_wmask_q),
-    .b_rdata_o  (b_rdata_sram)
+    .b_rdata_o  (b_rdata_sram),
+
+    .cfg_i
   );
 
   always_ff @(posedge clk_a_i or negedge rst_a_ni) begin

@@ -1110,7 +1110,17 @@ typedef enum top_earlgrey_pinmux_peripheral_in {
   kTopEarlgreyPinmuxPeripheralInFlashCtrlTck = 46, /**< flash_ctrl_tck */
   kTopEarlgreyPinmuxPeripheralInFlashCtrlTms = 47, /**< flash_ctrl_tms */
   kTopEarlgreyPinmuxPeripheralInFlashCtrlTdi = 48, /**< flash_ctrl_tdi */
-  kTopEarlgreyPinmuxPeripheralInLast = 48, /**< \internal Last valid peripheral input */
+  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn0 = 49, /**< sensor_ctrl_aon_ast_debug_in 0 */
+  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn1 = 50, /**< sensor_ctrl_aon_ast_debug_in 1 */
+  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn2 = 51, /**< sensor_ctrl_aon_ast_debug_in 2 */
+  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn3 = 52, /**< sensor_ctrl_aon_ast_debug_in 3 */
+  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn4 = 53, /**< sensor_ctrl_aon_ast_debug_in 4 */
+  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn5 = 54, /**< sensor_ctrl_aon_ast_debug_in 5 */
+  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn6 = 55, /**< sensor_ctrl_aon_ast_debug_in 6 */
+  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn7 = 56, /**< sensor_ctrl_aon_ast_debug_in 7 */
+  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn8 = 57, /**< sensor_ctrl_aon_ast_debug_in 8 */
+  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn9 = 58, /**< sensor_ctrl_aon_ast_debug_in 9 */
+  kTopEarlgreyPinmuxPeripheralInLast = 58, /**< \internal Last valid peripheral input */
 } top_earlgrey_pinmux_peripheral_in_t;
 
 /**
@@ -1277,7 +1287,17 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselSpiHost1Sck = 53, /**< spi_host1_sck */
   kTopEarlgreyPinmuxOutselSpiHost1Csb = 54, /**< spi_host1_csb */
   kTopEarlgreyPinmuxOutselFlashCtrlTdo = 55, /**< flash_ctrl_tdo */
-  kTopEarlgreyPinmuxOutselLast = 55, /**< \internal Last valid outsel value */
+  kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut0 = 56, /**< sensor_ctrl_aon_ast_debug_out 0 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut1 = 57, /**< sensor_ctrl_aon_ast_debug_out 1 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut2 = 58, /**< sensor_ctrl_aon_ast_debug_out 2 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut3 = 59, /**< sensor_ctrl_aon_ast_debug_out 3 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut4 = 60, /**< sensor_ctrl_aon_ast_debug_out 4 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut5 = 61, /**< sensor_ctrl_aon_ast_debug_out 5 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut6 = 62, /**< sensor_ctrl_aon_ast_debug_out 6 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut7 = 63, /**< sensor_ctrl_aon_ast_debug_out 7 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut8 = 64, /**< sensor_ctrl_aon_ast_debug_out 8 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut9 = 65, /**< sensor_ctrl_aon_ast_debug_out 9 */
+  kTopEarlgreyPinmuxOutselLast = 65, /**< \internal Last valid outsel value */
 } top_earlgrey_pinmux_outsel_t;
 
 /**

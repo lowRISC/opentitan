@@ -134,8 +134,7 @@ module otbn_top_sim (
   prim_ram_1p_adv #(
     .Width           ( WLEN          ),
     .Depth           ( DmemSizeWords ),
-    .DataBitsPerMask ( 32            ),
-    .CfgW            ( 8             )
+    .DataBitsPerMask ( 32            )
   ) u_dmem (
     .clk_i    ( IO_CLK          ),
     .rst_ni   ( IO_RST_N        ),
@@ -165,8 +164,7 @@ module otbn_top_sim (
   prim_ram_1p_adv #(
     .Width           ( 32            ),
     .Depth           ( ImemSizeWords ),
-    .DataBitsPerMask ( 32            ),
-    .CfgW            ( 8             )
+    .DataBitsPerMask ( 32            )
   ) u_imem (
     .clk_i    ( IO_CLK          ),
     .rst_ni   ( IO_RST_N        ),

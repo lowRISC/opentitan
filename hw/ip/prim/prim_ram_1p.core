@@ -9,6 +9,7 @@ filesets:
   primgen_dep:
     depend:
       - lowrisc:prim:prim_pkg
+      - lowrisc:prim:ram_1p_pkg
       - lowrisc:prim:primgen
 
 

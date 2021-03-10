@@ -58,6 +58,9 @@ module usbdev import usbdev_pkg::*; (
   output logic       usb_ref_val_o,
   output logic       usb_ref_pulse_o,
 
+  // memory configuration
+  input prim_ram_2p_pkg::ram_2p_cfg_t ram_cfg_i,
+
   // Interrupts
   output logic       intr_pkt_received_o, // Packet received
   output logic       intr_pkt_sent_o, // Packet sent
@@ -688,7 +691,6 @@ module usbdev import usbdev_pkg::*; (
     .Depth (SramDepth),
     .Width (SramDw),    // 32 x 512 --> 2kB
     .DataBitsPerMask(SramDw),
-    .CfgW  (8),
 
     .EnableECC           (0), // No Protection
     .EnableParity        (0),
@@ -716,8 +718,7 @@ module usbdev import usbdev_pkg::*; (
     .b_rvalid_o (),
     .b_rdata_o  (usb_mem_b_rdata),
     .b_rerror_o (),
-
-    .cfg_i      (8'h0)
+    .cfg_i      (ram_cfg_i)
   );
 
   // Register module

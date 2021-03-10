@@ -73,6 +73,12 @@
       package: "usbdev_pkg",
       struct:  "awk_state",
     },
+    { struct:  "ram_2p_cfg",
+      package: "prim_ram_2p_pkg",
+      type:    "uni",
+      name:    "ram_cfg",
+      act:     "rcv"
+    }
   ]
   param_list: [
     { name:    "NEndpoints",

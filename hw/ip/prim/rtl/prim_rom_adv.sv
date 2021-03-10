@@ -6,13 +6,11 @@
 
 `include "prim_assert.sv"
 
-module prim_rom_adv #(
+module prim_rom_adv import prim_rom_pkg::*; #(
   // Parameters passed on the the ROM primitive.
   parameter  int Width       = 32,
   parameter  int Depth       = 2048, // 8kB default
   parameter      MemInitFile = "", // VMEM file to initialize the memory with
-
-  parameter  int CfgW        = 8,     // WTC, RTC, etc
 
   localparam int Aw          = $clog2(Depth)
 ) (
@@ -23,12 +21,8 @@ module prim_rom_adv #(
   output logic             rvalid_o,
   output logic [Width-1:0] rdata_o,
 
-  input        [CfgW-1:0]  cfg_i
+  input rom_cfg_t          cfg_i
 );
-
-  // We will eventually use cfg_i for RTC/WTC or other memory parameters.
-  logic [CfgW-1:0] unused_cfg;
-  assign unused_cfg = cfg_i;
 
   prim_rom #(
     .Width(Width),
@@ -38,7 +32,8 @@ module prim_rom_adv #(
     .clk_i,
     .req_i,
     .addr_i,
-    .rdata_o
+    .rdata_o,
+    .cfg_i
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin

@@ -6,7 +6,7 @@
 
 `include "prim_assert.sv"
 
-module prim_generic_ram_1p #(
+module prim_generic_ram_1p import prim_ram_1p_pkg::*; #(
   parameter  int Width           = 32, // bit
   parameter  int Depth           = 128,
   parameter  int DataBitsPerMask = 1, // Number of data bits per bit of write mask
@@ -21,8 +21,12 @@ module prim_generic_ram_1p #(
   input  logic [Aw-1:0]    addr_i,
   input  logic [Width-1:0] wdata_i,
   input  logic [Width-1:0] wmask_i,
-  output logic [Width-1:0] rdata_o // Read data. Data is returned one cycle after req_i is high.
+  output logic [Width-1:0] rdata_o, // Read data. Data is returned one cycle after req_i is high.
+  input ram_1p_cfg_t       cfg_i
 );
+
+  logic unused_cfg;
+  assign unused_cfg = ^cfg_i;
 
   // Width of internal write mask. Note wmask_i input into the module is always assumed
   // to be the full bit mask

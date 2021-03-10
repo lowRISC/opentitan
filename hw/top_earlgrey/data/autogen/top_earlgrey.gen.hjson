@@ -711,6 +711,18 @@
       inter_signal_list:
       [
         {
+          name: ram_cfg
+          struct: ram_2p_cfg
+          package: prim_ram_2p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: spi_device
+          default: ""
+          top_signame: ast_ram_2p_cfg
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -1124,6 +1136,18 @@
           inst_name: usbdev
           default: ""
           top_signame: pinmux_aon_usb_state_debug
+          index: -1
+        }
+        {
+          name: ram_cfg
+          struct: ram_2p_cfg
+          package: prim_ram_2p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: usbdev
+          default: ""
+          top_signame: ast_ram_2p_cfg
           index: -1
         }
         {
@@ -2603,13 +2627,15 @@
         }
         {
           name: dft_strap_test
-          struct: dft_strap_test
+          struct: dft_strap_test_req
           package: pinmux_pkg
           type: uni
           act: req
           width: 1
           default: "'0"
           inst_name: pinmux_aon
+          external: true
+          top_signame: dft_strap_test
           index: -1
         }
         {
@@ -2922,6 +2948,30 @@
           default: ""
           external: true
           top_signame: sensor_ctrl_ast_status
+          index: -1
+        }
+        {
+          name: ast2pinmux
+          struct: logic
+          type: uni
+          act: rcv
+          width: 10
+          inst_name: sensor_ctrl_aon
+          default: ""
+          external: true
+          top_signame: ast2pinmux
+          index: -1
+        }
+        {
+          name: pinmux2ast
+          struct: logic
+          type: uni
+          act: req
+          width: 10
+          inst_name: sensor_ctrl_aon
+          default: ""
+          external: true
+          top_signame: pinmux2ast
           index: -1
         }
         {
@@ -4604,6 +4654,18 @@
           index: 3
         }
         {
+          name: ram_cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: otbn
+          default: ""
+          top_signame: ast_ram_1p_cfg
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -4654,6 +4716,18 @@
           default: ""
           end_idx: -1
           top_signame: rom_tl
+          index: -1
+        }
+        {
+          struct: rom_cfg
+          package: prim_rom_pkg
+          type: uni
+          name: cfg
+          act: rcv
+          inst_name: rom
+          width: 1
+          default: ""
+          top_signame: ast_rom_cfg
           index: -1
         }
       ]
@@ -4733,6 +4807,18 @@
           top_signame: ram_main_intg_error
           index: -1
         }
+        {
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          name: cfg
+          act: rcv
+          inst_name: ram_main
+          width: 1
+          default: ""
+          top_signame: ast_ram_1p_cfg
+          index: -1
+        }
       ]
       clock_connections:
       {
@@ -4809,6 +4895,18 @@
           end_idx: -1
           top_type: broadcast
           top_signame: ram_ret_aon_intg_error
+          index: -1
+        }
+        {
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          name: cfg
+          act: rcv
+          inst_name: ram_ret_aon
+          width: 1
+          default: ""
+          top_signame: ast_ram_1p_cfg
           index: -1
         }
       ]
@@ -4961,7 +5059,7 @@
   port:
   [
     {
-      name: ast_edn
+      name: ast
       inter_signal_list:
       [
         {
@@ -4970,11 +5068,69 @@
           name: edn
           act: rsp
           package: edn_pkg
-          inst_name: ast_edn
+          inst_name: ast
           width: 1
           default: ""
           top_signame: edn0_edn
           index: 2
+          external: true
+        }
+        {
+          struct: lc_tx
+          type: uni
+          name: lc_dft_en
+          act: req
+          package: lc_ctrl_pkg
+          inst_name: ast
+          width: 1
+          default: ""
+          top_signame: lc_ctrl_lc_dft_en
+          index: -1
+          external: true
+        }
+        {
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          name: ram_1p_cfg
+          act: rcv
+          inst_name: ast
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: ast_ram_1p_cfg
+          index: -1
+          external: true
+        }
+        {
+          struct: ram_2p_cfg
+          package: prim_ram_2p_pkg
+          type: uni
+          name: ram_2p_cfg
+          act: rcv
+          inst_name: ast
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: ast_ram_2p_cfg
+          index: -1
+          external: true
+        }
+        {
+          struct: rom_cfg
+          package: prim_rom_pkg
+          type: uni
+          name: rom_cfg
+          act: rcv
+          inst_name: ast
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: ast_rom_cfg
+          index: -1
           external: true
         }
       ]
@@ -4984,6 +5140,21 @@
   {
     connect:
     {
+      ast.ram_1p_cfg:
+      [
+        otbn.ram_cfg
+        ram_main.cfg
+        ram_ret_aon.cfg
+      ]
+      ast.ram_2p_cfg:
+      [
+        spi_device.ram_cfg
+        usbdev.ram_cfg
+      ]
+      ast.rom_cfg:
+      [
+        rom.cfg
+      ]
       alert_handler.crashdump:
       [
         rstmgr_aon.alert_dump
@@ -5121,7 +5292,7 @@
       [
         keymgr.edn
         otp_ctrl.edn
-        ast_edn.edn
+        ast.edn
         kmac.entropy
         alert_handler.edn
         aes.edn
@@ -5185,6 +5356,7 @@
       [
         otp_ctrl.lc_dft_en
         pinmux_aon.lc_dft_en
+        ast.lc_dft_en
       ]
       lc_ctrl.lc_nvm_debug_en:
       [
@@ -5430,19 +5602,17 @@
     ]
     external:
     {
+      ast.edn: ""
+      ast.lc_dft_en: ""
+      ast.ram_1p_cfg: ram_1p_cfg
+      ast.ram_2p_cfg: ram_2p_cfg
+      ast.rom_cfg: rom_cfg
       clkmgr_aon.clk_main: clk_main
       clkmgr_aon.clk_io: clk_io
       clkmgr_aon.clk_usb: clk_usb
       clkmgr_aon.clk_aon: clk_aon
       clkmgr_aon.jitter_en: clk_main_jitter_en
-      pwrmgr_aon.pwr_ast: pwrmgr_ast
-      sensor_ctrl_aon.ast_alert: sensor_ctrl_ast_alert
-      sensor_ctrl_aon.ast_status: sensor_ctrl_ast_status
-      usbdev.usb_ref_val: ""
-      usbdev.usb_ref_pulse: ""
-      peri.tl_ast: ast_tl
-      otp_ctrl.otp_ast_pwr_seq: ""
-      otp_ctrl.otp_ast_pwr_seq_h: ""
+      clkmgr_aon.ast_clk_bypass_ack: lc_clk_byp_ack
       eflash.flash_bist_enable: flash_bist_enable
       eflash.flash_power_down_h: flash_power_down_h
       eflash.flash_power_ready_h: flash_power_ready_h
@@ -5450,8 +5620,17 @@
       eflash.flash_test_voltage_h: flash_test_voltage_h
       entropy_src.entropy_src_rng: es_rng
       lc_ctrl.lc_clk_byp_req: lc_clk_byp_req
-      clkmgr_aon.ast_clk_bypass_ack: lc_clk_byp_ack
-      ast_edn.edn: ""
+      peri.tl_ast: ast_tl
+      pinmux_aon.dft_strap_test: dft_strap_test
+      pwrmgr_aon.pwr_ast: pwrmgr_ast
+      otp_ctrl.otp_ast_pwr_seq: ""
+      otp_ctrl.otp_ast_pwr_seq_h: ""
+      sensor_ctrl_aon.ast_alert: sensor_ctrl_ast_alert
+      sensor_ctrl_aon.ast_status: sensor_ctrl_ast_status
+      sensor_ctrl_aon.pinmux2ast: pinmux2ast
+      sensor_ctrl_aon.ast2pinmux: ast2pinmux
+      usbdev.usb_ref_val: ""
+      usbdev.usb_ref_pulse: ""
       clkmgr_aon.clocks_ast: clks_ast
       rstmgr_aon.resets_ast: rsts_ast
     }
@@ -7017,6 +7196,7 @@
       pattgen
       spi_host1
       flash_ctrl
+      sensor_ctrl_aon
     ]
     nc_modules:
     [
@@ -7339,6 +7519,12 @@
         type: input
         module_name: flash_ctrl
       }
+      {
+        name: sensor_ctrl_aon_ast_debug_in
+        width: 10
+        type: input
+        module_name: sensor_ctrl_aon
+      }
     ]
     outputs:
     [
@@ -7455,6 +7641,12 @@
         width: 1
         type: output
         module_name: flash_ctrl
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_out
+        width: 10
+        type: output
+        module_name: sensor_ctrl_aon
       }
     ]
   }
@@ -8786,6 +8978,18 @@
         index: -1
       }
       {
+        name: ram_cfg
+        struct: ram_2p_cfg
+        package: prim_ram_2p_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: spi_device
+        default: ""
+        top_signame: ast_ram_2p_cfg
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -8975,6 +9179,18 @@
         inst_name: usbdev
         default: ""
         top_signame: pinmux_aon_usb_state_debug
+        index: -1
+      }
+      {
+        name: ram_cfg
+        struct: ram_2p_cfg
+        package: prim_ram_2p_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: usbdev
+        default: ""
+        top_signame: ast_ram_2p_cfg
         index: -1
       }
       {
@@ -10138,13 +10354,15 @@
       }
       {
         name: dft_strap_test
-        struct: dft_strap_test
+        struct: dft_strap_test_req
         package: pinmux_pkg
         type: uni
         act: req
         width: 1
         default: "'0"
         inst_name: pinmux_aon
+        external: true
+        top_signame: dft_strap_test
         index: -1
       }
       {
@@ -10365,6 +10583,30 @@
         default: ""
         external: true
         top_signame: sensor_ctrl_ast_status
+        index: -1
+      }
+      {
+        name: ast2pinmux
+        struct: logic
+        type: uni
+        act: rcv
+        width: 10
+        inst_name: sensor_ctrl_aon
+        default: ""
+        external: true
+        top_signame: ast2pinmux
+        index: -1
+      }
+      {
+        name: pinmux2ast
+        struct: logic
+        type: uni
+        act: req
+        width: 10
+        inst_name: sensor_ctrl_aon
+        default: ""
+        external: true
+        top_signame: pinmux2ast
         index: -1
       }
       {
@@ -11277,6 +11519,18 @@
         index: 3
       }
       {
+        name: ram_cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: otbn
+        default: ""
+        top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -11300,6 +11554,18 @@
         default: ""
         end_idx: -1
         top_signame: rom_tl
+        index: -1
+      }
+      {
+        struct: rom_cfg
+        package: prim_rom_pkg
+        type: uni
+        name: cfg
+        act: rcv
+        inst_name: rom
+        width: 1
+        default: ""
+        top_signame: ast_rom_cfg
         index: -1
       }
       {
@@ -11354,6 +11620,18 @@
         index: -1
       }
       {
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: uni
+        name: cfg
+        act: rcv
+        inst_name: ram_main
+        width: 1
+        default: ""
+        top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -11402,6 +11680,18 @@
         end_idx: -1
         top_type: broadcast
         top_signame: ram_ret_aon_intg_error
+        index: -1
+      }
+      {
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: uni
+        name: cfg
+        act: rcv
+        inst_name: ram_ret_aon
+        width: 1
+        default: ""
+        top_signame: ast_ram_1p_cfg
         index: -1
       }
       {
@@ -12140,16 +12430,146 @@
         name: edn
         act: rsp
         package: edn_pkg
-        inst_name: ast_edn
+        inst_name: ast
         width: 1
         default: ""
         top_signame: edn0_edn
         index: 2
         external: true
       }
+      {
+        struct: lc_tx
+        type: uni
+        name: lc_dft_en
+        act: req
+        package: lc_ctrl_pkg
+        inst_name: ast
+        width: 1
+        default: ""
+        top_signame: lc_ctrl_lc_dft_en
+        index: -1
+        external: true
+      }
+      {
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: uni
+        name: ram_1p_cfg
+        act: rcv
+        inst_name: ast
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: ast_ram_1p_cfg
+        index: -1
+        external: true
+      }
+      {
+        struct: ram_2p_cfg
+        package: prim_ram_2p_pkg
+        type: uni
+        name: ram_2p_cfg
+        act: rcv
+        inst_name: ast
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: ast_ram_2p_cfg
+        index: -1
+        external: true
+      }
+      {
+        struct: rom_cfg
+        package: prim_rom_pkg
+        type: uni
+        name: rom_cfg
+        act: rcv
+        inst_name: ast
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: ast_rom_cfg
+        index: -1
+        external: true
+      }
     ]
     external:
     [
+      {
+        package: edn_pkg
+        struct: edn_req
+        signame: ast_edn_req_i
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: true
+        index: 2
+        netname: edn0_edn_req
+      }
+      {
+        package: edn_pkg
+        struct: edn_rsp
+        signame: ast_edn_rsp_o
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: true
+        index: 2
+        netname: edn0_edn_rsp
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: ast_lc_dft_en_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: true
+        index: -1
+        netname: lc_ctrl_lc_dft_en
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg
+        signame: ram_1p_cfg_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: true
+        index: -1
+        netname: ast_ram_1p_cfg
+      }
+      {
+        package: prim_ram_2p_pkg
+        struct: ram_2p_cfg
+        signame: ram_2p_cfg_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: true
+        index: -1
+        netname: ast_ram_2p_cfg
+      }
+      {
+        package: prim_rom_pkg
+        struct: rom_cfg
+        signame: rom_cfg_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: true
+        index: -1
+        netname: ast_rom_cfg
+      }
       {
         package: ""
         struct: logic
@@ -12158,6 +12578,7 @@
         type: uni
         default: ""
         direction: in
+        conn_type: false
         index: -1
         netname: clk_main
       }
@@ -12169,6 +12590,7 @@
         type: uni
         default: ""
         direction: in
+        conn_type: false
         index: -1
         netname: clk_io
       }
@@ -12180,6 +12602,7 @@
         type: uni
         default: ""
         direction: in
+        conn_type: false
         index: -1
         netname: clk_usb
       }
@@ -12191,6 +12614,7 @@
         type: uni
         default: ""
         direction: in
+        conn_type: false
         index: -1
         netname: clk_aon
       }
@@ -12202,129 +12626,21 @@
         type: uni
         default: ""
         direction: out
+        conn_type: false
         index: -1
         netname: clk_main_jitter_en
       }
       {
-        package: pwrmgr_pkg
-        struct: pwr_ast_req
-        signame: pwrmgr_ast_req_o
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: out
-        index: -1
-        netname: pwrmgr_ast_req
-      }
-      {
-        package: pwrmgr_pkg
-        struct: pwr_ast_rsp
-        signame: pwrmgr_ast_rsp_i
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: in
-        index: -1
-        netname: pwrmgr_ast_rsp
-      }
-      {
-        package: ast_pkg
-        struct: ast_alert_req
-        signame: sensor_ctrl_ast_alert_req_i
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: in
-        index: -1
-        netname: sensor_ctrl_ast_alert_req
-      }
-      {
-        package: ast_pkg
-        struct: ast_alert_rsp
-        signame: sensor_ctrl_ast_alert_rsp_o
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: out
-        index: -1
-        netname: sensor_ctrl_ast_alert_rsp
-      }
-      {
-        package: ast_pkg
-        struct: ast_status
-        signame: sensor_ctrl_ast_status_i
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_clk_byp_ack_i
         width: 1
         type: uni
         default: ""
         direction: in
+        conn_type: false
         index: -1
-        netname: sensor_ctrl_ast_status
-      }
-      {
-        package: ""
-        struct: logic
-        signame: usbdev_usb_ref_val_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        index: -1
-        netname: usbdev_usb_ref_val
-      }
-      {
-        package: ""
-        struct: logic
-        signame: usbdev_usb_ref_pulse_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        index: -1
-        netname: usbdev_usb_ref_pulse
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: ast_tl_req_o
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: out
-        index: -1
-        netname: ast_tl_h2d
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: ast_tl_rsp_i
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: in
-        index: -1
-        netname: ast_tl_d2h
-      }
-      {
-        package: otp_ctrl_pkg
-        struct: otp_ast_req
-        signame: otp_ctrl_otp_ast_pwr_seq_o
-        width: 1
-        type: uni
-        default: "'0"
-        direction: out
-        index: -1
-        netname: otp_ctrl_otp_ast_pwr_seq
-      }
-      {
-        package: otp_ctrl_pkg
-        struct: otp_ast_rsp
-        signame: otp_ctrl_otp_ast_pwr_seq_h_i
-        width: 1
-        type: uni
-        default: "'0"
-        direction: in
-        index: -1
-        netname: otp_ctrl_otp_ast_pwr_seq_h
+        netname: lc_clk_byp_ack
       }
       {
         package: lc_ctrl_pkg
@@ -12334,6 +12650,7 @@
         type: uni
         default: ""
         direction: in
+        conn_type: false
         index: -1
         netname: flash_bist_enable
       }
@@ -12345,6 +12662,7 @@
         type: uni
         default: ""
         direction: in
+        conn_type: false
         index: -1
         netname: flash_power_down_h
       }
@@ -12356,6 +12674,7 @@
         type: uni
         default: ""
         direction: in
+        conn_type: false
         index: -1
         netname: flash_power_ready_h
       }
@@ -12367,6 +12686,7 @@
         type: uni
         default: ""
         direction: in
+        conn_type: false
         index: -1
         netname: flash_test_mode_a
       }
@@ -12378,6 +12698,7 @@
         type: uni
         default: ""
         direction: in
+        conn_type: false
         index: -1
         netname: flash_test_voltage_h
       }
@@ -12389,6 +12710,7 @@
         type: req_rsp
         default: ""
         direction: out
+        conn_type: false
         index: -1
         netname: es_rng_req
       }
@@ -12400,6 +12722,7 @@
         type: req_rsp
         default: ""
         direction: in
+        conn_type: false
         index: -1
         netname: es_rng_rsp
       }
@@ -12411,41 +12734,177 @@
         type: uni
         default: lc_ctrl_pkg::Off
         direction: out
+        conn_type: false
         index: -1
         netname: lc_clk_byp_req
       }
       {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: lc_clk_byp_ack_i
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        index: -1
-        netname: lc_clk_byp_ack
-      }
-      {
-        package: edn_pkg
-        struct: edn_req
-        signame: ast_edn_edn_req_i
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: in
-        index: 2
-        netname: edn0_edn_req
-      }
-      {
-        package: edn_pkg
-        struct: edn_rsp
-        signame: ast_edn_edn_rsp_o
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: ast_tl_req_o
         width: 1
         type: req_rsp
         default: ""
         direction: out
-        index: 2
-        netname: edn0_edn_rsp
+        conn_type: false
+        index: -1
+        netname: ast_tl_h2d
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: ast_tl_rsp_i
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: ast_tl_d2h
+      }
+      {
+        package: pinmux_pkg
+        struct: dft_strap_test_req
+        signame: dft_strap_test_o
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: dft_strap_test
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_ast_req
+        signame: pwrmgr_ast_req_o
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: pwrmgr_ast_req
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_ast_rsp
+        signame: pwrmgr_ast_rsp_i
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: pwrmgr_ast_rsp
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_ast_req
+        signame: otp_ctrl_otp_ast_pwr_seq_o
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: otp_ctrl_otp_ast_pwr_seq
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_ast_rsp
+        signame: otp_ctrl_otp_ast_pwr_seq_h_i
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: otp_ctrl_otp_ast_pwr_seq_h
+      }
+      {
+        package: ast_pkg
+        struct: ast_alert_req
+        signame: sensor_ctrl_ast_alert_req_i
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: sensor_ctrl_ast_alert_req
+      }
+      {
+        package: ast_pkg
+        struct: ast_alert_rsp
+        signame: sensor_ctrl_ast_alert_rsp_o
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: sensor_ctrl_ast_alert_rsp
+      }
+      {
+        package: ast_pkg
+        struct: ast_status
+        signame: sensor_ctrl_ast_status_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: sensor_ctrl_ast_status
+      }
+      {
+        package: ""
+        struct: logic
+        signame: pinmux2ast_o
+        width: 10
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: pinmux2ast
+      }
+      {
+        package: ""
+        struct: logic
+        signame: ast2pinmux_i
+        width: 10
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: ast2pinmux
+      }
+      {
+        package: ""
+        struct: logic
+        signame: usbdev_usb_ref_val_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_ref_val
+      }
+      {
+        package: ""
+        struct: logic
+        signame: usbdev_usb_ref_pulse_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_ref_pulse
       }
       {
         package: clkmgr_pkg
@@ -12455,6 +12914,7 @@
         type: uni
         default: ""
         direction: out
+        conn_type: false
         index: -1
         netname: clks_ast
       }
@@ -12466,12 +12926,46 @@
         type: uni
         default: ""
         direction: out
+        conn_type: false
         index: -1
         netname: rsts_ast
       }
     ]
     definitions:
     [
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg
+        signame: ast_ram_1p_cfg
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: ""
+      }
+      {
+        package: prim_ram_2p_pkg
+        struct: ram_2p_cfg
+        signame: ast_ram_2p_cfg
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: ""
+      }
+      {
+        package: prim_rom_pkg
+        struct: rom_cfg
+        signame: ast_rom_cfg
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: ""
+      }
       {
         package: alert_pkg
         struct: alert_crashdump

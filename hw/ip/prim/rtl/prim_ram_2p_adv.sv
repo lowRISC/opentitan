@@ -15,11 +15,10 @@
 
 `include "prim_assert.sv"
 
-module prim_ram_2p_adv #(
+module prim_ram_2p_adv import prim_ram_2p_pkg::*; #(
   parameter  int Depth                = 512,
   parameter  int Width                = 32,
   parameter  int DataBitsPerMask      = 1,  // Number of data bits per bit of write mask
-  parameter  int CfgW                 = 8,  // WTC, RTC, etc
   parameter      MemInitFile          = "", // VMEM file to initialize the memory with
 
   // Configurations
@@ -56,14 +55,13 @@ module prim_ram_2p_adv #(
   output logic             b_rvalid_o, // read response (b_rdata_o) is valid
   output logic [1:0]       b_rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
 
-  input        [CfgW-1:0]  cfg_i
+  input ram_2p_cfg_t       cfg_i
 );
 
   prim_ram_2p_async_adv #(
     .Depth               (Depth),
     .Width               (Width),
     .DataBitsPerMask     (DataBitsPerMask),
-    .CfgW                (CfgW),
     .MemInitFile         (MemInitFile),
     .EnableECC           (EnableECC),
     .EnableParity        (EnableParity),
