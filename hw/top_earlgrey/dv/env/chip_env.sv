@@ -10,7 +10,7 @@ class chip_env extends cip_base_env #(
   );
   `uvm_component_utils(chip_env)
 
-  uart_agent          m_uart_agent;
+  uart_agent          m_uart_agents[NUM_UART_INST];
   jtag_agent          m_jtag_agent;
   spi_agent           m_spi_agent;
 
@@ -66,8 +66,11 @@ class chip_env extends cip_base_env #(
     end
 
     // create components
-    m_uart_agent = uart_agent::type_id::create("m_uart_agent", this);
-    uvm_config_db#(uart_agent_cfg)::set(this, "m_uart_agent*", "cfg", cfg.m_uart_agent_cfg);
+    foreach (m_uart_agents[i]) begin
+      m_uart_agents[i] = uart_agent::type_id::create($sformatf("m_uart_agent%0d", i), this);
+      uvm_config_db#(uart_agent_cfg)::set(this, $sformatf("m_uart_agent%0d*", i), "cfg",
+                                          cfg.m_uart_agent_cfgs[i]);
+    end
 
     m_jtag_agent = jtag_agent::type_id::create("m_jtag_agent", this);
     uvm_config_db#(jtag_agent_cfg)::set(this, "m_jtag_agent*", "cfg", cfg.m_jtag_agent_cfg);
@@ -84,12 +87,12 @@ class chip_env extends cip_base_env #(
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     if (cfg.en_scb) begin
-      m_uart_agent.monitor.tx_analysis_port.connect(scoreboard.uart_tx_fifo.analysis_export);
-      m_uart_agent.monitor.rx_analysis_port.connect(scoreboard.uart_rx_fifo.analysis_export);
       m_jtag_agent.monitor.analysis_port.connect(scoreboard.jtag_fifo.analysis_export);
     end
-    if (cfg.is_active && cfg.m_uart_agent_cfg.is_active) begin
-      virtual_sequencer.uart_sequencer_h = m_uart_agent.sequencer;
+    foreach (m_uart_agents[i]) begin
+      if (cfg.is_active && cfg.m_uart_agent_cfgs[i].is_active) begin
+        virtual_sequencer.uart_sequencer_hs[i] = m_uart_agents[i].sequencer;
+      end
     end
     if (cfg.is_active && cfg.m_jtag_agent_cfg.is_active) begin
       virtual_sequencer.jtag_sequencer_h = m_jtag_agent.sequencer;
@@ -99,7 +102,10 @@ class chip_env extends cip_base_env #(
     end
 
     // Connect the DUT's UART TX TLM port to the sequencer.
-    m_uart_agent.monitor.tx_analysis_port.connect(virtual_sequencer.uart_tx_fifo.analysis_export);
+    foreach (m_uart_agents[i]) begin
+      m_uart_agents[i].monitor.tx_analysis_port.connect(
+          virtual_sequencer.uart_tx_fifos[i].analysis_export);
+    end
   endfunction
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);

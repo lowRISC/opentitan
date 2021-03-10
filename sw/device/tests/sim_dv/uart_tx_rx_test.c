@@ -48,7 +48,17 @@ typedef enum uart_direction {
   kUartReceive,
 } uart_direction_t;
 
-// TODO: Make these datasets random.
+// These datasets will be overwritten by DV test.
+
+// There are multiple uart instances in the chip. DV test will randomly select
+// one and overwrite base address and interrupt IDs below.
+static volatile uint32_t enabled_uart_base_addr    = TOP_EARLGREY_UART0_BASE_ADDR;
+static volatile uint32_t uart_irq_tx_watermartk_id = kTopEarlgreyPlicIrqIdUart1TxWatermark;
+static volatile uint32_t uart_irq_rx_watermartk_id = kTopEarlgreyPlicIrqIdUart1RxWatermark;
+static volatile uint32_t uart_irq_tx_empty_id      = kTopEarlgreyPlicIrqIdUart1TxEmpty;
+static volatile uint32_t uart_irq_rx_overflow_id   = kTopEarlgreyPlicIrqIdUart1RxOverflow;
+
+static const uint8_t enabled_uart_base_addr_array[4] = {0x00, 0x00, 0x01, 0x40};
 
 // A set of bytes to be send out of TX.
 static const uint8_t uart_tx_data[UART_DATASET_SIZE] = {
@@ -92,6 +102,9 @@ static volatile bool uart_irq_tx_empty_fired;
 static volatile bool exp_uart_irq_rx_overflow;
 static volatile bool uart_irq_rx_overflow_fired;
 
+uint32_t bytes2word(uint8_t *bytes) {
+  return bytes[3] << 24 | bytes[2] << 16 | bytes[1] << 8 | bytes[0];
+}
 /**
  * Provides external irq handling for this test.
  *
@@ -108,39 +121,34 @@ void handler_irq_external(void) {
   // Check if it is the right peripheral.
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralUart0,
+  CHECK(peripheral == kTopEarlgreyPlicPeripheralUart1,
         "Interurpt from unexpected peripheral: %d", peripheral);
 
   // Correlate the interrupt fired at PLIC with UART.
   dif_uart_irq_t uart_irq;
-  switch (plic_irq_id) {
-    case kTopEarlgreyPlicIrqIdUart0TxWatermark:
-      CHECK(exp_uart_irq_tx_watermark, "Unexpected TX watermark interrupt");
-      uart_irq_tx_watermark_fired = true;
-      uart_irq = kDifUartIrqTxWatermark;
-      break;
-    case kTopEarlgreyPlicIrqIdUart0RxWatermark:
-      CHECK(exp_uart_irq_rx_watermark, "Unexpected RX watermark interrupt");
-      uart_irq_rx_watermark_fired = true;
-      uart_irq = kDifUartIrqRxWatermark;
-      break;
-    case kTopEarlgreyPlicIrqIdUart0TxEmpty:
-      CHECK(exp_uart_irq_tx_empty, "Unexpected TX empty interrupt");
-      uart_irq_tx_empty_fired = true;
-      uart_irq = kDifUartIrqTxEmpty;
-      break;
-    case kTopEarlgreyPlicIrqIdUart0RxOverflow:
-      CHECK(exp_uart_irq_rx_overflow, "Unexpected RX overflow interrupt");
-      uart_irq_rx_overflow_fired = true;
-      uart_irq = kDifUartIrqRxOverflow;
-      break;
-    default:
-      LOG_ERROR("Unexpected interrupt (at PLIC): %d", plic_irq_id);
-      test_status_set(kTestStatusFailed);
-      // The `abort()` call below is redundant. It is added to prevent the
-      // compilation error due to not initializing the `uart_irq` enum variable
-      // above. See issue #2157 for moe details.
-      abort();
+  if (plic_irq_id == uart_irq_tx_watermartk_id) {
+    CHECK(exp_uart_irq_tx_watermark, "Unexpected TX watermark interrupt");
+    uart_irq_tx_watermark_fired = true;
+    uart_irq = kDifUartIrqTxWatermark;
+  } else if (plic_irq_id == uart_irq_rx_watermartk_id) {
+    CHECK(exp_uart_irq_rx_watermark, "Unexpected RX watermark interrupt");
+    uart_irq_rx_watermark_fired = true;
+    uart_irq = kDifUartIrqRxWatermark;
+  } else if (plic_irq_id == uart_irq_tx_empty_id) {
+    CHECK(exp_uart_irq_tx_empty, "Unexpected TX empty interrupt");
+    uart_irq_tx_empty_fired = true;
+    uart_irq = kDifUartIrqTxEmpty;
+  } else if (plic_irq_id == uart_irq_rx_overflow_id) {
+    CHECK(exp_uart_irq_rx_overflow, "Unexpected RX overflow interrupt");
+    uart_irq_rx_overflow_fired = true;
+    uart_irq = kDifUartIrqRxOverflow;
+  } else {
+    LOG_ERROR("Unexpected interrupt (at PLIC): %d", plic_irq_id);
+    test_status_set(kTestStatusFailed);
+    // The `abort()` call below is redundant. It is added to prevent the
+    // compilation error due to not initializing the `uart_irq` enum variable
+    // above. See issue #2157 for moe details.
+    abort();
   }
 
   // Check if the same interrupt fired at UART as well.
@@ -205,23 +213,23 @@ static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
  * Initializes PLIC and enables the relevant UART interrupts.
  */
 static void plic_init_with_irqs(mmio_region_t base_addr, dif_plic_t *plic) {
-  LOG_INFO("Initializing the PLIC.");
+  LOG_INFO("Initializing the PLIC. %0x", uart_irq_tx_watermartk_id);
 
   CHECK(dif_plic_init((dif_plic_params_t){.base_addr = base_addr}, plic) ==
             kDifPlicOk,
         "dif_plic_init failed");
 
   // Enable UART interrupts at PLIC as edge triggered.
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0TxWatermark,
+  CHECK(dif_plic_irq_set_trigger(plic, uart_irq_tx_watermartk_id,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxWatermark,
+  CHECK(dif_plic_irq_set_trigger(plic, uart_irq_rx_watermartk_id,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0TxEmpty,
+  CHECK(dif_plic_irq_set_trigger(plic, uart_irq_tx_empty_id,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
+  CHECK(dif_plic_irq_set_trigger(plic, uart_irq_rx_overflow_id,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
   CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxFrameErr,
@@ -239,16 +247,16 @@ static void plic_init_with_irqs(mmio_region_t base_addr, dif_plic_t *plic) {
 
   // Set the priority of UART interrupts at PLIC to be >=1 (so ensure the target
   // does get interrupted).
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0TxWatermark,
+  CHECK(dif_plic_irq_set_priority(plic, uart_irq_tx_watermartk_id,
                                   0x1) == kDifPlicOk,
         "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxWatermark,
+  CHECK(dif_plic_irq_set_priority(plic, uart_irq_rx_watermartk_id,
                                   0x2) == kDifPlicOk,
         "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0TxEmpty,
+  CHECK(dif_plic_irq_set_priority(plic, uart_irq_tx_empty_id,
                                   0x3) == kDifPlicOk,
         , "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
+  CHECK(dif_plic_irq_set_priority(plic, uart_irq_rx_overflow_id,
                                   0x1) == kDifPlicOk,
         "dif_plic_irq_set_priority failed");
   CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxFrameErr,
@@ -270,22 +278,22 @@ static void plic_init_with_irqs(mmio_region_t base_addr, dif_plic_t *plic) {
         "dif_plic_target_set_threshold failed");
 
   // Enable all UART interrupts at the PLIC.
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0TxWatermark,
+  CHECK(dif_plic_irq_set_enabled(plic, uart_irq_tx_watermartk_id,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxWatermark,
+  CHECK(dif_plic_irq_set_enabled(plic, uart_irq_rx_watermartk_id,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0TxEmpty,
+  CHECK(dif_plic_irq_set_enabled(plic, uart_irq_tx_empty_id,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
+  CHECK(dif_plic_irq_set_enabled(plic, uart_irq_rx_overflow_id,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
@@ -444,11 +452,18 @@ static bool execute_test(const dif_uart_t *uart) {
 const test_config_t kTestConfig;
 
 bool test_main(void) {
-  LOG_INFO("UART TX RX test");
+  uint32_t base_addr;
+  LOG_INFO("UART TX RX test %x", enabled_uart_base_addr);
+  for (int i = 0; i < 4; ++i) {
+    LOG_INFO("UART base addr %x", enabled_uart_base_addr_array[i]);
+  }
 
+  base_addr = bytes2word((uint8_t *)enabled_uart_base_addr_array);
+
+  LOG_INFO("UART TX RX test base_addr %8x", base_addr);
   // Initialize the UART.
   mmio_region_t uart_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR);
+      mmio_region_from_addr(base_addr);
   uart_init_with_irqs(uart_base_addr, &uart);
 
   // Initialize the PLIC.

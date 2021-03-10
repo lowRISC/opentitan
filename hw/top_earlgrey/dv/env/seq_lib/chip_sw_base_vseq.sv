@@ -17,8 +17,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // Backdoor load the sw test image, setup UART, logger and test status interfaces.
   virtual task cpu_init();
     // TODO: Fixing this for now - need to find a way to pass this on to the SW test.
-    cfg.m_uart_agent_cfg.set_parity(1'b0, 1'b0);
-    cfg.m_uart_agent_cfg.set_baud_rate(cfg.uart_baud_rate);
+    foreach (cfg.m_uart_agent_cfgs[i]) begin
+      cfg.m_uart_agent_cfgs[i].set_parity(1'b0, 1'b0);
+      cfg.m_uart_agent_cfgs[i].set_baud_rate(cfg.uart_baud_rate);
+    end
 
     // initialize the sw logger interface
     foreach (cfg.sw_images[i]) begin
@@ -149,11 +151,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // In the extended test vseq, override the cpu_init() to add this function call.
   // TODO: bootstrap mode not supported.
   // TODO: Need to deal with scrambling.
-  virtual function void sw_symbol_backdoor_overwrite(input string symbol,
-                                                     inout byte data[],
-                                                     input chip_mem_e mem = FlashBank0,
-                                                     input sw_type_e sw_type = SwTypeTest);
-
+  virtual function void sw_symbol_backdoor_overwrite(string symbol,
+                                                     byte data[],
+                                                     sw_type_e sw_type = SwTypeTest);
+    chip_mem_e mem;
     bit [bus_params_pkg::BUS_AW-1:0] addr;
     uint size;
 
@@ -165,6 +166,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     sw_symbol_get_addr_size({cfg.sw_images[sw_type], ".elf"}, symbol, addr, size);
     `uvm_info(`gfn, $sformatf("Symbol \"%s\": addr = 0x%0h, size = %0d", symbol, addr, size),
               UVM_MEDIUM)
+    mem = get_chip_mem_by_addr(addr);
     addr -= get_chip_mem_base_addr(mem);
     `DV_CHECK_EQ_FATAL(size, data.size())
 

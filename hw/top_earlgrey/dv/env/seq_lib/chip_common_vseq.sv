@@ -21,7 +21,7 @@ class chip_common_vseq extends chip_base_vseq;
     // moniter will start to check the TX data when it changes from 1 to 0. But the length of 0 may
     // be not right in CSR test.
     // In block-level, we always ties RX to 1 (idle) in CSR test. No need to disable the monitor
-    cfg.m_uart_agent_cfg.en_tx_monitor = 0;
+    foreach (cfg.m_uart_agent_cfgs[i]) cfg.m_uart_agent_cfgs[i].en_tx_monitor = 0;
   endtask
 
   task post_start();

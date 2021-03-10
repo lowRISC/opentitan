@@ -56,16 +56,19 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   sw_logger_vif       sw_logger_vif;
   sw_test_status_vif  sw_test_status_vif;
 
+  // If the module has multiple instance in the top, control this through plusarg to select which
+  // instance to test
+  int                 instance_sel = -1;
+
   // ext component cfgs
-  rand uart_agent_cfg m_uart_agent_cfg;
+  rand uart_agent_cfg m_uart_agent_cfgs[NUM_UART_INST];
   rand jtag_agent_cfg m_jtag_agent_cfg;
   rand spi_agent_cfg  m_spi_agent_cfg;
 
   `uvm_object_utils_begin(chip_env_cfg)
-    `uvm_field_int   (stub_cpu,             UVM_DEFAULT)
-    `uvm_field_object(m_uart_agent_cfg,     UVM_DEFAULT)
-    `uvm_field_object(m_jtag_agent_cfg,     UVM_DEFAULT)
-    `uvm_field_object(m_spi_agent_cfg,      UVM_DEFAULT)
+    `uvm_field_int   (stub_cpu,                UVM_DEFAULT)
+    `uvm_field_object(m_jtag_agent_cfg,        UVM_DEFAULT)
+    `uvm_field_object(m_spi_agent_cfg,         UVM_DEFAULT)
   `uvm_object_utils_end
 
   // TODO: Fixing core clk freq to 50MHz for now.
@@ -96,7 +99,9 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
     m_tl_agent_cfg.valid_a_source_width = 6;
 
     // create uart agent config obj
-    m_uart_agent_cfg = uart_agent_cfg::type_id::create("m_uart_agent_cfg");
+    foreach (m_uart_agent_cfgs[i]) begin
+      m_uart_agent_cfgs[i] = uart_agent_cfg::type_id::create($sformatf("m_uart_agent_cfg%0s", i));
+    end
 
     // create jtag agent config obj
     m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");

@@ -79,10 +79,10 @@ class chip_base_vseq extends cip_base_vseq #(
   endtask
 
   // Grab packets sent by the DUT over the UART TX port.
-  virtual task get_uart_tx_items();
+  virtual task get_uart_tx_items(int uart_idx = 0);
     uart_item item;
     forever begin
-      p_sequencer.uart_tx_fifo.get(item);
+      p_sequencer.uart_tx_fifos[uart_idx].get(item);
       `uvm_info(`gfn, $sformatf("Received UART data over TX:\n%0h", item.data), UVM_HIGH)
       uart_tx_data_q.push_back(item.data);
     end

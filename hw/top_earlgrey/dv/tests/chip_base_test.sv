@@ -35,8 +35,8 @@ class chip_base_test extends cip_base_test #(
 
       // Knob to enable logging over UART (disabled by default).
       void'($value$plusargs("en_uart_logger=%0b", cfg.en_uart_logger));
-      cfg.m_uart_agent_cfg.en_logger = cfg.en_uart_logger;
-      cfg.m_uart_agent_cfg.write_logs_to_file = cfg.write_sw_logs_to_file;
+      cfg.m_uart_agent_cfgs[0].en_logger = cfg.en_uart_logger;
+      cfg.m_uart_agent_cfgs[0].write_logs_to_file = cfg.write_sw_logs_to_file;
 
       // Knob to set the sw_test_timeout_ns (set to 5ms by default).
       void'($value$plusargs("sw_test_timeout_ns=%0d", cfg.sw_test_timeout_ns));
