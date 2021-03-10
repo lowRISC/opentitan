@@ -134,9 +134,7 @@ module rstmgr import rstmgr_pkg::*; (
 
 
   // lc reset sources
-  rstmgr_ctrl #(
-    .PowerDomains(PowerDomains)
-  ) u_lc_src (
+  rstmgr_ctrl u_lc_src (
     .clk_i,
     .rst_ni(local_rst_n),
     .rst_req_i(pwr_i.rst_lc_req),
@@ -145,9 +143,7 @@ module rstmgr import rstmgr_pkg::*; (
   );
 
   // sys reset sources
-  rstmgr_ctrl #(
-    .PowerDomains(PowerDomains)
-  ) u_sys_src (
+  rstmgr_ctrl u_sys_src (
     .clk_i,
     .rst_ni(local_rst_n),
     .rst_req_i(pwr_i.rst_sys_req | {PowerDomains{ndm_req_valid}}),
