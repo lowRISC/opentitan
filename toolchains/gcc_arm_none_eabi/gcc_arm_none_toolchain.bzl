@@ -52,6 +52,31 @@ _LD_ALL_ACTIONS = [
     ACTION_NAMES.cpp_link_executable,
 ]
 
+def _get_injected_headers_command_line(ctx):
+    command_line = []
+    for hdr_lib in ctx.attr.injected_hdr_deps:
+        cc_ctx = hdr_lib[CcInfo].compilation_context
+        for hdr in cc_ctx.headers.to_list():
+            command_line += ["-include", hdr.short_path]
+    return command_line
+
+def _get_additional_system_includes_command_line(ctx):
+    command_line = []
+    for hdr_lib in ctx.attr.system_hdr_deps:
+        cc_ctx = hdr_lib[CcInfo].compilation_context
+        for inc in cc_ctx.system_includes.to_list():
+            command_line += ["-isystem", inc]
+    return command_line
+
+def _get_additional_system_include_paths(ctx):
+    include_paths = []
+    for hdr_lib in ctx.attr.system_hdr_deps:
+        cc_ctx = hdr_lib[CcInfo].compilation_context
+        for inc in cc_ctx.system_includes.to_list():
+            if inc not in ".":
+                include_paths.append(inc)
+    return include_paths
+
 def _gcc_arm_none_toolchain_config_info_impl(ctx):
     tool_paths = [
         tool_path(
@@ -100,7 +125,9 @@ def _gcc_arm_none_toolchain_config_info_impl(ctx):
         float_abi = ctx.attr.float_abi,
         endian = ctx.attr.endian,
         fpu = ctx.attr.fpu,
-        include_paths = SYSTEM_INCLUDE_COMMAND_LINE,
+        include_paths = _get_additional_system_includes_command_line(ctx) +
+                        SYSTEM_INCLUDE_COMMAND_LINE +
+                        _get_injected_headers_command_line(ctx),
         sysroot = None,
     )
     embedded_features = GetEmbeddedFeatures("GCC")
@@ -180,6 +207,16 @@ gcc_arm_none_toolchain_config = rule(
             doc = "Application Binary Interface",
             mandatory = False,
             values = ["soft", "softfp", "hard"],
+        ),
+        "system_hdr_deps": attr.label_list(
+            doc = "A set of additional system header libraries that are added as a dependency of every cc_<target>",
+            default = ["@bazel_embedded_upstream_toolchain//:polyfill"],
+            providers = [CcInfo],
+        ),
+        "injected_hdr_deps": attr.label_list(
+            doc = "A set of headers that are injected into the toolchain e.g. by -include",
+            default = ["@bazel_embedded_upstream_toolchain//:injected_headers"],
+            providers = [CcInfo],
         ),
         "fpu": attr.string(
             default = "auto",
