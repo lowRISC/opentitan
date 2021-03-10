@@ -16,6 +16,9 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+// TODO, remove it once pinout configuration is provided
+#include "pinmux_regs.h"
+
 #define UART_DATASET_SIZE 128
 
 static dif_uart_t uart;
@@ -48,10 +51,22 @@ typedef enum uart_direction {
   kUartReceive,
 } uart_direction_t;
 
-// TODO: Make these datasets random.
+/**
+ * Indicates the UART instance under test.
+ *
+ * From the software / compiler's perspective, this is a constant (hence the
+ * `const` qualifier). However, the external DV testbench finds this symbol's
+ * address and modifies it via backdoor, to test a different UART instance with
+ * the same test SW image. Hence, we add the `volatile` keyword to prevent the
+ * compiler from optimizing it out.
+ * The `const` is needed to put it in the .rodata section, otherwise it gets
+ * placed in .data section in the main SRAM. We cannot backdoor write anything
+ * in SRAM at the start of the test because the CRT init code wipes it to 0s.
+ */
+static volatile const uint8_t kUartIdx = 0x0;
 
 // A set of bytes to be send out of TX.
-static const uint8_t uart_tx_data[UART_DATASET_SIZE] = {
+static const uint8_t kUartTxData[UART_DATASET_SIZE] = {
     0xe8, 0x50, 0xc6, 0xb4, 0xbe, 0x16, 0xed, 0x55, 0x16, 0x1d, 0xe6, 0x1c,
     0xde, 0x9f, 0xfd, 0x24, 0x89, 0x81, 0x4d, 0x0d, 0x1a, 0x12, 0x4f, 0x57,
     0xea, 0xd6, 0x6f, 0xc0, 0x7d, 0x46, 0xe7, 0x37, 0x81, 0xd3, 0x8e, 0x16,
@@ -66,7 +81,7 @@ static const uint8_t uart_tx_data[UART_DATASET_SIZE] = {
 };
 
 // The set of bytes expected to be received over RX.
-static const uint8_t exp_uart_rx_data[UART_DATASET_SIZE] = {
+static const uint8_t kExpUartRxData[UART_DATASET_SIZE] = {
     0x1b, 0x95, 0xc5, 0xb5, 0x8a, 0xa4, 0xa8, 0x9f, 0x6a, 0x7d, 0x6b, 0x0c,
     0xcd, 0xd5, 0xa6, 0x8f, 0x07, 0x3a, 0x9e, 0x82, 0xe6, 0xa2, 0x2b, 0xe0,
     0x0c, 0x30, 0xe8, 0x5a, 0x05, 0x14, 0x79, 0x8a, 0xFf, 0x88, 0x29, 0xda,
@@ -80,9 +95,25 @@ static const uint8_t exp_uart_rx_data[UART_DATASET_SIZE] = {
     0xc7, 0x33, 0xd1, 0x6a, 0xc7, 0xba, 0x78, 0x69,
 };
 
-// Set our expectation & event indications of the interrupts we intend to
-// exercise in this test. These are declared volatile since they are used by the
-// interrupt handler.
+// There are multiple uart instances in the chip. These variables will be
+// updated according to the uart we select.
+static volatile uint32_t uart_base_addr;
+static volatile uint32_t uart_peripheral_id;
+static volatile uint32_t uart_irq_tx_watermartk_id;
+static volatile uint32_t uart_irq_rx_watermartk_id;
+static volatile uint32_t uart_irq_tx_empty_id;
+static volatile uint32_t uart_irq_rx_overflow_id;
+static volatile uint32_t uart_irq_rx_frame_err_id;
+static volatile uint32_t uart_irq_rx_frame_err_id;
+static volatile uint32_t uart_irq_rx_break_err_id;
+static volatile uint32_t uart_irq_rx_timeout_id;
+static volatile uint32_t uart_irq_rx_parity_err_id;
+
+/**
+ * Set our expectation & event indications of the interrupts we intend to
+ * exercise in this test. These are declared volatile since they are used by the
+ * interrupt handler.
+ */
 static volatile bool exp_uart_irq_tx_watermark;
 static volatile bool uart_irq_tx_watermark_fired;
 static volatile bool exp_uart_irq_rx_watermark;
@@ -92,6 +123,95 @@ static volatile bool uart_irq_tx_empty_fired;
 static volatile bool exp_uart_irq_rx_overflow;
 static volatile bool uart_irq_rx_overflow_fired;
 
+// Configures the pinmux to connect the UART instance to chip IOs based on the
+// ChromeOS pinout configuration.
+//
+// The pinout configuration is documented here:
+// https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/data/top_earlgrey.hjson
+// TODO: Pinout configuration APIs based on customer usecases will be
+// auto-generated in future. This function is a stop-gap solution until that is
+// made available.
+static void pinmux_connect_uart_to_pads(uint32_t rx_pin_in_idx,
+                                        uint32_t rx_uart_idx,
+                                        uint32_t tx_pin_out_idx,
+                                        uint32_t tx_uart_idx) {
+  mmio_region_t reg32 = mmio_region_from_addr(
+      TOP_EARLGREY_PINMUX_AON_BASE_ADDR + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET);
+  uint32_t reg_value = rx_pin_in_idx;
+  // We've got one insel configuration field per register. Hence, we have to
+  // convert the enumeration index into a byte address using << 2.
+  uint32_t reg_offset = rx_uart_idx << 2;
+  uint32_t mask = PINMUX_MIO_PERIPH_INSEL_0_IN_0_MASK;
+  mmio_region_write32(reg32, reg_offset, reg_value & mask);
+
+  reg32 = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR +
+                                PINMUX_MIO_OUTSEL_0_REG_OFFSET);
+  reg_value = tx_uart_idx;
+  // We've got one insel configuration field per register. Hence, we have to
+  // convert the enumeration index into a byte address using << 2.
+  reg_offset = tx_pin_out_idx << 2;
+  mask = PINMUX_MIO_OUTSEL_0_OUT_0_MASK;
+  mmio_region_write32(reg32, reg_offset, reg_value & mask);
+}
+
+void update_uart_base_addr_and_irq_id(void) {
+  switch (kUartIdx) {
+    case 0:
+      uart_base_addr = TOP_EARLGREY_UART0_BASE_ADDR;
+      uart_peripheral_id = kTopEarlgreyPlicPeripheralUart0;
+      uart_irq_tx_watermartk_id = kTopEarlgreyPlicIrqIdUart0TxWatermark;
+      uart_irq_rx_watermartk_id = kTopEarlgreyPlicIrqIdUart0RxWatermark;
+      uart_irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart0TxEmpty;
+      uart_irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart0RxOverflow;
+      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart0RxFrameErr;
+      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart0RxFrameErr;
+      uart_irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart0RxBreakErr;
+      uart_irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart0RxTimeout;
+      uart_irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart0RxParityErr;
+      break;
+    case 1:
+      uart_base_addr = TOP_EARLGREY_UART1_BASE_ADDR;
+      uart_peripheral_id = kTopEarlgreyPlicPeripheralUart1;
+      uart_irq_tx_watermartk_id = kTopEarlgreyPlicIrqIdUart1TxWatermark;
+      uart_irq_rx_watermartk_id = kTopEarlgreyPlicIrqIdUart1RxWatermark;
+      uart_irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart1TxEmpty;
+      uart_irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart1RxOverflow;
+      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart1RxFrameErr;
+      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart1RxFrameErr;
+      uart_irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart1RxBreakErr;
+      uart_irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart1RxTimeout;
+      uart_irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart1RxParityErr;
+      break;
+    case 2:
+      uart_base_addr = TOP_EARLGREY_UART2_BASE_ADDR;
+      uart_peripheral_id = kTopEarlgreyPlicPeripheralUart2;
+      uart_irq_tx_watermartk_id = kTopEarlgreyPlicIrqIdUart2TxWatermark;
+      uart_irq_rx_watermartk_id = kTopEarlgreyPlicIrqIdUart2RxWatermark;
+      uart_irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart2TxEmpty;
+      uart_irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart2RxOverflow;
+      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart2RxFrameErr;
+      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart2RxFrameErr;
+      uart_irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart2RxBreakErr;
+      uart_irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart2RxTimeout;
+      uart_irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart2RxParityErr;
+      break;
+    case 3:
+      uart_base_addr = TOP_EARLGREY_UART3_BASE_ADDR;
+      uart_peripheral_id = kTopEarlgreyPlicPeripheralUart3;
+      uart_irq_tx_watermartk_id = kTopEarlgreyPlicIrqIdUart3TxWatermark;
+      uart_irq_rx_watermartk_id = kTopEarlgreyPlicIrqIdUart3RxWatermark;
+      uart_irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart3TxEmpty;
+      uart_irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart3RxOverflow;
+      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart3RxFrameErr;
+      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart3RxFrameErr;
+      uart_irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart3RxBreakErr;
+      uart_irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart3RxTimeout;
+      uart_irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart3RxParityErr;
+      break;
+    default:
+      LOG_FATAL("Unsupported uart ID %x", kUartIdx);
+  }
+}
 /**
  * Provides external irq handling for this test.
  *
@@ -108,39 +228,34 @@ void handler_irq_external(void) {
   // Check if it is the right peripheral.
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralUart0,
+  CHECK(peripheral == uart_peripheral_id,
         "Interurpt from unexpected peripheral: %d", peripheral);
 
   // Correlate the interrupt fired at PLIC with UART.
   dif_uart_irq_t uart_irq;
-  switch (plic_irq_id) {
-    case kTopEarlgreyPlicIrqIdUart0TxWatermark:
-      CHECK(exp_uart_irq_tx_watermark, "Unexpected TX watermark interrupt");
-      uart_irq_tx_watermark_fired = true;
-      uart_irq = kDifUartIrqTxWatermark;
-      break;
-    case kTopEarlgreyPlicIrqIdUart0RxWatermark:
-      CHECK(exp_uart_irq_rx_watermark, "Unexpected RX watermark interrupt");
-      uart_irq_rx_watermark_fired = true;
-      uart_irq = kDifUartIrqRxWatermark;
-      break;
-    case kTopEarlgreyPlicIrqIdUart0TxEmpty:
-      CHECK(exp_uart_irq_tx_empty, "Unexpected TX empty interrupt");
-      uart_irq_tx_empty_fired = true;
-      uart_irq = kDifUartIrqTxEmpty;
-      break;
-    case kTopEarlgreyPlicIrqIdUart0RxOverflow:
-      CHECK(exp_uart_irq_rx_overflow, "Unexpected RX overflow interrupt");
-      uart_irq_rx_overflow_fired = true;
-      uart_irq = kDifUartIrqRxOverflow;
-      break;
-    default:
-      LOG_ERROR("Unexpected interrupt (at PLIC): %d", plic_irq_id);
-      test_status_set(kTestStatusFailed);
-      // The `abort()` call below is redundant. It is added to prevent the
-      // compilation error due to not initializing the `uart_irq` enum variable
-      // above. See issue #2157 for moe details.
-      abort();
+  if (plic_irq_id == uart_irq_tx_watermartk_id) {
+    CHECK(exp_uart_irq_tx_watermark, "Unexpected TX watermark interrupt");
+    uart_irq_tx_watermark_fired = true;
+    uart_irq = kDifUartIrqTxWatermark;
+  } else if (plic_irq_id == uart_irq_rx_watermartk_id) {
+    CHECK(exp_uart_irq_rx_watermark, "Unexpected RX watermark interrupt");
+    uart_irq_rx_watermark_fired = true;
+    uart_irq = kDifUartIrqRxWatermark;
+  } else if (plic_irq_id == uart_irq_tx_empty_id) {
+    CHECK(exp_uart_irq_tx_empty, "Unexpected TX empty interrupt");
+    uart_irq_tx_empty_fired = true;
+    uart_irq = kDifUartIrqTxEmpty;
+  } else if (plic_irq_id == uart_irq_rx_overflow_id) {
+    CHECK(exp_uart_irq_rx_overflow, "Unexpected RX overflow interrupt");
+    uart_irq_rx_overflow_fired = true;
+    uart_irq = kDifUartIrqRxOverflow;
+  } else {
+    LOG_ERROR("Unexpected interrupt (at PLIC): %d", plic_irq_id);
+    test_status_set(kTestStatusFailed);
+    // The `abort()` call below is redundant. It is added to prevent the
+    // compilation error due to not initializing the `uart_irq` enum variable
+    // above. See issue #2157 for moe details.
+    abort();
   }
 
   // Check if the same interrupt fired at UART as well.
@@ -205,63 +320,63 @@ static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
  * Initializes PLIC and enables the relevant UART interrupts.
  */
 static void plic_init_with_irqs(mmio_region_t base_addr, dif_plic_t *plic) {
-  LOG_INFO("Initializing the PLIC.");
+  LOG_INFO("Initializing the PLIC. %0x", uart_irq_tx_watermartk_id);
 
   CHECK(dif_plic_init((dif_plic_params_t){.base_addr = base_addr}, plic) ==
             kDifPlicOk,
         "dif_plic_init failed");
 
   // Enable UART interrupts at PLIC as edge triggered.
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0TxWatermark,
+  CHECK(dif_plic_irq_set_trigger(plic, uart_irq_tx_watermartk_id,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxWatermark,
+  CHECK(dif_plic_irq_set_trigger(plic, uart_irq_rx_watermartk_id,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0TxEmpty,
+  CHECK(dif_plic_irq_set_trigger(plic, uart_irq_tx_empty_id,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
+  CHECK(dif_plic_irq_set_trigger(plic, uart_irq_rx_overflow_id,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxFrameErr,
+  CHECK(dif_plic_irq_set_trigger(plic, uart_irq_rx_frame_err_id,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxBreakErr,
+  CHECK(dif_plic_irq_set_trigger(plic, uart_irq_rx_break_err_id,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxTimeout,
+  CHECK(dif_plic_irq_set_trigger(plic, uart_irq_rx_timeout_id,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
-  CHECK(dif_plic_irq_set_trigger(plic, kTopEarlgreyPlicIrqIdUart0RxParityErr,
+  CHECK(dif_plic_irq_set_trigger(plic, uart_irq_rx_parity_err_id,
                                  kDifPlicIrqTriggerEdge) == kDifPlicOk,
         "dif_plic_irq_set_trigger failed");
 
   // Set the priority of UART interrupts at PLIC to be >=1 (so ensure the target
   // does get interrupted).
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0TxWatermark,
-                                  0x1) == kDifPlicOk,
+  CHECK(dif_plic_irq_set_priority(plic, uart_irq_tx_watermartk_id, 0x1) ==
+            kDifPlicOk,
         "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxWatermark,
-                                  0x2) == kDifPlicOk,
+  CHECK(dif_plic_irq_set_priority(plic, uart_irq_rx_watermartk_id, 0x2) ==
+            kDifPlicOk,
         "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0TxEmpty,
-                                  0x3) == kDifPlicOk,
-        , "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
-                                  0x1) == kDifPlicOk,
+  CHECK(
+      dif_plic_irq_set_priority(plic, uart_irq_tx_empty_id, 0x3) == kDifPlicOk,
+      , "dif_plic_irq_set_priority failed");
+  CHECK(dif_plic_irq_set_priority(plic, uart_irq_rx_overflow_id, 0x1) ==
+            kDifPlicOk,
         "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxFrameErr,
-                                  0x2) == kDifPlicOk,
+  CHECK(dif_plic_irq_set_priority(plic, uart_irq_rx_frame_err_id, 0x2) ==
+            kDifPlicOk,
         "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxBreakErr,
-                                  0x3) == kDifPlicOk,
+  CHECK(dif_plic_irq_set_priority(plic, uart_irq_rx_break_err_id, 0x3) ==
+            kDifPlicOk,
         "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxTimeout,
-                                  0x1) == kDifPlicOk,
+  CHECK(dif_plic_irq_set_priority(plic, uart_irq_rx_timeout_id, 0x1) ==
+            kDifPlicOk,
         "dif_plic_irq_set_priority failed");
-  CHECK(dif_plic_irq_set_priority(plic, kTopEarlgreyPlicIrqIdUart0RxParityErr,
-                                  0x2) == kDifPlicOk,
+  CHECK(dif_plic_irq_set_priority(plic, uart_irq_rx_parity_err_id, 0x2) ==
+            kDifPlicOk,
         "dif_plic_irq_set_priority failed");
 
   // Set the threshold for the Ibex to 0.
@@ -270,42 +385,42 @@ static void plic_init_with_irqs(mmio_region_t base_addr, dif_plic_t *plic) {
         "dif_plic_target_set_threshold failed");
 
   // Enable all UART interrupts at the PLIC.
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0TxWatermark,
+  CHECK(dif_plic_irq_set_enabled(plic, uart_irq_tx_watermartk_id,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxWatermark,
+  CHECK(dif_plic_irq_set_enabled(plic, uart_irq_rx_watermartk_id,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0TxEmpty,
+  CHECK(dif_plic_irq_set_enabled(plic, uart_irq_tx_empty_id,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxOverflow,
+  CHECK(dif_plic_irq_set_enabled(plic, uart_irq_rx_overflow_id,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxFrameErr,
+  CHECK(dif_plic_irq_set_enabled(plic, uart_irq_rx_frame_err_id,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxBreakErr,
+  CHECK(dif_plic_irq_set_enabled(plic, uart_irq_rx_break_err_id,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxTimeout,
+  CHECK(dif_plic_irq_set_enabled(plic, uart_irq_rx_timeout_id,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
 
-  CHECK(dif_plic_irq_set_enabled(plic, kTopEarlgreyPlicIrqIdUart0RxParityErr,
+  CHECK(dif_plic_irq_set_enabled(plic, uart_irq_rx_parity_err_id,
                                  kTopEarlgreyPlicTargetIbex0,
                                  kDifPlicToggleEnabled) == kDifPlicOk,
         "dif_plic_irq_set_enabled failed");
@@ -378,10 +493,10 @@ static bool execute_test(const dif_uart_t *uart) {
     if (!uart_tx_done && uart_irq_tx_watermark_fired) {
       uart_irq_tx_watermark_fired = false;
 
-      // Send the remaining uart_tx_data as and when the TX watermark fires.
-      CHECK(uart_transfer_ongoing_bytes(
-          uart, kUartSend, (uint8_t *)uart_tx_data, UART_DATASET_SIZE,
-          &uart_tx_bytes_written, &uart_tx_done));
+      // Send the remaining kUartTxData as and when the TX watermark fires.
+      CHECK(uart_transfer_ongoing_bytes(uart, kUartSend, (uint8_t *)kUartTxData,
+                                        UART_DATASET_SIZE,
+                                        &uart_tx_bytes_written, &uart_tx_done));
 
       if (uart_tx_done) {
         // At this point, we have sent the required number of bytes.
@@ -432,9 +547,9 @@ static bool execute_test(const dif_uart_t *uart) {
   // Check data consistency.
   LOG_INFO("Checking the received UART RX data for consistency.");
   for (int i = 0; i < UART_DATASET_SIZE; ++i) {
-    CHECK(uart_rx_data[i] == exp_uart_rx_data[i],
+    CHECK(uart_rx_data[i] == kExpUartRxData[i],
           "UART RX data[%0d] mismatched: {act: %x, exp: %x}", i,
-          uart_rx_data[i], exp_uart_rx_data[i]);
+          uart_rx_data[i], kExpUartRxData[i]);
   }
 
   // If we reached here, then the test passed.
@@ -444,12 +559,27 @@ static bool execute_test(const dif_uart_t *uart) {
 const test_config_t kTestConfig;
 
 bool test_main(void) {
-  LOG_INFO("UART TX RX test");
+  update_uart_base_addr_and_irq_id();
+
+  LOG_INFO("Test UART%d with base_addr: %8x", kUartIdx, uart_base_addr);
+
+  // TODO, remove thse once pinout configuration is provided
+  pinmux_connect_uart_to_pads(
+      kTopEarlgreyPinmuxInselIoc10, kTopEarlgreyPinmuxPeripheralInUart0Rx,
+      kTopEarlgreyPinmuxMioOutIoc11, kTopEarlgreyPinmuxOutselUart0Tx);
+  pinmux_connect_uart_to_pads(
+      kTopEarlgreyPinmuxInselIor5, kTopEarlgreyPinmuxPeripheralInUart1Rx,
+      kTopEarlgreyPinmuxMioOutIor6, kTopEarlgreyPinmuxOutselUart1Tx);
+  pinmux_connect_uart_to_pads(
+      kTopEarlgreyPinmuxInselIor7, kTopEarlgreyPinmuxPeripheralInUart2Rx,
+      kTopEarlgreyPinmuxMioOutIor10, kTopEarlgreyPinmuxOutselUart2Tx);
+  pinmux_connect_uart_to_pads(
+      kTopEarlgreyPinmuxInselIor11, kTopEarlgreyPinmuxPeripheralInUart3Rx,
+      kTopEarlgreyPinmuxMioOutIor12, kTopEarlgreyPinmuxOutselUart3Tx);
 
   // Initialize the UART.
-  mmio_region_t uart_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR);
-  uart_init_with_irqs(uart_base_addr, &uart);
+  mmio_region_t chosen_uart_region = mmio_region_from_addr(uart_base_addr);
+  uart_init_with_irqs(chosen_uart_region, &uart);
 
   // Initialize the PLIC.
   mmio_region_t plic_base_addr =

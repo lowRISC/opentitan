@@ -40,7 +40,7 @@ module tb;
 
   wire usb_dp0, usb_dn0, usb_sense0, usb_dppullup0, usb_dnpullup0;
 
-  wire uart_rx, uart_tx;
+  wire uart_rx[NUM_UARTS], uart_tx[NUM_UARTS];
 
   bit stub_cpu;
   bit en_sim_sram = 1'b1;
@@ -62,7 +62,7 @@ module tb;
   pins_if #(1) rst_n_mon_if(.pins(cpu_rst_n));
   spi_if spi_if(.rst_n);
   tl_if cpu_d_tl_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
-  uart_if uart_if();
+  uart_if uart_if[NUM_UARTS-1:0]();
   jtag_if jtag_if();
 
   // TODO: Replace with correct interfaces once
@@ -129,8 +129,8 @@ module tb;
     .IOC7(tie_off[7]),     // MIO 29
     .IOC8(tap_straps[0]),  // MIO 30
     .IOC9(tie_off[8]),     // MIO 31
-    .IOC10(uart_rx),       // MIO 32
-    .IOC11(uart_tx),       // MIO 33
+    .IOC10(uart_rx[0]),    // MIO 32
+    .IOC11(uart_tx[0]),    // MIO 33
     .IOC12(tie_off[9]),    // MIO 34
     // Bank R (VCC domain)
     .IOR0(jtag_tms),       // MIO 35
@@ -138,14 +138,14 @@ module tb;
     .IOR2(jtag_tdi),       // MIO 37
     .IOR3(jtag_tck),       // MIO 38
     .IOR4(jtag_trst_n),    // MIO 39
-    .IOR5(tie_off[10]),    // MIO 40
-    .IOR6(tie_off[11]),    // MIO 41
-    .IOR7(tie_off[12]),    // MIO 42
-    .IOR8(tie_off[13]),    // MIO 43
-    .IOR9(tie_off[14]),    // MIO 44
-    .IOR10(tie_off[15]),   // MIO 45
-    .IOR11(tie_off[16]),   // MIO 46
-    .IOR12(tie_off[17]),   // MIO 47
+    .IOR5(uart_rx[1]),     // MIO 40
+    .IOR6(uart_tx[1]),     // MIO 41
+    .IOR7(uart_rx[2]),     // MIO 42
+    .IOR8(tie_off[13]),    // MIO 43, Dedicated sysrst_ctrl output (ec_rst_l)
+    .IOR9(tie_off[14]),    // MIO 44, Dedicated sysrst_ctrl output (pwrb_out)
+    .IOR10(uart_tx[2]),    // MIO 45
+    .IOR11(uart_rx[3]),    // MIO 46
+    .IOR12(uart_tx[3]),    // MIO 47
     .IOR13(tie_off[18]),   // MIO 48
     // DCD (VCC domain)
     .CC1(tie_off[19]),
@@ -179,13 +179,6 @@ module tb;
   assign spi_device_csb   = spi_if.csb;
   assign spi_device_sdi_i = spi_if.sio[0];
   assign spi_if.sio[1]    = spi_device_sdo_o;
-
-  // TODO: Replace this weak pull to a known value with initialization
-  // in the agent/interface.
-  assign (weak0, weak1) uart_rx = 1'b1;
-  assign (weak0, weak1) uart_tx = 1'b1;
-  assign uart_rx = uart_if.uart_rx;
-  assign uart_if.uart_tx = uart_tx;
 
   // TODO: USB-related signals, hookup an interface.
   assign usb_rst_n  = `USBDEV_HIER.rst_usb_48mhz_ni;
@@ -248,7 +241,6 @@ module tb;
 
     // IO Interfaces
     uvm_config_db#(virtual pins_if #(NUM_GPIOS))::set(null, "*.env", "gpio_vif", gpio_if);
-    uvm_config_db#(virtual uart_if)::set(null, "*.env.m_uart_agent*", "vif", uart_if);
     uvm_config_db#(virtual jtag_if)::set(null, "*.env.m_jtag_riscv_agent*", "vif", jtag_if);
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_agent*", "vif", spi_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", cpu_d_tl_if);
@@ -278,6 +270,19 @@ module tb;
     run_test();
   end
 
+  for (genvar i = 0; i < NUM_UARTS; i++) begin : gen_uart_if
+    // TODO: Replace this weak pull to a known value with initialization
+    // in the agent/interface.
+    assign (weak0, weak1) uart_rx[i] = 1'b1;
+    assign (weak0, weak1) uart_tx[i] = 1'b1;
+    assign uart_rx[i] = uart_if[i].uart_rx;
+    assign uart_if[i].uart_tx = uart_tx[i];
+
+    initial begin
+      uvm_config_db#(virtual uart_if)::set(null, $sformatf("*.env.m_uart_agent%0d*", i),
+                                           "vif", uart_if[i]);
+    end
+  end
   `undef SIM_SRAM_IF
 
   // Instantitate the memory backdoor util instances.

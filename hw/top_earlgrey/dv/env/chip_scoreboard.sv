@@ -12,8 +12,6 @@ class chip_scoreboard extends cip_base_scoreboard #(
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(uart_item)       uart_tx_fifo;
-  uvm_tlm_analysis_fifo #(uart_item)       uart_rx_fifo;
   uvm_tlm_analysis_fifo #(jtag_riscv_item) jtag_fifo;
 
   // local queues to hold incoming packets pending comparison
@@ -25,8 +23,6 @@ class chip_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    uart_tx_fifo = new("uart_tx_fifo", this);
-    uart_rx_fifo = new("uart_rx_fifo", this);
     jtag_fifo = new("jtag_fifo", this);
   endfunction
 

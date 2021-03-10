@@ -166,6 +166,31 @@
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode"]
+      reseed: 10
+    }
+    {
+      name: chip_sw_uart_tx_rx_idx1
+      uvm_test_seq: chip_sw_uart_tx_rx_vseq
+      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      en_run_modes: ["sw_test_mode"]
+      run_opts: ["+uart_idx=1"]
+      reseed: 10
+    }
+    {
+      name: chip_sw_uart_tx_rx_idx2
+      uvm_test_seq: chip_sw_uart_tx_rx_vseq
+      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      en_run_modes: ["sw_test_mode"]
+      run_opts: ["+uart_idx=2"]
+      reseed: 10
+    }
+    {
+      name: chip_sw_uart_tx_rx_idx3
+      uvm_test_seq: chip_sw_uart_tx_rx_vseq
+      sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
+      en_run_modes: ["sw_test_mode"]
+      run_opts: ["+uart_idx=3"]
+      reseed: 10
     }
     {
       name: chip_sw_uart_tx_rx_bootstrap

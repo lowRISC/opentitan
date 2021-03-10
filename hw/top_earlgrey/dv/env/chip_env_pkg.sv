@@ -34,6 +34,7 @@ package chip_env_pkg;
 
   // local parameters and types
   parameter uint NUM_GPIOS = 16;
+  parameter uint NUM_UARTS = 4;
   // Buffer is half of SPI_DEVICE Dual Port SRAM
   parameter uint SPI_FRAME_BYTE_SIZE = spi_device_reg_pkg::SPI_DEVICE_BUFFER_SIZE/2;
 

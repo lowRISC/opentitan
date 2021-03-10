@@ -5,7 +5,10 @@
 uart_tx_rx_test_lib = declare_dependency(
   link_with: static_library(
     'uart_tx_rx_test_lib',
-    sources: ['uart_tx_rx_test.c'],
+    sources: [
+      # TODO, remove it once pinout configuration is provided
+      hw_top_earlgrey_pinmux_reg_h,
+      'uart_tx_rx_test.c'],
     dependencies: [
       sw_lib_dif_uart,
       sw_lib_dif_plic,
