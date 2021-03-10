@@ -56,9 +56,6 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   // Total number of regions including default region
   localparam int TotalRegions = MpRegions+1;
 
-  // Hardware interface permission table
-  localparam int HwInfoRules = 3;
-
   // bank + page address
   logic [AllPagesW-1:0] bank_page_addr;
   // bank address
