@@ -31,8 +31,33 @@
       struct:  "rom_cfg",
       act:     "rcv"
       type:    "uni",
-    }
+    },
+
+    // Power manager interface
+    { name:    "pwrmgr_data"
+      package: "rom_ctrl_pkg"
+      struct:  "pwrmgr_data"
+      act:     "req"
+      type:    "uni"
+    },
+
+    // Keymgr interface
+    { name:    "keymgr_data"
+      package: "rom_ctrl_pkg"
+      struct:  "keymgr_data"
+      act:     "req"
+      type:    "uni"
+    },
+
+    // KMAC interface
+    { name:    "kmac_data"
+      package: "kmac_pkg"
+      struct:  "app"
+      act:     "req"
+      type:    "req_rsp"
+    },
   ],
+  regwidth: "32"
   registers: {
     regs: [
       { name: "FATAL_ALERT_CAUSE",
@@ -47,17 +72,51 @@
         hwaccess: "hwo",
         fields: [
           { bits: "0",
+            name: "checker_error",
+            resval: 0,
+            desc: "Set on a fatal error detected by the ROM checker."
+          }
+          { bits: "1",
             name: "integrity_error",
             resval: 0,
-            desc: "Set on an integrity error from the register interface"
-          }
-
-          { bits: "1",
-            name: "dummy",
-            resval: 0,
-            desc: "Dummy index to prevent reggen from hiding the array."
+            desc: "Set on an integrity error from the register interface."
           }
         ]
+      }
+
+      {
+        multireg: {
+          cname: "ROM_CTRL",
+          name: "DIGEST",
+          desc: "The digest computed from the contents of ROM"
+          count: "8"
+          swaccess: "ro"
+          hwaccess: "hrw"
+          fields: [
+            {
+              bits: "31:0"
+              name: "DIGEST"
+              desc: "32 bits of the digest"
+            }
+          ]
+        }
+      }
+      {
+        multireg: {
+          cname: "ROM_CTRL",
+          name: "EXP_DIGEST",
+          desc: "The expected digest, stored in the top words of ROM"
+          count: "8"
+          swaccess: "ro"
+          hwaccess: "hrw"
+          fields: [
+            {
+              bits: "31:0"
+              name: "DIGEST"
+              desc: "32 bits of the digest"
+            }
+          ]
+        }
       }
     ],
 

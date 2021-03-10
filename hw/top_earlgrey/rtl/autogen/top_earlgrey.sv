@@ -2282,6 +2282,10 @@ module top_earlgrey #(
 
       // Inter-module signals
       .rom_cfg_i(ast_rom_cfg),
+      .pwrmgr_data_o(),
+      .keymgr_data_o(),
+      .kmac_data_o(),
+      .kmac_data_i(kmac_pkg::APP_RSP_DEFAULT),
       .regs_tl_i(rom_ctrl_regs_tl_req),
       .regs_tl_o(rom_ctrl_regs_tl_rsp),
       .rom_tl_i(rom_ctrl_rom_tl_req),

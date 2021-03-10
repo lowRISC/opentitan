@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:rom_adv
       - lowrisc:prim:subreg
       - lowrisc:prim:util
+      - lowrisc:ip:kmac_pkg
       - lowrisc:ip:tlul
     files:
       - rtl/rom_ctrl_pkg.sv
@@ -20,6 +21,10 @@ filesets:
       - rtl/rom_ctrl_regs_reg_top.sv
       - rtl/rom_ctrl_rom_reg_top.sv
       - rtl/rom_ctrl.sv
+      - rtl/rom_ctrl_compare.sv
+      - rtl/rom_ctrl_counter.sv
+      - rtl/rom_ctrl_fsm.sv
+      - rtl/rom_ctrl_mux.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
