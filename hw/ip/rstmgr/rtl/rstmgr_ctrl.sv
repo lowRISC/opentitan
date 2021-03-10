@@ -7,10 +7,10 @@
 
 `include "prim_assert.sv"
 
-module rstmgr_ctrl import rstmgr_pkg::*; #(
-  parameter int PowerDomains = 2,
-  localparam int OffDomains = PowerDomains - 1
-) (
+module rstmgr_ctrl
+  import rstmgr_pkg::*;
+  import rstmgr_reg_pkg::*;
+(
   input clk_i,
   input rst_ni,
   input [PowerDomains-1:0] rst_req_i,

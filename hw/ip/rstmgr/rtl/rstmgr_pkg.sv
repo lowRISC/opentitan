@@ -14,7 +14,7 @@ package rstmgr_pkg;
   parameter int Domain0Sel = 1;
 
   // Number of non-always-on domains
-  parameter int OffDomains = PowerDomains-1;
+  parameter int OffDomains = PowerDomains - 1;
 
   // positions of software controllable reset bits
   parameter int SPI_DEVICE = 0;
