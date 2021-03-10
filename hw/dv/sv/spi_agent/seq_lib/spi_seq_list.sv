@@ -5,3 +5,4 @@
 `include "spi_base_seq.sv"
 `include "spi_host_seq.sv"
 `include "spi_host_dummy_seq.sv"
+`include "spi_device_seq.sv"
