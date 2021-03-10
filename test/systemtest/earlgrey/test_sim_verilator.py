@@ -225,7 +225,7 @@ def assert_selfchecking_test_passes(sim):
 
     result_match = sim.find_in_output(
         re.compile(r'^==== SW TEST (PASSED|FAILED) ====$'),
-        timeout=600,
+        timeout=120,
         filter_func=utils.filter_remove_sw_test_status_log_prefix)
     assert result_match is not None, "PASSED/FAILED indication not found in test output."
 
