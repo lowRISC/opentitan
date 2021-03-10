@@ -7,7 +7,7 @@ from typing import Dict, List
 from reggen import register
 from .field import Field
 from .lib import check_keys, check_str, check_name, check_bool
-from .params import Params
+from .params import ReggenParams
 from .reg_base import RegBase
 from .register import Register
 
@@ -47,7 +47,7 @@ class MultiRegister(RegBase):
                  offset: int,
                  addrsep: int,
                  reg_width: int,
-                 params: Params,
+                 params: ReggenParams,
                  raw: object):
         super().__init__(offset)
 

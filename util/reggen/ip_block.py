@@ -13,7 +13,7 @@ from .bus_interfaces import BusInterfaces
 from .inter_signal import InterSignal
 from .lib import (check_keys, check_name, check_int, check_bool,
                   check_list, check_optional_str, check_name_list)
-from .params import Params, LocalParam
+from .params import ReggenParams, LocalParam
 from .reg_block import RegBlock
 from .signal import Signal
 
@@ -74,7 +74,7 @@ class IpBlock:
     def __init__(self,
                  name: str,
                  regwidth: int,
-                 params: Params,
+                 params: ReggenParams,
                  reg_blocks: Dict[Optional[str], RegBlock],
                  interrupts: Sequence[Signal],
                  no_auto_intr: bool,
@@ -146,8 +146,8 @@ class IpBlock:
                                  '{} is not positive.'
                                  .format(what, regwidth))
 
-        params = Params.from_raw('parameter list for ' + what,
-                                 rd.get('param_list', []))
+        params = ReggenParams.from_raw('parameter list for ' + what,
+                                       rd.get('param_list', []))
         try:
             params.apply_defaults(param_defaults)
         except (ValueError, KeyError) as err:

@@ -6,7 +6,7 @@ from typing import Dict
 
 from .access import SWAccess
 from .lib import check_keys, check_str, check_bool, check_int
-from .params import Params
+from .params import ReggenParams
 
 
 REQUIRED_FIELDS = {
@@ -73,7 +73,7 @@ class Window:
     @staticmethod
     def from_raw(offset: int,
                  reg_width: int,
-                 params: Params,
+                 params: ReggenParams,
                  raw: object) -> 'Window':
         rd = check_keys(raw, 'window',
                         list(REQUIRED_FIELDS.keys()),

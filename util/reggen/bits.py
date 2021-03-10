@@ -7,7 +7,7 @@
 from typing import Tuple
 
 from .lib import check_str
-from .params import Params
+from .params import ReggenParams
 
 
 class Bits:
@@ -31,7 +31,7 @@ class Bits:
     @staticmethod
     def from_raw(where: str,
                  reg_width: int,
-                 params: Params,
+                 params: ReggenParams,
                  raw: object) -> 'Bits':
         # Bits should be specified as msb:lsb or as just a single bit index.
         if isinstance(raw, int):
@@ -56,7 +56,7 @@ class Bits:
 
     @staticmethod
     def _parse_str(where: str,
-                   params: Params,
+                   params: ReggenParams,
                    str_val: str) -> Tuple[int, int]:
         try:
             idx = int(str_val)

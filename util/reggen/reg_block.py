@@ -13,13 +13,13 @@ from .field import Field
 from .signal import Signal
 from .lib import check_int, check_list, check_str_dict, check_str
 from .multi_register import MultiRegister
-from .params import Params
+from .params import ReggenParams
 from .register import Register
 from .window import Window
 
 
 class RegBlock:
-    def __init__(self, reg_width: int, params: Params):
+    def __init__(self, reg_width: int, params: ReggenParams):
 
         self._addrsep = (reg_width + 7) // 8
         self._reg_width = reg_width

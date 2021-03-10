@@ -232,20 +232,6 @@ class Params(MutableMapping):
     def __init__(self) -> None:
         self.by_name = {}  # type: Dict[str, BaseParam]
 
-    @staticmethod
-    def from_raw(where: str, raw: object) -> 'Params':
-        ret = Params()
-        rl = check_list(raw, where)
-        for idx, r_param in enumerate(rl):
-            entry_where = 'entry {} in {}'.format(idx + 1, where)
-            param = _parse_parameter(entry_where, r_param)
-            if ret.get(param.name) is not None:
-                raise ValueError('At {}, found a duplicate parameter with '
-                                 'name {}.'
-                                 .format(entry_where, param.name))
-            ret.add(param)
-        return ret
-
     def __getitem__(self, key):
         return self.by_name[key]
 
@@ -330,6 +316,22 @@ class Params(MutableMapping):
 
     def as_dicts(self) -> List[Dict[str, object]]:
         return [p.as_dict() for p in self.by_name.values()]
+
+
+class ReggenParams(Params):
+    @staticmethod
+    def from_raw(where: str, raw: object) -> 'ReggenParams':
+        ret = ReggenParams()
+        rl = check_list(raw, where)
+        for idx, r_param in enumerate(rl):
+            entry_where = 'entry {} in {}'.format(idx + 1, where)
+            param = _parse_parameter(entry_where, r_param)
+            if param.name in ret:
+                raise ValueError('At {}, found a duplicate parameter with '
+                                 'name {}.'
+                                 .format(entry_where, param.name))
+            ret.add(param)
+        return ret
 
     def get_localparams(self) -> List[LocalParam]:
         ret = []

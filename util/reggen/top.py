@@ -7,7 +7,7 @@
 from typing import Dict, List, Optional, Tuple, Union
 
 from .ip_block import IpBlock
-from .params import Params
+from .params import ReggenParams
 from .reg_block import RegBlock
 from .window import Window
 
@@ -57,7 +57,7 @@ class Top:
         self.instances = instances
         self.if_addrs = if_addrs
 
-        self.window_block = RegBlock(regwidth, Params())
+        self.window_block = RegBlock(regwidth, ReggenParams())
 
         # Generate one list of base addresses and objects (with each object
         # either a block name and interface name or a window). While we're at
