@@ -17,6 +17,7 @@
              "{proj_root}/hw/ip/aes/dv/aes_sim_cfg.hjson",
              "{proj_root}/hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson",
              "{proj_root}/hw/ip/csrng/dv/csrng_sim_cfg.hjson",
+             "{proj_root}/hw/ip/dcd/dv/dcd_sim_cfg.hjson",
              "{proj_root}/hw/ip/entropy_src/dv/entropy_src_sim_cfg.hjson",
              "{proj_root}/hw/ip/flash_ctrl/dv/flash_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/gpio/dv/gpio_sim_cfg.hjson",

@@ -114,7 +114,7 @@ module dcd_core import dcd_reg_pkg::* ; (
   );
   prim_fifo_async #(
     .Width(4),
-    .Depth(2)
+    .Depth(4)
   ) i_cfg_pwrup_time (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -141,7 +141,7 @@ module dcd_core import dcd_reg_pkg::* ; (
 
   prim_fifo_async #(
     .Width(24),
-    .Depth(2)
+    .Depth(4)
   ) i_cfg_wakeup_time (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -168,7 +168,7 @@ module dcd_core import dcd_reg_pkg::* ; (
 
   prim_fifo_async #(
     .Width(8),
-    .Depth(2)
+    .Depth(4)
   ) i_cfg_lp_sample_cnt (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -195,7 +195,7 @@ module dcd_core import dcd_reg_pkg::* ; (
 
   prim_fifo_async #(
     .Width(16),
-    .Depth(2)
+    .Depth(4)
   ) i_cfg_np_sample_cnt (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -251,7 +251,7 @@ module dcd_core import dcd_reg_pkg::* ; (
 
     prim_fifo_async #(
     .Width(10),
-    .Depth(2)
+    .Depth(4)
     ) i_cfg_chn0_min_v (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -279,7 +279,7 @@ module dcd_core import dcd_reg_pkg::* ; (
 
     prim_fifo_async #(
     .Width(10),
-    .Depth(2)
+    .Depth(4)
     ) i_cfg_chn1_min_v (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -306,7 +306,7 @@ module dcd_core import dcd_reg_pkg::* ; (
 
     prim_fifo_async #(
     .Width(10),
-    .Depth(2)
+    .Depth(4)
     ) i_cfg_chn0_max_v (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -333,7 +333,7 @@ module dcd_core import dcd_reg_pkg::* ; (
 
     prim_fifo_async #(
     .Width(10),
-    .Depth(2)
+    .Depth(4)
     ) i_cfg_chn1_max_v (
     .clk_wr_i  (clk_i),
     .rst_wr_ni (rst_ni),
@@ -534,7 +534,7 @@ module dcd_core import dcd_reg_pkg::* ; (
 
   prim_fifo_async #(
     .Width(10),
-    .Depth(2)
+    .Depth(4)
   ) i_cfg_chn0_val (
     .clk_wr_i  (clk_aon_i),
     .rst_wr_ni (rst_slow_ni),
@@ -553,7 +553,7 @@ module dcd_core import dcd_reg_pkg::* ; (
 
   prim_fifo_async #(
     .Width(10),
-    .Depth(2)
+    .Depth(4)
   ) i_cfg_chn1_val (
     .clk_wr_i  (clk_aon_i),
     .rst_wr_ni (rst_slow_ni),
@@ -572,7 +572,7 @@ module dcd_core import dcd_reg_pkg::* ; (
 
   prim_fifo_async #(
     .Width(10),
-    .Depth(2)
+    .Depth(4)
   ) i_cfg_chn0_val_intr (
     .clk_wr_i  (clk_aon_i),
     .rst_wr_ni (rst_slow_ni),
@@ -591,7 +591,7 @@ module dcd_core import dcd_reg_pkg::* ; (
 
   prim_fifo_async #(
     .Width(10),
-    .Depth(2)
+    .Depth(4)
   ) i_cfg_chn1_val_intr (
     .clk_wr_i  (clk_aon_i),
     .rst_wr_ni (rst_slow_ni),
