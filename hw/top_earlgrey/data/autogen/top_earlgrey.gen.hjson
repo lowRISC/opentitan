@@ -5056,6 +5056,36 @@
           index: -1
         }
         {
+          name: pwrmgr_data
+          struct: pwrmgr_data
+          package: rom_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: rom_ctrl
+          index: -1
+        }
+        {
+          name: keymgr_data
+          struct: keymgr_data
+          package: rom_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: rom_ctrl
+          index: -1
+        }
+        {
+          name: kmac_data
+          struct: app
+          package: kmac_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: rom_ctrl
+          index: -1
+        }
+        {
           name: regs_tl
           struct: tl
           package: tlul_pkg
@@ -14149,6 +14179,36 @@
         inst_name: rom_ctrl
         default: ""
         top_signame: ast_rom_cfg
+        index: -1
+      }
+      {
+        name: pwrmgr_data
+        struct: pwrmgr_data
+        package: rom_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: rom_ctrl
+        index: -1
+      }
+      {
+        name: keymgr_data
+        struct: keymgr_data
+        package: rom_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: rom_ctrl
+        index: -1
+      }
+      {
+        name: kmac_data
+        struct: app
+        package: kmac_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: rom_ctrl
         index: -1
       }
       {

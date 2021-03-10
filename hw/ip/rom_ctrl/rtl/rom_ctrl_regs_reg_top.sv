@@ -25,7 +25,7 @@ module rom_ctrl_regs_reg_top (
 
   import rom_ctrl_reg_pkg::* ;
 
-  localparam int AW = 3;
+  localparam int AW = 7;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -106,8 +106,24 @@ module rom_ctrl_regs_reg_top (
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   logic alert_test_wd;
   logic alert_test_we;
+  logic fatal_alert_cause_checker_error_qs;
   logic fatal_alert_cause_integrity_error_qs;
-  logic fatal_alert_cause_dummy_qs;
+  logic [31:0] digest_0_qs;
+  logic [31:0] digest_1_qs;
+  logic [31:0] digest_2_qs;
+  logic [31:0] digest_3_qs;
+  logic [31:0] digest_4_qs;
+  logic [31:0] digest_5_qs;
+  logic [31:0] digest_6_qs;
+  logic [31:0] digest_7_qs;
+  logic [31:0] exp_digest_0_qs;
+  logic [31:0] exp_digest_1_qs;
+  logic [31:0] exp_digest_2_qs;
+  logic [31:0] exp_digest_3_qs;
+  logic [31:0] exp_digest_4_qs;
+  logic [31:0] exp_digest_5_qs;
+  logic [31:0] exp_digest_6_qs;
+  logic [31:0] exp_digest_7_qs;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -128,7 +144,32 @@ module rom_ctrl_regs_reg_top (
 
   // R[fatal_alert_cause]: V(False)
 
-  //   F[integrity_error]: 0:0
+  //   F[checker_error]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_fatal_alert_cause_checker_error (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.fatal_alert_cause.checker_error.de),
+    .d      (hw2reg.fatal_alert_cause.checker_error.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (fatal_alert_cause_checker_error_qs)
+  );
+
+
+  //   F[integrity_error]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RO"),
@@ -153,12 +194,15 @@ module rom_ctrl_regs_reg_top (
   );
 
 
-  //   F[dummy]: 1:1
+
+  // Subregister 0 of Multireg digest
+  // R[digest_0]: V(False)
+
   prim_subreg #(
-    .DW      (1),
+    .DW      (32),
     .SWACCESS("RO"),
-    .RESVAL  (1'h0)
-  ) u_fatal_alert_cause_dummy (
+    .RESVAL  (32'h0)
+  ) u_digest_0 (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
@@ -166,25 +210,433 @@ module rom_ctrl_regs_reg_top (
     .wd     ('0  ),
 
     // from internal hardware
-    .de     (hw2reg.fatal_alert_cause.dummy.de),
-    .d      (hw2reg.fatal_alert_cause.dummy.d ),
+    .de     (hw2reg.digest[0].de),
+    .d      (hw2reg.digest[0].d ),
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.digest[0].q ),
 
     // to register interface (read)
-    .qs     (fatal_alert_cause_dummy_qs)
+    .qs     (digest_0_qs)
+  );
+
+  // Subregister 1 of Multireg digest
+  // R[digest_1]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_digest_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.digest[1].de),
+    .d      (hw2reg.digest[1].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.digest[1].q ),
+
+    // to register interface (read)
+    .qs     (digest_1_qs)
+  );
+
+  // Subregister 2 of Multireg digest
+  // R[digest_2]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_digest_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.digest[2].de),
+    .d      (hw2reg.digest[2].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.digest[2].q ),
+
+    // to register interface (read)
+    .qs     (digest_2_qs)
+  );
+
+  // Subregister 3 of Multireg digest
+  // R[digest_3]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_digest_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.digest[3].de),
+    .d      (hw2reg.digest[3].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.digest[3].q ),
+
+    // to register interface (read)
+    .qs     (digest_3_qs)
+  );
+
+  // Subregister 4 of Multireg digest
+  // R[digest_4]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_digest_4 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.digest[4].de),
+    .d      (hw2reg.digest[4].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.digest[4].q ),
+
+    // to register interface (read)
+    .qs     (digest_4_qs)
+  );
+
+  // Subregister 5 of Multireg digest
+  // R[digest_5]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_digest_5 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.digest[5].de),
+    .d      (hw2reg.digest[5].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.digest[5].q ),
+
+    // to register interface (read)
+    .qs     (digest_5_qs)
+  );
+
+  // Subregister 6 of Multireg digest
+  // R[digest_6]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_digest_6 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.digest[6].de),
+    .d      (hw2reg.digest[6].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.digest[6].q ),
+
+    // to register interface (read)
+    .qs     (digest_6_qs)
+  );
+
+  // Subregister 7 of Multireg digest
+  // R[digest_7]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_digest_7 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.digest[7].de),
+    .d      (hw2reg.digest[7].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.digest[7].q ),
+
+    // to register interface (read)
+    .qs     (digest_7_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg exp_digest
+  // R[exp_digest_0]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_exp_digest_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.exp_digest[0].de),
+    .d      (hw2reg.exp_digest[0].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_digest[0].q ),
+
+    // to register interface (read)
+    .qs     (exp_digest_0_qs)
+  );
+
+  // Subregister 1 of Multireg exp_digest
+  // R[exp_digest_1]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_exp_digest_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.exp_digest[1].de),
+    .d      (hw2reg.exp_digest[1].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_digest[1].q ),
+
+    // to register interface (read)
+    .qs     (exp_digest_1_qs)
+  );
+
+  // Subregister 2 of Multireg exp_digest
+  // R[exp_digest_2]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_exp_digest_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.exp_digest[2].de),
+    .d      (hw2reg.exp_digest[2].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_digest[2].q ),
+
+    // to register interface (read)
+    .qs     (exp_digest_2_qs)
+  );
+
+  // Subregister 3 of Multireg exp_digest
+  // R[exp_digest_3]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_exp_digest_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.exp_digest[3].de),
+    .d      (hw2reg.exp_digest[3].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_digest[3].q ),
+
+    // to register interface (read)
+    .qs     (exp_digest_3_qs)
+  );
+
+  // Subregister 4 of Multireg exp_digest
+  // R[exp_digest_4]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_exp_digest_4 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.exp_digest[4].de),
+    .d      (hw2reg.exp_digest[4].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_digest[4].q ),
+
+    // to register interface (read)
+    .qs     (exp_digest_4_qs)
+  );
+
+  // Subregister 5 of Multireg exp_digest
+  // R[exp_digest_5]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_exp_digest_5 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.exp_digest[5].de),
+    .d      (hw2reg.exp_digest[5].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_digest[5].q ),
+
+    // to register interface (read)
+    .qs     (exp_digest_5_qs)
+  );
+
+  // Subregister 6 of Multireg exp_digest
+  // R[exp_digest_6]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_exp_digest_6 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.exp_digest[6].de),
+    .d      (hw2reg.exp_digest[6].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_digest[6].q ),
+
+    // to register interface (read)
+    .qs     (exp_digest_6_qs)
+  );
+
+  // Subregister 7 of Multireg exp_digest
+  // R[exp_digest_7]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_exp_digest_7 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.exp_digest[7].de),
+    .d      (hw2reg.exp_digest[7].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_digest[7].q ),
+
+    // to register interface (read)
+    .qs     (exp_digest_7_qs)
   );
 
 
 
 
-  logic [1:0] addr_hit;
+  logic [17:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == ROM_CTRL_ALERT_TEST_OFFSET);
-    addr_hit[1] = (reg_addr == ROM_CTRL_FATAL_ALERT_CAUSE_OFFSET);
+    addr_hit[ 0] = (reg_addr == ROM_CTRL_ALERT_TEST_OFFSET);
+    addr_hit[ 1] = (reg_addr == ROM_CTRL_FATAL_ALERT_CAUSE_OFFSET);
+    addr_hit[ 2] = (reg_addr == ROM_CTRL_DIGEST_0_OFFSET);
+    addr_hit[ 3] = (reg_addr == ROM_CTRL_DIGEST_1_OFFSET);
+    addr_hit[ 4] = (reg_addr == ROM_CTRL_DIGEST_2_OFFSET);
+    addr_hit[ 5] = (reg_addr == ROM_CTRL_DIGEST_3_OFFSET);
+    addr_hit[ 6] = (reg_addr == ROM_CTRL_DIGEST_4_OFFSET);
+    addr_hit[ 7] = (reg_addr == ROM_CTRL_DIGEST_5_OFFSET);
+    addr_hit[ 8] = (reg_addr == ROM_CTRL_DIGEST_6_OFFSET);
+    addr_hit[ 9] = (reg_addr == ROM_CTRL_DIGEST_7_OFFSET);
+    addr_hit[10] = (reg_addr == ROM_CTRL_EXP_DIGEST_0_OFFSET);
+    addr_hit[11] = (reg_addr == ROM_CTRL_EXP_DIGEST_1_OFFSET);
+    addr_hit[12] = (reg_addr == ROM_CTRL_EXP_DIGEST_2_OFFSET);
+    addr_hit[13] = (reg_addr == ROM_CTRL_EXP_DIGEST_3_OFFSET);
+    addr_hit[14] = (reg_addr == ROM_CTRL_EXP_DIGEST_4_OFFSET);
+    addr_hit[15] = (reg_addr == ROM_CTRL_EXP_DIGEST_5_OFFSET);
+    addr_hit[16] = (reg_addr == ROM_CTRL_EXP_DIGEST_6_OFFSET);
+    addr_hit[17] = (reg_addr == ROM_CTRL_EXP_DIGEST_7_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -192,8 +644,24 @@ module rom_ctrl_regs_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = 1'b0;
-    if (addr_hit[0] && reg_we && (ROM_CTRL_REGS_PERMIT[0] != (ROM_CTRL_REGS_PERMIT[0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[1] && reg_we && (ROM_CTRL_REGS_PERMIT[1] != (ROM_CTRL_REGS_PERMIT[1] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 0] && reg_we && (ROM_CTRL_REGS_PERMIT[ 0] != (ROM_CTRL_REGS_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 1] && reg_we && (ROM_CTRL_REGS_PERMIT[ 1] != (ROM_CTRL_REGS_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 2] && reg_we && (ROM_CTRL_REGS_PERMIT[ 2] != (ROM_CTRL_REGS_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 3] && reg_we && (ROM_CTRL_REGS_PERMIT[ 3] != (ROM_CTRL_REGS_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 4] && reg_we && (ROM_CTRL_REGS_PERMIT[ 4] != (ROM_CTRL_REGS_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 5] && reg_we && (ROM_CTRL_REGS_PERMIT[ 5] != (ROM_CTRL_REGS_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 6] && reg_we && (ROM_CTRL_REGS_PERMIT[ 6] != (ROM_CTRL_REGS_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 7] && reg_we && (ROM_CTRL_REGS_PERMIT[ 7] != (ROM_CTRL_REGS_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 8] && reg_we && (ROM_CTRL_REGS_PERMIT[ 8] != (ROM_CTRL_REGS_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 9] && reg_we && (ROM_CTRL_REGS_PERMIT[ 9] != (ROM_CTRL_REGS_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[10] && reg_we && (ROM_CTRL_REGS_PERMIT[10] != (ROM_CTRL_REGS_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[11] && reg_we && (ROM_CTRL_REGS_PERMIT[11] != (ROM_CTRL_REGS_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[12] && reg_we && (ROM_CTRL_REGS_PERMIT[12] != (ROM_CTRL_REGS_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[13] && reg_we && (ROM_CTRL_REGS_PERMIT[13] != (ROM_CTRL_REGS_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[14] && reg_we && (ROM_CTRL_REGS_PERMIT[14] != (ROM_CTRL_REGS_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[15] && reg_we && (ROM_CTRL_REGS_PERMIT[15] != (ROM_CTRL_REGS_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[16] && reg_we && (ROM_CTRL_REGS_PERMIT[16] != (ROM_CTRL_REGS_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[17] && reg_we && (ROM_CTRL_REGS_PERMIT[17] != (ROM_CTRL_REGS_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
@@ -208,8 +676,72 @@ module rom_ctrl_regs_reg_top (
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = fatal_alert_cause_integrity_error_qs;
-        reg_rdata_next[1] = fatal_alert_cause_dummy_qs;
+        reg_rdata_next[0] = fatal_alert_cause_checker_error_qs;
+        reg_rdata_next[1] = fatal_alert_cause_integrity_error_qs;
+      end
+
+      addr_hit[2]: begin
+        reg_rdata_next[31:0] = digest_0_qs;
+      end
+
+      addr_hit[3]: begin
+        reg_rdata_next[31:0] = digest_1_qs;
+      end
+
+      addr_hit[4]: begin
+        reg_rdata_next[31:0] = digest_2_qs;
+      end
+
+      addr_hit[5]: begin
+        reg_rdata_next[31:0] = digest_3_qs;
+      end
+
+      addr_hit[6]: begin
+        reg_rdata_next[31:0] = digest_4_qs;
+      end
+
+      addr_hit[7]: begin
+        reg_rdata_next[31:0] = digest_5_qs;
+      end
+
+      addr_hit[8]: begin
+        reg_rdata_next[31:0] = digest_6_qs;
+      end
+
+      addr_hit[9]: begin
+        reg_rdata_next[31:0] = digest_7_qs;
+      end
+
+      addr_hit[10]: begin
+        reg_rdata_next[31:0] = exp_digest_0_qs;
+      end
+
+      addr_hit[11]: begin
+        reg_rdata_next[31:0] = exp_digest_1_qs;
+      end
+
+      addr_hit[12]: begin
+        reg_rdata_next[31:0] = exp_digest_2_qs;
+      end
+
+      addr_hit[13]: begin
+        reg_rdata_next[31:0] = exp_digest_3_qs;
+      end
+
+      addr_hit[14]: begin
+        reg_rdata_next[31:0] = exp_digest_4_qs;
+      end
+
+      addr_hit[15]: begin
+        reg_rdata_next[31:0] = exp_digest_5_qs;
+      end
+
+      addr_hit[16]: begin
+        reg_rdata_next[31:0] = exp_digest_6_qs;
+      end
+
+      addr_hit[17]: begin
+        reg_rdata_next[31:0] = exp_digest_7_qs;
       end
 
       default: begin
