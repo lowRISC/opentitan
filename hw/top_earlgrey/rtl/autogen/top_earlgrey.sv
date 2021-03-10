@@ -656,8 +656,8 @@ module top_earlgrey #(
     .BranchPredictor          (0),
     .DbgTriggerEn             (1),
     .SecureIbex               (0),
-    .DmHaltAddr               (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress),
-    .DmExceptionAddr          (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress),
+    .DmHaltAddr               (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress[31:0]),
+    .DmExceptionAddr          (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress[31:0]),
     .PipeLine                 (IbexPipeLine)
   ) u_rv_core_ibex (
     // clock and reset
