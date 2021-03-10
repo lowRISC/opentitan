@@ -20,11 +20,18 @@ class dv_base_monitor #(type ITEM_T = uvm_sequence_item,
   // Analysis port for the collected transfer.
   uvm_analysis_port #(ITEM_T) analysis_port;
 
+  // item will be sent to this port for seq when req phase is done (last is set)
+  uvm_analysis_port #(ITEM_T) req_analysis_port;
+  // item will be sent to this port for seq when rsp phase is done (rsp_done is set)
+  uvm_analysis_port #(ITEM_T) rsp_analysis_port;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     analysis_port = new("analysis_port", this);
+    req_analysis_port = new("req_analysis_port", this);
+    rsp_analysis_port = new("rsp_analysis_port", this);
   endfunction
 
   virtual task run_phase(uvm_phase phase);

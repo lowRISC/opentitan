@@ -43,16 +43,24 @@ class dv_base_agent #(type CFG_T            = dv_base_agent_cfg,
       sequencer = SEQUENCER_T::type_id::create("sequencer", this);
       sequencer.cfg = cfg;
 
-      if (cfg.if_mode == Host)  driver = HOST_DRIVER_T::type_id::create("driver", this);
-      else                      driver = DEVICE_DRIVER_T::type_id::create("driver", this);
-      driver.cfg = cfg;
+      if (cfg.has_driver) begin
+        if (cfg.if_mode == Host)  driver = HOST_DRIVER_T::type_id::create("driver", this);
+        else                      driver = DEVICE_DRIVER_T::type_id::create("driver", this);
+        driver.cfg = cfg;
+      end
     end
   endfunction
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    if (cfg.is_active) begin
+    if (cfg.is_active && cfg.has_driver) begin
       driver.seq_item_port.connect(sequencer.seq_item_export);
+    end
+    if (cfg.has_req_fifo) begin
+      monitor.req_analysis_port.connect(sequencer.req_analysis_fifo.analysis_export);
+    end
+    if (cfg.has_rsp_fifo) begin
+      monitor.rsp_analysis_port.connect(sequencer.rsp_analysis_fifo.analysis_export);
     end
   endfunction
 

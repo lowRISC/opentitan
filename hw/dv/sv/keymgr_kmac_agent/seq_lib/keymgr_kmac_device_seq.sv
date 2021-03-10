@@ -8,7 +8,7 @@ class keymgr_kmac_device_seq extends keymgr_kmac_base_seq;
 
   virtual task body();
     forever begin
-      p_sequencer.req_data_fifo.get(req);
+      p_sequencer.req_analysis_fifo.get(req);
       $cast(rsp, req.clone());
       start_item(rsp);
       randomize_item(rsp);

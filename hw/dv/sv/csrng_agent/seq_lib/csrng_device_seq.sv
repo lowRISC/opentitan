@@ -18,7 +18,7 @@ class csrng_device_seq extends csrng_base_seq;
     fork
       forever begin
         csrng_item   req;
-        p_sequencer.cmd_req_fifo.get(req);
+        p_sequencer.req_analysis_fifo.get(req);
         req_q.push_back(req);
       end
 

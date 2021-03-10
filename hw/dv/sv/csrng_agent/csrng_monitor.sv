@@ -14,20 +14,8 @@ class csrng_monitor extends dv_base_monitor #(
   // csrng_agent_cov: cov
   // uvm_analysis_port #(csrng_item): analysis_port
 
-  // item will be sent to this port when req phase is done (last is set)
-  uvm_analysis_port#(csrng_item) req_port;
-  // item will be sent to this port when rsp phase is done (rsp_done is set)
-  uvm_analysis_port#(csrng_item) rsp_port;
-
   `uvm_component_new
   bit in_reset;
-
-  function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
-
-    req_port  = new("req_port", this);
-    rsp_port  = new("rsp_port", this);
-  endfunction
 
   task run_phase(uvm_phase phase);
     @(posedge cfg.vif.rst_n);
@@ -70,7 +58,7 @@ class csrng_monitor extends dv_base_monitor #(
         item = csrng_item::type_id::create("item");
         item.acmd = cfg.vif.mon_cb.cmd_req.csrng_req_bus[3:0];
         `uvm_info(`gfn, $sformatf("Captured item: %s", item.convert2string()), UVM_HIGH)
-        req_port.write(item);
+        req_analysis_port.write(item);
         // After picking up a request, wait until a response is sent before
         // detecting another request, as this is not a pipelined protocol.
         `DV_SPINWAIT_EXIT(while (!cfg.vif.mon_cb.cmd_rsp.csrng_rsp_ack) @(cfg.vif.mon_cb);,

@@ -21,13 +21,12 @@ class i2c_agent extends dv_base_agent #(
     if (!uvm_config_db#(virtual i2c_if)::get(this, "", "vif", cfg.vif)) begin
       `uvm_fatal(`gfn, "failed to get i2c_if handle from uvm_config_db")
     end
+    if (cfg.if_mode == dv_utils_pkg::Device) cfg.has_req_fifo = 1;
   endfunction : build_phase
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    if (cfg.if_mode == dv_utils_pkg::Device) begin
-      monitor.mon_item_port.connect(sequencer.mon_item_fifo.analysis_export);
-    end else begin
+    if (!cfg.if_mode == dv_utils_pkg::Device) begin
       `uvm_fatal(`gfn, "failed to connect driver to sequencer")
     end
   endfunction : connect_phase

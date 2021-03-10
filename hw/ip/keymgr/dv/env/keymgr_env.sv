@@ -29,8 +29,8 @@ class keymgr_env extends cip_base_env #(
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    m_keymgr_kmac_agent.monitor.req_port.connect(scoreboard.req_fifo.analysis_export);
-    m_keymgr_kmac_agent.monitor.rsp_port.connect(scoreboard.rsp_fifo.analysis_export);
+    m_keymgr_kmac_agent.monitor.req_analysis_port.connect(scoreboard.req_fifo.analysis_export);
+    m_keymgr_kmac_agent.monitor.analysis_port.connect(scoreboard.rsp_fifo.analysis_export);
   endfunction
 
 endclass

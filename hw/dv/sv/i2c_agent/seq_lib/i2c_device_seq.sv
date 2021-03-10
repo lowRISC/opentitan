@@ -16,7 +16,7 @@ class i2c_device_seq extends i2c_base_seq;
     fork
       forever begin
         i2c_item  req;
-        p_sequencer.mon_item_fifo.get(req);
+        p_sequencer.req_analysis_fifo.get(req);
         req_q.push_back(req);
       end
       forever begin
