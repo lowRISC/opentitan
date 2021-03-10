@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import re
+from collections.abc import MutableMapping
 from typing import Dict, List, Optional, Tuple
 
 from .lib import check_keys, check_str, check_int, check_bool, check_list
@@ -227,7 +228,7 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
         return Parameter(name, desc, param_type, default, expose)
 
 
-class Params:
+class Params(MutableMapping):
     def __init__(self) -> None:
         self.by_name = {}  # type: Dict[str, BaseParam]
 
@@ -245,16 +246,31 @@ class Params:
             ret.add(param)
         return ret
 
+    def __getitem__(self, key):
+        return self.by_name[key]
+
+    def __delitem__(self, key):
+        del self.by_name[key]
+
+    def __setitem__(self, key, value):
+        self.by_name[key] = value
+
+    def __iter__(self):
+        return iter(self.by_name)
+
+    def __len__(self):
+        return len(self.by_name)
+
+    def __repr__(self):
+        return f"{type(self).__name__}({self.by_name})"
+
     def add(self, param: BaseParam) -> None:
         assert param.name not in self.by_name
         self.by_name[param.name] = param
 
-    def get(self, name: str) -> Optional[BaseParam]:
-        return self.by_name.get(name)
-
     def apply_defaults(self, defaults: List[Tuple[str, str]]) -> None:
         for idx, (key, value) in enumerate(defaults):
-            param = self.by_name.get(key)
+            param = self.by_name[key]
             if param is None:
                 raise KeyError('Cannot find parameter '
                                '{} to set default value.'
