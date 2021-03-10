@@ -164,13 +164,14 @@ def get_proj_root():
 def resolve_proj_root(args):
     '''Update proj_root based on how DVSim is invoked.
 
-    If --remote env var is set, a location in the scratch area is chosen as the
+    If --remote switch is set, a location in the scratch area is chosen as the
     new proj_root. The entire repo is copied over to this location. Else, the
     proj_root is discovered using get_proj_root() method, unless the user
     overrides it on the command line.
 
     This function returns the updated proj_root src and destination path. If
-    --remote env var is not set, the destination path is identical to the src path.
+    --remote switch is not set, the destination path is identical to the src
+    path. Likewise, if --dry-run is set.
     '''
     proj_root_src = args.proj_root or get_proj_root()
 
@@ -178,19 +179,19 @@ def resolve_proj_root(args):
     # then the repo needs to be copied over to the scratch area
     # accessible to those machines.
     # If --purge arg is set, then purge the repo_top that was copied before.
-    if args.remote:
+    if args.remote and not args.dry_run:
         proj_root_dest = os.path.join(args.scratch_root, args.branch,
                                       "repo_top")
         if args.purge:
             rm_path(proj_root_dest)
-        copy_repo(proj_root_src, proj_root_dest, args.dry_run)
+        copy_repo(proj_root_src, proj_root_dest)
     else:
         proj_root_dest = proj_root_src
 
     return proj_root_src, proj_root_dest
 
 
-def copy_repo(src, dest, dry_run):
+def copy_repo(src, dest):
     '''Copy over the repo to a new location.
 
     The repo is copied over from src to dest area. It tentatively uses the
@@ -219,17 +220,17 @@ def copy_repo(src, dest, dry_run):
 
     log.info("[copy_repo] [dest]: %s", dest)
     log.log(VERBOSE, "[copy_repo] [cmd]: \n%s", ' '.join(cmd))
-    if not dry_run:
-        # Make sure the dest exists first.
-        os.makedirs(dest, exist_ok=True)
-        try:
-            subprocess.run(cmd,
-                           check=True,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
-        except subprocess.CalledProcessError as e:
-            log.error("Failed to copy over %s to %s: %s", src, dest,
-                      e.stderr.decode("utf-8").strip())
+
+    # Make sure the dest exists first.
+    os.makedirs(dest, exist_ok=True)
+    try:
+        subprocess.run(cmd,
+                       check=True,
+                       stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE)
+    except subprocess.CalledProcessError as e:
+        log.error("Failed to copy over %s to %s: %s", src, dest,
+                  e.stderr.decode("utf-8").strip())
     log.info("Done.")
 
 
