@@ -11,7 +11,8 @@ package keymgr_pkg;
   parameter int DigestWidth = 128;     // uses truncated hash
   parameter int KmacDataIfWidth = 64;  // KMAC interface data width
   parameter int KeyMgrStages = 3;      // Number of key manager stages (creator, ownerInt, owner)
-  parameter int SwBindingWidth = 128; // Size of rom_ext hash, truncated
+  parameter int SwBindingWidth = 32 * keymgr_reg_pkg::NumSwBindingReg;
+  parameter int SaltWidth = 32 * keymgr_reg_pkg::NumSaltReg;
   parameter int Shares = 2; // number of key shares
   parameter int EdnWidth = edn_pkg::ENDPOINT_BUS_WIDTH;
 
@@ -71,7 +72,7 @@ package keymgr_pkg;
   parameter int AdvDataWidth = SwBindingWidth + 2*KeyWidth + DevIdWidth + HealthStateWidth;
   parameter int IdDataWidth = KeyWidth;
   // key version + salt + key ID + constant
-  parameter int GenDataWidth = 32 + 128 + KeyWidth*2;
+  parameter int GenDataWidth = 32 + SaltWidth + KeyWidth*2;
   parameter int StageWidth = $clog2(KeyMgrStages);
 
   // Max Payload Width to derivation function

@@ -175,9 +175,14 @@
       randcount: "256",
       randtype:  "data",
     },
-
-    { name: "NumInReg",
-      desc: "Number of Registers for SW inputs (SW binding / keyID / Salt)",
+    { name: "NumSaltReg",
+      desc: "Number of Registers for SW inputs (Salt)",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "NumSwBindingReg",
+      desc: "Number of Registers for SW inputs (SW binding)",
       type: "int",
       default: "4",
       local: "true"
@@ -357,7 +362,8 @@
     },
 
     // The following can potentially be replaced by a RAM if it gets too large
-    // Currently there are 32b * NumInReg * 3 bits for inputs
+    // Currently there are 32b * NumSaltReg  bits for salt inputs
+    //                     32b * NumSwBindingReg bits for software binding inputs
     //                     32b * NumOutReg * 2 (if key shares desired) for outputs
     //                     32b * NumOutReg * NumCryptos * 2 (if key shares desired) for hidden key bus
     // This totals to over 2kb of storage
@@ -394,7 +400,7 @@
 
           The software binding is locked by software and unlocked by hardware upon a successful advance operation.
         ''',
-        count: "NumInReg",
+        count: "NumSwBindingReg",
         swaccess: "rw",
         hwaccess: "hro",
         fields: [
@@ -416,7 +422,7 @@
         desc: '''
           Salt value used as part of output generation
         ''',
-        count: "NumInReg",
+        count: "NumSaltReg",
         swaccess: "rw",
         hwaccess: "hro",
         fields: [

@@ -7,7 +7,8 @@
 package keymgr_reg_pkg;
 
   // Param list
-  parameter int NumInReg = 4;
+  parameter int NumSaltReg = 4;
+  parameter int NumSwBindingReg = 4;
   parameter int NumOutReg = 8;
   parameter int NumKeyVersion = 1;
   parameter int NumAlerts = 2;
