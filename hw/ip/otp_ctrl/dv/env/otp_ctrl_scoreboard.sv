@@ -32,6 +32,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   bit macro_alert_triggered;
 
+  bit lc_esc;
+
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(SRAM_DATA_SIZE)))
                         sram_fifos[NumSramKeyReqSlots];
@@ -67,6 +69,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     super.run_phase(phase);
     fork
       process_otp_power_up();
+      process_lc_esc();
       process_lc_token_req();
       process_lc_prog_req();
       process_edn_req();
@@ -116,13 +119,15 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
 
           // Dai access is unlocked because the power init is done
-          void'(ral.direct_access_regwen.predict(1));
+          if (!lc_esc) void'(ral.direct_access_regwen.predict(1));
 
           // Dai idle is set because the otp init is done
           exp_status[OtpDaiIdleIdx] = 1;
 
           // Hwcfg_o gets data from OTP HW cfg partition
-          exp_hwcfg_data = otp_hw_cfg_data_t'({<<32 {otp_a[HwCfgOffset/4 +: HwCfgSize/4]}});
+          exp_hwcfg_data = lc_esc ?
+                           otp_ctrl_part_pkg::PartInvDefault[HwCfgOffset*8 +: HwCfgSize*8] :
+                           otp_hw_cfg_data_t'({<<32 {otp_a[HwCfgOffset/4 +: HwCfgSize/4]}});
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.data, exp_hwcfg_data)
 
           // Otp_keymgr outputs creator root key shares from the secret2 partition.
@@ -137,6 +142,30 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
         end
       end
+    end
+  endtask
+
+  virtual task process_lc_esc();
+    forever begin
+      wait(cfg.otp_ctrl_vif.lc_escalate_en_i == lc_ctrl_pkg::On);
+      // LC_escalate_en will trigger fatal check alert.
+      set_exp_alert("fatal_check_error", 1, 5);
+
+      // Update status bits.
+      exp_status = '0;
+      for (int i = 0; i < OtpTimeoutErrIdx; i++) predict_err(otp_status_e'(i), OtpFsmStateError);
+      exp_status[OtpDerivKeyFsmErrIdx:OtpLfsrFsmErrIdx] = '1;
+
+      // Set lc_esc flag, only DUT reset can clear this flag.
+      lc_esc = 1;
+
+      // Update digest values and direct_access_regwen.
+      for (int i = HwCfgIdx; i <= Secret2Idx; i++) digests[i] = 0;
+      predict_digest_csrs();
+      predict_rdata(1, 0, 0);
+      void'(ral.direct_access_regwen.predict(.value(0), .kind(UVM_PREDICT_READ)));
+
+      wait(cfg.otp_ctrl_vif.lc_escalate_en_i != lc_ctrl_pkg::On);
     end
   endtask
 
@@ -349,7 +378,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg     csr;
     dv_base_reg dv_reg;
-    bit         do_read_check = 1'b1;
+    bit         do_read_check = !cfg.otp_ctrl_vif.skip_read_check;
     bit         write         = item.is_write();
     uvm_reg_addr_t csr_addr   = ral.get_word_aligned_addr(item.a_addr);
     bit [TL_AW-1:0] addr_mask = ral.get_addr_mask();
@@ -432,7 +461,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         end
       end
       "direct_access_cmd": begin
-        if (addr_phase_write) begin
+        if (addr_phase_write && !lc_esc) begin
           // here only normalize to 2 lsb, if is secret, will be reduced further
           bit [TL_AW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int part_idx = get_part_index(dai_addr);
@@ -570,8 +599,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           if (item.d_data[OtpDaiIdleIdx]) check_otp_idle(1);
 
           // STATUS register check with mask
-          `DV_CHECK_EQ((csr.get_mirrored_value() | status_mask), (item.d_data | status_mask),
-                       $sformatf("reg name: status, compare_mask %0h", status_mask))
+          if (do_read_check) begin
+            `DV_CHECK_EQ((csr.get_mirrored_value() | status_mask), (item.d_data | status_mask),
+                         $sformatf("reg name: status, compare_mask %0h", status_mask))
+          end
 
           // Check if OtpCheckPending is set correctly, then ignore checking until check is done
           if (under_chk) begin
@@ -583,7 +614,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
             if (`gmv(ral.status.check_pending)) under_chk = 1;
           end
 
-          if (under_dai_access) begin
+          if (under_dai_access && !lc_esc) begin
             if (item.d_data[OtpDaiIdleIdx]) begin
               under_dai_access = 0;
               void'(ral.direct_access_regwen.predict(1));
@@ -639,6 +670,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       sram_fifos[i].flush();
     end
 
+    lc_esc                = 0;
     under_chk             = 0;
     under_dai_access      = 0;
     macro_alert_triggered = 0;
@@ -674,7 +706,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                  cfg.m_otbn_pull_agent_cfg.vif.req || cfg.m_flash_data_pull_agent_cfg.vif.req ||
                  cfg.m_flash_addr_pull_agent_cfg.vif.req ||
                  cfg.m_sram_pull_agent_cfg[0].vif.req || cfg.m_sram_pull_agent_cfg[1].vif.req ||
-                 cfg.m_lc_prog_pull_agent_cfg.vif.req || cfg.m_lc_token_pull_agent_cfg.vif.req);
+                 cfg.m_lc_prog_pull_agent_cfg.vif.req || cfg.m_lc_token_pull_agent_cfg.vif.req ||
+                 lc_esc);
           end
         join_any
         disable fork;
@@ -750,6 +783,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     bit [TL_DW-1:0] mem_q[$];
     int             array_size;
     real            key_factor  = SCRAMBLE_KEY_SIZE / TL_DW;
+
+    if (lc_esc) return;
 
     if (digests[part_idx] != 0 ||
         part_idx inside {CreatorSwCfgIdx, OwnerSwCfgIdx, LifeCycleIdx}) begin
@@ -873,6 +908,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   // This function predict OTP error related registers: intr_state, status, and err_code
   virtual function void predict_err(otp_status_e   status_err_idx,
                                     otp_err_code_e err_code = OtpNoError);
+    if (lc_esc) return;
+
     // Update intr_state
     void'(ral.intr_state.otp_error.predict(.value(1), .kind(UVM_PREDICT_READ)));
 
@@ -893,6 +930,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // TODO: consider combine it with function predict_err()
   virtual function void predict_no_err(otp_status_e status_err_idx);
+    if (lc_esc) return;
+
     exp_status[status_err_idx] = 0;
     if (status_err_idx == OtpDaiErrIdx) exp_status[OtpDaiIdleIdx] = 1;
 
@@ -905,8 +944,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   virtual function void predict_rdata(bit is_64_bits, bit [TL_DW-1:0] rdata0,
                                       bit [TL_DW-1:0] rdata1 = 0);
-    void'(ral.direct_access_rdata_0.predict(rdata0));
-    if (is_64_bits) void'(ral.direct_access_rdata_1.predict(rdata1));
+    void'(ral.direct_access_rdata_0.predict(.value(rdata0), .kind(UVM_PREDICT_READ)));
+    if (is_64_bits) begin
+      void'(ral.direct_access_rdata_1.predict(.value(rdata1), .kind(UVM_PREDICT_READ)));
+    end
   endfunction
 
   // this function retrieves keys (128 bits) from scb's otp_array with a starting address
