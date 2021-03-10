@@ -18,6 +18,9 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   // spi mode knob
   spi_mode_e spi_mode;
 
+  // spi config
+  spi_regs_t spi_agent_regs;
+
   // how many bytes monitor samples per transaction
   int num_bytes_per_trans_in_mon = 4;
 

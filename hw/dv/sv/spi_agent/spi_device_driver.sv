@@ -16,8 +16,27 @@ class spi_device_driver extends spi_driver;
     end
   endtask
 
-  // TODO:
   virtual task get_and_drive();
-  endtask
+    forever begin
+      seq_item_port.get_next_item(req);
+      $cast(rsp, req.clone());
+      rsp.set_id_info(req);
+      `uvm_info(`gfn, $sformatf("spi_host_driver: rcvd item:\n%0s", req.sprint()), UVM_HIGH)
+      fork
+        drive_rx_sio();
+        drive_tx_sio();
+      join
+      `uvm_info(`gfn, "spi_host_driver: item sent", UVM_HIGH)
+      seq_item_port.item_done(rsp);
+    end
+  endtask : get_and_drive
 
-endclass
+  virtual task drive_rx_sio();
+    // TODO
+  endtask : drive_rx_sio
+
+  virtual task drive_tx_sio();
+    // TODO
+  endtask : drive_tx_sio
+
+endclass : spi_device_driver

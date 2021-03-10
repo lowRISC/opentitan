@@ -3,16 +3,15 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ip:spi_host:0.1"
-description: "SPI Host"
+description: "SPI_HOST DV"
 
 filesets:
   files_rtl:
     depend:
       - lowrisc:constants:top_pkg
-      - lowrisc:ip:tlul
       - lowrisc:prim:all
-      - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:prim:lc_sync
+      - lowrisc:ip:lc_ctrl
+      - lowrisc:ip:tlul
     files:
       - rtl/spi_host_reg_pkg.sv
       - rtl/spi_host_reg_top.sv
