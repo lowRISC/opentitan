@@ -46,7 +46,7 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
     `uvm_info(`gfn,
               $sformatf("Performing %0d random memory accesses after reset!", num_ops_after_reset),
               UVM_LOW)
-    do_rand_ops(num_ops_after_reset, 1);
+    do_rand_ops(num_ops_after_reset);
 
     `uvm_info(`gfn, $sformatf("Starting %0d SRAM transactions", num_trans), UVM_LOW)
     for (int i = 0; i < num_trans; i++) begin
@@ -66,7 +66,13 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
       `uvm_info(`gfn,
                 $sformatf("Performing %0d random memory accesses!", num_ops),
                 UVM_LOW)
-      do_rand_ops(num_ops);
+      if (stress_pipeline) begin
+        for (int i = 0; i < num_ops; i++) begin
+          do_stress_ops($urandom(), $urandom_range(5, 20));
+        end
+      end else begin
+        do_rand_ops(num_ops);
+      end
     end
   endtask : body
 

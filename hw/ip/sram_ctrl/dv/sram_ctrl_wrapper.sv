@@ -81,7 +81,8 @@ module sram_ctrl_wrapper
   // TLUL Adapter SRAM
   tlul_adapter_sram #(
     .SramAw(AddrWidth),
-    .SramDw(DataWidth)
+    .SramDw(DataWidth),
+    .Outstanding(2)
   ) u_tl_adapter_sram (
     .clk_i    (clk_i          ),
     .rst_ni   (rst_ni         ),

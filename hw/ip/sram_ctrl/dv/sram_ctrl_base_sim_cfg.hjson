@@ -77,6 +77,10 @@
       name: "{variant}_bijection"
       uvm_test_seq: sram_ctrl_bijection_vseq
     }
+    {
+      name: "{variant}_stress_pipeline"
+      uvm_test_seq: sram_ctrl_stress_pipeline_vseq
+    }
   ]
 
   // List of regressions.
