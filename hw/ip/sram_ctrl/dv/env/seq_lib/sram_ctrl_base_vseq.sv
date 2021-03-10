@@ -14,6 +14,8 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
   // various knobs to enable certain routines
   bit do_sram_ctrl_init = 1'b1;
 
+  bit stress_pipeline = 1'b0;
+
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
     if (do_sram_ctrl_init) sram_ctrl_init();
@@ -59,6 +61,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
               .exp_data(exp_rdata),
               .compare_mask(mask),
               .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));
+    csr_utils_pkg::wait_no_outstanding_access();
   endtask
 
   // Task to perform a single SRAM write at the specified location
@@ -72,6 +75,24 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
               .write(1'b1),
               .blocking(blocking),
               .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));
+    csr_utils_pkg::wait_no_outstanding_access();
+  endtask
+
+  // This task is designed to kick off `num_stress_ops` back to back memory transactions
+  // to the same address, to stress the SRAM pipelining implementation
+  virtual task do_stress_ops(bit [TL_AW-1:0] addr,
+                             int num_stress_ops);
+    bit [TL_DW-1:0] data;
+    repeat (num_stress_ops) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(data)
+      tl_access(.addr(addr),
+                .data(data),
+                .mask(get_rand_contiguous_mask()),
+                .write($urandom_range(0, 1)),
+                .blocking(1'b0),
+                .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));
+    end
+    csr_utils_pkg::wait_no_outstanding_access();
   endtask
 
   // Task to perform `num_ops` fully randomized memory transactions.
@@ -92,6 +113,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
                 .blocking(blocking),
                 .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));
     end
+    csr_utils_pkg::wait_no_outstanding_access();
   endtask
 
 endclass : sram_ctrl_base_vseq

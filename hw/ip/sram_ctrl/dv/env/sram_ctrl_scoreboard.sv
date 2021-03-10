@@ -41,15 +41,63 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // local queues to hold incoming packets pending comparison
 
-  // mailbox to send a sram_trans_t struct to the data phase collection,
-  // where read addresses can be collected.
-  mailbox #(sram_trans_t) data_phase_mbox;
+  // store addr_phase information about incoming transaction
+  mailbox #(sram_trans_t) addr_phase_mbox;
 
   // mailbox that all completed sram_trans_t structs will be pushed into for processing.
+  //
+  // transaction order in this mailbox represents the orderr in which the underlying memory
+  // will actually perform memory operations, taking into account any forwarding/reordering.
+  //
+  // Use mailbox to enforce atomic FIFO ordering.
   mailbox #(sram_trans_t) completed_trans_mbox;
 
   otp_ctrl_pkg::sram_key_t key     = sram_ctrl_pkg::RndCnstSramKeyDefault;
   otp_ctrl_pkg::sram_nonce_t nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
+
+  // Data holding "register" and transaction info for use in forwarding situations
+  // e.g. if a write is followed by a read, the write transaction is held
+  //      and is not immediately reflected in the memory macro
+  sram_trans_t held_trans;
+
+  // the held data is assumed to be masked correctly, to deal with tricky situations where
+  // a read follows b2b writes of the same address (each with different masks) -
+  // we need to be able to have access to the most updated version of the write data
+  bit [TL_DW-1:0] held_data;
+
+  bit in_raw_hazard = 0;
+
+  // utility function to word-align an input TL address
+  // (SRAM is indexed at word granularity)
+  function bit [TL_AW-1:0] word_align_addr(bit [TL_AW-1:0] addr);
+    return {addr[TL_AW-1:2], 2'b00};
+  endfunction
+
+  // utility function to reset all fields of a sram_trans_t
+  function void clear_trans(ref sram_trans_t t);
+    t.we    = 0;
+    t.addr  = '0;
+    t.data  = '0;
+    t.mask  = '0;
+    t.key   = sram_ctrl_pkg::RndCnstSramKeyDefault;
+    t.nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
+  endfunction
+
+  // utility function to clear all RAW hazard state
+  function void clear_hazard_state();
+    in_raw_hazard = 0;
+    held_data = '0;
+    clear_trans(held_trans);
+  endfunction
+
+  // utility function to expand a TLUL mask to a full bit-mask
+  function bit [TL_DW-1:0] expand_bit_mask(bit [TL_DBW-1:0] mask);
+    bit [TL_DW-1:0] bitmask = '0;
+    for (int i = 0; i < TL_DBW; i++) begin
+      bitmask[i*8 +: 8] = {8{mask[i]}};
+    end
+    return bitmask;
+  endfunction
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -58,7 +106,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
     kdi_fifo = new("kdi_fifo", this);
 
-    data_phase_mbox = new();
+    addr_phase_mbox = new();
     completed_trans_mbox = new();
   endfunction
 
@@ -72,7 +120,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       process_sram_tl_a_chan_fifo();
       process_sram_tl_d_chan_fifo();
       process_kdi_fifo();
-      process_sram_trans();
+      process_completed_trans();
     join_none
   endtask
 
@@ -80,41 +128,70 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     tl_seq_item item;
     sram_trans_t addr_trans;
     forever begin
-      sram_tl_a_chan_fifo.get(item);
-      if (!cfg.en_scb) continue;
-      `uvm_info(`gfn, $sformatf("Received sram_tl_a_chan item:\n%0s", item.sprint()), UVM_HIGH)
+      if (cfg.en_scb) begin
 
-      // TODO: need to ensure that we don't process TLUL errors
+        if (sram_tl_a_chan_fifo.try_get(item) > 0) begin // received a tl_seq_item
+          `uvm_info(`gfn, $sformatf("Received sram_tl_a_chan item:\n%0s", item.sprint()), UVM_HIGH)
 
-      addr_trans.we = item.is_write();
-      addr_trans.addr = item.a_addr;
-      addr_trans.mask = item.a_mask;
+          // TODO: need to ensure that we don't process TLUL errors
 
-      addr_trans.key = key;
-      addr_trans.nonce = nonce;
+          addr_trans.we    = item.is_write();
+          addr_trans.addr  = word_align_addr(item.a_addr);
+          addr_trans.mask  = item.a_mask;
+          addr_trans.key   = key;
+          addr_trans.nonce = nonce;
+          if (item.is_write()) begin
+            addr_trans.data = item.a_data;
+          end
 
-      // Only set data in address phase if a write is detected
-      if (item.is_write()) begin
-        addr_trans.data = item.a_data;
-        // write the completed transaction to be processed
-        completed_trans_mbox.put(addr_trans);
-        `uvm_info({`gfn, "::process_sram_tl_a_chan_fifo()"},
-                  $sformatf("Put COMPLETED_WRITE transaction into completed_trans_mbox: %0p", addr_trans),
-                  UVM_HIGH)
-      end else begin
-        // on a read transaction, set the address and then send the incomplete transaction item
-        // to be completed in the data phase
-        data_phase_mbox.put(addr_trans);
-        `uvm_info({`gfn, "::process_sram_tl_a_chan_fifo()"},
-                  $sformatf("Put INCOMPLETE_READ transaction into data_phase_mbox: %0p", addr_trans),
-                  UVM_HIGH)
+          // write the addr_trans into the mailbox
+          addr_phase_mbox.put(addr_trans);
+
+          `uvm_info({`gfn, "::process_sram_tl_a_chan_fifo()"},
+                    $sformatf("Put ADDR_PHASE transaction into addr_phase_mbox: %0p", addr_trans),
+                    UVM_HIGH)
+
+          // terminate the raw_hazard status if we see this series of mem accesses -
+          // `write -> 1+ reads -> write`, where we are currently looking at
+          // the final `write` transaction
+          //
+          // in this case, we should send the held write transaction off to be checked,
+          // and not do anything to the pending address transaction currently in the address phase
+          //
+          // we also need to lower `in_raw_hazard` as we no longer require data forwarding
+          cfg.clk_rst_vif.wait_n_clks(1);
+          if (in_raw_hazard && addr_trans.we) begin
+            `uvm_info(`gfn, "next b2b transaction is a write, clearing hazard state", UVM_HIGH)
+            completed_trans_mbox.put(held_trans);
+            clear_hazard_state();
+          end
+        end else begin // didn't receive tl_seq_item
+
+          // terminate the raw_hazard status in the scenario:
+          // `write -> 1+ reads -> empty cycle` - if an empty cycle occurs after the last read
+          // transaction that causes a hazard, the write will be resolved during this cycle,
+          // so clear the hazard status and check the held write transaction
+          if (in_raw_hazard) begin
+            `uvm_info(`gfn, "Empty cycle seen after hazardous read, clearing hazard state", UVM_HIGH)
+            completed_trans_mbox.put(held_trans);
+            clear_hazard_state();
+          end
+        end
+
       end
+
+      // wait a cycle before next non-blocking check to sram_tl_a_chan
+      cfg.clk_rst_vif.wait_clks(1);
+      // small delay to allow monitor to complete putting item into sram_tl_a_chan_fifo
+      #1;
     end
   endtask
 
   virtual task process_sram_tl_d_chan_fifo();
     tl_seq_item item;
+    sram_trans_t addr_trans;
     sram_trans_t data_trans;
+
     forever begin
       sram_tl_d_chan_fifo.get(item);
       if (!cfg.en_scb) continue;
@@ -125,22 +202,111 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       // check packet integrity
       void'(item.is_ok());
 
-      // here we only want to process read responses
+      // the addr_phase_mbox will be populated during A_phase of each memory transaction.
       //
-      // TODO: for now...
-      if (item.d_opcode == tlul_pkg::AccessAckData) begin
-        // if data channel has a read response, then there is an incomplete transaction
-        // waiting in the data_phase_mbox
-        data_phase_mbox.get(data_trans);
-        `uvm_info({`gfn, "::process_sram_tl_d_chan_fifo()"},
-                  $sformatf("Got INCOMPLETE_READ transaction from data_phase_mbox: %0p", data_trans),
-                  UVM_HIGH)
-        // set the read response data
+      // since we use the addr_phase_mbox in this task to check for data forwarding hazards,
+      // need to keep it up to date with the current transaction.
+      //
+      // it is guaranteed that both:
+      // - the mailbox will have at least 1 addr_trans item in it at this point
+      // - the first item in the mailbox matches up to the current data_phase transaction
+      //
+      // as a result we can safely remove the item from the mailbox here
+      `DV_CHECK_NE(addr_phase_mbox.try_get(addr_trans), 0,
+        "AddrPhase transaction not available in addr_phase_mbox")
+
+      // assign data_trans fields
+      clear_trans(data_trans);
+      data_trans.addr  = word_align_addr(item.a_addr);
+      data_trans.mask  = item.a_mask;
+      data_trans.key   = key;
+      data_trans.nonce = nonce;
+
+      `uvm_info(`gfn, $sformatf("in_raw_hazard: %0d",  in_raw_hazard), UVM_HIGH)
+
+      if (item.d_opcode == tlul_pkg::AccessAckData) begin // read
+        `uvm_info(`gfn, "Processing READ transaction", UVM_HIGH)
+
+        data_trans.we = 0;
         data_trans.data = item.d_data;
-        completed_trans_mbox.put(data_trans);
-        `uvm_info({`gfn, "::process_sram_tl_d_chan_fifo()"},
-                  $sformatf("Put COMPLETED_READ transaction into completed_trans_mbox: %0p", data_trans),
-                  UVM_HIGH)
+
+        if (in_raw_hazard) begin
+          // executing a read while `in_raw_hazard` is high means that this read comes after
+          // the most recent write transaction, which has then been held
+          //
+          // as a result we need to check for an address collision then act accordingly.
+
+          // if we have an address collision (read address is the same as the pending write address)
+          // return data based on the `held_data`
+          if (data_trans.addr == held_trans.addr) begin
+            bit [TL_DW-1:0] exp_masked_rdata = held_data & expand_bit_mask(item.a_mask);
+            `uvm_info(`gfn, $sformatf("exp_masked_rdata: 0x%0x", exp_masked_rdata), UVM_HIGH)
+            `DV_CHECK_EQ_FATAL(exp_masked_rdata, item.d_data)
+          end else begin
+            // in this case we do not have a strict RAW hazard on the same address,
+            // so we can check the read transaction normally, as it will complete
+            // before the pending write
+            completed_trans_mbox.put(data_trans);
+          end
+
+        end else begin
+          completed_trans_mbox.put(data_trans);
+        end
+      end else if (item.d_opcode == tlul_pkg::AccessAck) begin // write
+        bit b2b_detected;
+
+        `uvm_info(`gfn, "Processing WRITE transaction", UVM_HIGH)
+
+        data_trans.we = 1;
+        data_trans.data = item.a_data;
+
+        // insert a small delay before checking addr_phase_mbox to allow b2b
+        // transactions to be picked up (otherwise we wait until the next cycle)
+        #1;
+
+        // peek at the next address phase request
+        b2b_detected = addr_phase_mbox.try_peek(addr_trans);
+        `uvm_info(`gfn, $sformatf("b2b_detected: %0d", b2b_detected), UVM_HIGH)
+
+        if (b2b_detected) begin
+
+          bit  [TL_AW-1:0] waddr = '0;
+
+          `uvm_info(`gfn, $sformatf("addr_trans: %0p", addr_trans), UVM_HIGH)
+
+          if (addr_trans.we == 0) begin
+            // if we see a read directly after a write and we are not currently in a RAW hazard
+            // handling state, we need to do the following:
+            //
+            // - backdoor read the memory at the given address to get the currently stored data,
+            //   and update the scb data holding "register" with this value
+            //
+            // - overwrite this data holding register with the masked write data sent by the
+            //   original write transaction that caused the forwarding scenario (this is so that
+            //   sub-word reads reading different bytes from the ones being written can still
+            //   return the most recently written values)
+            `uvm_info(`gfn, "detected RAW hazard", UVM_HIGH)
+            in_raw_hazard = 1;
+            held_trans = data_trans;
+            waddr = {data_trans.addr[TL_AW-1:2], 2'b00};
+            held_data = cfg.mem_bkdr_vif.sram_encrypt_read32(waddr, data_trans.key, data_trans.nonce);
+
+            for (int i = 0; i < TL_DBW; i++) begin
+              if (data_trans.mask[i]) begin
+                held_data[i*8 +: 8] = data_trans.data[i*8 +: 8];
+              end
+            end
+            `uvm_info(`gfn, $sformatf("new held_data: 0x%0x", held_data), UVM_HIGH)
+          end else begin
+            // if we have a write-after-write scenario, whether the addresses are the same or not,
+            // just proceed as normal and send the current transaction off to be checked
+            completed_trans_mbox.put(data_trans);
+          end
+        end else begin
+          // if no b2b transaction detected, it is safe to send
+          // the collected transaction off for checking
+          completed_trans_mbox.put(data_trans);
+        end
       end
     end
   endtask
@@ -165,19 +331,21 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // This task continuously pulls items from the completed_trans_mbox
   // and checks them for correctness by using the mem_bkdr_if.
-  virtual task process_sram_trans();
+  //
+  // TLUL allows partial reads and writes, so we first need to construct a bit-mask
+  // based off of the TLUL mask field.
+  // We then read from the memory using the backdoor interface, and can then directly compare
+  // the TLUL response data to the backdoor-read data using the bit-mask.
+  virtual task process_completed_trans();
     sram_trans_t trans;
+
     forever begin
       completed_trans_mbox.get(trans);
 
-      // SRAM writes take 2 cycles to execute, while reads return data in the TLUL response.
-      if (trans.we) begin
-        cfg.clk_rst_vif.wait_clks(2);
-      end
-
-      `uvm_info({`gfn, "::process_sram_trans()"},
-                $sformatf("Received COMPLETED transaction from completed_trans_mbox: %0p", trans),
+      `uvm_info({`gfn, "::process_completed_trans()"},
+                $sformatf("Checking SRAM memory transaction: %0p", trans),
                 UVM_HIGH)
+
       check_mem_trans(trans);
     end
   endtask
@@ -199,19 +367,16 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     bit [TL_DW-1:0] exp_masked_data;
     bit [TL_DW-1:0] act_masked_data;
 
-    `uvm_info(`gfn, $sformatf("Checking SRAM memory transaction: %0p", t), UVM_HIGH)
 
     // Word align the request address
     word_addr = {t.addr[TL_AW-1:2], 2'b00};
     `uvm_info(`gfn, $sformatf("word_addr: 0x%0x", word_addr), UVM_HIGH)
 
-    // Expand the byte-oriented mask into a full bit mask
-    for (int i = 0; i < TL_DBW; i++) begin
-      bit_mask[i*8 +: 8] = {8{t.mask[i]}};
-    end
+    bit_mask = expand_bit_mask(t.mask);
 
     // backdoor read the mem
     exp_data = cfg.mem_bkdr_vif.sram_encrypt_read32(word_addr, t.key, t.nonce);
+    `uvm_info(`gfn, $sformatf("exp_data: 0x%0x", exp_data), UVM_HIGH)
 
     exp_masked_data = exp_data & bit_mask;
     act_masked_data = t.data & bit_mask;
@@ -221,6 +386,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
     `DV_CHECK_EQ_FATAL(exp_masked_data, act_masked_data)
   endfunction
+
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
@@ -300,12 +466,16 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
-    // reset local fifos queues and variables
+    clear_hazard_state();
   endfunction
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
-    // post test checks - ensure that all local fifos and queues are empty
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, sram_tl_a_chan_fifo)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, sram_tl_d_chan_fifo)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(push_pull_item#(.DeviceDataWidth(KDI_DATA_SIZE)), kdi_fifo)
+    `DV_CHECK_EQ(addr_phase_mbox.num(), 0, "Items still remain in addr_phase_mbox!")
+    `DV_CHECK_EQ(completed_trans_mbox.num(), 0, "Items still remain in completed_trans_mbox!")
   endfunction
 
 endclass
