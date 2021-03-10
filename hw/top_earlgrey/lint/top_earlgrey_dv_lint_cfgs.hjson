@@ -38,6 +38,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/csrng/dv/lint/{tool}"
              },
+             {    name: dcd
+                  fusesoc_core: lowrisc:dv:dcd_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/dcd/dv/lint/{tool}"
+             },
              {    name: entropy_src
                   fusesoc_core: lowrisc:dv:entropy_src_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]

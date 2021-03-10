@@ -1,0 +1,37 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:dcd_env:0.1"
+description: "DCD DV UVM environment"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:ralgen
+      - lowrisc:dv:cip_lib
+    files:
+      - dcd_env_pkg.sv
+      - dcd_env_cfg.sv: {is_include_file: true}
+      - dcd_env_cov.sv: {is_include_file: true}
+      - dcd_virtual_sequencer.sv: {is_include_file: true}
+      - dcd_scoreboard.sv: {is_include_file: true}
+      - dcd_env.sv: {is_include_file: true}
+      - seq_lib/dcd_vseq_list.sv: {is_include_file: true}
+      - seq_lib/dcd_base_vseq.sv: {is_include_file: true}
+      - seq_lib/dcd_common_vseq.sv: {is_include_file: true}
+      - seq_lib/dcd_smoke_vseq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: dcd
+      ip_hjson: ../../data/dcd.hjson
+
+targets:
+  default:
+    filesets:
+      - files_dv
+    generate:
+      - ral
