@@ -11,8 +11,7 @@ module entropy_src
   import entropy_src_pkg::*;
   import entropy_src_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter int EsFifoDepth = 2
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -65,9 +64,7 @@ module entropy_src
     .devmode_i(1'b1)
   );
 
-  entropy_src_core #(
-    .EsFifoDepth(EsFifoDepth)
-  ) u_entropy_src_core (
+  entropy_src_core u_entropy_src_core (
     .clk_i,
     .rst_ni,
     .reg2hw,
