@@ -40,10 +40,12 @@ class csrng_agent extends dv_base_agent #(
                                    create("m_genbits_push_agent_cfg");
     cfg.m_genbits_push_agent_cfg.is_active  = cfg.is_active;
     cfg.m_genbits_push_agent_cfg.agent_type = PushAgent;
-    if (cfg.if_mode == dv_utils_pkg::Host)
+    if (cfg.if_mode == dv_utils_pkg::Host) begin
+      cfg.has_req_fifo = 1;
       cfg.m_genbits_push_agent_cfg.if_mode = dv_utils_pkg::Device;
-    else
+    end else begin
       cfg.m_genbits_push_agent_cfg.if_mode = dv_utils_pkg::Host;
+    end
 
     cfg.vif.if_mode = cfg.if_mode;
 
@@ -64,7 +66,7 @@ class csrng_agent extends dv_base_agent #(
 
     if (cfg.is_active) begin
       if (cfg.if_mode == dv_utils_pkg::Device) begin
-        monitor.req_port.connect(sequencer.cmd_req_fifo.analysis_export);
+        monitor.req_analysis_port.connect(sequencer.req_analysis_fifo.analysis_export);
         sequencer.m_genbits_push_sequencer = m_genbits_push_agent.sequencer;
       end
     end

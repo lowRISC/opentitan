@@ -20,6 +20,10 @@ class push_pull_agent #(parameter int HostDataWidth = 32,
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
+    // use for reactive device
+    cfg.has_req_fifo = 1;
+
     // get push_pull_if handle
     if (!uvm_config_db#(virtual push_pull_if#(HostDataWidth, DeviceDataWidth))::get(this, "", "vif",
                                                                                     cfg.vif)) begin
@@ -33,7 +37,7 @@ class push_pull_agent #(parameter int HostDataWidth = 32,
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     if (cfg.if_mode == dv_utils_pkg::Device) begin
-      monitor.req_port.connect(sequencer.push_pull_req_fifo.analysis_export);
+      monitor.req_analysis_port.connect(sequencer.req_analysis_fifo.analysis_export);
     end
   endfunction
 

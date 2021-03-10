@@ -31,8 +31,8 @@ class kmac_env extends cip_base_env #(
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    m_kdf_agent.monitor.req_port.connect(scoreboard.kdf_req_fifo.analysis_export);
-    m_kdf_agent.monitor.rsp_port.connect(scoreboard.kdf_rsp_fifo.analysis_export);
+    m_kdf_agent.monitor.req_analysis_port.connect(scoreboard.kdf_req_fifo.analysis_export);
+    m_kdf_agent.monitor.analysis_port.connect(scoreboard.kdf_rsp_fifo.analysis_export);
 
     virtual_sequencer.kdf_sequencer_h = m_kdf_agent.sequencer;
   endfunction

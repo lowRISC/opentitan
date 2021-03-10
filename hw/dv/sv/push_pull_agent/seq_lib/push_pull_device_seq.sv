@@ -43,7 +43,7 @@ class push_pull_device_seq #(parameter int HostDataWidth = 32,
       fork
         forever begin : collect_req
           // We indefinitely poll for any traffic sent from the monitor and store it to a mailbox.
-          p_sequencer.push_pull_req_fifo.get(req);
+          p_sequencer.req_analysis_fifo.get(req);
           req_mailbox.put(req);
         end : collect_req
         forever begin : send_req

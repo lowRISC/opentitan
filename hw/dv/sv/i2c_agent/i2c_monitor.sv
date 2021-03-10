@@ -9,7 +9,6 @@ class i2c_monitor extends dv_base_monitor #(
   );
   `uvm_component_utils(i2c_monitor)
 
-  uvm_analysis_port #(i2c_item) mon_item_port;  // used to send partial rd/wr_tran to driver
   uvm_analysis_port #(i2c_item) wr_item_port;   // used to send complete wr_tran to sb
   uvm_analysis_port #(i2c_item) rd_item_port;   // used to send complete rd_tran to sb
 
@@ -21,7 +20,6 @@ class i2c_monitor extends dv_base_monitor #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    mon_item_port = new("mon_item_port", this);
     wr_item_port  = new("wr_item_port", this);
     rd_item_port  = new("rd_item_port", this);
     mon_dut_item  = i2c_item::type_id::create("mon_dut_item", this);
@@ -102,7 +100,7 @@ class i2c_monitor extends dv_base_monitor #(
     // get ack after transmitting address
     mon_dut_item.drv_type = DevAck;
     `downcast(clone_item, mon_dut_item.clone());
-    mon_item_port.write(clone_item);
+    req_analysis_port.write(clone_item);
     cfg.vif.wait_for_device_ack(cfg.timing_cfg);
     `uvm_info(`gfn, $sformatf("\nmonitor, address, detect TARGET ACK"), UVM_DEBUG)
   endtask : address_thread
@@ -118,7 +116,7 @@ class i2c_monitor extends dv_base_monitor #(
       // ask driver response read data
       mon_dut_item.drv_type = RdData;
       `downcast(clone_item, mon_dut_item.clone());
-      mon_item_port.write(clone_item);
+      req_analysis_port.write(clone_item);
       // sample read data
       for (int i = 7; i >= 0; i--) begin
         cfg.vif.get_bit_data("device", cfg.timing_cfg, mon_data[i]);
@@ -159,7 +157,7 @@ class i2c_monitor extends dv_base_monitor #(
               // ask driver's response a write request
               mon_dut_item.drv_type = WrData;
               `downcast(clone_item, mon_dut_item.clone());
-              mon_item_port.write(clone_item);
+              req_analysis_port.write(clone_item);
               for (int i = 7; i >= 0; i--) begin
                 cfg.vif.get_bit_data("host", cfg.timing_cfg, mon_data[i]);
               end
@@ -167,7 +165,7 @@ class i2c_monitor extends dv_base_monitor #(
               mon_dut_item.data_q.push_back(mon_data);
               mon_dut_item.drv_type = DevAck;
               `downcast(clone_item, mon_dut_item.clone());
-              mon_item_port.write(clone_item);
+              req_analysis_port.write(clone_item);
               cfg.vif.wait_for_device_ack(cfg.timing_cfg);
             end
             begin

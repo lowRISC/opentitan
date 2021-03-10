@@ -14,20 +14,12 @@ class keymgr_kmac_monitor extends dv_base_monitor #(
   // keymgr_kmac_agent_cov: cov
   // uvm_analysis_port #(keymgr_kmac_item): analysis_port
 
-  // item will be sent to this port when req phase is done (last is set)
-  uvm_analysis_port #(keymgr_kmac_item) req_port;
-  // item will be sent to this port when rsp phase is done (rsp_done is set)
-  uvm_analysis_port #(keymgr_kmac_item) rsp_port;
-  // connect to push_pull_monitor analysis_port, to get push_pull_item when valid-ready handshake
-  // is done
   uvm_tlm_analysis_fifo#(push_pull_item#(`CONNECT_DATA_WIDTH)) data_fifo;
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    req_port  = new("req_port", this);
-    rsp_port  = new("rsp_port", this);
     data_fifo = new("data_fifo", this);
   endfunction
 
@@ -67,7 +59,7 @@ class keymgr_kmac_monitor extends dv_base_monitor #(
         end
         if (last) break;
       end
-      req_port.write(req);
+      req_analysis_port.write(req);
       `uvm_info(`gfn, $sformatf("Write req item:\n%0s", req.sprint()), UVM_HIGH)
 
       `downcast(rsp, req.clone())
@@ -75,7 +67,7 @@ class keymgr_kmac_monitor extends dv_base_monitor #(
       rsp.rsp_error         = cfg.vif.rsp_error;
       rsp.rsp_digest_share0 = cfg.vif.rsp_digest_share0;
       rsp.rsp_digest_share1 = cfg.vif.rsp_digest_share1;
-      rsp_port.write(rsp);
+      analysis_port.write(rsp);
       `uvm_info(`gfn, $sformatf("Write rsp item:\n%0s", rsp.sprint()), UVM_HIGH)
       ok_to_end = 1;
     end

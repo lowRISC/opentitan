@@ -19,6 +19,10 @@ class keymgr_kmac_agent extends dv_base_agent #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
+    // use for mon-seq connection
+    cfg.has_req_fifo = 1;
+
     // get keymgr_kmac_intf handle
     if (!uvm_config_db#(virtual keymgr_kmac_intf)::get(this, "", "vif", cfg.vif)) begin
       `uvm_fatal(`gfn, "failed to get keymgr_kmac_intf handle from uvm_config_db")
@@ -48,7 +52,7 @@ class keymgr_kmac_agent extends dv_base_agent #(
       if (cfg.if_mode == dv_utils_pkg::Host) begin
         sequencer.m_push_pull_sequencer = m_data_push_agent.sequencer;
       end else begin
-        monitor.req_port.connect(sequencer.req_data_fifo.analysis_export);
+        monitor.req_analysis_port.connect(sequencer.req_analysis_fifo.analysis_export);
       end
     end
 
