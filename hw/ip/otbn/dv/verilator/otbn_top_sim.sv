@@ -46,50 +46,57 @@ module otbn_top_sim (
   logic                     dmem_rerror;
 
   // Entropy Distribution Network (EDN)
-  logic                     edn_req;
-  logic                     edn_ack;
-  logic [EdnDataWidth-1:0]  edn_data;
+  logic                     edn_rnd_req, edn_urnd_req;
+  logic                     edn_rnd_ack, edn_urnd_ack;
+  logic [EdnDataWidth-1:0]  edn_rnd_data, edn_urnd_data;
 
   otbn_core #(
     .ImemSizeByte ( ImemSizeByte ),
     .DmemSizeByte ( DmemSizeByte )
   ) u_otbn_core (
-    .clk_i         ( IO_CLK          ),
-    .rst_ni        ( IO_RST_N        ),
+    .clk_i           ( IO_CLK          ),
+    .rst_ni          ( IO_RST_N        ),
 
-    .start_i       ( otbn_start      ),
-    .done_o        ( otbn_done_d     ),
+    .start_i         ( otbn_start      ),
+    .done_o          ( otbn_done_d     ),
 
-    .err_bits_o    ( otbn_err_bits_d ),
+    .err_bits_o      ( otbn_err_bits_d ),
 
-    .start_addr_i  ( ImemStartAddr   ),
+    .start_addr_i    ( ImemStartAddr   ),
 
-    .imem_req_o    ( imem_req        ),
-    .imem_addr_o   ( imem_addr       ),
-    .imem_wdata_o  (                 ),
-    .imem_rdata_i  ( imem_rdata      ),
-    .imem_rvalid_i ( imem_rvalid     ),
-    .imem_rerror_i ( imem_rerror     ),
+    .imem_req_o      ( imem_req        ),
+    .imem_addr_o     ( imem_addr       ),
+    .imem_wdata_o    (                 ),
+    .imem_rdata_i    ( imem_rdata      ),
+    .imem_rvalid_i   ( imem_rvalid     ),
+    .imem_rerror_i   ( imem_rerror     ),
 
-    .dmem_req_o    ( dmem_req        ),
-    .dmem_write_o  ( dmem_write      ),
-    .dmem_addr_o   ( dmem_addr       ),
-    .dmem_wdata_o  ( dmem_wdata      ),
-    .dmem_wmask_o  ( dmem_wmask      ),
-    .dmem_rdata_i  ( dmem_rdata      ),
-    .dmem_rvalid_i ( dmem_rvalid     ),
-    .dmem_rerror_i ( dmem_rerror     ),
+    .dmem_req_o      ( dmem_req        ),
+    .dmem_write_o    ( dmem_write      ),
+    .dmem_addr_o     ( dmem_addr       ),
+    .dmem_wdata_o    ( dmem_wdata      ),
+    .dmem_wmask_o    ( dmem_wmask      ),
+    .dmem_rdata_i    ( dmem_rdata      ),
+    .dmem_rvalid_i   ( dmem_rvalid     ),
+    .dmem_rerror_i   ( dmem_rerror     ),
 
-    .edn_req_o     ( edn_req         ),
-    .edn_ack_i     ( edn_ack         ),
-    .edn_data_i    ( edn_data        )
+    .edn_rnd_req_o   ( edn_rnd_req     ),
+    .edn_rnd_ack_i   ( edn_rnd_ack     ),
+    .edn_rnd_data_i  ( edn_rnd_data    ),
+
+    .edn_urnd_req_o  ( edn_urnd_req    ),
+    .edn_urnd_ack_i  ( edn_urnd_ack    ),
+    .edn_urnd_data_i ( edn_urnd_data   )
   );
 
   // Tie-off EDN signals, eventually simulation will provide something here for testing RND
-  logic unused_edn_req;
-  assign unused_edn_req = edn_req;
-  assign edn_ack = 1'b0;
-  assign edn_data = '0;
+  logic unused_edn_rnd_req, unused_edn_urnd_req;
+  assign unused_edn_rnd_req = edn_rnd_req;
+  assign unused_edn_urnd_req = edn_urnd_req;
+  assign edn_rnd_ack = 1'b0;
+  assign edn_rnd_data = '0;
+  assign edn_urnd_ack = 1'b0;
+  assign edn_urnd_data = '0;
 
   bind otbn_core otbn_trace_if #(.ImemAddrWidth, .DmemAddrWidth) i_otbn_trace_if (.*);
   bind otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));

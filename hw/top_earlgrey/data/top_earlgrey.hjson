@@ -787,8 +787,8 @@
 
       // Edn connections
       'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn', 'ast_edn.edn', 'kmac.entropy',
-                                 'alert_handler.edn', 'aes.edn'],
-      'edn1.edn'              : ['otbn.edn'],
+                                 'alert_handler.edn', 'aes.edn', 'otbn.edn_urnd'],
+      'edn1.edn'              : ['otbn.edn_rnd'],
 
       // KeyMgr Sideload & KDF function
       'otp_ctrl.otp_keymgr_key' : ['keymgr.otp_key'],

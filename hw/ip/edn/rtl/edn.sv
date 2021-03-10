@@ -10,7 +10,7 @@ module edn
   import edn_pkg::*;
   import edn_reg_pkg::*;
 #(
-  parameter int NumEndPoints = 6,
+  parameter int NumEndPoints = 7,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter int BootInsCmd = 32'h0000_0001,
   parameter int BootGenCmd = 32'h00ff_f003

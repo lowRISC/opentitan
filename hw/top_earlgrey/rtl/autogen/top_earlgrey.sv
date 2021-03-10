@@ -446,10 +446,10 @@ module top_earlgrey #(
   logic       usbdev_usb_aon_wake_ack;
   logic       usbdev_usb_suspend;
   usbdev_pkg::awk_state_t       pinmux_aon_usb_state_debug;
-  edn_pkg::edn_req_t [5:0] edn0_edn_req;
-  edn_pkg::edn_rsp_t [5:0] edn0_edn_rsp;
-  edn_pkg::edn_req_t [5:0] edn1_edn_req;
-  edn_pkg::edn_rsp_t [5:0] edn1_edn_rsp;
+  edn_pkg::edn_req_t [6:0] edn0_edn_req;
+  edn_pkg::edn_rsp_t [6:0] edn0_edn_rsp;
+  edn_pkg::edn_req_t [6:0] edn1_edn_req;
+  edn_pkg::edn_rsp_t [6:0] edn1_edn_rsp;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
   keymgr_pkg::kmac_data_req_t       keymgr_kmac_data_req;
@@ -584,6 +584,7 @@ module top_earlgrey #(
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp3;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp4;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp5;
+  edn_pkg::edn_rsp_t unused_edn1_edn_rsp6;
 
   // assign partial inter-module tie-off
   assign unused_edn1_edn_rsp1 = edn1_edn_rsp[1];
@@ -591,11 +592,13 @@ module top_earlgrey #(
   assign unused_edn1_edn_rsp3 = edn1_edn_rsp[3];
   assign unused_edn1_edn_rsp4 = edn1_edn_rsp[4];
   assign unused_edn1_edn_rsp5 = edn1_edn_rsp[5];
+  assign unused_edn1_edn_rsp6 = edn1_edn_rsp[6];
   assign edn1_edn_req[1] = '0;
   assign edn1_edn_req[2] = '0;
   assign edn1_edn_req[3] = '0;
   assign edn1_edn_req[4] = '0;
   assign edn1_edn_req[5] = '0;
+  assign edn1_edn_req[6] = '0;
 
 
   // Unused reset signals
@@ -2110,8 +2113,10 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[28:27] ),
 
       // Inter-module signals
-      .edn_o(edn1_edn_req[0]),
-      .edn_i(edn1_edn_rsp[0]),
+      .edn_rnd_o(edn1_edn_req[0]),
+      .edn_rnd_i(edn1_edn_rsp[0]),
+      .edn_urnd_o(edn0_edn_req[6]),
+      .edn_urnd_i(edn0_edn_rsp[6]),
       .idle_o(clkmgr_aon_idle[3]),
       .tl_i(otbn_tl_req),
       .tl_o(otbn_tl_rsp),
