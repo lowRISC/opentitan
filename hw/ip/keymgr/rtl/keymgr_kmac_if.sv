@@ -278,8 +278,21 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   logic [2:0] enables, enables_sub;
   assign enables = {adv_en_i, id_en_i, gen_en_i};
   assign enables_sub = enables - 1'b1;
+
+  // if a one hot error occurs, latch onto it permanently
+  logic one_hot_err_q, one_hot_err_d;
+  assign one_hot_err_d = |(enables & enables_sub);
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      one_hot_err_q <= '0;
+    end else if (one_hot_err_d) begin
+      one_hot_err_q <= '1;
+    end
+  end
+
   // command error occurs if kmac errors or if the command itself is invalid
-  assign cmd_error_o = |(enables & enables_sub);
+  assign cmd_error_o = one_hot_err_q;
 
   // request entropy to churn whenever a transaction is accepted
   assign prng_en_o = kmac_data_o.valid & kmac_data_i.ready;
