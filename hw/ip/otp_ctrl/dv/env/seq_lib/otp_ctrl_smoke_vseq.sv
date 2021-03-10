@@ -12,6 +12,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   `uvm_object_new
 
   bit collect_used_addr = 1;
+  bit do_reset_in_seq = 1;
 
   rand bit                           do_req_keys, do_lc_trans, check_err_code;
   rand bit                           access_locked_parts;
@@ -62,6 +63,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   constraint ecc_err_c {ecc_err_mask == 0;}
 
   virtual task dut_init(string reset_kind = "HARD");
+    if (!do_reset_in_seq) return;
     super.dut_init(reset_kind);
     csr_wr(ral.intr_enable, en_intr);
   endtask
@@ -82,7 +84,9 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         if (i > 1) dut_init();
         // after otp-init done, check status
         cfg.clk_rst_vif.wait_clks(1);
-        csr_rd_check(.ptr(ral.status.dai_idle), .compare_value(1));
+        if ( cfg.otp_ctrl_vif.lc_escalate_en_i != lc_ctrl_pkg::On) begin
+          csr_rd_check(.ptr(ral.status.dai_idle), .compare_value(1));
+        end
       end
       do_otp_ctrl_init = 0;
 

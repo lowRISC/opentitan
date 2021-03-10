@@ -81,12 +81,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     //   detected
     // - zero delays in TLUL interface, otherwise dai operation might be finished before reading
     //   these two CSRs
-    if (cfg.zero_delays && is_valid_dai_op) begin
+    if (cfg.zero_delays && is_valid_dai_op &&
+        cfg.otp_ctrl_vif.lc_escalate_en_i != lc_ctrl_pkg::On) begin
       csr_rd_check(ral.status.dai_idle, .compare_value(0), .backdoor(1));
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
-    if (cfg.ecc_err == OtpEccUncorrErr) csr_spinwait(ral.status.dai_error, 1);
-    else                                csr_spinwait(ral.status.dai_idle, 1);
+    wait_dai_op_done();
     rd_and_clear_intrs();
   endtask : dai_wr
 
@@ -107,14 +107,13 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_wr(ral.direct_access_address, addr);
     csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiRead));
 
-    if (cfg.zero_delays && is_valid_dai_op) begin
+    if (cfg.zero_delays && is_valid_dai_op &&
+        cfg.otp_ctrl_vif.lc_escalate_en_i != lc_ctrl_pkg::On) begin
       csr_rd_check(ral.status.dai_idle, .compare_value(0), .backdoor(1));
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
 
-    if (cfg.ecc_err == OtpEccUncorrErr) csr_spinwait(ral.status.dai_error, 1);
-    else                                csr_spinwait(ral.status.dai_idle, 1);
-
+    wait_dai_op_done();
     csr_rd(ral.direct_access_rdata_0, rdata0);
     if (is_secret(addr) || is_digest(addr)) csr_rd(ral.direct_access_rdata_1, rdata1);
     rd_and_clear_intrs();
@@ -143,13 +142,13 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_wr(ral.direct_access_address, PART_BASE_ADDRS[part_idx]);
     csr_wr(ral.direct_access_cmd, otp_ctrl_pkg::DaiDigest);
 
-    if (cfg.zero_delays && is_valid_dai_op) begin
+    if (cfg.zero_delays && is_valid_dai_op &&
+        cfg.otp_ctrl_vif.lc_escalate_en_i != lc_ctrl_pkg::On) begin
       csr_rd_check(ral.status.dai_idle, .compare_value(0), .backdoor(1));
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
 
-    if (cfg.ecc_err == OtpEccUncorrErr) csr_spinwait(ral.status.dai_error, 1);
-    else                                csr_spinwait(ral.status.dai_idle, 1);
+    wait_dai_op_done();
     rd_and_clear_intrs();
   endtask
 
@@ -236,6 +235,31 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     if (wait_done && val) csr_spinwait(ral.status.check_pending, 0);
   endtask
 
+  // For a DAI interface operation to finish, either way until status dai_idle is set, or check
+  // err_code and see if fatal error happened.
+  virtual task wait_dai_op_done();
+    fork begin
+      fork
+        begin
+          csr_spinwait(.ptr(ral.status.dai_idle),
+                       .exp_data(1),
+                       .spinwait_delay_ns($urandom_range(0, 5)));
+        end
+        begin
+          forever begin
+            bit [TL_DW-1:0] err_val;
+            cfg.clk_rst_vif.wait_clks(1);
+            csr_rd(.ptr(ral.err_code.err_code_7), .value(err_val), .backdoor(1));
+            // Break if error will cause fatal alerts
+            if (err_val inside {OtpMacroEccUncorrError, OtpFsmStateError}) break;
+          end
+        end
+      join_any
+      wait_no_outstanding_access();
+      disable fork;
+    end join
+  endtask
+
   virtual task rd_and_clear_intrs();
     bit [TL_DW-1:0] val;
     if (cfg.otp_ctrl_vif.lc_prog_no_sta_check == 0) begin
@@ -293,7 +317,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
 
     `DV_CHECK_RANDOMIZE_FATAL(lc_prog_pull_seq)
-    `uvm_send(lc_prog_pull_seq)
+    `DV_SPINWAIT_EXIT(`uvm_send(lc_prog_pull_seq),
+                      wait(cfg.otp_ctrl_vif.lc_escalate_en_i == lc_ctrl_pkg::On);)
 
     if (check_intr) rd_and_clear_intrs();
   endtask
@@ -302,7 +327,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     push_pull_host_seq#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) lc_token_pull_seq;
     `uvm_create_on(lc_token_pull_seq, p_sequencer.lc_token_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(lc_token_pull_seq)
-    `uvm_send(lc_token_pull_seq)
+    `DV_SPINWAIT_EXIT(`uvm_send(lc_token_pull_seq),
+                      wait(cfg.otp_ctrl_vif.lc_escalate_en_i == lc_ctrl_pkg::On);)
   endtask
 
   // first two or three LSB bits of DAI address can be randomized based on if it is secret
