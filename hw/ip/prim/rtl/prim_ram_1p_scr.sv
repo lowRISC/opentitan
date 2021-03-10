@@ -361,16 +361,28 @@ module prim_ram_1p_scr #(
   logic rvalid_q;
   assign rvalid_o = rvalid_q;
 
-  // In case of a collision, we forward the write data from the unscrambled holding register
-  assign rdata_o = (addr_collision_q) ? wdata_q   : // forward pending (unscrambled) write data
-                   (rvalid_q)         ? rdata     : // regular reads
-                                        '0;         // tie to zero otherwise
+  logic [Width-1:0] wmask_q;
+  always_comb begin : p_forward_mux
+    rdata_o = '0;
+    // regular reads
+    if (rvalid_q) begin
+      rdata_o = rdata;
+    end
+    // In case of a collision, we forward the valid bytes of the write data from the unscrambled
+    // holding register.
+    if (addr_collision_q) begin
+      for (int k = 0; k < Width; k++) begin
+        if (wmask_q[k]) begin
+          rdata_o[k] = wdata_q[k];
+        end
+      end
+    end
+  end
 
   ///////////////
   // Registers //
   ///////////////
 
-  logic [Width-1:0] wmask_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_wdata_buf
     if (!rst_ni) begin
       write_pending_q     <= 1'b0;
