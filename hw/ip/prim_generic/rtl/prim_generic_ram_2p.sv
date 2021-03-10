@@ -6,7 +6,7 @@
 //   This module is for simulation and small size SRAM.
 //   Implementing ECC should be done inside wrapper not this model.
 `include "prim_assert.sv"
-module prim_generic_ram_2p #(
+module prim_generic_ram_2p import prim_ram_2p_pkg::*; #(
   parameter  int Width           = 32, // bit
   parameter  int Depth           = 128,
   parameter  int DataBitsPerMask = 1, // Number of data bits per bit of write mask
@@ -30,8 +30,14 @@ module prim_generic_ram_2p #(
   input        [Aw-1:0]    b_addr_i,
   input        [Width-1:0] b_wdata_i,
   input  logic [Width-1:0] b_wmask_i,
-  output logic [Width-1:0] b_rdata_o
+  output logic [Width-1:0] b_rdata_o,
+
+  input ram_2p_cfg_t       cfg_i
 );
+
+  logic unused_cfg;
+  assign unused_cfg = ^cfg_i;
+
   // Width of internal write mask. Note *_wmask_i input into the module is always assumed
   // to be the full bit mask.
   localparam int MaskWidth = Width / DataBitsPerMask;

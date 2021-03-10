@@ -337,6 +337,11 @@ module top_englishbreakfast_cw305 #(
     .mio_attr_o      ( mio_attr      ),
     .dio_attr_o      ( dio_attr      ),
 
+    // Memory attributes
+    .ram_1p_cfg_i    ( '0 ),
+    .ram_2p_cfg_i    ( '0 ),
+    .rom_cfg_i       ( '0 ),
+
     // DFT signals
     .scan_rst_ni     ( 1'b1             ),
     .scan_en_i       ( 1'b0             ),

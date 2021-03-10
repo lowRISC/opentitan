@@ -30,6 +30,9 @@ module spi_device (
   output logic intr_rxoverflow_o,  // RX Async FIFO Overflow
   output logic intr_txunderflow_o, // TX Async FIFO Underflow
 
+  // Memory configuration
+  input prim_ram_2p_pkg::ram_2p_cfg_t ram_cfg_i,
+
   // DFT related controls
   input scan_clk_i,
   input scan_rst_ni,
@@ -629,7 +632,6 @@ module spi_device (
     .Depth (SramDepth),
     .Width (SramDw),    // 32 x 512 --> 2kB
     .DataBitsPerMask (8),
-    .CfgW  (8),
 
     .EnableECC           (0),
     .EnableParity        (1),
@@ -660,7 +662,7 @@ module spi_device (
     .b_rdata_o  (mem_b_rdata),
     .b_rerror_o (mem_b_rerror),
 
-    .cfg_i      ('0)
+    .cfg_i      (ram_cfg_i)
   );
 
   // Register module

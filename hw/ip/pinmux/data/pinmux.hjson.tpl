@@ -75,7 +75,7 @@
       package: "jtag_pkg"
     }
     // Testmode signals to AST
-    { struct:  "dft_strap_test",
+    { struct:  "dft_strap_test_req",
       type:    "uni",
       name:    "dft_strap_test",
       act:     "req",

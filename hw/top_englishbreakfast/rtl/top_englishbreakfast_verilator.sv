@@ -190,6 +190,11 @@ module top_englishbreakfast_verilator (
     .mio_attr_o                 ( ),
     .dio_attr_o                 ( ),
 
+    // Memory attributes
+    .ram_1p_cfg_i               ('0),
+    .ram_2p_cfg_i               ('0),
+    .rom_cfg_i                  ('0),
+
     // DFT signals
     .scan_rst_ni                (1'b1),
     .scanmode_i                 (lc_ctrl_pkg::Off)

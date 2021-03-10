@@ -456,8 +456,11 @@ def elab_intermodule(topcfg: OrderedDict):
         # if top signame already defined, then a previous connection category
         # is already connected to external pin.  Sig name is only used for
         # port definition
+        conn_type = False
         if "top_signame" not in sig:
             sig["top_signame"] = sig_name
+        else:
+            conn_type = True
 
         if "index" not in sig:
             sig["index"] = -1
@@ -481,6 +484,7 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('default', sig["default"]),
                              ('direction',
                               'out' if sig['act'] == "req" else 'in'),
+                             ('conn_type', conn_type),
                              ('index', index),
                              ('netname', netname + req_suffix)]))
             topcfg["inter_signal"]["external"].append(
@@ -491,6 +495,7 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('default', sig["default"]),
                              ('direction',
                               'in' if sig['act'] == "req" else 'out'),
+                             ('conn_type', conn_type),
                              ('index', index),
                              ('netname', netname + rsp_suffix)]))
         else:  # uni
@@ -506,6 +511,7 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('default', sig["default"]),
                              ('direction',
                               'out' if sig['act'] == "req" else 'in'),
+                             ('conn_type', conn_type),
                              ('index', index),
                              ('netname', netname)]))
 
@@ -814,6 +820,7 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
         if sig_i != -1:
             log.error("{item} cannot have index".format(item=item))
             total_error += 1
+
         sig_struct = find_intermodule_signal(topcfg["inter_signal"]["signals"],
                                              sig_m, sig_s)
         err, sig_struct = check_intermodule_field(sig_struct)

@@ -4,7 +4,7 @@
 
 `include "prim_assert.sv"
 
-module prim_generic_rom #(
+module prim_generic_rom import prim_rom_pkg::*; #(
   parameter  int Width       = 32,
   parameter  int Depth       = 2048, // 8kB default
   parameter      MemInitFile = "", // VMEM file to initialize the memory with
@@ -14,8 +14,12 @@ module prim_generic_rom #(
   input  logic             clk_i,
   input  logic             req_i,
   input  logic [Aw-1:0]    addr_i,
-  output logic [Width-1:0] rdata_o
+  output logic [Width-1:0] rdata_o,
+  input rom_cfg_t          cfg_i
 );
+
+  logic unused_cfg;
+  assign unused_cfg = ^cfg_i;
 
   logic [Width-1:0] mem [Depth];
 

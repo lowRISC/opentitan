@@ -171,8 +171,8 @@ module top_earlgrey_verilator (
     .usbdev_usb_ref_pulse_o       (                  ),
     .ast_tl_req_o                 (                  ),
     .ast_tl_rsp_i                 ( '0               ),
-    .ast_edn_edn_req_i            ( '0               ),
-    .ast_edn_edn_rsp_o            (                  ),
+    .ast_edn_req_i                ( '0               ),
+    .ast_edn_rsp_o                (                  ),
     .otp_ctrl_otp_ast_pwr_seq_o   (                  ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( '0               ),
     .flash_bist_enable_i          ( lc_ctrl_pkg::Off ),
@@ -200,6 +200,11 @@ module top_earlgrey_verilator (
     // Pad attributes
     .mio_attr_o                   ( ),
     .dio_attr_o                   ( ),
+
+    // Memory attributes
+    .ram_1p_cfg_i                 ('0),
+    .ram_2p_cfg_i                 ('0),
+    .rom_cfg_i                    ('0),
 
     // DFT signals
     .scan_rst_ni                  (1'b1),

@@ -21,6 +21,13 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
   input ast_pkg::ast_alert_req_t ast_alert_i,
   output ast_pkg::ast_alert_rsp_t ast_alert_o,
   input ast_pkg::ast_status_t ast_status_i,
+  input [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux_i,
+  output logic [ast_pkg::Pad2AstInWidth-1:0] pinmux2ast_o,
+
+  // Interface to pinmux
+  input [ast_pkg::Pad2AstInWidth-1:0] cio_ast_debug_in_i,
+  output logic [ast_pkg::Ast2PadOutWidth-1:0] cio_ast_debug_out_o,
+  output logic [ast_pkg::Ast2PadOutWidth-1:0] cio_ast_debug_out_en_o,
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -145,6 +152,14 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
       ast_alert_o.alerts_trig[i].n = ~reg2hw.alert_trig[i];
     end
   end
+
+  ///////////////////////////
+  // pinmux feedthrough to ast
+  ///////////////////////////
+
+  assign cio_ast_debug_out_o = ast2pinmux_i;
+  assign cio_ast_debug_out_en_o = '1;
+  assign pinmux2ast_o = cio_ast_debug_in_i;
 
 
 endmodule // sensor_ctrl

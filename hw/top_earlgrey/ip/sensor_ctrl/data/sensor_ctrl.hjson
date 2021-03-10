@@ -13,6 +13,18 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
+  available_input_list: [
+    { name: "ast_debug_in",
+      desc: "ast debug inputs from pinmux",
+      width: "10"
+    },
+  ],
+  available_output_list: [
+    { name: "ast_debug_out",
+      desc: "ast debug outputs to pinmux",
+      width: "10"
+    }
+  ],
   regwidth: "32",
   param_list: [
     { name:    "NumAlerts",
@@ -98,8 +110,6 @@
 
   // Define ast_struct package
   inter_signal_list: [
-
-    // should be defined by ast wrapper later
     { struct:  "ast_alert",
       type:    "req_rsp",
       name:    "ast_alert",
@@ -107,13 +117,29 @@
       package: "ast_pkg",
     },
 
-    // should be defined by ast wrapper later
     { struct:  "ast_status",
       type:    "uni",
       name:    "ast_status",
       act:     "rcv",
       package: "ast_pkg",
     },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "ast2pinmux",
+      act:     "rcv",
+      width:   10,
+      package: ""
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "pinmux2ast",
+      act:     "req",
+      width:   10,
+      package: ""
+    },
+
   ],
 
 registers: [

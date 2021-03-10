@@ -52,22 +52,18 @@ module top_earlgrey #(
 
 
   // Inter-module Signal External type
+  input  edn_pkg::edn_req_t       ast_edn_req_i,
+  output edn_pkg::edn_rsp_t       ast_edn_rsp_o,
+  output lc_ctrl_pkg::lc_tx_t       ast_lc_dft_en_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t       ram_1p_cfg_i,
+  input  prim_ram_2p_pkg::ram_2p_cfg_t       ram_2p_cfg_i,
+  input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
   input  logic       clk_main_i,
   input  logic       clk_io_i,
   input  logic       clk_usb_i,
   input  logic       clk_aon_i,
   output logic       clk_main_jitter_en_o,
-  output pwrmgr_pkg::pwr_ast_req_t       pwrmgr_ast_req_o,
-  input  pwrmgr_pkg::pwr_ast_rsp_t       pwrmgr_ast_rsp_i,
-  input  ast_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req_i,
-  output ast_pkg::ast_alert_rsp_t       sensor_ctrl_ast_alert_rsp_o,
-  input  ast_pkg::ast_status_t       sensor_ctrl_ast_status_i,
-  output logic       usbdev_usb_ref_val_o,
-  output logic       usbdev_usb_ref_pulse_o,
-  output tlul_pkg::tl_h2d_t       ast_tl_req_o,
-  input  tlul_pkg::tl_d2h_t       ast_tl_rsp_i,
-  output otp_ctrl_pkg::otp_ast_req_t       otp_ctrl_otp_ast_pwr_seq_o,
-  input  otp_ctrl_pkg::otp_ast_rsp_t       otp_ctrl_otp_ast_pwr_seq_h_i,
+  input  lc_ctrl_pkg::lc_tx_t       lc_clk_byp_ack_i,
   input  lc_ctrl_pkg::lc_tx_t       flash_bist_enable_i,
   input  logic       flash_power_down_h_i,
   input  logic       flash_power_ready_h_i,
@@ -76,9 +72,20 @@ module top_earlgrey #(
   output entropy_src_pkg::entropy_src_rng_req_t       es_rng_req_o,
   input  entropy_src_pkg::entropy_src_rng_rsp_t       es_rng_rsp_i,
   output lc_ctrl_pkg::lc_tx_t       lc_clk_byp_req_o,
-  input  lc_ctrl_pkg::lc_tx_t       lc_clk_byp_ack_i,
-  input  edn_pkg::edn_req_t       ast_edn_edn_req_i,
-  output edn_pkg::edn_rsp_t       ast_edn_edn_rsp_o,
+  output tlul_pkg::tl_h2d_t       ast_tl_req_o,
+  input  tlul_pkg::tl_d2h_t       ast_tl_rsp_i,
+  output pinmux_pkg::dft_strap_test_req_t       dft_strap_test_o,
+  output pwrmgr_pkg::pwr_ast_req_t       pwrmgr_ast_req_o,
+  input  pwrmgr_pkg::pwr_ast_rsp_t       pwrmgr_ast_rsp_i,
+  output otp_ctrl_pkg::otp_ast_req_t       otp_ctrl_otp_ast_pwr_seq_o,
+  input  otp_ctrl_pkg::otp_ast_rsp_t       otp_ctrl_otp_ast_pwr_seq_h_i,
+  input  ast_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req_i,
+  output ast_pkg::ast_alert_rsp_t       sensor_ctrl_ast_alert_rsp_o,
+  input  ast_pkg::ast_status_t       sensor_ctrl_ast_status_i,
+  output logic [9:0] pinmux2ast_o,
+  input  logic [9:0] ast2pinmux_i,
+  output logic       usbdev_usb_ref_val_o,
+  output logic       usbdev_usb_ref_pulse_o,
   output clkmgr_pkg::clkmgr_ast_out_t       clks_ast_o,
   output rstmgr_pkg::rstmgr_ast_out_t       rsts_ast_o,
   input                      scan_rst_ni, // reset used for test mode
@@ -105,9 +112,9 @@ module top_earlgrey #(
   import top_earlgrey_rnd_cnst_pkg::*;
 
   // Signals
-  logic [48:0] mio_p2d;
-  logic [52:0] mio_d2p;
-  logic [52:0] mio_d2p_en;
+  logic [58:0] mio_p2d;
+  logic [62:0] mio_d2p;
+  logic [62:0] mio_d2p_en;
   logic [20:0] dio_p2d;
   logic [20:0] dio_d2p;
   logic [20:0] dio_d2p_en;
@@ -214,6 +221,9 @@ module top_earlgrey #(
   // pinmux_aon
   // aon_timer_aon
   // sensor_ctrl_aon
+  logic [9:0] cio_sensor_ctrl_aon_ast_debug_in_p2d;
+  logic [9:0] cio_sensor_ctrl_aon_ast_debug_out_d2p;
+  logic [9:0] cio_sensor_ctrl_aon_ast_debug_out_en_d2p;
   // sram_ctrl_ret_aon
   // flash_ctrl
   logic        cio_flash_ctrl_tck_p2d;
@@ -397,6 +407,9 @@ module top_earlgrey #(
 
 
   // define inter-module signals
+  prim_ram_1p_pkg::ram_1p_cfg_t       ast_ram_1p_cfg;
+  prim_ram_2p_pkg::ram_2p_cfg_t       ast_ram_2p_cfg;
+  prim_rom_pkg::rom_cfg_t       ast_rom_cfg;
   alert_pkg::alert_crashdump_t       alert_handler_crashdump;
   prim_esc_pkg::esc_rx_t [3:0] alert_handler_esc_rx;
   prim_esc_pkg::esc_tx_t [3:0] alert_handler_esc_tx;
@@ -571,8 +584,12 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       main_tl_debug_mem_rsp;
 
   // define mixed connection to port
-  assign edn0_edn_req[2] = ast_edn_edn_req_i;
-  assign ast_edn_edn_rsp_o = edn0_edn_rsp[2];
+  assign edn0_edn_req[2] = ast_edn_req_i;
+  assign ast_edn_rsp_o = edn0_edn_rsp[2];
+  assign ast_lc_dft_en_o = lc_ctrl_lc_dft_en;
+  assign ast_ram_1p_cfg = ram_1p_cfg_i;
+  assign ast_ram_2p_cfg = ram_2p_cfg_i;
+  assign ast_rom_cfg = rom_cfg_i;
 
   // define partial inter-module tie-off
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp1;
@@ -765,7 +782,7 @@ module top_earlgrey #(
     .addr_i   (rom_addr),
     .rdata_o  (rom_rdata),
     .rvalid_o (rom_rvalid),
-    .cfg_i    ('0) // tied off for now
+    .cfg_i    (rom_cfg_i)
   );
 
   // sram device
@@ -808,8 +825,7 @@ module top_earlgrey #(
   prim_ram_1p_scr #(
     .Width(39),
     .Depth(32768),
-    .EnableParity(0),
-    .CfgWidth(8)
+    .EnableParity(0)
   ) u_ram1p_ram_main (
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
@@ -830,7 +846,7 @@ module top_earlgrey #(
     .rerror_o    (ram_main_rerror),
     .raddr_o     (sram_ctrl_main_sram_scr_rsp.raddr),
     .intg_error_o(ram_main_intg_error),
-    .cfg_i       ( '0 )
+    .cfg_i       (ram_1p_cfg_i)
   );
 
   assign sram_ctrl_main_sram_scr_rsp.rerror = ram_main_rerror;
@@ -875,8 +891,7 @@ module top_earlgrey #(
   prim_ram_1p_scr #(
     .Width(39),
     .Depth(1024),
-    .EnableParity(0),
-    .CfgWidth(8)
+    .EnableParity(0)
   ) u_ram1p_ram_ret_aon (
     .clk_i   (clkmgr_aon_clocks.clk_io_div4_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
@@ -897,7 +912,7 @@ module top_earlgrey #(
     .rerror_o    (ram_ret_aon_rerror),
     .raddr_o     (sram_ctrl_ret_aon_sram_scr_rsp.raddr),
     .intg_error_o(ram_ret_aon_intg_error),
-    .cfg_i       ( '0 )
+    .cfg_i       (ram_1p_cfg_i)
   );
 
   assign sram_ctrl_ret_aon_sram_scr_rsp.rerror = ram_ret_aon_rerror;
@@ -1116,6 +1131,7 @@ module top_earlgrey #(
       .intr_txunderflow_o (intr_spi_device_txunderflow),
 
       // Inter-module signals
+      .ram_cfg_i(ast_ram_2p_cfg),
       .tl_i(spi_device_tl_req),
       .tl_o(spi_device_tl_rsp),
       .scanmode_i,
@@ -1394,6 +1410,7 @@ module top_earlgrey #(
       .usb_aon_wake_ack_o(usbdev_usb_aon_wake_ack),
       .usb_suspend_o(usbdev_usb_suspend),
       .usb_state_debug_i(pinmux_aon_usb_state_debug),
+      .ram_cfg_i(ast_ram_2p_cfg),
       .tl_i(usbdev_tl_req),
       .tl_o(usbdev_tl_rsp),
 
@@ -1642,7 +1659,7 @@ module top_earlgrey #(
       .rv_jtag_i(pinmux_aon_rv_jtag_rsp),
       .dft_jtag_o(),
       .dft_jtag_i(jtag_pkg::JTAG_RSP_DEFAULT),
-      .dft_strap_test_o(),
+      .dft_strap_test_o(dft_strap_test_o),
       .sleep_en_i(pwrmgr_aon_low_power),
       .strap_en_i(pwrmgr_aon_strap),
       .aon_wkup_req_o(pwrmgr_aon_wakeups[0]),
@@ -1704,6 +1721,13 @@ module top_earlgrey #(
 
   sensor_ctrl u_sensor_ctrl_aon (
 
+      // Input
+      .cio_ast_debug_in_i     (cio_sensor_ctrl_aon_ast_debug_in_p2d),
+
+      // Output
+      .cio_ast_debug_out_o    (cio_sensor_ctrl_aon_ast_debug_out_d2p),
+      .cio_ast_debug_out_en_o (cio_sensor_ctrl_aon_ast_debug_out_en_d2p),
+
       // [4]: recov_as
       // [5]: recov_cg
       // [6]: recov_gd
@@ -1718,6 +1742,8 @@ module top_earlgrey #(
       .ast_alert_i(sensor_ctrl_ast_alert_req_i),
       .ast_alert_o(sensor_ctrl_ast_alert_rsp_o),
       .ast_status_i(sensor_ctrl_ast_status_i),
+      .ast2pinmux_i(ast2pinmux_i),
+      .pinmux2ast_o(pinmux2ast_o),
       .tl_i(sensor_ctrl_aon_tl_req),
       .tl_o(sensor_ctrl_aon_tl_rsp),
 
@@ -2105,6 +2131,7 @@ module top_earlgrey #(
       .edn_urnd_o(edn0_edn_req[6]),
       .edn_urnd_i(edn0_edn_rsp[6]),
       .idle_o(clkmgr_aon_idle[3]),
+      .ram_cfg_i(ast_ram_1p_cfg),
       .tl_i(otbn_tl_req),
       .tl_o(otbn_tl_rsp),
 
@@ -2472,6 +2499,7 @@ module top_earlgrey #(
 
   // Pinmux connections
   assign mio_d2p = {
+    cio_sensor_ctrl_aon_ast_debug_out_d2p,
     cio_flash_ctrl_tdo_d2p,
     cio_spi_host1_csb_d2p,
     cio_spi_host1_sck_d2p,
@@ -2493,6 +2521,7 @@ module top_earlgrey #(
     cio_gpio_gpio_d2p
   };
   assign mio_d2p_en = {
+    cio_sensor_ctrl_aon_ast_debug_out_en_d2p,
     cio_flash_ctrl_tdo_en_d2p,
     cio_spi_host1_csb_en_d2p,
     cio_spi_host1_sck_en_d2p,
@@ -2514,6 +2543,7 @@ module top_earlgrey #(
     cio_gpio_gpio_en_d2p
   };
   assign {
+    cio_sensor_ctrl_aon_ast_debug_in_p2d,
     cio_flash_ctrl_tdi_p2d,
     cio_flash_ctrl_tms_p2d,
     cio_flash_ctrl_tck_p2d,

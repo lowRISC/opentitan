@@ -375,6 +375,12 @@ module top_earlgrey_asic (
   logic scan_rst_n;
   logic scan_en;
   lc_ctrl_pkg::lc_tx_t scanmode;
+  lc_ctrl_pkg::lc_tx_t dft_en;
+  pinmux_pkg::dft_strap_test_req_t dft_strap_test;
+
+  // Debug connections
+  logic [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux;
+  logic [ast_pkg::Pad2AstInWidth-1:0] pinmux2ast;
 
   // Jitter enable
   logic jen;
@@ -396,6 +402,54 @@ module top_earlgrey_asic (
   // TODO: need to mux the external clock.
   logic ext_clk;
   assign ext_clk = 1'b0;
+
+  // Memory configuration connections
+  ast_pkg::spm_rm_t ast_ram_1p_cfg;
+  ast_pkg::spm_rm_t ast_rf_cfg;
+  ast_pkg::spm_rm_t ast_rom_cfg;
+  ast_pkg::dpm_rm_t ast_ram_2p_fcfg;
+  ast_pkg::dpm_rm_t ast_ram_2p_lcfg;
+
+  prim_ram_1p_pkg::ram_1p_cfg_t ram_1p_cfg;
+  prim_ram_2p_pkg::ram_2p_cfg_t ram_2p_cfg;
+  prim_rom_pkg::rom_cfg_t rom_cfg;
+
+  // conversion from ast structure to memory centric structures
+  assign ram_1p_cfg = '{
+    ram_cfg: '{
+                cfg_en: ast_ram_1p_cfg.marg_en,
+                cfg:    ast_ram_1p_cfg.marg
+              },
+    rf_cfg:  '{
+                cfg_en: ast_rf_cfg.marg_en,
+                cfg:    ast_rf_cfg.marg
+              }
+  };
+
+  assign ram_2p_cfg = '{
+    a_ram_fcfg: '{
+                   cfg_en: ast_ram_2p_fcfg.marg_en_a,
+                   cfg:    ast_ram_2p_fcfg.marg_a
+                 },
+    a_ram_lcfg: '{
+                   cfg_en: ast_ram_2p_lcfg.marg_en_a,
+                   cfg:    ast_ram_2p_lcfg.marg_a
+                 },
+    b_ram_fcfg: '{
+                   cfg_en: ast_ram_2p_fcfg.marg_en_b,
+                   cfg:    ast_ram_2p_fcfg.marg_b
+                 },
+    b_ram_lcfg: '{
+                   cfg_en: ast_ram_2p_lcfg.marg_en_b,
+                   cfg:    ast_ram_2p_lcfg.marg_b
+                 }
+  };
+
+  assign rom_cfg = '{
+    cfg_en: ast_rom_cfg.marg_en,
+    cfg: ast_rom_cfg.marg
+  };
+
 
   // AST does not use all clocks / resets forwarded to it
   logic unused_slow_clk_en;
@@ -528,12 +582,11 @@ module top_earlgrey_asic (
     .ot_alert_ack_i        ( ast_alert_rsp.alerts_ack[OtSel]     ),
     .ot_alert_o            ( ast_alert_req.alerts[OtSel]         ),
     // dft
-    .dft_strap_test_i      ( '0               ),
-    .lc_dft_en_i           ( lc_ctrl_pkg::Off ),
-    // pad mux related
-    //TODO: Connect to pinmux
-    .padmux2ast_i          ( '0 ),
-    .ast2padmux_o          ( ),
+    .dft_strap_test_i      ( dft_strap_test   ),
+    .lc_dft_en_i           ( dft_en           ),
+    // pinmux related
+    .padmux2ast_i          ( pinmux2ast ),
+    .ast2padmux_o          ( ast2pinmux ),
     //TODO: Connect to PAD
     .pad2ast_t0_ai         ( '0 ),
     .pad2ast_t1_ai         ( '0 ),
@@ -543,11 +596,11 @@ module top_earlgrey_asic (
     .lc_clk_byp_ack_o      ( lc_ast_clk_byp_ack ),
     .flash_bist_en_o       ( flash_bist_enable  ),
     //TODO: Connect to memories
-    .dpram_rmf_o           ( ),
-    .dpram_rml_o           ( ),
-    .spram_rm_o            ( ),
-    .sprgf_rm_o            ( ),
-    .sprom_rm_o            ( ),
+    .dpram_rmf_o           ( ast_ram_2p_fcfg ),
+    .dpram_rml_o           ( ast_ram_2p_lcfg ),
+    .spram_rm_o            ( ast_ram_1p_cfg  ),
+    .sprgf_rm_o            ( ast_rf_cfg      ),
+    .sprom_rm_o            ( ast_rom_cfg     ),
     // scan
     .dft_scan_md_o         ( scanmode ),
     .scan_shift_en_o       ( scan_en ),
@@ -634,8 +687,8 @@ module top_earlgrey_asic (
     .usbdev_usb_ref_pulse_o       ( usb_ref_val                ),
     .ast_tl_req_o                 ( base_ast_bus               ),
     .ast_tl_rsp_i                 ( ast_base_bus               ),
-    .ast_edn_edn_req_i            ( ast_edn_edn_req            ),
-    .ast_edn_edn_rsp_o            ( ast_edn_edn_rsp            ),
+    .ast_edn_req_i                ( ast_edn_edn_req            ),
+    .ast_edn_rsp_o                ( ast_edn_edn_rsp            ),
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
     .flash_bist_enable_i          ( flash_bist_enable          ),
@@ -645,6 +698,8 @@ module top_earlgrey_asic (
     .es_rng_rsp_i                 ( es_rng_rsp                 ),
     .lc_clk_byp_req_o             ( lc_ast_clk_byp_req         ),
     .lc_clk_byp_ack_i             ( lc_ast_clk_byp_ack         ),
+    .pinmux2ast_o                 ( pinmux2ast                 ),
+    .ast2pinmux_i                 ( ast2pinmux                 ),
     // TODO: connect these
     .flash_test_mode_a_i          ('0                          ),
     .flash_test_voltage_h_i       ('0                          ),
@@ -663,7 +718,14 @@ module top_earlgrey_asic (
     .mio_attr_o                   ( mio_attr                   ),
     .dio_attr_o                   ( dio_attr                   ),
 
+    // Memory attributes
+    .ram_1p_cfg_i                 ( ram_1p_cfg                 ),
+    .ram_2p_cfg_i                 ( ram_2p_cfg                 ),
+    .rom_cfg_i                    ( rom_cfg                    ),
+
     // DFT signals
+    .ast_lc_dft_en_o              ( dft_en                     ),
+    .dft_strap_test_o             ( dft_strap_test             ),
     .scan_rst_ni                  ( scan_rst_n                 ),
     .scan_en_i                    ( scan_en                    ),
     .scanmode_i                   ( scanmode                   )
