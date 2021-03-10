@@ -7,7 +7,6 @@
 package csrng_reg_pkg;
 
   // Param list
-  parameter int NHwApps = 2;
   parameter int NumAlerts = 1;
 
   // Address width within the block

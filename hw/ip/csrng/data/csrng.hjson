@@ -13,12 +13,6 @@
       local: "false",
       expose: "true"
     },
-    { name: "NHwApps",
-      type: "int",
-      default: "2",
-      desc: "Number of CSRNG hardware applications",
-      local: "true"
-    }
   ],
   interrupt_list: [
     { name: "cs_cmd_req_done"
