@@ -58,13 +58,12 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   sw_test_status_vif  sw_test_status_vif;
 
   // ext component cfgs
-  rand uart_agent_cfg       m_uart_agent_cfg;
+  rand uart_agent_cfg       m_uart_agent_cfgs[NUM_UARTS];
   rand jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
   rand spi_agent_cfg        m_spi_agent_cfg;
 
   `uvm_object_utils_begin(chip_env_cfg)
     `uvm_field_int   (stub_cpu,               UVM_DEFAULT)
-    `uvm_field_object(m_uart_agent_cfg,       UVM_DEFAULT)
     `uvm_field_object(m_jtag_riscv_agent_cfg, UVM_DEFAULT)
     `uvm_field_object(m_spi_agent_cfg,        UVM_DEFAULT)
   `uvm_object_utils_end
@@ -89,7 +88,9 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
     m_tl_agent_cfg.valid_a_source_width = 6;
 
     // create uart agent config obj
-    m_uart_agent_cfg = uart_agent_cfg::type_id::create("m_uart_agent_cfg");
+    foreach (m_uart_agent_cfgs[i]) begin
+      m_uart_agent_cfgs[i] = uart_agent_cfg::type_id::create($sformatf("m_uart_agent_cfg%0d", i));
+    end
 
     // create jtag agent config obj
     m_jtag_riscv_agent_cfg = jtag_riscv_agent_cfg::type_id::create("m_jtag_riscv_agent_cfg");

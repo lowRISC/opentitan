@@ -17,8 +17,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // Backdoor load the sw test image, setup UART, logger and test status interfaces.
   virtual task cpu_init();
     // TODO: Fixing this for now - need to find a way to pass this on to the SW test.
-    cfg.m_uart_agent_cfg.set_parity(1'b0, 1'b0);
-    cfg.m_uart_agent_cfg.set_baud_rate(cfg.uart_baud_rate);
+    foreach (cfg.m_uart_agent_cfgs[i]) begin
+      cfg.m_uart_agent_cfgs[i].set_parity(1'b0, 1'b0);
+      cfg.m_uart_agent_cfgs[i].set_baud_rate(cfg.uart_baud_rate);
+    end
 
     // initialize the sw logger interface
     foreach (cfg.sw_images[i]) begin
