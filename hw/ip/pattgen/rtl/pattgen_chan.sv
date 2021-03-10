@@ -34,6 +34,7 @@ module pattgen_chan
   logic [9:0]  rep_cnt_d;
   logic [9:0]  rep_cnt_q;
 
+  logic        complete_en;
   logic        complete_d;
   logic        complete_q;
   logic        complete_q2;
