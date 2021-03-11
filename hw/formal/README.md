@@ -32,7 +32,7 @@ TileLink-UL standard.
 There are two types of assertions:
 *   **Concurrent assertions** can span time and are triggered by a clock edge.
 See the two examples in the previous section.
-*   **Immediate assertions** do not depend upon a clock edge. They are usually
+*   **Immediate assertions** do not depend upon a clock edge. They are typically
 used in an initial block to check for correct parameter settings. Example:
 ```
 initial begin
@@ -228,9 +228,9 @@ Without symbolic variables, the above assertions can be implemented as below:
 In contrast, symbolic variable can abstract the design by declaring the index with
 constraints. To ensure the symbolic variable performs the expected behaviors,
 two assumptions need to be written:
-* Constraint the symoblic variable with the correct bound
+* Constraint the symbolic variable with the correct bound.
 * Randomize the variable at the beginning of the simulation, then keep it stable
-  throughout the rest of the simulation
+  throughout the rest of the simulation.
 ```systemverilog
   logic [$clog2(N_SOURCE)-1:0] src_sel;
   `ASSUME_FPV(IsrcRange_M, src_sel >= 0 && src_sel < N_SOURCE, clk_i, !rst_ni)
