@@ -6,8 +6,9 @@
   other_clock_list: [
     "clk_aon_i"
   ]
-  bus_device: "tlul",
-  bus_host: "none",
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
   reset_primary: "rst_ni",
   other_reset_list: [
     "rst_slow_ni"
