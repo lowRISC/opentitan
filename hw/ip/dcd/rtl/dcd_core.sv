@@ -85,6 +85,17 @@ module dcd_core import dcd_reg_pkg::* ; (
   //CFG clock domain synchronized write enable when interrupt is triggered
   logic cfg_chn_val_intr_we;//Either oneshot_done or dcd_done
 
+  // tieoff unused signals
+  logic [NumAdcFilter-1:0] unused_cond_qe;
+  logic unused_lp_mode_qe;
+  for (genvar i=0; i < NumAdcFilter; i++) begin : gen_unused_tieoff
+    assign unused_cond_qe[i] = adc_chn0_filter_ctl_i[i].cond.qe ^
+                               adc_chn1_filter_ctl_i[i].cond.qe;
+  end
+
+  assign unused_lp_mode_qe = adc_pd_ctl_i.lp_mode.qe;
+
+
   //synchronize between cfg(24MHz) and always-on(200KHz)
   prim_flop_2sync # (
     .Width(1)

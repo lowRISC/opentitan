@@ -70,10 +70,6 @@ package dcd_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [1:0]  q;
-      logic        qe;
-    } min_ext;
-    struct packed {
       logic [9:0] q;
       logic        qe;
     } min_v;
@@ -81,10 +77,6 @@ package dcd_reg_pkg;
       logic        q;
       logic        qe;
     } cond;
-    struct packed {
-      logic [1:0]  q;
-      logic        qe;
-    } max_ext;
     struct packed {
       logic [9:0] q;
       logic        qe;
@@ -93,10 +85,6 @@ package dcd_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [1:0]  q;
-      logic        qe;
-    } min_ext;
-    struct packed {
       logic [9:0] q;
       logic        qe;
     } min_v;
@@ -104,10 +92,6 @@ package dcd_reg_pkg;
       logic        q;
       logic        qe;
     } cond;
-    struct packed {
-      logic [1:0]  q;
-      logic        qe;
-    } max_ext;
     struct packed {
       logic [9:0] q;
       logic        qe;
@@ -271,16 +255,16 @@ package dcd_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    dcd_reg2hw_intr_state_reg_t intr_state; // [561:561]
-    dcd_reg2hw_intr_enable_reg_t intr_enable; // [560:560]
-    dcd_reg2hw_intr_test_reg_t intr_test; // [559:558]
-    dcd_reg2hw_adc_en_ctl_reg_t adc_en_ctl; // [557:556]
-    dcd_reg2hw_adc_pd_ctl_reg_t adc_pd_ctl; // [555:524]
-    dcd_reg2hw_adc_lp_sample_ctl_reg_t adc_lp_sample_ctl; // [523:515]
-    dcd_reg2hw_adc_sample_ctl_reg_t adc_sample_ctl; // [514:498]
-    dcd_reg2hw_adc_fsm_rst_reg_t adc_fsm_rst; // [497:497]
-    dcd_reg2hw_adc_chn0_filter_ctl_mreg_t [7:0] adc_chn0_filter_ctl; // [496:257]
-    dcd_reg2hw_adc_chn1_filter_ctl_mreg_t [7:0] adc_chn1_filter_ctl; // [256:17]
+    dcd_reg2hw_intr_state_reg_t intr_state; // [465:465]
+    dcd_reg2hw_intr_enable_reg_t intr_enable; // [464:464]
+    dcd_reg2hw_intr_test_reg_t intr_test; // [463:462]
+    dcd_reg2hw_adc_en_ctl_reg_t adc_en_ctl; // [461:460]
+    dcd_reg2hw_adc_pd_ctl_reg_t adc_pd_ctl; // [459:428]
+    dcd_reg2hw_adc_lp_sample_ctl_reg_t adc_lp_sample_ctl; // [427:419]
+    dcd_reg2hw_adc_sample_ctl_reg_t adc_sample_ctl; // [418:402]
+    dcd_reg2hw_adc_fsm_rst_reg_t adc_fsm_rst; // [401:401]
+    dcd_reg2hw_adc_chn0_filter_ctl_mreg_t [7:0] adc_chn0_filter_ctl; // [400:209]
+    dcd_reg2hw_adc_chn1_filter_ctl_mreg_t [7:0] adc_chn1_filter_ctl; // [208:17]
     dcd_reg2hw_adc_wakeup_ctl_reg_t adc_wakeup_ctl; // [16:9]
     dcd_reg2hw_adc_intr_ctl_reg_t adc_intr_ctl; // [8:0]
   } dcd_reg2hw_t;
@@ -327,7 +311,7 @@ package dcd_reg_pkg;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] DCD_INTR_TEST_RESVAL = 1'h 0;
-  parameter logic [0:0] DCD_INTR_TEST_DEBUG_CABLE_UPDATE_RESVAL = 1'h 0;
+  parameter logic [0:0] DCD_INTR_TEST_DEBUG_CABLE_RESVAL = 1'h 0;
 
   // Register index
   typedef enum int {

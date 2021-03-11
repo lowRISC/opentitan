@@ -82,6 +82,9 @@ tl_device_t xbar_devices[$] = '{
     '{"aon_timer_aon", '{
         '{32'h40470000, 32'h40470fff}
     }},
+    '{"adc_ctrl_aon", '{
+        '{32'h40440000, 32'h40440fff}
+    }},
     '{"ast", '{
         '{32'h40480000, 32'h40480fff}
 }}};
@@ -114,5 +117,6 @@ tl_host_t xbar_hosts[$] = '{
         "alert_handler",
         "ast",
         "sram_ctrl_ret_aon",
-        "aon_timer_aon"}}
+        "aon_timer_aon",
+        "adc_ctrl_aon"}}
 };

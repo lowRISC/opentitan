@@ -399,6 +399,10 @@ module top_earlgrey_asic (
   import rstmgr_pkg::DomainAonSel;
   import rstmgr_pkg::Domain0Sel;
 
+  // adc connections
+  ast_pkg::adc_ast_req_t adc_req;
+  ast_pkg::adc_ast_rsp_t adc_rsp;
+
   // TODO: need to mux the external clock.
   logic ext_clk;
   assign ext_clk = 1'b0;
@@ -464,6 +468,7 @@ module top_earlgrey_asic (
   logic [PowerDomains-1:0] unused_usb_sys_aon_rst;
   logic unused_ast_sys_io_div4_rst;
   logic unused_sensor_ctrl_sys_io_div4_rst;
+  logic unused_adc_ctrl_sys_io_div4_rst;
   logic unused_entropy_sys_rst;
   logic unused_edn_sys_rst;
   assign unused_usb_usb_rst = rsts_ast.rst_ast_usbdev_usb_n[DomainAonSel];
@@ -473,6 +478,8 @@ module top_earlgrey_asic (
     rsts_ast.rst_ast_ast_sys_io_div4_n[Domain0Sel];
   assign unused_sensor_ctrl_sys_io_div4_rst =
     rsts_ast.rst_ast_sensor_ctrl_aon_sys_io_div4_n[Domain0Sel];
+  assign unused_adc_ctrl_sys_io_div4_rst =
+    rsts_ast.rst_ast_adc_ctrl_aon_sys_io_div4_n[Domain0Sel];
   assign unused_entropy_sys_rst = rsts_ast.rst_ast_entropy_src_sys_n[DomainAonSel];
   assign unused_edn_sys_rst = rsts_ast.rst_ast_edn0_sys_n[DomainAonSel];
 
@@ -490,8 +497,8 @@ module top_earlgrey_asic (
     .tl_o                  ( ast_base_bus ),
     // buffered clocks & resets
     // Reset domain connection is manual at the moment
-    .clk_ast_adc_i         ( 1'b0 ),
-    .rst_ast_adc_ni        ( 1'b0 ),
+    .clk_ast_adc_i         ( clks_ast.clk_ast_adc_ctrl_aon_io_div4_peri ),
+    .rst_ast_adc_ni        ( rsts_ast.rst_ast_adc_ctrl_aon_sys_io_div4_n[DomainAonSel] ),
     .clk_ast_alert_i       ( clks_ast.clk_ast_sensor_ctrl_aon_io_div4_secure ),
     .rst_ast_alert_ni      ( rsts_ast.rst_ast_sensor_ctrl_aon_sys_io_div4_n[DomainAonSel] ),
     .clk_ast_es_i          ( clks_ast.clk_ast_edn0_main_secure ),
@@ -545,13 +552,12 @@ module top_earlgrey_asic (
     // USB IO Pull-up Calibration Setting
     .usb_io_pu_cal_o       ( usb_io_pu_cal ),
     // adc
-    // TODO: Connect to do adc_ctrl when instantiated
-    .adc_pd_i              ( '0 ),
-    .adc_a0_ai             ( '0 ),
-    .adc_a1_ai             ( '0 ),
-    .adc_chnsel_i          ( '0 ),
-    .adc_d_o               (  ),
-    .adc_d_val_o           (  ),
+    .adc_a0_ai             ( CC1 ),
+    .adc_a1_ai             ( CC2 ),
+    .adc_pd_i              ( adc_req.pd ),
+    .adc_chnsel_i          ( adc_req.channel_sel ),
+    .adc_d_o               ( adc_rsp.data ),
+    .adc_d_val_o           ( adc_rsp.data_valid ),
     // rng
     .rng_en_i              ( es_rng_req.rng_enable ),
     .rng_fips_i            ( '0 ),
@@ -688,6 +694,8 @@ module top_earlgrey_asic (
     .usbdev_usb_ref_pulse_o       ( usb_ref_val                ),
     .ast_tl_req_o                 ( base_ast_bus               ),
     .ast_tl_rsp_i                 ( ast_base_bus               ),
+    .adc_req_o                    ( adc_req                    ),
+    .adc_rsp_i                    ( adc_rsp                    ),
     .ast_edn_req_i                ( ast_edn_edn_req            ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp            ),
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),

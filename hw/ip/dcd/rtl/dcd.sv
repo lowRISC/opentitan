@@ -44,8 +44,8 @@ module dcd import dcd_pkg::*;(
   dcd_reg2hw_t reg2hw;
   dcd_hw2reg_t hw2reg;
 
-  logic nc_intg_err_o;//FIXME
 
+  // TODO: hookup integrity error output
   // Register module
   dcd_reg_top u_reg (
     .clk_i(clk_i),
@@ -54,7 +54,7 @@ module dcd import dcd_pkg::*;(
     .tl_o(tl_o),
     .reg2hw(reg2hw),
     .hw2reg(hw2reg),
-    .intg_err_o(nc_intg_err_o),
+    .intg_err_o(),
     .devmode_i  (1'b1)
   );
 
