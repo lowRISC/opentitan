@@ -2703,6 +2703,48 @@
       }
     }
     {
+      name: pwm_aon
+      type: pwm
+      clock_srcs:
+      {
+        clk_i: io_div4
+        clk_core_i: aon
+      }
+      clock_group: powerup
+      reset_connections:
+      {
+        rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]
+        rst_core_ni: rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel]
+      }
+      domain: Aon
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
+        clk_core_i: clkmgr_aon_clocks.clk_aon_powerup
+      }
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: pwm_aon
+          default: ""
+          end_idx: -1
+          top_signame: pwm_aon_tl
+          index: -1
+        }
+      ]
+      base_addrs:
+      {
+        null: 0x40450000
+      }
+    }
+    {
       name: pinmux_aon
       type: pinmux
       clock_srcs:
@@ -5851,6 +5893,10 @@
       [
         peri.tl_pattgen
       ]
+      pwm_aon.tl:
+      [
+        peri.tl_pwm_aon
+      ]
       gpio.tl:
       [
         peri.tl_gpio
@@ -6745,6 +6791,7 @@
           aon_timer_aon
           adc_ctrl_aon
           sysrst_ctrl_aon
+          pwm_aon
         ]
       }
       nodes:
@@ -6897,6 +6944,24 @@
           [
             {
               base_addr: 0x400e0000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline_byp: "true"
+        }
+        {
+          name: pwm_aon
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: pwm
+          addr_range:
+          [
+            {
+              base_addr: 0x40450000
               size_byte: 0x1000
             }
           ]
@@ -7375,6 +7440,18 @@
           inst_name: peri
           default: ""
           top_signame: pattgen_tl
+          index: -1
+        }
+        {
+          name: tl_pwm_aon
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: peri
+          default: ""
+          top_signame: pwm_aon_tl
           index: -1
         }
         {
@@ -8463,6 +8540,14 @@
         attr: ""
       }
       {
+        instance: pwm_aon
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+        attr: ""
+      }
+      {
         instance: sysrst_ctrl_aon
         port: ac_present
         connection: muxed
@@ -9544,6 +9629,66 @@
         glob_idx: 62
       }
       {
+        name: pwm_aon_pwm
+        width: 6
+        type: output
+        idx: 0
+        pad: ""
+        attr: ""
+        connection: muxed
+        glob_idx: 63
+      }
+      {
+        name: pwm_aon_pwm
+        width: 6
+        type: output
+        idx: 1
+        pad: ""
+        attr: ""
+        connection: muxed
+        glob_idx: 64
+      }
+      {
+        name: pwm_aon_pwm
+        width: 6
+        type: output
+        idx: 2
+        pad: ""
+        attr: ""
+        connection: muxed
+        glob_idx: 65
+      }
+      {
+        name: pwm_aon_pwm
+        width: 6
+        type: output
+        idx: 3
+        pad: ""
+        attr: ""
+        connection: muxed
+        glob_idx: 66
+      }
+      {
+        name: pwm_aon_pwm
+        width: 6
+        type: output
+        idx: 4
+        pad: ""
+        attr: ""
+        connection: muxed
+        glob_idx: 67
+      }
+      {
+        name: pwm_aon_pwm
+        width: 6
+        type: output
+        idx: 5
+        pad: ""
+        attr: ""
+        connection: muxed
+        glob_idx: 68
+      }
+      {
         name: sysrst_ctrl_aon_bat_disable
         width: 1
         type: output
@@ -9551,7 +9696,7 @@
         pad: ""
         attr: ""
         connection: muxed
-        glob_idx: 63
+        glob_idx: 69
       }
       {
         name: sysrst_ctrl_aon_ec_rst_out_l
@@ -9571,7 +9716,7 @@
         pad: ""
         attr: ""
         connection: muxed
-        glob_idx: 64
+        glob_idx: 70
       }
       {
         name: sysrst_ctrl_aon_key1_out
@@ -9581,7 +9726,7 @@
         pad: ""
         attr: ""
         connection: muxed
-        glob_idx: 65
+        glob_idx: 71
       }
       {
         name: sysrst_ctrl_aon_key2_out
@@ -9591,7 +9736,7 @@
         pad: ""
         attr: ""
         connection: muxed
-        glob_idx: 66
+        glob_idx: 72
       }
       {
         name: sysrst_ctrl_aon_pwrb_out
@@ -9617,7 +9762,7 @@
       {
         inouts: 42
         inputs: 13
-        outputs: 25
+        outputs: 31
         pads: 47
       }
     }
@@ -12643,6 +12788,19 @@
         index: -1
       }
       {
+        name: tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: pwm_aon
+        default: ""
+        end_idx: -1
+        top_signame: pwm_aon_tl
+        index: -1
+      }
+      {
         name: lc_hw_debug_en
         struct: lc_tx
         package: lc_ctrl_pkg
@@ -14615,6 +14773,18 @@
         inst_name: peri
         default: ""
         top_signame: pattgen_tl
+        index: -1
+      }
+      {
+        name: tl_pwm_aon
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: peri
+        default: ""
+        top_signame: pwm_aon_tl
         index: -1
       }
       {
@@ -16974,6 +17144,28 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: pattgen_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: pwm_aon_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: pwm_aon_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

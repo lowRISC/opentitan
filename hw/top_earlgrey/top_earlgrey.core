@@ -21,6 +21,7 @@ filesets:
       - lowrisc:ip:spi_host
       - lowrisc:ip:i2c
       - lowrisc:ip:pattgen
+      - lowrisc:ip:pwm
       - lowrisc:ip:aes
       - lowrisc:ip:entropy_src
       - lowrisc:ip:csrng

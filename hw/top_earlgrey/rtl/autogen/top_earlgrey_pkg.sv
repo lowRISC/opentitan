@@ -231,6 +231,16 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_ADC_CTRL_AON_SIZE_BYTES = 32'h1000;
 
   /**
+   * Peripheral base address for pwm_aon in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_PWM_AON_BASE_ADDR = 32'h40450000;
+
+  /**
+   * Peripheral size in bytes for pwm_aon in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_PWM_AON_SIZE_BYTES = 32'h1000;
+
+  /**
    * Peripheral base address for pinmux_aon in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_PINMUX_AON_BASE_ADDR = 32'h40460000;
@@ -595,11 +605,17 @@ package top_earlgrey_pkg;
     MioOutSensorCtrlAonAstDebugOut7 = 60,
     MioOutSensorCtrlAonAstDebugOut8 = 61,
     MioOutSensorCtrlAonAstDebugOut9 = 62,
-    MioOutSysrstCtrlAonBatDisable = 63,
-    MioOutSysrstCtrlAonKey0Out = 64,
-    MioOutSysrstCtrlAonKey1Out = 65,
-    MioOutSysrstCtrlAonKey2Out = 66,
-    MioOutCount = 67
+    MioOutPwmAonPwm0 = 63,
+    MioOutPwmAonPwm1 = 64,
+    MioOutPwmAonPwm2 = 65,
+    MioOutPwmAonPwm3 = 66,
+    MioOutPwmAonPwm4 = 67,
+    MioOutPwmAonPwm5 = 68,
+    MioOutSysrstCtrlAonBatDisable = 69,
+    MioOutSysrstCtrlAonKey0Out = 70,
+    MioOutSysrstCtrlAonKey1Out = 71,
+    MioOutSysrstCtrlAonKey2Out = 72,
+    MioOutCount = 73
   } mio_out_e;
 
   // Enumeration for DIO signals, used on both the top and chip-levels.

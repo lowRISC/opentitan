@@ -117,8 +117,8 @@ module top_earlgrey #(
 
   // Signals
   logic [54:0] mio_p2d;
-  logic [66:0] mio_d2p;
-  logic [66:0] mio_en_d2p;
+  logic [72:0] mio_d2p;
+  logic [72:0] mio_en_d2p;
   logic [23:0] dio_p2d;
   logic [23:0] dio_d2p;
   logic [23:0] dio_en_d2p;
@@ -244,6 +244,9 @@ module top_earlgrey #(
   logic        cio_sysrst_ctrl_aon_pwrb_out_d2p;
   logic        cio_sysrst_ctrl_aon_pwrb_out_en_d2p;
   // adc_ctrl_aon
+  // pwm_aon
+  logic [5:0]  cio_pwm_aon_pwm_d2p;
+  logic [5:0]  cio_pwm_aon_pwm_en_d2p;
   // pinmux_aon
   // aon_timer_aon
   // sensor_ctrl_aon
@@ -576,6 +579,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       i2c2_tl_rsp;
   tlul_pkg::tl_h2d_t       pattgen_tl_req;
   tlul_pkg::tl_d2h_t       pattgen_tl_rsp;
+  tlul_pkg::tl_h2d_t       pwm_aon_tl_req;
+  tlul_pkg::tl_d2h_t       pwm_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       gpio_tl_req;
   tlul_pkg::tl_d2h_t       gpio_tl_rsp;
   tlul_pkg::tl_h2d_t       spi_device_tl_req;
@@ -1736,6 +1741,23 @@ module top_earlgrey #(
       .rst_slow_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel])
   );
 
+  pwm u_pwm_aon (
+
+      // Output
+      .cio_pwm_o    (cio_pwm_aon_pwm_d2p),
+      .cio_pwm_en_o (cio_pwm_aon_pwm_en_d2p),
+
+      // Inter-module signals
+      .tl_i(pwm_aon_tl_req),
+      .tl_o(pwm_aon_tl_rsp),
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),
+      .clk_core_i (clkmgr_aon_clocks.clk_aon_powerup),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
+      .rst_core_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel])
+  );
+
   pinmux #(
     .TargetCfg(PinmuxAonTargetCfg)
   ) u_pinmux_aon (
@@ -2558,6 +2580,10 @@ module top_earlgrey #(
     .tl_pattgen_o(pattgen_tl_req),
     .tl_pattgen_i(pattgen_tl_rsp),
 
+    // port: tl_pwm_aon
+    .tl_pwm_aon_o(pwm_aon_tl_req),
+    .tl_pwm_aon_i(pwm_aon_tl_rsp),
+
     // port: tl_gpio
     .tl_gpio_o(gpio_tl_req),
     .tl_gpio_i(gpio_tl_rsp),
@@ -2764,6 +2790,12 @@ module top_earlgrey #(
   assign mio_d2p[MioOutSensorCtrlAonAstDebugOut7] = cio_sensor_ctrl_aon_ast_debug_out_d2p[7];
   assign mio_d2p[MioOutSensorCtrlAonAstDebugOut8] = cio_sensor_ctrl_aon_ast_debug_out_d2p[8];
   assign mio_d2p[MioOutSensorCtrlAonAstDebugOut9] = cio_sensor_ctrl_aon_ast_debug_out_d2p[9];
+  assign mio_d2p[MioOutPwmAonPwm0] = cio_pwm_aon_pwm_d2p[0];
+  assign mio_d2p[MioOutPwmAonPwm1] = cio_pwm_aon_pwm_d2p[1];
+  assign mio_d2p[MioOutPwmAonPwm2] = cio_pwm_aon_pwm_d2p[2];
+  assign mio_d2p[MioOutPwmAonPwm3] = cio_pwm_aon_pwm_d2p[3];
+  assign mio_d2p[MioOutPwmAonPwm4] = cio_pwm_aon_pwm_d2p[4];
+  assign mio_d2p[MioOutPwmAonPwm5] = cio_pwm_aon_pwm_d2p[5];
   assign mio_d2p[MioOutSysrstCtrlAonBatDisable] = cio_sysrst_ctrl_aon_bat_disable_d2p;
   assign mio_d2p[MioOutSysrstCtrlAonKey0Out] = cio_sysrst_ctrl_aon_key0_out_d2p;
   assign mio_d2p[MioOutSysrstCtrlAonKey1Out] = cio_sysrst_ctrl_aon_key1_out_d2p;
@@ -2833,6 +2865,12 @@ module top_earlgrey #(
   assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut7] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[7];
   assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut8] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[8];
   assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut9] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[9];
+  assign mio_en_d2p[MioOutPwmAonPwm0] = cio_pwm_aon_pwm_en_d2p[0];
+  assign mio_en_d2p[MioOutPwmAonPwm1] = cio_pwm_aon_pwm_en_d2p[1];
+  assign mio_en_d2p[MioOutPwmAonPwm2] = cio_pwm_aon_pwm_en_d2p[2];
+  assign mio_en_d2p[MioOutPwmAonPwm3] = cio_pwm_aon_pwm_en_d2p[3];
+  assign mio_en_d2p[MioOutPwmAonPwm4] = cio_pwm_aon_pwm_en_d2p[4];
+  assign mio_en_d2p[MioOutPwmAonPwm5] = cio_pwm_aon_pwm_en_d2p[5];
   assign mio_en_d2p[MioOutSysrstCtrlAonBatDisable] = cio_sysrst_ctrl_aon_bat_disable_en_d2p;
   assign mio_en_d2p[MioOutSysrstCtrlAonKey0Out] = cio_sysrst_ctrl_aon_key0_out_en_d2p;
   assign mio_en_d2p[MioOutSysrstCtrlAonKey1Out] = cio_sysrst_ctrl_aon_key1_out_en_d2p;

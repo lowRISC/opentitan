@@ -55,6 +55,7 @@
       aon_timer_aon
       adc_ctrl_aon
       sysrst_ctrl_aon
+      pwm_aon
     ]
   }
   nodes:
@@ -207,6 +208,24 @@
       [
         {
           base_addr: 0x400e0000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: pwm_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: pwm
+      addr_range:
+      [
+        {
+          base_addr: 0x40450000
           size_byte: 0x1000
         }
       ]
