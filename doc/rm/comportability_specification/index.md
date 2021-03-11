@@ -161,7 +161,7 @@ By "care" an example would be to reset their value synchronously at a time after
 
 Based upon this and the fact that much of the team history was with asynchronous active low reset, we chose that methodology with added requirements that special care be applied for security state, the details of which will come at a later date.
 
-### Bus Interfaces
+### Bus Interfaces {#bus-interfaces}
 
 Peripherals can connect to the chip bus.
 All peripherals are assumed to have registers, and are thus required to expose at least one device interface on the chip bus.
