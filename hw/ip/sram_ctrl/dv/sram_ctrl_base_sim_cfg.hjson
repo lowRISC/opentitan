@@ -81,6 +81,10 @@
       name: "{variant}_stress_pipeline"
       uvm_test_seq: sram_ctrl_stress_pipeline_vseq
     }
+    {
+      name: "{variant}_lc_escalation"
+      uvm_test_seq: sram_ctrl_lc_escalation_vseq
+    }
   ]
 
   // List of regressions.

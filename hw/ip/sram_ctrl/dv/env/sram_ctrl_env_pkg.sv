@@ -30,9 +30,23 @@ package sram_ctrl_env_pkg;
   // 1 bit for valid, SramKeyWidth bits for the key, SramNonceWidth bits for the nonce.
   parameter int KDI_DATA_SIZE = 1 + otp_ctrl_pkg::SramKeyWidth + otp_ctrl_pkg::SramNonceWidth;
 
+  // after a kDI transaction is copmleted, it needs 4 cycles in the SRAM clock domain
+  // to be properly synchronized and propagated through the DUT
+  parameter int KDI_PROPAGATION_CYCLES = 4;
+
+  // a LC escalation request needs 3 cycles to be fully propagated through the DUT
+  parameter int LC_ESCALATION_PROPAGATION_CYCLES = 3;
+
   // types
   typedef virtual mem_bkdr_if #(.MEM_PARITY(1)) mem_bkdr_vif;
   typedef virtual sram_ctrl_lc_if lc_vif;
+
+  typedef enum bit [1:0] {
+    SramCtrlError           = 0,
+    SramCtrlEscalated       = 1,
+    SramCtrlScrKeyValid     = 2,
+    SramCtrlScrKeySeedValid = 3
+  } sram_ctrl_status_e;
 
   // package sources
   `include "sram_ctrl_env_cfg.sv"
