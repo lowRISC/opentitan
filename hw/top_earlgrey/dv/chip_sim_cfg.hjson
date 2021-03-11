@@ -32,7 +32,8 @@
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Common CIP test lists
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
+                // TODO #5484, comment this out because spi host memory is dummy
+                // "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
                 // xbar tests
                 "{proj_root}/hw/ip/tlul/generic_dv/xbar_tests.hjson",
