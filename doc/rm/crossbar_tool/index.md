@@ -30,11 +30,25 @@ While generating the RTL, the tool adds detailed connection information in the f
 ## Configuration File Format
 
 The `tlgen` script reads an Hjson file containing the crossbar connections and the host and device information.
-It describes a generic Directed Acyclic Graph (DAG) with some additional clock information and steering information.
+The two main sections of the configuration file are the list of nodes and the list of connections.
+Together, these describe a generic Directed Acyclic Graph (DAG) with some additional clock information and steering information.
 
 If the tool is used in the process of top generation (`topgen.py`, details forthcoming), a few fields are derived from the top Hjson configuration module structure.
 
 A description of Hjson and the recommended style is in the [Hjson Usage and Style Guide]({{< relref "doc/rm/hjson_usage_style" >}}).
+
+An item in the `nodes` list corresponds to a host or device interface on an instantiated IP block.
+The name of such a node should be of the form `<instance_name>.<interface_name>`, so the `my_if` interface on the instance `my_instance` would be denoted `my_instance.my_if`.
+However, many instances have a single, unnamed, device interface.
+For these devices, the node should just be named with the name of the instance (just `my_instance` in the example above).
+For details of how interfaces are defined using the register tool, see the [Bus Interfaces]({{< relref "doc/rm/comportability_specification#bus-interfaces" >}}) section of the Comportability Specification.
+
+Edges in the DAG are specified in the `connections` map.
+This uses an adjacency list format.
+The keys are the names of host nodes.
+The value at a host a list of the names of device nodes which that host should be able to see.
+
+### Configuration file syntax
 
 The tables below describe the keys for each context.
 The tool raises an error if *Required* keys are missing.
