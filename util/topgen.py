@@ -822,7 +822,7 @@ def generate_top_ral(top: Dict[str, object],
     chip = Top(regwidth, name_to_block, inst_to_block, if_addrs, mems)
 
     # generate the top ral model with template
-    gen_dv.gen_ral(chip, dv_base_prefix, str(out_path))
+    return gen_dv.gen_top_dv(chip, dv_base_prefix, str(out_path))
 
 
 def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
@@ -974,9 +974,9 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     generate_top_only(top_only_list, out_path, topname)
 
     if pass_idx > 0 and args.top_ral:
-        generate_top_ral(completecfg, ip_objs, name_to_block,
-                         args.dv_base_prefix, out_path)
-        sys.exit()
+        exit_code = generate_top_ral(completecfg, ip_objs, name_to_block,
+                                     args.dv_base_prefix, out_path)
+        sys.exit(exit_code)
 
     return completecfg, name_to_block
 

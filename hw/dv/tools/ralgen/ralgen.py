@@ -5,7 +5,6 @@
 r"""FuseSoc generator for UVM RAL package created with either regtool or
 topgen tools.
 """
-import argparse
 import os
 import subprocess
 import sys
@@ -13,9 +12,9 @@ import sys
 import yaml
 
 try:
-    from yaml import CSafeLoader as YamlLoader, CSafeDumper as YamlDumper
+    from yaml import CSafeLoader as YamlLoader
 except ImportError:
-    from yaml import SafeLoader as YamlLoader, SafeDumper as YamlDumper
+    from yaml import SafeLoader as YamlLoader
 
 # Repo root is 4 levels up. Note that this will require an update if the path to
 # this tool is changed.
@@ -56,7 +55,6 @@ def main():
         sys.exit(1)
 
     # Generate the RAL pkg.
-    ral_pkg_file = name + "_ral_pkg.sv"
     if ip_hjson:
         ral_spec = get_full_path(root_dir, ip_hjson)
         cmd = os.path.join(util_path, "regtool.py")
@@ -66,45 +64,16 @@ def main():
         cmd = os.path.join(util_path, "topgen.py")
         args = [cmd, "-r", "-o", ".", "-t", ral_spec]
 
-    depends = ["lowrisc:dv:dv_base_reg"]
     if dv_base_prefix and dv_base_prefix != "dv_base":
         args.extend(["--dv-base-prefix", dv_base_prefix])
-        depends.append("lowrisc:dv:{}_reg".format(dv_base_prefix))
 
     try:
         subprocess.run(args, check=True)
     except subprocess.CalledProcessError as e:
         print("Error: RAL pkg generation failed:\n{}".format(str(e)))
         sys.exit(e.returncode)
-    print("RAL pkg file written to {}".format(os.path.abspath(ral_pkg_file)))
-
-    # Generate the FuseSoc core file.
-    ral_pkg_core_text = {
-        'name': "lowrisc:dv:{}_ral_pkg".format(name),
-        'filesets': {
-            'files_dv': {
-                'depend': depends,
-                'files': [
-                    ral_pkg_file,
-                ],
-                'file_type': 'systemVerilogSource'
-            },
-        },
-        'targets': {
-            'default': {
-                'filesets': [
-                    'files_dv',
-                ],
-            },
-        },
-    }
-    ral_pkg_core_file = os.path.abspath(name + "_ral_pkg.core")
-    with open(ral_pkg_core_file, 'w') as f:
-        f.write("CAPI=2:\n")
-        yaml.dump(ral_pkg_core_text,
-                  f,
-                  encoding="utf-8")
-    print("RAL core file written to {}".format(ral_pkg_core_file))
+    print("RAL pkg for {} block written to {}"
+          .format(name, os.path.abspath('.')))
 
 
 if __name__ == '__main__':

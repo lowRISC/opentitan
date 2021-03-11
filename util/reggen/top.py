@@ -52,7 +52,6 @@ class Top:
 
         '''
 
-        self.name = 'chip'
         self.regwidth = regwidth
         self.blocks = blocks
         self.instances = instances
