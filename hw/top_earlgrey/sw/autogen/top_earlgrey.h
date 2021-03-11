@@ -422,6 +422,24 @@ extern "C" {
 #define TOP_EARLGREY_ADC_CTRL_AON_SIZE_BYTES 0x1000u
 
 /**
+ * Peripheral base address for pwm_aon in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_PWM_AON_BASE_ADDR 0x40450000u
+
+/**
+ * Peripheral size for pwm_aon in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_PWM_AON_BASE_ADDR and
+ * `TOP_EARLGREY_PWM_AON_BASE_ADDR + TOP_EARLGREY_PWM_AON_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_PWM_AON_SIZE_BYTES 0x1000u
+
+/**
  * Peripheral base address for pinmux_aon in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -1387,11 +1405,17 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut7 = 63, /**< Peripheral Output 60 */
   kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut8 = 64, /**< Peripheral Output 61 */
   kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut9 = 65, /**< Peripheral Output 62 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlAonBatDisable = 66, /**< Peripheral Output 63 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlAonKey0Out = 67, /**< Peripheral Output 64 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlAonKey1Out = 68, /**< Peripheral Output 65 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlAonKey2Out = 69, /**< Peripheral Output 66 */
-  kTopEarlgreyPinmuxOutselLast = 69, /**< \internal Last valid outsel value */
+  kTopEarlgreyPinmuxOutselPwmAonPwm0 = 66, /**< Peripheral Output 63 */
+  kTopEarlgreyPinmuxOutselPwmAonPwm1 = 67, /**< Peripheral Output 64 */
+  kTopEarlgreyPinmuxOutselPwmAonPwm2 = 68, /**< Peripheral Output 65 */
+  kTopEarlgreyPinmuxOutselPwmAonPwm3 = 69, /**< Peripheral Output 66 */
+  kTopEarlgreyPinmuxOutselPwmAonPwm4 = 70, /**< Peripheral Output 67 */
+  kTopEarlgreyPinmuxOutselPwmAonPwm5 = 71, /**< Peripheral Output 68 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlAonBatDisable = 72, /**< Peripheral Output 69 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlAonKey0Out = 73, /**< Peripheral Output 70 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlAonKey1Out = 74, /**< Peripheral Output 71 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlAonKey2Out = 75, /**< Peripheral Output 72 */
+  kTopEarlgreyPinmuxOutselLast = 75, /**< \internal Last valid outsel value */
 } top_earlgrey_pinmux_outsel_t;
 
 /**

@@ -216,6 +216,13 @@
  */
 #define TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR 0x40440000
 /**
+ * Peripheral base address for pwm_aon in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_PWM_AON_BASE_ADDR 0x40450000
+/**
  * Peripheral base address for pinmux_aon in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped

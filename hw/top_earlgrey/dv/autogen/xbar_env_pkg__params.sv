@@ -85,6 +85,9 @@ tl_device_t xbar_devices[$] = '{
     '{"pattgen", '{
         '{32'h400e0000, 32'h400e0fff}
     }},
+    '{"pwm_aon", '{
+        '{32'h40450000, 32'h40450fff}
+    }},
     '{"gpio", '{
         '{32'h40040000, 32'h40040fff}
     }},
@@ -188,6 +191,7 @@ tl_host_t xbar_hosts[$] = '{
         "aon_timer_aon",
         "adc_ctrl_aon",
         "sysrst_ctrl_aon",
+        "pwm_aon",
         "flash_ctrl.core",
         "flash_ctrl.prim",
         "aes",
@@ -235,6 +239,7 @@ tl_host_t xbar_hosts[$] = '{
         "aon_timer_aon",
         "adc_ctrl_aon",
         "sysrst_ctrl_aon",
+        "pwm_aon",
         "flash_ctrl.core",
         "flash_ctrl.prim",
         "aes",
