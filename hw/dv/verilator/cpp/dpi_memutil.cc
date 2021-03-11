@@ -245,12 +245,13 @@ static void WriteSegment(const MemArea &m, uint32_t offset,
   // be caught at this function's callsite.
   SVScoped scoped(m.location.data());
 
-  // This "mini buffer" is used to transfer each write to SystemVerilog. It's
-  // not massively efficient, but doing so ensures that we pass 256 bits (32
-  // bytes) of initialised data each time. This is for simutil_set_mem (defined
-  // in prim_util_memload.svh), whose "val" argument has SystemVerilog type bit
-  // [255:0].
-  uint8_t minibuf[32];
+  // This "mini buffer" is used to transfer each write to SystemVerilog.
+  // `simutil_set_mem` takes a fixed 312 bit vector but it will only use the
+  // bits required for the RAM width. For example for a 32-bit wide RAM only
+  // elements 3 - 0 of `minibuf` will be written to memory. The simulator may
+  // still read bits from minibuf it does not use so we must use a fixed
+  // allocation of the full bit vector size to avoid out of bounds access.
+  uint8_t minibuf[39];
   memset(minibuf, 0, sizeof minibuf);
   assert(m.width_byte <= sizeof minibuf);
 

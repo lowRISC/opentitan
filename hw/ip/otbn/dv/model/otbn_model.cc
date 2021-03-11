@@ -104,10 +104,10 @@ static std::vector<uint8_t> get_sim_memory(const char *scope, size_t num_words,
   SVScoped scoped(scope);
 
   // simutil_get_mem passes data as a packed array of svBitVecVal words. It
-  // only works for memories of size at most 256 bits, so we can just allocate
-  // 256/8 = 32 bytes as 32/sizeof(svBitVecVal) words on the stack.
-  assert(word_size <= 256 / 8);
-  svBitVecVal buf[256 / 8 / sizeof(svBitVecVal)];
+  // only works for memories of size at most 312 bits, so we can just allocate
+  // 312/8 = 39 bytes as 39/sizeof(svBitVecVal) words on the stack.
+  assert(word_size <= 312 / 8);
+  svBitVecVal buf[312 / 8 / sizeof(svBitVecVal)];
 
   std::vector<uint8_t> ret;
 
@@ -135,8 +135,8 @@ static void set_sim_memory(const std::vector<uint8_t> &data, const char *scope,
   assert(num_words * word_size == data.size());
 
   // See get_sim_memory for why this array is sized like this.
-  assert(word_size <= 256 / 8);
-  svBitVecVal buf[256 / 8 / sizeof(svBitVecVal)];
+  assert(word_size <= 312 / 8);
+  svBitVecVal buf[312 / 8 / sizeof(svBitVecVal)];
 
   for (size_t w = 0; w < num_words; w++) {
     const uint8_t *p = &data[w * word_size];

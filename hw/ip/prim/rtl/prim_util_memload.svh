@@ -13,7 +13,11 @@
  * - A parameter `Width` giving the memory width (word size) in bit.
  * - A parameter `Depth` giving the memory depth in words.
  * - A parameter `MemInitFile` with a file path of a VMEM file to be loaded into
-*    the memory if not empty.
+ *   the memory if not empty.
+ *
+ * Note this works with memories up to a maximum width of 312 bits. Should this maximum width be
+ * increased all of the `simutil_set_mem` and `simutil_get_mem` call sites must be found (e.g. using
+ * git grep) and adjusted appropriately.
  */
 
 `ifndef SYNTHESIS
@@ -29,10 +33,10 @@
   // Returns 1 (true) for success, 0 (false) for errors.
   export "DPI-C" function simutil_set_mem;
 
-  function int simutil_set_mem(input int index, input bit [255:0] val);
+  function int simutil_set_mem(input int index, input bit [311:0] val);
 
-    // Function will only work for memories <= 256 bits
-    if (Width > 256) begin
+    // Function will only work for memories <= 312 bits
+    if (Width > 312) begin
       return 0;
     end
 
@@ -47,10 +51,10 @@
   // Function for getting a specific element in |mem|
   export "DPI-C" function simutil_get_mem;
 
-  function int simutil_get_mem(input int index, output bit [255:0] val);
+  function int simutil_get_mem(input int index, output bit [311:0] val);
 
-    // Function will only work for memories <= 256 bits
-    if (Width > 256) begin
+    // Function will only work for memories <= 312 bits
+    if (Width > 312) begin
       return 0;
     end
 
