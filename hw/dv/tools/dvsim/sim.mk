@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+export SHELL	:= /bin/bash
 .DEFAULT_GOAL := all
 
 LOCK_SW_BUILD_DIR  ?= flock --timeout 3600 ${sw_build_dir} --command
@@ -56,7 +57,7 @@ ifneq (${sw_images},)
 	mkdir -p ${sw_build_dir}
 	# Initialize meson build system.
 	${LOCK_SW_BUILD_DIR} "cd ${proj_root} && \
-		BUILD_ROOT=${sw_build_dir} ${proj_root}/meson_init.sh"
+		env BUILD_ROOT=${sw_build_dir} ${proj_root}/meson_init.sh"
 
 	# Loop through the list of sw_images and invoke meson on each item.
 	# `sw_images` is a space-separated list of tests to be built into an image.
