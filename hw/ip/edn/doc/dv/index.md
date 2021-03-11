@@ -24,7 +24,7 @@ EDN testbench has been constructed based on the [CIP testbench architecture]({{<
 ![Block diagram](edn_tb.svg)
 
 ### Top level testbench
-Top level testbench is located at `hw/ip/edn/dv/tb/tb.sv`. It instantiates the EDN DUT module `hw/ip/edn/rtl/edn.sv`.
+Top level testbench is located at `hw/ip/edn/dv/tb.sv`. It instantiates the EDN DUT module `hw/ip/edn/rtl/edn.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
@@ -32,6 +32,8 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
 * Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
 * Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
+* Csrng ([`csrng_if`]({{< relref "hw/dv/sv/csrng_agent" >}})
+* Endpoints ([`push_pull_if`]({{< relref "hw/dv/sv/push_pull_agent" >}})
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
@@ -59,16 +61,13 @@ TL host interface into EDN device.
 ###  Endpoint_agent
 EDN testbench instantiates this push_pull_agent({{< relref "hw/dv/sv/push_pull_agent/README.md" >}}) which models an endpoint module.
 
-###  Csrng_genbits_agent
-EDN testbench instantiates this push_pull_agent({{< relref "hw/dv/sv/push_pull_agent/README.md" >}}) which models the genbits function of the csrng module.
+###  Csrng_agent
+EDN testbench instantiates this agent({{< relref "hw/dv/sv/csrng_agent/README.md" >}}) which models the csrng module.
 
 ### UVM RAL Model
 The EDN RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
 It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
-
-### Reference models
-[Describe reference models in use if applicable, example: SHA256/HMAC]
 
 ### Stimulus strategy
 #### Test sequences
@@ -96,8 +95,6 @@ explain inputs monitored, flow of data and outputs checked -->
 #### Assertions
 * TLUL assertions: The `tb/edn_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-<!-- * assert prop 1:
-* assert prop 2: -->
 
 ## Building and running tests
 We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/README.md" >}}) for building and running our tests and regressions.

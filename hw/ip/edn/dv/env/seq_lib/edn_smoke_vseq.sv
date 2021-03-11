@@ -19,9 +19,8 @@ class edn_smoke_vseq extends edn_base_vseq;
         create("m_endpoint_pull_seq");
     m_endpoint_pull_seq.start(p_sequencer.endpoint_sequencer_h[edn_env_pkg::NUM_ENDPOINTS-1]);
 
-    // TODO: Compare to genbits from csrng_device_seq
-    assert (cfg.m_endpoint_agent_cfg[edn_env_pkg::NUM_ENDPOINTS-1].vif.d_data == {1'b0, 32'hdeadbeef}) else
-      `uvm_error(`gfn, $sformatf("endpoint_data (%0h) != fips_genbits_data (0x0_deadbeef)", cfg.m_endpoint_agent_cfg[edn_env_pkg::NUM_ENDPOINTS-1].vif.d_data))
+    // TODO: Compare to genbits from csrng_device_seq (not hardcode "deadbeef")
+    `DV_CHECK_EQ_FATAL(cfg.m_endpoint_agent_cfg[edn_env_pkg::NUM_ENDPOINTS-1].vif.d_data, {1'b0, 32'hdeadbeef})
   endtask
 
 endclass
