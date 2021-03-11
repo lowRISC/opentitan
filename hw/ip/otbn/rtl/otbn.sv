@@ -109,7 +109,7 @@ module otbn
   logic [ImemIndexWidth-1:0] imem_index;
   logic [31:0] imem_wdata;
   logic [31:0] imem_wmask;
-  logic [31:0] imem_rdata;
+  logic [38:0] imem_rdata;
   logic imem_rvalid;
   logic [1:0] imem_rerror_vec;
   logic imem_rerror;
@@ -138,7 +138,7 @@ module otbn
   assign unused_imem_addr_core_wordbits = imem_addr_core[1:0];
 
   prim_ram_1p_adv #(
-    .Width           (32),
+    .Width           (39),
     .Depth           (ImemSizeWords),
     .DataBitsPerMask (32), // Write masks are not supported.
     .CfgW            (8)
@@ -148,8 +148,8 @@ module otbn
     .req_i    (imem_req),
     .write_i  (imem_write),
     .addr_i   (imem_index),
-    .wdata_i  (imem_wdata),
-    .wmask_i  (imem_wmask),
+    .wdata_i  (39'(imem_wdata)),
+    .wmask_i  (39'(imem_wmask)),
     .rdata_o  (imem_rdata),
     .rvalid_o (imem_rvalid),
     .rerror_o (imem_rerror_vec),
@@ -212,8 +212,8 @@ module otbn
   // Explicitly tie off bus interface during core operation to avoid leaking
   // the currently executed instruction from IMEM through the bus
   // unintentionally.
-  assign imem_rdata_bus  = !imem_access_core ? imem_rdata : 32'b0;
-  assign imem_rdata_core = imem_rdata;
+  assign imem_rdata_bus  = !imem_access_core ? imem_rdata[31:0] : 32'b0;
+  assign imem_rdata_core = imem_rdata[31:0];
 
   assign imem_rvalid_bus  = !imem_access_core ? imem_rvalid : 1'b0;
   assign imem_rvalid_core = imem_access_core ? imem_rvalid : 1'b0;
@@ -243,7 +243,7 @@ module otbn
   logic [DmemIndexWidth-1:0] dmem_index;
   logic [WLEN-1:0] dmem_wdata;
   logic [WLEN-1:0] dmem_wmask;
-  logic [WLEN-1:0] dmem_rdata;
+  logic [(WLEN+7*8)-1:0] dmem_rdata;
   logic dmem_rvalid;
   logic [1:0] dmem_rerror_vec;
   logic dmem_rerror;
@@ -273,7 +273,7 @@ module otbn
   assign unused_dmem_addr_core_wordbits = ^dmem_addr_core[DmemAddrWidth-DmemIndexWidth-1:0];
 
   prim_ram_1p_adv #(
-    .Width           (WLEN),
+    .Width           (WLEN+7*8),
     .Depth           (DmemSizeWords),
     .DataBitsPerMask (32), // 32b write masks for 32b word writes from bus
     .CfgW            (8)
@@ -283,8 +283,8 @@ module otbn
     .req_i    (dmem_req),
     .write_i  (dmem_write),
     .addr_i   (dmem_index),
-    .wdata_i  (dmem_wdata),
-    .wmask_i  (dmem_wmask),
+    .wdata_i  (312'(dmem_wdata)),
+    .wmask_i  (312'(dmem_wmask)),
     .rdata_o  (dmem_rdata),
     .rvalid_o (dmem_rvalid),
     .rerror_o (dmem_rerror_vec),
@@ -335,8 +335,8 @@ module otbn
 
   // Explicitly tie off bus interface during core operation to avoid leaking
   // DMEM data through the bus unintentionally.
-  assign dmem_rdata_bus  = !dmem_access_core ? dmem_rdata : '0;
-  assign dmem_rdata_core = dmem_rdata;
+  assign dmem_rdata_bus  = !dmem_access_core ? dmem_rdata[WLEN-1:0] : '0;
+  assign dmem_rdata_core = dmem_rdata[WLEN-1:0];
 
   assign dmem_rvalid_bus  = !dmem_access_core ? dmem_rvalid : 1'b0;
   assign dmem_rvalid_core = dmem_access_core  ? dmem_rvalid : 1'b0;
