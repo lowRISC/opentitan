@@ -36,7 +36,7 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
 
     // Ensure entropy_valid interrupt bit cleared
     csr_rd_check(.ptr(ral.intr_state), .compare_value(1'b0));
-    
+
   endtask : body
 
 endclass : entropy_src_smoke_vseq

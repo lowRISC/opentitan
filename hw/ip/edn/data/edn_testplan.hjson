@@ -13,7 +13,7 @@
       name: smoke
       desc: '''
             Enable edn, let edn boot mode generate csrng instantiate/generate commands,
-	    endpoint requests genbits, compare csrng/endpoint genbits.
+            endpoint requests genbits, compare csrng/endpoint genbits.
             '''
       milestone: V1
       tests: ["edn_smoke"]
@@ -21,11 +21,12 @@
     {
       name: firmware
       desc: '''
-            Verify regwen bit enables/disables write access to control registers
+            Verify regwen bit enables/disables write access to control registers.
             Verify SW_CMD_REQ/SW_CMD_STS registers/bits behave as predicted.
+            Verify RESEED/GENERATE software cmds work with/without additional data.
             Verify cmd_fifo_reset bit causes fifos to reset.
-	    Verify boot_req_dis bit disables boot_req mode
-	    Verify registers at End-Of-Test
+            Verify boot_req_dis bit disables boot_req mode.
+            Verify registers at End-Of-Test.
             '''
       milestone: V2
       tests: []
@@ -37,7 +38,7 @@
             Verify auto-request mode (RESEED_CMD/GENERATE_CMD registers) behaves as predicted.
             Verify max_num_reqs_between_reseeds in auto-generate mode.
             Verify boot-time request mode behaves as predicted.
-	    Verify SUM_STS register bits behave as predicted.
+            Verify SUM_STS register bits behave as predicted.
             '''
       milestone: V2
       tests: []
@@ -56,7 +57,7 @@
       desc: '''
             Verify intr_edn_cmd_req_done interrupt asserts/clears as predicted.
             Verify intr_edn_fatal_err interrupt asserts/clears as predicted.
-	    Verify ERR_CODE all reg bits via ERR_CODE_TEST.
+            Verify ERR_CODE all reg bits via ERR_CODE_TEST.
             '''
       milestone: V2
       tests: []

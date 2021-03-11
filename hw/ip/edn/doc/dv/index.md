@@ -32,8 +32,6 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
 * Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
 * Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
-* Csrng ([`csrng_if`]({{< relref "hw/dv/sv/csrng_agent" >}})
-* Endpoints ([`push_pull_if`]({{< relref "hw/dv/sv/push_pull_agent" >}})
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:

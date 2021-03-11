@@ -27,7 +27,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   // setup basic entropy_src features
   virtual task entropy_src_init();
-    
+
     cfg.efuse_es_sw_reg_en_vif.drive_pin(.idx(0), .val(cfg.efuse_es_sw_reg_en));
   endtask
 
