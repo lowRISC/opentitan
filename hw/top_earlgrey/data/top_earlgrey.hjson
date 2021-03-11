@@ -432,6 +432,15 @@
       base_addr: "0x40420000",
       attr: "templated",
     },
+    { name: "adc_ctrl_aon",
+      type: "dcd",
+      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
+      clock_group: "peri",
+      reset_connections: {rst_ni: "sys_io_div4", rst_slow_ni: "sys_aon"},
+      clock_reset_export: ["ast"],
+      domain: "Aon",
+      base_addr: "0x40440000"
+    },
     { name: "pinmux_aon",
       type: "pinmux",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
@@ -937,6 +946,7 @@
 
     // ext is to create port in the top.
     'external': {
+        'adc_ctrl_aon.adc'             : 'adc'
         'ast.edn'                      : '',
         'ast.lc_dft_en'                : '',
         'ast.ram_1p_cfg'               : 'ram_1p_cfg',
@@ -990,6 +1000,7 @@
   ],
 
   // ===== INTERRUPT CTRL =====================================================
+
   // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
   // source. "sequential" is smaller but slower, "matrix" is larger but faster.
   // Choose depends on the criteria. Currently it is set to "matrix" to meet FPGA timing @ 50MHz

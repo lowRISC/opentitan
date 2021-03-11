@@ -624,7 +624,7 @@ TEST_F(WakeupRecording, GetReason) {
                            .value = 1,
                        },
                        {
-                           .offset = PWRMGR_PARAM_USB_WKUP_REQ_IDX,
+                           .offset = PWRMGR_PARAM_DEBUG_CABLE_WAKEUP_IDX,
                            .value = 1,
                        },
                        {
@@ -666,7 +666,7 @@ TEST_F(WakeupRecording, GetReason) {
       // Only requests from peripherals.
       {
           .read_val = {{
-              .offset = PWRMGR_PARAM_AON_WKUP_REQ_IDX,
+              .offset = PWRMGR_PARAM_DEBUG_CABLE_WAKEUP_IDX,
               .value = 1,
           }},
           .exp_output =

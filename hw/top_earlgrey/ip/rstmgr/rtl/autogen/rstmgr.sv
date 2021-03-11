@@ -744,6 +744,8 @@ module rstmgr import rstmgr_pkg::*; (
   assign resets_ast_o.rst_ast_usbdev_sys_io_div4_n = resets_o.rst_sys_io_div4_n;
   assign resets_ast_o.rst_ast_usbdev_sys_aon_n = resets_o.rst_sys_aon_n;
   assign resets_ast_o.rst_ast_usbdev_usb_n = resets_o.rst_usb_n;
+  assign resets_ast_o.rst_ast_adc_ctrl_aon_sys_io_div4_n = resets_o.rst_sys_io_div4_n;
+  assign resets_ast_o.rst_ast_adc_ctrl_aon_sys_aon_n = resets_o.rst_sys_aon_n;
   assign resets_ast_o.rst_ast_ast_sys_io_div4_n = resets_o.rst_sys_io_div4_n;
   assign resets_ast_o.rst_ast_sensor_ctrl_aon_sys_io_div4_n = resets_o.rst_sys_io_div4_n;
   assign resets_ast_o.rst_ast_entropy_src_sys_n = resets_o.rst_sys_n;

@@ -386,6 +386,24 @@ extern "C" {
 #define TOP_EARLGREY_CLKMGR_AON_SIZE_BYTES 0x1000u
 
 /**
+ * Peripheral base address for adc_ctrl_aon in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR 0x40440000u
+
+/**
+ * Peripheral size for adc_ctrl_aon in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR and
+ * `TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR + TOP_EARLGREY_ADC_CTRL_AON_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_ADC_CTRL_AON_SIZE_BYTES 0x1000u
+
+/**
  * Peripheral base address for pinmux_aon in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -758,17 +776,18 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralOtpCtrl = 15, /**< otp_ctrl */
   kTopEarlgreyPlicPeripheralAlertHandler = 16, /**< alert_handler */
   kTopEarlgreyPlicPeripheralPwrmgrAon = 17, /**< pwrmgr_aon */
-  kTopEarlgreyPlicPeripheralAonTimerAon = 18, /**< aon_timer_aon */
-  kTopEarlgreyPlicPeripheralFlashCtrl = 19, /**< flash_ctrl */
-  kTopEarlgreyPlicPeripheralHmac = 20, /**< hmac */
-  kTopEarlgreyPlicPeripheralKmac = 21, /**< kmac */
-  kTopEarlgreyPlicPeripheralKeymgr = 22, /**< keymgr */
-  kTopEarlgreyPlicPeripheralCsrng = 23, /**< csrng */
-  kTopEarlgreyPlicPeripheralEntropySrc = 24, /**< entropy_src */
-  kTopEarlgreyPlicPeripheralEdn0 = 25, /**< edn0 */
-  kTopEarlgreyPlicPeripheralEdn1 = 26, /**< edn1 */
-  kTopEarlgreyPlicPeripheralOtbn = 27, /**< otbn */
-  kTopEarlgreyPlicPeripheralLast = 27, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralAdcCtrlAon = 18, /**< adc_ctrl_aon */
+  kTopEarlgreyPlicPeripheralAonTimerAon = 19, /**< aon_timer_aon */
+  kTopEarlgreyPlicPeripheralFlashCtrl = 20, /**< flash_ctrl */
+  kTopEarlgreyPlicPeripheralHmac = 21, /**< hmac */
+  kTopEarlgreyPlicPeripheralKmac = 22, /**< kmac */
+  kTopEarlgreyPlicPeripheralKeymgr = 23, /**< keymgr */
+  kTopEarlgreyPlicPeripheralCsrng = 24, /**< csrng */
+  kTopEarlgreyPlicPeripheralEntropySrc = 25, /**< entropy_src */
+  kTopEarlgreyPlicPeripheralEdn0 = 26, /**< edn0 */
+  kTopEarlgreyPlicPeripheralEdn1 = 27, /**< edn1 */
+  kTopEarlgreyPlicPeripheralOtbn = 28, /**< otbn */
+  kTopEarlgreyPlicPeripheralLast = 28, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -928,33 +947,34 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdAlertHandlerClassc = 147, /**< alert_handler_classc */
   kTopEarlgreyPlicIrqIdAlertHandlerClassd = 148, /**< alert_handler_classd */
   kTopEarlgreyPlicIrqIdPwrmgrAonWakeup = 149, /**< pwrmgr_aon_wakeup */
-  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired = 150, /**< aon_timer_aon_wkup_timer_expired */
-  kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark = 151, /**< aon_timer_aon_wdog_timer_bark */
-  kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty = 152, /**< flash_ctrl_prog_empty */
-  kTopEarlgreyPlicIrqIdFlashCtrlProgLvl = 153, /**< flash_ctrl_prog_lvl */
-  kTopEarlgreyPlicIrqIdFlashCtrlRdFull = 154, /**< flash_ctrl_rd_full */
-  kTopEarlgreyPlicIrqIdFlashCtrlRdLvl = 155, /**< flash_ctrl_rd_lvl */
-  kTopEarlgreyPlicIrqIdFlashCtrlOpDone = 156, /**< flash_ctrl_op_done */
-  kTopEarlgreyPlicIrqIdHmacHmacDone = 157, /**< hmac_hmac_done */
-  kTopEarlgreyPlicIrqIdHmacFifoEmpty = 158, /**< hmac_fifo_empty */
-  kTopEarlgreyPlicIrqIdHmacHmacErr = 159, /**< hmac_hmac_err */
-  kTopEarlgreyPlicIrqIdKmacKmacDone = 160, /**< kmac_kmac_done */
-  kTopEarlgreyPlicIrqIdKmacFifoEmpty = 161, /**< kmac_fifo_empty */
-  kTopEarlgreyPlicIrqIdKmacKmacErr = 162, /**< kmac_kmac_err */
-  kTopEarlgreyPlicIrqIdKeymgrOpDone = 163, /**< keymgr_op_done */
-  kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone = 164, /**< csrng_cs_cmd_req_done */
-  kTopEarlgreyPlicIrqIdCsrngCsEntropyReq = 165, /**< csrng_cs_entropy_req */
-  kTopEarlgreyPlicIrqIdCsrngCsHwInstExc = 166, /**< csrng_cs_hw_inst_exc */
-  kTopEarlgreyPlicIrqIdCsrngCsFatalErr = 167, /**< csrng_cs_fatal_err */
-  kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid = 168, /**< entropy_src_es_entropy_valid */
-  kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed = 169, /**< entropy_src_es_health_test_failed */
-  kTopEarlgreyPlicIrqIdEntropySrcEsFatalErr = 170, /**< entropy_src_es_fatal_err */
-  kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone = 171, /**< edn0_edn_cmd_req_done */
-  kTopEarlgreyPlicIrqIdEdn0EdnFatalErr = 172, /**< edn0_edn_fatal_err */
-  kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 173, /**< edn1_edn_cmd_req_done */
-  kTopEarlgreyPlicIrqIdEdn1EdnFatalErr = 174, /**< edn1_edn_fatal_err */
-  kTopEarlgreyPlicIrqIdOtbnDone = 175, /**< otbn_done */
-  kTopEarlgreyPlicIrqIdLast = 175, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdAdcCtrlAonDebugCable = 150, /**< adc_ctrl_aon_debug_cable */
+  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired = 151, /**< aon_timer_aon_wkup_timer_expired */
+  kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark = 152, /**< aon_timer_aon_wdog_timer_bark */
+  kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty = 153, /**< flash_ctrl_prog_empty */
+  kTopEarlgreyPlicIrqIdFlashCtrlProgLvl = 154, /**< flash_ctrl_prog_lvl */
+  kTopEarlgreyPlicIrqIdFlashCtrlRdFull = 155, /**< flash_ctrl_rd_full */
+  kTopEarlgreyPlicIrqIdFlashCtrlRdLvl = 156, /**< flash_ctrl_rd_lvl */
+  kTopEarlgreyPlicIrqIdFlashCtrlOpDone = 157, /**< flash_ctrl_op_done */
+  kTopEarlgreyPlicIrqIdHmacHmacDone = 158, /**< hmac_hmac_done */
+  kTopEarlgreyPlicIrqIdHmacFifoEmpty = 159, /**< hmac_fifo_empty */
+  kTopEarlgreyPlicIrqIdHmacHmacErr = 160, /**< hmac_hmac_err */
+  kTopEarlgreyPlicIrqIdKmacKmacDone = 161, /**< kmac_kmac_done */
+  kTopEarlgreyPlicIrqIdKmacFifoEmpty = 162, /**< kmac_fifo_empty */
+  kTopEarlgreyPlicIrqIdKmacKmacErr = 163, /**< kmac_kmac_err */
+  kTopEarlgreyPlicIrqIdKeymgrOpDone = 164, /**< keymgr_op_done */
+  kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone = 165, /**< csrng_cs_cmd_req_done */
+  kTopEarlgreyPlicIrqIdCsrngCsEntropyReq = 166, /**< csrng_cs_entropy_req */
+  kTopEarlgreyPlicIrqIdCsrngCsHwInstExc = 167, /**< csrng_cs_hw_inst_exc */
+  kTopEarlgreyPlicIrqIdCsrngCsFatalErr = 168, /**< csrng_cs_fatal_err */
+  kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid = 169, /**< entropy_src_es_entropy_valid */
+  kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed = 170, /**< entropy_src_es_health_test_failed */
+  kTopEarlgreyPlicIrqIdEntropySrcEsFatalErr = 171, /**< entropy_src_es_fatal_err */
+  kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone = 172, /**< edn0_edn_cmd_req_done */
+  kTopEarlgreyPlicIrqIdEdn0EdnFatalErr = 173, /**< edn0_edn_fatal_err */
+  kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 174, /**< edn1_edn_cmd_req_done */
+  kTopEarlgreyPlicIrqIdEdn1EdnFatalErr = 175, /**< edn1_edn_fatal_err */
+  kTopEarlgreyPlicIrqIdOtbnDone = 176, /**< otbn_done */
+  kTopEarlgreyPlicIrqIdLast = 176, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -964,7 +984,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[176];
+    top_earlgrey_plic_interrupt_for_peripheral[177];
 
 /**
  * PLIC Interrupt Target.
@@ -1304,10 +1324,11 @@ typedef enum top_earlgrey_pinmux_outsel {
  * Power Manager Wakeup Signals
  */
 typedef enum top_earlgrey_power_manager_wake_ups {
-  kTopEarlgreyPowerManagerWakeUpsPinmuxAonAonWkupReq = 0, /**<  */
-  kTopEarlgreyPowerManagerWakeUpsPinmuxAonUsbWkupReq = 1, /**<  */
-  kTopEarlgreyPowerManagerWakeUpsAonTimerAonAonTimerWkupReq = 2, /**<  */
-  kTopEarlgreyPowerManagerWakeUpsLast = 2, /**< \internal Last valid pwrmgr wakeup signal */
+  kTopEarlgreyPowerManagerWakeUpsAdcCtrlAonDebugCableWakeup = 0, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsPinmuxAonAonWkupReq = 1, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsPinmuxAonUsbWkupReq = 2, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsAonTimerAonAonTimerWkupReq = 3, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsLast = 3, /**< \internal Last valid pwrmgr wakeup signal */
 } top_earlgrey_power_manager_wake_ups_t;
 
 /**

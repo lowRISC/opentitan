@@ -44,6 +44,7 @@ filesets:
       - lowrisc:ip:rstmgr
       - lowrisc:ip:pwrmgr
       - lowrisc:ip:aon_timer
+      - lowrisc:ip:dcd
       - lowrisc:systems:clkmgr
       - lowrisc:systems:sensor_ctrl
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
