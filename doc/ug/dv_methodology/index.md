@@ -52,9 +52,9 @@ To effectively document all these pieces, there are some key tooling components 
 
 ### DV plan
 
-A DV plan consist of two parts a testplan that captures at a high level, a list of tests that are being planned to verify all design features listed in the design specification.
+A DV plan consist of two parts: A testplan that captures at a high level, a list of tests that are being planned to verify all design features listed in the design specification.
 A functional coverage plan that captures at high level a list of functional coverage points and coverage crosses needed to verify that the features listed in the design specification is tested by the list of tests.
-the DV plan is written in Hjson format and is made available in the corresponding `data` directory of each DUT
+The DV plan is written in Hjson format and is made available in the corresponding `data` directory of each DUT.
 
 The Hjson schema enables this information to be human-writable and machine-parsable, which facilitates an automated and documentation-driven DV effort.
 The complete DV plan is parsed into a data structure that serves the following purposes:
@@ -99,7 +99,7 @@ It can also be used to auto-generate the initial skeleton source code for buildi
 The UVM RAL model for DUTs containing CSRs is auto-generated using the [reggen]({{< relref "util/reggen/README.md" >}}) tool.
 The specification for capturing the CSRs in the Hjson format can be found in the [Register Tool]({{< relref "doc/rm/register_tool" >}}) documentation.
 We currently check-in the auto-generated UVM RAL model along with our UVM testbench code and rely on CI checks for consistency.
-In future, we may move to a flow where it is not checked into the repository, but auto-generated on-the-fly as a part of the simulation.
+In the future we may move to a flow where it is not checked into the repository, but auto-generated on-the-fly as a part of the simulation.
 
 ### Testbench Automation
 
@@ -116,7 +116,7 @@ To that end, several commonly used verification infrastructure pieces are provid
 ### DV Base Library
 
 We provide an elementary scaffolding / base layer for constructing UVM testbenches via a [DV base library]({{< relref "hw/dv/sv/dv_lib/README" >}}) of classes to help us get off the ground quickly.
-Most, if not all testbenches in OpenTitan (whether developed for a comportable IP or not) extend from this library, which provides a common set of features.
+Most, if not all, testbenches in OpenTitan (whether developed for a comportable IP or not) extend from this library, which provides a common set of features.
 A UVM testbench feature (stimulus / sequence, checking logic or functional coverage element) that is generic enough to be applicable for use in all testbenches is a valid candidate to be added to the DV base library.
 By doing so, we improve synergies across our testbenches and reduce the overall development effort & time to market.
 The features are discussed in more detail in the document referenced above.
@@ -160,7 +160,7 @@ Tests at this level run relatively quickly and development cycles are shorter.
 Coverage closure is more intensive since there are typically no pre-verified sub-modules.
 To achieve our coverage goals, we take a constrained random approach to generate the stimulus.
 The DV environment models the behavior of the DUT more closely to perform checks (typically within the scoreboard) independently of the stimulus.
-In some IPs (specifically the ones that provide cryptographic functions), we also employ the use of open source third party C libraries as reference models to check the behavior of the DUT through DPI-C calls.
+In some IPs (specifically the ones that provide cryptographic functions), we also use open source third party C libraries as reference models to check the behavior of the DUT through DPI-C calls.
 
 Each of the IP level DV environments are described in further detail within their own [DV document](#dv-document).
 To find all of them, please navigate to this [landing page]({{< relref "hw" >}}).
@@ -169,7 +169,7 @@ The [UART DV document]({{< relref "hw/ip/uart/doc/dv" >}}) documentation which c
 ### Core Ibex Level DV
 
 The RISC-V CPU core Ibex used in OpenTitan has its own DV testbench and it is verified to full coverage closure.
-Please see the [Ibex DV documentumentation](https://github.com/lowRISC/opentitan/blob/master/hw/vendor/lowrisc_ibex/doc/verification.rst) for more details.
+Please see the [Ibex DV documentation](https://github.com/lowRISC/opentitan/blob/master/hw/vendor/lowrisc_ibex/doc/verification.rst) for more details.
 
 ### Chip Level DV
 
@@ -196,7 +196,7 @@ These set of tests (not exhaustive) provide the confidence that the design is re
 At this stage, just a skeleton testbench environment is available and most components lack functionality.
 A basic sanity test drives the clock, brings the DUT out of reset, checks if all outputs are legal values (not unknown) and exercise a major datapath with simple set of checks.
 This paves the way for more complex testing.
-During the DV plan and the DV document review, the key stake holders at the higher level who consume the DUT as an IP (for example, design and DV engineers wotking at the chip level into which the IP is integrated) may drive the requirements for the level of testing to be done.
+During the DV plan and the DV document review, the key stake holders at the higher level who consume the DUT as an IP (for example, design and DV engineers working at the chip level into which the IP is integrated) may drive the requirements for the level of testing to be done.
 This test (or set of tests) is also included as a part of the sanity regression to maintain the code health.
 
 #### CSR Suite of Tests
@@ -240,7 +240,7 @@ While some of the examples listed above pertain to concrete features in the desi
 #### Debug Tests
 
 This mainly applies to DUTs that contain a processing element (CPU).
-These focus verifying the debug features supported by the CPU at the chip level based on the [RISCV debug specification](https://riscv.org/specifications/debug-specification).
+These focus on verifying the debug features supported by the CPU at the chip level based on the [RISCV debug specification](https://riscv.org/specifications/debug-specification).
 
 #### Stress Tests
 
@@ -347,7 +347,7 @@ Code coverage is sometimes referred to as implicit coverage as it is generated b
 
 Unlike code coverage, functional coverage requires the designer and/or DV engineer to write additional cover points and covergroups.
 For this reason functional coverage is sometimes referred to as explicit coverage.
-Cover points and covergroups are more complex constructs that capture whether signals (that reflect the current state of the design) have met an interesting set or a sequence of values (often called corner cases)
+Cover points and covergroups are more complex constructs that capture whether signals (that reflect the current state of the design) have met an interesting set or a sequence of values (often called corner cases).
 These constructs also allow us to capture whether multiple scenarios have occurred simultaneously through crosses.
 This is also often referred to as cross coverage.
 These constructs are typically encapsulated in a class and are sometimes referred to as the 'functional coverage model'.
@@ -415,11 +415,11 @@ Post-simulation coverage analysis typically yields items that may need to be wai
 This is documented via exclusions, which are generated by the simulator tools.
 The following are some of the best practices when adding exclusions:
 
-*  Designers are required to sign-off on exclusions in a PR review
-*  Provide annotations for ALL exclusions to explain the reasoning for the waiver
-*  Annotate exclusions with a standardized prefix (this makes writing exclusions and reviewing them easier)
+*  Designers are required to sign-off on exclusions in a PR review.
+*  Provide annotations for ALL exclusions to explain the reasoning for the waiver.
+*  Annotate exclusions with a standardized prefix (this makes writing exclusions and reviewing them easier).
    Exclusions almost always fall under a set of categories that can be standardized.
-   Annotation can be prefixed with a catehgory tag reflecting one of those categories, like this:
+   Annotation can be prefixed with a category tag reflecting one of those categories, like this:
 
    `[CATEGORY-TAG] <additional explanation if required>`
 
@@ -433,7 +433,7 @@ The following are some of the best practices when adding exclusions:
    *  **UNSUPPORTED**: Item being excluded is a part of design feature that is not supported.
       Additional explanation is optional.
       *  IP designed by some other team / third party is incorporated, but only a subset of the features are in use. Remaining ones are not supported.
-      *  Features that are added into the design but are not made a part of the design specification for the current generation / chip being taped out
+      *  Features that are added into the design but are not made a part of the design specification for the current generation / chip being taped out.
       *  UVC / agent with detailed coverage items where certain crosses are not supported by the design (ex: TL agent with fcov on full spectrum of burst with all sizes and lengths, but only a subset of it actually being supported).
       Additional explanation is **mandatory**.
    *  **EXTERNAL**: Items that are already covered in another bench.
@@ -460,11 +460,11 @@ This section aims to capture some of the best practices related to coverage clos
 
 It is recommended to follow these guidelines when collecting coverage:
 
-*  Shape the coverage collection at compile time if possible by only enabling coverage collection on DUT/sub-modules and nodes, and/or metrics of interest
-*  Collect toggle coverage only on IOs of DUT and all of its sub-modules
-  *  If this is not worthwhile, then collect coverage on top-level DUT IOs and IOs of pre-verified sub-modules
-*  Collect all coverage metrics (except toggle based on above bullet) on the DUT and all of its non-pre-verified sub-modules
-*  Treat pre-verified sub-modules as ['black-box'](#integration-testing) in terms of coverage collection
+*  Shape the coverage collection at compile time if possible by only enabling coverage collection on DUT/sub-modules and nodes, and/or metrics of interest.
+*  Collect toggle coverage only on IOs of DUT and all of its sub-modules.
+  *  If this is not worthwhile, then collect toggle coverage on top-level DUT IOs and IOs of pre-verified sub-modules.
+*  Collect all coverage metrics (except toggle based on above bullet) on the DUT and all of its non-pre-verified sub-modules.
+*  Treat pre-verified sub-modules as ['black-box'](#integration-testing) in terms of coverage collection.
 
 ### Unreachable Coverage Analysis
 
@@ -480,7 +480,7 @@ util/dvsim/dvsim.py path/to/<dut>_sim_cfg.hjson --cov-unr
 ```
 3. If no exclusion file is generated, there is no unreachable code in RTL.
    If there is an exclusion file generated, the output should be reviewed by both designer and verification engineer.
-   When the unreachable code is sensible and we decide to exclude it in coverage report, create a PR to add to ['common_cov_excl.el'](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/vcs/common_cov_excl.el) or block specific exclusion file, such as ['uart_cov_excl.el'](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/dv/cov/uart_cov_excl.el)
+   When the unreachable code is sensible and we decide to exclude it in coverage report, create a PR to add to ['common_cov_excl.el'](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/vcs/common_cov_excl.el) or block specific exclusion file, such as ['uart_cov_excl.el'](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/dv/cov/uart_cov_excl.el).
 
 Here are some guidelines for using UNR and checking in generating exclusion.
 1. It's encouraged that designers run UNR to check the design in the early design stage (D1/D2), but adding exclusions for unreachable coverage should be done between the D2 and V3 stage when the design is frozen (no feature update is allowed, except bug fix).
@@ -505,8 +505,8 @@ As a result, classic RTL-sim often fail to detect design problems related to the
 With Xprop in RTL-sim, we can detect these problems without having to run gate-sim.
 
 Synopsys VCS and Cadence Xcelium both provide the following 2 modes for Xprop.
-  * **Optimistic Mode**: Closer to actual hardware behavior and is the more commonly used mode
-  * **Pessimistic Mode**: More pessimistic than a standard gate-sim
+  * **Optimistic Mode**: Closer to actual hardware behavior and is the more commonly used mode.
+  * **Pessimistic Mode**: More pessimistic than a standard gate-sim.
 
 Example:
 ```systemverilog
@@ -551,7 +551,7 @@ This section is TBD.
 
 ## Reviews
 
-One of the best ways to convince ourselves that we have done our job right is by seeking from as well as providing feedback to our contributors.
+One of the best ways to convince ourselves that we have done our job right is by seeking from, as well as providing feedback to, our contributors.
 We have the following types of reviews for DV.
 
 ### Code Reviews
@@ -591,4 +591,4 @@ These are discussed in the [Getting Started with DV]({{< relref "getting_started
 
 These capabilities are currently under active development and will be available sometime in the near future:
 
-*  Provide ability to run regressions
+*  Provide ability to run regressions.
