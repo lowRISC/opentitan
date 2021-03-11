@@ -66,7 +66,17 @@ OPTIONAL_FIELDS = {
         "information in a comment at the top of the "
         "file."
     ],
-    'wakeup_list': ['lnw', "list of peripheral wakeups"]
+    'wakeup_list': ['lnw', "list of peripheral wakeups"],
+    'attr': [
+        None,
+        "There are a few types of modules supported in the top"
+        "Normal(default): Normal, non-templated modules that will be instantiated"
+        "templated:   These modules are templated and must be run through topgen"
+        "reggen_top:  These modules are not templated, but need to have reggen run"
+        "             because they live exclusively in hw/top_* instead of hw/ip_*."
+        "             These modules are also instantiated in the top level."
+        "reggen_only: Similar to reggen_top, but are not instantiated in the top level."
+    ]
 }
 
 
@@ -91,7 +101,8 @@ class IpBlock:
                               Sequence[Signal]],
                  wakeups: Sequence[Signal],
                  reset_requests: Sequence[Signal],
-                 scan_reset: bool):
+                 scan_reset: bool,
+                 attr: Optional[str]):
         assert reg_blocks
         assert clock_signals
         assert reset_signals
@@ -122,6 +133,7 @@ class IpBlock:
         self.wakeups = wakeups
         self.reset_requests = reset_requests
         self.scan_reset = scan_reset
+        self.attr = attr
 
     @staticmethod
     def from_raw(param_defaults: List[Tuple[str, str]],
@@ -261,12 +273,15 @@ class IpBlock:
                              "by {})."
                              .format(name, dev_if_names,
                                      list(reg_block_names)))
+        attr = check_optional_str(rd.get('attr', None),
+                                  'attr field of ' + what)
+
 
         return IpBlock(name, regwidth, params, reg_blocks,
                        interrupts, no_auto_intr, alerts, no_auto_alert,
                        scan, inter_signals, bus_interfaces,
                        hier_path, clock_signals, reset_signals,
-                       xputs, wakeups, rst_reqs, scan_reset)
+                       xputs, wakeups, rst_reqs, scan_reset, attr)
 
     @staticmethod
     def from_text(txt: str,
@@ -330,6 +345,9 @@ class IpBlock:
             ret['reset_request_list'] = self.reset_requests
 
         ret['scan_reset'] = self.scan_reset
+
+        if self.attr:
+            ret['attr'] = self.attr
 
         return ret
 

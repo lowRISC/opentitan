@@ -42,6 +42,11 @@ def sv_base_addr(top: Top, if_name: Tuple[str, Optional[str]]) -> str:
     return "{}'h{:x}".format(top.regwidth, top.if_addrs[if_name])
 
 
+def is_top_inst(b) -> bool:
+    '''Return True if the block is instantiated under the top'''
+    return b.attr != "reggen_only"
+
+
 def gen_dv(block: IpBlock, dv_base_prefix: str, outdir: str) -> int:
     '''Generate DV files for an IpBlock'''
     return gen_ral(block, dv_base_prefix, outdir)

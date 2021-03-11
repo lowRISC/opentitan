@@ -793,6 +793,8 @@ def generate_top_ral(top: Dict[str, object],
         inst_name = module['name']
         block_name = module['type']
         block = name_to_block[block_name]
+        if "attr" in module:
+            block.attr = module["attr"]
 
         inst_to_block[inst_name] = block_name
         for if_name in block.reg_blocks.keys():

@@ -253,13 +253,18 @@ package ${block.name.lower()}_ral_pkg;
           qual_if_name = (inst, if_name)
           base_addr = block.if_addrs[qual_if_name]
           sv_base_addr = gen_dv.sv_base_addr(block, qual_if_name)
+
+          if gen_dv.is_top_inst(b):
+            hdl_path = "tb.dut.top_earlgrey.u_" + inst
+          else:
+            hdl_path = "tb.dut.u_" + inst
         %>\
       ${inst} = ${gen_dv.bcname(b)}::type_id::create("${inst}");
       ${inst}.configure(.parent(this));
       ${inst}.build(.base_addr(base_addr + ${sv_base_addr}), .csr_excl(csr_excl));
-      ${inst}.set_hdl_path_root("tb.dut.top_earlgrey.u_${inst}", "BkdrRegPathRtl");
-      ${inst}.set_hdl_path_root("tb.dut.top_earlgrey.u_${inst}", "BkdrRegPathRtlCommitted");
-      ${inst}.set_hdl_path_root("tb.dut.top_earlgrey.u_${inst}", "BkdrRegPathRtlShadow");
+      ${inst}.set_hdl_path_root("${hdl_path}", "BkdrRegPathRtl");
+      ${inst}.set_hdl_path_root("${hdl_path}", "BkdrRegPathRtlCommitted");
+      ${inst}.set_hdl_path_root("${hdl_path}", "BkdrRegPathRtlShadow");
       default_map.add_submap(.child_map(${inst}.default_map),
                              .offset(base_addr + ${sv_base_addr}));
       % endfor
