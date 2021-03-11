@@ -9,12 +9,13 @@ package rbox_reg_pkg;
   // Param list
   parameter int NumCombo = 4;
 
-  // Address width within the block
+  // Address widths within the block
   parameter int BlockAw = 7;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
   typedef struct packed {
     logic        q;
   } rbox_reg2hw_intr_state_reg_t;
@@ -261,7 +262,6 @@ package rbox_reg_pkg;
     } gsc_rst;
   } rbox_reg2hw_com_out_ctl_mreg_t;
 
-
   typedef struct packed {
     logic        d;
     logic        de;
@@ -364,10 +364,7 @@ package rbox_reg_pkg;
     } ec_rst_l_l2h;
   } rbox_hw2reg_key_intr_status_reg_t;
 
-
-  ///////////////////////////////////////
-  // Register to internal design logic //
-  ///////////////////////////////////////
+  // Register -> HW type
   typedef struct packed {
     rbox_reg2hw_intr_state_reg_t intr_state; // [276:276]
     rbox_reg2hw_intr_enable_reg_t intr_enable; // [275:275]
@@ -386,9 +383,7 @@ package rbox_reg_pkg;
     rbox_reg2hw_com_out_ctl_mreg_t [3:0] com_out_ctl; // [15:0]
   } rbox_reg2hw_t;
 
-  ///////////////////////////////////////
-  // Internal design logic to register //
-  ///////////////////////////////////////
+  // HW -> register type
   typedef struct packed {
     rbox_hw2reg_intr_state_reg_t intr_state; // [45:44]
     rbox_hw2reg_pin_in_value_reg_t pin_in_value; // [43:32]
@@ -396,7 +391,7 @@ package rbox_reg_pkg;
     rbox_hw2reg_key_intr_status_reg_t key_intr_status; // [23:0]
   } rbox_hw2reg_t;
 
-  // Register Address
+  // Register offsets
   parameter logic [BlockAw-1:0] RBOX_INTR_STATE_OFFSET = 7'h 0;
   parameter logic [BlockAw-1:0] RBOX_INTR_ENABLE_OFFSET = 7'h 4;
   parameter logic [BlockAw-1:0] RBOX_INTR_TEST_OFFSET = 7'h 8;
@@ -430,7 +425,7 @@ package rbox_reg_pkg;
   parameter logic [0:0] RBOX_INTR_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] RBOX_INTR_TEST_RBOX_INTR_O_RESVAL = 1'h 0;
 
-  // Register Index
+  // Register index
   typedef enum int {
     RBOX_INTR_STATE,
     RBOX_INTR_ENABLE,
@@ -493,5 +488,6 @@ package rbox_reg_pkg;
     4'b 0001, // index[26] RBOX_COMBO_INTR_STATUS
     4'b 0011  // index[27] RBOX_KEY_INTR_STATUS
   };
+
 endpackage
 
