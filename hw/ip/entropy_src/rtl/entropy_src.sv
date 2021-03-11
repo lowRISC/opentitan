@@ -12,7 +12,7 @@ module entropy_src
   import entropy_src_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter int EsFifoDepth = 2
+  parameter int EsFifoDepth = 4
 ) (
   input logic clk_i,
   input logic rst_ni,

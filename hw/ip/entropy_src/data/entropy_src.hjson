@@ -6,14 +6,6 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
-  param_list: [
-    { name: "EsFifoDepth",
-      desc: "Depth of the entropy FIFO",
-      type: "int",
-      default: "4",
-      local: "true"
-    },
-  ],
   interrupt_list: [
     { name: "es_entropy_valid"
       desc: "Asserted when entropy source bits are available."}
@@ -977,7 +969,7 @@
       hwaccess: "hwo",
       hwext: "true",
       fields: [
-        { bits: "1:0",
+        { bits: "2:0",
           name: "ENTROPY_FIFO_DEPTH",
           desc: "This is the depth of the entropy source FIFO."
         }
