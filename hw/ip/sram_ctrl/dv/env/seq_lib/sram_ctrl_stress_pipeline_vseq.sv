@@ -22,17 +22,7 @@ class sram_ctrl_stress_pipeline_vseq extends sram_ctrl_multiple_keys_vseq;
 
     stress_pipeline = 1'b1;
 
-    cfg.m_sram_cfg.a_valid_delay_min = 0;
-    cfg.m_sram_cfg.a_valid_delay_max = 0;
-
-    cfg.m_sram_cfg.a_ready_delay_min = 0;
-    cfg.m_sram_cfg.a_ready_delay_max = 0;
-
-    cfg.m_sram_cfg.d_ready_delay_min = 0;
-    cfg.m_sram_cfg.d_ready_delay_max = 0;
-
-    cfg.m_sram_cfg.d_valid_delay_min = 0;
-    cfg.m_sram_cfg.d_valid_delay_max = 0;
+    cfg.set_sram_zero_delays();
 
     super.pre_start();
 

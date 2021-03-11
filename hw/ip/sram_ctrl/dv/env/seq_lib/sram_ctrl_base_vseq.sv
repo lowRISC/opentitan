@@ -96,8 +96,16 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   // Task to perform `num_ops` fully randomized memory transactions.
+  //
+  // Includes capability to abort transactions after several cycles if no response
+  // is seen from the SRAM.
+  // This is useful for when we are testing memory operations during terminal states
+  // (such as during LC escalations or parity errors), which are expected to not respond at all.
   virtual task do_rand_ops(int num_ops,
-                           bit blocking = $urandom_range(0, 1));
+                           bit blocking = $urandom_range(0, 1),
+                           bit abort    = 0);
+    uvm_status_e status;
+
     bit [TL_DW-1:0] data;
     bit [TL_AW-1:0] addr;
     bit we;
@@ -106,12 +114,14 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
       `DV_CHECK_STD_RANDOMIZE_FATAL(we)
       `DV_CHECK_STD_RANDOMIZE_FATAL(addr)
 
-      tl_access(.addr(addr),
-                .data(data),
-                .mask(get_rand_contiguous_mask()),
-                .write(we),
-                .blocking(blocking),
-                .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));
+      tl_access_w_abort(.addr(addr),
+                        .data(data),
+                        .status(status),
+                        .mask(get_rand_contiguous_mask()),
+                        .write(we),
+                        .blocking(blocking),
+                        .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h),
+                        .req_abort_pct((abort) ? 100 : 0));
     end
     csr_utils_pkg::wait_no_outstanding_access();
   endtask

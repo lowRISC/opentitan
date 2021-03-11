@@ -12,6 +12,18 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // local variables
 
+  bit [TL_DW-1:0] exp_status = '0;
+
+  // This bit goes high as soon as a LC escalation request is seen on the interface,
+  // and goes low once the scoreboard has finished all internal handling logic up to
+  // resetting the key and nonce (one cycle after `exp_status` is updated).
+  bit handling_lc_esc;
+
+  // this bit goes high immediately after waiting for
+  // LC_ESCALATION_PROPAGATION_DELAY cycles, to signal that
+  // the LC escalation has finished propagating through the design
+  bit status_lc_esc;
+
   typedef struct {
     // 1 for writes, 0 for reads
     bit we;
@@ -97,6 +109,21 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     t.nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
   endfunction
 
+  // utility function used by `process_sram_tl_d_chan_fifo()` to check that
+  // the current data_phase transaction matches the transaction pulled from the `addr_phase_mbox`
+  //
+  // can also be more generally used to check equality of two transactions
+  function bit eq_trans(sram_trans_t t1, sram_trans_t t2);
+    bit equal = (t1.we == t2.we) && (eq_sram_addr(t1.addr, t2.addr)) &&
+                (t1.mask == t2.mask) && (t1.key == t2.key) && (t1.nonce == t2.nonce);
+    `uvm_info(`gfn, $sformatf("Comparing 2 transactions:\nt1: %0p\nt2: %0p", t1, t2), UVM_HIGH)
+    // as one of the sram_trans_t structs will be still in address phase,
+    // it may not have the data field available if it is a READ operation
+    //
+    // in this case, only compare the data field if these are write transactions
+    return (equal && t1.we) ? (equal && (t1.data == t2.data)) : equal;
+  endfunction
+
   // utility function to clear all RAW hazard state
   function void clear_hazard_state();
     in_raw_hazard = 0;
@@ -131,6 +158,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+      process_lc_escalation();
       process_sram_tl_a_chan_fifo();
       process_sram_tl_d_chan_fifo();
       process_kdi_fifo();
@@ -138,60 +166,121 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     join_none
   endtask
 
+  virtual task process_lc_escalation();
+    forever begin
+      wait(cfg.lc_vif.lc_esc_en == lc_ctrl_pkg::On);
+      `uvm_info(`gfn, "LC escalation request detected", UVM_HIGH)
+
+      handling_lc_esc = 1;
+
+      // escalation signal needs 3 cycles to be propagated through the DUT
+      cfg.clk_rst_vif.wait_clks(LC_ESCALATION_PROPAGATION_CYCLES);
+
+      // signal that the escalation propagation has finished.
+      //
+      // updated control signals should now be broadcast from `sram_ctrl`
+      // to the rest of the SRAM subsystem
+      status_lc_esc = 1;
+
+      // Though the updated STATUS fields, key, and nonce are available
+      // LC_ESCALATION_PROPAGATION_CYCLES after detecting an escalation request,
+      // these values only become valid on the cycle after that.
+      //
+      // We wait a cycle here so the invalid values do not corrupt scoreboard state.
+      cfg.clk_rst_vif.wait_clks(1);
+
+      exp_status[SramCtrlEscalated]       = 1;
+      exp_status[SramCtrlScrKeySeedValid] = 0;
+
+      // escalation resets the key and nonce back to defaults
+      key   = sram_ctrl_pkg::RndCnstSramKeyDefault;
+      nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
+
+      // insert a small delay before dropping `handling_lc_esc`.
+      //
+      // This indicates that the scoreboard is done handling the internal updates required
+      // by an escalation request.
+      //
+      // However, this also has the effect of letting us handle a particularly tricky edge
+      // case where a memory request is sent on the cycle before `status_lc_esc` goes high.
+      // (see issue lowRISC/opentitan#5590).
+      //
+      // In this scenario, the `sram_tl_d_chan_fifo` will get the valid response tl_seq_item from
+      // the SRAM's TL response channel.
+      // As per issue #5590, even though the response is perfectly valid, any read data will be
+      // corrupted/incorrect due to the key input to `PRINCE` switching mid-way through keystream
+      // generation.
+      // This means that there will be a valid `sram_trans_t` item in `addr_phase_mbox` that we need
+      // to ignore as it will be corrupted, so we use `handling_lc_esc` as an indicator of when we
+      // can safely throw an error if an unexpected `tl_seq_item` is received by the
+      // `sram_tl_d_chan_fifo`.
+      //
+      // Again as per #5590, even if a write is performed successfully in this edge case it is ok to
+      // ignore it - we technically do not care about the write as the SRAM must be reset anyways
+      // before any more valid accesses can be made.
+      #1 handling_lc_esc = 0;
+
+      // lc escalation status will be dropped after reset, no further action needed
+      wait(cfg.lc_vif.lc_esc_en == lc_ctrl_pkg::Off);
+    end
+  endtask
+
   virtual task process_sram_tl_a_chan_fifo();
     tl_seq_item item;
     sram_trans_t addr_trans;
     forever begin
-      if (cfg.en_scb) begin
+      if (sram_tl_a_chan_fifo.try_get(item) > 0) begin // received a tl_seq_item
+        `uvm_info(`gfn, $sformatf("Received sram_tl_a_chan item:\n%0s", item.sprint()), UVM_HIGH)
 
-        if (sram_tl_a_chan_fifo.try_get(item) > 0) begin // received a tl_seq_item
-          `uvm_info(`gfn, $sformatf("Received sram_tl_a_chan item:\n%0s", item.sprint()), UVM_HIGH)
+        if (!cfg.en_scb) continue;
 
-          // TODO: need to ensure that we don't process TLUL errors
+        // If the escalation propagation has finished,
+        // do not process anymore addr_phase transactions
+        if (status_lc_esc) continue;
 
-          addr_trans.we    = item.is_write();
-          addr_trans.addr  = word_align_addr(item.a_addr);
-          addr_trans.mask  = item.a_mask;
-          addr_trans.key   = key;
-          addr_trans.nonce = nonce;
-          if (item.is_write()) begin
-            addr_trans.data = item.a_data;
-          end
+        // TODO: need to ensure that we don't process TLUL errors
 
-          // write the addr_trans into the mailbox
-          addr_phase_mbox.put(addr_trans);
+        addr_trans.we    = item.is_write();
+        addr_trans.addr  = word_align_addr(item.a_addr);
+        addr_trans.mask  = item.a_mask;
+        addr_trans.key   = key;
+        addr_trans.nonce = nonce;
+        if (item.is_write()) begin
+          addr_trans.data = item.a_data;
+        end
+        // write the addr_trans into the mailbox
+        addr_phase_mbox.put(addr_trans);
 
-          `uvm_info({`gfn, "::process_sram_tl_a_chan_fifo()"},
-                    $sformatf("Put ADDR_PHASE transaction into addr_phase_mbox: %0p", addr_trans),
-                    UVM_HIGH)
+        `uvm_info({`gfn, "::process_sram_tl_a_chan_fifo()"},
+            $sformatf("Put ADDR_PHASE transaction into addr_phase_mbox: %0p", addr_trans),
+            UVM_HIGH)
 
-          // terminate the raw_hazard status if we see this series of mem accesses -
-          // `write -> 1+ reads -> write`, where we are currently looking at
-          // the final `write` transaction
-          //
-          // in this case, we should send the held write transaction off to be checked,
-          // and not do anything to the pending address transaction currently in the address phase
-          //
-          // we also need to lower `in_raw_hazard` as we no longer require data forwarding
-          cfg.clk_rst_vif.wait_n_clks(1);
-          if (in_raw_hazard && addr_trans.we) begin
-            `uvm_info(`gfn, "next b2b transaction is a write, clearing hazard state", UVM_HIGH)
-            completed_trans_mbox.put(held_trans);
-            clear_hazard_state();
-          end
-        end else begin // didn't receive tl_seq_item
-
-          // terminate the raw_hazard status in the scenario:
-          // `write -> 1+ reads -> empty cycle` - if an empty cycle occurs after the last read
-          // transaction that causes a hazard, the write will be resolved during this cycle,
-          // so clear the hazard status and check the held write transaction
-          if (in_raw_hazard) begin
-            `uvm_info(`gfn, "Empty cycle seen after hazardous read, clearing hazard state", UVM_HIGH)
-            completed_trans_mbox.put(held_trans);
-            clear_hazard_state();
-          end
+        // terminate the raw_hazard status if we see this series of mem accesses -
+        // `write -> 1+ reads -> write`, where we are currently looking at
+        // the final `write` transaction
+        //
+        // in this case, we should send the held write transaction off to be checked,
+        // and not do anything to the pending address transaction currently in the address phase
+        //
+        // we also need to lower `in_raw_hazard` as we no longer require data forwarding
+        cfg.clk_rst_vif.wait_n_clks(1);
+        if (in_raw_hazard && addr_trans.we) begin
+          `uvm_info(`gfn, "next b2b transaction is a write, clearing hazard state", UVM_HIGH)
+          completed_trans_mbox.put(held_trans);
+          clear_hazard_state();
         end
 
+      end else begin // didn't receive tl_seq_item
+
+        // terminate the raw_hazard status in the scenario:
+        // `write -> 1+ reads -> empty cycle` - if an empty cycle occurs after the last read
+        // transaction that causes a hazard, the write will be resolved during this cycle,
+        // so clear the hazard status and check the held write transaction
+        if (in_raw_hazard && !status_lc_esc) begin
+          `uvm_info(`gfn, "Empty cycle seen after hazardous read, clearing hazard state", UVM_HIGH)
+          completed_trans_mbox.put(held_trans);
+          clear_hazard_state();
+        end
       end
 
       // wait a cycle before next non-blocking check to sram_tl_a_chan
@@ -206,6 +295,8 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     sram_trans_t addr_trans;
     sram_trans_t data_trans;
 
+    bit addr_trans_available = 0;
+
     forever begin
       sram_tl_d_chan_fifo.get(item);
       if (!cfg.en_scb) continue;
@@ -216,6 +307,27 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       // check packet integrity
       void'(item.is_ok());
 
+      addr_trans_available = (addr_phase_mbox.try_get(addr_trans) > 0);
+
+      // See the explanation in `process_lc_escalation()` as to why we use `handling_lc_esc`.
+      //
+      // Excepting this edge case, detecting any other item in the `addr_phase_mbox` indicates that
+      // a TLUL response has been seen from the SRAM even though it hasn't been processed by
+      // `process_sram_tl_a_chan_fifo()`. This means one of two things:
+      //
+      // 1) There is a bug in the scoreboard.
+      //
+      // 2) There is a bug in the design and the SRAM is actually servicing memory requests
+      //    while in the terminal escalated state.
+      if (status_lc_esc) begin
+        if (handling_lc_esc) begin
+          continue;
+        end else begin
+          `DV_CHECK_EQ(addr_trans_available, 1,
+              "SRAM returned TLUL response in LC escalation state")
+        end
+      end
+
       // the addr_phase_mbox will be populated during A_phase of each memory transaction.
       //
       // since we use the addr_phase_mbox in this task to check for data forwarding hazards,
@@ -225,24 +337,25 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       // - the mailbox will have at least 1 addr_trans item in it at this point
       // - the first item in the mailbox matches up to the current data_phase transaction
       //
-      // as a result we can safely remove the item from the mailbox here
-      `DV_CHECK_NE(addr_phase_mbox.try_get(addr_trans), 0,
+      // as a result we can safely remove the item from the mailbox here,
+      // and check that the addr_trans and data_trans correspond to the same TLUL operation
+      `DV_CHECK_NE(addr_trans_available, 0,
         "AddrPhase transaction not available in addr_phase_mbox")
 
       // assign data_trans fields
       clear_trans(data_trans);
+      data_trans.we    = item.is_write();
       data_trans.addr  = word_align_addr(item.a_addr);
       data_trans.mask  = item.a_mask;
-      data_trans.key   = key;
-      data_trans.nonce = nonce;
+      data_trans.key   = addr_trans.key;
+      data_trans.nonce = addr_trans.nonce;
+      data_trans.data  = item.is_write() ? item.a_data : item.d_data;
+      `DV_CHECK_EQ(eq_trans(addr_trans, data_trans), 1)
 
       `uvm_info(`gfn, $sformatf("in_raw_hazard: %0d",  in_raw_hazard), UVM_HIGH)
 
-      if (item.d_opcode == tlul_pkg::AccessAckData) begin // read
+      if (!item.is_write()) begin // read
         `uvm_info(`gfn, "Processing READ transaction", UVM_HIGH)
-
-        data_trans.we = 0;
-        data_trans.data = item.d_data;
 
         if (in_raw_hazard) begin
           // executing a read while `in_raw_hazard` is high means that this read comes after
@@ -266,13 +379,10 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
         end else begin
           completed_trans_mbox.put(data_trans);
         end
-      end else if (item.d_opcode == tlul_pkg::AccessAck) begin // write
+      end else if (item.is_write()) begin // write
         bit b2b_detected;
 
         `uvm_info(`gfn, "Processing WRITE transaction", UVM_HIGH)
-
-        data_trans.we = 1;
-        data_trans.data = item.a_data;
 
         // insert a small delay before checking addr_phase_mbox to allow b2b
         // transactions to be picked up (otherwise we wait until the next cycle)
@@ -333,10 +443,19 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       kdi_fifo.get(item);
       `uvm_info(`gfn, $sformatf("Received transaction from kdi_fifo:\n%0s", item.convert2string()), UVM_HIGH)
 
+      // after a KDI transaction is completed, it takes 4 clock cycles in the SRAM domain
+      // to properly synchronize and propagate the data through the DUT
+      cfg.clk_rst_vif.wait_clks(KDI_PROPAGATION_CYCLES);
+
       // When KDI item is seen, update key, nonce
-      //
-      // TODO: update STATUS.scr_key_seed_valid
       {key, nonce, seed_valid} = item.d_data;
+
+      // scr_key_valid simply denotes that a successful handshake with OTP has completed,
+      // so this will be 1 whenever we get a copmleted transaction item
+      exp_status[SramCtrlScrKeyValid]     = 1;
+
+      // if we are in escalated state, scr_key_seed_valid will always stay low
+      exp_status[SramCtrlScrKeySeedValid] = status_lc_esc ? 0 :seed_valid;
 
       `uvm_info(`gfn, $sformatf("Updated key: 0x%0x", key), UVM_HIGH)
       `uvm_info(`gfn, $sformatf("Updated nonce: 0x%0x", nonce), UVM_HIGH)
@@ -448,8 +567,9 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       "exec": begin
       end
       "status": begin
-        // TODO
-        do_read_check = 1'b0;
+        if (addr_phase_read) begin
+          void'(ral.status.predict(.value(exp_status), .kind(UVM_PREDICT_READ)));
+        end
       end
       "ctrl_regwen": begin
         // do nothing
@@ -457,6 +577,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       "ctrl": begin
         // do nothing if 0 is written
         if (addr_phase_write && item.a_data) begin
+          exp_status[SramCtrlScrKeyValid] = 0;
         end
       end
       "error_address": begin
@@ -480,7 +601,12 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
+    key = sram_ctrl_pkg::RndCnstSramKeyDefault;
+    nonce = sram_ctrl_pkg::RndCnstSramNonceDefault;
     clear_hazard_state();
+    exp_status = '0;
+    handling_lc_esc = 0;
+    status_lc_esc = 0;
   endfunction
 
   function void check_phase(uvm_phase phase);
@@ -488,8 +614,19 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, sram_tl_a_chan_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, sram_tl_d_chan_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(push_pull_item#(.DeviceDataWidth(KDI_DATA_SIZE)), kdi_fifo)
-    `DV_CHECK_EQ(addr_phase_mbox.num(), 0, "Items still remain in addr_phase_mbox!")
-    `DV_CHECK_EQ(completed_trans_mbox.num(), 0, "Items still remain in completed_trans_mbox!")
+    // check addr_phase_mbox
+    while (addr_phase_mbox.num() != 0) begin
+      sram_trans_t t;
+      void'(addr_phase_mbox.try_get(t));
+      `uvm_error(`gfn, $sformatf("addr_phase_mbox item uncompared:\n%0p", t))
+    end
+
+    // check completed_trans_mbox
+    while (completed_trans_mbox.num() != 0) begin
+      sram_trans_t t;
+      void'(completed_trans_mbox.try_get(t));
+      `uvm_error(`gfn, $sformatf("completed_trans_mbox item uncompared:\n%0p", t))
+    end
   endfunction
 
 endclass
