@@ -52,7 +52,7 @@ RTL           | [ARCHITECTURE_FROZEN][] | Done        |
 RTL           | [REVIEW_TODO][]         | Pending     |
 RTL           | [STYLE_X][]             | Done        |
 Code Quality  | [LINT_PASS][]           | Done        |
-Code Quality  | [CDC_SETUP][]           | Waived      | CDC flow is not available yet. 
+Code Quality  | [CDC_SETUP][]           | Waived      | CDC flow is not available yet.
 Code Quality  | [FPGA_TIMING][]         | Done        |
 Code Quality  | [CDC_SYNCMACRO][]       | Waived      |
 Security      | [SEC_CM_IMPLEMENTED][]  | Not Started |
