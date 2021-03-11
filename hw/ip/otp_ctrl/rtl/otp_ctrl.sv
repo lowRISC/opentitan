@@ -591,7 +591,8 @@ module otp_ctrl
   // transactions can be completely independent.
   prim_arbiter_tree #(
     .N(NumAgents),
-    .DW($bits(otp_bundle_t))
+    .DW($bits(otp_bundle_t)),
+    .EnReqStabA(0)
   ) u_otp_arb (
     .clk_i,
     .rst_ni,
