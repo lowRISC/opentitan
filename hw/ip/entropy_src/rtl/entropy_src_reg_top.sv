@@ -332,7 +332,7 @@ module entropy_src_reg_top (
   logic [6:0] pre_cond_fifo_depth_qs;
   logic [6:0] pre_cond_fifo_depth_wd;
   logic pre_cond_fifo_depth_we;
-  logic [1:0] debug_status_entropy_fifo_depth_qs;
+  logic [2:0] debug_status_entropy_fifo_depth_qs;
   logic debug_status_entropy_fifo_depth_re;
   logic debug_status_diag_qs;
   logic debug_status_diag_re;
@@ -2027,9 +2027,9 @@ module entropy_src_reg_top (
 
   // R[debug_status]: V(True)
 
-  //   F[entropy_fifo_depth]: 1:0
+  //   F[entropy_fifo_depth]: 2:0
   prim_subreg_ext #(
-    .DW    (2)
+    .DW    (3)
   ) u_debug_status_entropy_fifo_depth (
     .re     (debug_status_entropy_fifo_depth_re),
     .we     (1'b0),
@@ -2888,7 +2888,7 @@ module entropy_src_reg_top (
       end
 
       addr_hit[43]: begin
-        reg_rdata_next[1:0] = debug_status_entropy_fifo_depth_qs;
+        reg_rdata_next[2:0] = debug_status_entropy_fifo_depth_qs;
         reg_rdata_next[31] = debug_status_diag_qs;
       end
 
