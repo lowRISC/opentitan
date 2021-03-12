@@ -554,8 +554,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           // Check failure can trigger all kinds of errors.
           if (under_chk) status_mask = '1;
 
-          if (!under_chk && `gmv(ral.status.check_pending)) status_mask[OtpTimeoutErrIdx] = 1;
-
           // Mask out otp_dai access related field - we do not know how long it takes to finish
           // DAI access.
           if (under_dai_access) begin
@@ -579,8 +577,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
               exp_status[OtpCheckPendingIdx] = 0;
               under_chk = 0;
             end
-          end else begin
-            if (`gmv(ral.status.check_pending)) under_chk = 1;
           end
 
           if (under_dai_access) begin
@@ -597,6 +593,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       "check_trigger": begin
         if (addr_phase_write && `gmv(ral.check_trigger_regwen) && item.a_data inside {[1:3]}) begin
           exp_status[OtpCheckPendingIdx] = 1;
+          under_chk = 1;
           if (`gmv(ral.check_timeout) > 0 && `gmv(ral.check_timeout) <= CHK_TIMEOUT_CYC) begin
             set_exp_alert("fatal_check_error", 1, `gmv(ral.check_timeout));
             predict_err(OtpTimeoutErrIdx);
