@@ -202,6 +202,13 @@
           act:     "rcv",
           package: "lc_ctrl_pkg",
         },
+
+        { struct:  "ram_1p_cfg_t",
+          type:    "uni",
+          name:    "ram_cfg",
+          act:     "rcv",
+          package: "prim_ram_1p_pkg"
+        }
       ],
     }
     { name: "rv_dm",
@@ -808,7 +815,7 @@
   //  e.g flash_ctrl0.flash: [flash_phy0.flash_ctrl]
   inter_module: {
     'connect': {
-      'ast.ram_1p_cfg'          : ['otbn.ram_cfg', 'ram_main.cfg', 'ram_ret_aon.cfg'],
+      'ast.ram_1p_cfg'          : ['otbn.ram_cfg', 'ram_main.cfg', 'ram_ret_aon.cfg', 'rv_core_ibex.ram_cfg'],
       'ast.ram_2p_cfg'          : ['spi_device.ram_cfg', 'usbdev.ram_cfg'],
       'ast.rom_cfg'             : ['rom.cfg'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
