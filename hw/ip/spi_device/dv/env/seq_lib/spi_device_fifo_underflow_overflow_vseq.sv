@@ -8,6 +8,10 @@ class spi_device_fifo_underflow_overflow_vseq extends spi_device_txrx_vseq;
   `uvm_object_utils(spi_device_fifo_underflow_overflow_vseq)
   `uvm_object_new
 
+  constraint num_trans_c {
+    num_trans inside {[2:3]};
+  }
+
   virtual task body();
     allow_underflow_overflow = 1;
     // when underflow, sio may be unknown, disable checking it
