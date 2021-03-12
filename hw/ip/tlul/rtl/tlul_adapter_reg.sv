@@ -91,7 +91,7 @@ module tlul_adapter_reg import tlul_pkg::*; #(
       rdata  <= '0;
       error <= 1'b0;
     end else if (a_ack) begin
-      rdata <= (error_i || err_internal) ? '1 : rdata_i;
+      rdata <= (error_i || err_internal || wr_req) ? '1 : rdata_i;
       error <= error_i | err_internal;
     end
   end
@@ -101,7 +101,7 @@ module tlul_adapter_reg import tlul_pkg::*; #(
     logic [DataMaxWidth-1:0] unused_data;
 
     prim_secded_64_57_enc u_data_gen (
-      .in(DataMaxWidth'(rdata_i)),
+      .in(DataMaxWidth'(rdata)),
       .out({data_intg, unused_data})
     );
   end else begin : gen_tieoff_data_intg
