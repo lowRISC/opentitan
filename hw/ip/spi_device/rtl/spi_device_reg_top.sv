@@ -1481,8 +1481,6 @@ module spi_device_reg_top (
   assign rxf_ptr_rptr_we = addr_hit[8] & reg_we & !reg_error;
   assign rxf_ptr_rptr_wd = reg_wdata[15:0];
 
-
-
   assign txf_ptr_wptr_we = addr_hit[9] & reg_we & !reg_error;
   assign txf_ptr_wptr_wd = reg_wdata[31:16];
 

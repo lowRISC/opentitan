@@ -1060,7 +1060,6 @@ module hmac_reg_top (
 
   assign status_fifo_depth_re = addr_hit[5] & reg_re & !reg_error;
 
-
   assign wipe_secret_we = addr_hit[7] & reg_we & !reg_error;
   assign wipe_secret_wd = reg_wdata[31:0];
 
@@ -1103,8 +1102,6 @@ module hmac_reg_top (
   assign digest_6_re = addr_hit[22] & reg_re & !reg_error;
 
   assign digest_7_re = addr_hit[23] & reg_re & !reg_error;
-
-
 
   // Read data return
   always_comb begin

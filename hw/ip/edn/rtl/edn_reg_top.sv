@@ -958,8 +958,6 @@ module edn_reg_top (
   assign sw_cmd_req_we = addr_hit[7] & reg_we & !reg_error;
   assign sw_cmd_req_wd = reg_wdata[31:0];
 
-
-
   assign reseed_cmd_we = addr_hit[9] & reg_we & !reg_error;
   assign reseed_cmd_wd = reg_wdata[31:0];
 
@@ -968,13 +966,6 @@ module edn_reg_top (
 
   assign max_num_reqs_between_reseeds_we = addr_hit[11] & reg_we & !reg_error;
   assign max_num_reqs_between_reseeds_wd = reg_wdata[31:0];
-
-
-
-
-
-
-
 
   assign err_code_test_we = addr_hit[13] & reg_we & !reg_error;
   assign err_code_test_wd = reg_wdata[4:0];

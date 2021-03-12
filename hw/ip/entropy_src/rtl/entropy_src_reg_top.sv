@@ -2457,9 +2457,6 @@ module entropy_src_reg_top (
   assign regwen_we = addr_hit[4] & reg_we & !reg_error;
   assign regwen_wd = reg_wdata[0];
 
-
-
-
   assign conf_enable_we = addr_hit[6] & reg_we & !reg_error;
   assign conf_enable_wd = reg_wdata[1:0];
 
@@ -2665,14 +2662,6 @@ module entropy_src_reg_top (
 
   assign seed_we = addr_hit[44] & reg_we & !reg_error;
   assign seed_wd = reg_wdata[3:0];
-
-
-
-
-
-
-
-
 
   assign err_code_test_we = addr_hit[46] & reg_we & !reg_error;
   assign err_code_test_wd = reg_wdata[4:0];

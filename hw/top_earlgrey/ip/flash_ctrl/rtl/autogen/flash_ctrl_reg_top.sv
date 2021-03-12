@@ -11586,11 +11586,6 @@ module flash_ctrl_reg_top (
   assign op_status_err_we = addr_hit[80] & reg_we & !reg_error;
   assign op_status_err_wd = reg_wdata[1];
 
-
-
-
-
-
   assign err_code_flash_err_we = addr_hit[82] & reg_we & !reg_error;
   assign err_code_flash_err_wd = reg_wdata[0];
 
@@ -11606,17 +11601,11 @@ module flash_ctrl_reg_top (
   assign err_code_ecc_multi_err_we = addr_hit[82] & reg_we & !reg_error;
   assign err_code_ecc_multi_err_wd = reg_wdata[4];
 
-
-
-
   assign phy_alert_cfg_alert_ack_we = addr_hit[86] & reg_we & !reg_error;
   assign phy_alert_cfg_alert_ack_wd = reg_wdata[0];
 
   assign phy_alert_cfg_alert_trig_we = addr_hit[86] & reg_we & !reg_error;
   assign phy_alert_cfg_alert_trig_wd = reg_wdata[1];
-
-
-
 
   assign scratch_we = addr_hit[88] & reg_we & !reg_error;
   assign scratch_wd = reg_wdata[31:0];

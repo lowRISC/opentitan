@@ -3857,12 +3857,6 @@ module rbox_reg_top (
   assign pin_out_value_key2_out_we = addr_hit[8] & reg_we & !reg_error;
   assign pin_out_value_key2_out_wd = reg_wdata[5];
 
-
-
-
-
-
-
   assign key_intr_ctl_pwrb_in_h2l_we = addr_hit[10] & reg_we & !reg_error;
   assign key_intr_ctl_pwrb_in_h2l_wd = reg_wdata[0];
 

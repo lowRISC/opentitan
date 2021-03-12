@@ -1836,19 +1836,6 @@ module spi_host_reg_top (
   assign control_spien_we = addr_hit[3] & reg_we & !reg_error;
   assign control_spien_wd = reg_wdata[31];
 
-
-
-
-
-
-
-
-
-
-
-
-
-
   assign configopts_clkdiv_0_we = addr_hit[5] & reg_we & !reg_error;
   assign configopts_clkdiv_0_wd = reg_wdata[15:0];
 

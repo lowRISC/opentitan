@@ -606,7 +606,6 @@ module gpio_reg_top (
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
   assign intr_test_wd = reg_wdata[31:0];
 
-
   assign direct_out_we = addr_hit[4] & reg_we & !reg_error;
   assign direct_out_wd = reg_wdata[31:0];
   assign direct_out_re = addr_hit[4] & reg_re & !reg_error;

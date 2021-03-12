@@ -6736,7 +6736,6 @@ module usbdev_reg_top (
   assign wake_config_wake_ack_we = addr_hit[28] & reg_we & !reg_error;
   assign wake_config_wake_ack_wd = reg_wdata[1];
 
-
   // Read data return
   always_comb begin
     reg_rdata_next = '0;

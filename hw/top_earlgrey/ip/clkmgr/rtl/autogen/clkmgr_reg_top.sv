@@ -491,10 +491,6 @@ module clkmgr_reg_top (
   assign clk_hints_clk_main_otbn_hint_we = addr_hit[2] & reg_we & !reg_error;
   assign clk_hints_clk_main_otbn_hint_wd = reg_wdata[3];
 
-
-
-
-
   // Read data return
   always_comb begin
     reg_rdata_next = '0;

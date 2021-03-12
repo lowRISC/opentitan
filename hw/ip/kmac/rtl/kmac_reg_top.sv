@@ -2247,7 +2247,6 @@ module kmac_reg_top (
   assign prefix_10_we = addr_hit[53] & reg_we & !reg_error;
   assign prefix_10_wd = reg_wdata[31:0];
 
-
   // Read data return
   always_comb begin
     reg_rdata_next = '0;

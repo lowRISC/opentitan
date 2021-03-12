@@ -1651,12 +1651,8 @@ module csrng_reg_top (
   assign ctrl_fifo_depth_sts_sel_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_fifo_depth_sts_sel_wd = reg_wdata[19:16];
 
-
-
   assign cmd_req_we = addr_hit[7] & reg_we & !reg_error;
   assign cmd_req_wd = reg_wdata[31:0];
-
-
 
   assign genbits_vld_genbits_vld_re = addr_hit[9] & reg_re & !reg_error;
 
@@ -1667,7 +1663,6 @@ module csrng_reg_top (
   assign halt_main_sm_we = addr_hit[11] & reg_we & !reg_error;
   assign halt_main_sm_wd = reg_wdata[0];
 
-
   assign int_state_num_we = addr_hit[13] & reg_we & !reg_error;
   assign int_state_num_wd = reg_wdata[3:0];
 
@@ -1675,31 +1670,6 @@ module csrng_reg_top (
 
   assign hw_exc_sts_we = addr_hit[15] & reg_we & !reg_error;
   assign hw_exc_sts_wd = reg_wdata[14:0];
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   assign err_code_test_we = addr_hit[17] & reg_we & !reg_error;
   assign err_code_test_wd = reg_wdata[4:0];

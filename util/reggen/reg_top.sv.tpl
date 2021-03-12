@@ -541,8 +541,13 @@ ${bits.msb}\
   % endif
 </%def>\
 <%def name="we_gen(field, sig_name, hwext, shadowed, idx)">\
-
-% if field.swaccess.allows_write():
+<%
+    needs_we = field.swaccess.allows_write()
+    needs_re = (field.swaccess.allows_read() and hwext) or shadowed
+    space = '\n' if needs_we or needs_re else ''
+%>\
+${space}\
+% if needs_we:
   % if field.swaccess.swrd() != SwRdAccess.RC:
   assign ${sig_name}_we = addr_hit[${idx}] & reg_we & !reg_error;
   assign ${sig_name}_wd = reg_wdata[${str_bits_sv(field.bits)}];
@@ -552,7 +557,7 @@ ${bits.msb}\
   assign ${sig_name}_wd = '1;
   % endif
 % endif
-% if (field.swaccess.allows_read() and hwext) or shadowed:
+% if needs_re:
   assign ${sig_name}_re = addr_hit[${idx}] & reg_re & !reg_error;
 % endif
 </%def>\
