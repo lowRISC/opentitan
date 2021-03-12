@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description: RBOX combo Module
+// Description: sysrst_ctrl combo Module
 //
-module rbox_combo import rbox_reg_pkg::*; (
+module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
   input  clk_aon_i,
   input  rst_slow_ni,
   input  clk_i,
@@ -17,14 +17,14 @@ module rbox_combo import rbox_reg_pkg::*; (
   input  ac_present_int,
   input  cio_ec_rst_l_i,
 
-  input  rbox_reg2hw_ec_rst_ctl_reg_t ec_rst_ctl_i,
-  input  rbox_reg2hw_key_intr_debounce_ctl_reg_t key_intr_debounce_ctl_i,
-  input  rbox_reg2hw_com_sel_ctl_mreg_t [NumCombo-1:0] com_sel_ctl_i,
-  input  rbox_reg2hw_com_det_ctl_mreg_t [NumCombo-1:0] com_det_ctl_i,
-  input  rbox_reg2hw_com_out_ctl_mreg_t [NumCombo-1:0] com_out_ctl_i,
+  input  sysrst_ctrl_reg2hw_ec_rst_ctl_reg_t ec_rst_ctl_i,
+  input  sysrst_ctrl_reg2hw_key_intr_debounce_ctl_reg_t key_intr_debounce_ctl_i,
+  input  sysrst_ctrl_reg2hw_com_sel_ctl_mreg_t [NumCombo-1:0] com_sel_ctl_i,
+  input  sysrst_ctrl_reg2hw_com_det_ctl_mreg_t [NumCombo-1:0] com_det_ctl_i,
+  input  sysrst_ctrl_reg2hw_com_out_ctl_mreg_t [NumCombo-1:0] com_out_ctl_i,
 
-  output rbox_hw2reg_combo_intr_status_reg_t combo_intr_status_o,
-  output rbox_combo_intr,
+  output sysrst_ctrl_hw2reg_combo_intr_status_reg_t combo_intr_status_o,
+  output sysrst_ctrl_combo_intr,
 
   output bat_disable_hw,
   output gsc_rst_o,
@@ -271,7 +271,7 @@ module rbox_combo import rbox_reg_pkg::*; (
 
   //generate the trigger for each combo
   for (genvar k = 0 ; k < NumCombo ; k++) begin : gen_combo_trigger
-    rbox_combotrg i_combo_trg (
+    sysrst_ctrl_combotrg i_combo_trg (
       .cfg_in0_sel(cfg_pwrb_in_sel_com[k]),
       .cfg_in1_sel(cfg_key0_in_sel_com[k]),
       .cfg_in2_sel(cfg_key1_in_sel_com[k]),
@@ -292,7 +292,7 @@ module rbox_combo import rbox_reg_pkg::*; (
 
   //Instantiate the combo detection state machine
   for (genvar k = 0 ; k < NumCombo ; k++) begin : gen_combofsm
-    rbox_combofsm # (
+    sysrst_ctrl_combofsm # (
       .TIMER1BIT(16),
       .TIMER2BIT(32)
     ) i_combo_fsm (
@@ -309,7 +309,7 @@ module rbox_combo import rbox_reg_pkg::*; (
 
   //Instantiate the combo action module
   for (genvar k = 0 ; k < NumCombo ; k++) begin : gen_combo_act
-    rbox_comboact i_combo_act (
+    sysrst_ctrl_comboact i_combo_act (
       .clk_aon_i(clk_aon_i),
       .rst_slow_ni(rst_slow_ni),
       .clk_i(clk_i),
@@ -381,7 +381,7 @@ module rbox_combo import rbox_reg_pkg::*; (
 
   assign combo_intr_status_o.combo3_h2l.de = combo3_h2l_intr;
 
-  assign rbox_combo_intr = combo0_h2l_intr | combo1_h2l_intr | combo2_h2l_intr | combo3_h2l_intr;
+  assign sysrst_ctrl_combo_intr = combo0_h2l_intr | combo1_h2l_intr | combo2_h2l_intr | combo3_h2l_intr;
 
   //To write into interrupt status register
   assign combo_intr_status_o.combo0_h2l.d = 1'b1;

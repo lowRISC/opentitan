@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description: RBOX combo action Module
+// Description: sysrst_ctrl combo action Module
 //
-module rbox_comboact import rbox_reg_pkg::*; (
+module sysrst_ctrl_comboact import sysrst_ctrl_reg_pkg::*; (
   input  clk_aon_i,
   input  rst_slow_ni,
   input  clk_i,
@@ -17,7 +17,7 @@ module rbox_comboact import rbox_reg_pkg::*; (
   input  combo_det,
   input  ec_rst_l_i,
 
-  input  rbox_reg2hw_ec_rst_ctl_reg_t ec_rst_ctl_i,
+  input  sysrst_ctrl_reg2hw_ec_rst_ctl_reg_t ec_rst_ctl_i,
 
   output combo_intr_pulse,
   output bat_disable_o,

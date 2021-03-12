@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description RBOX key press and release FSM module
+// Description sysrst_ctrl key press and release FSM module
 
-module rbox_keyfsm #(
+module sysrst_ctrl_keyfsm #(
   parameter int unsigned TIMERBIT = 16
   ) (
   input                clk_aon_i,

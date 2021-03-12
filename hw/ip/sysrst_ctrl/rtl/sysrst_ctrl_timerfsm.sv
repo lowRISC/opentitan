@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description RBOX timer-based FSM module
+// Description sysrst_ctrl timer-based FSM module
 
-module rbox_timerfsm #(
+module sysrst_ctrl_timerfsm #(
   parameter int unsigned TIMERBIT = 16
   ) (
   input                clk_aon_i,

@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description: RBOX pin visibility and override Module
+// Description: sysrst_ctrl pin visibility and override Module
 //
 
-module rbox_pin import rbox_reg_pkg::*; (
+module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   input  clk_aon_i,
   input  rst_slow_ni,
   input  clk_i,
@@ -25,11 +25,11 @@ module rbox_pin import rbox_reg_pkg::*; (
   input  bat_disable_hw,
   input  ec_rst_l_hw,
 
-  input  rbox_reg2hw_pin_allowed_ctl_reg_t pin_allowed_ctl_i,
-  input  rbox_reg2hw_pin_out_ctl_reg_t pin_out_ctl_i,
-  input  rbox_reg2hw_pin_out_value_reg_t pin_out_value_i,
+  input  sysrst_ctrl_reg2hw_pin_allowed_ctl_reg_t pin_allowed_ctl_i,
+  input  sysrst_ctrl_reg2hw_pin_out_ctl_reg_t pin_out_ctl_i,
+  input  sysrst_ctrl_reg2hw_pin_out_value_reg_t pin_out_value_i,
 
-  output rbox_hw2reg_pin_in_value_reg_t pin_in_value_o,
+  output sysrst_ctrl_hw2reg_pin_in_value_reg_t pin_in_value_o,
 
   output pwrb_out_int,
   output key0_out_int,

@@ -30,7 +30,6 @@ IPS ?= aes           \
        pattgen       \
        pinmux        \
        pwrmgr        \
-       rbox          \
        rstmgr        \
        rv_plic       \
        rv_timer      \
@@ -38,6 +37,7 @@ IPS ?= aes           \
        spi_device    \
        spi_host      \
        sram_ctrl     \
+       sysrst_ctrl   \
        trial1        \
        otbn          \
        uart          \

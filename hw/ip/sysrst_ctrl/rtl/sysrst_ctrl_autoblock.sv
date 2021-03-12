@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description RBOX PWRB autoblock module
+// Description sysrst_ctrl PWRB autoblock module
 
-module rbox_autoblock import rbox_reg_pkg::*; (
+module sysrst_ctrl_autoblock import sysrst_ctrl_reg_pkg::*; (
   input  clk_aon_i,
   input  rst_slow_ni,
   input  clk_i,
@@ -15,8 +15,8 @@ module rbox_autoblock import rbox_reg_pkg::*; (
   input  key1_int,
   input  key2_int,
 
-  input  rbox_reg2hw_auto_block_debounce_ctl_reg_t auto_block_debounce_ctl_i,
-  input  rbox_reg2hw_auto_block_out_ctl_reg_t      auto_block_out_ctl_i,
+  input  sysrst_ctrl_reg2hw_auto_block_debounce_ctl_reg_t auto_block_debounce_ctl_i,
+  input  sysrst_ctrl_reg2hw_auto_block_out_ctl_reg_t      auto_block_out_ctl_i,
 
   output pwrb_out_hw,
   output key0_out_hw,
@@ -145,7 +145,7 @@ module rbox_autoblock import rbox_reg_pkg::*; (
     .q_o(pwrb_int_i)
   );
 
-  rbox_timerfsm # (
+  sysrst_ctrl_timerfsm # (
     .TIMERBIT(16)
   ) i_ab_fsm (
     .clk_aon_i(clk_aon_i),
