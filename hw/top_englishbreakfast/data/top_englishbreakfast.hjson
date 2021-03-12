@@ -447,6 +447,12 @@
           name:    "sram_scr",
           act:     "rsp",
         },
+        { struct:  "sram_scr_init",
+          package: "sram_ctrl_pkg"
+          type:    "req_rsp",
+          name:    "sram_scr_init",
+          act:     "rsp",
+        },
         { struct:  "tl_instr_en",
           package: "tlul_pkg"
           type:    "uni",
@@ -485,6 +491,12 @@
           package: "sram_ctrl_pkg"
           type:    "req_rsp",
           name:    "sram_scr",
+          act:     "rsp",
+        },
+        { struct:  "sram_scr_init",
+          package: "sram_ctrl_pkg"
+          type:    "req_rsp",
+          name:    "sram_scr_init",
           act:     "rsp",
         },
         { struct:  "tl_instr_en",
@@ -641,7 +653,9 @@
       'flash_ctrl.rma_ack'      : ['lc_ctrl.lc_flash_rma_ack'],
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
       'sram_ctrl_main.sram_scr' : ['ram_main.sram_scr'],
+      'sram_ctrl_main.sram_scr_init' : ['ram_main.sram_scr_init'],
       'sram_ctrl_ret_aon.sram_scr'  : ['ram_ret_aon.sram_scr'],
+      'sram_ctrl_ret_aon.sram_scr_init' : ['ram_ret_aon.sram_scr_init'],
       'sram_ctrl_main.en_ifetch'    : ['ram_main.en_ifetch'],
       'sram_ctrl_ret_aon.en_ifetch' : ['ram_ret_aon.en_ifetch'],
       'ram_main.intg_error'     : ['sram_ctrl_main.intg_error'],

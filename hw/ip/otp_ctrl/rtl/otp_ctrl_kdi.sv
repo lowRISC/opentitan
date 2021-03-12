@@ -228,9 +228,10 @@ module otp_ctrl_kdi
   assign otbn_otp_key_o.nonce        = nonce_out_q;
   assign otbn_otp_key_o.seed_valid   = seed_valid_q;
 
+  localparam int NonceIdx = SramNonceWidth / ScrmblBlockWidth;
   for (genvar k = 0; k < NumSramKeyReqSlots; k++) begin : gen_out_assign
     assign sram_otp_key_o[k].key        = key_out_q;
-    assign sram_otp_key_o[k].nonce      = nonce_out_q[0];
+    assign sram_otp_key_o[k].nonce      = nonce_out_q[NonceIdx-1:0];
     assign sram_otp_key_o[k].seed_valid = seed_valid_q;
   end
 

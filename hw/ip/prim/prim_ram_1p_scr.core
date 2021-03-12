@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:util
       - lowrisc:prim:ram_1p_adv
+      - lowrisc:prim:lfsr
       - lowrisc:prim:all
     files:
       - rtl/prim_ram_1p_scr.sv

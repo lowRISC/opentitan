@@ -644,6 +644,9 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
         // do nothing
       end
       "ctrl": begin
+        // TODO: need to correctly handle init timing
+        do_read_check = 1'b0;
+
         // do nothing if 0 is written
         if (addr_phase_write && item.a_data) begin
           in_key_req = 1;

@@ -16,8 +16,8 @@ module sram_ctrl
   parameter bit InstrExec                               = 1,
   // Random netlist constants
   parameter otp_ctrl_pkg::sram_key_t   RndCnstSramKey   = RndCnstSramKeyDefault,
-  parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce = RndCnstSramNonceDefault
-
+  parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce = RndCnstSramNonceDefault,
+  parameter lfsr_perm_t                RndCnstSramLfsrPerm = RndCnstSramLfsrPermDefault
 ) (
   // SRAM Clock
   input                                              clk_i,
@@ -44,12 +44,17 @@ module sram_ctrl
   // Interface with SRAM scrambling wrapper
   output sram_scr_req_t                              sram_scr_o,
   input  sram_scr_rsp_t                              sram_scr_i,
+  // Interface with SRAM scrambling wrapper init
+  output sram_scr_init_req_t                         sram_scr_init_o,
+  input  sram_scr_init_rsp_t                         sram_scr_init_i,
   // Interface with corresponding tlul adapters
   output tlul_pkg::tl_instr_en_e                     en_ifetch_o
 );
 
   // This peripheral only works up to a width of 64bits.
   `ASSERT_INIT(WidthMustBeBelow64_A, Width <= 64)
+  `ASSERT_INIT(NonceWidthsLessThanSource_A, NonceWidth + RandInitSeed <=
+               otp_ctrl_pkg::SramNonceWidth)
 
   //////////////////////////
   // CSR Node and Mapping //
@@ -73,7 +78,7 @@ module sram_ctrl
   logic [otp_ctrl_pkg::SramKeyWidth-1:0]   key_d, key_q;
   logic [otp_ctrl_pkg::SramNonceWidth-1:0] nonce_d, nonce_q;
   assign sram_scr_o.key    = key_q;
-  assign sram_scr_o.nonce  = nonce_q;
+  assign sram_scr_o.nonce  = nonce_q[NonceWidth-1:0];
 
   // Status register outputs
   logic parity_error_d, parity_error_q;
@@ -87,7 +92,7 @@ module sram_ctrl
 
   // Control register
   logic key_req;
-  assign key_req = reg2hw.ctrl.q & reg2hw.ctrl.qe;
+  assign key_req = reg2hw.ctrl.renew_scr_key.q & reg2hw.ctrl.renew_scr_key.qe;
 
   // Parity error (the error is sticky and cannot be cleared).
   assign hw2reg.error_address.d             = sram_scr_i.raddr;
@@ -162,9 +167,26 @@ module sram_ctrl
   assign key_req_pending_d = (key_req) ? 1'b1 :
                              (key_ack) ? 1'b0 : key_req_pending_q;
 
+  logic init_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      init_q <= '0;
+    end else if (init_q && sram_scr_init_i.ack) begin
+      init_q <= '0;
+    end else if (reg2hw.ctrl.init.q && reg2hw.ctrl.init.qe) begin
+      init_q <= 1'b1;
+    end
+  end
+
+  assign hw2reg.ctrl.renew_scr_key.d = '0;
+  assign hw2reg.ctrl.init.d = init_q;
+
   // The SRAM scrambling wrapper will not accept any transactions while
   // the key req is pending or if we have escalated.
   assign sram_scr_o.valid = ~(key_req_pending_q | escalated_q);
+
+  assign sram_scr_init_o.req  = init_q & key_valid_q;
+  assign sram_scr_init_o.seed = nonce_q[NonceWidth +: RandInitSeed];
 
   assign key_valid_d       = (key_req) ? 1'b0 :
                              (key_ack) ? 1'b1 : key_valid_q;

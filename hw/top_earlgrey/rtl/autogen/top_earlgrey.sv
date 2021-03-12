@@ -430,8 +430,12 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_flash_rma_seed_t       flash_ctrl_rma_seed;
   sram_ctrl_pkg::sram_scr_req_t       sram_ctrl_main_sram_scr_req;
   sram_ctrl_pkg::sram_scr_rsp_t       sram_ctrl_main_sram_scr_rsp;
+  sram_ctrl_pkg::sram_scr_init_req_t       sram_ctrl_main_sram_scr_init_req;
+  sram_ctrl_pkg::sram_scr_init_rsp_t       sram_ctrl_main_sram_scr_init_rsp;
   sram_ctrl_pkg::sram_scr_req_t       sram_ctrl_ret_aon_sram_scr_req;
   sram_ctrl_pkg::sram_scr_rsp_t       sram_ctrl_ret_aon_sram_scr_rsp;
+  sram_ctrl_pkg::sram_scr_init_req_t       sram_ctrl_ret_aon_sram_scr_init_req;
+  sram_ctrl_pkg::sram_scr_init_rsp_t       sram_ctrl_ret_aon_sram_scr_init_rsp;
   tlul_pkg::tl_instr_en_t       sram_ctrl_main_en_ifetch;
   tlul_pkg::tl_instr_en_t       sram_ctrl_ret_aon_en_ifetch;
   logic       ram_main_intg_error;
@@ -831,7 +835,9 @@ module top_earlgrey #(
   prim_ram_1p_scr #(
     .Width(39),
     .Depth(32768),
-    .EnableParity(0)
+    .EnableParity(0),
+    .LfsrWidth(32),
+    .StatePerm(RndCnstSramCtrlMainSramLfsrPerm)
   ) u_ram1p_ram_main (
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
@@ -839,6 +845,9 @@ module top_earlgrey #(
     .key_valid_i (sram_ctrl_main_sram_scr_req.valid),
     .key_i       (sram_ctrl_main_sram_scr_req.key),
     .nonce_i     (sram_ctrl_main_sram_scr_req.nonce),
+    .init_req_i  (sram_ctrl_main_sram_scr_init_req.req),
+    .init_seed_i (sram_ctrl_main_sram_scr_init_req.seed),
+    .init_ack_o  (sram_ctrl_main_sram_scr_init_rsp.ack),
 
     .req_i       (ram_main_req),
     .intg_error_i(ram_main_intg_err),
@@ -897,7 +906,9 @@ module top_earlgrey #(
   prim_ram_1p_scr #(
     .Width(39),
     .Depth(1024),
-    .EnableParity(0)
+    .EnableParity(0),
+    .LfsrWidth(32),
+    .StatePerm(RndCnstSramCtrlRetAonSramLfsrPerm)
   ) u_ram1p_ram_ret_aon (
     .clk_i   (clkmgr_aon_clocks.clk_io_div4_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
@@ -905,6 +916,9 @@ module top_earlgrey #(
     .key_valid_i (sram_ctrl_ret_aon_sram_scr_req.valid),
     .key_i       (sram_ctrl_ret_aon_sram_scr_req.key),
     .nonce_i     (sram_ctrl_ret_aon_sram_scr_req.nonce),
+    .init_req_i  (sram_ctrl_ret_aon_sram_scr_init_req.req),
+    .init_seed_i (sram_ctrl_ret_aon_sram_scr_init_req.seed),
+    .init_ack_o  (sram_ctrl_ret_aon_sram_scr_init_rsp.ack),
 
     .req_i       (ram_ret_aon_req),
     .intg_error_i(ram_ret_aon_intg_err),
@@ -1783,6 +1797,7 @@ module top_earlgrey #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[12:11]),
     .RndCnstSramKey(RndCnstSramCtrlRetAonSramKey),
     .RndCnstSramNonce(RndCnstSramCtrlRetAonSramNonce),
+    .RndCnstSramLfsrPerm(RndCnstSramCtrlRetAonSramLfsrPerm),
     .InstrExec(SramCtrlRetAonInstrExec)
   ) u_sram_ctrl_ret_aon (
       // [11]: fatal_intg_error
@@ -1795,6 +1810,8 @@ module top_earlgrey #(
       .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[1]),
       .sram_scr_o(sram_ctrl_ret_aon_sram_scr_req),
       .sram_scr_i(sram_ctrl_ret_aon_sram_scr_rsp),
+      .sram_scr_init_o(sram_ctrl_ret_aon_sram_scr_init_req),
+      .sram_scr_init_i(sram_ctrl_ret_aon_sram_scr_init_rsp),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
@@ -2116,6 +2133,7 @@ module top_earlgrey #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[26:25]),
     .RndCnstSramKey(RndCnstSramCtrlMainSramKey),
     .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce),
+    .RndCnstSramLfsrPerm(RndCnstSramCtrlMainSramLfsrPerm),
     .InstrExec(SramCtrlMainInstrExec)
   ) u_sram_ctrl_main (
       // [25]: fatal_intg_error
@@ -2128,6 +2146,8 @@ module top_earlgrey #(
       .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[0]),
       .sram_scr_o(sram_ctrl_main_sram_scr_req),
       .sram_scr_i(sram_ctrl_main_sram_scr_rsp),
+      .sram_scr_init_o(sram_ctrl_main_sram_scr_init_req),
+      .sram_scr_init_i(sram_ctrl_main_sram_scr_init_rsp),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),

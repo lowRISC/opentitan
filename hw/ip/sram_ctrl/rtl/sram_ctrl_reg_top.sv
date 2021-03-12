@@ -121,8 +121,14 @@ module sram_ctrl_reg_top (
   logic ctrl_regwen_qs;
   logic ctrl_regwen_wd;
   logic ctrl_regwen_we;
-  logic ctrl_wd;
-  logic ctrl_we;
+  logic ctrl_renew_scr_key_qs;
+  logic ctrl_renew_scr_key_wd;
+  logic ctrl_renew_scr_key_we;
+  logic ctrl_renew_scr_key_re;
+  logic ctrl_init_qs;
+  logic ctrl_init_wd;
+  logic ctrl_init_we;
+  logic ctrl_init_re;
   logic [31:0] error_address_qs;
 
   // Register instances
@@ -303,18 +309,35 @@ module sram_ctrl_reg_top (
 
   // R[ctrl]: V(True)
 
+  //   F[renew_scr_key]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_ctrl (
-    .re     (1'b0),
+  ) u_ctrl_renew_scr_key (
+    .re     (ctrl_renew_scr_key_re),
     // qualified with register enable
-    .we     (ctrl_we & ctrl_regwen_qs),
-    .wd     (ctrl_wd),
-    .d      ('0),
+    .we     (ctrl_renew_scr_key_we & ctrl_regwen_qs),
+    .wd     (ctrl_renew_scr_key_wd),
+    .d      (hw2reg.ctrl.renew_scr_key.d),
     .qre    (),
-    .qe     (reg2hw.ctrl.qe),
-    .q      (reg2hw.ctrl.q ),
-    .qs     ()
+    .qe     (reg2hw.ctrl.renew_scr_key.qe),
+    .q      (reg2hw.ctrl.renew_scr_key.q ),
+    .qs     (ctrl_renew_scr_key_qs)
+  );
+
+
+  //   F[init]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_ctrl_init (
+    .re     (ctrl_init_re),
+    // qualified with register enable
+    .we     (ctrl_init_we & ctrl_regwen_qs),
+    .wd     (ctrl_init_wd),
+    .d      (hw2reg.ctrl.init.d),
+    .qre    (),
+    .qe     (reg2hw.ctrl.init.qe),
+    .q      (reg2hw.ctrl.init.q ),
+    .qs     (ctrl_init_qs)
   );
 
 
@@ -395,8 +418,13 @@ module sram_ctrl_reg_top (
   assign ctrl_regwen_we = addr_hit[4] & reg_we & !reg_error;
   assign ctrl_regwen_wd = reg_wdata[0];
 
-  assign ctrl_we = addr_hit[5] & reg_we & !reg_error;
-  assign ctrl_wd = reg_wdata[0];
+  assign ctrl_renew_scr_key_we = addr_hit[5] & reg_we & !reg_error;
+  assign ctrl_renew_scr_key_wd = reg_wdata[0];
+  assign ctrl_renew_scr_key_re = addr_hit[5] & reg_re & !reg_error;
+
+  assign ctrl_init_we = addr_hit[5] & reg_we & !reg_error;
+  assign ctrl_init_wd = reg_wdata[1];
+  assign ctrl_init_re = addr_hit[5] & reg_re & !reg_error;
 
   // Read data return
   always_comb begin
@@ -427,7 +455,8 @@ module sram_ctrl_reg_top (
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[0] = '0;
+        reg_rdata_next[0] = ctrl_renew_scr_key_qs;
+        reg_rdata_next[1] = ctrl_init_qs;
       end
 
       addr_hit[6]: begin

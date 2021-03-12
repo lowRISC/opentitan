@@ -147,7 +147,7 @@ package otp_ctrl_pkg;
   parameter int KeyMgrKeyWidth   = 256;
   parameter int FlashKeyWidth    = 128;
   parameter int SramKeyWidth     = 128;
-  parameter int SramNonceWidth   = 64;
+  parameter int SramNonceWidth   = 128;
   parameter int OtbnKeyWidth     = 128;
   parameter int OtbnNonceWidth   = 256;
 
