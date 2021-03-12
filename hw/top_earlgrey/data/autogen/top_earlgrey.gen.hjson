@@ -4330,6 +4330,15 @@
           index: -1
         }
         {
+          name: rng_fips
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: entropy_src
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -11442,6 +11451,15 @@
         struct: logic
         type: uni
         act: rcv
+        width: 1
+        inst_name: entropy_src
+        index: -1
+      }
+      {
+        name: rng_fips
+        struct: logic
+        type: uni
+        act: req
         width: 1
         inst_name: entropy_src
         index: -1
