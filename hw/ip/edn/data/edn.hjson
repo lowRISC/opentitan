@@ -6,26 +6,6 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
-  param_list: [
-    { name: "NumEndPoints",
-      desc: "The number of endpoint ports supported by this EDN instance",
-      type: "int",
-      default: "64",
-      local: "true"
-    },
-    { name: "BootInsCmd",
-      desc: "Default boot-time CSRNG application interface instantiate command",
-      type: "int",
-      default: "1",
-      local: "true"
-    },
-    { name: "BootGenCmd",
-      desc: "Default boot-time CSRNG application interface generate command",
-      type: "int",
-      default: "12291",
-      local: "true"
-    },
-  ],
   interrupt_list: [
     { name: "edn_cmd_req_done"
       desc: "Asserted when a software CSRNG request has completed."}
