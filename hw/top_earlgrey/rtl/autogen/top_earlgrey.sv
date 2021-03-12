@@ -2028,6 +2028,7 @@ module top_earlgrey #(
       .entropy_src_xht_o(),
       .entropy_src_xht_i(entropy_src_pkg::ENTROPY_SRC_XHT_RSP_DEFAULT),
       .efuse_es_sw_reg_en_i('0),
+      .rng_fips_o(),
       .tl_i(entropy_src_tl_req),
       .tl_o(entropy_src_tl_rsp),
 

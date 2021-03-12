@@ -17,6 +17,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // Efuse Interface
   input logic efuse_es_sw_reg_en_i,
 
+  // RNG Interface
+  output logic rng_fips_o,
+
 
   // Entropy Interface
   input  entropy_src_hw_if_req_t entropy_src_hw_if_i,
@@ -974,6 +977,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
          boot_bypass_q;
 
   assign es_bypass_mode = boot_bypass_q || es_bypass_to_sw;
+
+  // send off to AST RNG for possibly faster entropy generation
+  assign rng_fips_o = es_bypass_mode;
 
   //--------------------------------------------
   // common health test window counter

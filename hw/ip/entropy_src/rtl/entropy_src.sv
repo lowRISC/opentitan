@@ -24,6 +24,9 @@ module entropy_src
   // Efuse Interface
   input logic efuse_es_sw_reg_en_i,
 
+  // RNG Interface
+  output logic rng_fips_o,
+
   // Entropy Interface
   input  entropy_src_hw_if_req_t entropy_src_hw_if_i,
   output entropy_src_hw_if_rsp_t entropy_src_hw_if_o,
@@ -74,6 +77,7 @@ module entropy_src
     .hw2reg,
 
     .efuse_es_sw_reg_en_i,
+    .rng_fips_o,
 
     .entropy_src_hw_if_o,
     .entropy_src_hw_if_i,

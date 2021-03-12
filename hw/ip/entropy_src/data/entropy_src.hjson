@@ -40,6 +40,13 @@
       width:   1
       package: ""
     }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "rng_fips"
+      act:     "req"
+      width:   1
+      package: ""
+    }
   ],
   alert_list: [
     { name: "recov_alert",
