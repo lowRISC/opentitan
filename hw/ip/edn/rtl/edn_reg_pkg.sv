@@ -7,9 +7,6 @@
 package edn_reg_pkg;
 
   // Param list
-  parameter int NumEndPoints = 64;
-  parameter int BootInsCmd = 1;
-  parameter int BootGenCmd = 12291;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
