@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description RBOX combo detection FSM module
+// Description sysrst_ctrl combo detection FSM module
 
-module rbox_combofsm #(
+module sysrst_ctrl_combofsm #(
   parameter int unsigned TIMER1BIT = 16,
   parameter int unsigned TIMER2BIT = 32
   ) (

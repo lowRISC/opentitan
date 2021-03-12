@@ -1,7 +1,7 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-{ name: "rbox",
+{ name: "sysrst_ctrl",
   clock_primary: "clk_i",
   other_clock_list: [
     "clk_aon_i"
@@ -14,8 +14,8 @@
     "rst_slow_ni"
   ],
   interrupt_list: [
-    { name: "rbox_intr_o",
-      desc: "combo or keyboard triggered interrupt",
+    { name: "sysrst_ctrl_common",
+      desc: "common interrupt triggered by combo or keyboard actions",
     }
   ],
   param_list: [
@@ -243,7 +243,7 @@
       ]
     }
     { name: "pin_in_value",
-      desc: "For SW to read the rbox inputs like GPIO",
+      desc: "For SW to read the sysrst_ctrl inputs like GPIO",
       swaccess: "ro",
       hwaccess: "hwo",
       resval: "0",
@@ -407,7 +407,7 @@
 	      HW will detect H2L transition in the combo use case
               ''',
         count: "NumCombo",
-        cname: "rbox",
+        cname: "sysrst_ctrl",
 	swaccess: "rw",
 	hwaccess: "hro",
         regwen:   "REGWEN",
@@ -442,7 +442,7 @@
 	      0-60s, each step is 5us(200KHz clock)
               ''',
         count: "NumCombo",
-        cname: "rbox",
+        cname: "sysrst_ctrl",
 	hwqe:  "true",
 	swaccess: "rw",
 	hwaccess: "hro",
@@ -465,7 +465,7 @@
               [3]: gsc_rst
               ''',
         count: "NumCombo",
-        cname: "rbox",
+        cname: "sysrst_ctrl",
 	swaccess: "rw",
 	hwaccess: "hro",
         regwen:   "REGWEN",

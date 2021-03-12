@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description RBOX combo trigger  module
+// Description sysrst_ctrl combo trigger  module
 
-module rbox_combotrg (
+module sysrst_ctrl_combotrg (
   input                cfg_in0_sel,
   input                cfg_in1_sel,
   input                cfg_in2_sel,

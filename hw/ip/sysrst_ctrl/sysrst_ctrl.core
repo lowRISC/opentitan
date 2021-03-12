@@ -2,8 +2,8 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:rbox:1.0"
-description: "rbox"
+name: "lowrisc:ip:sysrst_ctrl:1.0"
+description: "sysrst_ctrl"
 filesets:
   files_rtl:
     depend:
@@ -11,20 +11,20 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
     files:
-      - rtl/rbox_reg_pkg.sv
-      - rtl/rbox_reg_top.sv
-      - rtl/rbox_autoblock.sv
-      - rtl/rbox_comboact.sv
-      - rtl/rbox_combotrg.sv
-      - rtl/rbox_intr.sv
-      - rtl/rbox_inv.sv
-      - rtl/rbox_pin.sv
-      - rtl/rbox_keyintr.sv
-      - rtl/rbox_timerfsm.sv
-      - rtl/rbox_keyfsm.sv
-      - rtl/rbox_combofsm.sv
-      - rtl/rbox_combo.sv
-      - rtl/rbox.sv
+      - rtl/sysrst_ctrl_reg_pkg.sv
+      - rtl/sysrst_ctrl_reg_top.sv
+      - rtl/sysrst_ctrl_autoblock.sv
+      - rtl/sysrst_ctrl_comboact.sv
+      - rtl/sysrst_ctrl_combotrg.sv
+      - rtl/sysrst_ctrl_intr.sv
+      - rtl/sysrst_ctrl_inv.sv
+      - rtl/sysrst_ctrl_pin.sv
+      - rtl/sysrst_ctrl_keyintr.sv
+      - rtl/sysrst_ctrl_timerfsm.sv
+      - rtl/sysrst_ctrl_keyfsm.sv
+      - rtl/sysrst_ctrl_combofsm.sv
+      - rtl/sysrst_ctrl_combo.sv
+      - rtl/sysrst_ctrl.sv
     file_type: systemVerilogSource
 
   files_ascentlint_waiver:
@@ -49,7 +49,7 @@ targets:
     filesets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - files_rtl
-    toplevel: rbox
+    toplevel: sysrst_ctrl
 
 
   lint:

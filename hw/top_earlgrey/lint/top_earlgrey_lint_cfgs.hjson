@@ -142,10 +142,10 @@
                     }
                   ]
              },
-             {    name: rbox
-                  fusesoc_core: lowrisc:ip:rbox
+             {    name: sysrst_ctrl
+                  fusesoc_core: lowrisc:ip:sysrst_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/rbox/lint/{tool}"
+                  rel_path: "hw/ip/sysrst_ctrl/lint/{tool}"
              },
              {    name: rstmgr
                   fusesoc_core: lowrisc:ip:rstmgr

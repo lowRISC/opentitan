@@ -6,15 +6,15 @@
 
 `include "prim_assert.sv"
 
-module rbox_reg_top (
+module sysrst_ctrl_reg_top (
   input clk_i,
   input rst_ni,
 
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
-  output rbox_reg_pkg::rbox_reg2hw_t reg2hw, // Write
-  input  rbox_reg_pkg::rbox_hw2reg_t hw2reg, // Read
+  output sysrst_ctrl_reg_pkg::sysrst_ctrl_reg2hw_t reg2hw, // Write
+  input  sysrst_ctrl_reg_pkg::sysrst_ctrl_hw2reg_t hw2reg, // Read
 
   // Integrity check errors
   output logic intg_err_o,
@@ -23,7 +23,7 @@ module rbox_reg_top (
   input devmode_i // If 1, explicit error return for unmapped register access
 );
 
-  import rbox_reg_pkg::* ;
+  import sysrst_ctrl_reg_pkg::* ;
 
   localparam int AW = 7;
   localparam int DW = 32;
@@ -3675,34 +3675,34 @@ module rbox_reg_top (
   logic [27:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == RBOX_INTR_STATE_OFFSET);
-    addr_hit[ 1] = (reg_addr == RBOX_INTR_ENABLE_OFFSET);
-    addr_hit[ 2] = (reg_addr == RBOX_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == RBOX_REGWEN_OFFSET);
-    addr_hit[ 4] = (reg_addr == RBOX_EC_RST_CTL_OFFSET);
-    addr_hit[ 5] = (reg_addr == RBOX_KEY_INVERT_CTL_OFFSET);
-    addr_hit[ 6] = (reg_addr == RBOX_PIN_ALLOWED_CTL_OFFSET);
-    addr_hit[ 7] = (reg_addr == RBOX_PIN_OUT_CTL_OFFSET);
-    addr_hit[ 8] = (reg_addr == RBOX_PIN_OUT_VALUE_OFFSET);
-    addr_hit[ 9] = (reg_addr == RBOX_PIN_IN_VALUE_OFFSET);
-    addr_hit[10] = (reg_addr == RBOX_KEY_INTR_CTL_OFFSET);
-    addr_hit[11] = (reg_addr == RBOX_KEY_INTR_DEBOUNCE_CTL_OFFSET);
-    addr_hit[12] = (reg_addr == RBOX_AUTO_BLOCK_DEBOUNCE_CTL_OFFSET);
-    addr_hit[13] = (reg_addr == RBOX_AUTO_BLOCK_OUT_CTL_OFFSET);
-    addr_hit[14] = (reg_addr == RBOX_COM_SEL_CTL_0_OFFSET);
-    addr_hit[15] = (reg_addr == RBOX_COM_SEL_CTL_1_OFFSET);
-    addr_hit[16] = (reg_addr == RBOX_COM_SEL_CTL_2_OFFSET);
-    addr_hit[17] = (reg_addr == RBOX_COM_SEL_CTL_3_OFFSET);
-    addr_hit[18] = (reg_addr == RBOX_COM_DET_CTL_0_OFFSET);
-    addr_hit[19] = (reg_addr == RBOX_COM_DET_CTL_1_OFFSET);
-    addr_hit[20] = (reg_addr == RBOX_COM_DET_CTL_2_OFFSET);
-    addr_hit[21] = (reg_addr == RBOX_COM_DET_CTL_3_OFFSET);
-    addr_hit[22] = (reg_addr == RBOX_COM_OUT_CTL_0_OFFSET);
-    addr_hit[23] = (reg_addr == RBOX_COM_OUT_CTL_1_OFFSET);
-    addr_hit[24] = (reg_addr == RBOX_COM_OUT_CTL_2_OFFSET);
-    addr_hit[25] = (reg_addr == RBOX_COM_OUT_CTL_3_OFFSET);
-    addr_hit[26] = (reg_addr == RBOX_COMBO_INTR_STATUS_OFFSET);
-    addr_hit[27] = (reg_addr == RBOX_KEY_INTR_STATUS_OFFSET);
+    addr_hit[ 0] = (reg_addr == SYSRST_CTRL_INTR_STATE_OFFSET);
+    addr_hit[ 1] = (reg_addr == SYSRST_CTRL_INTR_ENABLE_OFFSET);
+    addr_hit[ 2] = (reg_addr == SYSRST_CTRL_INTR_TEST_OFFSET);
+    addr_hit[ 3] = (reg_addr == SYSRST_CTRL_REGWEN_OFFSET);
+    addr_hit[ 4] = (reg_addr == SYSRST_CTRL_EC_RST_CTL_OFFSET);
+    addr_hit[ 5] = (reg_addr == SYSRST_CTRL_KEY_INVERT_CTL_OFFSET);
+    addr_hit[ 6] = (reg_addr == SYSRST_CTRL_PIN_ALLOWED_CTL_OFFSET);
+    addr_hit[ 7] = (reg_addr == SYSRST_CTRL_PIN_OUT_CTL_OFFSET);
+    addr_hit[ 8] = (reg_addr == SYSRST_CTRL_PIN_OUT_VALUE_OFFSET);
+    addr_hit[ 9] = (reg_addr == SYSRST_CTRL_PIN_IN_VALUE_OFFSET);
+    addr_hit[10] = (reg_addr == SYSRST_CTRL_KEY_INTR_CTL_OFFSET);
+    addr_hit[11] = (reg_addr == SYSRST_CTRL_KEY_INTR_DEBOUNCE_CTL_OFFSET);
+    addr_hit[12] = (reg_addr == SYSRST_CTRL_AUTO_BLOCK_DEBOUNCE_CTL_OFFSET);
+    addr_hit[13] = (reg_addr == SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_OFFSET);
+    addr_hit[14] = (reg_addr == SYSRST_CTRL_COM_SEL_CTL_0_OFFSET);
+    addr_hit[15] = (reg_addr == SYSRST_CTRL_COM_SEL_CTL_1_OFFSET);
+    addr_hit[16] = (reg_addr == SYSRST_CTRL_COM_SEL_CTL_2_OFFSET);
+    addr_hit[17] = (reg_addr == SYSRST_CTRL_COM_SEL_CTL_3_OFFSET);
+    addr_hit[18] = (reg_addr == SYSRST_CTRL_COM_DET_CTL_0_OFFSET);
+    addr_hit[19] = (reg_addr == SYSRST_CTRL_COM_DET_CTL_1_OFFSET);
+    addr_hit[20] = (reg_addr == SYSRST_CTRL_COM_DET_CTL_2_OFFSET);
+    addr_hit[21] = (reg_addr == SYSRST_CTRL_COM_DET_CTL_3_OFFSET);
+    addr_hit[22] = (reg_addr == SYSRST_CTRL_COM_OUT_CTL_0_OFFSET);
+    addr_hit[23] = (reg_addr == SYSRST_CTRL_COM_OUT_CTL_1_OFFSET);
+    addr_hit[24] = (reg_addr == SYSRST_CTRL_COM_OUT_CTL_2_OFFSET);
+    addr_hit[25] = (reg_addr == SYSRST_CTRL_COM_OUT_CTL_3_OFFSET);
+    addr_hit[26] = (reg_addr == SYSRST_CTRL_COMBO_INTR_STATUS_OFFSET);
+    addr_hit[27] = (reg_addr == SYSRST_CTRL_KEY_INTR_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -3710,34 +3710,34 @@ module rbox_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (RBOX_PERMIT[ 0] != (RBOX_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (RBOX_PERMIT[ 1] != (RBOX_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (RBOX_PERMIT[ 2] != (RBOX_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (RBOX_PERMIT[ 3] != (RBOX_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (RBOX_PERMIT[ 4] != (RBOX_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (RBOX_PERMIT[ 5] != (RBOX_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (RBOX_PERMIT[ 6] != (RBOX_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (RBOX_PERMIT[ 7] != (RBOX_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (RBOX_PERMIT[ 8] != (RBOX_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (RBOX_PERMIT[ 9] != (RBOX_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (RBOX_PERMIT[10] != (RBOX_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (RBOX_PERMIT[11] != (RBOX_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (RBOX_PERMIT[12] != (RBOX_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (RBOX_PERMIT[13] != (RBOX_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[14] && reg_we && (RBOX_PERMIT[14] != (RBOX_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[15] && reg_we && (RBOX_PERMIT[15] != (RBOX_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[16] && reg_we && (RBOX_PERMIT[16] != (RBOX_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[17] && reg_we && (RBOX_PERMIT[17] != (RBOX_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[18] && reg_we && (RBOX_PERMIT[18] != (RBOX_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[19] && reg_we && (RBOX_PERMIT[19] != (RBOX_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[20] && reg_we && (RBOX_PERMIT[20] != (RBOX_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[21] && reg_we && (RBOX_PERMIT[21] != (RBOX_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[22] && reg_we && (RBOX_PERMIT[22] != (RBOX_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[23] && reg_we && (RBOX_PERMIT[23] != (RBOX_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[24] && reg_we && (RBOX_PERMIT[24] != (RBOX_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[25] && reg_we && (RBOX_PERMIT[25] != (RBOX_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[26] && reg_we && (RBOX_PERMIT[26] != (RBOX_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[27] && reg_we && (RBOX_PERMIT[27] != (RBOX_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 0] && reg_we && (SYSRST_CTRL_PERMIT[ 0] != (SYSRST_CTRL_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 1] && reg_we && (SYSRST_CTRL_PERMIT[ 1] != (SYSRST_CTRL_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 2] && reg_we && (SYSRST_CTRL_PERMIT[ 2] != (SYSRST_CTRL_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 3] && reg_we && (SYSRST_CTRL_PERMIT[ 3] != (SYSRST_CTRL_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 4] && reg_we && (SYSRST_CTRL_PERMIT[ 4] != (SYSRST_CTRL_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 5] && reg_we && (SYSRST_CTRL_PERMIT[ 5] != (SYSRST_CTRL_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 6] && reg_we && (SYSRST_CTRL_PERMIT[ 6] != (SYSRST_CTRL_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 7] && reg_we && (SYSRST_CTRL_PERMIT[ 7] != (SYSRST_CTRL_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 8] && reg_we && (SYSRST_CTRL_PERMIT[ 8] != (SYSRST_CTRL_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[ 9] && reg_we && (SYSRST_CTRL_PERMIT[ 9] != (SYSRST_CTRL_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[10] && reg_we && (SYSRST_CTRL_PERMIT[10] != (SYSRST_CTRL_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[11] && reg_we && (SYSRST_CTRL_PERMIT[11] != (SYSRST_CTRL_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[12] && reg_we && (SYSRST_CTRL_PERMIT[12] != (SYSRST_CTRL_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[13] && reg_we && (SYSRST_CTRL_PERMIT[13] != (SYSRST_CTRL_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[14] && reg_we && (SYSRST_CTRL_PERMIT[14] != (SYSRST_CTRL_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[15] && reg_we && (SYSRST_CTRL_PERMIT[15] != (SYSRST_CTRL_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[16] && reg_we && (SYSRST_CTRL_PERMIT[16] != (SYSRST_CTRL_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[17] && reg_we && (SYSRST_CTRL_PERMIT[17] != (SYSRST_CTRL_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[18] && reg_we && (SYSRST_CTRL_PERMIT[18] != (SYSRST_CTRL_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[19] && reg_we && (SYSRST_CTRL_PERMIT[19] != (SYSRST_CTRL_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[20] && reg_we && (SYSRST_CTRL_PERMIT[20] != (SYSRST_CTRL_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[21] && reg_we && (SYSRST_CTRL_PERMIT[21] != (SYSRST_CTRL_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[22] && reg_we && (SYSRST_CTRL_PERMIT[22] != (SYSRST_CTRL_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[23] && reg_we && (SYSRST_CTRL_PERMIT[23] != (SYSRST_CTRL_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[24] && reg_we && (SYSRST_CTRL_PERMIT[24] != (SYSRST_CTRL_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[25] && reg_we && (SYSRST_CTRL_PERMIT[25] != (SYSRST_CTRL_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[26] && reg_we && (SYSRST_CTRL_PERMIT[26] != (SYSRST_CTRL_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[27] && reg_we && (SYSRST_CTRL_PERMIT[27] != (SYSRST_CTRL_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;

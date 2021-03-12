@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description: RBOX pin inversion Module
+// Description: sysrst_ctrl pin inversion Module
 //
 
-module rbox_inv import rbox_reg_pkg::*; (
+module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
   input  clk_aon_i,
   input  rst_slow_ni,
 
@@ -21,7 +21,7 @@ module rbox_inv import rbox_reg_pkg::*; (
   input  key2_out_int,
   input  bat_disable_int,
 
-  input  rbox_reg2hw_key_invert_ctl_reg_t key_invert_ctl_i,
+  input  sysrst_ctrl_reg2hw_key_invert_ctl_reg_t key_invert_ctl_i,
 
   output pwrb_int,
   output key0_int,

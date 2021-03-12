@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description: RBOX key-triggered interrupt Module
+// Description: sysrst_ctrl key-triggered interrupt Module
 //
-module rbox_keyintr import rbox_reg_pkg::*; (
+module sysrst_ctrl_keyintr import sysrst_ctrl_reg_pkg::*; (
   input  clk_aon_i,
   input  rst_slow_ni,
   input  clk_i,
@@ -17,11 +17,11 @@ module rbox_keyintr import rbox_reg_pkg::*; (
   input  ac_present_int,
   input  cio_ec_rst_l_i,
 
-  input  rbox_reg2hw_key_intr_ctl_reg_t key_intr_ctl_i,
-  input  rbox_reg2hw_key_intr_debounce_ctl_reg_t key_intr_debounce_ctl_i,
+  input  sysrst_ctrl_reg2hw_key_intr_ctl_reg_t key_intr_ctl_i,
+  input  sysrst_ctrl_reg2hw_key_intr_debounce_ctl_reg_t key_intr_debounce_ctl_i,
 
-  output rbox_hw2reg_key_intr_status_reg_t key_intr_status_o,
-  output rbox_key_intr
+  output sysrst_ctrl_hw2reg_key_intr_status_reg_t key_intr_status_o,
+  output sysrst_ctrl_key_intr
 
 );
 
@@ -258,7 +258,7 @@ module rbox_keyintr import rbox_reg_pkg::*; (
   );
 
   //Instantiate the key state machine
-  rbox_keyfsm # (
+  sysrst_ctrl_keyfsm # (
     .TIMERBIT(16)
   ) i_pwrbintr_fsm (
     .clk_aon_i(clk_aon_i),
@@ -271,7 +271,7 @@ module rbox_keyintr import rbox_reg_pkg::*; (
     .timer_h2l_cond_met(pwrb_intr_h2l_det)
   );
 
-  rbox_keyfsm # (
+  sysrst_ctrl_keyfsm # (
     .TIMERBIT(16)
   ) i_key0intr_fsm (
     .clk_aon_i(clk_aon_i),
@@ -284,7 +284,7 @@ module rbox_keyintr import rbox_reg_pkg::*; (
     .timer_h2l_cond_met(key0_intr_h2l_det)
   );
 
-  rbox_keyfsm # (
+  sysrst_ctrl_keyfsm # (
     .TIMERBIT(16)
   ) i_key1intr_fsm (
     .clk_aon_i(clk_aon_i),
@@ -297,7 +297,7 @@ module rbox_keyintr import rbox_reg_pkg::*; (
     .timer_h2l_cond_met(key1_intr_h2l_det)
   );
 
-  rbox_keyfsm # (
+  sysrst_ctrl_keyfsm # (
     .TIMERBIT(16)
   ) i_key2intr_fsm (
     .clk_aon_i(clk_aon_i),
@@ -310,7 +310,7 @@ module rbox_keyintr import rbox_reg_pkg::*; (
     .timer_h2l_cond_met(key2_intr_h2l_det)
   );
 
-  rbox_keyfsm # (
+  sysrst_ctrl_keyfsm # (
     .TIMERBIT(16)
   ) i_ac_presentintr_fsm (
     .clk_aon_i(clk_aon_i),
@@ -323,7 +323,7 @@ module rbox_keyintr import rbox_reg_pkg::*; (
     .timer_h2l_cond_met(ac_present_intr_h2l_det)
   );
 
-  rbox_keyfsm # (
+  sysrst_ctrl_keyfsm # (
     .TIMERBIT(16)
   ) i_ec_rst_lintr_fsm (
     .clk_aon_i(clk_aon_i),
@@ -585,7 +585,7 @@ module rbox_keyintr import rbox_reg_pkg::*; (
 
   assign key_intr_status_o.ec_rst_l_l2h.de = ec_rst_l_l2h_intr;
 
-  assign rbox_key_intr = pwrb_h2l_intr | pwrb_l2h_intr |
+  assign sysrst_ctrl_key_intr = pwrb_h2l_intr | pwrb_l2h_intr |
    key0_in_h2l_intr | key0_in_l2h_intr |
    key1_in_h2l_intr | key1_in_l2h_intr |
    key2_in_h2l_intr | key2_in_l2h_intr |
