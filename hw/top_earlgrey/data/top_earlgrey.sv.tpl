@@ -268,6 +268,7 @@ module top_${top["name"]} #(
     .clk_esc_i            (${esc_clk}),
     .rst_esc_ni           (${esc_rst}[rstmgr_pkg::Domain0Sel]),
     .test_en_i            (1'b0),
+    .ram_cfg_i            (ast_ram_1p_cfg),
     // static pinning
     .hart_id_i            (32'b0),
     .boot_addr_i          (ADDR_SPACE_ROM),

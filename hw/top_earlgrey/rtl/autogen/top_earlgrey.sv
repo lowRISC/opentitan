@@ -682,6 +682,7 @@ module top_earlgrey #(
     .clk_esc_i            (clkmgr_aon_clocks.clk_io_div4_timers),
     .rst_esc_ni           (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]),
     .test_en_i            (1'b0),
+    .ram_cfg_i            (ast_ram_1p_cfg),
     // static pinning
     .hart_id_i            (32'b0),
     .boot_addr_i          (ADDR_SPACE_ROM),

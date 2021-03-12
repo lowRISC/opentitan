@@ -214,6 +214,40 @@ def get_config_file_location():
     return os.environ.get('IBEX_CONFIG_FILE', _DEFAULT_CONFIG_FILE)
 
 
+def parse_config(config_name, config_filename):
+    """Parses the selected config file and returns selected config information.
+
+    Arguments:
+
+        config_name: Name of the chosen Ibex core config
+
+        config_filename: Name of the configuration filename to be parsed
+
+    Returns: the chosen Ibex config as a YAML object.
+
+    Raises a ConfigException if there are any error while parsing the YAML.
+
+    Raises a FileNotFoundError if there are errors opening the chosen config file.
+    """
+    try:
+        config_file = open(config_filename)
+        config_dicts = get_config_dicts(config_file)
+
+        if config_name not in config_dicts:
+            print('ERROR: configuration {!r} not found in {!r}.'.format(
+                  config_name, config_filename), file=sys.stderr)
+            sys.exit(1)
+        return config_dicts[config_name]
+    except ConfigException as ce:
+        print('ERROR: failure to process configuration from {!r} {!r}.'.format(
+              config_filename, ce), file=sys.stderr)
+        sys.exit(1)
+    except FileNotFoundError:
+        print('ERROR: could not find configuration file {!r}.'.format(
+              config_filename), file=sys.stderr)
+        sys.exit(1)
+
+
 def main():
     outputters = [
         FusesocOpts(),
@@ -270,32 +304,8 @@ def main():
         print('ERROR: No output format specified.')
         sys.exit(1)
 
-    try:
-        config_file = open(args.config_filename)
-        config_dicts = get_config_dicts(config_file)
-
-        if args.config_name not in config_dicts:
-            print('ERROR: configuration',
-                  args.config_name,
-                  'not found in',
-                  args.config_filename,
-                  file=sys.stderr)
-
-            sys.exit(1)
-
-        print(args.output_fn(config_dicts[args.config_name], args))
-    except ConfigException as ce:
-        print('ERROR: failure to process configuration from',
-              args.config_filename,
-              ce,
-              file=sys.stderr)
-        sys.exit(1)
-    except FileNotFoundError:
-        print('ERROR: could not find configuration file',
-              args.config_filename,
-              file=sys.stderr)
-        sys.exit(1)
-
+    parsed_ibex_config = parse_config(args.config_name, args.config_filename)
+    print(args.output_fn(parsed_ibex_config, args))
 
 if __name__ == "__main__":
     main()
