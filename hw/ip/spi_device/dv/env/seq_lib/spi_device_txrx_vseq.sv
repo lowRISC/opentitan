@@ -64,7 +64,7 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
   }
 
   constraint num_trans_c {
-    num_trans == 5;
+    num_trans inside {[2:5]};
   }
 
   constraint en_dummy_host_xfer_c {
