@@ -40,6 +40,9 @@ module sram_ctrl_wrapper
   // Scrambling key interface between sram_ctrl and scrambling RAM
   sram_scr_req_t scr_req;
   sram_scr_rsp_t scr_rsp;
+  sram_scr_init_req_t scr_init_req;
+  sram_scr_init_rsp_t scr_init_rsp;
+
 
   // SRAM interface between TLUL adapter and scrambling RAM
   wire                  req;
@@ -74,6 +77,8 @@ module sram_ctrl_wrapper
     // Interface with SRAM memory scrambling
     .sram_scr_o       (scr_req          ),
     .sram_scr_i       (scr_rsp          ),
+    .sram_scr_init_o  (scr_init_req     ),
+    .sram_scr_init_i  (scr_init_rsp     ),
     // Integrity error
     .intg_error_i     (intg_error)
   );
@@ -104,7 +109,8 @@ module sram_ctrl_wrapper
   // Scrambling memory
   prim_ram_1p_scr #(
     .Width(DataWidth),
-    .Depth(2 ** AddrWidth)
+    .Depth(2 ** AddrWidth),
+    .LfsrWidth(DataWidth)
   ) u_ram1p_sram (
     .clk_i        (clk_i          ),
     .rst_ni       (rst_ni         ),
@@ -112,6 +118,10 @@ module sram_ctrl_wrapper
     .key_valid_i  (scr_req.valid  ),
     .key_i        (scr_req.key    ),
     .nonce_i      (scr_req.nonce  ),
+    // Init interface
+    .init_req_i   (scr_init_req.req  ),
+    .init_seed_i  (scr_init_req.seed ),
+    .init_ack_o   (scr_init_rsp.ack  ),
     // SRAM response interface to TLUL adapter
     .req_i        (req            ),
     .gnt_o        (gnt            ),

@@ -5,6 +5,7 @@ ${gencmd}
 <%
 import re
 import topgen.lib as lib
+from topgen.c import Name
 
 num_mio_inputs = sum([x["width"] for x in top["pinmux"]["inputs"]])
 num_mio_outputs = sum([x["width"] for x in top["pinmux"]["outputs"]])
@@ -368,7 +369,7 @@ module top_${top["name"]} #(
     % endfor
     .tl_i        (${m["name"]}_tl_req),
     .tl_o        (${m["name"]}_tl_rsp),
-    .en_ifetch_i (${m["inter_signal_list"][2]["top_signame"]}),
+    .en_ifetch_i (${m["inter_signal_list"][3]["top_signame"]}),
     .req_o       (${m["name"]}_req),
     .gnt_i       (${m["name"]}_gnt),
     .we_o        (${m["name"]}_we),
@@ -381,10 +382,16 @@ module top_${top["name"]} #(
     .rerror_i    (${m["name"]}_rerror)
   );
 
+<%
+mem_name = m["name"].split("_")
+mem_name = Name(mem_name[1:])
+%>\
   prim_ram_1p_scr #(
     .Width(${full_data_width}),
     .Depth(${sram_depth}),
-    .EnableParity(0)
+    .EnableParity(0),
+    .LfsrWidth(${data_width}),
+    .StatePerm(RndCnstSramCtrl${mem_name.as_camel_case()}SramLfsrPerm)
   ) u_ram1p_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
@@ -396,6 +403,9 @@ module top_${top["name"]} #(
     .key_valid_i (${m["inter_signal_list"][1]["top_signame"]}_req.valid),
     .key_i       (${m["inter_signal_list"][1]["top_signame"]}_req.key),
     .nonce_i     (${m["inter_signal_list"][1]["top_signame"]}_req.nonce),
+    .init_req_i  (${m["inter_signal_list"][2]["top_signame"]}_req.req),
+    .init_seed_i (${m["inter_signal_list"][2]["top_signame"]}_req.seed),
+    .init_ack_o  (${m["inter_signal_list"][2]["top_signame"]}_rsp.ack),
 
     .req_i       (${m["name"]}_req),
     .intg_error_i(${m["name"]}_intg_err),
@@ -408,7 +418,7 @@ module top_${top["name"]} #(
     .rvalid_o    (${m["name"]}_rvalid),
     .rerror_o    (${m["name"]}_rerror),
     .raddr_o     (${m["inter_signal_list"][1]["top_signame"]}_rsp.raddr),
-    .intg_error_o(${m["inter_signal_list"][3]["top_signame"]}),
+    .intg_error_o(${m["inter_signal_list"][4]["top_signame"]}),
     .cfg_i       (ram_1p_cfg_i)
   );
 

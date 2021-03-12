@@ -32,8 +32,14 @@ package sram_ctrl_reg_pkg;
   } sram_ctrl_reg2hw_exec_reg_t;
 
   typedef struct packed {
-    logic        q;
-    logic        qe;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } renew_scr_key;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } init;
   } sram_ctrl_reg2hw_ctrl_reg_t;
 
   typedef struct packed {
@@ -52,20 +58,30 @@ package sram_ctrl_reg_pkg;
   } sram_ctrl_hw2reg_status_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        d;
+    } renew_scr_key;
+    struct packed {
+      logic        d;
+    } init;
+  } sram_ctrl_hw2reg_ctrl_reg_t;
+
+  typedef struct packed {
     logic [31:0] d;
     logic        de;
   } sram_ctrl_hw2reg_error_address_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    sram_ctrl_reg2hw_alert_test_reg_t alert_test; // [8:5]
-    sram_ctrl_reg2hw_exec_reg_t exec; // [4:2]
-    sram_ctrl_reg2hw_ctrl_reg_t ctrl; // [1:0]
+    sram_ctrl_reg2hw_alert_test_reg_t alert_test; // [10:7]
+    sram_ctrl_reg2hw_exec_reg_t exec; // [6:4]
+    sram_ctrl_reg2hw_ctrl_reg_t ctrl; // [3:0]
   } sram_ctrl_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    sram_ctrl_hw2reg_status_reg_t status; // [36:33]
+    sram_ctrl_hw2reg_status_reg_t status; // [38:35]
+    sram_ctrl_hw2reg_ctrl_reg_t ctrl; // [34:33]
     sram_ctrl_hw2reg_error_address_reg_t error_address; // [32:0]
   } sram_ctrl_hw2reg_t;
 
@@ -83,7 +99,7 @@ package sram_ctrl_reg_pkg;
   parameter logic [0:0] SRAM_CTRL_ALERT_TEST_FATAL_INTG_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] SRAM_CTRL_ALERT_TEST_FATAL_PARITY_ERROR_RESVAL = 1'h 0;
   parameter logic [3:0] SRAM_CTRL_STATUS_RESVAL = 4'h 0;
-  parameter logic [0:0] SRAM_CTRL_CTRL_RESVAL = 1'h 0;
+  parameter logic [1:0] SRAM_CTRL_CTRL_RESVAL = 2'h 0;
 
   // Register index
   typedef enum int {

@@ -66,7 +66,12 @@ package top_earlgrey_rnd_cnst_pkg;
 
   // Compile-time random reset value for SRAM scrambling nonce.
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlRetAonSramNonce = {
-    64'h60C06703B494B3FF
+    128'h1D7D9D0CE1DD7D7C60C06703B494B3FF
+  };
+
+  // Compile-time random permutation for LFSR output
+  parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlRetAonSramLfsrPerm = {
+    160'h8C24F71703EDA8A2378916B6BF80C76651EBCEA1
   };
 
   ////////////////////////////////////////////
@@ -74,22 +79,22 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for default address key
   parameter flash_ctrl_pkg::flash_key_t RndCnstFlashCtrlAddrKey = {
-    128'h738F30D9006289A1D7D9D0CE1DD7D7C
+    128'h48BAE844C87B69111A24D5E4442BCFB7
   };
 
   // Compile-time random bits for default data key
   parameter flash_ctrl_pkg::flash_key_t RndCnstFlashCtrlDataKey = {
-    128'hFE8F673FBA39BB679D58AA91AEB2691C
+    128'hEEC5E43D4B16446726A27B8F0B30AD50
   };
 
   // Compile-time random bits for initial LFSR seed
   parameter flash_ctrl_pkg::lfsr_seed_t RndCnstFlashCtrlLfsrSeed = {
-    32'hAE24AF11
+    32'h369AE283
   };
 
   // Compile-time random permutation for LFSR output
   parameter flash_ctrl_pkg::lfsr_perm_t RndCnstFlashCtrlLfsrPerm = {
-    160'h25DA5869DC96FE354F1DA55E9123CB082C63B331
+    160'hB0DD7870FFED25342F40F3D8926051DA8B96D426
   };
 
   ////////////////////////////////////////////
@@ -97,23 +102,23 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Default seed of the PRNG used for register clearing.
   parameter aes_pkg::clearing_lfsr_seed_t RndCnstAesClearingLfsrSeed = {
-    64'h4B16446726A27B8F
+    64'hED204633871CB178
   };
 
   // Permutation applied to the LFSR of the PRNG used for clearing.
   parameter aes_pkg::clearing_lfsr_perm_t RndCnstAesClearingLfsrPerm = {
-    128'h725022AFED8C3F0C64F132A9FC5D1745,
-    256'hD64EC881FDED0E5FE8D9F8DEE8215810DEB1848952D123D552F36AA086A2F99B
+    128'h99B01E35560F2EB97E3047685D6B7BD8,
+    256'h7B029229DA078DF923F7D0F46154C34BA9D43C734AF2A1EAA8E0F3270944E4D9
   };
 
   // Default seed of the PRNG used for masking.
   parameter aes_pkg::masking_lfsr_seed_t RndCnstAesMaskingLfsrSeed = {
-    160'hA77B61ACD1356DC20CD7DD118E18EDEB46B20763
+    160'h46512073261CF96E55692B75E4024435CE910013
   };
 
   // Permutation applied to the LFSR chunks of the PRNG used for masking.
   parameter aes_pkg::mskg_chunk_lfsr_perm_t RndCnstAesMskgChunkLfsrPerm = {
-    160'h311A5ECD60FF1F145C3265ABEC8D303A85AC3B74
+    160'h7B6C2C9AB7E757BFA48A0B1C5F20F388070C5352
   };
 
   ////////////////////////////////////////////
@@ -121,68 +126,68 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for initial LFSR seed
   parameter keymgr_pkg::lfsr_seed_t RndCnstKeymgrLfsrSeed = {
-    64'hA26D06FED461E43E
+    64'hE2A9B121F6FD1B71
   };
 
   // Compile-time random permutation for LFSR output
   parameter keymgr_pkg::lfsr_perm_t RndCnstKeymgrLfsrPerm = {
-    128'hEDF8195A833EB78D252D435C8B301B7B,
-    256'h2BC36B6270C52908AE9B07EB9F615EE3F51444E641509876ADFC28647F9E304E
+    128'h25AC47E90B16ACA159622BF4F3D00C09,
+    256'hE515357736CD1B9DA5FFB79436E6C0BD68060E7B10E193FD286A92322D3F8CA7
   };
 
   // Compile-time random permutation for entropy used in share overriding
   parameter keymgr_pkg::rand_perm_t RndCnstKeymgrRandPerm = {
-    160'h97CD1105DCED6F9458F02A54BDF9BA9BC60A6184
+    160'hE2E014BA5846DB4AE6CF1DCF1FE99E997A451802
   };
 
   // Compile-time random bits for revision seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrRevisionSeed = {
-    256'h3C7A34558CCEC99F160326DB309C3ED8635B48D5DD14C50A053DB7469BAC5612
+    256'hF085D06D98C25574D82449E1AFA2201F312EA264F507A75D5B610152D8465246
   };
 
   // Compile-time random bits for creator identity seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrCreatorIdentitySeed = {
-    256'h81A3637187C027B6ACA8E4FFC89A3209A1642741192E3979E50F4B7302BF908C
+    256'hED2E99906A4AFBD4DEDB5CC59EF74E5AB14D5B983DD7598AF12E48C599DA1605
   };
 
   // Compile-time random bits for owner intermediate identity seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrOwnerIntIdentitySeed = {
-    256'hDC165280C0509A5CBEE310112A22E896651CDF06599BF6FFC17FFF937DE17023
+    256'h198A2B804DF44B9E44E1C905DCD81E3B8ADCF2EA1EB87424E51CAA14DBFBEC75
   };
 
   // Compile-time random bits for owner identity seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrOwnerIdentitySeed = {
-    256'h36C5B3D0A873F50B0E273058CAA5291BD06F88A44B8243CA1A45B215CC7256C
+    256'h710581E83789A7B90140C94645887A4457E74CD0C4CCA056411C89563D15B47B
   };
 
   // Compile-time random bits for software generation seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrSoftOutputSeed = {
-    256'h44AF7C286396D54F33CEB281D957BF9ED89305D88D8D71C2CA6258CC000DA006
+    256'hA2415E162F57F8AA2CCE101E080C3A9DB8CA70B49D1050C47FA9CE86F3443C8C
   };
 
   // Compile-time random bits for hardware generation seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrHardOutputSeed = {
-    256'hF085D06D98C25574D82449E1AFA2201F312EA264F507A75D5B610152D8465246
+    256'hEA8F46C61A39EBB93E4EF606D8CEFA03D0EC61B1BDCBC0E305B5E826EF06FF71
   };
 
   // Compile-time random bits for generation seed when aes destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrAesSeed = {
-    256'hED2E99906A4AFBD4DEDB5CC59EF74E5AB14D5B983DD7598AF12E48C599DA1605
+    256'h1D4967265F5BE435BB86EC6CE55EF0383B7EFF93CF28E950F9E20B072B46413F
   };
 
   // Compile-time random bits for generation seed when hmac destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrHmacSeed = {
-    256'h198A2B804DF44B9E44E1C905DCD81E3B8ADCF2EA1EB87424E51CAA14DBFBEC75
+    256'hCDE39C7F136F643DD889A82012723D99A28765B0F2275A007C6D3334CDF5F463
   };
 
   // Compile-time random bits for generation seed when kmac destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrKmacSeed = {
-    256'h710581E83789A7B90140C94645887A4457E74CD0C4CCA056411C89563D15B47B
+    256'h7D6A1DFC06309603AC5BDAA938CDE8623691D2421C1380E95BB5CA2EDD3D769F
   };
 
   // Compile-time random bits for generation seed when no destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrNoneSeed = {
-    256'hA2415E162F57F8AA2CCE101E080C3A9DB8CA70B49D1050C47FA9CE86F3443C8C
+    256'h31DC2B96A9AE6DDDCD37C3E4506557F163AFD8475E880D7228274B6F2922B53F
   };
 
   ////////////////////////////////////////////
@@ -190,12 +195,17 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random reset value for SRAM scrambling key.
   parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlMainSramKey = {
-    128'hD0EC61B1BDCBC0E305B5E826EF06FF71
+    128'hDE27F2CF29CAAB641654AC0A79A61FF5
   };
 
   // Compile-time random reset value for SRAM scrambling nonce.
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlMainSramNonce = {
-    64'h3E4EF606D8CEFA03
+    128'h27D13A3A480B63B97279D8D378486795
+  };
+
+  // Compile-time random permutation for LFSR output
+  parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlMainSramLfsrPerm = {
+    160'hA170A012778B2DE5C91D1B7E1AED3C819DA38B2F
   };
 
 endpackage : top_earlgrey_rnd_cnst_pkg

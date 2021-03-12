@@ -46,7 +46,11 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // If set to 0, the cipher primitive is replicated, and together with a wider nonce input,
   // a unique keystream is generated for the full data width.
   parameter  bit ReplicateKeyStream  = 1'b0,
-
+  // Width of lfsr seed used for random init
+  parameter  int LfsrWidth           = 8,
+  parameter logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] StatePerm = {
+    24'h988eab
+  },
   // Derived parameters
   localparam int AddrWidth           = prim_util_pkg::vbits(Depth),
   // Depending on the data width, we need to instantiate multiple parallel cipher primitives to
@@ -66,6 +70,9 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   input                             key_valid_i,
   input        [DataKeyWidth-1:0]   key_i,
   input        [NonceWidth-1:0]     nonce_i,
+  input        [LfsrWidth-1:0]      init_seed_i,
+  input                             init_req_i,
+  output logic                      init_ack_o,
 
   // Interface to TL-UL SRAM adapter
   input                             req_i,
@@ -116,6 +123,77 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .out_o(intg_error_o)
   );
 
+  ///////////////////////////
+  // Lfsr for random init  //
+  ///////////////////////////
+
+  logic init_req_q, load_seed;
+  logic [AddrWidth-1:0] addr_cnt_q;
+  logic [LfsrWidth-1:0] lfsr_out;
+  logic init_sel;
+
+  // input muxed addr/data/mask
+  logic [AddrWidth-1:0] addr;
+  logic [Width-1:0] wdata;
+  logic [Width-1:0] wmask;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      init_req_q <= '0;
+    end else begin
+      init_req_q <= init_req_i;
+    end
+  end
+
+  assign load_seed = init_req_i & ~init_req_q;
+
+  prim_lfsr #(
+    .LfsrDw(LfsrWidth),
+    .StateOutDw(LfsrWidth),
+    .StatePermEn(1'b0),
+    .StatePerm(StatePerm)
+  ) u_lfsr (
+    .clk_i,
+    .rst_ni,
+    .lfsr_en_i(init_req_i),
+    .seed_en_i(load_seed),
+    .seed_i(init_seed_i),
+    .entropy_i('0),
+    .state_o(lfsr_out)
+  );
+
+  // TODO: Need to harden these counters long term
+  assign init_ack_o = init_req_q && addr_cnt_q == Depth - 1;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      addr_cnt_q <= '0;
+    end else if (init_ack_o) begin
+      addr_cnt_q <= '0;
+    end else if (init_req_q && addr_cnt_q < Depth - 1) begin
+      addr_cnt_q <= addr_cnt_q + AddrWidth'(1);
+    end
+  end
+
+  // The lfsr width and the width of the data may not be completely aligned
+  localparam int LfsrMult = (Width % LfsrWidth > 0) ? Width / LfsrWidth + 1 :
+                                                      Width / LfsrWidth;
+  localparam int FullRandWidth = LfsrMult * LfsrWidth;
+
+  // The random value may be larger than what is needed
+  logic [FullRandWidth-1:0] rand_val;
+  assign rand_val = {LfsrMult{lfsr_out}};
+
+  if (LfsrMult * LfsrWidth > Width) begin : gen_rand_tieoffs
+    logic unused_rand;
+    assign unused_rand = ^rand_val[FullRandWidth-1:Width];
+  end
+
+  assign init_sel = init_req_q;
+  assign addr = init_sel ? addr_cnt_q : addr_i;
+  assign wdata = init_sel ? rand_val[Width-1:0] : wdata_i;
+  assign wmask = init_sel ? '1 : wmask_i;
+
   /////////////////////////////////////////
   // Pending Write and Address Registers //
   /////////////////////////////////////////
@@ -130,15 +208,15 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   // Read / write strobes
   logic read_en, write_en_d, write_en_q;
-  assign gnt_o = req_i & key_valid_i;
+  assign gnt_o = req_i & key_valid_i & ~init_sel;
 
   assign read_en = gnt_o & ~write_i;
-  assign write_en_d = gnt_o & write_i;
+  assign write_en_d = gnt_o & write_i | init_sel;
 
   logic write_pending_q;
   logic addr_collision_d, addr_collision_q;
   logic [AddrWidth-1:0] waddr_q;
-  assign addr_collision_d = read_en & (write_en_q | write_pending_q) & (addr_i == waddr_q);
+  assign addr_collision_d = read_en & (write_en_q | write_pending_q) & (addr == waddr_q);
 
   // Macro requests and write strobe
   // The macro operation is silenced if an integrity error is seen
@@ -162,7 +240,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   // We only select the pending write address in case there is no incoming read transaction.
   logic [AddrWidth-1:0] addr_mux;
-  assign addr_mux = (read_en) ? addr_i : waddr_q;
+  assign addr_mux = (read_en) ? addr : waddr_q;
 
   // This creates a bijective address mapping using a substitution / permutation network.
   logic [AddrWidth-1:0] addr_scr;
@@ -189,7 +267,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       .Decrypt   ( 0                )
     ) u_prim_subst_perm (
       .data_i ( addr_mux       ),
-      // Since the counter mode concatenates {nonce_i[NonceWidth-1-AddrWidth:0], addr_i} to form
+      // Since the counter mode concatenates {nonce_i[NonceWidth-1-AddrWidth:0], addr} to form
       // the IV, the upper AddrWidth bits of the nonce are not used and can be used for address
       // scrambling. In cases where N parallel PRINCE blocks are used due to a data
       // width > 64bit, N*AddrWidth nonce bits are left dangling.
@@ -243,8 +321,8 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       .rst_ni,
       .valid_i ( gnt_o ),
       // The IV is composed of a nonce and the row address
-      //.data_i  ( {nonce_i[k * (64 - AddrWidth) +: (64 - AddrWidth)], addr_i} ),
-      .data_i  ( {data_scr_nonce[k], addr_i} ),
+      //.data_i  ( {nonce_i[k * (64 - AddrWidth) +: (64 - AddrWidth)], addr} ),
+      .data_i  ( {data_scr_nonce[k], addr} ),
       // All parallel scramblers use the same key
       .key_i,
       // Since we operate in counter mode, this can always be set to encryption mode
@@ -400,12 +478,12 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       write_en_q          <= write_en_d;
 
       if (read_en) begin
-        raddr_q           <= addr_i;
+        raddr_q           <= addr;
       end
       if (write_en_d) begin
-        waddr_q <= addr_i;
-        wmask_q <= wmask_i;
-        wdata_q <= wdata_i;
+        waddr_q <= addr;
+        wmask_q <= wmask;
+        wdata_q <= wdata;
       end
       if (rw_collision) begin
         wdata_scr_q <= wdata_scr_d;
