@@ -78,15 +78,6 @@
       local:   "false",
       expose:  "true"
     },
-    { name:    "AlertAsyncOn",
-      type:    "logic [aes_reg_pkg::NumAlerts-1:0]",
-      default: "{aes_reg_pkg::NumAlerts{1'b1}}",
-      desc:    '''
-        One bit per alert specifying whether the corresponding sender in the AES module and the receiver in the alert handler are in the same clock domain (0) or whether there is an asynchronous boundary in between (1).
-      '''
-      local:   "false",
-      expose:  "false"
-    },
     # Random netlist constants
     { name:    "RndCnstClearingLfsrSeed",
       type:    "aes_pkg::clearing_lfsr_seed_t",

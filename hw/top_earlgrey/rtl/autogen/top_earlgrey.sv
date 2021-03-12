@@ -1424,6 +1424,7 @@ module top_earlgrey #(
   );
 
   otp_ctrl #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[1:0]),
     .MemInitFile(OtpCtrlMemInitFile),
     .RndCnstLfsrSeed(RndCnstOtpCtrlLfsrSeed),
     .RndCnstLfsrPerm(RndCnstOtpCtrlLfsrPerm)
@@ -1432,7 +1433,6 @@ module top_earlgrey #(
       // Interrupt
       .intr_otp_operation_done_o (intr_otp_ctrl_otp_operation_done),
       .intr_otp_error_o          (intr_otp_ctrl_otp_error),
-
       // [0]: fatal_macro_error
       // [1]: fatal_check_error
       .alert_tx_o  ( alert_tx[1:0] ),
@@ -1474,11 +1474,11 @@ module top_earlgrey #(
   );
 
   lc_ctrl #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[3:2]),
     .RndCnstLcKeymgrDivInvalid(RndCnstLcCtrlLcKeymgrDivInvalid),
     .RndCnstLcKeymgrDivTestDevRma(RndCnstLcCtrlLcKeymgrDivTestDevRma),
     .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction)
   ) u_lc_ctrl (
-
       // [2]: fatal_prog_error
       // [3]: fatal_state_error
       .alert_tx_o  ( alert_tx[3:2] ),
@@ -1719,7 +1719,9 @@ module top_earlgrey #(
       .rst_aon_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel])
   );
 
-  sensor_ctrl u_sensor_ctrl_aon (
+  sensor_ctrl #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[10:4])
+  ) u_sensor_ctrl_aon (
 
       // Input
       .cio_ast_debug_in_i     (cio_sensor_ctrl_aon_ast_debug_in_p2d),
@@ -1727,7 +1729,6 @@ module top_earlgrey #(
       // Output
       .cio_ast_debug_out_o    (cio_sensor_ctrl_aon_ast_debug_out_d2p),
       .cio_ast_debug_out_en_o (cio_sensor_ctrl_aon_ast_debug_out_en_d2p),
-
       // [4]: recov_as
       // [5]: recov_cg
       // [6]: recov_gd
@@ -1753,11 +1754,11 @@ module top_earlgrey #(
   );
 
   sram_ctrl #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[12:11]),
     .RndCnstSramKey(RndCnstSramCtrlRetAonSramKey),
     .RndCnstSramNonce(RndCnstSramCtrlRetAonSramNonce),
     .InstrExec(SramCtrlRetAonInstrExec)
   ) u_sram_ctrl_ret_aon (
-
       // [11]: fatal_intg_error
       // [12]: fatal_parity_error
       .alert_tx_o  ( alert_tx[12:11] ),
@@ -1784,6 +1785,7 @@ module top_earlgrey #(
   );
 
   flash_ctrl #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[15:13]),
     .RndCnstAddrKey(RndCnstFlashCtrlAddrKey),
     .RndCnstDataKey(RndCnstFlashCtrlDataKey),
     .RndCnstLfsrSeed(RndCnstFlashCtrlLfsrSeed),
@@ -1805,7 +1807,6 @@ module top_earlgrey #(
       .intr_rd_full_o    (intr_flash_ctrl_rd_full),
       .intr_rd_lvl_o     (intr_flash_ctrl_rd_lvl),
       .intr_op_done_o    (intr_flash_ctrl_op_done),
-
       // [13]: recov_err
       // [14]: recov_mp_err
       // [15]: recov_ecc_err
@@ -1855,19 +1856,18 @@ module top_earlgrey #(
   );
 
   aes #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[17:16]),
     .AES192Enable(1'b1),
     .Masking(AesMasking),
     .SBoxImpl(AesSBoxImpl),
     .SecStartTriggerDelay(SecAesStartTriggerDelay),
     .SecAllowForcingMasks(SecAesAllowForcingMasks),
     .SecSkipPRNGReseeding(SecAesSkipPRNGReseeding),
-    .AlertAsyncOn({aes_reg_pkg::NumAlerts{1'b1}}),
     .RndCnstClearingLfsrSeed(RndCnstAesClearingLfsrSeed),
     .RndCnstClearingLfsrPerm(RndCnstAesClearingLfsrPerm),
     .RndCnstMaskingLfsrSeed(RndCnstAesMaskingLfsrSeed),
     .RndCnstMskgChunkLfsrPerm(RndCnstAesMskgChunkLfsrPerm)
   ) u_aes (
-
       // [16]: recov_ctrl_update_err
       // [17]: fatal_fault
       .alert_tx_o  ( alert_tx[17:16] ),
@@ -1933,6 +1933,7 @@ module top_earlgrey #(
   );
 
   keymgr #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[19:18]),
     .RndCnstLfsrSeed(RndCnstKeymgrLfsrSeed),
     .RndCnstLfsrPerm(RndCnstKeymgrLfsrPerm),
     .RndCnstRandPerm(RndCnstKeymgrRandPerm),
@@ -1950,7 +1951,6 @@ module top_earlgrey #(
 
       // Interrupt
       .intr_op_done_o (intr_keymgr_op_done),
-
       // [18]: fatal_fault_err
       // [19]: recov_operation_err
       .alert_tx_o  ( alert_tx[19:18] ),
@@ -1980,6 +1980,7 @@ module top_earlgrey #(
   );
 
   csrng #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[20:20]),
     .SBoxImpl(CsrngSBoxImpl)
   ) u_csrng (
 
@@ -1988,7 +1989,6 @@ module top_earlgrey #(
       .intr_cs_entropy_req_o  (intr_csrng_cs_entropy_req),
       .intr_cs_hw_inst_exc_o  (intr_csrng_cs_hw_inst_exc),
       .intr_cs_fatal_err_o    (intr_csrng_cs_fatal_err),
-
       // [20]: fatal_alert
       .alert_tx_o  ( alert_tx[20:20] ),
       .alert_rx_i  ( alert_rx[20:20] ),
@@ -2008,13 +2008,14 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
-  entropy_src u_entropy_src (
+  entropy_src #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[22:21])
+  ) u_entropy_src (
 
       // Interrupt
       .intr_es_entropy_valid_o      (intr_entropy_src_es_entropy_valid),
       .intr_es_health_test_failed_o (intr_entropy_src_es_health_test_failed),
       .intr_es_fatal_err_o          (intr_entropy_src_es_fatal_err),
-
       // [21]: recov_alert
       // [22]: fatal_alert
       .alert_tx_o  ( alert_tx[22:21] ),
@@ -2036,12 +2037,13 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
-  edn u_edn0 (
+  edn #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[23:23])
+  ) u_edn0 (
 
       // Interrupt
       .intr_edn_cmd_req_done_o (intr_edn0_edn_cmd_req_done),
       .intr_edn_fatal_err_o    (intr_edn0_edn_fatal_err),
-
       // [23]: fatal_alert
       .alert_tx_o  ( alert_tx[23:23] ),
       .alert_rx_i  ( alert_rx[23:23] ),
@@ -2059,12 +2061,13 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
-  edn u_edn1 (
+  edn #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[24:24])
+  ) u_edn1 (
 
       // Interrupt
       .intr_edn_cmd_req_done_o (intr_edn1_edn_cmd_req_done),
       .intr_edn_fatal_err_o    (intr_edn1_edn_fatal_err),
-
       // [24]: fatal_alert
       .alert_tx_o  ( alert_tx[24:24] ),
       .alert_rx_i  ( alert_rx[24:24] ),
@@ -2083,11 +2086,11 @@ module top_earlgrey #(
   );
 
   sram_ctrl #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[26:25]),
     .RndCnstSramKey(RndCnstSramCtrlMainSramKey),
     .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce),
     .InstrExec(SramCtrlMainInstrExec)
   ) u_sram_ctrl_main (
-
       // [25]: fatal_intg_error
       // [26]: fatal_parity_error
       .alert_tx_o  ( alert_tx[26:25] ),
@@ -2114,12 +2117,12 @@ module top_earlgrey #(
   );
 
   otbn #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[28:27]),
     .RegFile(OtbnRegFile)
   ) u_otbn (
 
       // Interrupt
       .intr_done_o (intr_otbn_done),
-
       // [27]: fatal
       // [28]: recov
       .alert_tx_o  ( alert_tx[28:27] ),
