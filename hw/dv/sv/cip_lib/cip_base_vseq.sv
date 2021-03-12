@@ -349,7 +349,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         `uvm_info(`gfn, $sformatf("Read %s: 0x%0h", csr.get_full_name(), act_val),
             UVM_MEDIUM)
 
-        if (!cfg.under_reset) continue;
+        if (cfg.under_reset) continue;
 
         `DV_CHECK_EQ(act_val, `gmv(csr))
 
