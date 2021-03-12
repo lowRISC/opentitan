@@ -37,6 +37,7 @@ module rv_core_ibex #(
   input  logic        rst_esc_ni,
 
   input  logic        test_en_i,     // enable all clock gates for testing
+  input  prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
 
   input  logic [31:0] hart_id_i,
   input  logic [31:0] boot_addr_i,
@@ -196,6 +197,7 @@ module rv_core_ibex #(
     .rst_ni,
 
     .test_en_i,
+    .ram_cfg_i,
 
     .hart_id_i,
     .boot_addr_i,

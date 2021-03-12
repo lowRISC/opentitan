@@ -224,7 +224,7 @@ module ibex_multdiv_fast #(
 
           summand1 = '0;
           summand2 = accum;
-          summand3 = mult3_res;
+          summand3 = $unsigned(mult3_res);
 
           mult_state_d = MULL;
           mult_valid = 1'b1;

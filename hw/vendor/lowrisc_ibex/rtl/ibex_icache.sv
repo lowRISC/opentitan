@@ -22,40 +22,41 @@ module ibex_icache #(
   parameter bit          BranchCache     = 1'b0
 ) (
     // Clock and reset
-    input  logic                clk_i,
-    input  logic                rst_ni,
+    input  logic                         clk_i,
+    input  logic                         rst_ni,
 
     // Signal that the core would like instructions
-    input  logic                req_i,
+    input  logic                         req_i,
 
     // Set the cache's address counter
-    input  logic                branch_i,
-    input  logic                branch_spec_i,
-    input  logic                predicted_branch_i,
-    input  logic                branch_mispredict_i,
-    input  logic [31:0]         addr_i,
+    input  logic                         branch_i,
+    input  logic                         branch_spec_i,
+    input  logic                         predicted_branch_i,
+    input  logic                         branch_mispredict_i,
+    input  logic [31:0]                  addr_i,
 
     // IF stage interface: Pass fetched instructions to the core
-    input  logic                ready_i,
-    output logic                valid_o,
-    output logic [31:0]         rdata_o,
-    output logic [31:0]         addr_o,
-    output logic                err_o,
-    output logic                err_plus2_o,
+    input  logic                         ready_i,
+    output logic                         valid_o,
+    output logic [31:0]                  rdata_o,
+    output logic [31:0]                  addr_o,
+    output logic                         err_o,
+    output logic                         err_plus2_o,
 
     // Instruction memory / interconnect interface: Fetch instruction data from memory
-    output logic                instr_req_o,
-    input  logic                instr_gnt_i,
-    output logic [31:0]         instr_addr_o,
-    input  logic [BusWidth-1:0] instr_rdata_i,
-    input  logic                instr_err_i,
-    input  logic                instr_pmp_err_i,
-    input  logic                instr_rvalid_i,
+    output logic                         instr_req_o,
+    input  logic                         instr_gnt_i,
+    output logic [31:0]                  instr_addr_o,
+    input  logic [BusWidth-1:0]          instr_rdata_i,
+    input  logic                         instr_err_i,
+    input  logic                         instr_pmp_err_i,
+    input  logic                         instr_rvalid_i,
 
     // Cache status
-    input  logic                icache_enable_i,
-    input  logic                icache_inval_i,
-    output logic                busy_o
+    input  prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
+    input  logic                         icache_enable_i,
+    input  logic                         icache_inval_i,
+    output logic                         busy_o
 );
   // Local constants
   localparam int unsigned ADDR_W       = 32;
@@ -64,14 +65,15 @@ module ibex_icache #(
   // Request throttling threshold
   localparam int unsigned FB_THRESHOLD = NUM_FB - 2;
   // Derived parameters
-  localparam int unsigned LINE_SIZE_ECC   = ICacheECC ? (LineSize + 8) : LineSize;
   localparam int unsigned LINE_SIZE_BYTES = LineSize/8;
   localparam int unsigned LINE_W          = $clog2(LINE_SIZE_BYTES);
+  localparam int unsigned BUS_SIZE_ECC    = ICacheECC ? (BusWidth + 7) : BusWidth;
   localparam int unsigned BUS_BYTES       = BusWidth/8;
   localparam int unsigned BUS_W           = $clog2(BUS_BYTES);
   localparam int unsigned LINE_BEATS      = LINE_SIZE_BYTES / BUS_BYTES;
   localparam int unsigned LINE_BEATS_W    = $clog2(LINE_BEATS);
   localparam int unsigned NUM_LINES       = CacheSizeBytes / NumWays / LINE_SIZE_BYTES;
+  localparam int unsigned LINE_SIZE_ECC   = BUS_SIZE_ECC * LINE_BEATS;
   localparam int unsigned INDEX_W         = $clog2(NUM_LINES);
   localparam int unsigned INDEX_HI        = INDEX_W + LINE_W - 1;
   localparam int unsigned TAG_SIZE        = ADDR_W - INDEX_W - LINE_W + 1; // 1 valid bit
@@ -110,7 +112,8 @@ module ibex_icache #(
   // Cache pipelipe IC1 signals
   logic [TAG_SIZE_ECC-1:0]             tag_rdata_ic1  [NumWays];
   logic [LINE_SIZE_ECC-1:0]            data_rdata_ic1 [NumWays];
-  logic [LINE_SIZE_ECC-1:0]            hit_data_ic1;
+  logic [LINE_SIZE_ECC-1:0]            hit_data_ecc_ic1;
+  logic [LineSize-1:0]                 hit_data_ic1;
   logic                                lookup_valid_ic1;
   logic [ADDR_W-1:INDEX_HI+1]          lookup_addr_ic1;
   logic [NumWays-1:0]                  tag_match_ic1;
@@ -315,10 +318,12 @@ module ibex_icache #(
     assign tag_wdata_ic0 = {tag_ecc_output_padded[27:22],tag_ecc_output_padded[TAG_SIZE-1:0]};
 
     // Dataram ECC
-    prim_secded_72_64_enc data_ecc_enc (
-      .in  (fill_wdata_ic0),
-      .out (data_wdata_ic0)
-    );
+    for (genvar bank = 0; bank < LINE_BEATS; bank ++) begin : gen_ecc_banks
+      prim_secded_39_32_enc data_ecc_enc (
+        .in  (fill_wdata_ic0[bank*BusWidth+:BusWidth]),
+        .out (data_wdata_ic0[bank*BUS_SIZE_ECC+:BUS_SIZE_ECC])
+      );
+    end
 
   end else begin : gen_noecc_wdata
     assign tag_wdata_ic0  = fill_tag_ic0;
@@ -338,6 +343,7 @@ module ibex_icache #(
     ) tag_bank (
       .clk_i    (clk_i),
       .req_i    (tag_req_ic0 & tag_banks_ic0[way]),
+      .cfg_i    (ram_cfg_i),
       .write_i  (tag_write_ic0),
       .wmask_i  ({TAG_SIZE_ECC{1'b1}}),
       .addr_i   (tag_index_ic0),
@@ -352,6 +358,7 @@ module ibex_icache #(
     ) data_bank (
       .clk_i    (clk_i),
       .req_i    (data_req_ic0 & data_banks_ic0[way]),
+      .cfg_i    (ram_cfg_i),
       .write_i  (data_write_ic0),
       .wmask_i  ({LINE_SIZE_ECC{1'b1}}),
       .addr_i   (data_index_ic0),
@@ -390,10 +397,10 @@ module ibex_icache #(
 
   // Hit data mux
   always_comb begin
-    hit_data_ic1 = 'b0;
+    hit_data_ecc_ic1 = 'b0;
     for (int way = 0; way < NumWays; way++) begin
       if (tag_match_ic1[way]) begin
-        hit_data_ic1 |= data_rdata_ic1[way];
+        hit_data_ecc_ic1 |= data_rdata_ic1[way];
       end
     end
   end
@@ -421,11 +428,11 @@ module ibex_icache #(
 
   // ECC checking logic
   if (ICacheECC) begin : gen_data_ecc_checking
-    logic [NumWays-1:0] tag_err_ic1;
-    logic [1:0]         data_err_ic1;
-    logic               ecc_correction_write_d, ecc_correction_write_q;
-    logic [NumWays-1:0] ecc_correction_ways_d, ecc_correction_ways_q;
-    logic [INDEX_W-1:0] lookup_index_ic1, ecc_correction_index_q;
+    logic [NumWays-1:0]      tag_err_ic1;
+    logic [LINE_BEATS*2-1:0] data_err_ic1;
+    logic                    ecc_correction_write_d, ecc_correction_write_q;
+    logic [NumWays-1:0]      ecc_correction_ways_d, ecc_correction_ways_q;
+    logic [INDEX_W-1:0]      lookup_index_ic1, ecc_correction_index_q;
 
     // Tag ECC checking
     for (genvar way = 0; way < NumWays; way++) begin : gen_tag_ecc
@@ -448,12 +455,17 @@ module ibex_icache #(
 
     // Data ECC checking
     // Note - could generate for all ways and mux after
-    prim_secded_72_64_dec data_ecc_dec (
-      .in         (hit_data_ic1),
-      .d_o        (),
-      .syndrome_o (),
-      .err_o      (data_err_ic1)
-    );
+    for (genvar bank = 0; bank < LINE_BEATS; bank++) begin : gen_ecc_banks
+      prim_secded_39_32_dec data_ecc_dec (
+        .in         (hit_data_ecc_ic1[bank*BUS_SIZE_ECC+:BUS_SIZE_ECC]),
+        .d_o        (),
+        .syndrome_o (),
+        .err_o      (data_err_ic1[bank*2+:2])
+      );
+
+      assign hit_data_ic1[bank*BusWidth+:BusWidth] = hit_data_ecc_ic1[bank*BUS_SIZE_ECC+:BusWidth];
+
+    end
 
     assign ecc_err_ic1 = lookup_valid_ic1 & ((|data_err_ic1) | (|tag_err_ic1));
 
@@ -497,6 +509,7 @@ module ibex_icache #(
     assign ecc_write_req   = 1'b0;
     assign ecc_write_ways  = '0;
     assign ecc_write_index = '0;
+    assign hit_data_ic1    = hit_data_ecc_ic1;
   end
 
   ///////////////////////////////
@@ -782,7 +795,7 @@ module ibex_icache #(
 
     // Data either comes from the cache or the bus. If there was an ECC error, we must take
     // the incoming bus data since the cache hit data is corrupted.
-    assign fill_data_d[fb] = fill_hit_ic1[fb] ? hit_data_ic1[LineSize-1:0] :
+    assign fill_data_d[fb] = fill_hit_ic1[fb] ? hit_data_ic1 :
                                                 {LINE_BEATS{instr_rdata_i}};
 
     for (genvar b = 0; b < LINE_BEATS; b++) begin : gen_data_buf
@@ -881,7 +894,7 @@ module ibex_icache #(
   ////////////////////////
 
   // Mux between line-width data sources
-  assign line_data = |fill_data_hit ? hit_data_ic1[LineSize-1:0] : fill_out_data;
+  assign line_data = |fill_data_hit ? hit_data_ic1 : fill_out_data;
   assign line_err  = |fill_data_hit ? {LINE_BEATS{1'b0}} : fill_out_err;
 
   // Mux the relevant beat of line data, based on the output address
@@ -1059,7 +1072,7 @@ module ibex_icache #(
 
   // ECC primitives will need to be changed for different sizes
   `ASSERT_INIT(ecc_tag_param_legal, (TAG_SIZE <= 27))
-  `ASSERT_INIT(ecc_data_param_legal, (LineSize <= 121))
+  `ASSERT_INIT(ecc_data_param_legal, !ICacheECC || (BusWidth == 32))
 
   // Lookups in the tag ram should always give a known result
   `ASSERT_KNOWN(TagHitKnown,     lookup_valid_ic1 & tag_hit_ic1)

@@ -21,76 +21,77 @@ module ibex_if_stage #(
     parameter bit          PCIncrCheck       = 1'b0,
     parameter bit          BranchPredictor   = 1'b0
 ) (
-    input  logic                   clk_i,
-    input  logic                   rst_ni,
+    input  logic                         clk_i,
+    input  logic                         rst_ni,
 
-    input  logic [31:0]            boot_addr_i,              // also used for mtvec
-    input  logic                   req_i,                    // instruction request control
+    input  prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
+    input  logic [31:0]                  boot_addr_i,              // also used for mtvec
+    input  logic                         req_i,                    // instruction request control
 
     // instruction cache interface
-    output logic                  instr_req_o,
-    output logic [31:0]           instr_addr_o,
-    input  logic                  instr_gnt_i,
-    input  logic                  instr_rvalid_i,
-    input  logic [31:0]           instr_rdata_i,
-    input  logic                  instr_err_i,
-    input  logic                  instr_pmp_err_i,
+    output logic                        instr_req_o,
+    output logic [31:0]                 instr_addr_o,
+    input  logic                        instr_gnt_i,
+    input  logic                        instr_rvalid_i,
+    input  logic [31:0]                 instr_rdata_i,
+    input  logic                        instr_err_i,
+    input  logic                        instr_pmp_err_i,
 
     // output of ID stage
-    output logic                  instr_valid_id_o,         // instr in IF-ID is valid
-    output logic                  instr_new_id_o,           // instr in IF-ID is new
-    output logic [31:0]           instr_rdata_id_o,         // instr for ID stage
-    output logic [31:0]           instr_rdata_alu_id_o,     // replicated instr for ID stage
-                                                            // to reduce fan-out
-    output logic [15:0]           instr_rdata_c_id_o,       // compressed instr for ID stage
-                                                            // (mtval), meaningful only if
-                                                            // instr_is_compressed_id_o = 1'b1
-    output logic                  instr_is_compressed_id_o, // compressed decoder thinks this
-                                                            // is a compressed instr
-    output logic                  instr_bp_taken_o,         // instruction was predicted to be
-                                                            // a taken branch
-    output logic                  instr_fetch_err_o,        // bus error on fetch
-    output logic                  instr_fetch_err_plus2_o,  // bus error misaligned
-    output logic                  illegal_c_insn_id_o,      // compressed decoder thinks this
-                                                            // is an invalid instr
-    output logic                  dummy_instr_id_o,         // Instruction is a dummy
-    output logic [31:0]           pc_if_o,
-    output logic [31:0]           pc_id_o,
+    output logic                        instr_valid_id_o,         // instr in IF-ID is valid
+    output logic                        instr_new_id_o,           // instr in IF-ID is new
+    output logic [31:0]                 instr_rdata_id_o,         // instr for ID stage
+    output logic [31:0]                 instr_rdata_alu_id_o,     // replicated instr for ID stage
+                                                                  // to reduce fan-out
+    output logic [15:0]                 instr_rdata_c_id_o,       // compressed instr for ID stage
+                                                                  // (mtval), meaningful only if
+                                                                 // instr_is_compressed_id_o = 1'b1
+    output logic                        instr_is_compressed_id_o, // compressed decoder thinks this
+                                                                  // is a compressed instr
+    output logic                        instr_bp_taken_o,         // instruction was predicted to be
+                                                                  // a taken branch
+    output logic                        instr_fetch_err_o,        // bus error on fetch
+    output logic                        instr_fetch_err_plus2_o,  // bus error misaligned
+    output logic                        illegal_c_insn_id_o,      // compressed decoder thinks this
+                                                                  // is an invalid instr
+    output logic                        dummy_instr_id_o,         // Instruction is a dummy
+    output logic [31:0]                 pc_if_o,
+    output logic [31:0]                 pc_id_o,
 
     // control signals
-    input  logic                  instr_valid_clear_i,      // clear instr valid bit in IF-ID
-    input  logic                  pc_set_i,                 // set the PC to a new value
-    input  logic                  pc_set_spec_i,
-    input  ibex_pkg::pc_sel_e     pc_mux_i,                 // selector for PC multiplexer
-    input  logic                  nt_branch_mispredict_i,   // Not-taken branch in ID/EX was
-                                                            // mispredicted (predicted taken)
-    input  ibex_pkg::exc_pc_sel_e exc_pc_mux_i,             // selects ISR address
-    input  ibex_pkg::exc_cause_e  exc_cause,                // selects ISR address for
-                                                            // vectorized interrupt lines
-    input logic                   dummy_instr_en_i,
-    input logic [2:0]             dummy_instr_mask_i,
-    input logic                   dummy_instr_seed_en_i,
-    input logic [31:0]            dummy_instr_seed_i,
-    input logic                   icache_enable_i,
-    input logic                   icache_inval_i,
+    input  logic                        instr_valid_clear_i,      // clear instr valid bit in IF-ID
+    input  logic                        pc_set_i,                 // set the PC to a new value
+    input  logic                        pc_set_spec_i,
+    input  ibex_pkg::pc_sel_e           pc_mux_i,                 // selector for PC multiplexer
+    input  logic                        nt_branch_mispredict_i,   // Not-taken branch in ID/EX was
+                                                                  // mispredicted (predicted taken)
+    input  ibex_pkg::exc_pc_sel_e       exc_pc_mux_i,             // selects ISR address
+    input  ibex_pkg::exc_cause_e        exc_cause,                // selects ISR address for
+                                                                  // vectorized interrupt lines
+    input logic                         dummy_instr_en_i,
+    input logic [2:0]                   dummy_instr_mask_i,
+    input logic                         dummy_instr_seed_en_i,
+    input logic [31:0]                  dummy_instr_seed_i,
+    input logic                         icache_enable_i,
+    input logic                         icache_inval_i,
 
     // jump and branch target
-    input  logic [31:0]           branch_target_ex_i,       // branch/jump target address
+    input  logic [31:0]                 branch_target_ex_i,       // branch/jump target address
 
     // CSRs
-    input  logic [31:0]           csr_mepc_i,               // PC to restore after handling
-                                                            // the interrupt/exception
-    input  logic [31:0]           csr_depc_i,               // PC to restore after handling
-                                                            // the debug request
-    input  logic [31:0]           csr_mtvec_i,              // base PC to jump to on exception
-    output logic                  csr_mtvec_init_o,         // tell CS regfile to init mtvec
+    input  logic [31:0]                 csr_mepc_i,               // PC to restore after handling
+                                                                  // the interrupt/exception
+    input  logic [31:0]                 csr_depc_i,               // PC to restore after handling
+                                                                  // the debug request
+    input  logic [31:0]                 csr_mtvec_i,              // base PC to jump to on exception
+    output logic                        csr_mtvec_init_o,         // tell CS regfile to init mtvec
 
     // pipeline stall
-    input  logic                  id_in_ready_i,            // ID stage is ready for new instr
+    input  logic                        id_in_ready_i,            // ID stage is ready for new instr
 
     // misc signals
-    output logic                  pc_mismatch_alert_o,
-    output logic                  if_busy_o                 // IF stage is busy fetching instr
+    output logic                        pc_mismatch_alert_o,
+    output logic                        if_busy_o                 // IF stage is busy fetching instr
 );
 
   import ibex_pkg::*;
@@ -213,6 +214,7 @@ module ibex_if_stage #(
         .instr_err_i         ( instr_err_i                ),
         .instr_pmp_err_i     ( instr_pmp_err_i            ),
 
+        .ram_cfg_i           ( ram_cfg_i                  ),
         .icache_enable_i     ( icache_enable_i            ),
         .icache_inval_i      ( icache_inval_i             ),
         .busy_o              ( prefetch_busy              )
@@ -252,8 +254,10 @@ module ibex_if_stage #(
     );
     // ICache tieoffs
     logic unused_icen, unused_icinv;
-    assign unused_icen  = icache_enable_i;
-    assign unused_icinv = icache_inval_i;
+    prim_ram_1p_pkg::ram_1p_cfg_t unused_ram_cfg;
+    assign unused_icen    = icache_enable_i;
+    assign unused_icinv   = icache_inval_i;
+    assign unused_ram_cfg = ram_cfg_i;
   end
 
   assign unused_fetch_addr_n0 = fetch_addr_n[0];

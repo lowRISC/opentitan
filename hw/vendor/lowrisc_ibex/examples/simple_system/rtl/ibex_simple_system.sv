@@ -183,6 +183,7 @@ module ibex_simple_system (
       .rst_ni                (rst_sys_n),
 
       .test_en_i             ('b0),
+      .ram_cfg_i             ('b0),
 
       .hart_id_i             (32'b0),
       // First instruction executed is at 0x0 + 0x80

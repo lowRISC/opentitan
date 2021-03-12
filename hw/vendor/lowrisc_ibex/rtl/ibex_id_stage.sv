@@ -671,9 +671,12 @@ module ibex_id_stage #(
     // Branches always take two cycles in fixed time execution mode, with or without the branch
     // target ALU (to avoid a path from the branch decision into the branch target ALU operand
     // muxing).
-    assign branch_set_raw      = (BranchTargetALU && !data_ind_timing_i) ? branch_set_raw_d : branch_set_raw_q;
+    assign branch_set_raw      = (BranchTargetALU && !data_ind_timing_i) ? branch_set_raw_d :
+                                                                           branch_set_raw_q;
+
     // Use the speculative branch signal when BTALU is enabled
-    assign branch_set_raw_spec = (BranchTargetALU && !data_ind_timing_i) ? branch_spec : branch_set_raw_q;
+    assign branch_set_raw_spec = (BranchTargetALU && !data_ind_timing_i) ? branch_spec :
+                                                                           branch_set_raw_q;
   end
 
   // Track whether the current instruction in ID/EX has done a branch or jump set.
@@ -691,10 +694,10 @@ module ibex_id_stage #(
   // the _raw signals from the state machine may be asserted for multiple cycles when
   // instr_executing_spec is asserted and instr_executing is not asserted. This may occur where
   // a memory error is seen or a there are outstanding memory accesses (indicate a load or store is
-  // in the WB stage). The branch or jump speculatively begins the fetch but is held back from completing
-  // until it is certain the outstanding access hasn't seen a memory error. This logic ensures only
-  // the first cycle of a branch or jump set is sent to the controller to prevent needless extra IF
-  // flushes and fetches.
+  // in the WB stage). The branch or jump speculatively begins the fetch but is held back from
+  // completing until it is certain the outstanding access hasn't seen a memory error. This logic
+  // ensures only the first cycle of a branch or jump set is sent to the controller to prevent
+  // needless extra IF flushes and fetches.
   assign jump_set        = jump_set_raw        & ~branch_jump_set_done_q;
   assign branch_set      = branch_set_raw      & ~branch_jump_set_done_q;
   assign branch_set_spec = branch_set_raw_spec & ~branch_jump_set_done_q;
@@ -716,7 +719,8 @@ module ibex_id_stage #(
 
   end else begin : g_nosec_branch_taken
 
-    // Signal unused without fixed time execution mode - only taken branches will trigger branch_set_raw
+    // Signal unused without fixed time execution mode - only taken branches will trigger
+    // branch_set_raw
     assign branch_taken = 1'b1;
 
   end
