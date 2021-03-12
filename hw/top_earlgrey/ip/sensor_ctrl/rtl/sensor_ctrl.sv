@@ -7,7 +7,7 @@
 `include "prim_assert.sv"
 
 module sensor_ctrl import sensor_ctrl_pkg::*; #(
-  parameter logic AsyncOn = 1'b0
+  parameter logic AlertAsyncOn = 1'b1
 ) (
   // Primary module clocks
   input clk_i,
@@ -105,7 +105,7 @@ module sensor_ctrl import sensor_ctrl_pkg::*; #(
     assign alert_req = sw_ack_mode[i] ? reg2hw.alert_state[i].q : valid_alert;
 
     prim_alert_sender #(
-      .AsyncOn(AsyncOn),
+      .AsyncOn(AlertAsyncOn),
       .IsFatal(0)
     ) u_prim_alert_sender (
       .clk_i,

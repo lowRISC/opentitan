@@ -566,8 +566,15 @@ max_sigwidth = max(len(x.name) for x in port_list) if port_list else 0
 max_intrwidth = (max(len(x.name) for x in block.interrupts)
                  if block.interrupts else 0)
 %>\
-  % if m["param_list"]:
+  % if m["param_list"] or block.alerts:
   ${m["type"]} #(
+  % if block.alerts:
+<%
+w = len(block.alerts)
+slice = str(alert_idx+w-1) + ":" + str(alert_idx)
+%>\
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[${slice}])${"," if m["param_list"] else ""}
+  % endif
     % for i in m["param_list"]:
     .${i["name"]}(${i["name_top" if i.get("expose") == "true" or i.get("randtype", "none") != "none" else "default"]})${"," if not loop.last else ""}
     % endfor
@@ -598,10 +605,6 @@ max_intrwidth = (max(len(x.name) for x in block.interrupts)
       .${lib.ljust("intr_"+intr.name+"_o",max_intrwidth+7)} (intr_${m["name"]}_${intr.name}),
     % endfor
     % if block.alerts:
-<%
-w = len(block.alerts)
-slice = str(alert_idx+w-1) + ":" + str(alert_idx)
-%>
       % for alert in block.alerts:
       // [${alert_idx}]: ${alert.name}<% alert_idx += 1 %>
       % endfor

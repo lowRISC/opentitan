@@ -3520,14 +3520,6 @@
           name_top: SecAesSkipPRNGReseeding
         }
         {
-          name: AlertAsyncOn
-          desc: One bit per alert specifying whether the corresponding sender in the AES module and the receiver in the alert handler are in the same clock domain (0) or whether there is an asynchronous boundary in between (1).
-          type: logic [aes_reg_pkg::NumAlerts-1:0]
-          default: "{aes_reg_pkg::NumAlerts{1'b1}}"
-          expose: "false"
-          name_top: AesAlertAsyncOn
-        }
-        {
           name: RndCnstClearingLfsrSeed
           desc: Default seed of the PRNG used for register clearing.
           type: aes_pkg::clearing_lfsr_seed_t
