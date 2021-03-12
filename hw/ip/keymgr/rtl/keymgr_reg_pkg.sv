@@ -7,8 +7,8 @@
 package keymgr_reg_pkg;
 
   // Param list
-  parameter int NumSaltReg = 4;
-  parameter int NumSwBindingReg = 4;
+  parameter int NumSaltReg = 8;
+  parameter int NumSwBindingReg = 8;
   parameter int NumOutReg = 8;
   parameter int NumKeyVersion = 1;
   parameter int NumAlerts = 2;
@@ -169,16 +169,16 @@ package keymgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    keymgr_reg2hw_intr_state_reg_t intr_state; // [420:420]
-    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [419:419]
-    keymgr_reg2hw_intr_test_reg_t intr_test; // [418:417]
-    keymgr_reg2hw_alert_test_reg_t alert_test; // [416:413]
-    keymgr_reg2hw_control_reg_t control; // [412:407]
-    keymgr_reg2hw_sideload_clear_reg_t sideload_clear; // [406:406]
-    keymgr_reg2hw_reseed_interval_reg_t reseed_interval; // [405:390]
-    keymgr_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [389:388]
-    keymgr_reg2hw_sw_binding_mreg_t [3:0] sw_binding; // [387:260]
-    keymgr_reg2hw_salt_mreg_t [3:0] salt; // [259:132]
+    keymgr_reg2hw_intr_state_reg_t intr_state; // [676:676]
+    keymgr_reg2hw_intr_enable_reg_t intr_enable; // [675:675]
+    keymgr_reg2hw_intr_test_reg_t intr_test; // [674:673]
+    keymgr_reg2hw_alert_test_reg_t alert_test; // [672:669]
+    keymgr_reg2hw_control_reg_t control; // [668:663]
+    keymgr_reg2hw_sideload_clear_reg_t sideload_clear; // [662:662]
+    keymgr_reg2hw_reseed_interval_reg_t reseed_interval; // [661:646]
+    keymgr_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [645:644]
+    keymgr_reg2hw_sw_binding_mreg_t [7:0] sw_binding; // [643:388]
+    keymgr_reg2hw_salt_mreg_t [7:0] salt; // [387:132]
     keymgr_reg2hw_key_version_mreg_t [0:0] key_version; // [131:100]
     keymgr_reg2hw_max_creator_key_ver_reg_t max_creator_key_ver; // [99:68]
     keymgr_reg2hw_max_owner_int_key_ver_reg_t max_owner_int_key_ver; // [67:36]
@@ -213,36 +213,44 @@ package keymgr_reg_pkg;
   parameter logic [BlockAw-1:0] KEYMGR_SW_BINDING_1_OFFSET = 8'h 28;
   parameter logic [BlockAw-1:0] KEYMGR_SW_BINDING_2_OFFSET = 8'h 2c;
   parameter logic [BlockAw-1:0] KEYMGR_SW_BINDING_3_OFFSET = 8'h 30;
-  parameter logic [BlockAw-1:0] KEYMGR_SALT_0_OFFSET = 8'h 34;
-  parameter logic [BlockAw-1:0] KEYMGR_SALT_1_OFFSET = 8'h 38;
-  parameter logic [BlockAw-1:0] KEYMGR_SALT_2_OFFSET = 8'h 3c;
-  parameter logic [BlockAw-1:0] KEYMGR_SALT_3_OFFSET = 8'h 40;
-  parameter logic [BlockAw-1:0] KEYMGR_KEY_VERSION_OFFSET = 8'h 44;
-  parameter logic [BlockAw-1:0] KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_OFFSET = 8'h 48;
-  parameter logic [BlockAw-1:0] KEYMGR_MAX_CREATOR_KEY_VER_OFFSET = 8'h 4c;
-  parameter logic [BlockAw-1:0] KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_OFFSET = 8'h 50;
-  parameter logic [BlockAw-1:0] KEYMGR_MAX_OWNER_INT_KEY_VER_OFFSET = 8'h 54;
-  parameter logic [BlockAw-1:0] KEYMGR_MAX_OWNER_KEY_VER_REGWEN_OFFSET = 8'h 58;
-  parameter logic [BlockAw-1:0] KEYMGR_MAX_OWNER_KEY_VER_OFFSET = 8'h 5c;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_0_OFFSET = 8'h 60;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_1_OFFSET = 8'h 64;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_2_OFFSET = 8'h 68;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_3_OFFSET = 8'h 6c;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_4_OFFSET = 8'h 70;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_5_OFFSET = 8'h 74;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_6_OFFSET = 8'h 78;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_7_OFFSET = 8'h 7c;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_0_OFFSET = 8'h 80;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_1_OFFSET = 8'h 84;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_2_OFFSET = 8'h 88;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_3_OFFSET = 8'h 8c;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_4_OFFSET = 8'h 90;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_5_OFFSET = 8'h 94;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_6_OFFSET = 8'h 98;
-  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_7_OFFSET = 8'h 9c;
-  parameter logic [BlockAw-1:0] KEYMGR_WORKING_STATE_OFFSET = 8'h a0;
-  parameter logic [BlockAw-1:0] KEYMGR_OP_STATUS_OFFSET = 8'h a4;
-  parameter logic [BlockAw-1:0] KEYMGR_ERR_CODE_OFFSET = 8'h a8;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_BINDING_4_OFFSET = 8'h 34;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_BINDING_5_OFFSET = 8'h 38;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_BINDING_6_OFFSET = 8'h 3c;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_BINDING_7_OFFSET = 8'h 40;
+  parameter logic [BlockAw-1:0] KEYMGR_SALT_0_OFFSET = 8'h 44;
+  parameter logic [BlockAw-1:0] KEYMGR_SALT_1_OFFSET = 8'h 48;
+  parameter logic [BlockAw-1:0] KEYMGR_SALT_2_OFFSET = 8'h 4c;
+  parameter logic [BlockAw-1:0] KEYMGR_SALT_3_OFFSET = 8'h 50;
+  parameter logic [BlockAw-1:0] KEYMGR_SALT_4_OFFSET = 8'h 54;
+  parameter logic [BlockAw-1:0] KEYMGR_SALT_5_OFFSET = 8'h 58;
+  parameter logic [BlockAw-1:0] KEYMGR_SALT_6_OFFSET = 8'h 5c;
+  parameter logic [BlockAw-1:0] KEYMGR_SALT_7_OFFSET = 8'h 60;
+  parameter logic [BlockAw-1:0] KEYMGR_KEY_VERSION_OFFSET = 8'h 64;
+  parameter logic [BlockAw-1:0] KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_OFFSET = 8'h 68;
+  parameter logic [BlockAw-1:0] KEYMGR_MAX_CREATOR_KEY_VER_OFFSET = 8'h 6c;
+  parameter logic [BlockAw-1:0] KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_OFFSET = 8'h 70;
+  parameter logic [BlockAw-1:0] KEYMGR_MAX_OWNER_INT_KEY_VER_OFFSET = 8'h 74;
+  parameter logic [BlockAw-1:0] KEYMGR_MAX_OWNER_KEY_VER_REGWEN_OFFSET = 8'h 78;
+  parameter logic [BlockAw-1:0] KEYMGR_MAX_OWNER_KEY_VER_OFFSET = 8'h 7c;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_0_OFFSET = 8'h 80;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_1_OFFSET = 8'h 84;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_2_OFFSET = 8'h 88;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_3_OFFSET = 8'h 8c;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_4_OFFSET = 8'h 90;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_5_OFFSET = 8'h 94;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_6_OFFSET = 8'h 98;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE0_OUTPUT_7_OFFSET = 8'h 9c;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_0_OFFSET = 8'h a0;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_1_OFFSET = 8'h a4;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_2_OFFSET = 8'h a8;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_3_OFFSET = 8'h ac;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_4_OFFSET = 8'h b0;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_5_OFFSET = 8'h b4;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_6_OFFSET = 8'h b8;
+  parameter logic [BlockAw-1:0] KEYMGR_SW_SHARE1_OUTPUT_7_OFFSET = 8'h bc;
+  parameter logic [BlockAw-1:0] KEYMGR_WORKING_STATE_OFFSET = 8'h c0;
+  parameter logic [BlockAw-1:0] KEYMGR_OP_STATUS_OFFSET = 8'h c4;
+  parameter logic [BlockAw-1:0] KEYMGR_ERR_CODE_OFFSET = 8'h c8;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] KEYMGR_INTR_TEST_RESVAL = 1'h 0;
@@ -270,10 +278,18 @@ package keymgr_reg_pkg;
     KEYMGR_SW_BINDING_1,
     KEYMGR_SW_BINDING_2,
     KEYMGR_SW_BINDING_3,
+    KEYMGR_SW_BINDING_4,
+    KEYMGR_SW_BINDING_5,
+    KEYMGR_SW_BINDING_6,
+    KEYMGR_SW_BINDING_7,
     KEYMGR_SALT_0,
     KEYMGR_SALT_1,
     KEYMGR_SALT_2,
     KEYMGR_SALT_3,
+    KEYMGR_SALT_4,
+    KEYMGR_SALT_5,
+    KEYMGR_SALT_6,
+    KEYMGR_SALT_7,
     KEYMGR_KEY_VERSION,
     KEYMGR_MAX_CREATOR_KEY_VER_REGWEN,
     KEYMGR_MAX_CREATOR_KEY_VER,
@@ -303,7 +319,7 @@ package keymgr_reg_pkg;
   } keymgr_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] KEYMGR_PERMIT [43] = '{
+  parameter logic [3:0] KEYMGR_PERMIT [51] = '{
     4'b 0001, // index[ 0] KEYMGR_INTR_STATE
     4'b 0001, // index[ 1] KEYMGR_INTR_ENABLE
     4'b 0001, // index[ 2] KEYMGR_INTR_TEST
@@ -317,36 +333,44 @@ package keymgr_reg_pkg;
     4'b 1111, // index[10] KEYMGR_SW_BINDING_1
     4'b 1111, // index[11] KEYMGR_SW_BINDING_2
     4'b 1111, // index[12] KEYMGR_SW_BINDING_3
-    4'b 1111, // index[13] KEYMGR_SALT_0
-    4'b 1111, // index[14] KEYMGR_SALT_1
-    4'b 1111, // index[15] KEYMGR_SALT_2
-    4'b 1111, // index[16] KEYMGR_SALT_3
-    4'b 1111, // index[17] KEYMGR_KEY_VERSION
-    4'b 0001, // index[18] KEYMGR_MAX_CREATOR_KEY_VER_REGWEN
-    4'b 1111, // index[19] KEYMGR_MAX_CREATOR_KEY_VER
-    4'b 0001, // index[20] KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN
-    4'b 1111, // index[21] KEYMGR_MAX_OWNER_INT_KEY_VER
-    4'b 0001, // index[22] KEYMGR_MAX_OWNER_KEY_VER_REGWEN
-    4'b 1111, // index[23] KEYMGR_MAX_OWNER_KEY_VER
-    4'b 1111, // index[24] KEYMGR_SW_SHARE0_OUTPUT_0
-    4'b 1111, // index[25] KEYMGR_SW_SHARE0_OUTPUT_1
-    4'b 1111, // index[26] KEYMGR_SW_SHARE0_OUTPUT_2
-    4'b 1111, // index[27] KEYMGR_SW_SHARE0_OUTPUT_3
-    4'b 1111, // index[28] KEYMGR_SW_SHARE0_OUTPUT_4
-    4'b 1111, // index[29] KEYMGR_SW_SHARE0_OUTPUT_5
-    4'b 1111, // index[30] KEYMGR_SW_SHARE0_OUTPUT_6
-    4'b 1111, // index[31] KEYMGR_SW_SHARE0_OUTPUT_7
-    4'b 1111, // index[32] KEYMGR_SW_SHARE1_OUTPUT_0
-    4'b 1111, // index[33] KEYMGR_SW_SHARE1_OUTPUT_1
-    4'b 1111, // index[34] KEYMGR_SW_SHARE1_OUTPUT_2
-    4'b 1111, // index[35] KEYMGR_SW_SHARE1_OUTPUT_3
-    4'b 1111, // index[36] KEYMGR_SW_SHARE1_OUTPUT_4
-    4'b 1111, // index[37] KEYMGR_SW_SHARE1_OUTPUT_5
-    4'b 1111, // index[38] KEYMGR_SW_SHARE1_OUTPUT_6
-    4'b 1111, // index[39] KEYMGR_SW_SHARE1_OUTPUT_7
-    4'b 0001, // index[40] KEYMGR_WORKING_STATE
-    4'b 0001, // index[41] KEYMGR_OP_STATUS
-    4'b 0001  // index[42] KEYMGR_ERR_CODE
+    4'b 1111, // index[13] KEYMGR_SW_BINDING_4
+    4'b 1111, // index[14] KEYMGR_SW_BINDING_5
+    4'b 1111, // index[15] KEYMGR_SW_BINDING_6
+    4'b 1111, // index[16] KEYMGR_SW_BINDING_7
+    4'b 1111, // index[17] KEYMGR_SALT_0
+    4'b 1111, // index[18] KEYMGR_SALT_1
+    4'b 1111, // index[19] KEYMGR_SALT_2
+    4'b 1111, // index[20] KEYMGR_SALT_3
+    4'b 1111, // index[21] KEYMGR_SALT_4
+    4'b 1111, // index[22] KEYMGR_SALT_5
+    4'b 1111, // index[23] KEYMGR_SALT_6
+    4'b 1111, // index[24] KEYMGR_SALT_7
+    4'b 1111, // index[25] KEYMGR_KEY_VERSION
+    4'b 0001, // index[26] KEYMGR_MAX_CREATOR_KEY_VER_REGWEN
+    4'b 1111, // index[27] KEYMGR_MAX_CREATOR_KEY_VER
+    4'b 0001, // index[28] KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN
+    4'b 1111, // index[29] KEYMGR_MAX_OWNER_INT_KEY_VER
+    4'b 0001, // index[30] KEYMGR_MAX_OWNER_KEY_VER_REGWEN
+    4'b 1111, // index[31] KEYMGR_MAX_OWNER_KEY_VER
+    4'b 1111, // index[32] KEYMGR_SW_SHARE0_OUTPUT_0
+    4'b 1111, // index[33] KEYMGR_SW_SHARE0_OUTPUT_1
+    4'b 1111, // index[34] KEYMGR_SW_SHARE0_OUTPUT_2
+    4'b 1111, // index[35] KEYMGR_SW_SHARE0_OUTPUT_3
+    4'b 1111, // index[36] KEYMGR_SW_SHARE0_OUTPUT_4
+    4'b 1111, // index[37] KEYMGR_SW_SHARE0_OUTPUT_5
+    4'b 1111, // index[38] KEYMGR_SW_SHARE0_OUTPUT_6
+    4'b 1111, // index[39] KEYMGR_SW_SHARE0_OUTPUT_7
+    4'b 1111, // index[40] KEYMGR_SW_SHARE1_OUTPUT_0
+    4'b 1111, // index[41] KEYMGR_SW_SHARE1_OUTPUT_1
+    4'b 1111, // index[42] KEYMGR_SW_SHARE1_OUTPUT_2
+    4'b 1111, // index[43] KEYMGR_SW_SHARE1_OUTPUT_3
+    4'b 1111, // index[44] KEYMGR_SW_SHARE1_OUTPUT_4
+    4'b 1111, // index[45] KEYMGR_SW_SHARE1_OUTPUT_5
+    4'b 1111, // index[46] KEYMGR_SW_SHARE1_OUTPUT_6
+    4'b 1111, // index[47] KEYMGR_SW_SHARE1_OUTPUT_7
+    4'b 0001, // index[48] KEYMGR_WORKING_STATE
+    4'b 0001, // index[49] KEYMGR_OP_STATUS
+    4'b 0001  // index[50] KEYMGR_ERR_CODE
   };
 
 endpackage

@@ -76,9 +76,10 @@ package keymgr_pkg;
   parameter int StageWidth = $clog2(KeyMgrStages);
 
   // Max Payload Width to derivation function
-  // This should be decomposed to 1600 - security_strength*2
   // see security strength description https://keccak.team/keccak.html
-  parameter int KDFMaxWidth = 1088;
+  // The max width here is chosen arbitrarily to ensure we do not get out of hand.
+  // Since KMAC is a MAC operation, the data can be as long as we need.
+  parameter int KDFMaxWidth = 1600;
 
   // Enumeration for operations
   typedef enum logic [2:0] {

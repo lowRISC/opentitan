@@ -180,13 +180,13 @@
     { name: "NumSaltReg",
       desc: "Number of Registers for SW inputs (Salt)",
       type: "int",
-      default: "4",
+      default: "8",
       local: "true"
     },
     { name: "NumSwBindingReg",
       desc: "Number of Registers for SW inputs (SW binding)",
       type: "int",
-      default: "4",
+      default: "8",
       local: "true"
     },
     { name: "NumOutReg",

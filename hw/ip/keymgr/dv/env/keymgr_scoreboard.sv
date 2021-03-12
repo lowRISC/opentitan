@@ -21,20 +21,20 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   typedef struct packed {
     // some portions are unused, which are 0s
-    bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::KeyWidth-TL_DW*4-1:0]  unused;
-    bit [3:0][TL_DW-1:0] SoftwareBinding;
+    bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::KeyWidth-keymgr_pkg::SwBindingWidth-1:0] unused;
+    bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
     bit [keymgr_pkg::KeyWidth-1:0] OwnerRootSecret;
   } adv_owner_int_data_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
-    bit [keymgr_pkg::AdvDataWidth-TL_DW*4-1:0]  unused;
-    bit [3:0][TL_DW-1:0] SoftwareBinding;
+    bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::SwBindingWidth-1:0]  unused;
+    bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
   } adv_owner_data_t;
 
   typedef struct packed {
     bit [TL_DW-1:0]      KeyVersion;
-    bit [3:0][TL_DW-1:0] Salt;
+    bit [keymgr_reg_pkg::NumSaltReg-1:0][TL_DW-1:0] Salt;
     keymgr_pkg::seed_t   KeyID;
     keymgr_pkg::seed_t   SoftwareExportConstant;
   } gen_out_data_t;
@@ -704,6 +704,10 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     act = {<<8{byte_data_q}};
 
     exp.OwnerRootSecret = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx];
+    exp.SoftwareBinding[7] = `gmv(ral.sw_binding_7);
+    exp.SoftwareBinding[6] = `gmv(ral.sw_binding_6);
+    exp.SoftwareBinding[5] = `gmv(ral.sw_binding_5);
+    exp.SoftwareBinding[4] = `gmv(ral.sw_binding_4);
     exp.SoftwareBinding[3] = `gmv(ral.sw_binding_3);
     exp.SoftwareBinding[2] = `gmv(ral.sw_binding_2);
     exp.SoftwareBinding[1] = `gmv(ral.sw_binding_1);
@@ -711,10 +715,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     `CREATE_CMP_STR(unused)
     `CREATE_CMP_STR(OwnerRootSecret)
-    `CREATE_CMP_STR(SoftwareBinding[3])
-    `CREATE_CMP_STR(SoftwareBinding[2])
-    `CREATE_CMP_STR(SoftwareBinding[1])
-    `CREATE_CMP_STR(SoftwareBinding[0])
+    for (int i=0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
+      `CREATE_CMP_STR(SoftwareBinding[i])
+    end
 
     if (exp_match) begin
       `DV_CHECK_EQ(act, exp, str)
@@ -731,16 +734,19 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     act = {<<8{byte_data_q}};
 
+    exp.SoftwareBinding[7] = `gmv(ral.sw_binding_7);
+    exp.SoftwareBinding[6] = `gmv(ral.sw_binding_6);
+    exp.SoftwareBinding[5] = `gmv(ral.sw_binding_5);
+    exp.SoftwareBinding[4] = `gmv(ral.sw_binding_4);
     exp.SoftwareBinding[3] = `gmv(ral.sw_binding_3);
     exp.SoftwareBinding[2] = `gmv(ral.sw_binding_2);
     exp.SoftwareBinding[1] = `gmv(ral.sw_binding_1);
     exp.SoftwareBinding[0] = `gmv(ral.sw_binding_0);
 
     `CREATE_CMP_STR(unused)
-    `CREATE_CMP_STR(SoftwareBinding[3])
-    `CREATE_CMP_STR(SoftwareBinding[2])
-    `CREATE_CMP_STR(SoftwareBinding[1])
-    `CREATE_CMP_STR(SoftwareBinding[0])
+    for (int i=0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
+      `CREATE_CMP_STR(SoftwareBinding[i])
+    end
 
     `DV_CHECK_EQ(act, exp, str)
 
@@ -801,6 +807,10 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     exp.Salt[1]    = `gmv(ral.salt_1);
     exp.Salt[2]    = `gmv(ral.salt_2);
     exp.Salt[3]    = `gmv(ral.salt_3);
+    exp.Salt[4]    = `gmv(ral.salt_4);
+    exp.Salt[5]    = `gmv(ral.salt_5);
+    exp.Salt[6]    = `gmv(ral.salt_6);
+    exp.Salt[7]    = `gmv(ral.salt_7);
     case (dest)
       keymgr_pkg::Kmac: exp.KeyID = keymgr_pkg::RndCnstKmacSeedDefault;
       keymgr_pkg::Hmac: exp.KeyID = keymgr_pkg::RndCnstHmacSeedDefault;
