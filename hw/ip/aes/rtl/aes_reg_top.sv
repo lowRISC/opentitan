@@ -1279,13 +1279,6 @@ module aes_reg_top (
   assign trigger_prng_reseed_we = addr_hit[30] & reg_we & !reg_error;
   assign trigger_prng_reseed_wd = reg_wdata[3];
 
-
-
-
-
-
-
-
   // Read data return
   always_comb begin
     reg_rdata_next = '0;

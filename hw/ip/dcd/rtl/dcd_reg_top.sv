@@ -4348,14 +4348,6 @@ module dcd_reg_top (
   assign adc_chn1_filter_ctl_7_max_v_7_we = addr_hit[23] & reg_we & !reg_error;
   assign adc_chn1_filter_ctl_7_max_v_7_wd = reg_wdata[27:18];
 
-
-
-
-
-
-
-
-
   assign adc_wakeup_ctl_chn0_1_filter0_en_we = addr_hit[26] & reg_we & !reg_error;
   assign adc_wakeup_ctl_chn0_1_filter0_en_wd = reg_wdata[0];
 

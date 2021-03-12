@@ -1747,7 +1747,6 @@ module keymgr_reg_top (
   assign sw_share1_output_7_we = addr_hit[39] & reg_re & !reg_error;
   assign sw_share1_output_7_wd = '1;
 
-
   assign op_status_we = addr_hit[41] & reg_we & !reg_error;
   assign op_status_wd = reg_wdata[1:0];
 

@@ -3935,38 +3935,6 @@ module rv_plic_reg_top (
     if (addr_hit[37] && reg_we && (RV_PLIC_PERMIT[37] != (RV_PLIC_PERMIT[37] & reg_be))) wr_err = 1'b1 ;
   end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   assign le_le_0_we = addr_hit[1] & reg_we & !reg_error;
   assign le_le_0_wd = reg_wdata[0];
 

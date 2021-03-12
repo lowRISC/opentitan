@@ -904,16 +904,11 @@ module pwrmgr_reg_top (
   assign wakeup_en_en_2_we = addr_hit[7] & reg_we & !reg_error;
   assign wakeup_en_en_2_wd = reg_wdata[2];
 
-
-
-
   assign reset_en_regwen_we = addr_hit[9] & reg_we & !reg_error;
   assign reset_en_regwen_wd = reg_wdata[0];
 
   assign reset_en_we = addr_hit[10] & reg_we & !reg_error;
   assign reset_en_wd = reg_wdata[0];
-
-
 
   assign wake_info_capture_dis_we = addr_hit[13] & reg_we & !reg_error;
   assign wake_info_capture_dis_wd = reg_wdata[0];

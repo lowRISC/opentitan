@@ -398,7 +398,6 @@ module sram_ctrl_reg_top (
   assign ctrl_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_wd = reg_wdata[0];
 
-
   // Read data return
   always_comb begin
     reg_rdata_next = '0;

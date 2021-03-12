@@ -675,19 +675,8 @@ module otbn_reg_top (
 
   assign status_re = addr_hit[5] & reg_re & !reg_error;
 
-
-
-
-
-
-
-
-
   assign start_addr_we = addr_hit[7] & reg_we & !reg_error;
   assign start_addr_wd = reg_wdata[31:0];
-
-
-
 
   // Read data return
   always_comb begin

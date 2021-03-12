@@ -1121,7 +1121,6 @@ module trial1_reg_top (
   assign rwtype4_field1_we = addr_hit[4] & reg_we & !reg_error;
   assign rwtype4_field1_wd = reg_wdata[31:16];
 
-
   assign w1ctype0_we = addr_hit[6] & reg_we & !reg_error;
   assign w1ctype0_wd = reg_wdata[31:0];
 
@@ -1155,8 +1154,6 @@ module trial1_reg_top (
   assign mixtype0_field1_we = addr_hit[14] & reg_we & !reg_error;
   assign mixtype0_field1_wd = reg_wdata[7:4];
 
-
-
   assign mixtype0_field4_we = addr_hit[14] & reg_we & !reg_error;
   assign mixtype0_field4_wd = reg_wdata[19:16];
 
@@ -1177,9 +1174,6 @@ module trial1_reg_top (
   assign rwtype6_re = addr_hit[16] & reg_re & !reg_error;
 
   assign rotype1_re = addr_hit[17] & reg_re & !reg_error;
-
-
-
 
   assign rwtype7_we = addr_hit[19] & reg_we & !reg_error;
   assign rwtype7_wd = reg_wdata[31:0];
