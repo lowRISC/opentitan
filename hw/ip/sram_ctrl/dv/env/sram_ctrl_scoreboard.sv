@@ -73,6 +73,20 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     return {addr[TL_AW-1:2], 2'b00};
   endfunction
 
+  // utility function to check whether two addresses map to the same SRAM memory line
+  function bit eq_sram_addr(bit [TL_AW-1:0] addr1, bit [TL_AW-1:0] addr2);
+    bit [TL_AW-1:0] addr_mask = '0;
+
+    addr1 = word_align_addr(addr1);
+    addr2 = word_align_addr(addr2);
+
+    for (int i = 0; i < cfg.mem_bkdr_vif.mem_addr_width + 2; i++) begin
+      addr_mask[i] = 1;
+    end
+
+    return (addr1 & addr_mask) == (addr2 & addr_mask);
+  endfunction
+
   // utility function to reset all fields of a sram_trans_t
   function void clear_trans(ref sram_trans_t t);
     t.we    = 0;
@@ -238,7 +252,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
           // if we have an address collision (read address is the same as the pending write address)
           // return data based on the `held_data`
-          if (data_trans.addr == held_trans.addr) begin
+          if (eq_sram_addr(data_trans.addr, held_trans.addr)) begin
             bit [TL_DW-1:0] exp_masked_rdata = held_data & expand_bit_mask(item.a_mask);
             `uvm_info(`gfn, $sformatf("exp_masked_rdata: 0x%0x", exp_masked_rdata), UVM_HIGH)
             `DV_CHECK_EQ_FATAL(exp_masked_rdata, item.d_data)
