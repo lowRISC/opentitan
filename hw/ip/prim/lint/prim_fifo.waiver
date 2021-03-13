@@ -1,0 +1,26 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_fifo
+
+waive -rules {ONE_BIT_MEM_WIDTH} -location {prim_fifo_sync.sv} -msg {Memory 'gen_normal_fifo.storage' has word width which is single bit wide} \
+      -comment "It is permissible that a FIFO has a wordwidth of 1bit"
+
+waive -rules {INPUT_NOT_READ} -location {prim_fifo_sync.sv} -regexp {Input port '(clk_i|rst_ni)' is not read from, instance.*Depth=0\)} \
+      -comment "In passthrough mode, clk and reset are not read form within this module"
+
+
+waive -rules {ASSIGN_SIGN} -location {prim_fifo_async.sv} -msg {Signed target 'i' assigned unsigned value 'PTR_WIDTH - 3'} \
+      -comment "Parameter PTR_WIDTH is unsigned, but integer i is signed. This is fine. Changing the integer to unsigned might \
+                cause issues with the for loop never exiting, because an unsigned integer can never become < 0."
+
+waive -rules NOT_READ             -location {prim_fifo_async.sv} -regexp {Signal 'nc_decval_msb' is not read} \
+      -comment "Store temporary values. Not used intentionally"
+
+
+waive -rules VAR_INDEX_RANGE      -location {prim_fifo_*sync.sv} -regexp {maximum value .* may be too large for 'storage'} \
+      -comment "index is protected by control logic"
+
+waive -rules EXPLICIT_BITLEN      -location {prim_fifo_*sync.sv} -regexp {Bit length not specified for constant '1'} \
+      -comment "index is protected by control logic"

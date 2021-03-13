@@ -1,0 +1,10 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+`verilator_config
+
+// prim_fifo_sync
+// In passthrough mode, clk and reset are not read form within this module
+lint_off -rule UNUSED -file "*/rtl/prim_fifo_sync.sv" -match "*clk_i*"
+lint_off -rule UNUSED -file "*/rtl/prim_fifo_sync.sv" -match "*rst_ni*"
