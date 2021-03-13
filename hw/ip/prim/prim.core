@@ -20,6 +20,7 @@ filesets:
       - lowrisc:prim:flop_2sync
       - lowrisc:prim:cipher_pkg:0.1
       - lowrisc:prim:arbiter
+      - lowrisc:prim:fifo
     files:
       - rtl/prim_clock_gating_sync.sv
       - rtl/prim_alert_pkg.sv
@@ -29,8 +30,6 @@ filesets:
       - rtl/prim_esc_receiver.sv
       - rtl/prim_esc_sender.sv
       - rtl/prim_sram_arbiter.sv
-      - rtl/prim_fifo_async.sv
-      - rtl/prim_fifo_sync.sv
       - rtl/prim_slicer.sv
       - rtl/prim_sync_reqack.sv
       - rtl/prim_sync_reqack_data.sv
