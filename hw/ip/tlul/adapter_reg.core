@@ -8,7 +8,8 @@ description: "TL-UL to Register interface adapter"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:all
+      - lowrisc:prim:assert
+      - lowrisc:prim:secded
       - lowrisc:tlul:common
       - lowrisc:tlul:trans_intg
     files:

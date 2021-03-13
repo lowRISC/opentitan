@@ -8,7 +8,7 @@ description: "SRAM to TL-UL adapter (host)"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:all
+      - lowrisc:prim:assert
       - lowrisc:tlul:common
     files:
       - rtl/sram2tlul.sv
