@@ -9,7 +9,8 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:dv:pins_if
-      - lowrisc:prim:all
+      - lowrisc:prim:assert
+      - lowrisc:prim:fifo
       - lowrisc:tlul:headers
     files:
       - rtl/tlul_fifo_sync.sv

@@ -8,7 +8,7 @@ description: "Tlul transmission integrity"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:all
+      - lowrisc:prim:assert
       - lowrisc:prim:secded
       - lowrisc:tlul:common
     files:

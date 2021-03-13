@@ -8,7 +8,7 @@ description: "TL-UL socket 1:n"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:all
+      - lowrisc:prim:assert
       - lowrisc:tlul:headers
       - lowrisc:tlul:common
     files:
