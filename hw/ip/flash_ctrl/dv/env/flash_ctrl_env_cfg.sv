@@ -31,8 +31,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_reg_block)
     m_eflash_tl_agent_cfg = tl_agent_cfg::type_id::create("m_eflash_tl_agent_cfg");
     m_eflash_tl_agent_cfg.if_mode = dv_utils_pkg::Host;
 
-    // create the seq_cfg
+    // create the seq_cfg and call configure
     seq_cfg = flash_ctrl_seq_cfg::type_id::create("seq_cfg");
+    seq_cfg.configure();
 
     // set num_interrupts & num_alerts
     begin
