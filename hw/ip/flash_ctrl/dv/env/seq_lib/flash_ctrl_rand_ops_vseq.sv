@@ -20,6 +20,7 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
   rand flash_op_t flash_op;
 
   constraint flash_op_c {
+    solve flash_op.partition before flash_op.op;
     solve flash_op.op before flash_op.erase_type;
     solve flash_op.op before flash_op.num_words;
     solve flash_op.addr before flash_op.num_words ;
@@ -30,6 +31,10 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
       flash_op.op != flash_ctrl_pkg::FlashOpInvalid;
     }
 
+    if (cfg.seq_cfg.flash_only_op != flash_ctrl_pkg::FlashOpInvalid) {
+      flash_op.op == cfg.seq_cfg.flash_only_op;
+    }
+    
     (flash_op.op == flash_ctrl_pkg::FlashOpErase) ->
         flash_op.erase_type dist {
           flash_ctrl_pkg::FlashErasePage :/ (100 - cfg.seq_cfg.op_erase_type_bank_pc),
@@ -42,6 +47,15 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
       FlashPartInfo1 :/ cfg.seq_cfg.op_on_info1_partition_pc,
       FlashPartRed   :/ cfg.seq_cfg.op_on_red_partition_pc
     };
+
+    if (cfg.seq_cfg.op_readonly_on_info_partition) {
+      flash_op.partition == FlashPartInfo ->
+        flash_op.op == flash_ctrl_pkg::FlashOpRead;
+    }
+    if (cfg.seq_cfg.op_readonly_on_info1_partition) {
+      flash_op.partition == FlashPartInfo1 ->
+        flash_op.op == flash_ctrl_pkg::FlashOpRead;
+    }
 
     if (flash_op.op inside {flash_ctrl_pkg::FlashOpRead, flash_ctrl_pkg::FlashOpProgram}) {
       flash_op.num_words inside {
