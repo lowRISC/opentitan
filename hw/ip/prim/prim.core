@@ -21,11 +21,9 @@ filesets:
       - lowrisc:prim:cipher_pkg:0.1
       - lowrisc:prim:arbiter
       - lowrisc:prim:fifo
+      - lowrisc:prim:alert
     files:
       - rtl/prim_clock_gating_sync.sv
-      - rtl/prim_alert_pkg.sv
-      - rtl/prim_alert_receiver.sv
-      - rtl/prim_alert_sender.sv
       - rtl/prim_esc_pkg.sv
       - rtl/prim_esc_receiver.sv
       - rtl/prim_esc_sender.sv
