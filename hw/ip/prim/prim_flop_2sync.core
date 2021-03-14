@@ -10,6 +10,9 @@ filesets:
     depend:
       - lowrisc:prim:prim_pkg
       - lowrisc:prim:primgen
+      # Needed because the generic prim_generic_flop_2sync has a
+      # dependency on prim:flop.
+      - lowrisc:prim:flop
 
   files_verilator_waiver:
     depend:
