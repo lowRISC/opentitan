@@ -30,6 +30,8 @@ module tb;
   push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))  entropy_src_if();
   csrng_if  csrng_if(.clk(clk), .rst_n(rst_n));
 
+  `DV_ALERT_IF_CONNECT
+
   // dut
   csrng#(.NHwApps(NUM_HW_APPS)) dut (
     .clk_i                   (clk      ),
@@ -51,8 +53,8 @@ module tb;
     .csrng_cmd_i             (csrng_if.cmd_req),
     .csrng_cmd_o             (csrng_if.cmd_rsp),
 
-    .alert_rx_i              ('0), // (alert_rx), // TODO: connect to model
-    .alert_tx_o              (),   // (alert_tx), // TODO: connect to model
+    .alert_rx_i              (alert_rx),
+    .alert_tx_o              (alert_tx),
 
     .intr_cs_cmd_req_done_o  (intr_cmd_req_done),
     .intr_cs_entropy_req_o   (intr_entropy_req),
