@@ -29,6 +29,8 @@ module tb;
   push_pull_if#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
        endpoint_if[NUM_ENDPOINTS-1:0](.clk(clk), .rst_n(rst_n));
 
+  `DV_ALERT_IF_CONNECT
+
   // dut
   edn#(.NumEndPoints(NUM_ENDPOINTS)) dut (
     .clk_i                     (clk      ),
@@ -43,8 +45,8 @@ module tb;
     .csrng_cmd_i               (csrng_if.cmd_rsp),
     .csrng_cmd_o               (csrng_if.cmd_req),
 
-    .alert_rx_i                ('0), // (alert_rx), // TODO: connect to model
-    .alert_tx_o                (),   // (alert_tx), // TODO: connect to model
+    .alert_rx_i                (alert_rx),
+    .alert_tx_o                (alert_tx),
 
     .intr_edn_cmd_req_done_o   (intr_edn_cmd_req_done),
     .intr_edn_fatal_err_o      (intr_edn_fatal_err)
