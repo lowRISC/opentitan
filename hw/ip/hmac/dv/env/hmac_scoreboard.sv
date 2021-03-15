@@ -13,7 +13,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit             hmac_start, hmac_process;
   int             hmac_wr_cnt, hmac_rd_cnt;
   bit [TL_DW-1:0] key[8];
-  bit [TL_DW-1:0] intr_test; //WO reg
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -93,7 +92,16 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           "intr_test": begin // testmode, intr_state is W1C, cannot use UVM_PREDICT_WRITE
             bit [TL_DW-1:0] intr_state_exp = item.a_data | ral.intr_state.get_mirrored_value();
             void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
-            intr_test = item.a_data;
+            if (cfg.en_cov) begin
+              bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
+              hmac_intr_e     intr;
+              intr = intr.first;
+              do begin
+                cov.intr_test_cg.sample(intr, item.a_data[intr], intr_en[intr],
+                                        intr_state_exp[intr]);
+                intr = intr.next;
+              end while (intr != intr.first);
+            end
           end
           "intr_state": begin // wr intr_state.fifo_empty to 1 will clear the fifo_empty bit
             if (item.a_data[HmacMsgFifoEmpty]) fifo_empty = 0;
@@ -154,19 +162,15 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
         "intr_state": begin
           if (!do_cycle_accurate_check) do_read_check = 0;
           if (cfg.en_cov) begin
-            hmac_intr_e intr;
+            bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
+            hmac_intr_e     intr;
             intr = intr.first;
             do begin
-              bit [TL_DW-1:0] intr_en   = ral.intr_enable.get_mirrored_value();
               cov.intr_cg.sample(intr, intr_en[intr], item.d_data[intr]);
               cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
-              cov.intr_test_cg.sample(intr, intr_test[intr], intr_en[intr], item.d_data[intr]);
               intr = intr.next;
             end while (intr != intr.first);
           end
-          // intr_test is WO, so the value will be cleared one clk cycle after setting it to 1
-          // but for coverage purpose, we will reset intr_test after collected the coverage
-          intr_test = 0;
           if (item.d_data[HmacDone] == 1) begin
             // here check DUT should only trigger hmac_done when sha is enabled, and
             // previously triggered hash_process.
@@ -220,7 +224,6 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     super.reset(kind);
     flush();
     sha_en     = 0;
-    intr_test  = 0;
     fifo_empty = 0;
     hmac_start = 0;
     key        = '{default:0};
