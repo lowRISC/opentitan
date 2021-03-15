@@ -1,0 +1,110 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "pwm"
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+  entries: [
+    {
+      name: smoke
+      desc: '''
+            Smoke test accessing a major datapath within the pwm
+
+            Stimulus:
+              - Program pwm enable register (PWM_EN)
+              - Program configuration registers (CFG, INVERT)
+              - Disable blink and heartbeat enable registers (these mode are verified with other tests)
+              - Program REGEN to lock (enable) register settings and start pwm function
+
+            Checks:
+              - Ensure the output pulses are correctly modulated for all channels
+            '''
+      milestone: V1
+      tests: ["pwm_smoke"]
+    }
+    {
+      name: perf
+      desc: '''
+            Checking ip operation at min/max bandwidth
+
+            Stimulus:
+              - Program timing registers (CLK_DIV, DC_RESN) to high/low values (slow/fast data rate)
+              - Program other required registers for pwm operation
+              - Start pwm channels
+
+            Checks:
+              - Ensure the output pulses are correctly modulated for all channels
+            '''
+      milestone: V2
+      tests: ["pwm_perf"]
+    }
+    {
+      name: blink
+      desc: '''
+            Test the blinking mode of pwm
+
+            Stimulus:
+              - Program pwm enable register (PWM_EN)
+              - Program configuration registers (CFG, INVERT)
+              - Enable blink mode (BLINK_EN) and program DUTY_CYCLE register
+              - Program REGEN to lock (enable) register settings and start pwm function
+
+            Checks:
+              - Ensure the output pulses are correctly modulated for all channels
+              - Ensure blinking channel toggles by two duty cycle values programmed to DUTY_CYCLE register
+            '''
+      milestone: V2
+      tests: ["pwm_blink"]
+    }
+    {
+      name: heartbeat
+      desc: '''
+            Test the heartbeat mode of pwm
+
+            Stimulus:
+              - Program pwm enable register (PWM_EN)
+              - Program configuration registers (CFG, INVERT)
+              - Enable heartbeat mode (HTBT_EN) and programm BLINK_PARAM register
+              - Program REGEN to lock (enable) register settings and start pwm function
+
+            Checks:
+              - Ensure the output pulses are correctly modulated for all channels
+              - Ensure output duty cycle linearly increments and decrements between two
+                blink-rate values programmed to BLINK_PARAM register
+            '''
+      milestone: V2
+      tests: ["pwm_heartbeat"]
+    }
+    {
+      name: clock_domain
+      desc: '''
+            TBD -Verify the function of clock-crossing domain for pwm
+
+            Stimulus:
+              - TBD
+
+            Checking:
+              - TBD
+      '''
+      milestone: V2
+      tests: ["pwm_clock_domain"]
+    }
+    {
+      name: stress_all
+      desc: '''
+            Combine above sequences in one test then randomly select for running
+
+            Stimulus:
+              - Start sequences and randomly add reset between each sequence
+
+            Checking:
+              - All sequences should be finished and checked by the scoreboard
+      '''
+      milestone: V2
+      tests: ["pwm_stress_all"]
+    }
+  ]
+}
