@@ -1,0 +1,20 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "pwm",
+    design_spec:        "hw/ip/pwm/doc",
+    dv_doc:             "hw/ip/pwm/doc/dv",
+    hw_checklist:       "hw/ip/pwm/doc/checklist",
+    revisions: [
+      {
+        version:            "1.0",
+        life_stage:         "L0",
+        design_stage:       "D0",
+        verification_stage: "V0",
+        dif_stage:          "S0",
+        notes:              ""
+      }
+    ]
+}

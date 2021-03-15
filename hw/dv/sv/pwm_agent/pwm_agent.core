@@ -1,0 +1,26 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:pwm_agent:0.1"
+description: "PWM DV UVM agent"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_lib
+    files:
+      - pwm_if.sv
+      - pwm_agent_pkg.sv
+      - pwm_item.sv: {is_include_file: true}
+      - pwm_agent_cfg.sv: {is_include_file: true}
+      - pwm_agent_cov.sv: {is_include_file: true}
+      - pwm_driver.sv: {is_include_file: true}
+      - pwm_monitor.sv: {is_include_file: true}
+      - pwm_agent.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
