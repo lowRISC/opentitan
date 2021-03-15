@@ -76,14 +76,15 @@ end
 
 assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
 
+assign clk = (/*TODO*/ 1'b1) && en_osc;
+assign rng_clk_o = clk;
+
 if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
   // FPGA Model (place holder)
   ///////////////////////////////////////
-  assign clk = (/*TODO*/ 1'b1) && en_osc;
-  assign rng_clk_o = clk;
+  // TODO
 end else begin : gen_generic
-  assign clk = (/*TODO*/ 1'b1) && en_osc;
-  assign rng_clk_o = clk;
+  // TODO
 end
 `endif
 

@@ -26,6 +26,8 @@ logic clk, rng_clk_en, rng_clk;
 
 // clock Oschilator
 ////////////////////////////////////////
+logic rng_clk_o;
+
 // For FPGA, it can be replace with clk_src_aon_o/4 (200K/4=50K)
 rng_osc u_rng_osc (
   .vcaon_pok_i ( vcaon_pok_i ),

@@ -11,6 +11,8 @@ module io_clk (
   input clk_io_pd_ni,                      // IO Clock Power-down
   input rst_io_clk_ni,                     // IO Clock Logic reset
   input clk_src_io_en_i,                   // IO Source Clock Enable
+  input scan_mode_i,                       // Scan Mode
+  input scan_reset_ni,                     // Scan Reset
   output logic clk_src_io_o,               // IO Source Clock
   output logic clk_src_io_val_o            // IO Source Clock Valid
 );
@@ -18,7 +20,8 @@ module io_clk (
 logic clk, io_clk_en, rst_n;
 
 assign rst_n = rst_io_clk_ni;  // Scan enabled
-assign io_clk_en = clk_src_io_en_i && clk_io_pd_ni && rst_io_clk_ni;
+assign io_clk_en = scan_mode_i ||
+                   (clk_src_io_en_i && clk_io_pd_ni && rst_io_clk_ni);
 
 // Clock Oscilator
 ///////////////////////////////////////
@@ -37,7 +40,7 @@ prim_clock_buf u_clk_io_buf(
 
 // 2-stage de-assertion
 logic rst_val_n;
-assign rst_val_n = rst_n && io_clk_en;
+assign rst_val_n = scan_mode_i ? scan_reset_ni : rst_n && io_clk_en;
 
 prim_flop_2sync #(
   .Width ( 1 ),
