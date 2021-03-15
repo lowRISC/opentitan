@@ -86,9 +86,11 @@ config = {
     ],
 
     # Pre-generate dashboard fragments from these directories.
-    "dashboard_definitions": [
-        "hw/ip",
-    ],
+    "dashboard_definitions": {
+        "comportable": [
+            "hw/ip",
+        ],
+    },
 
     # Pre-generate testplan fragments from these files.
     "testplan_definitions": [
@@ -137,13 +139,16 @@ config = {
 
 
 def generate_dashboards():
-    for dashboard in config["dashboard_definitions"]:
+    for dashboard_name, dirs in config["dashboard_definitions"].items():
         hjson_paths = []
-        hjson_paths.extend(
-            sorted(SRCTREE_TOP.joinpath(dashboard).rglob('*.prj.hjson')))
+        for d in dirs:
+            hjson_paths += SRCTREE_TOP.joinpath(d).rglob('*.prj.hjson')
+
+        hjson_paths.sort(key=lambda f: f.name)
 
         dashboard_path = config["outdir-generated"].joinpath(
-            dashboard, 'dashboard')
+            dashboard_name, 'dashboard')
+        dashboard_path.parent.mkdir(exist_ok=True, parents=True)
         dashboard_html = open(str(dashboard_path), mode='w')
         for hjson_path in hjson_paths:
             gen_dashboard_entry.gen_dashboard_html(hjson_path, dashboard_html)
