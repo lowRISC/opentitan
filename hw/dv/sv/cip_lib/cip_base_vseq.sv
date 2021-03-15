@@ -577,7 +577,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         rd_mask = get_mask_excl_fields(test_csrs[i], CsrExclWriteCheck, csr_test_type, csr_excl);
         wr_mask = get_mask_excl_fields(test_csrs[i], CsrExclWrite, csr_test_type, csr_excl);
 
-        repeat ($urandom_range(2, 50)) begin
+        repeat ($urandom_range(2, 20)) begin
           // do read, exclude CsrExclWriteCheck, CsrExclCheck
           if ($urandom_range(0, 1) &&
               !csr_excl.is_excl(test_csrs[i], CsrExclWriteCheck, csr_test_type)) begin
@@ -597,8 +597,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         end
         csr_utils_pkg::wait_no_outstanding_access();
 
-        // reset after writing to wen_reg to avoid it locking associated regs
-        if (test_csrs[i].is_wen_reg()) dut_init("HARD");
+        // Manually lock lockable flds because we use tl_access() instead of csr_wr().
+        if (test_csrs[i].is_wen_reg()) test_csrs[i].lock_lockable_flds(`gmv(test_csrs[i]));
       end
     end
   endtask
