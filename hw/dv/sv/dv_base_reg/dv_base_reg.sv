@@ -181,7 +181,6 @@ class dv_base_reg extends uvm_reg;
   // automation.
   virtual task post_write(uvm_reg_item rw);
     dv_base_reg_field fields[$];
-    string field_access;
 
     // no need to update shadow value or access type if access is not OK, as access is aborted
     if (rw.status != UVM_IS_OK) return;
@@ -190,6 +189,7 @@ class dv_base_reg extends uvm_reg;
       // first write
       if (!shadow_wr_staged) begin
         shadow_wr_staged = 1;
+        // rw.value is a dynamic array
         staged_shadow_val = rw.value[0];
         return;
       end begin
@@ -203,24 +203,7 @@ class dv_base_reg extends uvm_reg;
         shadowed_val  = ~committed_val;
       end
     end
-    if (is_wen_reg()) begin
-      foreach (m_fields[i]) begin
-        dv_base_reg_field fld;
-        `downcast(fld, m_fields[i])
-        if (fld.is_wen_fld()) begin
-          // rw.value is a dynamic array
-          uvm_reg_data_t field_val = rw.value[0] & fld.get_field_mask();
-          field_access = fld.get_access();
-          case (field_access)
-            // discussed in issue #1922: enable register is standarized to W0C or RO (if HW has
-            // write access).
-            "W0C": if (field_val == 1'b0) fld.set_lockable_flds_access(1);
-            "RO": ; // if RO, it's updated by design, need to predict in scb
-            default:`uvm_fatal(`gfn, $sformatf("lock register invalid access %s", field_access))
-          endcase
-        end
-      end
-    end
+    lock_lockable_flds(rw.value[0]);
   endtask
 
   // shadow register read will clear its phase tracker
@@ -261,9 +244,9 @@ class dv_base_reg extends uvm_reg;
   // 2). It is shadow_reg's second write with an update_err.
   // 2). The shadow_reg is locked due to fatal storage error and it is not a backdoor write.
 
-  virtual function void do_predict (uvm_reg_item      rw,
-                                    uvm_predict_e     kind = UVM_PREDICT_DIRECT,
-                                    uvm_reg_byte_en_t be = -1);
+  virtual function void do_predict(uvm_reg_item      rw,
+                                   uvm_predict_e     kind = UVM_PREDICT_DIRECT,
+                                   uvm_reg_byte_en_t be = -1);
     if (is_shadowed && kind != UVM_PREDICT_READ && (shadow_wr_staged || shadow_update_err ||
         (shadow_fatal_lock && rw.path != UVM_BACKDOOR))) begin
       `uvm_info(`gfn, $sformatf(
@@ -274,13 +257,36 @@ class dv_base_reg extends uvm_reg;
     super.do_predict(rw, kind, be);
   endfunction
 
-  virtual task poke (output uvm_status_e     status,
-                     input  uvm_reg_data_t   value,
-                     input string            kind = "BkdrRegPathRtl",
-                     input uvm_sequence_base parent = null,
-                     input uvm_object        extension = null,
-                     input string            fname = "",
-                     input int               lineno = 0);
+  // This function is used for wen_reg to lock its lockable flds by changing the lockable flds'
+  // access policy. For register write via csr_wr(), this function is included in post_write().
+  // For register write via tl_access(), user will need to call this function manually.
+  virtual function void lock_lockable_flds(uvm_reg_data_t val);
+    if (is_wen_reg()) begin
+      foreach (m_fields[i]) begin
+        dv_base_reg_field fld;
+        `downcast(fld, m_fields[i])
+        if (fld.is_wen_fld()) begin
+          uvm_reg_data_t field_val = val & fld.get_field_mask();
+          string field_access = fld.get_access();
+          case (field_access)
+            // discussed in issue #1922: enable register is standarized to W0C or RO (if HW has
+            // write access).
+            "W0C": if (field_val == 1'b0) fld.set_lockable_flds_access(1);
+            "RO": ; // if RO, it's updated by design, need to predict in scb
+            default:`uvm_fatal(`gfn, $sformatf("lock register invalid access %s", field_access))
+          endcase
+        end
+      end
+    end
+  endfunction
+
+  virtual task poke(output uvm_status_e     status,
+                    input  uvm_reg_data_t   value,
+                    input string            kind = "BkdrRegPathRtl",
+                    input uvm_sequence_base parent = null,
+                    input uvm_object        extension = null,
+                    input string            fname = "",
+                    input int               lineno = 0);
     if (kind == "BkdrRegPathRtlShadow") shadowed_val = value;
     else if (kind == "BkdrRegPathRtlCommitted") committed_val = value;
 
