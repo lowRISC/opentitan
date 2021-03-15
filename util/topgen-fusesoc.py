@@ -79,6 +79,7 @@ def main():
 
     except subprocess.CalledProcessError as e:
         print("topgen failed: " + str(e))
+        print(e.stdout)
         sys.exit(1)
 
     # Create core files.
