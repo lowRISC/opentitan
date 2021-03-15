@@ -1,0 +1,6 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+waive -rules INPUT_NOT_READ       -location {prim_subreg.sv} -regexp {Input port 'wd' is not read from} \
+      -comment "for RO wd is not used"

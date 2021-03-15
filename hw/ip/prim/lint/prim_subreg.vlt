@@ -4,6 +4,6 @@
 
 `verilator_config
 
-// prim_lfsr
-// lfsr_perm_test is just used for an SVA
-lint_off -rule UNUSED -file "*/rtl/prim_lfsr.sv" -match "*lfsr_perm_test*"
+// prim_subreg
+// for RO wd is not used
+lint_off -rule UNUSED -file "*/rtl/prim_subreg.sv" -match "Signal is not used: 'wd'"
