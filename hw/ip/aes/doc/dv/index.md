@@ -115,4 +115,4 @@ Here's how to run a basic test without DPI calls:
 $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/aes/dv/aes_sim_cfg.hjson -i aes_wakeup
 ```
 ## DV plan
-{{< testplan "hw/ip/aes/data/aes_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/aes_testplan.hjson" "testplan" >}}

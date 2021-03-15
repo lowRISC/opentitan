@@ -172,7 +172,7 @@ If the `fips` signal is deasserted, it means the associated CSRNG instance has b
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/edn/data/edn.hjson" >}}
+{{< incGenFromIpDesc "../data/edn.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -238,4 +238,4 @@ Need to alert the system of a FIFO overflow condition.
 
 ## Register Table
 
-{{< registers "hw/ip/edn/data/edn.hjson" >}}
+{{< incGenFromIpDesc "../data/edn.hjson" "registers" >}}

@@ -182,7 +182,7 @@ The BOM can be filled by parts from Digikey.
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/usbdev/data/usbdev.hjson" >}}
+{{< incGenFromIpDesc "../data/usbdev.hjson" "hwcfg" >}}
 
 
 ## USB Link State
@@ -362,4 +362,4 @@ The hardware then sends NACKs to any IN/OUT requests until the software has deci
 
 ## Register Table
 
-{{< registers "hw/ip/usbdev/data/usbdev.hjson" >}}
+{{< incGenFromIpDesc "../data/usbdev.hjson" "registers" >}}

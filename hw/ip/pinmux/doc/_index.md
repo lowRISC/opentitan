@@ -70,7 +70,7 @@ Additional details about the signal names and parameters are given in the sectio
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson" >}}
+{{< incGenFromIpDesc "/hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson" "hwcfg" >}}
 
 ## Parameters
 
@@ -130,4 +130,4 @@ design]({{< relref "hw/top_earlgrey/doc" >}}).
 
 Similar register descriptions can be generated with different parameterizations.
 
-{{< registers "hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson" >}}
+{{< incGenFromIpDesc "/hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson" "registers" >}}

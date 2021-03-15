@@ -147,7 +147,7 @@ Shadow resets have not been implemented yet.
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson" >}}
+{{< incGenFromIpDesc "/hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson" "hwcfg" >}}
 
 ### Signals
 
@@ -308,4 +308,4 @@ Set {{< regref "ALERT_INFO_CTRL.INDEX" >}} to the desired segment, and then read
 
 ## Register Table
 
-{{< registers "hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson" >}}
+{{< incGenFromIpDesc "/hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson" "registers" >}}

@@ -29,4 +29,4 @@ Based on the captured value, the testbench monitor invokes UVM methods to pass o
 
 # List of Tests
 
-{{< testplan "hw/top_earlgrey/data/standalone_sw_testplan.hjson" >}}
+{{< incGenFromIpDesc "/hw/top_earlgrey/data/standalone_sw_testplan.hjson" "testplan" >}}

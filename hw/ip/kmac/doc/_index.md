@@ -75,7 +75,7 @@ If desired, the masking can be disabled and the internal state width can be redu
 
 ## Hardware Interface
 
-{{< hwcfg "hw/ip/kmac/data/kmac.hjson" >}}
+{{< incGenFromIpDesc "../data/kmac.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -330,7 +330,7 @@ It could restore the previous hashing state later and continue the operation.
 
 ## Registers
 
-{{< registers "hw/ip/kmac/data/kmac.hjson" >}}
+{{< incGenFromIpDesc "../data/kmac.hjson" "registers" >}}
 
 
 

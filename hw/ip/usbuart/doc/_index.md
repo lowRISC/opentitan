@@ -54,7 +54,7 @@ the requested Baud rate and parity may be read.
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/usbuart/data/usbuart.hjson" >}}
+{{< incGenFromIpDesc "../data/usbuart.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -223,4 +223,4 @@ void uart_interrupt_routine() {
 
 ## Register Table
 
-{{< registers "hw/ip/usbuart/data/usbuart.hjson" >}}
+{{< incGenFromIpDesc "../data/usbuart.hjson" "registers" >}}

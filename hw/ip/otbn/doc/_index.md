@@ -435,7 +435,7 @@ outer_body:
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/otbn/data/otbn.hjson" >}}
+{{< incGenFromIpDesc "../data/otbn.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -551,7 +551,7 @@ A higher-level driver for the OTBN block is available at `sw/device/lib/runtime/
 
 ## Register Table
 
-{{< registers "hw/ip/otbn/data/otbn.hjson" >}}
+{{< incGenFromIpDesc "../data/otbn.hjson" "registers" >}}
 
 # Writing OTBN applications {#writing-otbn-applications}
 

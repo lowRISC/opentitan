@@ -35,7 +35,7 @@ The RV_PLIC is compatible with any RISC-V core implementing the RISC-V privilege
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/top_earlgrey/ip/rv_plic/data/autogen/rv_plic.hjson" >}}
+{{< incGenFromIpDesc "/hw/top_earlgrey/ip/rv_plic/data/autogen/rv_plic.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -261,4 +261,4 @@ interrupt sources may be different.
 -   CC: N_TARGET
     Claim by read, complete by write
 
-{{< registers "hw/top_earlgrey/ip/rv_plic/data/autogen/rv_plic.hjson" >}}
+{{< incGenFromIpDesc "/hw/top_earlgrey/ip/rv_plic/data/autogen/rv_plic.hjson" "registers" >}}

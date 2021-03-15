@@ -39,4 +39,4 @@ In the pinmux_assert_fpv module, we declared two symbolic variables `mio_sel_i` 
 Detailed explanation is listed in the [Symbolic Variables]({{< relref "hw/formal/README.md#symbolic-variables" >}}) section.
 
 ## DV plan
-{{< testplan "hw/ip/pinmux/data/pinmux_fpv_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/pinmux_fpv_testplan.hjson" "testplan" >}}

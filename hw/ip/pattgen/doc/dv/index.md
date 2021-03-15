@@ -99,4 +99,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/pattgen/dv/pattgen_sim_cfg.hjson
 ```
 
 ## DV plan
-{{< testplan "hw/ip/pattgen/data/pattgen_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/pattgen_testplan.hjson" "testplan" >}}

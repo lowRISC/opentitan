@@ -21,7 +21,7 @@ title: "ADC_CTRL HWIP Technical Specification"
 
 ## Hardware Interface
 
-{{< hwcfg "hw/ip/dcd/data/dcd.hjson" >}}
+{{< incGenFromIpDesc "../data/dcd.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -32,4 +32,4 @@ title: "ADC_CTRL HWIP Technical Specification"
 
 ## Registers
 
-{{< registers "hw/ip/dcd/data/dcd.hjson" >}}
+{{< incGenFromIpDesc "../data/dcd.hjson" "registers" >}}

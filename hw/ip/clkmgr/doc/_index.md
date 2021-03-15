@@ -188,4 +188,4 @@ To control peripheral clocks, directly change the bits in {{< regref "CLK_ENABLE
 
 ## Register Table
 
-{{< registers "hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson" >}}
+{{< incGenFromIpDesc "/hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson" "registers" >}}

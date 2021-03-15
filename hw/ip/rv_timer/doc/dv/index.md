@@ -102,4 +102,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/rv_timer/dv/rv_timer_sim_cfg.hjs
 ```
 
 ## DV plan
-{{< testplan "hw/ip/rv_timer/data/rv_timer_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/rv_timer_testplan.hjson" "testplan" >}}

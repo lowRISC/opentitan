@@ -49,7 +49,7 @@ value. The 64-bit `mtime` value is compared with the 64-bit `mtimecmp`. If
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/rv_timer/data/rv_timer.hjson" >}}
+{{< incGenFromIpDesc "../data/rv_timer.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -246,4 +246,4 @@ In this case both {{<regref "COMPARE_LOWER0_0">}} and {{<regref "COMPARE_UPPER0_
 
 ## Register Table
 
-{{< registers "hw/ip/rv_timer/data/rv_timer.hjson" >}}
+{{< incGenFromIpDesc "../data/rv_timer.hjson" "registers" >}}

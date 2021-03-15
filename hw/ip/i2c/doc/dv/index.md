@@ -98,4 +98,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/i2c/dv/i2c_sim_cfg.hjson -i i2c_
 ```
 
 ## DV plan
-{{< testplan "hw/ip/i2c/data/i2c_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/i2c_testplan.hjson" "testplan" >}}

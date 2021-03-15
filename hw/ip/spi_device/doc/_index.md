@@ -69,7 +69,7 @@ signal when the SPI interface is idle.
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/spi_device/data/spi_device.hjson" >}}
+{{< incGenFromIpDesc "../data/spi_device.hjson" "hwcfg" >}}
 
 ## General Data Transfer on Pins
 
@@ -418,4 +418,4 @@ the phase bit, bit 11).
 
 ## Register Table
 
-{{< registers "hw/ip/spi_device/data/spi_device.hjson" >}}
+{{< incGenFromIpDesc "../data/spi_device.hjson" "registers" >}}

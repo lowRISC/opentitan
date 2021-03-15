@@ -100,4 +100,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/uart/dv/uart_sim_cfg.hjson -i ua
 ```
 
 ## DV plan
-{{< testplan "hw/ip/uart/data/uart_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/uart_testplan.hjson" "testplan" >}}

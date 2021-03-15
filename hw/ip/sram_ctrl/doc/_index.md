@@ -47,7 +47,7 @@ Parameter                   | Default (Max)         | Top Earlgrey | Description
 
 ### Signals
 
-{{< hwcfg "hw/ip/sram_ctrl/data/sram_ctrl.hjson" >}}
+{{< incGenFromIpDesc "../data/sram_ctrl.hjson" "hwcfg" >}}
 
 The table below lists other SRAM controller signals.
 
@@ -283,4 +283,4 @@ Optionally, SW can read the {{< regref "ERROR_ADDRESS" >}} register, which expos
 
 ## Register Table
 
-{{< registers "hw/ip/sram_ctrl/data/sram_ctrl.hjson" >}}
+{{< incGenFromIpDesc "../data/sram_ctrl.hjson" "registers" >}}

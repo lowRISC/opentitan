@@ -105,4 +105,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/aon_timer/dv/aon_timer_sim_cfg.h
 ```
 
 ## DV plan
-{{< testplan "hw/ip/aon_timer/data/aon_timer_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/aon_timer_testplan.hjson" "testplan" >}}

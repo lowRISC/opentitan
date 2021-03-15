@@ -103,4 +103,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/spi_device/dv/spi_device_sim_cfg
 ```
 
 ## DV plan
-{{< testplan "hw/ip/spi_device/data/spi_device_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/spi_device_testplan.hjson" "testplan" >}}

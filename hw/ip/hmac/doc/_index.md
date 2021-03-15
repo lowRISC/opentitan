@@ -83,7 +83,7 @@ hash result and the previous digest registers.
 
 ## Hardware Interface
 
-{{< hwcfg "hw/ip/hmac/data/hmac.hjson" >}}
+{{< incGenFromIpDesc "../data/hmac.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -302,4 +302,4 @@ interconnect.
 
 ## Register Table
 
-{{< registers "hw/ip/hmac/data/hmac.hjson" >}}
+{{< incGenFromIpDesc "../data/hmac.hjson" "registers" >}}

@@ -365,7 +365,7 @@ This can be used to cancel a previous command.
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/spi_host/data/spi_host.hjson" >}}
+{{< incGenFromIpDesc "../data/spi_host.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -549,4 +549,4 @@ The Byte Select, or `bytesel`, unit is responsible for unpacking data from the F
 
 ## Register Table
 
-{{< registers "hw/ip/spi_host/data/spi_host.hjson" >}}
+{{< incGenFromIpDesc "../data/spi_host.hjson" "registers" >}}

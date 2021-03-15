@@ -146,7 +146,7 @@ Parameter      | Default (Max)    | Description
 
 ### Signals
 
-{{< hwcfg "hw/top_earlgrey/ip/alert_handler/data/autogen/alert_handler.hjson" >}}
+{{< incGenFromIpDesc "/hw/top_earlgrey/ip/alert_handler/data/autogen/alert_handler.hjson" "hwcfg" >}}
 
 The table below lists other alert handler module signals. The number of alert
 instances is parametric and hence alert and ping diff pairs are grouped together
@@ -935,7 +935,7 @@ In order to generate the register file for four alert sources, from
 $ ./reg_alert_handler.py alert_handler.hjson.tpl -n 4 > alert_handler.hjson
 ```
 
-{{< registers "hw/top_earlgrey/ip/alert_handler/data/autogen/alert_handler.hjson" >}}
+{{< incGenFromIpDesc "/hw/top_earlgrey/ip/alert_handler/data/autogen/alert_handler.hjson" "registers" >}}
 
 
 # Additional Notes

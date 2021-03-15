@@ -141,4 +141,4 @@ For a list of available tests  to run, please see the 'Tests' column in the [DV 
 ### Nightly
 
 ## DV plan
-{{< testplan "hw/top_earlgrey/data/chip_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/chip_testplan.hjson" "testplan" >}}

@@ -48,4 +48,4 @@ Detailed explanation is listed in the
 [Symbolic Variables]({{< relref "hw/formal/README.md#symbolic-variables" >}}) section.
 
 ## DV plan
-{{< testplan "hw/ip/rv_plic/data/rv_plic_fpv_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/rv_plic_fpv_testplan.hjson" "testplan" >}}

@@ -70,7 +70,7 @@ This is used to stop the watchdog timer running when in debugging mode or when t
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/aon_timer/data/aon_timer.hjson" >}}
+{{< incGenFromIpDesc "../data/aon_timer.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -108,4 +108,4 @@ TODO
 
 ## Register Table
 
-{{< registers "hw/ip/aon_timer/data/aon_timer.hjson" >}}
+{{< incGenFromIpDesc "../data/aon_timer.hjson" "registers" >}}

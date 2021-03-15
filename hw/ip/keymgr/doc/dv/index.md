@@ -114,4 +114,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/keymgr/dv/keymgr_sim_cfg.hjson -
 ```
 
 ## DV plan
-{{< testplan "hw/ip/keymgr/data/keymgr_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/keymgr_testplan.hjson" "testplan" >}}
