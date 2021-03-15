@@ -85,6 +85,11 @@
       name: "{variant}_lc_escalation"
       uvm_test_seq: sram_ctrl_lc_escalation_vseq
     }
+    {
+      name: "{variant}_mem_tl_errors"
+      uvm_test_seq: sram_ctrl_mem_tl_errors_vseq
+      run_opts: ["+run_tl_errors"]
+    }
   ]
 
   // List of regressions.
