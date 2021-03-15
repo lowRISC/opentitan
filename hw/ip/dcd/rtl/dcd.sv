@@ -47,7 +47,7 @@ module dcd import dcd_pkg::*;(
   logic nc_intg_err_o;//FIXME
 
   // Register module
-  dcd_reg_top i_reg_top (
+  dcd_reg_top u_reg (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .tl_i(tl_i),
