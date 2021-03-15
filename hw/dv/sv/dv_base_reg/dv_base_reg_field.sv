@@ -94,7 +94,8 @@ class dv_base_reg_field extends uvm_reg_field;
   // If input is a reg, add all fields under the reg; if input is a field, add the specific field.
   function void add_lockable_reg_or_fld(uvm_object lockable_obj);
     dv_base_reg_field flds[$];
-    uvm_reg_block     ral = this.get_parent().get_parent();
+    uvm_reg_block     ral;
+    ral = this.get_parent().get_parent();
     `DV_CHECK_EQ_FATAL(ral.is_locked(), 0, "RAL is locked, cannot add lockable reg or fld!")
     get_flds_from_uvm_object(lockable_obj, `gfn, flds);
     foreach (flds[i]) lockable_flds.push_back(flds[i]);
@@ -136,12 +137,13 @@ class dv_base_reg_field extends uvm_reg_field;
   // this function can only be called when this reg is intr_test reg
   // Example: ral.intr_test.get_intr_state_field()
   local function uvm_reg_field get_intr_state_field();
-    uvm_reg_block blk = get_parent().get_parent();
+    uvm_reg_block blk;
     uvm_reg       intr_state_csr;
     uvm_reg_field fields[$];
     string        intr_state_csr_name;
     string        intr_test_csr_name = get_parent().get_name();
     bit           is_intr_state_csr = !(uvm_re_match("intr_test*", intr_test_csr_name));
+    blk = get_parent().get_parent();
 
     `DV_CHECK_EQ_FATAL(is_intr_state_csr, 1)
 
