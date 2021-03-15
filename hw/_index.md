@@ -28,7 +28,7 @@ Finally, we provide the same set of information for all available [top level des
 
 ## Comportable IPs
 
-{{< dashboard "hw/ip" >}}
+{{< dashboard "comportable" >}}
 
 ## Processor cores
 
