@@ -16,7 +16,7 @@ module ast_entropy #(
   input clk_src_sys_en_i,                          // System Source Clock Enable
   input clk_src_sys_jen_i,                         // System Source Clock Jitter Enable
   input scan_mode_i,                               // Scan Mode
-  input scan_reset_ni,                             // Scane Reset
+  input scan_reset_ni,                             // Scan Reset
   output edn_pkg::edn_req_t entropy_req_o          // Entropy Request
 );
 

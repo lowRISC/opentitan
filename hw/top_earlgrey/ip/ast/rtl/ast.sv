@@ -93,6 +93,7 @@ module ast #(
 
   // rng (entropy source) interface
   input rng_en_i,                             // RNG Enable
+  input rng_fips_i,                           // RNG FIPS
   output logic rng_val_o,                     // RNG Valid
   output logic [EntropyStreams-1:0] rng_b_o,  // RNG Bit(s)
 
@@ -171,6 +172,8 @@ import ast_reg_pkg::* ;
 import ast_bhv_pkg::* ;
 
 logic vcaon_pok, vcaon_pok_h, scan_mode, scan_reset_n;
+logic vcmain_pok, vcmain_pok_h, vcaon_pok_por;
+
 assign scan_reset_n = scan_reset_no;
 
 
@@ -179,6 +182,8 @@ assign scan_reset_n = scan_reset_no;
 // VCC POK (Always ON)
 ///////////////////////////////////////
 logic vcc_pok_h, vcc_pok;
+
+logic vcc_pok_int;
 
 vcc_pok u_vcc_pok (
   .vcc_pok_o ( vcc_pok_int )
@@ -191,7 +196,6 @@ assign vcc_pok_h = vcc_pok;     // "Level Shifter"
 ///////////////////////////////////////
 // VCAON POK (Always ON)
 ///////////////////////////////////////
-logic vcmain_pok, vcmain_pok_h, vcaon_pok_por;
 
 logic vcaon_pok_h_int;
 
@@ -199,9 +203,10 @@ assign vcaon_pok_h = vcaon_pok_h_int && vcaon_supp_i;
 assign vcaon_pok = vcaon_pok_h;  // Level Shifter
 
 // 'por_sync_n' reset deasetion synchronizer output
-logic por_rst_n, por_synco_n, por_sync_n;
+logic por_n, por_rst_n, por_synco_n, por_sync_n;
 
-assign por_rst_n = scan_mode ? scan_reset_n : por_ni && vcc_pok && vcaon_pok;
+assign por_n = scan_mode ? scan_reset_n : por_ni;
+assign por_rst_n = por_n && vcc_pok && vcaon_pok;
 // Reset De-Assert Sync
 prim_flop_2sync #(
   .Width ( 1 ),
@@ -277,6 +282,7 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .vcmain_pok_o_h_i ( vcmain_pok_por ),
   .clk_src_aon_h_i ( clk_src_aon_o ),
   .main_pd_h_ni ( main_pd_ni ),
+  .main_iso_en_i ( main_iso_en_i ),
   .otp_power_seq_h_i ( otp_power_seq_i[1:0] ),
   .vcaon_pok_h_o ( vcaon_pok_h_int ),
   .main_pwr_dly_o ( main_pwr_dly_o ),
@@ -290,7 +296,7 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
 // System Clock (Always ON)
 ///////////////////////////////////////
 logic rst_sys_clk_n;
-assign rst_sys_clk_n = vcmain_pok_por;  // Scna reset included
+assign rst_sys_clk_n = vcmain_pok_por;  // Scan reset included
 
 sys_clk u_sys_clk (
   .vcore_pok_h_i ( vcaon_pok_h ),
@@ -298,6 +304,8 @@ sys_clk u_sys_clk (
   .rst_sys_clk_ni ( rst_sys_clk_n ),
   .clk_src_sys_en_i ( clk_src_sys_en_i ),
   .clk_src_sys_jen_i ( clk_src_sys_jen_i ),
+  .scan_mode_i ( scan_mode ),
+  .scan_reset_ni ( scan_reset_n ),
   .clk_src_sys_o ( clk_src_sys_o ),
   .clk_src_sys_val_o ( clk_src_sys_val_o )
 );  // of u_sys_clk
@@ -316,6 +324,8 @@ usb_clk u_usb_clk (
   .clk_src_usb_en_i ( clk_src_usb_en_i ),
   .usb_ref_val_i ( usb_ref_val_i ),
   .usb_ref_pulse_i ( usb_ref_pulse_i ),
+  .scan_mode_i ( scan_mode ),
+  .scan_reset_ni ( scan_reset_n ),
   .clk_src_usb_o ( clk_src_usb_o ),
   .clk_src_usb_val_o ( clk_src_usb_val_o )
 );  // of u_usb_clk
@@ -332,6 +342,8 @@ aon_clk  u_aon_clk (
   .clk_aon_pd_ni ( 1'b1 ),     // Always Enabled
   .rst_aon_clk_ni ( rst_aon_clk_n ),
   .clk_src_aon_en_i ( 1'b1 ),  // Always Enabled
+  .scan_mode_i ( scan_mode ),
+  .scan_reset_ni ( scan_reset_n ),
   .clk_src_aon_o ( clk_src_aon_o ),
   .clk_src_aon_val_o ( clk_src_aon_val_o )
 );  // of u_aon_clk
@@ -348,6 +360,8 @@ io_clk u_io_clk (
   .clk_io_pd_ni ( vcmain_pok ),
   .rst_io_clk_ni ( rst_io_clk_n ),
   .clk_src_io_en_i ( clk_src_io_en_i ),
+  .scan_mode_i ( scan_mode ),
+  .scan_reset_ni ( scan_reset_n ),
   .clk_src_io_o ( clk_src_io_o ),
   .clk_src_io_val_o ( clk_src_io_val_o )
 );  // of u_io_clk
@@ -528,6 +542,7 @@ ast_reg_top u_reg (
   .tl_o ( tl_o ),
   .reg2hw ( reg2hw ),
   .hw2reg ( hw2reg ),
+  .intg_err_o ( ),
   .devmode_i ( 1'b0 )
 );  // u_reg
 
@@ -575,27 +590,28 @@ assign scan_reset_no    = 1'b1;
 // Assertions //
 ////////////////
 
+`ASSERT_KNOWN(ClkSrcAonValKnownO_A, clk_src_aon_val_o, clk_src_aon_o, rst_aon_clk_n)
+`ASSERT_KNOWN(ClkSrcSysValKnownO_A, clk_src_sys_val_o, clk_src_sys_o, rst_sys_clk_n)
+`ASSERT_KNOWN(ClkSrcIoValKnownO_A, clk_src_io_val_o, clk_src_io_o, rst_io_clk_n)
+`ASSERT_KNOWN(ClkSrcUsbValKnownO_A, clk_src_usb_val_o, clk_src_usb_o, rst_usb_clk_n)
+`ASSERT_KNOWN(AdcDValKnownO_A, adc_d_val_o, clk_ast_adc_i, rst_ast_adc_ni)
+`ASSERT_KNOWN(RngValKnownO_A, rng_val_o, clk_ast_rng_i, rst_ast_rng_ni)
+//
 `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid, clk_ast_tlul_i, rst_ast_tlul_ni)
 `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready, clk_ast_tlul_i, rst_ast_tlul_ni)
-`ASSERT_KNOWN(VcaonPokKnownO_A, vcaon_pok_o, clk_src_aon_o, por_ni)                      //TODO
-`ASSERT_KNOWN(VcmainPokKnownO_A, vcmain_pok_o, clk_src_aon_o, por_ni)                    //TODO
-`ASSERT_KNOWN(VioaPokKnownO_A, vioa_pok_o, clk_src_aon_o, por_ni)                        //TODO
-`ASSERT_KNOWN(ViobPokKnownO_A, viob_pok_o, clk_src_aon_o, por_ni)                        //TODO
+`ASSERT_KNOWN(VcaonPokKnownO_A, vcaon_pok_o, clk_src_aon_o, por_n)                       //TODO
+`ASSERT_KNOWN(VcmainPokKnownO_A, vcmain_pok_o, clk_src_aon_o, por_n)                     //TODO
+`ASSERT_KNOWN(VioaPokKnownO_A, vioa_pok_o, clk_src_aon_o, por_n)                         //TODO
+`ASSERT_KNOWN(ViobPokKnownO_A, viob_pok_o, clk_src_aon_o, por_n)                         //TODO
 `ASSERT_KNOWN(FlashPowerDownKnownO_A, flash_power_down_h_o, 1, vcmain_pok_o)             //TODO
 `ASSERT_KNOWN(FlashPowerReadyKnownO_A, flash_power_ready_h_o, 1, vcmain_pok_o)           //TODO
 `ASSERT_KNOWN(OtpPowerSeqKnownO_A, otp_power_seq_h_o, 1, vcmain_pok_o)                   //TODO
 `ASSERT_KNOWN(ClkSrcSysKnownO_A, clk_src_sys_o, 1, vcmain_pok_o)                         //TODO
-`ASSERT_KNOWN(ClkSrcSysValKnownO_A, clk_src_sys_val_o, clk_src_sys_o, vcmain_pok_o)
 `ASSERT_KNOWN(ClkSrcAonKnownO_A, clk_src_aon_o, 1, vcaon_pok_o)                          //TODO
-`ASSERT_KNOWN(ClkSrcAonValKnownO_A, clk_src_aon_val_o, clk_src_aon_o, vcaon_pok_o)
 `ASSERT_KNOWN(ClkSrcIoKnownO_A, clk_src_io_o, 1, vcaon_pok_o)                            //TODO
-`ASSERT_KNOWN(ClkSrcIoValKnownO_A, clk_src_io_val_o, clk_src_io_o, vcaon_pok_o)
 `ASSERT_KNOWN(ClkSrcUsbKnownO_A, clk_src_usb_o, 1, vcmain_pok_o)                         //TODO
-`ASSERT_KNOWN(ClkSrcUsbValKnownO_A, clk_src_usb_val_o, clk_src_usb_o, vcmain_pok_o)
 `ASSERT_KNOWN(UsbIoPuCalKnownO_A, usb_io_pu_cal_o, clk_ast_tlul_i, rst_ast_tlul_ni)
 `ASSERT_KNOWN(AdcDKnownO_A, adc_d_o, clk_ast_adc_i, rst_ast_adc_ni)
-`ASSERT_KNOWN(AdcDValKnownO_A, adc_d_val_o, clk_ast_adc_i, rst_ast_adc_ni)
-`ASSERT_KNOWN(RngValKnownO_A, rng_val_o, clk_ast_rng_i, rst_ast_rng_ni)
 `ASSERT_KNOWN(RngBKnownO_A, rng_b_o, clk_ast_rng_i, rst_ast_rng_ni)
 `ASSERT_KNOWN(EntropyRateKnownO_A, entropy_rate_o, clk_ast_es_i, rst_ast_es_ni)
 `ASSERT_KNOWN(EntropyReeqKnownO_A, entropy_req_o, clk_ast_es_i, rst_ast_es_ni)

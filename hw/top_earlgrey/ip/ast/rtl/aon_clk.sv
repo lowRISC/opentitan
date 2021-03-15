@@ -11,6 +11,8 @@ module aon_clk (
   input clk_aon_pd_ni,                     // AON Clock Power-down
   input rst_aon_clk_ni,                    // AON Clock Logic reset
   input clk_src_aon_en_i,                  // AON Source Clock Enable
+  input scan_mode_i,                       // Scan Mode
+  input scan_reset_ni,                     // Scan Reset
   output logic clk_src_aon_o,              // AON Source Clock
   output logic clk_src_aon_val_o           // AON Source Clock Valid
 );
@@ -18,7 +20,8 @@ module aon_clk (
 logic clk, aon_clk_en, rst_n;
 
 assign rst_n = rst_aon_clk_ni;  // Scan enabled
-assign aon_clk_en = clk_src_aon_en_i && clk_aon_pd_ni && rst_aon_clk_ni;
+assign aon_clk_en = scan_mode_i ||
+                    (clk_src_aon_en_i && clk_aon_pd_ni && rst_aon_clk_ni);
 
 // Clock Oscillator
 ///////////////////////////////////////
@@ -37,7 +40,7 @@ prim_clock_buf u_clk_aon_buf(
 
 // 2-stage de-assertion
 logic rst_val_n;
-assign rst_val_n = rst_n && clk_aon_pd_ni;
+assign rst_val_n = scan_mode_i ? scan_reset_ni : rst_n && clk_aon_pd_ni;
 
 prim_flop_2sync #(
   .Width ( 1 ),

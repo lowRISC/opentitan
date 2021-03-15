@@ -554,6 +554,7 @@ module top_earlgrey_asic (
     .adc_d_val_o           (  ),
     // rng
     .rng_en_i              ( es_rng_req.rng_enable ),
+    .rng_fips_i            ( '0 ),
     .rng_val_o             ( es_rng_rsp.rng_valid ),
     .rng_b_o               ( es_rng_rsp.rng_b ),
     // entropy

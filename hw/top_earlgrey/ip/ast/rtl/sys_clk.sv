@@ -12,6 +12,8 @@ module sys_clk (
   input rst_sys_clk_ni,                    // System Clock Logic reset
   input clk_src_sys_en_i,                  // System Source Clock Enable
   input clk_src_sys_jen_i,                 // System Source Clock Jitter Enable
+  input scan_mode_i,                       // Scan Mode
+  input scan_reset_ni,                     // Scan Reset
   output logic clk_src_sys_o,              // System Source Clock
   output logic clk_src_sys_val_o           // System Source Clock Valid
 );
@@ -19,7 +21,8 @@ module sys_clk (
 logic clk, sys_clk_en, rst_n;
 
 assign rst_n = rst_sys_clk_ni;  // scan enabled
-assign sys_clk_en = clk_src_sys_en_i && clk_sys_pd_ni && rst_sys_clk_ni;
+assign sys_clk_en = scan_mode_i ||
+                    (clk_src_sys_en_i && clk_sys_pd_ni && rst_sys_clk_ni);
 
 // Clock Oscilator
 ///////////////////////////////////////
@@ -39,7 +42,7 @@ prim_clock_buf u_clk_sys_buf(
 
 // 2-stage de-assertion
 logic rst_val_n;
-assign rst_val_n = rst_n && sys_clk_en;
+assign rst_val_n = scan_mode_i ? scan_reset_ni : rst_n && sys_clk_en;
 
 prim_flop_2sync #(
   .Width ( 1 ),
