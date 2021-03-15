@@ -89,6 +89,7 @@ config = {
     "dashboard_definitions": {
         "comportable": [
             "hw/ip",
+            "hw/top_earlgrey/ip",
         ],
     },
 
