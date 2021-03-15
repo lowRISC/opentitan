@@ -10,3 +10,4 @@
 `include "sram_ctrl_stress_pipeline_vseq.sv"
 `include "sram_ctrl_lc_escalation_vseq.sv"
 `include "sram_ctrl_mem_tl_errors_vseq.sv"
+`include "sram_ctrl_access_during_key_req_vseq.sv"

@@ -14,6 +14,8 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
   bit [TL_DW-1:0] exp_status = '0;
 
+  bit in_key_req = 0;
+
   // This bit goes high as soon as a LC escalation request is seen on the interface,
   // and goes low once the scoreboard has finished all internal handling logic up to
   // resetting the key and nonce (one cycle after `exp_status` is updated).
@@ -280,6 +282,8 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
         if (!cfg.en_scb) continue;
 
+        if (in_key_req) continue;
+
         // If the escalation propagation has finished,
         // do not process anymore addr_phase transactions
         if (status_lc_esc) continue;
@@ -366,6 +370,11 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       void'(item.is_ok());
 
       addr_trans_available = (addr_phase_mbox.try_get(addr_trans) > 0);
+
+      if (in_key_req) begin
+        `DV_CHECK_EQ(addr_trans_available, 1,
+            "SRAM returned TLUL response during active key request")
+      end
 
       // See the explanation in `process_lc_escalation()` as to why we use `handling_lc_esc`.
       //
@@ -505,6 +514,8 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       // to properly synchronize and propagate the data through the DUT
       cfg.clk_rst_vif.wait_clks(KDI_PROPAGATION_CYCLES);
 
+      in_key_req = 0;
+
       // When KDI item is seen, update key, nonce
       {key, nonce, seed_valid} = item.d_data;
 
@@ -635,6 +646,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       "ctrl": begin
         // do nothing if 0 is written
         if (addr_phase_write && item.a_data) begin
+          in_key_req = 1;
           exp_status[SramCtrlScrKeyValid] = 0;
         end
       end
