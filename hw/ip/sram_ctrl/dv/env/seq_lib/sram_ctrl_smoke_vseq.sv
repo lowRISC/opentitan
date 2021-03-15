@@ -8,6 +8,8 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
 
   `uvm_object_new
 
+  bit access_during_key_req = 0;
+
   // Indicates the number of memory accesses to be performed
   // before requesting a new scrambling key
   rand int num_ops;
@@ -57,10 +59,21 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
       // Request a new scrambling key
       req_scr_key();
 
-      // wait for a valid KDI transaction to be completed
-      //
-      // STATUS.scr_key_seed_valid return value will be checked by scoreboard
-      csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1'b1));
+      fork
+        begin
+          // wait for a valid KDI transaction to be completed
+          //
+          // STATUS.scr_key_seed_valid return value will be checked by scoreboard
+          csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1'b1));
+        end
+        begin
+          if (access_during_key_req) begin
+            `uvm_info(`gfn, "accessing during key req", UVM_HIGH)
+            do_rand_ops(.num_ops($urandom_range(100, 500)), .abort(1));
+            csr_utils_pkg::wait_no_outstanding_access();
+          end
+        end
+      join
 
       // Do some random memory accesses
       `uvm_info(`gfn,

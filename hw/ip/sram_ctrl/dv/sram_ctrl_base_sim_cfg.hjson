@@ -90,6 +90,10 @@
       uvm_test_seq: sram_ctrl_mem_tl_errors_vseq
       run_opts: ["+run_tl_errors"]
     }
+    {
+      name: "{variant}_access_during_key_req"
+      uvm_test_seq: sram_ctrl_access_during_key_req_vseq
+    }
   ]
 
   // List of regressions.
