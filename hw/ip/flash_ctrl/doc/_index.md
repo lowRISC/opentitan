@@ -293,7 +293,7 @@ For these pages, scramble shall be permanently disabled as the manufacturer shou
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/flash_ctrl/data/flash_ctrl.hjson" >}}
+{{< incGenFromIpDesc "../data/flash_ctrl.hjson" "hwcfg" >}}
 
 ### Signals
 
@@ -457,4 +457,4 @@ When all desired words have been programmed, the controller will post OP_DONE in
 The flash protocol controller maintains two separate access windows for the FIFO.
 It is implemented this way because the access window supports transaction back-pressure should the FIFO become full (in case of write) or empty (in case of read).
 
-{{< registers "hw/ip/flash_ctrl/data/flash_ctrl.hjson" >}}
+{{< incGenFromIpDesc "../data/flash_ctrl.hjson" "registers" >}}

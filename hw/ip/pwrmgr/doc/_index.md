@@ -255,4 +255,4 @@ Please see [power management programmers model](https://docs.google.com/document
 
 ## Register Table
 
-{{< registers "hw/top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr.hjson" >}}
+{{< incGenFromIpDesc "/hw/top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr.hjson" "registers" >}}

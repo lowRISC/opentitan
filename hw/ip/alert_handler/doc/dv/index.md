@@ -112,4 +112,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/$CHIP/ip/alert_handler/dv/alert_han
 In this run command, $CHIP can be top_earlgrey, etc.
 
 ## DV plan
-{{< testplan "hw/ip/alert_handler/data/alert_handler_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/alert_handler_testplan.hjson" "testplan" >}}

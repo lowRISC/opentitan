@@ -47,7 +47,7 @@ Changes to the configuration registers only take effect once the channel has bee
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/pattgen/data/pattgen.hjson" >}}
+{{< incGenFromIpDesc "../data/pattgen.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -138,4 +138,4 @@ To start both channel patterns at the same time, configure both channels then si
 
 ## Register Table
 
-{{< registers "hw/ip/pattgen/data/pattgen.hjson" >}}
+{{< incGenFromIpDesc "../data/pattgen.hjson" "registers" >}}

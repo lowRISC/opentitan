@@ -105,4 +105,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/sram_ctrl/dv/sram_ctrl_sim_cfg.h
 ```
 
 ## DV plan
-{{< testplan "hw/ip/sram_ctrl/data/sram_ctrl_base_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/sram_ctrl_base_testplan.hjson" "testplan" >}}

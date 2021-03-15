@@ -124,4 +124,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/${name}/dv/${name}_sim_cfg.hjson
 
 ${'##'} DV plan
 <!-- TODO: uncomment the line below after adding the testplan -->
-{{</* testplan "hw/ip/${name}/data/${name}_testplan.hjson" */>}}
+{{</* incGenFromIpDesc "hw/ip/${name}/data/${name}_testplan.hjson" "testplan" */>}

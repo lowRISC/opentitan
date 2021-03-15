@@ -100,4 +100,4 @@ $ make TEST_NAME=entropy_src_smoke
 ```
 
 ## DV plan
-{{< testplan "hw/ip/entropy_src/data/entropy_src_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/entropy_src_testplan.hjson" "testplan" >}}

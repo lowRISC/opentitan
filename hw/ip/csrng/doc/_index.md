@@ -135,7 +135,7 @@ Finally, an `ack` response and status will be returned to the application interf
 
 ## Hardware Interfaces
 
- {{< hwcfg "hw/ip/csrng/data/csrng.hjson" >}}
+ {{< incGenFromIpDesc "../data/csrng.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -510,4 +510,4 @@ void csrng_init(unsigned int enable) {
 
 ## Register Table
 
-{{< registers "hw/ip/csrng/data/csrng.hjson" >}}
+{{< incGenFromIpDesc "../data/csrng.hjson" "registers" >}}

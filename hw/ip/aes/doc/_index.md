@@ -116,7 +116,7 @@ The initialization vector (IV) register and the register to hold the previous in
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/aes/data/aes.hjson" >}}
+{{< incGenFromIpDesc "../data/aes.hjson" "hwcfg" >}}
 
 The table below lists other signals of the AES unit.
 
@@ -488,4 +488,4 @@ Also, using a FIFO interface for something that is not actually FIFO (internally
 
 For a detailed overview of the register tool, please refer to the [Register Tool documentation.]({{< relref "doc/rm/register_tool" >}})
 
-{{< registers "hw/ip/aes/data/aes.hjson" >}}
+{{< incGenFromIpDesc "../data/aes.hjson" "registers" >}}

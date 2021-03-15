@@ -101,4 +101,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/csrng/dv/csrng_sim_cfg.hjson -i 
 ```
 
 ## DV plan
-{{< testplan "hw/ip/csrng/data/csrng_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/csrng_testplan.hjson" "testplan" >}}

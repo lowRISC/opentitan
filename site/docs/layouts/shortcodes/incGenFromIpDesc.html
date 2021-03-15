@@ -1,0 +1,30 @@
+{{/*
+A Hugo shortcode to include the content generated from the IP description Hjson
+
+Usage: {{< incGenFromIpDesc hjsonPath contentType >}}
+
+hjsonPath: Path to an IP description file in Hjson (ip_name.hjson)
+  Relative paths are resolved relative to the directory using the shortcode.
+  Absolute paths are resolved relative to REPO_TOP.
+
+contentType: Type of generated content to include.
+  Valid options: testplan, hwcfg, registers
+
+The actual content is rendered as HTML by the util/build_docs.py script and only
+included by the shortcode here.
+*/}}
+
+{{ $hjsonPath := .Get 0 }}
+{{ $contentType := .Get 1 }}
+{{ $ipDescFile := (printf "%s.%s" $hjsonPath $contentType) }}
+
+{{ $path := "UNDEF" }}
+{{ if (hasPrefix $hjsonPath "/") }}
+  {{ $path = path.Join .Site.Params.generatedRoot $ipDescFile }}
+{{ else }}
+  {{ $path = path.Join .Site.Params.generatedRoot .Page.File.Dir $ipDescFile }}
+{{ end }}
+{{ if not (fileExists $path) }}
+  {{ errorf "HTML for %s has not been generated for %s (looked at %s)" $contentType $hjsonPath $path }}
+{{ end }}
+{{ readFile $path | safeHTML }}

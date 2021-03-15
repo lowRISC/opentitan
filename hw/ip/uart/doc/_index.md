@@ -44,7 +44,7 @@ Additional features such as parity have been added.
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/uart/data/uart.hjson" >}}
+{{< incGenFromIpDesc "../data/uart.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -485,4 +485,4 @@ case the host will eventually get a watermark interrupt, this will happen
 
 ## Register Table
 
-{{< registers "hw/ip/uart/data/uart.hjson" >}}
+{{< incGenFromIpDesc "../data/uart.hjson" "registers" >}}

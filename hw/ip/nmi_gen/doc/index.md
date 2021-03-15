@@ -32,7 +32,7 @@ N_ESC_SEV      | 4 (-)                 | Number of escalation receivers (should 
 
 ## Signals
 
-{{< hwcfg "hw/ip/nmi_gen/data/nmi_gen.hjson" >}}
+{{< incGenFromIpDesc "../data/nmi_gen.hjson" "hwcfg" >}}
 
 The table below lists other `nmi_gen` signals.
 
@@ -44,4 +44,4 @@ Signal                               | Direction        | Type                  
 
 ## Register Table
 
-{{< registers "hw/ip/nmi_gen/data/nmi_gen.hjson" >}}
+{{< incGenFromIpDesc "../data/nmi_gen.hjson" "registers" >}}

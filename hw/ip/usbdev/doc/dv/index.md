@@ -98,4 +98,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/usbdev/dv/usbdev_sim_cfg.hjson -
 ```
 
 ## DV plan
-{{< testplan "hw/ip/usbdev/data/usbdev_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/usbdev_testplan.hjson" "testplan" >}}

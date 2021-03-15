@@ -113,4 +113,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/gpio/dv/gpio_sim_cfg.hjson -i gp
 ```
 
 ## DV plan
-{{< testplan "hw/ip/gpio/data/gpio_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/gpio_testplan.hjson" "testplan" >}}

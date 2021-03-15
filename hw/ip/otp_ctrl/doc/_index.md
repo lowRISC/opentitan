@@ -305,7 +305,7 @@ Parameter                   | Default (Max) | Top Earlgrey | Description
 
 ### Signals
 
-{{< hwcfg "hw/ip/otp_ctrl/data/otp_ctrl.hjson" >}}
+{{< incGenFromIpDesc "../data/otp_ctrl.hjson" "hwcfg" >}}
 
 The table below lists other OTP controller signals.
 
@@ -984,7 +984,7 @@ This is however rare and should not happen after fabrication testing.
 
 ## Register Table
 
-{{< registers "hw/ip/otp_ctrl/data/otp_ctrl.hjson" >}}
+{{< incGenFromIpDesc "../data/otp_ctrl.hjson" "registers" >}}
 
 
 # Additional Notes

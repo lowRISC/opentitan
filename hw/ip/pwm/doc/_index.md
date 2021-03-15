@@ -77,7 +77,7 @@ Once the internal duty cycle reaches the target value, the internal duty cycle b
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/pwm/data/pwm.hjson" >}}
+{{< incGenFromIpDesc "../data/pwm.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -314,4 +314,4 @@ This step is necessary for changing the blink timing parameters
 
 ## Register Table
 
-{{< registers "hw/ip/pwm/data/pwm.hjson" >}}
+{{< incGenFromIpDesc "../data/pwm.hjson" "registers" >}}

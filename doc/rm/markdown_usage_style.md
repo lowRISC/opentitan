@@ -290,7 +290,7 @@ See that document for integration overview within the broader top level system.
 
 ## Hardware Interfaces
 
-{{</* hwcfg "hw/ip/component/data/component.hjson" */>}}
+{{</* incGenFromIpDesc "../data/component.hjson" "hwcfg" */>}}
 
 ## Design Details
 
@@ -310,6 +310,6 @@ See that document for integration overview within the broader top level system.
 
 ## Register Table
 
-{{</* registers "hw/ip/component/data/component.hjson" */>}}
+{{</* incGenFromIpDesc "../data/component.hjson" "registers" */>}}
 
 ```

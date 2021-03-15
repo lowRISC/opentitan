@@ -83,7 +83,7 @@ This IP also supports clock-stretching, should that be required by target device
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/i2c/data/i2c.hjson" >}}
+{{< incGenFromIpDesc "../data/i2c.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -509,4 +509,4 @@ All other parameters in registers `TIMING2`, `TIMING3`, `TIMING4` are unchanged 
 
 ## Register Table
 
-{{<registers "hw/ip/i2c/data/i2c.hjson" >}}
+{{< incGenFromIpDesc "../data/i2c.hjson" "registers" >}}

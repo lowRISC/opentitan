@@ -114,4 +114,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/otp_ctrl/dv/otp_ctrl_sim_cfg.hjs
 ```
 
 ## DV plan
-{{< testplan "hw/ip/otp_ctrl/data/otp_ctrl_testplan.hjson" >}}
+{{< incGenFromIpDesc "../../data/otp_ctrl_testplan.hjson" "testplan" >}}

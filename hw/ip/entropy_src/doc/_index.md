@@ -181,7 +181,7 @@ At any time, the `ENABLE` field can be cleared to halt the entropy generation (a
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/entropy_src/data/entropy_src.hjson" >}}
+{{< incGenFromIpDesc "../data/entropy_src.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -407,4 +407,4 @@ Need to alert the system of a FIFO overflow condition.
 
 ## Register Table
 
-{{< registers "hw/ip/entropy_src/data/entropy_src.hjson" >}}
+{{< incGenFromIpDesc "../data/entropy_src.hjson" "registers" >}}

@@ -376,7 +376,7 @@ An unsuccessful advance call (errors) does not unlock the binding.
 This allows the next stage of software to re-use the binding registers.
 
 ## Hardware Interfaces
-{{< hwcfg "hw/ip/keymgr/data/keymgr.hjson" >}}
+{{< incGenFromIpDesc "../data/keymgr.hjson" "hwcfg" >}}
 
 # Programmers Guide
 
@@ -399,4 +399,4 @@ More details to come.
 
 ## Register Table
 
-{{< registers "hw/ip/keymgr/data/keymgr.hjson" >}}
+{{< incGenFromIpDesc "../data/keymgr.hjson" "registers" >}}

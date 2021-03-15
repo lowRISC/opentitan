@@ -363,7 +363,7 @@ Parameter                      | Default (Max)         | Top Earlgrey   | Descri
 
 ### Signals
 
-{{< hwcfg "hw/ip/lc_ctrl/data/lc_ctrl.hjson" >}}
+{{< incGenFromIpDesc "../data/lc_ctrl.hjson" "hwcfg" >}}
 
 Signal                       | Direction        | Type                                 | Description
 -----------------------------|------------------|--------------------------------------|---------------
@@ -648,5 +648,5 @@ It is expected that the JTAG TAP interface is used to access the life cycle tran
 
 ## Register Table
 
-{{< registers "hw/ip/lc_ctrl/data/lc_ctrl.hjson" >}}
+{{< incGenFromIpDesc "../data/lc_ctrl.hjson" "registers" >}}
 

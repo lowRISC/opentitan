@@ -63,7 +63,7 @@ the top level netlist.
 
 ## Hardware Interfaces
 
-{{< hwcfg "hw/ip/gpio/data/gpio.hjson" >}}
+{{< incGenFromIpDesc "../data/gpio.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -281,4 +281,4 @@ printf("0b%b", *GPIO_INTR_STATE);       // 0b00001100
 
 ## Register Table
 
-{{< registers "hw/ip/gpio/data/gpio.hjson" >}}
+{{< incGenFromIpDesc "../data/gpio.hjson" "registers" >}}
