@@ -91,7 +91,7 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
           begin
             // read out STATUS csr, scoreboard will check that proper updates have been made
             csr_rd(.ptr(ral.status), .value(status));
-            csr_wr(.csr(ral.status), .value(status));
+            csr_wr(.ptr(ral.status), .value(status));
 
             `uvm_info(`gfn,
               $sformatf("Performing %0d random memory accesses after LC escalation request",

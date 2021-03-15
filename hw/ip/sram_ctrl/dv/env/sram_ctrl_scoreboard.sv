@@ -140,6 +140,52 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     return bitmask;
   endfunction
 
+  // Check if the input tl_seq_item has any tl errors.
+  //
+  // NOTE: this function is designed to only work for tl_seq_item objects sent to the
+  //       TLUL interface of the SRAM scrambling memory, as this interface does not
+  //       care about CSR/uvm_mem addressing.
+  //       For the same reason, we cannot use the already-provided `predict_tl_err(...)`
+  //       function of the cip_base_scoreboard, as the SRAM TLUL interface does not have
+  //       any CSRs or uvm_mems.
+  virtual function bit sram_predict_tl_err(tl_seq_item item, tl_channels_e channel);
+    bit is_tl_err;
+
+    is_tl_err = item.get_exp_d_error();
+
+    `uvm_info(`gfn,
+              $sformatf("error_a_opcode_invalid: %0b",
+                        item.get_error_a_opcode_invalid()),
+              UVM_HIGH)
+    `uvm_info(`gfn,
+              $sformatf("error_PutFullData_mask_size_mismatch: %0b",
+                        item.get_error_PutFullData_mask_size_mismatched()),
+              UVM_HIGH)
+    `uvm_info(`gfn,
+              $sformatf("error_addr_mask_misaligned: %0b",
+                        item.get_error_addr_mask_misaligned()),
+              UVM_HIGH)
+    `uvm_info(`gfn,
+              $sformatf("error_addr_size_misaligned: %0b",
+                        item.get_error_addr_size_misaligned()),
+              UVM_HIGH)
+    `uvm_info(`gfn,
+              $sformatf("error_mask_not_in_enabled_lanes: %0b",
+                        item.get_error_mask_not_in_enabled_lanes()),
+              UVM_HIGH)
+    `uvm_info(`gfn,
+              $sformatf("error_size_over_max: %0b",
+                        item.get_error_size_over_max()),
+              UVM_HIGH)
+
+    if (channel == DataChannel) begin
+      `DV_CHECK_EQ(item.d_error, is_tl_err,
+          $sformatf("item_err: %0d", is_tl_err))
+    end
+
+    return is_tl_err;
+  endfunction
+
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     sram_tl_a_chan_fifo = new("sram_tl_a_chan_fifo", this);
@@ -238,7 +284,13 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
         // do not process anymore addr_phase transactions
         if (status_lc_esc) continue;
 
-        // TODO: need to ensure that we don't process TLUL errors
+        // don't process any error items
+        //
+        // TODO: sample error coverage
+        if (cfg.en_scb_tl_err_chk && sram_predict_tl_err(item, AddrChannel)) begin
+          `uvm_info(`gfn, "TL addr_phase error detected", UVM_HIGH)
+          continue;
+        end
 
         addr_trans.we    = item.is_write();
         addr_trans.addr  = word_align_addr(item.a_addr);
@@ -302,7 +354,13 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       if (!cfg.en_scb) continue;
       `uvm_info(`gfn, $sformatf("Received sram_tl_d_chan item:\n%0s", item.sprint()), UVM_HIGH)
 
-      // TODO: need to ensure that we don't process TLUL errors
+      // don't process any error items
+      //
+      // TODO: sample error coverage
+      if (cfg.en_scb_tl_err_chk && sram_predict_tl_err(item, DataChannel)) begin
+        `uvm_info(`gfn, "TL data_phase error detected", UVM_HIGH)
+        continue;
+      end
 
       // check packet integrity
       void'(item.is_ok());
