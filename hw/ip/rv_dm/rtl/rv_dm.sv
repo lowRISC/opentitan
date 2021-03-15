@@ -366,4 +366,18 @@ module rv_dm #(
     end
   end
 
+  `ASSERT_KNOWN(TlDODValidKnown_A, tl_d_o.d_valid)
+  `ASSERT_KNOWN(TlDOAReadyKnown_A, tl_d_o.a_ready)
+
+  `ASSERT_KNOWN(TlHOAValidKnown_A, tl_h_o.a_valid)
+  `ASSERT_KNOWN(TlHODReadyKnown_A, tl_h_o.d_ready)
+
+  `ASSERT_KNOWN(NdmresetOKnown_A, ndmreset_o)
+  `ASSERT_KNOWN(DmactiveOKnown_A, dmactive_o)
+  `ASSERT_KNOWN(DebugReqOKnown_A, debug_req_o)
+
+  // JTAG TDO is driven by an inverted TCK in dmi_jtag_tap.sv
+  `ASSERT_KNOWN(JtagRspOTdoKnown_A, jtag_rsp_o.tdo, !jtag_req_i.tck, !jtag_req_i.trst_n)
+  `ASSERT_KNOWN(JtagRspOTdoOeKnown_A, jtag_rsp_o.tdo_oe, !jtag_req_i.tck, !jtag_req_i.trst_n)
+
 endmodule
