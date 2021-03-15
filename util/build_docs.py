@@ -93,7 +93,9 @@ config = {
     "dashboard_definitions": {
         "comportable": [
             "hw/ip",
-            "hw/top_earlgrey/ip/sensor_ctrl"
+        ],
+        "top_earlgrey": [
+            "hw/top_earlgrey/ip",
         ],
     },
 
