@@ -16,24 +16,6 @@
 
 #include "sv_scoped.h"
 
-// DPI Exports
-extern "C" {
-
-/**
- * Write |file| to a memory
- *
- * @param file path to a SystemVerilog $readmemh()-compatible file (VMEM file)
- */
-extern void simutil_memload(const char *file);
-
-/**
- * Write a 32 bit word |val| to memory at index |index|
- *
- * @return 1 if successful, 0 otherwise
- */
-extern int simutil_set_mem(int index, const svBitVecVal *val);
-}
-
 namespace {
 // Convenience class for runtime errors when loading an ELF file
 class ElfError : public std::exception {
@@ -234,73 +216,6 @@ static std::vector<uint8_t> FlattenElfFile(const std::string &filepath) {
   return ret.GetFlat();
 }
 
-// Write a "segment" of data to the given memory area.
-static void WriteSegment(const MemArea &m, uint32_t offset,
-                         const std::vector<uint8_t> &data) {
-  assert(m.width_byte <= 32);
-  assert(m.addr_loc.size == 0 || offset + data.size() <= m.addr_loc.size);
-  assert((offset % m.width_byte) == 0);
-
-  // If this fails to set scope, it will throw an error which should
-  // be caught at this function's callsite.
-  SVScoped scoped(m.location.data());
-
-  // This "mini buffer" is used to transfer each write to SystemVerilog.
-  // `simutil_set_mem` takes a fixed 312 bit vector but it will only use the
-  // bits required for the RAM width. For example for a 32-bit wide RAM only
-  // elements 3 - 0 of `minibuf` will be written to memory. The simulator may
-  // still read bits from minibuf it does not use so we must use a fixed
-  // allocation of the full bit vector size to avoid out of bounds access.
-  uint8_t minibuf[39];
-  memset(minibuf, 0, sizeof minibuf);
-  assert(m.width_byte <= sizeof minibuf);
-
-  uint32_t all_words = (data.size() + m.width_byte - 1) / m.width_byte;
-  uint32_t full_data_words = data.size() / m.width_byte;
-  uint32_t part_data_word_len = data.size() % m.width_byte;
-  bool has_part_data_word = part_data_word_len != 0;
-
-  uint32_t word_offset = offset / m.width_byte;
-
-  // Copy the full data words
-  for (uint32_t i = 0; i < full_data_words; ++i) {
-    uint32_t dst_word = word_offset + i;
-    uint32_t src_byte = i * m.width_byte;
-    memcpy(minibuf, &data[src_byte], m.width_byte);
-    if (!simutil_set_mem(dst_word, (svBitVecVal *)minibuf)) {
-      std::ostringstream oss;
-      oss << "Could not set `" << m.name << "' memory at byte offset 0x"
-          << std::hex << dst_word * m.width_byte << ".";
-      throw std::runtime_error(oss.str());
-    }
-  }
-
-  // Copy any partial data, zeroing minibuf first to ensure that the latter
-  // bytes in the word are zero.
-  if (has_part_data_word) {
-    memset(minibuf, 0, sizeof minibuf);
-    uint32_t dst_word = word_offset + full_data_words;
-    uint32_t src_byte = full_data_words * m.width_byte;
-    memcpy(minibuf, &data[src_byte], part_data_word_len);
-    if (!simutil_set_mem(dst_word, (svBitVecVal *)minibuf)) {
-      std::ostringstream oss;
-      oss << "Could not set `" << m.name << "' memory at byte offset 0x"
-          << std::hex << dst_word * m.width_byte << " (partial data word).";
-      throw std::runtime_error(oss.str());
-    }
-  }
-}
-
-static void WriteElfToMem(const MemArea &m, const std::string &filepath) {
-  WriteSegment(m, 0, FlattenElfFile(filepath));
-}
-
-static void WriteVmemToMem(const MemArea &m, const std::string &filepath) {
-  SVScoped scoped(m.location.data());
-  // TODO: Add error handling.
-  simutil_memload(filepath.data());
-}
-
 // Merge seg0 and seg1, overwriting any overlapping data in seg0 with
 // that from seg1. rng0/rng1 is the base and top address of seg0/seg1,
 // respectively.
@@ -396,66 +311,45 @@ std::vector<uint8_t> StagedMem::GetFlat() const {
   return ret;
 }
 
-bool DpiMemUtil::RegisterMemoryArea(const std::string name,
-                                    const std::string location) {
-  // Default to 32bit width and no address
-  return RegisterMemoryArea(name, location, 32, nullptr);
-}
-
-bool DpiMemUtil::RegisterMemoryArea(const std::string name,
-                                    const std::string location,
-                                    size_t width_bit,
-                                    const MemAreaLoc *addr_loc) {
-  assert((width_bit <= 256) &&
-         "TODO: Memory loading only supported up to 256 bits.");
-  assert(width_bit % 8 == 0);
-
-  // First, create and register the memory by name
-  MemArea mem = {.name = name,
-                 .location = location,
-                 .width_byte = (uint32_t)width_bit / 8,
-                 .addr_loc = {.base = 0, .size = 0}};
-  auto ret = name_to_mem_.emplace(name, mem);
-  if (ret.second == false) {
-    std::cerr << "ERROR: Can not register \"" << name << "\" at: \"" << location
-              << "\" (Previously defined at: \"" << ret.first->second.location
-              << "\")" << std::endl;
-    return false;
+void DpiMemUtil::RegisterMemoryArea(const std::string &name, uint32_t base,
+                                    std::unique_ptr<MemArea> &&mem_area) {
+  // Check that we don't overflow the address space.
+  uint32_t size = mem_area->GetSizeBytes();
+  uint32_t addr_top = base + (size - 1);
+  if (addr_top < base) {
+    std::ostringstream oss;
+    oss << "Cannot register '" << name << "' at at 0x" << std::hex << base
+        << " because it has size 0x" << size
+        << " and the top would overflow the top of the address space.";
+    throw std::runtime_error(oss.str());
   }
 
-  MemArea *stored_mem_area = &ret.first->second;
-
-  // If we have no address information, there's nothing more to do. However, if
-  // we do have address information, we should add an entry to addr_to_mem_.
-  if (!addr_loc) {
-    return true;
+  size_t new_idx = mem_areas_.size();
+  auto pr = name_to_mem_.emplace(name, new_idx);
+  const MemArea &stored = *mem_areas_[pr.first->second];
+  if (!pr.second) {
+    std::ostringstream oss;
+    oss << "Cannot register '" << name << "' at: '" << mem_area->GetScope()
+        << "' (Previously defined at: '" << stored.GetScope() << "')"
+        << std::endl;
+    throw std::runtime_error(oss.str());
   }
 
-  // Check that the size of the new area is positive, and that we don't overflow
-  // the address space.
-  if (addr_loc->size == 0) {
-    std::cerr << "ERROR: Can not register '" << name
-              << "' because it has zero size.\n";
-    return false;
-  }
-  uint32_t addr_top = addr_loc->base + (addr_loc->size - 1);
-  if (addr_top < addr_loc->base) {
-    std::cerr << "ERROR: Can not register '" << name
-              << "' because it overflows the top of the address space.\n";
-    return false;
-  }
-
-  auto clash = addr_to_mem_.EmplaceDisjoint(addr_loc->base, addr_top,
-                                            std::move(stored_mem_area));
+  auto clash = addr_to_mem_.EmplaceDisjoint(base, addr_top, std::move(new_idx));
   if (clash) {
     assert(*clash);
-    std::cerr << "ERROR: Can not register '" << name
-              << "' because its address range overlaps the existing area `"
-              << (*clash)->name << "'.\n";
-    return false;
+    // Remove the entry we added to name_to_mem_ above
+    name_to_mem_.erase(pr.first);
+
+    std::ostringstream oss;
+    oss << "Cannot register '" << name << "' at 0x" << std::hex << base
+        << " because its address range overlaps an existing area.";
+    throw std::runtime_error(oss.str());
   }
-  stored_mem_area->addr_loc = *addr_loc;
-  return true;
+
+  mem_areas_.emplace_back(std::move(mem_area));
+  base_addrs_.push_back(base);
+  names_.push_back(name);
 }
 
 MemImageType DpiMemUtil::GetMemImageType(const std::string &path,
@@ -466,16 +360,14 @@ MemImageType DpiMemUtil::GetMemImageType(const std::string &path,
 void DpiMemUtil::PrintMemRegions() const {
   std::cout << "Registered memory regions:" << std::endl;
   for (const auto &pr : name_to_mem_) {
-    const MemArea &m = pr.second;
-    std::cout << "\t'" << m.name << "' (" << m.width_byte * 8
-              << "bits) at location: '" << m.location << "'";
-    if (m.addr_loc.size) {
-      uint32_t low = m.addr_loc.base;
-      uint32_t high = m.addr_loc.base + m.addr_loc.size - 1;
-      std::cout << " (LMA range [0x" << std::hex << low << ", 0x" << high
-                << "])" << std::dec;
-    }
-    std::cout << std::endl;
+    const MemArea &mem = *mem_areas_[pr.second];
+    uint32_t base = base_addrs_[pr.second];
+    uint32_t top = base + mem.GetSizeBytes() - 1;
+
+    std::cout << "\t'" << pr.first << "' (" << mem.GetWidth()
+              << "bits) at location: '" << mem.GetScope() << "'"
+              << " (LMA range [0x" << std::hex << base << ", 0x" << top << "])"
+              << std::dec << std::endl;
   }
 }
 
@@ -503,15 +395,15 @@ void DpiMemUtil::LoadFileToNamedMem(bool verbose, const std::string &name,
               << name << "'." << std::endl;
   }
 
-  const MemArea &m = it->second;
+  const MemArea &m = *mem_areas_[it->second];
 
   try {
     switch (type) {
       case kMemImageElf:
-        WriteElfToMem(m, filepath);
+        m.Write(0, FlattenElfFile(filepath));
         break;
       case kMemImageVmem:
-        WriteVmemToMem(m, filepath);
+        m.LoadVmem(filepath);
         break;
       default:
         assert(0);
@@ -519,7 +411,7 @@ void DpiMemUtil::LoadFileToNamedMem(bool verbose, const std::string &name,
   } catch (const SVScoped::Error &err) {
     std::ostringstream oss;
     oss << "No memory found at `" << err.scope_name_
-        << "' (the scope associated with region `" << m.name << "').";
+        << "' (the scope associated with region `" << name << "').";
     throw std::runtime_error(oss.str());
   }
 }
@@ -535,19 +427,23 @@ void DpiMemUtil::LoadElfToMemories(bool verbose, const std::string &filepath) {
     auto mem_area_it = name_to_mem_.find(mem_name);
     assert(mem_area_it != name_to_mem_.end());
 
-    const MemArea &mem_area = mem_area_it->second;
+    const MemArea &mem_area = *mem_areas_[mem_area_it->second];
 
     for (const auto seg_pr : staged_mem.GetSegs()) {
       const AddrRange<uint32_t> &seg_rng = seg_pr.first;
       const std::vector<uint8_t> &seg_data = seg_pr.second;
+
+      assert(seg_rng.lo % mem_area.GetWidthByte() == 0);
+      uint32_t lo_word = seg_rng.lo / mem_area.GetWidthByte();
+
       try {
-        WriteSegment(mem_area, seg_rng.lo, seg_data);
+        mem_area.Write(lo_word, seg_data);
       } catch (const SVScoped::Error &err) {
         std::ostringstream oss;
         oss << "No memory found at `" << err.scope_name_
-            << "' (the scope associated with region `" << mem_area.name
+            << "' (the scope associated with region `" << mem_name
             << "', used by a segment that starts at LMA 0x" << std::hex
-            << mem_area.addr_loc.base + seg_rng.lo << ").";
+            << base_addrs_[mem_area_it->second] + seg_rng.lo << ").";
         throw std::runtime_error(oss.str());
       }
     }
@@ -575,18 +471,22 @@ void DpiMemUtil::StageElf(bool verbose, const std::string &path) {
     if (phdr.p_memsz == 0)
       continue;
 
-    const MemArea &mem_area =
+    size_t mem_area_idx =
         GetRegionForSegment(path, i, phdr.p_paddr, phdr.p_memsz);
 
+    const MemArea &mem_area = *mem_areas_[mem_area_idx];
+    uint32_t mem_area_base = base_addrs_[mem_area_idx];
+    const std::string &name = names_[mem_area_idx];
+
     // Check that the segment is aligned correctly for the memory
-    uint32_t local_base = phdr.p_paddr - mem_area.addr_loc.base;
-    if (local_base % mem_area.width_byte) {
+    uint32_t local_base = phdr.p_paddr - mem_area_base;
+    if (local_base % mem_area.GetWidthByte()) {
       std::ostringstream oss;
       oss << "Segment " << i << " has LMA 0x" << std::hex << phdr.p_paddr
           << ", which starts at offset 0x" << local_base
-          << " in the memory region `" << mem_area.name
+          << " in the memory region `" << name
           << "'. This offset is not aligned to the region's word width of "
-          << std::dec << 8 * mem_area.width_byte << " bits.";
+          << std::dec << mem_area.GetWidth() << " bits.";
       throw ElfError(path, oss.str());
     }
 
@@ -605,12 +505,12 @@ void DpiMemUtil::StageElf(bool verbose, const std::string &path) {
 
     if (verbose) {
       std::cout << "Loading segment " << i << " from ELF file `" << path
-                << "' into memory `" << mem_area.name << "'." << std::endl;
+                << "' into memory `" << name << "'." << std::endl;
     }
 
     // Get the StagedMem object associated with this memory area. If
     // there isn't one, make a new empty one.
-    StagedMem &staged_mem = staging_area_[mem_area.name];
+    StagedMem &staged_mem = staging_area_[name];
 
     const char *seg_data = file_data + phdr.p_offset;
     std::vector<uint8_t> vec(phdr.p_memsz, 0);
@@ -625,9 +525,8 @@ const StagedMem &DpiMemUtil::GetMemoryData(const std::string &mem_name) const {
   return (it == staging_area_.end()) ? empty_ : it->second;
 }
 
-const MemArea &DpiMemUtil::GetRegionForSegment(const std::string &path,
-                                               int seg_idx, uint32_t lma,
-                                               uint32_t mem_sz) const {
+size_t DpiMemUtil::GetRegionForSegment(const std::string &path, int seg_idx,
+                                       uint32_t lma, uint32_t mem_sz) const {
   assert(mem_sz > 0);
 
   auto mem_area_it = addr_to_mem_.find(lma);
@@ -638,9 +537,12 @@ const MemArea &DpiMemUtil::GetRegionForSegment(const std::string &path,
         << ").";
     throw ElfError(path, oss.str());
   }
-  const MemArea *mem_area = mem_area_it->second;
-  assert(mem_area);
-  assert(mem_area->addr_loc.base <= lma);
+  size_t mem_area_idx = mem_area_it->second;
+
+  const MemArea &mem_area = *mem_areas_[mem_area_idx];
+  uint32_t base_addr = base_addrs_[mem_area_idx];
+
+  assert(base_addr <= lma);
 
   uint32_t lma_top = lma + (mem_sz - 1);
   if (lma_top < lma) {
@@ -649,19 +551,19 @@ const MemArea &DpiMemUtil::GetRegionForSegment(const std::string &path,
     throw ElfError(path, oss.str());
   }
 
-  uint32_t local_base = lma - mem_area->addr_loc.base;
-  uint32_t local_top = lma_top - mem_area->addr_loc.base;
+  uint32_t local_base = lma - base_addr;
+  uint32_t local_top = lma_top - base_addr;
 
-  if (mem_area->addr_loc.size <= local_top) {
+  if (mem_area.GetSizeBytes() <= local_top) {
     std::ostringstream oss;
     oss << "Segment " << seg_idx << " has size 0x" << std::hex << mem_sz
         << " bytes. Its LMA of 0x" << lma << " is at offset 0x" << local_base
-        << " in the memory region `" << mem_area->name
+        << " in the memory region `" << names_[mem_area_idx]
         << "', so the segment finishes at offset 0x" << local_top
-        << ", but the memory region is only 0x" << mem_area->addr_loc.size
+        << ", but the memory region is only 0x" << mem_area.GetSizeBytes()
         << " bytes long.";
     throw ElfError(path, oss.str());
   }
 
-  return *mem_area;
+  return mem_area_it->second;
 }

@@ -11,19 +11,13 @@
 #include <stdexcept>
 
 OtbnMemUtil::OtbnMemUtil(const std::string &top_scope) {
-  MemAreaLoc imem_loc = {.base = 0x4000, .size = 4096};
-  std::string imem_scope =
-      top_scope + ".u_imem.u_mem.gen_generic.u_impl_generic";
-  if (!RegisterMemoryArea("imem", imem_scope, 32, &imem_loc)) {
-    throw std::runtime_error("Failed to register IMEM OTBN memory area.");
-  }
+  std::unique_ptr<MemArea> imem(new MemArea(
+      top_scope + ".u_imem.u_mem.gen_generic.u_impl_generic", 4096 / 4, 4));
+  std::unique_ptr<MemArea> dmem(new MemArea(
+      top_scope + ".u_dmem.u_mem.gen_generic.u_impl_generic", 4096 / 32, 32));
 
-  MemAreaLoc dmem_loc = {.base = 0x8000, .size = 4096};
-  std::string dmem_scope =
-      top_scope + ".u_dmem.u_mem.gen_generic.u_impl_generic";
-  if (!RegisterMemoryArea("dmem", dmem_scope, 256, &dmem_loc)) {
-    throw std::runtime_error("Failed to register DMEM OTBN memory area.");
-  }
+  RegisterMemoryArea("imem", 0x4000, std::move(imem));
+  RegisterMemoryArea("dmem", 0x8000, std::move(dmem));
 }
 
 void OtbnMemUtil::LoadElf(const std::string &elf_path) {
