@@ -142,6 +142,7 @@ static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
  *
  * @param otbn_ctx             The OTBN context object.
  * @param msg                  The message to verify (32B).
+ * @param signature_r          The signature component r (the proof) (32B).
  * @param signature_s          The signature component s (the proof) (32B).
  * @param public_key_x         The public key x-coordinate (32B).
  * @param public_key_y         The public key y-coordinate (32B).
@@ -149,6 +150,7 @@ static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
  *                             pre-allocated 32B buffer.
  */
 static void p256_ecdsa_verify(otbn_t *otbn_ctx, const uint8_t *msg,
+                              const uint8_t *signature_r,
                               const uint8_t *signature_s,
                               const uint8_t *public_key_x,
                               const uint8_t *public_key_y,
@@ -158,6 +160,8 @@ static void p256_ecdsa_verify(otbn_t *otbn_ctx, const uint8_t *msg,
   // Write input arguments.
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, msg, kOtbnVarMsg) ==
         kOtbnOk);
+  CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, signature_r,
+                               kOtbnVarR) == kOtbnOk);
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, signature_s,
                                kOtbnVarS) == kOtbnOk);
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, public_key_x,
@@ -241,19 +245,28 @@ static void test_ecdsa_p256_roundtrip(void) {
   check_data("signature_r", signature_r, kExpectedSignatureR, 32);
   check_data("signature_s", signature_s, kExpectedSignatureS, 32);
 
+  // Clear OTBN memory and reload app
+  LOG_INFO("Clearing OTBN memory and reloading app");
+  CHECK(otbn_zero_data_memory(&otbn_ctx) == kOtbnOk);
+  CHECK(otbn_load_app(&otbn_ctx, kOtbnAppP256Ecdsa) == kOtbnOk);
+
   // Verify
   uint8_t signature_r_out[32] = {0};
 
   LOG_INFO("Verifying");
   uint64_t t_start_verify = profile_start();
-  p256_ecdsa_verify(&otbn_ctx, kIn, signature_s, kPublicKeyQx, kPublicKeyQy,
-                    signature_r_out);
+  p256_ecdsa_verify(&otbn_ctx, kIn, signature_r, signature_s, kPublicKeyQx,
+                    kPublicKeyQy, signature_r_out);
 
   // Include the r =? r' comparison in the profiling as this is something
   // either OTBN or the host CPU needs to do as part of the signature
   // verification.
   check_data("signature_r_out", signature_r_out, signature_r, 32);
   profile_end(t_start_verify, "Verify");
+
+  // Clear OTBN memory
+  LOG_INFO("Clearing OTBN memory");
+  CHECK(otbn_zero_data_memory(&otbn_ctx) == kOtbnOk);
 }
 
 bool test_main() {
