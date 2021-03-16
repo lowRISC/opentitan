@@ -21,9 +21,8 @@
     {
       name: firmware
       desc: '''
-            Verify regwen bit enables/disables write access to control registers.
             Verify SW_CMD_REQ/SW_CMD_STS registers/bits behave as predicted.
-            Verify RESEED/GENERATE software cmds work with/without additional data.
+            Verify RESEED/GENERATE software cmds work with 0 and 12 32-bit words of additional data.
             Verify cmd_fifo_reset bit causes fifos to reset.
             Verify boot_req_dis bit disables boot_req mode.
             Verify registers at End-Of-Test.
@@ -34,7 +33,8 @@
     {
       name: csrng_cmd
       desc: '''
-            Verify endpoint agent reqs generate csrng commands as predicted.
+            Verify endpoint agent reqs generate csrng commands for both fifo full/empty conditions.
+            Verify when no/some/all endpoints requesting (test arbiter).
             Verify auto-request mode (RESEED_CMD/GENERATE_CMD registers) behaves as predicted.
             Verify max_num_reqs_between_reseeds in auto-generate mode.
             Verify boot-time request mode behaves as predicted.
