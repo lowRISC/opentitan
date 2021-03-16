@@ -42,7 +42,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
   //
   // Will trigger a request to the KDI push_pull agent.
   virtual task req_scr_key();
-    csr_wr(.csr(ral.ctrl), .value(1'b1));
+    csr_wr(.ptr(ral.ctrl), .value(1'b1));
   endtask
 
   // Task to perform a single SRAM read at the specified location

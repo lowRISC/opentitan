@@ -148,7 +148,7 @@ class rv_timer_base_vseq extends cip_base_vseq #(
 
     if ($urandom_range(0, 1)) begin
       wr_value = 1 << timer;
-      csr_wr(.csr(intr_state_rg), .value(wr_value));
+      csr_wr(.ptr(intr_state_rg), .value(wr_value));
     end else begin
       wr_value = $urandom();
       set_compare_val(hart, timer, wr_value);

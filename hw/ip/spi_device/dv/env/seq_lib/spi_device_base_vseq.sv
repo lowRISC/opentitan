@@ -237,7 +237,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
 
     // update txf_ptr.wptr
     tx_wptr = get_csr_val_with_updated_field(ral.txf_ptr.wptr, ral.txf_ptr.get(), tx_wptr);
-    csr_wr(.csr(ral.txf_ptr), .value(tx_wptr));
+    csr_wr(.ptr(ral.txf_ptr), .value(tx_wptr));
   endtask
 
   // read spi host data received from the host
@@ -267,7 +267,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
     end
 
     // update rxf_ptr.rptr
-    csr_wr(.csr(ral.rxf_ptr), .value(rx_rptr));
+    csr_wr(.ptr(ral.rxf_ptr), .value(rx_rptr));
   endtask
 
   virtual task read_tx_avail_bytes(sram_avail_type_e avail_type, ref uint avail_bytes);

@@ -119,7 +119,7 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
           csr_wr_value[pin] = gpio_if_pins_o_val[pin];
         end
       end
-      csr_wr(.csr(ral.direct_out), .value(csr_wr_value));
+      csr_wr(.ptr(ral.direct_out), .value(csr_wr_value));
       // Update value of data_out
       data_out = csr_wr_value;
       `uvm_info(`gfn, $sformatf("data_out updated to value %0h", data_out), UVM_HIGH)
@@ -142,7 +142,7 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
       end
       // updated csr_wr_value
       csr_wr_value = {mask, data};
-      csr_wr(.csr(ral.masked_out_lower), .value(csr_wr_value));
+      csr_wr(.ptr(ral.masked_out_lower), .value(csr_wr_value));
       // Update data_out value
       for (uint pin = 0; pin < ral.masked_out_lower.mask.get_n_bits(); pin++) begin
         if (mask[pin] == 1'b1) begin
@@ -171,7 +171,7 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
       end
       // updated csr_wr_value
       csr_wr_value = {mask, data};
-      csr_wr(.csr(ral.masked_out_upper), .value(csr_wr_value));
+      csr_wr(.ptr(ral.masked_out_upper), .value(csr_wr_value));
       // Update value of data_out
       for (uint pin = 0; pin < ral.masked_out_upper.mask.get_n_bits(); pin++) begin
         if (mask[pin] == 1'b1) begin
@@ -191,7 +191,7 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
           csr_wr_value[pin] = 1'b0;
         end
       end
-      csr_wr(.csr(ral.direct_oe), .value(csr_wr_value));
+      csr_wr(.ptr(ral.direct_oe), .value(csr_wr_value));
       // Update data_oe value
       data_oe = csr_wr_value;
       `uvm_info(`gfn, $sformatf("data_oe updated to value %0h", data_oe), UVM_HIGH)
@@ -214,7 +214,7 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
       end
       // updated csr_wr_value
       csr_wr_value = {mask, data};
-      csr_wr(.csr(ral.masked_oe_lower), .value(csr_wr_value));
+      csr_wr(.ptr(ral.masked_oe_lower), .value(csr_wr_value));
       // Update data_oe value
       for (uint pin = 0; pin < ral.masked_oe_lower.mask.get_n_bits(); pin++) begin
         if (mask[pin] == 1'b1) begin
@@ -242,7 +242,7 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
       end
       // updated csr_wr_value
       csr_wr_value = {mask, data};
-      csr_wr(.csr(ral.masked_oe_upper), .value(csr_wr_value));
+      csr_wr(.ptr(ral.masked_oe_upper), .value(csr_wr_value));
       // Update data_oe value
       for (uint pin = 0; pin < ral.masked_oe_upper.mask.get_n_bits(); pin++) begin
         if (mask[pin] == 1'b1) begin

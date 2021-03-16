@@ -288,7 +288,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     csr_rd_check(.ptr(csr_intr_state), .compare_value(exp_intr_state), .compare_mask(interrupts));
 
     if (check_set && |(interrupts & clear)) begin
-      csr_wr(.csr(csr_intr_state), .value(interrupts & clear));
+      csr_wr(.ptr(csr_intr_state), .value(interrupts & clear));
     end
   endtask
 
@@ -335,7 +335,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         uvm_reg_data_t data = $urandom;
         `uvm_info(`gfn, $sformatf("Write intr CSR %s: 0x%0h", all_intr_csrs[i].get_name(), data),
                   UVM_MEDIUM)
-        csr_wr(.csr(all_intr_csrs[i]), .value(data));
+        csr_wr(.ptr(all_intr_csrs[i]), .value(data));
       end
 
       // Read all intr related csr and check interrupt pins
@@ -373,7 +373,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       csr_rd(.ptr(intr_state_csrs[i]), .value(data));
       if (data != 0) begin
         `uvm_info(`gtn, $sformatf("Clearing %0s", intr_state_csrs[i].get_name()), UVM_HIGH)
-        csr_wr(.csr(intr_state_csrs[i]), .value(data));
+        csr_wr(.ptr(intr_state_csrs[i]), .value(data));
         csr_rd(.ptr(intr_state_csrs[i]), .value(data));
         if (!cfg.under_reset) `DV_CHECK_EQ(data, 0)
         else break;
@@ -391,7 +391,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
       repeat ($urandom_range(num_alerts, num_alerts * 10)) begin
         bit [BUS_DW-1:0] alert_req = $urandom_range(0, (1'b1 << num_alerts) - 1);
-        csr_wr(.csr(alert_test_csr), .value(alert_req));
+        csr_wr(.ptr(alert_test_csr), .value(alert_req));
         `uvm_info(`gfn, $sformatf("Write alert_test with val %0h", alert_req), UVM_HIGH)
         fork
           begin
@@ -410,7 +410,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
                     // write alert_test during alert handshake will be ignored
                     if ($urandom_range(1, 10) == 10) begin
-                      csr_wr(.csr(alert_test_csr), .value(1'b1 << index));
+                      csr_wr(.ptr(alert_test_csr), .value(1'b1 << index));
                       `uvm_info(`gfn, "Write alert_test again during alert handshake", UVM_HIGH)
                     end
 
@@ -430,7 +430,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                       `uvm_info(`gfn,
                                 $sformatf("Write alert_test with val %0h during alert_handshake",
                                 1'b1 << index), UVM_HIGH)
-                      csr_wr(.csr(alert_test_csr), .value(1'b1 << index));
+                      csr_wr(.ptr(alert_test_csr), .value(1'b1 << index));
                       `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
                                         cfg.clk_rst_vif.wait_clks(1);,
                                         cfg.clk_rst_vif.wait_clks(2);,
@@ -616,7 +616,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       begin
         fork
           begin
-            csr_wr(.csr(csr), .value(wdata), .en_shadow_wr(0), .predict(1));
+            csr_wr(.ptr(csr), .value(wdata), .en_shadow_wr(0), .predict(1));
           end
           begin
             string alert_name = csr.get_update_err_alert_name();
@@ -703,7 +703,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
             if ($urandom_range(0, 1)) wdata = test_csrs[i].get_staged_shadow_val();
           end
           if (test_csrs[i].get_is_shadowed()) shadow_reg_wr(test_csrs[i], wdata, alert_triggered);
-          else csr_wr(.csr(test_csrs[i]), .value(wdata), .en_shadow_wr(0), .predict(1));
+          else csr_wr(.ptr(test_csrs[i]), .value(wdata), .en_shadow_wr(0), .predict(1));
 
           // check shadow_reg update error
           if (test_csrs[i].get_shadow_update_err()) begin
@@ -735,7 +735,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               csr_peek(.ptr(shadowed_csrs[index]), .value(origin_val), .kind(kind));
               rand_val = gen_storage_err_val(shadowed_csrs[index], origin_val);
 
-              csr_poke(.csr(shadowed_csrs[index]), .value(rand_val), .kind(kind), .predict(1));
+              csr_poke(.ptr(shadowed_csrs[index]), .value(rand_val), .kind(kind), .predict(1));
               `uvm_info(`gfn, $sformatf("backdoor write %0s with value %0h", kind.name, rand_val),
                         UVM_HIGH);
 
@@ -753,7 +753,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                   // Wait two clock cycles then backdoor write back original value.
                   // This won't stop fatal alert from firing.
                   cfg.clk_rst_vif.wait_clks(2);
-                  csr_poke(.csr(shadowed_csrs[index]), .value(origin_val), .kind(kind), .predict(1));
+                  csr_poke(.ptr(shadowed_csrs[index]), .value(origin_val), .kind(kind), .predict(1));
                 end else begin
                   `DV_CHECK_EQ(has_storage_error, 1,
                                "dv_base_reg did not predict shadow storage error");
@@ -763,7 +763,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                                          shadowed_csrs[index].get_name()));
 
                   // backdoor write back original value to avoid alert keep firing
-                  csr_poke(.csr(shadowed_csrs[index]), .value(origin_val), .kind(kind), .predict(1));
+                  csr_poke(.ptr(shadowed_csrs[index]), .value(origin_val), .kind(kind), .predict(1));
                   `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
                                $sformatf("timeout for alert:%0s", alert_name))
 

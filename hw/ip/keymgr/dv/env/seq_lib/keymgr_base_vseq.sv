@@ -175,7 +175,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
     // check for chech in scb and clear err_code
     csr_rd(.ptr(ral.err_code), .value(rd_val));
     if (rd_val != 0) begin
-      csr_wr(.csr(ral.err_code), .value(rd_val));
+      csr_wr(.ptr(ral.err_code), .value(rd_val));
     end
   endtask : wait_op_done
 

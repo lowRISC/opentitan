@@ -200,7 +200,7 @@ class csr_write_seq extends csr_base_seq;
                                            backdoor dist {0 :/ 7, 1 :/ 3};)
       end
 
-      csr_wr(.csr(test_csrs[i]), .value(wdata), .blocking(0), .backdoor(backdoor));
+      csr_wr(.ptr(test_csrs[i]), .value(wdata), .blocking(0), .backdoor(backdoor));
     end
   endtask
 
@@ -243,7 +243,7 @@ class csr_rw_seq extends csr_base_seq;
       // might pick up stale mirrored value
       // the pre-predict also needs to happen after the register is being written, to make sure the
       // register is getting the updated access information.
-      csr_wr(.csr(test_csrs[i]), .value(wdata), .blocking(0), .predict(!external_checker));
+      csr_wr(.ptr(test_csrs[i]), .value(wdata), .blocking(0), .predict(!external_checker));
 
       do_check_csr_or_field_rd(.csr(test_csrs[i]),
                               .blocking(0),
@@ -364,7 +364,7 @@ class csr_bit_bash_seq extends csr_base_seq;
       val = rg.get();
       val[k]  = ~val[k];
       err_msg = $sformatf("Wrote %0s[%0d]: %0b", rg.get_full_name(), k, val[k]);
-      csr_wr(.csr(rg), .value(val), .blocking(1), .predict(!external_checker));
+      csr_wr(.ptr(rg), .value(val), .blocking(1), .predict(!external_checker));
 
       // TODO, outstanding access to same reg isn't supported in uvm_reg. Need to add another seq
       // uvm_reg waits until transaction is completed, before start another read/write in same reg
@@ -407,7 +407,7 @@ class csr_aliasing_seq extends csr_base_seq;
 
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
       wdata &= get_mask_excl_fields(test_csrs[i], CsrExclWrite, CsrAliasingTest, m_csr_excl_item);
-      csr_wr(.csr(test_csrs[i]), .value(wdata), .blocking(0), .predict(!external_checker));
+      csr_wr(.ptr(test_csrs[i]), .value(wdata), .blocking(0), .predict(!external_checker));
 
       all_csrs.shuffle();
       foreach (all_csrs[j]) begin

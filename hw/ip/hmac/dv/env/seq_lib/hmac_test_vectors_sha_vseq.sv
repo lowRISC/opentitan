@@ -62,7 +62,7 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
 
         wait(cfg.intr_vif.pins[HmacDone] === 1'b1);
         csr_rd(.ptr(ral.intr_state), .value(intr_state_val));
-        csr_wr(.csr(ral.intr_state), .value(intr_state_val));
+        csr_wr(.ptr(ral.intr_state), .value(intr_state_val));
         // read digest and compare with the expected result, scb will calculate and check too
         compare_digest(parsed_vectors[j].exp_digest);
       end

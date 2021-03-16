@@ -12,13 +12,13 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
     csr_rd_check(.ptr(ral.entropy_data), .compare_value(1'b0));
 
     // Change entropy rate
-    csr_wr(.csr(ral.rate), .value('h8));
+    csr_wr(.ptr(ral.rate), .value('h8));
 
     // Route to ENTROPY_DATA register
-    csr_wr(.csr(ral.entropy_control), .value(1'b1));
+    csr_wr(.ptr(ral.entropy_control), .value(1'b1));
 
     // Enable entropy_src - lfsr mode
-    csr_wr(.csr(ral.conf), .value(2'b10));
+    csr_wr(.ptr(ral.conf), .value(2'b10));
 
     // Wait for entropy_valid interrupt
     csr_spinwait(.ptr(ral.intr_state.es_entropy_valid), .exp_data(1'b1));
@@ -32,7 +32,7 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
     csr_rd_check(.ptr(ral.intr_state), .compare_value(1'b1));
 
     // Clear entropy_valid interrupt bit
-    csr_wr(.csr(ral.intr_state), .value(1'b1));
+    csr_wr(.ptr(ral.intr_state), .value(1'b1));
 
     // Ensure entropy_valid interrupt bit cleared
     csr_rd_check(.ptr(ral.intr_state), .compare_value(1'b0));

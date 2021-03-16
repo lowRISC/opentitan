@@ -50,12 +50,12 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_ctrl[0]    = 0;                  // set to encryption
     aes_ctrl[6:1]  = aes_pkg::AES_ECB;   // 6'b00_0001
     aes_ctrl[9:7]  = aes_pkg::AES_128;   // set to 128b key
-    csr_wr(.csr(ral.ctrl_shadowed), .value(aes_ctrl), .en_shadow_wr(1'b1), .blocking(1));
+    csr_wr(.ptr(ral.ctrl_shadowed), .value(aes_ctrl), .en_shadow_wr(1'b1), .blocking(1));
   endtask // aes_init
 
 
   virtual task trigger();
-      csr_wr(.csr(ral.trigger), .value(32'h00000001));
+      csr_wr(.ptr(ral.trigger), .value(32'h00000001));
   endtask // trigger
 
 
@@ -77,7 +77,7 @@ class aes_base_vseq extends cip_base_vseq #(
   virtual task prng_reseed();
     bit [TL_DW:0] reg_val = '0;
     reg_val[5] = 1'b1;
-    csr_wr(.csr(ral.trigger), .value(reg_val));
+    csr_wr(.ptr(ral.trigger), .value(reg_val));
   endtask // prng_reseed
 
 
@@ -116,31 +116,31 @@ class aes_base_vseq extends cip_base_vseq #(
   virtual task write_key(bit [7:0][31:0] key [2], bit do_b2b);
     `uvm_info(`gfn, $sformatf("\n\t --- back to back transactions : %b", do_b2b), UVM_MEDIUM)
     // Share 0 (the masked key share = key ^ mask)
-    csr_wr(.csr(ral.key_share0_0), .value(key[0][0]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.key_share0_1), .value(key[0][1]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.key_share0_2), .value(key[0][2]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.key_share0_3), .value(key[0][3]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.key_share0_4), .value(key[0][4]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.key_share0_5), .value(key[0][5]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.key_share0_6), .value(key[0][6]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.key_share0_7), .value(key[0][7]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share0_0), .value(key[0][0]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share0_1), .value(key[0][1]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share0_2), .value(key[0][2]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share0_3), .value(key[0][3]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share0_4), .value(key[0][4]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share0_5), .value(key[0][5]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share0_6), .value(key[0][6]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share0_7), .value(key[0][7]), .blocking(~do_b2b));
     // Share 1 (the mask share)
-    csr_wr(.csr(ral.key_share1_0), .value(key[1][0]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.key_share1_1), .value(key[1][1]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.key_share1_2), .value(key[1][2]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.key_share1_3), .value(key[1][3]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.key_share1_4), .value(key[1][4]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.key_share1_5), .value(key[1][5]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.key_share1_6), .value(key[1][6]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.key_share1_7), .value(key[1][7]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share1_0), .value(key[1][0]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share1_1), .value(key[1][1]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share1_2), .value(key[1][2]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share1_3), .value(key[1][3]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share1_4), .value(key[1][4]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share1_5), .value(key[1][5]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share1_6), .value(key[1][6]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.key_share1_7), .value(key[1][7]), .blocking(~do_b2b));
   endtask // write_key
 
 
   virtual task write_iv(bit  [3:0][31:0] iv, bit do_b2b);
-    csr_wr(.csr(ral.iv_0), .value(iv[0]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.iv_1), .value(iv[1]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.iv_2), .value(iv[2]), .blocking(~do_b2b));
-    csr_wr(.csr(ral.iv_3), .value(iv[3]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.iv_0), .value(iv[0]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.iv_1), .value(iv[1]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.iv_2), .value(iv[2]), .blocking(~do_b2b));
+    csr_wr(.ptr(ral.iv_3), .value(iv[3]), .blocking(~do_b2b));
   endtask
 
 
@@ -156,10 +156,10 @@ class aes_base_vseq extends cip_base_vseq #(
     write_order.shuffle();
     foreach (write_order[i]) begin
       case (write_order[i])
-        0: csr_wr(.csr(ral.data_in_0), .value(data[0][31:0]), .blocking(~do_b2b));
-        1: csr_wr(.csr(ral.data_in_1), .value(data[1][31:0]), .blocking(~do_b2b));
-        2: csr_wr(.csr(ral.data_in_2), .value(data[2][31:0]), .blocking(~do_b2b));
-        3: csr_wr(.csr(ral.data_in_3), .value(data[3][31:0]), .blocking(~do_b2b));
+        0: csr_wr(.ptr(ral.data_in_0), .value(data[0][31:0]), .blocking(~do_b2b));
+        1: csr_wr(.ptr(ral.data_in_1), .value(data[1][31:0]), .blocking(~do_b2b));
+        2: csr_wr(.ptr(ral.data_in_2), .value(data[2][31:0]), .blocking(~do_b2b));
+        3: csr_wr(.ptr(ral.data_in_3), .value(data[3][31:0]), .blocking(~do_b2b));
       endcase
     end
   endtask
@@ -298,33 +298,33 @@ class aes_base_vseq extends cip_base_vseq #(
       txt = {txt, $sformatf("\n\t ----| \t %s", interleave_queue[i]) };
 
       case (interleave_queue[i])
-        "key_share0_0": csr_wr(.csr(ral.key_share0_0), .value(item.key[0][0]), .blocking(is_blocking));
-        "key_share0_1": csr_wr(.csr(ral.key_share0_1), .value(item.key[0][1]), .blocking(is_blocking));
-        "key_share0_2": csr_wr(.csr(ral.key_share0_2), .value(item.key[0][2]), .blocking(is_blocking));
-        "key_share0_3": csr_wr(.csr(ral.key_share0_3), .value(item.key[0][3]), .blocking(is_blocking));
-        "key_share0_4": csr_wr(.csr(ral.key_share0_4), .value(item.key[0][4]), .blocking(is_blocking));
-        "key_share0_5": csr_wr(.csr(ral.key_share0_5), .value(item.key[0][5]), .blocking(is_blocking));
-        "key_share0_6": csr_wr(.csr(ral.key_share0_6), .value(item.key[0][6]), .blocking(is_blocking));
-        "key_share0_7": csr_wr(.csr(ral.key_share0_7), .value(item.key[0][7]), .blocking(is_blocking));
+        "key_share0_0": csr_wr(.ptr(ral.key_share0_0), .value(item.key[0][0]), .blocking(is_blocking));
+        "key_share0_1": csr_wr(.ptr(ral.key_share0_1), .value(item.key[0][1]), .blocking(is_blocking));
+        "key_share0_2": csr_wr(.ptr(ral.key_share0_2), .value(item.key[0][2]), .blocking(is_blocking));
+        "key_share0_3": csr_wr(.ptr(ral.key_share0_3), .value(item.key[0][3]), .blocking(is_blocking));
+        "key_share0_4": csr_wr(.ptr(ral.key_share0_4), .value(item.key[0][4]), .blocking(is_blocking));
+        "key_share0_5": csr_wr(.ptr(ral.key_share0_5), .value(item.key[0][5]), .blocking(is_blocking));
+        "key_share0_6": csr_wr(.ptr(ral.key_share0_6), .value(item.key[0][6]), .blocking(is_blocking));
+        "key_share0_7": csr_wr(.ptr(ral.key_share0_7), .value(item.key[0][7]), .blocking(is_blocking));
 
-        "key_share1_0": csr_wr(.csr(ral.key_share1_0), .value(item.key[1][0]), .blocking(is_blocking));
-        "key_share1_1": csr_wr(.csr(ral.key_share1_1), .value(item.key[1][1]), .blocking(is_blocking));
-        "key_share1_2": csr_wr(.csr(ral.key_share1_2), .value(item.key[1][2]), .blocking(is_blocking));
-        "key_share1_3": csr_wr(.csr(ral.key_share1_3), .value(item.key[1][3]), .blocking(is_blocking));
-        "key_share1_4": csr_wr(.csr(ral.key_share1_4), .value(item.key[1][4]), .blocking(is_blocking));
-        "key_share1_5": csr_wr(.csr(ral.key_share1_5), .value(item.key[1][5]), .blocking(is_blocking));
-        "key_share1_6": csr_wr(.csr(ral.key_share1_6), .value(item.key[1][6]), .blocking(is_blocking));
-        "key_share1_7": csr_wr(.csr(ral.key_share1_7), .value(item.key[1][7]), .blocking(is_blocking));
+        "key_share1_0": csr_wr(.ptr(ral.key_share1_0), .value(item.key[1][0]), .blocking(is_blocking));
+        "key_share1_1": csr_wr(.ptr(ral.key_share1_1), .value(item.key[1][1]), .blocking(is_blocking));
+        "key_share1_2": csr_wr(.ptr(ral.key_share1_2), .value(item.key[1][2]), .blocking(is_blocking));
+        "key_share1_3": csr_wr(.ptr(ral.key_share1_3), .value(item.key[1][3]), .blocking(is_blocking));
+        "key_share1_4": csr_wr(.ptr(ral.key_share1_4), .value(item.key[1][4]), .blocking(is_blocking));
+        "key_share1_5": csr_wr(.ptr(ral.key_share1_5), .value(item.key[1][5]), .blocking(is_blocking));
+        "key_share1_6": csr_wr(.ptr(ral.key_share1_6), .value(item.key[1][6]), .blocking(is_blocking));
+        "key_share1_7": csr_wr(.ptr(ral.key_share1_7), .value(item.key[1][7]), .blocking(is_blocking));
 
-        "iv_0": csr_wr(.csr(ral.iv_0), .value(item.iv[0]), .blocking(is_blocking));
-        "iv_1": csr_wr(.csr(ral.iv_1), .value(item.iv[1]), .blocking(is_blocking));
-        "iv_2": csr_wr(.csr(ral.iv_2), .value(item.iv[2]), .blocking(is_blocking));
-        "iv_3": csr_wr(.csr(ral.iv_3), .value(item.iv[3]), .blocking(is_blocking));
+        "iv_0": csr_wr(.ptr(ral.iv_0), .value(item.iv[0]), .blocking(is_blocking));
+        "iv_1": csr_wr(.ptr(ral.iv_1), .value(item.iv[1]), .blocking(is_blocking));
+        "iv_2": csr_wr(.ptr(ral.iv_2), .value(item.iv[2]), .blocking(is_blocking));
+        "iv_3": csr_wr(.ptr(ral.iv_3), .value(item.iv[3]), .blocking(is_blocking));
 
-        "data_in_0": csr_wr(.csr(ral.data_in_0), .value(data[0][31:0]), .blocking(is_blocking));
-        "data_in_1": csr_wr(.csr(ral.data_in_1), .value(data[1][31:0]), .blocking(is_blocking));
-        "data_in_2": csr_wr(.csr(ral.data_in_2), .value(data[2][31:0]), .blocking(is_blocking));
-        "data_in_3": csr_wr(.csr(ral.data_in_3), .value(data[3][31:0]), .blocking(is_blocking));
+        "data_in_0": csr_wr(.ptr(ral.data_in_0), .value(data[0][31:0]), .blocking(is_blocking));
+        "data_in_1": csr_wr(.ptr(ral.data_in_1), .value(data[1][31:0]), .blocking(is_blocking));
+        "data_in_2": csr_wr(.ptr(ral.data_in_2), .value(data[2][31:0]), .blocking(is_blocking));
+        "data_in_3": csr_wr(.ptr(ral.data_in_3), .value(data[3][31:0]), .blocking(is_blocking));
 
         "clear_reg": begin
           clear_regs(item.clear_reg);
