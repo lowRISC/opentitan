@@ -17,7 +17,7 @@
     tl_seq.req_abort_pct = $urandom_range(0, 100); \
     `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq, with_c_) \
     csr_utils_pkg::increment_outstanding_access(); \
-    `uvm_send_pri(tl_seq, 1) \
+    `DV_SPINWAIT(`uvm_send_pri(tl_seq, 1), 10_000) \
     csr_utils_pkg::decrement_outstanding_access(); \
   end
 
