@@ -4,10 +4,10 @@
 
 {
     name:               "hmac",
-    design_spec:        "hw/ip/hmac/doc",
-    dv_doc:            "hw/ip/hmac/doc/dv",
-    hw_checklist:       "hw/ip/hmac/doc/checklist",
-    sw_checklist:       "sw/device/lib/dif/dif_hmac",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_hmac",
     revisions: [
       {
         version:            "0.5",

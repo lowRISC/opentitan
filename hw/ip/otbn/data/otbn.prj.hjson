@@ -4,10 +4,10 @@
 
 {
     name:               "otbn",
-    design_spec:        "hw/ip/otbn/doc",
-//    dv_doc:            "hw/ip/otbn/doc/dv",
-    hw_checklist:       "hw/ip/otbn/doc/checklist",
-    sw_checklist:       "sw/device/lib/dif/dif_otbn"
+    design_spec:        "../doc",
+//    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_otbn"
     version:            "0.1",
     life_stage:         "L1",
     design_stage:       "D1",

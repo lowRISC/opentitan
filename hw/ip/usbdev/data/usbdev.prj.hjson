@@ -4,9 +4,9 @@
 
 {
     name:               "usbdev",
-    design_spec:        "hw/ip/usbdev/doc",
-    dv_doc:            "hw/ip/usbdev/doc/dv",
-    sw_checklist:       "sw/device/lib/dif/dif_usbdev",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    sw_checklist:       "/sw/device/lib/dif/dif_usbdev",
     version:            "0.5",
     life_stage:         "L1",
     design_stage:       "D1",

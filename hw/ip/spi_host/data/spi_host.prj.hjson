@@ -4,19 +4,14 @@
 
 {
     name:               "spi_host",
-    design_spec:        "",
-    dv_doc:            "",
-    hw_checklist:       "",
-    sw_checklist:       "",
+    design_spec:        "../doc",
     revisions: [
       {
         version:            "0.5",
         life_stage:         "L0",
         design_stage:       "D0",
-        verification_stage: "",
-        dif_stage:          "",
-        commit_id:          "",
-        notes:              ""
+        verification_stage: "V0",
+        dif_stage:          "S0",
       }
     ]
 }

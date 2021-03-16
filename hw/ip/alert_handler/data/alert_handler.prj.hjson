@@ -4,10 +4,10 @@
 
 {
     name:               "alert_handler",
-    design_spec:        "hw/ip/alert_handler/doc",
-    dv_doc:            "hw/ip/alert_handler/doc/dv",
-    hw_checklist:       "hw/ip/alert_handler/doc/checklist",
-    sw_checklist:       "sw/device/lib/dif/dif_alert_handler"
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_alert_handler"
     version:            "0.5",
     life_stage:         "L1",
     design_stage:       "D1",

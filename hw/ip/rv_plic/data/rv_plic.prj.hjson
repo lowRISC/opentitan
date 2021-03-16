@@ -4,10 +4,10 @@
 
 {
     name:               "rv_plic",
-    design_spec:        "hw/ip/rv_plic/doc",
-    dv_doc:            "hw/ip/rv_plic/doc/dv",
-    hw_checklist:       "hw/ip/rv_plic/doc/checklist",
-    sw_checklist:       "sw/device/lib/dif/dif_plic",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_plic",
     revisions: [
       {
         version:            "0.5",

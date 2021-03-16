@@ -4,9 +4,9 @@
 
 {
     name:               "entropy_src",
-    design_spec:        "hw/ip/entropy_src/doc",
-    dv_doc:            "hw/ip/entropy_src/doc/dv",
-    hw_checklist:       "hw/ip/entropy_src/doc/checklist",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
     version:            "0.5",
     life_stage:         "L1",
     design_stage:       "D1",

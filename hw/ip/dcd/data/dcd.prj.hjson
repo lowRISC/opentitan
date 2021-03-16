@@ -4,9 +4,9 @@
 
 {
     name:               "dcd",
-    design_spec:        "hw/ip/dcd/doc",
-    dv_doc:             "hw/ip/dcd/doc/dv",
-    hw_checklist:       "hw/ip/dcd/doc/checklist",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
     version:            "1.0",
     life_stage:         "L1",
     design_stage:       "D0",

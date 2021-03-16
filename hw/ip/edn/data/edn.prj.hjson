@@ -4,9 +4,9 @@
 
 {
     name:               "edn",
-    design_spec:        "hw/ip/edn/doc",
-    dv_doc:            "hw/ip/edn/doc/dv",
-    hw_checklist:       "hw/ip/edn/doc/checklist",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
     version:            "0.5",
     life_stage:         "L1",
     design_stage:       "D1",

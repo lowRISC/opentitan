@@ -4,10 +4,10 @@
 
 {
     name:               "aon_timer",
-    design_spec:        "hw/ip/aon_timer/doc",
-    dv_doc:             "hw/ip/aon_timer/doc/dv",
-    hw_checklist:       "hw/ip/aon_timer/doc/checklist",
-    sw_checklist:       "sw/device/lib/dif/dif_aon_timer",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_aon_timer",
     version:            "1.0",
     life_stage:         "L1",
     design_stage:       "D1",

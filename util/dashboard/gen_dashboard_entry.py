@@ -10,10 +10,13 @@ import logging as log
 import os.path
 import re
 import sys
+from pathlib import Path
 
 import dashboard.dashboard_validate as dashboard_validate
 import hjson
 import mistletoe as mk
+
+REPO_TOP = Path(__file__).parent.parent.parent.resolve().absolute()
 
 
 def genout(outfile, msg):
@@ -42,21 +45,29 @@ STAGE_STRINGS = {
     'S3': 'Stable',
 }
 
-# TODO: This is relative to the dashboard, which is currently located at
-# hw/_index.md.
-docs_server = "../.."
-
 
 def convert_stage(stagestr):
     return STAGE_STRINGS.get(stagestr, "UNKNOWN")
+
+def get_doc_url(base, url):
+    """ Produce a URL to a document.
+
+    Relative `url`s are relative to `base`, absolute `url`s are relative to the
+    repository root.
+    """
+    assert isinstance(url, str) and len(url) > 0
+    if url[0] == '/':
+        return url
+    else:
+        return '/' + base + '/' + url
 
 
 # Link module name with its design spec doc.
 def get_linked_design_spec(obj):
     result = ""
-    if 'design_spec' in obj.keys():
-        url = docs_server + "/" + html.escape(obj['design_spec'])
-        result = "<span title='Design Spec'><a href='{}'>".format(url)
+    if 'design_spec' in obj:
+        result = "<span title='Design Spec'><a href='{}'>".format(
+            get_doc_url(obj['_ip_desc_hjson_dir'], obj['design_spec']))
         result += "<code>{}</code></a></span>".format(html.escape(obj['name']))
     else:
         result = html.escape(obj['name'])
@@ -66,9 +77,9 @@ def get_linked_design_spec(obj):
 
 # Provide the link to the DV plan.
 def get_linked_dv_plan(obj):
-    if 'dv_doc' in obj.keys():
-        url = docs_server + "/" + html.escape(obj['dv_doc'])
-        return "<span title='DV Document'><a href=\"{}\">DV</a></span>".format(url)
+    if 'dv_doc' in obj:
+        return "<span title='DV Document'><a href=\"{}\">DV</a></span>".format(
+            get_doc_url(obj['_ip_desc_hjson_dir'], obj['dv_doc']))
     else:
         return ""
 
@@ -102,8 +113,8 @@ def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
         url = "https://github.com/lowrisc/opentitan/tree/{}/{}.md{}".format(
             rev['commit_id'], obj['hw_checklist'], in_page_ref)
     elif 'hw_checklist' in obj:
-        url = "{}/{}{}".format(docs_server, html.escape(obj['hw_checklist']),
-                               in_page_ref)
+        url = get_doc_url(obj['_ip_desc_hjson_dir'],
+                          obj['hw_checklist'] + in_page_ref)
     else:
         # There is no checklist available, so point to the template.
         # doc/project/hw_checklist.md.tpl is a symlink to ip_checklist.md.tpl,
@@ -135,8 +146,8 @@ def get_linked_sw_checklist(obj, rev, stage, is_latest_rev=True):
         url = "https://github.com/lowrisc/opentitan/tree/{}/{}.md{}".format(
             rev['commit_id'], obj['sw_checklist'], in_page_ref)
     elif 'sw_checklist' in obj:
-        url = "{}/{}{}".format(docs_server, html.escape(obj['sw_checklist']),
-                               in_page_ref)
+        url = get_doc_url(obj['_ip_desc_hjson_dir'],
+                          obj['sw_checklist'] + in_page_ref)
     else:
         # There is no checklist available, so point to the template.
         url = "https://github.com/lowrisc/opentitan/tree/master/"
@@ -199,6 +210,9 @@ def gen_dashboard_html(hjson_path, outfile):
         log.info("Generated dashboard object for " + str(hjson_path))
     else:
         log.fail("hjson file import failed\n")
+
+    ip_desc_hjson_dir = hjson_path.parent.relative_to(REPO_TOP)
+    obj['_ip_desc_hjson_dir'] = str(ip_desc_hjson_dir)
 
     # If `revisions` field doesn't exist, the tool assumes the Hjson
     # as the previous project format, which has only one version entry.

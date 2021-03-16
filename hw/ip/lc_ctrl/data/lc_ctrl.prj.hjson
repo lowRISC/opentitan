@@ -4,9 +4,9 @@
 
 {
     name:               "lc_ctrl",
-    design_spec:        "hw/ip/lc_ctrl/doc",
-    dv_doc:             "hw/ip/lc_ctrl/doc/dv",
-    hw_checklist:       "hw/ip/lc_ctrl/doc/checklist",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
     version:            "0.1",
     life_stage:         "L1",
     design_stage:       "D1",

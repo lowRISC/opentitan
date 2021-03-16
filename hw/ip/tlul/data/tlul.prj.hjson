@@ -4,9 +4,9 @@
 
 {
     name:               "tlul",
-    design_spec:        "hw/ip/tlul/doc",
-    dv_doc:            "hw/ip/tlul/doc/dv",
-    hw_checklist:       "hw/top_earlgrey/ip/xbar/doc/checklist",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "/hw/top_earlgrey/ip/xbar/doc/checklist",
     revisions: [
       {
         version:            "0.5",
