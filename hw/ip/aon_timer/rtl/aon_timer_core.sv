@@ -94,7 +94,7 @@ module aon_timer_core (
 
   // Prescaler counter
   assign prescale_count_d = wkup_incr ? 12'h000 : (prescale_count_q + 12'h001);
-  assign prescale_en      = lc_cpu_en_i[0] == lc_ctrl_pkg::Off;
+  assign prescale_en      = wkup_enable_q & (lc_cpu_en_i[0] == lc_ctrl_pkg::On);
 
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
     if (!rst_aon_ni) begin
@@ -105,7 +105,7 @@ module aon_timer_core (
   end
 
   // Wakeup timer count
-  assign wkup_incr     = (lc_cpu_en_i[1] == lc_ctrl_pkg::Off) & wkup_enable_q &
+  assign wkup_incr     = (lc_cpu_en_i[1] == lc_ctrl_pkg::On) & wkup_enable_q &
                          (prescale_count_q == wkup_prescaler_q);
   assign wkup_count_d  = wkup_count_reg_wr_i ? wkup_count_wr_data_i :
                                                (wkup_count_q + 32'd1);
@@ -172,7 +172,7 @@ module aon_timer_core (
   assign wdog_bite_thold_o = wdog_bite_thold_q;
 
   // Watchdog timer count
-  assign wdog_incr     = wdog_enable_q & (lc_cpu_en_i[2] == lc_ctrl_pkg::Off) &
+  assign wdog_incr     = wdog_enable_q & (lc_cpu_en_i[2] == lc_ctrl_pkg::On) &
                          ~(sleep_mode_i & wdog_pause_q);
   assign wdog_count_d  = wdog_count_reg_wr_i ? wdog_count_wr_data_i :
                                                (wdog_count_q + 32'd1);
