@@ -7,6 +7,7 @@
 #include <svdpi.h>
 
 #include "dpi_memutil.h"
+#include "ecc32_mem_area.h"
 
 class OtbnMemUtil : public DpiMemUtil {
  public:
@@ -29,7 +30,7 @@ class OtbnMemUtil : public DpiMemUtil {
   }
 
  private:
-  MemArea imem_, dmem_;
+  Ecc32MemArea imem_, dmem_;
 };
 
 // DPI-accessible wrappers

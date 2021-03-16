@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "otbn_memutil.h"
+#include "ecc32_mem_area.h"
 
 #include <cassert>
 #include <cstring>
@@ -21,9 +22,9 @@ static std::string join_scopes(const std::string &a, const std::string &b) {
 
 OtbnMemUtil::OtbnMemUtil(const std::string &top_scope)
     : imem_(join_scopes(top_scope, "u_imem.u_mem.gen_generic.u_impl_generic"),
-            4096 / 4, 4),
+            4096 / 4, 4 / 4),
       dmem_(join_scopes(top_scope, "u_dmem.u_mem.gen_generic.u_impl_generic"),
-            4096 / 32, 32) {
+            4096 / 32, 32 / 4) {
   RegisterMemoryArea("imem", 0x4000, &imem_);
   RegisterMemoryArea("dmem", 0x8000, &dmem_);
 }
