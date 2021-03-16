@@ -18,7 +18,7 @@
 
 `define RAND_WRITE_CLASS_CTRL(i, lock_bit) \
   `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_ctrl, lock.value == lock_bit;) \
-  csr_wr(.csr(ral.class``i``_ctrl), .value(ral.class``i``_ctrl.get()));
+  csr_wr(.ptr(ral.class``i``_ctrl), .value(ral.class``i``_ctrl.get()));
 
 class alert_handler_base_vseq extends cip_base_vseq #(
     .CFG_T               (alert_handler_env_cfg),
@@ -51,16 +51,16 @@ class alert_handler_base_vseq extends cip_base_vseq #(
                                   bit [TL_DW-1:0]                     alert_class = 'h0,
                                   bit [NUM_LOCAL_ALERT-1:0]           loc_alert_en = '1,
                                   bit [TL_DW-1:0]                     loc_alert_class = 'h0);
-    csr_wr(.csr(ral.intr_enable), .value(intr_en));
-    csr_wr(.csr(ral.alert_en), .value(alert_en));
-    csr_wr(.csr(ral.loc_alert_en), .value(loc_alert_en));
-    csr_wr(.csr(ral.loc_alert_class), .value(loc_alert_class));
+    csr_wr(.ptr(ral.intr_enable), .value(intr_en));
+    csr_wr(.ptr(ral.alert_en), .value(alert_en));
+    csr_wr(.ptr(ral.loc_alert_en), .value(loc_alert_en));
+    csr_wr(.ptr(ral.loc_alert_class), .value(loc_alert_class));
     for (int i = 0; i < $ceil(NUM_ALERTS * 2 / TL_DW); i++) begin
       string alert_name = (NUM_ALERTS <= TL_DW / 2) ? "alert_class" :
                                                       $sformatf("alert_class_%0d", i);
       uvm_reg alert_class_csr = ral.get_reg_by_name(alert_name);
       `DV_CHECK_NE_FATAL(alert_class_csr, null, alert_name)
-      csr_wr(.csr(alert_class_csr), .value(alert_class[i * TL_DW +: TL_DW]));
+      csr_wr(.ptr(alert_class_csr), .value(alert_class[i * TL_DW +: TL_DW]));
     end
 
   endtask
@@ -74,10 +74,10 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task alert_handler_wr_regwen_regs(bit [NUM_ALERT_HANDLER_CLASSES-1:0] regwen);
-    if (!regwen[0]) csr_wr(.csr(ral.classa_regwen), .value($urandom_range(0, 1)));
-    if (!regwen[1]) csr_wr(.csr(ral.classb_regwen), .value($urandom_range(0, 1)));
-    if (!regwen[2]) csr_wr(.csr(ral.classc_regwen), .value($urandom_range(0, 1)));
-    if (!regwen[3]) csr_wr(.csr(ral.classd_regwen), .value($urandom_range(0, 1)));
+    if (!regwen[0]) csr_wr(.ptr(ral.classa_regwen), .value($urandom_range(0, 1)));
+    if (!regwen[1]) csr_wr(.ptr(ral.classb_regwen), .value($urandom_range(0, 1)));
+    if (!regwen[2]) csr_wr(.ptr(ral.classc_regwen), .value($urandom_range(0, 1)));
+    if (!regwen[3]) csr_wr(.ptr(ral.classd_regwen), .value($urandom_range(0, 1)));
   endtask
 
   // If do_lock_config is set, write value 0 to rewgen register.
@@ -85,7 +85,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   // Please note that writing 1 to regwen won't lock any lockable regs.
   virtual task lock_config(bit do_lock_config);
     if (do_lock_config || $urandom_range(0, 1)) begin
-      csr_wr(.csr(ral.regwen), .value(!do_lock_config));
+      csr_wr(.ptr(ral.regwen), .value(!do_lock_config));
     end
   endtask
 
@@ -139,14 +139,14 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   virtual task check_alert_interrupts();
     bit [TL_DW-1:0] intr;
     csr_rd(.ptr(ral.intr_state), .value(intr));
-    csr_wr(.csr(ral.intr_state), .value('1));
+    csr_wr(.ptr(ral.intr_state), .value('1));
   endtask
 
   virtual task clear_esc();
-    csr_wr(.csr(ral.classa_clr), .value(1));
-    csr_wr(.csr(ral.classb_clr), .value(1));
-    csr_wr(.csr(ral.classc_clr), .value(1));
-    csr_wr(.csr(ral.classd_clr), .value(1));
+    csr_wr(.ptr(ral.classa_clr), .value(1));
+    csr_wr(.ptr(ral.classb_clr), .value(1));
+    csr_wr(.ptr(ral.classc_clr), .value(1));
+    csr_wr(.ptr(ral.classd_clr), .value(1));
   endtask
 
   // checking for csr_rd is done in scb
@@ -239,21 +239,21 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task wr_intr_timeout_cycle(bit[TL_DW-1:0] intr_timeout_cyc[NUM_ALERT_HANDLER_CLASSES]);
-    csr_wr(.csr(ral.classa_timeout_cyc), .value(intr_timeout_cyc[0]));
-    csr_wr(.csr(ral.classb_timeout_cyc), .value(intr_timeout_cyc[1]));
-    csr_wr(.csr(ral.classc_timeout_cyc), .value(intr_timeout_cyc[2]));
-    csr_wr(.csr(ral.classd_timeout_cyc), .value(intr_timeout_cyc[3]));
+    csr_wr(.ptr(ral.classa_timeout_cyc), .value(intr_timeout_cyc[0]));
+    csr_wr(.ptr(ral.classb_timeout_cyc), .value(intr_timeout_cyc[1]));
+    csr_wr(.ptr(ral.classc_timeout_cyc), .value(intr_timeout_cyc[2]));
+    csr_wr(.ptr(ral.classd_timeout_cyc), .value(intr_timeout_cyc[3]));
   endtask
 
   virtual task wr_class_accum_threshold(bit[TL_DW-1:0] accum_thresh[NUM_ALERT_HANDLER_CLASSES]);
-    csr_wr(.csr(ral.classa_accum_thresh), .value(accum_thresh[0]));
-    csr_wr(.csr(ral.classb_accum_thresh), .value(accum_thresh[1]));
-    csr_wr(.csr(ral.classc_accum_thresh), .value(accum_thresh[2]));
-    csr_wr(.csr(ral.classd_accum_thresh), .value(accum_thresh[3]));
+    csr_wr(.ptr(ral.classa_accum_thresh), .value(accum_thresh[0]));
+    csr_wr(.ptr(ral.classb_accum_thresh), .value(accum_thresh[1]));
+    csr_wr(.ptr(ral.classc_accum_thresh), .value(accum_thresh[2]));
+    csr_wr(.ptr(ral.classd_accum_thresh), .value(accum_thresh[3]));
   endtask
 
   virtual task wr_ping_timeout_cycle(bit[TL_DW-1:0] timeout_val);
-    csr_wr(.csr(ral.ping_timeout_cyc), .value(timeout_val));
+    csr_wr(.ptr(ral.ping_timeout_cyc), .value(timeout_val));
     if (!config_locked) begin
       if (timeout_val == 0) timeout_val = 1;
       foreach (cfg.alert_host_cfg[i]) cfg.alert_host_cfg[i].ping_timeout_cycle = timeout_val;

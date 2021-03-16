@@ -34,7 +34,7 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   // write csrng command request register
   virtual task wr_cmd_req(bit[3:0] acmd, bit[3:0] clen, bit[3:0] flags, bit[18:0] glen);
-    csr_wr(.csr(ral.cmd_req), .value({1'b0, glen, flags, clen, acmd}));
+    csr_wr(.ptr(ral.cmd_req), .value({1'b0, glen, flags, clen, acmd}));
   endtask
 
 endclass : csrng_base_vseq

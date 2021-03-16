@@ -26,7 +26,7 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
         // clean up rx fifo
         process_rx_read(ASYNC_FIFO_SIZE);
         // clean interrupts
-        csr_wr(.csr(ral.intr_state), .value('1));
+        csr_wr(.ptr(ral.intr_state), .value('1));
       end
 
       repeat (NumSpiDevIntr) begin
@@ -35,7 +35,7 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
         `uvm_info(`gfn, $sformatf("\nTesting %0s", spi_dev_intr.name), UVM_LOW)
         drive_and_check_one_intr(spi_dev_intr);
 
-        csr_wr(.csr(ral.intr_state), .value('1));
+        csr_wr(.ptr(ral.intr_state), .value('1));
         check_for_tx_rx_idle();
       end
       `uvm_info(`gfn, $sformatf("finished run %0d/%0d", i, num_trans), UVM_LOW)
@@ -93,7 +93,7 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
 
           // clean interrupts and test it's edge triggered
           filled_bytes = aligned_watermark + SRAM_WORD_SIZE;
-          csr_wr(.csr(ral.intr_state), .value('1));
+          csr_wr(.ptr(ral.intr_state), .value('1));
           spi_host_xfer_bytes(SRAM_WORD_SIZE, device_bytes_q);
           wait_for_rx_avail_bytes(filled_bytes, SramDataAvail, avail_bytes);
           check_interrupts(.interrupts(1 << RxFifoGeLevel), .check_set(0));

@@ -42,14 +42,14 @@ class chip_shadow_reg_errors_vseq extends chip_common_vseq;
                                          {BkdrRegPathRtlCommitted, BkdrRegPathRtlShadow};)
       csr_peek(.ptr(shadowed_csrs[i]), .value(origin_val), .kind(kind));
       poke_val = gen_storage_err_val(shadowed_csrs[i], origin_val, 0);
-      csr_poke(.csr(shadowed_csrs[i]), .value(poke_val), .kind(kind), .predict(1));
+      csr_poke(.ptr(shadowed_csrs[i]), .value(poke_val), .kind(kind), .predict(1));
 
       // Check storage error alerts
       alert_name = shadowed_csrs[i].get_storage_err_alert_name();
       `DV_SPINWAIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
                    cfg.clk_rst_vif.wait_clks(1);,
                    $sformatf("%0s storage_err alert not detected", shadowed_csrs[i].get_name()));
-      csr_poke(.csr(shadowed_csrs[i]), .value(origin_val), .kind(kind), .predict(1));
+      csr_poke(.ptr(shadowed_csrs[i]), .value(origin_val), .kind(kind), .predict(1));
       `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
                    $sformatf("timeout for alert:%0s", alert_name))
     end
@@ -59,7 +59,7 @@ class chip_shadow_reg_errors_vseq extends chip_common_vseq;
   // and the second write is 'haaaa_aaaa
   // If any shadow reg does not follow this, can add additional requirements to this task
   virtual task wr_shadowed_reg_update_err(dv_base_reg csr, output bit alert_triggered);
-    csr_wr(.csr(csr), .value('h5555_5555), .en_shadow_wr(0), .predict(1));
+    csr_wr(.ptr(csr), .value('h5555_5555), .en_shadow_wr(0), .predict(1));
     shadow_reg_wr(.csr(csr), .wdata('haaaa_aaaa), .alert_triggered(alert_triggered));
   endtask : wr_shadowed_reg_update_err
 

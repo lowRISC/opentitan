@@ -73,7 +73,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
 
   // setup basic pattgen features
   virtual task initialize_dut();
-    csr_wr(.csr(ral.intr_enable), .value({TL_DW{1'b1}}));
+    csr_wr(.ptr(ral.intr_enable), .value({TL_DW{1'b1}}));
     `uvm_info(`gfn, "\n  call pattgen_init", UVM_DEBUG)
   endtask : initialize_dut
 
@@ -109,9 +109,9 @@ class pattgen_base_vseq extends cip_base_vseq #(
       ral.size.len_ch0.set(channel_cfg[0].len);
       ral.size.reps_ch0.set(channel_cfg[0].reps);
       csr_update(ral.size);
-      csr_wr(.csr(ral.prediv_ch0), .value(channel_cfg[0].prediv));
-      csr_wr(.csr(ral.data_ch0_0), .value(channel_cfg[0].data[31:0]));
-      csr_wr(.csr(ral.data_ch0_1), .value(channel_cfg[0].data[63:32]));
+      csr_wr(.ptr(ral.prediv_ch0), .value(channel_cfg[0].prediv));
+      csr_wr(.ptr(ral.data_ch0_0), .value(channel_cfg[0].data[31:0]));
+      csr_wr(.ptr(ral.data_ch0_1), .value(channel_cfg[0].data[63:32]));
       ral.ctrl.polarity_ch0.set(channel_cfg[0].polarity);
       update_pattgen_agent_cfg(.channel(0));
       csr_update(ral.ctrl);
@@ -131,9 +131,9 @@ class pattgen_base_vseq extends cip_base_vseq #(
       ral.size.len_ch1.set(channel_cfg[1].len);
       ral.size.reps_ch1.set(channel_cfg[1].reps);
       csr_update(ral.size);
-      csr_wr(.csr(ral.prediv_ch1), .value(channel_cfg[1].prediv));
-      csr_wr(.csr(ral.data_ch1_0), .value(channel_cfg[1].data[31:0]));
-      csr_wr(.csr(ral.data_ch1_1), .value(channel_cfg[1].data[63:32]));
+      csr_wr(.ptr(ral.prediv_ch1), .value(channel_cfg[1].prediv));
+      csr_wr(.ptr(ral.data_ch1_0), .value(channel_cfg[1].data[31:0]));
+      csr_wr(.ptr(ral.data_ch1_1), .value(channel_cfg[1].data[63:32]));
       ral.ctrl.polarity_ch1.set(channel_cfg[1].polarity);
       update_pattgen_agent_cfg(.channel(1));
       csr_update(ral.ctrl);
@@ -329,7 +329,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
       endcase
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(clear_intr_dly)
       cfg.clk_rst_vif.wait_clks(clear_intr_dly);
-      csr_wr(.csr(ral.intr_state), .value(intr_clear));
+      csr_wr(.ptr(ral.intr_state), .value(intr_clear));
     end else begin
       `uvm_info(`gfn, $sformatf("\n  channel error, no clear interrupts %b", intr_clear), UVM_DEBUG)
     end

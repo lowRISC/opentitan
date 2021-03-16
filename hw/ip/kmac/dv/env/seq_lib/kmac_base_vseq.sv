@@ -234,7 +234,7 @@ class kmac_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.cfg));
 
     // setup KEY_LEN csr
-    csr_wr(.csr(ral.key_len), .value(key_len));
+    csr_wr(.ptr(ral.key_len), .value(key_len));
 
     // print debug info
     `uvm_info(`gfn, $sformatf("KMAC INITIALIZATION INFO:\n%0s", convert2string()), UVM_HIGH)
@@ -364,13 +364,13 @@ class kmac_base_vseq extends cip_base_vseq #(
     foreach (prefix_arr[i]) begin
       string csr_name = $sformatf("prefix_%0d", i);
       uvm_reg csr = ral.get_reg_by_name(csr_name);
-      csr_wr(.csr(csr), .value(prefix_arr[i]));
+      csr_wr(.ptr(csr), .value(prefix_arr[i]));
     end
   endtask
 
   // This task writes the given command to the CMD csr
   virtual task issue_cmd(kmac_cmd_e cmd);
-    csr_wr(.csr(ral.cmd), .value(cmd));
+    csr_wr(.ptr(ral.cmd), .value(cmd));
   endtask
 
   // This task commands KMAC to manually squeeze more output data,
@@ -387,7 +387,7 @@ class kmac_base_vseq extends cip_base_vseq #(
       for (int j = 0; j < KMAC_NUM_KEYS_PER_SHARE; j++) begin
         string csr_name = $sformatf("key_share%0d_%0d", i, j);
         uvm_reg csr = ral.get_reg_by_name(csr_name);
-        csr_wr(.csr(csr), .value(key_share[i][j]));
+        csr_wr(.ptr(csr), .value(key_share[i][j]));
       end
     end
 
@@ -400,8 +400,8 @@ class kmac_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task provide_sw_entropy();
-    csr_wr(.csr(ral.entropy_seed_lower), .value($urandom()));
-    csr_wr(.csr(ral.entropy_seed_upper), .value($urandom()));
+    csr_wr(.ptr(ral.entropy_seed_lower), .value($urandom()));
+    csr_wr(.ptr(ral.entropy_seed_upper), .value($urandom()));
   endtask
 
   // Call this task to initiate a KDF hashing operation
@@ -585,7 +585,7 @@ class kmac_base_vseq extends cip_base_vseq #(
     //
     // TODO: might need a way to determine when to check fifo-related state in the scoreboard
     csr_rd(.ptr(ral.intr_state), .value(irq_data));
-    csr_wr(.csr(ral.intr_state), .value(irq_data));
+    csr_wr(.ptr(ral.intr_state), .value(irq_data));
 
     csr_spinwait(.ptr(ral.status.fifo_full), .exp_data(1'b0));
   endtask
@@ -603,7 +603,7 @@ class kmac_base_vseq extends cip_base_vseq #(
     end
     // read and clear intr_state
     csr_rd(.ptr(ral.intr_state), .value(intr_state));
-    csr_wr(.csr(ral.intr_state), .value(intr_state));
+    csr_wr(.ptr(ral.intr_state), .value(intr_state));
   endtask
 
   // This task reads a chunk of data from the STATE window and appends it to the `digest`

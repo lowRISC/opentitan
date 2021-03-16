@@ -224,7 +224,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     csr_update(ral.fifo_ctrl);
 
     //enable then clear interrupts
-    csr_wr(.csr(ral.intr_enable), .value({TL_DW{1'b1}}));
+    csr_wr(.ptr(ral.intr_enable), .value({TL_DW{1'b1}}));
     process_interrupts();
   endtask : host_init
 
@@ -373,11 +373,11 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(clear_intr_dly)
     cfg.clk_rst_vif.wait_clks(clear_intr_dly);
-    csr_wr(.csr(ral.intr_state), .value(intr_clear));
+    csr_wr(.ptr(ral.intr_state), .value(intr_clear));
   endtask : process_interrupts
 
   virtual task clear_interrupt(i2c_intr_e intr, bit verify_clear = 1'b1);
-    csr_wr(.csr(ral.intr_state), .value(1 << intr));
+    csr_wr(.ptr(ral.intr_state), .value(1 << intr));
     if (verify_clear) wait(!cfg.intr_vif.pins[intr]);
   endtask : clear_interrupt
 

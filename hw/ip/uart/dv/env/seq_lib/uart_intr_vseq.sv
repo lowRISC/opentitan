@@ -37,7 +37,7 @@ class uart_intr_vseq extends uart_base_vseq;
         // tx may have unfinished transaction
         spinwait_txidle();
         dut_shutdown();
-        csr_wr(.csr(ral.intr_state), .value('hff));
+        csr_wr(.ptr(ral.intr_state), .value('hff));
       end
       `uvm_info(`gfn, $sformatf("finished run %0d/%0d", i, num_trans), UVM_LOW)
     end
@@ -68,7 +68,7 @@ class uart_intr_vseq extends uart_base_vseq;
         check_one_intr(.uart_intr(uart_intr), .exp(1));
         cfg.m_uart_agent_cfg.vif.wait_for_tx_idle();
         // check interrupt is non-sticky
-        csr_wr(.csr(ral.intr_state), .value(1 << uart_intr));
+        csr_wr(.ptr(ral.intr_state), .value(1 << uart_intr));
         drive_tx_bytes(.num_bytes(watermark_bytes - 1));
         check_one_intr(.uart_intr(uart_intr), .exp(0));
         cfg.m_uart_agent_cfg.vif.wait_for_tx_idle();
@@ -82,7 +82,7 @@ class uart_intr_vseq extends uart_base_vseq;
         drive_rx_bytes(.num_bytes(1));
         check_one_intr(.uart_intr(uart_intr), .exp(en_rx));
         // check interrupt is non-sticky
-        csr_wr(.csr(ral.intr_state), .value(1 << uart_intr));
+        csr_wr(.ptr(ral.intr_state), .value(1 << uart_intr));
         drive_rx_bytes(.num_bytes(1));
         check_one_intr(.uart_intr(uart_intr), .exp(0));
       end
@@ -95,7 +95,7 @@ class uart_intr_vseq extends uart_base_vseq;
           spinwait_txidle();
           check_one_intr(.uart_intr(uart_intr), .exp(1));
           // check interrupt is non-sticky
-          csr_wr(.csr(ral.intr_state), .value(1 << uart_intr));
+          csr_wr(.ptr(ral.intr_state), .value(1 << uart_intr));
           check_one_intr(.uart_intr(uart_intr), .exp(0));
         end
       end
@@ -130,7 +130,7 @@ class uart_intr_vseq extends uart_base_vseq;
         drive_rx_bytes(.num_bytes(1));
         // clear rx fifo and interrupts triggered by above driving
         clear_fifos(.clear_tx_fifo(0), .clear_rx_fifo(1));
-        csr_wr(.csr(ral.intr_state), .value('hff));
+        csr_wr(.ptr(ral.intr_state), .value('hff));
 
         fork
           begin
@@ -192,11 +192,11 @@ class uart_intr_vseq extends uart_base_vseq;
         check_one_intr(.uart_intr(uart_intr), .exp(0));
         wait_for_baud_clock_cycles(2);
         check_one_intr(.uart_intr(uart_intr), .exp(en_rx & en_timeout));
-        csr_wr(.csr(ral.intr_state), .value('hff));
+        csr_wr(.ptr(ral.intr_state), .value('hff));
         // expect timeout again since no fifo activity
         wait_for_baud_clock_cycles(timeout_val);
         check_one_intr(.uart_intr(uart_intr), .exp(en_rx & en_timeout));
-        csr_wr(.csr(ral.intr_state), .value('hff));
+        csr_wr(.ptr(ral.intr_state), .value('hff));
 
         if (!en_rx) return;
         // reset timeout timer by issuing a rdata read
@@ -267,7 +267,7 @@ class uart_intr_vseq extends uart_base_vseq;
         "uart_intr val: %0h, en_intr: %0h", exp, en_intr))
 
     if (do_clear) begin
-      csr_wr(.csr(ral.intr_state), .value(exp));
+      csr_wr(.ptr(ral.intr_state), .value(exp));
     end
   endtask : check_all_intr
 

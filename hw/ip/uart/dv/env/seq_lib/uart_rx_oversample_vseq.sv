@@ -45,7 +45,7 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
     clear_fifos(.clear_rx_fifo(1), .clear_tx_fifo(0));
     // clear all interrupts as the driving of rx value in seq may trigger interrupt that scb
     // doesn't expect
-    csr_wr(.csr(ral.intr_state), .value('1));
+    csr_wr(.ptr(ral.intr_state), .value('1));
   endtask : body
 
   // find the center of oversampled clk

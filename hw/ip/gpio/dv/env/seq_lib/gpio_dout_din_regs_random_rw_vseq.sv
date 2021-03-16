@@ -55,14 +55,14 @@ class gpio_dout_din_regs_random_rw_vseq extends gpio_base_vseq;
               cfg.clk_rst_vif.wait_clks(1);
               // DATA_IN register is RO, but writing random value to it
               // should have no impact on gpio functionality
-              csr_wr(.csr(ral.data_in), .value(csr_val));
+              csr_wr(.ptr(ral.data_in), .value(csr_val));
             end
-            1: csr_wr(.csr(ral.direct_out      ), .value(csr_val));
-            1: csr_wr(.csr(ral.direct_oe       ), .value(csr_val));
-            1: csr_wr(.csr(ral.masked_out_lower), .value(csr_val));
-            1: csr_wr(.csr(ral.masked_oe_lower ), .value(csr_val));
-            1: csr_wr(.csr(ral.masked_out_upper), .value(csr_val));
-            1: csr_wr(.csr(ral.masked_oe_upper ), .value(csr_val));
+            1: csr_wr(.ptr(ral.direct_out      ), .value(csr_val));
+            1: csr_wr(.ptr(ral.direct_oe       ), .value(csr_val));
+            1: csr_wr(.ptr(ral.masked_out_lower), .value(csr_val));
+            1: csr_wr(.ptr(ral.masked_oe_lower ), .value(csr_val));
+            1: csr_wr(.ptr(ral.masked_out_upper), .value(csr_val));
+            1: csr_wr(.ptr(ral.masked_oe_upper ), .value(csr_val));
           endcase
         end
         // read any one of the gpio data registers

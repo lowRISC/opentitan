@@ -129,7 +129,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
           end
         end
         csr_rd(.ptr(ral.intr_state), .value(intr_state_val));
-        csr_wr(.csr(ral.intr_state), .value(intr_state_val));
+        csr_wr(.ptr(ral.intr_state), .value(intr_state_val));
       end
 
       // if disable sha, digest should be cleared

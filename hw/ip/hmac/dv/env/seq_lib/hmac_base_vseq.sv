@@ -98,13 +98,13 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   // trigger hash computation to start
   virtual task trigger_hash();
-    csr_wr(.csr(ral.cmd), .value(1'b1 << HashStart));
+    csr_wr(.ptr(ral.cmd), .value(1'b1 << HashStart));
     // if sha is not enabled, assert error interrupt and check error code
     if (!ral.cfg.sha_en.get_mirrored_value()) check_error_code();
   endtask
 
   virtual task trigger_process();
-    csr_wr(.csr(ral.cmd), .value(1'b1 << HashProcess));
+    csr_wr(.ptr(ral.cmd), .value(1'b1 << HashProcess));
   endtask
 
   virtual task trigger_hash_when_active();
@@ -241,7 +241,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     csr_utils_pkg::wait_no_outstanding_access();
     csr_rd(ral.status, rdata);
     csr_rd(ral.intr_state, rdata);
-    csr_wr(.csr(ral.intr_state), .value(rdata));
+    csr_wr(.ptr(ral.intr_state), .value(rdata));
   endtask
 
   // this task is called when sha_en=0 and sequence set hash_start, or streamed in msg
@@ -256,11 +256,11 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
         check_interrupts(.interrupts((1 << HmacErr)), .check_set(1'b1));
       end else begin
         csr_rd_check(.ptr(ral.intr_state), .compare_value(1 << HmacErr));
-        csr_wr(.csr(ral.intr_state), .value(1 << HmacErr));
+        csr_wr(.ptr(ral.intr_state), .value(1 << HmacErr));
       end
     end else begin
       csr_rd(.ptr(ral.intr_state), .value(error_code));
-      csr_wr(.csr(ral.intr_state), .value(error_code));
+      csr_wr(.ptr(ral.intr_state), .value(error_code));
     end
     csr_rd(ral.err_code, error_code);
   endtask

@@ -158,7 +158,7 @@ class uart_tx_rx_vseq extends uart_base_vseq;
     clear_rx_intr = clear_intr[RxWatermark] | clear_intr[RxOverflow] | clear_intr[RxFrameErr] |
                     clear_intr[RxParityErr];
     wait_when_in_ignored_period(clear_tx_intr, clear_rx_intr);
-    csr_wr(.csr(ral.intr_state), .value(clear_intr));
+    csr_wr(.ptr(ral.intr_state), .value(clear_intr));
   endtask
 
   virtual task process_tx();

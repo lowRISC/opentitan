@@ -145,7 +145,7 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
 
   // task to send a byte of data out of dut
   virtual task send_tx_byte(byte data);
-    csr_wr(.csr(ral.wdata), .value(data));
+    csr_wr(.ptr(ral.wdata), .value(data));
   endtask
 
   // task to send a byte of data into dut, can override it to test error cases

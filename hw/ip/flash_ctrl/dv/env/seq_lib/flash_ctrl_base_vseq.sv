@@ -50,7 +50,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         get_csr_val_with_updated_field(ral.mp_region_cfg_0.base_0, data, region_cfg.start_page) |
         get_csr_val_with_updated_field(ral.mp_region_cfg_0.size_0, data, region_cfg.num_pages);
     csr = ral.get_reg_by_name($sformatf("mp_region_cfg_%0d", index));
-    csr_wr(.csr(csr), .value(data));
+    csr_wr(.ptr(csr), .value(data));
   endtask
 
   // Configure the protection for the "default" region (all pages that do not fall into one
@@ -61,12 +61,12 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     data = get_csr_val_with_updated_field(ral.default_region.rd_en, data, read_en) |
            get_csr_val_with_updated_field(ral.default_region.prog_en, data, program_en) |
            get_csr_val_with_updated_field(ral.default_region.erase_en, data, erase_en);
-    csr_wr(.csr(ral.default_region), .value(data));
+    csr_wr(.ptr(ral.default_region), .value(data));
   endtask
 
   // Configure bank erasability.
   virtual task flash_ctrl_bank_erase_cfg(bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en);
-    csr_wr(.csr(ral.mp_bank_cfg), .value(bank_erase_en));
+    csr_wr(.ptr(ral.mp_bank_cfg), .value(bank_erase_en));
   endtask
 
   // Configure read and program fifo levels for interrupt.
@@ -76,12 +76,12 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     data = get_csr_val_with_updated_field(ral.fifo_lvl.prog, data, program_fifo_intr_level) |
            get_csr_val_with_updated_field(ral.fifo_lvl.rd, data, read_fifo_intr_level);
-    csr_wr(.csr(ral.fifo_lvl), .value(data));
+    csr_wr(.ptr(ral.fifo_lvl), .value(data));
   endtask
 
   // Reset the program and read fifos.
   virtual task flash_ctrl_fifo_reset(bit reset = 1'b1);
-    csr_wr(.csr(ral.fifo_rst), .value(reset));
+    csr_wr(.ptr(ral.fifo_rst), .value(reset));
   endtask
 
   // Wait for flash_ctrl op to finish.
@@ -99,7 +99,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     )
     if (clear_op_status) begin
       data = get_csr_val_with_updated_field(ral.op_status.done, data, 0);
-      csr_wr(.csr(ral.op_status), .value(data));
+      csr_wr(.ptr(ral.op_status), .value(data));
     end
   endtask
 
@@ -116,7 +116,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     )
     if (clear_op_status) begin
       data = get_csr_val_with_updated_field(ral.op_status.err, data, 0);
-      csr_wr(.csr(ral.op_status), .value(data));
+      csr_wr(.ptr(ral.op_status), .value(data));
     end
   endtask
 
@@ -150,7 +150,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     bit [InfoTypesWidth-1:0] info_sel;
 
 
-    csr_wr(.csr(ral.addr), .value(flash_op.addr));
+    csr_wr(.ptr(ral.addr), .value(flash_op.addr));
 
     // flash_op.partition -> partition_sel  ,    info_sel         |
     //  (flash_dv_part_e) | (flash_part_e)  | bit[InfoTypesWidth] |
@@ -169,7 +169,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         get_csr_val_with_updated_field(ral.control.partition_sel, data, partition_sel) |
         get_csr_val_with_updated_field(ral.control.info_sel, data, info_sel) |
         get_csr_val_with_updated_field(ral.control.num, data, flash_op.num_words - 1);
-    csr_wr(.csr(ral.control), .value(data));
+    csr_wr(.ptr(ral.control), .value(data));
   endtask
 
   // Program data into flash, stopping whenever full.

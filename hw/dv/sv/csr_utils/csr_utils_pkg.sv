@@ -230,7 +230,7 @@ package csr_utils_pkg;
     join
   endtask
 
-  task automatic csr_wr(input uvm_reg        csr,
+  task automatic csr_wr(input uvm_object     ptr,
                         input uvm_reg_data_t value,
                         input uvm_check_e    check = default_csr_check,
                         input uvm_path_e     path = UVM_DEFAULT_PATH,
@@ -241,17 +241,27 @@ package csr_utils_pkg;
                         input uvm_reg_map    map = null,
                         input bit            en_shadow_wr = 1);
     if (backdoor) begin
-      csr_poke(csr, value, check, predict);
-    end else if (blocking) begin
-      csr_wr_sub(csr, value, check, path, timeout_ns, predict, map, en_shadow_wr);
+      csr_poke(ptr, value, check, predict);
     end else begin
-      fork
-        begin
-          csr_wr_sub(csr, value, check, path, timeout_ns, predict, map, en_shadow_wr);
-        end
-      join_none
-      // Add #0 to ensure that this thread starts executing before any subsequent call
-      #0;
+      csr_field_t csr_or_fld = decode_csr_or_field(ptr);
+
+      // if it's a field write, still do full CSR write and use mirrored value for the other fields
+      if (csr_or_fld.field != null) begin
+        // get full CSR value
+        value = get_csr_val_with_updated_field(csr_or_fld.field, `gmv(csr_or_fld.csr), value);
+      end
+
+      if (blocking) begin
+        csr_wr_sub(csr_or_fld.csr, value, check, path, timeout_ns, predict, map, en_shadow_wr);
+      end else begin
+        fork
+          begin
+            csr_wr_sub(csr_or_fld.csr, value, check, path, timeout_ns, predict, map, en_shadow_wr);
+          end
+        join_none
+        // Add #0 to ensure that this thread starts executing before any subsequent call
+        #0;
+      end
     end
   endtask
 
@@ -323,27 +333,40 @@ package csr_utils_pkg;
   endtask
 
   // backdoor write csr
-  task automatic csr_poke(input uvm_reg         csr,
+  task automatic csr_poke(input uvm_object      ptr,
                           input uvm_reg_data_t  value,
                           input uvm_check_e     check = default_csr_check,
                           input bit             predict = 0,
                           input bkdr_reg_path_e kind = BkdrRegPathRtl);
+    csr_field_t   csr_or_fld = decode_csr_or_field(ptr);
     uvm_status_e  status;
     string        msg_id = {csr_utils_pkg::msg_id, "::csr_poke"};
-    uvm_reg_data_t old_mirrored_val = csr.get_mirrored_value();
+    uvm_reg_data_t old_mirrored_val;
 
-    csr.poke(.status(status), .value(value), .kind(kind.name));
+    if (csr_or_fld.field != null) begin
+      old_mirrored_val = csr_or_fld.field.get_mirrored_value();
+      csr_or_fld.field.poke(.status(status), .value(value), .kind(kind.name));
+    end else begin
+      old_mirrored_val = csr_or_fld.csr.get_mirrored_value();
+      csr_or_fld.csr.poke(.status(status), .value(value), .kind(kind.name));
+    end
     if (check == UVM_CHECK && status != UVM_IS_OK) begin
       string str;
       uvm_hdl_path_concat paths[$];
-      csr.get_full_hdl_path(paths);
+      csr_or_fld.csr.get_full_hdl_path(paths);
       foreach (paths[0].slices[i]) str = $sformatf("%0s\n%0s", str, paths[0].slices[i].path);
       `uvm_fatal(msg_id, $sformatf("poke failed for %0s, check below paths %0s",
-                                   csr.get_full_name(), str))
+                                   ptr.get_full_name(), str))
     end
     // poke always updates predict value, if predict == 0, revert back to old mirrored value
     if (!predict || kind == BkdrRegPathRtlShadow) begin
-      void'(csr.predict(.value(old_mirrored_val), .kind(UVM_PREDICT_DIRECT), .path(UVM_BACKDOOR)));
+      if (csr_or_fld.field != null) begin
+        void'(csr_or_fld.field.predict(.value(old_mirrored_val), .kind(UVM_PREDICT_DIRECT),
+                                       .path(UVM_BACKDOOR)));
+      end else begin
+        void'(csr_or_fld.csr.predict(.value(old_mirrored_val), .kind(UVM_PREDICT_DIRECT),
+                                     .path(UVM_BACKDOOR)));
+      end
     end
   endtask
 

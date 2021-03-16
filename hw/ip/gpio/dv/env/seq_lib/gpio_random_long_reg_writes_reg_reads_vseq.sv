@@ -66,48 +66,48 @@ class gpio_random_long_reg_writes_reg_reads_vseq extends gpio_base_vseq;
     randcase
       1: begin
         // Writing to DATA_IN reg
-        csr_wr(.csr(ral.data_in), .value(csr_wr_value));
+        csr_wr(.ptr(ral.data_in), .value(csr_wr_value));
       end
       1: begin
-        csr_wr(.csr(ral.direct_out), .value(csr_wr_value));
+        csr_wr(.ptr(ral.direct_out), .value(csr_wr_value));
       end
       1: begin
-        csr_wr(.csr(ral.masked_out_lower), .value(csr_wr_value));
+        csr_wr(.ptr(ral.masked_out_lower), .value(csr_wr_value));
       end
       1: begin
-        csr_wr(.csr(ral.masked_out_upper), .value(csr_wr_value));
+        csr_wr(.ptr(ral.masked_out_upper), .value(csr_wr_value));
       end
       1: begin
         undrive_gpio_in();
-        csr_wr(.csr(ral.direct_oe), .value(csr_wr_value));
+        csr_wr(.ptr(ral.direct_oe), .value(csr_wr_value));
       end
       1: begin
-        csr_wr(.csr(ral.masked_oe_lower), .value(csr_wr_value));
+        csr_wr(.ptr(ral.masked_oe_lower), .value(csr_wr_value));
       end
       1: begin
-        csr_wr(.csr(ral.masked_oe_upper), .value(csr_wr_value));
+        csr_wr(.ptr(ral.masked_oe_upper), .value(csr_wr_value));
       end
       1: begin
-        csr_wr(.csr(ral.intr_enable), .value(csr_wr_value));
+        csr_wr(.ptr(ral.intr_enable), .value(csr_wr_value));
       end
       1: begin
-        csr_wr(.csr(ral.intr_test), .value(csr_wr_value));
+        csr_wr(.ptr(ral.intr_test), .value(csr_wr_value));
         `uvm_info(`gfn, "Writing to intr_test", UVM_NONE)
       end
       1: begin
-        csr_wr(.csr(ral.intr_state), .value(csr_wr_value));
+        csr_wr(.ptr(ral.intr_state), .value(csr_wr_value));
       end
       1: begin
-        csr_wr(.csr(ral.intr_ctrl_en_falling), .value(csr_wr_value));
+        csr_wr(.ptr(ral.intr_ctrl_en_falling), .value(csr_wr_value));
       end
       1: begin
-        csr_wr(.csr(ral.intr_ctrl_en_rising), .value(csr_wr_value));
+        csr_wr(.ptr(ral.intr_ctrl_en_rising), .value(csr_wr_value));
       end
       1: begin
-        csr_wr(.csr(ral.intr_ctrl_en_lvllow), .value(csr_wr_value));
+        csr_wr(.ptr(ral.intr_ctrl_en_lvllow), .value(csr_wr_value));
       end
       1: begin
-        csr_wr(.csr(ral.intr_ctrl_en_lvlhigh), .value(csr_wr_value));
+        csr_wr(.ptr(ral.intr_ctrl_en_lvlhigh), .value(csr_wr_value));
       end
     endcase
   endtask : gpio_reg_wr
