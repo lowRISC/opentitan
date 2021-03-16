@@ -41,6 +41,12 @@ package entropy_src_env_pkg;
     FifoErr          = 2
   } entropy_src_intr_e;
 
+  typedef enum int {
+    Disable    = 0,
+    PTRNG_Mode = 1,
+    LFSR_Mode  = 2
+  } enable_e;
+
   // package sources
   `include "entropy_src_env_cfg.sv"
   `include "entropy_src_env_cov.sv"

@@ -36,8 +36,10 @@ class push_pull_host_driver #(parameter int HostDataWidth = 32,
         `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.convert2string()), UVM_HIGH)
         if (!in_reset) begin
           if (cfg.agent_type == PushAgent) begin
+            @(`PUSH_DRIVER); // TODO: Workaround for Xcelium issue #5713
             drive_push();
           end else if (cfg.agent_type == PullAgent) begin
+            @(`PULL_DRIVER); // TODO: Workaround for Xcelium issue #5713
             drive_pull();
           end else begin
             `uvm_fatal(`gfn, $sformatf("%0s is an invalid driver protocol!", cfg.agent_type))

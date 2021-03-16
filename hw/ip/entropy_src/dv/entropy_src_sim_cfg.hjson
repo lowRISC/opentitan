@@ -54,6 +54,7 @@
 
     {
       name: entropy_src_rng
+      uvm_test: entropy_src_rng_test
       uvm_test_seq: entropy_src_rng_vseq
     }
 

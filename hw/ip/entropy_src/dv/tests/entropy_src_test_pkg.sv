@@ -12,12 +12,9 @@ package entropy_src_test_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // local types
-
-  // functions
-
   // package sources
   `include "entropy_src_base_test.sv"
   `include "entropy_src_smoke_test.sv"
+  `include "entropy_src_rng_test.sv"
 
 endpackage

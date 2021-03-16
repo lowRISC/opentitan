@@ -49,7 +49,7 @@
             - Verify FIPS bits match predicted
             '''
       milestone: V2
-      tests: []
+      tests: ["entropy_src_rng"]
     }
     {
       name: rng_mode
@@ -61,7 +61,7 @@
       Verify FIPS bits match predicted
             '''
       milestone: V2
-      tests: []
+      tests: ["entropy_src_rng"]
     }
     {
       name: health_checks
