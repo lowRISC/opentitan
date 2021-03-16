@@ -5,31 +5,18 @@
 #define OPENTITAN_HW_DV_VERILATOR_CPP_DPI_MEMUTIL_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <svdpi.h>
 #include <vector>
 
+#include "mem_area.h"
 #include "ranged_map.h"
 
 enum MemImageType {
   kMemImageUnknown = 0,
   kMemImageElf,
   kMemImageVmem,
-};
-
-// The "load" location of a memory area. base is the lowest address in
-// the area, and should correspond to an ELF file's LMA. size is the
-// length of the area in bytes.
-struct MemAreaLoc {
-  uint32_t base;
-  uint32_t size;
-};
-
-struct MemArea {
-  std::string name;      // Unique identifier
-  std::string location;  // Design scope location
-  uint32_t width_byte;   // Memory width in bytes
-  MemAreaLoc addr_loc;   // Address location. If !size, location is unknown.
 };
 
 // Staged data for a given memory area.
@@ -75,27 +62,22 @@ class DpiMemUtil {
   /**
    * Register a memory as instantiated by generic ram
    *
-   * The |name| must be a unique identifier. The function will return false if
-   * |name| is already used. |location| is the path to the scope of the
-   * instantiated memory, which needs to support the DPI-C interfaces
-   * 'simutil_memload' and 'simutil_set_mem' used for 'vmem' and 'elf' files,
-   * respectively.
+   * The |name| must be a unique identifier. The constructor will
+   * throw a std::runtime_error if |name| is already used.
    *
-   * The |width_bit| argument specifies the with in bits of the target memory
-   * instance (used for packing data). This must be a multiple of 8. If
-   * |addr_loc| is not null, it gives the base and size of the memory for
-   * loading in the address space (corresponding to LMAs in an ELF file).
+   * |base| gives the base address of the memory in a logical address
+   * space that corresponds to LMAs in an ELF file. If this overlaps
+   * with some other registered memory, the constructor throws a
+   * std::runtime_error.
+   *
+   * This function takes ownership of its |mem_area| argument, which
+   * must not be null.
    *
    * Memories must be registered before command arguments are parsed by
    * ParseCommandArgs() in order for them to be known.
    */
-  bool RegisterMemoryArea(const std::string name, const std::string location,
-                          size_t width_bit, const MemAreaLoc *addr_loc);
-
-  /**
-   * Register a memory with default width (32bits)
-   */
-  bool RegisterMemoryArea(const std::string name, const std::string location);
+  void RegisterMemoryArea(const std::string &name, uint32_t base,
+                          std::unique_ptr<MemArea> &&mem_area);
 
   /**
    * Guess the type of the file at |path|.
@@ -146,9 +128,14 @@ class DpiMemUtil {
   const StagedMem &GetMemoryData(const std::string &mem_name) const;
 
  private:
-  // Memory area registry
-  std::map<std::string, MemArea> name_to_mem_;
-  RangedMap<uint32_t, MemArea *> addr_to_mem_;
+  // Memory area registry. The maps give indices pointing into
+  // the vectors (which all have the same number of elements).
+  std::vector<std::unique_ptr<MemArea>> mem_areas_;
+  std::vector<uint32_t> base_addrs_;
+  std::vector<std::string> names_;
+
+  std::map<std::string, size_t> name_to_mem_;
+  RangedMap<uint32_t, size_t> addr_to_mem_;
 
   // Staging area, loaded by StageElf. The map is keyed by names of memories
   // stored in name_to_mem_. We also ensure that every segment in a StagedMem
@@ -158,11 +145,11 @@ class DpiMemUtil {
   const StagedMem empty_;
 
   /**
-   * Find a region containing for the given segment's addresses.
+   * Find the index of a memory area containing the given segment's addresses.
    * Raises a std::exception if none is found.
    */
-  const MemArea &GetRegionForSegment(const std::string &path, int seg_idx,
-                                     uint32_t lma, uint32_t mem_sz) const;
+  size_t GetRegionForSegment(const std::string &path, int seg_idx, uint32_t lma,
+                             uint32_t mem_sz) const;
 };
 
 #endif  // OPENTITAN_HW_DV_VERILATOR_CPP_DPI_MEMUTIL_H_
