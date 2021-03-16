@@ -10,19 +10,25 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(entropy_src_scoreboard)
 
   // local variables
+  bit [entropy_src_pkg::RNG_BUS_WIDTH-1:0] rng_item_data_q[$];
+  bit [31:0] entropy_data_q[$];
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))  csrng_fifo;
-  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH)))  rng_fifo;
+  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))
+      csrng_fifo;
+  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH)))
+      rng_fifo;
 
   // local queues to hold incoming packets pending comparison
   push_pull_item#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))  csrng_q[$];
-  push_pull_item#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))  rng_q[$];
+  push_pull_item#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))  rng_item;
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
+    rng_fifo = new("rng_fifo", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -32,12 +38,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+      concatenate();
     join_none
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg csr;
-    // TODO Turned off do_read_check for polling, add prediction
+    // TODO: Add conditioning prediction, still TBD in design
     bit     do_read_check   = 1'b1;
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = ral.get_word_aligned_addr(item.a_addr);
@@ -64,7 +71,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
-         do_read_check = 1'b0;
+        do_read_check = 1'b0;
       end
       "intr_enable": begin
       end
@@ -80,8 +87,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
       end
       "entropy_control": begin
       end
-       "entropy_data": begin
-         do_read_check = 1'b0;
+      "entropy_data": begin
       end
       "health_test_windows": begin
       end
@@ -128,13 +134,34 @@ class entropy_src_scoreboard extends cip_base_scoreboard #(
       end
     endcase
 
-    // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
+    // On reads, if do_read_check is set, then check mirrored_value against item.d_data
     if (!write && channel == DataChannel) begin
       if (do_read_check) begin
+        case (csr.get_name())
+          "entropy_data": begin
+            void'(csr.predict(.value(entropy_data_q.pop_front()), .kind(UVM_PREDICT_READ)));
+          end
+        endcase
+
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))
       end
-      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+    end
+  endtask
+
+  task concatenate;
+    bit [31:0] entropy_data;
+
+    forever begin
+      rng_fifo.get(rng_item);
+      rng_item_data_q.push_back(rng_item.h_data);
+      if ((rng_item_data_q.size() % 8) == 0) begin
+        for (int i = 0; i < 8; i++) begin
+          entropy_data = entropy_data + (rng_item_data_q[rng_item_data_q.size - 8 + i] << (4 * i));
+        end
+        entropy_data_q.push_back(entropy_data);
+        entropy_data = 32'h0;
+      end
     end
   endtask
 

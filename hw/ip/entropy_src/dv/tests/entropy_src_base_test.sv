@@ -25,6 +25,7 @@ class entropy_src_base_test extends cip_base_test #(
 
   // The following knob settings will serve as the defaults.
   // Overrides should happen in the specific testcase.
+
   virtual function void configure_env();
     cfg.efuse_es_sw_reg_en_pct = 100;
   endfunction

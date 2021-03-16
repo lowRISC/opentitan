@@ -40,6 +40,12 @@ class entropy_src_env extends cip_base_env #(
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+
+    m_rng_agent.monitor.analysis_port.connect(scoreboard.rng_fifo.analysis_export);
+
+    virtual_sequencer.csrng_sequencer_h = m_csrng_agent.sequencer;
+    virtual_sequencer.rng_sequencer_h   = m_rng_agent.sequencer;
+
   endfunction
 
 endclass
