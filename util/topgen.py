@@ -17,6 +17,8 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 import hjson
+from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
+                   IpTemplate, TemplateRenderError)
 from mako import exceptions
 from mako.template import Template
 
@@ -54,6 +56,38 @@ GENCMD = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson\n"
 SRCTREE_TOP = Path(__file__).parent.parent.resolve()
 
 TOPGEN_TEMPLATE_PATH = Path(__file__).parent / 'topgen/templates'
+
+# List of IP templates which use ipgen to instantiate the template.
+# TODO: Remove once all IP templates use ipgen.
+IPS_USING_IPGEN = []
+
+
+def ipgen_render(template_name: str, topname: str, params: Dict,
+                 out_path: Path):
+    """ Render an IP template for a specific toplevel using ipgen.
+
+    The generated IP block is placed in the 'ip_autogen' directory of the
+    toplevel.
+
+    Aborts the program execution in case of an error.
+    """
+    instance_name = f'top_{topname}_{template_name}'
+    ip_template = IpTemplate.from_template_path(
+        SRCTREE_TOP / 'hw/ip_templates' / template_name)
+
+    try:
+        ip_config = IpConfig(ip_template.params, instance_name, params)
+    except ValueError as e:
+        log.error(f"Unable to render IP template {template_name!r}: {str(e)}")
+        sys.exit(1)
+
+    try:
+        renderer = IpBlockRenderer(ip_template, ip_config)
+        renderer.render(out_path / 'ip_autogen' / template_name,
+                        overwrite_output_dir=True)
+    except TemplateRenderError as e:
+        log.error(e.verbose_str())
+        sys.exit(1)
 
 
 def clang_format(outfile: Path) -> None:
@@ -817,12 +851,17 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
         # the output path.  For modules not generated before, it may exist in a
         # pre-defined area already.
         log.info("Appending {}".format(ip))
-        if ip == 'clkmgr' or (pass_idx > 0):
-            ip_hjson = Path(out_path) / "ip/{}/data/autogen/{}.hjson".format(
-                ip, ip)
+        if ip in IPS_USING_IPGEN:
+            ip_relpath = 'ip_autogen'
+            desc_file_relpath = 'data'
         else:
-            ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
-                ip, ip)
+            ip_relpath = 'ip'
+            desc_file_relpath = 'data/autogen'
+
+        if ip == 'clkmgr' or (pass_idx > 0):
+            ip_hjson = Path(out_path) / ip_relpath / ip / desc_file_relpath / f"{ip}.hjson"
+        else:
+            ip_hjson = hjson_dir.parent / ip_relpath / ip / desc_file_relpath / f"{ip}.hjson"
         ips.append(ip_hjson)
 
     for ip in top_only_list:
@@ -833,26 +872,52 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     # load Hjson and pass validate from reggen
     try:
         ip_objs = []
-        for x in ips:
+        for ip_desc_file in ips:
+            ip_name = ip_desc_file.stem
             # Skip if it is not in the module list
-            if x.stem not in [ip["type"] for ip in topcfg["module"]]:
+            if ip_name not in [ip["type"] for ip in topcfg["module"]]:
                 log.info("Skip module %s as it isn't in the top module list" %
-                         x.stem)
+                         ip_name)
                 continue
 
             # The auto-generated hjson might not yet exist. It will be created
             # later, see generate_{ip_name}() calls below. For the initial
-            # validation, use the template in hw/ip/{ip_name}/data .
-            if x.stem in generated_list and not x.is_file():
-                hjson_file = ip_dir / "{}/data/{}.hjson".format(x.stem, x.stem)
-                log.info(
-                    "Auto-generated hjson %s does not yet exist. " % str(x) +
-                    "Falling back to template %s for initial validation." %
-                    str(hjson_file))
-            else:
-                hjson_file = x
+            # validation, use the Hjson file with default values.
+            # TODO: All of this is a rather ugly hack that we need to get rid
+            # of as soon as we don't arbitrarily template IP description Hjson
+            # files any more.
+            if ip_name in generated_list and not ip_desc_file.is_file():
+                if ip_name in IPS_USING_IPGEN:
+                    log.info(
+                        "To-be-auto-generated Hjson %s does not yet exist. "
+                        "Falling back to the default configuration of template "
+                        "%s for initial validation." %
+                        (ip_desc_file, ip_name))
 
-            ip_objs.append(IpBlock.from_path(str(hjson_file), []))
+                    tpl_path = SRCTREE_TOP / 'hw/ip_templates' / ip_name
+                    ip_template = IpTemplate.from_template_path(tpl_path)
+                    ip_config = IpConfig(ip_template.params,
+                                         f'top_{topname}_{ip_name}')
+
+                    ip_desc = IpDescriptionOnlyRenderer(
+                        ip_template, ip_config).render()
+                    s = 'default description of IP template {}'.format(ip_name)
+                    ip_objs.append(IpBlock.from_text(ip_desc, [], s))
+                else:
+                    # TODO: Remove this block as soon as all IP templates use
+                    # ipgen.
+                    template_hjson_file = ip_dir / "{}/data/{}.hjson".format(
+                        ip_name, ip_name)
+                    log.info(
+                        "To-be-auto-generated Hjson %s does not yet exist. "
+                        "Falling back to Hjson description file %s shipped "
+                        "with the IP template for initial validation." %
+                        (ip_desc_file, template_hjson_file))
+
+                    ip_objs.append(
+                        IpBlock.from_path(str(template_hjson_file), []))
+            else:
+                ip_objs.append(IpBlock.from_path(str(ip_desc_file), []))
 
     except ValueError:
         raise SystemExit(sys.exc_info()[1])
