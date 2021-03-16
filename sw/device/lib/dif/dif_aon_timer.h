@@ -118,7 +118,12 @@ DIF_WARN_UNUSED_RESULT
 dif_aon_timer_result_t dif_aon_timer_init(dif_aon_timer_params_t params,
                                           dif_aon_timer_t *aon);
 
-/** Starts Always-On Timer (wake-up timer).
+/**
+ * Starts Always-On Timer (wake-up timer).
+ *
+ * This operation starts the wake-up timer with the provided configuration.
+ * Note that the timer is stopped and counter cleared, before the timer is
+ * started with the new configuration.
  *
  * @param aon An Always-On Timer handle.
  * @param threshold Threshold in ticks.
@@ -163,6 +168,10 @@ dif_aon_timer_result_t dif_aon_timer_wakeup_get_count(
     const dif_aon_timer_t *aon, uint32_t *count);
 
 /** Starts Always-On Timer (watchdog timer).
+ *
+ * This operation starts the watchdog timer with the provided configuration.
+ * Note that the timer is stopped and counter cleared, before the timer is
+ * started with the new configuration.
  *
  * @param aon An Always-On Timer handle.
  * @param bark_threshold "Bark" threshold in ticks.
@@ -245,7 +254,7 @@ dif_aon_timer_watchdog_result_t dif_aon_timer_watchdog_lock(
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_aon_timer_watchdog_result_t dif_aon_timer_watchdog_is_locked(
+dif_aon_timer_result_t dif_aon_timer_watchdog_is_locked(
     const dif_aon_timer_t *aon, bool *is_locked);
 
 /**
