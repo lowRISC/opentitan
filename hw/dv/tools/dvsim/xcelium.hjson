@@ -124,13 +124,13 @@
   // not needed we can reuse the last build snapshot
   cov_unr_build_opts:[]
   cov_unr_build_cmd:[]
-  
+
   cov_unr_run_cmd: "{job_prefix} xrun"
 
-               
+
   cov_unr_run_opts: [// use xrun in UNR mode
                      "-unr",
-                     // jason gold switch (use formal)
+                     // JasperGold switch (use formal)
                      "-jg",
                      // use the same snapshot as used for regression
                      "-r {tb}",
@@ -140,7 +140,7 @@
                      "-jg_coverage {cov_metrics}",
                      "-64bit",
                      "-xmlibdirname {build_dir}/xcelium.d",
-                     // overwrite previous results 
+                     // overwrite previous results
                      "-covoverwrite",
                      "-inst_top {dut_instance}",
                      // UNR Configurations
