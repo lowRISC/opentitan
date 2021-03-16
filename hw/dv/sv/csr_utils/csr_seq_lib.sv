@@ -410,6 +410,11 @@ class csr_aliasing_seq extends csr_base_seq;
       csr_wr(.csr(test_csrs[i]), .value(wdata), .blocking(0), .predict(!external_checker));
 
       all_csrs.shuffle();
+
+      // If all_csrs queue size is larger than 100, randomly pick 100 CSRs to avoid chip level test
+      // runtime too long.
+      if (all_csrs.size() > 100) all_csrs = all_csrs[0 : 99];
+
       foreach (all_csrs[j]) begin
         uvm_reg_data_t compare_mask;
 
