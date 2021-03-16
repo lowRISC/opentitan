@@ -4,10 +4,10 @@
 
 {
     name:               "clkmgr",
-    design_spec:        "hw/ip/clkmgr/doc",
-    dv_doc:            "hw/top_earlgrey/doc/dv",
-    hw_checklist:       "hw/ip/clkmgr/doc/checklist",
-    sw_checklist:       "sw/device/lib/dif/dif_clkmgr",
+    design_spec:        "../doc",
+    dv_doc:             "/hw/top_earlgrey/doc/dv",
+    hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_clkmgr",
     revisions: [
       {
         version:            "0.1",

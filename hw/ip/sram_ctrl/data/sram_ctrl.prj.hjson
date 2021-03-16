@@ -4,9 +4,9 @@
 
 {
     name:               "sram_ctrl",
-    design_spec:        "hw/ip/sram_ctrl/doc",
-    dv_doc:             "hw/ip/sram_ctrl/doc/dv",
-    hw_checklist:       "hw/ip/sram_ctrl/doc/checklist",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
     sw_checklist:       "",
     version:            "0.1",
     life_stage:         "L1",

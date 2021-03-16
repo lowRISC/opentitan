@@ -4,9 +4,9 @@
 
 {
     name:               "rbox",
-    design_spec:        "hw/ip/rbox/doc",
-    dv_doc:             "hw/ip/rbox/doc/dv",
-    hw_checklist:       "hw/ip/rbox/doc/checklist",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
     version:            "1.0",
     life_stage:         "L1",
     design_stage:       "D0",

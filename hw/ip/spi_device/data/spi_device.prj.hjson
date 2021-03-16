@@ -4,10 +4,10 @@
 
 {
     name:               "spi_device",
-    design_spec:        "hw/ip/spi_device/doc",
-    dv_doc:            "hw/ip/spi_device/doc/dv",
-    hw_checklist:       "hw/ip/spi_device/doc/checklist",
-    sw_checklist:       "sw/device/lib/dif/dif_spi_device",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_spi_device",
     revisions: [
       {
         version:            "0.5",

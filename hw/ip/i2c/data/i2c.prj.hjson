@@ -4,10 +4,10 @@
 
 {
     name:               "i2c",
-    design_spec:        "hw/ip/i2c/doc",
-    dv_doc:            "hw/ip/i2c/doc/dv",
-    hw_checklist:       "hw/ip/i2c/doc/checklist",
-    sw_checklist:       "sw/device/lib/dif/dif_i2c",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_i2c",
     revisions: [
       {
         version:            "0.5",

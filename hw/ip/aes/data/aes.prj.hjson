@@ -4,10 +4,10 @@
 
 {
     name:               "aes",
-    design_spec:        "hw/ip/aes/doc",
-    dv_doc:             "hw/ip/aes/doc/dv",
-    hw_checklist:       "hw/ip/aes/doc/checklist",
-    sw_checklist:       "sw/device/lib/dif/dif_aes",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_aes",
     version:            "1.0",
     life_stage:         "L1",
     design_stage:       "D1",

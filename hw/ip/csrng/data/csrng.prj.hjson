@@ -4,9 +4,9 @@
 
 {
     name:               "csrng",
-    design_spec:        "hw/ip/csrng/doc",
-    dv_doc:            "hw/ip/csrng/doc/dv",
-    hw_checklist:       "hw/ip/csrng/doc/checklist",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
     version:            "0.5",
     life_stage:         "L1",
     design_stage:       "D1",

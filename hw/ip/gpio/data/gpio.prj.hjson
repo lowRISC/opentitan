@@ -4,10 +4,10 @@
 
 {
     name:               "gpio",
-    design_spec:        "hw/ip/gpio/doc",
-    dv_doc:            "hw/ip/gpio/doc/dv",
-    hw_checklist:       "hw/ip/gpio/doc/checklist",
-    sw_checklist:       "sw/device/lib/dif/dif_gpio",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_gpio",
     revisions: [
       {
         version:            "1.0",

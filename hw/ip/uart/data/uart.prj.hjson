@@ -4,10 +4,10 @@
 
 {
     name:               "uart",
-    design_spec:        "hw/ip/uart/doc",
-    dv_doc:            "hw/ip/uart/doc/dv",
-    hw_checklist:       "hw/ip/uart/doc/checklist",
-    sw_checklist:       "sw/device/lib/dif/dif_uart",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_uart",
     revisions: [
       {
         version:            "1.0",
