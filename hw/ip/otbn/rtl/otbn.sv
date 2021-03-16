@@ -146,15 +146,15 @@ module otbn
   prim_ram_1p_adv #(
     .Width           (39),
     .Depth           (ImemSizeWords),
-    .DataBitsPerMask (32) // Write masks are not supported.
+    .DataBitsPerMask (39) // Write masks are not supported.
   ) u_imem (
     .clk_i,
     .rst_ni,
     .req_i    (imem_req),
     .write_i  (imem_write),
     .addr_i   (imem_index),
-    .wdata_i  (39'(imem_wdata)),
-    .wmask_i  (39'(imem_wmask)),
+    .wdata_i  ({7'd0, imem_wdata}),
+    .wmask_i  ({{7{imem_wmask[0]}}, imem_wmask}),
     .rdata_o  (imem_rdata),
     .rvalid_o (imem_rvalid),
     .rerror_o (imem_rerror_vec),
@@ -234,6 +234,10 @@ module otbn
   assign imem_rerror_bus  = !imem_access_core ? {imem_rerror, 1'b0} : 2'b00;
   assign imem_rerror_core = imem_rerror;
 
+  // The top bits of IMEM rdata aren't currently used (they will eventually be used for integrity
+  // checks both on the bus and within the core)
+  logic unused_imem_top_rdata;
+  assign unused_imem_top_rdata = &{1'b0, imem_rdata[38:32]};
 
   // Data Memory (DMEM) ========================================================
 
@@ -246,9 +250,9 @@ module otbn
   logic dmem_req;
   logic dmem_write;
   logic [DmemIndexWidth-1:0] dmem_index;
-  logic [WLEN-1:0] dmem_wdata;
-  logic [WLEN-1:0] dmem_wmask;
-  logic [(WLEN+7*8)-1:0] dmem_rdata;
+  logic [ExtWLEN-1:0] dmem_wdata;
+  logic [ExtWLEN-1:0] dmem_wmask;
+  logic [ExtWLEN-1:0] dmem_rdata;
   logic dmem_rvalid;
   logic [1:0] dmem_rerror_vec;
   logic dmem_rerror;
@@ -256,18 +260,24 @@ module otbn
   logic dmem_req_core;
   logic dmem_write_core;
   logic [DmemIndexWidth-1:0] dmem_index_core;
-  logic [WLEN-1:0] dmem_wdata_core;
-  logic [WLEN-1:0] dmem_wmask_core;
-  logic [WLEN-1:0] dmem_rdata_core;
+  logic [WLEN-1:0] dmem_wdata_core_nointeg;
+  logic [WLEN-1:0] dmem_wmask_core_nointeg;
+  logic [WLEN-1:0] dmem_rdata_core_nointeg;
+  logic [ExtWLEN-1:0] dmem_wdata_core;
+  logic [ExtWLEN-1:0] dmem_wmask_core;
+  logic [ExtWLEN-1:0] dmem_rdata_core;
   logic dmem_rvalid_core;
   logic dmem_rerror_core;
 
   logic dmem_req_bus;
   logic dmem_write_bus;
   logic [DmemIndexWidth-1:0] dmem_index_bus;
-  logic [WLEN-1:0] dmem_wdata_bus;
-  logic [WLEN-1:0] dmem_wmask_bus;
-  logic [WLEN-1:0] dmem_rdata_bus;
+  logic [WLEN-1:0] dmem_wdata_bus_nointeg;
+  logic [WLEN-1:0] dmem_wmask_bus_nointeg;
+  logic [WLEN-1:0] dmem_rdata_bus_nointeg;
+  logic [ExtWLEN-1:0] dmem_wdata_bus;
+  logic [ExtWLEN-1:0] dmem_wmask_bus;
+  logic [ExtWLEN-1:0] dmem_rdata_bus;
   logic dmem_rvalid_bus;
   logic [1:0] dmem_rerror_bus;
 
@@ -278,17 +288,17 @@ module otbn
   assign unused_dmem_addr_core_wordbits = ^dmem_addr_core[DmemAddrWidth-DmemIndexWidth-1:0];
 
   prim_ram_1p_adv #(
-    .Width           (WLEN+7*8),
+    .Width           (ExtWLEN),
     .Depth           (DmemSizeWords),
-    .DataBitsPerMask (32) // 32b write masks for 32b word writes from bus
+    .DataBitsPerMask (39) // 39b write masks for 32b word writes from bus plus checksum
   ) u_dmem (
     .clk_i,
     .rst_ni,
     .req_i    (dmem_req),
     .write_i  (dmem_write),
     .addr_i   (dmem_index),
-    .wdata_i  (312'(dmem_wdata)),
-    .wmask_i  (312'(dmem_wmask)),
+    .wdata_i  (dmem_wdata),
+    .wmask_i  (dmem_wmask),
     .rdata_o  (dmem_rdata),
     .rvalid_o (dmem_rvalid),
     .rerror_o (dmem_rerror_vec),
@@ -313,20 +323,31 @@ module otbn
     .clk_i,
     .rst_ni,
 
-    .tl_i        (tl_win_h2d[TlWinDmem]),
-    .tl_o        (tl_win_d2h[TlWinDmem]),
-    .en_ifetch_i (tlul_pkg::InstrDis),
-    .req_o       (dmem_req_bus   ),
-    .gnt_i       (dmem_gnt_bus   ),
-    .we_o        (dmem_write_bus ),
-    .addr_o      (dmem_index_bus ),
-    .wdata_o     (dmem_wdata_bus ),
-    .wmask_o     (dmem_wmask_bus ),
-    .intg_error_o(               ),
-    .rdata_i     (dmem_rdata_bus ),
-    .rvalid_i    (dmem_rvalid_bus),
-    .rerror_i    (dmem_rerror_bus)
+    .tl_i        (tl_win_h2d[TlWinDmem] ),
+    .tl_o        (tl_win_d2h[TlWinDmem] ),
+    .en_ifetch_i (tlul_pkg::InstrDis    ),
+    .req_o       (dmem_req_bus          ),
+    .gnt_i       (dmem_gnt_bus          ),
+    .we_o        (dmem_write_bus        ),
+    .addr_o      (dmem_index_bus        ),
+    .wdata_o     (dmem_wdata_bus_nointeg),
+    .wmask_o     (dmem_wmask_bus_nointeg),
+    .intg_error_o(                      ),
+    .rdata_i     (dmem_rdata_bus_nointeg),
+    .rvalid_i    (dmem_rvalid_bus       ),
+    .rerror_i    (dmem_rerror_bus       )
   );
+
+  // The tlul_adapter doesn't currently handle the integrity bits that we will insert into the
+  // memory. Convert between its view and that of the actual SRAM macro here.
+  logic [BaseWordsPerWLEN-1:0] unused_rdata_bus_integrity;
+  for (genvar i = 0; i < BaseWordsPerWLEN; i++) begin: gen_bus_dmem_adapter
+    assign dmem_wdata_bus[i*39 +: 39] = {7'd0, dmem_wdata_bus_nointeg[i*32 +: 32]};
+    assign dmem_wmask_bus[i*39 +: 39] = {{7{dmem_wmask_bus_nointeg[i*32]}},
+                                         dmem_wmask_bus_nointeg[i*32 +: 32]};
+    assign dmem_rdata_bus_nointeg[i*32 +: 32] = dmem_rdata_bus[i*39 +: 32];
+    assign unused_rdata_bus_integrity[i] = &{dmem_rdata_bus[i*39 + 32 +: 7]};
+  end
 
   // Mux core and bus access into dmem
   assign dmem_access_core = busy_q;
@@ -339,8 +360,8 @@ module otbn
 
   // Explicitly tie off bus interface during core operation to avoid leaking
   // DMEM data through the bus unintentionally.
-  assign dmem_rdata_bus  = !dmem_access_core ? dmem_rdata[WLEN-1:0] : '0;
-  assign dmem_rdata_core = dmem_rdata[WLEN-1:0];
+  assign dmem_rdata_bus  = !dmem_access_core ? dmem_rdata : '0;
+  assign dmem_rdata_core = dmem_rdata;
 
   assign dmem_rvalid_bus  = !dmem_access_core ? dmem_rvalid : 1'b0;
   assign dmem_rvalid_core = dmem_access_core  ? dmem_rvalid : 1'b0;
@@ -350,6 +371,10 @@ module otbn
   assign dmem_rerror_bus  = !dmem_access_core ? {dmem_rerror, 1'b0} : 2'b00;
   assign dmem_rerror_core = dmem_rerror;
 
+  // The top bits of DMEM rdata aren't currently used (they will eventually be used for integrity
+  // checks within the core)
+  logic unused_dmem_top_rdata;
+  assign unused_dmem_top_rdata = &{1'b0, dmem_rdata[ExtWLEN-1:WLEN]};
 
   // Registers =================================================================
 
@@ -565,9 +590,9 @@ module otbn
       .dmem_req_o    (dmem_req_core),
       .dmem_write_o  (dmem_write_core),
       .dmem_addr_o   (dmem_addr_core),
-      .dmem_wdata_o  (dmem_wdata_core),
-      .dmem_wmask_o  (dmem_wmask_core),
-      .dmem_rdata_i  (dmem_rdata_core),
+      .dmem_wdata_o  (dmem_wdata_core_nointeg),
+      .dmem_wmask_o  (dmem_wmask_core_nointeg),
+      .dmem_rdata_i  (dmem_rdata_core_nointeg),
       .dmem_rvalid_i (dmem_rvalid_core),
       .dmem_rerror_i (dmem_rerror_core)
     );
@@ -597,9 +622,9 @@ module otbn
       .dmem_req_o      (dmem_req_core),
       .dmem_write_o    (dmem_write_core),
       .dmem_addr_o     (dmem_addr_core),
-      .dmem_wdata_o    (dmem_wdata_core),
-      .dmem_wmask_o    (dmem_wmask_core),
-      .dmem_rdata_i    (dmem_rdata_core),
+      .dmem_wdata_o    (dmem_wdata_core_nointeg),
+      .dmem_wmask_o    (dmem_wmask_core_nointeg),
+      .dmem_rdata_i    (dmem_rdata_core_nointeg),
       .dmem_rvalid_i   (dmem_rvalid_core),
       .dmem_rerror_i   (dmem_rerror_core),
 
@@ -615,6 +640,17 @@ module otbn
 
   // The core can never signal a write to IMEM
   assign imem_write_core = 1'b0;
+
+  // The core doesn't currently handle the integrity bits that we will insert into the memory.
+  // Convert between its view and that of the actual SRAM macro here.
+  logic [BaseWordsPerWLEN-1:0] unused_rdata_core_integrity;
+  for (genvar i = 0; i < BaseWordsPerWLEN; i++) begin: gen_core_dmem_adapter
+    assign dmem_wdata_core[i*39 +: 39] = {7'd0, dmem_wdata_core_nointeg[i*32 +: 32]};
+    assign dmem_wmask_core[i*39 +: 39] = {{7{dmem_wmask_core_nointeg[i*32]}},
+                                          dmem_wmask_core_nointeg[i*32 +: 32]};
+    assign dmem_rdata_core_nointeg[i*32 +: 32] = dmem_rdata_core[i*39 +: 32];
+    assign unused_rdata_core_integrity[i] = &{dmem_rdata_core[i*39 + 32 +: 7]};
+  end
 
   // LFSR ======================================================================
 

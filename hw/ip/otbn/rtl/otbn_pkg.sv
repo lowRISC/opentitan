@@ -11,6 +11,9 @@ package otbn_pkg;
   // Data path width for BN (wide) instructions, in bits.
   parameter int WLEN = 256;
 
+  // "Extended" WLEN: the size of the datapath with added parity bits
+  parameter int ExtWLEN = WLEN * 39 / 32;
+
   // Number of 32-bit words per WLEN
   parameter int BaseWordsPerWLEN = WLEN / 32;
 
