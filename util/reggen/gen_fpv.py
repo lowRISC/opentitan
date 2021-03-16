@@ -58,7 +58,7 @@ def gen_fpv(block: IpBlock, outdir):
         'filesets': {
             'files_dv': {
                 'depend': [
-                    "lowrisc:ip:{}".format(lblock),
+                    block.fusesoc_core_name,
                     "lowrisc:tlul:headers",
                     "lowrisc:prim:assert",
                 ],
