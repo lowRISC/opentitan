@@ -428,3 +428,20 @@ sw_tests += {
     'library': dif_clkmgr_smoketest_lib,
   }
 }
+
+dif_aon_timer_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'dif_aon_timer_smoketest_lib',
+    sources: ['dif_aon_timer_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_aon_timer,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'dif_aon_timer_smoketest': {
+    'library': dif_aon_timer_smoketest_lib,
+  }
+}
