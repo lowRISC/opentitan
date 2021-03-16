@@ -47,6 +47,7 @@ ignoreFiles = [
   "/__pycache__/*",
   "/build/*",
   "/hw/vendor/*",
+  "/hw/ip_templates/*",
   "/sw/vendor/*",
   "/meson.build$",
   "/opentitan-docs/",
