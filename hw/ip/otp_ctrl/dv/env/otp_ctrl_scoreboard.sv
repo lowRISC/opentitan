@@ -920,7 +920,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         `uvm_error(`gfn, $sformatf("please set status error: %0s error code", status_err_idx.name))
       end
       ral.err_code.get_dv_base_reg_fields(err_code_flds);
-      void'(err_code_flds[status_err_idx].predict(err_code));
+      void'(err_code_flds[status_err_idx].predict(.value(err_code), .kind(UVM_PREDICT_READ)));
     end
 
   endfunction
