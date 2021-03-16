@@ -31,8 +31,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   // Cfg errors are cleared after reset
-  virtual task apply_reset(string reset_kind = "HARD");
-    super.apply_reset(reset_kind);
+  virtual task apply_reset(string kind = "HARD");
+    super.apply_reset(kind);
     cfg.ecc_err = OtpNoEccErr;
   endtask
 

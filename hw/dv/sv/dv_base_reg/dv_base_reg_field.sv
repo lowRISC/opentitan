@@ -50,7 +50,7 @@ class dv_base_reg_field extends uvm_reg_field;
     if (is_intr_test_fld) begin
       uvm_reg_field intr_state_fld = get_intr_state_field();
       // use UVM_PREDICT_READ to avoid uvm_warning due to UVM_PREDICT_DIRECT
-      intr_state_fld.predict(field_val | `gmv(intr_state_fld), .kind(UVM_PREDICT_READ));
+      void'(intr_state_fld.predict(field_val | `gmv(intr_state_fld), .kind(UVM_PREDICT_READ)));
     end
 
     super.do_predict(rw, kind, be);
