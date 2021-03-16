@@ -69,6 +69,13 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
   virtual task uart_init();
     int nco = get_nco(baud_rate, cfg.clk_freq_mhz, ral.ctrl.nco.get_n_bits());
 
+    // we skip writting some CSRs at the last 1-2 uart cycles, when baud rate is 1.5Mbps, uart
+    // cycle is small, need to reduce the TL delay, so that the write doesn't happen at the
+    // ignore period
+    if (baud_rate == BaudRate1p5Mbps && p_sequencer.cfg.clk_freq_mhz == ClkFreq24Mhz) begin
+      if (cfg.m_tl_agent_cfg.d_ready_delay_max > 5) cfg.m_tl_agent_cfg.d_ready_delay_max = 5;
+    end
+
     cfg.m_uart_agent_cfg.set_uart_period_glitch_pct(uart_period_glitch_pct);
 
     // cfg uart agent to set the baud rate & parity

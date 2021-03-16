@@ -10,6 +10,10 @@ class uart_stress_all_vseq extends uart_base_vseq;
 
   `uvm_object_new
 
+  constraint num_trans_c {
+    num_trans inside {[3:6]};
+  }
+
   task body();
     string seq_names[] = {"uart_smoke_vseq",
                           "uart_tx_rx_vseq",
