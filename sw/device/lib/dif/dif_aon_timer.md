@@ -9,10 +9,10 @@ All checklist items refer to the content in the [Checklist]({{< relref "/doc/pro
 
 Type           | Item                 | Resolution  | Note/Collaterals
 ---------------|----------------------|-------------|------------------
-Implementation | [DIF_EXISTS][]       | Started     |
-Implementation | [DIF_USED_IN_TREE][] | Not Started |
-Tests          | [DIF_TEST_UNIT][]    | Not Started |
-Tests          | [DIF_TEST_SMOKE][]   | Not Started |
+Implementation | [DIF_EXISTS][]       | Done        |
+Implementation | [DIF_USED_IN_TREE][] | Done        |
+Tests          | [DIF_TEST_UNIT][]    | Done        |
+Tests          | [DIF_TEST_SMOKE][]   | Done        |
 
 [DIF_EXISTS]:       {{< relref "/doc/project/checklist.md#dif_exists" >}}
 [DIF_USED_IN_TREE]: {{< relref "/doc/project/checklist.md#dif_used_in_tree" >}}
