@@ -70,14 +70,18 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     if (csr == null)
       return;
 
+    // Update the RAL model to reflect any write
+    if (item.is_write()) begin
+      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+    end
+
     // The only TL transactions we're tracking at the moment are writes to the "cmd" register,
     // which tell us to start.
     csr_name = csr.get_name();
     if (csr_name == "cmd") begin
 
       // We start when we see a write that sets the "start" field of the register. We can read most
-      // register fields from the RAL (which is updated by the base scoreboard class), but this
-      // register is W1C, so that doesn't really work here.
+      // register fields from the RAL, but this register is W1C, so that doesn't really work here.
       if (csr_utils_pkg::get_field_val(cfg.ral.cmd.start, item.a_data)) begin
         this.expect_start_counter++;
       end
