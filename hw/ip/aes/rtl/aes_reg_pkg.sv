@@ -281,8 +281,10 @@ package aes_reg_pkg;
   parameter logic [31:0] AES_DATA_OUT_2_RESVAL = 32'h 0;
   parameter logic [31:0] AES_DATA_OUT_3_RESVAL = 32'h 0;
   parameter logic [11:0] AES_CTRL_SHADOWED_RESVAL = 12'h c0;
+  parameter logic [0:0] AES_CTRL_SHADOWED_OPERATION_RESVAL = 1'h 0;
   parameter logic [5:0] AES_CTRL_SHADOWED_MODE_RESVAL = 6'h 20;
   parameter logic [2:0] AES_CTRL_SHADOWED_KEY_LEN_RESVAL = 3'h 1;
+  parameter logic [0:0] AES_CTRL_SHADOWED_MANUAL_OPERATION_RESVAL = 1'h 0;
   parameter logic [0:0] AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_RESVAL = 1'h 0;
 
   // Register index

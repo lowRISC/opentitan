@@ -316,11 +316,11 @@ typedef struct packed {
 } ctrl_reg_t;
 
 parameter ctrl_reg_t CTRL_RESET = '{
-  force_zero_masks: '0,
-  manual_operation: '0,
-  key_len:          AES_128,
-  mode:             AES_NONE,
-  operation:        AES_ENC
+  force_zero_masks: aes_reg_pkg::AES_CTRL_SHADOWED_FORCE_ZERO_MASKS_RESVAL,
+  manual_operation: aes_reg_pkg::AES_CTRL_SHADOWED_MANUAL_OPERATION_RESVAL,
+  key_len:          key_len_e'(aes_reg_pkg::AES_CTRL_SHADOWED_KEY_LEN_RESVAL),
+  mode:             aes_mode_e'(aes_reg_pkg::AES_CTRL_SHADOWED_MODE_RESVAL),
+  operation:        aes_op_e'(aes_reg_pkg::AES_CTRL_SHADOWED_OPERATION_RESVAL)
 };
 
 // Multiplication by {02} (i.e. x) on GF(2^8)
