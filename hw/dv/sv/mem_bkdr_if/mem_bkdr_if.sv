@@ -636,7 +636,13 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
     end
     // TODO - temporary workaround until ECC encoding is implemented
     if (MEM_ECC) begin
-      foreach (`MEM_ARR_PATH_SLICE[i]) `DV_CHECK_STD_RANDOMIZE_FATAL(`MEM_ARR_PATH_SLICE[i], , path)
+      foreach (`MEM_ARR_PATH_SLICE[i]) begin
+        // Workaround to avoid Xcelium compile error:
+        // `DV_CHECK_STD_RANDOMIZE_FATAL(`MEM_ARR_PATH_SLICE[i], , path)
+        bit [MAX_MEM_WIDTH-1:0] val = `MEM_ARR_PATH_SLICE[i];
+        `DV_CHECK_STD_RANDOMIZE_FATAL(val, , path)
+        for (int j = 0; j < mem_width; j++)  `MEM_ARR_PATH_SLICE[i][j] = val[j];
+      end
     end
   endfunction
 
