@@ -10,6 +10,7 @@
 #
 {
   name: "CLKMGR",
+  fusesoc_core_name: "lowrisc:ip:clkmgr_reg"
   clock_primary: "clk_i",
   other_clock_list: [
     "clk_main_i",

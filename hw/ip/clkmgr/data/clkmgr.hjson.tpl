@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 // TODO: This module is only a draft implementation that covers most of the rstmgr
-// functoinality but is incomplete
+// functionality but is incomplete
 
 <%
 clks_attr = cfg['clocks']
@@ -15,6 +15,7 @@ num_grps = len(grps)
 #
 {
   name: "CLKMGR",
+  fusesoc_core_name: "lowrisc:systems:clkmgr"
   scan: "true",
   clock_primary: "clk_i",
   other_clock_list: [],
