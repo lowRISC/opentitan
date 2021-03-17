@@ -328,6 +328,14 @@ Future versions of this AES unit thus might employ different means at architectu
 This section discusses how software can interface with the AES unit.
 
 
+## Clear upon Reset
+
+Upon reset, the AES unit will first reseed the internal PRNG for register clearing via EDN, and then clear all key, IV and data registers with pseudo-random data.
+Only after this sequence has finished, the unit becomes idle (indicated in {{< regref "STATUS.IDLE" >}}).
+The AES unit is then ready for software initialization.
+Note that at this point, the key, IV and data registers' values can no longer be expected to match the reset values.
+
+
 ## Initialization
 
 Before initialization, software must ensure that the AES unit is idle by checking {{< regref "STATUS.IDLE" >}}.
@@ -364,6 +372,7 @@ It ensures that the AES unit:
 1. Does not overwrite previous output data that has not yet been read by the processor.
 
 Then, software must:
+1. Ensure that the INPUT_READY bit in {{< regref "STATUS" >}} is `1`.
 1. Write Input Data Block `0` to the Input Data registers {{< regref "DATA_IN_0" >}} - {{< regref "DATA_IN_3" >}}.
    Each register must be written at least once.
    The order in which these registers are written does not matter.
