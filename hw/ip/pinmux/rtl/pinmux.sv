@@ -17,6 +17,8 @@ module pinmux
 ) (
   input                            clk_i,
   input                            rst_ni,
+  // Scan enable
+  input  lc_ctrl_pkg::lc_tx_t      scanmode_i,
   // Slow always-on clock
   input                            clk_aon_i,
   input                            rst_aon_ni,
@@ -152,6 +154,7 @@ module pinmux
   ) u_pinmux_strap_sampling (
     .clk_i,
     .rst_ni,
+    .scanmode_i,
     // To padring side
     .out_padring_o ( {dio_out_o, mio_out_o} ),
     .oe_padring_o  ( {dio_oe_o , mio_oe_o } ),
