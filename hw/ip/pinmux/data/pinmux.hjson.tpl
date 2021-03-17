@@ -29,6 +29,7 @@
     { protocol: "tlul", direction: "device" }
   ],
   regwidth: "32",
+  scan: "true",
 
   wakeup_list: [
     { name: "aon_wkup_req",

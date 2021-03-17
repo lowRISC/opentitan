@@ -12,6 +12,7 @@ module pinmux_strap_sampling
 ) (
   input                            clk_i,
   input                            rst_ni,
+  input lc_ctrl_pkg::lc_tx_t       scanmode_i,
   // To padring side
   output logic [NumIOs-1:0]        out_padring_o,
   output logic [NumIOs-1:0]        oe_padring_o,
@@ -35,12 +36,25 @@ module pinmux_strap_sampling
   input  jtag_pkg::jtag_rsp_t      dft_jtag_i
 );
 
+
   /////////////////////////////////////
   // Life cycle signal synchronizers //
   /////////////////////////////////////
 
   lc_ctrl_pkg::lc_tx_t [1:0] lc_hw_debug_en;
   lc_ctrl_pkg::lc_tx_t [1:0] lc_dft_en;
+  lc_ctrl_pkg::lc_tx_t [0:0] scanmode;
+
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_por_scanmode_sync (
+    .clk_i(1'b0),  // unused clock
+    .rst_ni(1'b1), // unused reset
+    .lc_en_i(scanmode_i),
+    .lc_en_o(scanmode)
+  );
+
   prim_lc_sync #(
     .NumCopies(2)
   ) u_prim_lc_sync_rv (
@@ -215,8 +229,19 @@ module pinmux_strap_sampling
   // Inputs connections
   assign jtag_req.tck    = in_padring_i[TargetCfg.tck_idx];
   assign jtag_req.tms    = in_padring_i[TargetCfg.tms_idx];
-  assign jtag_req.trst_n = in_padring_i[TargetCfg.trst_idx];
   assign jtag_req.tdi    = in_padring_i[TargetCfg.tdi_idx];
+
+  // Note that this resets the selected TAP controller in
+  // scanmode. If the TAP controller needs to be active during
+  // reset, this reset bypass needs to be adapted accordingly.
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_rst_por_aon_n_mux (
+    .clk0_i(in_padring_i[TargetCfg.trst_idx]),
+    .clk1_i(rst_ni),
+    .sel_i(scanmode[0] == lc_ctrl_pkg::On),
+    .clk_o(jtag_req.trst_n)
+  );
 
   // Input tie-off muxes
   for (genvar k = 0; k < NumIOs; k++) begin : gen_input_tie_off

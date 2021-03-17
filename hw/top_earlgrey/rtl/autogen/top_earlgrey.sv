@@ -1715,6 +1715,7 @@ module top_earlgrey #(
       .dio_oe_o,
       .dio_in_i,
 
+      .scanmode_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),
