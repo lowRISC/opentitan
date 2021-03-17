@@ -6,7 +6,7 @@
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE
 // FOLLOWING COMMAND:
 // util/rom-ext-manifest-generator.py
-//     --input-dir=sw/device/rom_exts
+//     --input-dir=sw/device/silicon_creator/rom_exts
 //     --output-dir=<destination dir>
 //     --output-files=rust
 

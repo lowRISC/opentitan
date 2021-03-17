@@ -28,10 +28,10 @@ artifacts. **
 
 # Keys
 
-This guide assumes that commands are run from within `sw/device/rom_exts/keys`
+This guide assumes that commands are run from within `sw/device/silicon_creator/rom_exts/keys`
 directory.
 
-`cd sw/device/rom_exts/keys`
+`cd sw/device/silicon_creator/rom_exts/keys`
 
 ## How the key pair was generated?
 
@@ -53,9 +53,9 @@ openssl rsa                \
 # Hash, signature generation and verification.
 
 This guide assumes that commands are run from within
-`sw/device/rom_exts/keys/testing` directory.
+`sw/device/silicon_creator/rom_exts/keys/testing` directory.
 
-`cd sw/device/rom_exts/keys/testing`
+`cd sw/device/silicon_creator/rom_exts/keys/testing`
 
 ## How the reference file was signed?
 

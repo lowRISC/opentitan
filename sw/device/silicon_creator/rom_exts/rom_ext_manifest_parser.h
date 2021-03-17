@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_ROM_EXTS_ROM_EXT_MANIFEST_PARSER_H_
-#define OPENTITAN_SW_DEVICE_ROM_EXTS_ROM_EXT_MANIFEST_PARSER_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXTS_ROM_EXT_MANIFEST_PARSER_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXTS_ROM_EXT_MANIFEST_PARSER_H_
 
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/rom_exts/manifest.h"
+#include "sw/device/silicon_creator/rom_exts/manifest.h"
 
 /**
  * @file
@@ -17,7 +17,8 @@
  *
  * This parser is intended to parse in-memory ROM_EXT images, from either Slot A
  * or Slot B. The fields it is parsing are defined in
- * `sw/device/rom_exts/manifest.md` and `sw/device_rom_exts/manifest.hjson`.
+ * `sw/device/silicon_creator/rom_exts/manifest.md` and
+ * `sw/device_rom_exts/manifest.hjson`.
  *
  * This parser does minimal validity checking of the returned values, which must
  * always be checked by the caller to ensure do not contain incorrect or
@@ -294,4 +295,4 @@ uintptr_t rom_ext_get_entry(rom_ext_manifest_t params);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_ROM_EXTS_ROM_EXT_MANIFEST_PARSER_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXTS_ROM_EXT_MANIFEST_PARSER_H_

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """
 This script generates various descriptions of the ROM_EXT manifest format based
-on the `sw/device/rom_exts/manifest.hjson` machine-readable description of that
+on the `sw/device/silicon_creator/rom_exts/manifest.hjson` machine-readable description of that
 format.
 
 The main part of `mainfest.hjson` is a list of fields described using a list of
@@ -31,7 +31,7 @@ All fields and offsets must have a name, and optionally a description in the
 
 The generator currently produces the following files (into the given output
 directory):
-- `template.h`, from `sw/device/rom_exts/manifest.h.tpl` which provides field
+- `template.h`, from `sw/device/silicon_creator/rom_exts/manifest.h.tpl` which provides field
   size and offset preprocessor definitions for use from C.
 """
 

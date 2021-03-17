@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/mask_rom/mask_rom.h"
+#include "sw/device/silicon_creator/mask_rom/mask_rom.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
-#include "sw/device/rom_exts/rom_ext_manifest_parser.h"
+#include "sw/device/silicon_creator/rom_exts/rom_ext_manifest_parser.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

@@ -32,8 +32,8 @@ The OpenTitan Reference Firmware Images together make up the Opentitan Reference
 Different images are used for different boot stages.
 
 The Reference Firmware Images are, in boot order:
-1.  The [Mask ROM]({{< relref "sw/device/mask_rom/docs" >}}) (in `sw/device/mask_rom`), executed at chip reset;
-2.  The ROM_EXT (in `sw/device/rom_exts`), the second stage Silicon Creator code, executed from flash; and
+1.  The [Mask ROM]({{< relref "sw/device/silicon_creator/mask_rom/docs" >}}) (in `sw/device/mask_rom`), executed at chip reset;
+2.  The ROM_EXT (in `sw/device/silicon_creator/rom_exts`), the second stage Silicon Creator code, executed from flash; and
 3.  The [Tock Image]({{< relref "sw/device/tock/README.md" >}}) (in `sw/device/tock`), the Silicon Owner code, also executed from flash.
 
 ### Testing-only Images

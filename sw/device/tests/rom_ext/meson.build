@@ -14,7 +14,7 @@ test('rom_ext_parser_unittest', executable(
   'rom_ext_parser_unittest',
   sources: [
     'rom_ext_parser_unittest.cc',
-    meson.source_root() / 'sw/device/rom_exts/rom_ext_manifest_parser.c',
+    meson.source_root() / 'sw/device/silicon_creator/rom_exts/rom_ext_manifest_parser.c',
     rom_exts_manifest_offsets_header,
   ],
   dependencies: [

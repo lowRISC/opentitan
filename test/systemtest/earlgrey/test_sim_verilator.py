@@ -304,7 +304,7 @@ def test_apps_selfchecking_silicon_creator(tmp_path, bin_dir,
     """
 
     sim_path = bin_dir / "hw/top_earlgrey/Vtop_earlgrey_verilator"
-    rom_elf_path = bin_dir / "sw/device/mask_rom/mask_rom_sim_verilator.elf"
+    rom_elf_path = bin_dir / "sw/device/silicon_creator/mask_rom/mask_rom_sim_verilator.elf"
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
     sim = VerilatorSimEarlgrey(sim_path, rom_elf_path, otp_img_path, tmp_path)

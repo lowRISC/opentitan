@@ -20,4 +20,4 @@ ${content}
 
 <!-- Links -->
 [csm-secure-boot]: {{< relref "doc/security/specs/secure_boot" >}}
-[mask-rom-description]: {{< relref "sw/device/mask_rom/docs" >}}
+[mask-rom-description]: {{< relref "sw/device/silicon_creator/mask_rom/docs" >}}
