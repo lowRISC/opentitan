@@ -79,15 +79,9 @@ class LocalLauncher(Launcher):
             return 'D'
 
         self.exit_code = self.process.returncode
-        status = 'P' if self._has_passed() else 'F'
-
-        self._post_finish(status)
+        status, err_msg = self._check_status()
+        self._post_finish(status, err_msg)
         return status
-
-    def _post_finish(self, status):
-        super()._post_finish(status)
-        self._close_process()
-        self.process = None
 
     def kill(self):
         '''Kill the running process.
@@ -106,7 +100,12 @@ class LocalLauncher(Launcher):
         except subprocess.TimeoutExpired:
             self.process.kill()
 
-        self._post_finish('K')
+        self._post_finish('K', 'Job killed!')
+
+    def _post_finish(self, status, err_msg):
+        super()._post_finish(status, err_msg)
+        self._close_process()
+        self.process = None
 
     def _close_process(self):
         '''Close the file descriptors associated with the process.'''
