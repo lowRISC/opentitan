@@ -912,7 +912,7 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RO"),
-    .RESVAL  (1'h1)
+    .RESVAL  (1'h0)
   ) u_status_idle (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -1012,7 +1012,7 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RO"),
-    .RESVAL  (1'h1)
+    .RESVAL  (1'h0)
   ) u_status_input_ready (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
