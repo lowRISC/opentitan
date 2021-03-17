@@ -22,23 +22,6 @@ class sram_ctrl_mem_tl_errors_vseq extends sram_ctrl_multiple_keys_vseq;
     for (int i = 0; i < num_times; i++) begin
       `uvm_info(`gfn, $sformatf("Running run_tl_errors_vseq %0d/%0d", i, num_times), UVM_LOW)
 
-      // randomly enable zero delays
-      //
-      // TODO: Move this into the env build_phase and control with zero_delays knob
-      if ($urandom_range(0, 1)) begin
-        cfg.m_sram_cfg.a_valid_delay_min = 0;
-        cfg.m_sram_cfg.a_valid_delay_max = 0;
-
-        cfg.m_sram_cfg.a_ready_delay_min = 0;
-        cfg.m_sram_cfg.a_ready_delay_max = 0;
-
-        cfg.m_sram_cfg.d_valid_delay_min = 0;
-        cfg.m_sram_cfg.d_valid_delay_max = 0;
-
-        cfg.m_sram_cfg.d_ready_delay_min = 0;
-        cfg.m_sram_cfg.d_ready_delay_max = 0;
-      end
-
       // spawn various threads to interleave TLUL protocol error accesses and valid memory accesses
       fork
         begin: isolation
