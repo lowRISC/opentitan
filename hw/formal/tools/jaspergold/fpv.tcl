@@ -50,7 +50,7 @@ if {$env(FPV_TOP) == "rv_dm"} {
   clock clk_i -both_edges
   clock cio_sck_i
   clock -rate {scanmode_i, tl_i} clk_i
-  clock -rate {cio_csb_i, cio_sdi_i} cio_sck_i
+  clock -rate {cio_csb_i, cio_sd_i} cio_sck_i
   reset -expr {!rst_ni cio_csb_i}
 
 } elseif {$env(FPV_TOP) == "usbuart"} {

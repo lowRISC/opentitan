@@ -163,7 +163,7 @@ module aes
     .entropy_masking_ack_i  ( entropy_masking_ack  ),
     .entropy_masking_i      ( edn_data             ),
 
-    .lc_escalate_en_i       ( lc_escalate_en       ),
+    .lc_escalate_en_i       ( lc_escalate_en[0]    ),
 
     .alert_recov_o          ( alert[0]             ),
     .alert_fatal_o          ( alert[1]             ),
