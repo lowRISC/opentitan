@@ -334,6 +334,16 @@ module entropy_src_reg_top (
   logic pre_cond_fifo_depth_we;
   logic [2:0] debug_status_entropy_fifo_depth_qs;
   logic debug_status_entropy_fifo_depth_re;
+  logic [2:0] debug_status_sha3_fsm_qs;
+  logic debug_status_sha3_fsm_re;
+  logic debug_status_sha3_block_pr_qs;
+  logic debug_status_sha3_block_pr_re;
+  logic debug_status_sha3_squeezing_qs;
+  logic debug_status_sha3_squeezing_re;
+  logic debug_status_sha3_absorbed_qs;
+  logic debug_status_sha3_absorbed_re;
+  logic debug_status_sha3_err_qs;
+  logic debug_status_sha3_err_re;
   logic debug_status_diag_qs;
   logic debug_status_diag_re;
   logic [3:0] seed_qs;
@@ -902,7 +912,7 @@ module entropy_src_reg_top (
   prim_subreg #(
     .DW      (16),
     .SWACCESS("RW"),
-    .RESVAL  (16'h8)
+    .RESVAL  (16'h4)
   ) u_rate (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -1000,7 +1010,7 @@ module entropy_src_reg_top (
   prim_subreg #(
     .DW      (16),
     .SWACCESS("RW"),
-    .RESVAL  (16'h100)
+    .RESVAL  (16'h200)
   ) u_health_test_windows_fips_window (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
@@ -2042,6 +2052,81 @@ module entropy_src_reg_top (
   );
 
 
+  //   F[sha3_fsm]: 5:3
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_debug_status_sha3_fsm (
+    .re     (debug_status_sha3_fsm_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.debug_status.sha3_fsm.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (debug_status_sha3_fsm_qs)
+  );
+
+
+  //   F[sha3_block_pr]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_debug_status_sha3_block_pr (
+    .re     (debug_status_sha3_block_pr_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.debug_status.sha3_block_pr.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (debug_status_sha3_block_pr_qs)
+  );
+
+
+  //   F[sha3_squeezing]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_debug_status_sha3_squeezing (
+    .re     (debug_status_sha3_squeezing_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.debug_status.sha3_squeezing.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (debug_status_sha3_squeezing_qs)
+  );
+
+
+  //   F[sha3_absorbed]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_debug_status_sha3_absorbed (
+    .re     (debug_status_sha3_absorbed_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.debug_status.sha3_absorbed.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (debug_status_sha3_absorbed_qs)
+  );
+
+
+  //   F[sha3_err]: 9:9
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_debug_status_sha3_err (
+    .re     (debug_status_sha3_err_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.debug_status.sha3_err.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (debug_status_sha3_err_qs)
+  );
+
+
   //   F[diag]: 31:31
   prim_subreg_ext #(
     .DW    (1)
@@ -2658,6 +2743,16 @@ module entropy_src_reg_top (
 
   assign debug_status_entropy_fifo_depth_re = addr_hit[43] & reg_re & !reg_error;
 
+  assign debug_status_sha3_fsm_re = addr_hit[43] & reg_re & !reg_error;
+
+  assign debug_status_sha3_block_pr_re = addr_hit[43] & reg_re & !reg_error;
+
+  assign debug_status_sha3_squeezing_re = addr_hit[43] & reg_re & !reg_error;
+
+  assign debug_status_sha3_absorbed_re = addr_hit[43] & reg_re & !reg_error;
+
+  assign debug_status_sha3_err_re = addr_hit[43] & reg_re & !reg_error;
+
   assign debug_status_diag_re = addr_hit[43] & reg_re & !reg_error;
 
   assign seed_we = addr_hit[44] & reg_we & !reg_error;
@@ -2889,6 +2984,11 @@ module entropy_src_reg_top (
 
       addr_hit[43]: begin
         reg_rdata_next[2:0] = debug_status_entropy_fifo_depth_qs;
+        reg_rdata_next[5:3] = debug_status_sha3_fsm_qs;
+        reg_rdata_next[6] = debug_status_sha3_block_pr_qs;
+        reg_rdata_next[7] = debug_status_sha3_squeezing_qs;
+        reg_rdata_next[8] = debug_status_sha3_absorbed_qs;
+        reg_rdata_next[9] = debug_status_sha3_err_qs;
         reg_rdata_next[31] = debug_status_diag_qs;
       end
 

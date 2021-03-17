@@ -57,6 +57,16 @@ module entropy_src_core import entropy_src_pkg::*; #(
   localparam int PreCondWidth = 64;
   localparam int Clog2PreCondFifoDepth = $clog2(PreCondFifoDepth);
 
+  //-----------------------
+  // SHA3 parameters
+  //-----------------------
+  // Do not enable masking
+  localparam int Sha3EnMasking = 0;
+  // Needs EnMasking active to take effect
+  localparam int Sha3ReuseShare = 0;
+  // derived parameter
+  localparam int Sha3Share = (Sha3EnMasking) ? 2 : 1;
+
   // signals
   logic [RngBusWidth-1:0] lfsr_value;
   logic [RngBusWidth-1:0] seed_value;
@@ -270,8 +280,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [SeedLen-1:0]       pfifo_cond_rdata;
   logic                     pfifo_cond_not_empty;
   logic                     pfifo_cond_push;
-  logic                     pfifo_cond_clr;
-  logic                     pfifo_cond_pop;
 
   logic [PreCondFifoWidth-1:0] pfifo_precon_wdata;
   logic [PreCondWidth-1:0]     pfifo_precon_rdata;
@@ -310,6 +318,20 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     fifo_read_err_sum;
   logic                     fifo_status_err_sum;
   logic [30:0]              err_code_test_bit;
+  logic                     sha3_msgfifo_ready;
+  logic                     sha3_state_vld;
+  logic                     sha3_start;
+  logic                     sha3_process;
+  logic                     sha3_block_processed;
+  logic                     sha3_done;
+  logic                     sha3_absorbed;
+  logic                     sha3_squeezing;
+  logic [2:0]               sha3_fsm;
+  logic [32:0]              sha3_err;
+
+
+  logic [sha3_pkg::StateW-1:0] sha3_state[Sha3Share];
+  logic [PreCondWidth-1:0] msg_data[Sha3Share];
 
   // flops
   logic [15:0] es_rate_cntr_q, es_rate_cntr_d;
@@ -320,6 +342,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic        boot_bypass_q, boot_bypass_d;
   logic        ht_failed_q, ht_failed_d;
   logic [HalfRegWidth-1:0] window_cntr_q, window_cntr_d;
+  logic                    sha3_msg_rdy_q, sha3_msg_rdy_d;
+  logic                    sha3_err_q, sha3_err_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -331,6 +355,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
       ht_esbus_vld_dly_q    <= '0;
       ht_esbus_vld_dly2_q   <= '0;
       window_cntr_q         <= '0;
+      sha3_msg_rdy_q        <= '0;
+      sha3_err_q            <= '0;
     end else begin
       es_rate_cntr_q        <= es_rate_cntr_d;
       lfsr_incr_dly_q       <= lfsr_incr_dly_d;
@@ -340,6 +366,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
       ht_esbus_vld_dly_q    <= ht_esbus_vld_dly_d;
       ht_esbus_vld_dly2_q   <= ht_esbus_vld_dly2_d;
       window_cntr_q         <= window_cntr_d;
+      sha3_msg_rdy_q        <= sha3_msg_rdy_d;
+      sha3_err_q            <= sha3_err_d;
     end
 
   assign es_enable = (|reg2hw.conf.enable.q);
@@ -547,6 +575,16 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // set the debug status reg
   assign hw2reg.debug_status.entropy_fifo_depth.d = sfifo_esfinal_depth;
+  assign hw2reg.debug_status.sha3_fsm.d = sha3_fsm;
+  assign hw2reg.debug_status.sha3_block_pr.d = sha3_block_processed;
+  assign hw2reg.debug_status.sha3_squeezing.d = sha3_squeezing;
+  assign hw2reg.debug_status.sha3_absorbed.d = sha3_absorbed;
+  assign hw2reg.debug_status.sha3_err.d = sha3_err_q;
+
+  assign sha3_err_d =
+         es_enable ? 1'b0 :
+         {|sha3_err} ? 1'b1 :
+         sha3_err_q;
 
   //--------------------------------------------
   // receive in RNG bus input
@@ -1700,31 +1738,64 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
   // This block will take in raw entropy from the noise source block
   // and compress it such that a perfect entropy source is created
-  // This block will take in xxx bits to create 384 bits.
+  // This block will take in 2048 (by default setting) bits to create 384 bits.
 
 
-  // TODO: remove temp standin block
-  prim_packer_fifo #(
-    .InW(PreCondWidth),
-    .OutW(SeedLen)
-  ) u_prim_packer_fifo_cond (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_ni),
-    .clr_i      (pfifo_cond_clr),
-    .wvalid_i   (pfifo_cond_push),
-    .wdata_i    (pfifo_cond_wdata),
-    .wready_o   (),
-    .rvalid_o   (pfifo_cond_not_empty),
-    .rdata_o    (pfifo_cond_rdata),
-    .rready_i   (pfifo_cond_pop),
-    .depth_o    ()
-  );
+  assign pfifo_cond_push = pfifo_precon_pop && sha3_msgfifo_ready &&
+  !es_bypass_mode;
 
-  assign pfifo_cond_push = pfifo_precon_pop && !es_bypass_mode;
   assign pfifo_cond_wdata = pfifo_precon_rdata;
 
-  assign pfifo_cond_clr = !es_enable;
-  assign pfifo_cond_pop = main_stage_pop;
+  assign msg_data[0] = pfifo_cond_wdata;
+
+  assign pfifo_cond_rdata = sha3_state[0][SeedLen-1:0];
+  assign pfifo_cond_not_empty = sha3_state_vld;
+  assign sha3_msgfifo_ready = sha3_msg_rdy_q;
+
+  // SHA3 hashing engine
+  sha3 #(
+    .EnMasking (Sha3EnMasking),
+    .ReuseShare (Sha3ReuseShare)
+  ) u_sha3 (
+    .clk_i,
+    .rst_ni,
+
+    // MSG_FIFO interface
+    .msg_valid_i (pfifo_cond_push),
+    .msg_data_i  (msg_data),
+    .msg_strb_i  ({8{pfifo_cond_push}}),
+    .msg_ready_o (sha3_msg_rdy_d),
+
+    // Entropy interface - not using
+    .rand_valid_i    (1'b0),
+    .rand_data_i     ('0),
+    .rand_consumed_o (),
+
+    // N, S: Used in cSHAKE mode
+    .ns_data_i       ('0), // ns_prefix),
+
+    // Configurations
+    .mode_i     (sha3_pkg::Sha3), // Use SHA3 mode
+    .strength_i (sha3_pkg::L384), // Use keccak_strength_e of L384
+
+    // Controls (CMD register)
+    .start_i    (sha3_start       ),
+    .process_i  (sha3_process     ),
+    .run_i      (1'b0             ), // For software application
+    .done_i     (sha3_done        ),
+
+    .absorbed_o (sha3_absorbed),
+    .squeezing_o (sha3_squeezing),
+
+    .block_processed_o (sha3_block_processed),
+
+    .sha3_fsm_o (sha3_fsm),
+
+    .state_valid_o (sha3_state_vld),
+    .state_o       (sha3_state),
+
+    .error_o (sha3_err)
+  );
 
 
   //--------------------------------------------
@@ -1754,8 +1825,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign pfifo_bypass_pop = bypass_stage_pop;
 
 
-// mux to select between fips and bypass mode
-
+  // mux to select between fips and bypass mode
   assign final_es_data = es_bypass_mode ? pfifo_bypass_rdata : pfifo_cond_rdata;
 
 
@@ -1770,14 +1840,17 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .enable_i           (es_enable),
     .ht_done_pulse_i    (health_test_done_pulse),
     .ht_fail_pulse_i    (any_fail_pulse),
-    .postht_not_empty_i (pfifo_postht_not_empty),
     .rst_alert_cntr_o   (rst_alert_cntr),
     .bypass_mode_i      (es_bypass_mode),
     .rst_bypass_mode_o  (rst_bypass_mode),
     .main_stage_rdy_i   (pfifo_cond_not_empty),
     .bypass_stage_rdy_i (pfifo_bypass_not_empty),
+    .sha3_state_vld_i   (sha3_state_vld),
     .main_stage_pop_o   (main_stage_pop),
     .bypass_stage_pop_o (bypass_stage_pop),
+    .sha3_start_o       (sha3_start),
+    .sha3_process_o     (sha3_process),
+    .sha3_done_o        (sha3_done),
     .main_sm_err_o      (es_main_sm_err)
   );
 
@@ -1873,6 +1946,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.debug_status.diag.d  =
          (|err_code_test_bit[19:3]) ||
          (|err_code_test_bit[27:22]) ||
+         (|sha3_state[0][sha3_pkg::StateW-1:SeedLen])||
          reg2hw.regwen.q &&
          (&reg2hw.entropy_data.q) &&
          (&reg2hw.fw_ov_rd_data.q);
