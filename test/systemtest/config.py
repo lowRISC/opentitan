@@ -49,6 +49,9 @@ TEST_APPS_SELFCHECKING = [
         "name": "dif_aes_smoketest",
     },
     {
+        "name": "dif_aon_timer_smoketest",
+    },
+    {
         "name": "dif_otp_ctrl_smoketest",
     },
     {
