@@ -14,8 +14,8 @@ filesets:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:edn_pkg
     files:
-      - rtl/aes_pkg.sv
       - rtl/aes_reg_pkg.sv
+      - rtl/aes_pkg.sv
       - rtl/aes_reg_top.sv
       - rtl/aes_core.sv
       - rtl/aes_ctr.sv

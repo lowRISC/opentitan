@@ -329,6 +329,7 @@
     fields: [
       { bits: "0",
         name: "OPERATION",
+        resval: "0",
         desc:  '''
           Select encryption(0) or decryption(1) operation of AES unit.
         '''
@@ -413,6 +414,7 @@
       }
       { bits: "10",
         name: "MANUAL_OPERATION",
+        resval: "0"
         desc:  '''
           Controls whether the AES unit is operated in normal/automatic mode (0) or fully manual mode (1).
           In automatic mode (0), the AES unit automatically i) starts to encrypt/decrypt when it receives new input data, and ii) stalls during the last encryption/decryption cycle if the previous output data has not yet been read.
