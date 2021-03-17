@@ -184,6 +184,7 @@
 # initial key registers
     { multireg: {
       name: "KEY_SHARE0",
+      resval: "0",
       desc: '''
         Initial Key Registers Share 0.
         The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
@@ -207,6 +208,7 @@
     },
     { multireg: {
       name: "KEY_SHARE1",
+      resval: "0",
       desc: '''
         Initial Key Registers Share 1.
         The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
@@ -232,6 +234,7 @@
 # initialization vector registers
     { multireg: {
       name: "IV",
+      resval: "0",
       desc: '''
         Initialization Vector Registers.
         The initialization vector (IV) or initial counter value must be written to these registers when starting a new message in CBC or CTR mode (see Control Register), respectively.
@@ -259,6 +262,7 @@
 # input data registers
     { multireg: {
       name: "DATA_IN",
+      resval: "0",
       desc: '''
         Input Data Registers.
         If MANUAL_OPERATION=0 (see Control Register), the AES unit automatically starts encryption/decryption after all Input Data registers have been written.
@@ -282,6 +286,7 @@
 # output data registers
     { multireg: {
       name: "DATA_OUT",
+      resval: "0",
       desc: '''
         Output Data Register.
         Holds the output data produced by the AES unit during the last encryption/decryption operation.
