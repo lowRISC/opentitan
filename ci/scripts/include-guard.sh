@@ -22,19 +22,11 @@ merge_base="$(git merge-base origin/$tgt_branch HEAD)" || {
 }
 echo "Checking header guards on headers changed since $merge_base"
 
-TMPFILE="$(mktemp)" || {
-    echo >&2 "Failed to create temporary file"
-    exit 1
-}
-trap 'rm -f "$TMPFILE"' EXIT
-
 set -o pipefail
 git diff --name-only --diff-filter=ACMRTUXB "$merge_base" -- \
   "*.h" ':!*/vendor/*' | \
-    xargs -r util/fix_include_guard.py --dry-run | \
-    tee "$TMPFILE"
-if [ -s "$TMPFILE" ]; then
+    xargs -r util/fix_include_guard.py --dry-run || {
     echo -n "##vso[task.logissue type=error]"
     echo "Include guard check failed. Please run util/fix_include_guard.py on the above files."
     exit 1
-fi
+}
