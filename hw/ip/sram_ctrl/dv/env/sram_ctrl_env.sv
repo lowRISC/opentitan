@@ -49,6 +49,10 @@ class sram_ctrl_env extends cip_base_env #(
     uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(KDI_DATA_SIZE)))::set(
       this, "m_kdi_agent", "cfg", cfg.m_kdi_cfg);
     cfg.m_kdi_cfg.en_cov = cfg.en_cov;
+
+    if (cfg.zero_delays) begin
+      cfg.set_sram_zero_delays();
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);

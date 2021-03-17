@@ -80,6 +80,7 @@
     {
       name: "{variant}_stress_pipeline"
       uvm_test_seq: sram_ctrl_stress_pipeline_vseq
+      run_opts: ["+zero_delays=1"]
     }
     {
       name: "{variant}_lc_escalation"

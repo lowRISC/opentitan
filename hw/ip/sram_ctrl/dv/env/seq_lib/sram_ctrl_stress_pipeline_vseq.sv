@@ -22,8 +22,6 @@ class sram_ctrl_stress_pipeline_vseq extends sram_ctrl_multiple_keys_vseq;
 
     stress_pipeline = 1'b1;
 
-    cfg.set_sram_zero_delays();
-
     super.pre_start();
 
   endtask
