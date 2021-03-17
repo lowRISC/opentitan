@@ -53,7 +53,7 @@ For packages listed below without a version number we have not determined a mini
 * libftdi with development headers
 * OpenSSL 1.0 or 1.1 with development headers
 * libusb 1.0 (called libusbx in older distributions)
-* OpenOCD
+* OpenOCD 0.11.0
 * [Verible](https://github.com/google/verible) {{< tool_version "verible" >}}
 
 To synthesize and simulate the hardware components of OpenTitan multiple EDA tools are supported.
@@ -213,15 +213,17 @@ Alternatively, manually download the file starting with `lowrisc-toolchain-rv32i
 OpenOCD is a tool to connect with the target chip over JTAG and similar transports.
 It also provides a GDB server which is an "intermediate" when debugging software on the chip with GDB.
 
-Unfortunately the upstream sources of OpenOCD do not contain all necessary patches to support RISC-V, and hence typical distribution packages don't work.
-We therefore need to build OpenOCD from source from a forked repository.
+At least OpenOCD 0.11.0 is required.
 
-To build OpenOCD (this should be done outside the `$REPO_TOP` directory):
+It is recommended to use the regular upstream version of OpenOCD instead of the [RISC-V downstream fork](https://github.com/riscv/riscv-openocd).
+
+As most distributions do not yet include OpenOCD 0.11 in its package repositories building from source is likely to be required.
+The following steps build OpenOCD (this should be done outside the `$REPO_TOP` directory):
 
 ```console
-$ git clone https://github.com/riscv/riscv-openocd.git
-$ cd riscv-openocd
-$ ./bootstrap
+$ wget https://downloads.sourceforge.net/project/openocd/openocd/0.11.0/openocd-0.11.0.tar.bz2
+$ tar -xf openocd-0.11.0.tar.bz2
+$ cd openocd-0.11.0/
 $ mkdir build
 $ cd build
 $ ../configure --enable-ftdi --enable-verbose-jtag-io --disable-vsllink --enable-remote-bitbang --prefix=/tools/openocd

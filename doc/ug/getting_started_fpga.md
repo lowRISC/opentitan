@@ -195,11 +195,10 @@ To connect the FPGA with OpenOCD, run the following command
 
 ```console
 $ cd $REPO_TOP
-$ /tools/openocd/bin/openocd -s util/openocd -f board/lowrisc-earlgrey-nexysvideo.cfg
+$ openocd -s util/openocd -f board/lowrisc-earlgrey-nexysvideo.cfg
 ```
 
-Note that you must use the [RISC-V fork of OpenOCD](https://github.com/riscv/riscv-openocd).
-See the [install instructions]({{< relref "install_instructions#openocd" >}}) for guidance on building OpenOCD.
+See the [install instructions]({{< relref "install_instructions#openocd" >}}) for guidance on installing OpenOCD.
 
 To actually debug through OpenOCD, it must either be connected through telnet or GDB.
 
