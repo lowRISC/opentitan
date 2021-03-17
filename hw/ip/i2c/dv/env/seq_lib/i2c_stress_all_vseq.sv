@@ -75,7 +75,7 @@ class i2c_stress_all_vseq extends i2c_rx_tx_vseq;
           i2c_common_vseq common_vseq;
           `downcast(common_vseq, i2c_vseq);
           common_vseq.common_seq_type = "intr_test";
-          cfg.en_scb = 1'b0;
+          cfg.en_scb = 1'b1;
         end
         "i2c_override_vseq": begin
           cfg.en_scb = 1'b0;

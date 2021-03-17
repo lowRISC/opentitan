@@ -53,17 +53,11 @@ class pattgen_stress_all_vseq extends pattgen_base_vseq;
 
       pattgen_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(pattgen_vseq)
-      case (seq_name)
-        "pattgen_common_vseq": begin
-          pattgen_common_vseq common_vseq;
-          `downcast(common_vseq, pattgen_vseq);
-          common_vseq.common_seq_type = "intr_test";
-          cfg.en_scb = 1'b0;
-        end
-        default: begin
-          cfg.en_scb = 1'b1;
-        end
-      endcase
+      if (seq_name == "pattgen_common_vseq") begin
+        pattgen_common_vseq common_vseq;
+        `downcast(common_vseq, pattgen_vseq);
+        common_vseq.common_seq_type = "intr_test";
+      end
       // run vseq
       pattgen_vseq.start(p_sequencer);
       seq_run_hist[seq_name]++;
