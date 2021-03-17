@@ -701,15 +701,22 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           end
           begin
             wait(cfg.under_reset || cfg.otp_ctrl_vif.pwr_otp_idle_o == val ||
-                 // due to OTP access arbitration, any KDI request during DAI access might block
+                 // Due to OTP access arbitration, any KDI request during DAI access might block
                  // write secret until KDI request is completed. Since the KDI process time could
                  // vary depends on the push-pull-agent, we are going to ignore the checking if
-                 // this scenario happens
-                 cfg.m_otbn_pull_agent_cfg.vif.req || cfg.m_flash_data_pull_agent_cfg.vif.req ||
+                 // this scenario happens.
+                 cfg.m_otbn_pull_agent_cfg.vif.req ||
+                 cfg.m_flash_data_pull_agent_cfg.vif.req ||
                  cfg.m_flash_addr_pull_agent_cfg.vif.req ||
-                 cfg.m_sram_pull_agent_cfg[0].vif.req || cfg.m_sram_pull_agent_cfg[1].vif.req ||
-                 cfg.m_lc_prog_pull_agent_cfg.vif.req || cfg.m_lc_token_pull_agent_cfg.vif.req ||
-                 lc_esc);
+                 cfg.m_sram_pull_agent_cfg[0].vif.req ||
+                 cfg.m_sram_pull_agent_cfg[1].vif.req ||
+                 cfg.m_lc_prog_pull_agent_cfg.vif.req ||
+                 cfg.m_lc_token_pull_agent_cfg.vif.req ||
+                 // When lc_escalation is on, the DAI interface goes to ErrorSt, so ignore
+                 // otp_idle checking.
+                 lc_esc ||
+                 // Check timeout will keep doing background check, issue #5616
+                 lc_esc || exp_status[OtpTimeoutErrIdx]);
           end
         join_any
         disable fork;
