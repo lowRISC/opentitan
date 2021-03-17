@@ -173,6 +173,15 @@ void AESTLULInterface::MonitorSignals() {
   return;
 }
 
+static uint64_t BitwiseXOR(uint64_t in) {
+  uint64_t out = 0;
+  for (int i = 0; i < 64; i++) {
+    out ^= (in >> i) & 0x1;
+  }
+
+  return out;
+}
+
 void AESTLULInterface::DriveSignals() {
   // clear
   rtl_->tl_i[3] = 0;
@@ -192,6 +201,31 @@ void AESTLULInterface::DriveSignals() {
   // a_user    - 21  - [21:1]    - [0][21:1]
   // d_ready   - 1   - [0]       - [0][0]
 
+  // a_user.tl_type = DataType
+  uint8_t tl_type = 0x2;
+
+  // generate cmd integrity data, see also
+  // - hw/ip/tlul/rtl/tlul_pkg.sv
+  // - hw/ip/tlul/rtl/tlul_cmd_intg_chk.sv
+  // - hw/ip/prim/rtl/prim_secded_64_57_enc.sv
+
+  // prepare
+  uint64_t payload = 0;
+  payload |= tl_i_.a_mask & 0xF;
+  payload |= (tl_i_.a_opcode & 0x7) << 4;
+  payload |= (tl_i_.a_address & 0xFFFFFFFF) << 7;
+  payload |= ((uint64_t)tl_type & 0x3) << 39;
+
+  // generate
+  uint64_t intg = payload;
+  intg |= (BitwiseXOR(intg & 0x0103FFF800007FFF) & 0x1) << 57;
+  intg |= (BitwiseXOR(intg & 0x017C1FF801FF801F) & 0x1) << 58;
+  intg |= (BitwiseXOR(intg & 0x01BDE1F87E0781E1) & 0x1) << 59;
+  intg |= (BitwiseXOR(intg & 0x01DEEE3B8E388E22) & 0x1) << 60;
+  intg |= (BitwiseXOR(intg & 0x01EF76CDB2C93244) & 0x1) << 61;
+  intg |= (BitwiseXOR(intg & 0x01F7BB56D5525488) & 0x1) << 62;
+  intg |= (BitwiseXOR(intg & 0x01FBDDA769A46910) & 0x1) << 63;
+
   // set required bits
   rtl_->tl_i[3] |= (tl_i_.a_valid & 0x1) << 10;
   rtl_->tl_i[3] |= (tl_i_.a_opcode & 0x7) << 7;
@@ -204,8 +238,10 @@ void AESTLULInterface::DriveSignals() {
   rtl_->tl_i[1] |= (tl_i_.a_data & 0xFFFFFC00) >> 10;
   rtl_->tl_i[0] |= (tl_i_.a_data & 0x000003FF) << 22;
   // a_user = 0
-  // a_user.tl_type = DataType
-  rtl_->tl_i[0] |= 0x2 << (7 + 7 + 1);
+  // a_user.cmd_intg
+  rtl_->tl_i[0] |= ((intg >> 57) & 0x7F) << (7 + 1);
+  // a_user.tl_type
+  rtl_->tl_i[0] |= tl_type << (7 + 7 + 1);
   rtl_->tl_i[0] |= (tl_i_.d_ready & 0x1);
 
   return;
