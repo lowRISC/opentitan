@@ -172,7 +172,7 @@
                    The number in this register represents how many clocks there are between
                    each newLFSR value generation.
                 '''
-          resval: "0x00000008"
+          resval: "0x00000004"
         }
       ]
     },
@@ -221,9 +221,9 @@
           name: "FIPS_WINDOW",
           desc: '''This is the window size for all health tests. This value is used in normal mode
                    when entropy is being tested in FIPS/CC compliance mode.
-                   The default value is (1024 bits * 1 clock/4 bits);
+                   The default value is (2048 bits * 1 clock/4 bits);
                 '''
-          resval: "0x0100"
+          resval: "0x0200"
         }
         { bits: "31:16",
           name: "BYPASS_WINDOW",
@@ -979,6 +979,26 @@
         { bits: "2:0",
           name: "ENTROPY_FIFO_DEPTH",
           desc: "This is the depth of the entropy source FIFO."
+        }
+        { bits: "5:3",
+          name: "SHA3_FSM",
+          desc: "This is the SHA3 finite state machine current state."
+        }
+        { bits: "6",
+          name: "SHA3_BLOCK_PR",
+          desc: "This is the SHA3 block processed signal current state."
+        }
+        { bits: "7",
+          name: "SHA3_SQUEEZING",
+          desc: "This is the SHA3 squeezing signal current state."
+        }
+        { bits: "8",
+          name: "SHA3_ABSORBED",
+          desc: "This is the SHA3 absorbed signal current state."
+        }
+        { bits: "9",
+          name: "SHA3_ERR",
+          desc: "This is a logic-or of all of the SHA3 error signals."
         }
         { bits: "31",
           name: "DIAG",

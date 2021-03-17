@@ -47,7 +47,7 @@ These tests include:
 - Optional Vendor Specific tests, which allow silicon creators to extend the health checks by adding a top-level block external to this IP.
 
 The Repetition Count and Adaptive Proportion test are specifically recommended by SP 800-90B, and are implemented in accordance with those recommendations.
-In FIPS/CC-compliance mode, all checks except the Repetition Count test are performed on fixed window of data, typically consisting of 1024 bits each.
+In FIPS/CC-compliance mode, all checks except the Repetition Count test are performed on fixed window of data, typically consisting of 2048 bits each.
 Per the definition in SP 800-90B, the Repetition Count test does not operate on a fixed window.
 The repetition count test fails if any sequence of bits continuously asserts the same value for too many samples, as determined by the programmable threshold, regardless of whether that sequence crosses any window boundaries.
 The thresholds for these tests should be chosen to achieve a low false-positive rate (&alpha;) given a conservative estimate of the manufacturing tolerances of the PTRNG noise source.
@@ -55,7 +55,7 @@ The combined choice of threshold and window size then determine the false-negati
 
 When the IP is disabled by clearing the `ENABLE` bit in {{< regref "CONF" >}}, all heath checks are disabled and all counters internal to the health checks are reset.
 
-In order to compensate for the fact our tests (like *all* realistic statistical tests) have finite resolution for detecting defects, we conservatively use 1024 bits of PTRNG noise source to construct each 384 bit conditioned entropy sample.
+In order to compensate for the fact our tests (like *all* realistic statistical tests) have finite resolution for detecting defects, we conservatively use 2048 bits of PTRNG noise source to construct each 384 bit conditioned entropy sample.
 When passed through the conditioning block, the resultant entropy stream will be full entropy unless the PTRNG noise source has encountered some statistical defect serious enough to reduce the raw min-entropy to a level below 0.375 bits of entropy per output bit.
 We choose this level as our definition of "non-tolerable statistical defects" for the purposes of evaluating this system under AIS31.
 Given this definition of "non-tolerable defects", the health-checks as implemented for this block will almost certainly detect any of the previously mentioned defects in a single iteration of the health checks (i.e. such serious defects will be detected with very low &beta;).
@@ -106,14 +106,14 @@ After the block is enabled and initialized, entropy bits will be collected up in
 
 After a reset, the ENTROPY_SRC block will start up in boot-time mode by default.
 This feature is designed to provide an initial seed's worth of entropy with lower latency than the normal FIPS/CC compliant health check process.
-Health testing will still be performed on boot-time mode entropy, but the window of checking is, by default, 384 bits instead of 1024 bits.
+Health testing will still be performed on boot-time mode entropy, but the window of checking is, by default, 384 bits instead of 2048 bits.
 When entropy is delivered to the downstream hardware block, a signal will indicate what type of entropy it is - FIPS compliant or not.
 Boot-time mode can be completely disabled in the {{< regref "CONF" >}} register.
 
 Once the initial boot-time mode phase has completed, the ENTROPY_SRC block will switch to FIPS compliant mode.
 In this mode, once the raw entropy has been health checked, it will be passed into a conditioner block.
 This block will compress the bits such that the entropy bits/physical bits, or min-entropy value, should be improved over the raw data source min-entropy value.
-The compression operation, by default, will compress every 1024 tested bits into 384 full-entropy bits.
+The compression operation, by default, will compress every 2048 tested bits into 384 full-entropy bits.
 
 The hardware conditioning can also be bypassed and replaced in normal operation with a firmware-defined conditioning algorithm.
 This firmware conditioning algorithm, can be disabled on boot for security purposes.
