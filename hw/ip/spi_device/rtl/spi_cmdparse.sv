@@ -123,7 +123,7 @@ module spi_cmdparse
   end
 
   always_comb begin
-    st = st_d;
+    st_d = st;
 
     sel_dp = DpNone;
 
