@@ -77,7 +77,7 @@ module tb;
     .alert_tx_o                 (alert_tx   ),
     // ast
     .otp_ast_pwr_seq_o          (ast_req),
-    .otp_ast_pwr_seq_h_i        ('0),
+    .otp_ast_pwr_seq_h_i        (otp_ctrl_if.otp_ast_pwr_seq_h_i),
     // pwrmgr
     .pwr_otp_i                  (otp_ctrl_if.pwr_otp_init_i),
     .pwr_otp_o                  ({otp_ctrl_if.pwr_otp_done_o, otp_ctrl_if.pwr_otp_idle_o}),
