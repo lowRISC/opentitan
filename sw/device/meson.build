@@ -61,8 +61,7 @@ make_otp_img_depend_files = [
 
 subdir('boot_rom')
 subdir('otp_img')
-subdir('rom_exts')
-subdir('mask_rom')
+subdir('silicon_creator')
 subdir('examples')
 subdir('sca')
 subdir('tests')

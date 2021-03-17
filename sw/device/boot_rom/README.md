@@ -1,7 +1,7 @@
 # Boot ROM Overview
 
 The Boot ROM is a **testing-only** device image.
-The [Mask ROM]({{< relref "sw/device/mask_rom/docs/index.md" >}}) is the reference implementation of the OpenTitan Secure Boot specification.
+The [Mask ROM]({{< relref "sw/device/silicon_creator/mask_rom/docs/index.md" >}}) is the reference implementation of the OpenTitan Secure Boot specification.
 
 The boot ROM is always the first piece of code run in the system.
 At the moment, it serves 2 functions:

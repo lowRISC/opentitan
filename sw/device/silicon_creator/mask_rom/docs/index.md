@@ -1,7 +1,7 @@
 ---
 title: "Reference Mask ROM: Secure Boot Description"
 aliases:
-- /sw/device/mask_rom/boot
+- /sw/device/silicon_creator/mask_rom/boot
 ---
 
 <p style="text-align: right">
@@ -559,4 +559,4 @@ Extensibility:
 
 <!-- Links -->
 [csm-secure-boot]: {{< relref "doc/security/specs/secure_boot" >}}
-[rom-ext-manifest]: {{< relref "sw/device/rom_exts/docs/manifest" >}}
+[rom-ext-manifest]: {{< relref "sw/device/silicon_creator/rom_exts/docs/manifest" >}}

@@ -1,7 +1,7 @@
 ---
 title: Reference ROM_EXT Manifest Format
 aliases:
-- /sw/device/rom_exts/manifest
+- /sw/device/silicon_creator/rom_exts/manifest
 ---
 
 <p style="text-align: right">
@@ -30,7 +30,7 @@ and changes are manually committed to this file.
 
 ```
 $ util/rom-ext-manifest-generator.py \
-    --input-dir sw/device/rom_exts/ \
+    --input-dir sw/device/silicon_creator/rom_exts/ \
     --output-dir ${OUT_DIR} \
     --output-files=format
 ```
@@ -467,6 +467,6 @@ result := RSASSA-PKCS1-V1_5-VERIFY(public_key, message, signature)
 ```
 
 
-[mask-rom-description]: {{< relref "sw/device/mask_rom/docs" >}}
+[mask-rom-description]: {{< relref "sw/device/silicon_creator/mask_rom/docs" >}}
 [RSASSA-PKCS1-V1_5-SIGN]: https://tools.ietf.org/html/rfc3447#section-8.2.1
 [RSASSA-PKCS1-V1_5-VERIFY]: https://tools.ietf.org/html/rfc3447#section-8.2.2
