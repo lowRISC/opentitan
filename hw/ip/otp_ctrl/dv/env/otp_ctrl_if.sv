@@ -19,6 +19,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   logic                pwr_otp_init_i;
   lc_ctrl_pkg::lc_tx_e lc_dft_en_i, lc_escalate_en_i, lc_check_byp_en_i,
                        lc_creator_seed_sw_rw_en_i, lc_seed_hw_rd_en_i;
+  otp_ast_rsp_t        otp_ast_pwr_seq_h_i;
 
   // connect with lc_prog push-pull interface
   logic                lc_prog_req, lc_prog_err;
@@ -58,6 +59,8 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     lc_escalate_en_i           = lc_ctrl_pkg::Off;
     lc_check_byp_en_i          = lc_ctrl_pkg::Off;
     pwr_otp_init_i             = 0;
+    // ast_pwr_seq is dummy in open sourced OTP memory
+    otp_ast_pwr_seq_h_i        = $urandom();
   endtask
 
   task automatic drive_pwr_otp_init(logic val);
