@@ -17,7 +17,7 @@ title: "USBDEV DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/usbdev/dv/latest/results.html)
 
 ## Design features
-For detailed information on USBDEV design features, please see the [USBDEV HWIP technical specification]({{< relref "hw/ip/usbdev/doc" >}}).
+For detailed information on USBDEV design features, please see the [USBDEV HWIP technical specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 USBDEV testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).

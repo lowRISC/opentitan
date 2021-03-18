@@ -15,7 +15,7 @@ title: "EDN DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/edn/dv/latest/results.html)
 
 ## Design features
-For detailed information on EDN design features, please see the [EDN HWIP technical specification]({{< relref "hw/ip/edn/doc" >}}).
+For detailed information on EDN design features, please see the [EDN HWIP technical specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 EDN testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).

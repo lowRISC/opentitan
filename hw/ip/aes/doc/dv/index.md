@@ -15,7 +15,7 @@ title: "AES DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/aes/dv/latest/results.html)
 
 ## Design features
-For detailed information on AES design features, please see the [AES HWIP Technical Specification]({{< relref "hw/ip/aes/doc" >}}).
+For detailed information on AES design features, please see the [AES HWIP Technical Specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 AES testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).

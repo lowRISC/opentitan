@@ -15,7 +15,7 @@ title: "OTP_CTRL DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/otp_ctrl/dv/latest/results.html)
 
 ## Design features
-For detailed information on OTP_CTRL design features, please see the [OTP_CTRL HWIP technical specification]({{< relref "hw/ip/otp_ctrl/doc" >}}).
+For detailed information on OTP_CTRL design features, please see the [OTP_CTRL HWIP technical specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 OTP_CTRL testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).

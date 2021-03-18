@@ -15,7 +15,7 @@ title: "ENTROPY_SRC DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/entropy_src/dv/latest/results.html)
 
 ## Design features
-For detailed information on ENTROPY_SRC design features, please see the [ENTROPY_SRC HWIP technical specification]({{< relref "hw/ip/entropy_src/doc" >}}).
+For detailed information on ENTROPY_SRC design features, please see the [ENTROPY_SRC HWIP technical specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 ENTROPY_SRC testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).

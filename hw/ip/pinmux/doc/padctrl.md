@@ -40,7 +40,7 @@ The top-level module `padctrl` contains the CSRs that are accessible via the TL-
 
 The chip level `padctrl` module provides two sets of parametric IO arrays prefixed with `mio*` and `dio*`.
 Both sets are functionally equivalent, but are meant to be used with either multiplexed or dedicated IOs as the naming suggests.
-I.e., the `mio*` pads can be connected to the `pinmux` module ([see spec]({{< relref "hw/ip/pinmux/doc" >}})) in order to provide as much IO flexibility as possible to the software running on the device.
+I.e., the `mio*` pads can be connected to the `pinmux` module ([see spec]({{< relref "." >}})) in order to provide as much IO flexibility as possible to the software running on the device.
 The `dio*` pads on the other hand are to be connected to peripherals that require dedicated ownership of the pads.
 Examples that fall into the latter category are a high-speed SPI peripherals or a UART device that should always be connected for debugging purposes.
 

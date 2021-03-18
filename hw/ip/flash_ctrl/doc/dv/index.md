@@ -15,7 +15,7 @@ title: "FLASH_CTRL DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/flash_ctrl/dv/latest/results.html)
 
 ## Design features
-For detailed information on `flash_ctrl` design features, please see the [`flash_ctrl` HWIP technical specification]({{< relref "hw/ip/flash_ctrl/doc" >}}).
+For detailed information on `flash_ctrl` design features, please see the [`flash_ctrl` HWIP technical specification]({{< relref ".." >}}).
 The design-under-test (DUT) wraps the `flash_ctrl` IP, `flash_phy` and the TLUL SRAM adapter that converts the incoming TL accesses from the from host (CPU) interface into flash requests.
 These modules are instantiated and connected to each other and to the rest of the design at the top level.
 For the IP level DV, we replicate the instantiations and connections in `flash_ctrl_wrapper` module mainained in DV, located at `hw/ip/flash_ctrl/dv/tb/flash_ctrl_wrapper.sv`.

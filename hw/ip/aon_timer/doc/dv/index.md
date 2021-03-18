@@ -15,7 +15,7 @@ title: "AON_TIMER DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/aon_timer/dv/latest/results.html)
 
 ## Design features
-For detailed information on AON_TIMER design features, please see the [AON_TIMER HWIP technical specification]({{< relref "hw/ip/aon_timer/doc" >}}).
+For detailed information on AON_TIMER design features, please see the [AON_TIMER HWIP technical specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 AON_TIMER testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).

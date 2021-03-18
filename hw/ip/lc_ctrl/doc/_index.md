@@ -153,7 +153,7 @@ They exist only after specific events, and are restored to normal once the devic
 
 The individual signals summarized in the table below are described in the following subsections.
 
-{{< snippet "hw/ip/lc_ctrl/doc/lc_ctrl_function_signals_table.md" >}}
+{{< snippet "lc_ctrl_function_signals_table.md" >}}
 
 Signals marked with an asterisk (Y\*) are only asserted under certain conditions as explained in detail below.
 
@@ -228,7 +228,7 @@ The CLK_BYP_REQ signal is only asserted when a transition command is issued.
 
 The individual signals summarized in the table below are described in the following subsections.
 
-{{< snippet "hw/ip/lc_ctrl/doc/lc_ctrl_access_signals_table.md" >}}
+{{< snippet "lc_ctrl_access_signals_table.md" >}}
 
 Signals marked with an asterisk (Y\*) are only asserted under certain conditions as explained in detail below.
 
@@ -263,7 +263,7 @@ The following is a list of all life cycle related collateral stored in OTP.
 Most collateral also contain associated metadata to indicate when the collateral is restricted from further software access, see [accessibility summary]({{< relref "#otp-accessibility-summary-and-impact-of-provision_en" >}}) for more details.
 Since not all collateral is consumed by the life cycle controller, the consuming agent is also shown.
 
-{{< snippet "hw/ip/lc_ctrl/doc/lc_ctrl_otp_collateral.md" >}}
+{{< snippet "lc_ctrl_otp_collateral.md" >}}
 
 The TOKENs and KEYS are considered secret data and are stored in [wrapped format]({{< relref "#conditional-transitions">}}).
 Before use, the secrets are unwrapped.
@@ -309,7 +309,7 @@ These are
 
 The table below summarizes the software accessibility of all life cycle collateral.
 
-{{< snippet "hw/ip/lc_ctrl/doc/lc_ctrl_otp_accessibility.md" >}}
+{{< snippet "lc_ctrl_otp_accessibility.md" >}}
 
 Note that CREATOR_SEED_SW_RW_EN is set to OFF if SECRET2_DIGEST has a nonzero value in PROD, PROD_END and DEV states.
 SEED_HW_RD_EN only becomes active if SECRET2_DIGEST has a nonzero value in DEV, PROD, PROD_END and RMA states.
@@ -321,11 +321,11 @@ As it pertains to life cycle, the flash contains three sets of important collate
 They are enumerated in the table below.
 Just as with OTP, the consumer and usage of each is also described.
 
-{{< snippet "hw/ip/lc_ctrl/doc/lc_ctrl_flash_collateral.md" >}}
+{{< snippet "lc_ctrl_flash_collateral.md" >}}
 
 Each collateral belongs to a separate flash partition, the table below enumerates the partition and whether the partition is memory mapped.
 
-{{< snippet "hw/ip/lc_ctrl/doc/lc_ctrl_flash_partitions.md" >}}
+{{< snippet "lc_ctrl_flash_partitions.md" >}}
 
 The general flash partition refers to any software managed storage in flash, and is not a specific carve out in the non-memory mapped area.
 
@@ -338,7 +338,7 @@ It is expected that ROM_ext during secure boot programs the protection correctly
 The CREATOR_DATA partitions however, are further qualified based on the personalization state of the device.
 Just as with OTP, the table below enumerates accessibility of flash collateral.
 
-{{< snippet "hw/ip/lc_ctrl/doc/lc_ctrl_flash_accessibility.md" >}}
+{{< snippet "lc_ctrl_flash_accessibility.md" >}}
 
 Note that CREATOR_SEED_SW_RW_EN is set to OFF if SECRET2_DIGEST has a nonzero value in PROD, PROD_END and DEV states.
 SEED_HW_RD_EN only becomes active if SECRET2_DIGEST has a nonzero value in DEV, PROD, PROD_END and RMA states.
@@ -490,7 +490,7 @@ The figure below provides more context about how the life cycle controller is in
 The encoding of the life-cycle state is used both for OTP storage and as part of the FSM state in the life cycle controller.
 In other words the state stored within OTP is not re-encoded before it is consumed as part of the life cycle controller FSM state.
 
-{{< snippet "hw/ip/lc_ctrl/doc/lc_ctrl_encoding_table.md" >}}
+{{< snippet "lc_ctrl_encoding_table.md" >}}
 
 Any decoding that does not fall into the table above is considered **INVALID**.
 
@@ -524,7 +524,7 @@ The second readout pass uses a linearly increasing address sequence, whereas the
 The life cycle transition counter has 16 strokes where each stroke maps to one 16bit OTP word.
 The strokes are similarly encoded as the life cycle state in the sense that upon the first transition attempt, all words are initialized with unique Cx values that can later be overwritten with unique Dx values without producing an ECC error.
 
-{{< snippet "hw/ip/lc_ctrl/doc/lc_ctrl_counter_table.md" >}}
+{{< snippet "lc_ctrl_counter_table.md" >}}
 
 Upon each life cycle transition attempt, the life cycle controller **FIRST** increments the transition counter before initiating any token hashing and comparison operations.
 
