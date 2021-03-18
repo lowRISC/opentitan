@@ -143,8 +143,8 @@ module flash_ctrl_wrapper (
     .flash_power_ready_h_i,
     .flash_power_down_h_i,
     .flash_bist_enable_i,
-    .flash_test_mode_a_i    (1'b0),
-    .flash_test_voltage_h_i (1'b0),
+    .flash_test_mode_a_io   (),
+    .flash_test_voltage_h_io(),
     .lc_nvm_debug_en_i
   );
 
