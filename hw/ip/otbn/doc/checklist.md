@@ -2,7 +2,7 @@
 title: "OTBN Checklist"
 ---
 
-This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [OTBN peripheral.]({{< relref "hw/ip/otbn/doc" >}})
+This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [OTBN peripheral.]({{< relref "." >}})
 All checklist items refer to the content in the [Checklist.]({{< relref "/doc/project/checklist.md" >}})
 
 ## Design Checklist
@@ -11,7 +11,7 @@ All checklist items refer to the content in the [Checklist.]({{< relref "/doc/pr
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Done        | [OTBN Design Spec]({{<relref "hw/ip/otbn/doc" >}}). The specification is feature-complete, we were able to successfully run larger chunks of crypto code with the described feature set. At the same time, the specification has (known and unknown) issues, such as incomplete or buggy descriptions of individual instructions. These issues are being worked on as they are discovered while the design is in the D1 stage.
+Documentation | [SPEC_COMPLETE][]              | Done        | [OTBN Design Spec]({{<relref "." >}}). The specification is feature-complete, we were able to successfully run larger chunks of crypto code with the described feature set. At the same time, the specification has (known and unknown) issues, such as incomplete or buggy descriptions of individual instructions. These issues are being worked on as they are discovered while the design is in the D1 stage.
 Documentation | [CSR_DEFINED][]                | Done        |
 RTL           | [CLKRST_CONNECTED][]           | Done        |
 RTL           | [IP_TOP][]                     | Done        |
@@ -110,8 +110,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [OTBN DV document]({{<relref "hw/ip/otbn/doc/dv" >}})
-Documentation | [DV_PLAN_COMPLETED][]                 | Done        | [OTBN DV plan]({{<relref "hw/ip/otbn/doc/dv/index.md#dv_plan" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [OTBN DV document]({{<relref "dv" >}})
+Documentation | [DV_PLAN_COMPLETED][]                 | Done        | [OTBN DV plan]({{<relref "dv/index.md#dv_plan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |

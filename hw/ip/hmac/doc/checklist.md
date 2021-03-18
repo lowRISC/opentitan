@@ -21,7 +21,7 @@ RTL           | [FUNC_IMPLEMENTED][]           | Done        |
 RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
 Code Quality  | [LINT_SETUP][]                 | Done        |
 
-[HMAC Spec]: {{<relref "/hw/ip/hmac/doc">}}
+[HMAC Spec]: {{<relref "/.">}}
 
 [SPEC_COMPLETE]:              {{<relref "/doc/project/checklist.md#spec_complete" >}}
 [CSR_DEFINED]:                {{<relref "/doc/project/checklist.md#csr_defined" >}}

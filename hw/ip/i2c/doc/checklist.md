@@ -2,7 +2,7 @@
 title: "I2C Checklist"
 ---
 
-This checklist is for [Hardware Stage][] transitions for the [I2C peripheral.]({{<relref "hw/ip/i2c/doc" >}})
+This checklist is for [Hardware Stage][] transitions for the [I2C peripheral.]({{<relref "." >}})
 All checklist items refer to the content in the [Checklist.]({{<relref "/doc/project/checklist.md">}})
 
 [Hardware Stage]: {{<relref "/doc/project/development_stages.md" >}}
@@ -13,7 +13,7 @@ All checklist items refer to the content in the [Checklist.]({{<relref "/doc/pro
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Done        | [I2C Spec]({{<relref "hw/ip/i2c/doc" >}})
+Documentation | [SPEC_COMPLETE][]              | Done        | [I2C Spec]({{<relref "." >}})
 Documentation | [CSR_DEFINED][]                | Done        |
 RTL           | [CLKRST_CONNECTED][]           | Done        |
 RTL           | [IP_TOP][]                     | Done        |
@@ -112,8 +112,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [i2c_dv_doc]({{<relref "hw/ip/i2c/doc/dv" >}})
-Documentation | [DV_PLAN_COMPLETED][]                 | Done        | [i2c_dv_plan]({{<relref "hw/ip/i2c/doc/dv/index.md#dv_plan" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [i2c_dv_doc]({{<relref "dv" >}})
+Documentation | [DV_PLAN_COMPLETED][]                 | Done        | [i2c_dv_plan]({{<relref "dv/index.md#dv_plan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |

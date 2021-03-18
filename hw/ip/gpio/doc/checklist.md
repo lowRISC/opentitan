@@ -137,7 +137,7 @@ Review        | [DV_PLAN_REVIEWED][]                  | Done            |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done            | Exception (Security, Power, Debug)
 Review        | [V2_CHECKLIST_SCOPED][]               | Done            |
 
-[gpio_dv_doc]: {{<relref "/hw/ip/gpio/doc/dv/index.md">}}
+[gpio_dv_doc]: {{<relref "/dv/index.md">}}
 
 [DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
 [DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
