@@ -468,8 +468,8 @@ module otbn_controller
   assign alu_bignum_operation_o.shift_amt   = insn_dec_bignum_i.alu_shift_amt;
   assign alu_bignum_operation_o.flag_group  = insn_dec_bignum_i.alu_flag_group;
   assign alu_bignum_operation_o.sel_flag    = insn_dec_bignum_i.alu_sel_flag;
-  assign alu_bignum_operation_o.alu_flag_en = insn_dec_bignum_i.alu_flag_en;
-  assign alu_bignum_operation_o.mac_flag_en = insn_dec_bignum_i.mac_flag_en;
+  assign alu_bignum_operation_o.alu_flag_en = insn_dec_bignum_i.alu_flag_en & insn_executing;
+  assign alu_bignum_operation_o.mac_flag_en = insn_dec_bignum_i.mac_flag_en & insn_executing;
 
   assign mac_bignum_operation_o.operand_a         = rf_bignum_rd_data_a_i;
   assign mac_bignum_operation_o.operand_b         = rf_bignum_rd_data_b_i;
