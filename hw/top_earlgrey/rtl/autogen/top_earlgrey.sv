@@ -837,7 +837,7 @@ module top_earlgrey #(
     .Depth(32768),
     .EnableParity(0),
     .LfsrWidth(32),
-    .StatePerm(RndCnstSramCtrlMainSramLfsrPerm)
+    .StatePerm(RndCnstSramCtrlMainSramLfsrPerm),
     .DataBitsPerMask(1),
     .DiffWidth(8)
   ) u_ram1p_ram_main (
@@ -910,7 +910,7 @@ module top_earlgrey #(
     .Depth(1024),
     .EnableParity(0),
     .LfsrWidth(32),
-    .StatePerm(RndCnstSramCtrlRetAonSramLfsrPerm)
+    .StatePerm(RndCnstSramCtrlRetAonSramLfsrPerm),
     .DataBitsPerMask(1),
     .DiffWidth(8)
   ) u_ram1p_ram_ret_aon (
