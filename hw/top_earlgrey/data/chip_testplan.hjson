@@ -1154,7 +1154,7 @@
 
     // DCD (pre-verified IP) integration tests:
     {
-      name: chip_sleep_dcd_ast_adc_pd
+      name: chip_sleep_adc_ctrl_ast_adc_pd
       desc: '''Verify that in deep sleep, DCD can signal the ADC within the AST to power down.
 
              Details TBD.
@@ -1163,7 +1163,7 @@
       tests: []
     }
     {
-      name: chip_sleep_dcd_debug_cable_wake
+      name: chip_sleep_adc_ctrl_debug_cable_wake
       desc: '''Verify that the debug cable detection logic can wake up the chip from sleep.
 
              Details TBD.
@@ -1172,7 +1172,7 @@
       tests: []
     }
     {
-      name: chip_dcd_ast_adc
+      name: chip_adc_ctrl_ast_adc
       desc: '''Verify that the DCD can use the ADC within AST to know the voltage level.
 
              Details TBD. SW test validates the reception of debug cable update interrupt.
@@ -1181,7 +1181,7 @@
       tests: []
     }
     {
-      name: chip_dcd_por_l
+      name: chip_adc_ctrl_por_l
       desc: '''Verify the POR reset input to DCD.
 
              This sort of also tracks the testing of DCD surviving low power entry/exit.

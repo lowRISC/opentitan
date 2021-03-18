@@ -11,12 +11,12 @@ REG_OUTPUT_DV_DIR ?= ${REG_OUTPUT_DIR}/dv
 REG_OUTPUT_SW_DIR ?= ${REG_OUTPUT_DIR}/sw
 
 IPS ?= aes           \
+       adc_ctrl      \
        alert_handler \
        aon_timer     \
        clkmgr        \
        entropy_src   \
        csrng         \
-       dcd           \
        edn           \
        flash_ctrl    \
        gpio          \
