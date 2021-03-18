@@ -205,11 +205,8 @@ module otbn_top_sim (
 
   // The model
   //
-  // This runs in parallel with the real core above. Eventually, we'll have strong consistency
-  // checks between the two. For now, we just check that they have the same "done" signals.
+  // This runs in parallel with the real core above, with consistency checks between the two.
 
-  localparam string ImemScope = "..u_imem.u_mem.gen_generic.u_impl_generic";
-  localparam string DmemScope = "..u_dmem.u_mem.gen_generic.u_impl_generic";
   localparam string DesignScope = "..u_otbn_core";
 
   logic      otbn_model_done;
@@ -219,8 +216,7 @@ module otbn_top_sim (
   otbn_core_model #(
     .DmemSizeByte    ( DmemSizeByte ),
     .ImemSizeByte    ( ImemSizeByte ),
-    .DmemScope       ( DmemScope ),
-    .ImemScope       ( ImemScope ),
+    .MemScope        ( ".." ),
     .DesignScope     ( DesignScope )
   ) u_otbn_core_model (
     .clk_i        ( IO_CLK ),

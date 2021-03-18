@@ -13,40 +13,72 @@
 #include <svdpi.h>
 
 #include "iss_wrapper.h"
+#include "otbn_memutil.h"
 #include "otbn_trace_checker.h"
 #include "sv_scoped.h"
 
+// Read (the start of) the contents of a file at path as a vector of bytes.
+// Expects num_bytes bytes of data. On failure, throws a std::runtime_error.
+static std::vector<uint8_t> read_vector_from_file(const std::string &path,
+                                                  size_t num_bytes);
+
+// Write a vector of bytes to a new file at path. On failure, throws a
+// std::runtime_error.
+static void write_vector_to_file(const std::string &path,
+                                 const std::vector<uint8_t> &data);
+
 namespace {
-// An extremely thin wrapper around ISSWrapper. The point is that we want to
-// create the model in an initial block in the SystemVerilog simulation, but
-// might not actually want to spawn the ISS. To handle that in a non-racy
-// way, the most convenient thing is to spawn the ISS on the first call to
-// otbn_model_step.
 struct OtbnModel {
  public:
-  bool ensure() {
+  OtbnModel(const std::string &mem_scope, const std::string &design_scope,
+            unsigned imem_size_words, unsigned dmem_size_words)
+      : mem_util(mem_scope),
+        design_scope_(design_scope),
+        imem_size_words_(imem_size_words),
+        dmem_size_words_(dmem_size_words) {}
+
+  // This class is a thin wrapper around ISSWrapper. The point is that we want
+  // to create the model in an initial block in the SystemVerilog simulation,
+  // but might not actually want to spawn the ISS. To handle that in a non-racy
+  // way, the most convenient thing is to spawn the ISS the first time it's
+  // actually needed.
+  //
+  // If ensure is true, this constructs an ISS wrapper if necessary. If
+  // something goes wrong, this function prints a message and then returns
+  // null. If ensure is true, it will never return null without printing a
+  // message, so error handling at the callsite can silently return a failure
+  // code.
+  ISSWrapper *get_wrapper(bool ensure) {
     if (!iss) {
       try {
         iss.reset(new ISSWrapper());
       } catch (const std::runtime_error &err) {
         std::cerr << "Error when constructing ISS wrapper: " << err.what()
                   << "\n";
-        return false;
+        return nullptr;
       }
     }
     assert(iss);
-    return true;
+    return iss.get();
+  }
+
+  std::vector<uint8_t> get_sim_memory(bool is_imem) const {
+    const MemArea &mem_area = mem_util.GetMemArea(is_imem);
+    return mem_area.Read(0, mem_area.GetSizeWords());
+  }
+
+  void set_sim_memory(bool is_imem, const std::vector<uint8_t> &data) const {
+    mem_util.GetMemArea(is_imem).Write(0, data);
   }
 
   std::unique_ptr<ISSWrapper> iss;
+  OtbnMemUtil mem_util;
+  std::string design_scope_;
+  unsigned imem_size_words_, dmem_size_words_;
 };
 }  // namespace
 
 extern "C" {
-// DPI imports, implemented in SystemVerilog
-int simutil_get_mem(int index, svBitVecVal *val);
-int simutil_set_mem(int index, const svBitVecVal *val);
-
 // These functions are only implemented if DesignScope != "", i.e. if we're
 // running a block-level simulation. Code needs to check at runtime if
 // otbn_rf_peek() and otbn_stack_element_peek() are available before calling
@@ -81,78 +113,20 @@ int otbn_stack_element_peek(int index, svBitVecVal *val) __attribute__((weak));
 // and running to false.
 //
 // If nothing goes wrong, but the ISS finishes its run, we set running to
-// false, write out err_bits and do the post-run task. If design_scope is
-// non-empty, it should be the scope of an RTL implementation. In that case, we
-// compare register and memory contents with that implementation, printing to
-// stderr and setting the failed_cmp bit if there are any mismatches. If
-// design_scope is the empty string, we grab the contents of DMEM from the ISS
-// and inject them into the memory at dmem_scope.
+// false, write out err_bits and do the post-run task. If the model's
+// design_scope is non-empty, it should be the scope of an RTL implementation.
+// In that case, we compare register and memory contents with that
+// implementation, printing to stderr and setting the failed_cmp bit if there
+// are any mismatches. If the model's design_scope is the empty string, we grab
+// the contents of DMEM from the ISS and inject them into the simulation
+// memory.
 //
 // If start_i is true, we start the model at start_addr and then step once (as
 // described above).
-extern "C" unsigned otbn_model_step(OtbnModel *model, const char *imem_scope,
-                                    unsigned imem_words, const char *dmem_scope,
-                                    unsigned dmem_words,
-                                    const char *design_scope, svLogic start_i,
+extern "C" unsigned otbn_model_step(OtbnModel *model, svLogic start_i,
                                     unsigned start_addr, unsigned status,
                                     svBitVecVal *err_bits /* bit [31:0] */);
 
-// Use simutil_get_mem to read data one word at a time from the given scope and
-// collect the results up in a vector of uint8_t values.
-static std::vector<uint8_t> get_sim_memory(const char *scope, size_t num_words,
-                                           size_t word_size) {
-  SVScoped scoped(scope);
-
-  // simutil_get_mem passes data as a packed array of svBitVecVal words. It
-  // only works for memories of size at most 312 bits, so we can just allocate
-  // 312/8 = 39 bytes as 39/sizeof(svBitVecVal) words on the stack.
-  assert(word_size <= 312 / 8);
-  svBitVecVal buf[312 / 8 / sizeof(svBitVecVal)];
-
-  std::vector<uint8_t> ret;
-
-  for (size_t w = 0; w < num_words; w++) {
-    if (!simutil_get_mem(w, buf)) {
-      std::ostringstream oss;
-      oss << "Cannot get memory at word " << w << " from scope " << scope
-          << ".\n";
-      throw std::runtime_error(oss.str());
-    }
-
-    // Append the first word_size bytes of data to ret.
-    std::copy_n(reinterpret_cast<const char *>(buf), word_size,
-                std::back_inserter(ret));
-  }
-
-  return ret;
-}
-
-// Use simutil_get_mem to write data one word at a time to the given scope.
-static void set_sim_memory(const std::vector<uint8_t> &data, const char *scope,
-                           size_t num_words, size_t word_size) {
-  SVScoped scoped(scope);
-
-  assert(num_words * word_size == data.size());
-
-  // See get_sim_memory for why this array is sized like this.
-  assert(word_size <= 312 / 8);
-  svBitVecVal buf[312 / 8 / sizeof(svBitVecVal)];
-
-  for (size_t w = 0; w < num_words; w++) {
-    const uint8_t *p = &data[w * word_size];
-    memcpy(buf, p, word_size);
-
-    if (!simutil_set_mem(w, buf)) {
-      std::ostringstream oss;
-      oss << "Cannot set memory at word " << w << " for scope " << scope
-          << ".\n";
-      throw std::runtime_error(oss.str());
-    }
-  }
-}
-
-// Read (the start of) the contents of a file at path as a vector of bytes.
-// Expects num_bytes bytes of data.
 static std::vector<uint8_t> read_vector_from_file(const std::string &path,
                                                   size_t num_bytes) {
   std::filebuf fb;
@@ -198,55 +172,42 @@ static void write_vector_to_file(const std::string &path,
   }
 }
 
-// Dump the memory at the given scope to a file at path.
-static void dump_memory_to_file(const std::string &path, const char *scope,
-                                size_t num_words, size_t word_size) {
-  write_vector_to_file(path, get_sim_memory(scope, num_words, word_size));
+extern "C" OtbnModel *otbn_model_init(const char *mem_scope,
+                                      const char *design_scope,
+                                      unsigned imem_words,
+                                      unsigned dmem_words) {
+  assert(mem_scope && design_scope);
+  return new OtbnModel(mem_scope, design_scope, imem_words, dmem_words);
 }
-
-// Read data from the given file and then write it into the memory at the given
-// scope.
-static void load_memory_from_file(const std::string &path, const char *scope,
-                                  size_t num_words, size_t word_size) {
-  size_t num_bytes = num_words * word_size;
-  set_sim_memory(read_vector_from_file(path, num_bytes), scope, num_words,
-                 word_size);
-}
-
-extern "C" OtbnModel *otbn_model_init() { return new OtbnModel; }
 
 extern "C" void otbn_model_destroy(OtbnModel *model) { delete model; }
 
 // Start a new run with the model, writing IMEM/DMEM and jumping to the given
 // start address. Returns 0 on success; -1 on failure.
-static int start_model(OtbnModel *model, const char *imem_scope,
-                       unsigned imem_words, const char *dmem_scope,
-                       unsigned dmem_words, unsigned start_addr) {
-  assert(model);
-  assert(imem_words >= 0);
-  assert(dmem_words >= 0);
-  assert(start_addr < (imem_words * 4));
+static int start_model(OtbnModel &model, unsigned start_addr) {
+  const MemArea &imem = model.mem_util.GetMemArea(true);
+  assert(start_addr % 4 == 0);
+  assert(start_addr / 4 < imem.GetSizeWords());
 
-  if (!model->ensure())
+  ISSWrapper *iss = model.get_wrapper(true);
+  if (!iss)
     return -1;
-  assert(model->iss);
-  ISSWrapper &iss = *model->iss;
 
-  std::string ifname(iss.make_tmp_path("imem"));
-  std::string dfname(iss.make_tmp_path("dmem"));
+  std::string dfname(iss->make_tmp_path("dmem"));
+  std::string ifname(iss->make_tmp_path("imem"));
 
   try {
-    dump_memory_to_file(dfname, dmem_scope, dmem_words, 32);
-    dump_memory_to_file(ifname, imem_scope, imem_words, 4);
+    write_vector_to_file(dfname, model.get_sim_memory(false));
+    write_vector_to_file(ifname, model.get_sim_memory(true));
   } catch (const std::exception &err) {
     std::cerr << "Error when dumping memory contents: " << err.what() << "\n";
     return -1;
   }
 
   try {
-    iss.load_d(dfname);
-    iss.load_i(ifname);
-    iss.start(start_addr);
+    iss->load_d(dfname);
+    iss->load_i(ifname);
+    iss->start(start_addr);
   } catch (const std::runtime_error &err) {
     std::cerr << "Error when starting ISS: " << err.what() << "\n";
     return -1;
@@ -258,17 +219,15 @@ static int start_model(OtbnModel *model, const char *imem_scope,
 // Step once in the model. Returns 1 if the model has finished, 0 if not and -1
 // on failure. If gen_trace is true, pass trace entries to the trace checker.
 // If the model has finished, writes otbn.ERR_BITS to *err_bits.
-static int step_model(OtbnModel *model, bool gen_trace, uint32_t *err_bits) {
-  assert(model);
+static int step_model(OtbnModel &model, bool gen_trace, uint32_t *err_bits) {
   assert(err_bits);
 
-  if (!model->ensure())
+  ISSWrapper *iss = model.get_wrapper(true);
+  if (!iss)
     return -1;
-  assert(model->iss);
-  ISSWrapper &iss = *model->iss;
 
   try {
-    std::pair<int, uint32_t> ret = iss.step(gen_trace);
+    std::pair<int, uint32_t> ret = iss->step(gen_trace);
     switch (ret.first) {
       case -1:
         // Something went wrong, such as a trace mismatch. We've already printed
@@ -296,19 +255,20 @@ static int step_model(OtbnModel *model, bool gen_trace, uint32_t *err_bits) {
 
 // Grab contents of dmem from the model and load it back into the RTL. Returns
 // 0 on success; -1 on failure.
-static int load_dmem(OtbnModel *model, const char *dmem_scope,
-                     unsigned dmem_words) {
-  assert(model);
-  if (!model->iss) {
+static int load_dmem(OtbnModel &model) {
+  ISSWrapper *iss = model.get_wrapper(false);
+  if (!iss) {
     std::cerr << "Cannot load dmem from OTBN model: ISS has not started.\n";
     return -1;
   }
-  ISSWrapper &iss = *model->iss;
 
-  std::string dfname(iss.make_tmp_path("dmem_out"));
+  const MemArea &dmem = model.mem_util.GetMemArea(false);
+
+  std::string dfname(iss->make_tmp_path("dmem_out"));
   try {
-    iss.dump_d(dfname);
-    load_memory_from_file(dfname, dmem_scope, dmem_words, 32);
+    iss->dump_d(dfname);
+    model.set_sim_memory(false,
+                         read_vector_from_file(dfname, dmem.GetSizeBytes()));
   } catch (const std::exception &err) {
     std::cerr << "Error when loading dmem from ISS: " << err.what() << "\n";
     return -1;
@@ -319,16 +279,17 @@ static int load_dmem(OtbnModel *model, const char *dmem_scope,
 // Grab contents of dmem from the model and compare it with the RTL.
 // Prints messages to stderr on failure or mismatch. Returns true on
 // success; false on mismatch. Throws a std::runtime_error on failure.
-static bool check_dmem(ISSWrapper &iss, const char *dmem_scope,
-                       unsigned dmem_words) {
-  size_t dmem_bytes = dmem_words * 32;
+static bool check_dmem(OtbnModel &model, ISSWrapper &iss) {
+  const MemArea &dmem = model.mem_util.GetMemArea(false);
+  uint32_t dmem_bytes = dmem.GetSizeBytes();
+
   std::string dfname(iss.make_tmp_path("dmem_out"));
 
   iss.dump_d(dfname);
   std::vector<uint8_t> iss_data = read_vector_from_file(dfname, dmem_bytes);
   assert(iss_data.size() == dmem_bytes);
 
-  std::vector<uint8_t> rtl_data = get_sim_memory(dmem_scope, dmem_words, 32);
+  std::vector<uint8_t> rtl_data = model.get_sim_memory(false);
   assert(rtl_data.size() == dmem_bytes);
 
   // If the arrays match, we're done.
@@ -434,12 +395,12 @@ static std::vector<T> get_stack(const std::string &stack_scope) {
 // Compare contents of ISS registers with those from the design. Prints
 // messages to stderr on failure or mismatch. Returns true on success; false on
 // mismatch. Throws a std::runtime_error on failure.
-static bool check_regs(ISSWrapper &iss, const std::string &design_scope) {
+static bool check_regs(OtbnModel &model, ISSWrapper &iss) {
   std::string base_scope =
-      design_scope +
+      model.design_scope_ +
       ".u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.u_snooper";
   std::string wide_scope =
-      design_scope + ".gen_rf_bignum_ff.u_otbn_rf_bignum.u_snooper";
+      model.design_scope_ + ".gen_rf_bignum_ff.u_otbn_rf_bignum.u_snooper";
 
   auto rtl_gprs = get_rtl_regs<uint32_t>(base_scope);
   auto rtl_wdrs = get_rtl_regs<ISSWrapper::u256_t>(wide_scope);
@@ -495,9 +456,9 @@ static bool check_regs(ISSWrapper &iss, const std::string &design_scope) {
 // Compare contents of ISS call stack with those from the design. Prints
 // messages to stderr on failure or mismatch. Returns true on success; false on
 // mismatch.  Throws a std::runtime_error on failure.
-static bool check_call_stack(ISSWrapper &iss, const std::string &design_scope) {
+static bool check_call_stack(OtbnModel &model, ISSWrapper &iss) {
   std::string call_stack_snooper_scope =
-      design_scope + ".u_otbn_rf_base.u_call_stack_snooper";
+      model.design_scope_ + ".u_otbn_rf_base.u_call_stack_snooper";
 
   auto rtl_call_stack = get_stack<uint32_t>(call_stack_snooper_scope);
 
@@ -534,38 +495,35 @@ static bool check_call_stack(ISSWrapper &iss, const std::string &design_scope) {
 // Check model against RTL when a run has finished. Prints messages to stderr
 // on failure or mismatch. Returns 1 for a match, 0 for a mismatch, -1 for some
 // other failure.
-int check_model(OtbnModel *model, const char *dmem_scope, unsigned dmem_words,
-                const char *design_scope) {
+int check_model(OtbnModel *model) {
   assert(model);
-  assert(dmem_words >= 0);
-  assert(design_scope);
 
-  if (!model->iss) {
+  ISSWrapper *iss = model->get_wrapper(false);
+  if (!iss) {
     std::cerr << "Cannot check OTBN model: ISS has not started.\n";
     return -1;
   }
-  ISSWrapper &iss = *model->iss;
 
   bool good = true;
 
   good &= OtbnTraceChecker::get().Finish();
 
   try {
-    good &= check_dmem(iss, dmem_scope, dmem_words);
+    good &= check_dmem(*model, *iss);
   } catch (const std::exception &err) {
     std::cerr << "Failed to check DMEM: " << err.what() << "\n";
     return -1;
   }
 
   try {
-    good &= check_regs(iss, design_scope);
+    good &= check_regs(*model, *iss);
   } catch (const std::exception &err) {
     std::cerr << "Failed to check registers: " << err.what() << "\n";
     return -1;
   }
 
   try {
-    good &= check_call_stack(iss, design_scope);
+    good &= check_call_stack(*model, *iss);
   } catch (const std::exception &err) {
     std::cerr << "Failed to check call stack: " << err.what() << "\n";
     return -1;
@@ -584,19 +542,16 @@ static void set_err_bits(svBitVecVal *dst, uint32_t src) {
   }
 }
 
-extern "C" unsigned otbn_model_step(OtbnModel *model, const char *imem_scope,
-                                    unsigned imem_words, const char *dmem_scope,
-                                    unsigned dmem_words,
-                                    const char *design_scope, svLogic start_i,
+extern "C" unsigned otbn_model_step(OtbnModel *model, svLogic start_i,
                                     unsigned start_addr, unsigned status,
                                     svBitVecVal *err_bits /* bit [31:0] */) {
-  assert(model && imem_scope && dmem_scope && design_scope && err_bits);
+  assert(model && err_bits);
 
   // Run model checks if needed. This usually happens just after an operation
   // has finished.
-  bool check_rtl = (design_scope[0] != '\0');
+  bool check_rtl = (model->design_scope_.size() > 0);
   if (check_rtl && (status & CHECK_DUE_BIT)) {
-    switch (check_model(model, dmem_scope, dmem_words, design_scope)) {
+    switch (check_model(model)) {
       case 1:
         // Match (success)
         break;
@@ -615,8 +570,7 @@ extern "C" unsigned otbn_model_step(OtbnModel *model, const char *imem_scope,
 
   // Start the model if requested
   if (start_i) {
-    switch (start_model(model, imem_scope, imem_words, dmem_scope, dmem_words,
-                        start_addr)) {
+    switch (start_model(*model, start_addr)) {
       case 0:
         // All good
         status |= RUNNING_BIT;
@@ -634,7 +588,7 @@ extern "C" unsigned otbn_model_step(OtbnModel *model, const char *imem_scope,
 
   // Step the model once
   uint32_t int_err_bits;
-  switch (step_model(model, check_rtl, &int_err_bits)) {
+  switch (step_model(*model, check_rtl, &int_err_bits)) {
     case 0:
       // Still running: no change
       break;
@@ -657,7 +611,7 @@ extern "C" unsigned otbn_model_step(OtbnModel *model, const char *imem_scope,
   // If we've just stopped running and there's no RTL, load the contents of
   // DMEM back from the ISS
   if (!check_rtl) {
-    switch (load_dmem(model, dmem_scope, dmem_words)) {
+    switch (load_dmem(*model)) {
       case 0:
         // Success
         break;

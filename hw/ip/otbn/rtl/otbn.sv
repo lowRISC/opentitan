@@ -519,15 +519,11 @@ module otbn
     assign start_model = start & otbn_use_model;
     assign start_rtl = start & ~otbn_use_model;
 
-    // Model (Instruction Set Simulation)
-    localparam string ImemScope = "..u_imem.u_mem.gen_generic.u_impl_generic";
-    localparam string DmemScope = "..u_dmem.u_mem.gen_generic.u_impl_generic";
-
+    // Model (Instruction Set Simulator)
     otbn_core_model #(
       .DmemSizeByte(DmemSizeByte),
       .ImemSizeByte(ImemSizeByte),
-      .DmemScope(DmemScope),
-      .ImemScope(ImemScope),
+      .MemScope(".."),
       .DesignScope("")
     ) u_otbn_core_model (
       .clk_i,
