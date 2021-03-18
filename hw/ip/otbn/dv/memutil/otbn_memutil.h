@@ -1,8 +1,8 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
-#pragma once
+#ifndef OPENTITAN_HW_IP_OTBN_DV_MEMUTIL_OTBN_MEMUTIL_H_
+#define OPENTITAN_HW_IP_OTBN_DV_MEMUTIL_OTBN_MEMUTIL_H_
 
 #include <svdpi.h>
 
@@ -58,3 +58,5 @@ svBit OtbnMemUtilGetSegInfo(OtbnMemUtil *mem_util, svBit is_imem, int seg_idx,
 svBit OtbnMemUtilGetSegData(OtbnMemUtil *mem_util, svBit is_imem, int word_off,
                             /* output bit[31:0] */ svBitVecVal *data_value);
 }
+
+#endif  // OPENTITAN_HW_IP_OTBN_DV_MEMUTIL_OTBN_MEMUTIL_H_

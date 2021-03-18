@@ -1,8 +1,8 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
-#pragma once
+#ifndef OPENTITAN_HW_DV_VERILATOR_CPP_RANGED_MAP_H_
+#define OPENTITAN_HW_DV_VERILATOR_CPP_RANGED_MAP_H_
 
 // Utility class representing disjoint segments of memory
 
@@ -179,3 +179,5 @@ class RangedMap {
  private:
   std::map<rng_t, val_t> map_;
 };
+
+#endif  // OPENTITAN_HW_DV_VERILATOR_CPP_RANGED_MAP_H_

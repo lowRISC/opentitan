@@ -1,8 +1,8 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
-#pragma once
+#ifndef OPENTITAN_HW_DV_VERILATOR_CPP_VERILATOR_MEMUTIL_H_
+#define OPENTITAN_HW_DV_VERILATOR_CPP_VERILATOR_MEMUTIL_H_
 
 //
 // A wrapper class that converts a VerilatorMemutil into a SimCtrlExtension
@@ -40,3 +40,5 @@ class VerilatorMemUtil : public SimCtrlExtension {
   DpiMemUtil *mem_util_;
   std::unique_ptr<DpiMemUtil> allocation_;
 };
+
+#endif  // OPENTITAN_HW_DV_VERILATOR_CPP_VERILATOR_MEMUTIL_H_

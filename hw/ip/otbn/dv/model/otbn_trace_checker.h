@@ -1,8 +1,8 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
-#pragma once
+#ifndef OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_TRACE_CHECKER_H_
+#define OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_TRACE_CHECKER_H_
 
 // A singleton class that listens to trace entries from the simulated core (as
 // an OtbnTraceListener) and compares them with the trace coming out of the
@@ -98,3 +98,5 @@ class OtbnTraceChecker : public OtbnTraceListener {
   bool done_;
   bool seen_err_;
 };
+
+#endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_TRACE_CHECKER_H_
