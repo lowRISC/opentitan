@@ -10,11 +10,20 @@
 #include <limits>
 #include <stdexcept>
 
+// join two, possibly relative, scopes correctly.
+static std::string join_scopes(const std::string &a, const std::string &b) {
+  assert(a.size() && b.size());
+  // If a = ".." and b = "foo.bar", we want "..foo.bar". Otherwise, a
+  // = "..foo" and b = "bar.baz", so we want "..foo.bar.baz"
+  // (inserting a "." between the two)
+  return (a.back() == '.') ? a + b : a + "." + b;
+}
+
 OtbnMemUtil::OtbnMemUtil(const std::string &top_scope)
-    : imem_(top_scope + ".u_imem.u_mem.gen_generic.u_impl_generic", 4096 / 4,
-            4),
-      dmem_(top_scope + ".u_dmem.u_mem.gen_generic.u_impl_generic", 4096 / 32,
-            32) {
+    : imem_(join_scopes(top_scope, "u_imem.u_mem.gen_generic.u_impl_generic"),
+            4096 / 4, 4),
+      dmem_(join_scopes(top_scope, "u_dmem.u_mem.gen_generic.u_impl_generic"),
+            4096 / 32, 32) {
   RegisterMemoryArea("imem", 0x4000, &imem_);
   RegisterMemoryArea("dmem", 0x8000, &dmem_);
 }

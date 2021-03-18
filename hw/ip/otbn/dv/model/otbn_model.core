@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:ip:otbn_pkg
       - lowrisc:dv_verilator:memutil_dpi
+      - lowrisc:dv:otbn_memutil
       - lowrisc:ip:otbn_tracer
     files:
       - otbn_model.cc: { file_type: cppSource }

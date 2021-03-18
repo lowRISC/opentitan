@@ -68,16 +68,11 @@ module tb;
   // decoding errors).
   assign model_if.start = dut.start;
 
-  localparam ImemScope = "..dut.u_imem.u_mem.gen_generic.u_impl_generic";
-  localparam DmemScope = "..dut.u_dmem.u_mem.gen_generic.u_impl_generic";
-  localparam DesignScope = "..dut.u_otbn_core";
-
   otbn_core_model #(
     .DmemSizeByte (otbn_reg_pkg::OTBN_DMEM_SIZE),
     .ImemSizeByte (otbn_reg_pkg::OTBN_IMEM_SIZE),
-    .DmemScope    (DmemScope),
-    .ImemScope    (ImemScope),
-    .DesignScope  (DesignScope)
+    .MemScope     ("..dut"),
+    .DesignScope  ("..dut.u_otbn_core")
   ) u_model (
     .clk_i        (model_if.clk_i),
     .rst_ni       (model_if.rst_ni),

@@ -19,10 +19,9 @@ module otbn_core_model
   // Size of the data memory, in bytes
   parameter int DmemSizeByte = 4096,
 
-  // Scope of the instruction memory (for DPI)
-  parameter string ImemScope = "",
-  // Scope of the data memory (for DPI)
-  parameter string DmemScope = "",
+  // The scope that contains the instruction and data memory (for DPI)
+  parameter string MemScope = "",
+
   // Scope of an RTL OTBN implementation (for DPI). If empty, this is a "standalone" model, which
   // should update DMEM on completion. If not empty, we assume it's the scope for the top-level of a
   // real implementation running alongside and we check DMEM contents on completion.
@@ -43,15 +42,13 @@ module otbn_core_model
   output bit err_o        // something went wrong
 );
 
-  import "DPI-C" function chandle otbn_model_init();
+  import "DPI-C" context function chandle otbn_model_init(string mem_scope,
+                                                          string design_scope,
+                                                          int unsigned imem_words,
+                                                          int unsigned dmem_words);
   import "DPI-C" function void otbn_model_destroy(chandle handle);
   import "DPI-C" context function
     int unsigned otbn_model_step(chandle           model,
-                                 string            imem_scope,
-                                 int unsigned      imem_size,
-                                 string            dmem_scope,
-                                 int unsigned      dmem_size,
-                                 string            design_scope,
                                  logic             start_i,
                                  int unsigned      start_addr,
                                  int unsigned      status,
@@ -76,7 +73,7 @@ module otbn_core_model
   // Create and destroy an object through which we can talk to the ISS.
   chandle model_handle;
   initial begin
-    model_handle = otbn_model_init();
+    model_handle = otbn_model_init(MemScope, DesignScope, ImemSizeWords, DmemSizeWords);
     assert(model_handle != chandle_null);
   end
   final begin
@@ -109,9 +106,6 @@ module otbn_core_model
     end else begin
       if (start_i | running | check_due) begin
         status <= otbn_model_step(model_handle,
-                                  ImemScope, ImemSizeWords,
-                                  DmemScope, DmemSizeWords,
-                                  DesignScope,
                                   start_i, start_addr_32,
                                   status, raw_err_bits_d);
         raw_err_bits_q <= raw_err_bits_d;
