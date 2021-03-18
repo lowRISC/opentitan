@@ -19,7 +19,7 @@ module rstmgr_por #(
 );
   localparam int CtrWidth = $clog2(StretchCount+1);
 
-  logic rst_root_n;
+  logic rst_root_n_pre_mux, rst_root_n;
   logic [FilterStages-1:0] rst_filter_n;
   logic rst_stable;
   logic rst_clean_n;
@@ -34,7 +34,16 @@ module rstmgr_por #(
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .d_i(1'b1),
-    .q_o(rst_root_n)
+    .q_o(rst_root_n_pre_mux)
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_rst_root_mux (
+    .clk0_i(rst_root_n_pre_mux),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(rst_root_n)
   );
 
   // filter the POR
@@ -87,6 +96,13 @@ module rstmgr_por #(
     .q_o(rst_nq)
   );
 
-  assign rst_no = rst_nq;
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_rst_out_mux (
+    .clk0_i(rst_nq),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(rst_no)
+  );
 
 endmodule // rstmgr_por

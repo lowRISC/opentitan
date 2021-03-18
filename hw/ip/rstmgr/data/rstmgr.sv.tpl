@@ -50,13 +50,13 @@ module rstmgr import rstmgr_pkg::*; (
   // The por is at first stretched and synced on clk_aon
   // The rst_ni and pok_i input will be changed once AST is integrated
   logic [PowerDomains-1:0] rst_por_aon_n;
-  lc_ctrl_pkg::lc_tx_t [1:0] por_aon_scanmode;
 
   for (genvar i = 0; i < PowerDomains; i++) begin : gen_rst_por_aon
     if (i == DomainAonSel) begin : gen_rst_por_aon_normal
 
+      lc_ctrl_pkg::lc_tx_t por_aon_scanmode;
       prim_lc_sync #(
-        .NumCopies(2),
+        .NumCopies(1),
         .AsyncOn(0)
       ) u_por_scanmode_sync (
         .clk_i(1'b0),  // unused clock
@@ -69,22 +69,14 @@ module rstmgr import rstmgr_pkg::*; (
         .clk_i(clk_aon_i),
         .rst_ni, // this is the only use of rst_ni in this module
         .scan_rst_ni,
-        .scanmode_i(por_aon_scanmode[0] == lc_ctrl_pkg::On),
+        .scanmode_i(por_aon_scanmode == lc_ctrl_pkg::On),
         .rst_no(rst_por_aon_n[i])
-      );
-
-      prim_clock_mux2 #(
-        .NoFpgaBufG(1'b1)
-      ) u_rst_por_aon_n_mux (
-        .clk0_i(rst_por_aon_n[i]),
-        .clk1_i(scan_rst_ni),
-        .sel_i(por_aon_scanmode[1] == lc_ctrl_pkg::On),
-        .clk_o(resets_o.rst_por_aon_n[i])
       );
     end else begin : gen_rst_por_aon_tieoff
       assign rst_por_aon_n[i] = 1'b0;
-      assign resets_o.rst_por_aon_n[i] = rst_por_aon_n[i];
     end
+
+    assign resets_o.rst_por_aon_n[i] = rst_por_aon_n[i];
   end
 
 
@@ -142,10 +134,22 @@ module rstmgr import rstmgr_pkg::*; (
   logic [PowerDomains-1:0] rst_lc_src_n;
   logic [PowerDomains-1:0] rst_sys_src_n;
 
+  lc_ctrl_pkg::lc_tx_t rst_ctrl_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_ctrl_scanmode_sync (
+    .clk_i(1'b0),  // unused clock
+    .rst_ni(1'b1), // unused reset
+    .lc_en_i(scanmode_i),
+    .lc_en_o(rst_ctrl_scanmode)
+  );
 
   // lc reset sources
   rstmgr_ctrl u_lc_src (
     .clk_i,
+    .scanmode_i(rst_ctrl_scanmode == lc_ctrl_pkg::On),
+    .scan_rst_ni,
     .rst_ni(local_rst_n),
     .rst_req_i(pwr_i.rst_lc_req),
     .rst_parent_ni({PowerDomains{1'b1}}),
@@ -155,6 +159,8 @@ module rstmgr import rstmgr_pkg::*; (
   // sys reset sources
   rstmgr_ctrl u_sys_src (
     .clk_i,
+    .scanmode_i(rst_ctrl_scanmode == lc_ctrl_pkg::On),
+    .scan_rst_ni,
     .rst_ni(local_rst_n),
     .rst_req_i(pwr_i.rst_sys_req | {PowerDomains{ndm_req_valid}}),
     .rst_parent_ni(rst_lc_src_n),
