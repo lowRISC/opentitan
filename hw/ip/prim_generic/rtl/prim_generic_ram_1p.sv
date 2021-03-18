@@ -25,6 +25,9 @@ module prim_generic_ram_1p import prim_ram_1p_pkg::*; #(
   input ram_1p_cfg_t       cfg_i
 );
 
+  // Width must be fully divisible by DataBitsPerMask
+  `ASSERT_INIT(DataBitsPerMaskCheck_A, (Width % DataBitsPerMask) == 0)
+
   logic unused_cfg;
   assign unused_cfg = ^cfg_i;
 

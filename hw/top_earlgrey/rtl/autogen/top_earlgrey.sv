@@ -838,6 +838,8 @@ module top_earlgrey #(
     .EnableParity(0),
     .LfsrWidth(32),
     .StatePerm(RndCnstSramCtrlMainSramLfsrPerm)
+    .DataBitsPerMask(1),
+    .DiffWidth(8)
   ) u_ram1p_ram_main (
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
@@ -909,6 +911,8 @@ module top_earlgrey #(
     .EnableParity(0),
     .LfsrWidth(32),
     .StatePerm(RndCnstSramCtrlRetAonSramLfsrPerm)
+    .DataBitsPerMask(1),
+    .DiffWidth(8)
   ) u_ram1p_ram_ret_aon (
     .clk_i   (clkmgr_aon_clocks.clk_io_div4_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),

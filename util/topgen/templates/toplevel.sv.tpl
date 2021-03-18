@@ -392,6 +392,8 @@ mem_name = Name(mem_name[1:])
     .EnableParity(0),
     .LfsrWidth(${data_width}),
     .StatePerm(RndCnstSramCtrl${mem_name.as_camel_case()}SramLfsrPerm)
+    .DataBitsPerMask(1),
+    .DiffWidth(8)
   ) u_ram1p_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),

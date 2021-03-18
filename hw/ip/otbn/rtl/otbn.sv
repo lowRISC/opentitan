@@ -146,7 +146,7 @@ module otbn
   prim_ram_1p_adv #(
     .Width           (39),
     .Depth           (ImemSizeWords),
-    .DataBitsPerMask (32) // Write masks are not supported.
+    .DataBitsPerMask (1) // Write masks are not supported.
   ) u_imem (
     .clk_i,
     .rst_ni,
@@ -280,7 +280,7 @@ module otbn
   prim_ram_1p_adv #(
     .Width           (WLEN+7*8),
     .Depth           (DmemSizeWords),
-    .DataBitsPerMask (32) // 32b write masks for 32b word writes from bus
+    .DataBitsPerMask (1) // 32b write masks for 32b word writes from bus
   ) u_dmem (
     .clk_i,
     .rst_ni,
