@@ -165,21 +165,21 @@ package tlul_pkg;
     return payload;
   endfunction // extract_d2h_rsp_intg
 
-  // calculate ecc for command checking 
-  function automatic logic [H2DCmdIntgWidth-1:0] ecc_cmd_intg( tl_h2d_t tl_i );
+  // calculate ecc for command checking
+  function automatic logic [H2DCmdIntgWidth-1:0] ecc_cmd_intg(tl_h2d_t tl);
     logic [H2DCmdIntgWidth-1:0] cmd_intg;
     logic [H2DCmdMaxWidth-1:0] unused_cmd_payload;
     tl_h2d_cmd_intg_t cmd;
-    cmd = extract_h2d_cmd_intg( tl_i );
-    {cmd_intg, unused_cmd_payload} = prim_secded_64_57_enc( H2DCmdMaxWidth'(cmd) );
+    cmd = extract_h2d_cmd_intg(tl);
+    {cmd_intg, unused_cmd_payload} = prim_secded_64_57_enc(H2DCmdMaxWidth'(cmd));
    return cmd_intg;
   endfunction  // ecc_cmd_intg
- 
-  // calculate ecc for data checking 
-  function automatic logic [DataIntgWidth-1:0] ecc_data_intg( tl_d2h_t tl_i );
+
+  // calculate ecc for data checking
+  function automatic logic [DataIntgWidth-1:0] ecc_data_intg(tl_d2h_t tl);
     logic [DataIntgWidth-1:0] data_intg;
     logic [DataMaxWidth-1:0] unused_data;
-    {data_intg, unused_data} = prim_secded_64_57_enc( tl_i.d_data );
+    {data_intg, unused_data} = prim_secded_64_57_enc(tl.d_data);
     return data_intg;
   endfunction  // ecc_data_intg
 
