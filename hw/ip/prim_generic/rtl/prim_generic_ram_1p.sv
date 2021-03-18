@@ -28,20 +28,28 @@ module prim_generic_ram_1p import prim_ram_1p_pkg::*; #(
   logic unused_cfg;
   assign unused_cfg = ^cfg_i;
 
+  // The width of the word may not always align with the bitmask.
+  // Such situations can arise if the upper level incorporates a protocol such as
+  // memory scrambling, which does not work if DataBitsPerMask is 1.
+  // When this happens, allow the upper layers to use DataBitsPerMask > 1,
+  // but convert back to a bit mask of 1 for memory updating purposes.
+  localparam bit AlignedMask = (Width % DataBitsPerMask) == 0;
+
   // Width of internal write mask. Note wmask_i input into the module is always assumed
   // to be the full bit mask
-  localparam int MaskWidth = Width / DataBitsPerMask;
+  localparam int LocalDataBitsPerMask = AlignedMask ? DataBitsPerMask : 1;
+  localparam int MaskWidth = Width / LocalDataBitsPerMask;
 
   logic [Width-1:0]     mem [Depth];
   logic [MaskWidth-1:0] wmask;
 
   for (genvar k = 0; k < MaskWidth; k++) begin : gen_wmask
-    assign wmask[k] = &wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
+    assign wmask[k] = &wmask_i[k*LocalDataBitsPerMask +: LocalDataBitsPerMask];
 
     // Ensure that all mask bits within a group have the same value for a write
     `ASSERT(MaskCheck_A, req_i && write_i |->
-        wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
-        clk_i, '0)
+        wmask_i[k*LocalDataBitsPerMask +: LocalDataBitsPerMask] inside
+        {{LocalDataBitsPerMask{1'b1}}, '0}, clk_i, '0)
   end
 
   // using always instead of always_ff to avoid 'ICPD  - illegal combination of drivers' error
@@ -51,8 +59,8 @@ module prim_generic_ram_1p import prim_ram_1p_pkg::*; #(
       if (write_i) begin
         for (int i=0; i < MaskWidth; i = i + 1) begin
           if (wmask[i]) begin
-            mem[addr_i][i*DataBitsPerMask +: DataBitsPerMask] <=
-              wdata_i[i*DataBitsPerMask +: DataBitsPerMask];
+            mem[addr_i][i*LocalDataBitsPerMask +: LocalDataBitsPerMask] <=
+              wdata_i[i*LocalDataBitsPerMask +: LocalDataBitsPerMask];
           end
         end
       end else begin

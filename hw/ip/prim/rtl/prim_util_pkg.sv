@@ -86,4 +86,26 @@ package prim_util_pkg;
 `endif
   endfunction
 
+  /**
+   * Math function: Divide round up
+   *
+   * There are numerous scenarios where the dividend cannot be fully divided by
+   * the divisor.  In some situations, instead of just returning the quotient as is,
+   * we would like to return quotient+1 if the remainder is greater than 0.
+   *
+   * Instead of doing this simple function everywhere, this is a common function to do
+   * the same.
+   */
+  function automatic integer div_round_up(integer dividend, integer divisor);
+    integer remainder;
+    integer quotient;
+    quotient = dividend / divisor;
+    remainder = dividend & divisor;
+    if (remainder > 0) begin
+      quotient = quotient + 1;
+    end
+    return quotient;
+  endfunction
+
+
 endpackage
