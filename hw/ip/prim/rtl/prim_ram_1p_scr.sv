@@ -38,7 +38,6 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   parameter  int NumDiffRounds       = 2,
   // This parameter governs the block-width of additional diffusion layers.
   // For intra-byte diffusion, set this parameter to 8.
-  // Note that DataBitsPerMask must be a multiple of this parameter.
   parameter  int DiffWidth           = DataBitsPerMask,
   // Number of address scrambling rounds. Setting this to 0 disables address scrambling.
   parameter  int NumAddrScrRounds    = 2,
@@ -102,7 +101,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   // The depth needs to be a power of 2 in case address scrambling is turned on
   `ASSERT_INIT(DepthPow2Check_A, NumAddrScrRounds <= '0 || 2**$clog2(Depth) == Depth)
-  `ASSERT_INIT(DiffWidthAligned_A, (DataBitsPerMask % DiffWidth) == 0)
+  `ASSERT_INIT(DiffWidthMinimum_A, DiffWidth >= 4)
   `ASSERT_INIT(DiffWidthWithParity_A, EnableParity && (DiffWidth == 8) || !EnableParity)
 
   //////////////////////////////

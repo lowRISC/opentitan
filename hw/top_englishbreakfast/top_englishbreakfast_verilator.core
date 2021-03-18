@@ -97,6 +97,7 @@ targets:
           - '--trace-structs'
           - '--trace-params'
           - '--trace-max-array 1024'
+          - '--unroll-count 512'
           - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DVL_USER_STOP -DTOPLEVEL_NAME=top_englishbreakfast_verilator -g"'
           - '-LDFLAGS "-pthread -lutil -lelf"'
           - '-Wall'
