@@ -63,9 +63,9 @@ module top_englishbreakfast_cw305 #(
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_core;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe_core;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_core;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out_core, dio_out_umux;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe_core, dio_oe_umux;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_core, dio_in_umux;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out_core;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe_core;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_core;
 
   padring #(
     // MIOs 43:34 and 31:20 are currently not
@@ -205,12 +205,12 @@ module top_englishbreakfast_cw305 #(
                              IO_USB_DN0 } ),
     // Muxed IOs
     .mio_in_o            ( mio_in_core   ),
-    .mio_out_i           ( mio_out_core  ),
+    .mio_out_i           ( mio_out       ),
     .mio_oe_i            ( mio_oe_core   ),
     // Dedicated IOs
-    .dio_in_o            ( dio_in_umux   ),
-    .dio_out_i           ( dio_out_umux  ),
-    .dio_oe_i            ( dio_oe_umux   ),
+    .dio_in_o            ( dio_in_core   ),
+    .dio_out_i           ( dio_out_core  ),
+    .dio_oe_i            ( dio_oe_core   ),
     // Pad Attributes
     .mio_attr_i          ( mio_attr      ),
     .dio_attr_i          ( dio_attr      )
