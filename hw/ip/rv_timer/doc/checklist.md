@@ -22,7 +22,7 @@ RTL           | [FUNC_IMPLEMENTED][]           | Done        |
 RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
 Code Quality  | [LINT_SETUP][]                 | Done        |
 
-[RV_TIMER Spec]:      {{<relref "/hw/ip/rv_timer/doc/_index.md">}}
+[RV_TIMER Spec]:      {{<relref "/_index.md">}}
 
 [SPEC_COMPLETE]:              {{<relref "/doc/project/checklist.md#spec_complete" >}}
 [CSR_DEFINED]:                {{<relref "/doc/project/checklist.md#csr_defined" >}}

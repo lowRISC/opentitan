@@ -7,7 +7,7 @@ NOTE: This is a template checklist document that is required to be copied over t
 directory for a new design that transitions from L0 (Specification) to L1 (Development)
 stage, and updated as needed. Once done, please remove this comment before checking it in.
 -->
-This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [CSRNG peripheral.]({{< relref "hw/ip/csrng/doc" >}})
+This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [CSRNG peripheral.]({{< relref "." >}})
 All checklist items refer to the content in the [Checklist.]({{< relref "/doc/project/checklist.md" >}})
 
 ## Design Checklist
@@ -16,7 +16,7 @@ All checklist items refer to the content in the [Checklist.]({{< relref "/doc/pr
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Done        | [CSRNG Design Spec]({{<relref "hw/ip/csrng/doc" >}})
+Documentation | [SPEC_COMPLETE][]              | Done        | [CSRNG Design Spec]({{<relref "." >}})
 Documentation | [CSR_DEFINED][]                | Done        |
 RTL           | [CLKRST_CONNECTED][]           | Done        |
 RTL           | [IP_TOP][]                     | Done        |
@@ -115,8 +115,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [CSRNG DV document]({{<relref "hw/ip/csrng/doc/dv" >}})
-Documentation | [DV_PLAN_COMPLETED][]                 | Done        | [CSRNG DV plan]({{<relref "hw/ip/csrng/doc/dv/index.md#dv_plan" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [CSRNG DV document]({{<relref "dv" >}})
+Documentation | [DV_PLAN_COMPLETED][]                 | Done        | [CSRNG DV plan]({{<relref "dv/index.md#dv_plan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |

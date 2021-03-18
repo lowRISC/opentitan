@@ -2,7 +2,7 @@
 title: "AON Timer Checklist"
 ---
 
-This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [AON Timer peripheral.]({{< relref "hw/ip/aon_timer/doc" >}})
+This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [AON Timer peripheral.]({{< relref "." >}})
 All checklist items refer to the content in the [Checklist.]({{< relref "/doc/project/checklist.md" >}})
 
 ## Design Checklist
@@ -11,7 +11,7 @@ All checklist items refer to the content in the [Checklist.]({{< relref "/doc/pr
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Done        | [AON Timer Design Spec]({{<relref "hw/ip/aon_timer/doc" >}})
+Documentation | [SPEC_COMPLETE][]              | Done        | [AON Timer Design Spec]({{<relref "." >}})
 Documentation | [CSR_DEFINED][]                | Done        |
 RTL           | [CLKRST_CONNECTED][]           | Done        |
 RTL           | [IP_TOP][]                     | Done        |

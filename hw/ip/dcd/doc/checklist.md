@@ -16,7 +16,7 @@ All checklist items refer to the content in the [Checklist.]({{< relref "/doc/pr
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Not Started | [DCD Design Spec]({{<relref "hw/ip/dcd/doc" >}})
+Documentation | [SPEC_COMPLETE][]              | Not Started | [DCD Design Spec]({{<relref "." >}})
 Documentation | [CSR_DEFINED][]                | Not Started |
 RTL           | [CLKRST_CONNECTED][]           | Not Started |
 RTL           | [IP_TOP][]                     | Not Started |
@@ -115,8 +115,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [DCD DV document]({{<relref "hw/ip/dcd/doc/dv/index.md" >}})
-Documentation | [DV_PLAN_COMPLETED][]                 | Not Started | [DCD DV Plan]({{<relref "hw/ip/dcd/doc/dv/index.md#dv_plan" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [DCD DV document]({{<relref "dv/index.md" >}})
+Documentation | [DV_PLAN_COMPLETED][]                 | Not Started | [DCD DV Plan]({{<relref "dv/index.md#dv_plan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Not Started |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Not Started |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Not Started |

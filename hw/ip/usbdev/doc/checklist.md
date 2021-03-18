@@ -2,7 +2,7 @@
 title: "USB Device Checklist"
 ---
 
-This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [USB Device peripheral.]({{< relref "hw/ip/usbdev/doc" >}})
+This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [USB Device peripheral.]({{< relref "." >}})
 All checklist items refer to the content in the [Checklist.]({{< relref "/doc/project/checklist.md" >}})
 
 ## Design Checklist
@@ -11,7 +11,7 @@ All checklist items refer to the content in the [Checklist.]({{< relref "/doc/pr
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Done        | [USB Device Design Spec]({{<relref "hw/ip/usbdev/doc" >}})
+Documentation | [SPEC_COMPLETE][]              | Done        | [USB Device Design Spec]({{<relref "." >}})
 Documentation | [CSR_DEFINED][]                | Done        |
 RTL           | [CLKRST_CONNECTED][]           | Done        |
 RTL           | [IP_TOP][]                     | Done        |
@@ -110,8 +110,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | In Progress | [USB Device DV document]({{<relref "hw/ip/usbdev/doc/dv" >}})
-Documentation | [DV_PLAN_COMPLETED][]                 | In Progress | [USB Device DV plan]({{<relref "hw/ip/usbdev/doc/dv/index.md#dv_plan" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | In Progress | [USB Device DV document]({{<relref "dv" >}})
+Documentation | [DV_PLAN_COMPLETED][]                 | In Progress | [USB Device DV plan]({{<relref "dv/index.md#dv_plan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |

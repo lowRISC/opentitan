@@ -7,7 +7,7 @@ NOTE: This is a template checklist document that is required to be copied over t
 directory for a new design that transitions from L0 (Specification) to L1 (Development)
 stage, and updated as needed. Once done, please remove this comment before checking it in.
 -->
-This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [CLKMGR peripheral.]({{< relref "hw/ip/clkmgr/doc" >}})
+This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [CLKMGR peripheral.]({{< relref "." >}})
 All checklist items refer to the content in the [Checklist.]({{< relref "/doc/project/checklist.md" >}})
 
 ## Design Checklist
@@ -16,7 +16,7 @@ All checklist items refer to the content in the [Checklist.]({{< relref "/doc/pr
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Done        | [CLKMGR Design Spec]({{<relref "hw/ip/clkmgr/doc" >}})
+Documentation | [SPEC_COMPLETE][]              | Done        | [CLKMGR Design Spec]({{<relref "." >}})
 Documentation | [CSR_DEFINED][]                | Done        |
 RTL           | [CLKRST_CONNECTED][]           | Done        |
 RTL           | [IP_TOP][]                     | Done        |

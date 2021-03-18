@@ -2,7 +2,7 @@
 title: "Pattgen Checklist"
 ---
 
-This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [Pattgen peripheral.]({{<relref "hw/ip/pattgen/doc" >}})
+This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [Pattgen peripheral.]({{<relref "." >}})
 All checklist items refer to the content in the [Checklist.]({{< relref "/doc/project/checklist.md" >}})
 
 ## Design Checklist
@@ -11,7 +11,7 @@ All checklist items refer to the content in the [Checklist.]({{< relref "/doc/pr
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|-----------------------         |-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Done        | [Pattgen Design Spec]({{<relref "hw/ip/pattgen/doc" >}})
+Documentation | [SPEC_COMPLETE][]              | Done        | [Pattgen Design Spec]({{<relref "." >}})
 Documentation | [CSR_DEFINED][]                | Done        |
 RTL           | [CLKRST_CONNECTED][]           | Done        |
 RTL           | [IP_TOP][]                     | Done        |
@@ -112,8 +112,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [pattgen_dv_doc]({{<relref "hw/ip/pattgen/doc/dv" >}})
-Documentation | [DV_PLAN_COMPLETED][]                 | Done        | [pattgen_dv_plan]({{<relref "hw/ip/pattgen/doc/dv/index.md#dv_plan" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Not Started | [pattgen_dv_doc]({{<relref "dv" >}})
+Documentation | [DV_PLAN_COMPLETED][]                 | Done        | [pattgen_dv_plan]({{<relref "dv/index.md#dv_plan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
