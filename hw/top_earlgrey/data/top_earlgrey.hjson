@@ -961,9 +961,8 @@
         'eflash.flash_bist_enable'     : 'flash_bist_enable',
         'eflash.flash_power_down_h'    : 'flash_power_down_h',
         'eflash.flash_power_ready_h'   : 'flash_power_ready_h',
-        'eflash.flash_test_mode_a'     : 'flash_test_mode_a',
-        'eflash.flash_test_voltage_h'  : 'flash_test_voltage_h',
         'entropy_src.entropy_src_rng'  : 'es_rng',
+        'entropy_src.rng_fips'         : 'es_rng_fips',
         'lc_ctrl.lc_clk_byp_req'       : 'lc_clk_byp_req',
         'peri.tl_ast'                  : 'ast_tl',
         'pinmux_aon.dft_strap_test'    : 'dft_strap_test'

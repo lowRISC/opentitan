@@ -81,6 +81,11 @@ module top_${top["name"]} #(
   % for sig in top["inter_signal"]["external"]:
   ${"input " if sig["direction"] == "in" else "output"} ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]},
   % endfor
+
+  // Flash specific voltages
+  inout [3:0] flash_test_mode_a_io,
+  inout flash_test_voltage_h_io,
+
 % endif
   input                      scan_rst_ni, // reset used for test mode
   input                      scan_en_i,
@@ -539,8 +544,8 @@ module top_${top["name"]} #(
     .flash_bist_enable_i,
     .flash_power_down_h_i,
     .flash_power_ready_h_i,
-    .flash_test_mode_a_i,
-    .flash_test_voltage_h_i,
+    .flash_test_mode_a_io,
+    .flash_test_voltage_h_io,
     .scanmode_i,
     .scan_en_i,
     .scan_rst_ni
