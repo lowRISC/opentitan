@@ -7,8 +7,11 @@
 
 `include "prim_assert.sv"
 
-module keymgr import keymgr_pkg::*; #(
-  parameter logic AlertAsyncOn                 = 1'b1,
+module keymgr
+  import keymgr_pkg::*;
+  import keymgr_reg_pkg::*;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter lfsr_seed_t RndCnstLfsrSeed        = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm        = RndCnstLfsrPermDefault,
   parameter rand_perm_t RndCnstRandPerm        = RndCnstRandPermDefault,
@@ -509,7 +512,7 @@ module keymgr import keymgr_pkg::*; #(
   assign fault_alert_test = reg2hw.alert_test.fatal_fault_err.q &
                             reg2hw.alert_test.fatal_fault_err.qe;
   prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn),
+    .AsyncOn(AlertAsyncOn[0]),
     .IsFatal(1)
   ) u_fault_alert (
     .clk_i,
@@ -526,8 +529,8 @@ module keymgr import keymgr_pkg::*; #(
   assign op_err_alert_test = reg2hw.alert_test.recov_operation_err.q &
                              reg2hw.alert_test.recov_operation_err.qe;
   prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn),
-      .IsFatal(0)
+    .AsyncOn(AlertAsyncOn[1]),
+    .IsFatal(0)
   ) u_op_err_alert (
     .clk_i,
     .rst_ni,
