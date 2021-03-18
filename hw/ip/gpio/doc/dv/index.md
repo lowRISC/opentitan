@@ -15,7 +15,7 @@ title: "GPIO DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/gpio/dv/latest/results.html)
 
 ## Design features
-For detailed information on GPIO design features, please see the [GPIO design specification]({{< relref "hw/ip/gpio/doc" >}}).
+For detailed information on GPIO design features, please see the [GPIO design specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 GPIO testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).

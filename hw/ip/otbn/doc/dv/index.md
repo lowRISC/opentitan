@@ -18,7 +18,7 @@ title: "OTBN DV document"
 ## Design features
 
 OTBN, the OpenTitan Big Number accelerator, is a cryptographic accelerator.
-For detailed information on OTBN design features, see the [OTBN HWIP technical specification]({{< relref "hw/ip/otbn/doc" >}}).
+For detailed information on OTBN design features, see the [OTBN HWIP technical specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 

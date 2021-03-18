@@ -15,7 +15,7 @@ title: "LC_CTRL DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/lc_ctrl/dv/latest/results.html)
 
 ## Design features
-For detailed information on LC_CTRL design features, please see the [LC_CTRL HWIP technical specification]({{< relref "hw/ip/lc_ctrl/doc" >}}).
+For detailed information on LC_CTRL design features, please see the [LC_CTRL HWIP technical specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 LC_CTRL testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
