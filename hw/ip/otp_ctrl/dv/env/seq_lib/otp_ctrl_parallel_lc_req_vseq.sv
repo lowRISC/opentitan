@@ -17,8 +17,6 @@ class otp_ctrl_parallel_lc_req_vseq extends otp_ctrl_parallel_base_vseq;
 
   constraint lc_trans_c {
     do_lc_trans == 0;
-    // TODO: support enable req_key while lc_escalate_en is set.
-    do_req_keys == 0;
   }
 
   virtual task run_parallel_seq(ref bit base_vseq_done);
@@ -37,19 +35,6 @@ class otp_ctrl_parallel_lc_req_vseq extends otp_ctrl_parallel_base_vseq;
           wait_clk_or_reset($urandom_range(0, 500));
           if (!base_vseq_done && !cfg.under_reset) req_lc_token();
         end
-      end
-      begin
-        // req lc token request
-        if ($urandom_range(0, 1)) begin
-          wait_clk_or_reset($urandom_range(0, 500));
-          if (!base_vseq_done && !cfg.under_reset) begin
-            // TODO: random drive any values instead of just on and off
-            cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::On);
-            // Turn off reset because if issuing lc_escalation_en during otp program, scb cannot
-            // predict if the OTP memory is programmed or not.
-            do_reset_in_seq = 0;
-          end
-        end
       end join
     end
   endtask
@@ -58,7 +43,6 @@ class otp_ctrl_parallel_lc_req_vseq extends otp_ctrl_parallel_base_vseq;
     // Use reset to clear lc interrupt error
     if (do_apply_reset) begin
       apply_reset();
-      cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
     end else wait(0); // wait until upper seq resets and kills this seq
 
     // delay to avoid race condition when sending item and checking no item after reset occur
