@@ -5,9 +5,6 @@
 
 package sensor_ctrl_pkg;
 
-  parameter int NumAlerts   = sensor_ctrl_reg_pkg::NumAlerts;
-  parameter int NumIoRails  = sensor_ctrl_reg_pkg::NumIoRails;
-
   // Ack mode enumerations
   typedef enum logic [1:0] {
     ImmAck,
