@@ -359,8 +359,8 @@ module top_${top["name"]} #(
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_we;
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_intg_err;
   logic ${lib.bitarray(addr_width, max_char)} ${m["name"]}_addr;
-  logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wdata;
-  logic ${lib.bitarray(data_width, max_char)} ${m["name"]}_wmask;
+  logic ${lib.bitarray(full_data_width, max_char)} ${m["name"]}_wdata;
+  logic ${lib.bitarray(full_data_width, max_char)} ${m["name"]}_wmask;
   logic ${lib.bitarray(full_data_width, max_char)} ${m["name"]}_rdata;
   logic ${lib.bitarray(1,          max_char)} ${m["name"]}_rvalid;
   logic ${lib.bitarray(2,          max_char)} ${m["name"]}_rerror;
@@ -371,7 +371,8 @@ module top_${top["name"]} #(
     .Outstanding(2),
     .CmdIntgCheck(1),
     .EnableRspIntgGen(1),
-    .EnableDataIntgGen(1)  // TODO: Needs to be updated for integrity passthrough
+    .EnableDataIntgGen(0),
+    .EnableDataIntgPt(1)
   ) u_tl_adapter_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),
@@ -389,7 +390,7 @@ module top_${top["name"]} #(
     .wdata_o     (${m["name"]}_wdata),
     .wmask_o     (${m["name"]}_wmask),
     .intg_error_o(${m["name"]}_intg_err),
-    .rdata_i     (${m["name"]}_rdata[${data_width-1}:0]),
+    .rdata_i     (${m["name"]}_rdata),
     .rvalid_i    (${m["name"]}_rvalid),
     .rerror_i    (${m["name"]}_rerror)
   );
@@ -426,8 +427,8 @@ mem_name = Name(mem_name[1:])
     .gnt_o       (${m["name"]}_gnt),
     .write_i     (${m["name"]}_we),
     .addr_i      (${m["name"]}_addr),
-    .wdata_i     (${full_data_width}'(${m["name"]}_wdata)),
-    .wmask_i     (${full_data_width}'(${m["name"]}_wmask)),
+    .wdata_i     (${m["name"]}_wdata),
+    .wmask_i     (${m["name"]}_wmask),
     .rdata_o     (${m["name"]}_rdata),
     .rvalid_o    (${m["name"]}_rvalid),
     .rerror_o    (${m["name"]}_rerror),
