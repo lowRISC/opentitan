@@ -118,11 +118,13 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           otp_ctrl_pkg::otp_keymgr_key_t       exp_keymgr_data;
           bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
 
-          // Dai access is unlocked because the power init is done
-          if (!lc_esc) void'(ral.direct_access_regwen.predict(1));
+          if (!lc_esc) begin
+            // Dai access is unlocked because the power init is done
+            void'(ral.direct_access_regwen.predict(1));
 
-          // Dai idle is set because the otp init is done
-          exp_status[OtpDaiIdleIdx] = 1;
+            // Dai idle is set because the otp init is done
+            exp_status[OtpDaiIdleIdx] = 1;
+          end
 
           // Hwcfg_o gets data from OTP HW cfg partition
           exp_hwcfg_data = lc_esc ?
@@ -144,7 +146,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
             exp_keymgr_data.key_share1 =
                 PartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
           end
-          `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
+          // Check keymgr_key_o in otp_ctrl_if
+          if (cfg.otp_ctrl_vif.lc_escalate_en_i != lc_ctrl_pkg::On) begin
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
+          end
         end
       end
     end
@@ -166,7 +171,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
       // Update digest values and direct_access_regwen.
       for (int i = HwCfgIdx; i <= Secret2Idx; i++) digests[i] = 0;
-      predict_digest_csrs();
       predict_rdata(1, 0, 0);
       void'(ral.direct_access_regwen.predict(.value(0), .kind(UVM_PREDICT_READ)));
 
@@ -383,7 +387,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
     uvm_reg     csr;
     dv_base_reg dv_reg;
-    bit         do_read_check = !cfg.otp_ctrl_vif.skip_read_check;
+    bit         do_read_check = 1;
     bit         write         = item.is_write();
     uvm_reg_addr_t csr_addr   = ral.get_word_aligned_addr(item.a_addr);
     bit [TL_AW-1:0] addr_mask = ral.get_addr_mask();
@@ -636,6 +640,11 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           end
         end
       end
+      "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1", "owner_sw_cfg_digest_0",
+      "owner_sw_cfg_digest_1": begin
+        // TODO: temp ignore checking until stress_all_with_rand_reset is supported
+        if (lc_esc) do_read_check = 0;
+      end
       "hw_cfg_digest_0", "hw_cfg_digest_1", "secret0_digest_0", "secret0_digest_1",
       "secret1_digest_0", "secret1_digest_1", "secret2_digest_0", "secret2_digest_1",
       "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1", "owner_sw_cfg_digest_0",
@@ -716,7 +725,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                  // otp_idle checking.
                  lc_esc ||
                  // Check timeout will keep doing background check, issue #5616
-                 lc_esc || exp_status[OtpTimeoutErrIdx]);
+                 exp_status[OtpTimeoutErrIdx]);
           end
         join_any
         disable fork;

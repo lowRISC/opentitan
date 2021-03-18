@@ -116,7 +116,7 @@
             - Trigger escalation_en
             '''
       milestone: V2
-      tests: ["otp_ctrl_parallel_lc_req"]
+      tests: ["otp_ctrl_parallel_lc_req", "otp_ctrl_parallel_lc_esc"]
     }
     { name: otp_dai_errors
       desc: '''

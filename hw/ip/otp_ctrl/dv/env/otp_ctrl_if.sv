@@ -27,8 +27,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
   // Signals to skip csr check during first two clock cycles after lc_escalate_en is set.
   // Because lc_escalate_en might take one clock cycle to propogate to design.
-  logic                lc_esc_dly1, lc_esc_dly2;
-  bit                  skip_read_check;
+  lc_ctrl_pkg::lc_tx_e lc_esc_dly1, lc_esc_dly2;
 
   // Lc_err could trigger during LC program, so check intr and status after lc_req is finished.
   // Lc_err takes one clock cycle to propogate to intr signal. So avoid intr check if it happens
@@ -45,8 +44,6 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     end
   end
 
-  assign skip_read_check = (lc_escalate_en_i == lc_ctrl_pkg::On) &&
-                           (lc_esc_dly1 != lc_ctrl_pkg::On || lc_esc_dly2 != lc_ctrl_pkg::On);
   assign lc_prog_no_sta_check = lc_prog_err | lc_prog_err_dly1 | lc_prog_req |
                                 lc_escalate_en_i == lc_ctrl_pkg::On;
 

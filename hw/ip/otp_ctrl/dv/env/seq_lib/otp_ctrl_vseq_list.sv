@@ -14,4 +14,5 @@
 `include "otp_ctrl_parallel_base_vseq.sv"
 `include "otp_ctrl_parallel_key_req_vseq.sv"
 `include "otp_ctrl_parallel_lc_req_vseq.sv"
+`include "otp_ctrl_parallel_lc_esc_vseq.sv"
 `include "otp_ctrl_regwen_vseq.sv"
