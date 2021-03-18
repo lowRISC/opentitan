@@ -10,6 +10,9 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_errs_vseq;
   `uvm_object_utils(otp_ctrl_parallel_lc_esc_vseq)
 
   `uvm_object_new
+  bit [lc_ctrl_pkg::TxWidth-1:0] lc_esc_on_val;
+
+  constraint lc_esc_on_c {lc_esc_on_val != lc_ctrl_pkg::Off;}
 
   // This sequence will kill super.body sequence once lc_escalate_en is On. Disable these interface
   // requests to avoid sequencer error.

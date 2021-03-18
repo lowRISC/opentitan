@@ -25,9 +25,10 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   logic                lc_prog_req, lc_prog_err;
   logic                lc_prog_err_dly1, lc_prog_no_sta_check;
 
-  // Signals to skip csr check during first two clock cycles after lc_escalate_en is set.
-  // Because lc_escalate_en might take one clock cycle to propogate to design.
+  // LC_escalate_en is async, take two clock cycles to sync.
   lc_ctrl_pkg::lc_tx_e lc_esc_dly1, lc_esc_dly2;
+  // For lc_escalate_en, every value that is not Off is a On.
+  bit                  lc_esc_on;
 
   // Lc_err could trigger during LC program, so check intr and status after lc_req is finished.
   // Lc_err takes one clock cycle to propogate to intr signal. So avoid intr check if it happens
@@ -35,8 +36,8 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       lc_prog_err_dly1 <= 0;
-      lc_esc_dly1      <= 0;
-      lc_esc_dly2      <= 0;
+      lc_esc_dly1      <= lc_ctrl_pkg::Off;
+      lc_esc_dly2      <= lc_ctrl_pkg::Off;
     end else begin
       lc_prog_err_dly1 <= lc_prog_err;
       lc_esc_dly1      <= lc_escalate_en_i;
@@ -44,8 +45,9 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     end
   end
 
-  assign lc_prog_no_sta_check = lc_prog_err | lc_prog_err_dly1 | lc_prog_req |
-                                lc_escalate_en_i == lc_ctrl_pkg::On;
+  assign lc_prog_no_sta_check = lc_prog_err | lc_prog_err_dly1 | lc_prog_req | lc_esc_on;
+
+  assign lc_esc_on = lc_esc_dly2 != lc_ctrl_pkg::Off;
 
   // TODO: for lc_tx, except esc_en signal, all value different from On is treated as Off,
   // technically we can randomize values here once scb supports
@@ -73,7 +75,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   endtask
 
   `define OTP_ASSERT_WO_LC_ESC(NAME, SEQ) \
-    `ASSERT(NAME, SEQ, clk_i, !rst_ni || lc_escalate_en_i == lc_ctrl_pkg::On)
+    `ASSERT(NAME, SEQ, clk_i, !rst_ni || lc_esc_on)
 
   // If pwr_otp_idle is set only if pwr_otp init is done
   `OTP_ASSERT_WO_LC_ESC(OtpPwrDoneWhenIdle_A, pwr_otp_idle_o |-> pwr_otp_done_o)
