@@ -540,7 +540,9 @@ module otp_ctrl
   logic key_edn_req, key_edn_ack;
   prim_arbiter_tree #(
     .N(2),
-    .EnDataPort(0)
+    .EnDataPort(0),
+    // Disable req stable assertion check due to lc_escalate_en_i
+    .EnReqStabA(0)
   ) u_edn_arb (
     .clk_i,
     .rst_ni,
@@ -556,7 +558,9 @@ module otp_ctrl
   // This synchronizes the data coming from EDN and stacks the
   // 32bit EDN words to achieve an internal entropy width of 64bit.
   prim_edn_req #(
-    .OutWidth(EdnDataWidth)
+    .OutWidth(EdnDataWidth),
+    // Disable req stable assertion check due to lc_escalate_en_i
+    .EnReqStabA(0)
   ) u_prim_edn_req (
     .clk_i,
     .rst_ni,
@@ -592,6 +596,7 @@ module otp_ctrl
   prim_arbiter_tree #(
     .N(NumAgents),
     .DW($bits(otp_bundle_t)),
+    // Disable req stable assertion check due to lc_escalate_en_i
     .EnReqStabA(0)
   ) u_otp_arb (
     .clk_i,

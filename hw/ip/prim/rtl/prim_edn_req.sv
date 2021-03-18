@@ -16,7 +16,11 @@
 module prim_edn_req
   import prim_alert_pkg::*;
 #(
-  parameter int OutWidth = 32
+  parameter int OutWidth = 32,
+
+  // Non-functional parameter to switch on the request stability assertion.
+  // Used in submodule `prim_sync_reqack`.
+  parameter bit EnReqStabA = 1
 ) (
   // Design side
   input                       clk_i,
@@ -42,7 +46,8 @@ module prim_edn_req
   prim_sync_reqack_data #(
     .Width(SyncWidth),
     .DataSrc2Dst(1'b0),
-    .DataReg(1'b0)
+    .DataReg(1'b0),
+    .EnReqStabA(EnReqStabA)
   ) u_prim_sync_reqack_data (
     .clk_src_i  ( clk_i                           ),
     .rst_src_ni ( rst_ni                          ),
