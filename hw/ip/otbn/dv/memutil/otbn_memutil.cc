@@ -10,14 +10,13 @@
 #include <limits>
 #include <stdexcept>
 
-OtbnMemUtil::OtbnMemUtil(const std::string &top_scope) {
-  std::unique_ptr<MemArea> imem(new MemArea(
-      top_scope + ".u_imem.u_mem.gen_generic.u_impl_generic", 4096 / 4, 4));
-  std::unique_ptr<MemArea> dmem(new MemArea(
-      top_scope + ".u_dmem.u_mem.gen_generic.u_impl_generic", 4096 / 32, 32));
-
-  RegisterMemoryArea("imem", 0x4000, std::move(imem));
-  RegisterMemoryArea("dmem", 0x8000, std::move(dmem));
+OtbnMemUtil::OtbnMemUtil(const std::string &top_scope)
+    : imem_(top_scope + ".u_imem.u_mem.gen_generic.u_impl_generic", 4096 / 4,
+            4),
+      dmem_(top_scope + ".u_dmem.u_mem.gen_generic.u_impl_generic", 4096 / 32,
+            32) {
+  RegisterMemoryArea("imem", 0x4000, &imem_);
+  RegisterMemoryArea("dmem", 0x8000, &dmem_);
 }
 
 void OtbnMemUtil::LoadElf(const std::string &elf_path) {

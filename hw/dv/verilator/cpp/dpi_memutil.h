@@ -70,14 +70,15 @@ class DpiMemUtil {
    * with some other registered memory, the constructor throws a
    * std::runtime_error.
    *
-   * This function takes ownership of its |mem_area| argument, which
-   * must not be null.
+   * The |mem_area| argument describes the memory area to be registered and
+   * must not be null. This function does not take ownership of the object,
+   * which must survive at least as long as the DpiMemutil object.
    *
    * Memories must be registered before command arguments are parsed by
    * ParseCommandArgs() in order for them to be known.
    */
   void RegisterMemoryArea(const std::string &name, uint32_t base,
-                          std::unique_ptr<MemArea> &&mem_area);
+                          const MemArea *mem_area);
 
   /**
    * Guess the type of the file at |path|.
@@ -128,9 +129,10 @@ class DpiMemUtil {
   const StagedMem &GetMemoryData(const std::string &mem_name) const;
 
  private:
-  // Memory area registry. The maps give indices pointing into
-  // the vectors (which all have the same number of elements).
-  std::vector<std::unique_ptr<MemArea>> mem_areas_;
+  // Memory area registry. The maps give indices pointing into the vectors
+  // (which all have the same number of elements). Note that mem_areas_ does
+  // not own the objects that it points to.
+  std::vector<const MemArea *> mem_areas_;
   std::vector<uint32_t> base_addrs_;
   std::vector<std::string> names_;
 

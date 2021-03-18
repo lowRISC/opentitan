@@ -22,6 +22,9 @@ class OtbnMemUtil : public DpiMemUtil {
 
   // Get access to the segments currently staged for imem/dmem
   const StagedMem::SegMap &GetSegs(bool is_imem) const;
+
+ private:
+  MemArea imem_, dmem_;
 };
 
 // DPI-accessible wrappers

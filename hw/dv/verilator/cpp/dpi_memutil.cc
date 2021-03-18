@@ -312,7 +312,9 @@ std::vector<uint8_t> StagedMem::GetFlat() const {
 }
 
 void DpiMemUtil::RegisterMemoryArea(const std::string &name, uint32_t base,
-                                    std::unique_ptr<MemArea> &&mem_area) {
+                                    const MemArea *mem_area) {
+  assert(mem_area);
+
   // Check that we don't overflow the address space.
   uint32_t size = mem_area->GetSizeBytes();
   uint32_t addr_top = base + (size - 1);
@@ -347,7 +349,7 @@ void DpiMemUtil::RegisterMemoryArea(const std::string &name, uint32_t base,
     throw std::runtime_error(oss.str());
   }
 
-  mem_areas_.emplace_back(std::move(mem_area));
+  mem_areas_.push_back(mem_area);
   base_addrs_.push_back(base);
   names_.push_back(name);
 }

@@ -28,8 +28,8 @@ class VerilatorMemUtil : public SimCtrlExtension {
 
   // Pass-thru function to underlying object
   void RegisterMemoryArea(const std::string &name, uint32_t base,
-                          std::unique_ptr<MemArea> &&mem_area) {
-    return mem_util_->RegisterMemoryArea(name, base, std::move(mem_area));
+                          const MemArea *mem_area) {
+    return mem_util_->RegisterMemoryArea(name, base, mem_area);
   }
 
  private:
