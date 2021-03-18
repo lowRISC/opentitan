@@ -2,15 +2,6 @@
 title: "LC_CTRL DV document"
 ---
 
-<!-- Copy this file to hw/ip/lc_ctrl/doc/lc_ctrl_dv_doc.md and make changes as needed.
-For convenience 'lc_ctrl' in the document can be searched and replaced easily with the
-desired IP (with case sensitivity!). Also, use the testbench block diagram
-located at OpenTitan team drive / 'design verification'
-as a starting point and modify it to reflect your lc_ctrl testbench and save it
-to hw/ip/lc_ctrl/doc/tb.svg. It should get linked and rendered under the block
-diagram section below. Please update / modify / remove sections below as
-applicable. Once done, remove this comment before making a PR. -->
-
 ## Goals
 * **DV**
   * Verify all LC_CTRL IP features by running dynamic simulations with a SV/UVM based testbench
