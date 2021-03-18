@@ -15,6 +15,14 @@
         design_stage:       "D1",
         verification_stage: "V0", // this module is not verified at the block level
         dif_stage:          "S0",
+        commit_id:          "b2abc989498f072d9a5530f8aab9b58c1f92c9fb"
+      }
+      {
+        version:            "0.5",
+        life_stage:         "L1",
+        design_stage:       "D2",
+        verification_stage: "V0", // this module is not verified at the block level
+        dif_stage:          "S0",
       }
     ]
 }
