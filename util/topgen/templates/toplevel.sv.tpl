@@ -403,7 +403,9 @@ mem_name = Name(mem_name[1:])
     .Depth(${sram_depth}),
     .EnableParity(0),
     .LfsrWidth(${data_width}),
-    .StatePerm(RndCnstSramCtrl${mem_name.as_camel_case()}SramLfsrPerm)
+    .StatePerm(RndCnstSramCtrl${mem_name.as_camel_case()}SramLfsrPerm),
+    .DataBitsPerMask(1), // TODO: Temporary change to ensure byte updates can still be done
+    .DiffWidth(8)
   ) u_ram1p_${m["name"]} (
     % for key in clocks:
     .${key}   (${clocks[key]}),

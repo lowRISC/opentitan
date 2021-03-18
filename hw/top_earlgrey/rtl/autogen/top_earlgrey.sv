@@ -804,7 +804,9 @@ module top_earlgrey #(
     .Depth(32768),
     .EnableParity(0),
     .LfsrWidth(32),
-    .StatePerm(RndCnstSramCtrlMainSramLfsrPerm)
+    .StatePerm(RndCnstSramCtrlMainSramLfsrPerm),
+    .DataBitsPerMask(1), // TODO: Temporary change to ensure byte updates can still be done
+    .DiffWidth(8)
   ) u_ram1p_ram_main (
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
@@ -875,7 +877,9 @@ module top_earlgrey #(
     .Depth(1024),
     .EnableParity(0),
     .LfsrWidth(32),
-    .StatePerm(RndCnstSramCtrlRetAonSramLfsrPerm)
+    .StatePerm(RndCnstSramCtrlRetAonSramLfsrPerm),
+    .DataBitsPerMask(1), // TODO: Temporary change to ensure byte updates can still be done
+    .DiffWidth(8)
   ) u_ram1p_ram_ret_aon (
     .clk_i   (clkmgr_aon_clocks.clk_io_div4_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
