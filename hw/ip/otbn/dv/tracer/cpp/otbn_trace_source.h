@@ -1,8 +1,8 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
-#pragma once
+#ifndef OPENTITAN_HW_IP_OTBN_DV_TRACER_CPP_OTBN_TRACE_SOURCE_H_
+#define OPENTITAN_HW_IP_OTBN_DV_TRACER_CPP_OTBN_TRACE_SOURCE_H_
 
 #include <vector>
 
@@ -34,3 +34,5 @@ class OtbnTraceSource {
  private:
   std::vector<OtbnTraceListener *> listeners_;
 };
+
+#endif  // OPENTITAN_HW_IP_OTBN_DV_TRACER_CPP_OTBN_TRACE_SOURCE_H_

@@ -1,8 +1,8 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
-#pragma once
+#ifndef OPENTITAN_HW_IP_OTBN_DV_MODEL_ISS_WRAPPER_H_
+#define OPENTITAN_HW_IP_OTBN_DV_MODEL_ISS_WRAPPER_H_
 
 #include <array>
 #include <cstdint>
@@ -71,3 +71,5 @@ struct ISSWrapper {
   // A temporary directory for communicating with the child process
   std::unique_ptr<TmpDir> tmpdir;
 };
+
+#endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_ISS_WRAPPER_H_

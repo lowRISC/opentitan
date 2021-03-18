@@ -1,8 +1,8 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
-#pragma once
+#ifndef OPENTITAN_HW_DV_VERILATOR_CPP_DPI_MEMUTIL_H_
+#define OPENTITAN_HW_DV_VERILATOR_CPP_DPI_MEMUTIL_H_
 
 #include <map>
 #include <string>
@@ -164,3 +164,5 @@ class DpiMemUtil {
   const MemArea &GetRegionForSegment(const std::string &path, int seg_idx,
                                      uint32_t lma, uint32_t mem_sz) const;
 };
+
+#endif  // OPENTITAN_HW_DV_VERILATOR_CPP_DPI_MEMUTIL_H_
