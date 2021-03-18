@@ -15,11 +15,13 @@ module rstmgr_ctrl
   input rst_ni,
   input [PowerDomains-1:0] rst_req_i,
   input [PowerDomains-1:0] rst_parent_ni, // parent reset
-  output logic [PowerDomains-1:0] rst_no
+  output logic [PowerDomains-1:0] rst_no,
+  input scanmode_i,
+  input scan_rst_ni
 );
 
   // the always on root reset
-  logic rst_aon_nq;
+  logic rst_aon_n;
 
   // the remaining resets
   logic [OffDomains-1:0] rst_pd_nd, rst_pd_nq;
@@ -42,7 +44,16 @@ module rstmgr_ctrl
     .clk_i,
     .rst_ni,
     .d_i(~rst_req_i[DomainAonSel] & rst_parent_synced[DomainAonSel]),
-    .q_o(rst_aon_nq)
+    .q_o(rst_aon_n)
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_rst_aon_mux (
+    .clk0_i(rst_aon_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i(scanmode_i),
+    .clk_o(rst_no[DomainAonSel])
   );
 
   // the non-always-on domains
@@ -51,13 +62,23 @@ module rstmgr_ctrl
   assign rst_pd_nd = ~rst_req_i[Domain0Sel +: OffDomains] &
                      rst_parent_synced[Domain0Sel +: OffDomains];
 
-  prim_flop u_pd_rst (
-    .clk_i,
-    .rst_ni(rst_aon_nq),
-    .d_i(rst_pd_nd),
-    .q_o(rst_pd_nq)
-  );
+  localparam int DomainPdStartIdx = DomainAonSel + 1;
+  for(genvar i = 0; i < OffDomains; i++) begin : gen_rst_pd_n
+    prim_flop u_pd_rst (
+      .clk_i,
+      .rst_ni(rst_aon_n),
+      .d_i(rst_pd_nd[i]),
+      .q_o(rst_pd_nq[i])
+    );
 
-  assign rst_no = {rst_pd_nq, rst_aon_nq};
+    prim_clock_mux2 #(
+      .NoFpgaBufG(1'b1)
+    ) u_rst_pd_mux (
+      .clk0_i(rst_pd_nq[i]),
+      .clk1_i(scan_rst_ni),
+      .sel_i(scanmode_i),
+      .clk_o(rst_no[DomainPdStartIdx + i])
+    );
+  end
 
 endmodule // rstmgr_ctrl
