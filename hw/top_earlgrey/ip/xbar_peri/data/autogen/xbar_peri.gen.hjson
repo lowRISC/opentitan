@@ -525,7 +525,7 @@
       clock: clk_peri_i
       reset: rst_peri_ni
       pipeline: "false"
-      inst_type: dcd
+      inst_type: adc_ctrl
       addr_range:
       [
         {

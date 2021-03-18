@@ -1670,7 +1670,7 @@ module top_earlgrey #(
       .rst_io_div4_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel])
   );
 
-  dcd u_adc_ctrl_aon (
+  adc_ctrl u_adc_ctrl_aon (
 
       // Interrupt
       .intr_debug_cable_o (intr_adc_ctrl_aon_debug_cable),

@@ -2545,7 +2545,7 @@
     }
     {
       name: adc_ctrl_aon
-      type: dcd
+      type: adc_ctrl
       clock_srcs:
       {
         clk_i: io_div4
@@ -6986,7 +6986,7 @@
           clock: clk_peri_i
           reset: rst_peri_ni
           pipeline: "false"
-          inst_type: dcd
+          inst_type: adc_ctrl
           addr_range:
           [
             {
