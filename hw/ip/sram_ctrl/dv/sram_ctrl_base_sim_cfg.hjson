@@ -46,6 +46,10 @@
       name: scratch_path
       value: "{scratch_base_path}/{variant}-{flow}-{tool}"
     }
+    {
+      name: rel_path
+      value: "hw/ip/{variant}/dv"
+    }
   ]
 
   build_modes: [
