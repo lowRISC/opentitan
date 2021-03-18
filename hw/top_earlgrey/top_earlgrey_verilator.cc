@@ -21,29 +21,23 @@ int main(int argc, char **argv) {
       "u_prim_ram_1p_adv.u_mem."
       "gen_generic.u_impl_generic");
 
-  std::string rom_scope(top_scope +
-                        ".u_rom_rom.u_prim_rom.gen_generic.u_impl_generic");
-  std::string ram_scope(top_scope + ".u_ram1p_ram_main." + ram1p_adv_scope);
-  std::string flash_scope(top_scope +
-                          ".u_flash_eflash.u_flash."
-                          "gen_generic.u_impl_generic."
-                          "gen_prim_flash_banks[0]."
-                          "u_prim_flash_bank.u_mem."
-                          "gen_generic.u_impl_generic");
-  std::string otp_scope(top_scope +
-                        ".u_otp_ctrl.u_otp.gen_generic.u_impl_generic." +
-                        ram1p_adv_scope);
+  MemArea rom(top_scope + ".u_rom_rom.u_prim_rom.gen_generic.u_impl_generic",
+              0x4000 / 4, 4);
+  MemArea ram(top_scope + ".u_ram1p_ram_main." + ram1p_adv_scope, 0x20000 / 4,
+              4);
+  MemArea flash(top_scope +
+                    ".u_flash_eflash.u_flash.gen_generic.u_impl_generic."
+                    "gen_prim_flash_banks[0].u_prim_flash_bank.u_mem."
+                    "gen_generic.u_impl_generic",
+                0x100000 / 8, 8);
+  MemArea otp(top_scope + ".u_otp_ctrl.u_otp.gen_generic.u_impl_generic." +
+                  ram1p_adv_scope,
+              0x4000 / 4, 4);
 
-  std::unique_ptr<MemArea> rom(new MemArea(rom_scope, 0x4000 / 4, 4)),
-      ram(new MemArea(ram_scope, 0x20000 / 4, 4)),
-      flash(new MemArea(flash_scope, 0x100000 / 8, 8)),
-      otp(new MemArea(otp_scope, 0x4000 / 4, 4));
-
-  memutil.RegisterMemoryArea("rom", 0x8000, std::move(rom));
-  memutil.RegisterMemoryArea("ram", 0x10000000u, std::move(ram));
-  memutil.RegisterMemoryArea("flash", 0x20000000u, std::move(flash));
-  memutil.RegisterMemoryArea("otp", 0x40000000u /* (bogus LMA) */,
-                             std::move(otp));
+  memutil.RegisterMemoryArea("rom", 0x8000, &rom);
+  memutil.RegisterMemoryArea("ram", 0x10000000u, &ram);
+  memutil.RegisterMemoryArea("flash", 0x20000000u, &flash);
+  memutil.RegisterMemoryArea("otp", 0x40000000u /* (bogus LMA) */, &otp);
   simctrl.RegisterExtension(&memutil);
 
   // The initial reset delay must be long enough such that pwr/rst/clkmgr will
