@@ -2,6 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+mask_rom_sys_state = declare_dependency(
+  link_with: static_library(
+    'sys_state',
+    sources: ['sys_state.c'],
+  )
+)
 # Mask ROM Linker Parameters
 #
 # See sw/device/exts/common/flash_link.ld for additional info about these
