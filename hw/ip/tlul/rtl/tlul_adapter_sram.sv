@@ -10,6 +10,12 @@
  * - Intentionally omitted BaseAddr in case of multiple memory maps are used in a SoC,
  *   it means that aliasing can happen if target device size in TL-UL crossbar is bigger
  *   than SRAM size
+ * - At most one of EnableDataIntgGen / EnableDataIntgPt can be enabled. However it
+ *   possible for both to be disabled.
+ *   A module can neither generate an integrity response nor pass through any pre-existing
+ *   integrity.  This might be the case for non-security critical memories where there is
+ *   no stored integrity AND another entity upstream is already generating returning integrity.
+ *   There is however no case where EnableDataIntgGen and EnableDataIntgPt are both true.
  */
 module tlul_adapter_sram import tlul_pkg::*; #(
   parameter int SramAw            = 12,
@@ -20,7 +26,11 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   parameter bit ErrOnRead         = 0,  // 1: Reads not allowed, automatically error
   parameter bit CmdIntgCheck      = 0,  // 1: Enable command integrity check
   parameter bit EnableRspIntgGen  = 0,  // 1: Generate response integrity
-  parameter bit EnableDataIntgGen = 0   // 1: Generate data integrity
+  parameter bit EnableDataIntgGen = 0,  // 1: Generate response data integrity
+  parameter bit EnableDataIntgPt  = 0,  // 1: Passthrough command/response data integrity
+  localparam int WidthMult        = SramDw / top_pkg::TL_DW,
+  localparam int IntgWidth        = tlul_pkg::DataIntgWidth * WidthMult,
+  localparam int DataOutW         = EnableDataIntgPt ? SramDw + IntgWidth : SramDw
 ) (
   input   clk_i,
   input   rst_ni,
@@ -33,21 +43,20 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   input   tl_instr_en_e     en_ifetch_i,
 
   // SRAM interface
-  output logic              req_o,
-  input                     gnt_i,
-  output logic              we_o,
-  output logic [SramAw-1:0] addr_o,
-  output logic [SramDw-1:0] wdata_o,
-  output logic [SramDw-1:0] wmask_o,
-  output logic              intg_error_o,
-  input        [SramDw-1:0] rdata_i,
-  input                     rvalid_i,
-  input        [1:0]        rerror_i // 2 bit error [1]: Uncorrectable, [0]: Correctable
+  output logic                req_o,
+  input                       gnt_i,
+  output logic                we_o,
+  output logic [SramAw-1:0]   addr_o,
+  output logic [DataOutW-1:0] wdata_o,
+  output logic [DataOutW-1:0] wmask_o,
+  output logic                intg_error_o,
+  input        [DataOutW-1:0] rdata_i,
+  input                       rvalid_i,
+  input        [1:0]          rerror_i // 2 bit error [1]: Uncorrectable, [0]: Correctable
 );
 
   localparam int SramByte = SramDw/8;
   localparam int DataBitWidth = prim_util_pkg::vbits(SramByte);
-  localparam int WidthMult = SramDw / top_pkg::TL_DW;
   localparam int WoffsetWidth = (SramByte == top_pkg::TL_DBW) ? 1 :
                                 DataBitWidth - prim_util_pkg::vbits(top_pkg::TL_DBW);
 
@@ -71,6 +80,7 @@ module tlul_adapter_sram import tlul_pkg::*; #(
 
   typedef struct packed {
     logic [top_pkg::TL_DW-1:0] data ;
+    logic [DataIntgWidth-1:0]  data_intg ;
     logic                      error ;
   } rsp_t ;
 
@@ -152,7 +162,7 @@ module tlul_adapter_sram import tlul_pkg::*; #(
       d_sink   : 1'b0,
       d_data   : (d_valid && rspfifo_rvalid && reqfifo_rdata.op == OpRead)
                  ? rspfifo_rdata.data : '0,
-      d_user   : TL_D_USER_DEFAULT,
+      d_user   : '{default: '1, data_intg: d_valid ? rspfifo_rdata.data_intg : '1},
       d_error  : d_valid && d_error,
 
       a_ready  : (gnt_i | error_internal) & reqfifo_wready & sramreqfifo_wready
@@ -188,9 +198,22 @@ module tlul_adapter_sram import tlul_pkg::*; #(
     assign woffset = '0;
   end
 
-  // Convert byte mask to SRAM bit mask for writes, and only forward valid data
+  // The size of the data/wmask depends on whether passthrough integrity is enabled.
+  // If passthrough integrity is enabled, the data is concatenated with the integrity passed through
+  // the user bits.  Otherwise, it is the data only.
+  localparam int DataWidth = EnableDataIntgPt ? top_pkg::TL_DW + DataIntgWidth : top_pkg::TL_DW;
+
+  // Final combined wmask / wdata
+  logic [WidthMult-1:0][DataWidth-1:0] wmask_combined;
+  logic [WidthMult-1:0][DataWidth-1:0] wdata_combined;
+
+  // Original tlul portion
   logic [WidthMult-1:0][top_pkg::TL_DW-1:0] wmask_int;
   logic [WidthMult-1:0][top_pkg::TL_DW-1:0] wdata_int;
+
+  // Integrity portion
+  logic [WidthMult-1:0][DataIntgWidth-1:0] wmask_intg;
+  logic [WidthMult-1:0][DataIntgWidth-1:0] wdata_intg;
 
   always_comb begin
     wmask_int = '0;
@@ -204,8 +227,36 @@ module tlul_adapter_sram import tlul_pkg::*; #(
     end
   end
 
-  assign wmask_o = wmask_int;
-  assign wdata_o = wdata_int;
+  // TODO: The logic below is incomplete.  If the adapter detects a write is NOT
+  // the full word, it must read back the other parts of the data from memory and
+  // re-generate the integrity.
+  // Since that will cause back-pressure to the upstream agent and likely substantial
+  // change into this module, it is left to a different PR.
+  always_comb begin
+    wmask_intg  = '0;
+    wdata_intg  = '0;
+
+    if (tl_i.a_valid) begin
+      wmask_intg[woffset] = '1;
+      wdata_intg[woffset] = tl_i.a_user.data_intg;
+    end
+  end
+
+  for (genvar i = 0; i < WidthMult; i++) begin : gen_write_output
+    if (EnableDataIntgPt) begin : gen_combined_output
+      assign wmask_combined[i] = {wmask_intg[i], wmask_int[i]};
+      assign wdata_combined[i] = {wdata_intg[i], wdata_int[i]};
+    end else begin : gen_ft_output
+      logic unused_w;
+      assign wmask_combined[i] = wmask_int[i];
+      assign wdata_combined[i] = wdata_int[i];
+      assign unused_w = |wmask_intg & |wdata_intg;
+    end
+  end
+
+  assign wmask_o = wmask_combined;
+  assign wdata_o = wdata_combined;
+
 
   // Begin: Request Error Detection
 
@@ -287,15 +338,20 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   assign rspfifo_wvalid = rvalid_i & reqfifo_rvalid;
 
   // Make sure only requested bytes are forwarded
-  logic [WidthMult-1:0][top_pkg::TL_DW-1:0] rdata;
-  logic [WidthMult-1:0][top_pkg::TL_DW-1:0] rmask;
-  //logic [SramDw-1:0] rmask;
-  logic [top_pkg::TL_DW-1:0] rdata_tlword;
+  logic [WidthMult-1:0][DataWidth-1:0] rdata;
+  logic [WidthMult-1:0][DataWidth-1:0] rmask;
+  logic [DataWidth-1:0] rdata_tlword;
 
-  always_comb begin
-    rmask = '0;
-    for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
-      rmask[sramreqfifo_rdata.woffset][8*i +: 8] = {8{sramreqfifo_rdata.mask[i]}};
+  // When passing through data integrity, we must feedback the entire
+  // read data, otherwise the stored integrity will not calculate correctly
+  if (EnableDataIntgPt) begin : gen_no_rmask
+    assign rmask = {DataOutW{|sramreqfifo_rdata.mask}};
+  end else begin : gen_rmask
+    always_comb begin
+      rmask = '0;
+      for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
+        rmask[sramreqfifo_rdata.woffset][8*i +: 8] = {8{sramreqfifo_rdata.mask[i]}};
+      end
     end
   end
 
@@ -303,8 +359,9 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   assign rdata_tlword = rdata[sramreqfifo_rdata.woffset];
 
   assign rspfifo_wdata  = '{
-    data : rdata_tlword,
-    error: rerror_i[1] // Only care for Uncorrectable error
+    data      : rdata_tlword[top_pkg::TL_DW-1:0],
+    data_intg : EnableDataIntgPt ? rdata_tlword[DataWidth-1 -: DataIntgWidth] : '1,
+    error     : rerror_i[1] // Only care for Uncorrectable error
   };
   assign rspfifo_rready = (reqfifo_rdata.op == OpRead & ~reqfifo_rdata.error)
                         ? reqfifo_rready : 1'b0 ;
@@ -405,7 +462,10 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   `ASSERT_INIT(adapterNoReadOrWrite, (ErrOnWrite & ErrOnRead) == 0)
 
   `ASSERT_INIT(SramDwHasByteGranularity_A, SramDw % 8 == 0)
-  `ASSERT_INIT(SramDwIsMultipleOfTlUlWidth_A, SramDw % top_pkg::TL_DW == 0)
+  `ASSERT_INIT(SramDwIsMultipleOfTlulWidth_A, SramDw % top_pkg::TL_DW == 0)
+
+  // These parameter options cannot both be true at the same time
+  `ASSERT_INIT(DataIntgOptions_A, ~(EnableDataIntgGen & EnableDataIntgPt))
 
   // make sure outputs are defined
   `ASSERT_KNOWN(TlOutKnown_A,    tl_o   )

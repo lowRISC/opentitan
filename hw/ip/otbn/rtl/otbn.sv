@@ -113,8 +113,8 @@ module otbn
   logic imem_req;
   logic imem_write;
   logic [ImemIndexWidth-1:0] imem_index;
-  logic [31:0] imem_wdata;
-  logic [31:0] imem_wmask;
+  logic [38:0] imem_wdata;
+  logic [38:0] imem_wmask;
   logic [38:0] imem_rdata;
   logic imem_rvalid;
   logic [1:0] imem_rerror_vec;
@@ -131,9 +131,9 @@ module otbn
   logic imem_req_bus;
   logic imem_write_bus;
   logic [ImemIndexWidth-1:0] imem_index_bus;
-  logic [31:0] imem_wdata_bus;
-  logic [31:0] imem_wmask_bus;
-  logic [31:0] imem_rdata_bus;
+  logic [38:0] imem_wdata_bus;
+  logic [38:0] imem_wmask_bus;
+  logic [38:0] imem_rdata_bus;
   logic imem_rvalid_bus;
   logic [1:0] imem_rerror_bus;
 
@@ -146,15 +146,15 @@ module otbn
   prim_ram_1p_adv #(
     .Width           (39),
     .Depth           (ImemSizeWords),
-    .DataBitsPerMask (39) // Write masks are not supported.
+    .DataBitsPerMask (39)
   ) u_imem (
     .clk_i,
     .rst_ni,
     .req_i    (imem_req),
     .write_i  (imem_write),
     .addr_i   (imem_index),
-    .wdata_i  ({7'd0, imem_wdata}),
-    .wmask_i  ({{7{imem_wmask[0]}}, imem_wmask}),
+    .wdata_i  (imem_wdata),
+    .wmask_i  (imem_wmask),
     .rdata_o  (imem_rdata),
     .rvalid_o (imem_rvalid),
     .rerror_o (imem_rerror_vec),
@@ -175,7 +175,8 @@ module otbn
     .SramDw      (32),
     .Outstanding (1),
     .ByteAccess  (0),
-    .ErrOnRead   (0)
+    .ErrOnRead   (0),
+    .EnableDataIntgPt (1)
   ) u_tlul_adapter_sram_imem (
     .clk_i,
     .rst_ni,
@@ -197,10 +198,10 @@ module otbn
   // Mux core and bus access into IMEM
   assign imem_access_core = busy_q | start;
 
-  assign imem_req   = imem_access_core ? imem_req_core   : imem_req_bus;
-  assign imem_write = imem_access_core ? imem_write_core : imem_write_bus;
-  assign imem_index = imem_access_core ? imem_index_core : imem_index_bus;
-  assign imem_wdata = imem_access_core ? imem_wdata_core : imem_wdata_bus;
+  assign imem_req   = imem_access_core ? imem_req_core        : imem_req_bus;
+  assign imem_write = imem_access_core ? imem_write_core      : imem_write_bus;
+  assign imem_index = imem_access_core ? imem_index_core      : imem_index_bus;
+  assign imem_wdata = imem_access_core ? 39'(imem_wdata_core) : imem_wdata_bus;
 
   // The instruction memory only supports 32b word writes, so we hardcode its
   // wmask here.
@@ -210,14 +211,14 @@ module otbn
   // the wmask signal from the bus is indeed '1 when it requests a write. We
   // don't have the corresponding check for writes from the core because the
   // core cannot perform writes (and has no imem_wmask_o port).
-  assign imem_wmask = 32'hFFFFFFFF;
+  assign imem_wmask = imem_access_core ? '1 : imem_wmask_bus;
   `ASSERT(ImemWmaskBusIsFullWord_A,
-      imem_req_bus && imem_write_bus |-> imem_wmask_bus == 32'hFFFFFFFF)
+      imem_req_bus && imem_write_bus |-> imem_wmask_bus == '1)
 
   // Explicitly tie off bus interface during core operation to avoid leaking
   // the currently executed instruction from IMEM through the bus
   // unintentionally.
-  assign imem_rdata_bus  = !imem_access_core ? imem_rdata[31:0] : 32'b0;
+  assign imem_rdata_bus  = !imem_access_core ? imem_rdata : 39'b0;
   assign imem_rdata_core = imem_rdata[31:0];
 
   assign imem_rvalid_bus  = !imem_access_core ? imem_rvalid : 1'b0;
@@ -272,9 +273,6 @@ module otbn
   logic dmem_req_bus;
   logic dmem_write_bus;
   logic [DmemIndexWidth-1:0] dmem_index_bus;
-  logic [WLEN-1:0] dmem_wdata_bus_nointeg;
-  logic [WLEN-1:0] dmem_wmask_bus_nointeg;
-  logic [WLEN-1:0] dmem_rdata_bus_nointeg;
   logic [ExtWLEN-1:0] dmem_wdata_bus;
   logic [ExtWLEN-1:0] dmem_wmask_bus;
   logic [ExtWLEN-1:0] dmem_rdata_bus;
@@ -290,7 +288,7 @@ module otbn
   prim_ram_1p_adv #(
     .Width           (ExtWLEN),
     .Depth           (DmemSizeWords),
-    .DataBitsPerMask (39) // 39b write masks for 32b word writes from bus plus checksum
+    .DataBitsPerMask (39)
   ) u_dmem (
     .clk_i,
     .rst_ni,
@@ -318,36 +316,25 @@ module otbn
     .SramDw      (WLEN),
     .Outstanding (1),
     .ByteAccess  (0),
-    .ErrOnRead   (0)
+    .ErrOnRead   (0),
+    .EnableDataIntgPt (1)
   ) u_tlul_adapter_sram_dmem (
     .clk_i,
     .rst_ni,
-
-    .tl_i        (tl_win_h2d[TlWinDmem] ),
-    .tl_o        (tl_win_d2h[TlWinDmem] ),
-    .en_ifetch_i (tlul_pkg::InstrDis    ),
-    .req_o       (dmem_req_bus          ),
-    .gnt_i       (dmem_gnt_bus          ),
-    .we_o        (dmem_write_bus        ),
-    .addr_o      (dmem_index_bus        ),
-    .wdata_o     (dmem_wdata_bus_nointeg),
-    .wmask_o     (dmem_wmask_bus_nointeg),
-    .intg_error_o(                      ),
-    .rdata_i     (dmem_rdata_bus_nointeg),
-    .rvalid_i    (dmem_rvalid_bus       ),
-    .rerror_i    (dmem_rerror_bus       )
+    .tl_i        (tl_win_h2d[TlWinDmem]),
+    .tl_o        (tl_win_d2h[TlWinDmem]),
+    .en_ifetch_i (tlul_pkg::InstrDis   ),
+    .req_o       (dmem_req_bus         ),
+    .gnt_i       (dmem_gnt_bus         ),
+    .we_o        (dmem_write_bus       ),
+    .addr_o      (dmem_index_bus       ),
+    .wdata_o     (dmem_wdata_bus       ),
+    .wmask_o     (dmem_wmask_bus       ),
+    .intg_error_o(                     ),
+    .rdata_i     (dmem_rdata_bus       ),
+    .rvalid_i    (dmem_rvalid_bus      ),
+    .rerror_i    (dmem_rerror_bus      )
   );
-
-  // The tlul_adapter doesn't currently handle the integrity bits that we will insert into the
-  // memory. Convert between its view and that of the actual SRAM macro here.
-  logic [BaseWordsPerWLEN-1:0] unused_rdata_bus_integrity;
-  for (genvar i = 0; i < BaseWordsPerWLEN; i++) begin: gen_bus_dmem_adapter
-    assign dmem_wdata_bus[i*39 +: 39] = {7'd0, dmem_wdata_bus_nointeg[i*32 +: 32]};
-    assign dmem_wmask_bus[i*39 +: 39] = {{7{dmem_wmask_bus_nointeg[i*32]}},
-                                         dmem_wmask_bus_nointeg[i*32 +: 32]};
-    assign dmem_rdata_bus_nointeg[i*32 +: 32] = dmem_rdata_bus[i*39 +: 32];
-    assign unused_rdata_bus_integrity[i] = &{dmem_rdata_bus[i*39 + 32 +: 7]};
-  end
 
   // Mux core and bus access into dmem
   assign dmem_access_core = busy_q;

@@ -768,8 +768,8 @@ module top_earlgrey #(
   logic        ram_main_we;
   logic        ram_main_intg_err;
   logic [14:0] ram_main_addr;
-  logic [31:0] ram_main_wdata;
-  logic [31:0] ram_main_wmask;
+  logic [38:0] ram_main_wdata;
+  logic [38:0] ram_main_wmask;
   logic [38:0] ram_main_rdata;
   logic        ram_main_rvalid;
   logic [1:0]  ram_main_rerror;
@@ -780,7 +780,8 @@ module top_earlgrey #(
     .Outstanding(2),
     .CmdIntgCheck(1),
     .EnableRspIntgGen(1),
-    .EnableDataIntgGen(1)  // TODO: Needs to be updated for integrity passthrough
+    .EnableDataIntgGen(0),
+    .EnableDataIntgPt(1)
   ) u_tl_adapter_ram_main (
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
@@ -794,7 +795,7 @@ module top_earlgrey #(
     .wdata_o     (ram_main_wdata),
     .wmask_o     (ram_main_wmask),
     .intg_error_o(ram_main_intg_err),
-    .rdata_i     (ram_main_rdata[31:0]),
+    .rdata_i     (ram_main_rdata),
     .rvalid_i    (ram_main_rvalid),
     .rerror_i    (ram_main_rerror)
   );
@@ -823,8 +824,8 @@ module top_earlgrey #(
     .gnt_o       (ram_main_gnt),
     .write_i     (ram_main_we),
     .addr_i      (ram_main_addr),
-    .wdata_i     (39'(ram_main_wdata)),
-    .wmask_i     (39'(ram_main_wmask)),
+    .wdata_i     (ram_main_wdata),
+    .wmask_i     (ram_main_wmask),
     .rdata_o     (ram_main_rdata),
     .rvalid_o    (ram_main_rvalid),
     .rerror_o    (ram_main_rerror),
@@ -841,8 +842,8 @@ module top_earlgrey #(
   logic        ram_ret_aon_we;
   logic        ram_ret_aon_intg_err;
   logic [9:0] ram_ret_aon_addr;
-  logic [31:0] ram_ret_aon_wdata;
-  logic [31:0] ram_ret_aon_wmask;
+  logic [38:0] ram_ret_aon_wdata;
+  logic [38:0] ram_ret_aon_wmask;
   logic [38:0] ram_ret_aon_rdata;
   logic        ram_ret_aon_rvalid;
   logic [1:0]  ram_ret_aon_rerror;
@@ -853,7 +854,8 @@ module top_earlgrey #(
     .Outstanding(2),
     .CmdIntgCheck(1),
     .EnableRspIntgGen(1),
-    .EnableDataIntgGen(1)  // TODO: Needs to be updated for integrity passthrough
+    .EnableDataIntgGen(0),
+    .EnableDataIntgPt(1)
   ) u_tl_adapter_ram_ret_aon (
     .clk_i   (clkmgr_aon_clocks.clk_io_div4_infra),
     .rst_ni   (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
@@ -867,7 +869,7 @@ module top_earlgrey #(
     .wdata_o     (ram_ret_aon_wdata),
     .wmask_o     (ram_ret_aon_wmask),
     .intg_error_o(ram_ret_aon_intg_err),
-    .rdata_i     (ram_ret_aon_rdata[31:0]),
+    .rdata_i     (ram_ret_aon_rdata),
     .rvalid_i    (ram_ret_aon_rvalid),
     .rerror_i    (ram_ret_aon_rerror)
   );
@@ -896,8 +898,8 @@ module top_earlgrey #(
     .gnt_o       (ram_ret_aon_gnt),
     .write_i     (ram_ret_aon_we),
     .addr_i      (ram_ret_aon_addr),
-    .wdata_i     (39'(ram_ret_aon_wdata)),
-    .wmask_i     (39'(ram_ret_aon_wmask)),
+    .wdata_i     (ram_ret_aon_wdata),
+    .wmask_i     (ram_ret_aon_wmask),
     .rdata_o     (ram_ret_aon_rdata),
     .rvalid_o    (ram_ret_aon_rvalid),
     .rerror_o    (ram_ret_aon_rerror),
