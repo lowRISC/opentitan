@@ -14,12 +14,15 @@
 
 `include "prim_assert.sv"
 
-module flash_ctrl import flash_ctrl_pkg::*; #(
-  parameter logic AlertAsyncOn          = 1'b1,
-  parameter flash_key_t RndCnstAddrKey  = RndCnstAddrKeyDefault,
-  parameter flash_key_t RndCnstDataKey  = RndCnstDataKeyDefault,
-  parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
-  parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
+module flash_ctrl
+  import flash_ctrl_pkg::*;
+  import flash_ctrl_reg_pkg::*;
+#(
+  parameter logic [NumAlerts-1:0] AlertAsyncOn    = {NumAlerts{1'b1}},
+  parameter flash_key_t           RndCnstAddrKey  = RndCnstAddrKeyDefault,
+  parameter flash_key_t           RndCnstDataKey  = RndCnstDataKeyDefault,
+  parameter lfsr_seed_t           RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
+  parameter lfsr_perm_t           RndCnstLfsrPerm = RndCnstLfsrPermDefault
 ) (
   input        clk_i,
   input        rst_ni,
@@ -838,7 +841,7 @@ module flash_ctrl import flash_ctrl_pkg::*; #(
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
     prim_alert_sender #(
-      .AsyncOn(AlertAsyncOn)
+      .AsyncOn(AlertAsyncOn[i])
     ) u_alert_sender (
       .clk_i,
       .rst_ni,
