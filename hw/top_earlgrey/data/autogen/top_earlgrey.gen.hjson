@@ -4359,6 +4359,9 @@
           act: req
           width: 1
           inst_name: entropy_src
+          default: ""
+          external: true
+          top_signame: es_rng_fips
           index: -1
         }
         {
@@ -5167,14 +5170,11 @@
         {
           struct: logic
           package: ""
-          width: 4
+          width: "4"
           type: uni
           act: rcv
           name: flash_test_mode_a
           inst_name: eflash
-          default: ""
-          external: true
-          top_signame: flash_test_mode_a
           index: -1
         }
         {
@@ -5184,10 +5184,6 @@
           act: rcv
           name: flash_test_voltage_h
           inst_name: eflash
-          width: 1
-          default: ""
-          external: true
-          top_signame: flash_test_voltage_h
           index: -1
         }
       ]
@@ -5785,9 +5781,8 @@
       eflash.flash_bist_enable: flash_bist_enable
       eflash.flash_power_down_h: flash_power_down_h
       eflash.flash_power_ready_h: flash_power_ready_h
-      eflash.flash_test_mode_a: flash_test_mode_a
-      eflash.flash_test_voltage_h: flash_test_voltage_h
       entropy_src.entropy_src_rng: es_rng
+      entropy_src.rng_fips: es_rng_fips
       lc_ctrl.lc_clk_byp_req: lc_clk_byp_req
       peri.tl_ast: ast_tl
       pinmux_aon.dft_strap_test: dft_strap_test
@@ -11553,6 +11548,9 @@
         act: req
         width: 1
         inst_name: entropy_src
+        default: ""
+        external: true
+        top_signame: es_rng_fips
         index: -1
       }
       {
@@ -12092,14 +12090,11 @@
       {
         struct: logic
         package: ""
-        width: 4
+        width: "4"
         type: uni
         act: rcv
         name: flash_test_mode_a
         inst_name: eflash
-        default: ""
-        external: true
-        top_signame: flash_test_mode_a
         index: -1
       }
       {
@@ -12109,10 +12104,6 @@
         act: rcv
         name: flash_test_voltage_h
         inst_name: eflash
-        width: 1
-        default: ""
-        external: true
-        top_signame: flash_test_voltage_h
         index: -1
       }
       {
@@ -13046,30 +13037,6 @@
         netname: flash_power_ready_h
       }
       {
-        package: ""
-        struct: logic
-        signame: flash_test_mode_a_i
-        width: 4
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: flash_test_mode_a
-      }
-      {
-        package: ""
-        struct: logic
-        signame: flash_test_voltage_h_i
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: flash_test_voltage_h
-      }
-      {
         package: entropy_src_pkg
         struct: entropy_src_rng_req
         signame: es_rng_req_o
@@ -13092,6 +13059,18 @@
         conn_type: false
         index: -1
         netname: es_rng_rsp
+      }
+      {
+        package: ""
+        struct: logic
+        signame: es_rng_fips_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: es_rng_fips
       }
       {
         package: lc_ctrl_pkg

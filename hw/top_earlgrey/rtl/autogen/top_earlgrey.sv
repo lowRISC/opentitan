@@ -68,10 +68,9 @@ module top_earlgrey #(
   input  lc_ctrl_pkg::lc_tx_t       flash_bist_enable_i,
   input  logic       flash_power_down_h_i,
   input  logic       flash_power_ready_h_i,
-  input  logic [3:0] flash_test_mode_a_i,
-  input  logic       flash_test_voltage_h_i,
   output entropy_src_pkg::entropy_src_rng_req_t       es_rng_req_o,
   input  entropy_src_pkg::entropy_src_rng_rsp_t       es_rng_rsp_i,
+  output logic       es_rng_fips_o,
   output lc_ctrl_pkg::lc_tx_t       lc_clk_byp_req_o,
   output tlul_pkg::tl_h2d_t       ast_tl_req_o,
   input  tlul_pkg::tl_d2h_t       ast_tl_rsp_i,
@@ -89,6 +88,11 @@ module top_earlgrey #(
   output logic       usbdev_usb_ref_pulse_o,
   output clkmgr_pkg::clkmgr_ast_out_t       clks_ast_o,
   output rstmgr_pkg::rstmgr_ast_out_t       rsts_ast_o,
+
+  // Flash specific voltages
+  inout [3:0] flash_test_mode_a_io,
+  inout flash_test_voltage_h_io,
+
   input                      scan_rst_ni, // reset used for test mode
   input                      scan_en_i,
   input lc_ctrl_pkg::lc_tx_t scanmode_i   // lc_ctrl_pkg::On for Scan
@@ -989,8 +993,8 @@ module top_earlgrey #(
     .flash_bist_enable_i,
     .flash_power_down_h_i,
     .flash_power_ready_h_i,
-    .flash_test_mode_a_i,
-    .flash_test_voltage_h_i,
+    .flash_test_mode_a_io,
+    .flash_test_voltage_h_io,
     .scanmode_i,
     .scan_en_i,
     .scan_rst_ni
@@ -2072,7 +2076,7 @@ module top_earlgrey #(
       .entropy_src_xht_o(),
       .entropy_src_xht_i(entropy_src_pkg::ENTROPY_SRC_XHT_RSP_DEFAULT),
       .efuse_es_sw_reg_en_i('0),
-      .rng_fips_o(),
+      .rng_fips_o(es_rng_fips_o),
       .tl_i(entropy_src_tl_req),
       .tl_o(entropy_src_tl_rsp),
 

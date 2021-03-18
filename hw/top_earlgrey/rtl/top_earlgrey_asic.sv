@@ -296,10 +296,10 @@ module top_earlgrey_asic (
   logic usb_diff_input;
   logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
 
-  assign usb_pullup_p_en_o = dio_out_core[top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDpPullup] &
-                             dio_oe_core[top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDpPullup];
-  assign usb_pullup_n_en_o = dio_out_core[top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDnPullup] &
-                             dio_oe_core[top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDnPullup];
+  assign usb_pullup_p_en = dio_out_core[top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDpPullup] &
+                           dio_oe_core[top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDpPullup];
+  assign usb_pullup_n_en = dio_out_core[top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDnPullup] &
+                           dio_oe_core[top_earlgrey_pkg::TopEarlgreyDioPinUsbdevDnPullup];
 
   // Input tie-off muxes
   for (genvar k = 0; k < pinmux_reg_pkg::NDioPads; k++) begin : gen_input_tie_off
@@ -353,6 +353,7 @@ module top_earlgrey_asic (
   // The entropy source pacakge definition should eventually be moved to es
   entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
   entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
+  logic es_rng_fips;
 
   // entropy distribution network
   edn_pkg::edn_req_t ast_edn_edn_req;
@@ -560,7 +561,7 @@ module top_earlgrey_asic (
     .adc_d_val_o           ( adc_rsp.data_valid ),
     // rng
     .rng_en_i              ( es_rng_req.rng_enable ),
-    .rng_fips_i            ( '0 ),
+    .rng_fips_i            ( es_rng_fips ),
     .rng_val_o             ( es_rng_rsp.rng_valid ),
     .rng_b_o               ( es_rng_rsp.rng_b ),
     // entropy
@@ -594,15 +595,15 @@ module top_earlgrey_asic (
     // pinmux related
     .padmux2ast_i          ( pinmux2ast ),
     .ast2padmux_o          ( ast2pinmux ),
-    //TODO: Connect to PAD
-    .pad2ast_t0_ai         ( '0 ),
-    .pad2ast_t1_ai         ( '0 ),
-    .ast2pad_t0_ao         ( ),
-    .ast2pad_t1_ao         ( ),
+    // Direct short to PAD
+    .pad2ast_t0_ai         ( IOA4 ),
+    .pad2ast_t1_ai         ( IOA5 ),
+    .ast2pad_t0_ao         ( IOA2 ),
+    .ast2pad_t1_ao         ( IOA3 ),
     .lc_clk_byp_req_i      ( lc_ast_clk_byp_req ),
     .lc_clk_byp_ack_o      ( lc_ast_clk_byp_ack ),
     .flash_bist_en_o       ( flash_bist_enable  ),
-    //TODO: Connect to memories
+    // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
     .dpram_rml_o           ( ast_ram_2p_lcfg ),
     .spram_rm_o            ( ast_ram_1p_cfg  ),
@@ -705,13 +706,15 @@ module top_earlgrey_asic (
     .flash_power_ready_h_i        ( flash_power_ready_h        ),
     .es_rng_req_o                 ( es_rng_req                 ),
     .es_rng_rsp_i                 ( es_rng_rsp                 ),
+    .es_rng_fips_o                ( es_rng_fips                ),
     .lc_clk_byp_req_o             ( lc_ast_clk_byp_req         ),
     .lc_clk_byp_ack_i             ( lc_ast_clk_byp_ack         ),
     .pinmux2ast_o                 ( pinmux2ast                 ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
-    // TODO: connect these
-    .flash_test_mode_a_i          ('0                          ),
-    .flash_test_voltage_h_i       ('0                          ),
+
+    // Flash test mode voltages
+    .flash_test_mode_a_io         ( FLASH_TEST_MODE            ),
+    .flash_test_voltage_h_io      ( FLASH_TEST_VOLT            ),
 
     // Multiplexed I/O
     .mio_in_i                     ( mio_in_core                ),

@@ -32,8 +32,8 @@ module prim_generic_flash #(
   input scan_rst_ni,
   input flash_power_ready_h_i,
   input flash_power_down_h_i,
-  input [TestModeWidth-1:0] flash_test_mode_a_i,
-  input flash_test_voltage_h_i,
+  inout [TestModeWidth-1:0] flash_test_mode_a_io,
+  inout flash_test_voltage_h_io,
   output logic flash_err_o,
   output logic flash_alert_po,
   output logic flash_alert_no,
@@ -111,8 +111,8 @@ module prim_generic_flash #(
   assign unused_scanmode = scanmode_i;
   assign unused_scan_en = scan_en_i;
   assign unused_scan_rst_n = scan_rst_ni;
-  assign unused_flash_test_mode = flash_test_mode_a_i;
-  assign unused_flash_test_voltage = flash_test_voltage_h_i;
+  assign unused_flash_test_mode = flash_test_mode_a_io;
+  assign unused_flash_test_voltage = flash_test_voltage_h_io;
   assign unused_tck = tck_i;
   assign unused_tdi = tdi_i;
   assign unused_tms = tms_i;

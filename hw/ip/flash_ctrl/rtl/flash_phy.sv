@@ -26,8 +26,8 @@ module flash_phy import flash_ctrl_pkg::*; (
   input scan_rst_ni,
   input flash_power_ready_h_i,
   input flash_power_down_h_i,
-  input [3:0] flash_test_mode_a_i,
-  input flash_test_voltage_h_i,
+  inout [3:0] flash_test_mode_a_io,
+  inout flash_test_voltage_h_io,
   input lc_ctrl_pkg::lc_tx_t flash_bist_enable_i,
   input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i
 );
@@ -272,8 +272,8 @@ module flash_phy import flash_ctrl_pkg::*; (
     .scan_rst_ni,
     .flash_power_ready_h_i,
     .flash_power_down_h_i,
-    .flash_test_mode_a_i,
-    .flash_test_voltage_h_i,
+    .flash_test_mode_a_io,
+    .flash_test_voltage_h_io,
     .flash_err_o(flash_ctrl_o.flash_err),
     .flash_alert_po(flash_ctrl_o.flash_alert_p),
     .flash_alert_no(flash_ctrl_o.flash_alert_n),

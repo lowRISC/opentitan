@@ -487,8 +487,6 @@ module top_earlgrey_nexysvideo #(
     .es_rng_rsp_i                 ( '0              ),
     .lc_clk_byp_req_o             ( lc_clk_bypass   ),
     .lc_clk_byp_ack_i             ( lc_clk_bypass   ),
-    .flash_test_mode_a_i          ('0               ),
-    .flash_test_voltage_h_i       ('0               ),
 
     // Multiplexed I/O
     .mio_in_i        ( mio_in_core   ),
