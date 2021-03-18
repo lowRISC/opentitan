@@ -1,3 +1,6 @@
 # bazel
 bazel-*
 **/bazel-*
+
+# vscode
+.vscode

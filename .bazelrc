@@ -1,4 +1,5 @@
 # Enable toolchain resolution with cc
 build --incompatible_enable_cc_toolchain_resolution
 
-build --cxxopt=-std=c++11
+coverage --experimental_generate_llvm_lcov
+coverage --combined_report=lcov

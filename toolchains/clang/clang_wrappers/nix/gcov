@@ -23,4 +23,4 @@
 # SOFTWARE.
 
 set -euo pipefail
-external/com_llvm_compiler/bin/llvm-cov gcov "$@"
+external/com_llvm_compiler/bin/llvm-profdata "$@"

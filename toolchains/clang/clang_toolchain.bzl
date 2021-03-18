@@ -110,6 +110,10 @@ def _clang_toolchain_config_info_impl(ctx):
             name = "strip",
             path = "clang_wrappers/{os}/strip",
         ),
+        tool_path(
+            name = "llvm-cov",
+            path = "clang_wrappers/{os}/llvm-cov",
+        ),
     ]
     os = "nix"
     postfix = ""

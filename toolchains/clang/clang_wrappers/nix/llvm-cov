@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # MIT License
 #
 # Copyright (c) 2019 Nathaniel Brough
@@ -20,27 +22,5 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-package(default_visibility = ["//visibility:public"])
-
-filegroup(
-    name = "all",
-    srcs = [
-        "ar",
-        "cpp",
-        "gcc",
-        "gcov",
-        "ld",
-        "llvm-cov",
-        "nm",
-        "objcopy",
-        "objdump",
-        "strip",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "objcopy_alias",
-    srcs = ["objcopy"],
-    visibility = ["//visibility:public"],
-)
+set -euo pipefail
+external/com_llvm_compiler/bin/llvm-cov "$@"

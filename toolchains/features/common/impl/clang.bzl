@@ -154,7 +154,7 @@ _COVERAGE_FEATURE = feature(
             actions = _CPP_ALL_COMPILE_ACTIONS + _C_ALL_COMPILE_ACTIONS,
             flag_groups = [
                 flag_group(
-                    flags = ["--coverage"],
+                    flags = ["--coverage", "-fprofile-instr-generate", "-fcoverage-mapping"],
                 ),
             ],
         ),

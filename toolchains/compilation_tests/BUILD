@@ -17,3 +17,9 @@ cc_test(
     srcs = ["host_targetted_compilation_test.cc"],
     target_compatible_with = ["@platforms//cpu:x86_64"],
 )
+
+cc_test(
+    name = "test_for_coverage",
+    srcs = ["combined_coverage_test.cc"],
+    target_compatible_with = ["@platforms//cpu:x86_64"],
+)
