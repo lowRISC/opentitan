@@ -41,6 +41,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     name_suffix: 'elf',
     link_depends: rom_link_deps,
     dependencies: [
+      device_lib,
       mask_rom_lib,
     ],
   )
