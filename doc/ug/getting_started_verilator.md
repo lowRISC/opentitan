@@ -133,6 +133,8 @@ $ echo 'h09 l31' > gpio0-write  # Pull the pin 9 high, and pin 31 low.
 The simulation includes a "virtual JTAG" port to which OpenOCD can connect using its `remote_bitbang` driver.
 All necessary configuration files are included in this repository.
 
+See the [install instructions]({{< relref "install_instructions#openocd" >}}) for guidance on installing OpenOCD.
+
 Run the simulation, then connect with OpenOCD using the following command.
 
 ```console
@@ -145,13 +147,6 @@ To connect GDB use the following command (noting it needs to be altered to point
 ```console
 $ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
   build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf
-```
-
-You can also run the debug compliance test suite built into OpenOCD.
-
-```console
-$ cd $REPO_TOP
-$ /tools/openocd/bin/openocd -s util/openocd -f board/lowrisc-earlgrey-verilator.cfg -c 'init; riscv test_compliance; shutdown'
 ```
 
 ## SPI device test interface
