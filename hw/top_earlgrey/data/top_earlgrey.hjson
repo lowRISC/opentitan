@@ -980,12 +980,12 @@
         'lc_ctrl.lc_clk_byp_req'       : 'lc_clk_byp_req',
         'peri.tl_ast'                  : 'ast_tl',
         'pinmux_aon.dft_strap_test'    : 'dft_strap_test'
+        'pinmux_aon.ast'               : 'pinmux_ast'
         'pwrmgr_aon.pwr_ast'           : 'pwrmgr_ast',
         'otp_ctrl.otp_ast_pwr_seq'     : '',
         'otp_ctrl.otp_ast_pwr_seq_h'   : '',
         'sensor_ctrl_aon.ast_alert'    : 'sensor_ctrl_ast_alert',
         'sensor_ctrl_aon.ast_status'   : 'sensor_ctrl_ast_status',
-        'sensor_ctrl_aon.pinmux2ast'   : 'pinmux2ast',
         'sensor_ctrl_aon.ast2pinmux'   : 'ast2pinmux',
         'usbdev.usb_ref_val'           : '',
         'usbdev.usb_ref_pulse'         : '',

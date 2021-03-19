@@ -645,9 +645,17 @@ module top_earlgrey_asic (
   localparam logic [pinmux_pkg::NumIOs-1:0] TieOffValues = pinmux_pkg::NumIOs'(1'b1 << (
       pinmux_reg_pkg::NMioPads + top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb));
 
-  // DFT and Debug signal positions in the pinout.
+  // DFT and Debuxg signal positions in the pinout.
   // TODO: generate these indices from the target-specific
   // pinout configuration.
+  localparam pinmux_pkg::ast_sel_t AstSelCfg = '{
+    6,  //IOB0,
+    7,  //IOB1,
+    8,  //IOB2,
+    37, //IOR7,
+    15, //IOB9,
+    16  //IOB10
+  };
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
     const_sampling: 1'b1,
     tie_offs:       TieOffValues,
@@ -663,7 +671,8 @@ module top_earlgrey_asic (
     tap_strap0_idx: 26, // MIO 26
     tap_strap1_idx: 23, // MIO 23
     dft_strap0_idx: 21, // MIO 21
-    dft_strap1_idx: 22  // MIO 22
+    dft_strap1_idx: 22, // MIO 22
+    ast_sel_cfg:    AstSelCfg
   };
 
   top_earlgrey #(
@@ -709,7 +718,7 @@ module top_earlgrey_asic (
     .es_rng_fips_o                ( es_rng_fips                ),
     .lc_clk_byp_req_o             ( lc_ast_clk_byp_req         ),
     .lc_clk_byp_ack_i             ( lc_ast_clk_byp_ack         ),
-    .pinmux2ast_o                 ( pinmux2ast                 ),
+    .pinmux_ast_o                 ( pinmux2ast                 ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
 
     // Flash test mode voltages

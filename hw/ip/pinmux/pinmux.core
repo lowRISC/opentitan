@@ -10,6 +10,8 @@ filesets:
     depend:
       - lowrisc:ip:pinmux_reg
       - lowrisc:ip:pinmux_component
+      - lowrisc:prim:util
+      - lowrisc:systems:ast_pkg
 
 parameters:
   SYNTHESIS:
@@ -33,5 +35,3 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
-
-
