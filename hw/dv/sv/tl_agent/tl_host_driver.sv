@@ -107,7 +107,7 @@ class tl_host_driver extends tl_base_driver;
         cfg.vif.host_cb.h2d_int.a_param   <= req.a_param;
         cfg.vif.host_cb.h2d_int.a_data    <= req.a_data;
         cfg.vif.host_cb.h2d_int.a_mask    <= req.a_mask;
-        cfg.vif.host_cb.h2d_int.a_user    <= req.get_a_user_val();
+        cfg.vif.host_cb.h2d_int.a_user    <= req.a_user;
         cfg.vif.host_cb.h2d_int.a_source  <= req.a_source;
         cfg.vif.host_cb.h2d_int.a_valid   <= 1'b1;
       end else begin

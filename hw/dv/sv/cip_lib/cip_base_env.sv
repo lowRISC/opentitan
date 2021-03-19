@@ -11,7 +11,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
   `uvm_component_param_utils(cip_base_env #(CFG_T, VIRTUAL_SEQUENCER_T, SCOREBOARD_T, COV_T))
 
   tl_agent                                           m_tl_agent;
-  tl_reg_adapter                                     m_tl_reg_adapter;
+  tl_reg_adapter#(cip_tl_seq_item)                   m_tl_reg_adapter;
   alert_esc_agent                                    m_alert_agent[string];
   push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent;
 
@@ -32,7 +32,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
 
     // Create & configure the TL agent.
     m_tl_agent = tl_agent::type_id::create("m_tl_agent", this);
-    m_tl_reg_adapter = tl_reg_adapter#()::type_id::create("m_tl_reg_adapter");
+    m_tl_reg_adapter = tl_reg_adapter#(cip_tl_seq_item)::type_id::create("m_tl_reg_adapter");
     m_tl_reg_adapter.cfg = cfg.m_tl_agent_cfg;
     uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_agent*", "cfg", cfg.m_tl_agent_cfg);
     cfg.m_tl_agent_cfg.en_cov = cfg.en_cov;

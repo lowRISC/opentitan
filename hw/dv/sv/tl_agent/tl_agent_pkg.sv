@@ -21,6 +21,7 @@ package tl_agent_pkg;
   parameter int SizeWidth   = bus_params_pkg::BUS_SZW;
   parameter int MaskWidth   = bus_params_pkg::BUS_DBW;
   parameter int SourceWidth = bus_params_pkg::BUS_AIW;
+  parameter int AUserWidth  = bus_params_pkg::BUS_AUW;
   parameter int DUserWidth  = bus_params_pkg::BUS_DUW;
   parameter int OpcodeWidth = 3;
 

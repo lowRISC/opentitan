@@ -46,11 +46,19 @@ package bus_params_pkg;
   parameter int BUS_DIW = top_pkg::TL_DIW;
 `endif
 
-// Set the bus data user width.
+// Set the bus a channel user width.
+`ifdef BUS_AUW
+  parameter int BUS_AUW = `BUS_AUW;
+`else
+  parameter int BUS_AUW = top_pkg::TL_AUW;
+`endif
+
+// Set the bus d channel user width.
 `ifdef BUS_DUW
   parameter int BUS_DUW = `BUS_DUW;
 `else
   parameter int BUS_DUW = top_pkg::TL_DUW;
 `endif
+
 
 endpackage

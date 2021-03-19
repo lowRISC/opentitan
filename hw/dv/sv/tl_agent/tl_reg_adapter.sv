@@ -18,7 +18,7 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
   function new(string name = "tl_reg_adapter");
     super.new(name);
     // Force the uvm_reg_map to use this sequence to sync with the driver instead.
-    parent_sequence = tl_host_base_seq::type_id::create("m_tl_host_base_seq");
+    parent_sequence = tl_host_base_seq#(ITEM_T)::type_id::create("m_tl_host_base_seq");
     supports_byte_enable = 1;
     provides_responses = 1;
   endfunction : new

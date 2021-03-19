@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // TL device sequence supports in-order and out-of-order response
-class tl_device_seq extends dv_base_seq #(.REQ        (tl_seq_item),
-                                          .CFG_T      (tl_agent_cfg),
-                                          .SEQUENCER_T(tl_sequencer)
-  );
+class tl_device_seq #(type REQ_T = tl_seq_item) extends dv_base_seq #(
+    .REQ        (REQ_T),
+    .CFG_T      (tl_agent_cfg),
+    .SEQUENCER_T(tl_sequencer));
 
   // if enabled, rsp will be aborted if it's not accepted after given valid length
   rand bit                 rsp_abort_after_d_valid_len;
@@ -16,13 +16,13 @@ class tl_device_seq extends dv_base_seq #(.REQ        (tl_seq_item),
   int                      min_rsp_delay = 0;
   int                      max_rsp_delay = 10;
   mem_model_pkg::mem_model mem;
-  tl_seq_item              req_q[$];
+  REQ                      req_q[$];
   bit                      out_of_order_rsp = 0;
 
   // chance to set d_error
   int                      d_error_pct = 0;
 
-  `uvm_object_utils(tl_device_seq)
+  `uvm_object_param_utils(tl_device_seq #(REQ))
   `uvm_object_new
 
   constraint en_req_abort_after_d_valid_len_c {
@@ -35,8 +35,8 @@ class tl_device_seq extends dv_base_seq #(.REQ        (tl_seq_item),
   virtual task body();
     fork
       forever begin // collect req thread
-        int         req_cnt;
-        tl_seq_item req;
+        int req_cnt;
+        REQ req;
 
         p_sequencer.a_chan_req_fifo.get(req);
         req_q.push_back(req);
@@ -45,8 +45,8 @@ class tl_device_seq extends dv_base_seq #(.REQ        (tl_seq_item),
         req_cnt++;
       end
       forever begin // response thread
-        int         rsp_cnt;
-        tl_seq_item req, rsp;
+        int rsp_cnt;
+        REQ req, rsp;
 
         wait(req_q.size > 0);
         if (out_of_order_rsp) req_q.shuffle();
@@ -67,7 +67,7 @@ class tl_device_seq extends dv_base_seq #(.REQ        (tl_seq_item),
     join
   endtask
 
-  virtual function void randomize_rsp(tl_seq_item rsp);
+  virtual function void randomize_rsp(REQ rsp);
     rsp.disable_a_chan_randomization();
     if (d_error_pct > 0) rsp.no_d_error_c.constraint_mode(0);
     if (!(rsp.randomize() with
@@ -87,12 +87,12 @@ class tl_device_seq extends dv_base_seq #(.REQ        (tl_seq_item),
   endfunction
 
   // callback after randomize seq, extened seq can override it to handle some non-rand variables
-  virtual function void post_randomize_rsp(tl_seq_item rsp);
+  virtual function void post_randomize_rsp(REQ rsp);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rsp_abort_after_d_valid_len)
     rsp.rsp_abort_after_d_valid_len = rsp_abort_after_d_valid_len;
   endfunction
 
-  virtual function void update_mem(tl_seq_item rsp);
+  virtual function void update_mem(REQ rsp);
     if (mem != null) begin
       if (rsp.a_opcode inside {PutFullData, PutPartialData}) begin
         bit [tl_agent_pkg::DataWidth-1:0] data;

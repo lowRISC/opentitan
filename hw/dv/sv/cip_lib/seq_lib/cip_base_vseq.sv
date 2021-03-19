@@ -160,7 +160,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                              tl_sequencer            tl_sequencer_h = p_sequencer.tl_sequencer_h);
     `DV_SPINWAIT(
         // thread to read/write tlul
-        tl_host_single_seq  tl_seq;
+        tl_host_single_seq #(cip_tl_seq_item) tl_seq;
         `uvm_create_on(tl_seq, tl_sequencer_h)
         if (cfg.zero_delays) begin
           tl_seq.min_req_delay = 0;
