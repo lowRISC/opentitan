@@ -16,8 +16,8 @@ class tl_host_driver extends tl_base_driver;
 
   virtual task get_and_drive();
     // Wait for initial reset to pass.
-    wait(cfg.vif.rst_n === 1'b0);
     wait(cfg.vif.rst_n === 1'b1);
+    @(cfg.vif.host_cb);
     fork
       begin : process_seq_item
         forever begin
