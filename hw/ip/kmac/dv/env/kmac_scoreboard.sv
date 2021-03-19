@@ -11,19 +11,70 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   // local variables
 
-  // this bit is set if a KDF transaction is being performed
+  // this bit goes high when KMAC has finished processing the
+  // prefix and the secret keys (only in KMAC mode)
+  bit prefix_and_keys_done = 0;
+
+  // this bit tracks the beginning and end of a KDF operation
   bit in_kdf;
+
+  // this bit goes high for a cycle when a manual squeezing is requested
+  bit req_manual_squeeze = 0;
+
+  // this bit goes high a small delay after CmdProcess is requested,
+  // used by fifo flushing logic to handle an edge case
+  bit req_cmd_process_dly = 0;
+
+  // This bit goes high if the fifo write pointer is incremented on the same cycle that
+  // a CmdProcess is detected internally and the fifo starts to flush its contents
+  bit incr_fifo_wr_in_process = 0;
+
+  // This bit indicates that a CmdProcess has been seen while the KMAC is still processing
+  // the prefix and secret keys (only used in KMAC mode)
+  bit cmd_process_in_header = 0;
+
+  // This bit indicates that the last block of a KDF request transaction has been sent
+  // while the KMAC is still processing the prefix and secret keys
+  bit kdf_last_in_header = 0;
+
+  // This bit is toggled for half a clock cycle every time a new block of data
+  // is transmitted via KDF app interface and received
+  bit got_data_from_kdf = 0;
 
   // CFG fields
   bit kmac_en;
   sha3_pkg::sha3_mode_e hash_mode;
   sha3_pkg::keccak_strength_e strength;
+  entropy_mode_e entropy_mode = EntropyModeNone;
+  bit entropy_fast_process;
+  bit entropy_ready;
 
   // CMD fields
   kmac_cmd_e kmac_cmd = CmdNone;
 
-  // FIFO status/intr empty bit
+  bit msg_digest_done;
+
+  // SHA3 status bits
+  bit sha3_idle;
+  bit sha3_absorb;
+  bit sha3_squeeze;
+
+  // FIFO model variables
+  bit [4:0] fifo_depth;
   bit fifo_empty;
+  bit fifo_full;
+
+  bit intr_kmac_done;
+  bit intr_fifo_empty;
+  bit intr_kmac_err;
+
+  // Variables to track the internal write/read pointers.
+  //
+  // One major difference between these and standard fifo pointers is that these
+  // values will not loop back to 0 after hitting the max fifo depth.
+  // These values will keep incrementing to keep some scoreboard logic simpler.
+  int fifo_wr_ptr;
+  int fifo_rd_ptr;
 
   // key length enum
   key_len_e key_len;
@@ -32,6 +83,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   bit kmac_err;
 
   keymgr_pkg::hw_key_req_t sideload_key;
+
+  bit [keymgr_pkg::KmacDataIfWidth-1:0]   kdf_block_data;
+  bit [keymgr_pkg::KmacDataIfWidth/8-1:0] kdf_block_strb;
+  int kdf_block_strb_size = 0;
+  bit kdf_last;
 
   // secret keys
   //
@@ -63,15 +119,16 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   bit [TL_DBW-1:0] state_mask;
 
   // TLM fifos
-  uvm_tlm_analysis_fifo #(keymgr_kmac_item) kdf_req_fifo;
   uvm_tlm_analysis_fifo #(keymgr_kmac_item) kdf_rsp_fifo;
+  uvm_tlm_analysis_fifo #(push_pull_agent_pkg::push_pull_item #(
+    .HostDataWidth(keymgr_kmac_agent_pkg::KMAC_REQ_DATA_WIDTH))) kdf_req_fifo;
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    kdf_req_fifo = new("kdf_req_fifo", this);
-    kdf_rsp_fifo = new("kdf_rsp_fifo", this);
+    kdf_req_fifo        = new("kdf_req_fifo", this);
+    kdf_rsp_fifo        = new("kdf_rsp_fifo", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -81,9 +138,19 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-      process_sideload_key();
+      detect_kdf_start();
+      process_prefix_and_keys();
+      process_msgfifo_write();
+      process_msgfifo_status();
+      process_sha3_idle();
+      process_sha3_absorb();
+      process_sha3_squeeze();
+      process_initial_digest();
+      process_manual_digest_squeeze();
+      process_intr_kmac_done();
       process_kdf_req_fifo();
       process_kdf_rsp_fifo();
+      process_sideload_key();
     join_none
   endtask
 
@@ -111,23 +178,57 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  // This task continuously checks the `kdf_req_fifo`.
+  // This task checks for the start of a KDF operation and updates scoreboard state accordingly.
   //
-  // This fifo is populated once a full KDF request has been detected,
-  // and is used by the scoreboard to store the input KDF message and set
-  // some internal state.
-  virtual task process_kdf_req_fifo();
-    keymgr_kmac_item kdf_req;
+  // `process_kdf_req_fifo()` cannot be used for this purpose because the scb will only receive
+  // a kdf_req item once the full request has been completed, which can consist of many
+  // different request transactions.
+  virtual task detect_kdf_start();
     forever begin
-      kdf_req_fifo.get(kdf_req);
-      `uvm_info(`gfn, $sformatf("Detected a KDF request:\n%0s", kdf_req.sprint()), UVM_HIGH)
+      // If we are not in KDF mode, the next time we see valid is the start
+      // of a KDF operation
+      //
+      //wait (!in_kdf && cfg.m_kdf_agent_cfg.vif.kmac_data_req.valid);
+      wait(!in_kdf &&
+           cfg.m_kdf_agent_cfg.vif.req_data_if.valid &&
+           cfg.m_kdf_agent_cfg.vif.req_data_if.ready);
+      in_kdf = 1;
+      `uvm_info(`gfn, "raised in_kdf", UVM_HIGH)
+    end
+  endtask
 
-      // signal to the rest of the scoreboard that we are now in KDF mode
-      in_kdf = 1'b1;
-
-      // store the input KDF message locally
-      kdf_msg = kdf_req.byte_data_q;
-      `uvm_info(`gfn, $sformatf("kdf_msg: %0p", kdf_msg), UVM_HIGH)
+  // This task continuously checks the analysis_port of the push_pull_agent
+  // in the keymgr_kmac_agent, as we need to know every time a data block is sent
+  // over the KDF interface.
+  virtual task process_kdf_req_fifo();
+    push_pull_agent_pkg::push_pull_item#(
+      .HostDataWidth(keymgr_kmac_agent_pkg::KMAC_REQ_DATA_WIDTH)) kdf_block_item;
+    forever begin
+        wait(!cfg.under_reset);
+        @(posedge in_kdf);
+        `DV_SPINWAIT_EXIT(
+            forever begin
+              kdf_req_fifo.get(kdf_block_item);
+              `uvm_info(`gfn, $sformatf("Detected KDF data transfer:\n%0s", kdf_block_item.sprint()), UVM_HIGH)
+              {kdf_block_data, kdf_block_strb, kdf_last} = kdf_block_item.h_data;
+              kdf_block_strb_size = $countones(kdf_block_strb);
+              got_data_from_kdf = 1;
+              while (kdf_block_strb > 0) begin
+                if (kdf_block_strb[0]) begin
+                  kdf_msg.push_back(kdf_block_data[7:0]);
+                end
+                kdf_block_data = kdf_block_data >> 8;
+                kdf_block_strb = kdf_block_strb >> 1;
+              end
+              `uvm_info(`gfn, $sformatf("kdf_msg: %0p", kdf_msg), UVM_HIGH)
+              // drop `got_data_from_kdf` before the next cycle to avoid repeating
+              // unnecessary state updates elsewhere in the scb
+              cfg.clk_rst_vif.wait_n_clks(1);
+              got_data_from_kdf = 0;
+            end
+            ,
+            wait(cfg.under_reset || !in_kdf);
+        )
     end
   endtask
 
@@ -158,7 +259,829 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
       check_digest();
 
-      in_kdf = 1'b0;
+      in_kdf = 0;
+      `uvm_info(`gfn, "dropped in_kdf", UVM_HIGH)
+
+      clear_state();
+    end
+  endtask
+
+  // This task updates the internal sha3_idle status field
+  virtual task process_sha3_idle();
+    forever begin
+      // sha3_idle drops when CmdStart command is sent or a KDF op is detected
+      @(posedge in_kdf or kmac_cmd == CmdStart);
+      sha3_idle = 0;
+      `uvm_info(`gfn, "dropped sha3_idle", UVM_HIGH)
+
+      // sha3_idle goes high when either KDF op is complete or CmdDone command is sent by SW
+      @(negedge in_kdf or kmac_cmd == CmdDone);
+      sha3_idle = 1;
+      `uvm_info(`gfn, "raised sha3_idle", UVM_HIGH)
+    end
+  endtask
+
+  // This task updates the internal sha3_absorb status field
+  virtual task process_sha3_absorb();
+    forever begin
+      // sha3_absorb should go high when CmdStart is written or
+      // when KDF op is started
+      @(posedge in_kdf or kmac_cmd == CmdStart);
+      sha3_absorb = 1;
+      `uvm_info(`gfn, "raised sha3_absorb", UVM_HIGH)
+
+      // sha3_absorb should go low one cycle after KMAC has finished calculating digest
+      @(posedge msg_digest_done);
+      cfg.clk_rst_vif.wait_clks(1);
+      sha3_absorb = 0;
+      `uvm_info(`gfn, "dropped sha3_absorb", UVM_HIGH)
+    end
+  endtask
+
+  // This task updates the internal sha3_squeeze status field
+  virtual task process_sha3_squeeze();
+    bit is_kdf_op;
+    forever begin
+      @(negedge sha3_idle);
+      `DV_SPINWAIT_EXIT(
+          forever begin
+            // sha3_squeeze goes high one cycle after KMAC has finished calculating digest,
+            @(posedge msg_digest_done);
+            // latch whether we are doing a KDF op to accurate determine when to raise sha3_squeeze
+            is_kdf_op = in_kdf;
+            // don't have to wait if manually squezing, squeeze status goes high immediately
+            // since immediate transition back into processing state
+            if (kmac_cmd != CmdManualRun) begin
+              cfg.clk_rst_vif.wait_clks(1);
+            end
+            sha3_squeeze = 1;
+            `uvm_info(`gfn, "raised sha3_squeeze", UVM_HIGH)
+
+            // sha3_squeeze goes low in one of three cases:
+            // - manual squeezing is requested
+            // - KDF operation finishes
+            // - CmdDone is written
+            `DV_SPINWAIT_EXIT(
+                @(posedge req_manual_squeeze);
+                ,
+                wait(kmac_cmd == CmdDone || (is_kdf_op && !in_kdf));
+            )
+            sha3_squeeze = 0;
+            `uvm_info(`gfn, "dropped sha3_squeeze", UVM_HIGH)
+          end
+          ,
+          @(posedge sha3_idle or posedge cfg.under_reset);
+      )
+    end
+  endtask
+
+  // This task handles asserting the `kmac_done` interrupt bit
+  virtual task process_intr_kmac_done();
+    forever begin
+      @(negedge sha3_idle);
+      `DV_SPINWAIT_EXIT(
+          wait(sha3_squeeze);
+          // interrupt goes high 2 cycles after internal status is updated
+          cfg.clk_rst_vif.wait_clks(2);
+          // only assert kmac_done intr when not in KDF mode
+          if (!in_kdf) intr_kmac_done = 1;
+          `uvm_info(`gfn, "raised intr_kmac_done", UVM_HIGH)
+          ,
+          // we stop processing the kmac_done interrupt when either:
+          // - a reset occurs
+          // - a KDF operation finishes
+          // - more digest is manually squeezed
+          // - CmdDone command is written
+          @(posedge cfg.under_reset or negedge in_kdf or
+            kmac_cmd == CmdManualRun or kmac_cmd == CmdDone);
+      )
+    end
+  endtask
+
+  // This task implements a timing model to track processing of the KMAC header
+  // (consisting of the prefix and secret keys), and asserts `prefix_and_keys_done` once
+  // the processing is complete.
+  // Naturally this only applies if KMAC mode is enabled.
+  virtual task process_prefix_and_keys();
+    forever begin
+      wait(!cfg.under_reset);
+      // Wait for KMAC to move out of IDLE state, meaning that:
+      // - CmdStart has been issued
+      // - KDF op has been started
+      `DV_SPINWAIT_EXIT(
+          @(negedge sha3_idle);
+          ,
+          wait(in_kdf == 1);
+      )
+      `uvm_info(`gfn, $sformatf("detected in_kdf: %0d", in_kdf), UVM_HIGH)
+
+      // Disregard prefix/key processing if not using KMAC mode
+      if (kmac_en) begin
+        fork
+          if (!in_kdf) begin : wait_cmd_process_header
+            // We need to be able to detect if a CmdProcess is asserted in the middle of
+            // processing the prefix and keys, as this changes the timing of how msgfifo
+            // is flushed
+            wait(kmac_cmd == CmdProcess);
+            cmd_process_in_header = 1;
+            `uvm_info(`gfn, "seen CmdProcess during prefix and key processing", UVM_HIGH)
+          end : wait_cmd_process_header
+          if (in_kdf) begin : wait_kdf_last_header
+            // We need to be able to detect if the last block of a KDF request is sent
+            // during processing of the prefix and secret keys, as this changes the timing
+            wait(kdf_last == 1);
+            kdf_last_in_header = 1;
+            `uvm_info(`gfn, "seen kdf_last during prefix and key processing", UVM_HIGH)
+          end
+          begin : wait_process_header
+            // If KMAC mode enabled, wait for the prefix and keys to be absorbed by keccak.
+            //
+            // Note that both absorptions will take the same number of cycles
+            `uvm_info(`gfn, "starting to wait for prefix and key to be processed", UVM_HIGH)
+
+            // if in_kdf is detected, we have sampled it right before the rising clock edge
+            // in the same simulation timestep, need to synchronize to this clock edge
+            // to avoid having it be caught when we're waiting for sha3pad to process everything
+            if (in_kdf) begin
+              cfg.clk_rst_vif.wait_clks(1);
+            end
+
+            repeat (2) begin
+              // wait either 21 or 17 cycles for sha3pad logic to send the prefix/key
+              // to the keccak_round logic (this is the keccak rate)
+              cfg.clk_rst_vif.wait_clks(sha3_pkg::KeccakRate[strength]);
+              `uvm_info(`gfn, "finished waiting for sha3pad process", UVM_HIGH)
+
+              // Keccak logic needs 1 cycle to latch internal control signal
+              // after sha3pad finishes transmitting prefix/key data blocks
+              cfg.clk_rst_vif.wait_clks(1);
+
+              // wait for the keccak logic to perform KECCAK_NUM_ROUNDS rounds
+              wait_keccak_rounds();
+
+            end
+            prefix_and_keys_done = 1;
+            `uvm_info(`gfn, "finished processing prefix and keys", UVM_HIGH)
+            // Ensure that we can correctly capture scenario where CmdProcess is seen on
+            // final cycle of prefix/key processing
+            #0;
+            disable wait_cmd_process_header;
+            disable wait_kdf_last_header;
+          end : wait_process_header
+        join
+      end
+      @(posedge sha3_idle);
+    end
+  endtask
+
+  // This task waits for the keccak logic to complete a full KECCAK_NUM_ROUNDS rounds
+  //
+  // This task must only be called after sha3pad logic has transmitted all KeccakRate
+  // blocks to keccak logic
+  virtual task wait_keccak_rounds();
+    int unsigned total_cycles = 0;
+    if (cfg.enable_masking) begin
+      // If masking is enabled then entropy is used,
+      // timing is more complex because of the various entropy features
+      //
+      // TODO: entropy_fast_process is currently disabled,
+      //       need to support when enabled in sequence
+
+      if (entropy_mode == EntropyModeSw) begin
+        // All rounds will take SW_ENTROPY_ROUND_CYCLES_NO_FAST cycles each, except the first one.
+        //
+        // Without fast entropy, the internal 320-bit entropy state needs to be "refilled" for
+        // each round, adding a 5-cycle latency per round (64 bits "filled" at a time).
+        //
+        // However, by the time `run_i` is asserted to keccak logic, the entropy state will
+        // already be "filled up" in the time it takes for sha3pad to transmit data.
+        //
+        // So, latency of first round will be 3 cycles, one for the entropy FSM to transition and
+        // start entropy expansion and 2 for keccak logic to latch this entropy.
+        total_cycles = 3 + (SW_ENTROPY_ROUND_CYCLES_NO_FAST * (KECCAK_NUM_ROUNDS - 1));
+      end else if (entropy_mode == EntropyModeEdn) begin
+        // TODO: EDN entropy isn't supported in sequences yet
+      end else begin
+        // TODO: to uvm_fatal or not to uvm_fatal?
+      end
+
+    end else begin
+      // If masking is disabled then no entropy is used,
+      // so just wait KECCAK_NUM_ROUNDS cycles
+      total_cycles = KECCAK_NUM_ROUNDS;
+    end
+
+    `uvm_info(`gfn, "starting to wait for keccak", UVM_HIGH)
+    cfg.clk_rst_vif.wait_clks(total_cycles);
+    // need to wait for one final cycle for sha3 wrapper logic to latch Keccak `complete` signal
+    cfg.clk_rst_vif.wait_clks(1);
+    `uvm_info(`gfn, "finished waiting for keccak", UVM_HIGH)
+  endtask
+
+  // This task implements a timing model to correctly assert the `msg_digest_done`signal,
+  // and also tracks the read interface to the msgfifo, as both are linked.
+  virtual task process_initial_digest();
+    bit do_increment;
+    bit cmd_process_in_keccak_and_blocks_left;
+    bit kdf_last_in_keccak;
+    bit run_final_keccak;
+
+    int num_blocks_filled = 0;
+
+    forever begin
+      wait(!cfg.under_reset);
+      `DV_SPINWAIT_EXIT(
+          wait(sha3_idle == 0);
+          ,
+          wait(in_kdf == 1);
+      )
+
+      // reset internal task state on each iteration
+      do_increment = 0;
+      cmd_process_in_keccak_and_blocks_left = 0;
+      kdf_last_in_keccak = 0;
+
+      // If KMAC mode enabled, the msgfifo will only be read from once
+      // the prefix and keys have been processed.
+      //
+      // This is guaranteed to happen after sha3_idle goes low, as the prefix and keys only start
+      // being processed once the DUT receives CmdStart command.
+      if (kmac_en) begin
+        @(posedge prefix_and_keys_done);
+
+        // KDF mode will instantly start transmitting data to the msgfifo without a delay
+        if (!in_kdf) begin
+          cfg.clk_rst_vif.wait_clks(1);
+
+          // There is a particularly tricky edge case where addr_phase_write of a CmdProcess command
+          // is detected one cycle after KMAC finishes processing the prefix and secret keys.
+          //
+          // If this happens we need to directly increment fifo_rd_ptr and num_blocks_filled,
+          // since we can only detect this scenario at the very end of the simulation timestep.
+          //
+          // Set `cmd_process_in_header` upon detecting this case so that we carry out
+          // proper timing behavior.
+          #0;
+          if (kmac_cmd == CmdProcess && !cmd_process_in_header) begin
+            `uvm_info(`gfn, "detected CmdProcess 1 cycle after process prefix/key", UVM_HIGH)
+            fifo_rd_ptr++;
+            num_blocks_filled++;
+            cmd_process_in_header = 1;
+            cfg.clk_rst_vif.wait_clks(1);
+          end
+        end
+        `uvm_info(`gfn, "finished waiting for prefix/key processing", UVM_HIGH)
+      end
+
+      `uvm_info(`gfn, "starting to handle msgfifo writes", UVM_HIGH)
+
+      `DV_SPINWAIT_EXIT(
+          fork
+            // This subprocess handles the control logic for when we are allowed
+            // to increment the fifo_rd_ptr
+            begin : process_msg_block
+              // Starting immediately after either:
+              //
+              // - prefix and keys have been processed in KMAC mode,
+              // - message has started being sent into the msgfifo
+              //
+              // Once we have a full set of blocks (21 or 17 blocks of 64-bits) of input message,
+              // we must wait for this data to be process via a full keccak round before we can start
+              // reading more data from the msgfifo
+              forever begin
+                do_increment = 0;
+                run_final_keccak = 0;
+                if (num_blocks_filled < sha3_pkg::KeccakRate[strength]) begin
+                  `uvm_info(`gfn,
+                      $sformatf("not enough blocks filled yet %0d/%0d",
+                                num_blocks_filled, sha3_pkg::KeccakRate[strength]),
+                      UVM_HIGH)
+                  if ((!in_kdf && kmac_cmd == CmdProcess) || (in_kdf && kdf_last)) begin
+                    `uvm_info(`gfn, "detected CmdProcess", UVM_HIGH)
+
+                    `uvm_info(`gfn, $sformatf("fifo_rd_ptr: %0d", fifo_rd_ptr), UVM_HIGH)
+                    `uvm_info(`gfn, $sformatf("fifo_wr_ptr: %0d", fifo_wr_ptr), UVM_HIGH)
+                    `uvm_info(`gfn, $sformatf("msg.size() : %0d", msg.size()), UVM_HIGH)
+
+                    // On a size 0 input message, simply wait 2 cycles for flushing and then
+                    // wait for keccak rounds to run
+                    //
+                    // Note that when using the KDF application interface the message
+                    // cannot have size 0 so we can skip this condition entirely
+                    if (!in_kdf && msg.size() == 0) begin
+                      `uvm_info(`gfn, "zero size message", UVM_HIGH)
+                      cfg.clk_rst_vif.wait_clks(2);
+                      run_final_keccak = 1;
+                    end else begin
+                      // If we get here it means that we don't have a full set of blocks ready for
+                      // the keccak logic.
+                      // As a result, we must now wait until the fifo has been completely flushed
+                      // and is completely empty.
+
+                      // This bit is used to detect scenario when a new block is written to msgfifo
+                      // during the 2 cycle flushing process, timing needs to change accordingly
+                      bit incr_fifo_wr_in_flush = 0;
+
+                      // Never enter this condition in KDF mode unless
+                      // one of the following edge cases are seen:
+                      // - kdf_last is seen during keccak hashing of full dadta block
+                      // - kdf_last is seen during processing of the prefix and secret key
+                      if (!in_kdf || kdf_last_in_keccak || kdf_last_in_header) begin
+                        // If both of the following two conditions are NOT true:
+                        //  - we've seen CmdProcess during an earlier keccak run and still have
+                        //    some data left in msgfifo/sha3pad
+                        //  - we've seen CmdProcess while processing prefix and secret keys
+                        //    (only in KMAC mode)
+                        // Wait for the msgfifo to be flushed, while simultaneously detecting
+                        // for a msgfifo write during the flushing process
+                        if (!in_kdf && !cmd_process_in_keccak_and_blocks_left &&
+                            !cmd_process_in_header) begin
+                          // If fifo_wr_ptr increments on the same cycle that we start flushing,
+                          // need to immediately increment fifo_rd_ptr to match.
+                          if (incr_fifo_wr_in_process) begin
+                            do_increment = 1;
+                            num_blocks_filled++;
+                            cfg.clk_rst_vif.wait_n_clks(1);
+                            do_increment = 0;
+                          end
+                          // This section waits several cycles for the flushing process to
+                          // be completed, while also checking for an edge case where a fifo write
+                          // goes through on the same cycle as the flush
+                          fork
+                            begin : wait_fifo_wr_in_flush
+                              // If the fifo write pointer is incremented while we are flushing,
+                              // we need to wait for another 2 cycles for the data to be correctly
+                              // latched by the flushing logic.
+                              // We can also increment the fifo_rd_ptr and increment
+                              // num_blocks_filled as a result.
+                              @(fifo_wr_ptr);
+                              incr_fifo_wr_in_flush = 1;
+                              do_increment = 1;
+                              num_blocks_filled++;
+                              `uvm_info(`gfn, "seen fifo_wr_ptr increment during flushing", UVM_HIGH)
+                            end : wait_fifo_wr_in_flush
+                            begin : wait_flush_cycles
+                              // wait 2 cycles for the flushing process
+                              `uvm_info(`gfn, "waiting 2 cycles for flushing", UVM_HIGH)
+                              cfg.clk_rst_vif.wait_clks(2);
+                              disable wait_fifo_wr_in_flush;
+                            end : wait_flush_cycles
+                          join
+
+                          if (incr_fifo_wr_in_flush || incr_fifo_wr_in_process) begin
+                            cfg.clk_rst_vif.wait_clks(2);
+                          end
+                        end
+
+                        // Wait for all remaining blocks in msgfifo to flush out to sha3pad
+                        while (!fifo_empty) begin
+                          do_increment = 1;
+                          num_blocks_filled++;
+
+                          `uvm_info(`gfn, $sformatf("increment num_blocks_filled: %0d", num_blocks_filled), UVM_HIGH)
+                          `uvm_info(`gfn, $sformatf("fifo_rd_ptr: %0d", fifo_rd_ptr), UVM_HIGH)
+                          `uvm_info(`gfn, $sformatf("fifo_wr_ptr: %0d", fifo_wr_ptr), UVM_HIGH)
+
+                          // wait until next timestep to ensure all state updates have settled
+                          #1;
+                          if (fifo_empty) begin
+                            `uvm_info(`gfn, "fifo is empty, exiting while loop", UVM_HIGH)
+                            // If any of the following conditions are true:
+                            //
+                            //  - we've seen CmdProcess during an earlier keccak run and still have
+                            //    some data left in msgfifo/sha3pad
+                            //  - we've seen CmdProcess while processing prefix and secret keys
+                            //    (only in KMAC mode)
+                            //  - we are in KDF mode (meaning that kdf_last was seen during
+                            //    prefix/key processing or during a keccak data hashing round)
+                            //
+                            // Wait for the fifo to correctly transition through flush states,
+                            // waiting an extra cycle delay if the `incr_fifo_wr_in_process` condition
+                            // was met.
+                            if (in_kdf || cmd_process_in_keccak_and_blocks_left ||
+                                cmd_process_in_header) begin
+                              cfg.clk_rst_vif.wait_clks(3);
+                              if (incr_fifo_wr_in_process) begin
+                                cfg.clk_rst_vif.wait_clks(1);
+                              end
+                              num_blocks_filled++;
+                            end
+                            break;
+                          end else begin
+                            // unset `do_increment` on the negedge to avoid infinite increments
+                            cfg.clk_rst_vif.wait_n_clks(1);
+                            do_increment = 0;
+                          end
+                          // If all blocks get filled up while we're flushing the fifo,
+                          // run full keccak rounds on these blocks
+                          if (num_blocks_filled == sha3_pkg::KeccakRate[strength]) begin
+                            `uvm_info(`gfn, "all blocks full while flushing fifo, running keccak rounds", UVM_HIGH)
+                            cfg.clk_rst_vif.wait_clks(1);
+                            wait_keccak_rounds();
+                            continue;
+                          end
+                          cfg.clk_rst_vif.wait_clks(1);
+                        end
+                      end else begin
+                        // if we get here it is guaranteed that kdf_last has been set
+                        //
+                        // usually we will wait 4 cycles for a KDF op to finish flushing out the
+                        // fifo and start runnning the rest of sha3pad process, with exception of
+                        // some edge cases.
+                        // use this bit to indicate when we should wait for these cycles.
+                        bit wait_kdf_flush = 1;
+
+                        // Similar timing logic as in `process_msgfifo_write()`
+                        if (kdf_block_strb_size == keymgr_pkg::KmacDataIfWidth/8) begin
+                          do_increment = 1;
+                          num_blocks_filled++;
+                          cfg.clk_rst_vif.wait_n_clks(1);
+                          do_increment = 0;
+                          if (num_blocks_filled == sha3_pkg::KeccakRate[strength]) begin
+                            `uvm_info(`gfn, "filled up blocks while processing full kdf_last block", UVM_HIGH)
+                            cfg.clk_rst_vif.wait_clks(1);
+                            wait_keccak_rounds();
+                            num_blocks_filled = 0;
+                            // if need to run keccak rounds, fifo_rd_ptr increments one cycle later
+                            // to transmit encoded output length to sha3pad
+                            cfg.clk_rst_vif.wait_clks(1);
+                          end else begin
+                            // in the normal scenario, fifo_rd_ptr will increment 2 cycles later
+                            // to transmit encoded output length to sha3pad logic
+                            cfg.clk_rst_vif.wait_clks(2);
+                          end
+                          // increment fifo_rd_ptr to account for the block of encoded output length
+                          do_increment = 1;
+                          cfg.clk_rst_vif.wait_n_clks(1);
+                          do_increment = 0;
+                        end else if (kdf_block_strb_size + 3 < keymgr_pkg::KmacDataIfWidth/8) begin
+                          cfg.clk_rst_vif.wait_clks(2);
+                          do_increment = 1;
+                          cfg.clk_rst_vif.wait_n_clks(1);
+                          do_increment = 0;
+                        end else if (kdf_block_strb_size + 3 >= keymgr_pkg::KmacDataIfWidth/8) begin
+                          cfg.clk_rst_vif.wait_clks(1);
+                          do_increment = 1;
+                          num_blocks_filled++;
+                          cfg.clk_rst_vif.wait_n_clks(1);
+                          do_increment = 0;
+                          if (kdf_block_strb_size + 3 > keymgr_pkg::KmacDataIfWidth/8) begin
+                            cfg.clk_rst_vif.wait_clks(1);
+                            do_increment = 1;
+                            cfg.clk_rst_vif.wait_n_clks(1);
+                            do_increment = 0;
+                          end
+                          if (num_blocks_filled == sha3_pkg::KeccakRate[strength]) begin
+                            wait_kdf_flush = 0;
+                            `uvm_info(`gfn, "filled up blocks while processing overflow kdf_last block", UVM_HIGH)
+                            cfg.clk_rst_vif.wait_clks(1);
+                            wait_keccak_rounds();
+                            num_blocks_filled = 0;
+                            cfg.clk_rst_vif.wait_clks(2);
+                            num_blocks_filled++;
+                          end
+                        end
+                        // wait the 4 cycles for KDF flushing to finish
+                        if (wait_kdf_flush) begin
+                          cfg.clk_rst_vif.wait_clks(4);
+                          num_blocks_filled++;
+                        end
+                      end
+
+                      run_final_keccak = 1;
+                    end
+
+                    if (run_final_keccak) begin
+                      `uvm_info(`gfn,
+                          $sformatf("waiting %0d cycles for sha3pad",
+                                    sha3_pkg::KeccakRate[strength] - num_blocks_filled),
+                          UVM_HIGH)
+                      cfg.clk_rst_vif.wait_clks(sha3_pkg::KeccakRate[strength] - num_blocks_filled);
+
+                      // wait one more cycle for keccak to latch sha3pad control signal
+                      cfg.clk_rst_vif.wait_clks(1);
+
+                      wait_keccak_rounds();
+
+                      num_blocks_filled = 0;
+
+                      // signal that the initial hash round has been completed
+                      `uvm_info(`gfn, "raising msg_digest_done", UVM_HIGH)
+                      msg_digest_done = 1;
+                    end
+
+                  end else begin
+                    // we still don't have a full set of blocks to send to keccak yet.
+                    //
+                    // at this point, one of two things can happen:
+                    //  1) more message can be written into the fifo, in which case we keep tracking
+                    //  2) CmdProcess is written, meaning that we execute an earlier block of code
+                    //     on the next cycle and flush out the remaining data to the keccak logic
+                    //
+                    // if another full block is written, increment the `num_blocks_filled` tracker
+                    // and continue to the next cycle.
+                    //
+                    // Add a zero delay here to ensure all fifo-related state is correctly updated
+                    #0;
+                    `uvm_info(`gfn, "don't have a full set of blocks yet", UVM_HIGH)
+                    `uvm_info(`gfn, $sformatf("num_blocks_filled: %0d", num_blocks_filled), UVM_HIGH)
+                    `uvm_info(`gfn, $sformatf("fifo_wr_ptr: %0d", fifo_wr_ptr), UVM_HIGH)
+                    `uvm_info(`gfn, $sformatf("fifo_rd_ptr: %0d", fifo_rd_ptr), UVM_HIGH)
+                    if (fifo_wr_ptr > fifo_rd_ptr) begin
+                      `uvm_info(`gfn, "have enough to fill another block", UVM_HIGH)
+                      num_blocks_filled++;
+                      `uvm_info(`gfn, $sformatf("increment num_blocks_filled: %0d", num_blocks_filled), UVM_HIGH)
+                      do_increment = 1;
+                    end
+
+                    // Unset do_increment to avoid infinitely incrementing it
+                    cfg.clk_rst_vif.wait_n_clks(1);
+                    do_increment = 0;
+                  end
+                end else if (num_blocks_filled == sha3_pkg::KeccakRate[strength]) begin
+                  // If we have filled up an entire set of blocks, we must immediately send it off
+                  // to the keccak logic for hashing to be performed.
+                  //
+                  // During the time that keccak logic is active, need to detect an incoming
+                  // CmdProcess request (only if not in KDF mode).
+                  // If we see a CmdProcess be written, we can assert `msg_digest_done` after the current
+                  // hash is complete.
+
+                  bit sw_process_seen_in_keccak = 0;
+
+                  `uvm_info(`gfn, "filled up keccak input blocks, sending to keccak to process", UVM_HIGH)
+
+                  fork
+                    begin : wait_for_cmd_process
+                      wait(kmac_cmd == CmdProcess);
+                      sw_process_seen_in_keccak = 1;
+                    end : wait_for_cmd_process
+
+                    begin : wait_for_kdf_last
+                      wait(kdf_last == 1);
+                      kdf_last_in_keccak = 1;
+                    end : wait_for_kdf_last
+
+                    begin : keccak_process_blocks
+                      do_increment = 0;
+                      num_blocks_filled = 0;
+                      wait_keccak_rounds();
+
+                      disable wait_for_cmd_process;
+                      disable wait_for_kdf_last;
+                    end : keccak_process_blocks
+                  join
+
+                  if (sw_process_seen_in_keccak) begin
+                     `uvm_info(`gfn, "detected sw_cmd_process during keccak operation", UVM_HIGH)
+                    if (fifo_empty) begin
+                      // we have seen CmdProcess be written during operation of the keccak logic,
+                      // meaning that the message byte length is an exact multiple of the keccak
+                      // block size.
+                      //
+                      // as a result, there will be one more round of sha3pad data transfer and keccak
+                      // logic after this to account for the `pad10*1()` bytes.
+                      //
+                      // Wait 1 cycle for flushing
+                      cfg.clk_rst_vif.wait_clks(1);
+                      // Wait for sha3pad to transmit all blocks to the keccak logic
+                      cfg.clk_rst_vif.wait_clks(sha3_pkg::KeccakRate[strength]);
+                      // Wait 1 more cycle for sha3pad control signal to be latched by keccak
+                      cfg.clk_rst_vif.wait_clks(1);
+                      wait_keccak_rounds();
+                      // signal that the initial hash round has been completed
+                      `uvm_info(`gfn, "raising msg_digest_done", UVM_HIGH)
+                      msg_digest_done = 1;
+                    end else begin
+                      // If CmdProcess has been issued during keccak processing but we still have
+                      // data left in the fifo, blocks will continue being sent to the
+                      // sha3pad on the next cycle until the msgfifo is empty.
+                      cmd_process_in_keccak_and_blocks_left = 1;
+                      `uvm_info(`gfn, "we still have blocks left to process", UVM_HIGH)
+                    end
+                  end else if (kdf_last_in_keccak) begin
+                    `uvm_info(`gfn, "detected kdf_last during keccak operation", UVM_HIGH)
+                  end else begin
+                    `uvm_info(`gfn, "did not detect sw_cmd_process during keccak operation, continue normal operation", UVM_HIGH)
+                  end
+
+                end else begin
+                  `uvm_fatal(`gfn,
+                      $sformatf("num_blocks_filled[%0d] > KeccakRate[strength][%0d]",
+                                num_blocks_filled, sha3_pkg::KeccakRate[strength]))
+                end
+                cfg.clk_rst_vif.wait_clks(1);
+              end
+
+            end : process_msg_block
+
+            // This subprocess handles the actual incrementation of fifo_rd_ptr
+            begin : increment_fifo_rd_ptr
+              forever begin
+                wait((fifo_wr_ptr > fifo_rd_ptr) && do_increment);
+
+                fifo_rd_ptr++;
+                `uvm_info(`gfn, $sformatf("incremented fifo_rd_ptr: %0d", fifo_rd_ptr), UVM_HIGH)
+                cfg.clk_rst_vif.wait_clks(1);
+              end
+            end : increment_fifo_rd_ptr
+          join
+          ,
+          wait(cfg.under_reset || msg_digest_done);
+      )
+      wait(sha3_idle == 1);
+    end
+  endtask
+
+  // This task handles updating the `msg_digest_done` value during any requested message squeezing,
+  // not handled in `process_initial_digest()` as that is designed to just handle the initial
+  // digest calculations and update the fifo pointers accordingly
+  //
+  // Note that squeezing more output can never happen during KDF operation
+  virtual task process_manual_digest_squeeze();
+    forever begin
+      wait(!cfg.under_reset);
+      @(negedge sha3_idle);
+      `DV_SPINWAIT_EXIT(
+          forever begin
+            @(posedge req_manual_squeeze);
+            msg_digest_done = 0;
+            `uvm_info(`gfn, "dropping msg_digest_done", UVM_HIGH)
+
+            wait_keccak_rounds();
+            msg_digest_done = 1;
+            `uvm_info(`gfn, "raising msg_digest_done", UVM_HIGH)
+          end
+          ,
+          wait(cfg.under_reset);
+      )
+    end
+  endtask
+
+  // This task implements a timing model for the write interface to the msgfifo
+  virtual task process_msgfifo_write();
+    // This bit is used for in-process synchronization to indicate whether we have seen a CmdProcess
+    // being issued and still more message remains in the FIFO
+    bit cmd_process_write = 0;
+    bit do_increment = 0;
+    forever begin
+      wait (!cfg.under_reset);
+      `DV_SPINWAIT_EXIT(
+          wait(sha3_idle == 0);
+          ,
+          wait(in_kdf == 1);
+      )
+      `DV_SPINWAIT_EXIT(
+          forever begin
+            // increment the write pointer by default
+            do_increment = 1;
+
+            if (in_kdf) begin
+              // If executing a KDF op, the FIFO write pointer should increment every time
+              // a new request item is sent from the application Host (otp_ctrl/rom_ctrl/keymgr),
+              // as the app interfae mandates that each data transfer be at a 64-bit granularity.
+              //
+              // Note that we can still safely increment the fifo_wr_ptr on the KDF input
+              // transaction where the `last` bit is set, as no more data will be sent until
+              // either a reset is detected or until after the current transaction finishes.
+              wait(got_data_from_kdf == 1);
+              `uvm_info(`gfn, "got data from kdf", UVM_HIGH)
+              // Note that when using the app interface, 0x2_0001 is appended to the last msgfifo
+              // block to be filled (the encoded output length - output fixed at 256b), so we need
+              // to account for this when incrementing the fifo_wr_ptr.
+              //
+              // As a result, 4 scenarios can happen when last data beat sent on the KDF interface:
+              //
+              // - A full data block is sent as the last data beat.
+              //   When this happens, fifo_wr_ptr is incremented after one cycle as normal,
+              //   but then needs to be incremented again after 2 more cycles to account for
+              //   the encoded output length (0x2_0001).
+              // - Second scenario occurs when the final data block appended to encoded output
+              //   length is < 64bits.
+              //   In this case, wait 1 cycle for appending the output length, then 2 cycles later
+              //   fifo_wr_ptr is incremented.
+              // - Third scenario occurs when final data block appended to encoded output length
+              //   is exactly 64 bits.
+              //   In this case, wait 1 cycle to append the output length, then 1 cyle later
+              //   fifo_wwr_ptr is incremented.
+              // - Final case is when the final data block appended to encoded output length is
+              //   >64bits.
+              //   In this case, wait 1 cycle for appending the output length, then fifo_wr_ptr is
+              //   incremented twice in a row on 2 consecutive cycles to account for the overflow.
+              //
+              // Note that since the encoded output length is 0x2_0001, the mask size necessary for
+              // just this segment is 3.
+              if (kdf_last) begin
+                `uvm_info(`gfn, $sformatf("kdf_block_strb_size: %0d", kdf_block_strb_size), UVM_HIGH)
+                `uvm_info(`gfn, "kdf_last detected", UVM_HIGH)
+                if (kdf_block_strb_size == keymgr_pkg::KmacDataIfWidth/8) begin
+                  cfg.clk_rst_vif.wait_clks(1);
+                  wait(fifo_wr_ptr - fifo_rd_ptr < KMAC_FIFO_DEPTH);
+                  fifo_wr_ptr++;
+                  cfg.clk_rst_vif.wait_clks(1);
+                end else if (kdf_block_strb_size + 3 < keymgr_pkg::KmacDataIfWidth/8) begin
+                  cfg.clk_rst_vif.wait_clks(2);
+                end else if (kdf_block_strb_size + 3 == keymgr_pkg::KmacDataIfWidth/8) begin
+                  cfg.clk_rst_vif.wait_clks(1);
+                end else if (kdf_block_strb_size + 3 > keymgr_pkg::KmacDataIfWidth/8) begin
+                  cfg.clk_rst_vif.wait_clks(2);
+                  wait(fifo_wr_ptr - fifo_rd_ptr < KMAC_FIFO_DEPTH);
+                  fifo_wr_ptr++;
+                end
+              end
+            end else begin
+              // If not executing a KDF op, the FIFO write pointer increments in two cases:
+              // 1) When KMAC_FIFO_BYTES_PER_ENTRY bytes have been written to msgfifo.
+              // 2) when CmdProcess is triggered and there is a non-zero amount of bytes in the msg,
+              //    as CmdProcess signals the msg has finished, so need to account for remaining
+              //    bytes.
+              `uvm_info(`gfn, $sformatf("fifo_wr_ptr: %0d", fifo_wr_ptr), UVM_HIGH)
+              wait((msg.size() >= ((fifo_wr_ptr + 1) * KMAC_FIFO_BYTES_PER_ENTRY)) ||
+                   (kmac_cmd == CmdProcess && msg.size % KMAC_FIFO_BYTES_PER_ENTRY > 0));
+
+              // If CmdProcess is written, no more message will be written to the fifo,
+              // so we should only increment the write pointer if some bytes still have not been
+              // processed (up to 1 word.
+              //
+              // e.g. if we are only able to write 3 bytes into a "fresh" fifo entry before writing
+              //      CmdProcess, we should not increment the fifo write pointer as the entry is not
+              //      overflowing.
+              cmd_process_write = (kmac_cmd == CmdProcess && msg.size() > 0);
+              if (cmd_process_write) begin
+                do_increment = (msg.size() < fifo_wr_ptr * KMAC_FIFO_BYTES_PER_ENTRY) ? 0 : 1;
+              end
+            end
+
+            if (do_increment) begin
+              // If fifo is full, wait until it isn't
+              if (fifo_wr_ptr - fifo_rd_ptr == KMAC_FIFO_DEPTH) begin
+                wait (fifo_wr_ptr - fifo_rd_ptr < KMAC_FIFO_DEPTH);
+              end
+
+              // update the fifo_wr_ptr
+              cfg.clk_rst_vif.wait_clks(1);
+              fifo_wr_ptr++;
+              `uvm_info(`gfn, $sformatf("incremented fifo_wr_ptr: %0d", fifo_wr_ptr), UVM_HIGH)
+
+              incr_fifo_wr_in_process = req_cmd_process_dly;
+              `uvm_info(`gfn,
+                        $sformatf("seen fifo_wr_ptr increment during CmdProcess: %0d",
+                                  incr_fifo_wr_in_process),
+                        UVM_HIGH)
+
+            end
+            cfg.clk_rst_vif.wait_clks(1);
+          end
+          ,
+          wait(cfg.under_reset || msg_digest_done);
+      )
+      wait(sha3_idle == 1);
+    end
+  endtask
+
+  // This task implements a timing model to update fifo_empty, fifo_depth, fifo_full status
+  virtual task process_msgfifo_status();
+    forever begin
+      wait(!cfg.under_reset);
+      `DV_SPINWAIT_EXIT(
+          fork
+            forever begin : update_fifo_state
+              @(fifo_wr_ptr, fifo_rd_ptr);
+
+              // update the general fifo status fields
+              fifo_depth = fifo_wr_ptr - fifo_rd_ptr;
+              fifo_empty = (fifo_depth == 0);
+              fifo_full  = fifo_depth == KMAC_FIFO_DEPTH;
+
+              `uvm_info(`gfn, $sformatf("fifo_depth: %0d", fifo_depth), UVM_HIGH)
+              `uvm_info(`gfn, $sformatf("fifo_empty: %0d", fifo_empty), UVM_HIGH)
+              `uvm_info(`gfn, $sformatf("fifo_full: %0d", fifo_full), UVM_HIGH)
+            end : update_fifo_state
+
+            forever begin : update_fifo_intr
+
+              // fifo_empty interrupt will only be asserted if the fifo becomes empty
+              // after its depth has been greater than 0 to prevent random assertions
+              @(fifo_wr_ptr, fifo_rd_ptr);
+              #1;
+              if (fifo_wr_ptr > fifo_rd_ptr) begin
+                `uvm_info(`gfn, "fifo_wr_ptr is greater than fifo_rd_ptr", UVM_HIGH)
+                while (fifo_wr_ptr != fifo_rd_ptr) begin
+                  cfg.clk_rst_vif.wait_clks(1);
+                  #1;
+                end
+                `uvm_info(`gfn, "fifo pointers are now equal", UVM_HIGH)
+                cfg.clk_rst_vif.wait_clks(2);
+                if (!intr_fifo_empty) intr_fifo_empty = 1;
+                `uvm_info(`gfn, "raised intr_fifo_empty", UVM_HIGH)
+              end else begin
+                continue;
+              end
+            end : update_fifo_intr
+          join
+          ,
+          @(posedge sha3_idle or posedge cfg.under_reset);
+      )
     end
   endtask
 
@@ -224,18 +1147,40 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     case (csr_name)
       // add individual case item for each csr
       "intr_state": begin
-        do_read_check = 1'b0;
-        // TODO
+        if (data_phase_write) begin
+          // clear internal state on a write
+          if (item.a_data[KmacDone])      intr_kmac_done = 0;
+          if (item.a_data[KmacFifoEmpty]) intr_fifo_empty = 0;
+          if (item.a_data[KmacErr])       intr_kmac_err = 0;
+        end else if (addr_phase_read) begin
+
+          void'(ral.intr_state.kmac_done.predict(
+              .value(intr_kmac_done), .kind(UVM_PREDICT_READ)));
+          void'(ral.intr_state.kmac_err.predict(
+              .value(intr_kmac_err), .kind(UVM_PREDICT_READ)));
+          void'(ral.intr_state.fifo_empty.predict(
+              .value(intr_fifo_empty), .kind(UVM_PREDICT_READ)));
+
+        end
       end
       "intr_enable": begin
         // no need to do anything here, functionality is tested in the automated intr tests,
         // and any issues here will become known if any checks on `intr_state` fail
       end
       "intr_test": begin
-        // Predict intr_state and sample coverage
-        bit [TL_DW-1:0] exp_state = `gmv(ral.intr_state) | item.a_data;
-        void'(ral.intr_state.predict(.value(exp_state), .kind(UVM_PREDICT_DIRECT)));
-        // TODO sample coverage
+        if (addr_phase_write) begin
+          bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
+          bit [KmacNumIntrs-1:0] intr_exp = item.a_data | `gmv(ral.intr_state);
+
+          void'(ral.intr_state.predict(.value(intr_exp), .kind(UVM_PREDICT_DIRECT)));
+
+          // sample coverage
+          if (cfg.en_cov) begin
+            foreach (intr_exp[i]) begin
+              cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_exp[i]);
+            end
+          end
+        end
       end
       "cfg_regwen": begin
         // do nothing
@@ -249,9 +1194,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             return;
           end
 
-          kmac_en = item.a_data[KmacEn];
-          hash_mode = sha3_pkg::sha3_mode_e'(item.a_data[5:4]);
-          strength = sha3_pkg::keccak_strength_e'(item.a_data[3:1]);
+          kmac_en              = item.a_data[KmacEn];
+          entropy_fast_process = item.a_data[KmacFastEntropy];
+          entropy_ready        = item.a_data[KmacEntropyReady];
+
+          hash_mode = sha3_pkg::sha3_mode_e'(item.a_data[KmacModeMSB:KmacModeLSB]);
+
+          strength = sha3_pkg::keccak_strength_e'(item.a_data[KmacStrengthMSB:KmacStrengthLSB]);
+
+          entropy_mode = entropy_mode_e'(item.a_data[KmacEntropyModeMSB:KmacEntropyModeLSB]);
 
           // TODO - sample coverage
         end
@@ -259,7 +1210,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       "cmd": begin
         // Writing to CMD will always result in the KMAC doing something
         //
-        // TODO unless in KDF mode...need to handle errors
+        // TODO - handle error cases
         if (addr_phase_write) begin
           case (kmac_cmd_e'(item.a_data))
             CmdStart: begin
@@ -269,17 +1220,31 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             CmdProcess: begin
               // kmac will now compute the digest
               kmac_cmd = CmdProcess;
+
+              // Raise this bit after a small delay to handle an edge case where
+              // fifo_wr_ptr and fifo_rd_ptr both increment on same cycle that CmdProcess
+              // is latched by internal scoreboard logic
+              #1 req_cmd_process_dly = 1;
+              `uvm_info(`gfn, "raised req_cmd_process_dly", UVM_HIGH)
             end
             CmdManualRun: begin
               // kmac will now squeeze more output data
               kmac_cmd = CmdManualRun;
+              req_manual_squeeze = 1;
+              `uvm_info(`gfn, "raised req_manual_squeeze", UVM_HIGH)
             end
             CmdDone: begin
               kmac_cmd = CmdDone;
+
               // Calculate the digest using DPI and check for correctness
               check_digest();
+
               // Flush all scoreboard state to prepare for the next hash operation
               clear_state();
+
+              // IDLE should go high one cycle after issuing Done cmd
+              cfg.clk_rst_vif.wait_clks(1);
+              sha3_idle = 1;
             end
             CmdNone: begin
               // RTL internal value, doesn't actually do anything
@@ -288,14 +1253,36 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               `uvm_fatal(`gfn, $sformatf("%0d is an illegal CMD value", item.a_data))
             end
           endcase
+        end else begin
+          // this bit will be set to 0 during the data phase of the write,
+          // providing better detection of when exactly a manual squeeze command
+          // has been requested
+          req_manual_squeeze = 0;
+          `uvm_info(`gfn, "dropped req_manual_squeeze", UVM_HIGH)
+
+          #1 req_cmd_process_dly = 0;
+          `uvm_info(`gfn, "dropped req_cmd_process_dly", UVM_HIGH)
         end
       end
       "status": begin
-        // STATUS is read only
-        do_read_check = 1'b0;
 
-        // TODO - in addr_phase_read update the mirror value (need to model fifo...)
-        //      - in data_phase_read sample coverage
+        // TODO - in data_phase_read sample coverage
+
+        if (addr_phase_read) begin
+          bit [TL_DW-1:0] exp_status;
+
+          exp_status[KmacStatusSha3Idle]    = sha3_idle;
+          exp_status[KmacStatusSha3Absorb]  = sha3_absorb;
+          exp_status[KmacStatusSha3Squeeze] = sha3_squeeze;
+
+          exp_status[KmacStatusFifoDepthMSB : KmacStatusFifoDepthLSB] = fifo_depth;
+
+          exp_status[KmacStatusFifoEmpty] = fifo_empty;
+          exp_status[KmacStatusFifoFull]  = fifo_full;
+
+          void'(ral.status.predict(.value(exp_status), .kind(UVM_PREDICT_READ)));
+
+        end
       end
       "key_len": begin
         // TODO need to do error checking
@@ -462,12 +1449,37 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     clear_state();
+
+    // status tracking bits
+    sha3_idle     = ral.status.sha3_idle.get_reset();
+    sha3_absorb   = ral.status.sha3_absorb.get_reset();
+    sha3_squeeze  = ral.status.sha3_squeeze.get_reset();
+    fifo_depth    = ral.status.fifo_depth.get_reset();
+    fifo_empty    = ral.status.fifo_empty.get_reset();
+    fifo_full     = ral.status.fifo_full.get_reset();
   endfunction
 
   // This function should be called to reset internal state to prepare for a new hash operation
   virtual function void clear_state();
+    `uvm_info(`gfn, "clearing scoreboard state", UVM_HIGH)
+
     msg.delete();
     kdf_msg.delete();
+
+    kdf_block_data      = '0;
+    kdf_block_strb      = '0;
+    kdf_block_strb_size = 0;
+    kdf_last            = 0;
+    got_data_from_kdf   = 0;
+
+    prefix_and_keys_done  = 0;
+    req_manual_squeeze    = 0;
+    cmd_process_in_header = 0;
+    kdf_last_in_header    = 0;
+    msg_digest_done       = 0;
+    fifo_rd_ptr           = 0;
+    fifo_wr_ptr           = 0;
+
     keys              = '0;
     keymgr_keys       = '0;
     sideload_key      = '0;

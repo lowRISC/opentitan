@@ -123,7 +123,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       if (kmac_en && en_kdf) begin
         send_kdf_req();
         // Wait until the KMAC engine has completely finished
-        wait (cfg.idle_vif.pins == 1);
+        wait (cfg.m_kdf_agent_cfg.vif.rsp_done == 1);
       end else begin
         // normal hashing operation - en_kdf doesn't matter when not in KMAC mode
 
@@ -150,6 +150,9 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
         wait_for_kmac_done();
       end
+
+      // read out intr_state and status, scb will check
+      check_state();
 
       // Read the output digest, scb will check digest
       //

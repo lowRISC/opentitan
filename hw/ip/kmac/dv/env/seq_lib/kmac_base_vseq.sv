@@ -240,6 +240,16 @@ class kmac_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("KMAC INITIALIZATION INFO:\n%0s", convert2string()), UVM_HIGH)
   endtask
 
+  // This task reads out the STATUS and INTR_STATE csrs so scb can check the status
+  virtual task check_state();
+    bit [TL_DW-1:0] data;
+
+    csr_rd(.ptr(ral.intr_state), .value(data));
+    csr_wr(.ptr(ral.intr_state), .value(data));
+
+    csr_rd(.ptr(ral.status), .value(data));
+  endtask
+
   virtual function string convert2string();
     return {$sformatf("intr_en[KmacDone]: %0b\n", enable_intr[KmacDone]),
             $sformatf("intr_en[KmacFifoEmpty]: %0b\n", enable_intr[KmacFifoEmpty]),
@@ -526,8 +536,8 @@ class kmac_base_vseq extends cip_base_vseq #(
 
     // wait for all msgfifo accesses to complete
     wait_no_outstanding_access();
-
-    // TODO: final csr checks might be needed
+    // read out status/intr_state CSRs to check
+    check_state();
   endtask
 
   // This task burst writes 32-bit chunks of the message into the msgfifo
@@ -588,10 +598,9 @@ class kmac_base_vseq extends cip_base_vseq #(
   // then waits for STATUS.fifo_full to be 0.
   virtual task wait_fifo_has_capacity();
     bit [TL_DW-1:0] irq_data;
+    bit [TL_DW-1:0] status_data;
 
     // read out interrupt state and clear any set interrupts (fifo_empty).
-    //
-    // TODO: might need a way to determine when to check fifo-related state in the scoreboard
     csr_rd(.ptr(ral.intr_state), .value(irq_data));
     csr_wr(.ptr(ral.intr_state), .value(irq_data));
 
