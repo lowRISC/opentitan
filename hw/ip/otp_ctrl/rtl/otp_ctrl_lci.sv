@@ -54,7 +54,7 @@ module otp_ctrl_lci
 
   import prim_util_pkg::vbits;
 
-  localparam int NumLcOtpWords = Info.size >> OtpAddrShift;
+  localparam int NumLcOtpWords = int'(Info.size) >> OtpAddrShift;
   localparam int CntWidth = vbits(NumLcOtpWords);
 
   // This is required, since each native OTP word can only be programmed once.
