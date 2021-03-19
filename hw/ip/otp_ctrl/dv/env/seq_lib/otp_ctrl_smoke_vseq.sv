@@ -146,6 +146,9 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
       end
 
+      // Read/write test access memory
+      if (cfg.otp_ctrl_vif.lc_dft_en_i == lc_ctrl_pkg::On) otp_test_access();
+
       // lock digests
       `uvm_info(`gfn, "Trigger HW digest calculation", UVM_HIGH)
       cal_hw_digests();

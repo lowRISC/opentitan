@@ -157,7 +157,7 @@
             - If error is unrecoverable, ensure that OTP entered terminal state
             '''
       milestone: V2
-      tests: []
+      tests: ["otp_ctrl_parallel_lc_esc", "otp_ctrl_check_fail"]
     }
     {
       name: test_access
@@ -167,7 +167,7 @@
             - Read out from the test access window and ensure no error occurs
             '''
       milestone: V2
-      tests: []
+      tests: ["otp_ctrl_test_access"]
     }
     {
       name: stress_all
