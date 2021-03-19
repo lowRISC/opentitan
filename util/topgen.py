@@ -63,6 +63,7 @@ TOPGEN_TEMPLATE_PATH = Path(__file__).parent / 'topgen/templates'
 IPS_USING_IPGEN = [
     'rv_plic',
     'alert_handler',
+    'flash_ctrl',
 ]
 
 
@@ -532,28 +533,7 @@ def generate_rstmgr(topcfg, out_path):
 # generate flash
 def generate_flash(topcfg, out_path):
     log.info("Generating flash")
-
-    # Define target path
-    rtl_path = out_path / 'ip/flash_ctrl/rtl/autogen'
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    doc_path = out_path / 'ip/flash_ctrl/data/autogen'
-    doc_path.mkdir(parents=True, exist_ok=True)
-    tpl_path = Path(__file__).resolve().parent / '../hw/ip/flash_ctrl/data'
-
-    # Read template files from ip directory.
-    tpls = []
-    outputs = []
-    names = ['flash_ctrl.hjson',
-             'flash_ctrl.sv',
-             'flash_ctrl_pkg.sv',
-             'flash_ctrl_region_cfg.sv']
-
-    for x in names:
-        tpls.append(tpl_path / Path(x + ".tpl"))
-        if "hjson" in x:
-            outputs.append(doc_path / Path(x))
-        else:
-            outputs.append(rtl_path / Path(x))
+    topname = topcfg['name']
 
     # Parameters needed for generation
     flash_mems = [module for module in topcfg['module'] if module['type'] == 'flash_ctrl']
@@ -561,29 +541,12 @@ def generate_flash(topcfg, out_path):
         log.error("This design does not currently support multiple flashes")
         return
 
-    cfg = flash_mems[0]['memory']['mem']['config']
+    params = {
+        # TODO: _asdict() should be called automatically.
+        **flash_mems[0]['memory']['mem']['config']._asdict()
+    }
 
-    # Generate templated files
-    for idx, t in enumerate(tpls):
-        out = StringIO()
-        with t.open(mode='r', encoding='UTF-8') as fin:
-            tpl = Template(fin.read())
-            try:
-                out = tpl.render(cfg=cfg)
-
-            except:  # noqa: E722
-                log.error(exceptions.text_error_template().render())
-
-        if out == "":
-            log.error("Cannot generate {}".format(names[idx]))
-            return
-
-        with outputs[idx].open(mode='w', encoding='UTF-8') as fout:
-            fout.write(genhdr + out)
-
-    # Generate reg files
-    hjson_path = outputs[0]
-    gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []), str(rtl_path))
+    ipgen_render('flash_ctrl', topname, params, out_path)
 
 
 def generate_top_only(top_only_list, out_path, topname):

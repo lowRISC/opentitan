@@ -1,0 +1,51 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "template_param_list": [
+    {
+      "name": "banks",
+      "desc": "Number of banks"
+      "type": "int"
+      "default": 2
+    },
+    {
+      "name": "pages_per_bank",
+      "desc": "Pages per bank"
+      "type": "int"
+      "default": 256
+    },
+    {
+      "name": "program_resolution",
+      "desc": "TODO"
+      "type": "int"
+      "default": 64
+    },
+    {
+      "name": "base_addr",
+      "desc": "TODO"
+      "type": "int"
+      "default": 0x20000000
+    },
+
+    // UNUSED?
+    {
+      "name": "bytes_per_page",
+      "desc": "TODO"
+      "type": "int"
+      "default": 2048
+    },
+    {
+      "name": "bytes_per_bank",
+      "desc": "TODO"
+      "type": "int"
+      "default": 524288
+    },
+    {
+      "name": "size",
+      "desc": "TODO"
+      "type": "int"
+      "default": 0x100000
+    },
+  ]
+}

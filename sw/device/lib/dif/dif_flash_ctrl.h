@@ -7,8 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/flash_ctrl/doc/">Flash Controller</a> Device
- * Interface Functions
+ * @brief Flash Controller Device Interface Functions
  */
 
 #include "sw/device/lib/dif/autogen/dif_flash_ctrl_autogen.h"

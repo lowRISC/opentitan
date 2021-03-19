@@ -1,0 +1,30 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "flash_ctrl",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv"
+    hw_checklist:       "../doc/checklist",
+    version:            "0.5",
+    life_stage:         "L1",
+    design_stage:       "D1",
+    verification_stage: "V1",
+    revisions: [
+        {
+            version:            "0.1",
+            life_stage:         "L1",
+            design_stage:       "D1",
+            verification_stage: "V1",
+            commit_id:          "7049fd0d5d48e20772f8ebf32b240faa0dad5528",
+        },
+        {
+            version:            "0.5",
+            life_stage:         "L1",
+            design_stage:       "D2",
+            verification_stage: "V1",
+            notes:              "DV resource allocation pending.",
+        },
+    ]
+}

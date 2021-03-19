@@ -59,9 +59,9 @@
                   rel_path: "hw/ip/edn/dv/lint/{tool}"
              },
              {    name: flash_ctrl
-                  fusesoc_core: lowrisc:dv:flash_ctrl_sim
+                  fusesoc_core: lowrisc:opentitan:top_earlgrey_flash_ctrl_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/flash_ctrl/dv/lint/{tool}"
+                  rel_path: "hw/top_earlgrey/ip_autogen/flash_ctrl/dv/lint/{tool}"
              },
              {    name: gpio
                   fusesoc_core: lowrisc:dv:gpio_sim

@@ -44,7 +44,6 @@ REPO_TOP = Path(__file__).resolve().parent.parent
 
 ALL_PARTS = ["header", "checklist", "autogen"]
 
-
 def main():
     dif_dir = REPO_TOP / "sw/device/lib/dif"
     autogen_dif_dir = dif_dir / "autogen"

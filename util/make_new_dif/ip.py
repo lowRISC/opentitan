@@ -14,6 +14,7 @@ REPO_TOP = Path(__file__).resolve().parent.parent.parent
 IPS_USING_IPGEN = [
     'rv_plic',
     'alert_handler',
+    'flash_ctrl',
 ]
 
 
