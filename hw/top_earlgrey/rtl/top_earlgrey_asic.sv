@@ -20,10 +20,17 @@ module top_earlgrey_asic (
   inout               SPI_DEV_CS_L,
   inout               IOA0,  // MIO 0
   inout               IOA1,  // MIO 1
+  `ifdef ANALOGSIM
+  output ast_pkg::awire_t IOA2,  // MIO 2  // ast2pad_t0_ao
+  output ast_pkg::awire_t IOA3,  // MIO 3  // ast2pad_t1_ao
+  input  ast_pkg::awire_t IOA4,  // MIO 4  // pad2ast_t0_ai
+  input  ast_pkg::awire_t IOA5,  // MIO 5  // pad2ast_t1_ai
+  `else
   inout               IOA2,  // MIO 2
   inout               IOA3,  // MIO 3
   inout               IOA4,  // MIO 4
   inout               IOA5,  // MIO 5
+  `endif
   // Bank B (VIOB domain)
   inout               IOB0,  // MIO 6
   inout               IOB1,  // MIO 7
@@ -66,8 +73,13 @@ module top_earlgrey_asic (
   inout               IOR12, // MIO 42
   inout               IOR13, // MIO 43
   // DCD (VCC domain)
+  `ifdef ANALOGSIM
+  input ast_pkg::awire_t CC1,  // adc_a0_ai 
+  input ast_pkg::awire_t CC2,  // adc_a1_ai
+  `else
   inout               CC1,
   inout               CC2,
+  `endif
   // USB (VCC domain)
   inout               USB_P,
   inout               USB_N,
@@ -104,6 +116,9 @@ module top_earlgrey_asic (
   wire unused_usbdev_dp_pullup_en, unused_usbdev_dn_pullup_en;
   wire unused_spi_device_s2, unused_spi_device_s3;
   wire unused_clk;
+
+  // Unconnected padring for ANALOGSIM
+  wire UC0, UC1;
 
   padring #(
     // The clock pad is not connected since
@@ -195,8 +210,13 @@ module top_earlgrey_asic (
     .rst_pad_ni          ( POR_N      ),
     .clk_o               (            ),
     .rst_no              ( rst_n      ),
+    `ifdef ANALOGSIM
+    .cc1_i               ( '0         ),
+    .cc2_i               ( '0         ),
+    `else
     .cc1_i               ( CC1        ),
     .cc2_i               ( CC2        ),
+    `endif
     // "special"
     // MIO Pads
     .mio_pad_io          ( { // RBox
@@ -241,10 +261,17 @@ module top_earlgrey_asic (
                              IOB1,  // MIO 7
                              IOB0,  // MIO 6
                              // Bank A
+                             `ifdef ANALOGSIM
+			     UC0, // ast2pad_t0_ao
+			     UC1, // ast2pad_t1_ao
+			     '0,  // pad2ast_t0_ai
+			     '0,  // pad2ast_t1_ai
+                             `else
                              IOA5,  // MIO 5
                              IOA4,  // MIO 4
                              IOA3,  // MIO 3
                              IOA2,  // MIO 2
+                             `endif
                              IOA1,  // MIO 1
                              IOA0   // MIO 0
                             } ),
@@ -594,11 +621,11 @@ module top_earlgrey_asic (
     // pinmux related
     .padmux2ast_i          ( pinmux2ast ),
     .ast2padmux_o          ( ast2pinmux ),
-    //TODO: Connect to PAD
-    .pad2ast_t0_ai         ( '0 ),
-    .pad2ast_t1_ai         ( '0 ),
-    .ast2pad_t0_ao         ( ),
-    .ast2pad_t1_ao         ( ),
+    // Direct Connect to PAD
+    .pad2ast_t0_ai         ( IOA4 ),
+    .pad2ast_t1_ai         ( IOA5 ),
+    .ast2pad_t0_ao         ( IOA2 ),
+    .ast2pad_t1_ao         ( IOA3 ),
     .lc_clk_byp_req_i      ( lc_ast_clk_byp_req ),
     .lc_clk_byp_ack_o      ( lc_ast_clk_byp_ack ),
     .flash_bist_en_o       ( flash_bist_enable  ),
