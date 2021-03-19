@@ -6,8 +6,9 @@ from typing import Dict
 
 from sim import err_bits
 from .flags import FlagReg
-from .isa import (DecodeError, OTBNInsn, RV32RegReg, RV32RegImm, RV32ImmShift,
-                  insn_for_mnemonic, logical_byte_shift, extract_quarter_word)
+from .isa import (DecodeError, OTBNInsn, OTBNLDInsn, RV32RegReg, RV32RegImm,
+                  RV32ImmShift, insn_for_mnemonic, logical_byte_shift,
+                  extract_quarter_word)
 from .state import OTBNState
 
 
@@ -170,7 +171,7 @@ class XORI(RV32RegImm):
         state.gprs.get_reg(self.grd).write_unsigned(result)
 
 
-class LW(OTBNInsn):
+class LW(OTBNLDInsn):
     insn = insn_for_mnemonic('lw', 3)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
@@ -845,7 +846,7 @@ class BNCMPB(OTBNInsn):
         state.set_flags(self.flag_group, flags)
 
 
-class BNLID(OTBNInsn):
+class BNLID(OTBNLDInsn):
     insn = insn_for_mnemonic('bn.lid', 5)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):

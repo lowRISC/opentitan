@@ -274,11 +274,6 @@ def render_insn(insn: Insn, impl: Optional[str], heading_level: int) -> str:
     if insn.rv32i:
         parts.append('This instruction is defined in the RV32I instruction set.\n\n')
 
-    # If this takes more than a single cycle, say so.
-    if insn.cycles > 1:
-        parts.append('This instruction takes {} cycles.\n\n'
-                     .format(insn.cycles))
-
     # Show any trailing documentation (stuff that should come after the syntax
     # example but before the operand table).
     if insn.trailing_doc is not None:

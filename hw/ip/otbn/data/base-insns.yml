@@ -257,7 +257,7 @@
     Loads a 32b word from address `offset + grs1` in data memory, writing the result to `grd`.
     Unaligned loads are not supported.
     Any address that is unaligned or is above the top of memory will result in an error (setting bit `bad_data_addr` in `ERR_BITS`).
-  cycles: 2
+    This instruction takes 2 cycles.
   lsu:
     type: mem-load
     target: [offset, grs1]

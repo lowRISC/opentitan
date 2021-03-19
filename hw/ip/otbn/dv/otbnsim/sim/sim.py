@@ -44,29 +44,30 @@ class OTBNSim:
         if not self.state.running:
             return (None, [])
 
-        was_stalled = self.state.stalled
         pc_before = self.state.pc
 
-        if was_stalled:
-            insn = None
+        word_pc = int(self.state.pc) >> 2
+        if word_pc >= len(self.program):
+            raise RuntimeError('Trying to execute instruction at address '
+                               '{:#x}, but the program is only {:#x} '
+                               'bytes ({} instructions) long. Since there '
+                               'are no architectural contents of the '
+                               'memory here, we have to stop.'
+                               .format(int(self.state.pc),
+                                       4 * len(self.program),
+                                       len(self.program)))
+        insn = self.program[word_pc]
+
+        sim_stalled = self.state.non_insn_stall
+        if not sim_stalled:
+            # Instruction can stall sim by returning False from `pre_execute`
+            sim_stalled = not insn.pre_execute(self.state)
+
+        if sim_stalled:
+            self.state.commit(sim_stalled=True)
+            disasm = '(stall)'
             changes = []
-            self.state.commit()
         else:
-            word_pc = int(self.state.pc) >> 2
-            if word_pc >= len(self.program):
-                raise RuntimeError('Trying to execute instruction at address '
-                                   '{:#x}, but the program is only {:#x} '
-                                   'bytes ({} instructions) long. Since there '
-                                   'are no architectural contents of the '
-                                   'memory here, we have to stop.'
-                                   .format(int(self.state.pc),
-                                           4 * len(self.program),
-                                           len(self.program)))
-            insn = self.program[word_pc]
-
-            if insn.insn.cycles > 1:
-                self.state.add_stall_cycles(insn.insn.cycles - 1)
-
             self.state.pre_insn(insn.affects_control)
             insn.execute(self.state)
             self.state.post_insn()
@@ -82,14 +83,14 @@ class OTBNSim:
                 changes = self.state.changes()
             else:
                 changes = self.state.changes()
-                self.state.commit()
+                self.state.commit(sim_stalled=False)
+
+            disasm = insn.disassemble(pc_before)
 
         if verbose:
-            disasm = ('(stall)' if insn is None
-                      else insn.disassemble(pc_before))
             self._print_trace(pc_before, disasm, changes)
 
-        return (insn, changes)
+        return (None if sim_stalled else insn, changes)
 
     def dump_data(self) -> bytes:
         return self.state.dmem.dump_le_words()

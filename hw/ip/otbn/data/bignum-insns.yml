@@ -599,7 +599,7 @@
 
     The memory address must be aligned to WLEN bits.
     Any address that is unaligned or is above the top of memory results in an error (setting bit `bad_data_addr` in `ERR_BITS`).
-  cycles: 2
+    This instruction takes 2 cycles.
   lsu:
     type: mem-load
     target: [offset, grs1]

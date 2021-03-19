@@ -29,7 +29,7 @@ class Insn:
                          'syntax', 'doc', 'note', 'trailing-doc',
                          'encoding', 'glued-ops',
                          'literal-pseudo-op', 'python-pseudo-op', 'lsu',
-                         'straight-line', 'cycles'])
+                         'straight-line'])
 
         self.mnemonic = check_str(yd['mnemonic'], 'mnemonic for instruction')
 
@@ -150,12 +150,6 @@ class Insn:
                                      .format(idx, what, op_name))
 
         self.straight_line = yd.get('straight-line', True)
-
-        self.cycles = check_int(yd.get('cycles', 1),
-                                'cycles field for ' + what)
-        if self.cycles <= 0:
-            raise ValueError('cycles field for {} is not positive.'
-                             .format(what))
 
     def enc_vals_to_op_vals(self,
                             cur_pc: int,

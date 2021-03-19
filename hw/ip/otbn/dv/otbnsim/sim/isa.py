@@ -92,6 +92,14 @@ class OTBNInsn:
         # it can't hurt to check).
         self._disasm = None  # type: Optional[Tuple[int, str]]
 
+    def pre_execute(self, state: OTBNState) -> bool:
+        '''Performs any actions required before instruction can execute.
+
+        Return True if instruction is clear to execute. Returning False will
+        stall the simulator for a step.
+        '''
+        return True
+
     def execute(self, state: OTBNState) -> None:
         raise NotImplementedError('OTBNInsn.execute')
 
@@ -111,6 +119,20 @@ class OTBNInsn:
         '''Interpret the signed value as a 2's complement u32'''
         assert -(1 << 31) <= value < (1 << 31)
         return (1 << 32) + value if value < 0 else value
+
+
+class OTBNLDInsn(OTBNInsn):
+    '''A general class for any load instruction providing appropriate stalls'''
+
+    def pre_execute(self, state: OTBNState) -> bool:
+        if state.dmem.in_progress_load_complete():
+            # Load has been started and now complete, execution can proceed
+            return True
+
+        # Load not complete so begin a new load
+        state.dmem.begin_load()
+        # Load stalls when it begins
+        return False
 
 
 class RV32RegReg(OTBNInsn):
