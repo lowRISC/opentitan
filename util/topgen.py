@@ -1224,7 +1224,8 @@ def main():
             # 'toplevel_memory.h.tpl' -> 'sw/autogen/top_{topname}_memory.h'
             memory_cheader_path = cformat_dir / f"top_{topname}_memory.h"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.h.tpl",
-                            memory_cheader_path)
+                            memory_cheader_path,
+                            helper=c_helper)
 
             try:
                 cheader_path.relative_to(SRCTREE_TOP)

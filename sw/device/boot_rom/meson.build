@@ -35,6 +35,10 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   boot_rom_elf = executable(
     'boot_rom_' + device_name,
     sources: [
+      hw_ip_sram_ctrl_reg_h,
+      hw_ip_entropy_src_reg_h,
+      hw_ip_csrng_reg_h,
+      hw_ip_edn_reg_h,
       'boot_rom.c',
       'bootstrap.c',
       'irq_vector.S',
