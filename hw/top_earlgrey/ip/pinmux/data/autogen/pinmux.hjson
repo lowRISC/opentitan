@@ -71,6 +71,13 @@
       act:     "req"
       package: "jtag_pkg"
     }
+    // General signals to AST
+    { struct:  "pinmux_ast",
+      type:    "uni",
+      name:    "ast",
+      act:     "req",
+      package: "pinmux_pkg",
+    }
     // Testmode signals to AST
     { struct:  "dft_strap_test_req",
       type:    "uni",
@@ -154,13 +161,13 @@
     { name: "NMioPeriphIn",
       desc: "Number of muxed peripheral inputs",
       type: "int",
-      default: "59",
+      default: "49",
       local: "true"
     },
     { name: "NMioPeriphOut",
       desc: "Number of muxed peripheral outputs",
       type: "int",
-      default: "63",
+      default: "62",
       local: "true"
     },
     { name: "NMioPads",

@@ -1130,17 +1130,7 @@ typedef enum top_earlgrey_pinmux_peripheral_in {
   kTopEarlgreyPinmuxPeripheralInFlashCtrlTck = 46, /**< flash_ctrl_tck */
   kTopEarlgreyPinmuxPeripheralInFlashCtrlTms = 47, /**< flash_ctrl_tms */
   kTopEarlgreyPinmuxPeripheralInFlashCtrlTdi = 48, /**< flash_ctrl_tdi */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn0 = 49, /**< sensor_ctrl_aon_ast_debug_in 0 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn1 = 50, /**< sensor_ctrl_aon_ast_debug_in 1 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn2 = 51, /**< sensor_ctrl_aon_ast_debug_in 2 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn3 = 52, /**< sensor_ctrl_aon_ast_debug_in 3 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn4 = 53, /**< sensor_ctrl_aon_ast_debug_in 4 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn5 = 54, /**< sensor_ctrl_aon_ast_debug_in 5 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn6 = 55, /**< sensor_ctrl_aon_ast_debug_in 6 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn7 = 56, /**< sensor_ctrl_aon_ast_debug_in 7 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn8 = 57, /**< sensor_ctrl_aon_ast_debug_in 8 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn9 = 58, /**< sensor_ctrl_aon_ast_debug_in 9 */
-  kTopEarlgreyPinmuxPeripheralInLast = 58, /**< \internal Last valid peripheral input */
+  kTopEarlgreyPinmuxPeripheralInLast = 48, /**< \internal Last valid peripheral input */
 } top_earlgrey_pinmux_peripheral_in_t;
 
 /**
@@ -1316,8 +1306,7 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut6 = 62, /**< sensor_ctrl_aon_ast_debug_out 6 */
   kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut7 = 63, /**< sensor_ctrl_aon_ast_debug_out 7 */
   kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut8 = 64, /**< sensor_ctrl_aon_ast_debug_out 8 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut9 = 65, /**< sensor_ctrl_aon_ast_debug_out 9 */
-  kTopEarlgreyPinmuxOutselLast = 65, /**< \internal Last valid outsel value */
+  kTopEarlgreyPinmuxOutselLast = 64, /**< \internal Last valid outsel value */
 } top_earlgrey_pinmux_outsel_t;
 
 /**

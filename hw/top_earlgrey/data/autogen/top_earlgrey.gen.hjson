@@ -2709,6 +2709,19 @@
           index: -1
         }
         {
+          name: ast
+          struct: pinmux_ast
+          package: pinmux_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: pinmux_aon
+          default: ""
+          external: true
+          top_signame: pinmux_ast
+          index: -1
+        }
+        {
           name: dft_strap_test
           struct: dft_strap_test_req
           package: pinmux_pkg
@@ -3038,23 +3051,11 @@
           struct: logic
           type: uni
           act: rcv
-          width: 10
+          width: 9
           inst_name: sensor_ctrl_aon
           default: ""
           external: true
           top_signame: ast2pinmux
-          index: -1
-        }
-        {
-          name: pinmux2ast
-          struct: logic
-          type: uni
-          act: req
-          width: 10
-          inst_name: sensor_ctrl_aon
-          default: ""
-          external: true
-          top_signame: pinmux2ast
           index: -1
         }
         {
@@ -5786,12 +5787,12 @@
       lc_ctrl.lc_clk_byp_req: lc_clk_byp_req
       peri.tl_ast: ast_tl
       pinmux_aon.dft_strap_test: dft_strap_test
+      pinmux_aon.ast: pinmux_ast
       pwrmgr_aon.pwr_ast: pwrmgr_ast
       otp_ctrl.otp_ast_pwr_seq: ""
       otp_ctrl.otp_ast_pwr_seq_h: ""
       sensor_ctrl_aon.ast_alert: sensor_ctrl_ast_alert
       sensor_ctrl_aon.ast_status: sensor_ctrl_ast_status
-      sensor_ctrl_aon.pinmux2ast: pinmux2ast
       sensor_ctrl_aon.ast2pinmux: ast2pinmux
       usbdev.usb_ref_val: ""
       usbdev.usb_ref_pulse: ""
@@ -7714,12 +7715,6 @@
         type: input
         module_name: flash_ctrl
       }
-      {
-        name: sensor_ctrl_aon_ast_debug_in
-        width: 10
-        type: input
-        module_name: sensor_ctrl_aon
-      }
     ]
     outputs:
     [
@@ -7839,7 +7834,7 @@
       }
       {
         name: sensor_ctrl_aon_ast_debug_out
-        width: 10
+        width: 9
         type: output
         module_name: sensor_ctrl_aon
       }
@@ -10608,6 +10603,19 @@
         index: -1
       }
       {
+        name: ast
+        struct: pinmux_ast
+        package: pinmux_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: pinmux_aon
+        default: ""
+        external: true
+        top_signame: pinmux_ast
+        index: -1
+      }
+      {
         name: dft_strap_test
         struct: dft_strap_test_req
         package: pinmux_pkg
@@ -10845,23 +10853,11 @@
         struct: logic
         type: uni
         act: rcv
-        width: 10
+        width: 9
         inst_name: sensor_ctrl_aon
         default: ""
         external: true
         top_signame: ast2pinmux
-        index: -1
-      }
-      {
-        name: pinmux2ast
-        struct: logic
-        type: uni
-        act: req
-        width: 10
-        inst_name: sensor_ctrl_aon
-        default: ""
-        external: true
-        top_signame: pinmux2ast
         index: -1
       }
       {
@@ -13121,6 +13117,18 @@
         netname: dft_strap_test
       }
       {
+        package: pinmux_pkg
+        struct: pinmux_ast
+        signame: pinmux_ast_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: pinmux_ast
+      }
+      {
         package: pwrmgr_pkg
         struct: pwr_ast_req
         signame: pwrmgr_ast_req_o
@@ -13207,20 +13215,8 @@
       {
         package: ""
         struct: logic
-        signame: pinmux2ast_o
-        width: 10
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: pinmux2ast
-      }
-      {
-        package: ""
-        struct: logic
         signame: ast2pinmux_i
-        width: 10
+        width: 9
         type: uni
         default: ""
         direction: in
