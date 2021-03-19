@@ -443,4 +443,20 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_send(lc_token_pull_seq)
   endtask
 
+  // This test access OTP_CTRL's test_access memory. The open-sourced code only test if the access
+  // is valid. Please override this task in proprietary OTP.
+  virtual task otp_test_access();
+    repeat($urandom_range(1, 20)) begin
+      bit [TL_DW-1:0] addr = $urandom_range(TEST_ACCESS_BASE_ADDR,
+                                            TEST_ACCESS_BASE_ADDR + TEST_ACCESS_WINDOW_SIZE - 1);
+      bit [TL_DW-1:0] data = $urandom();
+      bit [TL_DW-1:0] rdata;
+
+      addr = cfg.ral.get_addr_from_offset(addr);
+      `uvm_info(`gfn, $sformatf("write test access %0h with data %0h", addr, data), UVM_HIGH)
+      tl_access(.addr(addr), .write(1), .data(data));
+      tl_access(.addr(addr), .write(0), .data(rdata), .check_exp_data(1), .exp_data(data));
+    end
+  endtask
+
 endclass : otp_ctrl_base_vseq

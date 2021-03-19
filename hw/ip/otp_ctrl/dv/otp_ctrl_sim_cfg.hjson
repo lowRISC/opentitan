@@ -108,6 +108,10 @@
       run_opts: ["+zero_delays=1"]
     }
 
+    {
+      name: otp_ctrl_test_access
+      uvm_test_seq: otp_ctrl_test_access_vseq
+    }
   ]
 
   // List of regressions.
