@@ -16,7 +16,7 @@ title: "SPI Device DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/spi_device/dv/latest/results.html)
 
 ## Design features
-For detailed information on SPI Device design features, please see the [SPI_device design specification]({{< relref "hw/ip/spi_device/doc" >}}).
+For detailed information on SPI Device design features, please see the [SPI_device design specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 SPI Device testbench has been constructed based on the

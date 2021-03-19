@@ -18,6 +18,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   bit [TL_AW-1:0] used_dai_addr_q[$];
   bit is_valid_dai_op = 1;
 
+  bit default_req_blocking = 1;
+
   `uvm_object_new
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -268,39 +270,135 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task req_sram_key(int index);
+  // first two or three LSB bits of DAI address can be randomized based on if it is secret
+  virtual function bit [TL_AW-1:0] randomize_dai_addr(bit [TL_AW-1:0] dai_addr);
+    if (is_secret(dai_addr)) begin
+      bit [2:0] rand_addr = $urandom();
+      randomize_dai_addr = {dai_addr[TL_DW-1:3], rand_addr};
+    end else begin
+      bit [1:0] rand_addr = $urandom();
+      randomize_dai_addr = {dai_addr[TL_DW-1:2], rand_addr};
+    end
+  endfunction
+
+  // The following interface requests are separated to blocking and non-blocking accesses.
+  // The non-blocking access is mainly used when lc_escalate_en is On, which acts like a reset and
+  // move all design state machines to ErrorSt. Thus pending request will never get a response
+  // until reset.
+  virtual task req_sram_key(int index, bit blocking = default_req_blocking);
+    // Return if the request is already high, this is mainly due to lc_escalate_en On.
+    if (cfg.m_sram_pull_agent_cfg[index].vif.req === 1'b1) return;
+
+    if (blocking) begin
+      req_sram_key_sub(index);
+    end else begin
+      fork
+        begin
+          req_sram_key_sub(index);
+        end
+      join_none;
+      // Add #0 to ensure that this thread starts executing before any subsequent call
+      #0;
+    end
+  endtask
+
+  virtual task req_sram_key_sub(int index);
     push_pull_host_seq#(.DeviceDataWidth(SRAM_DATA_SIZE)) sram_pull_seq;
     `uvm_create_on(sram_pull_seq, p_sequencer.sram_pull_sequencer_h[index]);
     `DV_CHECK_RANDOMIZE_FATAL(sram_pull_seq)
     `uvm_send(sram_pull_seq)
   endtask
 
-  virtual task req_all_sram_keys();
-    for (int i = 0; i < NumSramKeyReqSlots; i++) req_sram_key(i);
+  virtual task req_all_sram_keys(bit blocking = default_req_blocking);
+    for (int i = 0; i < NumSramKeyReqSlots; i++) req_sram_key(i, blocking);
   endtask
 
-  virtual task req_otbn_key();
+  virtual task req_otbn_key(bit blocking = default_req_blocking);
+    if (cfg.m_otbn_pull_agent_cfg.vif.req === 1'b1) return;
+
+    if (blocking) begin
+      req_otbn_key_sub();
+    end else begin
+      fork
+        begin
+          req_otbn_key_sub();
+        end
+      join_none;
+      // Add #0 to ensure that this thread starts executing before any subsequent call
+      #0;
+    end
+  endtask
+
+  virtual task req_otbn_key_sub();
     push_pull_host_seq#(.DeviceDataWidth(OTBN_DATA_SIZE)) otbn_pull_seq;
     `uvm_create_on(otbn_pull_seq, p_sequencer.otbn_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(otbn_pull_seq)
     `uvm_send(otbn_pull_seq)
   endtask
 
-  virtual task req_flash_addr_key();
+  virtual task req_flash_addr_key(bit blocking = default_req_blocking);
+    if (cfg.m_flash_addr_pull_agent_cfg.vif.req === 1'b1) return;
+
+    if (blocking) begin
+      req_flash_addr_key_sub();
+    end else begin
+      fork
+        begin
+          req_flash_addr_key_sub();
+        end
+      join_none;
+      // Add #0 to ensure that this thread starts executing before any subsequent call
+      #0;
+    end
+  endtask
+
+  virtual task req_flash_addr_key_sub();
     push_pull_host_seq#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_pull_seq;
     `uvm_create_on(flash_addr_pull_seq, p_sequencer.flash_addr_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(flash_addr_pull_seq)
     `uvm_send(flash_addr_pull_seq)
   endtask
 
-  virtual task req_flash_data_key();
+  virtual task req_flash_data_key(bit blocking = default_req_blocking);
+    if (cfg.m_flash_data_pull_agent_cfg.vif.req === 1'b1) return;
+
+    if (blocking) begin
+      req_flash_data_key_sub();
+    end else begin
+      fork
+        begin
+          req_flash_data_key_sub();
+        end
+      join_none;
+      // Add #0 to ensure that this thread starts executing before any subsequent call
+      #0;
+    end
+  endtask
+
+  virtual task req_flash_data_key_sub();
     push_pull_host_seq#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_pull_seq;
     `uvm_create_on(flash_data_pull_seq, p_sequencer.flash_data_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(flash_data_pull_seq)
     `uvm_send(flash_data_pull_seq)
   endtask
 
-  virtual task req_lc_transition(bit check_intr = 0);
+  virtual task req_lc_transition(bit check_intr = 0, bit blocking = default_req_blocking);
+    if (cfg.m_lc_prog_pull_agent_cfg.vif.req === 1'b1) return;
+
+    if (blocking) begin
+      req_lc_transition_sub();
+    end else begin
+      fork
+        begin
+          req_lc_transition_sub();
+        end
+      join_none;
+      // Add #0 to ensure that this thread starts executing before any subsequent call
+      #0;
+    end
+  endtask
+
+  virtual task req_lc_transition_sub(bit check_intr = 0);
     lc_ctrl_state_pkg::lc_state_e lc_state;
     lc_ctrl_state_pkg::lc_cnt_e   lc_cnt;
     bit [TL_DW-1:0]               intr_val;
@@ -317,29 +415,32 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
 
     `DV_CHECK_RANDOMIZE_FATAL(lc_prog_pull_seq)
-    `DV_SPINWAIT_EXIT(`uvm_send(lc_prog_pull_seq),
-                      wait(cfg.otp_ctrl_vif.lc_escalate_en_i == lc_ctrl_pkg::On);)
+    `uvm_send(lc_prog_pull_seq)
 
     if (check_intr) rd_and_clear_intrs();
   endtask
 
-  virtual task req_lc_token();
+  virtual task req_lc_token(bit blocking = default_req_blocking);
+    if (cfg.m_lc_token_pull_agent_cfg.vif.req === 1'b1) return;
+
+    if (blocking) begin
+      req_lc_token_sub();
+    end else begin
+      fork
+        begin
+          req_lc_token_sub();
+        end
+      join_none;
+      // Add #0 to ensure that this thread starts executing before any subsequent call
+      #0;
+    end
+  endtask
+
+  virtual task req_lc_token_sub();
     push_pull_host_seq#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) lc_token_pull_seq;
     `uvm_create_on(lc_token_pull_seq, p_sequencer.lc_token_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(lc_token_pull_seq)
-    `DV_SPINWAIT_EXIT(`uvm_send(lc_token_pull_seq),
-                      wait(cfg.otp_ctrl_vif.lc_escalate_en_i == lc_ctrl_pkg::On);)
+    `uvm_send(lc_token_pull_seq)
   endtask
-
-  // first two or three LSB bits of DAI address can be randomized based on if it is secret
-  virtual function bit [TL_AW-1:0] randomize_dai_addr(bit [TL_AW-1:0] dai_addr);
-    if (is_secret(dai_addr)) begin
-      bit [2:0] rand_addr = $urandom();
-      randomize_dai_addr = {dai_addr[TL_DW-1:3], rand_addr};
-    end else begin
-      bit [1:0] rand_addr = $urandom();
-      randomize_dai_addr = {dai_addr[TL_DW-1:2], rand_addr};
-    end
-  endfunction
 
 endclass : otp_ctrl_base_vseq

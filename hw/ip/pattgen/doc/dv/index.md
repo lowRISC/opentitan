@@ -16,7 +16,7 @@ title: "PATTGEN DV document"
 
 ## Design features
 For detailed information on PATTGEN design features, please see the
-[PATTGEN design specification]({{< relref "hw/ip/pattgen/doc" >}}).
+[PATTGEN design specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 PATTGEN testbench has been constructed based on the

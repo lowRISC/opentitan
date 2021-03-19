@@ -16,7 +16,7 @@ title: "UART DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/uart/dv/latest/results.html)
 
 ## Design features
-For detailed information on UART design features, please see the [UART design specification]({{< relref "hw/ip/uart/doc" >}}).
+For detailed information on UART design features, please see the [UART design specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 UART testbench has been constructed based on the

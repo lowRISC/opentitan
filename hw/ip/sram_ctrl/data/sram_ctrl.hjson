@@ -41,8 +41,14 @@
     { name:      "RndCnstSramNonce",
       desc:      "Compile-time random reset value for SRAM scrambling nonce.",
       type:      "otp_ctrl_pkg::sram_nonce_t"
-      randcount: "64",
+      randcount: "128",
       randtype:  "data", // randomize randcount databits
+    },
+    { name:      "RndCnstSramLfsrPerm",
+      desc:      "Compile-time random permutation for LFSR output",
+      type:      "sram_ctrl_pkg::lfsr_perm_t"
+      randcount: "32",
+      randtype:  "perm",
     },
     { name:      "InstrExec",
       desc:      "Support execution from SRAM",
@@ -70,6 +76,14 @@
     { struct:  "sram_scr"
       type:    "req_rsp"
       name:    "sram_scr"
+      act:     "req"
+      default: "'0"
+      package: "sram_ctrl_pkg"
+    },
+    // Interface with SRAM scrambling wrapper init interface
+    { struct:  "sram_scr_init"
+      type:    "req_rsp"
+      name:    "sram_scr_init"
       act:     "req"
       default: "'0"
       package: "sram_ctrl_pkg"
@@ -204,8 +218,8 @@
     }
     { name: "CTRL",
       desc: "SRAM ctrl register.",
-      swaccess: "wo",
-      hwaccess: "hro",
+      swaccess: "rw",
+      hwaccess: "hrw",
       hwqe:     "true",
       hwext:    "true",
       regwen:   "CTRL_REGWEN"
@@ -221,6 +235,14 @@
                 can poll its status. Note that requesting a new scrambling key takes ~200 OTP cycles, which translates
                 to ~800 CPU cycles (OTP runs at 24MHz, CPU runs at 100MHz). Note that writing 1 to this register while
                 a key request is pending has no effect.
+                '''
+        },
+        { bits: "1",
+          name: "INIT",
+          desc: '''
+                Write 1 to request memory init.
+                The init process is seeded using the a nonce that is supplied during the init process.
+                The resulting memory is programmed with random data instead of deterministic values.
                 '''
         },
       ]

@@ -16,7 +16,7 @@ title: "HMAC DV document"
 
 ## Design features
 For detailed information on HMAC design features, please see the
-[HMAC design specification]({{< relref "hw/ip/hmac/doc" >}}).
+[HMAC design specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 HMAC testbench has been constructed based on the

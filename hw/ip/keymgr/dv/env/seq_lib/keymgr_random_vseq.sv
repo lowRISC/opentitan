@@ -18,14 +18,14 @@ class keymgr_random_vseq extends keymgr_sideload_vseq;
     uvm_reg         csr_update_q[$];
 
     csr_random_n_add_to_q(ral.sw_binding_regwen, csr_update_q);
-    csr_random_n_add_to_q(ral.sw_binding_0, csr_update_q);
-    csr_random_n_add_to_q(ral.sw_binding_1, csr_update_q);
-    csr_random_n_add_to_q(ral.sw_binding_2, csr_update_q);
-    csr_random_n_add_to_q(ral.sw_binding_3, csr_update_q);
-    csr_random_n_add_to_q(ral.salt_0, csr_update_q);
-    csr_random_n_add_to_q(ral.salt_1, csr_update_q);
-    csr_random_n_add_to_q(ral.salt_2, csr_update_q);
-    csr_random_n_add_to_q(ral.salt_3, csr_update_q);
+    for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
+      uvm_reg rg = ral.get_reg_by_name($sformatf("sw_binding_%0d", i));
+      csr_random_n_add_to_q(rg, csr_update_q);
+    end
+    for (int i = 0; i < keymgr_reg_pkg::NumSaltReg; i++) begin
+      uvm_reg rg = ral.get_reg_by_name($sformatf("salt_%0d", i));
+      csr_random_n_add_to_q(rg, csr_update_q);
+    end
 
     csr_random_n_add_to_q(ral.max_creator_key_ver, csr_update_q);
     csr_random_n_add_to_q(ral.max_owner_int_key_ver, csr_update_q);

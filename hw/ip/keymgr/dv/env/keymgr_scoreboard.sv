@@ -12,7 +12,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     str = $sformatf("%0s\n %0s act: 0x%0h, exp: 0x%0h", str, `"VAR`", act.``VAR, exp.``VAR);
 
   typedef struct packed {
-    bit [keymgr_pkg::SwBindingWidth-1:0]   RomExtSecurityDescriptor;
+    bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
     bit [keymgr_pkg::KeyWidth-1:0]         HardwareRevisionSecret;
     bit [keymgr_pkg::DevIdWidth-1:0]       DeviceIdentifier;
     bit [keymgr_pkg::HealthStateWidth-1:0] HealthMeasurement;
@@ -318,12 +318,13 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to cfg_regwen=0", csr.get_name()),
                   UVM_MEDIUM)
         return;
-      end else if (`gmv(ral.sw_binding_regwen) == 0 && csr.get_name() inside {"sw_binding_0",
-               "sw_binding_1", "sw_binding_2", "sw_binding_3"}) begin
+      end else if (`gmv(ral.sw_binding_regwen) == 0 &&
+          ral.sw_binding_regwen.locks_reg_or_fld(dv_reg)) begin
         `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to sw_binding_regwen=0",
                                   csr.get_name()), UVM_MEDIUM)
         return;
-      end else if (csr.get_name() == "sw_binding_regwen" && current_state == keymgr_pkg::StReset) begin
+      end else if (csr.get_name() == "sw_binding_regwen" && current_state == keymgr_pkg::StReset)
+      begin
         `uvm_info(`gfn, $sformatf("Reg write to %0s is ignored due to state in StReset",
                                   csr.get_name()), UVM_MEDIUM)
         return;
@@ -679,14 +680,16 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     exp.HealthMeasurement  = cfg.keymgr_vif.keymgr_div;
     exp.DeviceIdentifier   = cfg.keymgr_vif.otp_hw_cfg.data.device_id;
     exp.HardwareRevisionSecret = keymgr_pkg::RndCnstRevisionSeedDefault;
-    exp.RomExtSecurityDescriptor = {`gmv(ral.sw_binding_3), `gmv(ral.sw_binding_2),
-                                    `gmv(ral.sw_binding_1), `gmv(ral.sw_binding_0)};
+    for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
+      uvm_reg rg = ral.get_reg_by_name($sformatf("sw_binding_%0d", i));
+      exp.SoftwareBinding[i] = `gmv(rg);
+    end
 
     `CREATE_CMP_STR(DiversificationKey)
     `CREATE_CMP_STR(HealthMeasurement)
     `CREATE_CMP_STR(DeviceIdentifier)
     `CREATE_CMP_STR(HardwareRevisionSecret)
-    `CREATE_CMP_STR(RomExtSecurityDescriptor)
+    `CREATE_CMP_STR(SoftwareBinding)
 
     if (exp_match) begin
       `DV_CHECK_EQ(act, exp, str)
@@ -704,14 +707,10 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     act = {<<8{byte_data_q}};
 
     exp.OwnerRootSecret = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx];
-    exp.SoftwareBinding[7] = `gmv(ral.sw_binding_7);
-    exp.SoftwareBinding[6] = `gmv(ral.sw_binding_6);
-    exp.SoftwareBinding[5] = `gmv(ral.sw_binding_5);
-    exp.SoftwareBinding[4] = `gmv(ral.sw_binding_4);
-    exp.SoftwareBinding[3] = `gmv(ral.sw_binding_3);
-    exp.SoftwareBinding[2] = `gmv(ral.sw_binding_2);
-    exp.SoftwareBinding[1] = `gmv(ral.sw_binding_1);
-    exp.SoftwareBinding[0] = `gmv(ral.sw_binding_0);
+    for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
+      uvm_reg rg = ral.get_reg_by_name($sformatf("sw_binding_%0d", i));
+      exp.SoftwareBinding[i] = `gmv(rg);
+    end
 
     `CREATE_CMP_STR(unused)
     `CREATE_CMP_STR(OwnerRootSecret)
@@ -734,14 +733,10 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     act = {<<8{byte_data_q}};
 
-    exp.SoftwareBinding[7] = `gmv(ral.sw_binding_7);
-    exp.SoftwareBinding[6] = `gmv(ral.sw_binding_6);
-    exp.SoftwareBinding[5] = `gmv(ral.sw_binding_5);
-    exp.SoftwareBinding[4] = `gmv(ral.sw_binding_4);
-    exp.SoftwareBinding[3] = `gmv(ral.sw_binding_3);
-    exp.SoftwareBinding[2] = `gmv(ral.sw_binding_2);
-    exp.SoftwareBinding[1] = `gmv(ral.sw_binding_1);
-    exp.SoftwareBinding[0] = `gmv(ral.sw_binding_0);
+    for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
+      uvm_reg rg = ral.get_reg_by_name($sformatf("sw_binding_%0d", i));
+      exp.SoftwareBinding[i] = `gmv(rg);
+    end
 
     `CREATE_CMP_STR(unused)
     for (int i=0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
@@ -803,14 +798,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     act = {<<8{byte_data_q}};
 
     exp.KeyVersion = `gmv(ral.key_version);
-    exp.Salt[0]    = `gmv(ral.salt_0);
-    exp.Salt[1]    = `gmv(ral.salt_1);
-    exp.Salt[2]    = `gmv(ral.salt_2);
-    exp.Salt[3]    = `gmv(ral.salt_3);
-    exp.Salt[4]    = `gmv(ral.salt_4);
-    exp.Salt[5]    = `gmv(ral.salt_5);
-    exp.Salt[6]    = `gmv(ral.salt_6);
-    exp.Salt[7]    = `gmv(ral.salt_7);
+    for (int i = 0; i < keymgr_reg_pkg::NumSaltReg; i++) begin
+      uvm_reg rg = ral.get_reg_by_name($sformatf("salt_%0d", i));
+      exp.Salt[i] = `gmv(rg);
+    end
+
     case (dest)
       keymgr_pkg::Kmac: exp.KeyID = keymgr_pkg::RndCnstKmacSeedDefault;
       keymgr_pkg::Hmac: exp.KeyID = keymgr_pkg::RndCnstHmacSeedDefault;

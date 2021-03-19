@@ -2,15 +2,6 @@
 title: "OTP_CTRL DV document"
 ---
 
-<!-- Copy this file to hw/ip/otp_ctrl/doc/otp_ctrl_dv_doc.md and make changes as needed.
-For convenience 'otp_ctrl' in the document can be searched and replaced easily with the
-desired IP (with case sensitivity!). Also, use the testbench block diagram
-located at OpenTitan team drive / 'design verification'
-as a starting point and modify it to reflect your otp_ctrl testbench and save it
-to hw/ip/otp_ctrl/doc/tb.svg. It should get linked and rendered under the block
-diagram section below. Please update / modify / remove sections below as
-applicable. Once done, remove this comment before making a PR. -->
-
 ## Goals
 * **DV**
   * Verify all OTP_CTRL IP features by running dynamic simulations with a SV/UVM based testbench
@@ -24,7 +15,7 @@ applicable. Once done, remove this comment before making a PR. -->
 * [Simulation results](https://reports.opentitan.org/hw/ip/otp_ctrl/dv/latest/results.html)
 
 ## Design features
-For detailed information on OTP_CTRL design features, please see the [OTP_CTRL HWIP technical specification]({{< relref "hw/ip/otp_ctrl/doc" >}}).
+For detailed information on OTP_CTRL design features, please see the [OTP_CTRL HWIP technical specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 OTP_CTRL testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).

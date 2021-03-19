@@ -16,7 +16,7 @@ title: "I2C DV document"
 
 ## Design features
 For detailed information on I2C design features, please see the
-[I2C design specification]({{< relref "hw/ip/i2c/doc" >}}).
+[I2C design specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 I2C testbench has been constructed based on the

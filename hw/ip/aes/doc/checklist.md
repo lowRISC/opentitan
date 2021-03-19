@@ -2,7 +2,7 @@
 title: "AES Checklist"
 ---
 
-This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [AES peripheral.]({{<relref "hw/ip/aes/doc" >}})
+This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [AES peripheral.]({{<relref "." >}})
 All checklist items refer to the content in the [Checklist.]({{< relref "/doc/project/checklist.md" >}})
 
 ## Design Checklist
@@ -11,7 +11,7 @@ All checklist items refer to the content in the [Checklist.]({{< relref "/doc/pr
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|-----------------------         |-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Done        | [AES Design Spec]({{<relref "hw/ip/aes/doc" >}})
+Documentation | [SPEC_COMPLETE][]              | Done        | [AES Design Spec]({{<relref "." >}})
 Documentation | [CSR_DEFINED][]                | Done        |
 RTL           | [CLKRST_CONNECTED][]           | Done        |
 RTL           | [IP_TOP][]                     | Done        |
@@ -110,8 +110,8 @@ Review        | Signoff date            | Not Started |
 
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
-Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [AES DV document]({{<relref "hw/ip/aes/doc/dv" >}})
-Documentation | [DV_PLAN_COMPLETED][]                 | Done        | [AES DV plan]({{<relref "hw/ip/aes/doc/dv/index.md#dv_plan" >}})
+Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [AES DV document]({{<relref "dv" >}})
+Documentation | [DV_PLAN_COMPLETED][]                 | Done        | [AES DV plan]({{<relref "dv/index.md#dv_plan" >}})
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |

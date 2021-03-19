@@ -2,15 +2,6 @@
 title: "KMAC DV document"
 ---
 
-<!-- Copy this file to hw/ip/kmac/doc/kmac_dv_doc.md and make changes as needed.
-For convenience 'kmac' in the document can be searched and replaced easily with the
-desired IP (with case sensitivity!). Also, use the testbench block diagram
-located at OpenTitan team drive / 'design verification'
-as a starting point and modify it to reflect your kmac testbench and save it
-to hw/ip/kmac/doc/tb.svg. It should get linked and rendered under the block
-diagram section below. Please update / modify / remove sections below as
-applicable. Once done, remove this comment before making a PR. -->
-
 ## Goals
 * **DV**
   * Verify all KMAC IP features by running dynamic simulations with a SV/UVM based testbench
@@ -24,7 +15,7 @@ applicable. Once done, remove this comment before making a PR. -->
 * [Simulation results](https://reports.opentitan.org/hw/ip/kmac/dv/latest/results.html)
 
 ## Design features
-For detailed information on KMAC design features, please see the [KMAC HWIP technical specification]({{< relref "hw/ip/kmac/doc" >}}).
+For detailed information on KMAC design features, please see the [KMAC HWIP technical specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 KMAC testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).

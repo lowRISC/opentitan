@@ -17,9 +17,12 @@ class otp_ctrl_parallel_lc_req_vseq extends otp_ctrl_parallel_base_vseq;
 
   constraint lc_trans_c {
     do_lc_trans == 0;
-    // TODO: support enable req_key while lc_escalate_en is set.
-    do_req_keys == 0;
   }
+
+  virtual task pre_start();
+    super.pre_start();
+    default_req_blocking = 0;
+  endtask
 
   virtual task run_parallel_seq(ref bit base_vseq_done);
     forever begin

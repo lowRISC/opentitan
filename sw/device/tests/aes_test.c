@@ -90,14 +90,6 @@ bool test_main(void) {
           kCipherTextGold[i], buffer[i]);
   }
 
-  // Disable and re-enable EDN0 to get some more entropy out of it. This is
-  // dirty and needs to be reworked. We need to setup CSRNG/EDN to continously
-  // provide entropy.
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
-                      EDN_CTRL_REG_OFFSET, 0x0);
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
-                      EDN_CTRL_REG_OFFSET, 0x1);
-
   // Decode
   aes_cfg.operation = kAesDec;
   aes_init(aes_cfg);

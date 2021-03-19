@@ -35,7 +35,18 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
 
   // setup basic sram_ctrl features
   virtual task sram_ctrl_init();
+    // TODO: Can this be removed? and rely on mem init below?
     cfg.mem_bkdr_vif.clear_mem();
+    req_scr_key();
+    req_mem_init();
+  endtask
+
+  // Request a memory init.
+  //
+  virtual task req_mem_init();
+    ral.ctrl.init.set(1'b1);
+    csr_update(.csr(ral.ctrl));
+    csr_spinwait(.ptr(ral.ctrl.init), .exp_data(0));
   endtask
 
   // Request a new scrambling key from the OTP interface.

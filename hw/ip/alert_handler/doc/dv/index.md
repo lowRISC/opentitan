@@ -17,7 +17,7 @@ title: "ALERT_HANDLER DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/alert_handler/dv/latest/results.html)
 
 ## Design features
-For detailed information on ALERT_HANDLER design features, please see the [ALERT_HANDLER HWIP technical specification]({{< relref "hw/ip/alert_handler/doc" >}}).
+For detailed information on ALERT_HANDLER design features, please see the [ALERT_HANDLER HWIP technical specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 ALERT_HANDLER testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).

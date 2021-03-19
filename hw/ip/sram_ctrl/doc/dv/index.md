@@ -15,7 +15,7 @@ title: "SRAM_CTRL DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/sram_ctrl/dv/latest/results.html)
 
 ## Design features
-For detailed information on SRAM_CTRL design features, please see the [SRAM_CTRL HWIP technical specification]({{< relref "hw/ip/sram_ctrl/doc" >}}).
+For detailed information on SRAM_CTRL design features, please see the [SRAM_CTRL HWIP technical specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 SRAM_CTRL testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).

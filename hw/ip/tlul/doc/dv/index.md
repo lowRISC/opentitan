@@ -16,7 +16,7 @@ title: "TLUL XBAR DV document"
 * DV regression results dashboard (link TBD)
 
 ## Design features
-For detailed information on TLUL design features, please see the [TLUL design specification]({{< relref "hw/ip/tlul/doc" >}}).
+For detailed information on TLUL design features, please see the [TLUL design specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 XBAR testbench has been constructed based on the `hw/dv/sv/dv_lib`

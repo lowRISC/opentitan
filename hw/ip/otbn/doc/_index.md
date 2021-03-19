@@ -48,7 +48,7 @@ which has been formally verified within the [Fiat Crypto project](http://adam.ch
 # Instruction Set
 
 OTBN is a processor with a custom instruction set.
-The full ISA description can be found in our [ISA manual]({{< relref "hw/ip/otbn/doc/isa" >}}).
+The full ISA description can be found in our [ISA manual]({{< relref "isa" >}}).
 The instruction set is split into two groups:
 
 * The **base instruction subset** operates on the 32b General Purpose Registers (GPRs).
@@ -94,7 +94,7 @@ For example, good choices for temporary registers are `x6`, `x7`, `x28`, `x29`, 
 
 OTBN has an in-built call stack which is accessed through the `x1` GPR.
 This is intended to be used as a return address stack, containing return addresses for the current stack of function calls.
-See the documentation for [`JAL`]({{< relref "hw/ip/otbn/doc/isa#jal" >}}) and [`JALR`]({{< relref "hw/ip/otbn/doc/isa#jalr" >}}) for a description of how to use it for this purpose.
+See the documentation for [`JAL`]({{< relref "isa#jal" >}}) and [`JALR`]({{< relref "isa#jalr" >}}) for a description of how to use it for this purpose.
 
 The call stack has a maximum depth of 8 elements.
 Each instruction that reads from `x1` pops a single element from the stack.
@@ -291,7 +291,7 @@ GPRs are accessible from the base instruction subset, and WDRs are accessible fr
 
 OTBN has 256b Wide Special purpose Registers (WSRs).
 These are analogous to the 32b CSRs, but are used by big number instructions.
-They can be accessed with the [`BN.WSRRS`]({{< relref "hw/ip/otbn/doc/isa#bnwsrrs" >}}) and [`BN.WSRRW`]({{< relref "hw/ip/otbn/doc/isa#bnwsrrw" >}}) instructions.
+They can be accessed with the [`BN.WSRRS`]({{< relref "isa#bnwsrrs" >}}) and [`BN.WSRRW`]({{< relref "isa#bnwsrrw" >}}) instructions.
 
 <table>
   <thead>
@@ -309,7 +309,7 @@ They can be accessed with the [`BN.WSRRS`]({{< relref "hw/ip/otbn/doc/isa#bnwsrr
       <td>RW</td>
 <td>
 
-The modulus used by the [`BN.ADDM`]({{< relref "hw/ip/otbn/doc/isa#bnaddm" >}}) and [`BN.SUBM`]({{< relref "hw/ip/otbn/doc/isa#bnsubm" >}}) instructions.
+The modulus used by the [`BN.ADDM`]({{< relref "isa#bnaddm" >}}) and [`BN.SUBM`]({{< relref "isa#bnsubm" >}}) instructions.
 This WSR is also visible as CSRs `MOD0` through to `MOD7`.
 
 </td>
@@ -356,7 +356,7 @@ The `M`, `L`, and `Z` flags are determined based on the result of the operation 
 
 ### Loop Stack
 
-OTBN has two instructions for hardware-assisted loops: [`LOOP`]({{< relref "hw/ip/otbn/doc/isa#loop" >}}) and [`LOOPI`]({{< relref "hw/ip/otbn/doc/isa#loopi" >}}).
+OTBN has two instructions for hardware-assisted loops: [`LOOP`]({{< relref "isa#loop" >}}) and [`LOOPI`]({{< relref "isa#loopi" >}}).
 Both use the same state for tracking control flow.
 This is a stack of tuples containing a loop count, start address and end address.
 The stack has a maximum depth of eight and the top of the stack is the current loop.
@@ -468,7 +468,7 @@ By design, OTBN is a simple processor and provides no error handling support to 
 
 Whenever OTBN observes an error, it will generate an alert.
 This gets sent to the alert manager.
-The alert will either be fatal or recoverable, depending on the class of error: see [Alerts]({{< relref "hw/ip/otbn/doc#alerts" >}}) and {{< regref "ERR_BITS" >}} below for details.
+The alert will either be fatal or recoverable, depending on the class of error: see [Alerts]({{< relref "#alerts" >}}) and {{< regref "ERR_BITS" >}} below for details.
 
 If OTBN was running when the alert occurred (this is true whenever {{< regref "STATUS.busy" >}} is high), it will also:
 - Immediately stop fetching and executing instructions.
@@ -480,7 +480,7 @@ One example of this is an error caused by an ECC failure when reading or program
 In this case, the {{< regref "ERR_BITS" >}} register will not change.
 This avoids race conditions with the host processor's error handling software.
 However, every error that OTBN detects when it isn't running causes a fatal alert.
-This means that the cause will be reflected in {{< regref "FATAL_ALERT_CAUSE" >}}, as described below in [Alerts]({{< relref "hw/ip/otbn/doc#alerts" >}}).
+This means that the cause will be reflected in {{< regref "FATAL_ALERT_CAUSE" >}}, as described below in [Alerts]({{< relref "#alerts" >}}).
 This way, no alert is generated without setting an error code somewhere.
 
 <div class="bd-callout bd-callout-warning">
@@ -556,7 +556,7 @@ A higher-level driver for the OTBN block is available at `sw/device/lib/runtime/
 # Writing OTBN applications {#writing-otbn-applications}
 
 OTBN applications are (small) pieces of software written in OTBN assembly.
-The full instruction set is described in the [ISA manual]({{< relref "hw/ip/otbn/doc/isa" >}}), and example software is available in the `sw/otbn` directory of the OpenTitan source tree.
+The full instruction set is described in the [ISA manual]({{< relref "isa" >}}), and example software is available in the `sw/otbn` directory of the OpenTitan source tree.
 
 A hands-on user guide to develop OTBN software can be found in the section [Writing and building software for OTBN]({{<relref "doc/ug/otbn_sw.md" >}}).
 
@@ -580,7 +580,7 @@ All data passing must be done when OTBN is not running, as indicated by the {{< 
 
 ## Returning from an application
 
-The software running on OTBN signals completion by executing the [`ECALL`]({{< relref "hw/ip/otbn/doc/isa#ecall" >}}) instruction.
+The software running on OTBN signals completion by executing the [`ECALL`]({{< relref "isa#ecall" >}}) instruction.
 
 When it executes this instruction, OTBN:
 - Stops fetching and executing instructions.

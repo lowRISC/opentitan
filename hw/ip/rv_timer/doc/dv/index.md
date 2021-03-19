@@ -15,7 +15,7 @@ title: "RV_TIMER DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/rv_timer/dv/latest/results.html)
 
 ## Design features
-For detailed information on RV_TIMER design features, please see the [RV_TIMER design specification]({{< relref "hw/ip/rv_timer/doc" >}}).
+For detailed information on RV_TIMER design features, please see the [RV_TIMER design specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 RV_TIMER testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).

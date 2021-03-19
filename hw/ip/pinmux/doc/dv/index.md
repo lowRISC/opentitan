@@ -17,7 +17,7 @@ title: "PINMUX DV document"
 
 ## Design features
 For detailed information on PINMUX design features, please see the
-[PINMUX design specification]({{< relref "hw/ip/pinmux/doc" >}}).
+[PINMUX design specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 PINMUX FPV testbench has been constructed based on the [formal architecture]({{< relref "hw/formal/README.md" >}}).

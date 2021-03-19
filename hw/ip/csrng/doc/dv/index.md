@@ -15,7 +15,7 @@ title: "CSRNG DV document"
 * [Simulation results](https://reports.opentitan.org/hw/ip/csrng/dv/latest/results.html)
 
 ## Design features
-For detailed information on CSRNG design features, please see the [CSRNG HWIP technical specification]({{< relref "hw/ip/csrng/doc" >}}).
+For detailed information on CSRNG design features, please see the [CSRNG HWIP technical specification]({{< relref ".." >}}).
 
 ## Testbench architecture
 CSRNG testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).

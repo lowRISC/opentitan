@@ -145,4 +145,5 @@
       milestone: V2
       tests: ["spi_host_stress_all_with_rand_reset"]
     }
+  ]
 }

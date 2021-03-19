@@ -109,6 +109,7 @@ config = {
         "hw/ip/lc_ctrl/data/lc_ctrl_testplan.hjson",
         "hw/ip/otp_ctrl/data/otp_ctrl_testplan.hjson",
         "hw/ip/pattgen/data/pattgen_testplan.hjson",
+        "hw/ip/pwm/data/pwm_testplan.hjson",
         "hw/ip/pinmux/data/pinmux_fpv_testplan.hjson",
         "hw/ip/rv_plic/data/rv_plic_fpv_testplan.hjson",
         "hw/ip/rv_timer/data/rv_timer_testplan.hjson",

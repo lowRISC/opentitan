@@ -3,7 +3,7 @@ title: OpenTitan Big Number Accelerator (OTBN) Instruction Set Architecture
 ---
 
 This document describes the instruction set for OTBN.
-For more details about the processor itself, see the [OTBN Technical Specification]({{< relref "hw/ip/otbn/doc" >}}).
+For more details about the processor itself, see the [OTBN Technical Specification]({{< relref "." >}}).
 In particular, this document assumes knowledge of the *Processor State* section from that guide.
 
 The instruction set is split into *base* and *big number* subsets.

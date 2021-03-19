@@ -191,7 +191,7 @@ interface clk_rst_if #(
                              int post_reset_dly_clks  = 0,
                              int rst_n_scheme         = 1);
     int dly_ps;
-    if ($isunknown(reset_width_clks)) reset_width_clks = $urandom_range(4, 20);
+    if ($isunknown(reset_width_clks)) reset_width_clks = $urandom_range(50, 100);
     dly_ps = $urandom_range(0, clk_period_ps);
     wait_clks(pre_reset_dly_clks);
     case (rst_n_scheme)
