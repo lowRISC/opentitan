@@ -59,7 +59,7 @@ module otp_ctrl_part_unbuf
 
   localparam logic [OtpByteAddrWidth:0] PartEnd = (OtpByteAddrWidth+1)'(Info.offset) +
                                                   (OtpByteAddrWidth+1)'(Info.size);
-  localparam int DigestOffset = (Info.offset + (Info.size - (ScrmblBlockWidth/8)));
+  localparam int DigestOffset = int'(PartEnd) - ScrmblBlockWidth/8;
 
   // Integration checks for parameters.
   `ASSERT_INIT(OffsetMustBeBlockAligned_A, (Info.offset % (ScrmblBlockWidth/8)) == 0)

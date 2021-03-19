@@ -73,8 +73,8 @@ module otp_ctrl_part_buf
 
   import prim_util_pkg::vbits;
 
-  localparam int DigestOffset = Info.offset + Info.size - ScrmblBlockWidth/8;
-  localparam int NumScrmblBlocks = Info.size / (ScrmblBlockWidth/8);
+  localparam int DigestOffset = int'(Info.offset) + int'(Info.size) - ScrmblBlockWidth/8;
+  localparam int NumScrmblBlocks = int'(Info.size) / (ScrmblBlockWidth/8);
   localparam int CntWidth = vbits(NumScrmblBlocks);
 
   // Integration checks for parameters.
