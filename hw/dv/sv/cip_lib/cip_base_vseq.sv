@@ -821,7 +821,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
 
     num_accesses = num_accesses * num_times;
-    while (num_accesses) begin
+    while (num_accesses && !cfg.under_reset) begin
       fork
         begin
           bit [BUS_AW-1:0]  addr;
