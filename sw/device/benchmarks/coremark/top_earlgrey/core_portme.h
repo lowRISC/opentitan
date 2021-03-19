@@ -1,5 +1,8 @@
 /* File : core_portme.h */
 
+#ifndef OPENTITAN_SW_DEVICE_BENCHMARKS_COREMARK_TOP_EARLGREY_CORE_PORTME_H_
+#define OPENTITAN_SW_DEVICE_BENCHMARKS_COREMARK_TOP_EARLGREY_CORE_PORTME_H_
+
 /*
         Author : Shay Gal-On, EEMBC
         Legal : TODO!
@@ -8,9 +11,6 @@
         This file contains configuration constants required to execute on
    different platforms
 */
-
-#ifndef OPENTITAN_SW_DEVICE_BENCHMARKS_COREMARK_TOP_EARLGREY_CORE_PORTME_H_
-#define OPENTITAN_SW_DEVICE_BENCHMARKS_COREMARK_TOP_EARLGREY_CORE_PORTME_H_
 
 #include <stddef.h>
 

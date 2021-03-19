@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef DMIDPI_H_
-#define DMIDPI_H_
+#ifndef OPENTITAN_HW_DV_DPI_DMIDPI_DMIDPI_H_
+#define OPENTITAN_HW_DV_DPI_DMIDPI_DMIDPI_H_
 
 #include <svdpi.h>
 
@@ -49,4 +49,4 @@ void dmidpi_tick(void *ctx_void, svBit *dmi_req_valid,
 #ifdef __cplusplus
 }  // extern "C"
 #endif
-#endif  // DMIDPI_H_
+#endif  // OPENTITAN_HW_DV_DPI_DMIDPI_DMIDPI_H_

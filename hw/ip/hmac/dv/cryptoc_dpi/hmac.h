@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef SECURITY_UTIL_LITE_HMAC_H__
-#define SECURITY_UTIL_LITE_HMAC_H__
+#ifndef OPENTITAN_HW_IP_HMAC_DV_CRYPTOC_DPI_HMAC_H_
+#define OPENTITAN_HW_IP_HMAC_DV_CRYPTOC_DPI_HMAC_H_
 
 #include <stdint.h>
 
@@ -39,4 +39,4 @@ const uint8_t *HMAC_final(LITE_HMAC_CTX *ctx);
 }
 #endif
 
-#endif  // SECURITY_UTIL_LITE_HMAC_H__
+#endif  // OPENTITAN_HW_IP_HMAC_DV_CRYPTOC_DPI_HMAC_H_

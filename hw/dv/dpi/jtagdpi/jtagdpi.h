@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef JTAGDPI_H_
-#define JTAGDPI_H_
+#ifndef OPENTITAN_HW_DV_DPI_JTAGDPI_JTAGDPI_H_
+#define OPENTITAN_HW_DV_DPI_JTAGDPI_JTAGDPI_H_
 
 #include <svdpi.h>
 
@@ -53,4 +53,4 @@ void jtagdpi_tick(void *ctx_void, svBit *tck, svBit *tms, svBit *tdi,
 #ifdef __cplusplus
 }  // extern "C"
 #endif
-#endif  // JTAGDPI_H_
+#endif  // OPENTITAN_HW_DV_DPI_JTAGDPI_JTAGDPI_H_

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef HMAC_WRAP_H__
-#define HMAC_WRAP_H__
+#ifndef OPENTITAN_HW_IP_HMAC_DV_CRYPTOC_DPI_HMAC_WRAP_H_
+#define OPENTITAN_HW_IP_HMAC_DV_CRYPTOC_DPI_HMAC_WRAP_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,4 +23,4 @@ const uint8_t *HMAC_SHA256(const void *key, size_t key_len, const void *msg,
 }
 #endif
 
-#endif
+#endif  // OPENTITAN_HW_IP_HMAC_DV_CRYPTOC_DPI_HMAC_WRAP_H_

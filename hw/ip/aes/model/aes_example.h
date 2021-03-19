@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#ifndef OPENTITAN_HW_IP_AES_MODEL_AES_EXAMPLE_H_
+#define OPENTITAN_HW_IP_AES_MODEL_AES_EXAMPLE_H_
+
 // The examples below are extracted from
 // the Advanced Encryption Standard (AES) FIPS Publication 197 available at
 // https://www.nist.gov/publications/advanced-encryption-standard-aes.
@@ -63,3 +66,5 @@ static const unsigned char cipher_text_gold_32_0[16] = {
 static const unsigned char cipher_text_gold_32_1[16] = {
     0x8e, 0xa2, 0xb7, 0xca, 0x51, 0x67, 0x45, 0xbf,
     0xea, 0xfc, 0x49, 0x90, 0x4b, 0x49, 0x60, 0x89};
+
+#endif  // OPENTITAN_HW_IP_AES_MODEL_AES_EXAMPLE_H_

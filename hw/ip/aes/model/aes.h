@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef AES_H_
-#define AES_H_
+#ifndef OPENTITAN_HW_IP_AES_MODEL_AES_H_
+#define OPENTITAN_HW_IP_AES_MODEL_AES_H_
 
 /**
  * Encrypt one data block (16 Bytes) in ECB mode.
@@ -235,4 +235,4 @@ static const unsigned char inv_sbox[256] = {
     0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26,
     0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d};
 
-#endif  // AES_H_
+#endif  // OPENTITAN_HW_IP_AES_MODEL_AES_H_

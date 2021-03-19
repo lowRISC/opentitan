@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#ifndef OPENTITAN_HW_DV_DPI_COMMON_TCP_SERVER_TCP_SERVER_H_
+#define OPENTITAN_HW_DV_DPI_COMMON_TCP_SERVER_TCP_SERVER_H_
+
 /**
  * Functions to create and interact with a threaded TCP server
  *
  * This is intended to be used by simulation add-on DPI modules to provide
  * basic TCP socket communication between a host and simulated peripherals.
  */
-
-#ifndef TCP_SERVER_H_
-#define TCP_SERVER_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,4 +66,4 @@ void tcp_server_client_close(struct tcp_server_ctx *ctx);
 #ifdef __cplusplus
 }  // extern "C"
 #endif
-#endif  // TCP_SERVER_H_
+#endif  // OPENTITAN_HW_DV_DPI_COMMON_TCP_SERVER_TCP_SERVER_H_
