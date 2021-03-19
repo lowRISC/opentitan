@@ -107,6 +107,7 @@ config = {
         "hw/ip/i2c/data/i2c_testplan.hjson",
         "hw/ip/keymgr/data/keymgr_testplan.hjson",
         "hw/ip/lc_ctrl/data/lc_ctrl_testplan.hjson",
+        "hw/ip/otbn/data/otbn_testplan.hjson",
         "hw/ip/otp_ctrl/data/otp_ctrl_testplan.hjson",
         "hw/ip/pattgen/data/pattgen_testplan.hjson",
         "hw/ip/pwm/data/pwm_testplan.hjson",
