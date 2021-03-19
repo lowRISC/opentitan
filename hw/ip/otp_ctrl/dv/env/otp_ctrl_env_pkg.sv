@@ -182,7 +182,7 @@ package otp_ctrl_env_pkg;
 
   function automatic bit is_sw_part(bit [TL_DW-1:0] addr);
     int part_idx = get_part_index(addr);
-    if (part_idx inside {CreatorSwCfgDigestOffset, OwnerSwCfgDigestOffset}) return 1;
+    if (part_idx inside {CreatorSwCfgIdx, OwnerSwCfgIdx}) return 1;
     else return 0;
   endfunction
 
