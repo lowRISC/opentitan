@@ -116,7 +116,10 @@ module aon_timer (
   assign hw2reg.wdog_bite_thold.d          = hw2reg_sync.wdog_bite_thold.d;
   assign hw2reg.wdog_count.d               = hw2reg_sync.wdog_count.d;
   assign hw2reg.wkup_cause.d               = hw2reg_sync.wkup_cause.d;
-  assign unused_intr_state_bits            = &{1'b0, hw2reg_sync.intr_state};
+  assign unused_intr_state_bits            = &{1'b0, hw2reg_sync.intr_state.wkup_timer_expired.d,
+                                               hw2reg_sync.intr_state.wkup_timer_expired.de,
+                                               hw2reg_sync.intr_state.wdog_timer_expired.d,
+                                               hw2reg_sync.intr_state.wdog_timer_expired.de};
 
   //////////////////////////////
   // Register Write Interface //
