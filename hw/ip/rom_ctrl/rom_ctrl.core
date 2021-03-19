@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:alert
       - lowrisc:prim:assert
+      - lowrisc:prim:cipher
       - lowrisc:prim:rom_adv
       - lowrisc:prim:subreg
       - lowrisc:prim:util
@@ -25,6 +26,7 @@ filesets:
       - rtl/rom_ctrl_counter.sv
       - rtl/rom_ctrl_fsm.sv
       - rtl/rom_ctrl_mux.sv
+      - rtl/rom_ctrl_scrambled_rom.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

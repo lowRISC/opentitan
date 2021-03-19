@@ -29,7 +29,8 @@ module rom_ctrl_mux #(
   // Interface for ROM
   output logic [AW-1:0] rom_addr_o,
   output logic          rom_req_o,
-  input logic [39:0]    rom_rdata_i,
+  input logic [39:0]    rom_scr_rdata_i,
+  input logic [39:0]    rom_clr_rdata_i,
   input logic           rom_rvalid_i,
 
   // Alert output
@@ -52,11 +53,11 @@ module rom_ctrl_mux #(
 
   // The bus can have access every cycle, once the select signal has gone to zero
   assign bus_gnt_o    = ~sel_q;
-  assign bus_rdata_o  = rom_rdata_i;
+  assign bus_rdata_o  = rom_clr_rdata_i;
   // A high rom_rvalid_i is a response to a bus request if sel_i was zero on the previous cycle.
   assign bus_rvalid_o = ~sel_q & rom_rvalid_i;
 
-  assign chk_rdata_o = rom_rdata_i;
+  assign chk_rdata_o = rom_scr_rdata_i;
 
   assign rom_addr_o = sel_i ? chk_addr_i : bus_addr_i;
   assign rom_req_o  = sel_i ? 1'b1       : bus_req_i;

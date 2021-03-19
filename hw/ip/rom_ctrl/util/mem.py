@@ -195,19 +195,23 @@ class MemFile:
             if seg_type != 'PT_LOAD' or segment['p_memsz'] == 0:
                 continue
 
-            seg_lma = segment['p_paddr']
-            seg_end = seg_lma + segment['p_memsz']
+            # seg_lma is the (relative) address of the first byte to be loaded.
+            # seg_top is the address of the last byte to be loaded. A one-byte
+            # segment will have seg_lma == seg_top.
+            seg_lma = segment['p_paddr'] - base_addr
+            seg_top = seg_lma + segment['p_memsz'] - 1
+
+            assert seg_lma <= seg_top
 
             # We re-map the addresses relative to base_addr: check that no
             # segment starts before it.
-            if seg_lma < base_addr:
+            if seg_lma < 0:
                 raise ValueError('ELF file contains a segment starting at '
                                  '{:#x}, so cannot be loaded relative to base '
                                  'address {:#x}.'
-                                 .format(seg_lma, base_addr))
+                                 .format(base_addr + seg_lma, base_addr))
 
-            segments.append((seg_lma - base_addr,
-                             seg_end - base_addr, segment.data()))
+            segments.append((seg_lma, seg_top, segment.data()))
 
         # Sort the segments by base address
         segments.sort(key=lambda t: t[0])
@@ -215,21 +219,24 @@ class MemFile:
         # Make sure that they don't overlap
         prev_lma = 0
         next_addr = 0
-        for lma, end, data in segments:
+        for lma, top, data in segments:
             if lma < next_addr:
                 raise ValueError('ELF file contains overlapping segments with '
                                  'address ranges {:#x}..{:#x} and '
                                  '{:#x}..{:#x}.'
-                                 .format(prev_lma, next_addr - 1, lma, end))
+                                 .format(base_addr + prev_lma,
+                                         base_addr + next_addr - 1,
+                                         base_addr + lma,
+                                         base_addr + top))
             prev_lma = lma
-            next_addr = end + 1
+            next_addr = top + 1
 
         # Merge any adjacent segments, bridging any sub-word gaps. This doesn't
         # do any other right padding: we'll do that on the final pass that
         # converts to 32-bit words.
         merged_segments = []  # type: List[Tuple[int, int, bytes]]
         next_word = 0
-        for lma, end, data in segments:
+        for lma, top, data in segments:
             # Round the LMA down to the previous word boundary. The non-overlap
             # check above should ensure that this is never actually less than
             # next_word.
@@ -239,22 +246,25 @@ class MemFile:
             # If there isn't an aligned whole word between the two segments,
             # bridge the gap
             if merged_segments and next_word == lma_word:
-                last_lma_word, last_end, last_data = merged_segments[-1]
-                if last_end < lma:
-                    # The largest gap here is be something like last_end = 1;
-                    # lma = 7, which has size 2*4 - 1 - 1 = 6.
-                    assert lma - last_end <= 6
-                    last_data += bytes(lma - last_end)
-                merged_segments[-1] = (last_lma_word, end, last_data + data)
+                last_lma_word, last_top, last_data = merged_segments[-1]
+                if last_top < lma:
+                    # The largest gap possible here happens with addresses like
+                    # last_top = 0x100; lma = 0x107, which just bridges two
+                    # 4-byte words (0x100..0x103 and 0x104..0x107) with one
+                    # byte used from each, leaving 6 bytes to fill.
+                    assert lma - (last_top + 1) <= 6
+                    last_data += bytes(lma - (last_top + 1))
+                merged_segments[-1] = (last_lma_word, top, last_data + data)
             else:
                 # Pad on the left if necessary to ensure that lma is 32-bit
                 # aligned.
                 if lma % 4:
-                    merged_segments.append((lma_word, end, bytes(lma % 4) + data))
+                    merged_segments.append((lma_word, top, bytes(lma % 4) + data))
                 else:
-                    merged_segments.append((lma_word, end, data))
+                    merged_segments.append((lma_word, top, data))
 
-            next_word = 1 + (end // 4)
+            # The index of the first word that starts strictly above top.
+            next_word = 1 + (top // 4)
 
         # Assemble the bytes in each segment into little-endian 32-bit words.
         # Zero-extend any partial word at the end of a segment. Because of the

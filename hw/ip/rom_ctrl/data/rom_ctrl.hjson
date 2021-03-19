@@ -18,6 +18,20 @@
       local:   "false",
       expose:  "true"
     }
+
+    { name:      "RndCnstScrNonce",
+      type:      "bit [63:0]",
+      desc:      "Fixed nonce used for address / data scrambling"
+      randcount: "64",
+      randtype:  "data"
+    }
+
+    { name:      "RndCnstScrKey",
+      type:      "bit [127:0]",
+      desc:      "Randomised constant used as a scrambling key for ROM data"
+      randcount: "128",
+      randtype:  "data"
+    }
   ]
   alert_list: [
     { name: "fatal"

@@ -11,7 +11,7 @@
 `define CPU_HIER           `CHIP_HIER.u_rv_core_ibex
 `define RAM_MAIN_HIER      `CHIP_HIER.u_ram1p_ram_main.u_prim_ram_1p_adv.u_mem
 `define RAM_RET_HIER       `CHIP_HIER.u_ram1p_ram_ret_aon.u_prim_ram_1p_adv.u_mem
-`define ROM_HIER           `CHIP_HIER.u_rom_ctrl.u_rom.u_prim_rom
+`define ROM_HIER           `CHIP_HIER.u_rom_ctrl.u_rom.u_rom.u_prim_rom
 `define FLASH_HIER         `CHIP_HIER.u_flash_eflash.u_flash
 `define RSTMGR_HIER        `CHIP_HIER.u_rstmgr_aon
 `define CLKMGR_HIER        `CHIP_HIER.u_clkmgr_aon
