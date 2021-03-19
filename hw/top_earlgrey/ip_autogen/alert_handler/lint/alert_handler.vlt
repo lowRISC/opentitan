@@ -1,0 +1,12 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+`verilator_config
+
+// Tell the Verilator scheduler to split up hw2reg_wrap into separate fields
+// when scheduling processes. This structure is used (among other things) to
+// communicate between alert_handler_accu and alert_handler_esc_timer instances
+// and tracking it as one big blob causes spurious apparent circular
+// dependencies.
+split_var -module "alert_handler" -var "hw2reg_wrap"

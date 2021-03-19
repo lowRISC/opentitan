@@ -106,7 +106,7 @@ alert policy assignments to handle alerts completely in hardware depending on
 the assigned severity.
 
 [aes]: {{< relref "hw/ip/aes/doc" >}}
-[alert_handler]: {{< relref "hw/ip/alert_handler/doc" >}}
+[alert_handler]: {{< relref "hw/top_earlgrey/ip_autogen/alert_handler/doc" >}}
 [comportable_ip]: {{< relref "doc/rm/comportability_specification" >}}
 [csrng]: {{< relref "hw/ip/csrng/doc" >}}
 [entropy_source]: {{< relref "hw/ip/entropy_src/doc" >}}

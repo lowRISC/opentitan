@@ -375,7 +375,7 @@ This ensures that the underlying concern is guaranteed to be addressed if the pr
 
 Each peripheral has an option to present a list of individual alerts, representing individual threats that require handling.
 These alerts are sent in a particular encoding method to the alert handler module, itself a peripheral on the system bus.
-See the details of the [alert handler specification]({{< relref "hw/ip/alert_handler/doc" >}}) for more information.
+See the details of the alert handler specification for more information.
 
 At this time, the alert handler module is not wired into the top level.
 

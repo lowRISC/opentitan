@@ -24,9 +24,9 @@
                   rel_path: "hw/ip/aes/dv/lint/{tool}"
              },
              {    name: alert_handler
-                  fusesoc_core: lowrisc:dv:alert_handler_sim
+                  fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/top_earlgrey/ip/alert_handler/dv/lint/{tool}"
+                  rel_path: "hw/top_earlgrey/ip_autogen/alert_handler/dv/lint/{tool}"
              },
              {    name: aon_timer
                   fusesoc_core: lowrisc:dv:aon_timer_sim

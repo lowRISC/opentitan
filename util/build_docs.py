@@ -55,7 +55,7 @@ config = {
     "hardware_definitions": [
         "hw/ip/aes/data/aes.hjson",
         "hw/ip/aon_timer/data/aon_timer.hjson",
-        "hw/top_earlgrey/ip/alert_handler/data/autogen/alert_handler.hjson",
+        "hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson",
         "hw/ip/entropy_src/data/entropy_src.hjson",
         "hw/ip/csrng/data/csrng.hjson",
         "hw/ip/adc_ctrl/data/adc_ctrl.hjson",
@@ -103,7 +103,7 @@ config = {
     # Pre-generate testplan fragments from these files.
     "testplan_definitions": [
         "hw/ip/aes/data/aes_testplan.hjson",
-        "hw/ip/alert_handler/data/alert_handler_testplan.hjson",
+        "hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler_testplan.hjson",
         "hw/ip/aon_timer/data/aon_timer_testplan.hjson",
         "hw/ip/clkmgr/data/clkmgr_testplan.hjson",
         "hw/ip/entropy_src/data/entropy_src_testplan.hjson",

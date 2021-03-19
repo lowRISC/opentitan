@@ -10,7 +10,7 @@ filesets:
     depend:
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:rstmgr_reg
-      - lowrisc:ip:alert_handler_reg
+      - lowrisc:ip_interfaces:alert_handler_reg
       - lowrisc:ip:alert_handler_component
     files:
       - rtl/autogen/rstmgr_pkg.sv

@@ -15,7 +15,7 @@ filesets:
       - lowrisc:tlul:adapter_host
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:prim:lc_sync
-      - lowrisc:ip:alert_handler_reg
+      - lowrisc:ip_interfaces:alert_handler_reg
       - lowrisc:ip:pwrmgr_pkg
 
     files:
