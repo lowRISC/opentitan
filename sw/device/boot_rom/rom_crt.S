@@ -6,6 +6,12 @@
  * Boot ROM runtime initialization code.
  */
 
+  #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+  #include "sram_ctrl_regs.h"
+  #include "entropy_src_regs.h"
+  #include "csrng_regs.h"
+  #include "edn_regs.h"
+
   // NOTE: The "ax" flag below is necessary to ensure that this section
   // is allocated executable space in ROM by the linker.
   .section .crt, "ax"
@@ -75,18 +81,36 @@ _reset_start:
 _start:
   .globl _start
 
+  // Enable entropy complex - this is not the full enable
+  li   a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
+  li   t0, 0x2
+  sw   t0, ENTROPY_SRC_CONF_REG_OFFSET(a0)
+
+  li   a0, TOP_EARLGREY_CSRNG_BASE_ADDR
+  li   t0, 0x1
+  sw   t0, CSRNG_CTRL_REG_OFFSET(a0)
+
+  li   a0, TOP_EARLGREY_EDN0_BASE_ADDR
+  li   t0, 0x1
+  sw   t0, EDN_CTRL_REG_OFFSET(a0)
+
+  // Request memory scrambling and init
+  li a0, TOP_EARLGREY_SRAM_CTRL_MAIN_BASE_ADDR
+  li a1, (1<<SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT)|(1<<SRAM_CTRL_CTRL_INIT_BIT)
+  sw a1, SRAM_CTRL_CTRL_REG_OFFSET(a0)
+
   // Zero out the `.bss` segment.
   la   a0, _bss_start
   la   a1, _bss_end
   call crt_section_clear
 
-  // Zero out the stack
+  // This zero out stack function is now handled by the hardware memory init from above
   //
   // As the stack grows downwards and we zero going forwards the start pointer
   // starts as _stack_start and the end pointer at _stack_end.
-  la   a0, _stack_start
-  la   a1, _stack_end
-  call crt_section_clear
+  //la   a0, _stack_start
+  //la   a1, _stack_end
+  //call crt_section_clear
 
   // Initialize the `.data` segment from the `.idata` segment.
   la   a0, _data_start

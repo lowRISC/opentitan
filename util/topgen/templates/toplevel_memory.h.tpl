@@ -33,6 +33,20 @@
 
 % endfor
 
+% for (inst_name, if_name), region in helper.devices():
+<%
+    if_desc = inst_name if if_name is None else '{} device on {}'.format(if_name, inst_name)
+    hex_base_addr = "0x{:X}".format(region.base_addr)
+    base_addr_name = region.base_addr_name().as_c_define()
+%>\
+/**
+ * Peripheral base address for ${if_desc} in top ${top["name"]}.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define ${base_addr_name} ${hex_base_addr}
+% endfor
 #endif  // __ASSEMBLER__
 
 #endif  // _TOP_${top["name"].upper()}_MEMORY_H_
