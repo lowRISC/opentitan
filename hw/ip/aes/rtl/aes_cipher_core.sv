@@ -132,7 +132,7 @@ module aes_cipher_core import aes_pkg::*;
   output logic                        alert_o,
 
   // Pseudo-random data for register clearing
-  input  logic [WidthPRDClearing-1:0] prd_clearing_i,
+  input  logic [WidthPRDClearing-1:0] prd_clearing_i [NumShares],
 
   // Masking PRNG
   input  logic                        force_zero_masks_i, // Useful for SCA only.
@@ -215,8 +215,8 @@ module aes_cipher_core import aes_pkg::*;
   logic                               sp_enc_err_d, sp_enc_err_q;
 
   // Pseudo-random data for clearing and masking purposes
-  logic                       [127:0] prd_clearing_128;
-  logic                       [255:0] prd_clearing_256;
+  logic                       [127:0] prd_clearing_128 [NumShares];
+  logic                       [255:0] prd_clearing_256 [NumShares];
 
   logic         [WidthPRDMasking-1:0] prd_masking;
   logic  [3:0][3:0][WidthPRDSBox-1:0] prd_sub_bytes;
@@ -226,11 +226,13 @@ module aes_cipher_core import aes_pkg::*;
   logic                               prd_masking_rsd_ack;
 
   // Generate clearing signals of appropriate widths.
-  localparam int unsigned NumChunks = 128/WidthPRDClearing;
-  for (genvar c = 0; c < NumChunks; c++) begin : gen_prd_clearing
-    assign prd_clearing_128[c * WidthPRDClearing       +: WidthPRDClearing] = prd_clearing_i;
-    assign prd_clearing_256[c * WidthPRDClearing       +: WidthPRDClearing] = prd_clearing_i;
-    assign prd_clearing_256[c * WidthPRDClearing + 128 +: WidthPRDClearing] = prd_clearing_i;
+  for (genvar s = 0; s < NumShares; s++) begin : gen_prd_clearing_shares
+    for (genvar c = 0; c < 2; c++) begin : gen_prd_clearing_128
+      assign prd_clearing_128[s][c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing_i[s];
+    end
+    for (genvar c = 0; c < 4; c++) begin : gen_prd_clearing_256
+      assign prd_clearing_256[s][c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing_i[s];
+    end
   end
 
   //////////
@@ -242,8 +244,8 @@ module aes_cipher_core import aes_pkg::*;
     unique case (state_sel)
       STATE_INIT:  state_d = state_init_i;
       STATE_ROUND: state_d = add_round_key_out;
-      STATE_CLEAR: state_d = '{default: prd_clearing_128};
-      default:     state_d = '{default: prd_clearing_128};
+      STATE_CLEAR: state_d = prd_clearing_128;
+      default:     state_d = prd_clearing_128;
     endcase
   end
 
@@ -405,8 +407,8 @@ module aes_cipher_core import aes_pkg::*;
       KEY_FULL_ENC_INIT: key_full_d = key_init_i;
       KEY_FULL_DEC_INIT: key_full_d = key_dec_q;
       KEY_FULL_ROUND:    key_full_d = key_expand_out;
-      KEY_FULL_CLEAR:    key_full_d ='{default: prd_clearing_256};
-      default:           key_full_d ='{default: prd_clearing_256};
+      KEY_FULL_CLEAR:    key_full_d = prd_clearing_256;
+      default:           key_full_d = prd_clearing_256;
     endcase
   end
 
@@ -422,8 +424,8 @@ module aes_cipher_core import aes_pkg::*;
   always_comb begin : key_dec_mux
     unique case (key_dec_sel)
       KEY_DEC_EXPAND: key_dec_d = key_expand_out;
-      KEY_DEC_CLEAR:  key_dec_d = '{default: prd_clearing_256};
-      default:        key_dec_d = '{default: prd_clearing_256};
+      KEY_DEC_CLEAR:  key_dec_d = prd_clearing_256;
+      default:        key_dec_d = prd_clearing_256;
     endcase
   end
 

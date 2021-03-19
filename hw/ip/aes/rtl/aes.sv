@@ -34,6 +34,7 @@ module aes
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter clearing_lfsr_seed_t   RndCnstClearingLfsrSeed  = RndCnstClearingLfsrSeedDefault,
   parameter clearing_lfsr_perm_t   RndCnstClearingLfsrPerm  = RndCnstClearingLfsrPermDefault,
+  parameter clearing_lfsr_perm_t   RndCnstClearingSharePerm = RndCnstClearingSharePermDefault,
   parameter masking_lfsr_seed_t    RndCnstMaskingLfsrSeed   = RndCnstMaskingLfsrSeedDefault,
   parameter mskg_chunk_lfsr_perm_t RndCnstMskgChunkLfsrPerm = RndCnstMskgChunkLfsrPermDefault
 ) (
@@ -150,6 +151,7 @@ module aes
     .EntropyWidth             ( EntropyWidth             ),
     .RndCnstClearingLfsrSeed  ( RndCnstClearingLfsrSeed  ),
     .RndCnstClearingLfsrPerm  ( RndCnstClearingLfsrPerm  ),
+    .RndCnstClearingSharePerm ( RndCnstClearingSharePerm ),
     .RndCnstMaskingLfsrSeed   ( RndCnstMaskingLfsrSeed   ),
     .RndCnstMskgChunkLfsrPerm ( RndCnstMskgChunkLfsrPerm )
   ) u_aes_core (

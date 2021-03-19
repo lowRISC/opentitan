@@ -22,6 +22,7 @@ module aes_core
 
   parameter clearing_lfsr_seed_t   RndCnstClearingLfsrSeed  = RndCnstClearingLfsrSeedDefault,
   parameter clearing_lfsr_perm_t   RndCnstClearingLfsrPerm  = RndCnstClearingLfsrPermDefault,
+  parameter clearing_lfsr_perm_t   RndCnstClearingSharePerm = RndCnstClearingSharePermDefault,
   parameter masking_lfsr_seed_t    RndCnstMaskingLfsrSeed   = RndCnstMaskingLfsrSeedDefault,
   parameter mskg_chunk_lfsr_perm_t RndCnstMskgChunkLfsrPerm = RndCnstMskgChunkLfsrPermDefault
 ) (
@@ -154,13 +155,14 @@ module aes_core
   logic                        cipher_alert;
 
   // Pseudo-random data for clearing purposes
-  logic [WidthPRDClearing-1:0] prd_clearing;
+  logic [WidthPRDClearing-1:0] cipher_prd_clearing [NumShares];
+  logic [WidthPRDClearing-1:0] prd_clearing [2];
   logic                        prd_clearing_upd_req;
   logic                        prd_clearing_upd_ack;
   logic                        prd_clearing_rsd_req;
   logic                        prd_clearing_rsd_ack;
   logic                [127:0] prd_clearing_128;
-  logic                [255:0] prd_clearing_256;
+  logic                [255:0] prd_clearing_256 [2];
 
   // Unused signals
   logic            [3:0][31:0] unused_data_out_q;
@@ -168,11 +170,12 @@ module aes_core
 
   // The clearing PRNG provides pseudo-random data for register clearing purposes.
   aes_prng_clearing #(
-    .Width                ( WidthPRDClearing        ),
-    .EntropyWidth         ( EntropyWidth            ),
-    .SecSkipPRNGReseeding ( SecSkipPRNGReseeding    ),
-    .RndCnstLfsrSeed      ( RndCnstClearingLfsrSeed ),
-    .RndCnstLfsrPerm      ( RndCnstClearingLfsrPerm )
+    .Width                ( WidthPRDClearing         ),
+    .EntropyWidth         ( EntropyWidth             ),
+    .SecSkipPRNGReseeding ( SecSkipPRNGReseeding     ),
+    .RndCnstLfsrSeed      ( RndCnstClearingLfsrSeed  ),
+    .RndCnstLfsrPerm      ( RndCnstClearingLfsrPerm  ),
+    .RndCnstSharePerm     ( RndCnstClearingSharePerm )
   ) u_aes_prng_clearing (
     .clk_i         ( clk_i                  ),
     .rst_ni        ( rst_ni                 ),
@@ -189,11 +192,13 @@ module aes_core
   );
 
   // Generate clearing signals of appropriate widths.
-  localparam int unsigned NumChunks = 128/WidthPRDClearing;
-  for (genvar c = 0; c < NumChunks; c++) begin : gen_prd_clearing
-    assign prd_clearing_128[c * WidthPRDClearing       +: WidthPRDClearing] = prd_clearing;
-    assign prd_clearing_256[c * WidthPRDClearing       +: WidthPRDClearing] = prd_clearing;
-    assign prd_clearing_256[c * WidthPRDClearing + 128 +: WidthPRDClearing] = prd_clearing;
+  for (genvar c = 0; c < 2; c++) begin : gen_prd_clearing_128
+    assign prd_clearing_128[c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing[0];
+  end
+  for (genvar s = 0; s < 2; s++) begin : gen_prd_clearing_256_shares
+    for (genvar c = 0; c < 4; c++) begin : gen_prd_clearing_256
+      assign prd_clearing_256[s][c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing[s];
+    end
   end
 
   ////////////
@@ -239,8 +244,8 @@ module aes_core
   always_comb begin : key_init_mux
     unique case (key_init_sel)
       KEY_INIT_INPUT: key_init_d = key_init;
-      KEY_INIT_CLEAR: key_init_d = '{default: prd_clearing_256};
-      default:        key_init_d = '{default: prd_clearing_256};
+      KEY_INIT_CLEAR: key_init_d = prd_clearing_256;
+      default:        key_init_d = prd_clearing_256;
     endcase
   end
 
@@ -330,6 +335,10 @@ module aes_core
                      (aes_mode_q == AES_OFB)                        ? CIPH_FWD :
                      (aes_mode_q == AES_CTR)                        ? CIPH_FWD : CIPH_FWD;
 
+  for (genvar s = 0; s < NumShares; s++) begin : gen_cipher_prd_clearing
+    assign cipher_prd_clearing[s] = prd_clearing[s];
+  end
+
   // Convert input data/IV to state format (every word corresponds to one state column).
   // Mux for state input
   always_comb begin : state_in_mux
@@ -402,7 +411,7 @@ module aes_core
     .data_out_clear_o   ( cipher_data_out_clear_busy ),
     .alert_o            ( cipher_alert               ),
 
-    .prd_clearing_i     ( prd_clearing               ),
+    .prd_clearing_i     ( cipher_prd_clearing        ),
 
     .force_zero_masks_i ( force_zero_masks_q         ),
     .data_in_mask_o     ( state_mask                 ),

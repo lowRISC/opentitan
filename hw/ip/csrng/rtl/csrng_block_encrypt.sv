@@ -58,11 +58,15 @@ module csrng_block_encrypt #(
   logic [BlkLen-1:0]    cipher_data_out;
   logic                 aes_cipher_core_enable;
 
+  logic [aes_pkg::WidthPRDClearing-1:0] prd_clearing [NumShares];
+
   logic [3:0][3:0][7:0] state_init[NumShares];
 
   logic [7:0][31:0]     key_init[NumShares];
   logic [3:0][3:0][7:0] state_done[NumShares];
   logic [3:0][3:0][7:0] state_out;
+
+  assign     prd_clearing[0] = '0;
 
   assign     state_init[0] = block_encrypt_v_i;
 
@@ -108,7 +112,7 @@ module csrng_block_encrypt #(
     .key_clear_o        (                            ),
     .data_out_clear_i   ( 1'b0                       ), // Disable
     .data_out_clear_o   (                            ),
-    .prd_clearing_i     ( '0                         ),
+    .prd_clearing_i     ( prd_clearing               ),
     .force_zero_masks_i ( 1'b0                       ),
     .data_in_mask_o     (                            ),
     .entropy_req_o      (                            ),
