@@ -30,9 +30,10 @@
 // 3. Provide ability to override and "fix" the a_source to a particular value.
 // This is done to satisfy the use case where the TL host sends ALL requests with the same source
 // ID.
-class tl_host_base_seq extends dv_base_seq #(.REQ        (tl_seq_item),
-                                             .CFG_T      (tl_agent_cfg),
-                                             .SEQUENCER_T(tl_sequencer));
+class tl_host_base_seq #(type REQ_T = tl_seq_item) extends dv_base_seq #(
+    .REQ        (REQ_T),
+    .CFG_T      (tl_agent_cfg),
+    .SEQUENCER_T(tl_sequencer));
 
   // The knob below allows the user to fix a_source in the reqs from a higher level sequence. It is
   // the responsibility of the higher level sequence to ensure that the overridden_a_source_val is
@@ -41,7 +42,7 @@ class tl_host_base_seq extends dv_base_seq #(.REQ        (tl_seq_item),
   bit override_a_source_val = 0;
   bit [SourceWidth-1:0] overridden_a_source_val;
 
-  `uvm_object_utils_begin(tl_host_base_seq)
+  `uvm_object_param_utils_begin(tl_host_base_seq #(REQ_T))
     `uvm_field_int(override_a_source_val, UVM_DEFAULT | UVM_NOCOMPARE | UVM_NOPACK)
     `uvm_field_int(overridden_a_source_val, UVM_DEFAULT | UVM_NOCOMPARE | UVM_NOPACK)
   `uvm_object_utils_end
@@ -60,7 +61,7 @@ class tl_host_base_seq extends dv_base_seq #(.REQ        (tl_seq_item),
 
   // Overrides the base class implementation to late randomize / set a_source.
   virtual task finish_item(uvm_sequence_item item, int set_priority = -1);
-    tl_seq_item req;
+    REQ req;
 
     `downcast(req, item)
     if (cfg == null) get_cfg(req);
@@ -76,7 +77,7 @@ class tl_host_base_seq extends dv_base_seq #(.REQ        (tl_seq_item),
 
   // Called after the rsp is received.
   virtual task get_base_response(output uvm_sequence_item response, input int transaction_id = -1);
-    tl_seq_item rsp;
+    REQ rsp;
     super.get_base_response(response, transaction_id);
     `downcast(rsp, response)
     if (cfg == null) get_cfg(rsp);

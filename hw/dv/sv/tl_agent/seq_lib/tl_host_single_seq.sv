@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Extend host seq to send single specific item constructed by the caller
-class tl_host_single_seq extends tl_host_seq;
+class tl_host_single_seq #(type REQ_T = tl_seq_item) extends tl_host_seq #(REQ_T);
     rand bit                    write;
     rand bit [AddrWidth-1:0]    addr;
     rand bit [OpcodeWidth-1:0]  opcode;
@@ -19,12 +19,12 @@ class tl_host_single_seq extends tl_host_seq;
     bit control_rand_source    = 0;
     bit control_rand_opcode    = 0;
 
-  `uvm_object_utils(tl_host_single_seq)
+  `uvm_object_param_utils(tl_host_single_seq #(REQ_T))
   `uvm_object_new
 
   constraint req_cnt_eq_1_c { req_cnt == 1; }
 
-  virtual function void randomize_req(tl_seq_item req, int idx);
+  virtual function void randomize_req(REQ req, int idx);
     if (!(req.randomize() with {
         a_valid_delay inside {[min_req_delay:max_req_delay]};
         a_data == data;

@@ -10,6 +10,7 @@ package cip_base_pkg;
   import csr_utils_pkg::*;
   import dv_lib_pkg::*;
   import dv_base_reg_pkg::*;
+  import tlul_pkg::*;
   import tl_agent_pkg::*;
   import alert_esc_agent_pkg::*;
   import push_pull_agent_pkg::*;
@@ -30,6 +31,8 @@ package cip_base_pkg;
     err_storage
   } shadow_reg_alert_e;
 
+  typedef class cip_tl_seq_item;
+
   // functions
   // package sources
   // base env
@@ -40,7 +43,7 @@ package cip_base_pkg;
   `include "cip_base_env.sv"
 
   // sequences
-  `include "cip_base_vseq.sv"
+  `include "cip_seq_list.sv"
 
   // tests
   `include "cip_base_test.sv"

@@ -5,7 +5,8 @@
 // Shorthand to create and send a TL error seq
 // Set low priority (1) to send error item to TL agent, so when crossing error item with normal
 // seq, normal seq with default priority (100) has the priority to access TL driver
-`define create_tl_access_error_case(task_name_, with_c_, seq_t_ = tl_host_custom_seq,
+`define create_tl_access_error_case(task_name_, with_c_,
+                                    seq_t_ = tl_host_custom_seq #(cip_tl_seq_item),
                                     seqr_t = p_sequencer.tl_sequencer_h) \
   begin \
     seq_t_ tl_seq; \
@@ -94,7 +95,7 @@ virtual task tl_protocol_err(tl_sequencer tl_sequencer_h = p_sequencer.tl_sequen
   repeat ($urandom_range(10, 100)) begin
     if (cfg.under_reset) return;
     `create_tl_access_error_case(
-        tl_protocol_err, , tl_host_protocol_err_seq, tl_sequencer_h
+        tl_protocol_err, , tl_host_protocol_err_seq #(cip_tl_seq_item), tl_sequencer_h
         )
   end
 endtask

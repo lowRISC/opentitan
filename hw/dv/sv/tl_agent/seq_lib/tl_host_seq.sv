@@ -4,7 +4,7 @@
 
 // TL host sequence supports multiple outstanding requests
 // It generates 'req_cnt' number of completely random requests
-class tl_host_seq extends tl_host_base_seq;
+class tl_host_seq #(type REQ_T = tl_seq_item) extends tl_host_base_seq #(REQ_T);
 
   rand int unsigned req_cnt;
   // if enabled, req will be aborted if it's not accepted after given valid length
@@ -12,11 +12,11 @@ class tl_host_seq extends tl_host_base_seq;
   // chance to abort req
   int               req_abort_pct = 0;
 
-  tl_seq_item       pending_req[$];
+  REQ               pending_req[$];
   int               min_req_delay = 0;
   int               max_req_delay = 10;
 
-  `uvm_object_utils(tl_host_seq)
+  `uvm_object_param_utils(tl_host_seq #(REQ_T))
   `uvm_object_new
 
   constraint req_abort_after_a_valid_len_c {
@@ -31,8 +31,8 @@ class tl_host_seq extends tl_host_base_seq;
     fork
       begin : wait_response_thread
         for (int i = 0; i < req_cnt; i++) begin
-          tl_seq_item req;
-          bit         found_req;
+          REQ req;
+          bit found_req;
           get_response(rsp);
           `uvm_info(`gfn, $sformatf("Received rsp[%0d] : %0s",
                                      i, rsp.convert2string()), UVM_HIGH)
@@ -55,7 +55,7 @@ class tl_host_seq extends tl_host_base_seq;
       begin : request_thread
         `uvm_info(`gfn, $sformatf("Start sending %0d host requests", req_cnt), UVM_HIGH)
         for (int i = 0; i < req_cnt; i++) begin
-          req = tl_seq_item::type_id::create("req");
+          req = REQ::type_id::create("req");
           pre_start_item(req);
           start_item(req);
           randomize_req(req, i);
@@ -72,14 +72,14 @@ class tl_host_seq extends tl_host_base_seq;
 
   // Invoked after creating the req and before invoking start_item(req). Suitable for inserting
   // delays before start_item(). Example: avoid running out of source IDs.
-  virtual task pre_start_item(tl_seq_item req);
+  virtual task pre_start_item(REQ req);
   endtask
 
   // Request randomization, override this function to do custom request generation. Invoked after
   // start_item(). Not suitable for setting a_source, since that is handled in
   // `tl_host_base_seq::finish_item()` instead, to facilitate late randomization when accesses are
   // initiated from UVM RAL.
-  virtual function void randomize_req(tl_seq_item req, int idx);
+  virtual function void randomize_req(REQ req, int idx);
     if (!(req.randomize() with {
         a_valid_delay inside {[min_req_delay:max_req_delay]};})) begin
       `uvm_fatal(`gfn, "Cannot randomize req")
@@ -87,13 +87,13 @@ class tl_host_seq extends tl_host_base_seq;
   endfunction
 
   // callback after randomize seq, extened seq can override it to handle some non-rand variables
-  virtual function void post_randomize_req(tl_seq_item req, int idx);
+  virtual function void post_randomize_req(REQ req, int idx);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(req_abort_after_a_valid_len)
     req.req_abort_after_a_valid_len = req_abort_after_a_valid_len;
   endfunction
 
   // A reserved function that can be extended to process response packet
-  virtual function void process_response(tl_seq_item req, tl_seq_item rsp);
+  virtual function void process_response(REQ req, REQ rsp);
   endfunction
 
 endclass : tl_host_seq
