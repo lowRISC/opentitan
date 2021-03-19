@@ -33,7 +33,9 @@ module pinmux_strap_sampling
   output jtag_pkg::jtag_req_t      rv_jtag_o,
   input  jtag_pkg::jtag_rsp_t      rv_jtag_i,
   output jtag_pkg::jtag_req_t      dft_jtag_o,
-  input  jtag_pkg::jtag_rsp_t      dft_jtag_i
+  input  jtag_pkg::jtag_rsp_t      dft_jtag_i,
+  // AST specific tapped outputs
+  output pinmux_ast_t              ast_o
 );
 
 
@@ -266,6 +268,15 @@ module pinmux_strap_sampling
       assign oe_padring_o[k]  = oe_core_i[k];
     end
   end
+
+  /////////////////////////
+  // Direct AST outputs  //
+  /////////////////////////
+
+  for (genvar k = 0; k < ast_pkg::Pad2AstInWidth; k++) begin : gen_ast_output
+    assign ast_o[k] = in_padring_i[TargetCfg.ast_sel_cfg[k]];
+  end
+
 
   ////////////////
   // Assertions //

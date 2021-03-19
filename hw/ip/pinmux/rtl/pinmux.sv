@@ -42,6 +42,8 @@ module pinmux
   input  jtag_pkg::jtag_rsp_t      rv_jtag_i,
   output jtag_pkg::jtag_req_t      dft_jtag_o,
   input  jtag_pkg::jtag_rsp_t      dft_jtag_i,
+  // Direct AST connection
+  output pinmux_ast_t              ast_o,
   // Direct USB connection
   input                            usb_out_of_rst_i,
   input                            usb_aon_wake_en_i,
@@ -173,7 +175,8 @@ module pinmux
     .rv_jtag_o,
     .rv_jtag_i,
     .dft_jtag_o,
-    .dft_jtag_i
+    .dft_jtag_i,
+    .ast_o
   );
 
   ///////////////////////////////////////

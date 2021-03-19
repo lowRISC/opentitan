@@ -13,16 +13,10 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
-  available_input_list: [
-    { name: "ast_debug_in",
-      desc: "ast debug inputs from pinmux",
-      width: "10"
-    },
-  ],
   available_output_list: [
     { name: "ast_debug_out",
       desc: "ast debug outputs to pinmux",
-      width: "10"
+      width: "9"
     }
   ],
   regwidth: "32",
@@ -128,18 +122,9 @@
       type:    "uni",
       name:    "ast2pinmux",
       act:     "rcv",
-      width:   10,
+      width:   9,
       package: ""
     },
-
-    { struct:  "logic",
-      type:    "uni",
-      name:    "pinmux2ast",
-      act:     "req",
-      width:   10,
-      package: ""
-    },
-
   ],
 
 registers: [

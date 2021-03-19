@@ -438,7 +438,8 @@ module top_earlgrey_nexysvideo #(
     tap_strap0_idx: 20, // MIO 20 (tied off)
     tap_strap1_idx: 16, // MIO 16 (used as JTAG/SPI select signal)
     dft_strap0_idx: 21, // MIO 21 (tied off)
-    dft_strap1_idx: 22  // MIO 22 (tied off)
+    dft_strap1_idx: 22, // MIO 22 (tied off)
+    ast_sel_cfg:    pinmux_pkg::DefaultAstSel
   };
 
   top_earlgrey #(

@@ -75,6 +75,13 @@
       act:     "req"
       package: "jtag_pkg"
     }
+    // General signals to AST
+    { struct:  "pinmux_ast",
+      type:    "uni",
+      name:    "ast",
+      act:     "req",
+      package: "pinmux_pkg",
+    }
     // Testmode signals to AST
     { struct:  "dft_strap_test_req",
       type:    "uni",

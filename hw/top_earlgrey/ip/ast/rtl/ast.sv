@@ -12,9 +12,9 @@ module ast #(
   parameter int AdcChannels     = 2,
   parameter int AdcDataWidth    = 10,
   parameter int EntropyStreams  = 4,
-  parameter int Ast2PadOutWidth = 16,  // TODO:final size
-  parameter int Pad2AstInWidth  = 16,  // TODO:final size
-  parameter int UsbCalibWidth   = 16   // TODO:final size
+  parameter int Ast2PadOutWidth = 9,  // TODO:final size
+  parameter int Pad2AstInWidth  = 6,  // TODO:final size
+  parameter int UsbCalibWidth   = 16  // TODO:final size
 ) (
   // tlul if
   input tlul_pkg::tl_h2d_t tl_i,              // TLUL H2D

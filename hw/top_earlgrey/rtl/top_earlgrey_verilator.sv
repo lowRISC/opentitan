@@ -145,7 +145,8 @@ module top_earlgrey_verilator (
     tap_strap0_idx: 26, // MIO 26
     tap_strap1_idx: 16, // MIO 16 (this is different in the ASIC top)
     dft_strap0_idx: 21, // MIO 21
-    dft_strap1_idx: 22  // MIO 22
+    dft_strap1_idx: 22, // MIO 22
+    ast_sel_cfg:    pinmux_pkg::DefaultAstSel
   };
 
   lc_ctrl_pkg::lc_tx_t lc_clk_bypass;

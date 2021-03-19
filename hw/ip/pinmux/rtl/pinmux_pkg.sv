@@ -10,6 +10,11 @@ package pinmux_pkg;
   parameter int NDFTStraps = 2;
   parameter int NTapStraps = 2;
 
+  import ast_pkg::Pad2AstInWidth;
+  import prim_util_pkg::vbits;
+  typedef logic [Pad2AstInWidth-1:0] pinmux_ast_t;
+  typedef logic [Pad2AstInWidth-1:0][vbits(NumIOs)-1:0] ast_sel_t;
+
   // Since the target-specific top-levels often have slightly different debug signal positions, we
   // need a way to pass this info from the target specific top-level into the pinmux logic. The
   // datastructure below serves this purpose. Note that all the indices below are with respect to
@@ -26,8 +31,11 @@ package pinmux_pkg;
     int                tap_strap1_idx;
     int                dft_strap0_idx;
     int                dft_strap1_idx;
+    ast_sel_t          ast_sel_cfg;
   } target_cfg_t;
 
+
+  parameter ast_sel_t DefaultAstSel = '0;
   parameter target_cfg_t DefaultTargetCfg = '{
     const_sampling: 1'b0,
     tie_offs:       '0,
@@ -39,7 +47,8 @@ package pinmux_pkg;
     tap_strap0_idx: 0,
     tap_strap1_idx: 0,
     dft_strap0_idx: 0,
-    dft_strap1_idx: 0
+    dft_strap1_idx: 0,
+    ast_sel_cfg:    DefaultAstSel
   };
 
   // Wakeup Detector Modes
