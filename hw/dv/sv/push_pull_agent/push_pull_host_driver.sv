@@ -29,6 +29,7 @@ class push_pull_host_driver #(parameter int HostDataWidth = 32,
   virtual task get_and_drive();
     // wait for the initial reset to pass
     @(posedge cfg.vif.rst_n);
+    cfg.vif.wait_clks(1);
     forever begin
       seq_item_port.try_next_item(req);
       if (req != null) begin
