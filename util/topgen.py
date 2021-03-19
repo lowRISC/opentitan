@@ -52,6 +52,7 @@ IPS_USING_IPGEN = [
     'alert_handler',
     'clkmgr',
     'flash_ctrl',
+    'pinmux',
     'pwrmgr',
     'rstmgr',
     'rv_plic',
@@ -356,66 +357,34 @@ def generate_pinmux(top, out_path):
     log.info("usb_start_pos:    %d" % usb_start_pos)
     log.info("n_usb_pins:       %d" % n_usb_pins)
 
-    # Target path
-    #   rtl: pinmux_reg_pkg.sv & pinmux_reg_top.sv
-    #   data: pinmux.hjson
-    rtl_path = out_path / 'ip/pinmux/rtl/autogen'
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    data_path = out_path / 'ip/pinmux/data/autogen'
-    data_path.mkdir(parents=True, exist_ok=True)
 
-    # Template path
-    tpl_path = Path(
-        __file__).resolve().parent / '../hw/ip/pinmux/data/pinmux.hjson.tpl'
+    # TODO: pass in information about always-on peripherals
+    # TODO: pass in information on which DIOs can be selected
+    # as wakeup signals
+    # TODO: pass in signal names such that we can introduce
+    # named enums for select signals
+    params = {
+        'n_mio_periph_in': n_mio_periph_in,
+        'n_mio_periph_out': n_mio_periph_out,
+        'n_mio_pads': n_mio_pads,
+        # each DIO has in, out and oe wires
+        # some of these have to be tied off in the
+        # top, depending on the type.
+        'n_dio_periph_in': n_dio_pads,
+        'n_dio_periph_out': n_dio_pads,
+        'n_dio_pads': n_dio_pads,
+        'attr_dw': attr_dw,
+        'n_wkup_detect': num_wkup_detect,
+        'wkup_cnt_width': wkup_cnt_width,
+        'usb_start_pos': usb_start_pos,
+        'n_usb_pins': n_usb_pins,
+        'usb_dp_sel': usb_dp_sel,
+        'usb_dn_sel': usb_dn_sel,
+        'usb_dp_pull_sel': usb_dp_pull_sel,
+        'usb_dn_pull_sel': usb_dn_pull_sel,
+    }
 
-    # Generate register package and RTLs
-    gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
-              "-o hw/top_{topname}/\n\n".format(topname=topname))
-
-    hjson_gen_path = data_path / "pinmux.hjson"
-
-    out = StringIO()
-    with tpl_path.open(mode='r', encoding='UTF-8') as fin:
-        hjson_tpl = Template(fin.read())
-        try:
-            # TODO: pass in information about always-on peripherals
-            # TODO: pass in information on which DIOs can be selected
-            # as wakeup signals
-            # TODO: pass in signal names such that we can introduce
-            # named enums for select signals
-            out = hjson_tpl.render(
-                n_mio_periph_in=n_mio_periph_in,
-                n_mio_periph_out=n_mio_periph_out,
-                n_mio_pads=n_mio_pads,
-                # each DIO has in, out and oe wires
-                # some of these have to be tied off in the
-                # top, depending on the type.
-                n_dio_periph_in=n_dio_pads,
-                n_dio_periph_out=n_dio_pads,
-                n_dio_pads=n_dio_pads,
-                attr_dw=attr_dw,
-                n_wkup_detect=num_wkup_detect,
-                wkup_cnt_width=wkup_cnt_width,
-                usb_start_pos=usb_start_pos,
-                n_usb_pins=n_usb_pins,
-                usb_dp_sel=usb_dp_sel,
-                usb_dn_sel=usb_dn_sel,
-                usb_dp_pull_sel=usb_dp_pull_sel,
-                usb_dn_pull_sel=usb_dn_pull_sel
-            )
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-        log.info("PINMUX HJSON: %s" % out)
-
-    if out == "":
-        log.error("Cannot generate pinmux HJSON")
-        return
-
-    with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
-        fout.write(genhdr + gencmd + out)
-
-    gen_rtl.gen_rtl(IpBlock.from_text(out, [], str(hjson_gen_path)),
-                    str(rtl_path))
+    ipgen_render('pinmux', topname, params, out_path)
 
 
 def generate_clkmgr(top, out_path):

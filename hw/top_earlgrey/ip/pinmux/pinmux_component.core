@@ -1,0 +1,59 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:pinmux_component:0.1"
+description: "Pin Multiplexer component without the CSRs"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:all
+      - lowrisc:prim:clock_buf
+      - lowrisc:prim:buf
+      - lowrisc:prim:lc_sync
+      - lowrisc:ip:jtag_pkg
+      - lowrisc:ip:usbdev
+      # pinmux_wkup.sv depends on pinmux_reg_pkg.sv
+      - "fileset_topgen ? (lowrisc:systems:topgen-reg-only)"
+    files:
+      - rtl/padring.sv
+      - rtl/pinmux_pkg.sv
+      - rtl/pinmux_wkup.sv
+      - rtl/pinmux_jtag_buf.sv
+      - rtl/pinmux_strap_sampling.sv
+      - rtl/pinmux.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/pinmux.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/pinmux.waiver
+    file_type: waiver
+
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - files_rtl

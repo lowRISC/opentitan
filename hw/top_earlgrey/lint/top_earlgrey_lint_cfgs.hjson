@@ -127,9 +127,9 @@
                   ]
              },
              {    name: pinmux
-                  fusesoc_core: lowrisc:ip:pinmux
+                  fusesoc_core: lowrisc:opentitan:top_earlgrey_pinmux
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/pinmux/lint/{tool}"
+                  rel_path: "hw/top_earlgrey/ip/pinmux/lint/{tool}"
              },
              {    name: pwrmgr
                   fusesoc_core: lowrisc:opentitan:top_earlgrey_pwrmgr

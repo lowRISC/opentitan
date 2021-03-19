@@ -225,7 +225,7 @@ hw_ip_uart_reg_h = gen_hw_hdr.process('hw/ip/uart/data/uart.hjson')
 hw_ip_usbdev_reg_h = gen_hw_hdr.process('hw/ip/usbdev/data/usbdev.hjson')
 hw_ip_pwrmgr_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/pwrmgr/data/pwrmgr.hjson')
 hw_ip_rstmgr_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/rstmgr/data/rstmgr.hjson')
-hw_top_earlgrey_pinmux_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/pinmux/data/autogen/pinmux.hjson')
+hw_top_earlgrey_pinmux_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/pinmux/data/pinmux.hjson')
 hw_top_earlgrey_rv_plic_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/rv_plic/data/rv_plic.hjson')
 
 # Top Earlgrey library (top_earlgrey)

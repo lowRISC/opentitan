@@ -1,0 +1,24 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_earlgrey_pinmux
+  param_values:
+  {
+    n_mio_periph_in: 59
+    n_mio_periph_out: 63
+    n_mio_pads: 44
+    n_dio_periph_in: 21
+    n_dio_periph_out: 21
+    n_dio_pads: 21
+    attr_dw: 10
+    n_wkup_detect: 8
+    wkup_cnt_width: 8
+    usb_start_pos: 0
+    n_usb_pins: 9
+    usb_dp_sel: 1
+    usb_dn_sel: 0
+    usb_dp_pull_sel: 6
+    usb_dn_pull_sel: 5
+  }
+}

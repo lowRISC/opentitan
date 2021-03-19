@@ -146,25 +146,25 @@
     { name: "NMioPeriphIn",
       desc: "Number of muxed peripheral inputs",
       type: "int",
-      default: "33",
+      default: "59",
       local: "true"
     },
     { name: "NMioPeriphOut",
       desc: "Number of muxed peripheral outputs",
       type: "int",
-      default: "32",
+      default: "63",
       local: "true"
     },
     { name: "NMioPads",
       desc: "Number of muxed IO pads",
       type: "int",
-      default: "32",
+      default: "44",
       local: "true"
     },
     { name: "NDioPads",
       desc: "Number of dedicated IO pads",
       type: "int",
-      default: "16",
+      default: "21",
       local: "true"
     },
     { name: "NWkupDetect",
@@ -182,7 +182,7 @@
     { name: "NUsbDevPads",
       desc: "Number of usbdev pins",
       type: "int",
-      default: "0",
+      default: "9",
       local: "true"
     },
     { name: "NDioPadUsbDevStart",
@@ -194,7 +194,7 @@
     { name: "UsbDpSel",
       desc: "index of usbdev_dp",
       type: "int",
-      default: "0",
+      default: "1",
       local: "true"
     },
     { name: "UsbDnSel",
@@ -206,13 +206,13 @@
     { name: "UsbDpPullUpSel",
       desc: "index of usbdev_dp_pullup",
       type: "int",
-      default: "0",
+      default: "6",
       local: "true"
     },
     { name: "UsbDnPullUpSel",
       desc: "index of usbdev_dn_pullup",
       type: "int",
-      default: "0",
+      default: "5",
       local: "true"
     },
     // Since the target-specific top-levels often have slightly
@@ -306,7 +306,7 @@
                   regwen_multi: "true",
                   cname:        "OUT",
                   fields: [
-                    { bits: "5:0",
+                    { bits: "6:0",
                       name: "OUT",
                       desc: '''
                       0: tie constantly to zero, 1: tie constantly to 1, 2: high-Z,
@@ -847,4 +847,3 @@
     },
   ],
 }
-
