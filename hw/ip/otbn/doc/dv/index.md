@@ -80,14 +80,8 @@ The idea is that this is much quicker for designers to use to smoke-test propose
 This pre-DV phase cannot drive sign-off, but it does use much of the same tooling.
 
 Once we are running full DV tests, we re-use this work, by using the same collection of randomised instruction streams and randomly picking from them for most of the sequences.
-The ELF binaries are all placed in a single directory and named sequentially (`0.elf`, `1.elf`, ..., `1234.elf` or similar).
-This directory and the maximum index are passed to the simulation with plusargs.
-
-<div class="bd-callout bd-callout-warning">
-
-**TODO:** There's a bit of infrastructure work to do here to teach `dvsim.py` to run the instruction generator. Also, maybe it would be better to pass a list of ELF files (which would let us filter the initial generation for things that hit coverage points in pre-DV). This design might change slightly.
-
-</div>
+At the moment, the full DV tests create binaries on the fly by running `hw/ip/otbn/dv/uvm/gen-binaries.py`.
+This results in one or more ELF files in a directory, which the simulation then picks from at random.
 
 The pre-DV testing doesn't address external stimuli like resets or TileLink-based register accesses.
 These are driven by specialised test sequences, described below.
@@ -134,9 +128,8 @@ Tests can be run with [`dvsim.py`]({{< relref "hw/dv/tools/README.md" >}}).
 The link gives details of the tool's features and command line arguments.
 To run a basic smoke test, go to the top of the repository and run:
 ```console
-$ util/dvsim/dvsim.py hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson -i otbn_single
+$ util/dvsim/dvsim.py hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson -i otbn_smoke
 ```
 
 ## DV plan
-<!-- TODO: uncomment the line below after adding the DV plan -->
-{{</* testplan "hw/ip/otbn/data/otbn_testplan.hjson" */>}}
+{{< incGenFromIpDesc "../../data/otbn_testplan.hjson" "testplan" >}}
