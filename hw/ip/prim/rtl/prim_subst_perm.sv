@@ -23,7 +23,13 @@ module prim_subst_perm #(
   // datapath //
   //////////////
 
-  logic [NumRounds:0][DataWidth-1:0] data_state;
+  // The "split_var" hint that we pass to verilator here tells it to schedule the different parts of
+  // data_state separately. This avoids an UNOPTFLAT error where it would otherwise see a dependency
+  // chain
+  //
+  //    data_state -> data_state_sbox -> data_state
+  //
+  logic [NumRounds:0][DataWidth-1:0] data_state /* verilator split_var */;
 
   // initialize
   assign data_state[0] = data_i;
