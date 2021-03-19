@@ -1,0 +1,8 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_cipher_pkg
+
+waive -rules {INTEGER} -location {prim_cipher_pkg.sv} -msg {'k' of type int used as a non-constant} \
+      -comment "We need to use the iterator value in the keyschedule function, hence this is ok."

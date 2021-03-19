@@ -18,11 +18,11 @@ filesets:
       - lowrisc:prim:buf
       - lowrisc:prim:flop
       - lowrisc:prim:flop_2sync
-      - lowrisc:prim:cipher_pkg:0.1
       - lowrisc:prim:arbiter
       - lowrisc:prim:fifo
       - lowrisc:prim:alert
       - lowrisc:prim:subreg
+      - lowrisc:prim:cipher
     files:
       - rtl/prim_clock_gating_sync.sv
       - rtl/prim_esc_pkg.sv
@@ -36,9 +36,6 @@ filesets:
       - rtl/prim_keccak.sv
       - rtl/prim_packer.sv
       - rtl/prim_packer_fifo.sv
-      - rtl/prim_present.sv
-      - rtl/prim_prince.sv
-      - rtl/prim_subst_perm.sv
       - rtl/prim_gate_gen.sv
       - rtl/prim_pulse_sync.sv
       - rtl/prim_filter.sv
