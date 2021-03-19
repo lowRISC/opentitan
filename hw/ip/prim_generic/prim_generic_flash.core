@@ -10,7 +10,8 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:ram_1p
-      - lowrisc:ip:flash_ctrl_pkg
+      # TODO: A primitive should not depend on a whole IP block.
+      - lowrisc:ip_interfaces:flash_ctrl_pkg
     files:
       - rtl/prim_generic_flash_bank.sv
       - rtl/prim_generic_flash.sv

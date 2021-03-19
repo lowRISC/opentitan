@@ -1,0 +1,104 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_earlgrey_flash_ctrl
+  param_values:
+  {
+    cfg:
+    {
+      name: eflash
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni: rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]
+      }
+      type: eflash
+      base_addr: 0x20000000
+      banks: 2
+      pages_per_bank: 256
+      program_resolution: 8
+      swaccess: ro
+      inter_signal_list:
+      [
+        {
+          struct: flash
+          type: req_rsp
+          name: flash_ctrl
+          act: rsp
+        }
+        {
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          name: tl
+        }
+        {
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          name: lc_nvm_debug_en
+        }
+        {
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          name: flash_bist_enable
+        }
+        {
+          struct: logic
+          package: ""
+          type: uni
+          act: rcv
+          name: flash_power_down_h
+        }
+        {
+          struct: logic
+          package: ""
+          type: uni
+          act: rcv
+          name: flash_power_ready_h
+        }
+        {
+          struct: logic
+          package: ""
+          width: "4"
+          type: uni
+          act: rcv
+          name: flash_test_mode_a
+        }
+        {
+          struct: logic
+          package: ""
+          type: uni
+          act: rcv
+          name: flash_test_voltage_h
+        }
+      ]
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      words_per_page: 256
+      data_width: 64
+      metadata_width: 12
+      info_types: 3
+      infos_per_bank:
+      [
+        10
+        1
+        2
+      ]
+      size: 0x100000
+      pgm_resolution_bytes: 64
+      domain: "0"
+    }
+  }
+}

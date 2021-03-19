@@ -1,0 +1,27 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for Flash Controller
+
+# All leaf resets have a reset multiplex
+waive -rules TERMINAL_STATE -location {flash_ctrl_lcmgr.sv} -regexp {.*StInvalid.*} \
+      -comment "StInvalid is intended to be a terminal state"
+
+waive -rules MISSING_STATE -location {flash_ctrl_lcmgr.sv} -regexp {.*StInvalid.*} \
+      -comment "Behavior is part of default state"
+
+# Not all configurations for every info type is used
+waive -rules INPUT_NOT_READ: -location {flash_ctrl_info_cfg.sv} -regexp {.*cfgs_i.*} \
+      -comment "For info types that have fewer pages, the full config is not used"
+
+# Remove errors from prim_* modules
+# TBD These should be directly addressed in primgen modules long term
+waive -rules INPUT_NOT_READ -location {prim_flop.sv} -regexp {Input port.*} \
+      -comment "Silience prim related errors"
+
+waive -rules OUTPUT_NOT_DRIVEN -location {prim_flop*.sv} -regexp {.*q_o.*} \
+      -comment "Silience prim related errors"
+
+waive -rules INPUT_NOT_READ -location {prim_flop_2sync.sv} -regexp {Input port.*} \
+      -comment "Silience prim related errors"
