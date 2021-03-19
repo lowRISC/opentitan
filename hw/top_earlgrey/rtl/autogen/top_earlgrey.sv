@@ -1912,6 +1912,7 @@ module top_earlgrey #(
     .SecSkipPRNGReseeding(SecAesSkipPRNGReseeding),
     .RndCnstClearingLfsrSeed(RndCnstAesClearingLfsrSeed),
     .RndCnstClearingLfsrPerm(RndCnstAesClearingLfsrPerm),
+    .RndCnstClearingSharePerm(RndCnstAesClearingSharePerm),
     .RndCnstMaskingLfsrSeed(RndCnstAesMaskingLfsrSeed),
     .RndCnstMskgChunkLfsrPerm(RndCnstAesMskgChunkLfsrPerm)
   ) u_aes (

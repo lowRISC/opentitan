@@ -95,6 +95,14 @@
       randcount: "64",
       randtype:  "perm"
     },
+    { name:    "RndCnstClearingSharePerm",
+      type:    "aes_pkg::clearing_lfsr_perm_t",
+      desc:    '''
+        Permutation applied to the clearing PRNG output for clearing the second share of registers.
+      '''
+      randcount: "64",
+      randtype:  "perm"
+    },
     { name:    "RndCnstMaskingLfsrSeed",
       type:    "aes_pkg::masking_lfsr_seed_t",
       desc:    '''

@@ -19,8 +19,9 @@ module aes_prng_clearing import aes_pkg::*;
                                                     // infrastructure required for PRNG reseeding.
                                                     // To enable SCA resistance evaluations, we
                                                     // need to skip reseeding requests.
-  parameter clearing_lfsr_seed_t RndCnstLfsrSeed = RndCnstClearingLfsrSeedDefault,
-  parameter clearing_lfsr_perm_t RndCnstLfsrPerm = RndCnstClearingLfsrPermDefault
+  parameter clearing_lfsr_seed_t RndCnstLfsrSeed  = RndCnstClearingLfsrSeedDefault,
+  parameter clearing_lfsr_perm_t RndCnstLfsrPerm  = RndCnstClearingLfsrPermDefault,
+  parameter clearing_lfsr_perm_t RndCnstSharePerm = RndCnstClearingSharePermDefault
 ) (
   input  logic                    clk_i,
   input  logic                    rst_ni,
@@ -28,7 +29,7 @@ module aes_prng_clearing import aes_pkg::*;
   // Connections to AES internals, PRNG consumers
   input  logic                    data_req_i,
   output logic                    data_ack_o,
-  output logic        [Width-1:0] data_o,
+  output logic        [Width-1:0] data_o [2],
   input  logic                    reseed_req_i,
   output logic                    reseed_ack_o,
 
@@ -42,7 +43,7 @@ module aes_prng_clearing import aes_pkg::*;
   logic             seed_en;
   logic [Width-1:0] seed;
   logic             lfsr_en;
-  logic [Width-1:0] lfsr_state;
+  logic [Width-1:0] lfsr_state, lfsr_state_scrambled;
 
   // The data requests are fed from the LFSR, reseed requests have the highest priority.
   assign data_ack_o = reseed_req_i ? 1'b0 : data_req_i;
@@ -97,9 +98,27 @@ module aes_prng_clearing import aes_pkg::*;
   );
 
   // "Scramble" the LFSR state to break linear shift patterns.
-  assign data_o = prim_cipher_pkg::sbox4_64bit(lfsr_state, prim_cipher_pkg::PRINCE_SBOX4);
+  assign lfsr_state_scrambled = prim_cipher_pkg::sbox4_64bit(lfsr_state, prim_cipher_pkg::PRINCE_SBOX4);
+  assign data_o[0]            = lfsr_state_scrambled;
+  // A seperate permutation is applied to obtain the pseudo-random data for clearing the second
+  // share of registers (e.g. key registers or state registers in case masking is enabled).
+  for (genvar i = 0; i < Width; i++) begin : gen_share_perm
+    assign data_o[1][i] = lfsr_state_scrambled[RndCnstSharePerm[i]];
+  end
 
   // Width must be 64.
   `ASSERT_INIT(AesPrngWidth, Width == 64)
+
+  // Check that the supplied permutation is valid.
+  logic [Width-1:0] share_perm_test, unused_share_perm_test;
+  initial begin : p_share_perm_check
+    share_perm_test = '0;
+    for (int k = 0; k < Width; k++) begin
+      share_perm_test[RndCnstSharePerm[k]] = 1'b1;
+    end
+    assign unused_share_perm_test = share_perm_test;
+    // All bit positions must be marked with 1.
+    `ASSERT_I(SharePermutationCheck_A, &share_perm_test)
+  end
 
 endmodule
