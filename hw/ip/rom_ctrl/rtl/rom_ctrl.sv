@@ -10,6 +10,8 @@ module rom_ctrl
 #(
   parameter                       BootRomInitFile = "",
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit [63:0]            RndCnstScrNonce = '0,
+  parameter bit [127:0]           RndCnstScrKey = '0,
   parameter bit                   SkipCheck = 1'b1
 ) (
   input  clk_i,
@@ -49,7 +51,8 @@ module rom_ctrl
 
   logic [RomIndexWidth-1:0] rom_index;
   logic                     rom_req;
-  logic [39:0]              rom_rdata;
+  logic [39:0]              rom_scr_rdata;
+  logic [39:0]              rom_clr_rdata;
   logic                     rom_rvalid;
 
   logic [RomIndexWidth-1:0] bus_rom_index;
@@ -142,37 +145,41 @@ module rom_ctrl
   rom_ctrl_mux #(
     .AW (RomIndexWidth)
   ) u_mux (
-    .clk_i        (clk_i),
-    .rst_ni       (rst_ni),
-    .sel_i        (rom_select),
-    .bus_addr_i   (bus_rom_index),
-    .bus_req_i    (bus_rom_req),
-    .bus_gnt_o    (bus_rom_gnt),
-    .bus_rdata_o  (bus_rom_rdata),
-    .bus_rvalid_o (bus_rom_rvalid),
-    .chk_addr_i   (checker_rom_index),
-    .chk_rdata_o  (checker_rom_rdata),
-    .rom_addr_o   (rom_index),
-    .rom_req_o    (rom_req),
-    .rom_rdata_i  (rom_rdata),
-    .rom_rvalid_i (rom_rvalid),
-    .alert_o      (mux_alert)
+    .clk_i           (clk_i),
+    .rst_ni          (rst_ni),
+    .sel_i           (rom_select),
+    .bus_addr_i      (bus_rom_index),
+    .bus_req_i       (bus_rom_req),
+    .bus_gnt_o       (bus_rom_gnt),
+    .bus_rdata_o     (bus_rom_rdata),
+    .bus_rvalid_o    (bus_rom_rvalid),
+    .chk_addr_i      (checker_rom_index),
+    .chk_rdata_o     (checker_rom_rdata),
+    .rom_addr_o      (rom_index),
+    .rom_req_o       (rom_req),
+    .rom_scr_rdata_i (rom_scr_rdata),
+    .rom_clr_rdata_i (rom_clr_rdata),
+    .rom_rvalid_i    (rom_rvalid),
+    .alert_o         (mux_alert)
   );
 
   // The ROM itself ============================================================
 
-  prim_rom_adv #(
+  rom_ctrl_scrambled_rom #(
+    .MemInitFile (BootRomInitFile),
     .Width       (40),
     .Depth       (RomSizeWords),
-    .MemInitFile (BootRomInitFile)
+    .ScrNonce    (RndCnstScrNonce),
+    .ScrKey      (RndCnstScrKey)
   ) u_rom (
-    .clk_i    (clk_i),
-    .rst_ni   (rst_ni),
-    .req_i    (rom_req),
-    .addr_i   (rom_index),
-    .rdata_o  (rom_rdata),
-    .rvalid_o (rom_rvalid),
-    .cfg_i    (rom_cfg_i)
+    .clk_i       (clk_i),
+    .rst_ni      (rst_ni),
+    .req_i       (rom_req),
+    .addr_i      (rom_index),
+    .rvalid_o    (rom_rvalid),
+    .scr_rdata_o (rom_scr_rdata),
+    .clr_rdata_o (rom_clr_rdata),
+    .cfg_i       (rom_cfg_i)
   );
 
   // TODO: The ROM has been expanded to 40 bits wide to allow us to add 9 ECC check bits. At the

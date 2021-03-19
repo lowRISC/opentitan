@@ -228,4 +228,17 @@ package top_earlgrey_rnd_cnst_pkg;
     256'hA46ED80E5942BC02513FBDFD5A98A66805BC17DDED6CCD3271A3E37A08C92847
   };
 
+  ////////////////////////////////////////////
+  // rom_ctrl
+  ////////////////////////////////////////////
+  // Fixed nonce used for address / data scrambling
+  parameter bit [63:0] RndCnstRomCtrlScrNonce = {
+    64'hFC00DE9D9734C3FE
+  };
+
+  // Randomised constant used as a scrambling key for ROM data
+  parameter bit [127:0] RndCnstRomCtrlScrKey = {
+    128'h23C074E020FD502869582E71443C8BE0
+  };
+
 endpackage : top_earlgrey_rnd_cnst_pkg

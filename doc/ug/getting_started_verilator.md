@@ -47,7 +47,7 @@ The programs listed after `--meminit` are loaded into the system's specified mem
 ```console
 $ cd $REPO_TOP
 $ build/lowrisc_systems_chip_earlgrey_verilator_0.1/sim-verilator/Vchip_earlgrey_verilator \
-  --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.elf \
+  --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.scr.40.vmem \
   --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf \
   --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem
 ```
@@ -104,7 +104,7 @@ A full command-line invocation of the simulation could then look like that:
 ```console
 $ cd $REPO_TOP
 $ build/lowrisc_systems_chip_earlgrey_verilator_0.1/sim-verilator/Vchip_earlgrey_verilator \
-  --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.elf \
+  --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.scr.40.vmem \
   --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf \
   --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem \
   +UARTDPI_LOG_uart0=-
@@ -196,7 +196,7 @@ Tracing slows down the simulation by roughly factor of 1000.
 ```console
 $ cd $REPO_TOP
 $ build/lowrisc_systems_chip_earlgrey_verilator_0.1/sim-verilator/Vchip_earlgrey_verilator \
-  --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.elf \
+  --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.scr.40.vmem \
   --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.elf \
   --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem \
   --trace

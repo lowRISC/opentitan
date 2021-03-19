@@ -5040,6 +5040,26 @@
           expose: "true"
           name_top: RomCtrlBootRomInitFile
         }
+        {
+          name: RndCnstScrNonce
+          desc: Fixed nonce used for address / data scrambling
+          type: bit [63:0]
+          randcount: 64
+          randtype: data
+          name_top: RndCnstRomCtrlScrNonce
+          default: 0xfc00de9d9734c3fe
+          randwidth: 64
+        }
+        {
+          name: RndCnstScrKey
+          desc: Randomised constant used as a scrambling key for ROM data
+          type: bit [127:0]
+          randcount: 128
+          randtype: data
+          name_top: RndCnstRomCtrlScrKey
+          default: 0x23c074e020fd502869582e71443c8be0
+          randwidth: 128
+        }
       ]
       inter_signal_list:
       [

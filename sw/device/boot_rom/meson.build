@@ -103,7 +103,12 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     'boot_rom_export_' + device_name,
     command: export_target_command,
     depend_files: [export_target_depend_files,],
-    input: [boot_rom_elf, boot_rom_embedded, boot_rom_sim_dv_logs,],
+    input: [
+      boot_rom_elf,
+      boot_rom_embedded,
+      boot_rom_scrambled,
+      boot_rom_sim_dv_logs,
+    ],
     output: 'boot_rom_export_' + device_name,
     build_always_stale: true,
     build_by_default: true,

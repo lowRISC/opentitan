@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 class VerilatorSimEarlgrey:
     UART0_SPEED = 7200  # see device/lib/arch/device_sim_verilator.c
 
-    def __init__(self, sim_path: Path, rom_elf_path: Path, otp_img_path: Path,
+    def __init__(self, sim_path: Path, rom_vmem_path: Path, otp_img_path: Path,
                  work_dir: Path):
         """ A verilator simulation of the Earl Grey toplevel """
         assert sim_path.is_file()
@@ -25,9 +25,9 @@ class VerilatorSimEarlgrey:
 
         self.p_sim = None
 
-        assert rom_elf_path.is_file()
+        assert rom_vmem_path.is_file()
         assert otp_img_path.is_file()
-        self._rom_elf_path = rom_elf_path
+        self._rom_vmem_path = rom_vmem_path
         self._otp_img_path = otp_img_path
 
         assert work_dir.is_dir()
@@ -47,7 +47,7 @@ class VerilatorSimEarlgrey:
         self.uart0_log_path = self._work_dir / 'uart0.log'
 
         cmd_sim = [
-            self._sim_path, '--meminit=rom,' + str(self._rom_elf_path),
+            self._sim_path, '--meminit=rom,' + str(self._rom_vmem_path),
             '--meminit=otp,' + str(self._otp_img_path),
             '+UARTDPI_LOG_uart0=' + str(self.uart0_log_path)
         ]
@@ -280,10 +280,10 @@ def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking):
     """
 
     sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
-    rom_elf_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.elf"
+    rom_vmem_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.scr.40.vmem"
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
-    sim = VerilatorSimEarlgrey(sim_path, rom_elf_path, otp_img_path, tmp_path)
+    sim = VerilatorSimEarlgrey(sim_path, rom_vmem_path, otp_img_path, tmp_path)
 
     sim.run(app_selfchecking[0], extra_sim_args=app_selfchecking[1])
 
@@ -304,10 +304,11 @@ def test_apps_selfchecking_silicon_creator(tmp_path, bin_dir,
     """
 
     sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
-    rom_elf_path = bin_dir / "sw/device/silicon_creator/mask_rom/mask_rom_sim_verilator.elf"
+    rom_vmem_path = bin_dir / ("sw/device/silicon_creator/mask_rom/"
+                               "mask_rom_sim_verilator.scr.40.vmem")
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
-    sim = VerilatorSimEarlgrey(sim_path, rom_elf_path, otp_img_path, tmp_path)
+    sim = VerilatorSimEarlgrey(sim_path, rom_vmem_path, otp_img_path, tmp_path)
 
     sim.run(app_silicon_creator_selfchecking[0],
             extra_sim_args=app_silicon_creator_selfchecking[1])
@@ -323,10 +324,10 @@ def test_spiflash(tmp_path, bin_dir):
     """ Load a single application to the Verilator simulation using spiflash """
 
     sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
-    rom_elf_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.elf"
+    rom_vmem_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.scr.40.vmem"
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
-    sim = VerilatorSimEarlgrey(sim_path, rom_elf_path, otp_img_path, tmp_path)
+    sim = VerilatorSimEarlgrey(sim_path, rom_vmem_path, otp_img_path, tmp_path)
     sim.run()
 
     log.debug("Waiting for simulation to be ready for SPI input")
@@ -353,10 +354,10 @@ def test_openocd_basic_connectivity(tmp_path, bin_dir, topsrcdir, openocd):
     """
     # Run a simulation (bootrom only, no app beyond that)
     sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
-    rom_elf_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.elf"
+    rom_vmem_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.scr.40.vmem"
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
-    sim = VerilatorSimEarlgrey(sim_path, rom_elf_path, otp_img_path, tmp_path)
+    sim = VerilatorSimEarlgrey(sim_path, rom_vmem_path, otp_img_path, tmp_path)
     sim.run()
 
     # Wait a bit until the system has reached the bootrom and a first arbitrary

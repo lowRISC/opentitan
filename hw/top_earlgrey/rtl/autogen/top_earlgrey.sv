@@ -2274,7 +2274,9 @@ module top_earlgrey #(
 
   rom_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[30:30]),
-    .BootRomInitFile(RomCtrlBootRomInitFile)
+    .BootRomInitFile(RomCtrlBootRomInitFile),
+    .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
+    .RndCnstScrKey(RndCnstRomCtrlScrKey)
   ) u_rom_ctrl (
       // [30]: fatal
       .alert_tx_o  ( alert_tx[30:30] ),

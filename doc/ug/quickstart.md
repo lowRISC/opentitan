@@ -36,7 +36,7 @@ $ tar -C $OT_TOP -xvf opentitan-snapshot-20191101-1.tar.xz --strip-components=1
 Run the provided simulator binary with
 ```console
 $ cd $OT_TOP
-$ ./hw/top_earlgrey/Vchip_earlgrey_verilator --rominit=./sw/device/sim/boot_rom/rom.vmem --flashinit=./sw/device/sim/examples/hello_world/sw.vmem
+$ ./hw/top_earlgrey/Vchip_earlgrey_verilator --rominit=./sw/device/sim/boot_rom/boot_rom_sim_verilator.scr.40.vmem --flashinit=./sw/device/sim/examples/hello_world/sw.vmem
 
 Simulation of OpenTitan Earl Grey
 =================================
