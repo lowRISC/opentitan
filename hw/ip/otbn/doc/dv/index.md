@@ -116,11 +116,7 @@ Core TLUL protocol assertions are checked by binding the [TL-UL protocol checker
 Outputs are also checked for `'X` values by assertions in the design RTL.
 The design RTL contains other assertions defined by the designers, which will be checked in simulation (and won't have been checked by the pre-DV Verilator simulations).
 
-<div class="bd-callout bd-callout-warning">
-
-**TODO**: Define other SVA checks. A protocol check for the alert interface? Are there any properties that should hold relating interrupt and idle signals?
-
-</div>
+Finally, the `otbn_idle_checker` checks that the `idle_o` output correctly matches the running state that you'd expect, based on writes to the `CMD` register and responses that will appear in the `DONE` interrupt.
 
 ## Building and running tests
 

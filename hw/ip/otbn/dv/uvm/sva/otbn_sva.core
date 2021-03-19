@@ -7,10 +7,13 @@ description: "OTBN assertion modules and bind file."
 filesets:
   files_dv:
     depend:
-      - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
+      - lowrisc:ip:otbn
+      - lowrisc:prim:assert
+      - lowrisc:tlul:headers
     files:
       - otbn_bind.sv
+      - otbn_idle_checker.sv
     file_type: systemVerilogSource
 
   files_formal:
