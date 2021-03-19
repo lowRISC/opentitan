@@ -15,7 +15,7 @@
   tool: vcs
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler_sim
+  fusesoc_core: ${instance_vlnv("lowrisc:dv:alert_handler_sim:0.1")}
 
   // Testplan hjson file.
   testplan: "{proj_root}/hw/ip/alert_handler/data/alert_handler_testplan.hjson"

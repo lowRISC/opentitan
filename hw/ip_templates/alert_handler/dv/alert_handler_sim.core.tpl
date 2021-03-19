@@ -2,12 +2,12 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_earlgrey_alert_handler_sim
+name: ${instance_vlnv("lowrisc:dv:alert_handler_sim:0.1")}
 description: "ALERT_HANDLER DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:opentitan:top_earlgrey_alert_handler
+      - ${instance_vlnv("lowrisc:ip:alert_handler:0.1")}
     file_type: systemVerilogSource
 
   files_dv:

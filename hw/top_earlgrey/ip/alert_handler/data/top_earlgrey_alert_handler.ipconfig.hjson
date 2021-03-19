@@ -1,0 +1,14 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_earlgrey_alert_handler
+  param_values:
+  {
+    n_alerts: 29
+    esc_cnt_dw: 32
+    accu_cnt_dw: 16
+    async_on: 29'b11111111111111110000000000000
+    n_classes: 4
+  }
+}

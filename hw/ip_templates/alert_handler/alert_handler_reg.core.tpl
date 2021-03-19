@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_earlgrey_alert_handler_reg
+name: ${instance_vlnv("lowrisc:ip:alert_handler_reg:0.1")}
 description: "Auto-generated alert handler register sources"
 provide:
   # TODO: Check if the generated files actually maintain a stable public API.
