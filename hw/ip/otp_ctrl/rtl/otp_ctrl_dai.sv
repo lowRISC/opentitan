@@ -637,15 +637,28 @@ module otp_ctrl_dai
 
   logic [NumPart-1:0] part_sel_oh;
   for (genvar k = 0; k < NumPart; k++) begin : gen_part_sel
-    localparam logic [OtpByteAddrWidth:0] PartEnd = (OtpByteAddrWidth+1)'(PartInfo[k].offset) +
-                                                    (OtpByteAddrWidth+1)'(PartInfo[k].size);
-    assign part_sel_oh[k] = (dai_addr_i >= PartInfo[k].offset) & ({1'b0, dai_addr_i} < PartEnd);
-    // Needed for other address and access checks.
-    localparam logic [OtpByteAddrWidth-1:0] DigestOffset = OtpByteAddrWidth'(PartEnd -
-                                                                             ScrmblBlockWidth/8);
-    assign digest_addr_lut[k] = DigestOffset >> OtpAddrShift;
+    localparam int PartEndInt = int'(PartInfo[k].offset) + int'(PartInfo[k].size);
+    localparam int DigestOffsetInt = PartEndInt - ScrmblBlockWidth / 8;
+    localparam int DigestAddrLutInt = DigestOffsetInt >> OtpAddrShift;
+
+    // PartEnd has an extra bit to cope with the case where offset + size overflows. However, we
+    // arrange the address map to make sure that PartEndInt is at most 1 << OtpByteAddrWidth. Check
+    // that here.
+    `ASSERT_INIT(PartEndMax_A, PartEndInt <= (1 << OtpByteAddrWidth))
+
+    // Assuming ScrmblBlockWidth is at least 8, DigestOffset will be strictly less than PartEnd, so
+    // will fit in OtpByteAddrWidth bits again.
+    localparam bit [OtpByteAddrWidth-1:0] PartEnd = PartEndInt[OtpByteAddrWidth-1:0];
+
+    // The shift right by OtpAddrShift drops exactly the bottom bits that are needed to convert
+    // between OtpAddrWidth and OtpByteAddrWidth, so we know that we can slice safely here.
+    localparam bit [OtpAddrWidth-1:0] DigestAddrLut = DigestAddrLutInt[OtpAddrWidth-1:0];
+
+    assign part_sel_oh[k] = (dai_addr_i >= PartInfo[k].offset) & (dai_addr_i < PartEnd);
+    assign digest_addr_lut[k] = DigestAddrLut;
   end
 
+  `ASSERT(ScrmblBlockWidthGe8_A, ScrmblBlockWidth >= 8)
   `ASSERT(PartSelMustBeOnehot_A, $onehot0(part_sel_oh))
 
   prim_arbiter_fixed #(
