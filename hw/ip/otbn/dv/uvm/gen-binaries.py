@@ -120,6 +120,9 @@ def main() -> int:
     parser.add_argument('--seed', type=read_positive, default=0)
     parser.add_argument('--size', type=read_positive, default=100)
     parser.add_argument('--verbose', '-v', action='store_true')
+    parser.add_argument('--no-smoke', action='store_true',
+                        help=('Do not generate the smoke test (useful if '
+                              'generating exactly one binary)'))
     parser.add_argument('--jobs', '-j', type=read_jobs, nargs='?',
                         const='unlimited', help='Number of parallel jobs.')
     parser.add_argument('destdir',
@@ -136,12 +139,12 @@ def main() -> int:
         print(err, file=sys.stderr)
         return 1
 
-    rig_count = args.count - 1
+    rig_count = args.count if args.no_smoke else args.count - 1
 
     os.makedirs(args.destdir, exist_ok=True)
 
     with open(os.path.join(args.destdir, 'build.ninja'), 'w') as ninja_handle:
-        write_ninja(ninja_handle, rig_count,
+        write_ninja(ninja_handle, not args.no_smoke, rig_count,
                     args.seed, args.size, toolchain, otbn_dir)
 
     # Handle the -j argument like Make does, defaulting to 1 thread. This
@@ -161,7 +164,8 @@ def main() -> int:
     return subprocess.run(cmd, cwd=args.destdir, check=False).returncode
 
 
-def write_ninja(handle: TextIO, rig_count: int, start_seed: int, size: int,
+def write_ninja(handle: TextIO, build_smoke: bool, rig_count: int,
+                start_seed: int, size: int,
                 toolchain: Toolchain, otbn_dir: str) -> None:
     '''Write a build.ninja to build rig_count random binaries and a smoke test
 
@@ -177,9 +181,10 @@ def write_ninja(handle: TextIO, rig_count: int, start_seed: int, size: int,
 
     seeds = [start_seed + idx for idx in range(rig_count)]
 
-    handle.write('rule rig-gen\n'
-                 '  command = {rig} gen --size {size} --seed $seed >$out\n'
-                 .format(rig=otbn_rig, size=size))
+    if rig_count:
+        handle.write('rule rig-gen\n'
+                     '  command = {rig} gen --size {size} --seed $seed >$out\n'
+                     .format(rig=otbn_rig, size=size))
 
     handle.write('rule rig-asm\n'
                  '  command = {rig} asm -o $seed $in\n'
@@ -190,16 +195,18 @@ def write_ninja(handle: TextIO, rig_count: int, start_seed: int, size: int,
                  .format(rv32_as=toolchain.rv32_tool_as,
                          otbn_as=toolchain.otbn_as))
 
-    handle.write('rule ld\n'
-                 '  command = RV32_TOOL_LD={rv32_ld} '
-                 '{otbn_ld} -o $out -T $ldscript $in\n'
-                 .format(rv32_ld=toolchain.rv32_tool_ld,
-                         otbn_ld=toolchain.otbn_ld))
+    if rig_count:
+        handle.write('rule ld\n'
+                     '  command = RV32_TOOL_LD={rv32_ld} '
+                     '{otbn_ld} -o $out -T $ldscript $in\n'
+                     .format(rv32_ld=toolchain.rv32_tool_ld,
+                             otbn_ld=toolchain.otbn_ld))
 
-    handle.write('rule ld1\n'
-                 '  command = RV32_TOOL_LD={rv32_ld} {otbn_ld} -o $out $in\n\n'
-                 .format(rv32_ld=toolchain.rv32_tool_ld,
-                         otbn_ld=toolchain.otbn_ld))
+    if build_smoke:
+        handle.write('rule ld1\n'
+                     '  command = RV32_TOOL_LD={rv32_ld} {otbn_ld} -o $out $in\n\n'
+                     .format(rv32_ld=toolchain.rv32_tool_ld,
+                             otbn_ld=toolchain.otbn_ld))
 
     for seed in seeds:
         # Generate the .s and .ld files.
@@ -220,9 +227,10 @@ def write_ninja(handle: TextIO, rig_count: int, start_seed: int, size: int,
                      .format(seed=seed))
 
     # Rules to build the smoke test.
-    smoke_src = os.path.join(os.path.abspath(smoke_src_dir), 'smoke_test.s')
-    handle.write('build smoke.o: as {smoke_src}\n'.format(smoke_src=smoke_src))
-    handle.write('build smoke.elf: ld1 smoke.o\n\n')
+    if build_smoke:
+        smoke_src = os.path.join(os.path.abspath(smoke_src_dir), 'smoke_test.s')
+        handle.write('build smoke.o: as {smoke_src}\n'.format(smoke_src=smoke_src))
+        handle.write('build smoke.elf: ld1 smoke.o\n\n')
 
 
 if __name__ == '__main__':
