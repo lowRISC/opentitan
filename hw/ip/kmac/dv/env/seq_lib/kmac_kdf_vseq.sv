@@ -8,7 +8,6 @@ class kmac_kdf_vseq extends kmac_sideload_vseq;
   `uvm_object_new
 
   constraint kdf_c {
-    // KDF outputs 256-bit digest (32 bytes)
     if (kmac_en) {
       // KDF outputs 256-bit digest (32 bytes)
       output_len == 32;

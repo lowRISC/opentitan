@@ -52,6 +52,8 @@ package kmac_env_pkg;
 
   parameter int KMAC_FIFO_WORDS_PER_ENTRY = KMAC_FIFO_WIDTH / TL_DW;
 
+  parameter int KMAC_FIFO_BYTES_PER_ENTRY = KMAC_FIFO_WIDTH / 8;
+
   parameter int KMAC_FIFO_NUM_WORDS = KMAC_FIFO_DEPTH * KMAC_FIFO_WORDS_PER_ENTRY;
 
   parameter int KMAC_FIFO_NUM_BYTES = KMAC_FIFO_NUM_WORDS * 4;
@@ -60,16 +62,38 @@ package kmac_env_pkg;
   // `right_encode()` or `left_encode()`.
   parameter int MAX_ENCODE_WIDTH = 2040;
 
-  // Sideload data has 2*KeyWidth bits of key shares and 1 bit valid.
-  parameter int SIDELOAD_KEY_SIZE = $bits(hw_key_req_t);
-  // KDF request data has 1 bit for last, and the rest are for data/strb.
-  // We subtract 1 from the width of the struct as it includes the valid handshake signal.
-  parameter int KDF_DATA_SIZE = $bits(app_req_t) - 1;
-  // KDF response data has 2 bits for done/error signals and the rest are for digest shares.
-  // We subtract 1 from the struct width as it includes the ready handshake signal.
-  parameter int KDF_DIGEST_SIZE = $bits(app_rsp_t) - 1;
+  /////////////////////////////
+  // Timing Model Parameters //
+  /////////////////////////////
+  // Will include information related to both the keccak datapath and the entropy system,
+  // as both directly relate to how many cycles a given hash operation will take
 
-  // types
+  // Existing parameters:
+  //
+  // sha3_pkg::MsgWidth = 64 -> width of internal datapath
+  //
+  // sha3_pkg::StateW = 1600 -> represents width of Keccak state
+
+  // keccak datapath (lane) size
+  localparam int W = sha3_pkg::StateW / 25;
+
+  // log_2(W)
+  localparam int L = $clog2(W);
+
+  // number of rounds performed by keccak logic
+  parameter int KECCAK_NUM_ROUNDS = 12 + 2 * L;
+
+  parameter int ENTROPY_STORAGE_WIDTH = 320;
+  parameter int ENTROPY_LFSR_WIDTH    = 64;
+
+  // After seeding lfsr, internal entropy_storage is filled up in 5 cycles,
+  // ENTROPY_LFSR_WIDTH bits per cycles
+  parameter int CYCLES_TO_FILL_ENTROPY = ENTROPY_STORAGE_WIDTH / ENTROPY_LFSR_WIDTH;
+
+  // TODO - this assumes entropy_fast_process is disabled, need to support this
+  //
+  // 7 cycles total:                                     5 cycles        + 2 cycles (latch/consume entropy)
+  parameter int SW_ENTROPY_ROUND_CYCLES_NO_FAST = CYCLES_TO_FILL_ENTROPY + 2;
 
   // interrupt types
   typedef enum int {
@@ -82,9 +106,14 @@ package kmac_env_pkg;
   // CFG csr bit positions
   typedef enum int {
     KmacEn = 0,
-    KmacMsgEndian = 8,
+    KmacStrengthLSB = 1,
+    KmacStrengthMSB = 3,
+    KmacModeLSB = 4,
+    KmacModeMSB = 5, KmacMsgEndian = 8,
     KmacStateEndian = 9,
     KmacSideload = 12,
+    KmacEntropyModeLSB = 16,
+    KmacEntropyModeMSB = 17,
     KmacFastEntropy = 19,
     KmacEntropyReady = 24,
     KmacErrProcessed = 25
@@ -95,6 +124,8 @@ package kmac_env_pkg;
     KmacStatusSha3Idle = 0,
     KmacStatusSha3Absorb = 1,
     KmacStatusSha3Squeeze = 2,
+    KmacStatusFifoDepthLSB = 8,
+    KmacStatusFifoDepthMSB = 12,
     KmacStatusFifoEmpty = 14,
     KmacStatusFifoFull = 15
   } kmac_status_e;
