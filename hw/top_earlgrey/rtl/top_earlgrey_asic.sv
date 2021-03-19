@@ -219,6 +219,7 @@ module top_earlgrey_asic (
     `endif
     // "special"
     // MIO Pads
+    `ifdef ANALOGSIM
     .mio_pad_io          ( { // RBox
                              IOR13, // MIO 43
                              IOR12, // MIO 42
@@ -261,20 +262,64 @@ module top_earlgrey_asic (
                              IOB1,  // MIO 7
                              IOB0,  // MIO 6
                              // Bank A
-                             `ifdef ANALOGSIM
-			     UC0, // ast2pad_t0_ao
-			     UC1, // ast2pad_t1_ao
-			     '0,  // pad2ast_t0_ai
-			     '0,  // pad2ast_t1_ai
-                             `else
+                             UC0, // ast2pad_t0_ao
+                             UC1, // ast2pad_t1_ao
+                             '0,  // pad2ast_t0_ai
+                             '0,  // pad2ast_t1_ai
+                             IOA1,  // MIO 1
+                             IOA0   // MIO 0
+                            } ),
+    `else
+    .mio_pad_io          ( { // RBox
+                             IOR13, // MIO 43
+                             IOR12, // MIO 42
+                             IOR11, // MIO 41
+                             IOR10, // MIO 40
+                             IOR9,  // MIO 39
+                             IOR8,  // MIO 38
+                             IOR7,  // MIO 37
+                             IOR6,  // MIO 36
+                             IOR5,  // MIO 35
+                             IOR4,  // MIO 34
+                             IOR3,  // MIO 33
+                             IOR2,  // MIO 32
+                             IOR1,  // MIO 31
+                             IOR0,  // MIO 30
+                             // Bank C
+                             IOC11, // MIO 29
+                             IOC10, // MIO 28
+                             IOC9,  // MIO 27
+                             IOC8,  // MIO 26
+                             IOC7,  // MIO 25
+                             IOC6,  // MIO 24
+                             IOC5,  // MIO 23
+                             IOC4,  // MIO 22
+                             IOC3,  // MIO 21
+                             IOC2,  // MIO 20
+                             IOC1,  // MIO 19
+                             IOC0,  // MIO 18
+                             // Bank B
+                             IOB11, // MIO 17
+                             IOB10, // MIO 16
+                             IOB9,  // MIO 15
+                             IOB8,  // MIO 14
+                             IOB7,  // MIO 13
+                             IOB6,  // MIO 12
+                             IOB5,  // MIO 11
+                             IOB4,  // MIO 10
+                             IOB3,  // MIO 9
+                             IOB2,  // MIO 8
+                             IOB1,  // MIO 7
+                             IOB0,  // MIO 6
+                             // Bank A
                              IOA5,  // MIO 5
                              IOA4,  // MIO 4
                              IOA3,  // MIO 3
                              IOA2,  // MIO 2
-                             `endif
                              IOA1,  // MIO 1
                              IOA0   // MIO 0
                             } ),
+    `endif
     // DIO Pads
     .dio_pad_io          ( { SPI_DEV_CLK,                 // cio_spi_device_sck_p2d
                              SPI_DEV_CS_L,                // cio_spi_device_csb_p2d
