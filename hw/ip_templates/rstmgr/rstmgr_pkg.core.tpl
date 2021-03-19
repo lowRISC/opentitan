@@ -2,16 +2,15 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:systems:rstmgr_reg:0.1"
-description: "Auto-generated reset manager registers for top_earlgrey"
+name: ${instance_vlnv("lowrisc:ip:rstmgr_pkg:0.1")}
+description: "Reset manager package"
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:tlul:headers
+      - "fileset_topgen ? (lowrisc:systems:topgen)"
     files:
-      - rtl/autogen/rstmgr_reg_pkg.sv
-      - rtl/autogen/rstmgr_reg_top.sv
+      - rtl/rstmgr_pkg.sv
     file_type: systemVerilogSource
 
 targets:
