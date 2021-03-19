@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_earlgrey_clkmgr
+name: ${instance_vlnv("lowrisc:ip:clkmgr:0.1")}
 description: "Clock Manager"
 
 filesets:
@@ -17,7 +17,7 @@ filesets:
       - lowrisc:prim:lc_sync
       - lowrisc:prim:lc_sender
       - lowrisc:ip:pwrmgr_pkg
-      - lowrisc:opentitan:top_earlgrey_clkmgr_pkg
+      - ${instance_vlnv("lowrisc:ip:clkmgr_pkg")}
     files:
       - rtl/clkmgr_reg_pkg.sv
       - rtl/clkmgr_reg_top.sv

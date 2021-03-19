@@ -2,19 +2,19 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:clkmgr_reg:0.1"
-description: "Clock Manager Package"
+name: ${instance_vlnv("lowrisc:ip:clkmgr_pkg:0.1")}
+description: "Clock manager package"
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:tlul
+      - lowrisc:constants:top_pkg
+      - lowrisc:ip:pwrmgr_pkg
     files:
-      - rtl/clkmgr_reg_pkg.sv
-      - rtl/clkmgr_reg_top.sv
+      - rtl/clkmgr_pkg.sv
     file_type: systemVerilogSource
 
 targets:
-  default:
+  default: &default_target
     filesets:
       - files_rtl

@@ -42,10 +42,10 @@ filesets:
       - lowrisc:top_earlgrey:xbar_main
       - lowrisc:top_earlgrey:xbar_peri
       - lowrisc:opentitan:top_earlgrey_rstmgr
-      - lowrisc:ip:pwrmgr
+      - lowrisc:opentitan:top_earlgrey_pwrmgr
       - lowrisc:ip:aon_timer
       - lowrisc:ip:dcd
-      - lowrisc:systems:clkmgr
+      - lowrisc:opentitan:top_earlgrey_clkmgr
       - lowrisc:systems:sensor_ctrl
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
       - "fileset_partner ? (partner:systems:ast_pkg)"

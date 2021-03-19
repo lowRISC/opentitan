@@ -50,6 +50,7 @@ TOPGEN_TEMPLATE_PATH = Path(__file__).parent / 'topgen/templates'
 # TODO: Remove once all IP templates use ipgen.
 IPS_USING_IPGEN = [
     'alert_handler',
+    'clkmgr',
     'pwrmgr',
     'rstmgr',
     'rv_plic',
@@ -416,26 +417,8 @@ def generate_pinmux(top, out_path):
                     str(rtl_path))
 
 
-def generate_clkmgr(top, cfg_path, out_path):
-
-    # Target paths
-    rtl_path = out_path / 'ip/clkmgr/rtl/autogen'
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    data_path = out_path / 'ip/clkmgr/data/autogen'
-    data_path.mkdir(parents=True, exist_ok=True)
-
-    # Template paths
-    hjson_tpl = cfg_path / '../ip/clkmgr/data/clkmgr.hjson.tpl'
-    rtl_tpl = cfg_path / '../ip/clkmgr/data/clkmgr.sv.tpl'
-    pkg_tpl = cfg_path / '../ip/clkmgr/data/clkmgr_pkg.sv.tpl'
-
-    hjson_out = data_path / 'clkmgr.hjson'
-    rtl_out = rtl_path / 'clkmgr.sv'
-    pkg_out = rtl_path / 'clkmgr_pkg.sv'
-
-    tpls = [hjson_tpl, rtl_tpl, pkg_tpl]
-    outputs = [hjson_out, rtl_out, pkg_out]
-    names = ['clkmgr.hjson', 'clkmgr.sv', 'clkmgr_pkg.sv']
+def generate_clkmgr(top, out_path):
+    topname = top['name']
 
     # clock classification
     grps = top['clocks']['groups']
@@ -489,32 +472,18 @@ def generate_clkmgr(top, cfg_path, out_path):
         hint_clks[clk]['name'] = (clk.rsplit('_', 1)[-1])
         hint_clks[clk]['src'] = src
 
-    for idx, tpl in enumerate(tpls):
-        out = ""
-        with tpl.open(mode='r', encoding='UTF-8') as fin:
-            tpl = Template(fin.read())
-            try:
-                out = tpl.render(cfg=top,
-                                 div_srcs=top['clocks']['derived_srcs'],
-                                 rg_srcs=rg_srcs,
-                                 ft_clks=ft_clks,
-                                 rg_clks=rg_clks,
-                                 sw_clks=sw_clks,
-                                 export_clks=top['exported_clks'],
-                                 hint_clks=hint_clks)
-            except:  # noqa: E722
-                log.error(exceptions.text_error_template().render())
+    params = {
+        'cfg': top,
+        'div_srcs': top['clocks']['derived_srcs'],
+        'rg_srcs': rg_srcs,
+        'ft_clks': ft_clks,
+        'rg_clks': rg_clks,
+        'sw_clks': sw_clks,
+        'export_clks': top['exported_clks'],
+        'hint_clks': hint_clks,
+    }
 
-        if out == "":
-            log.error("Cannot generate {}".format(names[idx]))
-            return
-
-        with outputs[idx].open(mode='w', encoding='UTF-8') as fout:
-            fout.write(genhdr + out)
-
-    # Generate reg files
-    gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_out), []), str(rtl_path))
-
+    ipgen_render('clkmgr', topname, params, out_path)
 
 # generate pwrmgr
 def generate_pwrmgr(top, out_path):
@@ -750,7 +719,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     # ip.hjson information.  All the information is embedded within
     # the top hjson file
     amend_clocks(topcfg)
-    generate_clkmgr(topcfg, cfg_path, out_path)
+    generate_clkmgr(topcfg, out_path)
 
     # It may require two passes to check if the module is needed.
     # TODO: first run of topgen will fail due to the absent of rv_plic.
