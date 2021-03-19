@@ -109,7 +109,7 @@ This separation is required because the non-volatile controllers (OTP / Lifecycl
 If these modules are reset along with the rest of the system, the TAP and related debug functions would also be reset.
 By keeping these reset trees separate, we allow the state of the test domain functions to persist while functionally resetting the rest of the core domain.
 
-Additionally, modules such as [alert handler]({{< relref "hw/ip/alert_handler/doc" >}}) and [aon timers]() (which contain the watchdog function) are also kept on the `rst_lc_n` tree.
+Additionally, modules such as alert handler and [aon timers]() (which contain the watchdog function) are also kept on the `rst_lc_n` tree.
 This ensures that an erroneously requested system reset through `rst_sys_n` cannot silence the alert mechanism or prevent the system from triggering a watchdog mechanism.
 
 The reset topology also contains additional properties:

@@ -11,7 +11,6 @@ REG_OUTPUT_SW_DIR ?= ${REG_OUTPUT_DIR}/sw
 
 IPS ?= aes           \
        adc_ctrl      \
-       alert_handler \
        aon_timer     \
        clkmgr        \
        entropy_src   \

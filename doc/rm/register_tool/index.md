@@ -618,7 +618,7 @@ The following aspects need to be considered when integrating shadow registers in
   It is thus **highly recommended** to use non-permissive reset values and use software for configuring more permissive values.
 
 - Error hook-ups:
-  - Storage errors signaled to the hardware in `err_storage` are fatal, and should be hooked up directly into the [alert system]({{< relref "hw/ip/alert_handler/doc" >}}).
+  - Storage errors signaled to the hardware in `err_storage` are fatal, and should be hooked up directly into the [alert system]({{< relref "hw/top_earlgrey/ip_autogen/alert_handler/doc" >}}).
   - Update errors signaled to the hardware in `err_update` may be software errors and do not affect the current committed value; thus they can be considered informational bugs that are collected into error status or interrupts, and optionally alerts.
     They do not generate error responses on the TL-UL system bus interface.
 
@@ -675,7 +675,7 @@ The following features are currently not implemented but might be added in the f
   Depending on the design, the reset propagation **may** be multi-cycle, and thus it is possible for the shadow register and committed register to not be reset at the same time when resets are asserted.
   This may manifest as an issue if the reset skews are **not** balanced, and may cause register outputs to change on the opposite sides of a clock edge for the receiving domain.
   It is thus important to ensure the skews of the committed and shadow reset lines to be roughly balanced and/or downstream logic to correctly ignore errors when this happens.
-  Note that a module may need to be reset during operation of the system, i.e., when the [alert system]({{< relref "hw/ip/alert_handler/doc" >}}) is running.
+  Note that a module may need to be reset during operation of the system, i.e., when the [alert system]({{< relref "hw/top_earlgrey/ip_autogen/alert_handler/doc" >}}) is running.
 
   Software-controllable resets should be avoided.
   If a single reset bit drives both normal and shadow resets, then the problem is simply moved to a different place.

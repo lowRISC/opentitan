@@ -231,7 +231,7 @@ See the section on [Interrupt Handling](#interrupt-handling) below, which define
 
 ### Alerts
 
-Each peripheral has the option of designating output signals as security critical alerts destined for the hardware [alert handler module]({{< relref "/hw/ip/alert_handler/doc" >}}).
+Each peripheral has the option of designating output signals as security critical alerts destined for the hardware [alert handler module]({{< relref "/hw/top_earlgrey/ip_autogen/alert_handler/doc" >}}).
 These are differential signals (to avoid single point of failure) sent to the alert handler for it to send to the processor for first-line defense handling, or hardware security response if the processor does not act.
 The peripheral lists its collection of alerts with the `alert_list` attribute in the configuration file.
 For each alert in the full system, a corresponding set of signals will be generated in the alert handler to carry out this communication between alert sender and handler.
@@ -454,7 +454,7 @@ Specification of this control is defined in the rv_plic documentation of the cor
 
 Alerts are another critical and common implementation to standardize for all peripherals.
 Unlike interrupts, there is no software component to alerts at the peripheral, though there is at the hardware alert handler.
-See that [specification]({{< relref "/hw/ip/alert_handler/doc" >}}) for full details.
+See that [specification]({{< relref "/hw/top_earlgrey/ip_autogen/alert_handler/doc" >}}) for full details.
 A general description of the handling of alerts at the hardware level is given here.
 
 ### Alerts per Module
@@ -530,7 +530,7 @@ Cause registers for recoverable alerts must either be clearable by SW, or the HW
 Cause registers for fatal alerts must not be clearable in any way and must hence be read-only.
 
 The `prim_alert_sender` converts the event into a differentially encoded signal pair to be routed to the hardware alert handler, as dictated by the details in the
-[alert handler specification]({{< relref "/hw/ip/alert_handler/doc" >}}).
+[alert handler specification]({{< relref "/hw/top_earlgrey/ip_autogen/alert_handler/doc" >}}).
 The alert handler module is automatically generated to have enough alert ports to represent each alert declared in the different included peripheral IP configuration files.
 
 ## Inter Signal Handling

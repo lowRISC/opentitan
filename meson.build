@@ -211,7 +211,7 @@ gen_hw_hdr = generator(
 # TODO: Considering moving these into hw/ip directories.
 TOPNAME='top_earlgrey'
 hw_ip_aes_reg_h = gen_hw_hdr.process('hw/ip/aes/data/aes.hjson')
-hw_ip_alert_handler_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/alert_handler/data/autogen/alert_handler.hjson')
+hw_ip_alert_handler_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip_autogen/alert_handler/data/alert_handler.hjson')
 hw_ip_aon_timer_reg_h = gen_hw_hdr.process('hw/ip/aon_timer/data/aon_timer.hjson')
 hw_ip_clkmgr_reg_h = gen_hw_hdr.process('hw/' + TOPNAME + '/ip/clkmgr/data/autogen/clkmgr.hjson')
 hw_ip_entropy_src_reg_h = gen_hw_hdr.process('hw/ip/entropy_src/data/entropy_src.hjson')

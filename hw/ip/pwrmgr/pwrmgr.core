@@ -15,7 +15,7 @@ filesets:
       - lowrisc:ip:rom_ctrl_pkg
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:pwrmgr_pkg
-      - lowrisc:ip:alert_handler_reg
+      - lowrisc:ip_interfaces:alert_handler_reg
     files:
       - rtl/pwrmgr.sv
       - rtl/pwrmgr_cdc.sv

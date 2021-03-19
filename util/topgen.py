@@ -61,6 +61,7 @@ TOPGEN_TEMPLATE_PATH = Path(__file__).parent / 'topgen/templates'
 # TODO: Remove once all IP templates use ipgen.
 IPS_USING_IPGEN = [
     'rv_plic',
+    'alert_handler',
 ]
 
 
@@ -170,6 +171,8 @@ def generate_xbars(top, out_path):
 
 
 def generate_alert_handler(top, out_path):
+    topname = top["name"]
+
     # default values
     esc_cnt_dw = 32
     accu_cnt_dw = 16
@@ -180,7 +183,6 @@ def generate_alert_handler(top, out_path):
     n_lpg = 1
     lpg_map = []
 
-    topname = top["name"]
 
     # Count number of alerts and LPGs
     n_alerts = sum([x["width"] if "width" in x else 1 for x in top["alert"]])
@@ -211,56 +213,17 @@ def generate_alert_handler(top, out_path):
                 async_on.append(async_on_format.format(int(alert['async'])))
                 lpg_map.append(lpg_idx_format.format(int(alert['lpg_idx'])))
 
-    log.info("alert handler parameterization:")
-    log.info("NAlerts   = %d" % n_alerts)
-    log.info("EscCntDw  = %d" % esc_cnt_dw)
-    log.info("AccuCntDw = %d" % accu_cnt_dw)
-    log.info("AsyncOn   = %s" % async_on)
-    log.info("NLpg      = %s" % n_lpg)
-    log.info("LpgMap    = %s" % lpg_map)
+    params = {
+        'n_alerts': n_alerts,
+        'esc_cnt_dw': esc_cnt_dw,
+        'accu_cnt_dw': accu_cnt_dw,
+        'async_on': async_on,
+        'n_classes': n_classes,
+        'n_lpg': n_lpg,
+        'lpg_map': lpg_map,
+    }
 
-    # Define target path
-    rtl_path = out_path / 'ip/alert_handler/rtl/autogen'
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    doc_path = out_path / 'ip/alert_handler/data/autogen'
-    doc_path.mkdir(parents=True, exist_ok=True)
-
-    # Generating IP top module script is not generalized yet.
-    # So, topgen reads template files from alert_handler directory directly.
-    tpl_path = Path(__file__).resolve().parent / '../hw/ip/alert_handler/data'
-    hjson_tpl_path = tpl_path / 'alert_handler.hjson.tpl'
-
-    # Generate Register Package and RTLs
-    out = StringIO()
-    with hjson_tpl_path.open(mode='r', encoding='UTF-8') as fin:
-        hjson_tpl = Template(fin.read())
-        try:
-            out = hjson_tpl.render(n_alerts=n_alerts,
-                                   esc_cnt_dw=esc_cnt_dw,
-                                   accu_cnt_dw=accu_cnt_dw,
-                                   async_on=async_on,
-                                   n_classes=n_classes,
-                                   n_lpg=n_lpg,
-                                   lpg_map=lpg_map)
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-        log.info("alert_handler hjson: %s" % out)
-
-    if out == "":
-        log.error("Cannot generate alert_handler config file")
-        return
-
-    hjson_gen_path = doc_path / "alert_handler.hjson"
-    gencmd = (
-        "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --alert-handler-only "
-        "-o hw/top_{topname}/\n\n".format(topname=topname))
-    with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
-        fout.write(genhdr + gencmd + out)
-
-    # Generate register RTLs (currently using shell execute)
-    # TODO: More secure way to gneerate RTL
-    gen_rtl.gen_rtl(IpBlock.from_text(out, [], str(hjson_gen_path)),
-                    str(rtl_path))
+    ipgen_render('alert_handler', topname, params, out_path)
 
 
 def generate_plic(top, out_path):
