@@ -2,18 +2,20 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:pwrmgr_reg:0.1"
+name: ${instance_vlnv("lowrisc:ip:pwrmgr_reg:0.1")}
 description: "Power manager registers"
+provide:
+  # TODO: Double-check if the generated files really provide a stable interface.
+  - lowrisc:ip_interfaces:pwrmgr_reg
 
 filesets:
   files_rtl:
     depend:
       - lowrisc:tlul:headers
-      - "fileset_top    ? (lowrisc:systems:pwrmgr_reg)"
       - "fileset_topgen ? (lowrisc:systems:topgen-reg-only)"
     files:
-      - "fileset_ip ? (rtl/pwrmgr_reg_pkg.sv)"
-      - "fileset_ip ? (rtl/pwrmgr_reg_top.sv)"
+      - rtl/pwrmgr_reg_pkg.sv
+      - rtl/pwrmgr_reg_top.sv
     file_type: systemVerilogSource
 
 targets:

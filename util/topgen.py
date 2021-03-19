@@ -50,6 +50,7 @@ TOPGEN_TEMPLATE_PATH = Path(__file__).parent / 'topgen/templates'
 # TODO: Remove once all IP templates use ipgen.
 IPS_USING_IPGEN = [
     'alert_handler',
+    'pwrmgr',
     'rstmgr',
     'rv_plic',
 ]
@@ -518,6 +519,7 @@ def generate_clkmgr(top, cfg_path, out_path):
 # generate pwrmgr
 def generate_pwrmgr(top, out_path):
     log.info("Generating pwrmgr")
+    topname = top["name"]
 
     # Count number of wakeups
     n_wkups = len(top["wakeups"])
@@ -532,39 +534,12 @@ def generate_pwrmgr(top, out_path):
         log.warning(
             "The design has no wakeup sources. Low power not supported")
 
-    # Define target path
-    rtl_path = out_path / 'ip/pwrmgr/rtl/autogen'
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    doc_path = out_path / 'ip/pwrmgr/data/autogen'
-    doc_path.mkdir(parents=True, exist_ok=True)
-
-    # So, read template files from ip directory.
-    tpl_path = Path(__file__).resolve().parent / '../hw/ip/pwrmgr/data'
-    hjson_tpl_path = tpl_path / 'pwrmgr.hjson.tpl'
-
-    # Render and write out hjson
-    out = StringIO()
-    with hjson_tpl_path.open(mode='r', encoding='UTF-8') as fin:
-        hjson_tpl = Template(fin.read())
-        try:
-            out = hjson_tpl.render(NumWkups=n_wkups,
-                                   Wkups=top["wakeups"],
-                                   NumRstReqs=n_rstreqs)
-
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-        log.info("pwrmgr hjson: %s" % out)
-
-    if out == "":
-        log.error("Cannot generate pwrmgr config file")
-        return
-
-    hjson_path = doc_path / "pwrmgr.hjson"
-    with hjson_path.open(mode='w', encoding='UTF-8') as fout:
-        fout.write(genhdr + out)
-
-    # Generate reg files
-    gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []), str(rtl_path))
+    params = {
+        'NumWkups': n_wkups,
+        'Wkups': top["wakeups"],
+        'NumRstReqs': n_rstreqs,
+    }
+    ipgen_render('pwrmgr', topname, params, out_path)
 
 
 # generate rstmgr
