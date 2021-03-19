@@ -63,6 +63,9 @@ class Dmem:
 
         self.err_flag = False
 
+        self._load_begun = False
+        self._load_ready = False
+
     def _get_u32s(self, idx: int) -> List[int]:
         '''Return the value at idx as 8 uint32's
 
@@ -240,8 +243,15 @@ class Dmem:
         # And write back
         self._set_u32s(idxW, u32s)
 
-    def commit(self) -> None:
+    def commit(self, stalled: bool) -> None:
         assert not self.err_flag
+
+        if self._load_begun:
+            self._load_begun = False
+            self._load_ready = True
+        else:
+            self._load_ready = False
+
         for item in self.trace:
             self._commit_store(item)
         self.trace = []
@@ -249,3 +259,10 @@ class Dmem:
     def abort(self) -> None:
         self.trace = []
         self.err_flag = False
+
+    def in_progress_load_complete(self):
+        '''Returns true if a previously started load has completed'''
+        return self._load_ready
+
+    def begin_load(self):
+        self._load_begun = True

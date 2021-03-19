@@ -34,17 +34,14 @@ class OTBNState:
 
         self.dmem = Dmem()
 
-        # Stall cycle support: if an instruction causes one or more stall
-        # cycles, we call add_stall_cycles. This increments self._stalls (a
-        # non-negative count of the number of stall cycles to wait). On
-        # self.commit(), the self.stalled flag gets set if necessary and
-        # self._stalls is decremented.
+        # Stalling support: Instructions can indicate they should stall by
+        # returning false from OTBNInsn.pre_execute. For non instruction related
+        # stalls setting self.non_insn_stall will produce a stall.
         #
         # As a special case, we stall for one cycle before fetching the first
         # instruction (to match the behaviour of the RTL). This is modelled by
-        # setting self._start_stall and self.stalled.
-        self.stalled = False
-        self._stalls = 0
+        # setting self._start_stall and self.non_insn_stall
+        self.non_insn_stall = False
         self._start_stall = False
 
         self.loop_stack = LoopStack()
@@ -53,11 +50,6 @@ class OTBNState:
 
         self._err_bits = 0
         self.pending_halt = False
-
-    def add_stall_cycles(self, num_cycles: int) -> None:
-        '''Add stall cycles before the next insn completes'''
-        assert num_cycles >= 0
-        self._stalls += num_cycles
 
     def loop_start(self, iterations: int, bodysize: int) -> None:
         next_pc = int(self.pc) + 4
@@ -81,40 +73,30 @@ class OTBNState:
         c += self.wdrs.changes()
         return c
 
-    def commit(self) -> None:
+    def commit(self, sim_stalled: bool) -> None:
         # If the pending_halt flag is set or there are error bits (which should
         # imply pending_halt is set), we shouldn't get as far as commit.
         assert not self.pending_halt
         assert self._err_bits == 0
 
-        # Update self.stalled. If the instruction we just ran stalled us then
-        # self._stalls will be positive but self.stalled will be false.
-        assert self._stalls >= 0
-        if self._stalls > 0:
-            self.stalled = True
-            self._stalls -= 1
-        else:
-            self.stalled = False
-
         # If self._start_stall, this is the end of the stall cycle at the start
-        # of a run. We've just cleared self.stalled. Clear self._start_stall
-        # and commit self.ext_regs (so the start flag becomes visible) but then
-        # return rather than advancing the PC, ensuring we don't skip the first
-        # instruction.
+        # of a run. Clear self.non_insn_stall and self._start_stall
+        # and commit self.ext_regs (so the start flag becomes visible).
         if self._start_stall:
             self._start_stall = False
+            self.non_insn_stall = False
             self.ext_regs.commit()
-            return
+
+        self.dmem.commit(sim_stalled)
 
         # If we're stalled, there's nothing more to do: we only commit when we
         # finish our stall cycles.
-        if self.stalled:
+        if sim_stalled:
             return
 
         self.gprs.commit()
         self.pc = self.pc_next if self.pc_next is not None else self.pc + 4
         self.pc_next = None
-        self.dmem.commit()
         self.loop_stack.commit()
         self.ext_regs.commit()
         self.wsrs.commit()
@@ -123,11 +105,6 @@ class OTBNState:
 
     def _abort(self) -> None:
         '''Abort any pending state changes'''
-        # This should only be called when an instruction's execution goes
-        # wrong. If self._stalls is positive, the bad execution caused those
-        # stalls, so we should just zero them.
-        self._stalls = 0
-
         self.gprs.abort()
         self.pc_next = None
         self.dmem.abort()
@@ -142,7 +119,7 @@ class OTBNState:
         self.ext_regs.set_bits('STATUS', 1 << 0)
         self.running = True
         self._start_stall = True
-        self.stalled = True
+        self.non_insn_stall = True
         self.pending_halt = False
         self._err_bits = 0
 
