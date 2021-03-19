@@ -145,10 +145,14 @@ module ibex_controller #(
   logic special_req;
   logic special_req_pc_change;
   logic special_req_flush_only;
-  logic enter_debug_mode_d;
-  logic enter_debug_mode_q;
+  logic do_single_step_d;
+  logic do_single_step_q;
+  logic enter_debug_mode_prio_d;
+  logic enter_debug_mode_prio_q;
+  logic enter_debug_mode;
   logic ebreak_into_debug;
   logic handle_irq;
+  logic id_wb_pending;
 
   logic [3:0] mfip_id;
   logic       unused_irq_timer;
@@ -233,6 +237,9 @@ module ibex_controller #(
   // generic special request signal, applies to all instructions
   assign special_req = special_req_pc_change | special_req_flush_only;
 
+  // Is there an instruction in ID or WB that has yet to complete?
+  assign id_wb_pending = instr_valid_i | ~ready_wb_i;
+
   // Exception/fault prioritisation is taken from Table 3.7 of Priviledged Spec v1.11
   if (WritebackStage) begin : g_wb_exceptions
     always_comb begin
@@ -308,8 +315,24 @@ module ibex_controller #(
   // due to a recently flushed IF (or a delay in an instruction returning from
   // memory) before it has had anything to single step.
   // Also enter debug mode on a trigger match (hardware breakpoint)
-  assign enter_debug_mode_d = (debug_req_i | (debug_single_step_i & instr_valid_i) |
-                               trigger_match_i) & ~debug_mode_q;
+
+  // Set `do_single_step_q` when a valid instruction is seen outside of debug mode and core is in
+  // single step mode. The first valid instruction on debug mode entry will clear it. Hold its value
+  // when there is no valid instruction so `do_single_step_d` remains asserted until debug mode is
+  // entered.
+  assign do_single_step_d = instr_valid_i ? ~debug_mode_q & debug_single_step_i : do_single_step_q;
+  // Enter debug mode due to:
+  // * external `debug_req_i`
+  // * core in single step mode (dcsr.step == 1).
+  // * trigger match (hardware breakpoint)
+  //
+  // `debug_req_i` and `do_single_step_d` request debug mode with priority. This results in a debug
+  // mode entry even if the controller goes to `FLUSH` in preparation for handling an exception or
+  // interrupt. `trigger_match_i` is not a priority entry into debug mode as it must be ignored
+  // where control flow changes such that the instruction causing the trigger is no longer being
+  // executed.
+  assign enter_debug_mode_prio_d = (debug_req_i | do_single_step_d) & ~debug_mode_q;
+  assign enter_debug_mode = enter_debug_mode_prio_d | (trigger_match_i & ~debug_mode_q);
 
   // Set when an ebreak should enter debug mode rather than jump to exception
   // handler
@@ -452,7 +475,7 @@ module ibex_controller #(
         end
 
         // enter debug mode
-        if (enter_debug_mode_d) begin
+        if (enter_debug_mode) begin
           ctrl_fsm_ns = DBG_TAKEN_IF;
           // Halt IF only for now, ID will be flushed in DBG_TAKEN_IF as the
           // ID state is needed for correct debug mode entry
@@ -516,15 +539,14 @@ module ibex_controller #(
           pc_set_spec_o = BranchPredictor ? ~instr_bp_taken_i : 1'b1;
         end
 
-        // If entering debug mode or handling an IRQ the core needs to wait
-        // until the current instruction has finished executing. Stall IF
-        // during that time.
-        if ((enter_debug_mode_d || handle_irq) && stall) begin
+        // If entering debug mode or handling an IRQ the core needs to wait until any instruction in
+        // ID or WB has finished executing. Stall IF during that time.
+        if ((enter_debug_mode || handle_irq) && (stall || id_wb_pending)) begin
           halt_if = 1'b1;
         end
 
-        if (!stall && !special_req) begin
-          if (enter_debug_mode_d) begin
+        if (!stall && !special_req && !id_wb_pending) begin
+          if (enter_debug_mode) begin
             // enter debug mode
             ctrl_fsm_ns = DBG_TAKEN_IF;
             // Halt IF only for now, ID will be flushed in DBG_TAKEN_IF as the
@@ -757,7 +779,7 @@ module ibex_controller #(
         // If an EBREAK instruction is causing us to enter debug mode on the
         // same cycle as a debug_req or single step, honor the EBREAK and
         // proceed to DBG_TAKEN_ID.
-        if (enter_debug_mode_q && !(ebrk_insn_prio && ebreak_into_debug)) begin
+        if (enter_debug_mode_prio_q && !(ebrk_insn_prio && ebreak_into_debug)) begin
           ctrl_fsm_ns = DBG_TAKEN_IF;
         end
       end // FLUSH
@@ -799,23 +821,25 @@ module ibex_controller #(
   // update registers
   always_ff @(posedge clk_i or negedge rst_ni) begin : update_regs
     if (!rst_ni) begin
-      ctrl_fsm_cs        <= RESET;
-      nmi_mode_q         <= 1'b0;
-      debug_mode_q       <= 1'b0;
-      enter_debug_mode_q <= 1'b0;
-      load_err_q         <= 1'b0;
-      store_err_q        <= 1'b0;
-      exc_req_q          <= 1'b0;
-      illegal_insn_q     <= 1'b0;
+      ctrl_fsm_cs             <= RESET;
+      nmi_mode_q              <= 1'b0;
+      do_single_step_q        <= 1'b0;
+      debug_mode_q            <= 1'b0;
+      enter_debug_mode_prio_q <= 1'b0;
+      load_err_q              <= 1'b0;
+      store_err_q             <= 1'b0;
+      exc_req_q               <= 1'b0;
+      illegal_insn_q          <= 1'b0;
     end else begin
-      ctrl_fsm_cs        <= ctrl_fsm_ns;
-      nmi_mode_q         <= nmi_mode_d;
-      debug_mode_q       <= debug_mode_d;
-      enter_debug_mode_q <= enter_debug_mode_d;
-      load_err_q         <= load_err_d;
-      store_err_q        <= store_err_d;
-      exc_req_q          <= exc_req_d;
-      illegal_insn_q     <= illegal_insn_d;
+      ctrl_fsm_cs             <= ctrl_fsm_ns;
+      nmi_mode_q              <= nmi_mode_d;
+      do_single_step_q        <= do_single_step_d;
+      debug_mode_q            <= debug_mode_d;
+      enter_debug_mode_prio_q <= enter_debug_mode_prio_d;
+      load_err_q              <= load_err_d;
+      store_err_q             <= store_err_d;
+      exc_req_q               <= exc_req_d;
+      illegal_insn_q          <= illegal_insn_d;
     end
   end
 
@@ -853,13 +877,13 @@ module ibex_controller #(
     logic exception_pc_set, seen_exception_pc_set, expect_exception_pc_set;
     logic exception_req_needs_pc_set;
 
-    assign exception_req = (special_req | enter_debug_mode_d | handle_irq);
+    assign exception_req = (special_req | enter_debug_mode | handle_irq);
     // Any exception rquest will cause a transition out of DECODE, once the controller transitions
     // back into DECODE we're done handling the request.
     assign exception_req_done =
       exception_req_pending & (ctrl_fsm_cs != DECODE) & (ctrl_fsm_ns == DECODE);
 
-    assign exception_req_needs_pc_set = enter_debug_mode_d | handle_irq | special_req_pc_change;
+    assign exception_req_needs_pc_set = enter_debug_mode | handle_irq | special_req_pc_change;
 
     // An exception PC set uses specific PC types
     assign exception_pc_set =

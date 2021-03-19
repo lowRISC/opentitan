@@ -21,6 +21,7 @@ This makes it more difficult for an external observer to infer secret data by ob
 
 In Ibex, most instructions already execute independent of their input operands.
 When data-independent timing is enabled:
+
 * Branches execute identically regardless of their taken/not-taken status
 * Early completion of multiplication by zero/one is removed
 * Early completion of divide by zero is removed
