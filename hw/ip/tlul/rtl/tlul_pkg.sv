@@ -176,7 +176,7 @@ package tlul_pkg;
   endfunction  // get_cmd_intg
 
   // calculate ecc for data checking
-  function automatic logic [DataIntgWidth-1:0] get_data_intg([top_pkg::TL_DW-1:0] data);
+  function automatic logic [DataIntgWidth-1:0] get_data_intg(logic [top_pkg::TL_DW-1:0] data);
     logic [DataIntgWidth-1:0] data_intg;
     logic [top_pkg::TL_DW-1:0] unused_data;
     {data_intg, unused_data} = prim_secded_pkg::prim_secded_39_32_enc(data);
