@@ -368,6 +368,7 @@ typedef enum logic[11:0] {
   CSR_MIP       = 12'h344,
 
   CSR_MSECCFG   = 12'h390,
+  CSR_MSECCFGH  = 12'h391,
 
   // Physical memory protection
   CSR_PMPCFG0   = 12'h3A0,
