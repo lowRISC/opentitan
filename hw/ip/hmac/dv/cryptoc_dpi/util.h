@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef SECURITY_UTIL_LITE_UTIL_H_
-#define SECURITY_UTIL_LITE_UTIL_H_
+#ifndef OPENTITAN_HW_IP_HMAC_DV_CRYPTOC_DPI_UTIL_H_
+#define OPENTITAN_HW_IP_HMAC_DV_CRYPTOC_DPI_UTIL_H_
 
 #include <stddef.h>
 
@@ -20,4 +20,4 @@
  * useful for scrubbing security sensitive buffers. */
 void *always_memset(void *s, int c, size_t n);
 
-#endif  // SECURITY_UTIL_LITE_UTIL_H_
+#endif  // OPENTITAN_HW_IP_HMAC_DV_CRYPTOC_DPI_UTIL_H_

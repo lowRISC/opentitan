@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef SECURITY_UTIL_LITE_SHA_H_
-#define SECURITY_UTIL_LITE_SHA_H_
+#ifndef OPENTITAN_HW_IP_HMAC_DV_CRYPTOC_DPI_SHA_H_
+#define OPENTITAN_HW_IP_HMAC_DV_CRYPTOC_DPI_SHA_H_
 
 #include <stdint.h>
 
@@ -40,4 +40,4 @@ const uint8_t *SHA_hash(const void *data, size_t len, uint8_t *digest);
 }
 #endif  // __cplusplus
 
-#endif  // SECURITY_UTIL_LITE_SHA_H_
+#endif  // OPENTITAN_HW_IP_HMAC_DV_CRYPTOC_DPI_SHA_H_

@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#ifndef OPENTITAN_HW_IP_AES_MODEL_AES_MODES_H_
+#define OPENTITAN_HW_IP_AES_MODEL_AES_MODES_H_
+
 // The examples below are extracted from the NIST Publication SP 800-38A
 // "Recommendation for Block Cipher Modes of Operation: Methods and Techniques"
 // available at https://csrc.nist.gov/publications/detail/sp/800-38a/final .
@@ -171,3 +174,5 @@ static const unsigned char kAesModesCipherTextCtr256[64] = {
     0x09, 0x30, 0xda, 0xa2, 0x3d, 0xe9, 0x4c, 0xe8, 0x70, 0x17, 0xba,
     0x2d, 0x84, 0x98, 0x8d, 0xdf, 0xc9, 0xc5, 0x8d, 0xb6, 0x7a, 0xad,
     0xa6, 0x13, 0xc2, 0xdd, 0x08, 0x45, 0x79, 0x41, 0xa6};
+
+#endif  // OPENTITAN_HW_IP_AES_MODEL_AES_MODES_H_

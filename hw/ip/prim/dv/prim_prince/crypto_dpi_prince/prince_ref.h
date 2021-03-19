@@ -3,6 +3,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#ifndef OPENTITAN_HW_IP_PRIM_DV_PRIM_PRINCE_CRYPTO_DPI_PRINCE_PRINCE_REF_H_
+#define OPENTITAN_HW_IP_PRIM_DV_PRIM_PRINCE_CRYPTO_DPI_PRINCE_PRINCE_REF_H_
+
 /*! \file prince_ref.h
     \brief Reference implementation of the Prince block cipher, complient to
    C99. 'Reference' here means straightforward, unoptimized, and checked against
@@ -31,9 +34,6 @@
  *    - Modification of `prince_core(...)` to handle the new key schedule and
  *      user-specified number of half-rounds.
  */
-
-#ifndef OPENTITAN_HW_IP_PRIM_DV_PRIM_PRINCE_CRYPTO_DPI_PRINCE_PRINCE_REF_H_
-#define OPENTITAN_HW_IP_PRIM_DV_PRIM_PRINCE_CRYPTO_DPI_PRINCE_PRINCE_REF_H_
 
 #include <stdint.h>
 #include <string.h>

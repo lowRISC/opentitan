@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#ifndef OPENTITAN_SW_DEVICE_RISCV_COMPLIANCE_SUPPORT_SUPPORT_H_
+#define OPENTITAN_SW_DEVICE_RISCV_COMPLIANCE_SUPPORT_SUPPORT_H_
+
 /**
  * @brief OpenTitan-specific wrapper for RISC-V Compliance
  *
@@ -17,3 +20,5 @@
  * Main function for RISC-V Compliance, provided as an out-of-band.
  */
 int opentitan_compliance_main(int argc, char **argv);
+
+#endif  // OPENTITAN_SW_DEVICE_RISCV_COMPLIANCE_SUPPORT_SUPPORT_H_

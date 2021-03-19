@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#ifndef SECURITY_UTIL_LITE_HASH_INTERNAL_H__
-#define SECURITY_UTIL_LITE_HASH_INTERNAL_H__
+#ifndef OPENTITAN_HW_IP_HMAC_DV_CRYPTOC_DPI_HASH_INTERNAL_H_
+#define OPENTITAN_HW_IP_HMAC_DV_CRYPTOC_DPI_HASH_INTERNAL_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -53,4 +53,4 @@ typedef struct HASH_CTX {
 }
 #endif  // __cplusplus
 
-#endif  // SECURITY_UTIL_LITE_HASH_INTERNAL_H__
+#endif  // OPENTITAN_HW_IP_HMAC_DV_CRYPTOC_DPI_HASH_INTERNAL_H_

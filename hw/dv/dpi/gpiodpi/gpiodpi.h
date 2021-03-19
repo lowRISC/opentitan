@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef GPIODPI_H_
-#define GPIODPI_H_
+#ifndef OPENTITAN_HW_DV_DPI_GPIODPI_GPIODPI_H_
+#define OPENTITAN_HW_DV_DPI_GPIODPI_GPIODPI_H_
 
 #include <svdpi.h>
 
@@ -46,4 +46,4 @@ uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe);
 void gpiodpi_close(void *ctx_void);
 
 }  // extern "C"
-#endif  // GPIODPI_H_
+#endif  // OPENTITAN_HW_DV_DPI_GPIODPI_GPIODPI_H_
