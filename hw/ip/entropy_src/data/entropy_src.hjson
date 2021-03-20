@@ -164,6 +164,12 @@
                 to ENTROPY_SRC."
                 '''
         }
+        { bits: "13",
+          name: "REPCNTS_DISABLE",
+          desc: '''Setting this bit disables the health test called Repetition Count test,
+                which is based on counting symbols.
+                '''
+        }
       ]
     },
     { name: "RATE",
@@ -266,6 +272,42 @@
         { bits: "31:16",
           name: "BYPASS_THRESH",
           desc: '''This is the threshold size for the repetition count health test
+                   running in bypass mode. This mode is active after reset for the
+                   first and only test run, or when this mode is programmed by firmware.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is less than the current value of this register.
+                   A read from this register always reflects the current value.
+                '''
+          resval: "0xFFFF"
+        }
+      ]
+    },
+    { name: "REPCNTS_THRESHOLDS",
+      desc: "Repetition count symbol test thresholds register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe:  "true",
+      regwen:   "REGWEN",
+      tags: [// Exclude from writes to these field because they are one-way updates
+             "excl:CsrAllTests:CsrExclWrite"]
+      fields: [
+        { bits: "15:0",
+          name: "FIPS_THRESH",
+          desc: '''This is the threshold size for the repetition count symbol health test.
+                   This value is used in normal mode when entropy is being tested in
+                   FIPS/CC compliance mode.
+                   This register must be written before the module is enabled.
+                   Writing to this register will only update the register if the
+                   written value is less than the current value of this register.
+                   A read from this register always reflects the current value.
+                '''
+          resval: "0xFFFF"
+        }
+        { bits: "31:16",
+          name: "BYPASS_THRESH",
+          desc: '''This is the threshold size for the repetition count symbol health test
                    running in bypass mode. This mode is active after reset for the
                    first and only test run, or when this mode is programmed by firmware.
                    This register must be written before the module is enabled.
@@ -545,6 +587,22 @@
         }
       ]
     },
+    { name:     "REPCNTS_HI_WATERMARKS",
+      desc:     "Repetition count symbol test high watermarks register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "15:0",
+          name: "FIPS_WATERMARK",
+          desc: "High watermark value of the REPCNTS test in FIPS mode."
+        }
+        { bits: "31:16",
+          name: "BYPASS_WATERMARK",
+          desc: "High watermark value of the REPCNTS test in bypass mode."
+        }
+      ]
+    },
     { name:     "ADAPTP_HI_WATERMARKS",
       desc:     "Adaptive proportion test high watermarks register",
       swaccess: "ro",
@@ -671,6 +729,20 @@
       fields: [
         { bits: "31:0",
           name: "REPCNT_TOTAL_FAILS",
+          desc: '''This register will hold a running count of test failures observed
+                   during normal operation. It will persist until cleared.
+                '''
+        }
+      ]
+    },
+    { name:     "REPCNTS_TOTAL_FAILS",
+      desc:     "Repetition count symbol test failure counter register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "31:0",
+          name: "REPCNTS_TOTAL_FAILS",
           desc: '''This register will hold a running count of test failures observed
                    during normal operation. It will persist until cleared.
                 '''
@@ -857,6 +929,14 @@
         }
         { bits: "27:24",
           name: "MARKOV_LO_FAIL_COUNT",
+          desc: '''This field will hold a running count of test failures that
+                   contribute to the total alert count. It will be reset after every
+                   passing test sequence. If an alert is signaled, this value
+                   will persist until it is cleared.
+                '''
+        }
+        { bits: "31:28",
+          name: "REPCNTS_FAIL_COUNT",
           desc: '''This field will hold a running count of test failures that
                    contribute to the total alert count. It will be reset after every
                    passing test sequence. If an alert is signaled, this value

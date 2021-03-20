@@ -23,6 +23,7 @@ filesets:
       - rtl/entropy_src_ack_sm.sv
       - rtl/entropy_src_main_sm.sv
       - rtl/entropy_src_repcnt_ht.sv
+      - rtl/entropy_src_repcnts_ht.sv
       - rtl/entropy_src_adaptp_ht.sv
       - rtl/entropy_src_bucket_ht.sv
       - rtl/entropy_src_markov_ht.sv
