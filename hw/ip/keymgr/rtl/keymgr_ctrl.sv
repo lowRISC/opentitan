@@ -172,10 +172,12 @@ module keymgr_ctrl import keymgr_pkg::*;(
   );
 
   keymgr_key_update_e update_sel;
+  logic key_update_vld;
   always_comb begin
     key_state_d = key_state_q;
     data_valid_o = 1'b0;
     wipe_key_o = 1'b0;
+    key_update_vld = 1'b0;
 
     unique case (update_sel)
       KeyUpdateRandom: begin
@@ -193,12 +195,14 @@ module keymgr_ctrl import keymgr_pkg::*;(
 
       KeyUpdateKmac: begin
         data_valid_o = data_update & ~fault_err & ~op_err;
-        key_state_d = key_update & ~fault_err & ~op_err ? kmac_data_i : key_state_q;
+        key_update_vld = key_update & ~fault_err & ~op_err;
+        key_state_d = key_update_vld ? kmac_data_i : key_state_q;
       end
 
       KeyUpdateInvalid: begin
         data_valid_o = data_update;
-        key_state_d = key_update ? kmac_data_i : key_state_q;
+        key_update_vld = key_update;
+        key_state_d = key_update_vld ? kmac_data_i : key_state_q;
       end
 
       KeyUpdateWipe: begin
@@ -234,6 +238,10 @@ module keymgr_ctrl import keymgr_pkg::*;(
                                  (init_o | invalid_op);
 
 
+  logic next_state;
+  logic invalid_state;
+  assign next_state = op_ack && advance_sel && key_update_vld;
+  assign invalid_state = op_ack && (disable_sel || fault_err);
   always_comb begin
     // persistent data
     state_d = state_q;
@@ -326,10 +334,10 @@ module keymgr_ctrl import keymgr_pkg::*;(
         update_sel = KeyUpdateKmac;
         if (!en_i) begin
           state_d = StCtrlWipe;
-        end else if (op_ack && (disable_sel || fault_err)) begin
+        end else if (invalid_state) begin
           update_sel = KeyUpdateInvalid;
           state_d = StCtrlDisabled;
-        end else if (op_ack && advance_sel) begin
+        end else if (next_state) begin
           state_d = StCtrlCreatorRootKey;
         end
       end
@@ -348,10 +356,10 @@ module keymgr_ctrl import keymgr_pkg::*;(
         update_sel = KeyUpdateKmac;
         if (!en_i) begin
           state_d = StCtrlWipe;
-        end else if (op_ack && (disable_sel || fault_err)) begin
+        end else if (invalid_state) begin
           update_sel = KeyUpdateInvalid;
           state_d = StCtrlDisabled;
-        end else if (op_ack && advance_sel) begin
+        end else if (next_state) begin
           state_d = StCtrlOwnerIntKey;
         end
       end
@@ -369,10 +377,10 @@ module keymgr_ctrl import keymgr_pkg::*;(
         update_sel = KeyUpdateKmac;
         if (!en_i) begin
           state_d = StCtrlWipe;
-        end else if (op_ack && (disable_sel || fault_err)) begin
+        end else if (invalid_state) begin
           update_sel = KeyUpdateInvalid;
           state_d = StCtrlDisabled;
-        end else if (op_ack && advance_sel) begin
+        end else if (next_state) begin
           state_d = StCtrlOwnerKey;
         end
       end
