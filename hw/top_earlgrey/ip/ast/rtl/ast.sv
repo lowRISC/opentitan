@@ -546,19 +546,11 @@ ast_reg_top u_reg (
   .devmode_i ( 1'b0 )
 );  // u_reg
 
-// Registers Output to AST
-logic [32-1:0] ast_rwtype0_q;
-logic [11-1:0] ast_rwtype1_q;
-
-assign ast_rwtype0_q = reg2hw.rwtype0.q;
-assign ast_rwtype1_q = { reg2hw.rwtype1.field15_8.q,
-                         reg2hw.rwtype1.field4.q,
-                         reg2hw.rwtype1.field1.q,
-                         reg2hw.rwtype1.field0.q };
-
 // AST to Registers Input
-assign hw2reg.rwtype0.d  = 32'h0000_0000;
-assign hw2reg.rwtype0.de = 1'b0;
+for (genvar i=0; i<10; i++ ) begin : gen_regb
+  assign hw2reg.regb[i].d  = 32'h0000_0000;
+  assign hw2reg.regb[i].de = 1'b0;
+end
 
 
 ///////////////////////////////////////

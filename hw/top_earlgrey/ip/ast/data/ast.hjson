@@ -11,6 +11,20 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
+  param_list: [
+    { name:    "NumRegsA",
+      type:    "int",
+      default: "50",
+      desc: "Number of registers in the array",
+      local:   "true",
+    },
+    { name:    "NumRegsB",
+      type:    "int",
+      default: "10",
+      desc: "Number of registers in the array",
+      local:   "true",
+    },
+  ],
   regwidth: "32",
   registers: [
     { name: "REVID",
@@ -24,55 +38,46 @@
         { bits: "7:0",
           desc: "Revision",
           resval: "0x01",
-	}
+	},
 	//
         // bits: "31:8", Reserved
 	//
-      ]
-    }
-    { name: "RWTYPE0",
-      desc: "RW type with one field",
-      swaccess: "rw",
-      hwaccess: "hrw",
-      fields: [
-        {
-          bits: "31:0",
-          desc: "field description"
-          resval: "12345678",
-        }
-      ]
+      ],
     },
-    { name: "RWTYPE1",
-      desc: '''
-          RW type
-          with long
-          description
-          and multiple fields
-          '''
-      swaccess: "rw",
-      hwaccess: "hro",
-      fields: [
-        { bits: "0",
-          name: "FIELD0",
-          desc: "field 0",
-          resval: "1",
-        }
-        { bits: "1",
-          name: "FIELD1",
-          desc: "field 1",
-          resval: "0",
-        }
-        { bits: "4",
-          name: "FIELD4",
-          desc: "field 4",
-          resval: "1",
-        }
-        { bits: "15:8",
-          name: "FIELD15_8",
-          desc: "field [15:8]",
-          resval: "100",
-        }
-      ]
+    { multireg:
+      {
+        name: "REGA",
+        desc: "AST Registers Array-A for OTP/ROM Write Testing",
+        count: "NumRegsA",
+        cname: "REGA",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "31:0", 
+            name: "reg32", 
+	    desc: "32-bit Register",
+            resval: "0",
+          },
+        ],
+      },
+    },
+    { skipto: "0x200" }
+    { multireg:
+      {
+        name: "REGB",
+        desc: "AST Registers Array-B",
+        count: "NumRegsB",
+        cname: "REGB",
+        swaccess: "rw",
+        hwaccess: "hrw",
+        fields: [
+          { bits: "31:0", 
+            name: "reg32", 
+	    desc: "32-bit Register",
+            resval: "0",
+          },
+        ],
+      },
     },
   ],
 }
