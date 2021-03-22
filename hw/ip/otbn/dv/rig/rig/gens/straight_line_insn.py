@@ -175,25 +175,25 @@ class StraightLineInsn(SnippetGen):
         assert len(op_vals) == len(insn.operands)
         return ProgInsn(insn, op_vals, None)
 
-    def _pick_gpr_with_arch_val(self, model: Model) -> int:
-        '''Return the index of a GPR with an architectural value'''
-        arch_gprs = model.regs_with_architectural_vals('gpr')
-        # Since x0 always has a value, there will always be at least something
-        assert arch_gprs
-        return random.choices(arch_gprs)[0]
+    def _pick_gpr_for_indirect_wdr(self,
+                                   known_regs: List[Tuple[int, int]],
+                                   model: Model,
+                                   wdr_is_src: bool) -> Optional[int]:
+        '''Return index of a GPR pointing to a WDR with architectural value
 
-    def _pick_gpr_for_arch_wdr(self,
-                               known_regs: List[Tuple[int, int]],
-                               model: Model) -> Optional[int]:
-        '''Return index of a GPR pointing to a WDR with architectural value'''
+        Here, the GPR value must be known and must be at most 31. If wdr_is_src
+        then the WDR that it points to must also have an architectural value.
+
+        '''
         arch_wdrs = set(model.regs_with_architectural_vals('wdr'))
         valid_gprs = []
         for gpr, gpr_val in known_regs:
-            if gpr_val is None:
+            if gpr_val is None or gpr_val > 31:
                 continue
-            wdr_idx = gpr_val & 31
-            if wdr_idx in arch_wdrs:
-                valid_gprs.append(gpr)
+            if wdr_is_src and gpr_val not in arch_wdrs:
+                continue
+
+            valid_gprs.append(gpr)
 
         if not valid_gprs:
             return None
@@ -276,21 +276,10 @@ class StraightLineInsn(SnippetGen):
         assert isinstance(offset.op_type, ImmOperandType)
 
         known_regs = model.regs_with_known_vals('gpr')
-        if is_load:
-            # bn.lid reads the bottom 5 bits of grd to get the index of the
-            # destination WDR. We can pick any GPR that has an architectural
-            # value.
-            wdr_gpr_idx = self._pick_gpr_with_arch_val(model)
-        else:
-            # bn.sid looks at the bottom 5 bits of grs2 to get a source WDR.
-            # Unlike bn.lid above, we need an architectural value in the
-            # corresponding WDR. Thus we have to pick a GPR with a known value
-            # which, in turn, points at a WDR with an architectural value.
-            grs2_idx = self._pick_gpr_for_arch_wdr(known_regs, model)
-            if grs2_idx is None:
-                return None
-
-            wdr_gpr_idx = grs2_idx
+        wdr_gpr_idx = self._pick_gpr_for_indirect_wdr(known_regs, model,
+                                                      not is_load)
+        if wdr_gpr_idx is None:
+            return None
 
         # Now pick the source register and offset. The range for offset
         # shouldn't be none (because we know the width of the underlying bit
@@ -358,16 +347,14 @@ class StraightLineInsn(SnippetGen):
         if not exp_shape:
             raise RuntimeError('Unexpected shape for bn.movr')
 
-        # For grs, we need to pick a GPR that points at a WDR with an
-        # architectural value (since it will be the source of the move).
         known_regs = model.regs_with_known_vals('gpr')
-        grs_idx = self._pick_gpr_for_arch_wdr(known_regs, model)
+        grs_idx = self._pick_gpr_for_indirect_wdr(known_regs, model, True)
         if grs_idx is None:
             return None
 
-        # For grd, we can pick any GPR with an architectural value (since it
-        # defines the destination WDR)
-        grd_idx = self._pick_gpr_with_arch_val(model)
+        grd_idx = self._pick_gpr_for_indirect_wdr(known_regs, model, False)
+        if grd_idx is None:
+            return None
 
         grd_inc_val, grs_inc_val = self._pick_inc_vals(grd_idx, grs_idx, model)
 
