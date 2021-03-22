@@ -44,6 +44,12 @@
       act:     "req"
       package: "entropy_src_pkg"
     }
+    { struct:  "cs_aes_halt"
+      type:    "req_rsp",
+      name:    "cs_aes_halt"
+      act:     "rsp"
+      package: "entropy_src_pkg"
+    }
     { struct:  "logic"
       type:    "uni"
       name:    "efuse_sw_app_enable"

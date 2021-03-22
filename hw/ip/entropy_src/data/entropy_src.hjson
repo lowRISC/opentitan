@@ -21,6 +21,12 @@
       act:     "rsp",
       package: "entropy_src_pkg",
     }
+    { struct:  "cs_aes_halt"
+      type:    "req_rsp",
+      name:    "cs_aes_halt"
+      act:     "req"
+      package: "entropy_src_pkg"
+    }
     { struct:  "entropy_src_rng",
       type:    "req_rsp",
       name:    "entropy_src_rng",

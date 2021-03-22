@@ -41,6 +41,11 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   output logic [CtrLen-1:0]  ctr_drbg_gen_rc_o,
   output logic [BlkLen-1:0]  ctr_drbg_gen_bits_o,
   output logic               ctr_drbg_gen_fips_o,
+
+   // es_req/ack
+  input logic                ctr_drbg_gen_es_req_i,
+  output logic               ctr_drbg_gen_es_ack_o,
+
   // update interface
   output logic               gen_upd_req_o,
   input logic                upd_gen_rdy_i,
@@ -168,8 +173,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   logic [1:0]                  interate_ctr_q, interate_ctr_d;
 
 // Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 3 -n 5 \
-//      -s 214010139 --language=sv
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
+//      -s 2651202796 --language=sv
 //
 // Hamming distance histogram:
 //
@@ -188,8 +193,9 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
 
   localparam int StateWidth = 5;
   typedef enum logic [StateWidth-1:0] {
-    ReqIdle  = 5'b01011,
-    ReqSend  = 5'b10001,
+    ReqIdle  = 5'b01101,
+    ReqSend  = 5'b00011,
+    ESHalt   = 5'b11000,
     ReqError = 5'b10110
 } state_e;
 
@@ -311,10 +317,13 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     block_encrypt_req_o = 1'b0;
     sfifo_genreq_pop = 1'b0;
     ctr_drbg_gen_sm_err_o = 1'b0;
+    ctr_drbg_gen_es_ack_o = 1'b0;
     unique case (state_q)
       // ReqIdle: increment v this cycle, push in next
       ReqIdle: begin
-        if (sfifo_genreq_not_empty && !sfifo_adstage_full) begin
+        if (ctr_drbg_gen_es_req_i) begin
+          state_d = ESHalt;
+        end else if (sfifo_genreq_not_empty && !sfifo_adstage_full) begin
           v_ctr_load = 1'b1;
           sfifo_adstage_push = 1'b1;
           state_d = ReqSend;
@@ -329,6 +338,12 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
           end
         end else begin
           sfifo_genreq_pop = 1'b1;
+          state_d = ReqIdle;
+        end
+      end
+      ESHalt: begin
+        ctr_drbg_gen_es_ack_o = 1'b1;
+        if (!ctr_drbg_gen_es_req_i) begin
           state_d = ReqIdle;
         end
       end

@@ -30,6 +30,7 @@ module csrng_block_encrypt #(
   output logic [Cmd-1:0]     block_encrypt_cmd_o,
   output logic [StateId-1:0] block_encrypt_id_o,
   output logic [BlkLen-1:0]  block_encrypt_v_o,
+  output logic               block_encrypt_quiet_o,
   output logic               block_encrypt_aes_cipher_sm_err_o,
   output logic [2:0]         block_encrypt_sfifo_blkenc_err_o
 );
@@ -55,6 +56,7 @@ module csrng_block_encrypt #(
   aes_pkg::sp2v_e       cipher_in_ready;
   aes_pkg::sp2v_e       cipher_out_valid;
   aes_pkg::sp2v_e       cipher_out_ready;
+  aes_pkg::sp2v_e       cipher_crypt_busy;
   logic [BlkLen-1:0]    cipher_data_out;
   logic                 aes_cipher_core_enable;
 
@@ -104,7 +106,7 @@ module csrng_block_encrypt #(
     .op_i               ( aes_pkg::CIPH_FWD          ),
     .key_len_i          ( aes_pkg::AES_256           ),
     .crypt_i            ( aes_pkg::SP2V_HIGH         ), // Enable
-    .crypt_o            (                            ),
+    .crypt_o            ( cipher_crypt_busy          ),
     .alert_o            ( block_encrypt_aes_cipher_sm_err_o),
     .dec_key_gen_i      ( aes_pkg::SP2V_LOW          ), // Disable
     .dec_key_gen_o      (                            ),
@@ -169,5 +171,14 @@ module csrng_block_encrypt #(
          {(sfifo_blkenc_push && sfifo_blkenc_full),
           (sfifo_blkenc_pop && !sfifo_blkenc_not_empty),
           (sfifo_blkenc_full && !sfifo_blkenc_not_empty)};
+
+  //--------------------------------------------
+  // idle detection
+  //--------------------------------------------
+
+  // simple aes cipher activity detector
+  assign block_encrypt_quiet_o =
+         (cipher_in_valid == aes_pkg::SP2V_LOW) && (cipher_in_ready == aes_pkg::SP2V_LOW) ||
+         (cipher_crypt_busy == aes_pkg::SP2V_LOW);
 
 endmodule

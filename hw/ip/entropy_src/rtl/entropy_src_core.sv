@@ -29,6 +29,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   output entropy_src_rng_req_t entropy_src_rng_o,
   input  entropy_src_rng_rsp_t entropy_src_rng_i,
 
+  // CSRNG Interface
+  output cs_aes_halt_req_t cs_aes_halt_o,
+  input  cs_aes_halt_rsp_t cs_aes_halt_i,
+
   // External Health Test Interface
   output entropy_src_xht_req_t entropy_src_xht_o,
   input  entropy_src_xht_rsp_t entropy_src_xht_i,
@@ -328,6 +332,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     sha3_squeezing;
   logic [2:0]               sha3_fsm;
   logic [32:0]              sha3_err;
+  logic                     cs_aes_halt_req;
 
 
   logic [sha3_pkg::StateW-1:0] sha3_state[Sha3Share];
@@ -344,6 +349,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] window_cntr_q, window_cntr_d;
   logic                    sha3_msg_rdy_q, sha3_msg_rdy_d;
   logic                    sha3_err_q, sha3_err_d;
+  logic        cs_aes_halt_q, cs_aes_halt_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -357,6 +363,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       window_cntr_q         <= '0;
       sha3_msg_rdy_q        <= '0;
       sha3_err_q            <= '0;
+      cs_aes_halt_q         <= '0;
     end else begin
       es_rate_cntr_q        <= es_rate_cntr_d;
       lfsr_incr_dly_q       <= lfsr_incr_dly_d;
@@ -368,6 +375,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       window_cntr_q         <= window_cntr_d;
       sha3_msg_rdy_q        <= sha3_msg_rdy_d;
       sha3_err_q            <= sha3_err_d;
+      cs_aes_halt_q         <= cs_aes_halt_d;
     end
 
   assign es_enable = (|reg2hw.conf.enable.q);
@@ -1742,7 +1750,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
 
   assign pfifo_cond_push = pfifo_precon_pop && sha3_msgfifo_ready &&
-  !es_bypass_mode;
+  !cs_aes_halt_req && !es_bypass_mode;
 
   assign pfifo_cond_wdata = pfifo_precon_rdata;
 
@@ -1851,9 +1859,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .sha3_start_o       (sha3_start),
     .sha3_process_o     (sha3_process),
     .sha3_done_o        (sha3_done),
+    .cs_aes_halt_req_o  (cs_aes_halt_req),
+    .cs_aes_halt_ack_i  (cs_aes_halt_i.cs_aes_halt_ack),
     .main_sm_err_o      (es_main_sm_err)
   );
 
+  // es to cs halt request to reduce power spikes
+  assign cs_aes_halt_d = cs_aes_halt_req;
+  assign cs_aes_halt_o.cs_aes_halt_req = cs_aes_halt_q;
 
   //--------------------------------------------
   // send processed entropy to final fifo
