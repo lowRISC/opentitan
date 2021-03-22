@@ -86,13 +86,13 @@ module aes_core
   logic        [3:0][3:0][7:0] state_done [NumShares];
   logic        [3:0][3:0][7:0] state_out;
 
-  logic            [7:0][31:0] key_init [2];
-  logic            [7:0]       key_init_qe [2];
-  logic            [7:0][31:0] key_init_d [2];
-  logic            [7:0][31:0] key_init_q [2];
+  logic            [7:0][31:0] key_init [NumSharesKey];
+  logic            [7:0]       key_init_qe [NumSharesKey];
+  logic            [7:0][31:0] key_init_d [NumSharesKey];
+  logic            [7:0][31:0] key_init_q [NumSharesKey];
   logic            [7:0][31:0] key_init_cipher [NumShares];
-  sp2v_e           [7:0]       key_init_we_ctrl [2];
-  sp2v_e           [7:0]       key_init_we [2];
+  sp2v_e           [7:0]       key_init_we_ctrl [NumSharesKey];
+  sp2v_e           [7:0]       key_init_we [NumSharesKey];
   logic  [KeyInitSelWidth-1:0] key_init_sel_raw;
   key_init_sel_e               key_init_sel_ctrl;
   key_init_sel_e               key_init_sel;
@@ -156,13 +156,13 @@ module aes_core
 
   // Pseudo-random data for clearing purposes
   logic [WidthPRDClearing-1:0] cipher_prd_clearing [NumShares];
-  logic [WidthPRDClearing-1:0] prd_clearing [2];
+  logic [WidthPRDClearing-1:0] prd_clearing [NumSharesKey];
   logic                        prd_clearing_upd_req;
   logic                        prd_clearing_upd_ack;
   logic                        prd_clearing_rsd_req;
   logic                        prd_clearing_rsd_ack;
   logic                [127:0] prd_clearing_128;
-  logic                [255:0] prd_clearing_256 [2];
+  logic                [255:0] prd_clearing_256 [NumSharesKey];
 
   // Unused signals
   logic            [3:0][31:0] unused_data_out_q;
@@ -192,11 +192,13 @@ module aes_core
   );
 
   // Generate clearing signals of appropriate widths.
-  for (genvar c = 0; c < 2; c++) begin : gen_prd_clearing_128
+  for (genvar c = 0; c < NumChunksPRDClearing128; c++) begin : gen_prd_clearing_128
     assign prd_clearing_128[c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing[0];
   end
-  for (genvar s = 0; s < 2; s++) begin : gen_prd_clearing_256_shares
-    for (genvar c = 0; c < 4; c++) begin : gen_prd_clearing_256
+  // The initial key is always provided in two shares. The two shares of the initial key register
+  // need to be cleared with different pseudo-random data.
+  for (genvar s = 0; s < NumSharesKey; s++) begin : gen_prd_clearing_256_shares
+    for (genvar c = 0; c < NumChunksPRDClearing256; c++) begin : gen_prd_clearing_256
       assign prd_clearing_256[s][c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing[s];
     end
   end
@@ -253,7 +255,7 @@ module aes_core
     if (!rst_ni) begin
       key_init_q <= '{default: '0};
     end else begin
-      for (int s = 0; s < 2; s++) begin
+      for (int s = 0; s < NumSharesKey; s++) begin
         for (int i = 0; i < 8; i++) begin
           if (key_init_we[s][i] == SP2V_HIGH) begin
             key_init_q[s][i] <= key_init_d[s][i];
@@ -731,7 +733,7 @@ module aes_core
   logic  [NumSp2VSig-1:0][Sp2VWidth-1:0] sp2v_sig_chk_raw;
   logic  [NumSp2VSig-1:0]                sp2v_sig_err;
 
-  for (genvar s = 0; s < 2; s++) begin : gen_use_key_init_we_ctrl_shares
+  for (genvar s = 0; s < NumSharesKey; s++) begin : gen_use_key_init_we_ctrl_shares
     for (genvar i = 0; i < 8; i++) begin : gen_use_key_init_we_ctrl
       assign sp2v_sig[s*8+i] = key_init_we_ctrl[s][i];
     end
@@ -757,7 +759,7 @@ module aes_core
     assign sp2v_sig_chk[i] = sp2v_e'(sp2v_sig_chk_raw[i]);
   end
 
-  for (genvar s = 0; s < 2; s++) begin : gen_key_init_we_shares
+  for (genvar s = 0; s < NumSharesKey; s++) begin : gen_key_init_we_shares
     for (genvar i = 0; i < 8; i++) begin : gen_key_init_we
       assign key_init_we[s][i] = sp2v_sig_chk[s*8+i];
     end

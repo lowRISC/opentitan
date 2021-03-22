@@ -6,8 +6,16 @@
 
 package aes_pkg;
 
-// Widths of signals carrying pseudo-random data for clearing and masking and purposes
+// The initial key is always provided in two shares, independently whether the cipher core is
+// masked or not.
+parameter int unsigned NumSharesKey = 2;
+
+// Widths of signals carrying pseudo-random data for clearing
 parameter int unsigned WidthPRDClearing = 64;
+parameter int unsigned NumChunksPRDClearing128 = 128/WidthPRDClearing;
+parameter int unsigned NumChunksPRDClearing256 = 256/WidthPRDClearing;
+
+// Widths of signals carrying pseudo-random data for masking
 parameter int unsigned WidthPRDSBox     = 8;  // Number PRD bits per S-Box. This includes the
                                               // 8 bits for the output mask when using any of the
                                               // masked Canright S-Box implementations.
@@ -196,7 +204,7 @@ typedef enum logic [Mux4SelWidth-1:0] {
 // Minimum Hamming distance: 3
 // Maximum Hamming distance: 5
 //
-localparam int Mux6SelWidth = 6;
+parameter int Mux6SelWidth = 6;
 typedef enum logic [Mux6SelWidth-1:0] {
   MUX6_SEL_0 = 6'b011101,
   MUX6_SEL_1 = 6'b110000,
