@@ -421,7 +421,7 @@ module otp_ctrl_part_unbuf
   // If the partition is read locked, the TL-UL access must error out
   `ASSERT(TlulReadOnReadLock_A,
       tlul_req_i && tlul_gnt_o ##1 access_o.read_lock != Unlocked
-      |=>
+      |->
       tlul_rerror_o > '0 && tlul_rvalid_o)
   // ECC error in buffer regs.
   `ASSERT(EccErrorState_A,
