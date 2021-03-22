@@ -776,7 +776,7 @@
       hwaccess: "hro",
       regwen:   "REGWEN",
       fields: [
-        { bits: "3:0",
+        { bits: "31:0",
           name: "ALERT_THRESHOLD",
           desc: '''This is the threshold size that will signal an alert when
                    value is reached. A value of zero will disable alerts.
@@ -786,24 +786,30 @@
         }
       ]
     },
+    { name:     "ALERT_SUMMARY_FAIL_COUNTS",
+      desc:     "Alert summary failure counts register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "31:0",
+          name: "ANY_FAIL_COUNT",
+          desc: '''This field will hold a running count of
+                   the total alert count, which is a sum of all of the other
+                   counters in the !!ALERT_FAIL_COUNTS register.
+                   It will be reset after every
+                   passing test sequence. If an alert is signaled, this value
+                   will persist until it is cleared.
+                '''
+        }
+      ]
+    },
     { name:     "ALERT_FAIL_COUNTS",
       desc:     "Alert failure counts register",
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
       fields: [
-        { bits: "3:0",
-          name: "ANY_FAIL_COUNT",
-          desc: '''This field will hold a running count of
-                   the total alert count, which is a sum of all of the other
-                   counters in this register. It is intended to only hold
-                   a maximum count of 16 fails, even though the addition of
-                   all possible fails will easily overflow this field.
-                   It will be reset after every
-                   passing test sequence. If an alert is signaled, this value
-                   will persist until it is cleared.
-                '''
-        }
         { bits: "7:4",
           name: "REPCNT_FAIL_COUNT",
           desc: '''This field will hold a running count of test failures that
