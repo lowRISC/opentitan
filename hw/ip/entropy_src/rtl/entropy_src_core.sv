@@ -50,7 +50,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   localparam int RngBusWidth = 4;
   localparam int HalfRegWidth = 16;
   localparam int FullRegWidth = 32;
-  localparam int EigthRegWidth = 4;
+  localparam int EighthRegWidth = 4;
   localparam int SeedLen = 384;
   localparam int PreCondFifoWidth = 32;
   localparam int PreCondFifoDepth = 64;
@@ -129,8 +129,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                   any_fail_pulse;
   logic                   main_stage_pop;
   logic                   bypass_stage_pop;
-  logic [EigthRegWidth-1:0] any_fail_count;
-  logic [EigthRegWidth-1:0] alert_threshold;
+  logic [FullRegWidth-1:0] any_fail_count;
+  logic [FullRegWidth-1:0] alert_threshold;
   logic                     recov_alert_event;
   logic                     repcnt_active;
   logic                     adaptp_active;
@@ -165,7 +165,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] repcnt_event_hwm_fips;
   logic [HalfRegWidth-1:0] repcnt_event_hwm_bypass;
   logic [FullRegWidth-1:0] repcnt_total_fails;
-  logic [EigthRegWidth-1:0] repcnt_fail_count;
+  logic [EighthRegWidth-1:0] repcnt_fail_count;
   logic                     repcnt_fail_pulse;
 
   logic [HalfRegWidth-1:0] adaptp_hi_fips_threshold;
@@ -189,8 +189,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] adaptp_lo_event_hwm_bypass;
   logic [FullRegWidth-1:0] adaptp_hi_total_fails;
   logic [FullRegWidth-1:0] adaptp_lo_total_fails;
-  logic [EigthRegWidth-1:0] adaptp_hi_fail_count;
-  logic [EigthRegWidth-1:0] adaptp_lo_fail_count;
+  logic [EighthRegWidth-1:0] adaptp_hi_fail_count;
+  logic [EighthRegWidth-1:0] adaptp_lo_fail_count;
   logic                     adaptp_hi_fail_pulse;
   logic                     adaptp_lo_fail_pulse;
 
@@ -205,7 +205,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] bucket_event_hwm_fips;
   logic [HalfRegWidth-1:0] bucket_event_hwm_bypass;
   logic [FullRegWidth-1:0] bucket_total_fails;
-  logic [EigthRegWidth-1:0] bucket_fail_count;
+  logic [EighthRegWidth-1:0] bucket_fail_count;
   logic                     bucket_fail_pulse;
 
   logic [HalfRegWidth-1:0] markov_hi_fips_threshold;
@@ -230,8 +230,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] markov_lo_event_hwm_bypass;
   logic [FullRegWidth-1:0] markov_hi_total_fails;
   logic [FullRegWidth-1:0] markov_lo_total_fails;
-  logic [EigthRegWidth-1:0] markov_hi_fail_count;
-  logic [EigthRegWidth-1:0] markov_lo_fail_count;
+  logic [EighthRegWidth-1:0] markov_hi_fail_count;
+  logic [EighthRegWidth-1:0] markov_lo_fail_count;
   logic                     markov_hi_fail_pulse;
   logic                     markov_lo_fail_pulse;
 
@@ -256,8 +256,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] extht_lo_event_hwm_bypass;
   logic [FullRegWidth-1:0] extht_hi_total_fails;
   logic [FullRegWidth-1:0] extht_lo_total_fails;
-  logic [EigthRegWidth-1:0] extht_hi_fail_count;
-  logic [EigthRegWidth-1:0] extht_lo_fail_count;
+  logic [EighthRegWidth-1:0] extht_hi_fail_count;
+  logic [EighthRegWidth-1:0] extht_lo_fail_count;
   logic                     extht_hi_fail_pulse;
   logic                     extht_lo_fail_pulse;
 
@@ -1481,7 +1481,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign alert_cntrs_clr = health_test_clr || rst_alert_cntr;
 
   entropy_src_cntr_reg #(
-    .RegWidth(EigthRegWidth)
+    .RegWidth(FullRegWidth)
   ) u_entropy_src_cntr_reg_any_alert_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
@@ -1506,7 +1506,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
          (any_fail_pulse && health_test_done_pulse) ? 1'b1 :
          ht_failed_q;
 
-  assign hw2reg.alert_fail_counts.any_fail_count.d = any_fail_count;
+  assign hw2reg.alert_summary_fail_counts.d = any_fail_count;
 
   // signal an alert
   assign alert_threshold = reg2hw.alert_threshold.q;
@@ -1517,7 +1517,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // repcnt fail counter
   entropy_src_cntr_reg #(
-    .RegWidth(EigthRegWidth)
+    .RegWidth(EighthRegWidth)
   ) u_entropy_src_cntr_reg_repcnt_alert_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
@@ -1531,7 +1531,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // adaptp fail counter hi and lo
   entropy_src_cntr_reg #(
-    .RegWidth(EigthRegWidth)
+    .RegWidth(EighthRegWidth)
   ) u_entropy_src_cntr_reg_adaptp_alert_hi_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
@@ -1544,7 +1544,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.alert_fail_counts.adaptp_hi_fail_count.d = adaptp_hi_fail_count;
 
   entropy_src_cntr_reg #(
-    .RegWidth(EigthRegWidth)
+    .RegWidth(EighthRegWidth)
   ) u_entropy_src_cntr_reg_adaptp_alert_lo_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
@@ -1558,7 +1558,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // bucket fail counter
   entropy_src_cntr_reg #(
-    .RegWidth(EigthRegWidth)
+    .RegWidth(EighthRegWidth)
   ) u_entropy_src_cntr_reg_bucket_alert_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
@@ -1573,7 +1573,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // markov fail counter hi and lo
   entropy_src_cntr_reg #(
-    .RegWidth(EigthRegWidth)
+    .RegWidth(EighthRegWidth)
   ) u_entropy_src_cntr_reg_markov_alert_hi_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
@@ -1586,7 +1586,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.alert_fail_counts.markov_hi_fail_count.d = markov_hi_fail_count;
 
   entropy_src_cntr_reg #(
-    .RegWidth(EigthRegWidth)
+    .RegWidth(EighthRegWidth)
   ) u_entropy_src_cntr_reg_markov_alert_lo_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
@@ -1600,7 +1600,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // extht fail counter hi and lo
   entropy_src_cntr_reg #(
-    .RegWidth(EigthRegWidth)
+    .RegWidth(EighthRegWidth)
   ) u_entropy_src_cntr_reg_extht_alert_hi_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
@@ -1613,7 +1613,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.extht_fail_counts.extht_hi_fail_count.d = extht_hi_fail_count;
 
   entropy_src_cntr_reg #(
-    .RegWidth(EigthRegWidth)
+    .RegWidth(EighthRegWidth)
   ) u_entropy_src_cntr_reg_extht_alert_lo_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
