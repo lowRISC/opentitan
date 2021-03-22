@@ -50,6 +50,9 @@ module tb;
                                CSRNG_BUS_WIDTH-1:0], entropy_src_if.h_data[entropy_src_pkg::
                                CSRNG_BUS_WIDTH]}),
 
+    .cs_aes_halt_i           (1'b0),
+    .cs_aes_halt_o           (),
+
     .csrng_cmd_i             (csrng_if.cmd_req),
     .csrng_cmd_o             (csrng_if.cmd_rsp),
 

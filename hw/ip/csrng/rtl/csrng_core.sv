@@ -26,6 +26,10 @@ module csrng_core import csrng_pkg::*; #(
   output entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_o,
   input  entropy_src_pkg::entropy_src_hw_if_rsp_t entropy_src_hw_if_i,
 
+  // Entropy Interface
+  input  entropy_src_pkg::cs_aes_halt_req_t cs_aes_halt_i,
+  output entropy_src_pkg::cs_aes_halt_rsp_t cs_aes_halt_o,
+
   // Application Interfaces
   input  csrng_req_t  [NHwApps-1:0] csrng_cmd_i,
   output csrng_rsp_t  [NHwApps-1:0] csrng_cmd_o,
@@ -300,6 +304,9 @@ module csrng_core import csrng_pkg::*; #(
   logic                    main_sm_sts;
 
   logic [30:0]             err_code_test_bit;
+  logic                    ctr_drbg_upd_es_ack;
+  logic                    ctr_drbg_gen_es_ack;
+  logic                    block_encrypt_quiet;
 
   // flops
   logic [2:0]  acmd_q, acmd_d;
@@ -310,6 +317,7 @@ module csrng_core import csrng_pkg::*; #(
   logic        lc_hw_debug_not_on_q, lc_hw_debug_not_on_d;
   logic        lc_hw_debug_on_q, lc_hw_debug_on_d;
   logic        cmd_req_dly_q, cmd_req_dly_d;
+  logic        cs_aes_halt_q, cs_aes_halt_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -321,6 +329,7 @@ module csrng_core import csrng_pkg::*; #(
       lc_hw_debug_not_on_q <= '0;
       lc_hw_debug_on_q <= '0;
       cmd_req_dly_q <= '0;
+      cs_aes_halt_q <= '0;
     end else begin
       acmd_q  <= acmd_d;
       shid_q  <= shid_d;
@@ -330,6 +339,7 @@ module csrng_core import csrng_pkg::*; #(
       lc_hw_debug_not_on_q <= lc_hw_debug_not_on_d;
       lc_hw_debug_on_q <= lc_hw_debug_on_d;
       cmd_req_dly_q <= cmd_req_dly_d;
+      cs_aes_halt_q <= cs_aes_halt_d;
     end
 
   //--------------------------------------------
@@ -1072,6 +1082,10 @@ module csrng_core import csrng_pkg::*; #(
     .ctr_drbg_upd_key_o(updblk_key),
     .ctr_drbg_upd_v_o(updblk_v),
 
+    // es halt interface
+    .ctr_drbg_upd_es_req_i(cs_aes_halt_i.cs_aes_halt_req),
+    .ctr_drbg_upd_es_ack_o(ctr_drbg_upd_es_ack),
+
     .block_encrypt_req_o(updblk_benblk_arb_req),
     .block_encrypt_rdy_i(updblk_benblk_arb_req_rdy),
     .block_encrypt_ccmd_o(updblk_benblk_cmd_arb_din),
@@ -1184,6 +1198,7 @@ module csrng_core import csrng_pkg::*; #(
     .block_encrypt_cmd_o(benblk_cmd),
     .block_encrypt_id_o(benblk_inst_id),
     .block_encrypt_v_o(benblk_v),
+    .block_encrypt_quiet_o(block_encrypt_quiet),
     .block_encrypt_aes_cipher_sm_err_o(aes_cipher_sm_err),
     .block_encrypt_sfifo_blkenc_err_o(block_encrypt_sfifo_blkenc_err)
   );
@@ -1260,6 +1275,10 @@ module csrng_core import csrng_pkg::*; #(
     .ctr_drbg_gen_rc_o(gen_result_rc),
     .ctr_drbg_gen_bits_o(gen_result_bits),
 
+    // es halt interface
+    .ctr_drbg_gen_es_req_i(cs_aes_halt_i.cs_aes_halt_req),
+    .ctr_drbg_gen_es_ack_o(ctr_drbg_gen_es_ack),
+
     // interface to updblk from genblk
     .gen_upd_req_o(genblk_updblk_arb_req),
     .upd_gen_rdy_i(updblk_genblk_arb_req_rdy),
@@ -1297,6 +1316,9 @@ module csrng_core import csrng_pkg::*; #(
   );
 
 
+  // es to cs halt request to reduce power spikes
+  assign cs_aes_halt_d = ctr_drbg_upd_es_ack && ctr_drbg_gen_es_ack && block_encrypt_quiet;
+  assign cs_aes_halt_o.cs_aes_halt_ack = cs_aes_halt_q;
 
   //--------------------------------------------
   // report csrng request summary

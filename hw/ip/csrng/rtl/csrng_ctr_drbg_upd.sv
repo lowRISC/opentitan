@@ -32,6 +32,11 @@ module csrng_ctr_drbg_upd #(
   output logic [BlkLen-1:0]  ctr_drbg_upd_v_o,
   output logic               ctr_drbg_upd_ack_o, // final ack when update process has been completed
   input logic                ctr_drbg_upd_rdy_i, // readu to process the ack above
+
+   // es_req/ack
+  input logic                ctr_drbg_upd_es_req_i,
+  output logic               ctr_drbg_upd_es_ack_o,
+
    // block encrypt interface
   output logic               block_encrypt_req_o,
   input logic                block_encrypt_rdy_i,
@@ -149,8 +154,8 @@ module csrng_ctr_drbg_upd #(
   logic [StateId-1:0] concat_inst_id_q, concat_inst_id_d;
 
 // Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 3 -n 5 \
-//      -s 2557753240 --language=sv
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 5 \
+//      -s 47328894 --language=sv
 //
 // Hamming distance histogram:
 //
@@ -169,9 +174,10 @@ module csrng_ctr_drbg_upd #(
 
   localparam int BlkEncStateWidth = 5;
   typedef enum logic [BlkEncStateWidth-1:0] {
-    ReqIdle = 5'b00110,
+    ReqIdle = 5'b11000,
     ReqSend = 5'b10011,
-    BEError = 5'b11100
+    ESHalt  = 5'b01110,
+    BEError = 5'b00101
   } blk_enc_state_e;
 
   blk_enc_state_e blk_enc_state_d, blk_enc_state_q;
@@ -331,10 +337,13 @@ module csrng_ctr_drbg_upd #(
     sfifo_bencreq_push = 1'b0;
     sfifo_updreq_pop = 1'b0;
     ctr_drbg_updbe_sm_err_o = 1'b0;
+    ctr_drbg_upd_es_ack_o = 1'b0;
     unique case (blk_enc_state_q)
       // ReqIdle: increment v this cycle, push in next
       ReqIdle: begin
-        if (sfifo_updreq_not_empty && !sfifo_bencreq_full && !sfifo_pdata_full) begin
+        if (ctr_drbg_upd_es_req_i) begin
+          blk_enc_state_d = ESHalt;
+        end else if (sfifo_updreq_not_empty && !sfifo_bencreq_full && !sfifo_pdata_full) begin
           v_ctr_load = 1'b1;
           sfifo_pdata_push = 1'b1;
           blk_enc_state_d = ReqSend;
@@ -349,6 +358,12 @@ module csrng_ctr_drbg_upd #(
           end
         end else begin
           sfifo_updreq_pop = 1'b1;
+          blk_enc_state_d = ReqIdle;
+        end
+      end
+      ESHalt: begin
+        ctr_drbg_upd_es_ack_o = 1'b1;
+        if (!ctr_drbg_upd_es_req_i) begin
           blk_enc_state_d = ReqIdle;
         end
       end

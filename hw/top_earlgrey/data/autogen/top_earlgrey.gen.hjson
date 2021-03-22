@@ -4307,6 +4307,19 @@
           index: -1
         }
         {
+          name: cs_aes_halt
+          struct: cs_aes_halt
+          package: entropy_src_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: csrng
+          default: ""
+          end_idx: -1
+          top_signame: csrng_cs_aes_halt
+          index: -1
+        }
+        {
           name: efuse_sw_app_enable
           struct: logic
           type: uni
@@ -4379,6 +4392,18 @@
           inst_name: entropy_src
           default: ""
           top_signame: csrng_entropy_src_hw_if
+          index: -1
+        }
+        {
+          name: cs_aes_halt
+          struct: cs_aes_halt
+          package: entropy_src_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: entropy_src
+          default: ""
+          top_signame: csrng_cs_aes_halt
           index: -1
         }
         {
@@ -5418,6 +5443,10 @@
       csrng.entropy_src_hw_if:
       [
         entropy_src.entropy_src_hw_if
+      ]
+      csrng.cs_aes_halt:
+      [
+        entropy_src.cs_aes_halt
       ]
       flash_ctrl.flash:
       [
@@ -11692,6 +11721,19 @@
         index: -1
       }
       {
+        name: cs_aes_halt
+        struct: cs_aes_halt
+        package: entropy_src_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: csrng
+        default: ""
+        end_idx: -1
+        top_signame: csrng_cs_aes_halt
+        index: -1
+      }
+      {
         name: efuse_sw_app_enable
         struct: logic
         type: uni
@@ -11734,6 +11776,18 @@
         inst_name: entropy_src
         default: ""
         top_signame: csrng_entropy_src_hw_if
+        index: -1
+      }
+      {
+        name: cs_aes_halt
+        struct: cs_aes_halt
+        package: entropy_src_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: entropy_src
+        default: ""
+        top_signame: csrng_cs_aes_halt
         index: -1
       }
       {
@@ -13650,6 +13704,28 @@
         type: req_rsp
         end_idx: -1
         act: req
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: entropy_src_pkg
+        struct: cs_aes_halt_req
+        signame: csrng_cs_aes_halt_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: ""
+      }
+      {
+        package: entropy_src_pkg
+        struct: cs_aes_halt_rsp
+        signame: csrng_cs_aes_halt_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
         suffix: rsp
         default: ""
       }

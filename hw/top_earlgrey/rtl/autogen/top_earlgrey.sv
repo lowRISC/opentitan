@@ -426,6 +426,8 @@ module top_earlgrey #(
   csrng_pkg::csrng_rsp_t [1:0] csrng_csrng_cmd_rsp;
   entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
   entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
+  entropy_src_pkg::cs_aes_halt_req_t       csrng_cs_aes_halt_req;
+  entropy_src_pkg::cs_aes_halt_rsp_t       csrng_cs_aes_halt_rsp;
   flash_ctrl_pkg::flash_req_t       flash_ctrl_flash_req;
   flash_ctrl_pkg::flash_rsp_t       flash_ctrl_flash_rsp;
   flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
@@ -2029,6 +2031,8 @@ module top_earlgrey #(
       .csrng_cmd_o(csrng_csrng_cmd_rsp),
       .entropy_src_hw_if_o(csrng_entropy_src_hw_if_req),
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_rsp),
+      .cs_aes_halt_i(csrng_cs_aes_halt_req),
+      .cs_aes_halt_o(csrng_cs_aes_halt_rsp),
       .efuse_sw_app_enable_i('0),
       .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
       .tl_i(csrng_tl_req),
@@ -2055,6 +2059,8 @@ module top_earlgrey #(
       // Inter-module signals
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_req),
       .entropy_src_hw_if_o(csrng_entropy_src_hw_if_rsp),
+      .cs_aes_halt_o(csrng_cs_aes_halt_req),
+      .cs_aes_halt_i(csrng_cs_aes_halt_rsp),
       .entropy_src_rng_o(es_rng_req_o),
       .entropy_src_rng_i(es_rng_rsp_i),
       .entropy_src_xht_o(),

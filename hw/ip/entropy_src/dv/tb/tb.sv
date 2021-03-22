@@ -46,6 +46,9 @@ module tb;
                                     csrng_if.d_data[entropy_src_pkg::CSRNG_BUS_WIDTH]}),
     .entropy_src_hw_if_i          (csrng_if.req),
 
+    .cs_aes_halt_o                (),
+    .cs_aes_halt_i                (1'b0),
+
     .entropy_src_xht_o            (),
     .entropy_src_xht_i            ('0),
 

@@ -35,6 +35,10 @@ module entropy_src
   output entropy_src_rng_req_t entropy_src_rng_o,
   input  entropy_src_rng_rsp_t entropy_src_rng_i,
 
+  // CSRNG Interface
+  output cs_aes_halt_req_t cs_aes_halt_o,
+  input  cs_aes_halt_rsp_t cs_aes_halt_i,
+
   // External Health Test Interface
   output entropy_src_xht_req_t entropy_src_xht_o,
   input  entropy_src_xht_rsp_t entropy_src_xht_i,
@@ -87,6 +91,9 @@ module entropy_src
 
     .entropy_src_rng_o,
     .entropy_src_rng_i,
+
+    .cs_aes_halt_o,
+    .cs_aes_halt_i,
 
     .recov_alert_o(alert[0]),
     .fatal_alert_o(alert[1]),

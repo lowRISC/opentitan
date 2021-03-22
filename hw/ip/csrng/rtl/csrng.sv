@@ -31,6 +31,10 @@ module csrng
   output entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_o,
   input  entropy_src_pkg::entropy_src_hw_if_rsp_t entropy_src_hw_if_i,
 
+  // Entropy Interface
+  input  entropy_src_pkg::cs_aes_halt_req_t cs_aes_halt_i,
+  output entropy_src_pkg::cs_aes_halt_rsp_t cs_aes_halt_o,
+
   // Application Interfaces
   input  csrng_req_t  [NHwApps-1:0] csrng_cmd_i,
   output csrng_rsp_t  [NHwApps-1:0] csrng_cmd_o,
@@ -82,6 +86,10 @@ module csrng
     // Entropy Interface
     .entropy_src_hw_if_o,
     .entropy_src_hw_if_i,
+
+    // Entropy Interface
+    .cs_aes_halt_i,
+    .cs_aes_halt_o,
 
     // Application Interfaces
     .csrng_cmd_i,

@@ -24,42 +24,45 @@ module entropy_src_main_sm (
   output logic               sha3_start_o,
   output logic               sha3_process_o,
   output logic               sha3_done_o,
+  output logic               cs_aes_halt_req_o,
+  input logic                cs_aes_halt_ack_i,
   output logic               main_sm_err_o
 );
 
 // Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 9 -n 8 \
-//      -s 3744885553 --language=sv
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 10 -n 8 \
+//      -s 1721366211 --language=sv
 //
 // Hamming distance histogram:
 //
 //  0: --
 //  1: --
 //  2: --
-//  3: |||||||||||||||||| (25.00%)
-//  4: |||||||||||||||||||| (27.78%)
-//  5: |||||||||||||||||||| (27.78%)
-//  6: |||||||||||| (16.67%)
-//  7: || (2.78%)
-//  8: --
+//  3: ||||||||||| (24.44%)
+//  4: |||||||||||||||||||| (44.44%)
+//  5: |||||||||| (22.22%)
+//  6: ||| (6.67%)
+//  7: --
+//  8: | (2.22%)
 //
 // Minimum Hamming distance: 3
-// Maximum Hamming distance: 7
-// Minimum Hamming weight: 3
-// Maximum Hamming weight: 6
+// Maximum Hamming distance: 8
+// Minimum Hamming weight: 2
+// Maximum Hamming weight: 5
 //
 
   localparam int StateWidth = 8;
   typedef enum logic [StateWidth-1:0] {
-    Idle              = 8'b10111100, // idle
-    BootHTRunning     = 8'b11100101, // boot mode, wait for health test done pulse
-    BootPostHTChk     = 8'b10011010, // boot mode, wait for post health test packer not empty state
-    NormHTStart       = 8'b00010011, // normal mode, pulse the sha3 start input
-    NormHTRunning     = 8'b11001001, // normal mode, wait for health test done pulse
-    NormSha3Process   = 8'b11010100, // normal mode, pulse the sha3 process input
-    NormSha3Valid     = 8'b00101101, // normal mode, wait for sha3 valid indication
-    NormSha3Done      = 8'b01111011, // normal mode, capture sha3 result, pulse done input
-    Error             = 8'b01000110  // illegal state reached and hang
+    Idle              = 8'b01110110, // idle
+    BootHTRunning     = 8'b01011011, // boot mode, wait for health test done pulse
+    BootPostHTChk     = 8'b00000111, // boot mode, wait for post health test packer not empty state
+    NormHTStart       = 8'b11100000, // normal mode, pulse the sha3 start input
+    NormHTRunning     = 8'b01001000, // normal mode, wait for health test done pulse
+    NormSha3CSReq     = 8'b10001001, // normal mode, request csrng arb to reduce power
+    NormSha3Process   = 8'b10010000, // normal mode, pulse the sha3 process input
+    NormSha3Valid     = 8'b01100011, // normal mode, wait for sha3 valid indication
+    NormSha3Done      = 8'b11001110, // normal mode, capture sha3 result, pulse done input
+    Error             = 8'b11010101  // illegal state reached and hang
   } state_e;
 
   state_e state_d, state_q;
@@ -89,6 +92,7 @@ module entropy_src_main_sm (
     sha3_start_o = 1'b0;
     sha3_process_o = 1'b0;
     sha3_done_o = 1'b0;
+    cs_aes_halt_req_o = 1'b0;
     main_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
@@ -128,16 +132,24 @@ module entropy_src_main_sm (
             sha3_done_o = 1'b1;
             state_d = Idle;
           end else begin
-            state_d = NormSha3Process;
+            state_d = NormSha3CSReq;
           end
         end
       end
+      NormSha3CSReq: begin
+        cs_aes_halt_req_o = 1'b1;
+        if (cs_aes_halt_ack_i) begin
+        state_d = NormSha3Process;
+        end
+      end
       NormSha3Process: begin
+        cs_aes_halt_req_o = 1'b1;
         rst_alert_cntr_o = 1'b1;
         sha3_process_o = 1'b1;
         state_d = NormSha3Valid;
       end
       NormSha3Valid: begin
+        cs_aes_halt_req_o = 1'b1;
         if (sha3_state_vld_i) begin
           state_d = NormSha3Done;
         end
