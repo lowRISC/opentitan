@@ -61,14 +61,13 @@
       desc: '''
             Run sequences back-to-back
 
-            This runs several sequences back-to-back, sometimes resetting
-            between them. We don't expect to see much from these tests, because
-            OTBN doesn't keep internal state across runs, but it's another way
-            to catch bugs where we don't re-initialize properly.
+            This runs several sequences back-to-back, without resets between
+            them. This should catch initialisation problems where not all state
+            is cleared between programs when there's no reset.
 
             '''
       milestone: V2
-      tests: []
+      tests: ["otbn_multi"]
     }
   ]
 }

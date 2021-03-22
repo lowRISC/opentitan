@@ -76,15 +76,15 @@ name:
     }
   ]
 
-  gen_binaries: "{proj_root}/hw/ip/otbn/dv/uvm/gen-binaries.py"
   otbn_obj_dir: "{build_dir}/build-out"
-  gen_binary: "{gen_binaries} --count 1 --obj-dir {otbn_obj_dir}"
+  gen_binaries_py: "{proj_root}/hw/ip/otbn/dv/uvm/gen-binaries.py"
+  gen_binary: "{gen_binaries_py} --count 1 --obj-dir {otbn_obj_dir}"
+  gen_binaries: "{gen_binaries_py} --count 10 --obj-dir {otbn_obj_dir}"
 
   run_modes: [
-    // A run mode that runs the random instruction generator and builds the
-    // one resulting binary in {otbn_elf_dir}. If you override the otbn_elf_dir
-    // plusarg with --run-opts, we'll still build the binary (but will ignore
-    // it).
+    // Run the random instruction generator and builds the one resulting binary
+    // in {otbn_elf_dir}. If you override the otbn_elf_dir plusarg with
+    // --run-opts, we'll still build the binary (but will ignore it).
     {
       name: build_otbn_rig_binary_mode
       pre_run_cmds: [
@@ -92,11 +92,20 @@ name:
       ]
     }
 
-    // A run mode that builds the smoke test in {otbn_elf_dir}.
+    // Build the smoke test in {otbn_elf_dir}.
     {
       name: build_otbn_smoke_binary_mode
       pre_run_cmds: [
         "{gen_binary} {otbn_elf_dir}"
+      ]
+    }
+
+    // Run the random instruction generator several times and build the
+    // resulting binaries in {otbn_elf_dir}.
+    {
+      name: build_otbn_rig_binaries_mode
+      pre_run_cmds: [
+        "{gen_binaries} --no-smoke --seed {seed} {otbn_elf_dir}"
       ]
     }
   ]
@@ -112,10 +121,23 @@ name:
       // in running it loads of times.
       reseed: 1
     }
+
     {
       name: "otbn_single"
       uvm_test_seq: "otbn_single_vseq"
       en_run_modes: ["build_otbn_rig_binary_mode"]
+      reseed: 50
+    }
+
+    // This test runs 10 binaries each time, so we give it a reseed value
+    // that's about a tenth of the value for otbn_single: these tests should
+    // equally good at catching errors within a program, so there's no need to
+    // run it more.
+    {
+      name: "otbn_multi"
+      uvm_test_seq: "otbn_multi_vseq"
+      en_run_modes: ["build_otbn_rig_binaries_mode"]
+      reseed: 5
     }
 
     // TODO: add more tests here
