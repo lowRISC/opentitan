@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/spi_device.hjson
-      depend: lowrisc:ip:spi_device
 
 targets:
   default: &default_target

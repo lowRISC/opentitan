@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/edn.hjson
-      depend: lowrisc:ip:edn
 
 targets:
   default: &default_target

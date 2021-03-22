@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/csrng.hjson
-      depend: lowrisc:ip:csrng
 
 targets:
   default: &default_target

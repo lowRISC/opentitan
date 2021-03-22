@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/kmac.hjson
-      depend: lowrisc:ip:kmac
 
 targets:
   default: &default_target

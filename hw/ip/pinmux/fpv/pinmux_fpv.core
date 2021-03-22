@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../data/pinmux.hjson
-      depend: lowrisc:ip:pinmux_reg
 
 targets:
   default: &default_target

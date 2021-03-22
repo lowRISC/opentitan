@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/usbdev.hjson
-      depend: lowrisc:ip:usbdev
 
 targets:
   default: &default_target

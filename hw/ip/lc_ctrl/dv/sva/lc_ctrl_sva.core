@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/lc_ctrl.hjson
-      depend: lowrisc:ip:lc_ctrl
 
 targets:
   default: &default_target

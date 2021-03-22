@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/aes.hjson
-      depend: lowrisc:ip:aes
 
 targets:
   default: &default_target

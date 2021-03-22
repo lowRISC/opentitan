@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/flash_ctrl.hjson
-      depend: lowrisc:ip:flash_ctrl
 
 targets:
   default: &default_target

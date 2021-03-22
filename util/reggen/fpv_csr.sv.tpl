@@ -26,18 +26,14 @@
 `endif
 
 // Block: ${lblock}
-module ${mod_base}_csr_assert_fpv import tlul_pkg::*; import ${lblock}_reg_pkg::*;
+module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
     import top_pkg::*;(
   input clk_i,
   input rst_ni,
 
   // tile link ports
   input tl_h2d_t h2d,
-  input tl_d2h_t d2h,
-
-  // reg and hw ports
-  input ${mod_base}_reg2hw_t reg2hw,
-  input ${mod_base}_hw2reg_t hw2reg
+  input tl_d2h_t d2h
 );
 
 `ifndef VERILATOR

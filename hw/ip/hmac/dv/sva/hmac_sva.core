@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/hmac.hjson
-      depend: lowrisc:ip:hmac
 
 targets:
   default: &default_target
