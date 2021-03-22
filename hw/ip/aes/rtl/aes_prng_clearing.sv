@@ -29,7 +29,7 @@ module aes_prng_clearing import aes_pkg::*;
   // Connections to AES internals, PRNG consumers
   input  logic                    data_req_i,
   output logic                    data_ack_o,
-  output logic        [Width-1:0] data_o [2],
+  output logic        [Width-1:0] data_o [NumSharesKey],
   input  logic                    reseed_req_i,
   output logic                    reseed_ack_o,
 

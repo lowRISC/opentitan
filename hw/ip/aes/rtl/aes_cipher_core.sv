@@ -225,12 +225,13 @@ module aes_cipher_core import aes_pkg::*;
   logic                               prd_masking_rsd_req;
   logic                               prd_masking_rsd_ack;
 
-  // Generate clearing signals of appropriate widths.
+  // Generate clearing signals of appropriate widths. If masking is enabled, the two shares of
+  // the registers must be cleared with different pseudo-random data.
   for (genvar s = 0; s < NumShares; s++) begin : gen_prd_clearing_shares
-    for (genvar c = 0; c < 2; c++) begin : gen_prd_clearing_128
+    for (genvar c = 0; c < NumChunksPRDClearing128; c++) begin : gen_prd_clearing_128
       assign prd_clearing_128[s][c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing_i[s];
     end
-    for (genvar c = 0; c < 4; c++) begin : gen_prd_clearing_256
+    for (genvar c = 0; c < NumChunksPRDClearing256; c++) begin : gen_prd_clearing_256
       assign prd_clearing_256[s][c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing_i[s];
     end
   end

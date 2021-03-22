@@ -34,7 +34,7 @@ module aes_control import aes_pkg::*;
   output logic                    alert_o,
 
   // I/O register read/write enables
-  input  logic [7:0]              key_init_qe_i [2],
+  input  logic [7:0]              key_init_qe_i [NumSharesKey],
   input  logic [3:0]              iv_qe_i,
   input  logic [3:0]              data_in_qe_i,
   input  logic [3:0]              data_out_re_i,
@@ -71,7 +71,7 @@ module aes_control import aes_pkg::*;
 
   // Initial key registers
   output key_init_sel_e           key_init_sel_o,
-  output sp2v_e [7:0]             key_init_we_o [2],
+  output sp2v_e [7:0]             key_init_we_o [NumSharesKey],
 
   // IV registers
   output iv_sel_e                 iv_sel_o,
@@ -347,7 +347,7 @@ module aes_control import aes_pkg::*;
 
         if (idle_o) begin
           // Initial key and IV updates are ignored if we are not idle.
-          for (int s = 0; s < 2; s++) begin
+          for (int s = 0; s < NumSharesKey; s++) begin
             for (int i = 0; i < 8; i++) begin
               key_init_we_o[s][i] = key_init_qe_i[s][i] ? SP2V_HIGH : SP2V_LOW;
             end
@@ -624,8 +624,8 @@ module aes_control import aes_pkg::*;
   // We only use clean initial keys. Either software/counter has updated
   // - all initial key registers, or
   // - none of the initial key registers but the registers were updated in the past.
-  logic [7:0] key_init_we [2];
-  for (genvar s = 0; s < 2; s++) begin : gen_status_key_init_we_shares
+  logic [7:0] key_init_we [NumSharesKey];
+  for (genvar s = 0; s < NumSharesKey; s++) begin : gen_status_key_init_we_shares
     for (genvar i = 0; i < 8; i++) begin : gen_status_key_init_we
       assign key_init_we[s][i] = (key_init_we_o[s][i] == SP2V_HIGH);
     end
