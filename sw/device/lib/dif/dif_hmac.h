@@ -14,6 +14,10 @@
 #include <stdint.h>
 #include "sw/device/lib/base/mmio.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 /**
  * HMAC interrupt configuration.
  *
@@ -379,5 +383,9 @@ dif_hmac_digest_result_t dif_hmac_digest_read(const dif_hmac_t *hmac,
  */
 dif_hmac_result_t dif_hmac_wipe_secret(const dif_hmac_t *hmac,
                                        uint32_t entropy);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_HMAC_H_
