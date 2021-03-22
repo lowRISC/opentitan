@@ -106,6 +106,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         req_all_sram_keys();
       end
 
+      if ($urandom_range(0, 1) && access_locked_parts) write_sw_rd_locks();
+
       for (int i = 0; i < num_dai_op; i++) begin
         bit [TL_DW-1:0] rdata0, rdata1;
 
@@ -113,7 +115,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         // recalculate part_idx in case some test turn off constraint dai_wr_legal_addr_c
         part_idx = get_part_index(dai_addr);
         `uvm_info(`gfn, $sformatf("starting dai access seq %0d/%0d with addr %0h in partition %0d",
-                  i, num_dai_op, dai_addr, part_idx), UVM_DEBUG)
+                  i, num_dai_op, dai_addr, part_idx), UVM_HIGH)
 
         // OTP write via DAI
         if ($urandom_range(0, 1)) begin
@@ -132,7 +134,9 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
           // random issue reset, OTP content should not be cleared
           if ($urandom_range(0, 1)) dut_init();
-          tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1));
+        
+          // tlul error rsp is checked in scoreboard
+          tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_rsp(0));
         end
 
         if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(tlul_val));
@@ -155,7 +159,6 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
       write_sw_digests();
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
-      write_sw_rd_locks();
 
       if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
 
