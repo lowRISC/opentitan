@@ -67,7 +67,10 @@
           name: "oneshot_mode",
           desc: "Oneshot mode does not care about the filter value. 1'b0: disable; 1'b1: enable",
         }
-      ]
+      ],
+      tags: [// when set, adc functions are triggered and may generate interrupts.
+             // These should only be exercised as part of directed tests
+        "excl:CsrNonInitTests:CsrExclWrite"]
     }
     { name: "adc_pd_ctl",
       desc: "ADC PowerDown(PD) control register",
