@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/otp_ctrl.hjson
-      depend: lowrisc:ip:otp_ctrl_pkg
 
 targets:
   default: &default_target

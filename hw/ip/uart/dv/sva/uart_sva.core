@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/uart.hjson
-      depend: lowrisc:ip:uart
 
 targets:
   default: &default_target

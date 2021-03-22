@@ -19,7 +19,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/autogen/alert_handler.hjson
-      depend: lowrisc:ip:alert_handler_reg
 
 targets:
   default:

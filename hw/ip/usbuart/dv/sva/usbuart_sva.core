@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/usbuart.hjson
-      depend: lowrisc:ip:usbuart
 
 targets:
   default: &default_target

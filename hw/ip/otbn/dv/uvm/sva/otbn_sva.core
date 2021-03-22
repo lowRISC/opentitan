@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../../data/otbn.hjson
-      depend: lowrisc:ip:otbn
 
 targets:
   default: &default_target

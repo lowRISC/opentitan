@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/entropy_src.hjson
-      depend: lowrisc:ip:entropy_src
 
 targets:
   default: &default_target

@@ -34,10 +34,6 @@ OPTIONAL_FIELDS = {
     'available_inout_list': ['lnw', "list of available peripheral inouts"],
     'available_input_list': ['lnw', "list of available peripheral inputs"],
     'available_output_list': ['lnw', "list of available peripheral outputs"],
-    'fusesoc_core_name': [
-        's',
-        "name of the FuseSoC core. Defaults to 'lowrisc:ip:<name>'."
-    ],
     'hier_path': [
         None,
         'additional hierarchy path before the reg block instance'
@@ -87,7 +83,6 @@ class IpBlock:
                  scan: bool,
                  inter_signals: List[InterSignal],
                  bus_interfaces: BusInterfaces,
-                 fusesoc_core_name: str,
                  hier_path: Optional[str],
                  clock_signals: List[str],
                  reset_signals: List[str],
@@ -120,7 +115,6 @@ class IpBlock:
         self.scan = scan
         self.inter_signals = inter_signals
         self.bus_interfaces = bus_interfaces
-        self.fusesoc_core_name = fusesoc_core_name
         self.hier_path = hier_path
         self.clock_signals = clock_signals
         self.reset_signals = reset_signals
@@ -224,10 +218,6 @@ class IpBlock:
                                    'bus_interfaces field of ' + where))
         inter_signals += bus_interfaces.inter_signals()
 
-        fusesoc_core_name = check_str(
-            rd.get('fusesoc_core_name', 'lowrisc:ip:' + name.lower()),
-            'fusesoc_core_name field of ' + what)
-
         hier_path = check_optional_str(rd.get('hier_path', None),
                                        'hier_path field of ' + what)
 
@@ -275,8 +265,8 @@ class IpBlock:
         return IpBlock(name, regwidth, params, reg_blocks,
                        interrupts, no_auto_intr, alerts, no_auto_alert,
                        scan, inter_signals, bus_interfaces,
-                       fusesoc_core_name, hier_path, clock_signals,
-                       reset_signals, xputs, wakeups, rst_reqs, scan_reset)
+                       hier_path, clock_signals, reset_signals, xputs,
+                       wakeups, rst_reqs, scan_reset)
 
     @staticmethod
     def from_text(txt: str,
@@ -314,7 +304,6 @@ class IpBlock:
         ret['scan'] = self.scan
         ret['inter_signal_list'] = self.inter_signals
         ret['bus_interfaces'] = self.bus_interfaces.as_dicts()
-        ret['fusesoc_core_name'] = self.fusesoc_core_name
 
         if self.hier_path is not None:
             ret['hier_path'] = self.hier_path

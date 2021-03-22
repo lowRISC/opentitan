@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/i2c.hjson
-      depend: lowrisc:ip:i2c
 
 targets:
   default: &default_target

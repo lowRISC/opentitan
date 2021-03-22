@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/dcd.hjson
-      depend: lowrisc:ip:dcd
 
 targets:
   default: &default_target

@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/pattgen.hjson
-      depend: lowrisc:ip:pattgen
 
 targets:
   default: &default_target

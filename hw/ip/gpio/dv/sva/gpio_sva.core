@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/gpio.hjson
-      depend: lowrisc:ip:gpio
 
 targets:
   default: &default_target

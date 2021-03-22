@@ -22,7 +22,6 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../../data/keymgr.hjson
-      depend: lowrisc:ip:keymgr
 
 targets:
   default: &default_target
