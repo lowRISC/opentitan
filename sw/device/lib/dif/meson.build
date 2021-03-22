@@ -129,6 +129,21 @@ sw_lib_dif_hmac = declare_dependency(
   )
 )
 
+# KMAC device DIF library
+sw_lib_dif_kmac = declare_dependency(
+  link_with: static_library(
+    'sw_dif_kmac',
+    sources: [
+      hw_ip_kmac_reg_h,
+      'dif_kmac.c'
+    ],
+    dependencies: [
+      sw_lib_bitfield,
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # OTBN DIF library
 sw_lib_dif_otbn = declare_dependency(
   link_with: static_library(
