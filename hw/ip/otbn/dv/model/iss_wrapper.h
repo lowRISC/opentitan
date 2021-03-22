@@ -36,12 +36,19 @@ struct ISSWrapper {
   // Jump to a new address and start running
   void start(uint32_t addr);
 
-  // Run simulation for a single cycle. Return true if it is now
-  // finished (ECALL or error).
+  // Run simulation for a single cycle. Returns a pair (ret_code, err_bits).
   //
   // If gen_trace is true, pass trace data to the (singleton)
   // OtbnTraceChecker object.
-  std::pair<bool, uint32_t> step(bool gen_trace);
+  //
+  // ret_code describes the state of the simulation. It is 1 if the simulation
+  // just stopped (on ECALL or an architectural error); it is 0 if the
+  // simulation is still running. It is -1 if something went wrong (such as a
+  // trace mismatch).
+  //
+  // err_bits is zero unless the simulation just came to a halt, in which case
+  // it's the value of the ERR_BITS register.
+  std::pair<int, uint32_t> step(bool gen_trace);
 
   // Read contents of the register file
   void get_regs(std::array<uint32_t, 32> *gprs, std::array<u256_t, 32> *wdrs);

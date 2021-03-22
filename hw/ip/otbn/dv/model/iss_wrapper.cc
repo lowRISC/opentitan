@@ -322,18 +322,22 @@ void ISSWrapper::start(uint32_t addr) {
   run_command(oss.str(), nullptr);
 }
 
-std::pair<bool, uint32_t> ISSWrapper::step(bool gen_trace) {
+std::pair<int, uint32_t> ISSWrapper::step(bool gen_trace) {
   std::vector<std::string> lines;
+  bool mismatch = false;
+
   run_command("step\n", &lines);
   if (gen_trace) {
-    OtbnTraceChecker::get().OnIssTrace(lines);
+    mismatch = !OtbnTraceChecker::get().OnIssTrace(lines);
   }
 
   // The busy flag is bit 0 of the STATUS register, so is cleared on this cycle
   // if we see a write that sets the value to an even number.
   bool done = (read_ext_reg("STATUS", lines, 1) & 1) == 0;
-  uint32_t err_code = done ? read_ext_reg("ERR_BITS", lines, 0) : 0;
-  return std::make_pair(done, err_code);
+  uint32_t err_bits = done ? read_ext_reg("ERR_BITS", lines, 0) : 0;
+
+  int ret_code = mismatch ? -1 : (done ? 1 : 0);
+  return std::make_pair(ret_code, err_bits);
 }
 
 void ISSWrapper::get_regs(std::array<uint32_t, 32> *gprs,
