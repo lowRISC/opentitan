@@ -9,7 +9,7 @@
 
 module flash_ctrl_info_cfg import flash_ctrl_pkg::*; # (
   parameter logic [BankW-1:0] Bank = 0,
-  parameter int InfoSel = 0
+  parameter logic [InfoTypesWidth-1:0] InfoSel = 0
 ) (
   input info_page_cfg_t [InfosPerBank-1:0] cfgs_i,
   input creator_seed_priv_i,
@@ -31,10 +31,16 @@ module flash_ctrl_info_cfg import flash_ctrl_pkg::*; # (
     he_en : 1'b1
   };
 
+  // The code below uses page_addr_t to represent a page inside an Info partition, but a page_addr_t
+  // is really designed a page inside a Data partition (the "addr" field has width BankW + PageW,
+  // not BankW + InfoPageW). This will work just fine so long as InfoPageW <= PageW, but we should
+  // check that's always true.
+  `ASSERT_INIT(InfoNoBiggerThanData_A, InfoPageW <= PageW)
+
   for(genvar i = 0; i < InfosPerBank; i++) begin : gen_info_priv
 
     localparam logic [InfoPageW-1:0] CurPage = i;
-    localparam page_addr_t CurAddr = '{sel: InfoSel, addr: {Bank, CurPage}};
+    localparam page_addr_t CurAddr = '{sel: InfoSel, addr: {Bank, PageW'(CurPage)}};
 
     if (i > InfoTypeSize[InfoSel]) begin : gen_invalid_region
       assign cfgs_o[i] = '0;

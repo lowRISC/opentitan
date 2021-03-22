@@ -8,9 +8,9 @@
 package flash_ctrl_pkg;
 
   // design parameters that can be altered through topgen
-  parameter int NumBanks        = flash_ctrl_reg_pkg::RegNumBanks;
-  parameter int PagesPerBank    = flash_ctrl_reg_pkg::RegPagesPerBank;
-  parameter int BusPgmResBytes  = flash_ctrl_reg_pkg::RegBusPgmResBytes;
+  parameter int unsigned NumBanks        = flash_ctrl_reg_pkg::RegNumBanks;
+  parameter int unsigned PagesPerBank    = flash_ctrl_reg_pkg::RegPagesPerBank;
+  parameter int unsigned BusPgmResBytes  = flash_ctrl_reg_pkg::RegBusPgmResBytes;
 
   // fixed parameters of flash derived from topgen parameters
   parameter int DataWidth       = ${cfg['data_width']};
@@ -64,7 +64,7 @@ package flash_ctrl_pkg;
   parameter int FifoDepthW      = prim_util_pkg::vbits(FifoDepth+1);
 
   // The end address in bus words for each kind of partition in each bank
-  parameter logic [PageW-1:0] DataPartitionEndAddr = PagesPerBank - 1;
+  parameter logic [PageW-1:0] DataPartitionEndAddr = PageW'(PagesPerBank - 1);
   //parameter logic [PageW-1:0] InfoPartitionEndAddr [InfoTypes] = '{
   % for type in range((cfg['info_types'])):
   //  ${cfg['infos_per_bank'][type]-1}${"," if not loop.last else ""}
@@ -72,7 +72,7 @@ package flash_ctrl_pkg;
   //};
   parameter logic [PageW-1:0] InfoPartitionEndAddr [InfoTypes] = '{
   % for type in range((cfg['info_types'])):
-    InfoTypeSize[${type}] - 1${"," if not loop.last else ""}
+    PageW'(InfoTypeSize[${type}] - 1)${"," if not loop.last else ""}
   % endfor
   };
 
@@ -136,13 +136,13 @@ package flash_ctrl_pkg;
   // One page for owner seeds
   // One page for isolated flash page
   parameter int NumSeeds = 2;
-  parameter int SeedBank = 0;
-  parameter int SeedInfoSel = 0;
-  parameter int CreatorSeedIdx = 0;
-  parameter int OwnerSeedIdx = 1;
-  parameter int CreatorInfoPage = 1;
-  parameter int OwnerInfoPage = 2;
-  parameter int IsolatedInfoPage = 3;
+  parameter bit [BankW-1:0] SeedBank = 0;
+  parameter bit [InfoTypesWidth-1:0] SeedInfoSel = 0;
+  parameter bit [0:0] CreatorSeedIdx = 0;
+  parameter bit [0:0] OwnerSeedIdx = 1;
+  parameter bit [PageW-1:0] CreatorInfoPage = 1;
+  parameter bit [PageW-1:0] OwnerInfoPage = 2;
+  parameter bit [PageW-1:0] IsolatedInfoPage = 3;
 
   // which page of which info type of which bank for seed selection
   parameter page_addr_t SeedInfoPageSel [NumSeeds] = '{
@@ -219,7 +219,7 @@ package flash_ctrl_pkg;
                  ecc_en:      1'b1,
                  he_en:       1'b1, // HW assumes high endurance
                  base:        '0,
-                 size:        {AllPagesW{1'b1}}
+                 size:        '1
                 }
      }
   };
@@ -387,7 +387,7 @@ package flash_ctrl_pkg;
        bank: SeedBank,
        part: FlashPartInfo,
        info_sel: SeedInfoSel,
-       start_page: OwnerInfoPage,
+       start_page: {1'b0, OwnerInfoPage},
        num_pages: 1
      },
 
@@ -396,7 +396,7 @@ package flash_ctrl_pkg;
        part: FlashPartData,
        info_sel: 0,
        start_page: 0,
-       num_pages: PagesPerBank
+       num_pages: (PageW + 1)'(PagesPerBank)
      },
 
     '{
@@ -404,7 +404,7 @@ package flash_ctrl_pkg;
        part: FlashPartData,
        info_sel: 0,
        start_page: 0,
-       num_pages: PagesPerBank
+       num_pages: (PageW + 1)'(PagesPerBank)
      }
   };
 
