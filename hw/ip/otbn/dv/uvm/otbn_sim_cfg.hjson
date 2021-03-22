@@ -140,7 +140,12 @@ name:
       reseed: 5
     }
 
-    // TODO: add more tests here
+    {
+      name: "otbn_reset"
+      uvm_test_seq: "otbn_reset_vseq"
+      en_run_modes: ["build_otbn_rig_binary_mode"]
+      reseed: 5
+    }
   ]
 
   // List of regressions.

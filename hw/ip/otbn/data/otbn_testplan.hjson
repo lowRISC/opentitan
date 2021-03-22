@@ -54,7 +54,7 @@
 
             '''
       milestone: V2
-      tests: []
+      tests: ["otbn_reset"]
     }
     {
       name: mem_integrity
