@@ -15,6 +15,10 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_warn_unused_result.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 /**
  * Hardware constants.
  */
@@ -911,5 +915,9 @@ dif_usbdev_result_t dif_usbdev_irq_restore(dif_usbdev_t *usbdev,
 DIF_WARN_UNUSED_RESULT
 dif_usbdev_result_t dif_usbdev_irq_test(dif_usbdev_t *usbdev,
                                         dif_usbdev_irq_t irq);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_USBDEV_H_
