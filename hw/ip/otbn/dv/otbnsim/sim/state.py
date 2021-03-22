@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from shared.mem_layout import get_memory_layout
 
@@ -137,14 +137,21 @@ class OTBNState:
         self.csrs.flags.abort()
         self.wdrs.abort()
 
-    def start(self) -> None:
-        '''Set the running flag and the ext_reg busy flag'''
+    def start(self, addr: int) -> None:
+        '''Set the running flag and the ext_reg busy flag; perform state init'''
         self.ext_regs.set_bits('STATUS', 1 << 0)
         self.running = True
         self._start_stall = True
         self.stalled = True
         self.pending_halt = False
         self._err_bits = 0
+
+        self.pc = addr
+
+        # Reset CSRs, WSRs and loop stack
+        self.csrs = CSRFile()
+        self.wsrs = WSRFile()
+        self.loop_stack = LoopStack()
 
     def stop(self) -> None:
         '''Set flags to stop the processor and abort the instruction'''

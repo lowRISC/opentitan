@@ -33,8 +33,7 @@ def main() -> int:
     sim = OTBNSim()
     load_elf(sim, args.elf)
 
-    sim.state.pc = 0
-    sim.state.start()
+    sim.state.start(0)
     sim.run(verbose=args.verbose)
 
     if args.dump_dmem is not None:
