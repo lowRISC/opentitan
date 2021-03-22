@@ -32,13 +32,19 @@ def _com_gcc_arm_none_repository_impl(repository_ctx):
         sha256 = remote_toolchain_info["remote_compiler"]["sha256"],
         stripPrefix = remote_toolchain_info["remote_compiler"]["strip_prefix"],
     )
+    postfix = ""
+    if "windows" in repository_ctx.os.name:
+        print("windows!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1")
+        postfix = ".exe"
     response = repository_ctx.execute(include_tools.ShellCommand(
-        "bin/arm-none-eabi-cpp",
+        "bin/arm-none-eabi-cpp" + postfix,
         [
             "-specs=nano.specs",
             "-specs=nosys.specs",
         ],
     ))
+    print("stdout:", response.stdout)
+    print("stderr:", response.stderr)
     include_paths = include_tools.ProccessResponse(response.stderr)
     include_flags = ["-isystem" + path for path in include_paths]
     include_bazel_template_input = include_tools.CommandLineToTemplateString(include_flags)

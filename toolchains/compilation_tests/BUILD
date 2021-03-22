@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 
 cc_binary(
     name = "compilation_test_c",
@@ -22,4 +22,9 @@ cc_test(
     name = "test_for_coverage",
     srcs = ["combined_coverage_test.cc"],
     target_compatible_with = ["@platforms//cpu:x86_64"],
+)
+
+cc_library(
+    name = "includes_system_headers",
+    srcs = ["includes_system_headers.cc"],
 )

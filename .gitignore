@@ -3,4 +3,5 @@ bazel-*
 **/bazel-*
 
 # vscode
+.vscode/*
 .vscode
