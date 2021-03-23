@@ -130,6 +130,18 @@ There is a page for creator and a page for the owner.
 The seed pages are read under the following initialization conditions:
 *  life cycle sets provision enable
 
+See [life cycle]({{< relref "hw/ip/lc_ctrl/doc/_index.md#creator_seed_sw_rw_en-and-owner_seed_sw_rw_en" >}}) for more details.
+
+#### Isolated Information Partitions
+
+One information partition page in the design is used for manufacturing time authentication.
+The accessibility of this page is controlled by life cycle and otp.
+
+During TEST states, the isolated page is only progrmmable.
+During production and RMA states, the isolated page is also readable.
+
+See [life cycle]({{< relref "hw/ip/lc_ctrl/doc/_index.md#iso_part_sw_rd_en-and-iso_part_sw_wr_en" >}}) for more details
+
 
 # Theory of Operation
 
@@ -290,6 +302,23 @@ However, one TBD feature is related to flash support of life cycle and manufactu
 It may be required for manufacturers to directly inject data into specific pages flash information partitions via die contacts.
 For these pages, scramble shall be permanently disabled as the manufacturer should not be aware of scrambling functions.
 
+## Flash Default Configuration
+Since the flash controller is highly dependent on the specific flavor of flash memory chosen underneath, its configuration can vary widely between different integrations.
+
+This sections details the default settings used by the flash controller:
+* Number of banks: 2
+* Number of pages per bank: 256
+* [Program resolution](#program-resolution): 8 flash words
+* Flash word data bits: 64
+* Flash word metadata bits: 8
+* ECC choice: Hamming code SECDED
+* Information partition types: 3
+* Size of information partition type 0: 10 pages
+* Size of information partition type 1: 1 page
+* Size of information partition type 2: 2 pages
+* Secret partition 0 (used for creator): Bank 0, information partition 0, page 1
+* Secret partition 1 (used for creator): Bank 0, information partition 0, page 2
+* Isolated partition: Bank 0, information partition 0, page 3
 
 ## Hardware Interfaces
 
