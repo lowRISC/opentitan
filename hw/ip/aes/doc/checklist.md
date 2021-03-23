@@ -35,8 +35,8 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 
 Type          | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]        | In progress | Security review pending
-Documentation | [BLOCK_DIAGRAM][]       | In progress | Security review pending
+Documentation | [NEW_FEATURES][]        | Done        |
+Documentation | [BLOCK_DIAGRAM][]       | Done        |
 Documentation | [DOC_INTERFACE][]       | Done        |
 Documentation | [MISSING_FUNC][]        | Done        |
 Documentation | [FEATURE_FROZEN][]      | Done        |

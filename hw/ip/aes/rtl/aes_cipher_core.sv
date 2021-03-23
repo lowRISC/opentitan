@@ -95,8 +95,8 @@
 module aes_cipher_core import aes_pkg::*;
 #(
   parameter bit          AES192Enable         = 1,
-  parameter bit          Masking              = 0,
-  parameter sbox_impl_e  SBoxImpl             = SBoxImplLut,
+  parameter bit          Masking              = 1,
+  parameter sbox_impl_e  SBoxImpl             = SBoxImplDom,
   parameter bit          SecAllowForcingMasks = 0,
   parameter bit          SecSkipPRNGReseeding = 0,
   parameter int unsigned EntropyWidth         = edn_pkg::ENDPOINT_BUS_WIDTH,
