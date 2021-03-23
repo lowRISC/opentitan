@@ -114,13 +114,6 @@ module kmac_staterd
   logic [SelAddrW-1:0] addr_sel;
   assign addr_sel = tlram_addr[StateAddrW+:SelAddrW];
 
-  always_comb begin
-    tlram_rdata_endian = '0;
-    for (int i = 0 ; i < Share ; i++) begin
-      if ($unsigned(i) == addr_sel) begin
-        tlram_rdata_endian = muxed_state[i];
-      end
-    end
-  end
+  assign tlram_rdata_endian = int'(addr_sel) < Share ? muxed_state[addr_sel] : 0;
 
 endmodule
