@@ -98,7 +98,8 @@ module aes_prng_clearing import aes_pkg::*;
   );
 
   // "Scramble" the LFSR state to break linear shift patterns.
-  assign lfsr_state_scrambled = prim_cipher_pkg::sbox4_64bit(lfsr_state, prim_cipher_pkg::PRINCE_SBOX4);
+  assign lfsr_state_scrambled = prim_cipher_pkg::sbox4_64bit(lfsr_state,
+      prim_cipher_pkg::PRINCE_SBOX4);
   assign data_o[0]            = lfsr_state_scrambled;
   // A seperate permutation is applied to obtain the pseudo-random data for clearing the second
   // share of registers (e.g. key registers or state registers in case masking is enabled).
@@ -109,6 +110,9 @@ module aes_prng_clearing import aes_pkg::*;
   // Width must be 64.
   `ASSERT_INIT(AesPrngWidth, Width == 64)
 
+// the code below is not meant to be synthesized,
+// but it is intended to be used in simulation and FPV
+`ifndef SYNTHESIS
   // Check that the supplied permutation is valid.
   logic [Width-1:0] share_perm_test, unused_share_perm_test;
   initial begin : p_share_perm_check
@@ -116,9 +120,10 @@ module aes_prng_clearing import aes_pkg::*;
     for (int k = 0; k < Width; k++) begin
       share_perm_test[RndCnstSharePerm[k]] = 1'b1;
     end
-    assign unused_share_perm_test = share_perm_test;
+    unused_share_perm_test = share_perm_test;
     // All bit positions must be marked with 1.
     `ASSERT_I(SharePermutationCheck_A, &share_perm_test)
   end
+`endif
 
 endmodule
