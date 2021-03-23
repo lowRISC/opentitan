@@ -369,8 +369,8 @@ module top_earlgrey_asic (
   logic flash_power_ready_h;
 
   // Life cycle clock bypass req/ack
-  lc_ctrl_pkg::lc_tx_t lc_ast_clk_byp_req;
-  lc_ctrl_pkg::lc_tx_t lc_ast_clk_byp_ack;
+  lc_ctrl_pkg::lc_tx_t ast_clk_byp_req;
+  lc_ctrl_pkg::lc_tx_t ast_clk_byp_ack;
 
   // DFT connections
   logic scan_rst_n;
@@ -600,8 +600,8 @@ module top_earlgrey_asic (
     .pad2ast_t1_ai         ( IOA5 ),
     .ast2pad_t0_ao         ( IOA2 ),
     .ast2pad_t1_ao         ( IOA3 ),
-    .lc_clk_byp_req_i      ( lc_ast_clk_byp_req ),
-    .lc_clk_byp_ack_o      ( lc_ast_clk_byp_ack ),
+    .lc_clk_byp_req_i      ( ast_clk_byp_req    ),
+    .lc_clk_byp_ack_o      ( ast_clk_byp_ack    ),
     .flash_bist_en_o       ( flash_bist_enable  ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
@@ -707,8 +707,8 @@ module top_earlgrey_asic (
     .es_rng_req_o                 ( es_rng_req                 ),
     .es_rng_rsp_i                 ( es_rng_rsp                 ),
     .es_rng_fips_o                ( es_rng_fips                ),
-    .lc_clk_byp_req_o             ( lc_ast_clk_byp_req         ),
-    .lc_clk_byp_ack_i             ( lc_ast_clk_byp_ack         ),
+    .ast_clk_byp_req_o            ( ast_clk_byp_req            ),
+    .ast_clk_byp_ack_i            ( ast_clk_byp_ack            ),
     .pinmux2ast_o                 ( pinmux2ast                 ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
 

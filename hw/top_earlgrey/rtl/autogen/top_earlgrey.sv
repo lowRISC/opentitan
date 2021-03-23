@@ -64,14 +64,14 @@ module top_earlgrey #(
   input  logic       clk_usb_i,
   input  logic       clk_aon_i,
   output logic       clk_main_jitter_en_o,
-  input  lc_ctrl_pkg::lc_tx_t       lc_clk_byp_ack_i,
+  output lc_ctrl_pkg::lc_tx_t       ast_clk_byp_req_o,
+  input  lc_ctrl_pkg::lc_tx_t       ast_clk_byp_ack_i,
   input  lc_ctrl_pkg::lc_tx_t       flash_bist_enable_i,
   input  logic       flash_power_down_h_i,
   input  logic       flash_power_ready_h_i,
   output entropy_src_pkg::entropy_src_rng_req_t       es_rng_req_o,
   input  entropy_src_pkg::entropy_src_rng_rsp_t       es_rng_rsp_i,
   output logic       es_rng_fips_o,
-  output lc_ctrl_pkg::lc_tx_t       lc_clk_byp_req_o,
   output tlul_pkg::tl_h2d_t       ast_tl_req_o,
   input  tlul_pkg::tl_d2h_t       ast_tl_rsp_i,
   output pinmux_pkg::dft_strap_test_req_t       dft_strap_test_o,
@@ -491,6 +491,7 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_keymgr_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_check_byp_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_req;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_ack;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_creator_seed_sw_rw_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_owner_seed_sw_rw_en;
@@ -1528,7 +1529,7 @@ module top_earlgrey #(
       .lc_cpu_en_o(lc_ctrl_lc_cpu_en),
       .lc_keymgr_en_o(lc_ctrl_lc_keymgr_en),
       .lc_escalate_en_o(lc_ctrl_lc_escalate_en),
-      .lc_clk_byp_req_o(lc_clk_byp_req_o),
+      .lc_clk_byp_req_o(lc_ctrl_lc_clk_byp_req),
       .lc_clk_byp_ack_i(lc_ctrl_lc_clk_byp_ack),
       .lc_flash_rma_req_o(flash_ctrl_rma_req),
       .lc_flash_rma_seed_o(flash_ctrl_rma_seed),
@@ -1645,8 +1646,10 @@ module top_earlgrey #(
 
       // Inter-module signals
       .clocks_o(clkmgr_aon_clocks),
-      .ast_clk_bypass_ack_i(lc_clk_byp_ack_i),
-      .lc_clk_bypass_ack_o(lc_ctrl_lc_clk_byp_ack),
+      .ast_clk_byp_req_o(ast_clk_byp_req_o),
+      .ast_clk_byp_ack_i(ast_clk_byp_ack_i),
+      .lc_clk_byp_req_i(lc_ctrl_lc_clk_byp_req),
+      .lc_clk_byp_ack_o(lc_ctrl_lc_clk_byp_ack),
       .jitter_en_o(clk_main_jitter_en_o),
       .clk_main_i(clk_main_i),
       .clk_io_i(clk_io_i),

@@ -316,8 +316,8 @@ module top_englishbreakfast_cw305 #(
     .flash_bist_enable_i          ( 1'b0            ),
     .flash_power_down_h_i         ( 1'b0            ),
     .flash_power_ready_h_i        ( 1'b1            ),
-    .lc_clk_byp_req_o             ( lc_clk_bypass   ),
-    .lc_clk_byp_ack_i             ( lc_clk_bypass   ),
+    .ast_clk_byp_req_o            ( lc_clk_bypass   ),
+    .ast_clk_byp_ack_i            ( lc_clk_bypass   ),
     .clks_ast_o                   (                 ),
     .rsts_ast_o                   (                 ),
 

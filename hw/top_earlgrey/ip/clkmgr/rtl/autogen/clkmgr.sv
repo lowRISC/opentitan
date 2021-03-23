@@ -14,7 +14,7 @@
 
 
 
-module clkmgr import clkmgr_pkg::*; (
+  module clkmgr import clkmgr_pkg::*; import lc_ctrl_pkg::lc_tx_t; (
   // Primary module control clocks and resets
   // This drives the register interface
   input clk_i,
@@ -44,14 +44,19 @@ module clkmgr import clkmgr_pkg::*; (
   output pwrmgr_pkg::pwr_clk_rsp_t pwr_o,
 
   // dft interface
-  input lc_ctrl_pkg::lc_tx_t scanmode_i,
+  input lc_tx_t scanmode_i,
 
   // idle hints
   input [3:0] idle_i,
 
+  // life cycle state output
+  input lc_tx_t lc_dft_en_i,
+
   // clock bypass control
-  input lc_ctrl_pkg::lc_tx_t ast_clk_bypass_ack_i,
-  output lc_ctrl_pkg::lc_tx_t lc_clk_bypass_ack_o,
+  input lc_tx_t lc_clk_byp_req_i,
+  output lc_tx_t ast_clk_byp_req_o,
+  input lc_tx_t ast_clk_byp_ack_i,
+  output lc_tx_t lc_clk_byp_ack_o,
 
   // jittery enable
   output logic jitter_en_o,
@@ -80,25 +85,19 @@ module clkmgr import clkmgr_pkg::*; (
     .devmode_i(1'b1)
   );
 
+
   ////////////////////////////////////////////////////
   // Divided clocks
   ////////////////////////////////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t step_down_req;
+  lc_tx_t step_down_req;
   logic [1:0] step_down_acks;
-
-  prim_lc_sync u_rcv (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(ast_clk_bypass_ack_i),
-    .lc_en_o(step_down_req)
-  );
 
   logic clk_io_div2_i;
   logic clk_io_div4_i;
 
 
-  lc_ctrl_pkg::lc_tx_t io_div2_div_scanmode;
+  lc_tx_t io_div2_div_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -120,7 +119,7 @@ module clkmgr import clkmgr_pkg::*; (
     .clk_o(clk_io_div2_i)
   );
 
-  lc_ctrl_pkg::lc_tx_t io_div4_div_scanmode;
+  lc_tx_t io_div4_div_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -142,11 +141,23 @@ module clkmgr import clkmgr_pkg::*; (
     .clk_o(clk_io_div4_i)
   );
 
-  prim_lc_sender u_send (
-   .clk_i,
-   .rst_ni,
-   .lc_en_i(&step_down_acks ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off),
-   .lc_en_o(lc_clk_bypass_ack_o)
+  ////////////////////////////////////////////////////
+  // Clock bypass request
+  ////////////////////////////////////////////////////
+
+  clkmgr_byp #(
+    .NumDivClks(2)
+  ) u_clkmgr_byp (
+    .clk_i,
+    .rst_ni,
+    .en_i(lc_dft_en_i),
+    .byp_req(lc_tx_t'(reg2hw.extclk_sel.q)),
+    .ast_clk_byp_req_o,
+    .ast_clk_byp_ack_i,
+    .lc_clk_byp_req_i,
+    .lc_clk_byp_ack_o,
+    .step_down_acks_i(step_down_acks),
+    .step_down_req_o(step_down_req)
   );
 
   ////////////////////////////////////////////////////
@@ -210,7 +221,7 @@ module clkmgr import clkmgr_pkg::*; (
   logic clk_io_div4_root;
   logic clk_io_div4_en;
 
-  lc_ctrl_pkg::lc_tx_t main_scanmode;
+  lc_tx_t main_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -229,7 +240,7 @@ module clkmgr import clkmgr_pkg::*; (
     .en_o(clk_main_en),
     .clk_o(clk_main_root)
   );
-  lc_ctrl_pkg::lc_tx_t io_scanmode;
+  lc_tx_t io_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -248,7 +259,7 @@ module clkmgr import clkmgr_pkg::*; (
     .en_o(clk_io_en),
     .clk_o(clk_io_root)
   );
-  lc_ctrl_pkg::lc_tx_t usb_scanmode;
+  lc_tx_t usb_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -267,7 +278,7 @@ module clkmgr import clkmgr_pkg::*; (
     .en_o(clk_usb_en),
     .clk_o(clk_usb_root)
   );
-  lc_ctrl_pkg::lc_tx_t io_div2_scanmode;
+  lc_tx_t io_div2_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -286,7 +297,7 @@ module clkmgr import clkmgr_pkg::*; (
     .en_o(clk_io_div2_en),
     .clk_o(clk_io_div2_root)
   );
-  lc_ctrl_pkg::lc_tx_t io_div4_scanmode;
+  lc_tx_t io_div4_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -392,7 +403,7 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_io_div4_peri_sw_en)
   );
 
-  lc_ctrl_pkg::lc_tx_t clk_io_div4_peri_scanmode;
+  lc_tx_t clk_io_div4_peri_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -421,7 +432,7 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_io_div2_peri_sw_en)
   );
 
-  lc_ctrl_pkg::lc_tx_t clk_io_div2_peri_scanmode;
+  lc_tx_t clk_io_div2_peri_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -450,7 +461,7 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_usb_peri_sw_en)
   );
 
-  lc_ctrl_pkg::lc_tx_t clk_usb_peri_scanmode;
+  lc_tx_t clk_usb_peri_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -497,7 +508,7 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_main_aes_hint)
   );
 
-  lc_ctrl_pkg::lc_tx_t clk_main_aes_scanmode;
+  lc_tx_t clk_main_aes_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -528,7 +539,7 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_main_hmac_hint)
   );
 
-  lc_ctrl_pkg::lc_tx_t clk_main_hmac_scanmode;
+  lc_tx_t clk_main_hmac_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -559,7 +570,7 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_main_kmac_hint)
   );
 
-  lc_ctrl_pkg::lc_tx_t clk_main_kmac_scanmode;
+  lc_tx_t clk_main_kmac_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -590,7 +601,7 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_main_otbn_hint)
   );
 
-  lc_ctrl_pkg::lc_tx_t clk_main_otbn_scanmode;
+  lc_tx_t clk_main_otbn_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)

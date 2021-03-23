@@ -136,6 +136,7 @@ def main():
                         'lowrisc:prim:clock_gating',
                         'lowrisc:prim:clock_buf',
                         'lowrisc:prim:clock_div',
+                        'lowrisc:ip:clkmgr_components',
                         # Top
                         # ast and sensor_ctrl not auto-generated, re-used from top_earlgrey
                         'lowrisc:systems:sensor_ctrl',
@@ -143,7 +144,6 @@ def main():
                     ],
                     'files': [
                         # IPs
-                        'ip/clkmgr/rtl/autogen/clkmgr_pkg.sv',
                         'ip/clkmgr/rtl/autogen/clkmgr.sv',
                         'ip/flash_ctrl/rtl/autogen/flash_ctrl_pkg.sv',
                         'ip/flash_ctrl/rtl/autogen/flash_ctrl.sv',

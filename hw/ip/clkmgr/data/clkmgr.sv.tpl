@@ -11,7 +11,7 @@ clks_attr = cfg['clocks']
 srcs = clks_attr['srcs']
 %>
 
-module clkmgr import clkmgr_pkg::*; (
+  module clkmgr import clkmgr_pkg::*; import lc_ctrl_pkg::lc_tx_t; (
   // Primary module control clocks and resets
   // This drives the register interface
   input clk_i,
@@ -41,14 +41,19 @@ module clkmgr import clkmgr_pkg::*; (
   output pwrmgr_pkg::pwr_clk_rsp_t pwr_o,
 
   // dft interface
-  input lc_ctrl_pkg::lc_tx_t scanmode_i,
+  input lc_tx_t scanmode_i,
 
   // idle hints
   input [${len(hint_clks)-1}:0] idle_i,
 
+  // life cycle state output
+  input lc_tx_t lc_dft_en_i,
+
   // clock bypass control
-  input lc_ctrl_pkg::lc_tx_t ast_clk_bypass_ack_i,
-  output lc_ctrl_pkg::lc_tx_t lc_clk_bypass_ack_o,
+  input lc_tx_t lc_clk_byp_req_i,
+  output lc_tx_t ast_clk_byp_req_o,
+  input lc_tx_t ast_clk_byp_ack_i,
+  output lc_tx_t lc_clk_byp_ack_o,
 
   // jittery enable
   output logic jitter_en_o,
@@ -79,19 +84,13 @@ module clkmgr import clkmgr_pkg::*; (
     .devmode_i(1'b1)
   );
 
+
   ////////////////////////////////////////////////////
   // Divided clocks
   ////////////////////////////////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t step_down_req;
+  lc_tx_t step_down_req;
   logic [${len(div_srcs)-1}:0] step_down_acks;
-
-  prim_lc_sync u_rcv (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(ast_clk_bypass_ack_i),
-    .lc_en_o(step_down_req)
-  );
 
 % for src in div_srcs:
   logic clk_${src['name']}_i;
@@ -99,7 +98,7 @@ module clkmgr import clkmgr_pkg::*; (
 
 % for src in div_srcs:
 
-  lc_ctrl_pkg::lc_tx_t ${src['name']}_div_scanmode;
+  lc_tx_t ${src['name']}_div_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -122,11 +121,23 @@ module clkmgr import clkmgr_pkg::*; (
   );
 % endfor
 
-  prim_lc_sender u_send (
-   .clk_i,
-   .rst_ni,
-   .lc_en_i(&step_down_acks ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off),
-   .lc_en_o(lc_clk_bypass_ack_o)
+  ////////////////////////////////////////////////////
+  // Clock bypass request
+  ////////////////////////////////////////////////////
+
+  clkmgr_byp #(
+    .NumDivClks(${len(div_srcs)})
+  ) u_clkmgr_byp (
+    .clk_i,
+    .rst_ni,
+    .en_i(lc_dft_en_i),
+    .byp_req(lc_tx_t'(reg2hw.extclk_sel.q)),
+    .ast_clk_byp_req_o,
+    .ast_clk_byp_ack_i,
+    .lc_clk_byp_req_i,
+    .lc_clk_byp_ack_o,
+    .step_down_acks_i(step_down_acks),
+    .step_down_req_o(step_down_req)
   );
 
   ////////////////////////////////////////////////////
@@ -159,7 +170,7 @@ module clkmgr import clkmgr_pkg::*; (
 % endfor
 
 % for src in rg_srcs:
-  lc_ctrl_pkg::lc_tx_t ${src}_scanmode;
+  lc_tx_t ${src}_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -267,7 +278,7 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(${k}_sw_en)
   );
 
-  lc_ctrl_pkg::lc_tx_t ${k}_scanmode;
+  lc_tx_t ${k}_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -312,7 +323,7 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(${k}_hint)
   );
 
-  lc_ctrl_pkg::lc_tx_t ${k}_scanmode;
+  lc_tx_t ${k}_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)

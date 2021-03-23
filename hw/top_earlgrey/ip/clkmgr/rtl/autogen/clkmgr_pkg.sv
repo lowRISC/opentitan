@@ -65,5 +65,4 @@ package clkmgr_pkg;
     idle: {4{1'b1}}
   };
 
-
 endpackage // clkmgr_pkg

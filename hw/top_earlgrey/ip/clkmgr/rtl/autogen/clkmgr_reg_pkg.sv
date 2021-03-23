@@ -10,11 +10,15 @@ package clkmgr_reg_pkg;
   parameter int NumGroups = 7;
 
   // Address widths within the block
-  parameter int BlockAw = 4;
+  parameter int BlockAw = 5;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
+
+  typedef struct packed {
+    logic [3:0]  q;
+  } clkmgr_reg2hw_extclk_sel_reg_t;
 
   typedef struct packed {
     logic        q;
@@ -68,6 +72,7 @@ package clkmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
+    clkmgr_reg2hw_extclk_sel_reg_t extclk_sel; // [11:8]
     clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [7:7]
     clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [6:4]
     clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [3:0]
@@ -79,13 +84,17 @@ package clkmgr_reg_pkg;
   } clkmgr_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] CLKMGR_JITTER_ENABLE_OFFSET = 4'h 0;
-  parameter logic [BlockAw-1:0] CLKMGR_CLK_ENABLES_OFFSET = 4'h 4;
-  parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_OFFSET = 4'h 8;
-  parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_STATUS_OFFSET = 4'h c;
+  parameter logic [BlockAw-1:0] CLKMGR_EXTCLK_SEL_REGWEN_OFFSET = 5'h 0;
+  parameter logic [BlockAw-1:0] CLKMGR_EXTCLK_SEL_OFFSET = 5'h 4;
+  parameter logic [BlockAw-1:0] CLKMGR_JITTER_ENABLE_OFFSET = 5'h 8;
+  parameter logic [BlockAw-1:0] CLKMGR_CLK_ENABLES_OFFSET = 5'h c;
+  parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_OFFSET = 5'h 10;
+  parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_STATUS_OFFSET = 5'h 14;
 
   // Register index
   typedef enum int {
+    CLKMGR_EXTCLK_SEL_REGWEN,
+    CLKMGR_EXTCLK_SEL,
     CLKMGR_JITTER_ENABLE,
     CLKMGR_CLK_ENABLES,
     CLKMGR_CLK_HINTS,
@@ -93,11 +102,13 @@ package clkmgr_reg_pkg;
   } clkmgr_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] CLKMGR_PERMIT [4] = '{
-    4'b 0001, // index[0] CLKMGR_JITTER_ENABLE
-    4'b 0001, // index[1] CLKMGR_CLK_ENABLES
-    4'b 0001, // index[2] CLKMGR_CLK_HINTS
-    4'b 0001  // index[3] CLKMGR_CLK_HINTS_STATUS
+  parameter logic [3:0] CLKMGR_PERMIT [6] = '{
+    4'b 0001, // index[0] CLKMGR_EXTCLK_SEL_REGWEN
+    4'b 0001, // index[1] CLKMGR_EXTCLK_SEL
+    4'b 0001, // index[2] CLKMGR_JITTER_ENABLE
+    4'b 0001, // index[3] CLKMGR_CLK_ENABLES
+    4'b 0001, // index[4] CLKMGR_CLK_HINTS
+    4'b 0001  // index[5] CLKMGR_CLK_HINTS_STATUS
   };
 
 endpackage
