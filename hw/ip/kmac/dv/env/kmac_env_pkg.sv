@@ -64,10 +64,10 @@ package kmac_env_pkg;
   parameter int SIDELOAD_KEY_SIZE = $bits(hw_key_req_t);
   // KDF request data has 1 bit for last, and the rest are for data/strb.
   // We subtract 1 from the width of the struct as it includes the valid handshake signal.
-  parameter int KDF_DATA_SIZE = $bits(kmac_data_req_t) - 1;
+  parameter int KDF_DATA_SIZE = $bits(app_req_t) - 1;
   // KDF response data has 2 bits for done/error signals and the rest are for digest shares.
   // We subtract 1 from the struct width as it includes the ready handshake signal.
-  parameter int KDF_DIGEST_SIZE = $bits(kmac_data_rsp_t) - 1;
+  parameter int KDF_DIGEST_SIZE = $bits(app_rsp_t) - 1;
 
   // types
 

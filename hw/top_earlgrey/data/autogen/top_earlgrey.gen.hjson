@@ -3851,15 +3851,16 @@
           index: -1
         }
         {
-          name: keymgr_kdf
-          struct: kmac_data
-          package: keymgr_pkg
+          name: app
+          struct: app
+          package: kmac_pkg
           type: req_rsp
           act: rsp
           width: 1
           inst_name: kmac
           default: ""
-          top_signame: keymgr_kmac_data
+          end_idx: -1
+          top_signame: kmac_app
           index: -1
         }
         {
@@ -4108,15 +4109,14 @@
         }
         {
           name: kmac_data
-          struct: kmac_data
-          package: keymgr_pkg
+          struct: app
+          package: kmac_pkg
           type: req_rsp
           act: req
           width: 1
           inst_name: keymgr
           default: ""
-          end_idx: -1
-          top_signame: keymgr_kmac_data
+          top_signame: kmac_app
           index: -1
         }
         {
@@ -5479,9 +5479,9 @@
       [
         kmac.keymgr_key
       ]
-      keymgr.kmac_data:
+      kmac.app:
       [
-        kmac.keymgr_kdf
+        keymgr.kmac_data
       ]
       clkmgr_aon.idle:
       [
@@ -11267,15 +11267,16 @@
         index: -1
       }
       {
-        name: keymgr_kdf
-        struct: kmac_data
-        package: keymgr_pkg
+        name: app
+        struct: app
+        package: kmac_pkg
         type: req_rsp
         act: rsp
         width: 1
         inst_name: kmac
         default: ""
-        top_signame: keymgr_kmac_data
+        end_idx: -1
+        top_signame: kmac_app
         index: -1
       }
       {
@@ -11363,15 +11364,14 @@
       }
       {
         name: kmac_data
-        struct: kmac_data
-        package: keymgr_pkg
+        struct: app
+        package: kmac_pkg
         type: req_rsp
         act: req
         width: 1
         inst_name: keymgr
         default: ""
-        end_idx: -1
-        top_signame: keymgr_kmac_data
+        top_signame: kmac_app
         index: -1
       }
       {
@@ -13906,24 +13906,24 @@
         default: ""
       }
       {
-        package: keymgr_pkg
-        struct: kmac_data_req
-        signame: keymgr_kmac_data_req
+        package: kmac_pkg
+        struct: app_req
+        signame: kmac_app_req
         width: 1
         type: req_rsp
         end_idx: -1
-        act: req
+        act: rsp
         suffix: req
         default: ""
       }
       {
-        package: keymgr_pkg
-        struct: kmac_data_rsp
-        signame: keymgr_kmac_data_rsp
+        package: kmac_pkg
+        struct: app_rsp
+        signame: kmac_app_rsp
         width: 1
         type: req_rsp
         end_idx: -1
-        act: req
+        act: rsp
         suffix: rsp
         default: ""
       }

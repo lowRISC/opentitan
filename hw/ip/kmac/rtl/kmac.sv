@@ -32,8 +32,8 @@ module kmac
   input keymgr_pkg::hw_key_req_t keymgr_key_i,
 
   // KeyMgr KDF data path
-  input  keymgr_pkg::kmac_data_req_t keymgr_kdf_i,
-  output keymgr_pkg::kmac_data_rsp_t keymgr_kdf_o,
+  input  app_req_t app_i,
+  output app_rsp_t app_o,
 
   // EDN interface
   output edn_pkg::edn_req_t entropy_o,
@@ -685,8 +685,8 @@ module kmac
     .keymgr_key_i,
 
     // KeyMgr data in / digest out interface
-    .keymgr_data_i (keymgr_kdf_i),
-    .keymgr_data_o (keymgr_kdf_o),
+    .app_i (app_i),
+    .app_o (app_o),
 
     // Secret Key output to KMAC Core
     .key_data_o (key_data),

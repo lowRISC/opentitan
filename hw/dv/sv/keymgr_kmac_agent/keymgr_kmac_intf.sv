@@ -10,8 +10,8 @@ interface keymgr_kmac_intf (input clk, input rst_n);
   dv_utils_pkg::if_mode_e if_mode; // interface mode - Host or Device
 
   // interface pins used to connect with DUT
-  wire kmac_data_req_t kmac_data_req;
-  wire kmac_data_rsp_t kmac_data_rsp;
+  wire kmac_pkg::app_req_t kmac_data_req;
+  wire kmac_pkg::app_rsp_t kmac_data_rsp;
 
   // interface pins used in driver/monitor
   push_pull_if #(.HostDataWidth(keymgr_kmac_agent_pkg::KMAC_REQ_DATA_WIDTH))

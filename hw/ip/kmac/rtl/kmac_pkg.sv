@@ -90,6 +90,47 @@ package kmac_pkg;
     EntropyModeSw   = 2'h 2
   } entropy_mode_e;
 
+  ///////////////////////////
+  // Application interface //
+  ///////////////////////////
+  // MsgWidth : 64
+  // MsgStrbW : 8
+  parameter int unsigned AppDigestW = 256;
+  typedef struct packed {
+    logic valid;
+    logic [MsgWidth-1:0] data;
+    logic [MsgStrbW-1:0] strb;
+    // last indicates the last beat of the data. strb can be partial only with
+    // last.
+    logic last;
+  } app_req_t;
+
+  typedef struct packed {
+    logic ready;
+    logic done;
+    logic [AppDigestW-1:0] digest_share0;
+    logic [AppDigestW-1:0] digest_share1;
+    // Error is valid when done is high. If any error occurs during KDF, KMAC
+    // returns the garbage digest data with error. The KeyMgr discards the
+    // digest and may re-initiate the process.
+    logic error;
+  } app_rsp_t;
+
+  parameter app_req_t APP_REQ_DEFAULT = '{
+    valid: 1'b 0,
+    data: '0,
+    strb: '0,
+    last: 1'b 0
+  };
+  parameter app_rsp_t APP_RSP_DEFAULT = '{
+    ready: 1'b1,
+    done:  1'b1,
+    digest_share0: AppDigestW'(32'hDEADBEEF),
+    digest_share1: AppDigestW'(32'hFACEBEEF),
+    error: 1'b1
+  };
+
+
   ////////////////////
   // Error Handling //
   ////////////////////

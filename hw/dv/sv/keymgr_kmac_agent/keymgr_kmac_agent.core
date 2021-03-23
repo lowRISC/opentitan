@@ -11,6 +11,7 @@ filesets:
       - lowrisc:dv:dv_lib
       - lowrisc:dv:push_pull_agent
       - lowrisc:ip:keymgr_pkg
+      - lowrisc:ip:kmac_pkg
     files:
       - keymgr_kmac_agent_pkg.sv
       - keymgr_kmac_intf.sv

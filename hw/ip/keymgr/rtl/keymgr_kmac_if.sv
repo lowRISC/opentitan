@@ -26,8 +26,8 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   output logic [Shares-1:0][KeyWidth-1:0] data_o,
 
   // actual connection to kmac
-  output kmac_data_req_t kmac_data_o,
-  input kmac_data_rsp_t kmac_data_i,
+  output kmac_pkg::app_req_t kmac_data_o,
+  input  kmac_pkg::app_rsp_t kmac_data_i,
 
   // entropy input
   output logic prng_en_o,

@@ -470,8 +470,8 @@ module top_earlgrey #(
   edn_pkg::edn_rsp_t [6:0] edn1_edn_rsp;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
-  keymgr_pkg::kmac_data_req_t       keymgr_kmac_data_req;
-  keymgr_pkg::kmac_data_rsp_t       keymgr_kmac_data_rsp;
+  kmac_pkg::app_req_t       kmac_app_req;
+  kmac_pkg::app_rsp_t       kmac_app_rsp;
   logic [3:0] clkmgr_aon_idle;
   jtag_pkg::jtag_req_t       pinmux_aon_lc_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_aon_lc_jtag_rsp;
@@ -1965,8 +1965,8 @@ module top_earlgrey #(
 
       // Inter-module signals
       .keymgr_key_i(keymgr_kmac_key),
-      .keymgr_kdf_i(keymgr_kmac_data_req),
-      .keymgr_kdf_o(keymgr_kmac_data_rsp),
+      .app_i(kmac_app_req),
+      .app_o(kmac_app_rsp),
       .entropy_o(edn0_edn_req[3]),
       .entropy_i(edn0_edn_rsp[3]),
       .idle_o(clkmgr_aon_idle[2]),
@@ -2010,8 +2010,8 @@ module top_earlgrey #(
       .aes_key_o(),
       .hmac_key_o(),
       .kmac_key_o(keymgr_kmac_key),
-      .kmac_data_o(keymgr_kmac_data_req),
-      .kmac_data_i(keymgr_kmac_data_rsp),
+      .kmac_data_o(kmac_app_req),
+      .kmac_data_i(kmac_app_rsp),
       .otp_key_i(otp_ctrl_otp_keymgr_key),
       .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
       .flash_i(flash_ctrl_keymgr),

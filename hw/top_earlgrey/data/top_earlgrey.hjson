@@ -893,7 +893,10 @@
       // KeyMgr Sideload & KDF function
       'otp_ctrl.otp_keymgr_key' : ['keymgr.otp_key'],
       'keymgr.kmac_key'         : ['kmac.keymgr_key']
-      'keymgr.kmac_data'        : ['kmac.keymgr_kdf']
+
+      // KMAC Application Interface
+      'kmac.app'                : ['keymgr.kmac_data']
+
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
       // an empty list.

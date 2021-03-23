@@ -49,11 +49,11 @@
       act:     "req",
       package: "keymgr_pkg",  // Origin package (only needs for the requester)
     },
-    { struct:  "kmac_data",   // kmac_data_req_t, kmac_data_rsp_t
+    { struct:  "app",   // kmac_pkg::app_req_t, kmac_pkg::app_rsp_t
       type:    "req_rsp",
       name:    "kmac_data",   // kmac_data_o (req), kmac_data_i (rsp)
       act:     "req",
-      package: "keymgr_pkg",  // Origin package (only needs for the requester)
+      package: "kmac_pkg",  // Origin package (only needs for the requester)
     },
     { struct:  "otp_keymgr_key",
       type:    "uni",

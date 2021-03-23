@@ -68,11 +68,11 @@
       act:     "rcv"
       package: "keymgr_pkg"
     }
-    { struct:  "kmac_data"
+    { struct:  "app"
       type:    "req_rsp"
-      name:    "keymgr_kdf"
+      name:    "app"
       act:     "rsp"
-      package: "keymgr_pkg"
+      package: "kmac_pkg"
     }
     { struct:  "edn"
       type:    "req_rsp"

@@ -29,8 +29,8 @@ module kmac_keymgr
   input keymgr_pkg::hw_key_req_t keymgr_key_i,
 
   // KeyMgr Data in/ Digest out interface + control signals
-  input  keymgr_pkg::kmac_data_req_t keymgr_data_i,
-  output keymgr_pkg::kmac_data_rsp_t keymgr_data_o,
+  input  app_req_t app_i,
+  output app_rsp_t app_o,
 
   // to KMAC Core: Secret key
   output [MaxKeyLen-1:0] key_data_o [Share],
@@ -90,7 +90,7 @@ module kmac_keymgr
 
   // Digest width is same to the key width `keymgr_pkg::KeyWidth`.
   localparam int KeyMgrKeyW = $bits(keymgr_key_i.key_share0);
-  localparam int KeyMgrDigestW = $bits(keymgr_data_o.digest_share0);
+  localparam int KeyMgrDigestW = $bits(app_o.digest_share0);
 
   localparam key_len_e KeyLen [5] = '{Key128, Key192, Key256, Key384, Key512};
 
@@ -171,7 +171,7 @@ module kmac_keymgr
 
   keyctrl_st_e st, st_d;
 
-  // keymgr_pkg::keymgr_data_rsp_t signals
+  // app_rsp_t signals
   // The state machine controls mux selection, which controls the ready signal
   // the other responses are controled in separate logic. So define the signals
   // here and merge them to the response.
@@ -179,7 +179,7 @@ module kmac_keymgr
   logic keymgr_digest_done;
   logic [KeyMgrDigestW-1:0] keymgr_digest [2];
 
-  assign keymgr_data_o = '{
+  assign app_o = '{
     ready:         keymgr_data_ready,
     done:          keymgr_digest_done,
     digest_share0: keymgr_digest[0],
@@ -225,11 +225,11 @@ module kmac_keymgr
 
     unique case (st)
       StIdle: begin
-        if (keymgr_data_i.valid && keymgr_key_i.valid) begin
+        if (app_i.valid && keymgr_key_i.valid) begin
           st_d = StKeyMgrMsg;
           // KeyMgr initiates the data
           cmd_o = CmdStart;
-        end else if (keymgr_data_i.valid && !keymgr_key_i.valid) begin
+        end else if (app_i.valid && !keymgr_key_i.valid) begin
           st_d = StKeyMgrErrKeyNotValid;
 
           fsm_err.valid = 1'b 1;
@@ -248,7 +248,7 @@ module kmac_keymgr
         mux_sel = SelKeyMgr;
         // Wait until the completion (done) from KeyMgr?
         // Or absorb completion?
-        if (keymgr_data_i.valid && keymgr_data_o.ready && keymgr_data_i.last) begin
+        if (app_i.valid && app_o.ready && app_i.last) begin
           st_d = StKeyMgrOutLen;
         end else begin
           st_d = StKeyMgrMsg;
@@ -328,11 +328,11 @@ module kmac_keymgr
 
     unique case (mux_sel)
       SelKeyMgr: begin
-        kmac_valid_o = keymgr_data_i.valid;
-        kmac_data_o  = keymgr_data_i.data;
+        kmac_valid_o = app_i.valid;
+        kmac_data_o  = app_i.data;
         // Expand strb to bits. prim_packer inside MSG_FIFO accepts the bit masks
-        for (int i = 0 ; i < $bits(keymgr_data_i.strb) ; i++) begin
-          kmac_mask_o[8*i+:8] = {8{keymgr_data_i.strb[i]}};
+        for (int i = 0 ; i < $bits(app_i.strb) ; i++) begin
+          kmac_mask_o[8*i+:8] = {8{app_i.strb[i]}};
         end
         keymgr_data_ready = kmac_ready_i;
       end

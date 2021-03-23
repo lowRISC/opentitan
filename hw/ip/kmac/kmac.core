@@ -16,8 +16,8 @@ filesets:
       - lowrisc:ip:sha3
       - lowrisc:ip:edn_pkg
       - lowrisc:prim:edn_req
+      - lowrisc:ip:kmac_pkg
     files:
-      - rtl/kmac_pkg.sv
       - rtl/kmac_core.sv
       - rtl/kmac_msgfifo.sv
       - rtl/kmac_staterd.sv

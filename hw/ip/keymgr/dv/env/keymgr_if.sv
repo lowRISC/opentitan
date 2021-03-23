@@ -22,8 +22,8 @@ interface keymgr_if(input clk, input rst_n);
   keymgr_pkg::hw_key_req_t aes_key_exp;
 
   // connect KDF interface for assertion check
-  wire keymgr_pkg::kmac_data_req_t kmac_data_req;
-  wire keymgr_pkg::kmac_data_rsp_t kmac_data_rsp;
+  wire kmac_pkg::app_req_t kmac_data_req;
+  wire kmac_pkg::app_rsp_t kmac_data_rsp;
 
   // connect EDN for assertion check
   wire edn_clk, edn_rst_n, edn_req, edn_ack;

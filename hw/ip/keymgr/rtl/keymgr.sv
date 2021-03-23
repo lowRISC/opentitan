@@ -41,8 +41,8 @@ module keymgr
   output hw_key_req_t kmac_key_o,
 
   // data interface to/from crypto modules
-  output kmac_data_req_t kmac_data_o,
-  input kmac_data_rsp_t kmac_data_i,
+  output kmac_pkg::app_req_t kmac_data_o,
+  input  kmac_pkg::app_rsp_t kmac_data_i,
 
   // the following signals should eventually be wrapped into structs from other modules
   input lc_ctrl_pkg::lc_tx_t lc_keymgr_en_i,

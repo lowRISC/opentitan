@@ -21,8 +21,8 @@ module tb;
   // keymgr/kmac sideload wires
   keymgr_pkg::hw_key_req_t kmac_sideload_key;
   // kdf wires
-  keymgr_pkg::kmac_data_req_t kdf_req;
-  keymgr_pkg::kmac_data_rsp_t kdf_rsp;
+  kmac_pkg::app_req_t kdf_req;
+  kmac_pkg::app_rsp_t kdf_rsp;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -56,8 +56,8 @@ module tb;
     //
     // TODO: this is set to 0 for the time being to get the csr tests passing.
     //       this will eventually be hooked up to the kmac<->keymgr agent.
-    .keymgr_kdf_i       (keymgr_kmac_if.kmac_data_req ),
-    .keymgr_kdf_o       (keymgr_kmac_if.kmac_data_rsp ),
+    .app_i       (keymgr_kmac_if.kmac_data_req ),
+    .app_o       (keymgr_kmac_if.kmac_data_rsp ),
 
     // Interrupts
     .intr_kmac_done_o   (interrupts[KmacDone]         ),

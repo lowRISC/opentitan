@@ -163,40 +163,6 @@ package keymgr_pkg;
     key_share1: KeyWidth'(32'hFACEBEEF)
   };
 
-  typedef struct packed {
-    logic valid;
-    logic [KmacDataIfWidth-1:0] data;
-    logic [KmacDataIfWidth/8-1:0] strb;
-    // last indicates the last beat of the data. strb can be partial only with
-    // last.
-    logic last;
-  } kmac_data_req_t;
-
-  typedef struct packed {
-    logic ready;
-    logic done;
-    logic [KeyWidth-1:0] digest_share0;
-    logic [KeyWidth-1:0] digest_share1;
-    // Error is valid when done is high. If any error occurs during KDF, KMAC
-    // returns the garbage digest data with error. The KeyMgr discards the
-    // digest and may re-initiate the process.
-    logic error;
-  } kmac_data_rsp_t;
-
-  parameter kmac_data_req_t KMAC_DATA_REQ_DEFAULT = '{
-    valid: 1'b 0,
-    data: '0,
-    strb: '0,
-    last: 1'b 0
-  };
-  parameter kmac_data_rsp_t KMAC_DATA_RSP_DEFAULT = '{
-    ready: 1'b1,
-    done:  1'b1,
-    digest_share0: KeyWidth'(32'hDEADBEEF),
-    digest_share1: KeyWidth'(32'hFACEBEEF),
-    error: 1'b1
-  };
-
   // The following structs should be sourced from other modules
   // defined here temporarily
 
