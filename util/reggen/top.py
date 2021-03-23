@@ -30,7 +30,8 @@ class Top:
                  blocks: Dict[str, IpBlock],
                  instances: Dict[str, str],
                  if_addrs: Dict[Tuple[str, Optional[str]], int],
-                 windows: List[Window]):
+                 windows: List[Window],
+                 attrs: Dict[str, str]):
         '''Class initializer.
 
         regwidth is the width of the registers (which must match for all the
@@ -50,12 +51,15 @@ class Top:
 
         windows is a list of windows (these contain base addresses already).
 
+        attrs is a map from instance name to attr field of the block
+
         '''
 
         self.regwidth = regwidth
         self.blocks = blocks
         self.instances = instances
         self.if_addrs = if_addrs
+        self.attrs = attrs
 
         self.window_block = RegBlock(regwidth, ReggenParams())
 

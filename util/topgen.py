@@ -790,11 +790,16 @@ def generate_top_ral(top: Dict[str, object],
     # together with a map of interface addresses.
     inst_to_block = {}  # type: Dict[str, str]
     if_addrs = {}  # type: Dict[Tuple[str, Optional[str]], int],
+    attrs = {} # type: Dict[str, str]
 
     for module in top['module']:
         inst_name = module['name']
         block_name = module['type']
         block = name_to_block[block_name]
+        if "attr" in module:
+            if module["attr"] not in ['templated', 'reggen_top', 'reggen_only']:
+                raise ValueError('Unsupported value for attr field of {}: {!r}'.format(what, attr))
+            attrs[inst_name] = module["attr"]
 
         inst_to_block[inst_name] = block_name
         for if_name in block.reg_blocks.keys():
@@ -821,7 +826,7 @@ def generate_top_ral(top: Dict[str, object],
                                   offset=int(item["base_addr"], 0),
                                   swaccess=swaccess))
 
-    chip = Top(regwidth, name_to_block, inst_to_block, if_addrs, mems)
+    chip = Top(regwidth, name_to_block, inst_to_block, if_addrs, mems, attrs)
 
     # generate the top ral model with template
     return gen_dv.gen_top_dv(chip, dv_base_prefix, str(out_path))
