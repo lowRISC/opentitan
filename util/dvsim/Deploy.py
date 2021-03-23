@@ -5,6 +5,7 @@
 import logging as log
 import pprint
 import random
+import shlex
 
 from LauncherFactory import get_launcher
 from sim_utils import get_cov_summary_table
@@ -145,6 +146,13 @@ class Deploy():
         # Job name is used to group the job by cfg and target.
         self.job_name = "{}_{}".format(self.sim_cfg.name, self.target)
 
+        # Input directories (other than self) this job depends on.
+        self.input_dirs = []
+
+        # Directories touched by this job. These directories are marked
+        # becuase they are used by dependent jobs as input.
+        self.output_dirs = [self.odir]
+
         # Pass and fail patterns.
         self.pass_patterns = []
         self.fail_patterns = []
@@ -212,7 +220,7 @@ class Deploy():
                 value = int(value)
             if type(value) is str:
                 value = value.strip()
-            cmd += " " + attr + "=\"" + str(value) + "\""
+            cmd += " {}={}".format(attr, shlex.quote(value))
         return cmd
 
     def is_equivalent_job(self, item):
@@ -313,6 +321,7 @@ class CompileSim(Deploy):
         self.build_mode = self.name
         self.job_name = "{}_{}_{}".format(self.sim_cfg.name, self.target,
                                           self.build_mode)
+        self.output_dirs += [self.cov_db_dir]
         self.pass_patterns = self.build_pass_patterns
         self.fail_patterns = self.build_fail_patterns
 
@@ -425,6 +434,7 @@ class RunTest(Deploy):
         self.full_name = self.sim_cfg.name + ":" + self.qual_name
         self.job_name = "{}_{}_{}".format(self.sim_cfg.name, self.target,
                                           self.build_mode)
+        self.output_dirs += [self.cov_db_test_dir]
         self.pass_patterns = self.run_pass_patterns
         self.fail_patterns = self.run_fail_patterns
 
@@ -519,8 +529,7 @@ class CovMerge(Deploy):
         self.needs_all_dependencies_passing = False
 
         # Append cov_db_dirs to the list of exports.
-        self.exports["cov_db_dirs"] = "\"{}\"".format(" ".join(
-            self.cov_db_dirs))
+        self.exports["cov_db_dirs"] = shlex.quote(" ".join(self.cov_db_dirs))
 
     def _define_attrs(self):
         super()._define_attrs()
@@ -541,6 +550,8 @@ class CovMerge(Deploy):
 
         # For merging coverage db, the precise output dir is set in the HJson.
         self.odir = self.cov_merge_db_dir
+
+        self.input_dirs += self.cov_db_dirs
 
 
 class CovReport(Deploy):

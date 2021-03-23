@@ -6,6 +6,7 @@ import logging as log
 import os
 import sys
 
+from Launcher import Launcher
 from LocalLauncher import LocalLauncher
 from LsfLauncher import LsfLauncher
 from Scheduler import Scheduler
@@ -16,8 +17,8 @@ try:
 except ImportError:
     EDACLOUD_LAUNCHER_EXISTS = False
 
-# The chosen launcher type.
-launcher_type = None
+# The chosen launcher class.
+launcher_cls = None
 
 
 def set_launcher_type(is_local=False):
@@ -33,26 +34,31 @@ def set_launcher_type(is_local=False):
     launcher = os.environ.get("DVSIM_LAUNCHER", "local")
     if is_local:
         launcher = "local"
+    Launcher.variant = launcher
 
-    global launcher_type
+    global launcher_cls
     if launcher == "local":
-        launcher_type = LocalLauncher
+        launcher_cls = LocalLauncher
 
     elif launcher == "lsf":
-        launcher_type = LsfLauncher
+        launcher_cls = LsfLauncher
 
         # The max_parallel setting is not relevant when dispatching with LSF.
         Scheduler.max_parallel = sys.maxsize
 
-    # These custom launchers are site specific. They may not be committed to the
-    # open source repo.
+    # These custom launchers are site specific. They may not be committed to
+    # the open source repo.
     elif launcher == "edacloud" and EDACLOUD_LAUNCHER_EXISTS:
-        launcher_type = EdaCloudLauncher
+        launcher_cls = EdaCloudLauncher
+
+        # The max_parallel setting is not relevant when dispatching with
+        # EDACloud.
+        Scheduler.max_parallel = sys.maxsize
 
     else:
         log.error("Launcher {} set using DVSIM_LAUNCHER env var does not "
                   "exist. Using local launcher instead.".format(launcher))
-        launcher_type = LocalLauncher
+        launcher_cls = LocalLauncher
 
 
 def get_launcher(deploy):
@@ -61,6 +67,6 @@ def get_launcher(deploy):
     'deploy' is an instance of the deploy class to with the launcher is paired.
     '''
 
-    global launcher_type
-    assert launcher_type is not None
-    return launcher_type(deploy)
+    global launcher_cls
+    assert launcher_cls is not None
+    return launcher_cls(deploy)

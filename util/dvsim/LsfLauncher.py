@@ -36,19 +36,27 @@ class LsfLauncher(Launcher):
     def prepare_workspace(project, repo_top, args):
         # Since we dispatch to remote machines, a project specific python
         # virtualenv is exists, needs to be activated when launching the job.
-        Launcher.set_python_venv(project)
-        if Launcher.python_venv is None:
+        Launcher.set_pyvenv(project)
+        if Launcher.pyvenv is None:
             return
 
-        # Python_venv needs to be a valid tarfile. Extract it in the scratch
-        # area if it does not exist. It is upto the user to delete it if it is
-        # stale.
-        stem = Path(Launcher.python_venv).stem.split('.')[0]
+        # If it is already a dir, then nothing to be done.
+        if os.path.isdir(Launcher.pyvenv):
+            return
+
+        # If not, then it needs to be a valid tarball. Extract it in the
+        # scratch area if it does not exist.
+        stem = Path(Launcher.pyvenv).stem
+        if stem.endswith("tar"):
+            stem = stem[:-4]
         path = Path(args.scratch_root, stem)
         if not path.is_dir():
-            with tarfile.open(Launcher.python_venv, mode='r') as tar:
-                tar.extractall(path=args.scratch_root)
-        Launcher.python_venv = path
+            log.info("[prepare_workspace]: [pyvenv]: Extracting %s",
+                     Launcher.pyvenv)
+            with tarfile.open(Launcher.pyvenv, mode='r') as tar:
+                tar.extractall(args.scratch_root)
+            log.info("[prepare_workspace]: [pyvenv]: Done: %s", path)
+        Launcher.pyvenv = path
 
     @staticmethod
     def prepare_workspace_for_cfg(cfg):
@@ -77,8 +85,8 @@ class LsfLauncher(Launcher):
         lines = ["#!/usr/bin/env bash\nset -e\n"]
 
         # Activate the python virtualenv if it exists.
-        if Launcher.python_venv:
-            lines += ["source {}/bin/activate\n".format(Launcher.python_venv)]
+        if Launcher.pyvenv:
+            lines += ["source {}/bin/activate\n".format(Launcher.pyvenv)]
 
         lines += ["case $1 in\n"]
         for job in LsfLauncher.jobs[cfg][job_name]:
@@ -93,7 +101,7 @@ class LsfLauncher(Launcher):
             "    echo \"ERROR: Illegal job index: $1\" 1>&2; exit 1;;\n",
             "esac\n"
         ]
-        if Launcher.python_venv:
+        if Launcher.pyvenv:
             lines += ["deactivate\n"]
 
         job_script = Path(LsfLauncher.jobs_dir[cfg], job_name)

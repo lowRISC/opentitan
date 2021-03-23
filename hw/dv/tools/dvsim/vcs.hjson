@@ -29,7 +29,7 @@
                // otherwise. The double-escaped quotes are because this needs to go inside a string
                // that gets passed to Make (stripping one level of quotes), and then needs to
                // result in an argument with an embedded space (the other one).
-               "-CFLAGS \\\"--std=c99 -fno-extended-identifiers\\\"",
+               "-CFLAGS --std=c99 -CFLAGS -fno-extended-identifiers",
                // C++11 standard is enforced for all sources, including the DPI-C constructs.
                // TODO, may need to update to c++14 to meet our requirements
                // Refer to https://docs.opentitan.org/doc/ug/install_instructions
@@ -192,7 +192,7 @@
 
   // Vars that need to exported to the env.
   exports: [
-    { FLEXLM_DIAGNOSTICS: 4 },
+    { VCS_LICENSE_WAIT: 1 },
     { VCS_ARCH_OVERRIDE: "linux" },
     { VCS_LIC_EXPIRE_WARNING: 1 }
   ]
