@@ -660,8 +660,8 @@ module kmac
     assign sw_msg_data  = tlram_wdata_endian ;
     assign sw_msg_mask  = tlram_wmask_endian ;
   end else begin : gen_sw_msg_diff
-    assign sw_msg_data = {(MsgWidth-MsgWindowWidth)'(0), tlram_wdata_endian};
-    assign sw_msg_mask = {(MsgWidth-MsgWindowWidth)'(0), tlram_wmask_endian};
+    assign sw_msg_data = {{MsgWidth-MsgWindowWidth{1'b0}}, tlram_wdata_endian};
+    assign sw_msg_mask = {{MsgWidth-MsgWindowWidth{1'b0}}, tlram_wmask_endian};
   end
   assign tlram_gnt    = sw_msg_ready ;
 
