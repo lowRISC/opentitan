@@ -115,7 +115,10 @@ ${make_ral_pkg_window_class(dv_base_prefix, 'chip', window)}
         esc_if_name = block.name.lower() + if_suffix
         if_inst = inst_name + if_suffix
 
-        hdl_path = 'tb.dut.top_earlgrey.u_' + inst_name
+        if top.attrs.get(inst_name) == 'reggen_only':
+          hdl_path = 'tb.dut.u_' + inst_name
+        else:
+          hdl_path = 'tb.dut.top_earlgrey.u_' + inst_name
         qual_if_name = (inst_name, if_name)
         base_addr = top.if_addrs[qual_if_name]
         sv_base_addr = gen_dv.sv_base_addr(top, qual_if_name)
