@@ -15,7 +15,7 @@ module kmac_staterd
 
   // EnMasking: Enable masking security hardening inside keccak_round
   // If it is enabled, the result digest will be two set of 1600bit.
-  parameter  int EnMasking = 0,
+  parameter  bit EnMasking = 1'b0,
   localparam int Share = (EnMasking) ? 2 : 1  // derived parameter
 ) (
   input clk_i,
