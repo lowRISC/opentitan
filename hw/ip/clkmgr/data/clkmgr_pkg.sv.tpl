@@ -51,5 +51,4 @@ all_clocks.update(sw_clks)
     idle: {${num_hints}{1'b1}}
   };
 
-
 endpackage // clkmgr_pkg

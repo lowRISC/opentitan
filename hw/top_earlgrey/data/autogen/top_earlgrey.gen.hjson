@@ -1721,8 +1721,9 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: lc_ctrl
-          external: true
-          top_signame: lc_clk_byp_req
+          end_idx: -1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_clk_byp_req
           index: -1
         }
         {
@@ -2402,7 +2403,20 @@
           index: -1
         }
         {
-          name: ast_clk_bypass_ack
+          name: ast_clk_byp_req
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          external: true
+          top_signame: ast_clk_byp_req
+          index: -1
+        }
+        {
+          name: ast_clk_byp_ack
           struct: lc_tx
           package: lc_ctrl_pkg
           type: uni
@@ -2411,11 +2425,23 @@
           inst_name: clkmgr_aon
           default: ""
           external: true
-          top_signame: lc_clk_byp_ack
+          top_signame: ast_clk_byp_ack
           index: -1
         }
         {
-          name: lc_clk_bypass_ack
+          name: lc_clk_byp_req
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          top_signame: lc_ctrl_lc_clk_byp_req
+          index: -1
+        }
+        {
+          name: lc_clk_byp_ack
           struct: lc_tx
           package: lc_ctrl_pkg
           type: uni
@@ -5582,9 +5608,13 @@
       [
         otp_ctrl.lc_check_byp_en
       ]
+      lc_ctrl.lc_clk_byp_req:
+      [
+        clkmgr_aon.lc_clk_byp_req
+      ]
       lc_ctrl.lc_clk_byp_ack:
       [
-        clkmgr_aon.lc_clk_bypass_ack
+        clkmgr_aon.lc_clk_byp_ack
       ]
       lc_ctrl.lc_creator_seed_sw_rw_en:
       [
@@ -5816,13 +5846,13 @@
       clkmgr_aon.clk_usb: clk_usb
       clkmgr_aon.clk_aon: clk_aon
       clkmgr_aon.jitter_en: clk_main_jitter_en
-      clkmgr_aon.ast_clk_bypass_ack: lc_clk_byp_ack
+      clkmgr_aon.ast_clk_byp_req: ast_clk_byp_req
+      clkmgr_aon.ast_clk_byp_ack: ast_clk_byp_ack
       eflash.flash_bist_enable: flash_bist_enable
       eflash.flash_power_down_h: flash_power_down_h
       eflash.flash_power_ready_h: flash_power_ready_h
       entropy_src.entropy_src_rng: es_rng
       entropy_src.rng_fips: es_rng_fips
-      lc_ctrl.lc_clk_byp_req: lc_clk_byp_req
       peri.tl_ast: ast_tl
       pinmux_aon.dft_strap_test: dft_strap_test
       pwrmgr_aon.pwr_ast: pwrmgr_ast
@@ -9931,8 +9961,9 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: lc_ctrl
-        external: true
-        top_signame: lc_clk_byp_req
+        end_idx: -1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_clk_byp_req
         index: -1
       }
       {
@@ -10453,7 +10484,20 @@
         index: -1
       }
       {
-        name: ast_clk_bypass_ack
+        name: ast_clk_byp_req
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        external: true
+        top_signame: ast_clk_byp_req
+        index: -1
+      }
+      {
+        name: ast_clk_byp_ack
         struct: lc_tx
         package: lc_ctrl_pkg
         type: uni
@@ -10462,11 +10506,23 @@
         inst_name: clkmgr_aon
         default: ""
         external: true
-        top_signame: lc_clk_byp_ack
+        top_signame: ast_clk_byp_ack
         index: -1
       }
       {
-        name: lc_clk_bypass_ack
+        name: lc_clk_byp_req
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        top_signame: lc_ctrl_lc_clk_byp_req
+        index: -1
+      }
+      {
+        name: lc_clk_byp_ack
         struct: lc_tx
         package: lc_ctrl_pkg
         type: uni
@@ -13095,14 +13151,26 @@
       {
         package: lc_ctrl_pkg
         struct: lc_tx
-        signame: lc_clk_byp_ack_i
+        signame: ast_clk_byp_req_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: ast_clk_byp_req
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: ast_clk_byp_ack_i
         width: 1
         type: uni
         default: ""
         direction: in
         conn_type: false
         index: -1
-        netname: lc_clk_byp_ack
+        netname: ast_clk_byp_ack
       }
       {
         package: lc_ctrl_pkg
@@ -13175,18 +13243,6 @@
         conn_type: false
         index: -1
         netname: es_rng_fips
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: lc_clk_byp_req_o
-        width: 1
-        type: uni
-        default: lc_ctrl_pkg::Off
-        direction: out
-        conn_type: false
-        index: -1
-        netname: lc_clk_byp_req
       }
       {
         package: tlul_pkg
@@ -14223,6 +14279,17 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: lc_ctrl_lc_check_byp_en
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_clk_byp_req
         width: 1
         type: uni
         end_idx: -1

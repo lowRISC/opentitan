@@ -44,6 +44,17 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/entropy_src/lint/{tool}"
              },
+             {    name: clkmgr
+                  fusesoc_core: lowrisc:systems:clkmgr
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
+                  rel_path: "hw/top_earlgrey/ip/clkmgr/lint/{tool}",
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
+             },
              {    name: csrng
                   fusesoc_core: lowrisc:ip:csrng
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
@@ -142,11 +153,6 @@
                     }
                   ]
              },
-             {    name: sysrst_ctrl
-                  fusesoc_core: lowrisc:ip:sysrst_ctrl
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/sysrst_ctrl/lint/{tool}"
-             },
              {    name: rstmgr
                   fusesoc_core: lowrisc:ip:rstmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
@@ -198,6 +204,11 @@
                       value: "top"
                     }
                   ]
+             },
+             {    name: sysrst_ctrl
+                  fusesoc_core: lowrisc:ip:sysrst_ctrl
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/sysrst_ctrl/lint/{tool}"
              },
              {    name: uart
                   fusesoc_core: lowrisc:ip:uart

@@ -52,14 +52,28 @@ num_grps = len(grps)
 
     { struct:  "lc_tx",
       type:    "uni",
-      name:    "ast_clk_bypass_ack",
+      name:    "ast_clk_byp_req",
+      act:     "req",
+      package: "lc_ctrl_pkg",
+    },
+
+    { struct:  "lc_tx",
+      type:    "uni",
+      name:    "ast_clk_byp_ack",
       act:     "rcv",
       package: "lc_ctrl_pkg",
     },
 
     { struct:  "lc_tx",
       type:    "uni",
-      name:    "lc_clk_bypass_ack",
+      name:    "lc_clk_byp_req",
+      act:     "rcv",
+      package: "lc_ctrl_pkg",
+    },
+
+    { struct:  "lc_tx",
+      type:    "uni",
+      name:    "lc_clk_byp_ack",
       act:     "req",
       package: "lc_ctrl_pkg",
     },
@@ -108,6 +122,45 @@ num_grps = len(grps)
 
 
   registers: [
+    { name: "EXTCLK_SEL_REGWEN",
+      desc: "External clock select write enable",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            When 1, the value of !!EXTCLK_SEL can be set.  When 0, writes to !!EXTCLK_SEL have no
+            effect.
+          '''
+        },
+      ]
+    },
+
+    { name: "EXTCLK_SEL",
+      desc: '''
+        Select external clock
+      ''',
+      regwen: "EXTCLK_SEL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "3:0",
+          name: "VAL",
+          desc: '''
+            A value of b1010 selects external clock as clock for the system.
+            While this register can always be programmed, it only takes effect when the system is in
+            life cycle TEST or RMA states when DFT is enabled.
+
+            All other values are invalid and keep clocks on internal sources.
+          '''
+          resval: "0x5"
+        }
+      ]
+    },
+
     { name: "JITTER_ENABLE",
       desc: '''
         Enable jittery clock

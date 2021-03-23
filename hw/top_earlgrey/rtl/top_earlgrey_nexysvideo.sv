@@ -485,8 +485,8 @@ module top_earlgrey_nexysvideo #(
     // on verilator will hang
     .es_rng_req_o                 (                 ),
     .es_rng_rsp_i                 ( '0              ),
-    .lc_clk_byp_req_o             ( lc_clk_bypass   ),
-    .lc_clk_byp_ack_i             ( lc_clk_bypass   ),
+    .ast_clk_byp_req_o            ( lc_clk_bypass   ),
+    .ast_clk_byp_ack_i            ( lc_clk_bypass   ),
 
     // Multiplexed I/O
     .mio_in_i        ( mio_in_core   ),
