@@ -22,14 +22,14 @@ module keccak_round #(
   localparam int DInAddr  = $clog2(DInEntry),
 
   // Control parameters
-  parameter  bit EnMasking = 0,  // Enable secure hardening
+  parameter  bit EnMasking = 1'b0,  // Enable secure hardening
   localparam int Share     = EnMasking ? 2 : 1,
 
   // If ReuseShare is not 0, the logic will use unused sheet as an entropy
   // at Chi stage. It still needs small portion of the fresh entropy from
   // rand_data_i but the amount required are significantly small.
   // TODO: Implement the feature inside keccak_2share
-  parameter  int ReuseShare = 0  // Re-use adjacent share for entropy
+  parameter  bit ReuseShare = 1'b0  // Re-use adjacent share for entropy
 ) (
   input clk_i,
   input rst_ni,

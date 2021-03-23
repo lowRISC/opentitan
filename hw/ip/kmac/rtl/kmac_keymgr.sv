@@ -9,7 +9,7 @@
 module kmac_keymgr
   import kmac_pkg::*;
 #(
-  parameter  int EnMasking = 0,
+  parameter  bit EnMasking = 1'b0,
   localparam int Share = (EnMasking) ? 2 : 1 // derived parameter
 ) (
   input clk_i,
