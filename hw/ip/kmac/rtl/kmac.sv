@@ -665,6 +665,9 @@ module kmac
   end
   assign tlram_gnt    = sw_msg_ready ;
 
+  logic unused_tlram_addr;
+  assign unused_tlram_addr = &{1'b0, tlram_addr};
+
   // KeyMgr Mux/Demux
   kmac_keymgr #(
     .EnMasking(EnMasking)
