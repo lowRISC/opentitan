@@ -13,7 +13,17 @@ filesets:
       - rtl/pwrmgr_pkg.sv
     file_type: systemVerilogSource
 
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/pwrmgr_pkg.vlt
+    file_type: vlt
+
 targets:
   default:
     filesets:
+      - tool_verilator   ? (files_verilator_waiver)
       - files_rtl
