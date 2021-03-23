@@ -20,11 +20,13 @@
 extern "C" {
 #endif  // __cplusplus
 
-/**
- * Maximum pre-conditioning FIFO capacity.
- */
-// TODO: Synchronize value with hardware.
-#define DIF_ENTROPY_FIFO_MAX_CAPACITY 64
+enum {
+  /**
+   * Maximum pre-conditioning FIFO capacity.
+   */
+  // TODO: Synchronize value with hardware.
+  kDifEntropyFifoMaxCapacity = 64,
+};
 
 /**
  * A toggle state: enabled, or disabled.
@@ -454,6 +456,8 @@ dif_entropy_result_t dif_entropy_get_revision(const dif_entropy_t *entropy,
 /**
  * Queries the entropy source for health statistics.
  *
+ * Calling this function also clears the relevant status registers.
+ *
  * @param entropy An entropy source handle.
  * @param fips_mode The test mode to query statistics for.
  * @param[out] stats Out-param for stats data.
@@ -661,7 +665,7 @@ dif_entropy_result_t dif_entropy_fifo_get_capacity(const dif_entropy_t *entropy,
  * Sets the current capacity of the pre-conditioner FIFO.
  *
  * The `capacity` value must be less or equal to the physical capacity
- * of the fifo, defined as `DIF_ENTROPY_FIFO_MAX_CAPACITY`.
+ * of the fifo, defined as `kDifEntropyFifoMaxCapacity`.
  *
  * @param entropy An entropy source handle.
  * @param capacity The new capacity for the FIFO.
