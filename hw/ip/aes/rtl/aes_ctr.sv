@@ -4,25 +4,26 @@
 //
 // AES counter for CTR mode
 //
-// This module uses a 16-bit counter to iteratively increment the 128-bit counter value.
+// This module uses one counter with a width of SliceSizeCtr to iteratively increment the 128-bit
+// counter value.
 
 `include "prim_assert.sv"
 
 module aes_ctr import aes_pkg::*;
 (
-  input  logic              clk_i,
-  input  logic              rst_ni,
+  input  logic                                       clk_i,
+  input  logic                                       rst_ni,
 
-  input  sp2v_e             incr_i,
-  output sp2v_e             ready_o,
-  output logic              alert_o,
+  input  sp2v_e                                      incr_i,
+  output sp2v_e                                      ready_o,
+  output logic                                       alert_o,
 
-  input  logic  [7:0][15:0] ctr_i, // 8 times 2 bytes
-  output logic  [7:0][15:0] ctr_o, // 8 times 2 bytes
-  output sp2v_e [7:0]       ctr_we_o
+  input  logic  [NumSlicesCtr-1:0][SliceSizeCtr-1:0] ctr_i,
+  output logic  [NumSlicesCtr-1:0][SliceSizeCtr-1:0] ctr_o,
+  output sp2v_e [NumSlicesCtr-1:0]                   ctr_we_o
 );
 
-  // Reverse byte order
+  // Reverse byte order - unrelated to NumSlicesCtr and SliceSizeCtr
   function automatic logic [15:0][7:0] aes_rev_order_byte(logic [15:0][7:0] in);
     logic [15:0][7:0] out;
     for (int i = 0; i < 16; i++) begin
@@ -32,13 +33,16 @@ module aes_ctr import aes_pkg::*;
   endfunction
 
   // Reverse sp2v order
-  function automatic sp2v_e [7:0] aes_rev_order_sp2v(sp2v_e [7:0] in);
-    sp2v_e [7:0] out;
-    for (int i = 0; i < 8; i++) begin
-      out[i] = in[7-i];
+  function automatic sp2v_e [NumSlicesCtr-1:0] aes_rev_order_sp2v(sp2v_e [NumSlicesCtr-1:0] in);
+    sp2v_e [NumSlicesCtr-1:0] out;
+    for (int i = 0; i < NumSlicesCtr; i++) begin
+      out[i] = in[NumSlicesCtr - 1 - i];
     end
     return out;
   endfunction
+
+  // Local parameters
+  localparam int unsigned SliceIdxWidth = prim_util_pkg::vbits(NumSlicesCtr);
 
   // Types
   // $ ./sparse-fsm-encode.py -d 3 -m 3 -n 5 \
@@ -64,22 +68,22 @@ module aes_ctr import aes_pkg::*;
   } aes_ctr_e;
 
   // Signals
-  aes_ctr_e          aes_ctr_ns, aes_ctr_cs;
-  logic        [2:0] ctr_slice_idx_d, ctr_slice_idx_q;
-  logic              ctr_carry_d, ctr_carry_q;
+  aes_ctr_e                                   aes_ctr_ns, aes_ctr_cs;
+  logic                   [SliceIdxWidth-1:0] ctr_slice_idx_d, ctr_slice_idx_q;
+  logic                                       ctr_carry_d, ctr_carry_q;
 
-  logic  [7:0][15:0] ctr_i_rev; // 8 times 2 bytes
-  logic  [7:0][15:0] ctr_o_rev; // 8 times 2 bytes
-  sp2v_e [7:0]       ctr_we_o_rev;
-  sp2v_e             ctr_we;
+  logic  [NumSlicesCtr-1:0][SliceSizeCtr-1:0] ctr_i_rev; // 8 times 2 bytes
+  logic  [NumSlicesCtr-1:0][SliceSizeCtr-1:0] ctr_o_rev; // 8 times 2 bytes
+  sp2v_e [NumSlicesCtr-1:0]                   ctr_we_o_rev;
+  sp2v_e                                      ctr_we;
 
-  logic       [15:0] ctr_i_slice;
-  logic       [15:0] ctr_o_slice;
-  logic       [16:0] ctr_value;
+  logic                    [SliceSizeCtr-1:0] ctr_i_slice;
+  logic                    [SliceSizeCtr-1:0] ctr_o_slice;
+  logic                      [SliceSizeCtr:0] ctr_value;
 
-  logic              alert;
-  sp2v_e             incr;
-  logic              incr_err_d, incr_err_q;
+  logic                                       alert;
+  sp2v_e                                      incr;
+  logic                                       incr_err_d, incr_err_q;
 
   ////////////
   // Inputs //
@@ -116,10 +120,10 @@ module aes_ctr import aes_pkg::*;
   // Counter //
   /////////////
 
-  // We do 16 bits at a time.
+  // We do SliceSizeCtr bits at a time.
   assign ctr_i_slice = ctr_i_rev[ctr_slice_idx_q];
-  assign ctr_value   = ctr_i_slice + {15'b0, ctr_carry_q};
-  assign ctr_o_slice = ctr_value[15:0];
+  assign ctr_value   = ctr_i_slice + {{(SliceSizeCtr-1){1'b0}}, ctr_carry_q};
+  assign ctr_o_slice = ctr_value[SliceSizeCtr-1:0];
 
   /////////////
   // Control //
@@ -151,11 +155,11 @@ module aes_ctr import aes_pkg::*;
 
       INCR: begin
         // Increment slice index.
-        ctr_slice_idx_d = ctr_slice_idx_q + 3'b001;
-        ctr_carry_d     = ctr_value[16];
+        ctr_slice_idx_d = ctr_slice_idx_q + SliceIdxWidth'(1);
+        ctr_carry_d     = ctr_value[SliceSizeCtr];
         ctr_we          = SP2V_HIGH;
 
-        if (ctr_slice_idx_q == 3'b111) begin
+        if (ctr_slice_idx_q == {SliceIdxWidth{1'b1}}) begin
           aes_ctr_ns = IDLE;
         end
       end
@@ -210,7 +214,7 @@ module aes_ctr import aes_pkg::*;
 
   // Generate the sliced write enable.
   always_comb begin
-    ctr_we_o_rev                  = {8{SP2V_LOW}};
+    ctr_we_o_rev                  = {NumSlicesCtr{SP2V_LOW}};
     ctr_we_o_rev[ctr_slice_idx_q] = ctr_we;
   end
 

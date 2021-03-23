@@ -50,123 +50,123 @@ module aes_core
 );
 
   // Signals
-  logic                        ctrl_re;
-  logic                        ctrl_qe;
-  logic                        ctrl_we;
-  aes_op_e                     aes_op_q;
-  aes_mode_e                   mode;
-  aes_mode_e                   aes_mode_q;
-  ciph_op_e                    cipher_op;
-  key_len_e                    key_len;
-  key_len_e                    key_len_q;
-  logic                        manual_operation_q;
-  logic                        force_zero_masks_q;
-  ctrl_reg_t                   ctrl_d, ctrl_q;
-  logic                        ctrl_err_update;
-  logic                        ctrl_err_storage;
-  logic                        ctrl_err_storage_d;
-  logic                        ctrl_err_storage_q;
-  logic                        ctrl_alert;
-  logic                        mux_sel_err;
-  logic                        sp_enc_err_d, sp_enc_err_q;
+  logic                                       ctrl_re;
+  logic                                       ctrl_qe;
+  logic                                       ctrl_we;
+  aes_op_e                                    aes_op_q;
+  aes_mode_e                                  mode;
+  aes_mode_e                                  aes_mode_q;
+  ciph_op_e                                   cipher_op;
+  key_len_e                                   key_len;
+  key_len_e                                   key_len_q;
+  logic                                       manual_operation_q;
+  logic                                       force_zero_masks_q;
+  ctrl_reg_t                                  ctrl_d, ctrl_q;
+  logic                                       ctrl_err_update;
+  logic                                       ctrl_err_storage;
+  logic                                       ctrl_err_storage_d;
+  logic                                       ctrl_err_storage_q;
+  logic                                       ctrl_alert;
+  logic                                       mux_sel_err;
+  logic                                       sp_enc_err_d, sp_enc_err_q;
 
-  logic        [3:0][3:0][7:0] state_in;
-  logic       [SISelWidth-1:0] state_in_sel_raw;
-  si_sel_e                     state_in_sel_ctrl;
-  si_sel_e                     state_in_sel;
-  logic                        state_in_sel_err;
-  logic        [3:0][3:0][7:0] add_state_in;
-  logic    [AddSISelWidth-1:0] add_state_in_sel_raw;
-  add_si_sel_e                 add_state_in_sel_ctrl;
-  add_si_sel_e                 add_state_in_sel;
-  logic                        add_state_in_sel_err;
+  logic                       [3:0][3:0][7:0] state_in;
+  logic                      [SISelWidth-1:0] state_in_sel_raw;
+  si_sel_e                                    state_in_sel_ctrl;
+  si_sel_e                                    state_in_sel;
+  logic                                       state_in_sel_err;
+  logic                       [3:0][3:0][7:0] add_state_in;
+  logic                   [AddSISelWidth-1:0] add_state_in_sel_raw;
+  add_si_sel_e                                add_state_in_sel_ctrl;
+  add_si_sel_e                                add_state_in_sel;
+  logic                                       add_state_in_sel_err;
 
-  logic        [3:0][3:0][7:0] state_mask;
-  logic        [3:0][3:0][7:0] state_init [NumShares];
-  logic        [3:0][3:0][7:0] state_done [NumShares];
-  logic        [3:0][3:0][7:0] state_out;
+  logic                       [3:0][3:0][7:0] state_mask;
+  logic                       [3:0][3:0][7:0] state_init [NumShares];
+  logic                       [3:0][3:0][7:0] state_done [NumShares];
+  logic                       [3:0][3:0][7:0] state_out;
 
-  logic            [7:0][31:0] key_init [NumSharesKey];
-  logic            [7:0]       key_init_qe [NumSharesKey];
-  logic            [7:0][31:0] key_init_d [NumSharesKey];
-  logic            [7:0][31:0] key_init_q [NumSharesKey];
-  logic            [7:0][31:0] key_init_cipher [NumShares];
-  sp2v_e           [7:0]       key_init_we_ctrl [NumSharesKey];
-  sp2v_e           [7:0]       key_init_we [NumSharesKey];
-  logic  [KeyInitSelWidth-1:0] key_init_sel_raw;
-  key_init_sel_e               key_init_sel_ctrl;
-  key_init_sel_e               key_init_sel;
-  logic                        key_init_sel_err;
+  logic                [NumRegsKey-1:0][31:0] key_init [NumSharesKey];
+  logic                [NumRegsKey-1:0]       key_init_qe [NumSharesKey];
+  logic                [NumRegsKey-1:0][31:0] key_init_d [NumSharesKey];
+  logic                [NumRegsKey-1:0][31:0] key_init_q [NumSharesKey];
+  logic                [NumRegsKey-1:0][31:0] key_init_cipher [NumShares];
+  sp2v_e               [NumRegsKey-1:0]       key_init_we_ctrl [NumSharesKey];
+  sp2v_e               [NumRegsKey-1:0]       key_init_we [NumSharesKey];
+  logic                 [KeyInitSelWidth-1:0] key_init_sel_raw;
+  key_init_sel_e                              key_init_sel_ctrl;
+  key_init_sel_e                              key_init_sel;
+  logic                                       key_init_sel_err;
 
-  logic            [3:0][31:0] iv;
-  logic            [3:0]       iv_qe;
-  logic            [7:0][15:0] iv_d;
-  logic            [7:0][15:0] iv_q;
-  sp2v_e           [7:0]       iv_we_ctrl;
-  sp2v_e           [7:0]       iv_we;
-  logic       [IVSelWidth-1:0] iv_sel_raw;
-  iv_sel_e                     iv_sel_ctrl;
-  iv_sel_e                     iv_sel;
-  logic                        iv_sel_err;
+  logic                 [NumRegsIv-1:0][31:0] iv;
+  logic                 [NumRegsIv-1:0]       iv_qe;
+  logic  [NumSlicesCtr-1:0][SliceSizeCtr-1:0] iv_d;
+  logic  [NumSlicesCtr-1:0][SliceSizeCtr-1:0] iv_q;
+  sp2v_e [NumSlicesCtr-1:0]                   iv_we_ctrl;
+  sp2v_e [NumSlicesCtr-1:0]                   iv_we;
+  logic                      [IVSelWidth-1:0] iv_sel_raw;
+  iv_sel_e                                    iv_sel_ctrl;
+  iv_sel_e                                    iv_sel;
+  logic                                       iv_sel_err;
 
-  logic            [7:0][15:0] ctr;
-  sp2v_e           [7:0]       ctr_we;
-  sp2v_e                       ctr_incr;
-  sp2v_e                       ctr_ready;
-  logic                        ctr_alert;
+  logic  [NumSlicesCtr-1:0][SliceSizeCtr-1:0] ctr;
+  sp2v_e [NumSlicesCtr-1:0]                   ctr_we;
+  sp2v_e                                      ctr_incr;
+  sp2v_e                                      ctr_ready;
+  logic                                       ctr_alert;
 
-  logic            [3:0][31:0] data_in_prev_d;
-  logic            [3:0][31:0] data_in_prev_q;
-  sp2v_e                       data_in_prev_we_ctrl;
-  sp2v_e                       data_in_prev_we;
-  logic      [DIPSelWidth-1:0] data_in_prev_sel_raw;
-  dip_sel_e                    data_in_prev_sel_ctrl;
-  dip_sel_e                    data_in_prev_sel;
-  logic                        data_in_prev_sel_err;
+  logic               [NumRegsData-1:0][31:0] data_in_prev_d;
+  logic               [NumRegsData-1:0][31:0] data_in_prev_q;
+  sp2v_e                                      data_in_prev_we_ctrl;
+  sp2v_e                                      data_in_prev_we;
+  logic                     [DIPSelWidth-1:0] data_in_prev_sel_raw;
+  dip_sel_e                                   data_in_prev_sel_ctrl;
+  dip_sel_e                                   data_in_prev_sel;
+  logic                                       data_in_prev_sel_err;
 
-  logic            [3:0][31:0] data_in;
-  logic            [3:0]       data_in_qe;
-  logic                        data_in_we;
+  logic               [NumRegsData-1:0][31:0] data_in;
+  logic               [NumRegsData-1:0]       data_in_qe;
+  logic                                       data_in_we;
 
-  logic        [3:0][3:0][7:0] add_state_out;
-  logic    [AddSOSelWidth-1:0] add_state_out_sel_raw;
-  add_so_sel_e                 add_state_out_sel_ctrl;
-  add_so_sel_e                 add_state_out_sel;
-  logic                        add_state_out_sel_err;
+  logic                       [3:0][3:0][7:0] add_state_out;
+  logic                   [AddSOSelWidth-1:0] add_state_out_sel_raw;
+  add_so_sel_e                                add_state_out_sel_ctrl;
+  add_so_sel_e                                add_state_out_sel;
+  logic                                       add_state_out_sel_err;
 
-  logic            [3:0][31:0] data_out_d;
-  logic            [3:0][31:0] data_out_q;
-  sp2v_e                       data_out_we_ctrl;
-  sp2v_e                       data_out_we;
-  logic                  [3:0] data_out_re;
+  logic               [NumRegsData-1:0][31:0] data_out_d;
+  logic               [NumRegsData-1:0][31:0] data_out_q;
+  sp2v_e                                      data_out_we_ctrl;
+  sp2v_e                                      data_out_we;
+  logic               [NumRegsData-1:0]       data_out_re;
 
-  sp2v_e                       cipher_in_valid;
-  sp2v_e                       cipher_in_ready;
-  sp2v_e                       cipher_out_valid;
-  sp2v_e                       cipher_out_ready;
-  sp2v_e                       cipher_crypt;
-  sp2v_e                       cipher_crypt_busy;
-  sp2v_e                       cipher_dec_key_gen;
-  sp2v_e                       cipher_dec_key_gen_busy;
-  logic                        cipher_key_clear;
-  logic                        cipher_key_clear_busy;
-  logic                        cipher_data_out_clear;
-  logic                        cipher_data_out_clear_busy;
-  logic                        cipher_alert;
+  sp2v_e                                      cipher_in_valid;
+  sp2v_e                                      cipher_in_ready;
+  sp2v_e                                      cipher_out_valid;
+  sp2v_e                                      cipher_out_ready;
+  sp2v_e                                      cipher_crypt;
+  sp2v_e                                      cipher_crypt_busy;
+  sp2v_e                                      cipher_dec_key_gen;
+  sp2v_e                                      cipher_dec_key_gen_busy;
+  logic                                       cipher_key_clear;
+  logic                                       cipher_key_clear_busy;
+  logic                                       cipher_data_out_clear;
+  logic                                       cipher_data_out_clear_busy;
+  logic                                       cipher_alert;
 
   // Pseudo-random data for clearing purposes
-  logic [WidthPRDClearing-1:0] cipher_prd_clearing [NumShares];
-  logic [WidthPRDClearing-1:0] prd_clearing [NumSharesKey];
-  logic                        prd_clearing_upd_req;
-  logic                        prd_clearing_upd_ack;
-  logic                        prd_clearing_rsd_req;
-  logic                        prd_clearing_rsd_ack;
-  logic                [127:0] prd_clearing_128;
-  logic                [255:0] prd_clearing_256 [NumSharesKey];
+  logic                [WidthPRDClearing-1:0] cipher_prd_clearing [NumShares];
+  logic                [WidthPRDClearing-1:0] prd_clearing [NumSharesKey];
+  logic                                       prd_clearing_upd_req;
+  logic                                       prd_clearing_upd_ack;
+  logic                                       prd_clearing_rsd_req;
+  logic                                       prd_clearing_rsd_ack;
+  logic                               [127:0] prd_clearing_128;
+  logic                               [255:0] prd_clearing_256 [NumSharesKey];
 
   // Unused signals
-  logic            [3:0][31:0] unused_data_out_q;
-  logic                        unused_force_zero_masks;
+  logic               [NumRegsData-1:0][31:0] unused_data_out_q;
+  logic                                       unused_force_zero_masks;
 
   // The clearing PRNG provides pseudo-random data for register clearing purposes.
   aes_prng_clearing #(
@@ -256,7 +256,7 @@ module aes_core
       key_init_q <= '{default: '0};
     end else begin
       for (int s = 0; s < NumSharesKey; s++) begin
-        for (int i = 0; i < 8; i++) begin
+        for (int i = 0; i < NumRegsKey; i++) begin
           if (key_init_we[s][i] == SP2V_HIGH) begin
             key_init_q[s][i] <= key_init_d[s][i];
           end
@@ -282,7 +282,7 @@ module aes_core
     if (!rst_ni) begin
       iv_q <= '0;
     end else begin
-      for (int i = 0; i < 8; i++) begin
+      for (int i = 0; i < NumSlicesCtr; i++) begin
         if (iv_we[i] == SP2V_HIGH) begin
           iv_q[i] <= iv_d[i];
         end
@@ -614,7 +614,7 @@ module aes_core
   // Input data register clear
   always_comb begin : data_in_reg_clear
     for (int i = 0; i < NumRegsData; i++) begin
-      hw2reg.data_in[i].d  = prd_clearing_128[i*32 +: 32];
+      hw2reg.data_in[i].d  = prd_clearing_128[i * 32 +: 32];
       hw2reg.data_in[i].de = data_in_we;
     end
   end
@@ -727,22 +727,22 @@ module aes_core
   // de-asserts the data_out_we_o signal to prevent any data from being released.
 
   // We use vectors of sparsely encoded signals to reduce code duplication.
-  localparam int unsigned NumSp2VSig = 26;
+  localparam int unsigned NumSp2VSig = NumSharesKey * NumRegsKey + NumSlicesCtr + 2;
   sp2v_e [NumSp2VSig-1:0]                sp2v_sig;
   sp2v_e [NumSp2VSig-1:0]                sp2v_sig_chk;
   logic  [NumSp2VSig-1:0][Sp2VWidth-1:0] sp2v_sig_chk_raw;
   logic  [NumSp2VSig-1:0]                sp2v_sig_err;
 
   for (genvar s = 0; s < NumSharesKey; s++) begin : gen_use_key_init_we_ctrl_shares
-    for (genvar i = 0; i < 8; i++) begin : gen_use_key_init_we_ctrl
-      assign sp2v_sig[s*8+i] = key_init_we_ctrl[s][i];
+    for (genvar i = 0; i < NumRegsKey; i++) begin : gen_use_key_init_we_ctrl
+      assign sp2v_sig[s * NumRegsKey + i] = key_init_we_ctrl[s][i];
     end
   end
-  for (genvar i = 0; i < 8; i++) begin : gen_use_iv_we_ctrl
-    assign sp2v_sig[16+i] = iv_we_ctrl[i];
+  for (genvar i = 0; i < NumSlicesCtr; i++) begin : gen_use_iv_we_ctrl
+    assign sp2v_sig[NumSharesKey * NumRegsKey + i] = iv_we_ctrl[i];
   end
-  assign sp2v_sig[24] = data_in_prev_we_ctrl;
-  assign sp2v_sig[25] = data_out_we_ctrl;
+  assign sp2v_sig[NumSharesKey * NumRegsKey + NumSlicesCtr + 0] = data_in_prev_we_ctrl;
+  assign sp2v_sig[NumSharesKey * NumRegsKey + NumSlicesCtr + 1] = data_out_we_ctrl;
 
   // Individually check sparsely encoded signals.
   for (genvar i = 0; i < NumSp2VSig; i++) begin : gen_sel_buf_chk
@@ -760,15 +760,15 @@ module aes_core
   end
 
   for (genvar s = 0; s < NumSharesKey; s++) begin : gen_key_init_we_shares
-    for (genvar i = 0; i < 8; i++) begin : gen_key_init_we
-      assign key_init_we[s][i] = sp2v_sig_chk[s*8+i];
+    for (genvar i = 0; i < NumRegsKey; i++) begin : gen_key_init_we
+      assign key_init_we[s][i] = sp2v_sig_chk[s * NumRegsKey + i];
     end
   end
-  for (genvar i = 0; i < 8; i++) begin : gen_iv_we
-    assign iv_we[i]      = sp2v_sig_chk[16+i];
+  for (genvar i = 0; i < NumSlicesCtr; i++) begin : gen_iv_we
+    assign iv_we[i]      = sp2v_sig_chk[NumSharesKey * NumRegsKey + i];
   end
-  assign data_in_prev_we = sp2v_sig_chk[24];
-  assign data_out_we     = sp2v_sig_chk[25];
+  assign data_in_prev_we = sp2v_sig_chk[NumSharesKey * NumRegsKey + NumSlicesCtr + 0];
+  assign data_out_we     = sp2v_sig_chk[NumSharesKey * NumRegsKey + NumSlicesCtr + 1];
 
   // Collect encoding errors.
   // We instantiate the checker modules as close as possible to where the sparsely encoded signals
@@ -806,7 +806,9 @@ module aes_core
 
   always_comb begin : iv_reg_put
     for (int i = 0; i < NumRegsIv; i++) begin
-      hw2reg.iv[i].d  = {iv_q[2*i+1], iv_q[2*i]};
+      // Software updates IV in chunks of 32 bits. Internally, the counter updates SliceSizeCtr
+      // bits at a time.
+      hw2reg.iv[i].d  = {iv_q[2 * i + 1], iv_q[2 * i]};
     end
   end
 
@@ -871,5 +873,8 @@ module aes_core
       AES_NONE
       })
   `ASSERT_KNOWN(AesOpKnown, aes_op_q)
+
+  // Check parameters
+  `ASSERT_INIT(AesNumSlicesCtr, NumSlicesCtr == 8)
 
 endmodule

@@ -8,103 +8,105 @@
 
 `include "prim_assert.sv"
 
-module aes_control import aes_pkg::*;
+module aes_control
+  import aes_pkg::*;
+  import aes_reg_pkg::*;
 #(
   parameter int unsigned SecStartTriggerDelay = 0
 ) (
-  input  logic                    clk_i,
-  input  logic                    rst_ni,
+  input  logic                     clk_i,
+  input  logic                     rst_ni,
 
   // Main control signals
-  input  logic                    ctrl_qe_i,
-  output logic                    ctrl_we_o,
-  input  logic                    ctrl_err_storage_i,
-  input  aes_op_e                 op_i,
-  input  aes_mode_e               mode_i,
-  input  ciph_op_e                cipher_op_i,
-  input  logic                    manual_operation_i,
-  input  logic                    start_i,
-  input  logic                    key_iv_data_in_clear_i,
-  input  logic                    data_out_clear_i,
-  input  logic                    prng_reseed_i,
-  input  logic                    mux_sel_err_i,
-  input  logic                    sp_enc_err_i,
-  input  lc_ctrl_pkg::lc_tx_t     lc_escalate_en_i,
-  input  logic                    alert_fatal_i,
-  output logic                    alert_o,
+  input  logic                     ctrl_qe_i,
+  output logic                     ctrl_we_o,
+  input  logic                     ctrl_err_storage_i,
+  input  aes_op_e                  op_i,
+  input  aes_mode_e                mode_i,
+  input  ciph_op_e                 cipher_op_i,
+  input  logic                     manual_operation_i,
+  input  logic                     start_i,
+  input  logic                     key_iv_data_in_clear_i,
+  input  logic                     data_out_clear_i,
+  input  logic                     prng_reseed_i,
+  input  logic                     mux_sel_err_i,
+  input  logic                     sp_enc_err_i,
+  input  lc_ctrl_pkg::lc_tx_t      lc_escalate_en_i,
+  input  logic                     alert_fatal_i,
+  output logic                     alert_o,
 
   // I/O register read/write enables
-  input  logic [7:0]              key_init_qe_i [NumSharesKey],
-  input  logic [3:0]              iv_qe_i,
-  input  logic [3:0]              data_in_qe_i,
-  input  logic [3:0]              data_out_re_i,
-  output logic                    data_in_we_o,
-  output sp2v_e                   data_out_we_o,
+  input  logic    [NumRegsKey-1:0] key_init_qe_i [NumSharesKey],
+  input  logic     [NumRegsIv-1:0] iv_qe_i,
+  input  logic   [NumRegsData-1:0] data_in_qe_i,
+  input  logic   [NumRegsData-1:0] data_out_re_i,
+  output logic                     data_in_we_o,
+  output sp2v_e                    data_out_we_o,
 
   // Previous input data register
-  output dip_sel_e                data_in_prev_sel_o,
-  output sp2v_e                   data_in_prev_we_o,
+  output dip_sel_e                 data_in_prev_sel_o,
+  output sp2v_e                    data_in_prev_we_o,
 
   // Cipher I/O muxes
-  output si_sel_e                 state_in_sel_o,
-  output add_si_sel_e             add_state_in_sel_o,
-  output add_so_sel_e             add_state_out_sel_o,
+  output si_sel_e                  state_in_sel_o,
+  output add_si_sel_e              add_state_in_sel_o,
+  output add_so_sel_e              add_state_out_sel_o,
 
   // Counter
-  output sp2v_e                   ctr_incr_o,
-  input  sp2v_e                   ctr_ready_i,
-  input  sp2v_e [7:0]             ctr_we_i,
+  output sp2v_e                    ctr_incr_o,
+  input  sp2v_e                    ctr_ready_i,
+  input  sp2v_e [NumSlicesCtr-1:0] ctr_we_i,
 
   // Cipher core control and sync
-  output sp2v_e                   cipher_in_valid_o,
-  input  sp2v_e                   cipher_in_ready_i,
-  input  sp2v_e                   cipher_out_valid_i,
-  output sp2v_e                   cipher_out_ready_o,
-  output sp2v_e                   cipher_crypt_o,
-  input  sp2v_e                   cipher_crypt_i,
-  output sp2v_e                   cipher_dec_key_gen_o,
-  input  sp2v_e                   cipher_dec_key_gen_i,
-  output logic                    cipher_key_clear_o,
-  input  logic                    cipher_key_clear_i,
-  output logic                    cipher_data_out_clear_o,
-  input  logic                    cipher_data_out_clear_i,
+  output sp2v_e                    cipher_in_valid_o,
+  input  sp2v_e                    cipher_in_ready_i,
+  input  sp2v_e                    cipher_out_valid_i,
+  output sp2v_e                    cipher_out_ready_o,
+  output sp2v_e                    cipher_crypt_o,
+  input  sp2v_e                    cipher_crypt_i,
+  output sp2v_e                    cipher_dec_key_gen_o,
+  input  sp2v_e                    cipher_dec_key_gen_i,
+  output logic                     cipher_key_clear_o,
+  input  logic                     cipher_key_clear_i,
+  output logic                     cipher_data_out_clear_o,
+  input  logic                     cipher_data_out_clear_i,
 
   // Initial key registers
-  output key_init_sel_e           key_init_sel_o,
-  output sp2v_e [7:0]             key_init_we_o [NumSharesKey],
+  output key_init_sel_e            key_init_sel_o,
+  output sp2v_e   [NumRegsKey-1:0] key_init_we_o [NumSharesKey],
 
   // IV registers
-  output iv_sel_e                 iv_sel_o,
-  output sp2v_e [7:0]             iv_we_o,
+  output iv_sel_e                   iv_sel_o,
+  output sp2v_e  [NumSlicesCtr-1:0] iv_we_o,
 
   // Pseudo-random number generator interface
-  output logic                    prng_data_req_o,
-  input  logic                    prng_data_ack_i,
-  output logic                    prng_reseed_req_o,
-  input  logic                    prng_reseed_ack_i,
+  output logic                      prng_data_req_o,
+  input  logic                      prng_data_ack_i,
+  output logic                      prng_reseed_req_o,
+  input  logic                      prng_reseed_ack_i,
 
   // Trigger register
-  output logic                    start_o,
-  output logic                    start_we_o,
-  output logic                    key_iv_data_in_clear_o,
-  output logic                    key_iv_data_in_clear_we_o,
-  output logic                    data_out_clear_o,
-  output logic                    data_out_clear_we_o,
-  output logic                    prng_reseed_o,
-  output logic                    prng_reseed_we_o,
+  output logic                      start_o,
+  output logic                      start_we_o,
+  output logic                      key_iv_data_in_clear_o,
+  output logic                      key_iv_data_in_clear_we_o,
+  output logic                      data_out_clear_o,
+  output logic                      data_out_clear_we_o,
+  output logic                      prng_reseed_o,
+  output logic                      prng_reseed_we_o,
 
   // Status register
-  output logic                    output_valid_o,
-  output logic                    output_valid_we_o,
-  output logic                    input_ready_o,
-  output logic                    input_ready_we_o,
-  output logic                    idle_o,
-  output logic                    idle_we_o,
-  output logic                    stall_o,
-  output logic                    stall_we_o,
-  input  logic                    output_lost_i,
-  output logic                    output_lost_o,
-  output logic                    output_lost_we_o
+  output logic                      output_valid_o,
+  output logic                      output_valid_we_o,
+  output logic                      input_ready_o,
+  output logic                      input_ready_we_o,
+  output logic                      idle_o,
+  output logic                      idle_we_o,
+  output logic                      stall_o,
+  output logic                      stall_we_o,
+  input  logic                      output_lost_i,
+  output logic                      output_lost_o,
+  output logic                      output_lost_we_o
 );
 
   import aes_pkg::*;
@@ -139,52 +141,52 @@ module aes_control import aes_pkg::*;
     ERROR       = 6'b001110
   } aes_ctrl_e;
 
-  aes_ctrl_e aes_ctrl_ns, aes_ctrl_cs;
+  aes_ctrl_e                aes_ctrl_ns, aes_ctrl_cs;
 
   // Signals
-  aes_mode_e   mode;
-  logic        key_init_clear;
-  sp2v_e       key_init_new, key_init_new_chk;
-  logic        key_init_load;
-  logic        key_init_arm;
-  sp2v_e       key_init_ready, key_init_ready_chk;
+  aes_mode_e                mode;
+  logic                     key_init_clear;
+  sp2v_e                    key_init_new, key_init_new_chk;
+  logic                     key_init_load;
+  logic                     key_init_arm;
+  sp2v_e                    key_init_ready, key_init_ready_chk;
 
-  logic  [7:0] iv_qe;
-  logic        iv_clear;
-  logic        iv_load;
-  logic        iv_arm;
-  sp2v_e       iv_ready, iv_ready_chk;
+  logic  [NumSlicesCtr-1:0] iv_qe;
+  logic                     iv_clear;
+  logic                     iv_load;
+  logic                     iv_arm;
+  sp2v_e                    iv_ready, iv_ready_chk;
 
-  logic  [3:0] data_in_new_d, data_in_new_q;
-  sp2v_e       data_in_new, data_in_new_chk;
-  logic        data_in_load;
+  logic   [NumRegsData-1:0] data_in_new_d, data_in_new_q;
+  sp2v_e                    data_in_new, data_in_new_chk;
+  logic                     data_in_load;
 
-  logic  [3:0] data_out_read_d, data_out_read_q;
-  sp2v_e       data_out_read, data_out_read_chk;
-  sp2v_e       output_valid_d, output_valid_q;
+  logic   [NumRegsData-1:0] data_out_read_d, data_out_read_q;
+  sp2v_e                    data_out_read, data_out_read_chk;
+  sp2v_e                    output_valid_d, output_valid_q;
 
-  logic        start_trigger;
-  logic        cfg_valid;
-  logic        no_alert;
-  sp2v_e       start_common, start_ecb, start_cbc, start_cfb, start_ofb, start_ctr;
-  sp2v_e       start, start_chk;
-  sp2v_e       finish, finish_chk;
-  sp2v_e       crypt, crypt_chk;
-  sp2v_e       cipher_out_done, cipher_out_done_chk;
-  logic        cipher_out_done_err_d, cipher_out_done_err_q;
-  sp2v_e       doing_cbc_enc, doing_cbc_enc_chk, doing_cbc_dec, doing_cbc_dec_chk;
-  sp2v_e       doing_cfb_enc, doing_cfb_enc_chk, doing_cfb_dec, doing_cfb_dec_chk;
-  sp2v_e       doing_ofb, doing_ofb_chk;
-  sp2v_e       doing_ctr, doing_ctr_chk;
-  logic        ctrl_we_q;
-  sp2v_e       ctr_ready;
-  sp2v_e [7:0] ctr_we;
-  logic        clear_in_out_status;
-  sp2v_e       cipher_in_ready;
-  sp2v_e       cipher_out_valid;
-  sp2v_e       cipher_crypt;
-  sp2v_e       cipher_dec_key_gen;
-  logic        sp_enc_err;
+  logic                     start_trigger;
+  logic                     cfg_valid;
+  logic                     no_alert;
+  sp2v_e                    start_common, start_ecb, start_cbc, start_cfb, start_ofb, start_ctr;
+  sp2v_e                    start, start_chk;
+  sp2v_e                    finish, finish_chk;
+  sp2v_e                    crypt, crypt_chk;
+  sp2v_e                    cipher_out_done, cipher_out_done_chk;
+  logic                     cipher_out_done_err_d, cipher_out_done_err_q;
+  sp2v_e                    doing_cbc_enc, doing_cbc_enc_chk, doing_cbc_dec, doing_cbc_dec_chk;
+  sp2v_e                    doing_cfb_enc, doing_cfb_enc_chk, doing_cfb_dec, doing_cfb_dec_chk;
+  sp2v_e                    doing_ofb, doing_ofb_chk;
+  sp2v_e                    doing_ctr, doing_ctr_chk;
+  logic                     ctrl_we_q;
+  sp2v_e                    ctr_ready;
+  sp2v_e [NumSlicesCtr-1:0] ctr_we;
+  logic                     clear_in_out_status;
+  sp2v_e                    cipher_in_ready;
+  sp2v_e                    cipher_out_valid;
+  sp2v_e                    cipher_crypt;
+  sp2v_e                    cipher_dec_key_gen;
+  logic                     sp_enc_err;
 
   if (SecStartTriggerDelay > 0) begin : gen_start_delay
     // Delay the manual start trigger input for SCA measurements.
@@ -208,7 +210,7 @@ module aes_control import aes_pkg::*;
     assign start_trigger = start_i;
   end
 
-  // Software updates IV in chunks of 32 bits, the counter updates 16 bits at a time.
+  // Software updates IV in chunks of 32 bits, the counter updates SliceSizeCtr bits at a time.
   // Convert word write enable to internal half-word write enable.
   assign iv_qe = {iv_qe_i[3], iv_qe_i[3], iv_qe_i[2], iv_qe_i[2],
                   iv_qe_i[1], iv_qe_i[1], iv_qe_i[0], iv_qe_i[0]};
@@ -294,11 +296,11 @@ module aes_control import aes_pkg::*;
 
     // Initial key registers
     key_init_sel_o = KEY_INIT_INPUT;
-    key_init_we_o  = '{{8{SP2V_LOW}}, {8{SP2V_LOW}}};
+    key_init_we_o  = '{default: {NumRegsKey{SP2V_LOW}}};
 
     // IV registers
     iv_sel_o = IV_INPUT;
-    iv_we_o  = {8{SP2V_LOW}};
+    iv_we_o  = {NumSlicesCtr{SP2V_LOW}};
 
     // Control register
     ctrl_we_o = 1'b0;
@@ -348,11 +350,11 @@ module aes_control import aes_pkg::*;
         if (idle_o) begin
           // Initial key and IV updates are ignored if we are not idle.
           for (int s = 0; s < NumSharesKey; s++) begin
-            for (int i = 0; i < 8; i++) begin
+            for (int i = 0; i < NumRegsKey; i++) begin
               key_init_we_o[s][i] = key_init_qe_i[s][i] ? SP2V_HIGH : SP2V_LOW;
             end
           end
-          for (int i = 0; i < 8; i++) begin
+          for (int i = 0; i < NumSlicesCtr; i++) begin
             iv_we_o[i] = iv_qe[i] ? SP2V_HIGH : SP2V_LOW;
           end
 
@@ -444,7 +446,7 @@ module aes_control import aes_pkg::*;
         // IV control in case of ongoing encryption/decryption
         // - CTR: IV registers are updated by counter during cipher operation
         iv_sel_o = (doing_ctr_chk == SP2V_HIGH) ? IV_CTR : IV_INPUT;
-        iv_we_o  = (doing_ctr_chk == SP2V_HIGH) ? ctr_we : {8{SP2V_LOW}};
+        iv_we_o  = (doing_ctr_chk == SP2V_HIGH) ? ctr_we : {NumSlicesCtr{SP2V_LOW}};
 
         // Request fresh pseudo-random data, perform handshake.
         prng_data_req_o = 1'b1;
@@ -522,8 +524,8 @@ module aes_control import aes_pkg::*;
                      (doing_cbc_dec_chk == SP2V_HIGH) ||
                      (doing_cfb_enc_chk == SP2V_HIGH) ||
                      (doing_cfb_dec_chk == SP2V_HIGH) ||
-                     (doing_ofb_chk     == SP2V_HIGH) ? {8{cipher_out_done_chk}} :
-                     (doing_ctr_chk     == SP2V_HIGH) ? ctr_we                   : {8{SP2V_LOW}};
+                     (doing_ofb_chk     == SP2V_HIGH) ? {NumSlicesCtr{cipher_out_done_chk}} :
+                     (doing_ctr_chk     == SP2V_HIGH) ? ctr_we          : {NumSlicesCtr{SP2V_LOW}};
 
           // Arm the IV status tracker: After finishing, the IV registers can be written again
           // by software. We need to make sure software does not partially update the IV.
@@ -547,12 +549,12 @@ module aes_control import aes_pkg::*;
         if (key_iv_data_in_clear_i) begin
           // Initial Key
           key_init_sel_o = KEY_INIT_CLEAR;
-          key_init_we_o  = '{{8{SP2V_HIGH}}, {8{SP2V_HIGH}}};
+          key_init_we_o  = '{default: {NumRegsKey{SP2V_HIGH}}};
           key_init_clear = 1'b1;
 
           // IV
           iv_sel_o = IV_CLEAR;
-          iv_we_o  = {8{SP2V_HIGH}};
+          iv_we_o  = {NumSlicesCtr{SP2V_HIGH}};
           iv_clear = 1'b1;
 
           // Input data
@@ -624,9 +626,9 @@ module aes_control import aes_pkg::*;
   // We only use clean initial keys. Either software/counter has updated
   // - all initial key registers, or
   // - none of the initial key registers but the registers were updated in the past.
-  logic [7:0] key_init_we [NumSharesKey];
+  logic [NumRegsKey-1:0] key_init_we [NumSharesKey];
   for (genvar s = 0; s < NumSharesKey; s++) begin : gen_status_key_init_we_shares
-    for (genvar i = 0; i < 8; i++) begin : gen_status_key_init_we
+    for (genvar i = 0; i < NumRegsKey; i++) begin : gen_status_key_init_we
       assign key_init_we[s][i] = (key_init_we_o[s][i] == SP2V_HIGH);
     end
   end
@@ -647,8 +649,8 @@ module aes_control import aes_pkg::*;
   // - all IV registers, or
   // - none of the IV registers but the registers were updated in the past
   // and this particular IV has not yet been used.
-  logic [7:0] iv_we;
-  for (genvar i = 0; i < 8; i++) begin : gen_status_iv_we
+  logic [NumSlicesCtr-1:0] iv_we;
+  for (genvar i = 0; i < NumSlicesCtr; i++) begin : gen_status_iv_we
     assign iv_we[i] = (iv_we_o[i] == SP2V_HIGH);
   end
   aes_reg_status #(
@@ -769,7 +771,7 @@ module aes_control import aes_pkg::*;
   // data_out_we_o and other write-enable signals to prevent any data from being released.
 
   // We use vectors of sparsely encoded signals to reduce code duplication.
-  localparam int unsigned NumSp2VSig = 29;
+  localparam int unsigned NumSp2VSig = 21 + NumSlicesCtr;
   sp2v_e [NumSp2VSig-1:0]                sp2v_sig;
   sp2v_e [NumSp2VSig-1:0]                sp2v_sig_chk;
   logic  [NumSp2VSig-1:0][Sp2VWidth-1:0] sp2v_sig_chk_raw;
@@ -795,10 +797,10 @@ module aes_control import aes_pkg::*;
   assign sp2v_sig[17] = ctr_ready_i;
   assign sp2v_sig[18] = start;
   assign sp2v_sig[19] = finish;
-  for (genvar i = 0; i < 8; i++) begin : gen_use_ctr_we_i
+  for (genvar i = 0; i < NumSlicesCtr; i++) begin : gen_use_ctr_we_i
     assign sp2v_sig[20+i] = ctr_we_i[i];
   end
-  assign sp2v_sig[28] = cipher_out_done;
+  assign sp2v_sig[20 + NumSlicesCtr] = cipher_out_done;
 
   // Individually check sparsely encoded signals.
   for (genvar i = 0; i < NumSp2VSig; i++) begin : gen_sel_buf_chk
@@ -835,11 +837,11 @@ module aes_control import aes_pkg::*;
   assign ctr_ready             = sp2v_sig_chk[17];
   assign start_chk             = sp2v_sig_chk[18];
   assign finish_chk            = sp2v_sig_chk[19];
-  for (genvar i = 0; i < 8; i++) begin : gen_ctr_we
+  for (genvar i = 0; i < NumSlicesCtr; i++) begin : gen_ctr_we
     assign ctr_we[i]           = sp2v_sig_chk[20+i];
   end
-  assign cipher_out_done_chk   = sp2v_sig_chk[28];
-  assign cipher_out_done_err_d = sp2v_sig_err[28];
+  assign cipher_out_done_chk   = sp2v_sig_chk[20 + NumSlicesCtr];
+  assign cipher_out_done_err_d = sp2v_sig_err[20 + NumSlicesCtr];
 
   // We need to register the error signal for cipher_out_done to avoid circular loops in the FSM.
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_sp_enc_err
@@ -889,5 +891,8 @@ module aes_control import aes_pkg::*;
       FINISH,
       CLEAR
       })
+
+  // Check parameters
+  `ASSERT_INIT(AesNumSlicesCtr, NumSlicesCtr == 8)
 
 endmodule
