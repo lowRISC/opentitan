@@ -93,9 +93,70 @@ package kmac_pkg;
   ///////////////////////////
   // Application interface //
   ///////////////////////////
+
+  // Number of the application interface
+  // Currently KMAC has three interface.
+  // 0: KeyMgr
+  // 1: OTP_CTRL
+  // 2: ROM_CTRL
+  parameter int unsigned NumAppIntf = 3;
+
+  // Application Algorithm
+  // Each interface can choose algorithms among SHA3, cSHAKE, KMAC
+  typedef enum int unsigned {
+    // SHA3 mode doer not nees any additional information.
+    // Prefix will be tied to all zero and not used.
+    AppSHA3   = 0,
+
+    // In CShake/ KMAC mode, the Prefix can be determined by the compile-time
+    // parameter or through CSRs.
+    AppCShake = 1,
+
+    // In KMAC mode, the secret key always comes from sideload.
+    AppKMAC   = 2
+  } app_mode_e;
+
+  typedef struct {
+    app_mode_e                         Mode;
+
+    // PrefixMode determines the origin value of Prefix that is used in KMAC
+    // and cSHAKE operations.
+    // Choose **0** for CSRs (!!PREFIX), or **1** to use `Prefix` parameter
+    // below.
+    bit                                PrefixMode;
+
+    // If `PrefixMode` is 1'b 1, then this `Prefix` value will be used in
+    // cSHAKE or KMAC operation.
+    logic [sha3_pkg::PrefixIndexW-1:0] Prefix;
+  } app_config_t;
+
+  parameter app_config_t AppCfg [NumAppIntf] = '{
+    // KeyMgr
+    '{
+      Mode:       AppKMAC, // KeyMgr uses KMAC operation
+      PrefixMode: 1'b 0,   // Use CSR for prefix
+      Prefix:     '0       // Not used in CSR prefix mode
+    },
+
+    // OTP
+    '{
+      Mode:       AppCShake,
+      PrefixMode: 1'b 1,     // Use prefix parameter
+      Prefix:     'h 0       // TODO: Determine the prefix value
+    },
+
+    // ROM_CTRL
+    '{
+      Mode:       AppCShake,
+      PrefixMode: 1'b 1,     // Use prefix parameter
+      Prefix:     'h 0       // TODO: Determine the prefix value
+    }
+  };
+
   // MsgWidth : 64
   // MsgStrbW : 8
   parameter int unsigned AppDigestW = 256;
+
   typedef struct packed {
     logic valid;
     logic [MsgWidth-1:0] data;
