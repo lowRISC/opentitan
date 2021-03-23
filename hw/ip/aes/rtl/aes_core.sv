@@ -11,8 +11,8 @@ module aes_core
   import aes_reg_pkg::*;
 #(
   parameter bit          AES192Enable         = 1,
-  parameter bit          Masking              = 0,
-  parameter sbox_impl_e  SBoxImpl             = SBoxImplLut,
+  parameter bit          Masking              = 1,
+  parameter sbox_impl_e  SBoxImpl             = SBoxImplDom,
   parameter int unsigned SecStartTriggerDelay = 0,
   parameter bit          SecAllowForcingMasks = 0,
   parameter bit          SecSkipPRNGReseeding = 0,

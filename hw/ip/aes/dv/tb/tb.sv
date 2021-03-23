@@ -29,7 +29,11 @@ module tb;
   `DV_ALERT_IF_CONNECT
 
   // dut
-  aes dut (
+  aes #(
+    // for now keep testing the unmasked implementation
+    .Masking  ( 0                    ),
+    .SBoxImpl ( aes_pkg::SBoxImplLut )
+  ) dut (
     .clk_i            ( clk                           ),
     .rst_ni           ( rst_n                         ),
 

@@ -22,11 +22,13 @@ The AES unit supports the following features:
   - Output Feedback (OFB) mode, and
   - Counter (CTR) mode.
 - Support for AES-192 can be removed to save area, and is enabled/disabled using a compile-time Verilog parameter
-- Latency per 16 byte data block of 12/14/16 clock cycles in AES-128/192/256 mode
+- First-order masking of the cipher core using domain-oriented masking (DOM) to aggravate side-channel analysis (SCA), can optionally be disabled using compile-time Verilog parameters (for more details see [Security Hardening below]({{< relref "#side-channel-analysis" >}}))
+- Latency per 16 byte data block of 12/14/16 clock cycles (unmasked implementation) and 56/66/72 clock cycles (DOM) in AES-128/192/256 mode
+- Countermeasures for aggravating fault injection (FI) on the control path (for more details see [Security Hardening below]({{< relref "#fault-injection" >}}))
 - Register-based data and control interface
-- On-the-fly round-key generation in parallel to the actual encryption/decryption from a single initial 128/192/256-bit key provided through the register interface (for more details see Theory of Operations below)
+- On-the-fly round-key generation in parallel to the actual encryption/decryption from a single initial 128/192/256-bit key provided through the register interface (for more details see [Theory of Operations below]({{< relref "#theory-of-operations" >}}))
 
-This AES unit targets medium performance (16 parallel S-Boxes, \~1 cycle per round).
+This AES unit targets medium performance (16 parallel S-Boxes, \~1 cycle per round for the unmasked implementation, \~5 cycles per round for the DOM implementation).
 High-speed, single-cycle operation for high-bandwidth data streaming is not required.
 
 Cipher modes other than ECB, CBC, CFB, OFB and CTR are beyond this version of the AES unit but might be supported in future versions.
@@ -93,14 +95,16 @@ In this case, the AES unit never stalls and just overwrites previous output data
 
 ## Block Diagram
 
-This AES unit targets medium performance (\~1 cycle per round).
+This AES unit targets medium performance (\~1 cycle per round for the unmasked implementation).
 High-speed, single-cycle operation for high-bandwidth data streaming is not required.
 
 Therefore, the AES unit uses an iterative cipher core architecture with a 128-bit wide data path as shown in the figure below.
+Note that for the sake of simplicity, the figure shows the unmasked implementation.
+For details on the masked implementation of the cipher core refer to [Security Hardening below]({{< relref "#security-hardening" >}})).
 Using an iterative architecture allows for a smaller circuit area at the cost of throughput.
-Employing a 128-bit wide data path allows to achieve the latency requirements of 12/14/16 clock cycles per 16B data block in AES-128/192/256 mode, respectively.
+Employing a 128-bit wide data path allows to achieve the latency requirements of 12/14/16 clock cycles per 16B data block in AES-128/192/256 mode in the unmasked implementation, respectively.
 
-![AES unit block diagram with shared data paths for encryption and decryption (using the Equivalent Inverse Cipher).](aes_block_diagram.svg)
+![AES unit block diagram (unmasked implementation) with shared data paths for encryption and decryption (using the Equivalent Inverse Cipher).](aes_block_diagram.svg)
 
 Inside the cipher core, both the data paths for the actual cipher (left) and the round key generation (right) are shared between encryption and decryption.
 Consequently, the blocks shown in the diagram always implement the forward and backward (inverse) version of the corresponding operation.
@@ -221,7 +225,9 @@ Similarly, the initialization vector (IV) register can only be updated by the pr
 If the AES unit is busy and running in CBC or CTR mode, the AES unit itself updates the IV register.
 
 The cipher core architecture of the AES unit is derived from the architecture proposed by Satoh et al.: ["A compact Rijndael Hardware Architecture with S-Box Optimization"](https://link.springer.com/chapter/10.1007%2F3-540-45682-1_15).
-The expected circuit area in a 110nm CMOS technology is in the order of 12 - 22 kGE (AES-128 only).
+The expected circuit area in a 110nm CMOS technology is in the order of 12 - 22 kGE (unmasked implementation, AES-128 only).
+The expected circuit area of the entire AES unit with masking enabled is around 100 kGE.
+For more details, refer to the [nightly OpenTitan synthesis results](https://reports.opentitan.org/hw/top_earlgrey/syn/latest/results.html).
 
 For a description of the various sub modules, see the following sections.
 
@@ -235,11 +241,16 @@ In combination with the 128-bit wide data path, this allows to perform one AES r
 
 The design of this S-Box and its inverse can have a big impact on circuit area, timing critical path, robustness and power leakage, and is itself its own research topic.
 
-Since the S-Boxes can be decoupled from the rest of the AES unit, they can easily be replaced by a different implementation if required.
-The AES unit currently uses a LUT-based S-Box implementation (default) but also supports the implementation proposed by [Canright: "A very compact Rijndael S-Box"](https://hdl.handle.net/10945/25608) (selectable by a compile-time parameter).
+The S-Boxes are decoupled from the rest of the AES unit with a handshake protocol, allowing them to be easily replaced by different implementations if required.
+The AES unit comes with the following S-Box implementations that can be selected by a compile-time Verilog parameter:
+- Domain-oriented masking (DOM) S-Box: default, see [Gross et al.: "Domain-Oriented Masking: Compact Masked Hardware Implementations with Arbitrary Protection Order"](https://eprint.iacr.org/2016/486.pdf)
+- Masked Canright S-Box: provided for reference, usage discouraged, a version w/ and w/o mask re-use is provided, see [Canright and Batina: "A very compact "perfectly masked" S-Box for AES (corrected)"](https://eprint.iacr.org/2009/011.pdf)
+- Canright S-Box: only use when disabling masking, recommended when targeting ASIC implementation, see [Canright: "A very compact Rijndael S-Box"](https://hdl.handle.net/10945/25608)
+- LUT-based S-Box: only use when disabling masking, recommended when targeting FPGA implementation
 
-A possible candidate implementation that employs masking (i.e. that randomizes the power consumption of the AES unit in every cipher round) to aggravate power analysis attacks has been proposed by [Canright and Batina: "A very compact "perfectly masked" S-Box for AES (corrected)"](https://eprint.iacr.org/2009/011.pdf).
-
+The DOM S-Box has a latency of 5 clock cycles.
+All other implementations are fully combinational (one S-Box evaluation every clock cycle).
+See also [Security Hardening below.]({{< relref "#1st-order-masking-of-the-cipher-core" >}})
 
 ### ShiftRows
 
@@ -315,12 +326,114 @@ The processor writes both input data as well as the initial key to dedicated reg
 Future versions of the AES unit might include a separate interface through which a possible system key manager can provide the key without exposing it to the processor or other hosts attached to the system bus interconnect.
 
 
-### Security Hardening
+# Security Hardening
 
-The primary focus of the first version of the AES unit lies in having a first functional implementation.
+The AES unit employs different means at architectural, micro-architectural and physical levels for security hardening against side-channel analysis and fault injection.
 
-Future efforts on this unit will have a focus on security hardening of the design.
-Future versions of this AES unit thus might employ different means at architectural, microarchitectural and physical levels to reduce side-channel leakage (e.g. power and electromagnetic) and mitigate potential fault injection attacks.
+## Side-Channel Analysis
+
+To aggravate side-channel analysis (SCA), the AES unit implements the following countermeasures.
+
+### 1st-order Masking of the Cipher Core
+
+The AES unit employs 1st-order masking of the AES cipher core.
+More precisely, both the cipher and the key expand data path use two shares.
+As shown in the block diagram below, the width of all registers and data paths basically doubles.
+
+![Block diagram of the masked AES cipher core.](aes_block_diagram_cipher_core_masked.svg)
+
+The initial key is provided in two shares via the register interface.
+The input data is provided in unmasked form and masked outside of the cipher core to obtain the two shares of the initial state.
+The pseudo-random data (PRD) required for masking the input data is provided by the pseudo-random number generator (PRNG) of the cipher core.
+Similarly, the two shares of the output state are combined outside the cipher core to obtain the output data.
+
+The same PRNG also generates the fresh randomness required by the masked SubBytes (16 masked S-Boxes) and the masked KeyExpand (4 masked S-Boxes).
+The masking scheme selected for the S-Box can have a high impact on SCA resistance, circuit area, number of PRD bits consumed per cycle and per S-Box evaluation, and throughput.
+The selection of the masked S-Box implementation can be controlled via compile-time Verilog parameter.
+By default, the AES unit uses domain-oriented masking (DOM) for the S-Boxes as proposed by [Gross et al.: "Domain-Oriented Masking: Compact Masked Hardware Implementations with Arbitrary Protection Order".](https://eprint.iacr.org/2016/486.pdf)
+The provided implementation has a latency of 5 clock cycles per S-Box evaluation.
+As a result, the overall latency for processing a 16-byte data block increases from 12/14/16 to 56/66/72 clock cycles in AES-128/192/256 mode, respectively.
+Alternatively, the two original versions of the masked Canright S-Box can be chosen as proposed by [Canright and Batina: "A very compact "perfectly masked" S-Box for AES (corrected)".](https://eprint.iacr.org/2009/011.pdf)
+These are fully combinational (one S-Box evaluation every cycle) and have lower area footprint, but they are significantly less resistant to SCA.
+They are mainly included for reference but their usage is discouraged due to potential vulnerabilities to the correlation-enhanced collision attack as described by [Moradi et al.: "Correlation-Enhanced Power Analysis Collision Attack".](https://eprint.iacr.org/2010/297.pdf)
+
+Note that the masking can be enabled/disabled via compile-time Verilog parameter.
+It may be acceptable to disable the masking when using the AES cipher core for random number generation e.g. inside [CSRNG.]({{< relref "hw/ip/csrng/doc" >}})
+When disabling the masking, also an unmasked S-Box implementation needs to be selected using the corresponding compile-time Verilog parameter.
+When disabling masking, it is recommended to use the unmasked Canright or LUT S-Box implementation for ASIC or FPGA targets, respectively.
+Both are fully combinational and allow for one S-Box evaluation every clock cycle.
+
+It's worth noting that since input/output data are provided/retrieved via register interface in unmasked form, the AES unit should not be used to form an identity ladder where the output of one AES operation is used to form the key for the next AES operation in the ladder.
+In OpenTitan, the [Keccak Message Authentication Code (KMAC) unit]({{< relref "hw/ip/kmac/doc" >}}) is used for that purpose.
+
+### Fully-Parallel Data Path
+
+Any 1st-order masking scheme primarily protects against 1st-order SCA.
+Vulnerabilities against higher-order SCA might still be present.
+A common technique to aggravate higher-order attacks is to increase the noise in the system e.g. by leveraging parallel architectures.
+To this end, the AES cipher core uses a 128-bit parallel data path with a total of up to 20 S-Boxes (16 inside SubBytes, 4 inside KeyExpand) that are evaluated in parallel.
+
+Besides more noise for increased resistance against higher-order SCA, the fully-parallel architecture also enables for higher performance and flexibility.
+It allows users to seamlessly switch out the S-Box implementation in order to experiment with different masking schemes.
+To interface the data paths with the S-Boxes, a handshake protocol is used.
+
+### Note on Reset vs. Non-Reset Flip-Flops
+
+The choice of flip-flop type for registering sensitive assets such as keys can have implications on the vulnerability against e.g. combined reset glitch attacks and SCA.
+Following the [OpenTitan non-reset vs. reset flops rationale](https://github.com/lowRISC/opentitan/issues/2603), the following observations can be made:
+- If masking is enabled, key and state values are stored in two shares inside the AES unit.
+  Neither the Hamming weights of the individual shares nor the summed Hamming weight are proportional to the Hamming weight of the secret asset.
+- Input/output data and IV values are (currently) not stored in multiple shares but these are less critical as they are used only once.
+  Further, they are stored in banks of 32 bits leaving a larger hypothesis space compared to when glitching e.g. an 8-bit register into reset.
+  In addition, they could potentially also be extracted when being transferred over the TL-UL bus interface.
+For this reason, the AES unit uses reset flops only.
+However, all major key and data registers are cleared with pseudo-random data upon reset.
+
+### Clearing Registers with Pseudo-Random Data
+
+Upon reset or if initiated by software, all major key and data registers inside the AES module are cleared with pseudo-random data (PRD).
+This helps to reduce SCA leakage when both writing these registers for reconfiguration and when clearing the registers after use.
+
+In addition, the state registers inside the cipher core are cleared with PRD during the last round of every encryption/decryption.
+This prevents Hamming distance leakage between the states of the last two rounds as well as between output and input data.
+
+## Fault Injection
+
+Fault injection (FI) attacks can be distinguished based on the FI target.
+
+### Control Path
+
+In cryptographic devices, fault attacks on the control path usually aim to disturb the control flow in a way to facilitate SCA or other attacks.
+Example targets for AES include: switch to less secure mode of operation (ECB), keep processing the same input data, reduce the number of rounds/early termination, skip particular rounds, skip individual operations in a round.
+
+To protect against FI attacks on the control path, the AES unit implements the following countermeasures.
+
+- Shadowed Control Register:
+  The main control register is implemented as a shadow register.
+  This means software has to perform two subsequent write operations to perform an update.
+  Internally, a shadow copy is used that is constantly compared with the actual register.
+  For further details, refer to the [Register Tool documentation.]({{< relref "doc/rm/register_tool#shadow-registers" >}})
+
+- Hardened round counter:
+  To protect the round counter inside the cipher core against FI, a second copy of the counter is counting down, and the sum of the two counters is constantly compared with the number of total rounds to perform.
+  In addition, one parity bit is used for the round counter.
+
+- Sparse encodings of FSM states:
+  All FSMs inside the AES unit use sparse state encodings.
+
+- Sparse encodings for mux selector signals:
+  All main muxes use sparsely encoded selector signals.
+
+- Sparse encodings for handshake and other important control signals.
+
+If any of these countermeasures detects a fault, a fatal alert is triggered, the internal FSMs go into a terminal error state, the AES unit does not release further data and locks up until reset.
+Such a condition is reported in {{< regref "STATUS.ALERT_FATAL_FAULT" >}}.
+Details on where the fault has been detected are not provided.
+
+### Data Path
+
+The aim of fault attacks on the data path is typically to extract information on the key by means of statistical analysis.
+The current version of the AES unit does not employ countermeasures against such attacks, but future versions most likely will.
 
 
 # Programmers Guide
