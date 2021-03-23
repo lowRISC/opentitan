@@ -25,7 +25,8 @@ module tb;
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
-
+    // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
+  `DV_EDN_IF_CONNECT
   `DV_ALERT_IF_CONNECT
 
   // dut
@@ -39,10 +40,10 @@ module tb;
 
     .idle_o           (                               ),
     .lc_escalate_en_i ( lc_ctrl_pkg::Off              ),
-    .clk_edn_i        ( clk                           ),
-    .rst_edn_ni       ( rst_n                         ),
-    .edn_o            ( edn_req                       ),
-    .edn_i            ( {edn_req, 1'b0, 32'h12345678} ),
+    .clk_edn_i        ( edn_clk                       ),
+    .rst_edn_ni       ( edn_rst_n                     ),
+    .edn_o            ( edn_if.req                    ),
+    .edn_i            ( {edn_if.ack, edn_if.d_data}   ),
 
     .tl_i             ( tl_if.h2d                     ),
     .tl_o             ( tl_if.d2h                     ),

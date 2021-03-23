@@ -12,6 +12,7 @@ package aes_env_pkg;
   import tl_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
+  import push_pull_agent_pkg::*;
   import aes_reg_pkg::*;
   import aes_ral_pkg::*;
   import aes_pkg::*;

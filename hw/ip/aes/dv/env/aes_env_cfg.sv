@@ -167,6 +167,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     list_of_alerts = aes_env_pkg::LIST_OF_ALERTS;
+    has_edn = 1;
     super.initialize(csr_base_addr);
   endfunction
 
