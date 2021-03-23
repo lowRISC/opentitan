@@ -25,8 +25,11 @@ class Launcher:
     launcher object holds an instance of the deploy object.
     """
 
+    # Type of launcher used as string.
+    variant = None
+
     # Points to the python virtual env area.
-    python_venv = None
+    pyvenv = None
 
     # If a history of previous invocations is to be maintained, then keep no
     # more than this many directories.
@@ -37,7 +40,7 @@ class Launcher:
     workspace_prepared_for_cfg = set()
 
     @staticmethod
-    def set_python_venv(project):
+    def set_pyvenv(project):
         '''Activate a python virtualenv if available.
 
         The env variable <PROJECT>_PYTHON_VENV if set, points to the path
@@ -48,7 +51,7 @@ class Launcher:
         This is not applicable when running jobs locally on the user's machine.
         '''
 
-        if Launcher.python_venv is not None:
+        if Launcher.pyvenv is not None:
             return
 
         # If project-specific python virtualenv path is set, then activate it
@@ -56,8 +59,16 @@ class Launcher:
         # launching locally, but on external machines in a compute farm, which
         # may not have access to the default python installation area on the
         # host machine.
-        Launcher.python_venv = os.environ.get("{}_PYTHON_VENV".format(
-            project.upper()))
+        #
+        # The code below allows each launcher variant to set its own virtualenv
+        # because the loading / activating mechanism could be different between
+        # them.
+        Launcher.pyvenv = os.environ.get("{}_PYVENV_{}".format(
+            project.upper(), Launcher.variant.upper()))
+
+        if not Launcher.pyvenv:
+            Launcher.pyvenv = os.environ.get("{}_PYVENV".format(
+                project.upper()))
 
     @staticmethod
     def prepare_workspace(project, repo_top, args):

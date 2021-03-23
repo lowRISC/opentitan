@@ -104,7 +104,7 @@
       sw_images: ["sw/device/otp_img/otp_img:3"],
       run_opts: ["+sw_build_bin_dir={sw_build_dir}/build-bin",
                  "+sw_build_device={sw_build_device}",
-                 "+sw_images=\\\"{sw_images}\\\""]
+                 "+sw_images='{sw_images}'"]
     }
     {
       name: sw_test_mode

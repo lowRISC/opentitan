@@ -165,7 +165,9 @@
                    "-covdut {dut}",
                    // Set the coverage configuration file
                    "-covfile {xcelium_cov_cfg_file}"]
-      run_opts:   [// Coverage database output location.
+      run_opts:   [// Put the coverage model (*.ucm) and the database (*.ucd) together.
+                   "-covmodeldir {cov_db_test_dir}",
+                   // Coverage database output location.
                    "-covworkdir {cov_work_dir}",
                    // Set the scope to the build mode name.
                    "-covscope {build_mode}",
