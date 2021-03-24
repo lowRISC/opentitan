@@ -646,15 +646,12 @@ module otp_ctrl_dai
     // that here.
     `ASSERT_INIT(PartEndMax_A, PartEndInt <= (1 << OtpByteAddrWidth))
 
-    // Assuming ScrmblBlockWidth is at least 8, DigestOffset will be strictly less than PartEnd, so
-    // will fit in OtpByteAddrWidth bits again.
-    localparam bit [OtpByteAddrWidth-1:0] PartEnd = PartEndInt[OtpByteAddrWidth-1:0];
-
     // The shift right by OtpAddrShift drops exactly the bottom bits that are needed to convert
     // between OtpAddrWidth and OtpByteAddrWidth, so we know that we can slice safely here.
     localparam bit [OtpAddrWidth-1:0] DigestAddrLut = DigestAddrLutInt[OtpAddrWidth-1:0];
 
-    assign part_sel_oh[k] = (dai_addr_i >= PartInfo[k].offset) & (dai_addr_i < PartEnd);
+    assign part_sel_oh[k] = (dai_addr_i >= PartInfo[k].offset) &
+                            ({1'b0, dai_addr_i} < PartEndInt[OtpByteAddrWidth:0]);
     assign digest_addr_lut[k] = DigestAddrLut;
   end
 
@@ -712,7 +709,7 @@ module otp_ctrl_dai
   // shift the addresses appropriately.
   logic [OtpByteAddrWidth-1:0] addr_calc;
   assign addr_calc = {cnt_q, {$clog2(ScrmblBlockWidth/8){1'b0}}} + addr_base;
-  assign otp_addr_o = addr_calc >> OtpAddrShift;
+  assign otp_addr_o = OtpAddrWidth'(addr_calc >> OtpAddrShift);
 
   ///////////////
   // Registers //
