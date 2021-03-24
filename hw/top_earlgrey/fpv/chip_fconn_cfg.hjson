@@ -1,0 +1,16 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: top_earlgrey
+
+  import_cfgs: [// common server configuration for results upload
+                "{proj_root}/hw/formal/tools/dvsim/common_conn_cfg.hjson"]
+
+  fusesoc_core: lowrisc:systems:top_earlgrey
+
+  csv_path: "{proj_root}/hw/top_earlgrey/fpv/fconn_csvs/top_earlgrey_conn.csv"
+
+  // TODO: reduce run time and turn on coverage
+  cov: false
+}
