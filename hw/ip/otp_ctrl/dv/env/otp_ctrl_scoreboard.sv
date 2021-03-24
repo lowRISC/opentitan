@@ -479,19 +479,22 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
             case (item.a_data)
               DaiDigest: cal_digest_val(part_idx);
               DaiRead: begin
-                // SW partitions write read_lock_csr can lock read access
-                // Secret partitions cal digest can also lock read access
-                // However, digest is always readable
+                // Check if it is sw partition read lock
                 bit sw_read_lock = 0;
                 if (part_idx == CreatorSwCfgIdx) begin
                   sw_read_lock = `gmv(ral.creator_sw_cfg_read_lock) == 0;
                 end else if (part_idx == OwnerSwCfgIdx) begin
                   sw_read_lock = `gmv(ral.owner_sw_cfg_read_lock) == 0;
                 end
-                if (sw_read_lock || (is_secret(dai_addr) && digests[part_idx] != 0) &&
-                    !is_digest(dai_addr)) begin
+
+                // SW partitions write read_lock_csr can lock read access
+                // Secret partitions cal digest can also lock read access
+                // However, digest is always readable except SW partitions (TODO: check with
+                // designer)
+                if (sw_read_lock || (is_secret(dai_addr) && digests[part_idx] != 0 &&
+                    !is_digest(dai_addr))) begin
                   predict_err(OtpDaiErrIdx, OtpAccessError);
-                  predict_rdata(is_secret(dai_addr), 0, 0);
+                  predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
                 end else begin
                   bit [TL_AW-1:0] otp_addr = get_scb_otp_addr();
                   if (cfg.ecc_err == OtpNoEccErr) begin
@@ -994,23 +997,19 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     uvm_reg_addr_t addr = ral.get_word_aligned_addr(item.a_addr);
     if (`gmv(ral.creator_sw_cfg_read_lock) == 0) begin
       if (addr inside {[cfg.mem_ranges[0].start_addr :
-                       cfg.mem_ranges[0].start_addr + CreatorSwCfgDigestOffset - 1]}) begin
+                       cfg.mem_ranges[0].start_addr + CreatorSwCfgSize - 1]}) begin
         predict_err(OtpCreatorSwCfgErrIdx, OtpAccessError);
-        // TODO: confirm with design what is the output in error case
-        //`DV_CHECK_EQ(item.d_data, 0,
-        //             $sformatf("locked mem read mismatch at TLUL addr %0h in CreatorSwCfg",
-        //             addr))
+        `DV_CHECK_EQ(item.d_data, 0,
+                     $sformatf("locked mem read mismatch at TLUL addr %0h in CreatorSwCfg", addr))
         return 0;
       end
     end
     if (`gmv(ral.owner_sw_cfg_read_lock) == 0) begin
       if (addr inside {[cfg.mem_ranges[0].start_addr + OwnerSwCfgOffset :
-              cfg.mem_ranges[0].start_addr + OwnerSwCfgDigestOffset - 1]}) begin
+              cfg.mem_ranges[0].start_addr + OwnerSwCfgSize + OwnerSwCfgOffset - 1]}) begin
         predict_err(OtpOwnerSwCfgErrIdx, OtpAccessError);
-        // TODO: confirm with design what is the output in error case
-        //`DV_CHECK_EQ(item.d_data, 0,
-        //             $sformatf("locked mem read mismatch at TLUL addr %0h in OwnerSwCfg",
-        //             addr))
+        `DV_CHECK_EQ(item.d_data, 0,
+                     $sformatf("locked mem read mismatch at TLUL addr %0h in OwnerSwCfg", addr))
         return 0;
       end
     end

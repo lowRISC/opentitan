@@ -133,8 +133,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
           uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
 
           // random issue reset, OTP content should not be cleared
-          if ($urandom_range(0, 1)) dut_init();
-        
+          if ($urandom_range(0, 9) == 9) dut_init();
+
           // tlul error rsp is checked in scoreboard
           tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_rsp(0));
         end
