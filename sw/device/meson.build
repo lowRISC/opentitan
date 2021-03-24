@@ -62,6 +62,29 @@ make_otp_img_depend_files = [
   meson.source_root() / 'util/design/gen-otp-img.py',
 ]
 
+# Generates a scrambled version of a ROM image from an ELF
+#
+# TODO: This is currently top_earlgrey-specific. That's fine for now, because
+#       top_earlgrey is the only top-level with a rom_ctrl block, but we'll
+#       need to make this more generic if we support more top-levels.
+scramble_image_hjson = [
+  meson.source_root() / 'hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson'
+]
+scramble_image_outputs = [
+  '@BASENAME@.scr.40.vmem',
+]
+scramble_image_command = [
+    prog_python,
+    meson.source_root() / 'hw/ip/rom_ctrl/util/scramble_image.py',
+    scramble_image_hjson,
+    '@INPUT@',
+    '@OUTPUT@',
+]
+scramble_image_depend_files = [
+    meson.source_root() / 'hw/ip/rom_ctrl/util/scramble_image.py',
+    scramble_image_hjson
+]
+
 subdir('boot_rom')
 subdir('otp_img')
 subdir('silicon_creator')
