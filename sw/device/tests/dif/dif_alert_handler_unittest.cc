@@ -213,7 +213,7 @@ TEST_F(ConfigTest, ClassInit) {
   // Unfortunately, we can't use EXPECT_MASK for these reads and writes,
   // since there are not sequenced exactly.
   EXPECT_READ32(ALERT_HANDLER_ALERT_EN_REG_OFFSET, 0);
-  EXPECT_READ32(ALERT_HANDLER_ALERT_CLASS_REG_OFFSET, kAllOnes);
+  EXPECT_READ32(ALERT_HANDLER_ALERT_CLASS_0_REG_OFFSET, kAllOnes);
 
   EXPECT_WRITE32(ALERT_HANDLER_ALERT_EN_REG_OFFSET, {
                                                         {1, true},
@@ -225,7 +225,7 @@ TEST_F(ConfigTest, ClassInit) {
     reg_a =
         bitfield_field32_write(reg_a, {.mask = 0b11, .index = alert * 2}, 0b00);
   }
-  EXPECT_WRITE32(ALERT_HANDLER_ALERT_CLASS_REG_OFFSET, reg_a);
+  EXPECT_WRITE32(ALERT_HANDLER_ALERT_CLASS_0_REG_OFFSET, reg_a);
 
   EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_EN_REG_OFFSET, 0);
   EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CLASS_REG_OFFSET, kAllOnes);
@@ -261,7 +261,7 @@ TEST_F(ConfigTest, ClassInit) {
   EXPECT_WRITE32(ALERT_HANDLER_CLASSA_PHASE2_CYC_REG_OFFSET, 15000);
 
   EXPECT_READ32(ALERT_HANDLER_ALERT_EN_REG_OFFSET, 0);
-  EXPECT_READ32(ALERT_HANDLER_ALERT_CLASS_REG_OFFSET, kAllOnes);
+  EXPECT_READ32(ALERT_HANDLER_ALERT_CLASS_0_REG_OFFSET, kAllOnes);
 
   EXPECT_WRITE32(ALERT_HANDLER_ALERT_EN_REG_OFFSET, {
                                                         {9, true},
@@ -273,7 +273,7 @@ TEST_F(ConfigTest, ClassInit) {
     reg_b =
         bitfield_field32_write(reg_b, {.mask = 0b11, .index = alert * 2}, 0b01);
   }
-  EXPECT_WRITE32(ALERT_HANDLER_ALERT_CLASS_REG_OFFSET, reg_b);
+  EXPECT_WRITE32(ALERT_HANDLER_ALERT_CLASS_0_REG_OFFSET, reg_b);
 
   EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_EN_REG_OFFSET, 0);
   EXPECT_READ32(ALERT_HANDLER_LOC_ALERT_CLASS_REG_OFFSET, kAllOnes);
