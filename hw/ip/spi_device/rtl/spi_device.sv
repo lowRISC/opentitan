@@ -697,11 +697,7 @@ module spi_device (
     .cmd_config_idx_o ()
   );
 
-  spi_readcmd #(
-    .SramAw(SramAw),
-    .SramDw(SramDw)
-    // BaseAddr / Depth use spi_device_pkg parameters
-  ) u_readcmd (
+  spi_readcmd u_readcmd (
     .clk_i  (clk_spi_in_buf),
     .rst_ni (rst_spi_n),
 
