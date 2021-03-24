@@ -58,9 +58,9 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   `ASSERT_INIT(GenRemBytes_A, GenRem % 8 == 0)
 
   // Number of kmac transactions required
-  localparam int AdvRounds = AdvDataWidth / KmacDataIfWidth + (AdvRem > 0);
-  localparam int IdRounds  = IdDataWidth  / KmacDataIfWidth + (IdRem > 0);
-  localparam int GenRounds = GenDataWidth / KmacDataIfWidth + (GenRem > 0);
+  localparam int AdvRounds = (AdvDataWidth + KmacDataIfWidth - 1) / KmacDataIfWidth;
+  localparam int IdRounds  = (IdDataWidth + KmacDataIfWidth - 1) / KmacDataIfWidth;
+  localparam int GenRounds = (GenDataWidth + KmacDataIfWidth - 1) / KmacDataIfWidth;
   localparam int MaxRounds = KDFMaxWidth  / KmacDataIfWidth;
 
   // Total transmitted bits, this is the same as *DataWidth if it all
