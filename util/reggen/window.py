@@ -19,6 +19,10 @@ REQUIRED_FIELDS = {
 # TODO potential for additional optional to give more type info?
 # eg sram-hw-port: "none", "sync", "async"
 OPTIONAL_FIELDS = {
+    'data-intg-passthru': [
+        's', "True if the window has data integrity pass through. "
+        "Defaults to false if not present."
+    ],
     'byte-write': [
         's', "True if byte writes are supported. "
         "Defaults to false if not present."
@@ -47,6 +51,7 @@ class Window:
                  desc: str,
                  unusual: bool,
                  byte_write: bool,
+                 data_intg_passthru: bool,
                  validbits: int,
                  items: int,
                  size_in_bytes: int,
@@ -59,6 +64,7 @@ class Window:
         self.desc = desc
         self.unusual = unusual
         self.byte_write = byte_write
+        self.data_intg_passthru = data_intg_passthru
         self.validbits = validbits
         self.items = items
         self.size_in_bytes = size_in_bytes
@@ -89,6 +95,8 @@ class Window:
                              'unusual field for ' + wind_desc)
         byte_write = check_bool(rd.get('byte-write', False),
                                 'byte-write field for ' + wind_desc)
+        data_intg_passthru = check_bool(rd.get('data-intg-passthru', False),
+                                        'data-intg-passthru field for ' + wind_desc)
 
         validbits = check_int(rd.get('validbits', reg_width),
                               'validbits field for ' + wind_desc)
@@ -140,7 +148,7 @@ class Window:
                              'to do this, set the "unusual" flag.'
                              .format(wind_desc, swaccess.key))
 
-        return Window(name, desc, unusual, byte_write,
+        return Window(name, desc, unusual, byte_write, data_intg_passthru,
                       validbits, items, size_in_bytes, offset, swaccess)
 
     def next_offset(self, addrsep: int) -> int:

@@ -36,6 +36,10 @@
                 rb.windows[0].offset != 0 or
                 rb.windows[0].size_in_bytes != (1 << addr_width)))
 
+
+  common_data_intg_gen = 0 if rb.has_data_intg_passthru else 1
+  adapt_data_intg_gen = 1 if rb.has_data_intg_passthru else 0
+  assert common_data_intg_gen != adapt_data_intg_gen
 %>
 `include "prim_assert.sv"
 
@@ -115,7 +119,10 @@ module ${mod_name} (
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
-  tlul_rsp_intg_gen u_rsp_intg_gen (
+  tlul_rsp_intg_gen #(
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(${common_data_intg_gen})
+  ) u_rsp_intg_gen (
     .tl_i(tl_o_pre),
     .tl_o
   );
@@ -144,7 +151,19 @@ module ${mod_name} (
   % endif
   % for i,t in enumerate(rb.windows):
   assign tl_win_o[${i}] = tl_socket_h2d[${i}];
+    % if common_data_intg_gen == 0 and rb.windows[i].data_intg_passthru == False:
+    ## If there are multiple windows, and not every window has data integrity
+    ## passthrough, we must generate data integrity for it here.
+  tlul_rsp_intg_gen #(
+    .EnableRspIntgGen(0),
+    .EnableDataIntgGen(1)
+  ) u_win${i}_data_intg_gen (
+    .tl_i(tl_win_i[${i}]),
+    .tl_o(tl_socket_d2h[${i}])
+  );
+    % else:
   assign tl_socket_d2h[${i}] = tl_win_i[${i}];
+    % endif
   % endfor
 
   // Create Socket_1n
@@ -204,7 +223,8 @@ module ${mod_name} (
 
   tlul_adapter_reg #(
     .RegAw(AW),
-    .RegDw(DW)
+    .RegDw(DW),
+    .EnableDataIntgGen(${adapt_data_intg_gen})
   ) u_reg_if (
     .clk_i,
     .rst_ni,

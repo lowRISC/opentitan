@@ -30,6 +30,9 @@ class RegBlock:
         self.registers = []  # type: List[Register]
         self.windows = []  # type: List[Window]
 
+        # Boolean indication whether ANY window in regblock has data integrity passthrough
+        self.has_data_intg_passthru = False
+
         # A list of all registers, expanding multiregs, ordered by offset
         self.flat_regs = []  # type: List[Register]
 
@@ -244,6 +247,8 @@ class RegBlock:
         self.entries.append(window)
         assert self.offset <= window.offset
         self.offset = window.next_offset(self._addrsep)
+
+        self.has_data_intg_passthru |= window.data_intg_passthru
 
     def validate(self) -> None:
         '''Run this to check consistency after all registers have been added'''
