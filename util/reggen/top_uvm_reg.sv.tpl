@@ -36,6 +36,7 @@
       esc_if_name = block.name.lower() + if_suffix
       if_desc = '' if if_name is None else '; interface {}'.format(if_name)
       reg_block_path = 'u_reg' + if_suffix
+      reg_block_path = reg_block_path if block.hier_path is None else block.hier_path + "." + reg_block_path
 %>\
 // Block: ${block.name.lower()}${if_desc}
 ${make_ral_pkg(dv_base_prefix, top.regwidth, reg_block_path, rb, esc_if_name)}

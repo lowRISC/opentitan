@@ -169,8 +169,16 @@ class csr_write_seq extends csr_base_seq;
 
     // check all hdl paths are valid
     if (!test_backdoor_path_done) begin
+      bkdr_reg_path_e path_kind;
       uvm_reg_mem_hdl_paths_seq hdl_check_seq;
       hdl_check_seq = uvm_reg_mem_hdl_paths_seq::type_id::create("hdl_check_seq");
+
+      // add all the supported path types
+      do begin
+        hdl_check_seq.abstractions.push_back(path_kind.name);
+        path_kind = path_kind.next;
+      end while (path_kind != path_kind.first);
+
       foreach (models[i]) begin
         hdl_check_seq.model = models[i];
         hdl_check_seq.start(null);
