@@ -11,7 +11,7 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:ip:otp_ctrl_pkg
-      - lowrisc:ip:flash_ctrl_pkg
+      - lowrisc:ip_interfaces:flash_ctrl_pkg
     files:
       - rtl/keymgr_reg_pkg.sv
       - rtl/keymgr_pkg.sv

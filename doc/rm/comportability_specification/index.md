@@ -441,7 +441,7 @@ The hardware does not have the ability to clear the latched interrupt state, onl
 
 Interrupts sent to the processor are handled by its interrupt controller.
 Within that logic there may be another level of control for enabling, prioritizing, and enumeration.
-Specification of this control is defined in the [interrupt handler document]({{< relref "/hw/ip/rv_plic/doc" >}}).
+Specification of this control is defined in the [interrupt handler document]({{< relref "/hw/top_earlgrey/ip/rv_plic/doc" >}}).
 
 ## Alert Handling
 

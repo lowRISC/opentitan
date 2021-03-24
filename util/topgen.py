@@ -30,6 +30,7 @@ from topgen import intermodule as im
 from topgen import lib as lib
 from topgen import merge_top, search_ips, validate_top
 from topgen.c import TopGenC
+from ipgen import IpConfig, IpTemplate, IpBlockRenderer, IpDescriptionOnlyRenderer
 
 # Common header for generated files
 warnhdr = '''//
@@ -45,6 +46,27 @@ SRCTREE_TOP = Path(__file__).parent.parent.resolve()
 
 TOPGEN_TEMPLATE_PATH = Path(__file__).parent / 'topgen/templates'
 
+# List of IP templates which use ipgen to instantiate the template.
+# TODO: Remove once all IP templates use ipgen.
+IPS_USING_IPGEN = [
+    'alert_handler',
+    'clkmgr',
+    'flash_ctrl',
+    'pinmux',
+    'pwrmgr',
+    'rstmgr',
+    'rv_plic',
+]
+
+def ipgen_render(template_name: str, topname: str, params: Dict, out_path: Path):
+    """ Render an IP template for a specific toplevel using ipgen. """
+    instance_name = f'top_{topname}_{template_name}'
+    ip_template = IpTemplate.from_template_path(SRCTREE_TOP /
+        'hw/ip_templates' / template_name)
+    ip_config = IpConfig(ip_template.params, instance_name, params)
+
+    IpBlockRenderer(ip_template, ip_config).render(out_path / 'ip' /
+        template_name, overwrite_output_dir=True)
 
 def generate_top(top, name_to_block, tpl_filename, **kwargs):
     top_tpl = Template(filename=tpl_filename)
@@ -112,6 +134,8 @@ def generate_xbars(top, out_path):
 
 
 def generate_alert_handler(top, out_path):
+    topname = top["name"]
+
     # default values
     esc_cnt_dw = 32
     accu_cnt_dw = 16
@@ -119,7 +143,6 @@ def generate_alert_handler(top, out_path):
     # leave this constant
     n_classes = 4
 
-    topname = top["name"]
 
     # check if there are any params to be passed through reggen and placed into
     # the generated package
@@ -147,7 +170,7 @@ def generate_alert_handler(top, out_path):
     else:
         async_on = ""
         for alert in top['alert']:
-            for k in range(alert['width']):
+            for _ in range(alert['width']):
                 async_on = str(alert['async']) + async_on
         async_on = ("%d'b" % n_alerts) + async_on
 
@@ -156,120 +179,46 @@ def generate_alert_handler(top, out_path):
     log.info("EscCntDw  = %d" % esc_cnt_dw)
     log.info("AccuCntDw = %d" % accu_cnt_dw)
     log.info("AsyncOn   = %s" % async_on)
+    params = {
+        'n_alerts': n_alerts,
+        'esc_cnt_dw': esc_cnt_dw,
+        'accu_cnt_dw': accu_cnt_dw,
+        'async_on': async_on,
+        'n_classes': n_classes,
+    }
 
-    # Define target path
-    rtl_path = out_path / 'ip/alert_handler/rtl/autogen'
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    doc_path = out_path / 'ip/alert_handler/data/autogen'
-    doc_path.mkdir(parents=True, exist_ok=True)
+    template_name = 'alert_handler'
+    instance_name = f'top_{topname}_{template_name}'
+    ip_template = IpTemplate.from_template_path(SRCTREE_TOP /
+        'hw/ip_templates' / template_name)
+    ip_config = IpConfig(ip_template.params, instance_name, params)
 
-    # Generating IP top module script is not generalized yet.
-    # So, topgen reads template files from alert_handler directory directly.
-    tpl_path = Path(__file__).resolve().parent / '../hw/ip/alert_handler/data'
-    hjson_tpl_path = tpl_path / 'alert_handler.hjson.tpl'
-
-    # Generate Register Package and RTLs
-    out = StringIO()
-    with hjson_tpl_path.open(mode='r', encoding='UTF-8') as fin:
-        hjson_tpl = Template(fin.read())
-        try:
-            out = hjson_tpl.render(n_alerts=n_alerts,
-                                   esc_cnt_dw=esc_cnt_dw,
-                                   accu_cnt_dw=accu_cnt_dw,
-                                   async_on=async_on,
-                                   n_classes=n_classes)
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-        log.info("alert_handler hjson: %s" % out)
-
-    if out == "":
-        log.error("Cannot generate alert_handler config file")
-        return
-
-    hjson_gen_path = doc_path / "alert_handler.hjson"
-    gencmd = (
-        "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --alert-handler-only "
-        "-o hw/top_{topname}/\n\n".format(topname=topname))
-    with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
-        fout.write(genhdr + gencmd + out)
-
-    # Generate register RTLs (currently using shell execute)
-    # TODO: More secure way to gneerate RTL
-    gen_rtl.gen_rtl(IpBlock.from_text(out, [], str(hjson_gen_path)),
-                    str(rtl_path))
+    IpBlockRenderer(ip_template, ip_config).render(out_path / 'ip' /
+        template_name, overwrite_output_dir=True)
 
 
 def generate_plic(top, out_path):
     topname = top["name"]
+    params = {}
+
     # Count number of interrupts
     # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
     # So, total number of interrupts are the number of entries in the list + 1
-    src = sum([x["width"] if "width" in x else 1
-               for x in top["interrupt"]]) + 1
+    params['src'] = sum([x["width"] if "width" in x else 1
+                    for x in top["interrupt"]]) + 1
 
     # Target and priority: Currently fixed
-    target = int(top["num_cores"], 0) if "num_cores" in top else 1
-    prio = 3
+    params['target'] = int(top["num_cores"], 0) if "num_cores" in top else 1
+    params['prio'] = 3
 
-    # Define target path
-    #   rtl: rv_plic.sv & rv_plic_reg_pkg.sv & rv_plic_reg_top.sv
-    #   data: rv_plic.hjson
-    rtl_path = out_path / 'ip/rv_plic/rtl/autogen'
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    doc_path = out_path / 'ip/rv_plic/data/autogen'
-    doc_path.mkdir(parents=True, exist_ok=True)
-    hjson_path = out_path / 'ip/rv_plic/data/autogen'
-    hjson_path.mkdir(parents=True, exist_ok=True)
+    template_name = 'rv_plic'
+    instance_name = f'top_{topname}_{template_name}'
+    ip_template = IpTemplate.from_template_path(SRCTREE_TOP /
+        'hw/ip_templates' / template_name)
+    ip_config = IpConfig(ip_template.params, instance_name, params)
 
-    # Generating IP top module script is not generalized yet.
-    # So, topgen reads template files from rv_plic directory directly.
-    # Next, if the ip top gen tool is placed in util/ we can import the library.
-    tpl_path = Path(__file__).resolve().parent / '../hw/ip/rv_plic/data'
-    hjson_tpl_path = tpl_path / 'rv_plic.hjson.tpl'
-    rtl_tpl_path = tpl_path / 'rv_plic.sv.tpl'
-
-    # Generate Register Package and RTLs
-    out = StringIO()
-    with hjson_tpl_path.open(mode='r', encoding='UTF-8') as fin:
-        hjson_tpl = Template(fin.read())
-        try:
-            out = hjson_tpl.render(src=src, target=target, prio=prio)
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-        log.info("RV_PLIC hjson: %s" % out)
-
-    if out == "":
-        log.error("Cannot generate interrupt controller config file")
-        return
-
-    hjson_gen_path = hjson_path / "rv_plic.hjson"
-    gencmd = (
-        "// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson --plic-only "
-        "-o hw/top_{topname}/\n\n".format(topname=topname))
-    with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
-        fout.write(genhdr + gencmd + out)
-
-    # Generate register RTLs (currently using shell execute)
-    # TODO: More secure way to generate RTL
-    gen_rtl.gen_rtl(IpBlock.from_text(out, [], str(hjson_gen_path)),
-                    str(rtl_path))
-
-    # Generate RV_PLIC Top Module
-    with rtl_tpl_path.open(mode='r', encoding='UTF-8') as fin:
-        rtl_tpl = Template(fin.read())
-        try:
-            out = rtl_tpl.render(src=src, target=target, prio=prio)
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-        log.info("RV_PLIC RTL: %s" % out)
-
-    if out == "":
-        log.error("Cannot generate interrupt controller RTL")
-        return
-
-    rtl_gen_path = rtl_path / "rv_plic.sv"
-    with rtl_gen_path.open(mode='w', encoding='UTF-8') as fout:
-        fout.write(genhdr + gencmd + out)
+    IpBlockRenderer(ip_template, ip_config).render(out_path / 'ip' /
+        template_name, overwrite_output_dir=True)
 
 
 # returns the dedicated pin positions of a particular module
@@ -408,88 +357,38 @@ def generate_pinmux(top, out_path):
     log.info("usb_start_pos:    %d" % usb_start_pos)
     log.info("n_usb_pins:       %d" % n_usb_pins)
 
-    # Target path
-    #   rtl: pinmux_reg_pkg.sv & pinmux_reg_top.sv
-    #   data: pinmux.hjson
-    rtl_path = out_path / 'ip/pinmux/rtl/autogen'
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    data_path = out_path / 'ip/pinmux/data/autogen'
-    data_path.mkdir(parents=True, exist_ok=True)
 
-    # Template path
-    tpl_path = Path(
-        __file__).resolve().parent / '../hw/ip/pinmux/data/pinmux.hjson.tpl'
+    # TODO: pass in information about always-on peripherals
+    # TODO: pass in information on which DIOs can be selected
+    # as wakeup signals
+    # TODO: pass in signal names such that we can introduce
+    # named enums for select signals
+    params = {
+        'n_mio_periph_in': n_mio_periph_in,
+        'n_mio_periph_out': n_mio_periph_out,
+        'n_mio_pads': n_mio_pads,
+        # each DIO has in, out and oe wires
+        # some of these have to be tied off in the
+        # top, depending on the type.
+        'n_dio_periph_in': n_dio_pads,
+        'n_dio_periph_out': n_dio_pads,
+        'n_dio_pads': n_dio_pads,
+        'attr_dw': attr_dw,
+        'n_wkup_detect': num_wkup_detect,
+        'wkup_cnt_width': wkup_cnt_width,
+        'usb_start_pos': usb_start_pos,
+        'n_usb_pins': n_usb_pins,
+        'usb_dp_sel': usb_dp_sel,
+        'usb_dn_sel': usb_dn_sel,
+        'usb_dp_pull_sel': usb_dp_pull_sel,
+        'usb_dn_pull_sel': usb_dn_pull_sel,
+    }
 
-    # Generate register package and RTLs
-    gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
-              "-o hw/top_{topname}/\n\n".format(topname=topname))
-
-    hjson_gen_path = data_path / "pinmux.hjson"
-
-    out = StringIO()
-    with tpl_path.open(mode='r', encoding='UTF-8') as fin:
-        hjson_tpl = Template(fin.read())
-        try:
-            # TODO: pass in information about always-on peripherals
-            # TODO: pass in information on which DIOs can be selected
-            # as wakeup signals
-            # TODO: pass in signal names such that we can introduce
-            # named enums for select signals
-            out = hjson_tpl.render(
-                n_mio_periph_in=n_mio_periph_in,
-                n_mio_periph_out=n_mio_periph_out,
-                n_mio_pads=n_mio_pads,
-                # each DIO has in, out and oe wires
-                # some of these have to be tied off in the
-                # top, depending on the type.
-                n_dio_periph_in=n_dio_pads,
-                n_dio_periph_out=n_dio_pads,
-                n_dio_pads=n_dio_pads,
-                attr_dw=attr_dw,
-                n_wkup_detect=num_wkup_detect,
-                wkup_cnt_width=wkup_cnt_width,
-                usb_start_pos=usb_start_pos,
-                n_usb_pins=n_usb_pins,
-                usb_dp_sel=usb_dp_sel,
-                usb_dn_sel=usb_dn_sel,
-                usb_dp_pull_sel=usb_dp_pull_sel,
-                usb_dn_pull_sel=usb_dn_pull_sel
-            )
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-        log.info("PINMUX HJSON: %s" % out)
-
-    if out == "":
-        log.error("Cannot generate pinmux HJSON")
-        return
-
-    with hjson_gen_path.open(mode='w', encoding='UTF-8') as fout:
-        fout.write(genhdr + gencmd + out)
-
-    gen_rtl.gen_rtl(IpBlock.from_text(out, [], str(hjson_gen_path)),
-                    str(rtl_path))
+    ipgen_render('pinmux', topname, params, out_path)
 
 
-def generate_clkmgr(top, cfg_path, out_path):
-
-    # Target paths
-    rtl_path = out_path / 'ip/clkmgr/rtl/autogen'
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    data_path = out_path / 'ip/clkmgr/data/autogen'
-    data_path.mkdir(parents=True, exist_ok=True)
-
-    # Template paths
-    hjson_tpl = cfg_path / '../ip/clkmgr/data/clkmgr.hjson.tpl'
-    rtl_tpl = cfg_path / '../ip/clkmgr/data/clkmgr.sv.tpl'
-    pkg_tpl = cfg_path / '../ip/clkmgr/data/clkmgr_pkg.sv.tpl'
-
-    hjson_out = data_path / 'clkmgr.hjson'
-    rtl_out = rtl_path / 'clkmgr.sv'
-    pkg_out = rtl_path / 'clkmgr_pkg.sv'
-
-    tpls = [hjson_tpl, rtl_tpl, pkg_tpl]
-    outputs = [hjson_out, rtl_out, pkg_out]
-    names = ['clkmgr.hjson', 'clkmgr.sv', 'clkmgr_pkg.sv']
+def generate_clkmgr(top, out_path):
+    topname = top['name']
 
     # clock classification
     grps = top['clocks']['groups']
@@ -543,36 +442,23 @@ def generate_clkmgr(top, cfg_path, out_path):
         hint_clks[clk]['name'] = (clk.rsplit('_', 1)[-1])
         hint_clks[clk]['src'] = src
 
-    for idx, tpl in enumerate(tpls):
-        out = ""
-        with tpl.open(mode='r', encoding='UTF-8') as fin:
-            tpl = Template(fin.read())
-            try:
-                out = tpl.render(cfg=top,
-                                 div_srcs=top['clocks']['derived_srcs'],
-                                 rg_srcs=rg_srcs,
-                                 ft_clks=ft_clks,
-                                 rg_clks=rg_clks,
-                                 sw_clks=sw_clks,
-                                 export_clks=top['exported_clks'],
-                                 hint_clks=hint_clks)
-            except:  # noqa: E722
-                log.error(exceptions.text_error_template().render())
+    params = {
+        'cfg': top,
+        'div_srcs': top['clocks']['derived_srcs'],
+        'rg_srcs': rg_srcs,
+        'ft_clks': ft_clks,
+        'rg_clks': rg_clks,
+        'sw_clks': sw_clks,
+        'export_clks': top['exported_clks'],
+        'hint_clks': hint_clks,
+    }
 
-        if out == "":
-            log.error("Cannot generate {}".format(names[idx]))
-            return
-
-        with outputs[idx].open(mode='w', encoding='UTF-8') as fout:
-            fout.write(genhdr + out)
-
-    # Generate reg files
-    gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_out), []), str(rtl_path))
-
+    ipgen_render('clkmgr', topname, params, out_path)
 
 # generate pwrmgr
 def generate_pwrmgr(top, out_path):
     log.info("Generating pwrmgr")
+    topname = top["name"]
 
     # Count number of wakeups
     n_wkups = len(top["wakeups"])
@@ -587,69 +473,24 @@ def generate_pwrmgr(top, out_path):
         log.warning(
             "The design has no wakeup sources. Low power not supported")
 
-    # Define target path
-    rtl_path = out_path / 'ip/pwrmgr/rtl/autogen'
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    doc_path = out_path / 'ip/pwrmgr/data/autogen'
-    doc_path.mkdir(parents=True, exist_ok=True)
-
-    # So, read template files from ip directory.
-    tpl_path = Path(__file__).resolve().parent / '../hw/ip/pwrmgr/data'
-    hjson_tpl_path = tpl_path / 'pwrmgr.hjson.tpl'
-
-    # Render and write out hjson
-    out = StringIO()
-    with hjson_tpl_path.open(mode='r', encoding='UTF-8') as fin:
-        hjson_tpl = Template(fin.read())
-        try:
-            out = hjson_tpl.render(NumWkups=n_wkups,
-                                   Wkups=top["wakeups"],
-                                   NumRstReqs=n_rstreqs)
-
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-        log.info("pwrmgr hjson: %s" % out)
-
-    if out == "":
-        log.error("Cannot generate pwrmgr config file")
-        return
-
-    hjson_path = doc_path / "pwrmgr.hjson"
-    with hjson_path.open(mode='w', encoding='UTF-8') as fout:
-        fout.write(genhdr + out)
-
-    # Generate reg files
-    gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []), str(rtl_path))
+    params = {
+        'NumWkups': n_wkups,
+        'Wkups': top["wakeups"],
+        'NumRstReqs': n_rstreqs,
+    }
+    ipgen_render('pwrmgr', topname, params, out_path)
 
 
 # generate rstmgr
 def generate_rstmgr(topcfg, out_path):
     log.info("Generating rstmgr")
-
-    # Define target path
-    rtl_path = out_path / 'ip/rstmgr/rtl/autogen'
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    doc_path = out_path / 'ip/rstmgr/data/autogen'
-    doc_path.mkdir(parents=True, exist_ok=True)
-    tpl_path = Path(__file__).resolve().parent / '../hw/ip/rstmgr/data'
-
-    # Read template files from ip directory.
-    tpls = []
-    outputs = []
-    names = ['rstmgr.hjson', 'rstmgr.sv', 'rstmgr_pkg.sv']
-
-    for x in names:
-        tpls.append(tpl_path / Path(x + ".tpl"))
-        if "hjson" in x:
-            outputs.append(doc_path / Path(x))
-        else:
-            outputs.append(rtl_path / Path(x))
+    topname = topcfg["name"]
 
     # Parameters needed for generation
     clks = []
-    output_rsts = OrderedDict()
-    sw_rsts = OrderedDict()
-    leaf_rsts = OrderedDict()
+    output_rsts = {}
+    sw_rsts = {}
+    leaf_rsts = {}
 
     # unique clocks
     for rst in topcfg["resets"]["nodes"]:
@@ -677,57 +518,23 @@ def generate_rstmgr(topcfg, out_path):
     # Number of reset requests
     n_rstreqs = len(topcfg["reset_requests"])
 
-    # Generate templated files
-    for idx, t in enumerate(tpls):
-        out = StringIO()
-        with t.open(mode='r', encoding='UTF-8') as fin:
-            tpl = Template(fin.read())
-            try:
-                out = tpl.render(clks=clks,
-                                 power_domains=topcfg['power']['domains'],
-                                 num_rstreqs=n_rstreqs,
-                                 sw_rsts=sw_rsts,
-                                 output_rsts=output_rsts,
-                                 leaf_rsts=leaf_rsts,
-                                 export_rsts=topcfg['exported_rsts'])
+    params = {
+        'clks': clks,
+        'power_domains': topcfg['power']['domains'],
+        'num_rstreqs': n_rstreqs,
+        'sw_rsts': sw_rsts,
+        'output_rsts': output_rsts,
+        'leaf_rsts': leaf_rsts,
+        'export_rsts': topcfg['exported_rsts'],
+    }
 
-            except:  # noqa: E722
-                log.error(exceptions.text_error_template().render())
-
-        if out == "":
-            log.error("Cannot generate {}".format(names[idx]))
-            return
-
-        with outputs[idx].open(mode='w', encoding='UTF-8') as fout:
-            fout.write(genhdr + out)
-
-    # Generate reg files
-    hjson_path = outputs[0]
-    gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []), str(rtl_path))
+    ipgen_render('rstmgr', topname, params, out_path)
 
 
 # generate flash
 def generate_flash(topcfg, out_path):
     log.info("Generating flash")
-
-    # Define target path
-    rtl_path = out_path / 'ip/flash_ctrl/rtl/autogen'
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    doc_path = out_path / 'ip/flash_ctrl/data/autogen'
-    doc_path.mkdir(parents=True, exist_ok=True)
-    tpl_path = Path(__file__).resolve().parent / '../hw/ip/flash_ctrl/data'
-
-    # Read template files from ip directory.
-    tpls = []
-    outputs = []
-    names = ['flash_ctrl.hjson', 'flash_ctrl.sv', 'flash_ctrl_pkg.sv']
-
-    for x in names:
-        tpls.append(tpl_path / Path(x + ".tpl"))
-        if "hjson" in x:
-            outputs.append(doc_path / Path(x))
-        else:
-            outputs.append(rtl_path / Path(x))
+    topname = topcfg['name']
 
     # Parameters needed for generation
     flash_mems = [mem for mem in topcfg['memory'] if mem['type'] == 'eflash']
@@ -735,29 +542,11 @@ def generate_flash(topcfg, out_path):
         log.error("This design does not currently support multiple flashes")
         return
 
-    cfg = flash_mems[0]
+    params = {
+        'cfg': flash_mems[0]
+    }
 
-    # Generate templated files
-    for idx, t in enumerate(tpls):
-        out = StringIO()
-        with t.open(mode='r', encoding='UTF-8') as fin:
-            tpl = Template(fin.read())
-            try:
-                out = tpl.render(cfg=cfg)
-
-            except:  # noqa: E722
-                log.error(exceptions.text_error_template().render())
-
-        if out == "":
-            log.error("Cannot generate {}".format(names[idx]))
-            return
-
-        with outputs[idx].open(mode='w', encoding='UTF-8') as fout:
-            fout.write(genhdr + out)
-
-    # Generate reg files
-    hjson_path = outputs[0]
-    gen_rtl.gen_rtl(IpBlock.from_path(str(hjson_path), []), str(rtl_path))
+    ipgen_render('flash_ctrl', topname, params, out_path)
 
 
 def generate_top_only(top_only_list, out_path, topname):
@@ -831,7 +620,6 @@ def generate_top_ral(top: Dict[str, object],
     # generate the top ral model with template
     return gen_dv.gen_top_dv(chip, dv_base_prefix, str(out_path))
 
-
 def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     # Create generated list
     # These modules are generated through topgen
@@ -865,7 +653,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     # ip.hjson information.  All the information is embedded within
     # the top hjson file
     amend_clocks(topcfg)
-    generate_clkmgr(topcfg, cfg_path, out_path)
+    generate_clkmgr(topcfg, out_path)
 
     # It may require two passes to check if the module is needed.
     # TODO: first run of topgen will fail due to the absent of rv_plic.
@@ -878,12 +666,15 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
         # the output path.  For modules not generated before, it may exist in a
         # pre-defined area already.
         log.info("Appending {}".format(ip))
-        if ip == 'clkmgr' or (pass_idx > 0):
-            ip_hjson = Path(out_path) / "ip/{}/data/autogen/{}.hjson".format(
-                ip, ip)
+        if ip in IPS_USING_IPGEN:
+            desc_file_relpath = 'data'
         else:
-            ip_hjson = hjson_dir.parent / "ip/{}/data/autogen/{}.hjson".format(
-                ip, ip)
+            desc_file_relpath = 'data/autogen'
+
+        if ip == 'clkmgr' or (pass_idx > 0):
+            ip_hjson = Path(out_path) / "ip" / ip / desc_file_relpath / f"{ip}.hjson"
+        else:
+            ip_hjson = hjson_dir.parent / "ip" / ip / desc_file_relpath / f"{ip}.hjson"
         ips.append(ip_hjson)
 
     for ip in top_only_list:
@@ -894,26 +685,46 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     # load Hjson and pass validate from reggen
     try:
         ip_objs = []
-        for x in ips:
+        for ip_desc_file in ips:
+            ip_name = ip_desc_file.stem
             # Skip if it is not in the module list
-            if x.stem not in [ip["type"] for ip in topcfg["module"]]:
+            if ip_name not in [ip["type"] for ip in topcfg["module"]]:
                 log.info("Skip module %s as it isn't in the top module list" %
-                         x.stem)
+                         ip_name)
                 continue
 
             # The auto-generated hjson might not yet exist. It will be created
             # later, see generate_{ip_name}() calls below. For the initial
             # validation, use the template in hw/ip/{ip_name}/data .
-            if x.stem in generated_list and not x.is_file():
-                hjson_file = ip_dir / "{}/data/{}.hjson".format(x.stem, x.stem)
-                log.info(
-                    "Auto-generated hjson %s does not yet exist. " % str(x) +
-                    "Falling back to template %s for initial validation." %
-                    str(hjson_file))
-            else:
-                hjson_file = x
+            # TODO: All of this is a rather ugly hack that we need to get rid
+            # of as soon as we don't arbitrarily template IP description Hjson
+            # files any more.
+            if ip_name in generated_list and not ip_desc_file.is_file():
+                if ip_name in IPS_USING_IPGEN:
+                    log.info(
+                        "To-be-auto-generated Hjson %s does not yet exist. "
+                        "Falling back to the default configuration of template "
+                        "%s for initial validation." %
+                        (ip_desc_file, ip_name))
 
-            ip_objs.append(IpBlock.from_path(str(hjson_file), []))
+                    ip_template = IpTemplate.from_template_path(SRCTREE_TOP / 'hw/ip_templates' / ip_name)
+                    ip_config = IpConfig(ip_template.params, f'top_{topname}_{ip_name}')
+
+                    ip_desc = IpDescriptionOnlyRenderer(ip_template, ip_config).render()
+                    ip_objs.append(IpBlock.from_text(ip_desc, [], 'default description of IP template {}'.format(ip_name)))
+                else:
+                    # TODO: Remove this block as soon as all IP templates use
+                    # ipgen.
+                    template_hjson_file = ip_dir / "{}/data/{}.hjson".format(ip_name, ip_name)
+                    log.info(
+                        "To-be-auto-generated Hjson %s does not yet exist. "
+                        "Falling back to Hjson description file %s shipped "
+                        "with the IP template for initial validation." %
+                        (ip_desc_file, template_hjson_file))
+
+                    ip_objs.append(IpBlock.from_path(str(template_hjson_file), []))
+            else:
+                ip_objs.append(IpBlock.from_path(str(ip_desc_file), []))
 
     except ValueError:
         raise SystemExit(sys.exc_info()[1])

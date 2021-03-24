@@ -1,0 +1,58 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "template_param_list": [
+    {
+      // TODO: This entry needs to go and be replaced with a more fine-grained
+      // parameter. See clkmgr.cfg.example.hjson for an example of the expected
+      // content.
+      "name": "cfg",
+      "desc": "The whole top-level configuration"
+      "type": "object"
+      "default": {}
+    },
+    {
+      "name": "div_srcs",
+      "desc": "TODO"
+      "type": "object"
+      "default": {}
+    },
+    {
+      "name": "rg_srcs",
+      "desc": "TODO"
+      "type": "object"
+      "default": {}
+    },
+    {
+      "name": "ft_clks",
+      "desc": "TODO"
+      "type": "object"
+      "default": {}
+    },
+    {
+      "name": "rg_clks",
+      "desc": "TODO",
+      "type": "object",
+      "default": {}
+    },
+    {
+      "name": "sw_clks",
+      "desc": "TODO",
+      "type": "object",
+      "default": {}
+    },
+    {
+      "name": "export_clks",
+      "desc": "TODO",
+      "type": "object",
+      "default": {}
+    },
+    {
+      "name": "hint_clks",
+      "desc": "TODO"
+      "type": "object"
+      "default": {}
+    },
+  ],
+}

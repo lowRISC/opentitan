@@ -1,0 +1,39 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for alert handler
+
+waive -rules ENUM_RANGE -location {alert_handler_esc_timer.sv} -regexp {state_q} \
+      -comment "State is used to index timeout cycle counts"
+
+waive -rules NOT_READ -location {alert_handler_ping_timer.sv} -regexp {perm_state} \
+      -comment "Upper bits of permuted array are not read"
+
+waive -rules HIER_NET_NOT_READ -location {alert_handler_ping_timer.sv} -regexp {perm_state} \
+      -comment "Upper bits of permuted array are not read"
+
+waive -rules HIER_NET_NOT_READ -location {alert_handler.sv} -regexp {[Nn]et 'tl_[io]\.[ad]_(address|param|user)} \
+      -comment "Register interface doesn't use upper address and param, user filed"
+
+waive -rules INSIDE_OP_CONTEXT -location {prim_esc_sender.sv} -regexp {inside} \
+      -comment "Inside operator is used within SVA"
+
+waive -rules CASE_INC -location {alert_handler_esc_timer.sv} -regexp {'b010} \
+      -comment "Not all case tags are required."
+
+waive -rules CASE_INC -location {alert_handler_ping_timer.sv} -regexp {'b11} \
+      -comment "Not all case tags are required."
+
+waive -rules CASE_INC -location {prim_esc_sender.sv} -regexp {'b111} \
+      -comment "Not all case tags are required."
+
+waive -rules ONE_BIT_VEC -location {prim_lfsr.sv} -regexp {InDw - 1:0} \
+      -comment "Data input may be one bit wide."
+
+waive -rules VAR_INDEX -location {alert_handler_esc_timer.sv} -regexp {phase_cyc_i\[phase_idx\]} \
+      -comment "This indexing expression is correct."
+
+waive -rules VAR_INDEX -location {alert_handler_ping_timer.sv} -regexp {enable_mask\[id_to_ping\]} \
+      -comment "This indexing expression is correct."
+

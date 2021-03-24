@@ -1,0 +1,66 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: flash_ctrl
+
+  // Top level dut name (sv module).
+  dut: flash_ctrl_wrapper
+
+  // Top level testbench name (sv module).
+  tb: tb
+
+  // Simulator used to sign off this block
+  tool: vcs
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:dv:flash_ctrl_sim:0.1
+
+  // Testplan hjson file.
+  testplan: "{proj_root}/hw/ip/flash_ctrl/data/flash_ctrl_testplan.hjson"
+
+  // Import additional common sim cfg files.
+  import_cfgs: [// Project wide common sim cfg file
+                "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
+                // Common CIP test lists
+                "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"],
+
+  // Flash references pwrmgr directly, need to reference the top version
+  overrides: [
+    {
+      name: design_level
+              value: "top"
+    }
+  ]
+
+  // Add additional tops for simulation.
+  sim_tops: ["flash_ctrl_bind"]
+
+  // Default iterations for all tests - each test entry can override this.
+  reseed: 50
+
+  // Default UVM test and seq class name.
+  uvm_test: flash_ctrl_base_test
+  uvm_test_seq: flash_ctrl_base_vseq
+
+  // List of test specifications.
+  tests: [
+    {
+      name: flash_ctrl_smoke
+      uvm_test_seq: flash_ctrl_smoke_vseq
+    }
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: smoke
+      tests: ["flash_ctrl_smoke"]
+    }
+  ]
+}

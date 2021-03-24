@@ -1,0 +1,107 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "alert_handler"
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/enable_reg_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+  entries: [
+    {
+      name: smoke
+      desc: '''
+            - Alert_handler smoke test with one class configured that escalates through all
+              phases after one alert has been triggered
+            - Check interrupt pins, alert cause CSR values, escalation pings, and crashdump_o
+              output values
+            - Support both synchronous and asynchronous settings'''
+      milestone: V1
+      tests: ["alert_handler_smoke"]
+    }
+    {
+      name: esc_accum
+      desc: '''
+            Based on the smoke test, this test will focus on testing the escalation accumulation
+            feature. So all the escalations in the test will be triggered by alert accumulation.'''
+      milestone: V2
+      tests: ["alert_handler_esc_alert_accum"]
+    }
+    {
+      name: esc_timeout
+      desc: '''
+           Based on the smoke test, this test will focus on testing the escalation timeout
+           feature. So all the escalations in the test will be triggered by interrupt timeout.'''
+      milestone: V2
+      tests: ["alert_handler_esc_intr_timeout"]
+    }
+    {
+      name: entropy
+      desc: '''
+            Based on the smoke test, this test enables ping testing, and check if the ping feature
+            correctly pings all devices within certain period of time'''
+      milestone: V2
+      tests: ["alert_handler_entropy"]
+    }
+    {
+      name: sig_int_fail
+      desc: '''
+            This test will randomly inject differential pair failures on alert tx/rx pairs and the
+            escalator tx/rx pairs. Then check if integrity failure alert is triggered and escalated'''
+      milestone: V2
+      tests: ["alert_handler_sig_int_fail"]
+    }
+    {
+      name: ping_corner_cases
+      desc: '''
+            Based on the entropy test, this test will randomly inject ping timeout errors and ping
+            signal integrity errors on alert tx/rx or escalator tx/rx pairs.
+            Once a ping request is detected, the sequence will randomly execute one of the three
+            tasks:
+            - Interrupt the ping by a reset
+            - Inject alerts without any delay. This task attempts to hit the corner case where
+              esc ping is interrupted by real esc signal
+            - Let the ping response finish without any interruption. This taks attempts to hit the
+              ping timeout and ping signal integrity fail corner case
+            Then the sequence will read and check all the alert and esc status registers. Then
+            clear the interrupts.
+            Because alert_handler module's ping interval default value is relative long for
+            simulation, this test shortens this interval in order to hit all the corner cases in
+            a reasonable amount of run time. This test also disables ping related functional
+            coverage to ensure the original LFSR design is able to reach all the alerts and
+            escalators'''
+      milestone: V2
+      tests: ["alert_handler_ping_corner_cases"]
+    }
+    {
+      name: clk_skew
+      desc: '''
+            This test will randomly inject clock skew within the differential pairs. Then check no
+            alert is raised'''
+      milestone: V2
+      tests: ["alert_handler_smoke"]
+    }
+    {
+      name: random_alerts
+      desc: "Input random alerts and randomly write phase cycles"
+      milestone: V2
+      tests: ["alert_handler_random_alerts"]
+    }
+    {
+      name: random_classes
+      desc: "Based on random_alerts test, this test will also randomly enable interrupt classes"
+      milestone: V2
+      tests: ["alert_handler_random_classes"]
+    }
+    {
+      name: stress_all
+      desc: '''
+            Combine above sequences in one test to run sequentially with the following exclusions:
+            - CSR sequences: scoreboard disabled
+            - Ping_corner_cases sequence: included reset in the sequence'''
+      milestone: V2
+      tests: ["alert_handler_stress_all"]
+    }
+  ]
+}

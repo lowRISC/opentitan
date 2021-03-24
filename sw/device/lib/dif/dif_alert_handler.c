@@ -51,7 +51,7 @@ static bool classify_alerts(const dif_alert_handler_t *handler,
   uint32_t enable_reg = mmio_region_read32(handler->params.base_addr,
                                            ALERT_HANDLER_ALERT_EN_REG_OFFSET);
   uint32_t alerts_reg = mmio_region_read32(
-      handler->params.base_addr, ALERT_HANDLER_ALERT_CLASS_REG_OFFSET);
+      handler->params.base_addr, ALERT_HANDLER_ALERT_CLASS_0_REG_OFFSET);
 
   for (int i = 0; i < class->alerts_len; ++i) {
     if (class->alerts[i] >= handler->params.alert_count) {
@@ -65,16 +65,16 @@ static bool classify_alerts(const dif_alert_handler_t *handler,
     uint32_t classification;
     switch (class->alert_class) {
       case kDifAlertHandlerClassA:
-        classification = ALERT_HANDLER_ALERT_CLASS_CLASS_A_0_VALUE_CLASSA;
+        classification = ALERT_HANDLER_ALERT_CLASS_0_CLASS_A_0_VALUE_CLASSA;
         break;
       case kDifAlertHandlerClassB:
-        classification = ALERT_HANDLER_ALERT_CLASS_CLASS_A_0_VALUE_CLASSB;
+        classification = ALERT_HANDLER_ALERT_CLASS_0_CLASS_A_0_VALUE_CLASSB;
         break;
       case kDifAlertHandlerClassC:
-        classification = ALERT_HANDLER_ALERT_CLASS_CLASS_A_0_VALUE_CLASSC;
+        classification = ALERT_HANDLER_ALERT_CLASS_0_CLASS_A_0_VALUE_CLASSC;
         break;
       case kDifAlertHandlerClassD:
-        classification = ALERT_HANDLER_ALERT_CLASS_CLASS_A_0_VALUE_CLASSD;
+        classification = ALERT_HANDLER_ALERT_CLASS_0_CLASS_A_0_VALUE_CLASSD;
         break;
       default:
         return false;
@@ -83,13 +83,13 @@ static bool classify_alerts(const dif_alert_handler_t *handler,
     // TODO: Currently, we assume all fields are of equal width.
     // See: #3826
     uint32_t field_width =
-        bitfield_popcount32(ALERT_HANDLER_ALERT_CLASS_CLASS_A_0_MASK);
+        bitfield_popcount32(ALERT_HANDLER_ALERT_CLASS_0_CLASS_A_0_MASK);
     uint32_t field_offset = field_width * class->alerts[i];
 
     alerts_reg = bitfield_field32_write(
         alerts_reg,
         (bitfield_field32_t){
-            .mask = ALERT_HANDLER_ALERT_CLASS_CLASS_A_0_MASK,
+            .mask = ALERT_HANDLER_ALERT_CLASS_0_CLASS_A_0_MASK,
             .index = field_offset,
         },
         classification);
@@ -98,7 +98,7 @@ static bool classify_alerts(const dif_alert_handler_t *handler,
   mmio_region_write32(handler->params.base_addr,
                       ALERT_HANDLER_ALERT_EN_REG_OFFSET, enable_reg);
   mmio_region_write32(handler->params.base_addr,
-                      ALERT_HANDLER_ALERT_CLASS_REG_OFFSET, alerts_reg);
+                      ALERT_HANDLER_ALERT_CLASS_0_REG_OFFSET, alerts_reg);
   return true;
 }
 

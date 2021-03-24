@@ -1,0 +1,49 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "template_param_list": [
+    {
+      "name": "clks",
+      "desc": "TODO"
+      "type": "object"
+      "default": {}
+    },
+    {
+      "name": "power_domains",
+      "desc": "TODO",
+      "type": "object",
+      "default": {}
+    },
+    {
+      "name": "num_rstreqs",
+      "desc": "TODO",
+      "type": "int",
+      "default": "32" # TODO
+    },
+    {
+      "name": "sw_rsts",
+      "desc": "TODO"
+      "type": "object"
+      "default": {}
+    },
+    {
+      "name": "output_rsts",
+      "desc": "TODO"
+      "type": "object"
+      "default": {}
+    },
+    {
+      "name": "leaf_rsts",
+      "desc": "TODO"
+      "type": "object"
+      "default":  {}
+    },
+    {
+      "name": "export_rsts",
+      "desc": "TODO"
+      "type": "object"
+      "default":  {}
+    },
+  ],
+}

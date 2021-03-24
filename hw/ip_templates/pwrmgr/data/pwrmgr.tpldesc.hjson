@@ -1,0 +1,25 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "template_param_list": [
+    {
+      "name": "NumWkups",
+      "desc": "Number of Wakeup sources",
+      "type": "int",
+      "default": 1,
+    },
+    {
+      "name": "Wkups",
+      "desc": "Wakeups",
+      "type": "object",
+      "default": {},
+    },
+    {
+      "name": "NumRstReqs",
+      "desc": "Number of reset requests",
+      "type": "int",
+      "default": 1,
+    },
+  ],
+}

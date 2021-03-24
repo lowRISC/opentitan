@@ -1,0 +1,98 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "template_param_list": [
+    {
+      "name": "n_mio_periph_in",
+      "desc": "Number of muxed peripheral inputs"
+      "type": "int"
+      "default": 33
+    },
+    {
+      "name": "n_mio_periph_out",
+      "desc": "Number of muxed peripheral outputs"
+      "type": "int"
+      "default": 32
+    },
+    {
+      "name": "n_mio_pads",
+      "desc": "Number of muxed IO pads"
+      "type": "int"
+      "default": 32
+    },
+    {
+      "name": "n_dio_periph_in",
+      "desc": "Number of dedicated IO pads"
+      "type": "int"
+      "default": 16
+    },
+    {
+      // TODO: Unused.
+      "name": "n_dio_periph_out",
+      "desc": "Number of dedicated peripheral outputs"
+      "type": "int"
+      "default": 0
+    },
+    {
+      "name": "n_dio_pads",
+      "desc": "Number of dedicated IO pads"
+      "type": "int"
+      "default": 16
+    },
+    {
+      "name": "attr_dw",
+      "desc": "Pad attribute data width"
+      "type": "int"
+      "default": 10
+    },
+    {
+      "name": "n_wkup_detect",
+      "desc": "Number of wakeup detectors"
+      "type": "int"
+      "default": 8
+    },
+    {
+      "name": "wkup_cnt_width",
+      "desc": "Number of wakeup counter bits"
+      "type": "int"
+      "default": 8
+    },
+    {
+      "name": "usb_start_pos",
+      "desc": "Start position for usbdev pins"
+      "type": "int"
+      "default": 0
+    },
+    {
+      "name": "n_usb_pins",
+      "desc": "Number of usbdev pins"
+      "type": "int"
+      "default": 0
+    },
+    {
+      "name": "usb_dp_sel",
+      "desc": "index of usbdev_dp"
+      "type": "int"
+      "default": 0
+    },
+    {
+      "name": "usb_dn_sel",
+      "desc": "index of usbdev_dn"
+      "type": "int"
+      "default": 0
+    },
+    {
+      "name": "usb_dp_pull_sel",
+      "desc": "index of usbdev_dp_pullup"
+      "type": "int"
+      "default": 0
+    },
+    {
+      "name": "usb_dn_pull_sel",
+      "desc": "index of usbdev_dn_pullup"
+      "type": "int"
+      "default": 0
+    },
+  ]
+}

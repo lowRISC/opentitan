@@ -1,0 +1,17 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "alert_handler",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_alert_handler"
+    version:            "0.5",
+    life_stage:         "L1",
+    design_stage:       "D1",
+    verification_stage: "V1",
+    dif_stage:          "S0",
+    notes:              "will be verified at top level; formal and DV at block level",
+}

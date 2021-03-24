@@ -1,0 +1,15 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for pinmux
+
+waive -rules NOT_READ -location {pinmux_reg_top.sv} -regexp {.*reg_wdata.*} \
+      -comment "Upper bits of reg_wdata are not read"
+
+waive -rules HIER_NET_NOT_READ -location {pinmux_reg_top.sv} -regexp {.*reg_wdata.*} \
+      -comment "Upper bits of reg_wdata are not read"
+
+waive -rules VAR_INDEX_RANGE -location {pinmux.sv} -regexp {.*maximum value.*} \
+      -comment "Indexed arrays may not be fully populated."
+

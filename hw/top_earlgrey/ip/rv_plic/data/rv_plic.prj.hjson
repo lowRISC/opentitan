@@ -1,0 +1,22 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "rv_plic",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
+    hw_checklist:       "../doc/checklist",
+    sw_checklist:       "/sw/device/lib/dif/dif_plic",
+    revisions: [
+      {
+        version:            "0.5",
+        life_stage:         "L1",
+        design_stage:       "D2",
+        verification_stage: "V2",
+        dif_stage:          "S1",
+        commit_id:          "d1f3da165b6c43b20c38f9d3dabdfad8bc6e01a8",
+        notes:              "based on FPV at block level",
+      }
+    ],
+}

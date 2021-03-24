@@ -1,0 +1,28 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:pwrmgr_sva:0.1"
+description: "PWRMGR assertion modules and bind file."
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:tlul:headers
+      - lowrisc:fpv:csr_assert_gen
+    files:
+      - pwrmgr_bind.sv
+    file_type: systemVerilogSource
+
+generate:
+  csr_assert_gen:
+    generator: csr_assert_gen
+    parameters:
+      spec: ../../data/pwrmgr.hjson
+      depend: lowrisc:ip:pwrmgr_only_reg
+
+targets:
+  default:
+    filesets:
+      - files_dv
+    generate:
+      - csr_assert_gen

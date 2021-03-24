@@ -1,0 +1,552 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_earlgrey_rstmgr
+  param_values:
+  {
+    clks:
+    [
+      aon
+      io_div4
+      main
+      io
+      io_div2
+      usb
+    ]
+    power_domains:
+    [
+      Aon
+      "0"
+    ]
+    num_rstreqs: 1
+    sw_rsts:
+    [
+      {
+        name: spi_device
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: spi_host0
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: spi_host1
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: usb
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: usb
+        sw: 1
+      }
+      {
+        name: i2c0
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: i2c1
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: i2c2
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+    ]
+    output_rsts:
+    [
+      {
+        name: por_aon
+        gen: false
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        clk: aon
+      }
+      {
+        name: por
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        parent: por_aon
+        clk: main
+      }
+      {
+        name: por_io
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        parent: por_aon
+        clk: io
+      }
+      {
+        name: por_io_div2
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        parent: por_aon
+        clk: io_div2
+      }
+      {
+        name: por_io_div4
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        parent: por_aon
+        clk: io_div4
+      }
+      {
+        name: por_usb
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        parent: por_aon
+        clk: usb
+      }
+      {
+        name: lc
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: lc_src
+        clk: main
+      }
+      {
+        name: lc_io_div4
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: lc_src
+        clk: io_div4
+      }
+      {
+        name: sys
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: main
+      }
+      {
+        name: sys_io_div4
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div4
+      }
+      {
+        name: sys_aon
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+          "0"
+        ]
+        parent: sys_src
+        clk: aon
+      }
+      {
+        name: spi_device
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: spi_host0
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: spi_host1
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: usb
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: usb
+        sw: 1
+      }
+      {
+        name: i2c0
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: i2c1
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: i2c2
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+    ]
+    leaf_rsts:
+    [
+      {
+        name: por
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        parent: por_aon
+        clk: main
+      }
+      {
+        name: por_io
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        parent: por_aon
+        clk: io
+      }
+      {
+        name: por_io_div2
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        parent: por_aon
+        clk: io_div2
+      }
+      {
+        name: por_io_div4
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        parent: por_aon
+        clk: io_div4
+      }
+      {
+        name: por_usb
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+        ]
+        parent: por_aon
+        clk: usb
+      }
+      {
+        name: lc
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: lc_src
+        clk: main
+      }
+      {
+        name: lc_io_div4
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: lc_src
+        clk: io_div4
+      }
+      {
+        name: sys
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: main
+      }
+      {
+        name: sys_io_div4
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div4
+      }
+      {
+        name: sys_aon
+        gen: true
+        type: top
+        domains:
+        [
+          Aon
+          "0"
+        ]
+        parent: sys_src
+        clk: aon
+      }
+      {
+        name: spi_device
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: spi_host0
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: spi_host1
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: usb
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: usb
+        sw: 1
+      }
+      {
+        name: i2c0
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: i2c1
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+      {
+        name: i2c2
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        parent: sys_src
+        clk: io_div2
+        sw: 1
+      }
+    ]
+    export_rsts:
+    {
+      ast:
+      {
+        usbdev:
+        [
+          sys_io_div4
+          sys_aon
+          usb
+        ]
+        adc_ctrl_aon:
+        [
+          sys_io_div4
+          sys_aon
+        ]
+        ast:
+        [
+          sys_io_div4
+        ]
+        sensor_ctrl_aon:
+        [
+          sys_io_div4
+        ]
+        entropy_src:
+        [
+          sys
+        ]
+        edn0:
+        [
+          sys
+        ]
+      }
+    }
+  }
+}

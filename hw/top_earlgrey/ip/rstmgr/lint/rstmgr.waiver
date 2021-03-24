@@ -4,4 +4,6 @@
 #
 # waiver file for rstmgr
 
-set_reset_drivers prim_clock_mux2 prim_flop prim_flop_2sync
+# dedicated reset drivers / muxes
+set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
+set_clock_drivers prim_clock_buf

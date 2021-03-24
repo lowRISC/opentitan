@@ -1,0 +1,125 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "pinmux"
+  import_testplans: ["hw/dv/tools/dvsim/testplans/fpv_csr_testplan.hjson"]
+  entries: [
+    {
+      name: InSel0_A
+      desc: "When register periph_insel is set to 0, the corresponding mio_to_periph_o must be 0."
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: InSel1_A
+      desc: "When register periph_insel is set to 1, the corresponding mio_to_periph_o must be 1."
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: InSelN_A
+      desc: '''When register periph_insel is set to any value between 2 and
+            (2 + number of MioPads), the corresponding mio_to_periph_o must be equal to the related
+            mio_in_i value.'''
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: InSelOOB_A
+      desc: '''When register periph_insel is set to any value larger than (2 + number of MioPads),
+            the corresponding mio_to_periph_o must be 0.'''
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: MioToPeriphO_A
+      desc: '''This assertion checks that any changes from the mio_to_periph_o output are due to
+            the changes from either mio_in_i or register periph_insel.'''
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: OutSel0_A
+      desc: "When register mio_outsel is set to 0, the corresponding mio_out_o must be 0."
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: OutSel1_A
+      desc: "When register mio_outsel is set to 1, the corresponding mio_out_o must be 1."
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: OutSel2_A
+      desc: "When register mio_outsel is set to 2, the corresponding mio_out_o must be 0."
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: OutSelN_A
+      desc: '''When register mio_outsel is set to any value between 3 and
+            (3 + Number of periph out), the corresponding mio_out_o must be equal to the related
+            periph_to_mio_i value.'''
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: OutSelOOB_A
+      desc: '''When register mio_outsel is set to any value larger than
+            (3 + Number of periph out), the corresponding mio_out_o must be 0.'''
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: MioOutO_A
+      desc: '''This assertion checks that any changes from the mio_out_o output are due to the
+            changes from either periph_to_mio_i or register mio_outsel.'''
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: OutSelOe0_A
+      desc: "When register mio_outsel is set to 0, the corresponding mio_oe_o must be 0."
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: OutSelOe1_A
+      desc: "When register mio_outsel is set to 1, the corresponding mio_oe_o must be 1."
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: OutSelOe2_A
+      desc: "When register mio_outsel is set to 2, the corresponding mio_out_o must be 0."
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: OutSelOeN_A
+      desc: '''When register mio_outsel is set to any value between 3 and
+            (3 + Number of periph out), the corresponding mio_oe_o must be equal to the related
+            periph_to_mio_oe_i value.'''
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: OutSelOeOOB_A
+      desc: '''When register mio_outsel is set to any value larger than
+            (3 + Number of periph out), the corresponding mio_oe_o must be 0.'''
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+    {
+      name: MioOeO_A
+      desc: '''This assertion checks that any changes from the mio_oe_o output are due to the
+            changes from either periph_to_mio_oe_i or register mio_outsel.'''
+      milestone: V2
+      tests: ["pinmux_assert"]
+    }
+  ]
+}
+
+

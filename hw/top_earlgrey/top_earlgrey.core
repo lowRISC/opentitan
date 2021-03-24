@@ -8,13 +8,12 @@ filesets:
   files_rtl_generic:
     depend:
       - lowrisc:ip:uart:0.1
-      - lowrisc:ip:alert_handler
+      - lowrisc:opentitan:top_earlgrey_alert_handler
       - lowrisc:ip:gpio
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
-      - lowrisc:top_earlgrey:rv_plic
-      - lowrisc:top_earlgrey:pinmux_reg
-      - lowrisc:ip:pinmux_component
+      - lowrisc:opentitan:top_earlgrey_rv_plic
+      - lowrisc:opentitan:top_earlgrey_pinmux
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device
@@ -31,7 +30,7 @@ filesets:
       - lowrisc:prim:ram_1p_scr
       - lowrisc:prim:rom_adv
       - lowrisc:prim:flash
-      - lowrisc:ip:flash_ctrl
+      - lowrisc:opentitan:top_earlgrey_flash_ctrl
       - lowrisc:ip:sram_ctrl
       - lowrisc:ip:keymgr
       - lowrisc:constants:top_pkg
@@ -41,11 +40,11 @@ filesets:
       - lowrisc:ip:usbdev
       - lowrisc:top_earlgrey:xbar_main
       - lowrisc:top_earlgrey:xbar_peri
-      - lowrisc:ip:rstmgr
-      - lowrisc:ip:pwrmgr
+      - lowrisc:opentitan:top_earlgrey_rstmgr
+      - lowrisc:opentitan:top_earlgrey_pwrmgr
       - lowrisc:ip:aon_timer
       - lowrisc:ip:dcd
-      - lowrisc:systems:clkmgr
+      - lowrisc:opentitan:top_earlgrey_clkmgr
       - lowrisc:systems:sensor_ctrl
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
       - "fileset_partner ? (partner:systems:ast_pkg)"

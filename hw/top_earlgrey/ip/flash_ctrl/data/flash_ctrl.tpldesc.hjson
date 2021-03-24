@@ -1,0 +1,15 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "template_param_list": [
+    {
+      // TODO: This entry needs to go and be replaced with a more fine-grained
+      // parameter.
+      "name": "cfg",
+      "desc": "The whole top-level configuration"
+      "type": "object"
+      "default": {}
+    },
+  ]
+}

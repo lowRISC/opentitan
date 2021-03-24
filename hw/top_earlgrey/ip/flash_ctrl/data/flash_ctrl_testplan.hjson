@@ -1,0 +1,221 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "flash_ctrl"
+  // TODO: remove the common testplans if not applicable
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
+  entries: [
+    {
+      name: smoke
+      desc: '''
+            Randomly read, program or erase (page or a bank) a randomized chunk of flash memory.
+            Only the data partition is accessed. No extra features enabled. Flash memory is
+            invalidated and the targeted chunk is initialized with random data for reads and all 1s
+            for writes. Interrupts are not enabled, Completion is ascertained through polling. The
+            success of each operation is verified via backdoor.
+            '''
+      milestone: V1
+      tests: ["flash_ctrl_smoke"]
+    }
+    {
+      name: backpressure
+      desc: '''
+            Sanity + randomly pick between back-pressured reads / writes and fifo status-polled
+            reads / writes via the controller.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: all_partitions
+      desc: '''
+            Sanity + both, legal data and info partitions are accessed. In future, support for
+            multiple info partitions may be added - those will be covered as well.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: host_read_check
+      desc: '''
+            Sanity + the success of each operation is verified by randomly choosing
+            between backdoor and via the host interface.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: host_illegal_access
+      desc: '''
+            Do a bunch of illegal accesses via host interface to ensure that an error response is
+            appropriately seen. This includes writes, out of bound reads, protocol violated reads
+            and all other unsupported accesses.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: host_outstanding_access
+      desc: '''
+            Drive back-to-back access to ensure coverage on the maximum supported outstanding
+            on this interface.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: intr_enabled
+      desc: '''
+            Sanity + enable all interrupts and verify correctness of assertion and de-assertion of
+            each pin. Replace polling with waits on interrrupts.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: host_ctrl_arb
+      desc: '''
+            Continuously read data from host interface while randomly programming or reading from
+            the flash controller. Ensure the expected bandwidths are seen on both interfaces. Also,
+            initiate reads from the host to all banks back and forth to ensure the responses arrive
+            in-order.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: host_read_collide
+      desc: '''
+            Read LSB bus word via host and program or read the MSB bus word at the same time. This
+            will cause the internal flash word wide buffer to be updated. Then read the MSB bus word
+            within the same flash data word - it should read back the updated data, proving that the
+            internal buffer was cleared from the previous step.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: en_mp_regions
+      desc: '''
+            Protect randomized and legal ranges of data and info partitions and ensure that the
+            corresponding read / program / erase enable bits are working. TBD - future support for
+            sub-page protection may be added - that will be tracked as a part of this test as well.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: redundant_pages
+      desc: '''
+            TBD - support for adding redundant pages may be added in future for yield recovery. THis
+            is a placeholder to verify that feature.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: lc_ctrl_if
+      desc: '''
+            TBD - verify the interface between flash controller and the life cycle controller.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: key_mgr_if
+      desc: '''
+            TBD - verify the seed output to the key manager.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: scramble
+      desc: '''
+            Enable scrambling, along with randomized scramble keys. Program a fresh chunk of
+            memory and read back (both, via controller and host) to ensure data integrity. On
+            program, verify via backdoor scrambling was done on the raw data correctly. When
+            reading via host, read the same memory via host multiple times back-to-back and ensure
+            the timing is correct (subsequent reads should be faster). When scrambling is not
+            enabled, ensure that the raw data is written and read back.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: ecc
+      desc: '''
+            Randomly enable ECC for a randomly selected set of pages. Randomly corrupt a single bit
+            in the memory that is about to be read and ensure that the ECC works - the corrupted bit
+            should be fixed. Corrupt randomly either the data or the ECC bits. Randomly corrupt 2
+            bits in the same word and ensure that the read results in error. Ensure that pages with
+            ECC not enabled reads back corrupted data without any errors.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: read_ecc_metadata
+      desc: '''
+            TBD - in futurem support for reading the metadata from the ECC bits may be supported -
+            this is a placeholder to verify that feature.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: error
+      desc: '''
+            This test will attempt to generate flash error in all possible ways:
+            1. Read / program / erase a protected chunk
+            2. Set num words to 0 or out of bounds on read or program
+            3. Inject double bit errors when ECC is enabled
+            4. Program or read out-of-bounds info partition
+            5. Erase whole bank with bank erase not enabled
+            6. Randomly wiggle scramble enable in the middle of an op and ensure that the FSM does
+            not get locked up
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: flash_macro_timing
+      desc: '''
+            When verifying against the real flash macro (which will be in a closed source repo),
+            check that the read / program / erase timing parameters are correct.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: stress_all
+      desc: '''
+            This enables all of the above features to fully stress all the moving parts in the
+            design.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: flash_init
+      desc: '''
+            TBD - if supported - verify flash initialization routine upon reset.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: tlul_to_vendor
+      desc: '''
+            TBD - if supported - verify TLUL split to the vendor wrapper.
+            '''
+      milestone: V2
+      tests: []
+    }
+  ]
+}

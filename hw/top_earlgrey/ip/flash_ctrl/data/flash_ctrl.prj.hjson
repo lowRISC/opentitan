@@ -1,0 +1,14 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    name:               "flash_ctrl",
+    design_spec:        "../doc",
+    dv_doc:             "../doc/dv"
+    hw_checklist:       "../doc/checklist",
+    version:            "0.5",
+    life_stage:         "L1",
+    design_stage:       "D1",
+    verification_stage: "V1",
+}
