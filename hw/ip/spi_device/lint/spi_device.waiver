@@ -91,3 +91,10 @@ waive -rules VAR_INDEX -location {spi_fwm_txf_ctrl.sv} -regexp {'fifo_wdata_d.*'
       -comment "fifo_data_d is latched to fifo_data[7:0]"
 waive -rules CASE_INC -location {spi_fwm_*xf_ctrl.sv} -regexp {Case statement tag not} \
       -comment "Enum type is used for state machine"
+
+#### NOT used
+####   For the convenience of the design, below signals are intentionally unused
+waive -rules {NOT_USED NOT_READ} -location {spi_device.sv}
+      -regexp {'sub_sram_.*\[1\]' is not (used|read)}
+      -comment "CmdParse does not have SRAM intf"
+      
