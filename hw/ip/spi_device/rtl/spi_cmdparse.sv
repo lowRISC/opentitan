@@ -236,4 +236,3 @@ module spi_cmdparse
   ///////////////
 
 endmodule
-
