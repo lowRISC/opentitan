@@ -68,14 +68,6 @@ if {$env(FPV_TOP) == "rv_dm"} {
   clock -rate {cio_d_i, cio_dp_i, cio_dn_i, cio_sense_i} clk_usb_48mhz_i
   reset -expr {!rst_ni !rst_aon_ni !rst_usb_48mhz_ni}
 
-  # top_earlgrey is mainly used for connectivity test
-} elseif {$env(FPV_TOP) == "top_earlgrey"} {
-  clock clk_i -both_edges
-  clock jtag_tck_i
-  # TODO: check this once pinmux/padring is updated
-  clock -rate -default clk_i
-  reset -expr {!rst_ni !jtag_trst_ni}
-
 # TODO: work with the block owner and re-define FPV checkings for xbar
 # } elseif {$env(FPV_TOP) == "xbar_main"} {
 #   clock clk_main_i -both_edges
