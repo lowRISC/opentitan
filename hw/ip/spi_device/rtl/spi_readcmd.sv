@@ -385,7 +385,7 @@ module spi_readcmd
   assign sram_addr_o = sram_addr;
 
   assign sram_req_o = sram_req;
-  assign sram_write_o = 1'b 0; // always read
+  assign sram_we_o = 1'b 0;    // always read
   assign sram_wdata_o = '0;    // always read
 
   //- END:   SRAM Datapath ----------------------------------------------------
@@ -594,13 +594,13 @@ module spi_readcmd
   // Assertions //
   // FIFO should not overflow. The Main state machine shall send request only
   // when it needs the data within 2 cycles
-  `ASSERT(NotOverflow_A, sram_req_o && !sram_write_o |-> !unused_full)
+  `ASSERT(NotOverflow_A, sram_req_o && !sram_we_o |-> !unused_full)
 
   // SRAM access always read
-  `ASSERT(SramReadOnly_A, sram_req_o |-> !sram_write_o)
+  `ASSERT(SramReadOnly_A, sram_req_o |-> !sram_we_o)
 
   // SRAM data should return in next cycle
-  `ASSUME(SramDataReturnRequirement_M, sram_req_o && !sram_write_o |=> sram_rvalid_i)
+  `ASSUME(SramDataReturnRequirement_M, sram_req_o && !sram_we_o |=> sram_rvalid_i)
 
   // TODO: When main state machine returns data to SPI (via p2s), the FIFO shall
   // not be empty
