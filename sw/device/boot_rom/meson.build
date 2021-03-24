@@ -75,6 +75,15 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     build_by_default: true,
   )
 
+  boot_rom_scrambled = custom_target(
+    'boot_rom_scrambled_' + device_name,
+    command: scramble_image_command,
+    depend_files: scramble_image_depend_files,
+    input: boot_rom_elf,
+    output: scramble_image_outputs,
+    build_by_default: true,
+  )
+
   boot_rom_sim_dv_logs = []
   if device_name == 'sim_dv'
     boot_rom_sim_dv_logs = custom_target(

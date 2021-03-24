@@ -1,0 +1,344 @@
+#!/usr/bin/env python3
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+import random
+import re
+import subprocess
+import tempfile
+from typing import BinaryIO, IO, List, Optional, TextIO, Tuple
+
+from elftools.elf.elffile import ELFFile  # type: ignore
+
+
+def red_xor32(word: int) -> int:
+    '''Reduction XOR for a uint32'''
+    word = (word & 0xffff) ^ (word >> 16)
+    word = (word & 0xff) ^ (word >> 8)
+    word = (word & 0xf) ^ (word >> 4)
+    word = (word & 0x3) ^ (word >> 2)
+    return (word & 0x1) ^ (word >> 1)
+
+
+def add_ecc32(word: int) -> int:
+    '''Add Hsiao (39,32) ECC bits to a 32-bit unsigned word'''
+    assert 0 <= word < (1 << 32)
+    b0 = red_xor32(word ^ 0x00850e56a2) << 32
+    b1 = red_xor32(word ^ 0x002e534c61) << 33
+    b2 = red_xor32(word ^ 0x000901a9fe) << 34
+    b3 = red_xor32(word ^ 0x007079a702) << 35
+    b4 = red_xor32(word ^ 0x00caba900d) << 36
+    b5 = red_xor32(word ^ 0x00d3c44b18) << 37
+    b6 = red_xor32(word ^ 0x0034a430d5) << 38
+    return word | b0 | b1 | b2 | b3 | b4 | b5 | b6
+
+
+class MemChunk:
+    def __init__(self, base_addr: int, words: List[int]):
+        '''A contiguous list of words starting at base_addr'''
+        self.base_addr = base_addr
+        self.words = words
+
+    def __str__(self) -> str:
+        return ('MemChunk(@{:#x}, words_len={})'
+                .format(self.base_addr, len(self.words)))
+
+    def next_addr(self) -> int:
+        '''Get the address directly above the chunk'''
+        return self.base_addr + len(self.words)
+
+    def write_vmem(self, width: int, outfile: TextIO) -> None:
+        '''Write this chunk as one or more lines to outfile
+
+        width is the maximum width of a word in bits.
+
+        '''
+        addr_chars = max(8, (self.next_addr().bit_length() + 3) // 4)
+        word_chars = (width + 3) // 4
+
+        # Try to wrap at 79 characters. To do this, pick a number of words so
+        # that addr_chars + num_words * (word_chars + 1) fits (note that we
+        # gain a character by adding a @ on the front of the address, but lose
+        # it again by omitting the trailing space after the last word).
+        nwords_on_line = max(1, (79 - addr_chars) // (1 + word_chars))
+        for start_idx in range(0, len(self.words), nwords_on_line):
+            line_addr = self.base_addr + start_idx
+            toks = [f'@{line_addr:0{addr_chars}X}']
+            for word in self.words[start_idx:start_idx + nwords_on_line]:
+                toks.append(f'{word:0{word_chars}X}')
+            outfile.write(' '.join(toks) + '\n')
+
+    def add_ecc32(self) -> None:
+        '''Add ECC32 integrity bits
+
+        This extends the input words (which are assumed to be 32-bit) by 7
+        bits, to make 39-bit words.
+
+        '''
+        self.words = [add_ecc32(w) for w in self.words]
+
+
+class MemFile:
+    def __init__(self, width: int, chunks: List[MemChunk]):
+        self.width = width
+        self.chunks = chunks
+
+    def __str__(self) -> str:
+        return ('MemFile(width={}, chunks_len={})'
+                .format(self.width, len(self.chunks)))
+
+    @staticmethod
+    def _parse_line(width: int, line: str) -> Tuple[int, List[int]]:
+        '''Parse a line from a preprocessed vmem file
+
+        Returns a pair (addr, words) where addr is the address at the start of
+        the line and words is a list of the words that have been found, parsed
+        to unsigned numbers. Assumes that line has at least one non-whitespace
+        character. Each word is checked to make sure that it fits in width
+        bits.
+
+        '''
+        tokens = line.split()
+        assert tokens
+
+        addr_match = re.match(r'@([0-9a-fA-F]+)$', tokens[0])
+        if addr_match is None:
+            raise ValueError('Bad line format: first token is {!r}, '
+                             'which is not in the right format for an address.'
+                             .format(tokens[0]))
+        addr = int(addr_match.group(1), 16)
+
+        words = []
+        for idx, word_tok in enumerate(tokens[1:]):
+            try:
+                word = int(word_tok, 16)
+            except ValueError:
+                raise ValueError('Word {} of the line is invalid: '
+                                 '{!r} is not a hex number.'
+                                 .format(idx + 1, word_tok)) from None
+
+            if word < 0 or word >> width:
+                raise ValueError('Word {} of the line is {!r}, which '
+                                 'does not fit in an unsigned {}-bit number.'
+                                 .format(idx + 1, word_tok, width))
+            words.append(word)
+
+        return (addr, words)
+
+    @staticmethod
+    def _load_preproc(width: int, infile: IO[str]) -> 'MemFile':
+        '''Load a pre-processed file'''
+        chunks = []
+        next_chunk = None  # type: Optional[MemChunk]
+        for line in infile:
+            # If the line is empty or whitespace, skip it.
+            if not line or line.isspace():
+                continue
+
+            line_addr, line_words = MemFile._parse_line(width, line)
+
+            # If there aren't actually any words on the line, skip it.
+            if not line_words:
+                continue
+
+            if next_chunk is None:
+                next_chunk = MemChunk(line_addr, line_words)
+                continue
+
+            # Glue the line onto the current chunk if there's no gap
+            chunk_end = next_chunk.next_addr()
+            if line_addr < chunk_end:
+                raise ValueError("Cannot read data starting at {:#x}: "
+                                 "we're already at {:#x}, so this would "
+                                 "go backwards."
+                                 .format(line_addr, chunk_end))
+            if line_addr == chunk_end:
+                next_chunk.words += line_words
+                continue
+
+            # If we're here, there's a gap between the current chunk and
+            # line_addr.
+            chunks.append(next_chunk)
+            next_chunk = MemChunk(line_addr, line_words)
+
+        if next_chunk is not None:
+            chunks.append(next_chunk)
+
+        return MemFile(width, chunks)
+
+    @staticmethod
+    def load_vmem(width: int, infile: TextIO) -> 'MemFile':
+        '''Read a VMEM file
+
+        This assumes that all words fit in the given width.
+
+        '''
+        with tempfile.TemporaryFile('w+') as tmp:
+            # First, run cpp as a subprocess to strip out any comments. These
+            # are allowed by the vmem format as described in srec_vmem(5) and
+            # tokenising them is hard: get the C preprocessor to do the work
+            # for us! The -P argument tells cpp not to generate linemarkers
+            subprocess.run(['cpp', '-P'], stdin=infile, stdout=tmp, check=True)
+            tmp.seek(0)
+            return MemFile._load_preproc(width, tmp)
+
+    @staticmethod
+    def load_elf32(infile: BinaryIO, base_addr: int) -> 'MemFile':
+        '''Read a little-endian 32-bit ELF file'''
+        elf_file = ELFFile(infile)
+        segments = []  # type: List[Tuple[int, int, bytes]]
+        for segment in elf_file.iter_segments():
+            seg_type = segment['p_type']
+
+            # We're only interested in nonempty PT_LOAD segments
+            if seg_type != 'PT_LOAD' or segment['p_memsz'] == 0:
+                continue
+
+            seg_lma = segment['p_paddr']
+            seg_end = seg_lma + segment['p_memsz']
+
+            # We re-map the addresses relative to base_addr: check that no
+            # segment starts before it.
+            if seg_lma < base_addr:
+                raise ValueError('ELF file contains a segment starting at '
+                                 '{:#x}, so cannot be loaded relative to base '
+                                 'address {:#x}.'
+                                 .format(seg_lma, base_addr))
+
+            segments.append((seg_lma - base_addr,
+                             seg_end - base_addr, segment.data()))
+
+        # Sort the segments by base address
+        segments.sort(key=lambda t: t[0])
+
+        # Make sure that they don't overlap
+        prev_lma = 0
+        next_addr = 0
+        for lma, end, data in segments:
+            if lma < next_addr:
+                raise ValueError('ELF file contains overlapping segments with '
+                                 'address ranges {:#x}..{:#x} and '
+                                 '{:#x}..{:#x}.'
+                                 .format(prev_lma, next_addr - 1, lma, end))
+            prev_lma = lma
+            next_addr = end + 1
+
+        # Merge any adjacent segments, bridging any sub-word gaps. This doesn't
+        # do any other right padding: we'll do that on the final pass that
+        # converts to 32-bit words.
+        merged_segments = []  # type: List[Tuple[int, int, bytes]]
+        next_word = 0
+        for lma, end, data in segments:
+            # Round the LMA down to the previous word boundary. The non-overlap
+            # check above should ensure that this is never actually less than
+            # next_word.
+            lma_word = lma // 4
+            assert next_word <= lma_word
+
+            # If there isn't an aligned whole word between the two segments,
+            # bridge the gap
+            if merged_segments and next_word == lma_word:
+                last_lma_word, last_end, last_data = merged_segments[-1]
+                if last_end < lma:
+                    # The largest gap here is be something like last_end = 1;
+                    # lma = 7, which has size 2*4 - 1 - 1 = 6.
+                    assert lma - last_end <= 6
+                    last_data += bytes(lma - last_end)
+                merged_segments[-1] = (last_lma_word, end, last_data + data)
+            else:
+                # Pad on the left if necessary to ensure that lma is 32-bit
+                # aligned.
+                if lma % 4:
+                    merged_segments.append((lma_word, end, bytes(lma % 4) + data))
+                else:
+                    merged_segments.append((lma_word, end, data))
+
+            next_word = 1 + (end // 4)
+
+        # Assemble the bytes in each segment into little-endian 32-bit words.
+        # Zero-extend any partial word at the end of a segment. Because of the
+        # merging in the previous pass, we know this won't cause any overlaps.
+        chunks = []  # type: List[MemChunk]
+        for lma_word, _, data in merged_segments:
+            words = []
+            word = 0
+            for idx, byte in enumerate(data):
+                shift = 8 * (idx % 4)
+                word |= byte << shift
+                if idx % 4 == 3:
+                    words.append(word)
+                    word = 0
+            # idx here will be the index of the last byte. If data ended with a
+            # partial word, idx will be something other than 3 mod 4.
+            if idx % 4 != 3:
+                words.append(word)
+
+            chunks.append(MemChunk(lma_word, words))
+
+        return MemFile(32, chunks)
+
+    def next_addr(self) -> int:
+        '''Get the address directly above the top of the MemFile'''
+        return 0 if not self.chunks else self.chunks[-1].next_addr()
+
+    def write_vmem(self, outfile: TextIO) -> None:
+        '''Write data to a VMEM file'''
+        for chunk in self.chunks:
+            chunk.write_vmem(self.width, outfile)
+
+    def flatten(self, size: int, rnd_seed: int) -> 'MemFile':
+        '''Flatten into a single chunk, padding with pseudo-random data
+
+        As well as padding between the chunks, this expands the result up to
+        size words by adding padding after the last chunk if necessary.
+
+        '''
+        assert self.next_addr() <= size
+
+        old_rnd_state = random.getstate()
+        random.seed(rnd_seed)
+
+        try:
+            acc = MemChunk(0, [])
+            # Add each chunk
+            for chunk in self.chunks:
+                acc_end = acc.next_addr()
+                assert acc_end <= chunk.base_addr
+
+                # If there's a gap before the chunk, insert some random bits
+                padding_len = chunk.base_addr - acc_end
+                if padding_len:
+                    acc.words += [random.getrandbits(32)
+                                  for _ in range(padding_len)]
+
+                assert acc.next_addr() == chunk.base_addr
+                acc.words += chunk.words
+
+            acc_end = acc.next_addr()
+            assert acc_end == self.next_addr()
+
+            # If there's a gap after the last chunk, insert some more random
+            # bits
+            padding_len = size - acc_end
+            if padding_len:
+                acc.words += [random.getrandbits(32)
+                              for _ in range(padding_len)]
+
+            assert acc.next_addr() == size
+
+            return MemFile(self.width, [acc])
+        finally:
+            random.setstate(old_rnd_state)
+
+    def add_ecc32(self) -> None:
+        '''Add ECC32 integrity bits
+
+        This extends the input words (which are assumed to be 32-bit) by 7
+        bits, to make 39-bit words.
+
+        '''
+        assert self.width <= 32
+        for chunk in self.chunks:
+            chunk.add_ecc32()
+        self.width = 39

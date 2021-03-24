@@ -55,11 +55,24 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     build_by_default: true,
   )
 
+  mask_rom_scrambled = custom_target(
+    'mask_rom_scrambled_' + device_name,
+    command: scramble_image_command,
+    depend_files: scramble_image_depend_files,
+    input: mask_rom_elf,
+    output: scramble_image_outputs,
+    build_by_default: true,
+  )
+
   custom_target(
     'mask_rom_export_' + device_name,
     command: export_target_command,
     depend_files: [export_target_depend_files,],
-    input: [mask_rom_elf, mask_rom_embedded],
+    input: [
+      mask_rom_elf,
+      mask_rom_embedded,
+      mask_rom_scrambled,
+    ],
     output: 'mask_rom_export_' + device_name,
     build_always_stale: true,
     build_by_default: true,

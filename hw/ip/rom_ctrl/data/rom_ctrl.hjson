@@ -122,6 +122,9 @@
 
     rom: [
       // ROM size (given as `items` below) must be a power of two.
+      //
+      // NOTE: This number is replicated in ../util/scramble_image.py: keep the
+      // two in sync.
       { window: {
           name: "ROM"
           items: "4096" // 16 KiB
