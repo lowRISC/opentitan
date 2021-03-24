@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   flow:             fpv
-  sub_flow:         fpv
+  sub_flow:         fconn
   fpv_root:         "{proj_root}/hw/formal"
   flow_makefile:    "{fpv_root}/tools/dvsim/fpv.mk"
 
@@ -26,20 +26,30 @@
                       "run",
                       "--flag=fileset_{design_level}",
                       "--tool=icarus",
-                      "--target=formal",
+                      "--target=default",
                       "--build-root={build_dir}",
                       "--setup {fusesoc_core}"]
-  sv_flist_gen_dir:  "{build_dir}/formal-icarus"
+  sv_flist_gen_dir:  "{build_dir}/default-icarus"
 
   // Vars that need to exported to the env
   exports: [
-    { FPV_TOP: "{dut}" },
-    { COV: "{cov}" }
+    { TOP: "{dut}" },
+    { COV: "{cov}" },
+    { CSV_PATH: "{csv_path}"}
   ]
 
   report_cmd:  "python3 {fpv_root}/tools/{tool}/parse-fpv-report.py"
+  // TODO: the output name should be conn.log instead of fpv.log
   report_opts: ["--logpath={build_dir}/fpv.log",
                 "--reppath={build_dir}/results.hjson",
                 "--cov={cov}",
                 "--dut={name}"]
+
+  // Connectivity test should all be in top_level design
+  overrides: [
+    {
+      name: design_level
+      value: "top"
+    }
+  ]
 }
