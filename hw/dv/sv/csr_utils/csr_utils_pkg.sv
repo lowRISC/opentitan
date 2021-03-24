@@ -353,7 +353,7 @@ package csr_utils_pkg;
     if (check == UVM_CHECK && status != UVM_IS_OK) begin
       string str;
       uvm_hdl_path_concat paths[$];
-      csr_or_fld.csr.get_full_hdl_path(paths);
+      csr_or_fld.csr.get_full_hdl_path(paths, kind.name);
       foreach (paths[0].slices[i]) str = $sformatf("%0s\n%0s", str, paths[0].slices[i].path);
       `uvm_fatal(msg_id, $sformatf("poke failed for %0s, check below paths %0s",
                                    ptr.get_full_name(), str))
