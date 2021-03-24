@@ -357,8 +357,8 @@ module spi_readcmd
   // Address conversion
   // Convert into masked address
   localparam int unsigned MailboxAw = $clog2(MailboxDepth);
-  localparam logic [31:0] MailboxMask = 32'h FFFF_FFFF
-                                      ^ {(2+MailboxAw){1'b1}};
+  localparam logic [31:0] MailboxMask = {{30-MailboxAw{1'b1}}, {2+MailboxAw{1'b0}}};
+
   assign mailbox_masked_addr = addr_d & MailboxMask;
 
   // Only valid when logic sends SRAM request
