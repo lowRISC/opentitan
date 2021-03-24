@@ -1,0 +1,9 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# TODO: use top_earlgrey_asic once the ast compile error fixed
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+CONNECTION,CLKMGR_IDLE0,u_clkmgr_aon,idle_i[0],u_aes,idle_o
