@@ -485,14 +485,14 @@ module spi_readcmd
             CmdReadData: main_st_d = MainOutput;
 
             // Dummy cycle for commands other than IO
-            {CmdReadFast, CmdReadDual, CmdReadQuad}: begin
+            CmdReadFast, CmdReadDual, CmdReadQuad: begin
               main_st_d = MainDummy;
               // TODO: Reset dummy counter
               load_dummycnt = 1'b 1;
             end
 
             // MByte for IO commands
-            {CmdReadDualIO, CmdReadQuadIO}: begin
+            CmdReadDualIO, CmdReadQuadIO: begin
               main_st_d = MainMByte;
             end
 
@@ -533,9 +533,9 @@ module spi_readcmd
         // Change Mode based on the input opcode
         // Return data from FIFO
         unique case (opcode_i) inside
-          {CmdReadData, CmdReadFast}:   io_mode_o = SingleIO;
-          {CmdReadDual, CmdReadDualIO}: io_mode_o = DualIO;
-          {CmdReadQuad, CmdReadQuadIO}: io_mode_o = QuadIO;
+          CmdReadData, CmdReadFast:   io_mode_o = SingleIO;
+          CmdReadDual, CmdReadDualIO: io_mode_o = DualIO;
+          CmdReadQuad, CmdReadQuadIO: io_mode_o = QuadIO;
           default: io_mode_o = SingleIO;
         endcase
 
