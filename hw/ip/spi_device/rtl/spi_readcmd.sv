@@ -158,7 +158,7 @@ module spi_readcmd
 );
 
   logic unused_threshold;
-  assign unused_threshold = &{1'b0, readbuf_threshold_i};
+  assign unused_threshold = ^readbuf_threshold_i;
   assign read_watermark_o = 1'b 0;
 
   /////////////////
@@ -620,4 +620,3 @@ module spi_readcmd
 
 
 endmodule : spi_readcmd
-

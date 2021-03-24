@@ -70,6 +70,9 @@ waive -rules INPUT_NOT_READ -location {spi_fwmode.sv} -regexp {Input port 'mode_
 waive -rules CONST_FF -location {spi_device.sv} -msg {Flip-flop 'fwm_rxerr_q' is driven by constant zero} \
       -comment "This is an unimplemented error signal which is currently tied to 0."
 
+# intentional terminal states
+waive -rules TERMINAL_STATE -location {spi_cmdparse.sv} -regexp {Terminal state 'St(Status|Jedec|Sfdp|ReadCmd|Upload)' is detected}
+
 # async resets
 waive -rules RESET_DRIVER -location {spi_device.sv} -regexp {'rst_(spi|txfifo|rxfifo)_n' is driven here, and used as an asynchronous reset} \
       -comment "Async reset generation is required here"
