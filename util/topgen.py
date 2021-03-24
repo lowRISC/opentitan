@@ -790,7 +790,7 @@ def generate_top_ral(top: Dict[str, object],
     # together with a map of interface addresses.
     inst_to_block = {}  # type: Dict[str, str]
     if_addrs = {}  # type: Dict[Tuple[str, Optional[str]], int],
-    attrs = {} # type: Dict[str, str]
+    attrs = {}  # type: Dict[str, str]
 
     for module in top['module']:
         inst_name = module['name']
@@ -798,7 +798,8 @@ def generate_top_ral(top: Dict[str, object],
         block = name_to_block[block_name]
         if "attr" in module:
             if module["attr"] not in ['templated', 'reggen_top', 'reggen_only']:
-                raise ValueError('Unsupported value for attr field of {}: {!r}'.format(what, attr))
+                raise ValueError('Unsupported value for attr field of {}: {!r}'.
+                                 format(block_name, module["attr"]))
             attrs[inst_name] = module["attr"]
 
         inst_to_block[inst_name] = block_name
@@ -811,6 +812,8 @@ def generate_top_ral(top: Dict[str, object],
     for item in list(top.get("memory", [])):
         byte_write = ('byte_write' in item and
                       item["byte_write"].lower() == "true")
+        data_intg_passthru = ('data_intg_passthru' in item and
+                              item["data_intg_passthru"].lower() == "true")
         size_in_bytes = int(item['size'], 0)
         num_regs = size_in_bytes // addrsep
         swaccess = access.SWAccess('top-level memory',
@@ -820,6 +823,7 @@ def generate_top_ral(top: Dict[str, object],
                                   desc='(generated from top-level)',
                                   unusual=False,
                                   byte_write=byte_write,
+                                  data_intg_passthru=data_intg_passthru,
                                   validbits=regwidth,
                                   items=num_regs,
                                   size_in_bytes=size_in_bytes,
@@ -1134,8 +1138,6 @@ def main():
 
     # Generic Inter-module connection
     im.elab_intermodule(completecfg)
-
-    top_name = completecfg["name"]
 
     # Generate top.gen.hjson right before rendering
     genhjson_dir = out_path / "data/autogen"

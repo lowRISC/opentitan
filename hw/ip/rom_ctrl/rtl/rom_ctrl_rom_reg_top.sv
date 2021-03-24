@@ -51,7 +51,10 @@ module rom_ctrl_rom_reg_top (
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
-  tlul_rsp_intg_gen u_rsp_intg_gen (
+  tlul_rsp_intg_gen #(
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(1)
+  ) u_rsp_intg_gen (
     .tl_i(tl_o_pre),
     .tl_o
   );
