@@ -83,9 +83,6 @@
 module spi_readcmd
   import spi_device_pkg::*;
 #(
-  parameter int unsigned SramAw = 10, // 4kB
-  parameter int unsigned SramDw = 32, // 4B
-
   // Read command configurations
   // Base address: Index of DPSRAM
   // Buffer size: # of indices assigned to Read Buffer.
