@@ -281,7 +281,8 @@ module otp_ctrl_part_unbuf
   ///////////////////////////////////
 
   assign tlul_addr_d  = tlul_addr_i;
-  assign tlul_rdata_o = (tlul_rvalid_o) ? otp_rdata_i[31:0] : '0;
+  // Do not forward data in case of an error.
+  assign tlul_rdata_o = (tlul_rvalid_o && tlul_rerror_o == '0) ? otp_rdata_i[31:0] : '0;
 
   // Note that OTP works on halfword (16bit) addresses, hence need to
   // shift the addresses appropriately.
