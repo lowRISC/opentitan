@@ -96,7 +96,7 @@ module spi_host
   assign hw2reg.status.active.de = 1'b0;
   assign hw2reg.status.ready.d = 1'b0;
   assign hw2reg.status.ready.de = 1'b0;
-  for(genvar ii = 0; ii < MaxCS; ii++) begin : go_bit_tie_offs
+  for(genvar ii = 0; ii < MaxCS; ii++) begin : gen_go_bit_tie_offs
     assign hw2reg.command[ii].go.d = 1'b0;
     assign hw2reg.command[ii].go.de = 1'b0;
   end
@@ -117,6 +117,24 @@ module spi_host
   assign hw2reg.error_status.overflow.de = 1'b0;
   assign hw2reg.error_status.underflow.d = 1'b0;
   assign hw2reg.error_status.underflow.de = 1'b0;
+
+  // TODO: REMOVE THIS CODE
+  // Temp tie-off to silence lint warnings
+  logic unused_reg;
+  logic unused_tl;
+  logic unused_flop;
+  logic unused_scan;
+  assign unused_reg = ^reg2hw;
+  assign unused_tl = ^txfifo_win_h2d[0];
+  assign unused_scan = ^scanmode_i;
+
+  always_ff @(posedge clk_core_i or negedge rst_core_ni) begin
+    if (!rst_core_ni) begin
+      unused_flop <= '0;
+    end else begin
+      unused_flop <= ^cio_sd_i;
+    end
+  end
 
   prim_intr_hw #(.Width(1)) intr_hw_spi_event (
     .clk_i,
