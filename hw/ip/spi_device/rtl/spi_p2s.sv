@@ -210,7 +210,7 @@ module spi_p2s
       SingleIO: last_beat = (cnt == BitWidth'('h7));
       DualIO:   last_beat = (cnt == BitWidth'('h3));
       QuadIO:   last_beat = (cnt == BitWidth'('h1));
-      default:  last_beat = BitWidth'(0);
+      default:  last_beat = 1'b0;
     endcase
   end
 
