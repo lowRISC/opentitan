@@ -364,13 +364,13 @@ def install_hugo(install_dir):
     # TODO: Support more configurations
     if platform.system() == 'Linux' and platform.machine() == 'x86_64':
         download_url = ('https://github.com/gohugoio/hugo/releases/download/v{version}'
-                '/hugo_extended_{version}_Linux-64bit.tar.gz').format(
-                        version=HUGO_EXTENDED_VERSION)
+                        '/hugo_extended_{version}_Linux-64bit.tar.gz').format(
+                            version=HUGO_EXTENDED_VERSION)
 
     elif platform.system() == 'Darwin' and platform.machine() == 'x86_64':
-        download_url =  ('https://github.com/gohugoio/hugo/releases/download/v{version}'
-                '/hugo_extended_{version}_macOS-64bit.tar.gz').format(
-                        version=HUGO_EXTENDED_VERSION)
+        download_url = ('https://github.com/gohugoio/hugo/releases/download/v{version}'
+                        '/hugo_extended_{version}_macOS-64bit.tar.gz').format(
+                            version=HUGO_EXTENDED_VERSION)
 
     else:
         logging.fatal(
