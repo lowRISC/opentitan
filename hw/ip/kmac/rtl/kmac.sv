@@ -120,6 +120,7 @@ module kmac
   // For given default value 32, 256 bits, the max
   // encode_string(N) || encode_string(S) is 328. So 11 Prefix registers are
   // created.
+  logic [sha3_pkg::NSRegisterSize*8-1:0] reg_ns_prefix;
   logic [sha3_pkg::NSRegisterSize*8-1:0] ns_prefix;
 
   // NumWordsPrefix from kmac_reg_pkg
@@ -236,7 +237,7 @@ module kmac
   // Function-name N and Customization input string S
   always_comb begin
     for (int i = 0 ; i < NumWordsPrefix; i++) begin
-      ns_prefix[32*i+:32] = reg2hw.prefix[i].q;
+      reg_ns_prefix[32*i+:32] = reg2hw.prefix[i].q;
     end
   end
 
@@ -687,6 +688,8 @@ module kmac
     .reg_key_data_i (sw_key_data),
     .reg_key_len_i  (sw_key_len),
 
+    .reg_prefix_i (reg_ns_prefix),
+
     // data from tl_adapter
     .sw_valid_i (sw_msg_valid),
     .sw_data_i  (sw_msg_data),
@@ -709,6 +712,9 @@ module kmac
     .kmac_data_o  (mux2fifo_data),
     .kmac_mask_o  (mux2fifo_mask),
     .kmac_ready_i (mux2fifo_ready),
+
+    // to SHA3 Core
+    .sha3_prefix_o (ns_prefix),
 
     // Keccak state from SHA3 core
     .keccak_state_valid_i (state_valid),
