@@ -119,6 +119,8 @@ package kmac_pkg;
   typedef struct {
     app_mode_e                         Mode;
 
+    sha3_pkg::keccak_strength_e        Strength;
+
     // PrefixMode determines the origin value of Prefix that is used in KMAC
     // and cSHAKE operations.
     // Choose **0** for CSRs (!!PREFIX), or **1** to use `Prefix` parameter
@@ -134,6 +136,7 @@ package kmac_pkg;
     // KeyMgr
     '{
       Mode:       AppKMAC, // KeyMgr uses KMAC operation
+      Strength:   sha3_pkg::L256,
       PrefixMode: 1'b 0,   // Use CSR for prefix
       Prefix:     '0       // Not used in CSR prefix mode
     },
@@ -141,6 +144,7 @@ package kmac_pkg;
     // OTP
     '{
       Mode:       AppCShake,
+      Strength:   sha3_pkg::L256,
       PrefixMode: 1'b 1,     // Use prefix parameter
       Prefix:     'h 0       // TODO: Determine the prefix value
     },
@@ -148,6 +152,7 @@ package kmac_pkg;
     // ROM_CTRL
     '{
       Mode:       AppCShake,
+      Strength:   sha3_pkg::L256,
       PrefixMode: 1'b 1,     // Use prefix parameter
       Prefix:     'h 0       // TODO: Determine the prefix value
     }

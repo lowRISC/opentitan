@@ -23,6 +23,11 @@ module kmac_app
   // Prefix from register
   input [sha3_pkg::NSRegisterSize*8-1:0] reg_prefix_i,
 
+  // mode, strength, kmac_en from register
+  input                             reg_kmac_en_i,
+  input sha3_pkg::sha3_mode_e       reg_sha3_mode_i,
+  input sha3_pkg::keccak_strength_e reg_keccak_strength_i,
+
   // Data from Software
   input                sw_valid_i,
   input [MsgWidth-1:0] sw_data_i,
@@ -46,8 +51,13 @@ module kmac_app
   output logic [MsgWidth-1:0] kmac_mask_o,
   input                       kmac_ready_i,
 
+  // KMAC Core
+  output logic kmac_en_o,
+
   // To Sha3 Core
   output logic [sha3_pkg::NSRegisterSize*8-1:0] sha3_prefix_o,
+  output sha3_pkg::sha3_mode_e                  sha3_mode_o,
+  output sha3_pkg::keccak_strength_e            keccak_strength_o,
 
   // STATE from SHA3 Core
   input                        keccak_state_valid_i,
@@ -146,6 +156,11 @@ module kmac_app
     // (after the transaction is accepted regardless of partial writes or not)
     // When absorbed by SHA3 core, the logic sends digest to the requested App
     // and right next cycle, it triggers done command to downstream.
+
+    // In StAppCfg state, it latches the cfg from AppCfg parameter to determine
+    // the kmac_mode, sha3_mode, keccak strength.
+    StAppCfg = 4'b 1110,
+
     StAppMsg = 4'b 0101,
 
     // In StKeyOutLen, this module pushes encoded outlen to the MSG_FIFO.
@@ -315,26 +330,33 @@ module kmac_app
     unique case (st)
       StIdle: begin
         if (arb_valid && keymgr_key_i.valid) begin
-          st_d = StAppMsg;
-          // KeyMgr initiates the data
-          cmd_o = CmdStart;
+          st_d = StAppCfg;
 
           // choose app_id
           set_appid = 1'b 1;
-        // app_id is not valid at this time. use app_id_d or arb_idx
-        // TODO: arb_isx OoR case?
-        end else if (arb_valid && (AppCfg[arb_idx].Mode == AppKMAC) && !keymgr_key_i.valid) begin
-          st_d = StKeyMgrErrKeyNotValid;
-
-          fsm_err.valid = 1'b 1;
-          fsm_err.code = ErrKeyNotValid;
-          fsm_err.info = '0;
         end else if (sw_cmd_i == CmdStart) begin
           st_d = StSw;
           // Software initiates the sequence
           cmd_o = CmdStart;
         end else begin
           st_d = StIdle;
+        end
+      end
+
+      StAppCfg: begin
+
+        if ((AppCfg[app_id].Mode == AppKMAC) && !keymgr_key_i.valid) begin
+          st_d = StKeyMgrErrKeyNotValid;
+
+          fsm_err.valid = 1'b 1;
+          fsm_err.code = ErrKeyNotValid;
+          fsm_err.info = '0;
+        end else begin
+          // As Cfg is stable now, it sends cmd
+          st_d = StAppMsg;
+
+          // App initiates the data
+          cmd_o = CmdStart;
         end
       end
 
@@ -570,6 +592,30 @@ module kmac_app
         sha3_prefix_o = reg_prefix_i;
       end
     endcase
+  end
+
+  // KMAC en / SHA3 mode / Strength
+  //  by default, it uses reg cfg. When app intf reqs come, it uses AppCfg.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      kmac_en_o         <= 1'b 0;
+      sha3_mode_o       <= sha3_pkg::Sha3;
+      keccak_strength_o <= sha3_pkg::L256;
+    end else if (clr_appid) begin
+      // As App completed, latch reg value
+      kmac_en_o         <= reg_kmac_en_i;
+      sha3_mode_o       <= reg_sha3_mode_i;
+      keccak_strength_o <= reg_keccak_strength_i;
+    end else if (set_appid) begin
+      kmac_en_o         <= AppCfg[arb_idx].Mode == AppKMAC ? 1'b 1 : 1'b 0;
+      sha3_mode_o       <= AppCfg[arb_idx].Mode == AppSHA3
+                           ? sha3_pkg::Sha3 : sha3_pkg::CShake;
+      keccak_strength_o <= AppCfg[arb_idx].Strength ;
+    end else if (st == StIdle) begin
+      kmac_en_o         <= reg_kmac_en_i;
+      sha3_mode_o       <= reg_sha3_mode_i;
+      keccak_strength_o <= reg_keccak_strength_i;
+    end
   end
 
   // Error Reporting ==========================================================

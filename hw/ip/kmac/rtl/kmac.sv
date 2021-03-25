@@ -200,6 +200,12 @@ module kmac
   logic [MaxKeyLen-1:0] key_data [Share];
   key_len_e             key_len;
 
+  // SHA3 Mode, Strength, KMAC enable for app interface
+  logic                       reg_kmac_en,         app_kmac_en;
+  sha3_pkg::sha3_mode_e       reg_sha3_mode,       app_sha3_mode;
+  sha3_pkg::keccak_strength_e reg_keccak_strength, app_keccak_strength;
+
+
   // Command
   // sw_cmd is the command written by SW
   // kmac_cmd is generated in KeyMgr interface.
@@ -375,6 +381,11 @@ module kmac
   // Make sure the field has latch in reg_top
   `ASSERT(ErrProcessedLatched_A, $rose(err_processed) |=> !err_processed)
 
+  // App mode, strength, kmac_en
+  assign reg_kmac_en         = reg2hw.cfg.kmac_en.q;
+  assign reg_sha3_mode       = sha3_pkg::sha3_mode_e'(reg2hw.cfg.mode.q);
+  assign reg_keccak_strength = sha3_pkg::keccak_strength_e'(reg2hw.cfg.kstrength.q);
+
   ///////////////
   // Interrupt //
   ///////////////
@@ -474,7 +485,7 @@ module kmac
       KmacIdle: begin
         if (kmac_cmd == CmdStart) begin
           // If cSHAKE turned on
-          if (sha3_pkg::CShake == sha3_pkg::sha3_mode_e'(reg2hw.cfg.mode.q)) begin
+          if (sha3_pkg::CShake == app_sha3_mode) begin
             kmac_st_d = KmacPrefix;
           end else begin
             // Jump to Msg feed directly
@@ -556,9 +567,9 @@ module kmac
     .msg_ready_i  (msg_ready),
 
     // Configurations
-    .kmac_en_i  (reg2hw.cfg.kmac_en.q),
-    .mode_i     (sha3_pkg::sha3_mode_e'(reg2hw.cfg.mode.q)),
-    .strength_i (sha3_pkg::keccak_strength_e'(reg2hw.cfg.kstrength.q)),
+    .kmac_en_i  (app_kmac_en),
+    .mode_i     (app_sha3_mode),
+    .strength_i (app_keccak_strength),
 
     // Secret key interface
     .key_data_i (key_data),
@@ -594,8 +605,8 @@ module kmac
     .ns_data_i       (ns_prefix),
 
     // Configurations
-    .mode_i     (sha3_pkg::sha3_mode_e'(reg2hw.cfg.mode.q)),
-    .strength_i (sha3_pkg::keccak_strength_e'(reg2hw.cfg.kstrength.q)),
+    .mode_i     (app_sha3_mode),
+    .strength_i (app_keccak_strength),
 
     // Controls (CMD register)
     .start_i    (sha3_start       ),
@@ -690,6 +701,10 @@ module kmac
 
     .reg_prefix_i (reg_ns_prefix),
 
+    .reg_kmac_en_i         (reg_kmac_en),
+    .reg_sha3_mode_i       (reg_sha3_mode),
+    .reg_keccak_strength_i (reg_keccak_strength),
+
     // data from tl_adapter
     .sw_valid_i (sw_msg_valid),
     .sw_data_i  (sw_msg_data),
@@ -713,8 +728,13 @@ module kmac
     .kmac_mask_o  (mux2fifo_mask),
     .kmac_ready_i (mux2fifo_ready),
 
+    // to KMAC Core
+    .kmac_en_o (app_kmac_en),
+
     // to SHA3 Core
-    .sha3_prefix_o (ns_prefix),
+    .sha3_prefix_o     (ns_prefix),
+    .sha3_mode_o       (app_sha3_mode),
+    .keccak_strength_o (app_keccak_strength),
 
     // Keccak state from SHA3 core
     .keccak_state_valid_i (state_valid),

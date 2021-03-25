@@ -9,7 +9,13 @@ class kmac_kdf_vseq extends kmac_sideload_vseq;
 
   constraint kdf_c {
     // KDF outputs 256-bit digest (32 bytes)
-    (kmac_en == 1) -> (output_len == 32);
+    if (kmac_en) {
+      // KDF outputs 256-bit digest (32 bytes)
+      output_len == 32;
+
+      // application interface locked at 256-bit strength
+      strength == sha3_pkg::L256;
+    }
 
     // KDF will never use XOF mode
     xof_en == 0;
