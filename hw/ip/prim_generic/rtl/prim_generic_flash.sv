@@ -148,6 +148,7 @@ module prim_generic_flash #(
     .tl_o,
     .en_ifetch_i(tlul_pkg::InstrDis),
     .req_o(cfg_req),
+    .req_type_o(),
     .gnt_i(1'b1),
     .we_o(cfg_we),
     .addr_o(cfg_addr),
