@@ -175,7 +175,6 @@ module csrng_state_db import csrng_pkg::*; #(
                                        state_db_wr_v_i,state_db_wr_res_ctr_i,
                                        state_db_wr_inst_id_i,state_db_wr_sts_i};
 
-  // TODO: fix the case where GEN updates the internal state
   assign instance_status =
          (state_db_wr_ccmd_i == INS) ||
          (state_db_wr_ccmd_i == RES) ||
