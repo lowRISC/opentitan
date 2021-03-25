@@ -49,16 +49,11 @@ ifneq (${pre_run_cmds},)
 	cd ${run_dir} && ${pre_run_cmds}
 endif
 
-.ONESHELL:
 sw_build: pre_run
 	@echo "[make]: sw_build"
 ifneq (${sw_images},)
-	set -e
-	mkdir -p ${sw_build_dir}
 	# Initialize meson build system.
-	${LOCK_SW_BUILD_DIR} "cd ${proj_root} && \
-		env BUILD_ROOT=${sw_build_dir} ${proj_root}/meson_init.sh"
-
+	#
 	# Loop through the list of sw_images and invoke meson on each item.
 	# `sw_images` is a space-separated list of tests to be built into an image.
 	# Optionally, each item in the list can have additional metadata / flags using
@@ -68,7 +63,11 @@ ifneq (${sw_images},)
 	# If no delimiter is detected, then the full string is considered to be the
 	# <path-to-sw-test>. If 1 delimiter is detected, then it must be <path-to-sw-
 	# test> followed by <index>. The <flag> is considered optional.
-	@for sw_image in ${sw_images}; do \
+	set -e; \
+	mkdir -p ${sw_build_dir}; \
+	${LOCK_SW_BUILD_DIR} "cd ${proj_root} && \
+		env BUILD_ROOT=${sw_build_dir} ${proj_root}/meson_init.sh"; \
+	for sw_image in ${sw_images}; do \
 		image=`echo $$sw_image | cut -d: -f 1`;  \
 		index=`echo $$sw_image | cut -d: -f 2`; \
 		flags=(`echo $$sw_image | cut -d: -f 3- --output-delimiter " "`); \
