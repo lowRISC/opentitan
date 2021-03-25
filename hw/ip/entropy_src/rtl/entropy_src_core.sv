@@ -577,7 +577,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign sfifo_esrng_clr  = !es_enable;
   assign sfifo_esrng_wdata = es_rng_bus;
-  assign sfifo_esrng_pop = es_enable && es_rate_entropy_pulse && sfifo_esrng_not_empty;
+  assign sfifo_esrng_pop = es_enable_rng && es_rng_src_valid && sfifo_esrng_not_empty;
 
   // note: allow input rng raw entropy to drop
 
