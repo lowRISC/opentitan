@@ -6,7 +6,7 @@
 #include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-#define FLASH_CTRL0_BASE_ADDR TOP_EARLGREY_FLASH_CTRL_BASE_ADDR
+#define FLASH_CTRL0_BASE_ADDR TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR
 #define PROGRAM_RESOLUTION_WORDS \
   (FLASH_CTRL_PARAM_REGBUSPGMRESBYTES / sizeof(uint32_t))
 

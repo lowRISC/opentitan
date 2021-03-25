@@ -366,7 +366,7 @@
       clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
       clock_group: "infra",
       reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
-      base_addr: "0x41000000",
+      base_addrs: {core: "0x41000000", prim: "0x41008000"}
       attr: "templated",
     },
     { name: "rv_plic",

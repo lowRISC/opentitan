@@ -66,7 +66,13 @@
       reset:     "rst_fixed_ni",
       pipeline_byp: "false"
     },
-    { name:      "flash_ctrl",
+    { name:      "flash_ctrl.core",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      pipeline_byp: "false"
+    },
+    { name:      "flash_ctrl.prim",
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
@@ -148,14 +154,15 @@
     corei:  ["rom_ctrl.rom", "debug_mem", "ram_main", "eflash"],
     cored:  [
       "rom_ctrl.rom", "rom_ctrl.regs", "debug_mem", "ram_main",
-      "eflash", "peri", "flash_ctrl", "aes", "entropy_src", "csrng",
-      "edn0", "edn1", "hmac", "rv_plic", "otbn", "keymgr", "kmac",
-      "sram_ctrl_main"
+      "eflash", "peri", "flash_ctrl.core", "flash_ctrl.prim",
+      "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
+      "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main"
     ],
     dm_sba: [
       "rom_ctrl.rom", "rom_ctrl.regs", "ram_main", "eflash", "peri",
-      "flash_ctrl", "aes", "entropy_src", "csrng", "edn0", "edn1",
-      "hmac", "rv_plic", "otbn", "kmac", "sram_ctrl_main"
+      "flash_ctrl.core", "flash_ctrl.prim", "aes", "entropy_src",
+      "csrng", "edn0", "edn1", "hmac", "rv_plic", "otbn", "keymgr",
+      "kmac", "sram_ctrl_main"
     ],
   },
 }

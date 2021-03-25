@@ -54,8 +54,10 @@ module flash_ctrl_wrapper (
   flash_ctrl_pkg::flash_rsp_t     flash_ctrl_flash_rsp;
 
   flash_ctrl u_flash_ctrl (
-    .tl_i (flash_ctrl_tl_i),
-    .tl_o (flash_ctrl_tl_o),
+    .core_tl_i (flash_ctrl_tl_i),
+    .core_tl_o (flash_ctrl_tl_o),
+    .prim_tl_i ('0),
+    .prim_tl_o (),
 
     .cio_tck_i    ('0),
     .cio_tms_i    ('0),

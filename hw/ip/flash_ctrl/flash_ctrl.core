@@ -21,7 +21,7 @@ filesets:
       - "fileset_top    ? (lowrisc:systems:flash_ctrl)"
       - "fileset_topgen ? (lowrisc:systems:topgen)"
     files:
-      - "fileset_ip ? (rtl/flash_ctrl_reg_top.sv)"
+      - "fileset_ip ? (rtl/flash_ctrl_core_reg_top.sv)"
       - "fileset_ip ? (rtl/flash_ctrl.sv)"
       - rtl/flash_ctrl_erase.sv
       - rtl/flash_ctrl_prog.sv

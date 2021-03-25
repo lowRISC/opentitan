@@ -13,7 +13,7 @@ package flash_ctrl_env_pkg;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
   import flash_ctrl_pkg::*;
-  import flash_ctrl_ral_pkg::*;
+  import flash_ctrl_core_ral_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

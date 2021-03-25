@@ -9,15 +9,15 @@ module flash_ctrl_bind;
   ) tlul_assert_device (
     .clk_i,
     .rst_ni,
-    .h2d  (tl_i),
-    .d2h  (tl_o)
+    .h2d  (core_tl_i),
+    .d2h  (core_tl_o)
   );
 
-  bind flash_ctrl flash_ctrl_csr_assert_fpv flash_ctrl_csr_assert (
+  bind flash_ctrl flash_ctrl_core_csr_assert_fpv flash_ctrl_core_csr_assert (
     .clk_i,
     .rst_ni,
-    .h2d    (tl_i),
-    .d2h    (tl_o)
+    .h2d    (core_tl_i),
+    .d2h    (core_tl_o)
   );
 
 endmodule
