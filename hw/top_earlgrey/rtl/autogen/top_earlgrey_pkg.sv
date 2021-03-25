@@ -271,14 +271,24 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_AON_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for flash_ctrl in top earlgrey.
+   * Peripheral base address for core device on flash_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_BASE_ADDR = 32'h41000000;
+  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR = 32'h41000000;
 
   /**
-   * Peripheral size in bytes for flash_ctrl in top earlgrey.
+   * Peripheral size in bytes for core device on flash_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_CORE_SIZE_BYTES = 32'h1000;
+
+  /**
+   * Peripheral base address for prim device on flash_ctrl in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR = 32'h41008000;
+
+  /**
+   * Peripheral size in bytes for prim device on flash_ctrl in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES = 32'h1000;
 
   /**
    * Peripheral base address for rv_plic in top earlgrey.

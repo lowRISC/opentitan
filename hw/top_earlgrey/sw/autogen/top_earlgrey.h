@@ -494,22 +494,40 @@ extern "C" {
 #define TOP_EARLGREY_SRAM_CTRL_RET_AON_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for flash_ctrl in top earlgrey.
+ * Peripheral base address for core device on flash_ctrl in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_FLASH_CTRL_BASE_ADDR 0x41000000u
+#define TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR 0x41000000u
 
 /**
- * Peripheral size for flash_ctrl in top earlgrey.
+ * Peripheral size for core device on flash_ctrl in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_FLASH_CTRL_BASE_ADDR and
- * `TOP_EARLGREY_FLASH_CTRL_BASE_ADDR + TOP_EARLGREY_FLASH_CTRL_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR and
+ * `TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR + TOP_EARLGREY_FLASH_CTRL_CORE_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_FLASH_CTRL_SIZE_BYTES 0x1000u
+#define TOP_EARLGREY_FLASH_CTRL_CORE_SIZE_BYTES 0x1000u
+
+/**
+ * Peripheral base address for prim device on flash_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR 0x41008000u
+
+/**
+ * Peripheral size for prim device on flash_ctrl in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR and
+ * `TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR + TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES 0x1000u
 
 /**
  * Peripheral base address for rv_plic in top earlgrey.

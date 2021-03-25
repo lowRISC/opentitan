@@ -3308,6 +3308,11 @@
         rst_ni: rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]
         rst_otp_ni: rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
       }
+      base_addrs:
+      {
+        core: 0x41000000
+        prim: 0x41008000
+      }
       attr: templated
       clock_connections:
       {
@@ -3515,7 +3520,7 @@
           index: -1
         }
         {
-          name: tl
+          name: core_tl
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -3524,14 +3529,23 @@
           inst_name: flash_ctrl
           default: ""
           end_idx: -1
-          top_signame: flash_ctrl_tl
+          top_signame: flash_ctrl_core_tl
+          index: -1
+        }
+        {
+          name: prim_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: flash_ctrl
+          default: ""
+          end_idx: -1
+          top_signame: flash_ctrl_prim_tl
           index: -1
         }
       ]
-      base_addrs:
-      {
-        null: 0x41000000
-      }
     }
     {
       name: rv_plic
@@ -5680,9 +5694,13 @@
       [
         peri.tl_main
       ]
-      flash_ctrl.tl:
+      flash_ctrl.core_tl:
       [
-        main.tl_flash_ctrl
+        main.tl_flash_ctrl__core
+      ]
+      flash_ctrl.prim_tl:
+      [
+        main.tl_flash_ctrl__prim
       ]
       hmac.tl:
       [
@@ -5918,7 +5936,8 @@
           ram_main
           eflash
           peri
-          flash_ctrl
+          flash_ctrl.core
+          flash_ctrl.prim
           aes
           entropy_src
           csrng
@@ -5938,7 +5957,8 @@
           ram_main
           eflash
           peri
-          flash_ctrl
+          flash_ctrl.core
+          flash_ctrl.prim
           aes
           entropy_src
           csrng
@@ -5947,6 +5967,7 @@
           hmac
           rv_plic
           otbn
+          keymgr
           kmac
           sram_ctrl_main
         ]
@@ -6094,7 +6115,7 @@
           ]
         }
         {
-          name: flash_ctrl
+          name: flash_ctrl.core
           type: device
           clock: clk_main_i
           reset: rst_main_ni
@@ -6104,6 +6125,24 @@
           [
             {
               base_addr: 0x41000000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: "true"
+        }
+        {
+          name: flash_ctrl.prim
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline_byp: "false"
+          inst_type: flash_ctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x41008000
               size_byte: 0x1000
             }
           ]
@@ -6424,7 +6463,7 @@
           index: -1
         }
         {
-          name: tl_flash_ctrl
+          name: tl_flash_ctrl__core
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -6432,7 +6471,19 @@
           width: 1
           inst_name: main
           default: ""
-          top_signame: flash_ctrl_tl
+          top_signame: flash_ctrl_core_tl
+          index: -1
+        }
+        {
+          name: tl_flash_ctrl__prim
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: flash_ctrl_prim_tl
           index: -1
         }
         {
@@ -11301,7 +11352,7 @@
         index: -1
       }
       {
-        name: tl
+        name: core_tl
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -11310,7 +11361,20 @@
         inst_name: flash_ctrl
         default: ""
         end_idx: -1
-        top_signame: flash_ctrl_tl
+        top_signame: flash_ctrl_core_tl
+        index: -1
+      }
+      {
+        name: prim_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: flash_ctrl
+        default: ""
+        end_idx: -1
+        top_signame: flash_ctrl_prim_tl
         index: -1
       }
       {
@@ -12386,7 +12450,7 @@
         index: -1
       }
       {
-        name: tl_flash_ctrl
+        name: tl_flash_ctrl__core
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -12394,7 +12458,19 @@
         width: 1
         inst_name: main
         default: ""
-        top_signame: flash_ctrl_tl
+        top_signame: flash_ctrl_core_tl
+        index: -1
+      }
+      {
+        name: tl_flash_ctrl__prim
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: flash_ctrl_prim_tl
         index: -1
       }
       {
@@ -14520,7 +14596,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: flash_ctrl_tl_req
+        signame: flash_ctrl_core_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -14531,7 +14607,29 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: flash_ctrl_tl_rsp
+        signame: flash_ctrl_core_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: flash_ctrl_prim_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: flash_ctrl_prim_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

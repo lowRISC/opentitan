@@ -244,12 +244,19 @@
  */
 #define TOP_EARLGREY_SRAM_CTRL_RET_AON_BASE_ADDR 0x40500000
 /**
- * Peripheral base address for flash_ctrl in top earlgrey.
+ * Peripheral base address for core device on flash_ctrl in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_FLASH_CTRL_BASE_ADDR 0x41000000
+#define TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR 0x41000000
+/**
+ * Peripheral base address for prim device on flash_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR 0x41008000
 /**
  * Peripheral base address for rv_plic in top earlgrey.
  *
