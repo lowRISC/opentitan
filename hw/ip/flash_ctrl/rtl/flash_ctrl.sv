@@ -59,6 +59,7 @@ module flash_ctrl
   output logic cio_tdo_o,
 
   // Interrupts
+  output logic intr_err_o,        // ERR_CODE is non-zero
   output logic intr_prog_empty_o, // Program fifo is empty
   output logic intr_prog_lvl_o,   // Program fifo is empty
   output logic intr_rd_full_o,    // Read fifo is full
@@ -446,6 +447,7 @@ module flash_ctrl
     .tl_o        (tl_win_d2h[0]),
     .en_ifetch_i (tlul_pkg::InstrDis),
     .req_o       (sw_wvalid),
+    .req_type_o  (),
     .gnt_i       (sw_wready),
     .we_o        (sw_wen),
     .addr_o      (),
@@ -530,6 +532,7 @@ module flash_ctrl
     .tl_o        (tl_win_d2h[1]),
     .en_ifetch_i (tlul_pkg::InstrDis),
     .req_o       (rd_fifo_ren),
+    .req_type_o  (),
     .gnt_i       (rd_fifo_rvalid),
     .we_o        (),
     .addr_o      (),
@@ -786,11 +789,13 @@ module flash_ctrl
   assign flash_o.jtag_req.tms = cio_tms_i;
   assign flash_o.jtag_req.tdi = cio_tdi_i;
   assign flash_o.jtag_req.trst_n = '0;
+  assign flash_o.ecc_multi_err_en = reg2hw.phy_err_cfg.q;
   assign cio_tdo_o = flash_i.jtag_rsp.tdo;
   assign cio_tdo_en_o = flash_i.jtag_rsp.tdo_oe;
   assign flash_rd_err = flash_i.rd_err;
   assign flash_rd_data = flash_i.rd_data;
   assign flash_phy_busy = flash_i.init_busy;
+
 
 
   // Interface to pwrmgr
@@ -868,39 +873,72 @@ module flash_ctrl
   assign hw2reg.err_addr.d = err_addr;
   assign hw2reg.err_addr.de = flash_mp_error;
 
-  for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_err_cons
-    assign hw2reg.ecc_err_addr[bank].d  = {flash_i.ecc_addr[bank], {BusByteWidth{1'b0}}};
-    assign hw2reg.ecc_err_addr[bank].de = flash_i.ecc_single_err[bank] |
-                                          flash_i.ecc_multi_err[bank];
+  for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_single_err_cons
+    assign hw2reg.ecc_single_err_addr[bank].d  = {flash_i.ecc_addr[bank], {BusByteWidth{1'b0}}};
+    assign hw2reg.ecc_single_err_addr[bank].de = flash_i.ecc_single_err[bank];
   end
 
-  // Generate edge triggered signals for sources that are level
-  logic [3:0] intr_src;
-  logic [3:0] intr_src_q;
-  logic [3:0] intr_assert;
+  for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_multi_err_cons
+    assign hw2reg.ecc_multi_err_addr[bank].d  = {flash_i.ecc_addr[bank], {BusByteWidth{1'b0}}};
+    assign hw2reg.ecc_multi_err_addr[bank].de = flash_i.ecc_multi_err[bank];
+  end
 
-  assign intr_src = { ~prog_fifo_rvalid,
-                      reg2hw.fifo_lvl.prog.q == prog_fifo_depth,
-                      rd_fifo_full,
-                      reg2hw.fifo_lvl.rd.q == rd_fifo_depth
-                    };
+  logic [7:0] single_err_cnt_d, multi_err_cnt_d;
+  always_comb begin
+    single_err_cnt_d = reg2hw.ecc_single_err_cnt.q;
+    multi_err_cnt_d = reg2hw.ecc_multi_err_cnt.q;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      intr_src_q <= 4'h8; //prog_fifo is empty by default
-    end else if (sw_sel) begin
-      intr_src_q <= intr_src;
+    if (|flash_i.ecc_single_err && single_err_cnt_d < '1) begin
+      single_err_cnt_d = single_err_cnt_d + 1'b1;
+    end
+
+    if (|flash_i.ecc_multi_err && multi_err_cnt_d < '1) begin
+      multi_err_cnt_d = multi_err_cnt_d + 1'b1;
     end
   end
 
-  assign intr_assert = ~intr_src_q & intr_src;
+  // feed back in error count
+  assign hw2reg.ecc_single_err_cnt.de = 1'b1;
+  assign hw2reg.ecc_single_err_cnt.d  = single_err_cnt_d;
+  assign hw2reg.ecc_multi_err_cnt.de  = 1'b1;
+  assign hw2reg.ecc_multi_err_cnt.d   = multi_err_cnt_d;
 
+  // Generate edge triggered signals for sources that are level
+  logic [4:0] intr_src_d;
+  logic [4:0] intr_src_q;
+  logic [4:0] intr_assert;
+
+  assign intr_src_d = { reg2hw.err_code != '0,
+                        ~prog_fifo_rvalid,
+                        reg2hw.fifo_lvl.prog.q == prog_fifo_depth,
+                        rd_fifo_full,
+                        reg2hw.fifo_lvl.rd.q == rd_fifo_depth
+                      };
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      intr_src_q <= 5'h8; //prog_fifo is empty by default
+    end else begin
+      intr_src_q[4] <= intr_src_d[4];
+      if (sw_sel) begin
+        intr_src_q[3:0] <= intr_src_d[3:0];
+      end
+    end
+  end
+
+  assign intr_assert = ~intr_src_q & intr_src_d;
 
   assign intr_prog_empty_o = reg2hw.intr_enable.prog_empty.q & reg2hw.intr_state.prog_empty.q;
   assign intr_prog_lvl_o = reg2hw.intr_enable.prog_lvl.q & reg2hw.intr_state.prog_lvl.q;
   assign intr_rd_full_o = reg2hw.intr_enable.rd_full.q & reg2hw.intr_state.rd_full.q;
   assign intr_rd_lvl_o = reg2hw.intr_enable.rd_lvl.q & reg2hw.intr_state.rd_lvl.q;
   assign intr_op_done_o = reg2hw.intr_enable.op_done.q & reg2hw.intr_state.op_done.q;
+  assign intr_err_o = reg2hw.intr_enable.err.q & reg2hw.intr_state.err.q;
+
+  assign hw2reg.intr_state.err.d  = 1'b1;
+  assign hw2reg.intr_state.err.de = intr_assert[4] |
+                                    (reg2hw.intr_test.err.qe  &
+                                    reg2hw.intr_test.err.q);
 
   assign hw2reg.intr_state.prog_empty.d  = 1'b1;
   assign hw2reg.intr_state.prog_empty.de = intr_assert[3]  |
@@ -922,11 +960,11 @@ module flash_ctrl
                                        (reg2hw.intr_test.rd_lvl.qe  &
                                        reg2hw.intr_test.rd_lvl.q);
 
-
   assign hw2reg.intr_state.op_done.d  = 1'b1;
   assign hw2reg.intr_state.op_done.de = sw_ctrl_done  |
                                         (reg2hw.intr_test.op_done.qe  &
                                         reg2hw.intr_test.op_done.q);
+
 
 
   // Unused bits
@@ -954,5 +992,6 @@ module flash_ctrl
   `ASSERT_KNOWN(IntrProgRdFullKnownO_A, intr_rd_full_o   )
   `ASSERT_KNOWN(IntrRdLvlKnownO_A,      intr_rd_lvl_o    )
   `ASSERT_KNOWN(IntrOpDoneKnownO_A,     intr_op_done_o   )
+  `ASSERT_KNOWN(IntrErrO_A,             intr_err_o       )
 
 endmodule

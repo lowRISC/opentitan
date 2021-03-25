@@ -32,9 +32,11 @@ module flash_phy_rd import flash_phy_pkg::*; (
 
   // configuration interface from flash controller
   input buf_en_i,
+  input ecc_multi_err_en_i,
 
   // interface with arbitration unit
   input req_i,
+  input tlul_pkg::tl_type_e req_type_i,
   input descramble_i,
   input ecc_i,
   input prog_i,
@@ -307,6 +309,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
       rd_attrs.addr <= addr_i[BusBankAddrW-1:LsbAddrBit];
       rd_attrs.descramble <= descramble_i;
       rd_attrs.ecc <= ecc_i;
+      rd_attrs.req_type <= req_type_i;
     end else if (rd_done) begin
       rd_busy <= 1'b0;
     end
@@ -343,7 +346,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
   logic [DataWidth-1:0] data_int;
   logic data_erased;
 
-  assign valid_ecc = rd_done && rd_attrs.ecc && !data_erased;
+  assign valid_ecc = rd_done && rd_attrs.ecc;
 
   // When all bits are 1, the data has been erased
   // This check is only valid when read data returns.
@@ -363,9 +366,18 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // rd_done signal below is duplicated (already in data_erased) to show clear intent of the code.
   assign data_int = valid_ecc ? data_ecc_chk :
                                 data_i[DataWidth-1:0];
-  assign data_err = valid_ecc & ecc_multi_err;
-  assign ecc_multi_err_o = data_err;
+
+  // For instruction type accesses, always return the transaction error
+  // For data type accesses, allow the error return to be configurable, as the actual data may
+  // need to be debugged
+  assign data_err = (rd_attrs.req_type == tlul_pkg::InstrType) ?
+                    ecc_multi_err_o :
+                    ecc_multi_err_o & ecc_multi_err_en_i;
+
+  // always send out sideband indication on error
+  assign ecc_multi_err_o = valid_ecc & ecc_multi_err;
   assign ecc_single_err_o = valid_ecc & ecc_single_err;
+
   // ecc address return is always the full flash word
   assign ecc_addr_o = {rd_attrs.addr, {LsbAddrBit{1'b0}}};
 

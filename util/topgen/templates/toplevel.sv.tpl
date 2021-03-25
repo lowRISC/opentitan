@@ -384,6 +384,7 @@ module top_${top["name"]} #(
     .tl_o        (${m["name"]}_tl_rsp),
     .en_ifetch_i (${m["inter_signal_list"][3]["top_signame"]}),
     .req_o       (${m["name"]}_req),
+    .req_type_o  (),
     .gnt_i       (${m["name"]}_gnt),
     .we_o        (${m["name"]}_we),
     .addr_o      (${m["name"]}_addr),
@@ -474,6 +475,7 @@ mem_name = Name(mem_name[1:])
     .tl_o        (${m["name"]}_tl_rsp),
     .en_ifetch_i (tlul_pkg::InstrEn),
     .req_o       (${m["name"]}_req),
+    .req_type_o  (),
     .gnt_i       (1'b1), // Always grant as only one requester exists
     .we_o        (),
     .addr_o      (${m["name"]}_addr),
@@ -507,6 +509,7 @@ mem_name = Name(mem_name[1:])
 
   // host to flash communication
   logic flash_host_req;
+  tlul_pkg::tl_type_e flash_host_req_type;
   logic flash_host_req_rdy;
   logic flash_host_req_done;
   logic flash_host_rderr;
@@ -534,6 +537,7 @@ mem_name = Name(mem_name[1:])
     .tl_o        (${m["name"]}_tl_rsp),
     .en_ifetch_i (tlul_pkg::InstrEn), // tie this to secure boot somehow
     .req_o       (flash_host_req),
+    .req_type_o  (flash_host_req_type),
     .gnt_i       (flash_host_req_rdy),
     .we_o        (),
     .addr_o      (flash_host_addr),
@@ -553,6 +557,7 @@ mem_name = Name(mem_name[1:])
     .${key}   (${value}),
     % endfor
     .host_req_i        (flash_host_req),
+    .host_req_type_i   (flash_host_req_type),
     .host_addr_i       (flash_host_addr),
     .host_req_rdy_o    (flash_host_req_rdy),
     .host_req_done_o   (flash_host_req_done),

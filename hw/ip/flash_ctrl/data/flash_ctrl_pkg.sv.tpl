@@ -283,6 +283,8 @@ package flash_ctrl_pkg;
     logic                 scramble_en;
     logic                 ecc_en;
     logic                 he_en;
+    logic                 rd_buf_en;
+    logic                 ecc_multi_err_en;
     logic                 rd;
     logic                 prog;
     logic                 pg_erase;
@@ -297,7 +299,6 @@ package flash_ctrl_pkg;
     mp_region_cfg_t [MpRegions:0] region_cfgs;
     logic [KeyWidth-1:0]  addr_key;
     logic [KeyWidth-1:0]  data_key;
-    logic                 rd_buf_en;
     tlul_pkg::tl_h2d_t    tl_flash_c2p;
     logic                 alert_trig;
     logic                 alert_ack;
@@ -310,6 +311,8 @@ package flash_ctrl_pkg;
     scramble_en:   '0,
     ecc_en:        '0,
     he_en:         '0,
+    rd_buf_en:     1'b0,
+    ecc_multi_err_en: '0,
     rd:            '0,
     prog:          '0,
     pg_erase:      '0,
@@ -324,7 +327,6 @@ package flash_ctrl_pkg;
     region_cfgs:   '0,
     addr_key:      RndCnstAddrKeyDefault,
     data_key:      RndCnstDataKeyDefault,
-    rd_buf_en:     1'b0,
     tl_flash_c2p:  '0,
     alert_trig:    1'b0,
     alert_ack:     1'b0,

@@ -43,7 +43,7 @@ void flash_init_block(void) {
 static int get_clr_err(void) {
   uint32_t err_status =
       REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_ERR_CODE_REG_OFFSET);
-  REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_ERR_CODE_REG_OFFSET) = 0;
+  REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_ERR_CODE_REG_OFFSET) = -1u;
   return err_status;
 }
 
