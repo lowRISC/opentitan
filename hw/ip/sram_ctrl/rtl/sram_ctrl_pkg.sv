@@ -25,9 +25,8 @@ package sram_ctrl_pkg;
       128'hbecda03b34bc0418a30a33861a610f71;
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramNonceDefault =
       128'h22f296f8f95efb84a75cd435a5541e9f;
-  parameter lfsr_perm_t RndCnstSramLfsrPermDefault = {
-      128'h1cf6cd183310ef2203bb344b679cdff1
-  };
+  parameter lfsr_perm_t RndCnstSramLfsrPermDefault =
+      160'h8c24f71703eda8a2378916b6bf80c76651ebcea1;
 
   /////////////////////
   // Interface Types //
