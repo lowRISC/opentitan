@@ -507,6 +507,12 @@ The error that caused the alert can be determined by reading the {{< regref "FAT
 If OTBN was running, this value will also be reflected in the {{< regref "ERR_BITS" >}} register.
 A fatal alert can only be cleared by resetting OTBN through the `rst_ni` line.
 
+### Idle
+
+OTBN exposes a single-bit `idle_o` signal, intended to be used by the clock manager to clock-gate the block when it is not in use.
+This signal is high when OTBN is not running.
+The cycle after a write to {{< regref "CMD.start" >}}, the signal goes low.
+This remains low until the end of the operation (either from an [`ECALL`]({{< relref "isa#ecall" >}}) or an error, at which point it goes high again.
 
 # Running applications on OTBN
 
