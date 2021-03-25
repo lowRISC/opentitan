@@ -39,8 +39,8 @@ package crypto_dpi_prince_pkg;
   );
     for (int i = 0; i < NumRoundsHalf; i++) begin
       ciphertext[i] = c_dpi_prince_encrypt(plaintext,
-                                           key[63:0],
-                                           key[127:64],
+                                           key[127:64], // k0 gets assigned the MSB halve
+                                           key[63:0],   // k1 gets assigned the LSB halve
                                            i+1,
                                            old_key_schedule);
     end
@@ -54,8 +54,8 @@ package crypto_dpi_prince_pkg;
   );
     for (int i = 0; i < NumRoundsHalf; i++) begin
       plaintext[i] = c_dpi_prince_decrypt(ciphertext[i],
-                                          key[63:0],
-                                          key[127:64],
+                                          key[127:64],  // k0 gets assigned the MSB halve
+                                          key[63:0],    // k1 gets assigned the LSB halve
                                           i+1,
                                           old_key_schedule);
     end

@@ -53,14 +53,14 @@ module prim_prince #(
 
   logic [DataWidth-1:0] k0, k0_prime_d, k1_d, k0_new_d, k0_prime_q, k1_q, k0_new_q;
   always_comb begin : p_key_expansion
-    k0         = key_i[DataWidth-1:0];
+    k0         = key_i[2*DataWidth-1 : DataWidth];
     k0_prime_d = {k0[0], k0[DataWidth-1:2], k0[DataWidth-1] ^ k0[1]};
-    k1_d       = key_i[2*DataWidth-1 : DataWidth];
+    k1_d       = key_i[DataWidth-1:0];
 
     // modify key for decryption
     if (dec_i) begin
       k0          = k0_prime_d;
-      k0_prime_d  = key_i[DataWidth-1:0];
+      k0_prime_d  = key_i[2*DataWidth-1 : DataWidth];
       k1_d       ^= prim_cipher_pkg::PRINCE_ALPHA_CONST[DataWidth-1:0];
     end
   end
@@ -72,7 +72,7 @@ module prim_prince #(
     // Imroved keyschedule proposed by https://eprint.iacr.org/2014/656.pdf
     // In this case we alternate between k1 and k0.
     always_comb begin : p_new_keyschedule_k0_alpha
-      k0_new_d = key_i[DataWidth-1:0];
+      k0_new_d = key_i[2*DataWidth-1 : DataWidth];
       // We need to apply the alpha constant here as well, just as for k1 in decryption mode.
       if (dec_i) begin
         k0_new_d ^= prim_cipher_pkg::PRINCE_ALPHA_CONST[DataWidth-1:0];
