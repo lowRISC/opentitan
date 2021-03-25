@@ -127,7 +127,7 @@ package kmac_pkg;
 
     // If `PrefixMode` is 1'b 1, then this `Prefix` value will be used in
     // cSHAKE or KMAC operation.
-    logic [sha3_pkg::PrefixIndexW-1:0] Prefix;
+    logic [sha3_pkg::NSRegisterSize*8-1:0] Prefix;
   } app_config_t;
 
   parameter app_config_t AppCfg [NumAppIntf] = '{

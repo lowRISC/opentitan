@@ -20,6 +20,9 @@ module kmac_app
   input [MaxKeyLen-1:0] reg_key_data_i [Share],
   input key_len_e       reg_key_len_i,
 
+  // Prefix from register
+  input [sha3_pkg::NSRegisterSize*8-1:0] reg_prefix_i,
+
   // Data from Software
   input                sw_valid_i,
   input [MsgWidth-1:0] sw_data_i,
@@ -42,6 +45,9 @@ module kmac_app
   output logic [MsgWidth-1:0] kmac_data_o,
   output logic [MsgWidth-1:0] kmac_mask_o,
   input                       kmac_ready_i,
+
+  // To Sha3 Core
+  output logic [sha3_pkg::NSRegisterSize*8-1:0] sha3_prefix_o,
 
   // STATE from SHA3 Core
   input                        keccak_state_valid_i,
@@ -534,6 +540,36 @@ module kmac_app
     assign key_data_o[i] = (keymgr_key_en_i || (mux_sel == SelApp))
                          ? keymgr_key[i]
                          : reg_key_data_i[i] ;
+  end
+
+  // Prefix Demux
+  // For SW, always prefix register.
+  // For App intf, check PrefixMode cfg and if 1, use Prefix cfg.
+  always_comb begin
+    sha3_prefix_o = '0;
+
+    unique case (st)
+      StAppMsg: begin
+        // Check app intf cfg
+        for (int unsigned i = 0 ; i < NumAppIntf ; i++) begin
+          if (app_id == AppIdxW'(i)) begin
+            if (AppCfg[i].PrefixMode == 1'b 0) begin
+              sha3_prefix_o = reg_prefix_i;
+            end else begin
+              sha3_prefix_o = AppCfg[i].Prefix;
+            end
+          end
+        end
+      end
+
+      StSw: begin
+        sha3_prefix_o = reg_prefix_i;
+      end
+
+      default: begin
+        sha3_prefix_o = reg_prefix_i;
+      end
+    endcase
   end
 
   // Error Reporting ==========================================================
