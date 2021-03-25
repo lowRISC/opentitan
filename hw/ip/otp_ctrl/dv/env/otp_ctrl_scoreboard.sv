@@ -405,6 +405,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         {[SW_WINDOW_BASE_ADDR : SW_WINDOW_BASE_ADDR + SW_WINDOW_SIZE]}) begin
       if (data_phase_read) begin
         bit [TL_AW-1:0] otp_addr = (csr_addr & addr_mask - SW_WINDOW_BASE_ADDR) >> 2;
+        // TODO: macro ecc uncorrectable error once mem_bkdr_if supports
+        //`DV_CHECK_EQ(item.d_data, 0,
+        //             $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
+        //             csr_addr, otp_addr << 2))
         `DV_CHECK_EQ(item.d_data, otp_a[otp_addr],
                      $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
                      csr_addr, otp_addr << 2))
@@ -491,12 +495,14 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
                 // SW partitions write read_lock_csr can lock read access
                 // Secret partitions cal digest can also lock read access
-                // However, digest is always readable except SW partitions (TODO: check with
-                // designer)
+                // However, digest is always readable except SW partitions (Issue #5752)
                 if (sw_read_lock || (is_secret(dai_addr) && digests[part_idx] != 0 &&
                     !is_digest(dai_addr))) begin
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                   predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
+                  // DAI interface access error, even though injected ECC error, it won't be read
+                  // out and detected. (TODO: can remove this once ECC is adopted in mem_bkdr_if)
+                  cfg.ecc_err = OtpNoEccErr;
                 end else begin
                   bit [TL_AW-1:0] otp_addr = get_scb_otp_addr();
                   if (cfg.ecc_err == OtpNoEccErr) begin
@@ -507,6 +513,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                     predict_err(OtpDaiErrIdx, OtpMacroEccCorrError);
                     predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
                                   otp_a[otp_addr], otp_a[otp_addr+1]);
+                    // In sequence, we backdoor write back to non-error value, so here scb reset
+                    // the ecc_err back to NoErr.
+                    cfg.ecc_err = OtpNoEccErr;
+
                   // OTP macro uncorrectable error: DAI interface goes to error state
                   end else begin
                     predict_err(OtpDaiErrIdx, OtpMacroEccUncorrError);

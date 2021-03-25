@@ -101,7 +101,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] val, backdoor_rd_val;
     bit backdoor_wr;
     addr = randomize_dai_addr(addr);
-    if (cfg.ecc_err != OtpEccUncorrErr) begin
+    if (cfg.ecc_err != OtpEccUncorrErr && addr < LifeCycleOffset) begin
       backdoor_rd_val = backdoor_inject_ecc_err(addr, ecc_err_mask);
       backdoor_wr = 1;
     end
@@ -122,7 +122,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
     // If has ecc_err, backdoor write back original value
     // TODO: remove this once we can detect ECC error from men_bkdr_if
-    if (cfg.ecc_err != OtpNoEccErr && backdoor_wr) begin
+    if (backdoor_wr) begin
       cfg.mem_bkdr_vif.write32({addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
     end
   endtask : dai_rd
@@ -207,9 +207,10 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
                                                            bit [TL_DW-1:0] err_mask);
     bit [TL_DW-1:0] val, backdoor_val;
     addr = {addr[TL_DW-3:2], 2'b00};
+    val = cfg.mem_bkdr_vif.read32(addr);
     if (err_mask == 0 || addr >= LifeCycleOffset) begin
       cfg.ecc_err = OtpNoEccErr;
-      return 0;
+      return val;
     end
 
     // If every byte at most has one ECC error bit, it is a correctable error
@@ -223,11 +224,10 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
 
     // Backdoor read and write back with error bits
-    val = cfg.mem_bkdr_vif.read32(addr);
     foreach (err_mask[i]) backdoor_val[i] = err_mask[i] ? ~val[i] : val[i];
     cfg.mem_bkdr_vif.write32(addr, backdoor_val);
-    `uvm_info(`gfn, $sformatf("original val %0h, backdoor val %0h, err_mask %0h",
-                              val, backdoor_val, err_mask), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("original val %0h, backdoor val %0h, err_mask %0h err_type %0s",
+                              val, backdoor_val, err_mask, cfg.ecc_err.name), UVM_HIGH)
 
     return val;
   endfunction
