@@ -251,7 +251,7 @@ module top_earlgrey #(
   // rom_ctrl
 
 
-  logic [176:0]  intr_vector;
+  logic [177:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -379,6 +379,7 @@ module top_earlgrey #(
   logic intr_flash_ctrl_rd_full;
   logic intr_flash_ctrl_rd_lvl;
   logic intr_flash_ctrl_op_done;
+  logic intr_flash_ctrl_err;
   logic intr_hmac_hmac_done;
   logic intr_hmac_fifo_empty;
   logic intr_hmac_hmac_err;
@@ -791,6 +792,7 @@ module top_earlgrey #(
     .tl_o        (ram_main_tl_rsp),
     .en_ifetch_i (sram_ctrl_main_en_ifetch),
     .req_o       (ram_main_req),
+    .req_type_o  (),
     .gnt_i       (ram_main_gnt),
     .we_o        (ram_main_we),
     .addr_o      (ram_main_addr),
@@ -865,6 +867,7 @@ module top_earlgrey #(
     .tl_o        (ram_ret_aon_tl_rsp),
     .en_ifetch_i (sram_ctrl_ret_aon_en_ifetch),
     .req_o       (ram_ret_aon_req),
+    .req_type_o  (),
     .gnt_i       (ram_ret_aon_gnt),
     .we_o        (ram_ret_aon_we),
     .addr_o      (ram_ret_aon_addr),
@@ -915,6 +918,7 @@ module top_earlgrey #(
 
   // host to flash communication
   logic flash_host_req;
+  tlul_pkg::tl_type_e flash_host_req_type;
   logic flash_host_req_rdy;
   logic flash_host_req_done;
   logic flash_host_rderr;
@@ -938,6 +942,7 @@ module top_earlgrey #(
     .tl_o        (eflash_tl_rsp),
     .en_ifetch_i (tlul_pkg::InstrEn), // tie this to secure boot somehow
     .req_o       (flash_host_req),
+    .req_type_o  (flash_host_req_type),
     .gnt_i       (flash_host_req_rdy),
     .we_o        (),
     .addr_o      (flash_host_addr),
@@ -953,6 +958,7 @@ module top_earlgrey #(
     .clk_i   (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni   (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
     .host_req_i        (flash_host_req),
+    .host_req_type_i   (flash_host_req_type),
     .host_addr_i       (flash_host_addr),
     .host_req_rdy_o    (flash_host_req_rdy),
     .host_req_done_o   (flash_host_req_done),
@@ -1828,6 +1834,7 @@ module top_earlgrey #(
       .intr_rd_full_o    (intr_flash_ctrl_rd_full),
       .intr_rd_lvl_o     (intr_flash_ctrl_rd_lvl),
       .intr_op_done_o    (intr_flash_ctrl_op_done),
+      .intr_err_o        (intr_flash_ctrl_err),
       // [13]: recov_err
       // [14]: recov_mp_err
       // [15]: recov_ecc_err
@@ -2195,25 +2202,26 @@ module top_earlgrey #(
 
   // interrupt assignments
   assign intr_vector = {
-      intr_otbn_done, // ID 145
-      intr_edn1_edn_fatal_err, // ID 144
-      intr_edn1_edn_cmd_req_done, // ID 143
-      intr_edn0_edn_fatal_err, // ID 142
-      intr_edn0_edn_cmd_req_done, // ID 141
-      intr_entropy_src_es_fatal_err, // ID 140
-      intr_entropy_src_es_health_test_failed, // ID 139
-      intr_entropy_src_es_entropy_valid, // ID 138
-      intr_csrng_cs_fatal_err, // ID 137
-      intr_csrng_cs_hw_inst_exc, // ID 136
-      intr_csrng_cs_entropy_req, // ID 135
-      intr_csrng_cs_cmd_req_done, // ID 134
-      intr_keymgr_op_done, // ID 133
-      intr_kmac_kmac_err, // ID 132
-      intr_kmac_fifo_empty, // ID 131
-      intr_kmac_kmac_done, // ID 130
-      intr_hmac_hmac_err, // ID 129
-      intr_hmac_fifo_empty, // ID 128
-      intr_hmac_hmac_done, // ID 127
+      intr_otbn_done, // ID 146
+      intr_edn1_edn_fatal_err, // ID 145
+      intr_edn1_edn_cmd_req_done, // ID 144
+      intr_edn0_edn_fatal_err, // ID 143
+      intr_edn0_edn_cmd_req_done, // ID 142
+      intr_entropy_src_es_fatal_err, // ID 141
+      intr_entropy_src_es_health_test_failed, // ID 140
+      intr_entropy_src_es_entropy_valid, // ID 139
+      intr_csrng_cs_fatal_err, // ID 138
+      intr_csrng_cs_hw_inst_exc, // ID 137
+      intr_csrng_cs_entropy_req, // ID 136
+      intr_csrng_cs_cmd_req_done, // ID 135
+      intr_keymgr_op_done, // ID 134
+      intr_kmac_kmac_err, // ID 133
+      intr_kmac_fifo_empty, // ID 132
+      intr_kmac_kmac_done, // ID 131
+      intr_hmac_hmac_err, // ID 130
+      intr_hmac_fifo_empty, // ID 129
+      intr_hmac_hmac_done, // ID 128
+      intr_flash_ctrl_err, // ID 127
       intr_flash_ctrl_op_done, // ID 126
       intr_flash_ctrl_rd_lvl, // ID 125
       intr_flash_ctrl_rd_full, // ID 124

@@ -8897,6 +8897,12 @@
       module_name: flash_ctrl
     }
     {
+      name: flash_ctrl_err
+      width: 1
+      type: interrupt
+      module_name: flash_ctrl
+    }
+    {
       name: hmac_hmac_done
       width: 1
       type: interrupt

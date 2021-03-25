@@ -903,13 +903,27 @@ module flash_ctrl
   assign hw2reg.ecc_multi_err_cnt.de  = 1'b1;
   assign hw2reg.ecc_multi_err_cnt.d   = multi_err_cnt_d;
 
-  // Generate edge triggered signals for sources that are level
-  logic [4:0] intr_src_d;
-  logic [4:0] intr_src_q;
-  logic [4:0] intr_assert;
+  // err code interrupt event
+  flash_ctrl_reg2hw_err_code_reg_t err_code_d, err_code_q;
+  logic err_code_intr_event;
 
-  assign intr_src_d = { reg2hw.err_code != '0,
-                        ~prog_fifo_rvalid,
+  assign err_code_d = reg2hw.err_code & reg2hw.err_code_intr_en;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      err_code_q <= '0;
+    end else begin
+      err_code_q <= err_code_d;
+    end
+  end
+
+  assign err_code_intr_event = err_code_d != err_code_q;
+
+  // general interrupt events
+  logic [3:0] intr_src_d;
+  logic [3:0] intr_src_q;
+
+  assign intr_src_d = { ~prog_fifo_rvalid,
                         reg2hw.fifo_lvl.prog.q == prog_fifo_depth,
                         rd_fifo_full,
                         reg2hw.fifo_lvl.rd.q == rd_fifo_depth
@@ -917,16 +931,18 @@ module flash_ctrl
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      intr_src_q <= 5'h8; //prog_fifo is empty by default
+      intr_src_q <= 4'h8; //prog_fifo is empty by default
     end else begin
-      intr_src_q[4] <= intr_src_d[4];
       if (sw_sel) begin
         intr_src_q[3:0] <= intr_src_d[3:0];
       end
     end
   end
 
-  assign intr_assert = ~intr_src_q & intr_src_d;
+  // interrupt events
+  logic [4:0] intr_assert;
+  assign intr_assert[4] = err_code_intr_event;
+  assign intr_assert[3:0] = ~intr_src_q & intr_src_d;
 
   assign intr_prog_empty_o = reg2hw.intr_enable.prog_empty.q & reg2hw.intr_state.prog_empty.q;
   assign intr_prog_lvl_o = reg2hw.intr_enable.prog_lvl.q & reg2hw.intr_state.prog_lvl.q;

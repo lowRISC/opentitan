@@ -1297,6 +1297,39 @@
         ]
       },
 
+      { name: "ERR_CODE_INTR_EN",
+        desc: '''
+          Interrupt enable mask for error code.
+          Only enabled bits will generate interrupts.
+          Bits that are not enabled will still be reflected in the !!ERR_CODE register, but will not trigger
+          an interrupt
+        '''
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "0",
+            name: "flash_err_en",
+            desc: "interrupt mask for flash error"
+          },
+          { bits: "1",
+            name: "flash_alert_en",
+            desc: "interrupt mask for flash alert"
+          },
+          { bits: "2",
+            name: "mp_err",
+            desc: "interrupt mask for memory properties error"
+          },
+          { bits: "3",
+            name: "ecc_single_err",
+            desc: "interrupt mask for single bit ecc error"
+          },
+          { bits: "4",
+            name: "ecc_multi_err",
+            desc: "interrupt mask for multiple bits ecc error"
+          },
+        ]
+      },
+
       { name: "ERR_CODE",
         desc: '''
           Flash error code register.
@@ -1400,6 +1433,11 @@
           count: "RegNumBanks",
           swaccess: "ro",
           hwaccess: "hwo",
+          fields: [
+            { bits: "19:0",
+              resval: 0,
+            },
+          ]
         }
       },
 
