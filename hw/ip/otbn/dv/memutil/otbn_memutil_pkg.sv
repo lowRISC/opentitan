@@ -4,7 +4,7 @@
 
 // Imports for the functions defined in otbn_memutil.h. There are documentation comments explaining
 // what the functions do there.
-
+`ifndef SYNTHESIS
 package otbn_memutil_pkg;
 
   import "DPI-C" function chandle OtbnMemUtilMake(string top_scope);
@@ -25,3 +25,4 @@ package otbn_memutil_pkg;
                                                     output bit [31:0] data_value);
 
 endpackage
+`endif // SYNTHESIS
