@@ -5,12 +5,11 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_MOCK_MMIO_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_MOCK_MMIO_H_
 
-#include <stdint.h>
-#include <string.h>
-
 #include <initializer_list>
 #include <memory>
 #include <random>
+#include <stdint.h>
+#include <string.h>
 #include <vector>
 
 #include "gmock/gmock.h"
@@ -112,12 +111,14 @@ Int ToInt(LittleEndianBytes str) {
  * `BitField`'s documentation for details one what this means. This overload
  * enables bitfield EXPECT_* macros:
  *   EXPECT_READ32(offset, {{A_OFFSET, 0x55}, {B_OFFSET, 0xaa}});
+ *   EXPECT_READ32(offset, fields);
+ * where `fields` is an `std::vector<BitField>`.
  *
  * @param fields a list of bit field entries.
  * @return a value of type `Int` built out of `fields`.
  */
 template <typename Int>
-Int ToInt(std::initializer_list<BitField> fields) {
+Int ToInt(std::vector<BitField> fields) {
   Int val = 0;
   for (auto field : fields) {
     // Due to the way that gtest ASSERT_* works, and the fact that this must be
