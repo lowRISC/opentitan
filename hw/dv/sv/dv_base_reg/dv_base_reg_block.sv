@@ -39,13 +39,38 @@ class dv_base_reg_block extends uvm_reg_block;
     foreach (ral_regs[i]) `downcast(dv_regs[i], ral_regs[i])
   endfunction
 
-  function dv_base_reg get_dv_base_reg_by_name(string csr_name, bit check_csr_exist = 1'b1);
-    uvm_reg csr = get_reg_by_name(csr_name);
+  // set reg/mreg using name and index
+  function dv_base_reg get_dv_base_reg_by_name(string csr_name,
+                                               int    csr_idx = -1,
+                                               bit    check_csr_exist = 1'b1);
+    string  reg_name;
+    uvm_reg csr;
+
+    reg_name = (csr_idx < 0) ? csr_name : $sformatf("%s_%0d", csr_name, csr_idx);
+    csr = get_reg_by_name(reg_name);
     `downcast(get_dv_base_reg_by_name, csr)
     if (check_csr_exist) begin
       `DV_CHECK_NE_FATAL(get_dv_base_reg_by_name, null,
                          $sformatf("%0s does not exist in block %0s",csr_name, get_name()))
     end
+  endfunction
+
+  // set field of reg/mreg using name and index, need to call csr_update after setting
+  function void set_dv_base_reg_field_by_name(dv_base_reg csr_reg,
+                                              string      csr_field,
+                                              uint        value,
+                                              int         field_idx = -1,
+                                              bit         check_csr_exist = 1'b1);
+    uvm_reg_field reg_field;
+    string field_name;
+
+    field_name = (field_idx < 0) ? csr_field : $sformatf("%s_%0d", csr_field, field_idx);
+    reg_field = csr_reg.get_field_by_name(field_name);
+    if (check_csr_exist) begin
+      `DV_CHECK_NE_FATAL(reg_field, null,
+                         $sformatf("%0s does not exist in block %0s", field_name, get_name()))
+    end
+    reg_field.set(value);
   endfunction
 
   function void get_shadowed_regs(ref dv_base_reg shadowed_regs[$]);
@@ -175,4 +200,4 @@ class dv_base_reg_block extends uvm_reg_block;
     return (word_aligned ? get_word_aligned_addr(byte_offset) : byte_offset) + map.get_base_addr();
   endfunction
 
-endclass
+endclass : dv_base_reg_block
