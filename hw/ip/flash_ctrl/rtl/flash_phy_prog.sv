@@ -74,6 +74,8 @@ module flash_phy_prog import flash_phy_pkg::*; (
   logic align_next;
   data_sel_e data_sel;
 
+  localparam bit [WordSelW-1:0] MaxIdx = WordSelW'(WidthMultiple - 1);
+
   logic [WidthMultiple-1:0][BusWidth-1:0] packed_data;
 
   // selects empty data or real data
@@ -86,7 +88,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       idx <= '0;
-    end else if (pack_valid && idx == (WidthMultiple-1)) begin
+    end else if (pack_valid && idx == MaxIdx) begin
       // when a flash word is packed full, return index to 0
       idx <= '0;
     end else if (pack_valid) begin
@@ -143,7 +145,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
         pack_valid = req_i;
         data_sel = Actual;
 
-        if (req_i && idx == (WidthMultiple-1)) begin
+        if (req_i && idx == MaxIdx) begin
           // last beat of a flash word
           state_d = scramble_i ? StCalcMask : StReqFlash;
         end else if (req_i && last_i) begin
@@ -160,7 +162,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
         data_sel = Filler;
 
         // finish packing remaining entries
-        if (idx == (WidthMultiple-1)) begin
+        if (idx == MaxIdx) begin
           state_d = scramble_i ? StCalcMask : StReqFlash;
         end
       end
@@ -269,7 +271,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
 `endif
 
   // Prepack state can only pack up to WidthMultiple - 1
-  `ASSERT(PrePackRule_A, state_q == StPrePack && pack_valid |-> idx < (WidthMultiple - 1))
+  `ASSERT(PrePackRule_A, state_q == StPrePack && pack_valid |-> idx < MaxIdx)
 
   // Postpack states should never pack the first index (as it would be aligned in that case)
   `ASSERT(PostPackRule_A, state_q == StPostPack && pack_valid |-> idx != '0)
