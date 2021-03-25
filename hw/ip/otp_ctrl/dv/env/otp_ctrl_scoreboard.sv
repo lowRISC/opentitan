@@ -169,6 +169,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       for (int i = HwCfgIdx; i <= Secret2Idx; i++) digests[i] = 0;
       predict_rdata(1, 0, 0);
       void'(ral.direct_access_regwen.predict(0));
+      void'(ral.creator_sw_cfg_read_lock.predict(0));
+      void'(ral.owner_sw_cfg_read_lock.predict(0));
 
       wait(cfg.otp_ctrl_vif.lc_esc_on == 0);
     end
