@@ -273,17 +273,17 @@ class Launcher:
         # exit code for whatever reason, then show the last 10 lines of the log
         # as the failure message, which might help with the debug.
         if self.exit_code != 0:
-            err_msg = "Job returned non-zero exit code:\nLast 10 lines:\n"
-            "```\n{}\n```\n"
-            err_msg = err_msg.format("".join(lines[-10:]).strip())
+            err_msg = ("Job returned non-zero exit code:\nLast 10 lines:\n"
+                       "```\n{}\n```\n")
+            err_msg = err_msg.format(''.join(lines[-10:]).strip())
             return "F", err_msg
 
         # Ensure all pass patterns were seen.
         if chk_passed:
-            err_msg = "Some pass patterns missing:\n{}\nLast 10 lines:\n"
-            "```\n{}\n```\n"
+            err_msg = ("Some pass patterns missing:\n{}\nLast 10 lines:\n"
+                       "```\n{}\n```\n")
             err_msg = err_msg.format(pass_patterns,
-                                     "".join(lines[-10:]).strip())
+                                     ''.join(lines[-10:]).strip())
             return "F", err_msg
 
         assert err_msg is None
