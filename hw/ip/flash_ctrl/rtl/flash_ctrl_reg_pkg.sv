@@ -24,7 +24,7 @@ package flash_ctrl_reg_pkg;
 
   // Address widths within the block
   parameter int CoreAw = 9;
-  parameter int Prim_cfgAw = 2;
+  parameter int PrimAw = 1;
 
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
@@ -831,32 +831,6 @@ package flash_ctrl_reg_pkg;
     4'b 1111, // index[88] FLASH_CTRL_SCRATCH
     4'b 0011, // index[89] FLASH_CTRL_FIFO_LVL
     4'b 0001  // index[90] FLASH_CTRL_FIFO_RST
-  };
-
-  ///////////////////////////////////////////////////
-  // Typedefs for registers for prim_cfg interface //
-  ///////////////////////////////////////////////////
-
-  typedef struct packed {
-    logic        q;
-  } flash_ctrl_reg2hw_dummy_reg_t;
-
-  // Register -> HW type for prim_cfg interface
-  typedef struct packed {
-    flash_ctrl_reg2hw_dummy_reg_t dummy; // [0:0]
-  } flash_ctrl_prim_cfg_reg2hw_t;
-
-  // Register offsets for prim_cfg interface
-  parameter logic [Prim_cfgAw-1:0] FLASH_CTRL_DUMMY_OFFSET = 2'h 0;
-
-  // Register index for prim_cfg interface
-  typedef enum int {
-    FLASH_CTRL_DUMMY
-  } flash_ctrl_prim_cfg_id_e;
-
-  // Register width information to check illegal writes for prim_cfg interface
-  parameter logic [3:0] FLASH_CTRL_PRIM_CFG_PERMIT [1] = '{
-    4'b 0001  // index[0] FLASH_CTRL_DUMMY
   };
 
 endpackage

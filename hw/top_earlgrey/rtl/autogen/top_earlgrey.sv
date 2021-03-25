@@ -511,8 +511,10 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       eflash_tl_rsp;
   tlul_pkg::tl_h2d_t       main_tl_peri_req;
   tlul_pkg::tl_d2h_t       main_tl_peri_rsp;
-  tlul_pkg::tl_h2d_t       flash_ctrl_tl_req;
-  tlul_pkg::tl_d2h_t       flash_ctrl_tl_rsp;
+  tlul_pkg::tl_h2d_t       flash_ctrl_core_tl_req;
+  tlul_pkg::tl_d2h_t       flash_ctrl_core_tl_rsp;
+  tlul_pkg::tl_h2d_t       flash_ctrl_prim_tl_req;
+  tlul_pkg::tl_d2h_t       flash_ctrl_prim_tl_rsp;
   tlul_pkg::tl_h2d_t       hmac_tl_req;
   tlul_pkg::tl_d2h_t       hmac_tl_rsp;
   tlul_pkg::tl_h2d_t       kmac_tl_req;
@@ -1848,8 +1850,10 @@ module top_earlgrey #(
       .pwrmgr_i(pwrmgr_aon_pwr_flash_req),
       .pwrmgr_o(pwrmgr_aon_pwr_flash_rsp),
       .keymgr_o(flash_ctrl_keymgr),
-      .tl_i(flash_ctrl_tl_req),
-      .tl_o(flash_ctrl_tl_rsp),
+      .core_tl_i(flash_ctrl_core_tl_req),
+      .core_tl_o(flash_ctrl_core_tl_rsp),
+      .prim_tl_i(flash_ctrl_prim_tl_req),
+      .prim_tl_o(flash_ctrl_prim_tl_rsp),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
@@ -2382,9 +2386,13 @@ module top_earlgrey #(
     .tl_peri_o(main_tl_peri_req),
     .tl_peri_i(main_tl_peri_rsp),
 
-    // port: tl_flash_ctrl
-    .tl_flash_ctrl_o(flash_ctrl_tl_req),
-    .tl_flash_ctrl_i(flash_ctrl_tl_rsp),
+    // port: tl_flash_ctrl__core
+    .tl_flash_ctrl__core_o(flash_ctrl_core_tl_req),
+    .tl_flash_ctrl__core_i(flash_ctrl_core_tl_rsp),
+
+    // port: tl_flash_ctrl__prim
+    .tl_flash_ctrl__prim_o(flash_ctrl_prim_tl_req),
+    .tl_flash_ctrl__prim_i(flash_ctrl_prim_tl_rsp),
 
     // port: tl_hmac
     .tl_hmac_o(hmac_tl_req),

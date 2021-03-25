@@ -22,8 +22,11 @@ tl_device_t xbar_devices[$] = '{
     '{"eflash", '{
         '{32'h20000000, 32'h200fffff}
     }},
-    '{"flash_ctrl", '{
+    '{"flash_ctrl__core", '{
         '{32'h41000000, 32'h41000fff}
+    }},
+    '{"flash_ctrl__prim", '{
+        '{32'h41008000, 32'h41008fff}
     }},
     '{"hmac", '{
         '{32'h41110000, 32'h41110fff}
@@ -181,7 +184,8 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_ret_aon",
         "aon_timer_aon",
         "adc_ctrl_aon",
-        "flash_ctrl",
+        "flash_ctrl.core",
+        "flash_ctrl.prim",
         "aes",
         "entropy_src",
         "csrng",
@@ -226,7 +230,8 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_ret_aon",
         "aon_timer_aon",
         "adc_ctrl_aon",
-        "flash_ctrl",
+        "flash_ctrl.core",
+        "flash_ctrl.prim",
         "aes",
         "entropy_src",
         "csrng",
@@ -235,6 +240,7 @@ tl_host_t xbar_hosts[$] = '{
         "hmac",
         "rv_plic",
         "otbn",
+        "keymgr",
         "kmac",
         "sram_ctrl_main"}}
 };

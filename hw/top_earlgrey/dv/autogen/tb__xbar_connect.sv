@@ -38,7 +38,8 @@ tl_if rom_ctrl__regs_tl_if(clk_main, rst_n);
 tl_if debug_mem_tl_if(clk_main, rst_n);
 tl_if ram_main_tl_if(clk_main, rst_n);
 tl_if eflash_tl_if(clk_main, rst_n);
-tl_if flash_ctrl_tl_if(clk_main, rst_n);
+tl_if flash_ctrl__core_tl_if(clk_main, rst_n);
+tl_if flash_ctrl__prim_tl_if(clk_main, rst_n);
 tl_if hmac_tl_if(clk_main, rst_n);
 tl_if kmac_tl_if(clk_main, rst_n);
 tl_if aes_tl_if(clk_main, rst_n);
@@ -110,7 +111,8 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(debug_mem, dm_top, tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(ram_main, tl_adapter_ram_main, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(eflash, tl_adapter_eflash, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl, flash_ctrl, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__core, flash_ctrl, core_tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__prim, flash_ctrl, prim_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(hmac, hmac, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(kmac, kmac, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(aes, aes, tl)

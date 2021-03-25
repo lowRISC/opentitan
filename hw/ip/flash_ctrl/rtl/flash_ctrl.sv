@@ -34,8 +34,8 @@ module flash_ctrl
   // Bus Interface
   input        tlul_pkg::tl_h2d_t core_tl_i,
   output       tlul_pkg::tl_d2h_t core_tl_o,
-  input        tlul_pkg::tl_h2d_t prim_cfg_tl_i,
-  output       tlul_pkg::tl_d2h_t prim_cfg_tl_o,
+  input        tlul_pkg::tl_h2d_t prim_tl_i,
+  output       tlul_pkg::tl_d2h_t prim_tl_o,
 
   // Flash Interface
   input        flash_rsp_t flash_i,
@@ -80,9 +80,9 @@ module flash_ctrl
   tlul_pkg::tl_h2d_t tl_win_h2d [2];
   tlul_pkg::tl_d2h_t tl_win_d2h [2];
 
-  assign prim_cfg_tl_o = flash_i.tl_flash_p2c;
+  assign prim_tl_o = flash_i.tl_flash_p2c;
   // Register module
-  flash_ctrl_core_reg_top u_reg (
+  flash_ctrl_core_reg_top u_reg_core (
     .clk_i,
     .rst_ni,
 
@@ -779,7 +779,7 @@ module flash_ctrl
   assign flash_o.region_cfgs = region_cfgs;
   assign flash_o.addr_key = addr_key;
   assign flash_o.data_key = data_key;
-  assign flash_o.tl_flash_c2p = prim_cfg_tl_i;
+  assign flash_o.tl_flash_c2p = prim_tl_i;
   assign flash_o.alert_trig = reg2hw.phy_alert_cfg.alert_trig.q;
   assign flash_o.alert_ack = reg2hw.phy_alert_cfg.alert_ack.q;
   assign flash_o.jtag_req.tck = cio_tck_i;
@@ -941,10 +941,10 @@ module flash_ctrl
 
 
   // Assertions
-  `ASSERT_KNOWN(TlDValidKnownO_A,       core_tl_o.d_valid     )
-  `ASSERT_KNOWN(TlAReadyKnownO_A,       core_tl_o.a_ready     )
-  `ASSERT_KNOWN(PrimTlDValidKnownO_A,   prim_cfg_tl_o.d_valid )
-  `ASSERT_KNOWN(PrimTlAReadyKnownO_A,   prim_cfg_tl_o.a_ready )
+  `ASSERT_KNOWN(TlDValidKnownO_A,       core_tl_o.d_valid )
+  `ASSERT_KNOWN(TlAReadyKnownO_A,       core_tl_o.a_ready )
+  `ASSERT_KNOWN(PrimTlDValidKnownO_A,   prim_tl_o.d_valid )
+  `ASSERT_KNOWN(PrimTlAReadyKnownO_A,   prim_tl_o.a_ready )
   `ASSERT_KNOWN(FlashKnownO_A,          {flash_o.req, flash_o.rd, flash_o.prog, flash_o.pg_erase,
                                          flash_o.bk_erase})
   `ASSERT_KNOWN_IF(FlashAddrKnown_A,    flash_o.addr, flash_o.req)

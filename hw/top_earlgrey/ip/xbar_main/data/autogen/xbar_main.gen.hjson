@@ -43,7 +43,8 @@
       ram_main
       eflash
       peri
-      flash_ctrl
+      flash_ctrl.core
+      flash_ctrl.prim
       aes
       entropy_src
       csrng
@@ -63,7 +64,8 @@
       ram_main
       eflash
       peri
-      flash_ctrl
+      flash_ctrl.core
+      flash_ctrl.prim
       aes
       entropy_src
       csrng
@@ -72,6 +74,7 @@
       hmac
       rv_plic
       otbn
+      keymgr
       kmac
       sram_ctrl_main
     ]
@@ -219,7 +222,7 @@
       ]
     }
     {
-      name: flash_ctrl
+      name: flash_ctrl.core
       type: device
       clock: clk_main_i
       reset: rst_main_ni
@@ -229,6 +232,24 @@
       [
         {
           base_addr: 0x41000000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+    }
+    {
+      name: flash_ctrl.prim
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline_byp: "false"
+      inst_type: flash_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x41008000
           size_byte: 0x1000
         }
       ]
