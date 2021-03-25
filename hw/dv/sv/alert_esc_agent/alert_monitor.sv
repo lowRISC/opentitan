@@ -49,7 +49,9 @@ class alert_monitor extends alert_esc_base_monitor;
               begin : wait_ping_handshake
                 // in case there is an alert happened before ping
                 if (alert_p != 0) wait_alert_complete();
-                wait_alert();
+                // TODO: could use "wait_alert()" but right now scb needs to be cycle accurate to
+                // predict esc_cnt.
+                while (cfg.vif.alert_tx_final.alert_p !== 1'b1) @(cfg.vif.monitor_cb);
                 req.alert_handshake_sta = AlertReceived;
                 wait_ack();
                 req.alert_handshake_sta = AlertAckReceived;
