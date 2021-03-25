@@ -114,6 +114,9 @@ module otp_ctrl_part_unbuf
 
   part_access_t access;
 
+  // This is only used to return bus errors when the FSM is in ErrorSt.
+  logic pending_tlul_error_d, pending_tlul_error_q;
+
   // Output partition error state.
   assign error_o = error_q;
 
@@ -144,6 +147,7 @@ module otp_ctrl_part_unbuf
 
     // Error Register
     error_d = error_q;
+    pending_tlul_error_d = 1'b0;
 
     unique case (state_q)
       ///////////////////////////////////////////////////////////////////
@@ -249,6 +253,15 @@ module otp_ctrl_part_unbuf
       ErrorSt: begin
         if (!error_q) begin
           error_d = FsmStateError;
+        end
+
+        // Return bus errors if there are pending TL-UL requests.
+        if (pending_tlul_error_q) begin
+          tlul_rerror_o = 2'b11;
+          tlul_rvalid_o = 1'b1;
+        end else if (tlul_req_i) begin
+          tlul_gnt_o = 1'b1;
+          pending_tlul_error_d = 1'b1;
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -372,10 +385,12 @@ module otp_ctrl_part_unbuf
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      error_q       <= NoError;
-      tlul_addr_q   <= '0;
+      error_q              <= NoError;
+      tlul_addr_q          <= '0;
+      pending_tlul_error_q <= 1'b0;
     end else begin
-      error_q       <= error_d;
+      error_q              <= error_d;
+      pending_tlul_error_q <= pending_tlul_error_d;
       if (tlul_gnt_o) begin
         tlul_addr_q <= tlul_addr_d;
       end
