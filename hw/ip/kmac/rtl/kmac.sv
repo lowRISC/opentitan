@@ -668,6 +668,15 @@ module kmac
   logic unused_tlram_addr;
   assign unused_tlram_addr = &{1'b0, tlram_addr};
 
+  // Temporary app intf connect
+  app_req_t app_req_temp [NumAppIntf];
+  app_rsp_t app_rsp_temp [NumAppIntf];
+
+  assign app_req_temp[0] = app_i;
+  assign app_req_temp[1] = APP_REQ_DEFAULT;
+  assign app_req_temp[2] = APP_REQ_DEFAULT;
+
+  assign app_o = app_rsp_temp[0];
   // Application interface Mux/Demux
   kmac_app #(
     .EnMasking(EnMasking)
@@ -687,9 +696,9 @@ module kmac
     // KeyMgr sideloaded key interface
     .keymgr_key_i,
 
-    // KeyMgr data in / digest out interface
-    .app_i (app_i),
-    .app_o (app_o),
+    // Application data in / digest out interface
+    .app_i (app_req_temp),
+    .app_o (app_rsp_temp),
 
     // Secret Key output to KMAC Core
     .key_data_o (key_data),

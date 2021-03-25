@@ -30,8 +30,8 @@ module kmac_app
   input keymgr_pkg::hw_key_req_t keymgr_key_i,
 
   // Application Message in/ Digest out interface + control signals
-  input  app_req_t app_i,
-  output app_rsp_t app_o,
+  input  app_req_t app_i [NumAppIntf],
+  output app_rsp_t app_o [NumAppIntf],
 
   // to KMAC Core: Secret key
   output [MaxKeyLen-1:0] key_data_o [Share],
@@ -175,17 +175,18 @@ module kmac_app
   // The state machine controls mux selection, which controls the ready signal
   // the other responses are controled in separate logic. So define the signals
   // here and merge them to the response.
-  logic keymgr_data_ready;
-  logic keymgr_digest_done;
-  logic [AppDigestW-1:0] keymgr_digest [2];
+  logic app_data_ready;
+  logic app_digest_done;
+  logic [AppDigestW-1:0] app_digest [2];
 
-  assign app_o = '{
-    ready:         keymgr_data_ready,
-    done:          keymgr_digest_done,
-    digest_share0: keymgr_digest[0],
-    digest_share1: keymgr_digest[1],
-    error:         error_i
-  };
+  // One more slot for value NumAppIntf. It is the value when no app intf is
+  // chosen.
+  localparam int unsigned AppIdxW = $clog2(NumAppIntf);
+
+  // app_id indicates, which app interface was chosen. various logic use this
+  // value to get the config or return the data.
+  logic [AppIdxW-1:0] app_id, app_id_d;
+  logic               clr_appid, set_appid;
 
   // Output length
   logic [OutLenW-1:0] encoded_outlen, encoded_outlen_mask;
@@ -197,6 +198,84 @@ module kmac_app
   // Error checking logic
 
   kmac_pkg::err_t fsm_err, mux_err;
+
+  ////////////////////////////
+  // Application Mux/ Demux //
+  ////////////////////////////
+
+
+  // Processing return data.
+  // sends to only selected app intf.
+  // clear digest right after done to not leak info to other interface
+  always_comb begin
+    for (int unsigned i = 0 ; i < NumAppIntf ; i++) begin
+      if (AppIdxW'(i) == app_id) begin
+        app_o[i] = '{
+          ready:         app_data_ready,
+          done:          app_digest_done,
+          digest_share0: app_digest[0],
+          digest_share1: app_digest[1],
+          error:         error_i
+        };
+      end else begin
+        app_o[i] = '{
+          ready: 1'b 0,
+          done:  1'b 0,
+          digest_share0: '0,
+          digest_share1: '0,
+          error: 1'b 0
+        };
+      end
+    end // for {i, NumAppIntf, i++}
+  end // aiways_comb
+
+  // app_id latch
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) app_id <= AppIdxW'(0) ; // Do not select any
+    else if (clr_appid) app_id <= AppIdxW'(0);
+    else if (set_appid) app_id <= app_id_d;
+  end
+
+  // app_id selection as of now, app_id uses Priority. The assumption is that
+  //  the request normally does not collide. (ROM_CTRL activates very early
+  //  stage at the boot sequence)
+  //
+  //  If this assumption is not true, consider RR arbiter.
+
+  // Prep for arbiter
+  logic [NumAppIntf-1:0] app_reqs;
+  logic [NumAppIntf-1:0] unused_app_gnts;
+  logic [$clog2(NumAppIntf)-1:0] arb_idx;
+  logic arb_valid;
+  logic arb_ready;
+
+  always_comb begin
+    app_reqs = '0;
+    for (int unsigned i = 0 ; i < NumAppIntf ; i++) begin
+      app_reqs[i] = app_i[i].valid;
+    end
+  end
+
+  prim_arbiter_fixed #(
+    .N (NumAppIntf),
+    .DW(1),
+    .EnDataPort(1'b 0)
+  ) u_appid_arb (
+    .clk_i,
+    .rst_ni,
+
+    .req_i  (app_reqs),
+    .data_i ('{default:'0}),
+    .gnt_o  (unused_app_gnts),
+    .idx_o  (arb_idx),
+
+    .valid_o (arb_valid),
+    .data_o  (), // not used
+    .ready_i (arb_ready)
+  );
+
+  assign app_id_d = AppIdxW'(arb_idx);
+  assign arb_ready = set_appid;
 
   /////////
   // FSM //
@@ -214,6 +293,10 @@ module kmac_app
 
     mux_sel = SelNone;
 
+    // app_id control
+    set_appid = 1'b 0;
+    clr_appid = 1'b 0;
+
     // Commands
     cmd_o = CmdNone;
 
@@ -225,11 +308,16 @@ module kmac_app
 
     unique case (st)
       StIdle: begin
-        if (app_i.valid && keymgr_key_i.valid) begin
+        if (arb_valid && keymgr_key_i.valid) begin
           st_d = StAppMsg;
           // KeyMgr initiates the data
           cmd_o = CmdStart;
-        end else if (app_i.valid && !keymgr_key_i.valid) begin
+
+          // choose app_id
+          set_appid = 1'b 1;
+        // app_id is not valid at this time. use app_id_d or arb_idx
+        // TODO: arb_isx OoR case?
+        end else if (arb_valid && (AppCfg[arb_idx].Mode == AppKMAC) && !keymgr_key_i.valid) begin
           st_d = StKeyMgrErrKeyNotValid;
 
           fsm_err.valid = 1'b 1;
@@ -248,9 +336,12 @@ module kmac_app
         mux_sel = SelApp;
         // Wait until the completion (done) from KeyMgr?
         // Or absorb completion?
-        if (app_i.valid && app_o.ready && app_i.last) begin
-          // TODO: Skip this if cSHAKE or SHA3
-          st_d = StAppOutLen;
+        if (app_i[app_id].valid && app_o[app_id].ready && app_i[app_id].last) begin
+          if (AppCfg[app_id].Mode == AppKMAC) begin
+            st_d = StAppOutLen;
+          end else begin
+            st_d = StAppProcess;
+          end
         end else begin
           st_d = StAppMsg;
         end
@@ -276,6 +367,8 @@ module kmac_app
           // Send digest to KeyMgr and complete the op
           st_d = StIdle;
           cmd_o = CmdDone;
+
+          clr_appid = 1'b 1;
         end else begin
           st_d = StAppWait;
         end
@@ -320,7 +413,7 @@ module kmac_app
   // After KeyMgr sends last beat, the kmac interface (to MSG_FIFO) is switched
   // to OutLen. OutLen is pre-defined values. See `EncodeOutLen` parameter above.
   always_comb begin
-    keymgr_data_ready = 1'b 0;
+    app_data_ready = 1'b 0;
     sw_ready_o = 1'b 1;
 
     kmac_valid_o = 1'b 0;
@@ -329,13 +422,14 @@ module kmac_app
 
     unique case (mux_sel)
       SelApp: begin
-        kmac_valid_o = app_i.valid;
-        kmac_data_o  = app_i.data;
+        // app_id is valid at this time
+        kmac_valid_o = app_i[app_id].valid;
+        kmac_data_o  = app_i[app_id].data;
         // Expand strb to bits. prim_packer inside MSG_FIFO accepts the bit masks
-        for (int i = 0 ; i < $bits(app_i.strb) ; i++) begin
-          kmac_mask_o[8*i+:8] = {8{app_i.strb[i]}};
+        for (int i = 0 ; i < $bits(app_i[app_id].strb) ; i++) begin
+          kmac_mask_o[8*i+:8] = {8{app_i[app_id].strb[i]}};
         end
-        keymgr_data_ready = kmac_ready_i;
+        app_data_ready = kmac_ready_i;
       end
 
       SelOutLen: begin
@@ -398,16 +492,16 @@ module kmac_app
 
   // Keccak state --> KeyMgr
   always_comb begin
-    keymgr_digest_done = 1'b 0;
-    keymgr_digest = '{default:'0};
+    app_digest_done = 1'b 0;
+    app_digest = '{default:'0};
     if (st == StAppWait && absorbed_i) begin
       // SHA3 engine has calculated the hash. Return the data to KeyMgr
-      keymgr_digest_done = 1'b 1;
+      app_digest_done = 1'b 1;
 
       // digest has always 2 entries. If !EnMasking, second is tied to 0.
       for (int i = 0 ; i < Share ; i++) begin
         // Return the portion of state.
-        keymgr_digest[i] = keccak_state_i[i][AppDigestW-1:0];
+        app_digest[i] = keccak_state_i[i][AppDigestW-1:0];
       end
     end
   end
