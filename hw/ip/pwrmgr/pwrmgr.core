@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
+      - lowrisc:prim:all
       - lowrisc:ip:pwrmgr_pkg
     files:
       - rtl/pwrmgr.sv
