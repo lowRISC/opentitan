@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// KMAC KeyMgr interface
+// KMAC Application interface
 
 `include "prim_assert.sv"
 
-module kmac_keymgr
+module kmac_app
   import kmac_pkg::*;
 #(
+  // App specific configs are defined in kmac_pkg
   parameter  bit EnMasking = 1'b0,
   localparam int Share = (EnMasking) ? 2 : 1 // derived parameter
 ) (
@@ -28,7 +29,7 @@ module kmac_keymgr
   // KeyMgr Sideload Key interface
   input keymgr_pkg::hw_key_req_t keymgr_key_i,
 
-  // KeyMgr Data in/ Digest out interface + control signals
+  // Application Message in/ Digest out interface + control signals
   input  app_req_t app_i,
   output app_rsp_t app_o,
 
@@ -46,17 +47,16 @@ module kmac_keymgr
   input                        keccak_state_valid_i,
   input [sha3_pkg::StateW-1:0] keccak_state_i [Share],
 
-  // to STATE TL-window
-  // if KeyMgr KDF is not enabled, the incoming state goes to register
-  // if kdf_en is set, the state value goes to KeyMgr and the output to the
-  // register is all zero.
+  // to STATE TL-window if Application is not active, the incoming state goes to
+  // register if kdf_en is set, the state value goes to application and the
+  // output to the register is all zero.
   output logic                        reg_state_valid_o,
   output logic [sha3_pkg::StateW-1:0] reg_state_o [Share],
 
-  // Configurations
-  // If key_en is set, the logic uses KeyMgr's sideloaded key as a secret key
-  // rather than register values. This only affects when software initiates.
-  // If KeyMgr initiates the hash operation, it always uses sideloaded key.
+  // Configurations If key_en is set, the logic uses KeyMgr's sideloaded key as
+  // a secret key rather than register values. This only affects when software
+  // initiates. If App initiates the hash operation and uses KMAC algorithm, it
+  // always uses sideloaded key.
   input keymgr_key_en_i,
 
   // Commands
@@ -90,15 +90,14 @@ module kmac_keymgr
 
   // Digest width is same to the key width `keymgr_pkg::KeyWidth`.
   localparam int KeyMgrKeyW = $bits(keymgr_key_i.key_share0);
-  localparam int KeyMgrDigestW = $bits(app_o.digest_share0);
 
   localparam key_len_e KeyLen [5] = '{Key128, Key192, Key256, Key384, Key512};
 
-  localparam int SelKeySize = (KeyMgrDigestW == 128) ? 0 :
-                              (KeyMgrDigestW == 192) ? 1 :
-                              (KeyMgrDigestW == 256) ? 2 :
-                              (KeyMgrDigestW == 384) ? 3 :
-                              (KeyMgrDigestW == 512) ? 4 : 0 ;
+  localparam int SelKeySize = (AppDigestW == 128) ? 0 :
+                              (AppDigestW == 192) ? 1 :
+                              (AppDigestW == 256) ? 2 :
+                              (AppDigestW == 384) ? 3 :
+                              (AppDigestW == 512) ? 4 : 0 ;
   localparam key_len_e SideloadedKey = KeyLen[SelKeySize];
 
   // Define right_encode(outlen) value here
@@ -129,24 +128,25 @@ module kmac_keymgr
   typedef enum logic [3:0] {
     StIdle = 4'b 0000,
 
-    // KeyMgr operation.
-    // if start request comes from KeyMgr first, until the operation ends by
-    // KeyMgr, all operations are granted to KeyMgr. SW requests will be
-    // ignored.
-    // Assume KeyMgr doesn't have control signal:
-    // When first data valid occurs from keyMgr, this logic asserts the start
-    // command to the downstream. When last beat pulse comes, this logic asserts
-    // the process to downstream (after the transaction is accepted regardless
-    // of partial writes or not)
-    // When absorbed by SHA3 core, the logic sends digest to KeyMgr and right
-    // next cycle, it triggers done command to downstream.
-    StKeyMgrMsg = 4'b 0101,
+    // Application operation.
+    //
+    // if start request comes from an App first, until the operation ends by the
+    // requested App, all operations are granted to the specific App. SW
+    // requests and other Apps requests will be ignored.
+    //
+    // App interface does not have control signals. When first data valid occurs
+    // from an App, this logic asserts the start command to the downstream. When
+    // last beat pulse comes, this logic asserts the process to downstream
+    // (after the transaction is accepted regardless of partial writes or not)
+    // When absorbed by SHA3 core, the logic sends digest to the requested App
+    // and right next cycle, it triggers done command to downstream.
+    StAppMsg = 4'b 0101,
 
     // In StKeyOutLen, this module pushes encoded outlen to the MSG_FIFO.
     // Assume the length is 256 bit, the data will be 48'h 02_0100
-    StKeyMgrOutLen = 4'b 0110,
-    StKeyMgrProcess = 4'b 1010,
-    StKeyMgrWait = 4'b 0111,
+    StAppOutLen = 4'b 0110,
+    StAppProcess = 4'b 1010,
+    StAppWait = 4'b 0111,
 
     // SW Controlled
     // If start request comes from SW first, until the operation ends, all
@@ -160,7 +160,7 @@ module kmac_keymgr
 
   typedef enum logic [2:0] {
     SelNone = 3'b 000,
-    SelKeyMgr = 3'b 101,
+    SelApp = 3'b 101,
     SelOutLen = 3'b 110,
     SelSw = 3'b 010
   } mux_sel_e ;
@@ -177,7 +177,7 @@ module kmac_keymgr
   // here and merge them to the response.
   logic keymgr_data_ready;
   logic keymgr_digest_done;
-  logic [KeyMgrDigestW-1:0] keymgr_digest [2];
+  logic [AppDigestW-1:0] keymgr_digest [2];
 
   assign app_o = '{
     ready:         keymgr_data_ready,
@@ -226,7 +226,7 @@ module kmac_keymgr
     unique case (st)
       StIdle: begin
         if (app_i.valid && keymgr_key_i.valid) begin
-          st_d = StKeyMgrMsg;
+          st_d = StAppMsg;
           // KeyMgr initiates the data
           cmd_o = CmdStart;
         end else if (app_i.valid && !keymgr_key_i.valid) begin
@@ -244,39 +244,40 @@ module kmac_keymgr
         end
       end
 
-      StKeyMgrMsg: begin
-        mux_sel = SelKeyMgr;
+      StAppMsg: begin
+        mux_sel = SelApp;
         // Wait until the completion (done) from KeyMgr?
         // Or absorb completion?
         if (app_i.valid && app_o.ready && app_i.last) begin
-          st_d = StKeyMgrOutLen;
+          // TODO: Skip this if cSHAKE or SHA3
+          st_d = StAppOutLen;
         end else begin
-          st_d = StKeyMgrMsg;
+          st_d = StAppMsg;
         end
       end
 
-      StKeyMgrOutLen: begin
+      StAppOutLen: begin
         mux_sel = SelOutLen;
 
         if (kmac_valid_o && kmac_ready_i) begin
-          st_d = StKeyMgrProcess;
+          st_d = StAppProcess;
         end else begin
-          st_d = StKeyMgrOutLen;
+          st_d = StAppOutLen;
         end
       end
 
-      StKeyMgrProcess: begin
+      StAppProcess: begin
         cmd_o = CmdProcess;
-        st_d = StKeyMgrWait;
+        st_d = StAppWait;
       end
 
-      StKeyMgrWait: begin
+      StAppWait: begin
         if (absorbed_i) begin
           // Send digest to KeyMgr and complete the op
           st_d = StIdle;
           cmd_o = CmdDone;
         end else begin
-          st_d = StKeyMgrWait;
+          st_d = StAppWait;
         end
       end
 
@@ -327,7 +328,7 @@ module kmac_keymgr
     kmac_mask_o = '0;
 
     unique case (mux_sel)
-      SelKeyMgr: begin
+      SelApp: begin
         kmac_valid_o = app_i.valid;
         kmac_data_o  = app_i.data;
         // Expand strb to bits. prim_packer inside MSG_FIFO accepts the bit masks
@@ -399,14 +400,14 @@ module kmac_keymgr
   always_comb begin
     keymgr_digest_done = 1'b 0;
     keymgr_digest = '{default:'0};
-    if (st == StKeyMgrWait && absorbed_i) begin
+    if (st == StAppWait && absorbed_i) begin
       // SHA3 engine has calculated the hash. Return the data to KeyMgr
       keymgr_digest_done = 1'b 1;
 
       // digest has always 2 entries. If !EnMasking, second is tied to 0.
       for (int i = 0 ; i < Share ; i++) begin
         // Return the portion of state.
-        keymgr_digest[i] = keccak_state_i[i][KeyMgrDigestW-1:0];
+        keymgr_digest[i] = keccak_state_i[i][AppDigestW-1:0];
       end
     end
   end
@@ -427,7 +428,7 @@ module kmac_keymgr
 
   // Sideloaded key is used when KeyMgr KDF is active or !!CFG.sideload is set
   always_comb begin
-    if (keymgr_key_en_i || (mux_sel == SelKeyMgr)) begin
+    if (keymgr_key_en_i || (mux_sel == SelApp)) begin
       // KeyLen is fixed to the $bits(sideloaded_key)
       key_len_o = SideloadedKey;
     end else begin
@@ -436,7 +437,7 @@ module kmac_keymgr
   end
 
   for (genvar i = 0 ; i < Share ; i++) begin : g_key_assign
-    assign key_data_o[i] = (keymgr_key_en_i || (mux_sel == SelKeyMgr))
+    assign key_data_o[i] = (keymgr_key_en_i || (mux_sel == SelApp))
                          ? keymgr_key[i]
                          : reg_key_data_i[i] ;
   end
@@ -455,8 +456,8 @@ module kmac_keymgr
   ////////////////
 
   // KeyMgr sideload key and the digest should be in the Key Length value
-  `ASSERT_INIT(SideloadKeySameToDigest_A, KeyMgrKeyW == KeyMgrDigestW)
-  `ASSERT_INIT(KeyMgrInRange_A, KeyMgrDigestW inside {128, 192, 256, 384, 512})
+  `ASSERT_INIT(SideloadKeySameToDigest_A, KeyMgrKeyW == AppDigestW)
+  `ASSERT_INIT(AppIntfInRange_A, AppDigestW inside {128, 192, 256, 384, 512})
 
 
 endmodule

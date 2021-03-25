@@ -668,10 +668,10 @@ module kmac
   logic unused_tlram_addr;
   assign unused_tlram_addr = &{1'b0, tlram_addr};
 
-  // KeyMgr Mux/Demux
-  kmac_keymgr #(
+  // Application interface Mux/Demux
+  kmac_app #(
     .EnMasking(EnMasking)
-  ) u_keymgr_intf (
+  ) u_app_intf (
     .clk_i,
     .rst_ni,
 
