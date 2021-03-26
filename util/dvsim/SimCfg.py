@@ -504,21 +504,21 @@ class SimCfg(FlowCfg):
         self.runs = ([]
                      if self.build_only else self._expand_run_list(build_map))
 
-        # Discard the build_job dependency that was added earlier if --run-only
-        # switch is passed.
-        if self.run_only:
-            self.builds = []
-            for run in self.runs:
-                run.dependencies = []
+        # Add builds to the list of things to run, only if --run-only switch
+        # is not passed.
+        self.deploy = []
+        if not self.run_only:
+            self.deploy += self.builds
 
-        self.deploy = self.builds + self.runs
+        if not self.build_only:
+            self.deploy += self.runs
 
-        # Create cov_merge and cov_report objects, so long as we've got at
-        # least one run to do.
-        if self.cov and self.runs:
-            self.cov_merge_deploy = CovMerge(self.runs, self)
-            self.cov_report_deploy = CovReport(self.cov_merge_deploy, self)
-            self.deploy += [self.cov_merge_deploy, self.cov_report_deploy]
+            # Create cov_merge and cov_report objects, so long as we've got at
+            # least one run to do.
+            if self.cov and self.runs:
+                self.cov_merge_deploy = CovMerge(self.runs, self)
+                self.cov_report_deploy = CovReport(self.cov_merge_deploy, self)
+                self.deploy += [self.cov_merge_deploy, self.cov_report_deploy]
 
         # Create initial set of directories before kicking off the regression.
         self._create_dirs()

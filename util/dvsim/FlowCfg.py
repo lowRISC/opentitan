@@ -359,6 +359,11 @@ class FlowCfg():
         deploy = []
         for item in self.cfgs:
             deploy.extend(item.deploy)
+
+        if not deploy:
+            log.fatal("Nothing to run!")
+            sys.exit(1)
+
         return Scheduler(deploy).run()
 
     def _gen_results(self, results):
