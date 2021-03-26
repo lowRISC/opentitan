@@ -352,8 +352,16 @@ class kmac_base_vseq extends cip_base_vseq #(
     // stream into chunks of 32-bits (size of the PREFIX csr)
     prefix_bytes = {encoded_fname, encoded_custom_str};
     for (int i = 0; i < (fname_len + custom_str_len) / 4 + 2 ; i++) begin
-      prefix_arr[i] = {<< byte {prefix_bytes with [i*4 +: 4]}};
+      // TODO - Xcelium currently does not support `with` operator,
+      //        workaround needs to be used.
+      //prefix_arr[i] = {<< byte {prefix_bytes with [i*4 +: 4]}};
+      bit [7:0] prefix_word_arr[] = new[4];
+      for (int j = i*4; (j < i*4 + 4) && (j < prefix_bytes.size()); j++) begin
+        prefix_word_arr[j % 4] = prefix_bytes[j];
+      end
+      prefix_arr[i] = {<< byte {prefix_word_arr}};
     end
+
     `uvm_info(`gfn, $sformatf("prefix_arr: %0p", prefix_arr), UVM_HIGH)
 
     // write to PREFIX csrs
