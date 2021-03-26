@@ -105,7 +105,7 @@ package kmac_pkg;
 
   // Application Algorithm
   // Each interface can choose algorithms among SHA3, cSHAKE, KMAC
-  typedef enum int unsigned {
+  typedef enum bit [1:0] {
     // SHA3 mode doer not nees any additional information.
     // Prefix will be tied to all zero and not used.
     AppSHA3   = 0,
@@ -118,7 +118,7 @@ package kmac_pkg;
     AppKMAC   = 2
   } app_mode_e;
 
-  typedef struct {
+  typedef struct packed {
     app_mode_e                         Mode;
 
     sha3_pkg::keccak_strength_e        Strength;
