@@ -386,6 +386,7 @@ Following the [OpenTitan non-reset vs. reset flops rationale](https://github.com
 - Input/output data and IV values are (currently) not stored in multiple shares but these are less critical as they are used only once.
   Further, they are stored in banks of 32 bits leaving a larger hypothesis space compared to when glitching e.g. an 8-bit register into reset.
   In addition, they could potentially also be extracted when being transferred over the TL-UL bus interface.
+
 For this reason, the AES unit uses reset flops only.
 However, all major key and data registers are cleared with pseudo-random data upon reset.
 
@@ -606,6 +607,7 @@ Compared to first-in, first-out (FIFO) interfaces, having separate registers has
 - Supported out-of-the-box by the register tool (the FIFO would have to be implemented separately).
 - Usability: critical corner cases where software updates input data or the key partially only are easier to avoid using separate registers and the `hwqe`-signals provided by the Register Tool.
 - Easier interaction with DMA engines
+
 Also, using a FIFO interface for something that is not actually FIFO (internally, 16B of input/output data are consumed/produced at once) is less natural.
 
 For a detailed overview of the register tool, please refer to the [Register Tool documentation.]({{< relref "doc/rm/register_tool" >}})
