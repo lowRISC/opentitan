@@ -671,7 +671,7 @@ module csrng_core import csrng_pkg::*; #(
   // SW interface connection (only 1, and must be present)
   // cmd req
   assign cmd_stage_vld[NApps-1] = reg2hw.cmd_req.qe;
-  assign cmd_stage_shid[NApps-1] = (NApps-1);
+  assign cmd_stage_shid[NApps-1] = StateId'(NApps-1);
   assign cmd_stage_bus[NApps-1] = reg2hw.cmd_req.q;
   assign hw2reg.sw_cmd_sts.cmd_rdy.de = 1'b1;
   assign hw2reg.sw_cmd_sts.cmd_rdy.d = cmd_stage_rdy[NApps-1];

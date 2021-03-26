@@ -268,7 +268,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
 
   // if a UNI command, reset the state values
   assign sfifo_keyvrc_wdata = (rcstage_ccmd == UNI) ?
-         {{(KeyLen+BlkLen+CtrLen+16){1'b0}},upd_cmd_inst_id_i,upd_cmd_ccmd_i} :
+         {{(KeyLen+BlkLen+CtrLen+1+SeedLen){1'b0}},upd_cmd_inst_id_i,upd_cmd_ccmd_i} :
          {upd_cmd_key_i,upd_cmd_v_i,rcstage_rc,rcstage_fips,
           rcstage_adata,upd_cmd_inst_id_i,upd_cmd_ccmd_i};
 

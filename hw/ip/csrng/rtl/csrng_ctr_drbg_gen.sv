@@ -291,7 +291,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
          interate_ctr_q;
 
   // Supporting only 128b requests
-  assign interate_ctr_done = (interate_ctr_q >= (BlkLen/BlkLen));
+  assign interate_ctr_done = (interate_ctr_q >= 2'(BlkLen/BlkLen));
 
   //--------------------------------------------
   // state machine to send values to block_encrypt
