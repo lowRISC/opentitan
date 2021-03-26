@@ -121,7 +121,7 @@ module csrng_state_db import csrng_pkg::*; #(
 
 
   // re-using the internal state pipeline version for better timing
-  assign internal_state_diag = {32'b0,internal_state_pl_q};
+  assign internal_state_diag = {30'b0,internal_state_pl_q};
 
 
   // Register access of internal state

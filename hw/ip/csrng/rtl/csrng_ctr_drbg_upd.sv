@@ -316,7 +316,7 @@ module csrng_ctr_drbg_upd #(
              interate_ctr_inc ? (interate_ctr_q + 1) :
              interate_ctr_q;
 
-  assign interate_ctr_done = (interate_ctr_q >= (SeedLen/BlkLen));
+  assign interate_ctr_done = (int'(interate_ctr_q) >= SeedLen/BlkLen);
 
   //--------------------------------------------
   // state machine to send values to block_encrypt
@@ -471,7 +471,7 @@ module csrng_ctr_drbg_upd #(
   // shifting logic to receive values from block_encrypt
   //--------------------------------------------
 
-  assign concat_outblk_shifted_value = (concat_outblk_q << BlkLen);
+  assign concat_outblk_shifted_value = {concat_outblk_q, {BlkLen{1'b0}}};
 
   assign concat_outblk_d =
          sfifo_bencack_pop ? {concat_outblk_q[SeedLen-1:BlkLen],sfifo_bencack_v} :
@@ -484,7 +484,7 @@ module csrng_ctr_drbg_upd #(
          concat_ctr_inc ? (concat_ctr_q + 1) :
          concat_ctr_q;
 
-  assign concat_ctr_done = (concat_ctr_q >= (SeedLen/BlkLen));
+  assign concat_ctr_done = (int'(concat_ctr_q) >= (SeedLen/BlkLen));
 
   assign concat_inst_id_d = sfifo_bencack_pop ? sfifo_bencack_inst_id : concat_inst_id_q;
   assign concat_ccmd_d = sfifo_bencack_pop ? sfifo_bencack_ccmd : concat_ccmd_q;
