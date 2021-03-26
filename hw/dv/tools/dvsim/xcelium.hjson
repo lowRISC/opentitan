@@ -5,7 +5,7 @@
   build_cmd:  "{job_prefix} xrun"
   run_cmd:    "{job_prefix} xrun"
 
-  build_opts: ["-elaborate -64bit -access +r -sv",
+  build_opts: ["-elaborate -64bit -sv",
                "-licqueue",
                // TODO: duplicate primitives between OT and Ibex #1231
                "-ALLOWREDEFINITION",
@@ -153,8 +153,15 @@
 
   build_modes: [
     {
+      name: xcelium_gui
+      is_sim_mode: 1
+      build_opts: ["-createdebugdb", "-access +c"]
+      run_opts: ["-gui"]
+    }
+    {
       name: xcelium_waves
       is_sim_mode: 1
+      build_opts: ["-access +c"]
     }
     {
       name: xcelium_cov

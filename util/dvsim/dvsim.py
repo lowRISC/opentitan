@@ -402,6 +402,11 @@ def parse_args():
                         help=('The options for each build_mode in this list '
                               'are applied to all build and run targets.'))
 
+    disg.add_argument("--gui",
+                      action='store_true',
+                      help=('Run the flow in interactive mode instead of the '
+                            'batch mode.'))
+
     rung = parser.add_argument_group('Options for running')
 
     rung.add_argument("--run-only",

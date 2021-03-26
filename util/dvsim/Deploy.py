@@ -435,8 +435,11 @@ class RunTest(Deploy):
         self.job_name = "{}_{}_{}".format(self.sim_cfg.name, self.target,
                                           self.build_mode)
         self.output_dirs += [self.cov_db_test_dir]
-        self.pass_patterns = self.run_pass_patterns
-        self.fail_patterns = self.run_fail_patterns
+
+        # In GUI mode, the log file is not updated; hence, nothing to check.
+        if not self.sim_cfg.gui:
+            self.pass_patterns = self.run_pass_patterns
+            self.fail_patterns = self.run_fail_patterns
 
     def post_finish(self, status):
         if status != 'P':

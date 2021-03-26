@@ -93,6 +93,12 @@
 
   build_modes: [
     {
+      name: dsim_gui
+      is_sim_mode: 1
+      build_opts: []
+      run_opts: []
+    }
+    {
       name: dsim_waves
       is_sim_mode: 1
       build_opts: ["+acc+b"]

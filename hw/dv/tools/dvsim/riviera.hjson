@@ -64,6 +64,12 @@
 
   build_modes: [
     {
+      name: riviera_gui
+      is_sim_mode: 1
+      build_opts: []
+      run_opts: []
+    }
+    {
       name: riviera_waves
       is_sim_mode: 1
     }

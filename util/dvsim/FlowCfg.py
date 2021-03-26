@@ -47,6 +47,7 @@ class FlowCfg():
         self.scratch_root = args.scratch_root
         self.branch = args.branch
         self.job_prefix = args.job_prefix
+        self.gui = args.gui
 
         # Options set from hjson cfg.
         self.project = ""
@@ -348,6 +349,12 @@ class FlowCfg():
         '''Public facing API for _create_deploy_objects().
         '''
         self.prune_selected_cfgs()
+
+        # GUI mode is allowed only for one cfg.
+        if self.gui and len(self.cfgs) > 1:
+            log.fatal("In GUI mode, only one cfg can be run.")
+            sys.exit(1)
+
         for item in self.cfgs:
             item._create_deploy_objects()
 

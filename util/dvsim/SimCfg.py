@@ -126,6 +126,8 @@ class SimCfg(FlowCfg):
         self.map_full_testplan = args.map_full_testplan
 
         # Set default sim modes for unpacking
+        if args.gui:
+            self.en_build_modes.append("gui")
         if args.waves is not None:
             self.en_build_modes.append("waves")
         if self.cov is True:
@@ -504,6 +506,12 @@ class SimCfg(FlowCfg):
         self.runs = ([]
                      if self.build_only else self._expand_run_list(build_map))
 
+        # In GUI mode, only allow one test to run.
+        if self.gui and len(self.runs) > 1:
+            self.runs = self.runs[:1]
+            log.warning("In GUI mode, only one test is allowed to run. "
+                        "Picking {}".format(self.runs[0].full_name))
+
         # Add builds to the list of things to run, only if --run-only switch
         # is not passed.
         self.deploy = []
@@ -545,7 +553,7 @@ class SimCfg(FlowCfg):
         '''
         # TODO, Only support VCS
         if self.tool not in ['vcs', 'xcelium']:
-            log.error("Currently only support VCS and Xcelium for coverage UNR")
+            log.error("Only VCS and Xcelium are supported for the UNR flow.")
             sys.exit(1)
         # Create initial set of directories, such as dispatched, passed etc.
         self._create_dirs()
