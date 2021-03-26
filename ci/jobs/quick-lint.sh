@@ -33,6 +33,9 @@ ci/scripts/lint-commits.sh $tgt_branch
 echo -e "\n### Check Licence Headers"
 ci/scripts/check-licence-headers.sh $tgt_branch
 
+echo -e "\n### Check executable bits"
+ci/scripts/exec-check.sh
+
 echo -e "\n### Run Python lint (flake8)"
 ci/scripts/python-lint.sh $tgt_branch || {
     echo "(ignoring python lint errors)"
