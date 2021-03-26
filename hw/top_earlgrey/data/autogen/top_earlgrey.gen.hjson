@@ -2403,6 +2403,16 @@
           index: -1
         }
         {
+          name: lc_dft_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: clkmgr_aon
+          index: -1
+        }
+        {
           name: ast_clk_byp_req
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -10482,6 +10492,16 @@
         inst_name: clkmgr_aon
         default: ""
         top_signame: clkmgr_aon_clocks
+        index: -1
+      }
+      {
+        name: lc_dft_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: clkmgr_aon
         index: -1
       }
       {

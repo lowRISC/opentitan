@@ -52,6 +52,13 @@ num_grps = len(grps)
 
     { struct:  "lc_tx",
       type:    "uni",
+      name:    "lc_dft_en",
+      act:     "rcv",
+      package: "lc_ctrl_pkg",
+    },
+
+    { struct:  "lc_tx",
+      type:    "uni",
       name:    "ast_clk_byp_req",
       act:     "req",
       package: "lc_ctrl_pkg",
