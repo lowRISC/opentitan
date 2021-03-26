@@ -260,9 +260,9 @@ class Dmem:
         self.trace = []
         self.err_flag = False
 
-    def in_progress_load_complete(self):
+    def in_progress_load_complete(self) -> bool:
         '''Returns true if a previously started load has completed'''
         return self._load_ready
 
-    def begin_load(self):
+    def begin_load(self) -> None:
         self._load_begun = True
