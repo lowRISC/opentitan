@@ -28,7 +28,7 @@ class i2c_error_intr_vseq extends i2c_rx_tx_vseq;
 
   virtual task body();
     `uvm_info(`gfn, "\n--> start of i2c_error_intr_vseq", UVM_DEBUG)
-    initialization();
+    initialization(.mode(Host));
     for (int i = 1; i <= num_runs; i++) begin
       `uvm_info(`gfn, $sformatf("\n  run simulation %0d/%0d", i, num_runs), UVM_DEBUG)
       fork
@@ -38,10 +38,13 @@ class i2c_error_intr_vseq extends i2c_rx_tx_vseq;
             begin
               process_error_interrupts();
               apply_reset("HARD");
-              `uvm_info(`gfn, $sformatf("\n  reset is issued within error_intr_vseq"), UVM_DEBUG)
+              `uvm_info(`gfn, $sformatf("\n  reset is issued within error_intr_vseq"), UVM_LOW)
             end
             begin
               host_send_trans(num_trans);
+              // if host_send_trans is ended within apply_reset then
+              // wait reset completed before ending fork...join_any
+              wait(!cfg.under_reset);
             end
           join_any
           // stop all tl_seqs if reset is issued
@@ -52,7 +55,7 @@ class i2c_error_intr_vseq extends i2c_rx_tx_vseq;
           #1ps;
           if (do_reset) begin
             // re-initialize dut after on-the-fly reset
-            initialization();
+            initialization(.mode(Host));
             do_reset = 1'b0;
           end
         end
@@ -71,6 +74,8 @@ class i2c_error_intr_vseq extends i2c_rx_tx_vseq;
               cfg.intr_vif.pins[SclInference], cfg.intr_vif.pins[SdaInference],
               cfg.intr_vif.pins[SdaUnstable]), UVM_DEBUG)
           do_reset = 1'b1;
+          if (do_reset)
+            `uvm_info(`gfn, $sformatf("\n  get error interrupts, do_reset %b", do_reset), UVM_LOW);
           break;
         end
       end

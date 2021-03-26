@@ -7,9 +7,6 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   // i2c address mode (only support 7-bit address for targets)
   i2c_target_addr_mode_e target_addr_mode = Addr7BitMode;
 
-  // drained time of phase_ready_to_end
-  uint ok_to_end_delay_ns = 5000;
-
   // i2c_agent cfg
   rand i2c_agent_cfg m_i2c_agent_cfg;
 
@@ -27,6 +24,12 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
 
     // create i2c_agent_cfg
     m_i2c_agent_cfg = i2c_agent_cfg::type_id::create("m_i2c_agent_cfg");
+    // set agent to Device mode
+    m_i2c_agent_cfg.if_mode = Device;
+    // set time to stop test
+    m_i2c_agent_cfg.ok_to_end_delay_ns = 5000;
+    // config target address mode of agent to the same
+    m_i2c_agent_cfg.target_addr_mode = Addr7BitMode;
 
     // create the seq_cfg
     seq_cfg = i2c_seq_cfg::type_id::create("seq_cfg");

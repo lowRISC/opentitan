@@ -21,7 +21,7 @@ class i2c_stretch_timeout_vseq extends i2c_rx_tx_vseq;
 
   virtual task body();
     `uvm_info(`gfn, "\n--> start of i2c_stretch_timeout_vseq", UVM_DEBUG)
-    initialization();
+    initialization(.mode(Host));
     for (int i = 1; i <= num_trans; i++) begin
       cnt_wr_stretch = 0;
       cnt_rd_stretch = 0;

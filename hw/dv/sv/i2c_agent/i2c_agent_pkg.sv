@@ -14,9 +14,10 @@ package i2c_agent_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // TODO: optimize later
+  // Bus/Transaction types for the agent driver
   typedef enum logic [3:0] {
-    None, DevAck, RdData, WrData
+    None, DevAck, RdData, WrData,
+    HostStart, HostRStart, HostData, HostNAck, HostStop
   } drv_type_e;
 
   // register values
@@ -62,8 +63,6 @@ package i2c_agent_pkg;
   `include "i2c_agent_cov.sv"
   `include "i2c_monitor.sv"
   `include "i2c_driver.sv"
-  `include "i2c_device_driver.sv"
-  `include "i2c_host_driver.sv"
   `include "i2c_sequencer.sv"
   `include "i2c_agent.sv"
   `include "seq_lib/i2c_seq_list.sv"
