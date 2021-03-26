@@ -290,7 +290,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
       end
       // when rx_fifo is overflow, drop the last byte from dut_trn
       if (cfg.seq_cfg.en_rx_overflow && dut_trn.bus_op == BusOpRead) begin
-        dut_trn.data_q.pop_back();
+        void'(dut_trn.data_q.pop_back());
         dut_trn.num_data--;
       end
       if (!dut_trn.compare(exp_trn)) begin

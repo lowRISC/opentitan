@@ -37,7 +37,7 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   virtual task body();
     bit check_fmt_watermark, check_rx_watermark;
 
-    initialization();
+    initialization(.mode(Host));
     `uvm_info(`gfn, "\n--> start of i2c_fifo_watermark_vseq", UVM_DEBUG)
     for (int i = 1; i <= num_trans; i++) begin
       check_fmt_watermark = 1'b1;
@@ -115,7 +115,7 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
       // read registers via backdoor
       csr_rd(.ptr(ral.fifo_ctrl.fmtilvl), .value(fmt_ilvl), .backdoor(1'b1));
       csr_rd(.ptr(ral.fifo_status.fmtlvl), .value(fmt_lvl), .backdoor(1'b1));
-      `uvm_info(`gfn, $sformatf("\n fmtilvl %0d, fmtlvl %0d", fmt_ilvl, fmt_lvl), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("\n fmtilvl %0d, fmtlvl %0d", fmt_ilvl, fmt_lvl), UVM_DEBUG)
       // bound checking for fmt_lvl w.r.t fmt_ilvl because rx_fifo can received an extra data
       // before fmt_watermark intr pin is asserted (corner case)
       if (!cfg.under_reset) begin

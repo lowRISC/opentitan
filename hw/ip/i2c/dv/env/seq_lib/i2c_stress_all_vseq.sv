@@ -34,12 +34,12 @@ class i2c_stress_all_vseq extends i2c_rx_tx_vseq;
       uint size = seq_names.size();
       seq_names.push_back("i2c_error_intr_vseq");
     end
-  endtask : pre_start;
+  endtask : pre_start
 
   virtual task body();
-
     `uvm_info(`gfn, "\n\n=> start i2c_stress_all_vseq", UVM_DEBUG)
     print_seq_names(seq_names);
+    initialization(.mode(Host));
     for (int i = 1; i <= seq_names.size(); i++) begin
       seq_run_hist[seq_names[i-1]] = 0;
     end
@@ -51,7 +51,7 @@ class i2c_stress_all_vseq extends i2c_rx_tx_vseq;
 
       seq_name = seq_names[seq_idx];
       `uvm_info(`gfn, $sformatf("\n  -> start stressing vseq %s (%0d/%0d)",
-          seq_name, i, num_runs), UVM_DEBUG)
+          seq_name, i, num_runs), UVM_LOW)
       seq = create_seq_by_name(seq_name);
       `downcast(i2c_vseq, seq)
 
@@ -87,7 +87,7 @@ class i2c_stress_all_vseq extends i2c_rx_tx_vseq;
       // run vseq
       i2c_vseq.start(p_sequencer);
       seq_run_hist[seq_name]++;
-      `uvm_info(`gfn, $sformatf("\n  -> end stressing vseq %s\n", seq_name), UVM_DEBUG)
+      `uvm_info(`gfn, $sformatf("\n  -> end stressing vseq %s\n", seq_name), UVM_LOW)
       wait(cfg.m_i2c_agent_cfg.vif.rst_ni);
     end
     wait_host_for_idle();
@@ -102,7 +102,7 @@ class i2c_stress_all_vseq extends i2c_rx_tx_vseq;
     `uvm_info(`gfn, $sformatf("%s\n", str), UVM_DEBUG)
   endtask : body
 
-  virtual function print_seq_names(string seq_names[]);
+  virtual function void print_seq_names(string seq_names[]);
     string str;
 
     `uvm_info(`gfn, $sformatf("\n  list of %0d vseqs are stressed", seq_names.size()), UVM_DEBUG)

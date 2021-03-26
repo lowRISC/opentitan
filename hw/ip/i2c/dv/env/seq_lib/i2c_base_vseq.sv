@@ -188,45 +188,66 @@ class i2c_base_vseq extends cip_base_vseq #(
     print_seq_cfg_vars("post-start");
   endtask : post_start
 
-  virtual task initialization();
+  virtual task initialization(if_mode_e mode = Host);
     wait(cfg.m_i2c_agent_cfg.vif.rst_ni);
-    device_init();
-    host_init();
+    if (mode == Host) begin
+      i2c_init(Host);
+      agent_init(Device);
+    end else begin
+      i2c_init(Device);
+      agent_init(Host);
+    end
     `uvm_info(`gfn, "\n  initialization is done", UVM_DEBUG)
   endtask : initialization
 
-  virtual task device_init();
-    i2c_device_seq m_dev_seq;
+  virtual task agent_init(if_mode_e mode = Device);
+    i2c_base_seq m_base_seq;
 
-    m_dev_seq = i2c_device_seq::type_id::create("m_dev_seq");
-    `uvm_info(`gfn, "\n  start i2c_device sequence", UVM_DEBUG)
-    fork
-      m_dev_seq.start(p_sequencer.i2c_sequencer_h);
-    join_none
-  endtask : device_init
+    cfg.m_i2c_agent_cfg.if_mode = mode;
+    `uvm_info(`gfn, $sformatf("\n  initialize agent in mode %s", mode.name()), UVM_DEBUG)
+    if (mode == Host) begin
+      // stop re-active seq when the agent switches to Host mode
+      p_sequencer.i2c_sequencer_h.stop_sequences();
+    end else begin
+      m_base_seq = i2c_base_seq::type_id::create("m_base_seq");
+      `uvm_info(`gfn, $sformatf("\n  start i2c_sequence %s",
+          cfg.m_i2c_agent_cfg.if_mode.name()), UVM_DEBUG)
+      fork
+        m_base_seq.start(p_sequencer.i2c_sequencer_h);
+      join_none
+    end
+    // TODO: initialization for the agent running in Host mode
+  endtask : agent_init
 
-  virtual task host_init();
+  virtual task i2c_init(if_mode_e mode = Host);
     bit [TL_DW-1:0] intr_state;
 
-    `uvm_info(`gfn, "\n  initialize host", UVM_DEBUG)
-    // enable host/target
-    ral.ctrl.enablehost.set(1'b1);
-    ral.ctrl.enabletarget.set(1'b0);
-    csr_update(ral.ctrl);
-
-    // diable override
-    ral.ovrd.txovrden.set(1'b0);
-    csr_update(ral.ovrd);
+    `uvm_info(`gfn, $sformatf("\n  initialize host in mode %s", mode.name()), UVM_DEBUG)
+    if (mode == Host) begin
+      ral.ctrl.enablehost.set(1'b1);
+      ral.ctrl.enabletarget.set(1'b0);
+      csr_update(ral.ctrl);
+      // diable override
+      ral.ovrd.txovrden.set(1'b0);
+      csr_update(ral.ovrd);
+    end else begin
+      ral.ctrl.enablehost.set(1'b0);
+      ral.ctrl.enabletarget.set(1'b1);
+      csr_update(ral.ctrl);
+      // TODO: more initialization for the host running Target mode
+    end
 
     // clear fifos
     ral.fifo_ctrl.rxrst.set(1'b1);
     ral.fifo_ctrl.fmtrst.set(1'b1);
+    ral.fifo_ctrl.acqrst.set(1'b1);
+    ral.fifo_ctrl.txrst.set(1'b1);
     csr_update(ral.fifo_ctrl);
 
     //enable then clear interrupts
     csr_wr(.ptr(ral.intr_enable), .value({TL_DW{1'b1}}));
     process_interrupts();
-  endtask : host_init
+  endtask : i2c_init
 
   virtual task wait_for_reprogram_registers();
     bit fmtempty, hostidle;
@@ -313,10 +334,6 @@ class i2c_base_vseq extends cip_base_vseq #(
     cfg.m_i2c_agent_cfg.timing_cfg = timing_cfg;
     `uvm_info(`gfn, $sformatf("\n  cfg.m_i2c_agent_cfg.timing_cfg\n%p",
         cfg.m_i2c_agent_cfg.timing_cfg), UVM_DEBUG)
-    // set time to stop test
-    cfg.m_i2c_agent_cfg.ok_to_end_delay_ns = cfg.ok_to_end_delay_ns;
-    // config target address mode of agent to the same
-    cfg.m_i2c_agent_cfg.target_addr_mode = cfg.target_addr_mode;
 
     //*** program ilvl
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmtilvl)
@@ -398,7 +415,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
   endfunction : print_seq_cfg_vars
 
-  virtual function print_format_flag(i2c_item item, string msg = "", bit do_print = 1'b0);
+  virtual function void print_format_flag(i2c_item item, string msg = "", bit do_print = 1'b0);
     if (do_print) begin
       string str;
       str = {str, $sformatf("\n%s, format flags 0x%h \n", msg,
