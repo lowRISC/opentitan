@@ -16,6 +16,11 @@ if {[info exists ::env(WAVES)]} {
   set waves "$::env(WAVES)"
 }
 
+set gui 0
+if {[info exists ::env(GUI)]} {
+  set gui "$::env(GUI)"
+}
+
 set tb_top "tb"
 if {[info exists ::env(TB_TOP)]} {
   set tb_top "$::env(TB_TOP)"

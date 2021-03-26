@@ -17,5 +17,9 @@ if {[info exists ::env(dv_root)]} {
 source "${dv_root}/tools/common.tcl"
 source "${dv_root}/tools/waves.tcl"
 
-run
-quit
+# In GUI mode, let the user take control of running the simulation.
+global gui
+if {$gui == 0} {
+  run
+  quit
+}

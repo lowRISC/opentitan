@@ -11,12 +11,16 @@
                "-Mdir={build_ex}.csrc",
                "-o {build_ex}",
                "-f {sv_flist}",
+               // Enable LCA features. It does not require separate licenses.
+               "-lca",
                // List multiple tops for the simulation. Prepend each top level with `-top`.
                "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
                "+incdir+{build_dir}",
                // Turn on warnings for non-void functions called with return values ignored
                "+warn=SV-NFIVC",
                "+warn=noUII-L",
+               // Disable unnecessary LCA warning.
+               "+warn=noLCA_FEATURES_ENABLED",
                // Below option required for $error/$fatal system calls
                "-assert svaext",
                // Force unique and priority to evaluate compliance checking only on the stable
@@ -217,6 +221,12 @@
   run_fail_patterns:   ["^Error-.*$"] // Null pointer error
 
   build_modes: [
+    {
+      name: vcs_gui
+      is_sim_mode: 1
+      build_opts: ["-debug_access+all+reverse"]
+      run_opts: ["-gui", "-l {run_dir}/simv.log"]
+    }
     {
       name: vcs_waves
       is_sim_mode: 1

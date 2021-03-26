@@ -108,6 +108,14 @@
   cov_db_test_dir: ""
 
   build_modes: [
+    // TODO: Verilator will likely never have GUI. Find a better way to support
+    // --gui when the tool itself doesn't support it.
+    {
+      name: verilator_gui
+      is_sim_mode: 1
+      build_opts: []
+      run_opts: []
+    }
     {
       name: verilator_waves
       is_sim_mode: 1

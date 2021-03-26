@@ -8,6 +8,11 @@
   // options are appended to actual build_modes
   build_modes: [
     {
+      name: gui
+      is_sim_mode: 1
+      en_build_modes: ["{tool}_gui"]
+    }
+    {
       name: waves
       is_sim_mode: 1
       en_build_modes: ["{tool}_waves"]
