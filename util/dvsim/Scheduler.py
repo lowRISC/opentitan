@@ -26,6 +26,8 @@ class Scheduler:
     max_parallel = 16
 
     def __init__(self, items):
+        self.items = items
+
         # 'scheduled[target][cfg]' is a list of Deploy objects for the chosen
         # target and cfg. As items in _scheduled are ready to be run (once
         # their dependencies pass), they are moved to the _queued list, where
@@ -33,8 +35,7 @@ class Scheduler:
         # When all items (in all cfgs) of a target are done, it is removed from
         # this dictionary.
         self._scheduled = {}
-        for item in items:
-            self.add_to_scheduled(item)
+        self.add_to_scheduled(items)
 
         # Print status periodically using an external status printer.
         self.status_printer = get_status_printer()
@@ -131,19 +132,17 @@ class Scheduler:
         # We got to the end without anything exploding. Return the results.
         return self.item_to_status
 
-    def add_to_scheduled(self, item):
-        '''Recursively add item and all of its dependencies to _scheduled.
+    def add_to_scheduled(self, items):
+        '''Add items to the list of _scheduled.
 
-        'item' is a Deploy object.
+        'items' is a list of Deploy objects.
         '''
 
-        for dep in item.dependencies:
-            self.add_to_scheduled(dep)
-
-        target_dict = self._scheduled.setdefault(item.target, {})
-        cfg_list = target_dict.setdefault(item.sim_cfg, [])
-        if item not in cfg_list:
-            cfg_list.append(item)
+        for item in items:
+            target_dict = self._scheduled.setdefault(item.target, {})
+            cfg_list = target_dict.setdefault(item.sim_cfg, [])
+            if item not in cfg_list:
+                cfg_list.append(item)
 
     def _remove_from_scheduled(self, item):
         '''Removes the item from _scheduled[target][cfg] list.
@@ -257,6 +256,10 @@ class Scheduler:
         '''Returns true if ALL dependencies of item are complete.'''
 
         for dep in item.dependencies:
+            # Ignore dependencies that were not scheduled to run.
+            if dep not in self.items:
+                continue
+
             # Has the dep even been enqueued?
             if dep not in self.item_to_status:
                 return False
@@ -277,6 +280,10 @@ class Scheduler:
         # 'item' can run only if its dependencies have passed (their results
         # should already show up in the item to status map).
         for dep in item.dependencies:
+            # Ignore dependencies that were not scheduled to run.
+            if dep not in self.items:
+                continue
+
             dep_status = self.item_to_status[dep]
             assert dep_status in ['P', 'F', 'K']
 
