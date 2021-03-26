@@ -38,8 +38,8 @@ module kmac_app
   input keymgr_pkg::hw_key_req_t keymgr_key_i,
 
   // Application Message in/ Digest out interface + control signals
-  input  app_req_t app_i [NumAppIntf],
-  output app_rsp_t app_o [NumAppIntf],
+  input  app_req_t [NumAppIntf-1:0] app_i,
+  output app_rsp_t [NumAppIntf-1:0] app_o,
 
   // to KMAC Core: Secret key
   output [MaxKeyLen-1:0] key_data_o [Share],

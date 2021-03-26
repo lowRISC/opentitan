@@ -880,7 +880,9 @@ def im_netname(sig: OrderedDict,
             if obj.get("package") == "tlul_pkg" and obj["struct"] == "tl":
                 return "{package}::{struct}_H2D_DEFAULT".format(
                     package=obj["package"], struct=obj["struct"].upper())
-            return "{package}::{struct}_REQ_DEFAULT".format(
+            # default is used for dangling ports in definitions.
+            # the struct name already has `_req` suffix
+            return "{package}::{struct}_DEFAULT".format(
                 package=obj.get("package", ''), struct=obj["struct"].upper())
         if obj["act"] == "rcv" and suffix == "" and obj["struct"] == "logic":
             # custom default has been specified

@@ -41,6 +41,16 @@ module tb;
   `DV_EDN_IF_CONNECT
 
   // dut
+  // TODO: Make TB to support arb array of application interface
+  kmac_pkg::app_req_t [kmac_pkg::NumAppIntf-1:0] app_req;
+  kmac_pkg::app_rsp_t [kmac_pkg::NumAppIntf-1:0] app_rsp;
+
+  assign app_req[0] = keymgr_kmac_if.kmac_data_req;
+  assign app_req[1] = kmac_pkg::APP_REQ_DEFAULT;
+  assign app_req[2] = kmac_pkg::APP_REQ_DEFAULT;
+
+  assign keymgr_kmac_if.kmac_data_rsp = app_rsp[0];
+
   kmac #(.EnMasking(`EN_MASKING), .ReuseShare(`REUSE_SHARE)) dut (
     .clk_i              (clk                          ),
     .rst_ni             (rst_n                        ),
@@ -56,8 +66,8 @@ module tb;
     //
     // TODO: this is set to 0 for the time being to get the csr tests passing.
     //       this will eventually be hooked up to the kmac<->keymgr agent.
-    .app_i       (keymgr_kmac_if.kmac_data_req ),
-    .app_o       (keymgr_kmac_if.kmac_data_rsp ),
+    .app_i       (app_req ),
+    .app_o       (app_rsp ),
 
     // Interrupts
     .intr_kmac_done_o   (interrupts[KmacDone]         ),

@@ -99,6 +99,8 @@ package kmac_pkg;
   // 0: KeyMgr
   // 1: OTP_CTRL
   // 2: ROM_CTRL
+  // Make sure to change `width` of app inter-module signal definition
+  // if this value is changed.
   parameter int unsigned NumAppIntf = 3;
 
   // Application Algorithm
