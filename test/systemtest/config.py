@@ -70,6 +70,9 @@ TEST_APPS_SELFCHECKING = [
         "name": "dif_clkmgr_smoketest",
     },
     {
+        "name": "dif_entropy_smoketest",
+    },
+    {
         "name": "flash_ctrl_test",
     },
     {
