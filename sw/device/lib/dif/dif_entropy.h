@@ -105,7 +105,7 @@ typedef enum dif_entropy_mode {
   /**
    * Indicates that the source is disabled.
    */
-  kDifEntropyModeDisabled,
+  kDifEntropyModeDisabled = 0,
 
   /**
    * The physical true random number generator mode.
@@ -113,7 +113,7 @@ typedef enum dif_entropy_mode {
    * This mode uses a physical random noise generator for operation, and is
    * truly random. This noise generator is compatible with SP 800-90B.
    */
-  kDifEntropyModePtrng,
+  kDifEntropyModePtrng = 1,
 
   /**
    * The Linear Feedback Shift Register (LFSR) mode.
@@ -124,7 +124,7 @@ typedef enum dif_entropy_mode {
    * In this mode, the `dif_entropy_config.lfsr_seed` value is used to
    * initialize the internal state of the LFSR.
    */
-  kDifEntropyModeLfsr,
+  kDifEntropyModeLfsr = 2,
 } dif_entropy_mode_t;
 
 /**
@@ -132,29 +132,25 @@ typedef enum dif_entropy_mode {
  */
 typedef enum dif_entropy_single_bit_mode {
   /**
-   * Indicates that single-bit-mode is disabled.
-   */
-  kDifEntropySingleBitModeDisabled,
-
-  /**
    * Single-bit-mode, sampling the zeroth bit.
    */
-  kDifEntropySingleBitMode0,
-
+  kDifEntropySingleBitMode0 = 0,
   /**
    * Single-bit-mode, sampling the first bit.
    */
-  kDifEntropySingleBitMode1,
-
+  kDifEntropySingleBitMode1 = 1,
   /**
    * Single-bit-mode, sampling the second bit.
    */
-  kDifEntropySingleBitMode2,
-
+  kDifEntropySingleBitMode2 = 2,
   /**
    * Single-bit-mode, sampling the third bit.
    */
-  kDifEntropySingleBitMode3,
+  kDifEntropySingleBitMode3 = 3,
+  /**
+   * Indicates that single-bit-mode is disabled.
+   */
+  kDifEntropySingleBitModeDisabled = 4,
 } dif_entropy_single_bit_mode_t;
 
 /**
@@ -436,8 +432,6 @@ dif_entropy_result_t dif_entropy_init(dif_entropy_params_t params,
  * @param config Runtime configuration parameters.
  * @return The result of the operation.
  */
-// TODO: Should we have a separate function to clear the stats, or should
-// that be handled by this function.
 DIF_WARN_UNUSED_RESULT
 dif_entropy_result_t dif_entropy_configure(const dif_entropy_t *entropy,
                                            dif_entropy_config_t config);

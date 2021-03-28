@@ -222,7 +222,7 @@ test('dif_aes_test', executable(
     sw_lib_testing_mock_mmio,
   ],
   native: true,
-  c_args: ['-DMOCK_MMIO'], 
+  c_args: ['-DMOCK_MMIO'],
   cpp_args: ['-DMOCK_MMIO'],
 ))
 
@@ -232,6 +232,22 @@ test('dif_clkmgr_unittest', executable(
     hw_ip_clkmgr_reg_h,
     meson.source_root() / 'sw/device/lib/dif/dif_clkmgr.c',
     'dif_clkmgr_unittest.cc',
+  ],
+  dependencies: [
+    sw_vendor_gtest,
+    sw_lib_testing_mock_mmio,
+  ],
+  native: true,
+  c_args: ['-DMOCK_MMIO'],
+  cpp_args: ['-DMOCK_MMIO'],
+))
+
+test('dif_entropy_unittest', executable(
+  'dif_entropy_unittest',
+  sources: [
+    hw_ip_entropy_reg_h,
+    meson.source_root() / 'sw/device/lib/dif/dif_entropy.c',
+    'dif_entropy_unittest.cc',
   ],
   dependencies: [
     sw_vendor_gtest,
@@ -442,6 +458,23 @@ dif_clkmgr_smoketest_lib = declare_dependency(
 sw_tests += {
   'dif_clkmgr_smoketest': {
     'library': dif_clkmgr_smoketest_lib,
+  }
+}
+
+dif_entropy_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'dif_entropy_smoketest_lib',
+    sources: ['dif_entropy_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_entropy,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'dif_entropy_smoketest': {
+    'library': dif_entropy_smoketest_lib,
   }
 }
 
