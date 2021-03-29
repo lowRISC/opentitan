@@ -387,7 +387,7 @@ module otbn_controller
     rf_base_rd_addr_b_o = insn_dec_base_i.b;
     rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & insn_valid_i;
     rf_base_wr_addr_o   = insn_dec_base_i.d;
-    rf_base_rd_commit_o = !stall & ~err;
+    rf_base_rd_commit_o = ~stall & ~err;
 
     if (insn_dec_shared_i.subset == InsnSubsetBignum) begin
       unique case (1'b1)
