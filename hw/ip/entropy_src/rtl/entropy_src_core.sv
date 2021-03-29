@@ -61,9 +61,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // SHA3 parameters
   //-----------------------
   // Do not enable masking
-  localparam int Sha3EnMasking = 0;
+  localparam bit Sha3EnMasking = 0;
   // Needs EnMasking active to take effect
-  localparam int Sha3ReuseShare = 0;
+  localparam bit Sha3ReuseShare = 0;
   // derived parameter
   localparam int Sha3Share = (Sha3EnMasking) ? 2 : 1;
 
