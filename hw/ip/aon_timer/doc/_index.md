@@ -19,10 +19,10 @@ See that document for an overview of how it is integrated into the top level sys
 ### AON Wakeup timer
 
 The always-on wakeup timer operation is straightforward.
-A count starts at 0 and slowly ticks upwards (one tick every N+1 clock cycles, where N is the pre-scaler value).
+A count starts at 0 and slowly ticks upwards (one tick every `N + 1` clock cycles, where `N` is the pre-scaler value).
 When it reaches / exceeds the wake count, a level wakeup signal is sent to the power manager and a level IRQ is sent to the processor.
-This wakeup signal stays high until it is explicitly acknowledged by software (software must write zero to the wkup_cause register to clear it).
-The wakeup timer can be used like a real-time clock for long periods in a low-power mode (though it does not give any guarantees of time-accuracy TODO: specify accuracy).
+This wakeup signal stays high until it is explicitly acknowledged by software (software must write zero to the {{<regref "WKUP_CAUSE">}} register to clear it).
+The wakeup timer can be used like a real-time clock for long periods in a low-power mode (though it does not give any guarantees of time-accuracy). **TODO: specify accuracy**
 
 ### AON Watchdog timer
 
@@ -31,7 +31,7 @@ It has an independent count starting at 0 which slowly ticks upwards.
 When the first threshold is met or exceeded, a level wakeup signal (if enabled) is sent to the power manager.
 Simultaneously, a level IRQ signal is also generated to the processor.
 
-If the system is in a low power state, the wakeup signal asks the power manager to wake the system such that the IRQ can be serviced.
+If the system is in a low power state, the wakeup signal asks the power manager to wake the system so that the IRQ can be serviced.
 If the system is not in a low power mode, the IRQ is immediately serviced.
 Both the wakeup and the IRQ signals remain asserted until system reset or explicit acknowledgement by software.
 This first threshold is known as the watchdog bark.
@@ -76,7 +76,7 @@ This is used to stop the watchdog timer running when in debugging mode or when t
 
 The always-on timer will run on a ~200KHz clock.
 The timers themselves are 32b wide, giving a maximum timeout window of roughly ~6 hours.
-For the wakeup timer, pre-scaler extends the maximum timeout to ~1000 days.
+For the wakeup timer, the pre-scaler extends the maximum timeout to ~1000 days.
 
 Since the timer core runs on a slow clock, register values are sampled into the main clock domain to ensure register read / writes do not incur large latencies.
 The synchronization between clocks means that there is a delay between a register write completing and the underlying hardware taking the new value.
