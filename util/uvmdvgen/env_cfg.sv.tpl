@@ -37,9 +37,9 @@ class ${name}_env_cfg extends dv_base_env_cfg;
     // create ${agent} agent config obj
     m_${agent}_agent_cfg = ${agent}_agent_cfg::type_id::create("m_${agent}_agent_cfg");
 % endfor
-% if is_cip:
+% if has_interrupts:
 
-    // set num_interrupts & num_alerts
+    // set num_interrupts
     begin
       uvm_reg rg = ral.get_reg_by_name("intr_state");
       if (rg != null) begin
