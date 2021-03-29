@@ -25,7 +25,7 @@ endif
 
 do_build: pre_build
 	@echo "[make]: do_build"
-	cd ${sv_flist_gen_dir} && ${build_cmd} ${build_opts} 2>&1 | tee ${build_dir}/fpv.log
+	cd ${sv_flist_gen_dir} && ${build_cmd} ${build_opts} 2>&1 | tee ${build_dir}/${sub_flow}.log
 
 post_build: do_build
 	@echo "[make]: post_build"

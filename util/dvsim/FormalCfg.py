@@ -12,18 +12,18 @@ from OneShotCfg import OneShotCfg
 from utils import VERBOSE, subst_wildcards
 
 
-class FpvCfg(OneShotCfg):
-    """Derivative class for FPV purposes.
+class FormalCfg(OneShotCfg):
+    """Derivative class for running formal tools.
     """
 
-    flow = 'fpv'
+    flow = 'formal'
 
     def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
         super().__init__(flow_cfg_file, hjson_data, args, mk_config)
         self.header = ["name", "errors", "warnings", "proven", "cex", "undetermined",
                        "covered", "unreachable", "pass_rate", "cov_rate"]
         self.summary_header = ["name", "pass_rate", "stimuli_cov", "coi_cov", "prove_cov"]
-        self.results_title = self.name.upper() + " FPV Results"
+        self.results_title = self.name.upper() + " Formal Results"
 
     def parse_dict_to_str(self, input_dict, excl_keys = []):
         # This is a helper function to parse dictionary items into a string.
@@ -59,61 +59,61 @@ class FpvCfg(OneShotCfg):
                 output_str += "\n```\n"
         return output_str
 
-    def get_fpv_summary_results(self, result):
+    def get_summary(self, result):
         summary = []
-        fpv_summary = result.get("fpv_summary")
-        if fpv_summary is None:
-            results_str = "No fpv_summary found\n"
+        formal_summary = result.get("summary")
+        if formal_summary is None:
+            results_str = "No summary information found\n"
             summary.append("N/A")
         else:
             colalign = ("center", ) * len(self.header)
             table = [self.header]
             table.append([
                 self.name,
-                str(fpv_summary["errors"]) + " E ",
-                str(fpv_summary["warnings"]) + " W ",
-                str(fpv_summary["proven"]) + " G ",
-                str(fpv_summary["cex"]) + " E ",
-                str(fpv_summary["undetermined"]) + " W ",
-                str(fpv_summary["covered"]) + " G ",
-                str(fpv_summary["unreachable"]) + " E ",
-                fpv_summary["pass_rate"],
-                fpv_summary["cov_rate"]
+                str(formal_summary["errors"]) + " E ",
+                str(formal_summary["warnings"]) + " W ",
+                str(formal_summary["proven"]) + " G ",
+                str(formal_summary["cex"]) + " E ",
+                str(formal_summary["undetermined"]) + " W ",
+                str(formal_summary["covered"]) + " G ",
+                str(formal_summary["unreachable"]) + " E ",
+                formal_summary["pass_rate"],
+                formal_summary["cov_rate"]
             ])
-            summary.append(fpv_summary["pass_rate"])
+            summary.append(formal_summary["pass_rate"])
             if len(table) > 1:
                 results_str = tabulate(table, headers="firstrow", tablefmt="pipe",
                                        colalign=colalign)
             else:
-                results_str = "No content in fpv_summary\n"
+                results_str = "No content in summary\n"
                 summary.append("N/A")
         return results_str, summary
 
-    def get_fpv_coverage_results(self, result):
+    def get_coverage(self, result):
         summary = []
-        fpv_coverage = result.get("fpv_coverage")
-        if fpv_coverage is None:
-            results_str = "No fpv_coverage found\n"
+        formal_coverage = result.get("coverage")
+        if formal_coverage is None:
+            results_str = "No coverage information found\n"
             summary = ["N/A", "N/A", "N/A"]
         else:
             cov_header = ["stimuli", "coi", "proof"]
             cov_colalign = ("center", ) * len(cov_header)
             cov_table = [cov_header]
             cov_table.append([
-                fpv_coverage["stimuli"],
-                fpv_coverage["coi"],
-                fpv_coverage["proof"]
+                formal_coverage["stimuli"],
+                formal_coverage["coi"],
+                formal_coverage["proof"]
             ])
-            summary.append(fpv_coverage["stimuli"])
-            summary.append(fpv_coverage["coi"])
-            summary.append(fpv_coverage["proof"])
+            summary.append(formal_coverage["stimuli"])
+            summary.append(formal_coverage["coi"])
+            summary.append(formal_coverage["proof"])
 
             if len(cov_table) > 1:
                 results_str = tabulate(cov_table, headers="firstrow",
                                        tablefmt="pipe", colalign=cov_colalign)
 
             else:
-                results_str = "No content in fpv_coverage\n"
+                results_str = "No content in formal_coverage\n"
                 summary = ["N/A", "N/A", "N/A"]
         return results_str, summary
 
@@ -122,7 +122,7 @@ class FpvCfg(OneShotCfg):
         # The results_summary will only contain the passing rate and
         # percentages of the stimuli, coi, and proven coverage
         # The email_summary will contain all the information from results_md
-        log.info("Create summary of FPV results")
+        log.info("Create a result summary")
 
         results_str = "## " + self.results_title + " (Summary)\n\n"
         results_str += "### " + self.timestamp_long + "\n"
@@ -153,7 +153,7 @@ class FpvCfg(OneShotCfg):
         error_message = ""
 
         for cfg in self.cfgs:
-            email_result = cfg.result.get("fpv_summary")
+            email_result = cfg.result.get("summary")
             if email_result is not None:
                 email_table.append([
                     cfg.name,
@@ -169,9 +169,9 @@ class FpvCfg(OneShotCfg):
                 ])
             messages = cfg.result.get("messages")
             if messages is not None:
-                # TODO: temp disable printing out "fpv_warnings" in results_summary
-                # Will clean up FPV warnings first, then display "fpv_warnings"
-                error = self.parse_dict_to_str(messages, ["fpv_warnings"])
+                # TODO: temp disable printing out warnings in results_summary
+                # Will clean up formal warnings first, then display warnings
+                error = self.parse_dict_to_str(messages, ["warnings"])
                 if error:
                     error_message += "\n#### " + cfg.name + "\n"
                     error_message += error
@@ -185,7 +185,7 @@ class FpvCfg(OneShotCfg):
 
     def _gen_results(self, results):
         # This function is called after the regression and looks for
-        # results.hjson file with aggregated results from the FPV run.
+        # results.hjson file with aggregated results from the formal logfile.
         # The hjson file is required to follow this format:
         # {
         #   "messages": {
@@ -196,7 +196,7 @@ class FpvCfg(OneShotCfg):
         #      "unreachable" : [],
         #   },
         #
-        #   "fpv_summary": {
+        #   "summary": {
         #      "errors"      : 0
         #      "warnings"    : 2
         #      "proven"      : 20,
@@ -212,8 +212,8 @@ class FpvCfg(OneShotCfg):
         # covered, and unreachable.
         #
         # If coverage was enabled then results.hjson will also have an item that
-        # shows FPV coverage. It will have the following format:
-        #   "fpv_coverage": {
+        # shows formal coverage. It will have the following format:
+        #   "coverage": {
         #      stimuli: "90 %",
         #      coi    : "90 %",
         #      proof  : "80 %"
@@ -223,14 +223,14 @@ class FpvCfg(OneShotCfg):
         if self.revision:
             results_str += "### " + self.revision + "\n"
         results_str += "### Branch: " + self.branch + "\n"
-        results_str += "### FPV Tool: " + self.tool.upper() + "\n"
+        results_str += "### Formal Tool: " + self.tool.upper() + "\n"
         results_str += "### LogFile dir: " + self.scratch_path + "/default\n\n"
 
         summary = [self.name]  # cfg summary for publish results
 
         if len(self.build_modes) != 1:
             mode_names = [mode.name for mode in self.build_modes]
-            log.error("FPV only supports mode 'default', but found these modes: %s", mode_names)
+            log.error("Formal only supports mode 'default', but found these modes: %s", mode_names)
         else:
             mode = self.build_modes[0]
             result_data = Path(subst_wildcards(self.build_dir, {"build_mode": mode.name}) +
@@ -246,15 +246,15 @@ class FpvCfg(OneShotCfg):
                     }
                 }
 
-            fpv_result_str, fpv_summary = self.get_fpv_summary_results(self.result)
-            results_str += fpv_result_str
-            summary += fpv_summary
+            formal_result_str, formal_summary = self.get_summary(self.result)
+            results_str += formal_result_str
+            summary += formal_summary
 
             if self.cov:
                 results_str += "\n\n## Coverage Results\n"
                 results_str += ("### Coverage html file dir: " +
                                 self.scratch_path + "/default/formal-icarus\n\n")
-                cov_result_str, cov_summary = self.get_fpv_coverage_results(self.result)
+                cov_result_str, cov_summary = self.get_coverage(self.result)
                 results_str += cov_result_str
                 summary += cov_summary
 
@@ -277,9 +277,9 @@ class FpvCfg(OneShotCfg):
         return self.results_md
 
     def _publish_results(self):
-        '''This does nothing: detailed messages from FPV runs are not published
+        '''This does nothing: detailed messages from the logfile are not published
 
         Our agreement with tool vendors allows us to publish the summary
-        results (as in gen_results_summary), but not anything more detailed.
+        results (as in gen_results_summary).
         '''
         return

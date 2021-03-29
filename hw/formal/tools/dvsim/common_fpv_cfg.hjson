@@ -2,44 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  flow:             fpv
-  sub_flow:         fpv
-  fpv_root:         "{proj_root}/hw/formal"
-  flow_makefile:    "{fpv_root}/tools/dvsim/fpv.mk"
-
-  import_cfgs:      [// common server configuration for results upload
-                     "{proj_root}/hw/data/common_project_cfg.hjson",
-                     "{fpv_root}/tools/{tool}/{tool}.hjson"]
-
-  tool:             "jaspergold"
-
-  // Default directory structure for the output
-  dut:              "{name}"
-  build_dir:        "{scratch_path}/{build_mode}"
-
-  // we rely on Fusesoc to generate the filelist for fpv
-  sv_flist_gen_cmd:  fusesoc
-
-  // TODO: switch the tool to formal once the corresponding edalize backend is avaiable
-
-  sv_flist_gen_opts: ["--cores-root {proj_root}",
-                      "run",
-                      "--flag=fileset_{design_level}",
-                      "--tool=icarus",
-                      "--target=formal",
-                      "--build-root={build_dir}",
-                      "--setup {fusesoc_core}"]
-  sv_flist_gen_dir:  "{build_dir}/formal-icarus"
-
-  // Vars that need to exported to the env
-  exports: [
-    { FPV_TOP: "{dut}" },
-    { COV: "{cov}" }
-  ]
-
-  report_cmd:  "python3 {fpv_root}/tools/{tool}/parse-fpv-report.py"
-  report_opts: ["--logpath={build_dir}/fpv.log",
-                "--reppath={build_dir}/results.hjson",
-                "--cov={cov}",
-                "--dut={name}"]
+  sub_flow:    "fpv"
+  import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_formal_cfg.hjson"]
 }
