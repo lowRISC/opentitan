@@ -361,72 +361,6 @@ Both use the same state for tracking control flow.
 This is a stack of tuples containing a loop count, start address and end address.
 The stack has a maximum depth of eight and the top of the stack is the current loop.
 
-### Loop nesting
-
-OTBN permits loop nesting and branches and jumps inside loops.
-However, it doesn't have support for early termination of loops: there's no way to pop an entry from the loop stack without executing the last instruction of the loop the correct number of times.
-It can also only pop one level of the loop stack per instruction.
-
-To avoid polluting the loop stack or avoid surprising behaviour, the programmer must ensure that:
-* Even if there are branches and jumps within a loop body, the final instruction of the loop body gets executed exactly once per iteration.
-* Nested loops have distinct end addresses.
-* The end instruction of an outer loop is not executed before an inner loop finishes.
-
-OTBN does not detect these conditions being violated, so no error will be signalled should they occur.
-
-(Note indentation in the code examples is for clarity and has no functional impact).
-
-The following loops are *well nested*:
-
-```
-LOOP x2, 3
-  LOOP x3, 1
-    ADDI x4, x4, 1
-  # The NOP ensures that the outer and inner loops end on different instructions
-  NOP
-
-# Both inner and outer loops call some_fn, which returns to
-# the body of the loop
-LOOP x2, 5
-  JAL x1, some_fn
-  LOOP x3, 2
-    JAL x1, some_fn
-    ADDI x4, x4, 1
-  NOP
-
-# Control flow leaves the immediate body of the outer loop but eventually
-# returns to it
-LOOP x2, 4
-  BEQ x4, x5, some_label
-branch_back:
-  LOOP x3, 1
-    ADDI x6, x6, 1
-  NOP
-
-some_label:
-  ...
-  JAL x0, branch_back
-```
-
-The following loops are not well nested:
-
-```
-# Both loops end on the same instruction
-LOOP x2, 2
-  LOOP x3, 1
-    ADDI x4, x4, 1
-
-# Inner loop jumps into outer loop body (executing the outer loop end
-# instruction before the inner loop has finished)
-LOOP x2, 5
-  LOOP x3, 3
-    ADDI x4, x4 ,1
-    BEQ  x4, x5, outer_body
-    ADD  x6, x7, x8
-outer_body:
-  SUBI  x9, x9, 1
-```
-
 # Theory of Operations
 
 ## Block Diagram
@@ -595,6 +529,76 @@ When it executes this instruction, OTBN:
 
 The DMEM can be used to pass data back to the host processor, e.g. a "return value" or an "exit code".
 Refer to the section [Passing of data between the host CPU and OTBN]({{<relref "#writing-otbn-applications-datapassing" >}}) for more information.
+
+## Using hardware loops
+
+OTBN provides two hardware loop instructions: `LOOP` and `LOOPI`.
+
+### Loop nesting
+
+OTBN permits loop nesting and branches and jumps inside loops.
+However, it doesn't have support for early termination of loops: there's no way to pop an entry from the loop stack without executing the last instruction of the loop the correct number of times.
+It can also only pop one level of the loop stack per instruction.
+
+To avoid polluting the loop stack and avoid surprising behaviour, the programmer must ensure that:
+* Even if there are branches and jumps within a loop body, the final instruction of the loop body gets executed exactly once per iteration.
+* Nested loops have distinct end addresses.
+* The end instruction of an outer loop is not executed before an inner loop finishes.
+
+OTBN does not detect these conditions being violated, so no error will be signalled should they occur.
+
+(Note indentation in the code examples is for clarity and has no functional impact.)
+
+The following loops are *well nested*:
+
+```
+LOOP x2, 3
+  LOOP x3, 1
+    ADDI x4, x4, 1
+  # The NOP ensures that the outer and inner loops end on different instructions
+  NOP
+
+# Both inner and outer loops call some_fn, which returns to
+# the body of the loop
+LOOP x2, 5
+  JAL x1, some_fn
+  LOOP x3, 2
+    JAL x1, some_fn
+    ADDI x4, x4, 1
+  NOP
+
+# Control flow leaves the immediate body of the outer loop but eventually
+# returns to it
+LOOP x2, 4
+  BEQ x4, x5, some_label
+branch_back:
+  LOOP x3, 1
+    ADDI x6, x6, 1
+  NOP
+
+some_label:
+  ...
+  JAL x0, branch_back
+```
+
+The following loops are not well nested:
+
+```
+# Both loops end on the same instruction
+LOOP x2, 2
+  LOOP x3, 1
+    ADDI x4, x4, 1
+
+# Inner loop jumps into outer loop body (executing the outer loop end
+# instruction before the inner loop has finished)
+LOOP x2, 5
+  LOOP x3, 3
+    ADDI x4, x4 ,1
+    BEQ  x4, x5, outer_body
+    ADD  x6, x7, x8
+outer_body:
+  SUBI  x9, x9, 1
+```
 
 ## Algorithic Examples: Multiplication with BN.MULQACC
 
