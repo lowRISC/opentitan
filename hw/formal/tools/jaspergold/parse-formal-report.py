@@ -50,7 +50,7 @@ def format_percentage(good, bad):
     return '{0:.2f} %'.format(round(pc, 2))
 
 
-def parse_fpv_message(str_buffer):
+def parse_message(str_buffer):
     '''Parse error, warnings, and failed properties from the log file'''
     err_warn_patterns = [("errors", r"^ERROR: .*"),
                          ("errors", r"^\[ERROR.*"),
@@ -62,7 +62,7 @@ def parse_fpv_message(str_buffer):
     return extract_messages(str_buffer, err_warn_patterns)
 
 
-def parse_fpv_summary(str_buffer):
+def get_summary(str_buffer):
     '''Count errors, warnings, and property status from the log file'''
     message_patterns = [("errors", r"^ERROR: .*"),
                         ("errors", r"^\[ERROR.*"),
@@ -73,25 +73,25 @@ def parse_fpv_summary(str_buffer):
                         ("covered", r"^\[\d+\].*covered.*"),
                         ("undetermined", r"^\[\d+\].*undetermined.*"),
                         ("unreachable", r"^\[\d+\].*unreachable.*")]
-    fpv_summary = extract_messages_count(str_buffer, message_patterns)
+    summary = extract_messages_count(str_buffer, message_patterns)
 
-    fpv_summary["pass_rate"] = format_percentage(fpv_summary["proven"],
-                                                 fpv_summary["cex"] + fpv_summary["undetermined"])
-    fpv_summary["cov_rate"] = format_percentage(fpv_summary["covered"], fpv_summary["unreachable"])
+    summary["pass_rate"] = format_percentage(summary["proven"],
+                                             summary["cex"] + summary["undetermined"])
+    summary["cov_rate"] = format_percentage(summary["covered"], summary["unreachable"])
 
-    return fpv_summary
+    return summary
 
 
 def get_results(logpath):
-    '''Parse FPV log file and extract info to a dictionary'''
+    '''Parse log file and extract info to a dictionary'''
     try:
         with Path(logpath).open() as f:
             results = OrderedDict()
             full_file = f.read()
-            results["messages"] = parse_fpv_message(full_file)
-            fpv_summary = parse_fpv_summary(full_file)
-            if fpv_summary:
-                results["fpv_summary"] = fpv_summary
+            results["messages"] = parse_message(full_file)
+            summary = get_summary(full_file)
+            if summary:
+                results["summary"] = summary
             return results
 
     except IOError as err:
@@ -103,7 +103,7 @@ def get_results(logpath):
 
 
 def get_cov_results(logpath, dut_name):
-    '''Parse FPV coverage information from the log file'''
+    '''Parse coverage information from the log file'''
     try:
         with Path(logpath).open() as f:
             full_file = f.read()
@@ -131,7 +131,7 @@ def get_cov_results(logpath, dut_name):
 def main():
     parser = argparse.ArgumentParser(
         description=
-        '''This script parses the JasperGold FPV log to extract below information.
+        '''This script parses the JasperGold formal log to extract below information.
 
         "messages": {
           "errors"      : []
@@ -140,7 +140,7 @@ def main():
           "undetermined": [],
           "unreachable" : [],
         },
-        "fpv_summary": {
+        "summary": {
           "errors"      : 0
           "warnings"    : 2
           "proven"      : 20,
@@ -152,7 +152,7 @@ def main():
           "cover_rate"  : "90 %"
         },
         If coverage is enabled, this script will also parse the coverage result:
-        "fpv_coverage": {
+        "coverage": {
           stimuli: "90 %",
           coi    : "90 %",
           proof  : "80 %"
@@ -164,9 +164,7 @@ def main():
         ''')
     parser.add_argument('--logpath',
                         type=str,
-                        default="fpv.log",
-                        help=('FPV log file path. Defaults to `fpv.log` '
-                              'under the current script directory.'))
+                        help=('The path of the formal log file that will be parsed.'))
 
     parser.add_argument('--reppath',
                         type=str,
@@ -190,7 +188,7 @@ def main():
     results = get_results(args.logpath)
 
     if args.cov:
-        results["fpv_coverage"] = get_cov_results(args.logpath, args.dut)
+        results["coverage"] = get_cov_results(args.logpath, args.dut)
 
     with Path(args.reppath).open("w") as results_file:
         hjson.dump(results,
@@ -200,16 +198,16 @@ def main():
                    use_decimal=True)
 
     # return nonzero status if any errors or property failures are present
-    # TODO: currently allow FPV warnings
+    # TODO: currently allow warnings
     err_msgs = results["messages"]
     n_errors = len(err_msgs["errors"])
     n_failures = (len(err_msgs.get("cex")) + len(err_msgs.get("undetermined")) +
                   len(err_msgs.get("unreachable")))
     if n_errors > 0 or n_failures > 0:
-        log.info("Found %d FPV errors,  %d FPV property failures", n_errors, n_failures)
+        log.info("Found %d errors,  %d failures", n_errors, n_failures)
         return 1
 
-    log.info("FPV logfile parsed succesfully")
+    log.info("Formal logfile parsed succesfully")
     return 0
 
 

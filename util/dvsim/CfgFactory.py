@@ -7,7 +7,7 @@ import sys
 
 from CfgJson import load_hjson
 
-import FpvCfg
+import FormalCfg
 import LintCfg
 import SimCfg
 import SynCfg
@@ -36,7 +36,7 @@ def _load_cfg(path, initial_values):
     classes = [
         LintCfg.LintCfg,
         SynCfg.SynCfg,
-        FpvCfg.FpvCfg,
+        FormalCfg.FormalCfg,
         SimCfg.SimCfg
     ]
     found_cls = None

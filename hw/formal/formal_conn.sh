@@ -91,7 +91,7 @@ cd build/*${TOP}*/default-icarus
 
 if [ "${tool}" == "jg" ]; then
     jg ${batch} \
-      ${REPO_PATH}/hw/formal/tools/jaspergold/fconn.tcl \
+      ${REPO_PATH}/hw/formal/tools/jaspergold/conn.tcl \
       -proj {REPO_PATH}/hw/formal/jgproject \
       -allow_unsupported_OS \
       -command exit \

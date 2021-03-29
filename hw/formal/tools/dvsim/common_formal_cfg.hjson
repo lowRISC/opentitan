@@ -1,0 +1,46 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  flow:             formal
+  formal_root:      "{proj_root}/hw/formal"
+  flow_makefile:    "{formal_root}/tools/dvsim/formal.mk"
+
+  import_cfgs:      [// common server configuration for results upload
+                     "{proj_root}/hw/data/common_project_cfg.hjson",
+                     "{formal_root}/tools/{tool}/{tool}.hjson"]
+
+  tool:             "jaspergold"
+
+  // Default directory structure for the output
+  dut:              "{name}"
+  build_dir:        "{scratch_path}/{build_mode}"
+
+  // we rely on Fusesoc to generate the filelist for formal
+  sv_flist_gen_cmd:  fusesoc
+
+  // TODO: switch the tool to formal once the corresponding edalize backend is avaiable
+
+  sv_flist_gen_opts: ["--cores-root {proj_root}",
+                      "run",
+                      "--flag=fileset_{design_level}",
+                      "--tool=icarus",
+                      "--target=default",
+                      "--build-root={build_dir}",
+                      "--setup {fusesoc_core}"]
+  sv_flist_gen_dir:  "{build_dir}/default-icarus"
+
+  report_cmd:  "python3 {formal_root}/tools/{tool}/parse-formal-report.py"
+  report_opts: ["--logpath={build_dir}/{sub_flow}.log",
+                "--reppath={build_dir}/results.hjson",
+                "--cov={cov}",
+                "--dut={name}"]
+
+  // Vars that need to exported to the env
+  exports: [
+    { TOP:     "{dut}" },
+    { COV:     "{cov}" },
+    {sub_flow: "{sub_flow}"}
+  ]
+}
+

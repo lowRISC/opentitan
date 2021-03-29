@@ -9,7 +9,7 @@
 
   fusesoc_core: lowrisc:systems:top_earlgrey
 
-  csv_path: "{proj_root}/hw/top_earlgrey/fpv/fconn_csvs/top_earlgrey_conn.csv"
+  csv_path: "{proj_root}/hw/top_earlgrey/formal/fconn_csvs/top_earlgrey_conn.csv"
 
   // TODO: reduce run time and turn on coverage
   cov: false
