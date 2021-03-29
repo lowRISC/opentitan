@@ -41,7 +41,7 @@ module rstmgr_crash_info
     slots[CrashStoreSlot-1:0] = slots_q;
   end
 
-  assign slots_cnt_o = CrashStoreSlot;
+  assign slots_cnt_o = CrashStoreSlot[IdxWidth-1:0];
   assign slot_o = slots[slot_sel_i[SlotCntWidth-1:0]];
 
   if (SlotCntWidth < IdxWidth) begin : gen_tieoffs
@@ -50,6 +50,7 @@ module rstmgr_crash_info
   end
 
   // Make sure the crash dump isn't excessively large
+  `ASSERT_INIT(CntStoreSlot_A, CrashStoreSlot < (1 << IdxWidth))
   `ASSERT_INIT(CntWidth_A, SlotCntWidth <= IdxWidth)
 
 endmodule // rstmgr_crash_info
