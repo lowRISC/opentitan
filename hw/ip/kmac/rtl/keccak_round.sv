@@ -127,7 +127,7 @@ module keccak_round #(
   //////////////////////
 
   // state inputs
-  assign rnd_eq_end = (round == MaxRound - 1);
+  assign rnd_eq_end = (int'(round) == MaxRound - 1);
 
   typedef enum logic [2:0] {
       StIdle,
@@ -307,11 +307,11 @@ module keccak_round #(
     storage_d = keccak_out;
     if (xor_message) begin
       for (int j = 0 ; j < Share ; j++) begin
-        for (int i = 0 ; i < DInEntry ; i++) begin
+        for (int unsigned i = 0 ; i < DInEntry ; i++) begin
           // TODO: handle If Width is not integer divisable by DInWidth
           // Currently it is not allowed to have partial write
           // Please see the Assertion `WidthDivisableByDInWidth_A`
-          if (addr_i == $unsigned(i)) begin
+          if (addr_i == i[DInAddr-1:0]) begin
             storage_d[j][i*DInWidth+:DInWidth] =
               storage[j][i*DInWidth+:DInWidth] ^ data_i[j];
           end else begin
