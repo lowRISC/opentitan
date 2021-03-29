@@ -16,9 +16,25 @@ class aon_timer_env extends cip_base_env #(
     super.build_phase(phase);
 
     // get the vifs from config db
-    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "clk_aon_rst_vif",
-        cfg.clk_aon_rst_vif)) begin
-      `uvm_fatal(`gfn, "failed to get clk_aon_rst_vif from uvm_config_db")
+    if (!uvm_config_db#(virtual clk_rst_if)::
+        get(this, "", "aon_clk_rst_vif", cfg.aon_clk_rst_vif)) begin
+      `uvm_fatal(`gfn, "failed to get aon_clk_rst_vif from uvm_config_db")
+    end
+    if (!uvm_config_db#(virtual pins_if #(1))::
+        get(this, "", "cpu_en_vif", cfg.cpu_en_vif)) begin
+      `uvm_fatal(`gfn, "failed to get cpu_en_vif from uvm_config_db")
+    end
+    if (!uvm_config_db#(virtual pins_if #(2))::
+        get(this, "", "aon_intr_vif", cfg.aon_intr_vif)) begin
+      `uvm_fatal(`gfn, "failed to get aon_intr_vif from uvm_config_db")
+    end
+    if (!uvm_config_db#(virtual pins_if #(1))::
+        get(this, "", "sleep_vif", cfg.sleep_vif)) begin
+      `uvm_fatal(`gfn, "failed to get sleep_vif from uvm_config_db")
+    end
+    if (!uvm_config_db#(virtual aon_timer_core_if)::
+        get(this, "", "core_vif", cfg.core_vif)) begin
+      `uvm_fatal(`gfn, "failed to get core_vif from uvm_config_db")
     end
   endfunction
 
