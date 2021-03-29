@@ -10,7 +10,7 @@
 // Most of the items are TODO, at the moment only arbitration logic exists.
 
 module flash_phy_core import flash_phy_pkg::*; #(
-  parameter int ArbCnt       = 4
+  parameter int unsigned ArbCnt = 4
 ) (
   input                              clk_i,
   input                              rst_ni,
@@ -118,7 +118,7 @@ module flash_phy_core import flash_phy_pkg::*; #(
   logic op_ack;
   logic [DataWidth-1:0] scramble_mask;
 
-  assign host_req_masked = host_req_i & (arb_cnt < ArbCnt);
+  assign host_req_masked = host_req_i & (arb_cnt < ArbCnt[CntWidth-1:0]);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
