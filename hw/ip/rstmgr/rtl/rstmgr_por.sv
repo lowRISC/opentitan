@@ -74,7 +74,7 @@ module rstmgr_por #(
   logic rst_nd, rst_nq;
 
   assign rst_nd = ~rst_stable ? 1'b0 :
-                  cnt_en & (cnt == StretchCount) ? 1'b1 : rst_nq;
+                  cnt_en & (cnt == StretchCount[CtrWidth-1:0]) ? 1'b1 : rst_nq;
 
   always_ff @(posedge clk_i or negedge rst_clean_n) begin
     if (!rst_clean_n) begin
