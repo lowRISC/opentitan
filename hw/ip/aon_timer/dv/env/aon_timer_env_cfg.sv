@@ -4,7 +4,11 @@
 
 class aon_timer_env_cfg extends cip_base_env_cfg #(.RAL_T(aon_timer_reg_block));
 
-  virtual clk_rst_if clk_aon_rst_vif;
+  virtual clk_rst_if        aon_clk_rst_vif;
+  virtual pins_if #(1)      cpu_en_vif;
+  virtual pins_if #(2)      aon_intr_vif;
+  virtual pins_if #(1)      sleep_vif;
+  virtual aon_timer_core_if core_vif;
 
   // ext component cfgs
 
