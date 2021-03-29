@@ -13,7 +13,7 @@
 //                                   DO NOT USE THIS BLINDLY!                                    //
 //                                                                                               //
 // It has not yet been verified that this initial implementation produces pseudo-random numbers  //
-// of sufficient quality in terms of uniformity and independence, and that it is indeed sutiable //
+// of sufficient quality in terms of uniformity and independence, and that it is indeed suitable //
 // for masking purposes.                                                                         //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -134,7 +134,7 @@ module aes_prng_masking import aes_pkg::*;
     );
   end
 
-  // Furhter "scramble" the LFSR state at the byte level to break linear shift patterns.
+  // Further "scramble" the LFSR state at the byte level to break linear shift patterns.
   assign prng_b = prng_state;
   for (genvar b = 0; b < NumBytes; b++) begin : gen_sub
     assign sub_b[b] = prim_cipher_pkg::sbox4_8bit(prng_b[b], prim_cipher_pkg::PRINCE_SBOX4);
