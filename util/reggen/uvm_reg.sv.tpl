@@ -11,7 +11,4 @@
 <%namespace file="uvm_reg_base.sv.tpl" import="*"/>\
 ##
 ##
-<%
-  hier_path = '' if block.hier_path is None else block.hier_path + "."
-%>\
-${make_ral_pkg(dv_base_prefix, block.regwidth, hier_path, rb, esc_if_name)}
+${make_ral_pkg(dv_base_prefix, block.regwidth, reg_block_path, rb, esc_if_name)}
