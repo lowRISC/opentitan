@@ -7,7 +7,6 @@ cargo = find_program('cargo', required: false, disabler: true)
 build_type = 'release'
 build_dir = meson.current_build_dir()
 manifest_path = meson.current_source_dir() / 'Cargo.toml'
-toolchain_file = meson.current_source_dir() / '..' / 'rust-toolchain'
 
 # CARGO FLAGS:
 # These flags will only apply to the final binary, and won't get propogated
@@ -39,14 +38,13 @@ rom_ext_signer_raw = custom_target(
     cargo,
     cargo_flags,
     rust_flags,
-    toolchain_file,
+    '',
     meson.source_root(),
     meson.build_root(),
   ],
   depend_files: [
     cargo_invoke_cmd,
     manifest_path,
-    toolchain_file,
   ],
   output: '.',
   console: true,
