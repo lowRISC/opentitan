@@ -296,7 +296,9 @@ module aes_control
 
     // Initial key registers
     key_init_sel_o = KEY_INIT_INPUT;
-    key_init_we_o  = '{default: {NumRegsKey{SP2V_LOW}}};
+    for (int s = 0; s < NumSharesKey; s++) begin
+      key_init_we_o[s] = {NumRegsKey{SP2V_LOW}};
+    end
 
     // IV registers
     iv_sel_o = IV_INPUT;
@@ -549,7 +551,9 @@ module aes_control
         if (key_iv_data_in_clear_i) begin
           // Initial Key
           key_init_sel_o = KEY_INIT_CLEAR;
-          key_init_we_o  = '{default: {NumRegsKey{SP2V_HIGH}}};
+          for (int s = 0; s < NumSharesKey; s++) begin
+            key_init_we_o[s] = {NumRegsKey{SP2V_HIGH}};
+          end
           key_init_clear = 1'b1;
 
           // IV
