@@ -76,13 +76,14 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 );
 
   // total number of pages to be wiped during RMA entry
-  localparam int WipeIdxWidth = prim_util_pkg::vbits(WipeEntries);
+  localparam int unsigned WipeIdxWidth = prim_util_pkg::vbits(WipeEntries);
+  localparam int unsigned MaxWipeEntry = WipeEntries - 1;
 
   // seed related local params
-  localparam int SeedReads = SeedWidth / BusWidth;
-  localparam int SeedRdsWidth = $clog2(SeedReads);
-  localparam int SeedCntWidth = $clog2(NumSeeds+1);
-  localparam int NumSeedWidth = $clog2(NumSeeds);
+  localparam int unsigned SeedReads = SeedWidth / BusWidth;
+  localparam int unsigned SeedRdsWidth = $clog2(SeedReads);
+  localparam int unsigned SeedCntWidth = $clog2(NumSeeds+1);
+  localparam int unsigned NumSeedWidth = $clog2(NumSeeds);
 
   // the various seed outputs
   logic [NumSeeds-1:0][SeedReads-1:0][BusWidth-1:0] seeds_q;
@@ -284,7 +285,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     addr = '0;
     part_sel = FlashPartInfo;
     info_sel = 0;
-    num_words = SeedReads - 1'b1;
+    num_words = SeedReads[11:0] - 12'd1;
 
     // seed status
     seed_err_o = 1'b0;
@@ -350,7 +351,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         info_sel = seed_info_sel;
 
         // we have checked all seeds, proceed
-        if (seed_cnt_q == NumSeeds) begin
+        if (seed_cnt_q == NumSeeds[SeedCntWidth-1:0]) begin
           start = 1'b0;
           state_d = StWait;
 
@@ -399,7 +400,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         lfsr_en_o = 1'b1;
         rma_wipe_req = 1'b1;
 
-        if (rma_wipe_idx == WipeEntries-1 && rma_wipe_done) begin
+        if (rma_wipe_idx == MaxWipeEntry[WipeIdxWidth-1:0] && rma_wipe_done) begin
           // first check for error status
           // If error status is set, go directly to invalid terminal state
           // If error status is good, go to second check
@@ -438,9 +439,10 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   // RMA wiping Mechanism
   ///////////////////////////////
 
-  localparam int PageCntWidth = prim_util_pkg::vbits(PagesPerBank + 1);
-  localparam int WordCntWidth = prim_util_pkg::vbits(BusWordsPerPage + 1);
-  localparam int BeatCntWidth = prim_util_pkg::vbits(WidthMultiple);
+  localparam int unsigned PageCntWidth = prim_util_pkg::vbits(PagesPerBank + 1);
+  localparam int unsigned WordCntWidth = prim_util_pkg::vbits(BusWordsPerPage + 1);
+  localparam int unsigned BeatCntWidth = prim_util_pkg::vbits(WidthMultiple);
+  localparam int unsigned MaxBeatCnt = WidthMultiple - 1;
 
   logic page_cnt_ld;
   logic page_cnt_incr;
@@ -496,7 +498,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     end else if (word_cnt_clr) begin
       word_cnt <= '0;
     end else if (word_cnt_incr) begin
-      word_cnt <= word_cnt + WidthMultiple;
+      word_cnt <= word_cnt + WidthMultiple[WordCntWidth-1:0];
     end
   end
 
@@ -555,7 +557,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 
   assign rma_part_sel = RmaWipeEntries[rma_wipe_idx].part;
   assign rma_info_sel = RmaWipeEntries[rma_wipe_idx].info_sel;
-  assign rma_num_words = WidthMultiple - 1;
+  assign rma_num_words = WidthMultiple[11:0] - 1;
 
 
   //fsm for handling the actual wipe
@@ -603,7 +605,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       end
 
       StRmaWordSel: begin
-        if (word_cnt < BusWordsPerPage) begin
+        if (word_cnt < BusWordsPerPage[WordCntWidth-1:0]) begin
           rma_state_d = StRmaProgram;
         end else begin
           word_cnt_clr = 1'b1;
@@ -617,7 +619,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         rma_op = FlashOpProgram;
         prog_cnt_en = 1'b1;
 
-        if ((beat_cnt == WidthMultiple-1) && wready_i) begin
+        if ((beat_cnt == MaxBeatCnt[BeatCntWidth-1:0]) && wready_i) begin
           rma_state_d = StRmaProgramWait;
         end
       end
@@ -638,7 +640,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         rma_op = FlashOpRead;
         rd_cnt_en = 1'b1;
 
-        if ((beat_cnt == WidthMultiple-1) && done_i) begin
+        if ((beat_cnt == MaxBeatCnt[BeatCntWidth-1:0]) && done_i) begin
           beat_cnt_clr = 1'b1;
           word_cnt_incr = 1'b1;
           rma_state_d = StRmaWordSel;
