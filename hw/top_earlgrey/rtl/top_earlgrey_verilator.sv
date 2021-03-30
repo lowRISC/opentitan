@@ -8,6 +8,8 @@ module top_earlgrey_verilator (
   input rst_ni
 );
 
+  import top_earlgrey_pkg::*;
+
   logic [31:0]  cio_gpio_p2d, cio_gpio_d2p, cio_gpio_en_d2p;
   logic cio_uart_rx_p2d, cio_uart_tx_d2p, cio_uart_tx_en_d2p;
 
@@ -32,47 +34,36 @@ module top_earlgrey_verilator (
   logic [20:0] dio_out;
   logic [20:0] dio_oe;
 
-  assign dio_in = {cio_spi_device_sck_p2d,
-                   cio_spi_device_csb_p2d,
-                   1'b0,
-                   1'b0,
-                   1'b0,
-                   cio_spi_device_sdi_p2d,
-                   1'b0,
-                   1'b0,
-                   1'b0,
-                   1'b0,
-                   1'b0,
-                   1'b0,
-                   cio_usbdev_sense_p2d,
-                   1'b0,
-                   1'b0,
-                   1'b0,
-                   1'b0,
-                   1'b0,
-                   cio_usbdev_d_p2d,
-                   cio_usbdev_dp_p2d,
-                   cio_usbdev_dn_p2d};
+  always_comb begin : assign_dio_in
+    dio_in = '0;
+    dio_in[DioSpiDeviceSck] = cio_spi_device_sck_p2d;
+    dio_in[DioSpiDeviceCsb] = cio_spi_device_csb_p2d;
+    dio_in[DioSpiDeviceSd0] = cio_spi_device_sdi_p2d;
+    dio_in[DioUsbdevSense] = cio_usbdev_sense_p2d;
+    dio_in[DioUsbdevD] = cio_usbdev_d_p2d;
+    dio_in[DioUsbdevDp] = cio_usbdev_dp_p2d;
+    dio_in[DioUsbdevDn] = cio_usbdev_dn_p2d;
+  end
 
-  assign cio_usbdev_dn_d2p = dio_out[0];
-  assign cio_usbdev_dp_d2p = dio_out[1];
-  assign cio_usbdev_d_d2p  = dio_out[2];
-  assign cio_usbdev_suspend_d2p = dio_out[3];
-  assign cio_usbdev_tx_mode_se_d2p = dio_out[4];
-  assign cio_usbdev_dn_pullup_d2p = dio_out[5];
-  assign cio_usbdev_dp_pullup_d2p = dio_out[6];
-  assign cio_usbdev_se0_d2p = dio_out[7];
-  assign cio_spi_device_sdo_d2p = dio_out[16];
+  assign cio_usbdev_dn_d2p = dio_out[DioUsbdevDn];
+  assign cio_usbdev_dp_d2p = dio_out[DioUsbdevDp];
+  assign cio_usbdev_d_d2p  = dio_out[DioUsbdevD];
+  assign cio_usbdev_suspend_d2p = dio_out[DioUsbdevSuspend];
+  assign cio_usbdev_tx_mode_se_d2p = dio_out[DioUsbdevTxModeSe];
+  assign cio_usbdev_dn_pullup_d2p = dio_out[DioUsbdevDnPullup];
+  assign cio_usbdev_dp_pullup_d2p = dio_out[DioUsbdevDpPullup];
+  assign cio_usbdev_se0_d2p = dio_out[DioUsbdevSe0];
+  assign cio_spi_device_sdo_d2p = dio_out[DioSpiDeviceSd1];
 
-  assign cio_usbdev_dn_en_d2p = dio_oe[0];
-  assign cio_usbdev_dp_en_d2p = dio_oe[1];
-  assign cio_usbdev_d_en_d2p  = dio_oe[2];
-  assign cio_usbdev_suspend_en_d2p = dio_oe[3];
-  assign cio_usbdev_tx_mode_se_en_d2p = dio_oe[4];
-  assign cio_usbdev_dn_pullup_en_d2p = dio_oe[5];
-  assign cio_usbdev_dp_pullup_en_d2p = dio_oe[6];
-  assign cio_usbdev_se0_en_d2p = dio_oe[7];
-  assign cio_spi_device_sdo_en_d2p = dio_oe[16];
+  assign cio_usbdev_dn_en_d2p = dio_oe[DioUsbdevDn];
+  assign cio_usbdev_dp_en_d2p = dio_oe[DioUsbdevDp];
+  assign cio_usbdev_d_en_d2p  = dio_oe[DioUsbdevD];
+  assign cio_usbdev_suspend_en_d2p = dio_oe[DioUsbdevSuspend];
+  assign cio_usbdev_tx_mode_se_en_d2p = dio_oe[DioUsbdevTxModeSe];
+  assign cio_usbdev_dn_pullup_en_d2p = dio_oe[DioUsbdevDnPullup];
+  assign cio_usbdev_dp_pullup_en_d2p = dio_oe[DioUsbdevDpPullup];
+  assign cio_usbdev_se0_en_d2p = dio_oe[DioUsbdevSe0];
+  assign cio_spi_device_sdo_en_d2p = dio_oe[DioSpiDeviceSd1];
 
   logic [43:0] mio_in;
   logic [43:0] mio_out;
@@ -127,25 +118,31 @@ module top_earlgrey_verilator (
     .clk_o(clk_aon)
   );
 
-  // DFT and Debug signal positions in the pinout.
   // TODO: generate these indices from the target-specific
-  // pinout configuration.
+  // pinout configuration. But first, this verilator top needs
+  // to be split into a Verilator TB and a Verilator chiplevel.
+  // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
     const_sampling: 1'b1,
     tie_offs:       '0,
     tck_idx:        pinmux_reg_pkg::NMioPads +
-                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSck,
+                    top_earlgrey_pkg::DioSpiDeviceSck,
     tms_idx:        pinmux_reg_pkg::NMioPads +
-                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceCsb,
+                    top_earlgrey_pkg::DioSpiDeviceCsb,
     trst_idx:       18, // MIO 18
     tdi_idx:        pinmux_reg_pkg::NMioPads +
-                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd0,
+                    top_earlgrey_pkg::DioSpiDeviceSd0,
     tdo_idx:        pinmux_reg_pkg::NMioPads +
-                    top_earlgrey_pkg::TopEarlgreyDioPinSpiDeviceSd1,
+                    top_earlgrey_pkg::DioSpiDeviceSd1,
     tap_strap0_idx: 26, // MIO 26
     tap_strap1_idx: 16, // MIO 16 (this is different in the ASIC top)
     dft_strap0_idx: 21, // MIO 21
-    dft_strap1_idx: 22  // MIO 22
+    dft_strap1_idx: 22, // MIO 22
+    // TODO: check whether there is a better way to pass these USB-specific params
+    usb_dp_idx:        DioUsbdevDp,
+    usb_dn_idx:        DioUsbdevDn,
+    usb_dp_pullup_idx: DioUsbdevDpPullup,
+    usb_dn_pullup_idx: DioUsbdevDnPullup
   };
 
   lc_ctrl_pkg::lc_tx_t lc_clk_bypass;

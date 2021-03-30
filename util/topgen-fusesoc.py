@@ -134,6 +134,9 @@ def main():
             'filesets': {
                 'files_rtl': {
                     'depend': [
+                        # Ibex and OTBN constants
+                        'lowrisc:ibex:ibex_pkg',
+                        'lowrisc:ip:otbn_pkg',
                         # flash_ctrl
                         'lowrisc:constants:top_pkg',
                         'lowrisc:prim:util',
@@ -151,6 +154,8 @@ def main():
                         # ast and sensor_ctrl not auto-generated, re-used from top_earlgrey
                         'lowrisc:systems:sensor_ctrl',
                         'lowrisc:systems:ast_pkg',
+                        # TODO: absorb this into AST longerm
+                        'lowrisc:systems:clkgen_xil7series',
                     ],
                     'files': [
                         # IPs
@@ -164,6 +169,10 @@ def main():
                         'rtl/autogen/%s_rnd_cnst_pkg.sv' % topname,
                         'rtl/autogen/%s_pkg.sv' % topname,
                         'rtl/autogen/%s.sv' % topname,
+                        # TODO: this is not ideal. we should extract
+                        # this info from the target configuration and
+                        # possibly generate separate core files for this.
+                        'rtl/autogen/%s_cw305.sv' % topname,
                     ],
                     'file_type': 'systemVerilogSource'
                 },

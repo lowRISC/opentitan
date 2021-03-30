@@ -60,7 +60,7 @@ def intersignal_format(req: Dict) -> str:
     return result
 
 
-def get_suffixes(ims: OrderedDict) -> (str, str):
+def get_suffixes(ims: OrderedDict) -> Tuple[str, str]:
     """Get suffixes of the struct.
 
     TL-UL struct uses `h2d`, `d2h` suffixes for req, rsp pair.

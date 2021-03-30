@@ -6,13 +6,13 @@ module clkgen_xil7series # (
   // Add BUFG if not done by downstream logic
   parameter bit AddClkBuf = 1
 ) (
-  input  IO_CLK,
-  input  IO_RST_N,
-  input  jtag_srst_n,
-  output clk_main,
-  output clk_48MHz,
-  output clk_aon,
-  output rst_n
+  input  clk_i,
+  input  rst_ni,
+  input  jtag_srst_ni,
+  output clk_main_o,
+  output clk_48MHz_o,
+  output clk_aon_o,
+  output rst_no
 );
   logic locked_pll;
   logic io_clk_buf;
@@ -25,18 +25,6 @@ module clkgen_xil7series # (
   logic clk_48_unbuf;
   logic clk_aon_buf;
   logic clk_aon_unbuf;
-
-  // input clock buffer
-  IBUF io_clk_ibuf (
-    .I (IO_CLK),
-    .O (io_clk_buf)
-  );
-
-  // input reset buffer
-  IBUF io_rst_ibuf (
-    .I (IO_RST_N),
-    .O (io_rst_buf_n)
-  );
 
   PLLE2_ADV #(
     .BANDWIDTH            ("OPTIMIZED"),
@@ -65,7 +53,7 @@ module clkgen_xil7series # (
     .CLKOUT5             (),
      // Input clock control
     .CLKFBIN             (clk_fb_buf),
-    .CLKIN1              (io_clk_buf),
+    .CLKIN1              (clk_i),
     .CLKIN2              (1'b0),
      // Tied to always select the primary input clock
     .CLKINSEL            (1'b1),
@@ -112,10 +100,10 @@ module clkgen_xil7series # (
 
   // outputs
   // clock
-  assign clk_main = clk_10_buf;
-  assign clk_48MHz = clk_48_buf;
-  assign clk_aon = clk_aon_buf;
+  assign clk_main_o = clk_10_buf;
+  assign clk_48MHz_o = clk_48_buf;
+  assign clk_aon_o = clk_aon_buf;
 
   // reset
-  assign rst_n = locked_pll & io_rst_buf_n & jtag_srst_n;
+  assign rst_no = locked_pll & rst_ni & jtag_srst_ni;
 endmodule

@@ -179,42 +179,6 @@
       default: "8",
       local: "true"
     },
-    { name: "NUsbDevPads",
-      desc: "Number of usbdev pins",
-      type: "int",
-      default: "0",
-      local: "true"
-    },
-    { name: "NDioPadUsbDevStart",
-      desc: "Start position for usbdev pins",
-      type: "int",
-      default: "0",
-      local: "true"
-    },
-    { name: "UsbDpSel",
-      desc: "index of usbdev_dp",
-      type: "int",
-      default: "0",
-      local: "true"
-    },
-    { name: "UsbDnSel",
-      desc: "index of usbdev_dn",
-      type: "int",
-      default: "0",
-      local: "true"
-    },
-    { name: "UsbDpPullUpSel",
-      desc: "index of usbdev_dp_pullup",
-      type: "int",
-      default: "0",
-      local: "true"
-    },
-    { name: "UsbDnPullUpSel",
-      desc: "index of usbdev_dn_pullup",
-      type: "int",
-      default: "0",
-      local: "true"
-    },
     // Since the target-specific top-levels often have slightly
     // different debug signal positions, we need a way to pass
     // this info from the target specific top-level into the pinmux

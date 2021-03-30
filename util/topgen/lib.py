@@ -8,7 +8,7 @@ import sys
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, List
 
 import hjson
 
@@ -19,6 +19,61 @@ from reggen.ip_block import IpBlock
 from .intermodule import find_otherside_modules  # noqa : F401 # isort:skip
 from .intermodule import im_portname, im_defname, im_netname  # noqa : F401 # isort:skip
 from .intermodule import get_dangling_im_def # noqa : F401 # isort:skip
+
+
+class Name:
+    """
+    We often need to format names in specific ways; this class does so.
+
+    To simplify parsing and reassembling of name strings, this class
+    stores the name parts as a canonical list of strings internally
+    (in self.parts).
+
+    The "from_*" functions parse and split a name string into the canonical
+    list, whereas the "as_*" functions reassemble the canonical list in the
+    format specified.
+
+    For example, ex = Name.from_snake_case("example_name") gets split into
+    ["example", "name"] internally, and ex.as_camel_case() reassembles this
+    internal representation into "ExampleName".
+    """
+    def __add__(self, other):
+        return Name(self.parts + other.parts)
+
+    @staticmethod
+    def from_snake_case(input: str) -> 'Name':
+        return Name(input.split("_"))
+
+    def __init__(self, parts: List[str]):
+        self.parts = parts
+        for p in parts:
+            assert len(p) > 0, "cannot add zero-length name piece"
+
+    def as_snake_case(self) -> str:
+        return "_".join([p.lower() for p in self.parts])
+
+    def as_camel_case(self) -> str:
+        out = ""
+        for p in self.parts:
+            # If we're about to join two parts which would introduce adjacent
+            # numbers, put an underscore between them.
+            if out[-1:].isnumeric() and p[:1].isnumeric():
+                out += "_" + p
+            else:
+                out += p.capitalize()
+        return out
+
+    def as_c_define(self) -> str:
+        return "_".join([p.upper() for p in self.parts])
+
+    def as_c_enum(self) -> str:
+        return "k" + self.as_camel_case()
+
+    def as_c_type(self) -> str:
+        return self.as_snake_case() + "_t"
+
+    def remove_part(self, part_to_remove: str) -> "Name":
+        return Name([p for p in self.parts if p != part_to_remove])
 
 
 def is_ipcfg(ip: Path) -> bool:  # return bool
@@ -365,3 +420,14 @@ def get_base_and_size(name_to_block: Dict[str, IpBlock],
         assert isinstance(base_addr, int)
 
     return (base_addr, size_byte)
+
+
+def get_io_enum_literal(sig: Dict, prefix: str) -> str:
+    """Returns the DIO pin enum literal with value assignment"""
+    name = Name.from_snake_case(prefix) + Name.from_snake_case(sig["name"])
+    # In this case, the signal is a multibit signal, and hence
+    # we have to make the signal index part of the parameter
+    # name to uniquify it.
+    if sig['width'] > 1:
+        name += Name([str(sig['idx'])])
+    return name.as_camel_case()

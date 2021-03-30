@@ -12,7 +12,7 @@ filesets:
       - lowrisc:tool:top_earlgrey_nexysvideo_size_check
     files:
       - rtl/clkgen_xil7series.sv
-      - rtl/top_earlgrey_nexysvideo.sv
+      - rtl/autogen/top_earlgrey_nexysvideo.sv
     file_type: systemVerilogSource
 
   files_constraints:

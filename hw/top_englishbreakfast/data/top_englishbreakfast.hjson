@@ -722,6 +722,9 @@
 
     // ext is to create port in the top.
     'external': {
+        // 'adc_ctrl_aon.adc'             : 'adc'
+        'ast.edn'                      : '',
+        'ast.lc_dft_en'                : '',
         'ast.ram_1p_cfg'               : 'ram_1p_cfg',
         'ast.ram_2p_cfg'               : 'ram_2p_cfg',
         'ast.rom_cfg'                  : 'rom_cfg',
@@ -735,12 +738,17 @@
         'eflash.flash_bist_enable'     : 'flash_bist_enable',
         'eflash.flash_power_down_h'    : 'flash_power_down_h',
         'eflash.flash_power_ready_h'   : 'flash_power_ready_h',
-        'eflash.flash_test_mode_a'     : 'flash_test_mode_a',
-        'eflash.flash_test_voltage_h'  : 'flash_test_voltage_h',
+        # 'entropy_src.entropy_src_rng'  : '',
+        # 'entropy_src.rng_fips'         : '',
+        # 'peri.tl_ast'                  : '',
         'pinmux_aon.dft_strap_test'    : 'dft_strap_test'
         'pwrmgr_aon.pwr_ast'           : 'pwrmgr_ast',
+        # 'otp_ctrl.otp_ast_pwr_seq'     : '',
+        # 'otp_ctrl.otp_ast_pwr_seq_h'   : '',
         'sensor_ctrl_aon.ast_alert'    : 'sensor_ctrl_ast_alert',
         'sensor_ctrl_aon.ast_status'   : 'sensor_ctrl_ast_status',
+        'sensor_ctrl_aon.pinmux2ast'   : '',
+        'sensor_ctrl_aon.ast2pinmux'   : '',
         'usbdev.usb_ref_val'           : '',
         'usbdev.usb_ref_pulse'         : '',
     },
@@ -766,75 +774,223 @@
     }
   ],
 
-  // ===== INTERRUPT CTRL =====================================================
+  // ===== PINMUX & PINOUT ======================================================
 
-  // RV_PLIC has two searching algorithm internally to pick the most highest priority interrupt
-  // source. "sequential" is smaller but slower, "matrix" is larger but faster.
-  // Choose depends on the criteria. Currently it is set to "matrix" to meet FPGA timing @ 50MHz
-
-  // ===== ALERT HANDLER ======================================================
-
-  // TODO: need to overhaul this datastructure.
-  pinmux: {
-
-    // Total number of Multiplexed I/O
-    //  All the input/outputs from IPs are muxed in pinmux, and it has # of I/O
-    //  talks to the outside of top_earlgrey.
-    //  This field will be replaced to the length of PAD if padctrl is defined
-    num_mio: 44
-
-    // Dedicated IO modules. The in/out ports of the modules below are connected
-    //  to TOP IO port through PADS directly. It bypasses PINMUX multiplexers
-    dio_modules: [
-      { name: "spi_device", pad: ["ChC[0..5]"] },
-      { name: "spi_host0",  pad: ["ChB[0..5]"] },
-      { name: "usbdev",     pad: ["ChA[0..8]"] },
-    ],
-
-    // Multiplexing IO modules. The in/out ports of the modules below are
-    //  connected through PINMUX, which gives controllability of the connection
-    //  between the modules and the IO PADS.
-    //  If `mio_modules` aren't defined, it uses all remaining modules from
-    //  module list except defined in `dio_modules`.
-    mio_modules: ["gpio", "uart0"]
-
-    // If any module isn't defined in above two lists, its inputs will be tied
-    //  to 0, and the output/OE signals will be floating (or connected to
-    //  unused signal). `rv_plic` is special module, shouldn't be defined here.
-    nc_modules: ["rv_timer", "hmac"]
-
-    // Number of wakeup detectors to instantiate, and bitwidth for the wakeup
-    // counters. Note that all MIO pad inputs are connected to the wakeup detectors,
-    // and there is no way to disable this. DIO inputs on the other hand are by
-    // default not connected.
-    // TODO: need to add mechanism to mark them as wakeup pins.
-    num_wkup_detect: 8
-    wkup_cnt_width:  8
-
-    // Below fields are generated.
-    // inputs: [
-    //  { name: "xxx", width: xx },
-    //  ]
-    // outputs: [
-    //  { name: "xxx", width: xx },
-    //  ]
-    // inouts: [
-    //  { name: "xxx", width: xx },
-    //  ]
-  }
-
-  // TODO: need to overhaul this datastructure.
-  // PADS instantiation
-  //  Number of in/outs and the numer of PAD instances doesn't have to be
-  //  same. The number given below excludes clock/reset and other necessary
-  //  PADS but only defines GPIO pads.
-  padctrl: {
-    attr_default: ["STRONG"],
+  pinout: {
+    // IO power bank declaration.
+    // This list defines the IO bank power domains on the ASIC.
+    // Each individual pad must be in one of the declared power domains.
+    banks: ['VCC', 'AVCC', 'VIOA', 'VIOB'],
+    // Pad declaration.
+    // Each entry must have the following four keys:
+    //
+    // - name: Name of the pad (this will be exposed at the chiplevel).
+    //
+    // - type: Pad type (this maps to the pad types defined in prim_pad_wrapper_pkg.sv)
+    //
+    // - bank: Specifies in which of the IO power banks this pad lives.
+    //
+    // - connection: Can have either of the following values:
+    //
+    //               1) 'direct': This is a dedicated IO Pad that is directly connected to a peripheral.
+    //
+    //               2) 'manual': This is a dedicated IO signal that is not directly connected to a
+    //                            peripheral. It needs to be manually wired up in the template.
+    //
+    //               3) 'muxed': This is a muxed IO pad that will be connected to the pinmux.
+    //
+    // Optionally, each pad can also have a 'desc' field for further description.
     pads: [
-      { name: "ChA" type: "IO_33V", count: 32 }, // Accessing as ChA[0] .. ChA[31]
-      { name: "ChB" type: "IO_33V", count: 4, attr: ["KEEP", "WEAK"]},
-      { name: "ChC" type: "IO_33V", count: 4, attr: ["KEEP", "STRONG"]},
+      // TODO: this needs to be updated to the latest ASIC pinout.
+      // Dedicated
+      { name: 'POR_N'           , type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'System reset'},
+      { name: 'SPI_HOST_D0'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
+      { name: 'SPI_HOST_D1'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
+      { name: 'SPI_HOST_D2'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
+      { name: 'SPI_HOST_D3'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
+      { name: 'SPI_HOST_CLK'    , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host clock'},
+      { name: 'SPI_HOST_CS_L'   , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host chip select'},
+      { name: 'SPI_DEV_D0'      , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
+      { name: 'SPI_DEV_D1'      , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
+      { name: 'SPI_DEV_D2'      , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
+      { name: 'SPI_DEV_D3'      , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
+      { name: 'SPI_DEV_CLK'     , type: 'InputStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device clock'},
+      { name: 'SPI_DEV_CS_L'    , type: 'InputStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device chip select'},
+      { name: 'USB_P'           , type: 'BidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB P signal'},
+      { name: 'USB_N'           , type: 'BidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB N signal'},
+      { name: 'CC1'             , type: 'InputStd', bank: 'AVCC', connection: 'manual', desc: 'ADC input 1'},
+      { name: 'CC2'             , type: 'InputStd', bank: 'AVCC', connection: 'manual', desc: 'ADC input 2'},
+      { name: 'FLASH_TEST_MODE0', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
+      { name: 'FLASH_TEST_MODE1', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
+      { name: 'FLASH_TEST_MODE2', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
+      { name: 'FLASH_TEST_MODE3', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
+      { name: 'FLASH_TEST_VOLT' , type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test voltage input'},
+      // IOA
+      { name: 'IOA0'            , type: 'InputStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA1'            , type: 'InputStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA2'            , type: 'InputStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA3'            , type: 'InputStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA4'            , type: 'BidirOd' , bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA5'            , type: 'BidirOd' , bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      // IOB
+      { name: 'IOB0'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB1'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB2'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB3'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB4'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB5'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB6'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB7'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB8'            , type: 'BidirOd' , bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB9'            , type: 'BidirOd' , bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB10'           , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB11'           , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      // IOC
+      { name: 'IOC0'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC1'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC2'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC3'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC4'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC5'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC6'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC7'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC8'            , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC9'            , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC10'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC11'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      // IOR
+      { name: 'IOR0'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR1'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR2'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR3'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR4'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR5'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR6'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR7'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR8'            , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR9'            , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR10'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR11'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR12'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR13'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
     ]
   }
 
+  pinmux: {
+    // Signal to pinmux/pad mapping.
+    // Each entry in the list below must have the following two mandatory keys:
+    //
+    // - instance: This is the comportable IO instance name where the IO signal comes from.
+    //
+    // - connection: Can have either of the following values:
+    //
+    //               1) 'direct': This is a dedicated IO signal that is directly connected to a pad.
+    //                            Such an IO signal must also specify the 'port' and 'pad' keys
+    //                            (see further below).
+    //
+    //               2) 'manual': This is a dedicated IO signal that is not directly connected to a pad.
+    //                            It needs to be manually wired up in the template.
+    //                            Such an IO signal may have a 'port' key, but no 'pad' key.
+    //
+    //               3) 'muxed': This is a muxed IO signal that will be connected to the pinmux.
+    //                           Such an IO signal may have a 'port' key, but no 'pad' key.
+    //
+    // Depending on the connection type specified, each entry may have the following optional keys:
+    //
+    // - port: Name of the available IO signal of the instance.
+    //         This is required for 'direct' connections, but optional for the others.
+    //         Individual signals of a bus IO signal must be indexed with square brackets, e.g. mybus[1].
+    //         Not specifying this key or setting it to an empty string acts as a wild card
+    //         and includes all available IOs of this instance.
+    //
+    // - pad: Name of the pad the 'direct' connection should connect to.
+    //        This is not required for 'muxed' and 'manual' connections.
+    //
+    // - desc: Optional description field.
+    signals: [
+      // SPI Host0
+      { instance: 'spi_host0',       port: 'sck',   connection: 'direct', pad: 'SPI_HOST_CLK' , desc: ''},
+      { instance: 'spi_host0',       port: 'csb',   connection: 'direct', pad: 'SPI_HOST_CS_L', desc: ''},
+      { instance: 'spi_host0',       port: 'sd[0]', connection: 'direct', pad: 'SPI_HOST_D0'  , desc: ''},
+      { instance: 'spi_host0',       port: 'sd[1]', connection: 'direct', pad: 'SPI_HOST_D1'  , desc: ''},
+      { instance: 'spi_host0',       port: 'sd[2]', connection: 'direct', pad: 'SPI_HOST_D2'  , desc: ''},
+      { instance: 'spi_host0',       port: 'sd[3]', connection: 'direct', pad: 'SPI_HOST_D3'  , desc: ''},
+      // SPI Device
+      { instance: 'spi_device',      port: 'sck',   connection: 'direct', pad: 'SPI_DEV_CLK'  , desc: ''},
+      { instance: 'spi_device',      port: 'csb',   connection: 'direct', pad: 'SPI_DEV_CS_L' , desc: ''},
+      { instance: 'spi_device',      port: 'sd[0]', connection: 'direct', pad: 'SPI_DEV_D0'   , desc: ''},
+      { instance: 'spi_device',      port: 'sd[1]', connection: 'direct', pad: 'SPI_DEV_D1'   , desc: ''},
+      { instance: 'spi_device',      port: 'sd[2]', connection: 'direct', pad: 'SPI_DEV_D2'   , desc: ''},
+      { instance: 'spi_device',      port: 'sd[3]', connection: 'direct', pad: 'SPI_DEV_D3'   , desc: ''},
+      // USBDEV
+      { instance: 'usbdev',          port: '',      connection: 'manual', pad: ''             , desc: ''},
+      // MIOs
+      { instance: "gpio",            port: '',      connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "uart0",           port: '',      connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "flash_ctrl",      port: '',      connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "sensor_ctrl_aon", port: '',      connection: 'muxed' , pad: ''             , desc: ''},
+    ],
+
+    // Number of wakeup detectors to instantiate, and bitwidth for the wakeup counters.
+    num_wkup_detect: 8
+    wkup_cnt_width:  8
+  }
+
+  // Implementation targets.
+  // This defines the configuration of the target-specific chip-levels  to
+  // generate from the shared template. Each target uses the same base
+  // configuration for the  pinmux and pinout as defined above, and the
+  // generated software constants for the pinmux DIF do not change among the
+  // implementation targets. However, in order to accommodate slight
+  // differences among the ASIC, FPGA emulation and simulation environments,
+  // it is possible to make very limited pinout changes below. In particular,
+  // it is possible to remove and tie-off specific pads, or add more 'manual'
+  // pads that need to be manually connected in the template. It is also possible
+  // to override the JTAG and strap locations indices, since the testing and DFT
+  // setups may differ among the targets.
+  targets: [
+    { name: 'cw305',
+      pinout: {
+        remove_pads: [
+          'CC1', 'CC2',
+          'IOC1', 'IOC2','IOC3','IOC4','IOC5','IOC6','IOC7','IOC8','IOC9','IOC10','IOC11',
+          'SPI_DEV_D2', 'SPI_DEV_D3'
+          'SPI_HOST_CLK', 'SPI_HOST_CS_L',
+          'SPI_HOST_D0', 'SPI_HOST_D1', 'SPI_HOST_D2', 'SPI_HOST_D3',
+          'FLASH_TEST_VOLT',
+          'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1', 'FLASH_TEST_MODE2', 'FLASH_TEST_MODE3',
+          'IOR0','IOR1','IOR4', 'IOR5', 'IOR6', 'IOR7', 'IOR8', 'IOR9', 'IOR10', 'IOR11', 'IOR12', 'IOR13'
+        ],
+
+        add_pads: [
+          // Additional infrastucture pads
+          { name: 'IO_CLK',           type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Extra clock input for FPGA target'}
+          { name: 'IO_JSRST_N',       type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Dedicated JTAG system reset input'}
+          // Custom USB pads
+          { name: 'IO_USB_SENSE0',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB signal for FPGA target'}
+          { name: 'IO_USB_DNPULLUP0', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB signal for FPGA target'}
+          { name: 'IO_USB_DPPULLUP0', type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB signal for FPGA target'}
+          // ChipWhisperer IO
+          { name: 'TIO_CLKOUT',       type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual clock output for SCA setup'}
+          { name: 'IO_UTX_DEBUG',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual UART TX debug output'      }
+        ],
+      }
+
+      pinmux: {
+        special_signals: [
+          // Straps
+          { name: 'tap0',   pad: 'IOC2' ,        desc: 'TAP strap signal, maps to a stubbed-off MIO.'  },
+          { name: 'tap1',   pad: 'IOB10',        desc: 'TAP strap signal, maps to MIO pad 16.'         },
+          { name: 'dft0',   pad: 'IOC3' ,        desc: 'DFT strap signal, maps to a stubbed-off MIO.'  },
+          { name: 'dft1',   pad: 'IOC4' ,        desc: 'DFT strap signal, maps to a stubbed-off MIO.'  },
+          // JTAG
+          { name: 'tck',    pad: 'SPI_DEV_CLK' , desc: 'JTAG tck signal, overlaid on SPI_DEV.'   },
+          { name: 'tms',    pad: 'SPI_DEV_CS_L', desc: 'JTAG tms signal, overlaid on SPI_DEV.'   },
+          { name: 'trst_n', pad: 'IOC0'        , desc: 'JTAG trst_n signal, maps to MIO pad 18.' },
+          { name: 'tdi',    pad: 'SPI_DEV_D0'  , desc: 'JTAG tdi signal, overlaid on SPI_DEV.'   },
+          { name: 'tdo',    pad: 'SPI_DEV_D1'  , desc: 'JTAG tdo signal, overlaid on SPI_DEV.'   },
+        ],
+      }
+    }
+  ]
 }

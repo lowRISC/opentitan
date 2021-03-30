@@ -7543,535 +7543,1923 @@
       ]
     }
   ]
+  pinout:
+  {
+    banks:
+    [
+      VCC
+      AVCC
+      VIOA
+      VIOB
+    ]
+    pads:
+    [
+      {
+        name: POR_N
+        type: InputStd
+        bank: VCC
+        connection: manual
+        desc: System reset
+        idx: 0
+      }
+      {
+        name: SPI_HOST_D0
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI host data
+        idx: 1
+      }
+      {
+        name: SPI_HOST_D1
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI host data
+        idx: 2
+      }
+      {
+        name: SPI_HOST_D2
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI host data
+        idx: 3
+      }
+      {
+        name: SPI_HOST_D3
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI host data
+        idx: 4
+      }
+      {
+        name: SPI_HOST_CLK
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI host clock
+        idx: 5
+      }
+      {
+        name: SPI_HOST_CS_L
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI host chip select
+        idx: 6
+      }
+      {
+        name: SPI_DEV_D0
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI device data
+        idx: 7
+      }
+      {
+        name: SPI_DEV_D1
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI device data
+        idx: 8
+      }
+      {
+        name: SPI_DEV_D2
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI device data
+        idx: 9
+      }
+      {
+        name: SPI_DEV_D3
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI device data
+        idx: 10
+      }
+      {
+        name: SPI_DEV_CLK
+        type: InputStd
+        bank: VIOA
+        connection: direct
+        desc: SPI device clock
+        idx: 11
+      }
+      {
+        name: SPI_DEV_CS_L
+        type: InputStd
+        bank: VIOA
+        connection: direct
+        desc: SPI device chip select
+        idx: 12
+      }
+      {
+        name: USB_P
+        type: BidirTol
+        bank: VCC
+        connection: manual
+        desc: USB P signal
+        idx: 13
+      }
+      {
+        name: USB_N
+        type: BidirTol
+        bank: VCC
+        connection: manual
+        desc: USB N signal
+        idx: 14
+      }
+      {
+        name: CC1
+        type: InputStd
+        bank: AVCC
+        connection: manual
+        desc: ADC input 1
+        idx: 15
+      }
+      {
+        name: CC2
+        type: InputStd
+        bank: AVCC
+        connection: manual
+        desc: ADC input 2
+        idx: 16
+      }
+      {
+        name: FLASH_TEST_MODE0
+        type: InputStd
+        bank: VCC
+        connection: manual
+        desc: Flash test mode signal
+        idx: 17
+      }
+      {
+        name: FLASH_TEST_MODE1
+        type: InputStd
+        bank: VCC
+        connection: manual
+        desc: Flash test mode signal
+        idx: 18
+      }
+      {
+        name: FLASH_TEST_MODE2
+        type: InputStd
+        bank: VCC
+        connection: manual
+        desc: Flash test mode signal
+        idx: 19
+      }
+      {
+        name: FLASH_TEST_MODE3
+        type: InputStd
+        bank: VCC
+        connection: manual
+        desc: Flash test mode signal
+        idx: 20
+      }
+      {
+        name: FLASH_TEST_VOLT
+        type: InputStd
+        bank: VCC
+        connection: manual
+        desc: Flash test voltage input
+        idx: 21
+      }
+      {
+        name: IOA0
+        type: InputStd
+        bank: VIOA
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 0
+      }
+      {
+        name: IOA1
+        type: InputStd
+        bank: VIOA
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 1
+      }
+      {
+        name: IOA2
+        type: InputStd
+        bank: VIOA
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 2
+      }
+      {
+        name: IOA3
+        type: InputStd
+        bank: VIOA
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 3
+      }
+      {
+        name: IOA4
+        type: BidirOd
+        bank: VIOA
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 4
+      }
+      {
+        name: IOA5
+        type: BidirOd
+        bank: VIOA
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 5
+      }
+      {
+        name: IOB0
+        type: InputStd
+        bank: VIOB
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 6
+      }
+      {
+        name: IOB1
+        type: InputStd
+        bank: VIOB
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 7
+      }
+      {
+        name: IOB2
+        type: InputStd
+        bank: VIOB
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 8
+      }
+      {
+        name: IOB3
+        type: InputStd
+        bank: VIOB
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 9
+      }
+      {
+        name: IOB4
+        type: InputStd
+        bank: VIOB
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 10
+      }
+      {
+        name: IOB5
+        type: InputStd
+        bank: VIOB
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 11
+      }
+      {
+        name: IOB6
+        type: InputStd
+        bank: VIOB
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 12
+      }
+      {
+        name: IOB7
+        type: InputStd
+        bank: VIOB
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 13
+      }
+      {
+        name: IOB8
+        type: BidirOd
+        bank: VIOB
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 14
+      }
+      {
+        name: IOB9
+        type: BidirOd
+        bank: VIOB
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 15
+      }
+      {
+        name: IOB10
+        type: InputStd
+        bank: VIOB
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 16
+      }
+      {
+        name: IOB11
+        type: InputStd
+        bank: VIOB
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 17
+      }
+      {
+        name: IOC0
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 18
+      }
+      {
+        name: IOC1
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 19
+      }
+      {
+        name: IOC2
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 20
+      }
+      {
+        name: IOC3
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 21
+      }
+      {
+        name: IOC4
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 22
+      }
+      {
+        name: IOC5
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 23
+      }
+      {
+        name: IOC6
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 24
+      }
+      {
+        name: IOC7
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 25
+      }
+      {
+        name: IOC8
+        type: BidirOd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 26
+      }
+      {
+        name: IOC9
+        type: BidirOd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 27
+      }
+      {
+        name: IOC10
+        type: BidirOd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 28
+      }
+      {
+        name: IOC11
+        type: BidirOd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 29
+      }
+      {
+        name: IOR0
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 30
+      }
+      {
+        name: IOR1
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 31
+      }
+      {
+        name: IOR2
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 32
+      }
+      {
+        name: IOR3
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 33
+      }
+      {
+        name: IOR4
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 34
+      }
+      {
+        name: IOR5
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 35
+      }
+      {
+        name: IOR6
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 36
+      }
+      {
+        name: IOR7
+        type: InputStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 37
+      }
+      {
+        name: IOR8
+        type: BidirOd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 38
+      }
+      {
+        name: IOR9
+        type: BidirOd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 39
+      }
+      {
+        name: IOR10
+        type: BidirOd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 40
+      }
+      {
+        name: IOR11
+        type: BidirOd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 41
+      }
+      {
+        name: IOR12
+        type: BidirOd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 42
+      }
+      {
+        name: IOR13
+        type: BidirOd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 43
+      }
+    ]
+  }
   pinmux:
   {
-    num_mio: 44
-    dio_modules:
+    signals:
     [
       {
-        name: spi_device
-        pad:
-        [
-          ChC[0..5]
-        ]
+        instance: spi_host0
+        port: sck
+        connection: direct
+        pad: SPI_HOST_CLK
+        desc: ""
       }
       {
-        name: spi_host0
-        pad:
-        [
-          ChB[0..5]
-        ]
+        instance: spi_host0
+        port: csb
+        connection: direct
+        pad: SPI_HOST_CS_L
+        desc: ""
       }
       {
-        name: usbdev
-        pad:
-        [
-          ChA[0..8]
-        ]
+        instance: spi_host0
+        port: sd[0]
+        connection: direct
+        pad: SPI_HOST_D0
+        desc: ""
       }
-    ]
-    mio_modules:
-    [
-      gpio
-      uart0
-      uart1
-      uart2
-      uart3
-      i2c0
-      i2c1
-      i2c2
-      pattgen
-      spi_host1
-      flash_ctrl
-      sensor_ctrl_aon
-    ]
-    nc_modules:
-    [
-      rv_timer
-      hmac
+      {
+        instance: spi_host0
+        port: sd[1]
+        connection: direct
+        pad: SPI_HOST_D1
+        desc: ""
+      }
+      {
+        instance: spi_host0
+        port: sd[2]
+        connection: direct
+        pad: SPI_HOST_D2
+        desc: ""
+      }
+      {
+        instance: spi_host0
+        port: sd[3]
+        connection: direct
+        pad: SPI_HOST_D3
+        desc: ""
+      }
+      {
+        instance: spi_device
+        port: sck
+        connection: direct
+        pad: SPI_DEV_CLK
+        desc: ""
+      }
+      {
+        instance: spi_device
+        port: csb
+        connection: direct
+        pad: SPI_DEV_CS_L
+        desc: ""
+      }
+      {
+        instance: spi_device
+        port: sd[0]
+        connection: direct
+        pad: SPI_DEV_D0
+        desc: ""
+      }
+      {
+        instance: spi_device
+        port: sd[1]
+        connection: direct
+        pad: SPI_DEV_D1
+        desc: ""
+      }
+      {
+        instance: spi_device
+        port: sd[2]
+        connection: direct
+        pad: SPI_DEV_D2
+        desc: ""
+      }
+      {
+        instance: spi_device
+        port: sd[3]
+        connection: direct
+        pad: SPI_DEV_D3
+        desc: ""
+      }
+      {
+        instance: usbdev
+        port: ""
+        connection: manual
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: gpio
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: uart0
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: uart1
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: uart2
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: uart3
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: i2c0
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: i2c1
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: i2c2
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: pattgen
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: spi_host1
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: flash_ctrl
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: sensor_ctrl_aon
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
     ]
     num_wkup_detect: 8
     wkup_cnt_width: 8
-    dio:
+    ios:
     [
       {
-        name: spi_device_sck
-        width: 1
-        type: input
-        module_name: spi_device
-        pad:
-        [
-          {
-            name: ChC
-            index: 0
-          }
-        ]
-      }
-      {
-        name: spi_device_csb
-        width: 1
-        type: input
-        module_name: spi_device
-        pad:
-        [
-          {
-            name: ChC
-            index: 1
-          }
-        ]
-      }
-      {
-        name: spi_device_sd
+        name: spi_host0_sd
         width: 4
         type: inout
-        module_name: spi_device
-        pad:
-        [
-          {
-            name: ChC
-            index: 2
-          }
-          {
-            name: ChC
-            index: 3
-          }
-          {
-            name: ChC
-            index: 4
-          }
-          {
-            name: ChC
-            index: 5
-          }
-        ]
-      }
-      {
-        name: spi_host0_sck
-        width: 1
-        type: output
-        module_name: spi_host0
-        pad:
-        [
-          {
-            name: ChB
-            index: 0
-          }
-        ]
-      }
-      {
-        name: spi_host0_csb
-        width: 1
-        type: output
-        module_name: spi_host0
-        pad:
-        [
-          {
-            name: ChB
-            index: 1
-          }
-        ]
+        idx: 0
+        pad: SPI_HOST_D0
+        connection: direct
+        glob_idx: 0
       }
       {
         name: spi_host0_sd
         width: 4
         type: inout
-        module_name: spi_host0
-        pad:
-        [
-          {
-            name: ChB
-            index: 2
-          }
-          {
-            name: ChB
-            index: 3
-          }
-          {
-            name: ChB
-            index: 4
-          }
-          {
-            name: ChB
-            index: 5
-          }
-        ]
+        idx: 1
+        pad: SPI_HOST_D1
+        connection: direct
+        glob_idx: 1
       }
       {
-        name: usbdev_sense
-        width: 1
-        type: input
-        module_name: usbdev
-        pad:
-        [
-          {
-            name: ChA
-            index: 0
-          }
-        ]
+        name: spi_host0_sd
+        width: 4
+        type: inout
+        idx: 2
+        pad: SPI_HOST_D2
+        connection: direct
+        glob_idx: 2
       }
       {
-        name: usbdev_se0
-        width: 1
-        type: output
-        module_name: usbdev
-        pad:
-        [
-          {
-            name: ChA
-            index: 1
-          }
-        ]
+        name: spi_host0_sd
+        width: 4
+        type: inout
+        idx: 3
+        pad: SPI_HOST_D3
+        connection: direct
+        glob_idx: 3
       }
       {
-        name: usbdev_dp_pullup
-        width: 1
-        type: output
-        module_name: usbdev
-        pad:
-        [
-          {
-            name: ChA
-            index: 2
-          }
-        ]
+        name: spi_device_sd
+        width: 4
+        type: inout
+        idx: 0
+        pad: SPI_DEV_D0
+        connection: direct
+        glob_idx: 4
       }
       {
-        name: usbdev_dn_pullup
-        width: 1
-        type: output
-        module_name: usbdev
-        pad:
-        [
-          {
-            name: ChA
-            index: 3
-          }
-        ]
+        name: spi_device_sd
+        width: 4
+        type: inout
+        idx: 1
+        pad: SPI_DEV_D1
+        connection: direct
+        glob_idx: 5
       }
       {
-        name: usbdev_tx_mode_se
-        width: 1
-        type: output
-        module_name: usbdev
-        pad:
-        [
-          {
-            name: ChA
-            index: 4
-          }
-        ]
+        name: spi_device_sd
+        width: 4
+        type: inout
+        idx: 2
+        pad: SPI_DEV_D2
+        connection: direct
+        glob_idx: 6
       }
       {
-        name: usbdev_suspend
-        width: 1
-        type: output
-        module_name: usbdev
-        pad:
-        [
-          {
-            name: ChA
-            index: 5
-          }
-        ]
+        name: spi_device_sd
+        width: 4
+        type: inout
+        idx: 3
+        pad: SPI_DEV_D3
+        connection: direct
+        glob_idx: 7
       }
       {
         name: usbdev_d
         width: 1
         type: inout
-        module_name: usbdev
-        pad:
-        [
-          {
-            name: ChA
-            index: 6
-          }
-        ]
+        idx: -1
+        pad: ""
+        connection: manual
+        glob_idx: 8
       }
       {
         name: usbdev_dp
         width: 1
         type: inout
-        module_name: usbdev
-        pad:
-        [
-          {
-            name: ChA
-            index: 7
-          }
-        ]
+        idx: -1
+        pad: ""
+        connection: manual
+        glob_idx: 9
       }
       {
         name: usbdev_dn
         width: 1
         type: inout
-        module_name: usbdev
-        pad:
-        [
-          {
-            name: ChA
-            index: 8
-          }
-        ]
+        idx: -1
+        pad: ""
+        connection: manual
+        glob_idx: 10
       }
-    ]
-    inputs:
-    [
       {
         name: gpio_gpio
         width: 32
         type: inout
-        module_name: gpio
+        idx: 0
+        pad: ""
+        connection: muxed
+        glob_idx: 0
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 1
+        pad: ""
+        connection: muxed
+        glob_idx: 1
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 2
+        pad: ""
+        connection: muxed
+        glob_idx: 2
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 3
+        pad: ""
+        connection: muxed
+        glob_idx: 3
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 4
+        pad: ""
+        connection: muxed
+        glob_idx: 4
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 5
+        pad: ""
+        connection: muxed
+        glob_idx: 5
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 6
+        pad: ""
+        connection: muxed
+        glob_idx: 6
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 7
+        pad: ""
+        connection: muxed
+        glob_idx: 7
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 8
+        pad: ""
+        connection: muxed
+        glob_idx: 8
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 9
+        pad: ""
+        connection: muxed
+        glob_idx: 9
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 10
+        pad: ""
+        connection: muxed
+        glob_idx: 10
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 11
+        pad: ""
+        connection: muxed
+        glob_idx: 11
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 12
+        pad: ""
+        connection: muxed
+        glob_idx: 12
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 13
+        pad: ""
+        connection: muxed
+        glob_idx: 13
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 14
+        pad: ""
+        connection: muxed
+        glob_idx: 14
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 15
+        pad: ""
+        connection: muxed
+        glob_idx: 15
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 16
+        pad: ""
+        connection: muxed
+        glob_idx: 16
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 17
+        pad: ""
+        connection: muxed
+        glob_idx: 17
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 18
+        pad: ""
+        connection: muxed
+        glob_idx: 18
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 19
+        pad: ""
+        connection: muxed
+        glob_idx: 19
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 20
+        pad: ""
+        connection: muxed
+        glob_idx: 20
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 21
+        pad: ""
+        connection: muxed
+        glob_idx: 21
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 22
+        pad: ""
+        connection: muxed
+        glob_idx: 22
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 23
+        pad: ""
+        connection: muxed
+        glob_idx: 23
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 24
+        pad: ""
+        connection: muxed
+        glob_idx: 24
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 25
+        pad: ""
+        connection: muxed
+        glob_idx: 25
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 26
+        pad: ""
+        connection: muxed
+        glob_idx: 26
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 27
+        pad: ""
+        connection: muxed
+        glob_idx: 27
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 28
+        pad: ""
+        connection: muxed
+        glob_idx: 28
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 29
+        pad: ""
+        connection: muxed
+        glob_idx: 29
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 30
+        pad: ""
+        connection: muxed
+        glob_idx: 30
+      }
+      {
+        name: gpio_gpio
+        width: 32
+        type: inout
+        idx: 31
+        pad: ""
+        connection: muxed
+        glob_idx: 31
+      }
+      {
+        name: i2c0_sda
+        width: 1
+        type: inout
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 32
+      }
+      {
+        name: i2c0_scl
+        width: 1
+        type: inout
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 33
+      }
+      {
+        name: i2c1_sda
+        width: 1
+        type: inout
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 34
+      }
+      {
+        name: i2c1_scl
+        width: 1
+        type: inout
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 35
+      }
+      {
+        name: i2c2_sda
+        width: 1
+        type: inout
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 36
+      }
+      {
+        name: i2c2_scl
+        width: 1
+        type: inout
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 37
+      }
+      {
+        name: spi_host1_sd
+        width: 4
+        type: inout
+        idx: 0
+        pad: ""
+        connection: muxed
+        glob_idx: 38
+      }
+      {
+        name: spi_host1_sd
+        width: 4
+        type: inout
+        idx: 1
+        pad: ""
+        connection: muxed
+        glob_idx: 39
+      }
+      {
+        name: spi_host1_sd
+        width: 4
+        type: inout
+        idx: 2
+        pad: ""
+        connection: muxed
+        glob_idx: 40
+      }
+      {
+        name: spi_host1_sd
+        width: 4
+        type: inout
+        idx: 3
+        pad: ""
+        connection: muxed
+        glob_idx: 41
+      }
+      {
+        name: spi_device_sck
+        width: 1
+        type: input
+        idx: -1
+        pad: SPI_DEV_CLK
+        connection: direct
+        glob_idx: 11
+      }
+      {
+        name: spi_device_csb
+        width: 1
+        type: input
+        idx: -1
+        pad: SPI_DEV_CS_L
+        connection: direct
+        glob_idx: 12
+      }
+      {
+        name: usbdev_sense
+        width: 1
+        type: input
+        idx: -1
+        pad: ""
+        connection: manual
+        glob_idx: 13
       }
       {
         name: uart0_rx
         width: 1
         type: input
-        module_name: uart0
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 42
       }
       {
         name: uart1_rx
         width: 1
         type: input
-        module_name: uart1
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 43
       }
       {
         name: uart2_rx
         width: 1
         type: input
-        module_name: uart2
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 44
       }
       {
         name: uart3_rx
         width: 1
         type: input
-        module_name: uart3
-      }
-      {
-        name: i2c0_sda
-        width: 1
-        type: inout
-        module_name: i2c0
-      }
-      {
-        name: i2c0_scl
-        width: 1
-        type: inout
-        module_name: i2c0
-      }
-      {
-        name: i2c1_sda
-        width: 1
-        type: inout
-        module_name: i2c1
-      }
-      {
-        name: i2c1_scl
-        width: 1
-        type: inout
-        module_name: i2c1
-      }
-      {
-        name: i2c2_sda
-        width: 1
-        type: inout
-        module_name: i2c2
-      }
-      {
-        name: i2c2_scl
-        width: 1
-        type: inout
-        module_name: i2c2
-      }
-      {
-        name: spi_host1_sd
-        width: 4
-        type: inout
-        module_name: spi_host1
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 45
       }
       {
         name: flash_ctrl_tck
         width: 1
         type: input
-        module_name: flash_ctrl
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 46
       }
       {
         name: flash_ctrl_tms
         width: 1
         type: input
-        module_name: flash_ctrl
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 47
       }
       {
         name: flash_ctrl_tdi
         width: 1
         type: input
-        module_name: flash_ctrl
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 48
       }
       {
         name: sensor_ctrl_aon_ast_debug_in
         width: 10
         type: input
-        module_name: sensor_ctrl_aon
+        idx: 0
+        pad: ""
+        connection: muxed
+        glob_idx: 49
       }
-    ]
-    outputs:
-    [
       {
-        name: gpio_gpio
-        width: 32
-        type: inout
-        module_name: gpio
+        name: sensor_ctrl_aon_ast_debug_in
+        width: 10
+        type: input
+        idx: 1
+        pad: ""
+        connection: muxed
+        glob_idx: 50
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_in
+        width: 10
+        type: input
+        idx: 2
+        pad: ""
+        connection: muxed
+        glob_idx: 51
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_in
+        width: 10
+        type: input
+        idx: 3
+        pad: ""
+        connection: muxed
+        glob_idx: 52
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_in
+        width: 10
+        type: input
+        idx: 4
+        pad: ""
+        connection: muxed
+        glob_idx: 53
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_in
+        width: 10
+        type: input
+        idx: 5
+        pad: ""
+        connection: muxed
+        glob_idx: 54
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_in
+        width: 10
+        type: input
+        idx: 6
+        pad: ""
+        connection: muxed
+        glob_idx: 55
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_in
+        width: 10
+        type: input
+        idx: 7
+        pad: ""
+        connection: muxed
+        glob_idx: 56
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_in
+        width: 10
+        type: input
+        idx: 8
+        pad: ""
+        connection: muxed
+        glob_idx: 57
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_in
+        width: 10
+        type: input
+        idx: 9
+        pad: ""
+        connection: muxed
+        glob_idx: 58
+      }
+      {
+        name: spi_host0_sck
+        width: 1
+        type: output
+        idx: -1
+        pad: SPI_HOST_CLK
+        connection: direct
+        glob_idx: 14
+      }
+      {
+        name: spi_host0_csb
+        width: 1
+        type: output
+        idx: -1
+        pad: SPI_HOST_CS_L
+        connection: direct
+        glob_idx: 15
+      }
+      {
+        name: usbdev_se0
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        connection: manual
+        glob_idx: 16
+      }
+      {
+        name: usbdev_dp_pullup
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        connection: manual
+        glob_idx: 17
+      }
+      {
+        name: usbdev_dn_pullup
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        connection: manual
+        glob_idx: 18
+      }
+      {
+        name: usbdev_tx_mode_se
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        connection: manual
+        glob_idx: 19
+      }
+      {
+        name: usbdev_suspend
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        connection: manual
+        glob_idx: 20
       }
       {
         name: uart0_tx
         width: 1
         type: output
-        module_name: uart0
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 42
       }
       {
         name: uart1_tx
         width: 1
         type: output
-        module_name: uart1
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 43
       }
       {
         name: uart2_tx
         width: 1
         type: output
-        module_name: uart2
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 44
       }
       {
         name: uart3_tx
         width: 1
         type: output
-        module_name: uart3
-      }
-      {
-        name: i2c0_sda
-        width: 1
-        type: inout
-        module_name: i2c0
-      }
-      {
-        name: i2c0_scl
-        width: 1
-        type: inout
-        module_name: i2c0
-      }
-      {
-        name: i2c1_sda
-        width: 1
-        type: inout
-        module_name: i2c1
-      }
-      {
-        name: i2c1_scl
-        width: 1
-        type: inout
-        module_name: i2c1
-      }
-      {
-        name: i2c2_sda
-        width: 1
-        type: inout
-        module_name: i2c2
-      }
-      {
-        name: i2c2_scl
-        width: 1
-        type: inout
-        module_name: i2c2
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 45
       }
       {
         name: pattgen_pda0_tx
         width: 1
         type: output
-        module_name: pattgen
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 46
       }
       {
         name: pattgen_pcl0_tx
         width: 1
         type: output
-        module_name: pattgen
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 47
       }
       {
         name: pattgen_pda1_tx
         width: 1
         type: output
-        module_name: pattgen
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 48
       }
       {
         name: pattgen_pcl1_tx
         width: 1
         type: output
-        module_name: pattgen
-      }
-      {
-        name: spi_host1_sd
-        width: 4
-        type: inout
-        module_name: spi_host1
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 49
       }
       {
         name: spi_host1_sck
         width: 1
         type: output
-        module_name: spi_host1
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 50
       }
       {
         name: spi_host1_csb
         width: 1
         type: output
-        module_name: spi_host1
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 51
       }
       {
         name: flash_ctrl_tdo
         width: 1
         type: output
-        module_name: flash_ctrl
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 52
       }
       {
         name: sensor_ctrl_aon_ast_debug_out
         width: 10
         type: output
-        module_name: sensor_ctrl_aon
+        idx: 0
+        pad: ""
+        connection: muxed
+        glob_idx: 53
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_out
+        width: 10
+        type: output
+        idx: 1
+        pad: ""
+        connection: muxed
+        glob_idx: 54
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_out
+        width: 10
+        type: output
+        idx: 2
+        pad: ""
+        connection: muxed
+        glob_idx: 55
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_out
+        width: 10
+        type: output
+        idx: 3
+        pad: ""
+        connection: muxed
+        glob_idx: 56
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_out
+        width: 10
+        type: output
+        idx: 4
+        pad: ""
+        connection: muxed
+        glob_idx: 57
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_out
+        width: 10
+        type: output
+        idx: 5
+        pad: ""
+        connection: muxed
+        glob_idx: 58
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_out
+        width: 10
+        type: output
+        idx: 6
+        pad: ""
+        connection: muxed
+        glob_idx: 59
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_out
+        width: 10
+        type: output
+        idx: 7
+        pad: ""
+        connection: muxed
+        glob_idx: 60
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_out
+        width: 10
+        type: output
+        idx: 8
+        pad: ""
+        connection: muxed
+        glob_idx: 61
+      }
+      {
+        name: sensor_ctrl_aon_ast_debug_out
+        width: 10
+        type: output
+        idx: 9
+        pad: ""
+        connection: muxed
+        glob_idx: 62
       }
     ]
+    io_counts:
+    {
+      dedicated:
+      {
+        inouts: 11
+        inputs: 3
+        outputs: 7
+        pads: 22
+      }
+      muxed:
+      {
+        inouts: 42
+        inputs: 17
+        outputs: 21
+        pads: 44
+      }
+    }
   }
-  padctrl:
-  {
-    attr_default:
-    [
-      STRONG
-    ]
-    pads:
-    [
+  targets:
+  [
+    {
+      name: asic
+      pinout:
       {
-        name: ChA
-        type: IO_33V
-        count: 32
+        remove_pads: []
+        add_pads: []
       }
+      pinmux:
       {
-        name: ChB
-        type: IO_33V
-        count: 4
-        attr:
+        special_signals:
         [
-          KEEP
-          WEAK
+          {
+            name: tap0
+            pad: IOC8
+            desc: TAP strap signal.
+            idx: 26
+          }
+          {
+            name: tap1
+            pad: IOC5
+            desc: TAP strap signal.
+            idx: 23
+          }
+          {
+            name: dft0
+            pad: IOC3
+            desc: DFT strap signal.
+            idx: 21
+          }
+          {
+            name: dft1
+            pad: IOC4
+            desc: DFT strap signal.
+            idx: 22
+          }
+          {
+            name: tck
+            pad: SPI_DEV_CLK
+            desc: JTAG tck signal, overlaid on SPI_DEV.
+            idx: 55
+          }
+          {
+            name: tms
+            pad: SPI_DEV_CS_L
+            desc: JTAG tms signal, overlaid on SPI_DEV.
+            idx: 56
+          }
+          {
+            name: trst_n
+            pad: IOC0
+            desc: JTAG trst_n signal, maps to MIO Pad 18.
+            idx: 18
+          }
+          {
+            name: tdi
+            pad: SPI_DEV_D0
+            desc: JTAG tdi signal, overlaid on SPI_DEV.
+            idx: 48
+          }
+          {
+            name: tdo
+            pad: SPI_DEV_D1
+            desc: JTAG tdo signal, overlaid on SPI_DEV.
+            idx: 49
+          }
         ]
       }
+    }
+    {
+      name: nexysvideo
+      pinout:
       {
-        name: ChC
-        type: IO_33V
-        count: 4
-        attr:
+        remove_pads:
         [
-          KEEP
-          STRONG
+          CC1
+          CC2
+          IOC1
+          IOC2
+          IOC3
+          IOC4
+          IOC5
+          SPI_DEV_D2
+          SPI_DEV_D3
+          SPI_HOST_CLK
+          SPI_HOST_CS_L
+          SPI_HOST_D0
+          SPI_HOST_D1
+          SPI_HOST_D2
+          SPI_HOST_D3
+          FLASH_TEST_VOLT
+          FLASH_TEST_MODE0
+          FLASH_TEST_MODE1
+          FLASH_TEST_MODE2
+          FLASH_TEST_MODE3
+          IOR4
+          IOR5
+          IOR6
+          IOR7
+          IOR8
+          IOR9
+          IOR10
+          IOR11
+          IOR12
+          IOR13
+        ]
+        add_pads:
+        [
+          {
+            name: IO_CLK
+            type: InputStd
+            bank: VCC
+            connection: manual
+            desc: Extra clock input for FPGA target
+          }
+          {
+            name: IO_JSRST_N
+            type: InputStd
+            bank: VCC
+            connection: manual
+            desc: Dedicated JTAG system reset input
+          }
+          {
+            name: IO_USB_SENSE0
+            type: BidirStd
+            bank: VCC
+            connection: manual
+            desc: Manual USB signal for FPGA target
+          }
+          {
+            name: IO_USB_DNPULLUP0
+            type: BidirStd
+            bank: VCC
+            connection: manual
+            desc: Manual USB signal for FPGA target
+          }
+          {
+            name: IO_USB_DPPULLUP0
+            type: BidirStd
+            bank: VCC
+            connection: manual
+            desc: Manual USB signal for FPGA target
+          }
+          {
+            name: IO_UPHY_DP_TX
+            type: BidirStd
+            bank: VCC
+            connection: manual
+            desc: Manual USB UPHY signal for FPGA target
+          }
+          {
+            name: IO_UPHY_DN_TX
+            type: BidirStd
+            bank: VCC
+            connection: manual
+            desc: Manual USB UPHY signal for FPGA target
+          }
+          {
+            name: IO_UPHY_DP_RX
+            type: BidirStd
+            bank: VCC
+            connection: manual
+            desc: Manual USB UPHY signal for FPGA target
+          }
+          {
+            name: IO_UPHY_DN_RX
+            type: BidirStd
+            bank: VCC
+            connection: manual
+            desc: Manual USB UPHY signal for FPGA target
+          }
+          {
+            name: IO_UPHY_D_RX
+            type: BidirStd
+            bank: VCC
+            connection: manual
+            desc: Manual USB UPHY signal for FPGA target
+          }
+          {
+            name: IO_UPHY_OE_N
+            type: BidirStd
+            bank: VCC
+            connection: manual
+            desc: Manual USB UPHY signal for FPGA target
+          }
+          {
+            name: IO_UPHY_SENSE
+            type: BidirStd
+            bank: VCC
+            connection: manual
+            desc: Manual USB UPHY signal for FPGA target
+          }
+          {
+            name: IO_UPHY_DPPULLUP
+            type: BidirStd
+            bank: VCC
+            connection: manual
+            desc: Manual USB UPHY signal for FPGA target
+          }
         ]
       }
-    ]
-  }
+      pinmux:
+      {
+        special_signals:
+        [
+          {
+            name: tap0
+            pad: IOC2
+            desc: TAP strap signal, maps to a stubbed-off MIO.
+            idx: 20
+          }
+          {
+            name: tap1
+            pad: IOB10
+            desc: TAP strap signal, maps to MIO pad 16.
+            idx: 16
+          }
+          {
+            name: dft0
+            pad: IOC3
+            desc: DFT strap signal, maps to a stubbed-off MIO.
+            idx: 21
+          }
+          {
+            name: dft1
+            pad: IOC4
+            desc: DFT strap signal, maps to a stubbed-off MIO.
+            idx: 22
+          }
+          {
+            name: tck
+            pad: SPI_DEV_CLK
+            desc: JTAG tck signal, overlaid on SPI_DEV.
+            idx: 55
+          }
+          {
+            name: tms
+            pad: SPI_DEV_CS_L
+            desc: JTAG tms signal, overlaid on SPI_DEV.
+            idx: 56
+          }
+          {
+            name: trst_n
+            pad: IOC0
+            desc: JTAG trst_n signal, maps to MIO pad 18.
+            idx: 18
+          }
+          {
+            name: tdi
+            pad: SPI_DEV_D0
+            desc: JTAG tdi signal, overlaid on SPI_DEV.
+            idx: 48
+          }
+          {
+            name: tdo
+            pad: SPI_DEV_D1
+            desc: JTAG tdo signal, overlaid on SPI_DEV.
+            idx: 49
+          }
+        ]
+      }
+    }
+  ]
   exported_clks:
   {
     ast:

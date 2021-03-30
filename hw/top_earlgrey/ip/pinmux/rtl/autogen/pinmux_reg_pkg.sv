@@ -7,19 +7,13 @@
 package pinmux_reg_pkg;
 
   // Param list
-  parameter int AttrDw = 10;
+  parameter int AttrDw = 13;
   parameter int NMioPeriphIn = 59;
   parameter int NMioPeriphOut = 63;
   parameter int NMioPads = 44;
   parameter int NDioPads = 21;
   parameter int NWkupDetect = 8;
   parameter int WkupCntWidth = 8;
-  parameter int NUsbDevPads = 9;
-  parameter int NDioPadUsbDevStart = 0;
-  parameter int UsbDpSel = 1;
-  parameter int UsbDnSel = 0;
-  parameter int UsbDpPullUpSel = 6;
-  parameter int UsbDnPullUpSel = 5;
 
   // Address widths within the block
   parameter int BlockAw = 12;

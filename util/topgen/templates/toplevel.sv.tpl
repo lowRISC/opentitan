@@ -5,23 +5,24 @@ ${gencmd}
 <%
 import re
 import topgen.lib as lib
-from topgen.c import Name
 
-num_mio_inputs = sum([x["width"] for x in top["pinmux"]["inputs"]])
-num_mio_outputs = sum([x["width"] for x in top["pinmux"]["outputs"]])
-num_mio = top["pinmux"]["num_mio"]
+num_mio_inputs = top['pinmux']['io_counts']['muxed']['inouts'] + \
+                 top['pinmux']['io_counts']['muxed']['inputs']
+num_mio_outputs = top['pinmux']['io_counts']['muxed']['inouts'] + \
+                  top['pinmux']['io_counts']['muxed']['outputs']
+num_mio_pads = top['pinmux']['io_counts']['muxed']['pads']
 
-num_dio_inputs = sum([x["width"] if x["type"] == "input" else 0 for x in top["pinmux"]["dio"]])
-num_dio_outputs = sum([x["width"] if x["type"] == "output" else 0 for x in top["pinmux"]["dio"]])
-num_dio_inouts = sum([x["width"] if x["type"] == "inout" else 0 for x in top["pinmux"]["dio"]])
-num_dio = sum([x["width"] if "width" in x else 1 for x in top["pinmux"]["dio"]])
+num_dio_inputs = top['pinmux']['io_counts']['dedicated']['inouts'] + \
+                 top['pinmux']['io_counts']['dedicated']['inputs']
+num_dio_outputs = top['pinmux']['io_counts']['dedicated']['inouts'] + \
+                  top['pinmux']['io_counts']['dedicated']['outputs']
+num_dio_total = top['pinmux']['io_counts']['dedicated']['inouts'] + \
+                top['pinmux']['io_counts']['dedicated']['inputs'] + \
+                top['pinmux']['io_counts']['dedicated']['outputs']
 
 num_im = sum([x["width"] if "width" in x else 1 for x in top["inter_signal"]["external"]])
 
-max_miolength = max([len(x["name"]) for x in top["pinmux"]["inputs"] + top["pinmux"]["outputs"]])
-max_diolength = max([len(x["name"]) for x in top["pinmux"]["dio"]])
-
-max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["inputs"] + top["pinmux"]["outputs"]])
+max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["ios"]])
 max_sigwidth = len("{}".format(max_sigwidth))
 
 clks_attr = top['clocks']
@@ -62,25 +63,23 @@ module top_${top["name"]} #(
   // Reset, clocks defined as part of intermodule
   input               rst_ni,
 
-% if num_mio != 0:
+% if num_mio_pads != 0:
   // Multiplexed I/O
-  input        ${lib.bitarray(num_mio, max_sigwidth)} mio_in_i,
-  output logic ${lib.bitarray(num_mio, max_sigwidth)} mio_out_o,
-  output logic ${lib.bitarray(num_mio, max_sigwidth)} mio_oe_o,
+  input        ${lib.bitarray(num_mio_pads, max_sigwidth)} mio_in_i,
+  output logic ${lib.bitarray(num_mio_pads, max_sigwidth)} mio_out_o,
+  output logic ${lib.bitarray(num_mio_pads, max_sigwidth)} mio_oe_o,
 % endif
-% if num_dio != 0:
+% if num_dio_total != 0:
   // Dedicated I/O
-  input        ${lib.bitarray(num_dio, max_sigwidth)} dio_in_i,
-  output logic ${lib.bitarray(num_dio, max_sigwidth)} dio_out_o,
-  output logic ${lib.bitarray(num_dio, max_sigwidth)} dio_oe_o,
+  input        ${lib.bitarray(num_dio_total, max_sigwidth)} dio_in_i,
+  output logic ${lib.bitarray(num_dio_total, max_sigwidth)} dio_out_o,
+  output logic ${lib.bitarray(num_dio_total, max_sigwidth)} dio_oe_o,
 % endif
 
 % if "pinmux" in top:
   // pad attributes to padring
-  output logic[pinmux_reg_pkg::NMioPads-1:0]
-              [pinmux_reg_pkg::AttrDw-1:0]   mio_attr_o,
-  output logic[pinmux_reg_pkg::NDioPads-1:0]
-              [pinmux_reg_pkg::AttrDw-1:0]   dio_attr_o,
+  output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr_o,
+  output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr_o,
 % endif
 
 % if num_im != 0:
@@ -115,16 +114,17 @@ module top_${top["name"]} #(
   import tlul_pkg::*;
   import top_pkg::*;
   import tl_main_pkg::*;
+  import top_${top["name"]}_pkg::*;
   // Compile-time random constants
   import top_${top["name"]}_rnd_cnst_pkg::*;
 
   // Signals
   logic [${num_mio_inputs - 1}:0] mio_p2d;
   logic [${num_mio_outputs - 1}:0] mio_d2p;
-  logic [${num_mio_outputs - 1}:0] mio_d2p_en;
-  logic [${num_dio - 1}:0] dio_p2d;
-  logic [${num_dio - 1}:0] dio_d2p;
-  logic [${num_dio - 1}:0] dio_d2p_en;
+  logic [${num_mio_outputs - 1}:0] mio_en_d2p;
+  logic [${num_dio_total - 1}:0] dio_p2d;
+  logic [${num_dio_total - 1}:0] dio_d2p;
+  logic [${num_dio_total - 1}:0] dio_en_d2p;
 % for m in top["module"]:
   % if not lib.is_inst(m):
 <% continue %>
@@ -398,7 +398,7 @@ module top_${top["name"]} #(
 
 <%
 mem_name = m["name"].split("_")
-mem_name = Name(mem_name[1:])
+mem_name = lib.Name(mem_name[1:])
 %>\
   prim_ram_1p_scr #(
     .Width(${full_data_width}),
@@ -667,7 +667,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % if m["type"] == "pinmux":
 
       .periph_to_mio_i      (mio_d2p    ),
-      .periph_to_mio_oe_i   (mio_d2p_en ),
+      .periph_to_mio_oe_i   (mio_en_d2p ),
       .mio_to_periph_o      (mio_p2d    ),
 
       .mio_attr_o,
@@ -676,7 +676,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .mio_in_i,
 
       .periph_to_dio_i      (dio_d2p    ),
-      .periph_to_dio_oe_i   (dio_d2p_en ),
+      .periph_to_dio_oe_i   (dio_en_d2p ),
       .dio_to_periph_o      (dio_p2d    ),
 
       .dio_attr_o,
@@ -743,90 +743,68 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 
 % if "pinmux" in top:
   // Pinmux connections
-  % if num_mio_outputs != 0:
-  assign mio_d2p = {
-    % for sig in list(reversed(top["pinmux"]["outputs"])):
-    cio_${sig["name"]}_d2p${"" if loop.last else ","}
-    % endfor
-  };
-  assign mio_d2p_en = {
-  % for sig in list(reversed(top["pinmux"]["outputs"])):
-    cio_${sig["name"]}_en_d2p${"" if loop.last else ","}
-  % endfor
-  };
-  % endif
-  % if num_mio_inputs != 0:
-  assign {
-    % for sig in list(reversed(top["pinmux"]["inputs"])):
-    cio_${sig["name"]}_p2d${"" if loop.last else ","}
-    % endfor
-  } = mio_p2d;
-  % endif
-% endif
-
-% if num_dio != 0:
-  // Dedicated IO connections
-  // Input-only DIOs have no d2p signals
-  assign dio_d2p = {<% vector_idx = num_dio - 1 %>
-  % for sig in top["pinmux"]["dio"]:
-    % if sig["type"] in ["output", "inout"]:
-      % if sig["width"] > 1:
-        % for i in range(sig["width"]-1,-1,-1):
-    cio_${sig["name"]}_d2p[${i}]${"" if vector_idx - sig["width"] + 1 == 0 else ","} // DIO${vector_idx}<% vector_idx -= 1 %>
-        % endfor
-      % else:
-    cio_${sig["name"]}_d2p${"" if vector_idx == 0 else ","} // DIO${vector_idx}<% vector_idx -= 1 %>
-      % endif
-    % else:
-      % if sig["width"] > 1:
-    ${sig["width"]}'b0${"" if vector_idx - sig["width"] + 1 == 0 else ","} // DIO${vector_idx} - DIO${vector_idx-sig["width"] + 1}: cio_${sig["name"]}<% vector_idx -= sig["width"] %>
-      % else:
-    ${sig["width"]}'b0${"" if vector_idx == 0 else ","} // DIO${vector_idx}: cio_${sig["name"]}<% vector_idx -= 1 %>
-      % endif
+  // All muxed inputs
+  % for sig in top["pinmux"]["ios"]:
+    % if sig["connection"] == "muxed" and sig["type"] in ["inout", "input"]:
+<% literal = lib.get_io_enum_literal(sig, 'mio_in') %>\
+  assign cio_${sig["name"]}_p2d${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""} = mio_p2d[${literal}];
     % endif
   % endfor
-  };
 
-  assign dio_d2p_en = {<% vector_idx = num_dio - 1 %>
-  % for sig in top["pinmux"]["dio"]:
-    % if sig["type"] in ["output", "inout"]:
-      % if sig["width"] > 1:
-        % for i in range(sig["width"]-1,-1,-1):
-    cio_${sig["name"]}_en_d2p[${i}]${"" if vector_idx - sig["width"] + 1 == 0 else ","} // DIO${vector_idx}<% vector_idx -= 1 %>
-        % endfor
-      % else:
-    cio_${sig["name"]}_en_d2p${"" if vector_idx == 0 else ","} // DIO${vector_idx}<% vector_idx -= 1 %>
-      % endif
-    % else:
-      % if sig["width"] > 1:
-    ${sig["width"]}'b0${"" if vector_idx - sig["width"] + 1 == 0 else ","} // DIO${vector_idx} - DIO${vector_idx-sig["width"] + 1}: cio_${sig["name"]}<% vector_idx -= sig["width"] %>
-      % else:
-    ${sig["width"]}'b0${"" if vector_idx == 0 else ","} // DIO${vector_idx}: cio_${sig["name"]}<% vector_idx -= 1 %>
-      % endif
+  // All muxed outputs
+  % for sig in top["pinmux"]["ios"]:
+    % if sig["connection"] == "muxed" and sig["type"] in ["inout", "output"]:
+<% literal = lib.get_io_enum_literal(sig, 'mio_out') %>\
+  assign mio_d2p[${literal}] = cio_${sig["name"]}_d2p${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""};
     % endif
   % endfor
-  };
 
-  // Output-only DIOs have no p2d signal<% vector_idx = num_dio - 1 %>
-  % for sig in top["pinmux"]["dio"]:
-    % if sig["type"] in ["input", "inout"]:
-      % if sig["width"] > 1:
-        % for i in range(sig["width"]-1,-1,-1):
-  assign cio_${sig["name"]}_p2d[${i}]${" " * (max_diolength - len(str(i)) - 2 - len(sig["name"]))} = dio_p2d[${vector_idx}]; // DIO${vector_idx}<% vector_idx -= 1 %>
-        % endfor
-      % else:
-  assign cio_${sig["name"]}_p2d${" " * (max_diolength - len(sig["name"]))} = dio_p2d[${vector_idx}]; // DIO${vector_idx}<% vector_idx -= 1 %>
-      % endif
-    % else:
-      % if sig["width"] > 1:
-        % for i in range(sig["width"]-1,-1,-1):
-  // DIO${vector_idx}: cio_${sig["name"]}[${i}] // DIO${vector_idx}<% vector_idx -= 1 %>
-        % endfor
-      % else:
-  // DIO${vector_idx}: cio_${sig["name"]} // DIO${vector_idx}<% vector_idx -= 1 %>
-      % endif
+  // All muxed output enables
+  % for sig in top["pinmux"]["ios"]:
+    % if sig["connection"] == "muxed" and sig["type"] in ["inout", "output"]:
+<% literal = lib.get_io_enum_literal(sig, 'mio_out') %>\
+  assign mio_en_d2p[${literal}] = cio_${sig["name"]}_en_d2p${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""};
     % endif
   % endfor
+
+  // All dedicated inputs
+<% idx = 0 %>\
+  logic [${num_dio_total-1}:0] unused_dio_p2d;
+  % for sig in top["pinmux"]["ios"]:
+<% literal = lib.get_io_enum_literal(sig, 'dio') %>\
+    % if sig["connection"] != "muxed" and sig["type"] in ["inout"]:
+  assign cio_${sig["name"]}_p2d${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""} = dio_p2d[${literal}];
+    % elif sig["connection"] != "muxed" and sig["type"] in ["input"]:
+  assign cio_${sig["name"]}_p2d${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""} = dio_p2d[${literal}];
+    % elif sig["connection"] != "muxed" and sig["type"] in ["output"]:
+  assign unused_dio_p2d[${idx}] = dio_p2d[${literal}];<% idx += 1 %>
+    % endif
+  % endfor
+
+    // All dedicated outputs
+  % for sig in top["pinmux"]["ios"]:
+<% literal = lib.get_io_enum_literal(sig, 'dio') %>\
+    % if sig["connection"] != "muxed" and sig["type"] in ["inout"]:
+  assign dio_d2p[${literal}] = cio_${sig["name"]}_d2p${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""};
+    % elif sig["connection"] != "muxed" and sig["type"] in ["input"]:
+  assign dio_d2p[${literal}] = 1'b0;
+    % elif sig["connection"] != "muxed" and sig["type"] in ["output"]:
+  assign dio_d2p[${literal}] = cio_${sig["name"]}_d2p${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""};
+    % endif
+  % endfor
+
+  // All dedicated output enables
+  % for sig in top["pinmux"]["ios"]:
+<% literal = lib.get_io_enum_literal(sig, 'dio') %>\
+    % if sig["connection"] != "muxed" and sig["type"] in ["inout"]:
+  assign dio_en_d2p[${literal}] = cio_${sig["name"]}_en_d2p${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""};
+    % elif sig["connection"] != "muxed" and sig["type"] in ["input"]:
+  assign dio_en_d2p[${literal}] = 1'b0;
+    % elif sig["connection"] != "muxed" and sig["type"] in ["output"]:
+  assign dio_en_d2p[${literal}] = cio_${sig["name"]}_en_d2p${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""};
+    % endif
+  % endfor
+
 % endif
 
   // make sure scanmode_i is never X (including during reset)

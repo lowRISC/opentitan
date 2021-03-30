@@ -148,7 +148,7 @@
     { name: "AttrDw",
       desc: "Pad attribute data width",
       type: "int",
-      default: "10",
+      default: "13",
       local: "true"
     },
     { name: "NMioPeriphIn",
@@ -185,42 +185,6 @@
       desc: "Number of wakeup counter bits",
       type: "int",
       default: "8",
-      local: "true"
-    },
-    { name: "NUsbDevPads",
-      desc: "Number of usbdev pins",
-      type: "int",
-      default: "9",
-      local: "true"
-    },
-    { name: "NDioPadUsbDevStart",
-      desc: "Start position for usbdev pins",
-      type: "int",
-      default: "0",
-      local: "true"
-    },
-    { name: "UsbDpSel",
-      desc: "index of usbdev_dp",
-      type: "int",
-      default: "1",
-      local: "true"
-    },
-    { name: "UsbDnSel",
-      desc: "index of usbdev_dn",
-      type: "int",
-      default: "0",
-      local: "true"
-    },
-    { name: "UsbDpPullUpSel",
-      desc: "index of usbdev_dp_pullup",
-      type: "int",
-      default: "6",
-      local: "true"
-    },
-    { name: "UsbDnPullUpSel",
-      desc: "index of usbdev_dn_pullup",
-      type: "int",
-      default: "5",
       local: "true"
     },
     // Since the target-specific top-levels often have slightly
