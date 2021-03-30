@@ -18,8 +18,8 @@
 ##
 ##    reg_width        an integer giving the width of registers in bits
 ##
-##    hier_path        a string giving the hierarchical path to the block
-##                     containing this device interface.
+##    reg_block_path   the hierarchical path to the relevant register block in the
+##                     design
 ##
 ##    rb               a RegBlock object
 ##
@@ -28,14 +28,14 @@
 ##                     this will be bar__foo. For an unnamed interface
 ##                     on block BAR, this will be just bar.
 ##
-<%def name="make_ral_pkg(dv_base_prefix, reg_width, hier_path, rb, esc_if_name)">\
+<%def name="make_ral_pkg(dv_base_prefix, reg_width, reg_block_path, rb, esc_if_name)">\
 package ${esc_if_name}_ral_pkg;
 ${make_ral_pkg_hdr(dv_base_prefix, [])}
 
 ${make_ral_pkg_fwd_decls(esc_if_name, rb.flat_regs, rb.windows)}
 % for reg in rb.flat_regs:
 
-${make_ral_pkg_reg_class(dv_base_prefix, reg_width, esc_if_name, hier_path, reg)}
+${make_ral_pkg_reg_class(dv_base_prefix, reg_width, esc_if_name, reg_block_path, reg)}
 % endfor
 % for window in rb.windows:
 
@@ -207,10 +207,10 @@ endpackage
 ##
 ##    esc_if_name      as for make_ral_pkg
 ##
-##    hier_path        as for make_ral_pkg
+##    reg_block_path   as for make_ral_pkg
 ##
 ##    reg              a Register object
-<%def name="make_ral_pkg_reg_class(dv_base_prefix, reg_width, esc_if_name, hier_path, reg)">\
+<%def name="make_ral_pkg_reg_class(dv_base_prefix, reg_width, esc_if_name, reg_block_path, reg)">\
 <%
   reg_name = reg.name.lower()
 
@@ -246,7 +246,7 @@ endpackage
     else:
       reg_field_name = reg_name + "_" + field.name.lower()
 %>\
-${_create_reg_field(dv_base_prefix, reg_width, hier_path, reg.shadowed, reg.hwext, reg_field_name, field)}
+${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg.hwext, reg_field_name, field)}
 % endfor
 % if reg.shadowed and reg.hwext:
 <%
@@ -286,7 +286,7 @@ ${_create_reg_field(dv_base_prefix, reg_width, hier_path, reg.shadowed, reg.hwex
 ##
 ##    reg_width        as for make_ral_pkg
 ##
-##    hier_path        as for make_ral_pkg
+##    reg_block_path   as for make_ral_pkg
 ##
 ##    shadowed         true if the field's register is shadowed
 ##
@@ -295,7 +295,7 @@ ${_create_reg_field(dv_base_prefix, reg_width, hier_path, reg.shadowed, reg.hwex
 ##    reg_field_name   a string with the name to give the field in the HDL
 ##
 ##    field            a Field object
-<%def name="_create_reg_field(dv_base_prefix, reg_width, hier_path, shadowed, hwext, reg_field_name, field)">\
+<%def name="_create_reg_field(dv_base_prefix, reg_width, reg_block_path, shadowed, hwext, reg_field_name, field)">\
 <%
   field_size = field.bits.width()
   if field.swaccess.key == "r0w1c":
@@ -327,13 +327,13 @@ ${_create_reg_field(dv_base_prefix, reg_width, hier_path, reg.shadowed, reg.hwex
        field.swaccess.swrd() == SwRdAccess.RD and\
        not field.swaccess.allows_write())):
       // constant reg
-      add_hdl_path_slice("${hier_path}u_reg.${reg_field_name}_qs", ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
+      add_hdl_path_slice("${reg_block_path}.${reg_field_name}_qs", ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
 % else:
-      add_hdl_path_slice("${hier_path}u_reg.u_${reg_field_name}.q${"s" if hwext else ""}", ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
+      add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.q${"s" if hwext else ""}", ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
 % endif
 % if shadowed and not hwext:
-      add_hdl_path_slice("${hier_path}u_reg.u_${reg_field_name}.committed_reg.q", ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlCommitted");
-      add_hdl_path_slice("${hier_path}u_reg.u_${reg_field_name}.shadow_reg.q", ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlShadow");
+      add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.committed_reg.q", ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlCommitted");
+      add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.shadow_reg.q", ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlShadow");
 % endif
 % if field_tags:
       // create field tags

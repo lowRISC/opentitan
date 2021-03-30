@@ -35,9 +35,10 @@
       if_suffix = '' if if_name is None else '_' + if_name
       esc_if_name = block.name.lower() + if_suffix
       if_desc = '' if if_name is None else '; interface {}'.format(if_name)
+      reg_block_path = 'u_reg' + if_suffix
 %>\
 // Block: ${block.name.lower()}${if_desc}
-${make_ral_pkg(dv_base_prefix, top.regwidth, '', rb, esc_if_name)}
+${make_ral_pkg(dv_base_prefix, top.regwidth, reg_block_path, rb, esc_if_name)}
 %   endfor
 % endfor
 ##

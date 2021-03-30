@@ -119,7 +119,7 @@ module rom_ctrl
   rom_ctrl_regs_hw2reg_t hw2reg;
   logic                  reg_integrity_error;
 
-  rom_ctrl_regs_reg_top u_reg_top (
+  rom_ctrl_regs_reg_top u_reg_regs (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .tl_i       (regs_tl_i),

@@ -91,10 +91,10 @@ def gen_dv(block: IpBlock, dv_base_prefix: str, outdir: str) -> int:
 
     lblock = block.name.lower()
     for if_name, rb in block.reg_blocks.items():
-        if if_name is None:
-            mod_base = lblock
-        else:
-            mod_base = lblock + '_' + if_name.lower()
+        hier_path = '' if block.hier_path is None else block.hier_path + '.'
+        if_suffix = '' if if_name is None else '_' + if_name.lower()
+        mod_base = lblock + if_suffix
+        reg_block_path = hier_path + 'u_reg' + if_suffix
 
         file_name = mod_base + '_ral_pkg.sv'
         generated.append(file_name)
@@ -104,6 +104,7 @@ def gen_dv(block: IpBlock, dv_base_prefix: str, outdir: str) -> int:
                 fout.write(uvm_reg_tpl.render(rb=rb,
                                               block=block,
                                               esc_if_name=mod_base,
+                                              reg_block_path=reg_block_path,
                                               dv_base_prefix=dv_base_prefix))
             except:  # noqa F722 for template Exception handling
                 log.error(exceptions.text_error_template().render())
