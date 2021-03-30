@@ -13,6 +13,11 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   // various knobs to enable certain routines
   bit do_aon_timer_init = 1'b1;
 
+  // If this is set, the AON clock starts first and then the fast clock starts sometime later. If
+  // not, they start in parallel. Since the fast clock is *much* quicker, the practical result is
+  // that it starts first.
+  rand bit reset_aon_first;
+
   // Should the CPU be considered enabled at the start of time?
   rand bit initial_cpu_enable;
 
@@ -41,10 +46,17 @@ class aon_timer_base_vseq extends cip_base_vseq #(
     cfg.cpu_en_vif.drive(initial_cpu_enable);
     cfg.sleep_vif.drive(initial_sleep_mode);
 
-    if (kind == "HARD") begin
+    // Bring up the clocks in either order. We can't just race them by running them in parallel,
+    // because the AON clock is much slower so will always come up second.
+    if (kind == "HARD" && reset_aon_first) begin
       cfg.aon_clk_rst_vif.apply_reset();
+      super.apply_reset(kind);
+    end else begin
+      fork
+        if (kind == "HARD") cfg.aon_clk_rst_vif.apply_reset();
+        super.apply_reset(kind);
+      join
     end
-    super.apply_reset(kind);
   endtask // apply_reset
 
 endclass : aon_timer_base_vseq
