@@ -88,7 +88,7 @@ package otp_ctrl_env_pkg;
 
   parameter uint CHK_TIMEOUT_CYC = 40;
 
-  // lc does not have digest
+  // lc does not have dai access
   parameter int PART_BASE_ADDRS [NumPart-1] = {
     CreatorSwCfgOffset,
     OwnerSwCfgOffset,
@@ -96,6 +96,16 @@ package otp_ctrl_env_pkg;
     Secret0Offset,
     Secret1Offset,
     Secret2Offset
+  };
+
+  // lc does not have digest
+  parameter int PART_OTP_DIGEST_ADDRS [NumPart-1] = {
+    CreatorSwCfgDigestOffset >> 2,
+    OwnerSwCfgDigestOffset   >> 2,
+    HwCfgDigestOffset        >> 2,
+    Secret0DigestOffset      >> 2,
+    Secret1DigestOffset      >> 2,
+    Secret2DigestOffset      >> 2
   };
 
   // types

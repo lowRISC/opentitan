@@ -118,7 +118,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
                   i, num_dai_op, dai_addr, part_idx), UVM_HIGH)
 
         // OTP write via DAI
-        if ($urandom_range(0, 1)) begin
+        if ($urandom_range(0, 1) && !digest_calculated[part_idx]) begin
           dai_wr(dai_addr, wdata0, wdata1);
           if (collect_used_addr) used_dai_addr_q.push_back(dai_addr);
         end

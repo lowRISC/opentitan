@@ -18,6 +18,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   bit [TL_AW-1:0] used_dai_addr_q[$];
   bit is_valid_dai_op = 1;
 
+  // According to spec, the period between digest calculation and reset should not issue any write.
+  bit [NumPart-2:0] digest_calculated;
+
   bit default_req_blocking = 1;
 
   `uvm_object_new
@@ -48,6 +51,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     cfg.otp_ctrl_vif.drive_pwr_otp_init(1);
     wait(cfg.otp_ctrl_vif.pwr_otp_done_o == 1);
     cfg.otp_ctrl_vif.drive_pwr_otp_init(0);
+    digest_calculated = 0;
   endtask
 
   // setup basic otp_ctrl features
@@ -151,6 +155,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
 
     wait_dai_op_done();
+    digest_calculated[part_idx] = 1;
     rd_and_clear_intrs();
   endtask
 
