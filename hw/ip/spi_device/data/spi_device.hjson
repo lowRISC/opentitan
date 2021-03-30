@@ -46,6 +46,12 @@
       name:    "ram_cfg",
       act:     "rcv"
     }
+    { struct:  "passthrough",
+      package: "spi_device_pkg"
+      type:    "req_rsp"
+      name:    "passthrough",
+      act:     "req"
+    }
   ],
   regwidth: "32",
   registers: [

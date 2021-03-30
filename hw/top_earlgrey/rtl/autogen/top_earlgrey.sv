@@ -1174,6 +1174,8 @@ module top_earlgrey #(
 
       // Inter-module signals
       .ram_cfg_i(ast_ram_2p_cfg),
+      .passthrough_o(),
+      .passthrough_i(spi_device_pkg::PASSTHROUGH_RSP_DEFAULT),
       .tl_i(spi_device_tl_req),
       .tl_o(spi_device_tl_rsp),
       .scanmode_i,

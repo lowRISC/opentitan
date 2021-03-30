@@ -107,8 +107,23 @@ waive -rules {ONE_BIT_MEM_WIDTH} -location {spi_device.sv} \
       -regexp {Memory 'sub_.*' has word width which is a single bit wide} \
       -comment "Unpacked array for mux/demux"
 
+
 #### Clock use
 ####
 waive -rules {CLOCK_USE} -location {spi_device.sv} \
       -regexp {clk_i' is connected to 'prim_clock_mux2' port 'clk1_i', and used as a clock 'CK' at} \
       -comment "This clock mux is required."
+
+
+#### Passthrough
+waive -rules {TERMINAL_STATE} -location {spi_passthrough.sv} \
+      -regexp {Terminal state 'St.* state register 'st_d' is not} \
+      -comment "Dead End States waiting CSb de-assertion"
+
+waive -rules {NOT_READ} -location {spi_passthrough.sv} \
+      -regexp {Signal 'opcode.*}
+
+waive -rules {NOT_READ} -location {spi_passthrouth.sv} \
+      -regexp {Signal 'cmd_info.addr.*} \
+      -comment "cmd_info is valid after moving to Address state. So cmd_info_d was used"
+

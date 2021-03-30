@@ -149,6 +149,9 @@ module spi_readcmd
   input [31:0] mailbox_addr_i,
   //input [31:0] mailbox_mask_i,
 
+  // Indicator to take SPI line in Passthrough mode
+  output mailbox_assumed_o,
+
   output io_mode_e io_mode_o,
 
   // Read watermark event occurs when current address exceeds the threshold cfg
@@ -166,6 +169,9 @@ module spi_readcmd
 
   spi_mode_e unused_spi_mode ; // will be used for passthrough for output enable
   assign unused_spi_mode = spi_mode_i;
+
+  // TODO: Implement
+  assign mailbox_assumed_o = 1'b 0;
 
   /////////////////
   // Definitions //

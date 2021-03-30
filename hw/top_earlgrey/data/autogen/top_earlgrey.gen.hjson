@@ -736,6 +736,16 @@
           index: -1
         }
         {
+          name: passthrough
+          struct: passthrough
+          package: spi_device_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: spi_device
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -11556,6 +11566,16 @@
         inst_name: spi_device
         default: ""
         top_signame: ast_ram_2p_cfg
+        index: -1
+      }
+      {
+        name: passthrough
+        struct: passthrough
+        package: spi_device_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: spi_device
         index: -1
       }
       {

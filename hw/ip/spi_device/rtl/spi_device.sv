@@ -22,6 +22,10 @@ module spi_device (
   output logic [3:0] cio_sd_en_o,
   input        [3:0] cio_sd_i,
 
+  // Passthrough interface
+  output spi_device_pkg::passthrough_req_t passthrough_o,
+  input  spi_device_pkg::passthrough_rsp_t passthrough_i,
+
   // Interrupts
   output logic intr_rxf_o,         // RX FIFO Full
   output logic intr_rxlvl_o,       // RX FIFO above level
@@ -91,6 +95,10 @@ module spi_device (
   logic [SramDw-1:0] sub_sram_rdata  [IoModeEnd];
   logic [1:0]        sub_sram_rerror [IoModeEnd];
 
+  // Host return path mux
+  logic [3:0] internal_sd, internal_sd_en;
+  logic [3:0] passthrough_sd, passthrough_sd_en;
+
   /////////////////////
   // Control signals //
   /////////////////////
@@ -158,6 +166,9 @@ module spi_device (
   sel_datapath_e cmd_dp_sel, cmd_dp_sel_outclk;
   spi_byte_t     cmd_opcode;
 
+
+  // Mailbox in Passthrough needs to take SPI if readcmd hits mailbox address
+  logic mailbox_assumed, passthrough_assumed_by_internal;
 
   //////////////////////////////////////////////////////////////////////
   // Connect phase (between control signals above and register module //
@@ -534,7 +545,7 @@ module spi_device (
         sub_sram_rerror [IoModeFw] = mem_b_rerror;
       end
 
-      FlashMode: begin
+      FlashMode, PassThrough: begin
         unique case (cmd_dp_sel_outclk)
           DpNone: begin
             io_mode = sub_iomode[IoModeCmdParse];
@@ -573,11 +584,6 @@ module spi_device (
         endcase
       end
 
-      PassThrough: begin
-        // TODO: Revise when implementing PassThrough
-        io_mode = SingleIO;
-      end
-
       default: begin
         io_mode = SingleIO;
       end
@@ -585,7 +591,36 @@ module spi_device (
   end
   `ASSERT_KNOWN(SpiModeKnown_A, spi_mode)
 
+  always_comb begin
+    cio_sd_o    = internal_sd;
+    cio_sd_en_o = internal_sd_en;
 
+    unique case (spi_mode)
+      FwMode, FlashMode: begin
+        cio_sd_o    = internal_sd;
+        cio_sd_en_o = internal_sd_en;
+      end
+
+      PassThrough: begin
+        if (passthrough_assumed_by_internal) begin
+          cio_sd_o    = internal_sd;
+          cio_sd_en_o = internal_sd_en;
+        end else begin
+          cio_sd_o    = passthrough_sd;
+          cio_sd_en_o = passthrough_sd_en;
+        end
+      end
+
+      default: begin
+        cio_sd_o    = internal_sd;
+        cio_sd_en_o = internal_sd_en;
+      end
+    endcase
+  end
+  assign passthrough_assumed_by_internal = mailbox_assumed
+    // TOGO: Uncomment below when those submodules are implemented.
+    // | readstatus_assumed | readsfdp_assumed | readjedec_assumed
+    ;
 
   ////////////////////////////
   // SPI Serial to Parallel //
@@ -615,8 +650,8 @@ module spi_device (
     .data_sent_o  (p2s_sent),
 
     .csb_i        (cio_csb_i),
-    .s_en_o       (cio_sd_en_o),
-    .s_o          (cio_sd_o),
+    .s_en_o       (internal_sd_en),
+    .s_o          (internal_sd),
 
     .cpha_i       (cpha),
     .order_i      (txorder),
@@ -756,12 +791,47 @@ module spi_device (
 
     .addr_4b_en_i (1'b 0),
 
-    .mailbox_en_i   (1'b 0),
-    .mailbox_addr_i ('0), // 32
+    .mailbox_en_i      (1'b 0),
+    .mailbox_addr_i    ('0), // 32
+    .mailbox_assumed_o (mailbox_assumed),
 
     .io_mode_o (sub_iomode [IoModeReadCmd]),
 
     .read_watermark_o ()
+  );
+
+  /////////////////////
+  // SPI Passthrough //
+  /////////////////////
+  spi_passthrough u_passthrough (
+    .clk_i     (clk_spi_in_buf),
+    .rst_ni    (rst_spi_n),
+    .clk_out_i (clk_spi_out_buf),
+
+    // Configurations
+    .cfg_cmd_filter_i ('0), //TODO
+
+    .cfg_addr_mask_i  ('0), // TODO
+    .cfg_addr_value_i ('0), // TODO
+
+    .cfg_addr_4b_en_i (1'b 0),
+
+    .spi_mode_i       (spi_mode),
+
+    // Host SPI
+    .host_sck_i  (cio_sck_i),
+    .host_csb_i  (cio_csb_i),
+    .host_s_i    (cio_sd_i),
+    .host_s_o    (passthrough_sd),
+    .host_s_en_o (passthrough_sd_en),
+
+    // Passthrough to SPI_HOST HWIP
+    .passthrough_o,
+    .passthrough_i,
+
+    .mailbox_hit_i (1'b 0),
+
+    .event_cmd_filtered_o ()
   );
 
   ////////////////////
