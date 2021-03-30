@@ -583,7 +583,7 @@
     }
   ]
 
-  // Memories (ROM, RAM, eFlash) are defined at the top.
+  // Memories (RAM, eFlash) are defined at the top.
   // It utilizes the primitive cells but configurable
   memory: [
     { name: "ram_main",

@@ -38,6 +38,7 @@ filesets:
       - lowrisc:ip:nmi_gen
       - lowrisc:ip:otp_ctrl
       - lowrisc:ip:lc_ctrl
+      - lowrisc:ip:rom_ctrl
       - lowrisc:ip:usbdev
       - lowrisc:ip:rstmgr
       - lowrisc:ip:pwrmgr

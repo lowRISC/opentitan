@@ -297,7 +297,7 @@ module top_englishbreakfast_cw305 #(
     .IbexRegFile(ibex_pkg::RegFileFPGA),
     .IbexICache(0),
     .IbexPipeLine(1),
-    .BootRomInitFile(BootRomInitFile),
+    .RomCtrlBootRomInitFile(BootRomInitFile),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_englishbreakfast (
     // Clocks, resets
