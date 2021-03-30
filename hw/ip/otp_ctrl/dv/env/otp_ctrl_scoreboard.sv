@@ -17,9 +17,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   bit key_size_80 = SCRAMBLE_KEY_SIZE == 80;
   bit [EDN_BUS_WIDTH-1:0] edn_data_q[$];
 
-  // LC partition does not have digest
-  bit [SCRAMBLE_DATA_SIZE-1:0] digests[NumPart-1];
-
   // This bit is used for DAI interface to mark if the read access is valid.
   bit dai_read_valid;
 
@@ -84,7 +81,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         if (cfg.backdoor_clear_mem && cfg.en_scb) begin
           bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, Secret0Idx);
           otp_a        = '{default:0};
-          digests      = '{default:0};
           otp_lc_data  = '{default:0};
           // secret partitions have been scrambled before writing to OTP.
           // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
@@ -112,6 +108,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           otp_ctrl_pkg::otp_keymgr_key_t       exp_keymgr_data;
           bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
 
+          predict_digest_csrs();
+
           if (cfg.otp_ctrl_vif.lc_esc_on == 0) begin
             // Dai access is unlocked because the power init is done
             void'(ral.direct_access_regwen.predict(1));
@@ -128,7 +126,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
           // Otp_keymgr outputs creator root key shares from the secret2 partition.
           // Depends on lc_seed_hw_rd_en_i, it will output the real keys or a constant
-          exp_keymgr_data.valid = digests[Secret2Idx] != 0;
+          exp_keymgr_data.valid = get_otp_digest_val(Secret2Idx) != 0;
           if (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) begin
             exp_keymgr_data.key_share0 =
                 {<<32 {otp_a[CreatorRootKeyShare0Offset/4 +: CreatorRootKeyShare0Size/4]}};
@@ -163,10 +161,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       exp_status[OtpDerivKeyFsmErrIdx:OtpLfsrFsmErrIdx] = '1;
 
-      //void'(ral.intr_state.otp_operation_done.predict(1));
-
       // Update digest values and direct_access_regwen.
-      for (int i = HwCfgIdx; i <= Secret2Idx; i++) digests[i] = 0;
       predict_rdata(1, 0, 0);
       void'(ral.direct_access_regwen.predict(0));
       void'(ral.creator_sw_cfg_read_lock.predict(0));
@@ -496,7 +491,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                 // SW partitions write read_lock_csr can lock read access
                 // Secret partitions cal digest can also lock read access
                 // However, digest is always readable except SW partitions (Issue #5752)
-                if (sw_read_lock || (is_secret(dai_addr) && digests[part_idx] != 0 &&
+                if (sw_read_lock || (is_secret(dai_addr) && get_digest_reg_val(part_idx) != 0 &&
                     !is_digest(dai_addr))) begin
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                   predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
@@ -543,10 +538,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                     prev_digest = {otp_a[otp_addr+1], otp_a[otp_addr]};
                     // allow bit write
                     if ((prev_digest & curr_digest) == prev_digest) begin
-                      digests[part_idx] = curr_digest;
-                      // sw digest directly write to OTP, so reading out digest val do not need to
-                      // wait a reset
-                      update_sw_digests_to_otp(part_idx);
+                      update_digest_to_otp(part_idx, curr_digest);
                     end else begin
                       predict_err(OtpDaiErrIdx, OtpMacroWriteBlankError);
                     end
@@ -654,13 +646,18 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         // TODO: temp ignore checking until stress_all_with_rand_reset is supported
         if (cfg.otp_ctrl_vif.lc_esc_on) do_read_check = 0;
       end
+      "err_code": begin
+        // If lc_prog in progress, err_code might update anytime in DUT. Ignore checking until req
+        // is acknowledged.
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+      end
       "hw_cfg_digest_0", "hw_cfg_digest_1", "secret0_digest_0", "secret0_digest_1",
       "secret1_digest_0", "secret1_digest_1", "secret2_digest_0", "secret2_digest_1",
       "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1", "owner_sw_cfg_digest_0",
       "owner_sw_cfg_digest_1", "direct_access_regwen", "direct_access_wdata_0",
       "direct_access_wdata_1", "direct_access_address", "direct_access_rdata_0",
       "direct_access_rdata_1", "check_regwen", "check_trigger_regwen", "check_trigger",
-      "check_timeout", "intr_enable", "err_code", "creator_sw_cfg_read_lock",
+      "check_timeout", "intr_enable", "creator_sw_cfg_read_lock",
       "owner_sw_cfg_read_lock": begin
         // Do nothing
       end
@@ -696,10 +693,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     macro_alert_triggered = 0;
     exp_status            = `gmv(ral.status);
 
-    // reset local fifos queues and variables
-    // digest values are updated after a power cycle
-    predict_digest_csrs();
-    update_digests_to_otp_mem();
     edn_data_q.delete();
 
     // Out of reset: lock dai access until power init is done
@@ -744,55 +737,41 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // predict digest registers
   virtual function void predict_digest_csrs();
-    void'(ral.creator_sw_cfg_digest_0.predict(.value(digests[CreatorSwCfgIdx][31:0]),
-                                              .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.creator_sw_cfg_digest_1.predict(.value(digests[CreatorSwCfgIdx][63:32]),
-                                              .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.owner_sw_cfg_digest_0.predict(.value(digests[OwnerSwCfgIdx][31:0]),
-                                            .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.owner_sw_cfg_digest_1.predict(.value(digests[OwnerSwCfgIdx][63:32]),
-                                            .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.hw_cfg_digest_0.predict(.value(digests[HwCfgIdx][31:0]),
-                                      .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.hw_cfg_digest_1.predict(.value(digests[HwCfgIdx][63:32]),
-                                      .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret0_digest_0.predict(.value(digests[Secret0Idx][31:0]),
-                                       .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret0_digest_1.predict(.value(digests[Secret0Idx][63:32]),
-                                       .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret1_digest_0.predict(.value(digests[Secret1Idx][31:0]),
-                                       .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret1_digest_1.predict(.value(digests[Secret1Idx][63:32]),
-                                       .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret2_digest_0.predict(.value(digests[Secret2Idx][31:0]),
-                                       .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret2_digest_1.predict(.value(digests[Secret2Idx][63:32]),
-                                       .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.creator_sw_cfg_digest_0.predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[CreatorSwCfgIdx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.creator_sw_cfg_digest_1.predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[CreatorSwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.owner_sw_cfg_digest_0.predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.owner_sw_cfg_digest_1.predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.hw_cfg_digest_0.predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.hw_cfg_digest_1.predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.secret0_digest_0.predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret0_digest_1.predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.secret1_digest_0.predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret1_digest_1.predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+
+    void'(ral.secret2_digest_0.predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret2_digest_1.predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
   endfunction
 
-  function void update_sw_digests_to_otp(int part_idx);
-    if (part_idx == CreatorSwCfgIdx) begin
-      otp_a[CreatorSwCfgDigestOffset >> 2]       = digests[CreatorSwCfgIdx][31:0];
-      otp_a[(CreatorSwCfgDigestOffset >> 2) + 1] = digests[CreatorSwCfgIdx][63:32];
-    end else begin
-      otp_a[OwnerSwCfgDigestOffset >> 2]         = digests[OwnerSwCfgIdx][31:0];
-      otp_a[(OwnerSwCfgDigestOffset >> 2) + 1]   = digests[OwnerSwCfgIdx][63:32];
-    end
+  function void update_digest_to_otp(int part_idx, bit [TL_DW*2-1:0] digest);
+    otp_a[PART_OTP_DIGEST_ADDRS[part_idx]]     = digest[31:0];
+    otp_a[PART_OTP_DIGEST_ADDRS[part_idx] + 1] = digest[63:32];
   endfunction
-
-  function void update_digests_to_otp_mem();
-    update_sw_digests_to_otp(CreatorSwCfgIdx);
-    update_sw_digests_to_otp(OwnerSwCfgIdx);
-
-    otp_a[HwCfgDigestOffset >> 2]         = digests[HwCfgIdx][31:0];
-    otp_a[(HwCfgDigestOffset >> 2) + 1]   = digests[HwCfgIdx][63:32];
-    otp_a[Secret0DigestOffset >> 2]       = digests[Secret0Idx][31:0];
-    otp_a[(Secret0DigestOffset >> 2) + 1] = digests[Secret0Idx][63:32];
-    otp_a[Secret1DigestOffset >> 2]       = digests[Secret1Idx][31:0];
-    otp_a[(Secret1DigestOffset >> 2) + 1] = digests[Secret1Idx][63:32];
-    otp_a[Secret2DigestOffset >> 2]       = digests[Secret2Idx][31:0];
-    otp_a[(Secret2DigestOffset >> 2) + 1] = digests[Secret2Idx][63:32];
- endfunction
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
@@ -807,13 +786,14 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   function void cal_digest_val(int part_idx);
     bit [NUM_ROUND-1:0] [SCRAMBLE_DATA_SIZE-1:0] enc_array;
     bit [SCRAMBLE_DATA_SIZE-1:0]                 init_vec = RndCnstDigestIV[0];
-    bit [TL_DW-1:0] mem_q[$];
-    int             array_size;
-    real            key_factor  = SCRAMBLE_KEY_SIZE / TL_DW;
+    bit [TL_DW-1:0]   mem_q[$];
+    int               array_size;
+    real              key_factor  = SCRAMBLE_KEY_SIZE / TL_DW;
+    bit [TL_DW*2-1:0] digest, prev_digest;
 
     if (cfg.otp_ctrl_vif.lc_esc_on) return;
 
-    if (digests[part_idx] != 0 ||
+    if (get_digest_reg_val(part_idx) != 0 ||
         part_idx inside {CreatorSwCfgIdx, OwnerSwCfgIdx, LifeCycleIdx}) begin
       predict_err(OtpDaiErrIdx, OtpAccessError);
       return;
@@ -845,7 +825,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     end
 
     for (int i = 0; i < $ceil(array_size / key_factor); i++) begin
-      bit [SCRAMBLE_DATA_SIZE-1:0] input_data = (i == 0) ? init_vec : digests[part_idx];
+      bit [SCRAMBLE_DATA_SIZE-1:0] input_data = (i == 0) ? init_vec : digest;
       bit [SCRAMBLE_KEY_SIZE-1:0]  key;
 
       // Pad 32-bit partition data into 128-bit key input
@@ -859,16 +839,18 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       // Trigger 32 round of PRESENT encrypt
       crypto_dpi_present_pkg::sv_dpi_present_encrypt(input_data, key, key_size_80, enc_array);
       // XOR the previous state into the digest result according to the Davies-Meyer scheme.
-      digests[part_idx] = enc_array[NUM_ROUND-1] ^ input_data;
+      digest = enc_array[NUM_ROUND-1] ^ input_data;
     end
 
     // Last 32 round of digest is calculated with a digest constant
-    crypto_dpi_present_pkg::sv_dpi_present_encrypt(digests[part_idx],
+    crypto_dpi_present_pkg::sv_dpi_present_encrypt(digest,
                                                    RndCnstDigestConst[0],
                                                    key_size_80,
                                                    enc_array);
     // XOR the previous state into the digest result according to the Davies-Meyer scheme.
-    digests[part_idx] ^= enc_array[NUM_ROUND-1];
+    digest ^= enc_array[NUM_ROUND-1];
+
+    update_digest_to_otp(part_idx, digest);
   endfunction
 
   // when secret data write into otp_array, it will be scrambled
@@ -940,7 +922,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
     // Update intr_state
     void'(ral.intr_state.otp_error.predict(.value(1), .kind(UVM_PREDICT_READ)));
-
     // Update status
     exp_status[status_err_idx] = 1;
 
@@ -986,6 +967,15 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     if (!locked) return 0;
     for (int i = 0; i < 4; i++) key |= otp_a[i + start_i] << (TL_DW * i);
     return key;
+  endfunction
+
+  // The following two methods are all retrieving digest val.
+  // get_otp_digest_val: is the digest value from OTP memory
+  // get_digest_reg_val: is the digest value in register. This value is identical to OTP
+  // memory's digest value after a power cycle reset.
+  virtual function bit [TL_DW*2-1:0] get_otp_digest_val(int part_idx);
+    get_otp_digest_val[31:0]  = otp_a[PART_OTP_DIGEST_ADDRS[part_idx]];
+    get_otp_digest_val[63:32] = otp_a[PART_OTP_DIGEST_ADDRS[part_idx] + 1];
   endfunction
 
   virtual function bit [TL_DW*2-1:0] get_digest_reg_val(int part_idx);
