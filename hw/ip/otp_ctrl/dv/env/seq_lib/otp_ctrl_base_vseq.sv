@@ -386,11 +386,11 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     if (cfg.m_lc_prog_pull_agent_cfg.vif.req === 1'b1) return;
 
     if (blocking) begin
-      req_lc_transition_sub();
+      req_lc_transition_sub(check_intr);
     end else begin
       fork
         begin
-          req_lc_transition_sub();
+          req_lc_transition_sub(check_intr);
         end
       join_none;
       // Add #0 to ensure that this thread starts executing before any subsequent call
