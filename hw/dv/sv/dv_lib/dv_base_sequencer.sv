@@ -15,8 +15,8 @@ class dv_base_sequencer #(type ITEM_T     = uvm_sequence_item,
   // monitor and sequences. These fifos are optional
   // When device is re-active, it gets items from req_analysis_fifo and send rsp to driver
   // When this is a high-level agent, monitors put items to these 2 fifos for high-level seq
-  uvm_tlm_analysis_fifo #(ITEM_T) req_analysis_fifo;
-  uvm_tlm_analysis_fifo #(ITEM_T) rsp_analysis_fifo;
+  uvm_tlm_analysis_fifo #(ITEM_T)     req_analysis_fifo;
+  uvm_tlm_analysis_fifo #(RSP_ITEM_T) rsp_analysis_fifo;
 
   CFG_T cfg;
 
