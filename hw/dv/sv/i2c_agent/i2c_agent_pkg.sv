@@ -9,6 +9,7 @@ package i2c_agent_pkg;
   import uvm_pkg::*;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
+  import dv_seq_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

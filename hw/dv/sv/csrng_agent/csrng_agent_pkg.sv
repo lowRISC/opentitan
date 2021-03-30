@@ -7,6 +7,7 @@ package csrng_agent_pkg;
   import uvm_pkg::*;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
+  import dv_seq_agent_pkg::*;
   import push_pull_agent_pkg::*;
   import csrng_pkg::*;
 

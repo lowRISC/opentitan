@@ -4,9 +4,7 @@
 
 class otbn_model_agent extends dv_base_agent #(
   .CFG_T          (otbn_model_agent_cfg),
-  .MONITOR_T      (otbn_model_monitor),
-  .DRIVER_T       (otbn_dummy_driver),
-  .SEQUENCER_T    (otbn_dummy_sequencer)
+  .MONITOR_T      (otbn_model_monitor)
 );
 
   `uvm_component_utils(otbn_model_agent)

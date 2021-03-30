@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class csrng_monitor extends dv_base_monitor #(
+class csrng_monitor extends dv_seq_monitor #(
     .ITEM_T (csrng_item),
     .CFG_T  (csrng_agent_cfg),
     .COV_T  (csrng_agent_cov)

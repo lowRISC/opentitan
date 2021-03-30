@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class keymgr_kmac_monitor extends dv_base_monitor #(
+class keymgr_kmac_monitor extends dv_seq_monitor #(
     .ITEM_T (keymgr_kmac_item),
     .CFG_T  (keymgr_kmac_agent_cfg),
     .COV_T  (keymgr_kmac_agent_cov)

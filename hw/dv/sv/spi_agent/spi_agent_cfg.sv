@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class spi_agent_cfg extends dv_base_agent_cfg;
+class spi_agent_cfg extends dv_seq_agent_cfg;
 
   // enable checkers in monitor
   bit en_monitor_checks = 1'b1;

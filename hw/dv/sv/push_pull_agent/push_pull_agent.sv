@@ -4,7 +4,7 @@
 
 class push_pull_agent #(parameter int HostDataWidth = 32,
                         parameter int DeviceDataWidth = HostDataWidth)
-  extends dv_base_agent #(
+  extends dv_seq_agent #(
   .CFG_T          (push_pull_agent_cfg#(HostDataWidth, DeviceDataWidth)),
   .DRIVER_T       (push_pull_driver#(HostDataWidth, DeviceDataWidth)),
   .HOST_DRIVER_T  (push_pull_host_driver#(HostDataWidth, DeviceDataWidth)),

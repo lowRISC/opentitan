@@ -4,7 +4,7 @@
 
 class push_pull_agent_cfg #(parameter int HostDataWidth = 32,
                             parameter int DeviceDataWidth = HostDataWidth)
-  extends dv_base_agent_cfg;
+  extends dv_seq_agent_cfg;
 
   // interface handle used by driver, monitor & the sequencer, via cfg handle
   virtual push_pull_if#(HostDataWidth, DeviceDataWidth) vif;

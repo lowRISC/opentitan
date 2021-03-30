@@ -4,7 +4,7 @@
 
 class push_pull_monitor #(parameter int HostDataWidth = 32,
                           parameter int DeviceDataWidth = HostDataWidth)
-  extends dv_base_monitor #(
+  extends dv_seq_monitor #(
     .ITEM_T (push_pull_item#(HostDataWidth, DeviceDataWidth)),
     .CFG_T  (push_pull_agent_cfg#(HostDataWidth, DeviceDataWidth)),
     .COV_T  (push_pull_agent_cov#(HostDataWidth, DeviceDataWidth))

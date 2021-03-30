@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class i2c_monitor extends dv_base_monitor #(
+class i2c_monitor extends dv_seq_monitor #(
     .ITEM_T (i2c_item),
     .CFG_T  (i2c_agent_cfg),
     .COV_T  (i2c_agent_cov)

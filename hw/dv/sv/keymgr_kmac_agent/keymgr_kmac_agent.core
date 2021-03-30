@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:dv_lib
+      - lowrisc:dv:dv_seq_agent
       - lowrisc:dv:push_pull_agent
       - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:kmac_pkg

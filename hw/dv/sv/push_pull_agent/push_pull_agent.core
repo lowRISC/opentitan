@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:dv_lib
+      - lowrisc:dv:dv_seq_agent
     files:
       - push_pull_if.sv
       - push_pull_agent_pkg.sv

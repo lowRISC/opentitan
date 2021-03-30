@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class i2c_agent_cfg extends dv_base_agent_cfg;
+class i2c_agent_cfg extends dv_seq_agent_cfg;
 
   bit en_monitor = 1'b1; // enable monitor
   i2c_target_addr_mode_e target_addr_mode = Addr7BitMode;

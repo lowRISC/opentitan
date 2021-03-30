@@ -4,7 +4,7 @@
 
 class push_pull_sequencer #(parameter int HostDataWidth = 32,
                             parameter int DeviceDataWidth = HostDataWidth)
-  extends dv_base_sequencer #(
+  extends dv_seq_sequencer #(
     .ITEM_T (push_pull_item#(HostDataWidth, DeviceDataWidth)),
     .CFG_T  (push_pull_agent_cfg#(HostDataWidth, DeviceDataWidth))
 );

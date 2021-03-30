@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class spi_monitor extends dv_base_monitor#(
+class spi_monitor extends dv_seq_monitor#(
     .ITEM_T (spi_item),
     .CFG_T  (spi_agent_cfg),
     .COV_T  (spi_agent_cov)
