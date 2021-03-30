@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:pad_wrapper_pkg
     files:
       - rtl/prim_generic_pad_wrapper.sv
     file_type: systemVerilogSource

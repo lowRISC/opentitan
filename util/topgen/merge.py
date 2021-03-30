@@ -6,7 +6,6 @@ import logging as log
 import random
 from collections import OrderedDict
 from copy import deepcopy
-from functools import partial
 from math import ceil, log2
 from typing import Dict, List
 
@@ -852,127 +851,186 @@ def amend_reset_request(topcfg: OrderedDict,
         topcfg["inter_module"]["connect"]))
 
 
-def amend_pinmux_io(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
-    """ Check dio_modules/ mio_modules. If not exists, add all modules to mio
-    """
-    pinmux = top["pinmux"]
+def append_io_signal(temp: Dict, sig_inst: Dict) -> None:
+    '''Appends the signal to the correct list'''
+    if sig_inst['type'] == 'inout':
+        temp['inouts'].append(sig_inst)
+    if sig_inst['type'] == 'input':
+        temp['inputs'].append(sig_inst)
+    if sig_inst['type'] == 'output':
+        temp['outputs'].append(sig_inst)
 
-    if "dio_modules" not in pinmux:
-        pinmux['dio_modules'] = []
 
-    # list out dedicated IO
-    pinmux['dio'] = []
-    for e in pinmux["dio_modules"]:
-        # Check name if it is module or signal
-        mname, sname = lib.get_ms_name(e["name"])
+def get_index_and_incr(ctrs: Dict, connection: str, io_dir: str) -> Dict:
+    '''Get correct index counter and increment'''
 
-        # Parse how many signals
-        m = lib.get_module_by_name(top, mname)
+    if connection != 'muxed':
+        connection = 'dedicated'
 
-        if m is None:
-            raise SystemExit("Module {} in `dio_modules`"
-                             " is not searchable.".format(mname))
-
-        if sname is not None:
-            signals = deepcopy([lib.get_signal_by_name(m, sname)])
+    if io_dir in 'inout':
+        result = ctrs[connection]['inouts']
+        ctrs[connection]['inouts'] += 1
+    elif connection == 'muxed':
+        # For MIOs, the input/output arrays differ in RTL
+        # I.e., the input array contains {inputs, inouts}, whereas
+        # the output array contains {outputs, inouts}.
+        if io_dir == 'input':
+            result = ctrs[connection]['inputs'] + ctrs[connection]['inouts']
+            ctrs[connection]['inputs'] += 1
+        elif io_dir == 'output':
+            result = ctrs[connection]['outputs'] + ctrs[connection]['inouts']
+            ctrs[connection]['outputs'] += 1
         else:
-            # Get all module signals
-            block = name_to_block[m['type']]
-            inouts, inputs, outputs = block.xputs
-            signals = ([s.as_nwt_dict('input') for s in inputs] +
-                       [s.as_nwt_dict('output') for s in outputs] +
-                       [s.as_nwt_dict('inout') for s in inouts])
+            assert(0)  # should not happen
+    else:
+        # For DIOs, the input/output arrays are identical in terms of index layout.
+        # Unused inputs are left unconnected and unused outputs are tied off.
+        if io_dir == 'input':
+            result = ctrs[connection]['inputs'] + ctrs[connection]['inouts']
+            ctrs[connection]['inputs'] += 1
+        elif io_dir == 'output':
+            result = (ctrs[connection]['outputs'] +
+                      ctrs[connection]['inouts'] +
+                      ctrs[connection]['inputs'])
+            ctrs[connection]['outputs'] += 1
+        else:
+            assert(0)  # should not happen
 
-        sig_width = sum([s["width"] for s in signals])
+    return result
 
-        # convert signal with module name
-        signals = list(
-            map(partial(lib.add_module_prefix_to_signal, module=mname),
-                signals))
-        # Parse how many pads are assigned
-        if "pad" not in e:
-            raise SystemExit("Should catch pad field in validate.py!")
 
-        # pads are the list of individual pin, each entry is 1 bit width
-        pads = []
-        for p in e["pad"]:
-            pads += lib.get_pad_list(p)
+def amend_pinmux_io(top: Dict, name_to_block: Dict[str, IpBlock]):
+    """ Process pinmux/pinout configuration and assign available IOs
+    """
+    pinmux = top['pinmux']
+    pinout = top['pinout']
+    targets = top['targets']
 
-        # check if #sig and #pads are matched
-        if len(pads) != sig_width:
-            raise SystemExit("# Pads and # Sig (%s) aren't same: %d" %
-                             (mname, sig_width))
+    temp = {}
+    temp['inouts'] = []
+    temp['inputs'] = []
+    temp['outputs'] = []
 
-        # add info to pads["dio"]
-        for s in signals:
-            p = pads[:s["width"]]
-            pads = pads[s["width"]:]
-            s["pad"] = p
-            pinmux["dio"].append(s)
+    for sig in pinmux['signals']:
+        # Get the signal information from the IP block type of this instance/
+        mod_name = sig['instance']
+        m = lib.get_module_by_name(top, mod_name)
 
-    dio_names = [p["name"] for p in pinmux["dio"]]
-
-    # Multiplexer IO
-    if "mio_modules" not in pinmux:
-        # Add all modules having available io to Multiplexer IO
-        pinmux["mio_modules"] = []
-
-        for m in top["module"]:
-            num_io = len(m["available_input_list"] +
-                         m["available_output_list"] +
-                         m["available_inout_list"])
-            if num_io != 0:
-                # Add if not in dio_modules
-                pinmux["mio_modules"].append(m["name"])
-
-    # List up the dedicated IO to exclude from inputs/outputs
-
-    # Add port list to `inputs` and `outputs` fields
-    if "inputs" not in pinmux:
-        pinmux["inputs"] = []
-    if "outputs" not in pinmux:
-        pinmux["outputs"] = []
-
-    for e in pinmux["mio_modules"]:
-        tokens = e.split('.')
-        if len(tokens) not in [1, 2]:
-            raise SystemExit(
-                "Cannot parse signal/module in mio_modules {}".format(e))
-        # Add all ports from the module to input/outputs
-        m = lib.get_module_by_name(top, tokens[0])
         if m is None:
-            raise SystemExit("Module {} doesn't exist".format(tokens[0]))
+            raise SystemExit("Module {} is not searchable.".format(mod_name))
 
-        mod_name = m['name'].lower()
+        block = name_to_block[m['type']]
 
-        if len(tokens) == 1:
-            block = name_to_block[m['type']]
-            inouts, inputs, outputs = block.xputs
-            for signal in inouts:
-                rel = signal.as_nwt_dict('inout')
-                qual = lib.add_module_prefix_to_signal(rel, mod_name)
-                if qual['name'] not in dio_names:
-                    pinmux['inputs'].append(qual)
-                    pinmux['outputs'].append(qual)
+        # If the signal is explicitly named.
+        if sig['port'] != '':
 
-            for signal in inputs:
-                rel = signal.as_nwt_dict('input')
-                qual = lib.add_module_prefix_to_signal(rel, mod_name)
-                if qual['name'] not in dio_names:
-                    pinmux['inputs'].append(qual)
+            # If this is a bus signal with explicit indexes.
+            if '[' in sig['port']:
+                name_split = sig['port'].split('[')
+                sig_name = name_split[0]
+                idx = int(name_split[1][:-1])
+            else:
+                idx = -1
+                sig_name = sig['port']
 
-            for signal in outputs:
-                rel = signal.as_nwt_dict('output')
-                qual = lib.add_module_prefix_to_signal(rel, mod_name)
-                if qual['name'] not in dio_names:
-                    pinmux['outputs'].append(qual)
+            sig_inst = deepcopy(block.get_signal_by_name_as_dict(sig_name))
 
-        elif len(tokens) == 2:
-            # Current version doesn't consider signal in mio_modules
-            # only in dio_modules
-            raise SystemExit(
-                "Curren version doesn't support signal in mio_modules {}".
-                format(e))
+            if idx >= 0 and idx >= sig_inst['width']:
+                raise SystemExit("Index {} is out of bounds for signal {}"
+                                 " with width {}.".format(idx, sig_name, sig_inst['width']))
+            if idx == -1 and sig_inst['width'] != 1:
+                raise SystemExit("Bus signal {} requires an index.".format(sig_name))
+
+            # If we got this far we know that the signal is valid and exists.
+            # Augment this signal instance with additional information.
+            sig_inst.update({'idx': idx,
+                             'pad': sig['pad'],
+                             'connection': sig['connection']})
+            sig_inst['name'] = mod_name + '_' + sig_inst['name']
+            append_io_signal(temp, sig_inst)
+
+        # Otherwise the name is a wildcard for selecting all available IO signals
+        # of this block and we need to extract them here one by one signals here.
+        else:
+            sig_list = deepcopy(block.get_signals_as_list_of_dicts())
+
+            for sig_inst in sig_list:
+                # If this is a multibit signal, unroll the bus and
+                # generate a single bit IO signal entry for each one.
+                if sig_inst['width'] > 1:
+                    for idx in range(sig_inst['width']):
+                        sig_inst_copy = deepcopy(sig_inst)
+                        sig_inst_copy.update({'idx': idx,
+                                              'pad': sig['pad'],
+                                              'connection': sig['connection']})
+                        sig_inst_copy['name'] = sig['instance'] + '_' + sig_inst_copy['name']
+                        append_io_signal(temp, sig_inst_copy)
+                else:
+                    sig_inst.update({'idx': -1,
+                                     'pad': sig['pad'],
+                                     'connection': sig['connection']})
+                    sig_inst['name'] = sig['instance'] + '_' + sig_inst['name']
+                    append_io_signal(temp, sig_inst)
+
+    # Now that we've collected all input and output signals,
+    # we can go through once again and stack them into one unified
+    # list, and calculate MIO/DIO global indices.
+    pinmux['ios'] = (temp['inouts'] +
+                     temp['inputs'] +
+                     temp['outputs'])
+
+    # Remember these counts to facilitate the RTL generation
+    pinmux['io_counts'] = {'dedicated': {'inouts': 0, 'inputs': 0, 'outputs': 0, 'pads': 0},
+                           'muxed': {'inouts': 0, 'inputs': 0, 'outputs': 0, 'pads': 0}}
+
+    for sig in pinmux['ios']:
+        glob_idx = get_index_and_incr(pinmux['io_counts'], sig['connection'], sig['type'])
+        sig['glob_idx'] = glob_idx
+
+    # Calculate global indices for pads.
+    j = k = 0
+    for pad in pinout['pads']:
+        if pad['connection'] == 'muxed':
+            pad['idx'] = j
+            j += 1
+        else:
+            pad['idx'] = k
+            k += 1
+    pinmux['io_counts']['muxed']['pads'] = j
+    pinmux['io_counts']['dedicated']['pads'] = k
+
+    # For each target configuration, calculate the special signal indices.
+    known_muxed_pads = {}
+    for pad in pinout['pads']:
+        if pad['connection'] == 'muxed':
+            known_muxed_pads[pad['name']] = pad
+
+    known_mapped_dio_pads = {}
+    for sig in pinmux['ios']:
+        if sig['connection'] in ['muxed', 'manual']:
+            continue
+        if sig['pad'] in known_mapped_dio_pads:
+            raise SystemExit('Cannot have multiple IOs mapped to the same DIO pad {}'
+                             .format(sig['pad']))
+        known_mapped_dio_pads[sig['pad']] = sig
+
+    for target in targets:
+        for entry in target['pinmux']['special_signals']:
+            # If this is a muxed pad, the resolution is
+            # straightforward. I.e., we just assign the MIO index.
+            if entry['pad'] in known_muxed_pads:
+                entry['idx'] = known_muxed_pads[entry['pad']]['idx']
+            # Otherwise we need to find out which DIO this pad is mapped to.
+            # Note that we can't have special_signals that are manual, since
+            # there needs to exist a DIO connection.
+            elif entry['pad'] in known_mapped_dio_pads:
+                # This index refers to the stacked {dio, mio} array
+                # on the chip-level, hence we have to add the amount of MIO pads.
+                idx = (known_mapped_dio_pads[entry['pad']]['glob_idx'] +
+                       pinmux['io_counts']['muxed']['pads'])
+                entry['idx'] = idx
+            else:
+                assert(0)  # Entry should be guaranteed to exist at this point
 
 
 def merge_top(topcfg: OrderedDict,

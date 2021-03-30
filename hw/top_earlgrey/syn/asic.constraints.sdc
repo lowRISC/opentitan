@@ -311,6 +311,5 @@ puts "Done applying constraints for top level"
 # Case analysis for quasi-static signals #
 ##########################################
 
-# assume a value of 0 for the pad attribute at index [9]
-#set_case_analysis 0 [get_pins u_padring/u_*_pad/attr_i[9]]
-set_case_analysis 0 [get_pins u_padring/gen_*gen_*u_*_pad/attr_i[9]]
+# assume a value of 0 for the open drain pad attribute
+set_case_analysis 0 [get_pins u_padring/*_pad/attr_i\[od_en\]]

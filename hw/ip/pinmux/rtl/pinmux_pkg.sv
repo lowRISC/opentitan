@@ -15,31 +15,39 @@ package pinmux_pkg;
   // datastructure below serves this purpose. Note that all the indices below are with respect to
   // the concatenated {DIO, MIO} packed array.
   typedef struct packed {
-    bit                const_sampling; // TODO: check whether this can be eliminated.
+    logic              const_sampling; // TODO: check whether this can be eliminated.
     logic [NumIOs-1:0] tie_offs;       // TODO: check whether this can be eliminated.
-    int                tck_idx;
-    int                tms_idx;
-    int                trst_idx;
-    int                tdi_idx;
-    int                tdo_idx;
-    int                tap_strap0_idx;
-    int                tap_strap1_idx;
-    int                dft_strap0_idx;
-    int                dft_strap1_idx;
+    integer            tck_idx;
+    integer            tms_idx;
+    integer            trst_idx;
+    integer            tdi_idx;
+    integer            tdo_idx;
+    integer            tap_strap0_idx;
+    integer            tap_strap1_idx;
+    integer            dft_strap0_idx;
+    integer            dft_strap1_idx;
+    integer            usb_dp_idx;
+    integer            usb_dn_idx;
+    integer            usb_dp_pullup_idx;
+    integer            usb_dn_pullup_idx;
   } target_cfg_t;
 
   parameter target_cfg_t DefaultTargetCfg = '{
-    const_sampling: 1'b0,
-    tie_offs:       '0,
-    tck_idx:        0,
-    tms_idx:        0,
-    trst_idx:       0,
-    tdi_idx:        0,
-    tdo_idx:        0,
-    tap_strap0_idx: 0,
-    tap_strap1_idx: 0,
-    dft_strap0_idx: 0,
-    dft_strap1_idx: 0
+    const_sampling:    1'b0,
+    tie_offs:          '0,
+    tck_idx:           0,
+    tms_idx:           0,
+    trst_idx:          0,
+    tdi_idx:           0,
+    tdo_idx:           0,
+    tap_strap0_idx:    0,
+    tap_strap1_idx:    0,
+    dft_strap0_idx:    0,
+    dft_strap1_idx:    0,
+    usb_dp_idx:        0,
+    usb_dn_idx:        0,
+    usb_dp_pullup_idx: 0,
+    usb_dn_pullup_idx: 0
   };
 
   // Wakeup Detector Modes

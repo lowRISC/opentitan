@@ -6,73 +6,58 @@
 // virtual open drain feature.
 
 
-module prim_xilinx_pad_wrapper #(
-  parameter int Variant  =  0, // currently ignored
-  parameter int AttrDw   = 10,
-  parameter bit WarlOnly =  0  // If set to 1, no pad is instantiated and only warl_o is driven
+module prim_xilinx_pad_wrapper
+  import prim_pad_wrapper_pkg::*;
+#(
+  // These parameters are ignored in this Xilinx variant.
+  parameter pad_type_e PadType = BidirStd,
+  parameter scan_role_e ScanRole = NoScan
 ) (
+  // This is only used for scanmode (not used in this Xilinx variant)
+  input              clk_scan_i,
+  input              scanmode_i,
+  // Power sequencing signals (not used in this Xilinx variant)
+  input pad_pok_t    pok_i,
+  // Main Pad signals
   inout wire         inout_io, // bidirectional pad
   output logic       in_o,     // input data
+  output logic       in_raw_o, // uninverted output data
   input              ie_i,     // input enable
   input              out_i,    // output data
   input              oe_i,     // output enable
-  // additional attributes
-  input        [AttrDw-1:0] attr_i,
-  output logic [AttrDw-1:0] warl_o
+  input pad_attr_t   attr_i    // additional pad attributes
 );
 
-  // Supported attributes:
-  // [x] Bit   0: input/output inversion,
-  // [x] Bit   1: Virtual open drain enable.
-  // [ ] Bit   2: Pull enable.
-  // [ ] Bit   3: Pull select (0: pull down, 1: pull up).
-  // [ ] Bit   4: Keeper enable.
-  // [ ] Bit   5: Schmitt trigger enable.
-  // [ ] Bit   6: Slew rate (0: slow, 1: fast).
-  // [ ] Bit 7/8: Drive strength (00: weakest, 11: strongest).
-  // [ ] Bit   9: Reserved.
-  assign warl_o = AttrDw'(2'h3);
+  // not all signals are used here.
+  logic unused_sigs;
+  assign unused_sigs = ^{attr_i.slew_rate,
+                         attr_i.drive_strength,
+                         attr_i.od_en,
+                         attr_i.schmitt_en,
+                         attr_i.keep_en,
+                         attr_i.pull_en,
+                         attr_i.pull_select,
+                         scanmode_i,
+                         pok_i};
 
-  if (WarlOnly) begin : gen_warl
-    assign inout_io = 1'bz;
-    assign in_o     = 1'b0;
+  // input inversion
+  logic in;
+  assign in_raw_o = (ie_i) ? in  : 1'bz;
+  assign in_o = attr_i.invert ^ in_raw_o;
 
-    logic [AttrDw-1:0] unused_attr;
-    logic  unused_ie, unused_oe, unused_out, unused_inout;
-    assign unused_ie   = ie_i;
-    assign unused_oe   = oe_i;
-    assign unused_out  = out_i;
-    assign unused_attr = attr_i;
-    assign unused_inout = inout_io;
-  end else begin : gen_pad
+  // virtual open drain emulation
+  logic oe_n, out;
+  assign out      = out_i ^ attr_i.invert;
+  // oe_n = 0: enable driver
+  // oe_n = 1: disable driver
+  assign oe_n     = ~oe_i | (out & attr_i.virt_od_en);
 
-    // get pad attributes
-    logic od, inv;
-    assign {od, inv} = attr_i[1:0];
-
-    if (AttrDw > 9) begin : gen_unused_attr
-      logic [AttrDw-9-1:0] unused_attr;
-      assign unused_attr = attr_i[AttrDw-1:9];
-    end
-
-    // input inversion and buffer
-    logic in;
-    assign in_o     = (ie_i) ? inv ^ in : 1'bz;
-
-    // virtual open drain emulation
-    logic oe_n, out;
-    assign out      = out_i ^ inv;
-    // oe_n = 0: enable driver
-    // oe_n = 1: disable driver
-    assign oe_n     = ~oe_i | (out & od);
-
-    // driver
-    IOBUF i_iobuf (
-      .T  ( oe_n     ),
-      .I  ( out      ),
-      .O  ( in       ),
-      .IO ( inout_io )
-    );
-  end
+  // driver
+  IOBUF u_iobuf (
+    .T  ( oe_n     ),
+    .I  ( out      ),
+    .O  ( in       ),
+    .IO ( inout_io )
+  );
 
 endmodule : prim_xilinx_pad_wrapper

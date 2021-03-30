@@ -273,141 +273,69 @@ def generate_plic(top, out_path):
         fout.write(genhdr + gencmd + out)
 
 
-# returns the dedicated pin positions of a particular module
-# For example, if a module is connected to 6:1 of the dio connections,
-# [6, 1] will be returned.
-def _calc_dio_pin_pos(top, mname):
-    dios = top["pinmux"]["dio"]
-
-    last_index = dios.index(dios[-1])
-    bit_pos = []
-    first_index = False
-
-    for dio in dios:
-        if dio['module_name'] == mname and not first_index:
-            bit_pos.append(last_index - dios.index(dio))
-            first_index = True
-        elif first_index and dio['module_name'] != mname:
-            bit_pos.append(last_index - dios.index(dio) - 1)
-
-    # The last one, need to insert last element if only the msb
-    # position is found
-    if len(bit_pos) == 1:
-        bit_pos.append(0)
-
-    log.debug("bit pos {}".format(bit_pos))
-    return bit_pos
-
-
-def _find_dio_pin_pos(top, sname):
-    dios = top["pinmux"]["dio"]
-
-    last_index = dios.index(dios[-1])
-    bit_pos = -1
-
-    for dio in dios:
-        if dio['name'] == sname:
-            bit_pos = last_index - dios.index(dio)
-
-    if bit_pos < 0:
-        log.error("Could not find bit position of {} in dios".format(sname))
-
-    return bit_pos
-
-
 def generate_pinmux(top, out_path):
-    topname = top["name"]
-    # MIO Pads
-    n_mio_pads = top["pinmux"]["num_mio"]
-    if n_mio_pads <= 0:
-        # TODO: add support for no MIO case
-        log.error("Topgen does currently not support generation of a top " +
-                  "without a pinmux.")
-        return
 
-    if "padctrl" not in top:
-        # TODO: add support for no MIO case
-        log.error("Topgen does currently not support generation of a top " +
-                  "without a padctrl instance.")
-        return
+    topname = top['name']
+    pinmux = top['pinmux']
+
+    # Generation without pinmux and pinout configuration is not supported.
+    assert 'pinmux' in top
+    assert 'pinout' in top
 
     # Get number of wakeup detectors
-    if "num_wkup_detect" in top["pinmux"]:
-        num_wkup_detect = top["pinmux"]["num_wkup_detect"]
+    if 'num_wkup_detect' in pinmux:
+        num_wkup_detect = pinmux['num_wkup_detect']
     else:
         num_wkup_detect = 1
 
     if num_wkup_detect <= 0:
         # TODO: add support for no wakeup counter case
-        log.error("Topgen does currently not support generation of a top " +
-                  "without DIOs.")
+        log.error('Topgen does currently not support generation of a top ' +
+                  'without DIOs.')
         return
 
-    if "wkup_cnt_width" in top["pinmux"]:
-        wkup_cnt_width = top["pinmux"]["wkup_cnt_width"]
+    if 'wkup_cnt_width' in pinmux:
+        wkup_cnt_width = pinmux['wkup_cnt_width']
     else:
         wkup_cnt_width = 8
 
     if wkup_cnt_width <= 1:
-        log.error("Wakeup counter width must be greater equal 2.")
+        log.error('Wakeup counter width must be greater equal 2.')
         return
+
+    # MIO Pads
+    n_mio_pads = pinmux['io_counts']['muxed']['pads']
 
     # Total inputs/outputs
-    # Validation ensures that the width field is present.
-    num_mio_inputs = sum([x["width"] for x in top["pinmux"]["inputs"]])
-    num_mio_outputs = sum([x["width"] for x in top["pinmux"]["outputs"]])
-
-    num_dio_inputs = sum([
-        x["width"] if x["type"] == "input" else 0 for x in top["pinmux"]["dio"]
-    ])
-    num_dio_outputs = sum([
-        x["width"] if x["type"] == "output" else 0
-        for x in top["pinmux"]["dio"]
-    ])
-    num_dio_inouts = sum([
-        x["width"] if x["type"] == "inout" else 0 for x in top["pinmux"]["dio"]
-    ])
-
-    n_mio_periph_in = num_mio_inputs
-    n_mio_periph_out = num_mio_outputs
-    n_dio_periph_in = num_dio_inouts + num_dio_inputs
-    n_dio_periph_out = num_dio_inouts + num_dio_outputs
-    n_dio_pads = num_dio_inouts + num_dio_inputs + num_dio_outputs
+    # Reuse the counts from the merge phase
+    n_mio_periph_in = (pinmux['io_counts']['muxed']['inouts'] +
+                       pinmux['io_counts']['muxed']['inputs'])
+    n_mio_periph_out = (pinmux['io_counts']['muxed']['inouts'] +
+                        pinmux['io_counts']['muxed']['outputs'])
+    n_dio_periph_in = (pinmux['io_counts']['dedicated']['inouts'] +
+                       pinmux['io_counts']['dedicated']['inputs'])
+    n_dio_periph_out = (pinmux['io_counts']['dedicated']['inouts'] +
+                        pinmux['io_counts']['dedicated']['outputs'])
+    n_dio_pads = (pinmux['io_counts']['dedicated']['inouts'] +
+                  pinmux['io_counts']['dedicated']['inputs'] +
+                  pinmux['io_counts']['dedicated']['outputs'])
 
     # TODO: derive this value
-    attr_dw = 10
+    attr_dw = 13
 
-    if n_dio_pads <= 0:
-        # TODO: add support for no DIO case
-        log.error("Topgen does currently not support generation of a top " +
-                  "without DIOs.")
-        return
+    # Generation with zero MIO/DIO pads is currently not supported.
+    assert (n_mio_pads > 0)
+    assert (n_dio_pads > 0)
 
-    # find the start and end pin positions for usbdev
-    usb_pin_pos = _calc_dio_pin_pos(top, "usbdev")
-    usb_start_pos = usb_pin_pos[-1]
-    n_usb_pins = usb_pin_pos[0] - usb_pin_pos[-1] + 1
-    usb_dp_sel = _find_dio_pin_pos(top, "usbdev_dp")
-    usb_dn_sel = _find_dio_pin_pos(top, "usbdev_dn")
-    usb_dp_pull_sel = _find_dio_pin_pos(top, "usbdev_dp_pullup")
-    usb_dn_pull_sel = _find_dio_pin_pos(top, "usbdev_dn_pullup")
-
-    log.info("Generating pinmux with following info from hjson:")
-    log.info("num_mio_inputs:  %d" % num_mio_inputs)
-    log.info("num_mio_outputs: %d" % num_mio_outputs)
-    log.info("num_dio_inputs:  %d" % num_dio_inputs)
-    log.info("num_dio_outputs: %d" % num_dio_outputs)
-    log.info("attr_dw:         %d" % attr_dw)
-    log.info("num_wkup_detect: %d" % num_wkup_detect)
-    log.info("wkup_cnt_width:  %d" % wkup_cnt_width)
-    log.info("This translates to:")
-    log.info("n_mio_periph_in:  %d" % n_mio_periph_in)
-    log.info("n_mio_periph_out: %d" % n_mio_periph_out)
-    log.info("n_dio_periph_in:  %d" % n_dio_periph_in)
-    log.info("n_dio_periph_out: %d" % n_dio_periph_out)
-    log.info("n_dio_pads:       %d" % n_dio_pads)
-    log.info("usb_start_pos:    %d" % usb_start_pos)
-    log.info("n_usb_pins:       %d" % n_usb_pins)
+    log.info('Generating pinmux with following info from hjson:')
+    log.info('attr_dw:         %d' % attr_dw)
+    log.info('num_wkup_detect: %d' % num_wkup_detect)
+    log.info('wkup_cnt_width:  %d' % wkup_cnt_width)
+    log.info('n_mio_periph_in:  %d' % n_mio_periph_in)
+    log.info('n_mio_periph_out: %d' % n_mio_periph_out)
+    log.info('n_dio_periph_in:  %d' % n_dio_periph_in)
+    log.info('n_dio_periph_out: %d' % n_dio_periph_out)
+    log.info('n_dio_pads:       %d' % n_dio_pads)
 
     # Target path
     #   rtl: pinmux_reg_pkg.sv & pinmux_reg_top.sv
@@ -431,11 +359,6 @@ def generate_pinmux(top, out_path):
     with tpl_path.open(mode='r', encoding='UTF-8') as fin:
         hjson_tpl = Template(fin.read())
         try:
-            # TODO: pass in information about always-on peripherals
-            # TODO: pass in information on which DIOs can be selected
-            # as wakeup signals
-            # TODO: pass in signal names such that we can introduce
-            # named enums for select signals
             out = hjson_tpl.render(
                 n_mio_periph_in=n_mio_periph_in,
                 n_mio_periph_out=n_mio_periph_out,
@@ -448,13 +371,7 @@ def generate_pinmux(top, out_path):
                 n_dio_pads=n_dio_pads,
                 attr_dw=attr_dw,
                 n_wkup_detect=num_wkup_detect,
-                wkup_cnt_width=wkup_cnt_width,
-                usb_start_pos=usb_start_pos,
-                n_usb_pins=n_usb_pins,
-                usb_dp_sel=usb_dp_sel,
-                usb_dn_sel=usb_dn_sel,
-                usb_dp_pull_sel=usb_dp_pull_sel,
-                usb_dn_pull_sel=usb_dn_pull_sel
+                wkup_cnt_width=wkup_cnt_width
             )
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
@@ -798,8 +715,8 @@ def generate_top_ral(top: Dict[str, object],
         block = name_to_block[block_name]
         if "attr" in module:
             if module["attr"] not in ['templated', 'reggen_top', 'reggen_only']:
-                raise ValueError('Unsupported value for attr field of {}: {!r}'.
-                                 format(block_name, module["attr"]))
+                raise ValueError('Unsupported value for attr field of {}: {!r}'
+                                 .format(inst_name, module["attr"]))
             attrs[inst_name] = module["attr"]
 
         inst_to_block[inst_name] = block_name
@@ -1176,6 +1093,14 @@ def main():
         render_template(TOPGEN_TEMPLATE_PATH / "toplevel.sv.tpl",
                         out_path / f"rtl/autogen/top_{topname}.sv",
                         gencmd=gencmd)
+
+        # TODO: chiplevel renaming
+        # Multiple chip-levels (ASIC, FPGA, Verilator, etc)
+        for target in topcfg['targets']:
+            render_template(TOPGEN_TEMPLATE_PATH / "chiplevel.sv.tpl",
+                            out_path / f"rtl/autogen/top_{topname}_{target['name']}.sv",
+                            gencmd=gencmd,
+                            target=target)
 
         # The C / SV file needs some complex information, so we initialize this
         # object to store it.

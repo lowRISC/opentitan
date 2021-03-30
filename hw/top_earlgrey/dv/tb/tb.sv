@@ -157,7 +157,10 @@ module tb;
     .USB_P(usb_dp0),
     .USB_N(usb_dn0),
     // FLASH
-    .FLASH_TEST_MODE(tie_off[27:24]),
+    .FLASH_TEST_MODE0(tie_off[24]),
+    .FLASH_TEST_MODE1(tie_off[25]),
+    .FLASH_TEST_MODE2(tie_off[26]),
+    .FLASH_TEST_MODE3(tie_off[27]),
     .FLASH_TEST_VOLT(tie_off[28])
   );
 

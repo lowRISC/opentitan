@@ -10,9 +10,6 @@ filesets:
     depend:
       - lowrisc:systems:top_englishbreakfast:0.1
       - lowrisc:systems:topgen
-    files:
-      - rtl/clkgen_xil7series.sv
-      - rtl/top_englishbreakfast_cw305.sv
     file_type: systemVerilogSource
 
   files_constraints:

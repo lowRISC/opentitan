@@ -9,50 +9,9 @@ from typing import Dict, List, Optional, Tuple
 
 from mako.template import Template
 
-from .lib import get_base_and_size
+from .lib import get_base_and_size, Name
 
 from reggen.ip_block import IpBlock
-
-
-class Name(object):
-    """We often need to format names in specific ways; this class does so."""
-    def __add__(self, other):
-        return Name(self.parts + other.parts)
-
-    @staticmethod
-    def from_snake_case(input):
-        return Name(input.split("_"))
-
-    def __init__(self, parts):
-        self.parts = list(parts)
-        for p in parts:
-            assert len(p) > 0, "cannot add zero-length name piece"
-
-    def as_snake_case(self):
-        return "_".join([p.lower() for p in self.parts])
-
-    def as_camel_case(self):
-        out = ""
-        for p in self.parts:
-            # If we're about to join two parts which would introduce adjacent
-            # numbers, put an underscore between them.
-            if out[-1:].isnumeric() and p[:1].isnumeric():
-                out += "_" + p
-            else:
-                out += p.capitalize()
-        return out
-
-    def as_c_define(self):
-        return "_".join([p.upper() for p in self.parts])
-
-    def as_c_enum(self):
-        return "k" + self.as_camel_case()
-
-    def as_c_type(self):
-        return self.as_snake_case() + "_t"
-
-    def remove_part(self, part_to_remove):
-        return Name([p for p in self.parts if p != part_to_remove])
 
 
 class MemoryRegion(object):
@@ -337,63 +296,63 @@ class TopGenC:
 
         Insel and outsel have some special values which are captured here too.
         """
-        pinmux_info = self.top["pinmux"]
+        pinmux_info = self.top['pinmux']
+        pinout_info = self.top['pinout']
 
         # Peripheral Inputs
         peripheral_in = CEnum(self._top_name +
-                              Name(["pinmux", "peripheral", "in"]))
-        for signal in pinmux_info["inputs"]:
-            if "width" in signal and int(signal["width"]) != 1:
-                for i in range(int(signal["width"])):
-                    name = Name.from_snake_case(signal["name"]) + Name(
-                        [str(i)])
-                    peripheral_in.add_constant(name,
-                                               docstring="{} {}".format(
-                                                   signal["name"], i))
-            else:
-                peripheral_in.add_constant(Name.from_snake_case(
-                    signal["name"]),
-                                           docstring=signal["name"])
-        peripheral_in.add_last_constant("Last valid peripheral input")
+                              Name(['pinmux', 'peripheral', 'in']))
+        i = 0
+        for sig in pinmux_info['ios']:
+            if sig['connection'] == 'muxed' and sig['type'] in ['inout', 'input']:
+                index = Name([str(sig['idx'])]) if sig['idx'] != -1 else Name([])
+                name = Name.from_snake_case(sig['name']) + index
+                peripheral_in.add_constant(name, docstring='Peripheral Input {}'.format(i))
+                i += 1
+
+        peripheral_in.add_last_constant('Last valid peripheral input')
 
         # Pinmux Input Selects
-        insel = CEnum(self._top_name + Name(["pinmux", "insel"]))
-        insel.add_constant(Name(["constant", "zero"]),
-                           docstring="Tie constantly to zero")
-        insel.add_constant(Name(["constant", "one"]),
-                           docstring="Tie constantly to one")
-        for i in range(int(pinmux_info["num_mio"])):
-            insel.add_constant(Name(["mio", str(i)]),
-                               docstring="MIO Pad {}".format(i))
-        insel.add_last_constant("Last valid insel value")
+        insel = CEnum(self._top_name + Name(['pinmux', 'insel']))
+        insel.add_constant(Name(['constant', 'zero']),
+                           docstring='Tie constantly to zero')
+        insel.add_constant(Name(['constant', 'one']),
+                           docstring='Tie constantly to one')
+        i = 0
+        for pad in pinout_info['pads']:
+            if pad['connection'] == 'muxed':
+                insel.add_constant(Name([pad['name']]),
+                                   docstring='MIO Pad {}'.format(i))
+                i += 1
+        insel.add_last_constant('Last valid insel value')
 
         # MIO Outputs
-        mio_out = CEnum(self._top_name + Name(["pinmux", "mio", "out"]))
-        for i in range(int(pinmux_info["num_mio"])):
-            mio_out.add_constant(Name([str(i)]),
-                                 docstring="MIO Pad {}".format(i))
-        mio_out.add_last_constant("Last valid mio output")
+        mio_out = CEnum(self._top_name + Name(['pinmux', 'mio', 'out']))
+        i = 0
+        for pad in pinout_info['pads']:
+            if pad['connection'] == 'muxed':
+                mio_out.add_constant(Name.from_snake_case(pad['name']),
+                                     docstring='MIO Pad {}'.format(i))
+                i += 1
+        mio_out.add_last_constant('Last valid mio output')
 
         # Pinmux Output Selects
-        outsel = CEnum(self._top_name + Name(["pinmux", "outsel"]))
-        outsel.add_constant(Name(["constant", "zero"]),
-                            docstring="Tie constantly to zero")
-        outsel.add_constant(Name(["constant", "one"]),
-                            docstring="Tie constantly to one")
-        outsel.add_constant(Name(["constant", "high", "z"]),
-                            docstring="Tie constantly to high-Z")
-        for signal in pinmux_info["outputs"]:
-            if "width" in signal and int(signal["width"]) != 1:
-                for i in range(int(signal["width"])):
-                    name = Name.from_snake_case(signal["name"]) + Name(
-                        [str(i)])
-                    outsel.add_constant(name,
-                                        docstring="{} {}".format(
-                                            signal["name"], i))
-            else:
-                outsel.add_constant(Name.from_snake_case(signal["name"]),
-                                    docstring=signal["name"])
-        outsel.add_last_constant("Last valid outsel value")
+        outsel = CEnum(self._top_name + Name(['pinmux', 'outsel']))
+        outsel.add_constant(Name(['constant', 'zero']),
+                            docstring='Tie constantly to zero')
+        outsel.add_constant(Name(['constant', 'one']),
+                            docstring='Tie constantly to one')
+        outsel.add_constant(Name(['constant', 'high', 'z']),
+                            docstring='Tie constantly to high-Z')
+        i = 0
+        for sig in pinmux_info['ios']:
+            if sig['connection'] == 'muxed' and sig['type'] in ['inout', 'output']:
+                index = Name([str(sig['idx'])]) if sig['idx'] != -1 else Name([])
+                name = Name.from_snake_case(sig['name']) + index
+                outsel.add_constant(name, docstring='Peripheral Output {}'.format(i))
+                i += 1
+
+        outsel.add_last_constant('Last valid outsel value')
 
         self.pinmux_peripheral_in = peripheral_in
         self.pinmux_insel = insel

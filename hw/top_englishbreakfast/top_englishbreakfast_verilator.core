@@ -20,6 +20,8 @@ filesets:
       - lowrisc:ibex:ibex_tracer
       - lowrisc:dv:sim_sram
       - lowrisc:dv:sw_test_status
+      - lowrisc:dv:dv_test_status
+      - lowrisc:prim:clock_div
 
     files:
       - rtl/top_englishbreakfast_verilator.sv: { file_type: systemVerilogSource }

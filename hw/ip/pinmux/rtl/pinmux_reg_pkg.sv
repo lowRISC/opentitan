@@ -14,12 +14,6 @@ package pinmux_reg_pkg;
   parameter int NDioPads = 16;
   parameter int NWkupDetect = 8;
   parameter int WkupCntWidth = 8;
-  parameter int NUsbDevPads = 0;
-  parameter int NDioPadUsbDevStart = 0;
-  parameter int UsbDpSel = 0;
-  parameter int UsbDnSel = 0;
-  parameter int UsbDpPullUpSel = 0;
-  parameter int UsbDnPullUpSel = 0;
 
   // Address widths within the block
   parameter int BlockAw = 11;

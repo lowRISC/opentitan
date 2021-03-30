@@ -61,15 +61,15 @@ module pinmux
   output logic [NDioPads-1:0]      dio_to_periph_o,
   // Pad side
   // MIOs
-  output logic [NMioPads-1:0][AttrDw-1:0] mio_attr_o,
-  output logic [NMioPads-1:0]             mio_out_o,
-  output logic [NMioPads-1:0]             mio_oe_o,
-  input        [NMioPads-1:0]             mio_in_i,
+  output prim_pad_wrapper_pkg::pad_attr_t [NMioPads-1:0] mio_attr_o,
+  output logic                            [NMioPads-1:0] mio_out_o,
+  output logic                            [NMioPads-1:0] mio_oe_o,
+  input                                   [NMioPads-1:0] mio_in_i,
   // DIOs
-  output logic [NDioPads-1:0][AttrDw-1:0] dio_attr_o,
-  output logic [NDioPads-1:0]             dio_out_o,
-  output logic [NDioPads-1:0]             dio_oe_o,
-  input        [NDioPads-1:0]             dio_in_i
+  output prim_pad_wrapper_pkg::pad_attr_t [NDioPads-1:0] dio_attr_o,
+  output logic                            [NDioPads-1:0] dio_out_o,
+  output logic                            [NDioPads-1:0] dio_oe_o,
+  input                                   [NDioPads-1:0] dio_in_i
 );
 
   //////////////////////////////////
@@ -94,8 +94,8 @@ module pinmux
   // Pad attribute registers //
   /////////////////////////////
 
-  logic [NDioPads-1:0][AttrDw-1:0] dio_pad_attr_q;
-  logic [NMioPads-1:0][AttrDw-1:0] mio_pad_attr_q;
+  prim_pad_wrapper_pkg::pad_attr_t [NDioPads-1:0] dio_pad_attr_q;
+  prim_pad_wrapper_pkg::pad_attr_t [NMioPads-1:0] mio_pad_attr_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
@@ -123,14 +123,14 @@ module pinmux
 
   // TODO(#5221): rework the WARL behavior
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_attr
-    logic [AttrDw-1:0] warl_mask;
+    prim_pad_wrapper_pkg::pad_attr_t warl_mask;
     assign warl_mask = '0;
     assign dio_attr_o[k]            = dio_pad_attr_q[k] & warl_mask;
     assign hw2reg.dio_pad_attr[k].d = dio_pad_attr_q[k] & warl_mask;
   end
 
   for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_attr
-    logic [AttrDw-1:0] warl_mask;
+    prim_pad_wrapper_pkg::pad_attr_t warl_mask;
     assign warl_mask = '0;
     assign mio_attr_o[k]            = mio_pad_attr_q[k] & warl_mask;
     assign hw2reg.mio_pad_attr[k].d = mio_pad_attr_q[k] & warl_mask;
@@ -192,10 +192,10 @@ module pinmux
     .low_power_alw_i(sleep_en_i),
 
     // input signals for resume detection
-    .usb_dp_async_alw_i(dio_to_periph_o[UsbDpSel]),
-    .usb_dn_async_alw_i(dio_to_periph_o[UsbDnSel]),
-    .usb_dppullup_en_alw_i(dio_oe_o[UsbDpPullUpSel]),
-    .usb_dnpullup_en_alw_i(dio_oe_o[UsbDnPullUpSel]),
+    .usb_dp_async_alw_i(dio_to_periph_o[TargetCfg.usb_dp_idx]),
+    .usb_dn_async_alw_i(dio_to_periph_o[TargetCfg.usb_dn_idx]),
+    .usb_dppullup_en_alw_i(dio_oe_o[TargetCfg.usb_dp_pullup_idx]),
+    .usb_dnpullup_en_alw_i(dio_oe_o[TargetCfg.usb_dn_pullup_idx]),
 
     // tie this to something from usbdev to indicate its out of reset
     .usb_out_of_rst_upwr_i(usb_out_of_rst_i),

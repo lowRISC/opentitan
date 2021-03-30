@@ -7,6 +7,9 @@ name: "lowrisc:prim_xilinx:pad_wrapper"
 description: "prim"
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:prim:pad_wrapper_pkg
     files:
       - rtl/prim_xilinx_pad_wrapper.sv
     file_type: systemVerilogSource

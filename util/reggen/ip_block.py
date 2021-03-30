@@ -338,3 +338,21 @@ class IpBlock:
         for rb in self.reg_blocks.values():
             ret = ret.union(set(rb.name_to_offset.keys()))
         return ret
+
+    def get_signals_as_list_of_dicts(self) -> List[Dict]:
+        '''Look up and return signal by name'''
+        result = []
+        for iodir, xput in zip(('inout', 'input', 'output'), self.xputs):
+            for sig in xput:
+                result.append(sig.as_nwt_dict(iodir))
+        return result
+
+    def get_signal_by_name_as_dict(self, name: str) -> Dict:
+        '''Look up and return signal by name'''
+        sig_list = self.get_signals_as_list_of_dicts()
+        for sig in sig_list:
+            if sig['name'] == name:
+                return sig
+        else:
+            raise ValueError("Signal {} does not exist in IP block {}"
+                             .format(name, self.name))
