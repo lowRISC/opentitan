@@ -170,7 +170,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   // bank erase allowed for only data partition and software interface
   always_comb begin
     for (int unsigned i = 0; i < NumBanks; i++) begin: bank_comps
-      bk_erase_en[i] = (bank_addr == i) & bank_cfgs_i[i].q & ~hw_sel;
+      bk_erase_en[i] = (bank_addr == i[BankW-1:0]) & bank_cfgs_i[i].q & ~hw_sel;
     end
   end
 
