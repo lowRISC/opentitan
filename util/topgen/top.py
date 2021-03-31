@@ -6,10 +6,10 @@
 
 from typing import Dict, List, Optional, Tuple, Union
 
-from .ip_block import IpBlock
-from .params import ReggenParams
-from .reg_block import RegBlock
-from .window import Window
+from reggen.ip_block import IpBlock
+from reggen.params import ReggenParams
+from reggen.reg_block import RegBlock
+from reggen.window import Window
 
 _IFName = Tuple[str, Optional[str]]
 _Triple = Tuple[int, str, IpBlock]
