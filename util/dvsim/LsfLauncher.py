@@ -396,4 +396,4 @@ class LsfLauncher(Launcher):
         err_msg is the error message indicating the cause of failure.'''
 
         for job in LsfLauncher.jobs[cfg][job_name]:
-            job._post_finish("K", err_msg)
+            job._post_finish("F", err_msg)
