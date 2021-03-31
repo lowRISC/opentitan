@@ -10,6 +10,7 @@ This document specifies the functionality of the OpenTitan clock manager.
 
 - Attribute based controls of OpenTitan clocks.
 - Minimal software clock controls to reduce risks in clock manipulation.
+- External clock switch support
 
 # Theory of Operation
 
@@ -31,10 +32,10 @@ The table shows the group name, the modules that belong to each group, and wheth
 
 | Group           | Frequencies                    | Modules                                                        | Software       | Wait for Interrupt |
 | -------------   | ------------------------------ | -------------------------------------------------------------- | -------------- | ------------------ |
-| Power-up        | 100~200KHz, 24MHz              | Clock Manager, Power Manager, Reset Manager                    | No             | No                 |
+| Power-up        | 100~200KHz, 24MHz              | Clock Manager, Power Manager, Reset Manager, Pinmux            | No             | No                 |
 | Transactional   | ~100MHz                        | Aes, Hmac, Key Manager, Otbn                                   | Yes (1)        | Yes (2)            |
 | Infrastructural | 24MHz, ~100MHz                 | Fabric, Fabric gaskets (iopmp), Memories                       | No             | Yes (3)            |
-| Security        | 24MHz, ~100MHz                 | Alert handler, Entropy, Life cycle, Pinmux, Plic, Sensors      | No             | No                 |
+| Security        | 24MHz, ~100MHz                 | Alert handler, Entropy, Life cycle, Plic, Sensors              | No             | No                 |
 | Peripheral      | 24MHz, 48MHz, 96MHz            | I2c, Spi, Uart, Usb, others                                    | Yes            | Yes                |
 | Timers          | 100-200KHz, 24MHz              | AON timers, Timers, Watchdog                                   | No             | No                 |
 
@@ -171,6 +172,28 @@ Given the marginal benefits and the increased complexity of `wfi` support, the f
 All `wfi CG` modules in the block diagram are thus drawn with dashed lines to indicate it can be theoretically supported but currently not implemented.
 
 It may be added for future more complex systems where there is a need to tightly control infrastructural power consumption as a result from clocks.
+
+### External Clock Switch Support
+
+Clock manager supports the ability to request root clocks switch to an external clock.
+There are two occasions where this is required:
+-  Life cycle transition from `Raw` / `Test_locked` to `Test_unlocked` [states]({{< relref "hw/ip/lc_ctrl/doc/_index.md#clk_byp_req" >}}).
+-  Software request for external clocks during normal functional mode.
+
+Software request for external clocks is not always valid.
+Software is only able to request for external clocks when dft functions are [allowed]({{< relref "hw/ip/lc_ctrl/doc/_index.md#dft_en" >}}).
+
+When the life cycle controller requests external clock, a request signal `lc_clk_byp_req_i` is sent from `lc_ctrl` to `clkmgr`.
+`clkmgr` then forwards the request to `ast` through `ast_clk_byp_req_o`, which performs the actual clock switch.
+When the clock switch is complete, the life cycle controller is acknowledged through `lc_clk_byp_ack_o`.
+
+When software requests external clock, the register bit {{< regref "EXTCLK_SEL" >}} is written.
+If dft functions are allowed, the `clkmgr` sends a request signal `ast_clk_byp_req_o` to `ast`.
+
+In both cases, when the clock switch is complete, the internal dividers of the `clkmgr` are stepped down by 2x.
+A divide-by-4 clock becomes divide-by-2 clock , and a divide-by-2 becomes a divide-by-1 clock.
+The step down function will be made more flexible in the future as it is highly dependent on the ratio of internal to external clock ratios.
+However, given currently known requirements, a blanket 2x step down is sufficient.
 
 # Programmers Guide
 

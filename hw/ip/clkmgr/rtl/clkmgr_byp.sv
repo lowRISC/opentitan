@@ -55,10 +55,11 @@ module clkmgr_byp import clkmgr_pkg::*; import lc_ctrl_pkg::lc_tx_t; # (
     .lc_en_o(step_down_req_o)
   );
 
+  // only ack the lc_ctrl if it made a request.
   prim_lc_sender u_send (
    .clk_i,
    .rst_ni,
-   .lc_en_i((&step_down_acks_i) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off),
+   .lc_en_i((&step_down_acks_i) ? lc_clk_byp_req_i : lc_ctrl_pkg::Off),
    .lc_en_o(lc_clk_byp_ack_o)
   );
 
