@@ -7,7 +7,7 @@ Generate HTML documentation from Block
 
 from typing import TextIO
 
-from .block import Block
+from .ip_block import IpBlock
 from .html_helpers import render_td
 from .signal import Signal
 
@@ -28,7 +28,7 @@ def gen_kv(outfile: TextIO, key: str, value: str) -> None:
            '<p><i>{}:</i> {}</p>\n'.format(key, value))
 
 
-def gen_cfg_html(cfgs: Block, outfile: TextIO) -> None:
+def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
     rnames = cfgs.get_rnames()
 
     ot_server = 'https://docs.opentitan.org'

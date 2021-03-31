@@ -8,7 +8,7 @@ from collections import OrderedDict
 from enum import Enum
 from typing import Dict, List, Tuple
 
-from reggen.block import Block
+from reggen.ip_block import IpBlock
 from reggen.inter_signal import InterSignal
 from reggen.validate import check_int
 from topgen import lib
@@ -112,7 +112,7 @@ def add_intermodule_connection(obj: OrderedDict, req_m: str, req_s: str,
 
 
 def autoconnect_xbar(topcfg: OrderedDict,
-                     name_to_block: Dict[str, Block],
+                     name_to_block: Dict[str, IpBlock],
                      xbar: OrderedDict) -> None:
     # The crossbar is connecting to modules and memories in topcfg, plus
     # possible external connections. Make indices for the modules and memories
@@ -231,7 +231,7 @@ def autoconnect_xbar(topcfg: OrderedDict,
                                    rsp_s="tl_" + esc_name)
 
 
-def autoconnect(topcfg: OrderedDict, name_to_block: Dict[str, Block]):
+def autoconnect(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):
     """Matching the connection based on the naming rule
     between {memory, module} <-> Xbar.
     """
