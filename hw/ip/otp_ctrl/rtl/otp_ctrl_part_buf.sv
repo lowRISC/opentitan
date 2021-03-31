@@ -329,7 +329,7 @@ module otp_ctrl_part_buf
             // contents here.
             if (Info.hw_digest) begin
               // Note that we ignore this check if the digest is still blank.
-              if (digest_o == data_mux || data_mux == '0 && digest_o == '0) begin
+              if (digest_o == data_mux || digest_o == '0) begin
                 state_d = IdleSt;
                 cnsty_chk_ack_o = 1'b1;
               // Error out and lock the partition if this check fails.
