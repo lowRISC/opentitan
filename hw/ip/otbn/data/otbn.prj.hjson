@@ -8,9 +8,22 @@
     dv_doc:             "../doc/dv",
     hw_checklist:       "../doc/checklist",
     sw_checklist:       "/sw/device/lib/dif/dif_otbn"
-    version:            "0.1",
-    life_stage:         "L1",
-    design_stage:       "D1",
-    verification_stage: "V1",
-    dif_stage:          "S1",
+    revisions: [
+        {
+            version:            "0.1",
+            life_stage:         "L1",
+            design_stage:       "D1",
+            verification_stage: "V1",
+            dif_stage:          "S1",
+            commit_id:          "a46be154ebbcb7b0d5e310b5510a4ac700adc9df",
+            notes:              ""
+        },
+        {
+            version:            "0.2",
+            life_stage:         "L1",
+            design_stage:       "D1",
+            verification_stage: "V1",
+            dif_stage:          "S1",
+        },
+    ]
 }
