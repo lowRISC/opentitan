@@ -19,4 +19,24 @@ localparam int ENTROPY_STREAM=4;
 localparam int ADC_CHANNELS=2;
 localparam int ADC_DATAW=10;
 
+`ifdef ANALOGSIM 
+  `define INOUT_AI input ast_pkg::awire_t
+  `define INOUT_AO output ast_pkg::awire_t
+  `define CC1_M '0
+  `define CC2_M '0
+  `define IOA2_M UC_IOA2
+  `define IOA3_M UC_IOA3
+  `define IOA4_M '0
+  `define IOA5_M '0
+`else
+  `define INOUT_AI inout
+  `define INOUT_AO inout
+  `define CC1_M CC1
+  `define CC2_M CC2
+  `define IOA2_M IOA2
+  `define IOA3_M IOA3
+  `define IOA4_M IOA4
+  `define IOA5_M IOA5
+`endif
+
 endpackage
