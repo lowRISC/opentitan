@@ -217,6 +217,12 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
       1 :/ cfg.seq_cfg.poll_fifo_status_pc
     };
   }
+  
+  // When 0, the post-transaction back-door checks
+  //  will be disabled.
+  // Added to enable other post-transaction checks
+  //  and actions.
+  bit check_mem_post_tran = 1'b1;
 
   `uvm_object_new
 
@@ -256,17 +262,17 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(poll_fifo_status)
             flash_ctrl_read(flash_op.num_words, flash_op_data, poll_fifo_status);
             wait_flash_op_done();
-            cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
+            if (check_mem_post_tran) cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
           end
           flash_ctrl_pkg::FlashOpProgram: begin
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(poll_fifo_status)
             flash_ctrl_write(flash_op_data, poll_fifo_status);
             wait_flash_op_done();
-            cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
+            if (check_mem_post_tran) cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
           end
           flash_ctrl_pkg::FlashOpErase: begin
             wait_flash_op_done(.timeout_ns(120_000_000));// Added because mass(bank) erase can be longer then default timeout.
-            cfg.flash_mem_bkdr_erase_check(flash_op);
+            if (check_mem_post_tran) cfg.flash_mem_bkdr_erase_check(flash_op);
           end
           default: begin
             // TODO: V2 test item.
