@@ -128,6 +128,12 @@ def main():
             write_core(core_filepath, generated_core)
 
     else:
+        nameparts = topname.split('_')
+        if nameparts[0] == 'top' and len(nameparts) > 1:
+            chipname = 'chip_' + '_'.join(nameparts[1:])
+        else:
+            chipname = topname
+
         core_filepath = os.path.abspath('generated-topgen.core')
         generated_core = {
             'name': "lowrisc:systems:generated-topgen",
@@ -172,7 +178,7 @@ def main():
                         # TODO: this is not ideal. we should extract
                         # this info from the target configuration and
                         # possibly generate separate core files for this.
-                        'rtl/autogen/%s_cw305.sv' % topname,
+                        'rtl/autogen/%s_cw305.sv' % chipname,
                     ],
                     'file_type': 'systemVerilogSource'
                 },

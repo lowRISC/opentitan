@@ -41,7 +41,7 @@ set SV_FLIST $::env(SV_FLIST)
 set BUILD_DIR $::env(BUILD_DIR)
 
 # just compile the "core" toplevel at the moment
-# might want to switch to top_earlgrey_asic later on (with pads)
+# might want to switch to chip_earlgrey_asic later on (with pads)
 set DUT $::env(DUT)
 set CONSTRAINT $::env(CONSTRAINT)
 set FOUNDRY_CONSTRAINT $::env(FOUNDRY_CONSTRAINT)

@@ -6,7 +6,7 @@
   name: chip
 
   // Top level dut name (sv module).
-  dut: top_earlgrey_asic
+  dut: chip_earlgrey_asic
 
   // Top level testbench name (sv module).
   tb: tb

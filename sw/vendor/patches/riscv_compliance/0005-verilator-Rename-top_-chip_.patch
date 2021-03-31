@@ -1,0 +1,33 @@
+From c595f9723c1196f54ad04d9ee91ced7ca3c7acae Mon Sep 17 00:00:00 2001
+From: Michael Schaffner <msf@google.com>
+Date: Wed, 31 Mar 2021 16:23:34 -0700
+Subject: [PATCH 5/5] [verilator] Rename top_ -> chip_
+
+Signed-off-by: Michael Schaffner <msf@google.com>
+
+diff --git a/riscv-target/opentitan/README.md b/riscv-target/opentitan/README.md
+index 353a9b3..a942788 100644
+--- a/riscv-target/opentitan/README.md
++++ b/riscv-target/opentitan/README.md
+@@ -24,7 +24,7 @@ $ export OT_FPGA_UART=/dev/tty*
+ ```
+ 
+ By default, the test assumes there exists a valid Verilator build at
+-`${REPO_TOP}/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator`.
++`${REPO_TOP}/build/lowrisc_systems_chip_earlgrey_verilator_0.1/sim-verilator/Vchip_earlgrey_verilator`.
+ If your Verilator build is at a different location, please set that as well when
+ running with Verilator.
+ 
+diff --git a/riscv-target/opentitan/device/rv32imc/Makefile.include b/riscv-target/opentitan/device/rv32imc/Makefile.include
+index ca47ee0..570e0be 100644
+--- a/riscv-target/opentitan/device/rv32imc/Makefile.include
++++ b/riscv-target/opentitan/device/rv32imc/Makefile.include
+@@ -11,7 +11,7 @@ OT_FPGA_UART ?=
+ OT_TARGET    ?= fpga_nexysvideo
+ LDSCRIPT      = $(OT_ROOT)/sw/device/exts/common/flash_link.ld
+ DEFINES       = $(CARG) -DPRIV_MISA_S=0 -DPRIV_MISA_U=0 -DRVTEST_ENTRY=_rvc_start -DTRAPALIGN=8
+-TARGET_SIM   ?= $(OT_ROOT)/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator
++TARGET_SIM   ?= $(OT_ROOT)/build/lowrisc_systems_chip_earlgrey_verilator_0.1/sim-verilator/Vchip_earlgrey_verilator
+ 
+ COMPLIANCE_LIB_EXPORT = sw/device/riscv_compliance_support/riscv_compliance_support_export_$(OT_TARGET)
+ COMPLIANCE_LIB = ot_riscv_compliance_support_$(OT_TARGET)

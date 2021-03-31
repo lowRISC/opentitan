@@ -30,9 +30,9 @@ static const uint32_t kGpioVals[] = {0xAAAAAAAA, 0x55555555, 0xA5A5A5A5,
  * Pins to be tested.
  *
  * This test only uses pins 0-15 to be compatible with both FPGA and DV:
- * - On the nexys video board (top_earlgrey_nexysvideo.sv), pins 20-23 are
+ * - On the nexys video board (chip_earlgrey_nexysvideo.sv), pins 20-23 are
  *   grounded and pins 16-19 are reserved for JTAG, while
- * - On the OpenTitan ASIC (top_earlgrey_asic.sv), pins 20-31 are grounded and
+ * - On the OpenTitan ASIC (chip_earlgrey_asic.sv), pins 20-31 are grounded and
  *   pins 16-19 are reserved for JTAG.
  */
 static const uint32_t kGpioMask = 0x0000FFFF;

@@ -24,7 +24,7 @@ $ export OT_FPGA_UART=/dev/tty*
 ```
 
 By default, the test assumes there exists a valid Verilator build at
-`${REPO_TOP}/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator`.
+`${REPO_TOP}/build/lowrisc_systems_chip_earlgrey_verilator_0.1/sim-verilator/Vchip_earlgrey_verilator`.
 If your Verilator build is at a different location, please set that as well when
 running with Verilator.
 

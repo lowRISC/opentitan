@@ -200,7 +200,7 @@ jobs:
       ninja -C "$OBJ_DIR" test
     displayName: Run unit tests
 
-- job: top_earlgrey_verilator
+- job: chip_earlgrey_verilator
   displayName: Build Verilator simulation of the Earl Grey toplevel design
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
@@ -225,18 +225,18 @@ jobs:
       fusesoc --cores-root=. \
         run --flag=fileset_top --target=sim --setup --build \
         --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:top_earlgrey_verilator \
+        lowrisc:systems:chip_earlgrey_verilator \
         --verilator_options="--no-threads"
 
-      cp "$OBJ_DIR/hw/sim-verilator/Vtop_earlgrey_verilator" \
+      cp "$OBJ_DIR/hw/sim-verilator/Vchip_earlgrey_verilator" \
         "$BIN_DIR/hw/top_earlgrey"
     displayName: Build simulation with Verilator
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
-        - "/hw/top_earlgrey/Vtop_earlgrey_verilator"
+        - "/hw/top_earlgrey/Vchip_earlgrey_verilator"
 
-- job: top_englishbreakfast_verilator
+- job: chip_englishbreakfast_verilator
   displayName: Build Verilator simulation of the English Breakfast toplevel design
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'))
@@ -261,30 +261,30 @@ jobs:
       fusesoc --cores-root=. \
         run --flag=fileset_topgen --target=sim --setup --build \
         --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:top_englishbreakfast_verilator \
+        lowrisc:systems:chip_englishbreakfast_verilator \
         --verilator_options="--no-threads"
 
-      cp "$OBJ_DIR/hw/sim-verilator/Vtop_englishbreakfast_verilator" \
+      cp "$OBJ_DIR/hw/sim-verilator/Vchip_englishbreakfast_verilator" \
         "$BIN_DIR/hw/top_englishbreakfast"
     displayName: Build simulation with Verilator
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
-        - "/hw/top_englishbreakfast/Vtop_englishbreakfast_verilator"
+        - "/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator"
 
 - job: execute_verilated_tests
   displayName: Execute tests on the Verilated system
   pool:
     vmImage: ubuntu-18.04
   dependsOn:
-    - top_earlgrey_verilator
+    - chip_earlgrey_verilator
     - sw_build
   steps:
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
     parameters:
       downloadPartialBuildBinFrom:
-        - top_earlgrey_verilator
+        - chip_earlgrey_verilator
         - sw_build
   - bash: |
       # Install an additional pytest dependency for result upload.
@@ -342,7 +342,7 @@ jobs:
       make -C hw/ip/otbn/util asm-check
     displayName: Assemble and link code snippets
 
-- job: top_earlgrey_nexysvideo
+- job: chip_earlgrey_nexysvideo
   displayName: Build NexysVideo variant of the Earl Grey toplevel design using Vivado
   dependsOn:
     - lint
@@ -376,28 +376,28 @@ jobs:
       fusesoc --cores-root=. \
         run --flag=fileset_top --target=synth --setup --build \
         --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:top_earlgrey_nexysvideo \
+        lowrisc:systems:chip_earlgrey_nexysvideo \
         --BootRomInitFile="$BOOTROM_VMEM" \
         --OtpCtrlMemInitFile="$OTP_VMEM"
 
-      cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit" \
+      cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit" \
         "$BIN_DIR/hw/top_earlgrey"
     displayName: Build bitstream with Vivado
   - bash: |
       . util/build_consts.sh
       echo Synthesis log
-      cat $OBJ_DIR/hw/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.runs/synth_1/runme.log || true
+      cat $OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.runs/synth_1/runme.log || true
 
       echo Implementation log
-      cat $OBJ_DIR/hw/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.runs/impl_1/runme.log || true
+      cat $OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.runs/impl_1/runme.log || true
     condition: always()
     displayName: Display synthesis and implementation logs
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
-        - "/hw/top_earlgrey/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit"
+        - "/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit"
 
-- job: top_englishbreakfast_cw305
+- job: chip_englishbreakfast_cw305
   displayName: Build CW305 variant of the English Breakfast toplevel design using Vivado
   dependsOn:
     - lint
@@ -431,23 +431,23 @@ jobs:
       fusesoc --cores-root=. \
         run --flag=fileset_topgen --target=synth --setup --build \
         --build-root="$OBJ_DIR/hw" \
-        lowrisc:systems:top_englishbreakfast_cw305 \
+        lowrisc:systems:chip_englishbreakfast_cw305 \
         --BootRomInitFile="$BOOTROM_VMEM"
 
-      cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_top_englishbreakfast_cw305_0.1.bit" \
+      cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit" \
         "$BIN_DIR/hw/top_englishbreakfast"
     displayName: Build bitstream with Vivado
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
-        - "/hw/top_englishbreakfast/lowrisc_systems_top_englishbreakfast_cw305_0.1.bit"
+        - "/hw/top_englishbreakfast/lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit"
 
 - job: execute_fpga_tests
   displayName: Execute tests on FPGA
   pool: FPGA
   timeoutInMinutes: 30
   dependsOn:
-    - top_earlgrey_nexysvideo
+    - chip_earlgrey_nexysvideo
     - sw_build_nexysvideo
     - sw_build
   steps:
@@ -455,7 +455,7 @@ jobs:
   - template: ci/download-artifacts-template.yml
     parameters:
       downloadPartialBuildBinFrom:
-        - top_earlgrey_nexysvideo
+        - chip_earlgrey_nexysvideo
         - sw_build_nexysvideo
         - sw_build
   - bash: |
@@ -481,8 +481,8 @@ jobs:
   dependsOn:
     - lint
     - sw_build
-    - top_earlgrey_verilator
-    - top_earlgrey_nexysvideo
+    - chip_earlgrey_verilator
+    - chip_earlgrey_nexysvideo
   condition: and(eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
   steps:
   - template: ci/install-package-dependencies.yml
@@ -491,9 +491,9 @@ jobs:
       downloadPartialBuildBinFrom:
         - sw_build
         - sw_build_nexysvideo
-        - top_earlgrey_verilator
-        - top_earlgrey_nexysvideo
-        - top_englishbreakfast_verilator
+        - chip_earlgrey_verilator
+        - chip_earlgrey_nexysvideo
+        - chip_englishbreakfast_verilator
   - bash: |
       . util/build_consts.sh
 

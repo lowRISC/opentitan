@@ -27,7 +27,7 @@ Synthesizing a design for a FPGA board is done with the following commands.
 
 The FPGA build will pull in a program to act as the boot ROM.
 This must be built before running the FPGA build.
-This is pulled in from the `sw/device/boot_rom` directory (see the `parameters:` section of the `hw/top_earlgrey/top_earlgrey_nexysvideo.core` file).
+This is pulled in from the `sw/device/boot_rom` directory (see the `parameters:` section of the `hw/top_earlgrey/chip_earlgrey_nexysvideo.core` file).
 
 To build it:
 ```console
@@ -55,11 +55,11 @@ $ cd $REPO_TOP
 $ ./meson_init.sh
 $ ./hw/top_earlgrey/util/top_earlgrey_reduce.py
 $ ninja -C build-out all
-$ fusesoc --cores-root . run --flag=fileset_top --target=synth lowrisc:systems:top_earlgrey_nexysvideo
+$ fusesoc --cores-root . run --flag=fileset_top --target=synth lowrisc:systems:chip_earlgrey_nexysvideo
 ```
 The `fileset_top` flag used above is specific to the OpenTitan project to select the correct fileset.
 
-The resulting bitstream is located at `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit`.
+The resulting bitstream is located at `build/lowrisc_systems_chip_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit`.
 See the [reference manual]({{< relref "ref_manual_fpga.md" >}}) for more information.
 
 ## Connecting the board
@@ -80,7 +80,7 @@ Use the following command to program the FPGA with fusesoc.
 ```console
 $ . /tools/xilinx/Vivado/2020.1/settings64.sh
 $ cd $REPO_TOP
-$ fusesoc --cores-root . pgm lowrisc:systems:top_earlgrey_nexysvideo:0.1
+$ fusesoc --cores-root . pgm lowrisc:systems:chip_earlgrey_nexysvideo:0.1
 ```
 
 This should produce a message like this from the UART:
@@ -101,7 +101,7 @@ If you have having trouble with programming using the command line, try the GUI.
 ```console
 $ . /tools/xilinx/Vivado/2020.1/settings64.sh
 $ cd $REPO_TOP
-$ make -C build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado build-gui
+$ make -C build/lowrisc_systems_chip_earlgrey_nexysvideo_0.1/synth-vivado build-gui
 ```
 
 Now the Vivado GUI opens and loads the project.
@@ -110,7 +110,7 @@ Now the Vivado GUI opens and loads the project.
 * In the navigation on the left, click on *PROGRAM AND DEBUG* > *Open Hardware Manager* > *Open Target* > *Auto Connect*.
 * Vivado now enumerates all boards and connects to it.
 * Click on *Program Device* in the menu on the left (or at the top of the screen).
-* A dialog titled *Program Device* pops up. Select the file `lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit` as *Bitstream file*, and leave the *Debug probes file* empty.
+* A dialog titled *Program Device* pops up. Select the file `lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit` as *Bitstream file*, and leave the *Debug probes file* empty.
 * Click on *Program* to flash the FPGA with the bitstream.
 * The FPGA is ready as soon as the programming finishes.
 
@@ -186,7 +186,7 @@ The `--no-export` option of fusesoc disables copying the source files into the s
 
 ```console
 $ # only create Vivado project file
-$ fusesoc --cores-root . build --no-export --setup lowrisc:systems:top_earlgrey_nexysvideo
+$ fusesoc --cores-root . build --no-export --setup lowrisc:systems:chip_earlgrey_nexysvideo
 ```
 
 ## Connect with OpenOCD and debug

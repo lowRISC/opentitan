@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:systems:top_englishbreakfast_verilator:0.1"
+name: "lowrisc:systems:chip_englishbreakfast_verilator:0.1"
 description: "English Breakfast toplevel for simulation with Verilator"
 filesets:
   files_sim_verilator:
@@ -24,8 +24,8 @@ filesets:
       - lowrisc:prim:clock_div
 
     files:
-      - rtl/top_englishbreakfast_verilator.sv: { file_type: systemVerilogSource }
-      - top_englishbreakfast_verilator.cc: { file_type: cppSource }
+      - rtl/chip_englishbreakfast_verilator.sv: { file_type: systemVerilogSource }
+      - chip_englishbreakfast_verilator.cc: { file_type: cppSource }
 
 parameters:
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
@@ -71,7 +71,7 @@ targets:
   default: &default_target
     filesets:
       - files_sim_verilator
-    toplevel: top_englishbreakfast_verilator
+    toplevel: chip_englishbreakfast_verilator
 
   sim:
     parameters:
@@ -86,7 +86,7 @@ targets:
     default_tool: verilator
     filesets:
       - files_sim_verilator
-    toplevel: top_englishbreakfast_verilator
+    toplevel: chip_englishbreakfast_verilator
     tools:
       verilator:
         mode: cc
@@ -100,7 +100,7 @@ targets:
           - '--trace-params'
           - '--trace-max-array 1024'
           - '--unroll-count 512'
-          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DVL_USER_STOP -DTOPLEVEL_NAME=top_englishbreakfast_verilator -g"'
+          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DVL_USER_STOP -DTOPLEVEL_NAME=chip_englishbreakfast_verilator -g"'
           - '-LDFLAGS "-pthread -lutil -lelf"'
           - '-Wall'
           # Execute simulation with four threads by default, which works best

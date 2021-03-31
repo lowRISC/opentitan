@@ -9,8 +9,7 @@
 //                -o hw/top_earlgrey/ \
 //                --rnd_cnst_seed 4881560218908238235
 
-// TODO: change the naming to chip_earlgrey_nexysvideo
-module top_earlgrey_nexysvideo #(
+module chip_earlgrey_nexysvideo #(
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
   parameter BootRomInitFile = "boot_rom_fpga_nexysvideo.32.vmem",
@@ -809,5 +808,4 @@ module top_earlgrey_nexysvideo #(
 
 
 
-// TODO: change the naming to chip_
-endmodule : top_earlgrey_nexysvideo
+endmodule : chip_earlgrey_nexysvideo

@@ -1094,11 +1094,10 @@ def main():
                         out_path / f"rtl/autogen/top_{topname}.sv",
                         gencmd=gencmd)
 
-        # TODO: chiplevel renaming
         # Multiple chip-levels (ASIC, FPGA, Verilator, etc)
         for target in topcfg['targets']:
             render_template(TOPGEN_TEMPLATE_PATH / "chiplevel.sv.tpl",
-                            out_path / f"rtl/autogen/top_{topname}_{target['name']}.sv",
+                            out_path / f"rtl/autogen/chip_{topname}_{target['name']}.sv",
                             gencmd=gencmd,
                             target=target)
 

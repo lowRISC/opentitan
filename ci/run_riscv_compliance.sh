@@ -6,7 +6,7 @@ set -e
 
 . util/build_consts.sh
 
-export TARGET_SIM="$BIN_DIR/hw/top_earlgrey/Vtop_earlgrey_verilator"
+export TARGET_SIM="$BIN_DIR/hw/top_earlgrey/Vchip_earlgrey_verilator"
 export RISCV_DEVICE=rv32imc
 export RISCV_TARGET=opentitan
 export OT_BIN="$BIN_DIR"

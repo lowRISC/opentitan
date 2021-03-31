@@ -12,7 +12,7 @@
 const device_type_t kDeviceType = kDeviceSimVerilator;
 
 // Changes to the clock frequency or UART baud rate must also be reflected at
-// `hw/top_earlgrey/rtl/top_earlgrey_verilator.sv` and
+// `hw/top_earlgrey/rtl/chip_earlgrey_verilator.sv` and
 // `test/systemtest/earlgrey/test_sim_verilator.py`.
 const uint64_t kClockFreqCpuHz = 500 * 1000;  // 500kHz
 
@@ -22,7 +22,7 @@ const uint64_t kClockFreqUsbHz = 500 * 1000;  // 500kHz
 
 const uint64_t kUartBaudrate = 7200;
 
-// Defined in `hw/top_earlgrey/top_earlgrey_verilator.core`
+// Defined in `hw/top_earlgrey/chip_earlgrey_verilator.core`
 const uintptr_t kDeviceTestStatusAddress = 0x30000000;
 
 const uintptr_t kDeviceLogBypassUartAddress = 0;

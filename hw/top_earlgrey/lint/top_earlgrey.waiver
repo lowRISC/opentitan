@@ -22,7 +22,7 @@ waive -rules CLOCK_MUX -location {clkmgr.sv top_earlgrey.sv} -regexp {.*clk_io_d
       -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"
 
 # Combo loops through uart loopback can be ignored
-waive -rules {COMBO_LOOP} -location {top_earlgrey_asic.sv} -regexp {'tx' driven in module 'uart_core' by 'rx' at uart_core.sv} \
+waive -rules {COMBO_LOOP} -location {chip_earlgrey_asic.sv} -regexp {'tx' driven in module 'uart_core' by 'rx' at uart_core.sv} \
       -comment "there is technically a loopback path through uart, however RX / TX should never be configured to the same pin"
 
 waive -rules {SAME_NAME_TYPE} -location {*} -regexp {.*} \

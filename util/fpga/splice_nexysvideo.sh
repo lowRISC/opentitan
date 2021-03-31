@@ -10,11 +10,11 @@
 #   ./util/fpga/splice_nexysvideo.sh
 
 # Updated bitfile located at the same place as raw vivado bitfile at
-# $REPO_TOP/build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/
-#  lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit
+# $REPO_TOP/build/lowrisc_systems_chip_earlgrey_nexysvideo_0.1/synth-vivado/
+#  lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit
 # A copy of the original bitfile is created at
-# $REPO_TOP/build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/
-#  lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit.orig
+# $REPO_TOP/build/lowrisc_systems_chip_earlgrey_nexysvideo_0.1/synth-vivado/
+#  lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit.orig
 set -e
 
 . util/build_consts.sh
@@ -23,8 +23,8 @@ TARGET_PREFIX="sw/device/boot_rom/"
 TARGET_EXPORT="${TARGET_PREFIX}/boot_rom_export_fpga_nexysvideo"
 TARGET="${BIN_DIR}/${TARGET_PREFIX}/boot_rom_fpga_nexysvideo"
 
-FPGA_BUILD_DIR=build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/
-FPGA_BIT_NAME=lowrisc_systems_top_earlgrey_nexysvideo_0.1
+FPGA_BUILD_DIR=build/lowrisc_systems_chip_earlgrey_nexysvideo_0.1/synth-vivado/
+FPGA_BIT_NAME=lowrisc_systems_chip_earlgrey_nexysvideo_0.1
 
 ./meson_init.sh
 ninja -C "${OBJ_DIR}" "${TARGET_EXPORT}"

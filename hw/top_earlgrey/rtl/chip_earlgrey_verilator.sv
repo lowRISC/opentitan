@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module top_englishbreakfast_verilator (
+module chip_earlgrey_verilator (
   // Clock and Reset
   input clk_i,
   input rst_ni
 );
 
-  import top_englishbreakfast_pkg::*;
+  import top_earlgrey_pkg::*;
 
   logic [31:0]  cio_gpio_p2d, cio_gpio_d2p, cio_gpio_en_d2p;
   logic cio_uart_rx_p2d, cio_uart_tx_d2p, cio_uart_tx_en_d2p;
@@ -30,9 +30,9 @@ module top_englishbreakfast_verilator (
   logic IO_JTCK, IO_JTMS, IO_JTRST_N, IO_JTDI, IO_JTDO;
 
   // TODO: instantiate padring and route these signals through that module
-  logic [20:0] dio_in;
-  logic [20:0] dio_out;
-  logic [20:0] dio_oe;
+  logic [pinmux_pkg::NDioPads-1:0] dio_in;
+  logic [pinmux_pkg::NDioPads-1:0] dio_out;
+  logic [pinmux_pkg::NDioPads-1:0] dio_oe;
 
   always_comb begin : assign_dio_in
     dio_in = '0;
@@ -65,13 +65,15 @@ module top_englishbreakfast_verilator (
   assign cio_usbdev_se0_en_d2p = dio_oe[DioUsbdevSe0];
   assign cio_spi_device_sdo_en_d2p = dio_oe[DioSpiDeviceSd1];
 
-  logic [43:0] mio_in;
-  logic [43:0] mio_out;
-  logic [43:0] mio_oe;
+  logic [pinmux_pkg::NMioPads-1:0] mio_in;
+  logic [pinmux_pkg::NMioPads-1:0] mio_out;
+  logic [pinmux_pkg::NMioPads-1:0] mio_oe;
 
-  assign mio_in = {11'h0,
-                   cio_uart_rx_p2d,
-                   cio_gpio_p2d};
+  always_comb begin : assign_mio_in
+    mio_in = '0;
+    mio_in[32] = cio_uart_rx_p2d;
+    mio_in[31:0] = cio_gpio_p2d;
+  end
 
   assign cio_gpio_d2p       = mio_out[31:0];
   assign cio_gpio_en_d2p    = mio_oe[31:0];
@@ -105,7 +107,7 @@ module top_englishbreakfast_verilator (
   // reset is not used below becuase verilator uses only sync resets
   // and also does not under 'x'.
   // if we allow the divider below to reset, clk_aon will be silenced,
-  // and as a result all the clk_aon logic inside top_englishbreakfast does not
+  // and as a result all the clk_aon logic inside top_earlgrey does not
   // get reset
   prim_clock_div #(
     .Divisor(4)
@@ -126,14 +128,14 @@ module top_englishbreakfast_verilator (
     const_sampling: 1'b1,
     tie_offs:       '0,
     tck_idx:        pinmux_reg_pkg::NMioPads +
-                    top_englishbreakfast_pkg::DioSpiDeviceSck,
+                    top_earlgrey_pkg::DioSpiDeviceSck,
     tms_idx:        pinmux_reg_pkg::NMioPads +
-                    top_englishbreakfast_pkg::DioSpiDeviceCsb,
+                    top_earlgrey_pkg::DioSpiDeviceCsb,
     trst_idx:       18, // MIO 18
     tdi_idx:        pinmux_reg_pkg::NMioPads +
-                    top_englishbreakfast_pkg::DioSpiDeviceSd0,
+                    top_earlgrey_pkg::DioSpiDeviceSd0,
     tdo_idx:        pinmux_reg_pkg::NMioPads +
-                    top_englishbreakfast_pkg::DioSpiDeviceSd1,
+                    top_earlgrey_pkg::DioSpiDeviceSd1,
     tap_strap0_idx: 26, // MIO 26
     tap_strap1_idx: 16, // MIO 16 (this is different in the ASIC top)
     dft_strap0_idx: 21, // MIO 21
@@ -147,24 +149,17 @@ module top_englishbreakfast_verilator (
 
   lc_ctrl_pkg::lc_tx_t lc_clk_bypass;
   // Top-level design
-  top_englishbreakfast #(
-    .AesMasking(1'b1),
-    .AesSBoxImpl(aes_pkg::SBoxImplDom),
-    .SecAesStartTriggerDelay(40),
-    .SecAesAllowForcingMasks(1'b1),
-    .SecAesSkipPRNGReseeding(1'b1),
-    .IbexICache(0),
+  top_earlgrey #(
     .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
-  ) top_englishbreakfast (
+  ) top_earlgrey (
     .rst_ni                       (rst_ni            ),
     .clk_main_i                   (clk_i             ),
     .clk_io_i                     (clk_i             ),
     .clk_usb_i                    (clk_i             ),
     .clk_aon_i                    (clk_aon           ),
     .clks_ast_o                   (                  ),
-    .clk_main_jitter_en_o         (                  ),
     .rsts_ast_o                   (                  ),
     .pwrmgr_ast_req_o             (                  ),
     .pwrmgr_ast_rsp_i             ( ast_base_pwr     ),
@@ -173,11 +168,19 @@ module top_englishbreakfast_verilator (
     .sensor_ctrl_ast_status_i     ( ast_base_status  ),
     .usbdev_usb_ref_val_o         (                  ),
     .usbdev_usb_ref_pulse_o       (                  ),
+    .ast_tl_req_o                 (                  ),
+    .ast_tl_rsp_i                 ( '0               ),
     .ast_edn_req_i                ( '0               ),
     .ast_edn_rsp_o                (                  ),
+    .otp_ctrl_otp_ast_pwr_seq_o   (                  ),
+    .otp_ctrl_otp_ast_pwr_seq_h_i ( '0               ),
     .flash_bist_enable_i          ( lc_ctrl_pkg::Off ),
     .flash_power_down_h_i         ( 1'b0             ),
     .flash_power_ready_h_i        ( 1'b1             ),
+    // Need to model this logic at some point, otherwise entropy
+    // on verilator will hang
+    .es_rng_req_o                 (                  ),
+    .es_rng_rsp_i                 ( '0               ),
     .ast_clk_byp_req_o            ( lc_clk_bypass    ),
     .ast_clk_byp_ack_i            ( lc_clk_bypass    ),
 
@@ -305,7 +308,7 @@ module top_englishbreakfast_verilator (
   assign unused_cio_usbdev_suspend_d2p = cio_usbdev_suspend_d2p;
   assign unused_cio_usbdev_suspend_en_d2p = cio_usbdev_suspend_en_d2p;
 
-  `define RV_CORE_IBEX      top_englishbreakfast.u_rv_core_ibex
+  `define RV_CORE_IBEX      top_earlgrey.u_rv_core_ibex
   `define SIM_SRAM_IF       u_sim_sram.u_sim_sram_if
 
   // Detect SW test termination.
@@ -351,4 +354,4 @@ module top_englishbreakfast_verilator (
   `undef RV_CORE_IBEX
   `undef SIM_SRAM_IF
 
-endmodule
+endmodule : chip_earlgrey_verilator

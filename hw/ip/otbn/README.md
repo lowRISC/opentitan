@@ -95,7 +95,7 @@ the ISS) compiled in. When running the simulation the plusarg `OTBN_USE_MODEL`
 can be used to switch between the RTL implementation and the model, without
 recompiling the simulation.
 
-The Verilator simulation of Earl Grey (`lowrisc:systems:top_earlgrey_verilator`)
+The Verilator simulation of Earl Grey (`lowrisc:systems:chip_earlgrey_verilator`)
 builds the model by default when compiling the simulation and nothing else needs
 to be done. For other simulation targets, set the `OTBN_BUILD_MODEL` define,
 e.g. by passing `--OTBN_BUILD_MODEL` to fusesoc.
@@ -104,7 +104,7 @@ To run the simulation against the OTBN ISS pass `+OTBN_USE_MODEL=1` to the
 simulation run, e.g.
 
 ```sh
-build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator \
+build/lowrisc_systems_chip_earlgrey_verilator_0.1/sim-verilator/Vchip_earlgrey_verilator \
   --meminit=rom,build-bin/sw/device/boot_rom/boot_rom_sim_verilator.elf  \
   --meminit=flash,build-bin/sw/device/tests/dif_otbn_smoketest_sim_verilator.elf \
   --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem \

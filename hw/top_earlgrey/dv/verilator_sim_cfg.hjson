@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   // Name of the sim cfg - typically same as the name of the DUT.
-  name: top_earlgrey_verilator
+  name: chip_earlgrey_verilator
 
   // Top level dut name (sv module).
   dut: "{name}"
