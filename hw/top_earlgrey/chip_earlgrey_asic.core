@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:systems:top_earlgrey_asic:0.1"
+name: "lowrisc:systems:chip_earlgrey_asic:0.1"
 description: "Earl Grey chip level"
 filesets:
   files_rtl:
@@ -12,7 +12,7 @@ filesets:
       - "!fileset_partner ? (lowrisc:systems:ast)"
       - "fileset_partner ? (partner:systems:ast)"
     files:
-      - rtl/autogen/top_earlgrey_asic.sv
+      - rtl/autogen/chip_earlgrey_asic.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -47,7 +47,7 @@ targets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
-    toplevel: top_earlgrey_asic
+    toplevel: chip_earlgrey_asic
 
   lint:
     <<: *default_target
@@ -68,8 +68,8 @@ targets:
     default_tool: icarus
     parameters:
       - SYNTHESIS=true
-    toplevel: top_earlgrey_asic
+    toplevel: chip_earlgrey_asic
 
   formal:
     <<: *default_target
-    toplevel: top_earlgrey_asic
+    toplevel: chip_earlgrey_asic

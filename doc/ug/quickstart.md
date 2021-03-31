@@ -33,10 +33,10 @@ $ tar -C $OT_TOP -xvf opentitan-snapshot-20191101-1.tar.xz --strip-components=1
 
 ## Simulation with Verilator
 
-Run the provided simulator binary with 
+Run the provided simulator binary with
 ```console
 $ cd $OT_TOP
-$ ./hw/top_earlgrey/Vtop_earlgrey_verilator --rominit=./sw/device/sim/boot_rom/rom.vmem --flashinit=./sw/device/sim/examples/hello_world/sw.vmem
+$ ./hw/top_earlgrey/Vchip_earlgrey_verilator --rominit=./sw/device/sim/boot_rom/rom.vmem --flashinit=./sw/device/sim/examples/hello_world/sw.vmem
 
 Simulation of OpenTitan Earl Grey
 =================================
@@ -68,7 +68,7 @@ UART: Created /dev/pts/6 for uart0. Connect to it with any terminal program, e.g
 $ screen /dev/pts/6
 
 Simulation running, end by pressing CTRL-c.
-TOP.top_earlgrey_verilator.top_earlgrey.core.ibex_tracer_i: Writing execution trace to trace_core_00000000.log
+TOP.chip_earlgrey_verilator.top_earlgrey.core.ibex_tracer_i: Writing execution trace to trace_core_00000000.log
 ```
 
 Note the UART output will be available on `/dev/pts/N`, `/dev/pts/6` in this example.
@@ -141,7 +141,7 @@ If you are, and some of the commands run into permission errors, run them in `su
 6.  Copy the bit file image to the storage device.
     ```console
     $ cd $OT_TOP
-    $ cp hw/top_earlgrey/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit ~/ot-img-mount/
+    $ cp hw/top_earlgrey/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit ~/ot-img-mount/
     ```
 
 For more information on programming the Nexsys Video FPGA board refer to Section 2.3 of [Nexys Video reference manual](https://reference.digilentinc.com/_media/reference/programmable-logic/nexys-video/nexysvideo_rm.pdf).

@@ -73,9 +73,8 @@ unused_resets = lib.get_unused_resets(top)
 unused_im_defs, undriven_im_defs = lib.get_dangling_im_def(top["inter_signal"]["definitions"])
 
 %>\
-// TODO: change the naming to chip_${top["name"]}_${target["name"]}
 % if target["name"] != "asic":
-module top_${top["name"]}_${target["name"]} #(
+module chip_${top["name"]}_${target["name"]} #(
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
   parameter BootRomInitFile = "boot_rom_fpga_${target["name"]}.32.vmem",
@@ -84,7 +83,7 @@ module top_${top["name"]}_${target["name"]} #(
   parameter OtpCtrlMemInitFile = "otp_img_fpga_${target["name"]}.vmem"
 ) (
 % else:
-module top_${top["name"]}_${target["name"]} (
+module chip_${top["name"]}_${target["name"]} (
 % endif
 <%
 
@@ -1186,5 +1185,4 @@ module top_${top["name"]}_${target["name"]} (
 
 % endif
 
-// TODO: change the naming to chip_
-endmodule : top_${top["name"]}_${target["name"]}
+endmodule : chip_${top["name"]}_${target["name"]}

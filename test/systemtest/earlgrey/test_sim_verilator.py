@@ -279,7 +279,7 @@ def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking):
     Self-checking applications are expected to return PASS or FAIL in the end.
     """
 
-    sim_path = bin_dir / "hw/top_earlgrey/Vtop_earlgrey_verilator"
+    sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
     rom_elf_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.elf"
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
@@ -303,7 +303,7 @@ def test_apps_selfchecking_silicon_creator(tmp_path, bin_dir,
     Self-checking applications are expected to return PASS or FAIL in the end.
     """
 
-    sim_path = bin_dir / "hw/top_earlgrey/Vtop_earlgrey_verilator"
+    sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
     rom_elf_path = bin_dir / "sw/device/silicon_creator/mask_rom/mask_rom_sim_verilator.elf"
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
@@ -322,7 +322,7 @@ def test_apps_selfchecking_silicon_creator(tmp_path, bin_dir,
 def test_spiflash(tmp_path, bin_dir):
     """ Load a single application to the Verilator simulation using spiflash """
 
-    sim_path = bin_dir / "hw/top_earlgrey/Vtop_earlgrey_verilator"
+    sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
     rom_elf_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.elf"
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
@@ -352,7 +352,7 @@ def test_openocd_basic_connectivity(tmp_path, bin_dir, topsrcdir, openocd):
     with the core or the system (bus) is performed.
     """
     # Run a simulation (bootrom only, no app beyond that)
-    sim_path = bin_dir / "hw/top_earlgrey/Vtop_earlgrey_verilator"
+    sim_path = bin_dir / "hw/top_earlgrey/Vchip_earlgrey_verilator"
     rom_elf_path = bin_dir / "sw/device/boot_rom/boot_rom_sim_verilator.elf"
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 

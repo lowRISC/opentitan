@@ -16,7 +16,7 @@ $ ./util/fpga/splice_nexysvideo.sh
 ```
 
 Updated output bitfile located : at the same place as raw vivado bitfile @
-`build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.splice.bit`
+`build/lowrisc_systems_chip_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.splice.bit`
 
 This directory contains following files:
 

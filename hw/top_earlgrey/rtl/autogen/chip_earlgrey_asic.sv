@@ -9,8 +9,7 @@
 //                -o hw/top_earlgrey/ \
 //                --rnd_cnst_seed 4881560218908238235
 
-// TODO: change the naming to chip_earlgrey_asic
-module top_earlgrey_asic (
+module chip_earlgrey_asic (
   // Dedicated Pads
   inout POR_N, // Manual Pad
   inout SPI_HOST_D0, // Dedicated Pad for spi_host0_sd
@@ -1188,5 +1187,4 @@ module top_earlgrey_asic (
 
 
 
-// TODO: change the naming to chip_
-endmodule : top_earlgrey_asic
+endmodule : chip_earlgrey_asic

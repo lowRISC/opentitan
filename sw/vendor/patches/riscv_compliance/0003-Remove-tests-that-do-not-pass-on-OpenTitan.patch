@@ -1,7 +1,7 @@
 From 238c8583aa41156429c890e9761979007fae8be0 Mon Sep 17 00:00:00 2001
 From: Greg Chadwick <gac@lowrisc.org>
 Date: Wed, 15 Apr 2020 18:39:08 +0100
-Subject: [PATCH 3/4] Remove tests that do not pass on OpenTitan
+Subject: [PATCH 3/5] Remove tests that do not pass on OpenTitan
 
 
 diff --git a/riscv-test-suite/rv32i/Makefrag b/riscv-test-suite/rv32i/Makefrag

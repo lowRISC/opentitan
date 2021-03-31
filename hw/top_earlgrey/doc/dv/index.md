@@ -31,7 +31,7 @@ TBD
 
 ### Top level testbench
 Top level testbench is located at `hw/ip/top_earlgrey/dv/tb/tb.sv`.
-It instantiates the `top_earlgrey` DUT module `hw/top_earlgrey/rtl/top_earlgrey_asic.sv`.
+It instantiates the `top_earlgrey` DUT module `hw/top_earlgrey/rtl/autogen/chip_earlgrey_asic.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
   * Main clock as well as USB clock

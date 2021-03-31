@@ -87,7 +87,7 @@ module tb;
   // TODO: the external clk is currently not connected.
   // We will need to feed this in via a muxed pin, once that function implemented.
 
-  top_earlgrey_asic dut (
+  chip_earlgrey_asic dut (
     // Clock and Reset
     .POR_N(rst_n),
     // Bank A (VIOA domain)

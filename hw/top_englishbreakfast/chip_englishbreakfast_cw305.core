@@ -2,24 +2,20 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:systems:top_earlgrey_nexysvideo:0.1"
-description: "Earl Grey toplevel for the Nexys Video board"
+name: "lowrisc:systems:chip_englishbreakfast_cw305:0.1"
+description: "English Breakfast toplevel for the ChipWhisperer CW305 board"
+
 filesets:
-  files_rtl_nexysvideo:
+  files_rtl_cw305:
     depend:
-      - lowrisc:systems:top_earlgrey:0.1
-      - lowrisc:systems:top_earlgrey_pkg
-      - lowrisc:tool:top_earlgrey_nexysvideo_size_check
-    files:
-      - rtl/clkgen_xil7series.sv
-      - rtl/autogen/top_earlgrey_nexysvideo.sv
+      - lowrisc:systems:top_englishbreakfast:0.1
+      - lowrisc:systems:topgen
     file_type: systemVerilogSource
 
   files_constraints:
     files:
+      - data/pins_cw305.xdc
       - data/clocks.xdc
-      - data/pins_nexysvideo.xdc
-      - data/placement.xdc
     file_type: xdc
 
   files_tcl:
@@ -43,11 +39,6 @@ parameters:
     description: Boot ROM initialization file in 32 bit vmem hex format
     default: "../../../../../build-bin/sw/device/boot_rom/boot_rom_fpga_nexysvideo.32.vmem"
     paramtype: vlogparam
-  OtpCtrlMemInitFile:
-    datatype: str
-    description: OTP initialization file in vmem hex format
-    default: "../../../../../build-bin/sw/device/otp_img/otp_img_fpga_nexysvideo.vmem"
-    paramtype: vlogparam
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
   PRIM_DEFAULT_IMPL:
     datatype: str
@@ -57,29 +48,19 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - files_rtl_nexysvideo
-    toplevel: top_earlgrey_nexysvideo
+      - files_rtl_cw305
+    toplevel: chip_englishbreakfast_cw305
 
   synth:
     default_tool: vivado
     filesets:
-      - files_rtl_nexysvideo
+      - files_rtl_cw305
       - files_constraints
       - files_tcl
-    toplevel: top_earlgrey_nexysvideo
+    toplevel: chip_englishbreakfast_cw305
     parameters:
       - BootRomInitFile
-      - OtpCtrlMemInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
     tools:
       vivado:
-        part: "xc7a200tsbg484-1" # Nexys Video
-
-  lint:
-    <<: *default_target
-    default_tool: verilator
-    tools:
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"
+        part: "xc7a100tftg256-2" # CW305 Board

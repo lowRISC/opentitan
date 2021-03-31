@@ -39,13 +39,13 @@ See example below:
 ```console
 $ cd $REPO_TOP
 $ ./util/fpga/splice_nexysvideo.sh
-$ fusesoc --cores-root . pgm lowrisc:systems:top_earlgrey_nexysvideo
+$ fusesoc --cores-root . pgm lowrisc:systems:chip_earlgrey_nexysvideo
 ```
 
-The script assumes that there is an existing bitfile `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit` (this is created after following the steps in [getting_started_fpga]({{< relref "doc/ug/getting_started_fpga" >}})).
+The script assumes that there is an existing bitfile `build/lowrisc_systems_chip_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit` (this is created after following the steps in [getting_started_fpga]({{< relref "doc/ug/getting_started_fpga" >}})).
 
 The script rebuilds the contents in `sw/devices/boot_rom` and then creates a new bitfile of the same name at the same location.
-The original input bitfile is moved to `build/lowrisc_systems_top_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_top_earlgrey_nexysvideo_0.1.bit.orig`.
+The original input bitfile is moved to `build/lowrisc_systems_chip_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit.orig`.
 
 The fusesoc command can then be directly invoked to flash the FPGA.
 
@@ -64,7 +64,7 @@ The loading output is also shown.
 $ cd ${REPO_TOP}
 $ ./meson_init.sh
 $ ninja -C build-out
-$ build-bin/sw/host/spiflash/spiflash \ 
+$ build-bin/sw/host/spiflash/spiflash \
     --input build-bin/sw/device/examples/hello_world/hello_world_fpga_nexysvideo.bin
 
 Running SPI flash update.

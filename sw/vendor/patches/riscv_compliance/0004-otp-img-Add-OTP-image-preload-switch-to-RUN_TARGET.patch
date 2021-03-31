@@ -1,7 +1,7 @@
 From 74393f086a0d36070152f828a07f015ede7198aa Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Tue, 23 Feb 2021 18:30:20 -0800
-Subject: [PATCH 4/4] [otp-img] Add OTP image preload switch to RUN_TARGET
+Subject: [PATCH 4/5] [otp-img] Add OTP image preload switch to RUN_TARGET
 
 Signed-off-by: Michael Schaffner <msf@google.com>
 

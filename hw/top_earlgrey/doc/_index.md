@@ -63,7 +63,7 @@ This section discusses some operational details on `top_earlgrey`.
 It should first be **NOTED** that there is some subtlety on the notion of hierarchy within the top level.
 There is netlist automation to create the module `top_earlgrey` as indicated in sections of this specification that follow.
 **On top** of that module, hierarchically in the repo, are top level instantiation targets directed towards a particular use case.
-This includes `top_earlgrey_nexsysvideo` for use in FPGA, and `top_earlgrey_asic` for use (eventually) in a silicon implementation.
+This includes `chip_earlgrey_nexsysvideo` for use in FPGA, and `chip_earlgrey_asic` for use (eventually) in a silicon implementation.
 These top level targets will include the actual pads as needed by the target platform.
 At the time of this writing the two are not in perfect synchronization, but the intention will be for them to be as identical as possible.
 Where appropriate, including the block diagram below, notes will be provided where the hierarchy subtleties are explained.
@@ -77,12 +77,12 @@ The block diagram of `top_earlgrey` (the auto-generated module) is shown below.
 In this diagram, the instantiation of the Ibex processor and all of the memories and comportable IPs are shown.
 The IO shown at this level are the internal signals between the IP and the pads instantiated at the target top level netlist.
 
-In the block diagram below, the target netlist `top_earlgrey_nexsysvideo` is shown, including the FPGA pad names created.
+In the block diagram below, the target netlist `chip_earlgrey_nexsysvideo` is shown, including the FPGA pad names created.
 
-![Top Level Block Diagram](top_earlgrey_nexsysvideo_block_diagram.svg)
+![Top Level Block Diagram](chip_earlgrey_nexsysvideo_block_diagram.svg)
 
 In this diagram, pads for clock and reset are shown, as well as pads for JTAG, SPI device, UART, and GPIO.
-In this platform, at the moment, the logic for the JTAG and the SPI device are multiplexed within `top_earlgrey_nexsysvideo`.
+In this platform, at the moment, the logic for the JTAG and the SPI device are multiplexed within `chip_earlgrey_nexsysvideo`.
 This is done for ease of programming by the external host.
 In addition, at the moment, the UART pins and GPIO pins are separated out from the multipurpose `MIO` pins.
 This will change as software and scripting matures and pin selection is defined more efficiently.
@@ -114,7 +114,7 @@ These are the internal signals between that module and the pads of the platform 
 | `mio_out_o[31:0]` | output | Multiplexible output pins (currently only connected to GPIO) |
 | `mio_oe_o[31:0]` | output | Multiplexible output enables (currently only connected to GPIO) |
 
-Below are the hardware interfaces of the FPGA target `top_earlgrey_nexsysvideo` netlist.
+Below are the hardware interfaces of the FPGA target `chip_earlgrey_nexsysvideo` netlist.
 
 | Signal Name | Direction | Description |
 | --- | --- | --- |

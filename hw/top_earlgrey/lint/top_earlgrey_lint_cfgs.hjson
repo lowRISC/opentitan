@@ -271,10 +271,10 @@
                     }
                   ]
              },
-             {    name: top_earlgrey_asic
-                  fusesoc_core: lowrisc:systems:top_earlgrey_asic
+             {    name: chip_earlgrey_asic
+                  fusesoc_core: lowrisc:systems:chip_earlgrey_asic
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/top_earlgrey_asic/lint/{tool}"
+                  rel_path: "hw/chip_earlgrey_asic/lint/{tool}"
                   overrides: [
                     {
                       name: design_level
@@ -283,15 +283,15 @@
                   ]
              },
              // these two currently cause compilation issues in AscentLint
-             //{    name: top_earlgrey_nexysvideo
-             //     fusesoc_core: lowrisc:systems:top_earlgrey_nexysvideo
+             //{    name: chip_earlgrey_nexysvideo
+             //     fusesoc_core: lowrisc:systems:chip_earlgrey_nexysvideo
              //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-             //     rel_path: "hw/top_earlgrey_nexysvideo/lint/{tool}"
+             //     rel_path: "hw/chip_earlgrey_nexysvideo/lint/{tool}"
              //},
-             //{    name: top_earlgrey_verilator
-             //     fusesoc_core: lowrisc:systems:top_earlgrey_verilator
+             //{    name: chip_earlgrey_verilator
+             //     fusesoc_core: lowrisc:systems:chip_earlgrey_verilator
              //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-             //     rel_path: "hw/top_earlgrey_verilator/lint/{tool}"
+             //     rel_path: "hw/chip_earlgrey_verilator/lint/{tool}"
              //},
             ]
 

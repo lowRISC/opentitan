@@ -14,7 +14,7 @@ jobs:
     pool:
       vmImage: ubuntu-18.04
     dependsOn:
-      - top_earlgrey_verilator
+      - chip_earlgrey_verilator
       - sw_build
     steps:
     - template: install-package-dependencies.yml

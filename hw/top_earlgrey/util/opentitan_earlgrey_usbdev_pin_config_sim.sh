@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Simulator executable
-VERILATOR=build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator
+VERILATOR=build/lowrisc_systems_chip_earlgrey_verilator_0.1/sim-verilator/Vchip_earlgrey_verilator
 
 # Code to load
 ROMCODE=build-bin/sw/device/boot_rom/boot_rom_sim_verilator.elf

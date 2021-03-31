@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   // Top level dut name (sv module).
-  name: top_earlgrey_asic
+  name: chip_earlgrey_asic
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:systems:top_earlgrey_asic:0.1
+  fusesoc_core: lowrisc:systems:chip_earlgrey_asic:0.1
 
   import_cfgs: [// Project wide common synthesis config file
                 "{proj_root}/hw/syn/tools/dvsim/common_syn_cfg.hjson"]
