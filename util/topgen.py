@@ -777,7 +777,6 @@ def generate_top_only(top_only_list, out_path, topname):
 
 
 def generate_top_ral(top: Dict[str, object],
-                     ip_objs: Dict[str, object],
                      name_to_block: Dict[str, IpBlock],
                      dv_base_prefix: str,
                      out_path: str):
@@ -982,7 +981,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     generate_top_only(top_only_list, out_path, topname)
 
     if pass_idx > 0 and args.top_ral:
-        exit_code = generate_top_ral(completecfg, ip_objs, name_to_block,
+        exit_code = generate_top_ral(completecfg, name_to_block,
                                      args.dv_base_prefix, out_path)
         sys.exit(exit_code)
 
