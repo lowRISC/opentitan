@@ -134,7 +134,7 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
     string sw_images_split[$];
 
     // Split sw_images with space.
-    str_utils_pkg::str_split(sw_images_string, sw_images_split);
+    str_utils_pkg::str_split(sw_images_string, sw_images_split, ",");
     `DV_CHECK_GT_FATAL(sw_images_split.size(), 0)
 
     foreach (sw_images_split[i]) begin

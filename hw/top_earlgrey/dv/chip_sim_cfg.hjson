@@ -104,7 +104,8 @@
       sw_images: ["sw/device/otp_img/otp_img:3"],
       run_opts: ["+sw_build_bin_dir={sw_build_dir}/build-bin",
                  "+sw_build_device={sw_build_device}",
-                 "+sw_images='{sw_images}'"]
+                 // Separate individual SW images supplied to +sw_images plusarg by comma.
+                 "+sw_images={eval_cmd} echo {sw_images} | sed -E 's/\\s+/,/g'"]
     }
     {
       name: sw_test_mode
