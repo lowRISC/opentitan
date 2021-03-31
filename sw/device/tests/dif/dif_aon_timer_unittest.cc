@@ -200,7 +200,6 @@ TEST_F(WatchdogStartTest, SuccessLock) {
                      {AON_TIMER_WDOG_CTRL_ENABLE_BIT, true},
                  });
 
-  // Write one to clear.
   EXPECT_WRITE32(AON_TIMER_WDOG_REGWEN_REG_OFFSET, 1);
 
   EXPECT_EQ(
@@ -220,7 +219,6 @@ TEST_F(WatchdogStartTest, SuccessPauseInSleepAndLock) {
                      {AON_TIMER_WDOG_CTRL_ENABLE_BIT, true},
                  });
 
-  // Write one to clear.
   EXPECT_WRITE32(AON_TIMER_WDOG_REGWEN_REG_OFFSET, 1);
 
   EXPECT_EQ(
@@ -318,7 +316,6 @@ TEST_F(WatchdogLockTest, NullArgs) {
 }
 
 TEST_F(WatchdogLockTest, Success) {
-  // Write one to clear.
   EXPECT_WRITE32(AON_TIMER_WDOG_REGWEN_REG_OFFSET, 1);
 
   EXPECT_EQ(dif_aon_timer_watchdog_lock(&aon_), kDifAonTimerOk);
@@ -433,7 +430,6 @@ TEST_F(IrqAcknowledgeTest, BadInterrupt) {
 }
 
 TEST_F(IrqAcknowledgeTest, Success) {
-  // Write one to clear.
   uint32_t reg = bitfield_bit32_write(
       0, AON_TIMER_INTR_STATE_WKUP_TIMER_EXPIRED_BIT, true);
   EXPECT_WRITE32(AON_TIMER_INTR_STATE_REG_OFFSET, reg);
@@ -442,7 +438,6 @@ TEST_F(IrqAcknowledgeTest, Success) {
       dif_aon_timer_irq_acknowledge(&aon_, kDifAonTimerIrqWakeupThreshold),
       kDifAonTimerOk);
 
-  // Write one to clear.
   reg = bitfield_bit32_write(0, AON_TIMER_INTR_STATE_WDOG_TIMER_EXPIRED_BIT,
                              true);
   EXPECT_WRITE32(AON_TIMER_INTR_STATE_REG_OFFSET, reg);
@@ -467,7 +462,6 @@ TEST_F(IrqForceTest, BadInterrupt) {
 }
 
 TEST_F(IrqForceTest, Success) {
-  // Write one to clear.
   uint32_t reg =
       bitfield_bit32_write(0, AON_TIMER_INTR_TEST_WKUP_TIMER_EXPIRED_BIT, true);
   EXPECT_WRITE32(AON_TIMER_INTR_TEST_REG_OFFSET, reg);
@@ -475,7 +469,6 @@ TEST_F(IrqForceTest, Success) {
   EXPECT_EQ(dif_aon_timer_irq_force(&aon_, kDifAonTimerIrqWakeupThreshold),
             kDifAonTimerOk);
 
-  // Write one to clear.
   reg =
       bitfield_bit32_write(0, AON_TIMER_INTR_TEST_WDOG_TIMER_EXPIRED_BIT, true);
   EXPECT_WRITE32(AON_TIMER_INTR_TEST_REG_OFFSET, reg);
