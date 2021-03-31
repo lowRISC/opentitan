@@ -638,15 +638,15 @@
   // Exported clocks
   ////////////////////////////////////////////////////
 
-  assign clocks_ast_o.clk_ast_usbdev_io_div4_peri = clocks_o.clk_io_div4_peri;
-  assign clocks_ast_o.clk_ast_usbdev_aon_peri = clocks_o.clk_aon_peri;
-  assign clocks_ast_o.clk_ast_usbdev_usb_peri = clocks_o.clk_usb_peri;
-  assign clocks_ast_o.clk_ast_adc_ctrl_aon_io_div4_peri = clocks_o.clk_io_div4_peri;
-  assign clocks_ast_o.clk_ast_adc_ctrl_aon_aon_peri = clocks_o.clk_aon_peri;
-  assign clocks_ast_o.clk_ast_ast_io_div4_secure = clocks_o.clk_io_div4_secure;
-  assign clocks_ast_o.clk_ast_sensor_ctrl_aon_io_div4_secure = clocks_o.clk_io_div4_secure;
-  assign clocks_ast_o.clk_ast_entropy_src_main_secure = clocks_o.clk_main_secure;
-  assign clocks_ast_o.clk_ast_edn0_main_secure = clocks_o.clk_main_secure;
+      assign clocks_ast_o.clk_ast_usbdev_io_div4_peri = clocks_o.clk_io_div4_peri;
+      assign clocks_ast_o.clk_ast_usbdev_aon_peri = clocks_o.clk_aon_peri;
+      assign clocks_ast_o.clk_ast_usbdev_usb_peri = clocks_o.clk_usb_peri;
+      assign clocks_ast_o.clk_ast_adc_ctrl_aon_io_div4_peri = clocks_o.clk_io_div4_peri;
+      assign clocks_ast_o.clk_ast_adc_ctrl_aon_aon_peri = clocks_o.clk_aon_peri;
+      assign clocks_ast_o.clk_ast_ast_io_div4_secure = clocks_o.clk_io_div4_secure;
+      assign clocks_ast_o.clk_ast_sensor_ctrl_aon_io_div4_secure = clocks_o.clk_io_div4_secure;
+      assign clocks_ast_o.clk_ast_entropy_src_main_secure = clocks_o.clk_main_secure;
+      assign clocks_ast_o.clk_ast_edn0_main_secure = clocks_o.clk_main_secure;
 
   ////////////////////////////////////////////////////
   // Assertions
@@ -654,6 +654,10 @@
 
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
+  `ASSERT_KNOWN(AstClkBypReqKnownO_A, ast_clk_byp_req_o)
+  `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
+  `ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
   `ASSERT_KNOWN(ExportClocksKownO_A, clocks_ast_o)
   `ASSERT_KNOWN(ClocksKownO_A, clocks_o)
 

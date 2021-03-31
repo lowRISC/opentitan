@@ -360,7 +360,7 @@ srcs = clks_attr['srcs']
 % for intf, eps in export_clks.items():
   % for ep, clks in eps.items():
     % for clk in clks:
-  assign clocks_${intf}_o.clk_${intf}_${ep}_${clk} = clocks_o.clk_${clk};
+      assign clocks_${intf}_o.clk_${intf}_${ep}_${clk} = clocks_o.clk_${clk};
     % endfor
   % endfor
 % endfor
@@ -371,6 +371,10 @@ srcs = clks_attr['srcs']
 
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
+  `ASSERT_KNOWN(AstClkBypReqKnownO_A, ast_clk_byp_req_o)
+  `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
+  `ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
 % for intf in export_clks:
   `ASSERT_KNOWN(ExportClocksKownO_A, clocks_${intf}_o)
 % endfor
