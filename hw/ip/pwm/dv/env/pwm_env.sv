@@ -11,32 +11,37 @@ class pwm_env extends cip_base_env #(
   `uvm_component_utils(pwm_env)
   `uvm_component_new
 
-  pwm_agent m_pwm_agent;
+  pwm_monitor m_pwm_monitor;
 
   function void build_phase(uvm_phase phase);
-    int core_clk_freq_mhz;
-
     super.build_phase(phase);
-    m_pwm_agent = pwm_agent::type_id::create("m_pwm_agent", this);
-    uvm_config_db#(pwm_agent_cfg)::set(this, "m_pwm_agent*", "cfg", cfg.m_pwm_agent_cfg);
-    cfg.m_pwm_agent_cfg.en_cov = cfg.en_cov;
+
+    // instantiate pwm_monitor
+    m_pwm_monitor = pwm_monitor::type_id::create("m_pwm_monitor", this);
+    m_pwm_monitor.cfg = cfg;
+    m_pwm_monitor.cov = cov;
+    // get vif handle
+    if (!uvm_config_db#(virtual pwm_if#(PWM_NUM_CHANNELS))::
+        get(this, "", "pwm_vif", cfg.pwm_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get pwm_vif from uvm_config_db")
+    end
 
     // generate core clock (must slower than bus clock)
-    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "clk_rst_core_vif",
-        cfg.clk_rst_core_vif)) begin
+    if (!uvm_config_db#(virtual clk_rst_if)::
+        get(this, "", "clk_rst_core_vif", cfg.clk_rst_core_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get clk_rst_core_vif from uvm_config_db")
     end
-    core_clk_freq_mhz = cfg.get_clk_core_freq(cfg.seq_cfg.pwm_core_clk_ratio);
-    cfg.clk_rst_core_vif.set_freq_mhz(core_clk_freq_mhz);
+    cfg.core_clk_freq_mhz = cfg.get_clk_core_freq(cfg.seq_cfg.pwm_core_clk_ratio);
+    cfg.clk_rst_core_vif.set_freq_mhz(cfg.core_clk_freq_mhz);
   endfunction : build_phase
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     if (cfg.en_scb) begin
-      for (uint i = 0; i < NUM_PWM_CHANNELS; i++) begin
-        m_pwm_agent.monitor.item_port[i].connect(scoreboard.item_fifo[i].analysis_export);
+      for (int i = 0; i < PWM_NUM_CHANNELS; i++) begin
+        m_pwm_monitor.item_port[i].connect(scoreboard.item_fifo[i].analysis_export);
       end
     end
-  endfunction
+  endfunction : connect_phase
 
 endclass : pwm_env

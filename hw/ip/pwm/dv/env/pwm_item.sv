@@ -3,12 +3,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class pwm_item extends uvm_sequence_item;
-  bit  data_q[$];
+  int  en_cycles;
+  int  duty_cycle;
 
   `uvm_object_utils_begin(pwm_item)
-    `uvm_field_queue_int(data_q, UVM_DEFAULT)
+    `uvm_field_int(en_cycles,  UVM_DEFAULT)
+    `uvm_field_int(duty_cycle, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new
 
-endclass
+  function void reset();
+    en_cycles  = 0;
+    duty_cycle = 0;
+  endfunction : reset
+endclass : pwm_item

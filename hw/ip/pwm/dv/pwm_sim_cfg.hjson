@@ -46,11 +46,10 @@
 
   // List of test specifications.
   tests: [
-// TODO : for V1
-//    {
-//      name: pwm_smoke
-//      uvm_test_seq: pwm_smoke_vseq
-//    }
+    {
+      name: pwm_smoke
+      uvm_test_seq: pwm_smoke_vseq
+    }
   ]
 
   // List of regressions.
