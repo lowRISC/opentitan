@@ -2,21 +2,23 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class flash_ctrl_env #(type CFG_T = flash_ctrl_env_cfg)
+class flash_ctrl_env #(type CFG_T = flash_ctrl_env_cfg,
+                       type SCOREBOARD_T = flash_ctrl_scoreboard,
+                       type VIRTUAL_SEQUENCER_T = flash_ctrl_virtual_sequencer)
                        extends cip_base_env #(
     .CFG_T              (CFG_T),
     .COV_T              (flash_ctrl_env_cov),
-    .VIRTUAL_SEQUENCER_T(flash_ctrl_virtual_sequencer),
-    .SCOREBOARD_T       (flash_ctrl_scoreboard)
+    .VIRTUAL_SEQUENCER_T(VIRTUAL_SEQUENCER_T),
+    .SCOREBOARD_T       (SCOREBOARD_T)
   );
-  `uvm_component_param_utils(flash_ctrl_env #(CFG_T))
+  `uvm_component_param_utils(flash_ctrl_env #(CFG_T, SCOREBOARD_T, VIRTUAL_SEQUENCER_T))
 
   tl_agent        m_eflash_tl_agent;
   tl_reg_adapter  m_eflash_tl_reg_adapter;
 
   `uvm_component_new
 
-  function void build_phase(uvm_phase phase);
+  virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     if (cfg.zero_delays) begin
       cfg.m_eflash_tl_agent_cfg.a_valid_delay_min = 0;
@@ -30,7 +32,7 @@ class flash_ctrl_env #(type CFG_T = flash_ctrl_env_cfg)
     end
 
     // get the vifs from config db
-    if(`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin // If using open-source flash
+    if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin // If using open-source flash
       flash_dv_part_e part = part.first(); 
       for (int i = 0; i < part.num(); i++, part = part.next()) begin
         foreach (cfg.mem_bkdr_vifs[, bank]) begin
@@ -52,7 +54,7 @@ class flash_ctrl_env #(type CFG_T = flash_ctrl_env_cfg)
     cfg.m_eflash_tl_agent_cfg.en_cov = cfg.en_cov;
   endfunction
 
-  function void connect_phase(uvm_phase phase);
+  virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     if (cfg.en_scb) begin
       m_eflash_tl_agent.monitor.a_chan_port.connect(
@@ -68,7 +70,9 @@ class flash_ctrl_env #(type CFG_T = flash_ctrl_env_cfg)
   virtual function void end_of_elaboration_phase(uvm_phase phase);
     // We have a custom design wrapper around the flash controller, so we need to fix the
     // HDL path root.
-    cfg.ral.set_hdl_path_root("tb.dut.u_flash_ctrl", "BkdrRegPathRtl");
+    if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin // If using open-source flash
+      cfg.ral.set_hdl_path_root("tb.dut.u_flash_ctrl", "BkdrRegPathRtl");
+    end
     super.end_of_elaboration_phase(phase);
   endfunction : end_of_elaboration_phase
 

@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class flash_ctrl_scoreboard extends cip_base_scoreboard #(
-    .CFG_T(flash_ctrl_env_cfg),
+class flash_ctrl_scoreboard #(type CFG_T = flash_ctrl_env_cfg)
+                            extends cip_base_scoreboard #(
+    .CFG_T(CFG_T),
     .RAL_T(flash_ctrl_reg_block),
     .COV_T(flash_ctrl_env_cov)
   );
-  `uvm_component_utils(flash_ctrl_scoreboard)
+  `uvm_component_param_utils(flash_ctrl_scoreboard #(CFG_T))
 
   // local variables
 
@@ -19,17 +20,17 @@ class flash_ctrl_scoreboard extends cip_base_scoreboard #(
 
   `uvm_component_new
 
-  function void build_phase(uvm_phase phase);
+  virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     eflash_tl_a_chan_fifo = new("eflash_tl_a_chan_fifo", this);
     eflash_tl_d_chan_fifo = new("eflash_tl_d_chan_fifo", this);
   endfunction
 
-  function void connect_phase(uvm_phase phase);
+  virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
   endfunction
 
-  task run_phase(uvm_phase phase);
+  virtual task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
       process_eflash_tl_a_chan_fifo();
@@ -125,7 +126,7 @@ class flash_ctrl_scoreboard extends cip_base_scoreboard #(
     eflash_tl_d_chan_fifo.flush();
   endfunction
 
-  function void check_phase(uvm_phase phase);
+  virtual function void check_phase(uvm_phase phase);
     super.check_phase(phase);
     // post test checks - ensure that all local fifos and queues are empty
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, eflash_tl_a_chan_fifo)

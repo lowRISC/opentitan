@@ -44,11 +44,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_reg_block)
     end
   endfunction : initialize
 
-  
   // --------------------------------------------
   // Back-door access methods
   // --------------------------------------------
-
 
   virtual function void flash_mem_bkdr_init(flash_dv_part_e part = FlashPartData,
                                             flash_mem_init_e flash_mem_init);
@@ -109,7 +107,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(flash_ctrl_reg_block)
     endcase
     for (int i = 0; i < flash_op.num_words; i++) begin
       logic [TL_DW-1:0] loc_data;
-      if(flash_mem_init == FlashMemInitCustom)
+      if (flash_mem_init == FlashMemInitCustom)
         loc_data = data[i];
       else if (flash_mem_init == FlashMemInitRandomize)
         loc_data = $urandom;

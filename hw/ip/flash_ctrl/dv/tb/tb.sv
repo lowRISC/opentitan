@@ -81,7 +81,9 @@ module tb;
   assign flash_power_down_h = (init ? 1'b1 : 1'b0);
   initial begin
     init = 1'b1;
-    #(1us);
+    // Wait for reset, then 5 cycles more.
+    wait(rst_n);
+    clk_rst_if.wait_clks(5);
     init = 1'b0;
   end
 
@@ -97,7 +99,7 @@ module tb;
 
   for (genvar i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin : gen_mem_bkdr_if_i
 
-    if(`PRIM_DEFAULT_IMPL==prim_pkg::ImplGeneric) begin : gen_generic // If using open-source flash
+    if (`PRIM_DEFAULT_IMPL==prim_pkg::ImplGeneric) begin : gen_generic // If using open-source flash
 
       flash_dv_part_e part = part.first();
 
