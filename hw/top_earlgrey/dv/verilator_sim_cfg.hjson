@@ -137,6 +137,10 @@
       sw_images: ["sw/device/tests/dif_uart_smoketest:1"]
     }
     {
+      name: dif_kmac_smoketest
+      sw_images: ["sw/device/tests/dif_kmac_smoketest:1"]
+    }
+    {
       name: flash_ctrl_test
       sw_images: ["sw/device/tests/flash_ctrl_test:1"]
     }

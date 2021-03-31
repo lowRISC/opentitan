@@ -6,9 +6,36 @@
 
 #include <assert.h>
 
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 
-// TODO: implement!
+#include "kmac_regs.h"
+
+enum {
+  /**
+   * The maximum amount of usable bits in the output state.
+   *
+   * This constant may be assumed to be a multiple of 32.
+   *
+   * The actual number of usable bits may be lower than the value defined
+   * depending on the mode in use. The intent is that this constant is useful
+   * for sizing fixed length buffers.
+   *
+   * Formula for the rate in bits is:
+   *
+   *   r = 1600 - c
+   *
+   * Where c is the capacity (the security level in bits multiplied by two).
+   *
+   * The lowest security level is 128 (e.g. SHAKE128).
+   */
+  kDifKmacMaximumBitRate = 1600 - (2 * 128),
+
+  /**
+   * The offset of the second share within the output state register.
+   */
+  kDifKmacStateShareOffset = 0x100,
+};
 
 dif_kmac_result_t dif_kmac_customization_string_init(
     const char *data, size_t len, dif_kmac_customization_string_t *out) {
@@ -63,6 +90,346 @@ dif_kmac_result_t dif_kmac_function_name_init(const char *data, size_t len,
   out->buffer[1] = (char)(len * 8);
 
   memcpy(&out->buffer[2], data, len);
+
+  return kDifKmacOk;
+}
+
+/**
+ * Report whether the hardware is currently idle.
+ *
+ * If the hardware is not idle then the `CFG` register is locked.
+ *
+ * @param params Hardware parameters.
+ * @returns Whether the hardware is currently idle or not.
+ */
+static bool is_state_idle(dif_kmac_params_t params) {
+  uint32_t reg = mmio_region_read32(params.base_addr, KMAC_STATUS_REG_OFFSET);
+  return bitfield_bit32_read(reg, KMAC_STATUS_SHA3_IDLE_BIT);
+}
+
+/**
+ * Report whether the hardware is currently in the absorb state and accepting
+ * writes to the message FIFO.
+ *
+ * Note that writes to the message FIFO may still block if it is full.
+ *
+ * @param params Hardware parameters.
+ * @returns Whether the hardware is currently absorbing or not.
+ */
+static bool is_state_absorb(dif_kmac_params_t params) {
+  uint32_t reg = mmio_region_read32(params.base_addr, KMAC_STATUS_REG_OFFSET);
+  return bitfield_bit32_read(reg, KMAC_STATUS_SHA3_ABSORB_BIT);
+}
+
+/**
+ * Report whether the hardware is currently in the squeeze state which means
+ * that the output state is valid and may be read by software.
+ *
+ * @param params Hardware parameters.
+ * @returns Whether the hardware is currently in the squeeze state or not.
+ */
+static bool is_state_squeeze(dif_kmac_params_t params) {
+  uint32_t reg = mmio_region_read32(params.base_addr, KMAC_STATUS_REG_OFFSET);
+  return bitfield_bit32_read(reg, KMAC_STATUS_SHA3_SQUEEZE_BIT);
+}
+
+dif_kmac_result_t dif_kmac_init(dif_kmac_params_t params, dif_kmac_t *kmac) {
+  if (kmac == NULL) {
+    return kDifKmacBadArg;
+  }
+
+  *kmac = (dif_kmac_t){.params = params};
+  return kDifKmacOk;
+}
+
+dif_kmac_result_t dif_kmac_configure(dif_kmac_t *kmac,
+                                     dif_kmac_config_t config) {
+  if (kmac == NULL) {
+    return kDifKmacBadArg;
+  }
+
+  // Entropy mode.
+  uint32_t entropy_mode_value;
+  bool entropy_ready = false;
+  switch (config.entropy_mode) {
+    case kDifKmacEntropyModeIdle:
+      entropy_mode_value = KMAC_CFG_ENTROPY_MODE_VALUE_IDLE_MODE;
+      break;
+    case kDifKmacEntropyModeEdn:
+      entropy_mode_value = KMAC_CFG_ENTROPY_MODE_VALUE_EDN_MODE;
+      entropy_ready = true;
+      break;
+    case kDifKmacEntropyModeSoftware:
+      entropy_mode_value = KMAC_CFG_ENTROPY_MODE_VALUE_SW_MODE;
+      break;
+    default:
+      return kDifKmacBadArg;
+  }
+
+  // Check that the hardware is in an idle state.
+  if (!is_state_idle(kmac->params)) {
+    return kDifKmacLocked;
+  }
+
+  // Write configuration register.
+  uint32_t cfg_reg = 0;
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_MSG_ENDIANNESS_BIT,
+                                 config.message_big_endian);
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_STATE_ENDIANNESS_BIT,
+                                 config.output_big_endian);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_ENTROPY_MODE_FIELD,
+                                   entropy_mode_value);
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_ENTROPY_FAST_PROCESS_BIT,
+                                 config.entropy_fast_process);
+  cfg_reg =
+      bitfield_bit32_write(cfg_reg, KMAC_CFG_ENTROPY_READY_BIT, entropy_ready);
+  mmio_region_write32(kmac->params.base_addr, KMAC_CFG_REG_OFFSET, cfg_reg);
+
+  // Write entropy period register.
+  uint32_t entropy_period_reg = 0;
+  entropy_period_reg = bitfield_field32_write(
+      entropy_period_reg, KMAC_ENTROPY_PERIOD_ENTROPY_TIMER_FIELD,
+      config.entropy_reseed_interval);
+  entropy_period_reg = bitfield_field32_write(
+      entropy_period_reg, KMAC_ENTROPY_PERIOD_WAIT_TIMER_FIELD,
+      config.entropy_wait_timer);
+  mmio_region_write32(kmac->params.base_addr, KMAC_ENTROPY_PERIOD_REG_OFFSET,
+                      entropy_period_reg);
+
+  // Write entropy seed registers.
+  mmio_region_write32(kmac->params.base_addr,
+                      KMAC_ENTROPY_SEED_LOWER_REG_OFFSET,
+                      (uint32_t)config.entropy_seed);
+  mmio_region_write32(kmac->params.base_addr,
+                      KMAC_ENTROPY_SEED_UPPER_REG_OFFSET,
+                      (uint32_t)(config.entropy_seed >> 32));
+
+  return kDifKmacOk;
+}
+
+/**
+ * Calculate the rate (r) in bits from the given security level.
+ *
+ * @param security_level Security level in bits.
+ * @returns Rate in bits.
+ */
+static uint32_t calculate_rate_bits(uint32_t security_level) {
+  // Formula for the rate in bits is:
+  //
+  //   r = 1600 - c
+  //
+  // Where c is the capacity (the security level in bits multiplied by two).
+  return 1600 - 2 * security_level;
+}
+
+dif_kmac_result_t dif_kmac_mode_sha3_start(dif_kmac_t *kmac,
+                                           dif_kmac_mode_sha3_t mode) {
+  if (kmac == NULL) {
+    return kDifKmacBadArg;
+  }
+
+  // Set key strength and calculate rate (r) and digest length (d) in 32-bit
+  // words.
+  uint32_t kstrength;
+  switch (mode) {
+    case kDifKmacModeSha3Len224:
+      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L224;
+      kmac->offset = 0;
+      kmac->r = calculate_rate_bits(224) / 32;
+      kmac->d = 224 / 32;
+      break;
+    case kDifKmacModeSha3Len256:
+      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L256;
+      kmac->offset = 0;
+      kmac->r = calculate_rate_bits(256) / 32;
+      kmac->d = 256 / 32;
+      break;
+    case kDifKmacModeSha3Len384:
+      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L384;
+      kmac->offset = 0;
+      kmac->r = calculate_rate_bits(384) / 32;
+      kmac->d = 384 / 32;
+      break;
+    case kDifKmacModeSha3Len512:
+      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L512;
+      kmac->offset = 0;
+      kmac->r = calculate_rate_bits(512) / 32;
+      kmac->d = 512 / 32;
+      break;
+    default:
+      return kDifKmacBadArg;
+  }
+
+  // Hardware must be idle to start an operation.
+  if (!is_state_idle(kmac->params)) {
+    return kDifKmacError;
+  }
+
+  // Configure SHA-3 mode with the given strength.
+  uint32_t cfg_reg =
+      mmio_region_read32(kmac->params.base_addr, KMAC_CFG_REG_OFFSET);
+  cfg_reg =
+      bitfield_field32_write(cfg_reg, KMAC_CFG_KSTRENGTH_FIELD, kstrength);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_MODE_FIELD,
+                                   KMAC_CFG_MODE_VALUE_SHA3);
+  mmio_region_write32(kmac->params.base_addr, KMAC_CFG_REG_OFFSET, cfg_reg);
+
+  // Issue start command.
+  uint32_t cmd_reg =
+      bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_START);
+  mmio_region_write32(kmac->params.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+
+  // Poll until the status register is in the 'absorb' state.
+  while (true) {
+    if (is_state_absorb(kmac->params)) {
+      break;
+    }
+    // TODO(#6248): check for error.
+  }
+
+  return kDifKmacOk;
+}
+
+dif_kmac_result_t dif_kmac_absorb(dif_kmac_t *kmac, const void *msg, size_t len,
+                                  size_t *processed) {
+  // Set the number of bytes processed to 0.
+  if (processed != NULL) {
+    *processed = 0;
+  }
+
+  if (kmac == NULL || (msg == NULL && len != 0)) {
+    return kDifKmacBadArg;
+  }
+
+  // Check that an operation has been started.
+  if (kmac->r == 0) {
+    return kDifKmacError;
+  }
+
+  // Poll until the the status register is in the 'absorb' state.
+  if (!is_state_absorb(kmac->params)) {
+    return kDifKmacError;
+  }
+
+  // Copy the message one byte at a time.
+  // This could be sped up copying a word at a time but be careful
+  // about message endianness (e.g. only copy a word at a time when in
+  // little-endian mode).
+  for (size_t i = 0; i < len; ++i) {
+    mmio_region_write8(kmac->params.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
+                       ((const uint8_t *)msg)[i]);
+  }
+
+  if (processed != NULL) {
+    *processed = len;
+  }
+  return kDifKmacOk;
+}
+
+dif_kmac_result_t dif_kmac_squeeze(dif_kmac_t *kmac, uint32_t *out, size_t len,
+                                   size_t *processed) {
+  if (kmac == NULL || (out == NULL && len != 0)) {
+    return kDifKmacBadArg;
+  }
+
+  // Set `processed` to 0 so we can return early without setting it again.
+  if (processed != NULL) {
+    *processed = 0;
+  }
+
+  // Move into squeezing state (if not already in it).
+  // Do this even if the length requested is 0 or too big.
+  if (!kmac->squeezing) {
+    kmac->squeezing = true;
+
+    // Issue squeeze command.
+    uint32_t cmd_reg = bitfield_field32_write(0, KMAC_CMD_CMD_FIELD,
+                                              KMAC_CMD_CMD_VALUE_PROCESS);
+    mmio_region_write32(kmac->params.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+  }
+
+  // If the operation has a fixed length output then the total number of bytes
+  // requested must not exceed that length.
+  if (kmac->d != 0 && len > (kmac->d - kmac->offset)) {
+    return kDifKmacError;
+  }
+
+  if (len == 0) {
+    return kDifKmacOk;
+  }
+
+  // Poll the status register until in the 'squeeze' state.
+  while (true) {
+    if (is_state_squeeze(kmac->params)) {
+      break;
+    }
+    // TODO(#6248): check for error.
+  }
+
+  while (len > 0) {
+    size_t n = len;
+    size_t remaining = (kmac->d == 0 ? kmac->r : kmac->d) - kmac->offset;
+    if (n > remaining) {
+      n = remaining;
+    }
+    if (n == 0) {
+      // TODO(XOF): request more state.
+      return kDifKmacError;
+    }
+
+    uint32_t offset = KMAC_STATE_REG_OFFSET + kmac->offset * sizeof(uint32_t);
+    for (size_t i = 0; i < n; ++i) {
+      // Read both shares from state register and combine using XOR.
+      uint32_t share0 = mmio_region_read32(kmac->params.base_addr, offset);
+      uint32_t share1 = mmio_region_read32(kmac->params.base_addr,
+                                           offset + kDifKmacStateShareOffset);
+      *out++ = share0 ^ share1;
+      offset += sizeof(uint32_t);
+    }
+    kmac->offset += n;
+    len -= n;
+    if (processed != NULL) {
+      *processed += n;
+    }
+  }
+  return kDifKmacOk;
+}
+
+dif_kmac_result_t dif_kmac_end(dif_kmac_t *kmac) {
+  if (kmac == NULL) {
+    return kDifKmacBadArg;
+  }
+
+  // The hardware should (must?) complete squeeze operation before the DONE
+  // command is issued.
+  if (!kmac->squeezing) {
+    return kDifKmacError;
+  }
+  while (true) {
+    if (is_state_squeeze(kmac->params)) {
+      break;
+    }
+    // TODO(#6248): check for error.
+  }
+
+  // Issue done command.
+  uint32_t cmd_reg =
+      bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_DONE);
+  mmio_region_write32(kmac->params.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+
+  // Reset state.
+  kmac->squeezing = false;
+  kmac->offset = 0;
+  kmac->r = 0;
+  kmac->d = 0;
+
+  // Poll status register until in idle state.
+  while (true) {
+    if (is_state_idle(kmac->params)) {
+      break;
+    }
+    // TODO(#6248): check for error.
+  }
 
   return kDifKmacOk;
 }
