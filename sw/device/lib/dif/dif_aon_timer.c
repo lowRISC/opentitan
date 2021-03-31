@@ -24,12 +24,12 @@ const size_t kAonTimerWakeupIrqIndex =
 const size_t kAonTimerWatchdogIrqIndex =
     AON_TIMER_INTR_STATE_WDOG_TIMER_EXPIRED_BIT;
 
-static void aon_clear_wakeup_counter(const dif_aon_timer_t *aon) {
+static void aon_timer_wakeup_clear_counter(const dif_aon_timer_t *aon) {
   mmio_region_write32(aon->params.base_addr, AON_TIMER_WKUP_COUNT_REG_OFFSET,
                       0);
 }
 
-static void aon_toggle_wakeup_timer(const dif_aon_timer_t *aon, bool enable) {
+static void aon_timer_wakeup_toggle(const dif_aon_timer_t *aon, bool enable) {
   uint32_t reg =
       mmio_region_read32(aon->params.base_addr, AON_TIMER_WKUP_CTRL_REG_OFFSET);
   reg = bitfield_bit32_write(reg, AON_TIMER_WKUP_CTRL_ENABLE_BIT, enable);
@@ -37,12 +37,12 @@ static void aon_toggle_wakeup_timer(const dif_aon_timer_t *aon, bool enable) {
                       reg);
 }
 
-static void aon_clear_watchdog_counter(const dif_aon_timer_t *aon) {
+static void aon_timer_watchdog_clear_counter(const dif_aon_timer_t *aon) {
   mmio_region_write32(aon->params.base_addr, AON_TIMER_WDOG_COUNT_REG_OFFSET,
                       0);
 }
 
-static void aon_toggle_watchdog_timer(const dif_aon_timer_t *aon, bool enable) {
+static void aon_timer_watchdog_toggle(const dif_aon_timer_t *aon, bool enable) {
   uint32_t reg =
       mmio_region_read32(aon->params.base_addr, AON_TIMER_WDOG_CTRL_REG_OFFSET);
   reg = bitfield_bit32_write(reg, AON_TIMER_WDOG_CTRL_ENABLE_BIT, enable);
@@ -57,7 +57,7 @@ static void aon_timer_watchdog_lock(const dif_aon_timer_t *aon) {
                       0x00000001);
 }
 
-static bool aon_watchdog_is_locked(const dif_aon_timer_t *aon) {
+static bool aon_timer_watchdog_is_locked(const dif_aon_timer_t *aon) {
   uint32_t reg = mmio_region_read32(aon->params.base_addr,
                                     AON_TIMER_WDOG_REGWEN_REG_OFFSET);
 
@@ -99,8 +99,8 @@ dif_aon_timer_result_t dif_aon_timer_wakeup_start(const dif_aon_timer_t *aon,
   }
 
   // The timer should be stopped first, otherwise it will continue counting up.
-  aon_toggle_wakeup_timer(aon, false);
-  aon_clear_wakeup_counter(aon);
+  aon_timer_wakeup_toggle(aon, false);
+  aon_timer_wakeup_clear_counter(aon);
 
   mmio_region_write32(aon->params.base_addr, AON_TIMER_WKUP_THOLD_REG_OFFSET,
                       threshold);
@@ -119,7 +119,7 @@ dif_aon_timer_result_t dif_aon_timer_wakeup_stop(const dif_aon_timer_t *aon) {
     return kDifAonTimerBadArg;
   }
 
-  aon_toggle_wakeup_timer(aon, false);
+  aon_timer_wakeup_toggle(aon, false);
 
   return kDifAonTimerOk;
 }
@@ -130,8 +130,8 @@ dif_aon_timer_result_t dif_aon_timer_wakeup_restart(
     return kDifAonTimerBadArg;
   }
 
-  aon_clear_wakeup_counter(aon);
-  aon_toggle_wakeup_timer(aon, true);
+  aon_timer_wakeup_clear_counter(aon);
+  aon_timer_wakeup_toggle(aon, true);
 
   return kDifAonTimerOk;
 }
@@ -155,13 +155,13 @@ dif_aon_timer_watchdog_result_t dif_aon_timer_watchdog_start(
     return kDifAonTimerWatchdogBadArg;
   }
 
-  if (aon_watchdog_is_locked(aon)) {
+  if (aon_timer_watchdog_is_locked(aon)) {
     return kDifAonTimerWatchdogLocked;
   }
 
   // The timer should be stopped first, otherwise it will continue counting up.
-  aon_toggle_watchdog_timer(aon, false);
-  aon_clear_watchdog_counter(aon);
+  aon_timer_watchdog_toggle(aon, false);
+  aon_timer_watchdog_clear_counter(aon);
 
   mmio_region_write32(aon->params.base_addr,
                       AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET, bark_threshold);
@@ -191,11 +191,11 @@ dif_aon_timer_watchdog_result_t dif_aon_timer_watchdog_stop(
     return kDifAonTimerWatchdogBadArg;
   }
 
-  if (aon_watchdog_is_locked(aon)) {
+  if (aon_timer_watchdog_is_locked(aon)) {
     return kDifAonTimerWatchdogLocked;
   }
 
-  aon_toggle_watchdog_timer(aon, false);
+  aon_timer_watchdog_toggle(aon, false);
 
   return kDifAonTimerWatchdogOk;
 }
@@ -206,12 +206,12 @@ dif_aon_timer_watchdog_result_t dif_aon_timer_watchdog_restart(
     return kDifAonTimerWatchdogBadArg;
   }
 
-  if (aon_watchdog_is_locked(aon)) {
+  if (aon_timer_watchdog_is_locked(aon)) {
     return kDifAonTimerWatchdogLocked;
   }
 
-  aon_clear_watchdog_counter(aon);
-  aon_toggle_watchdog_timer(aon, true);
+  aon_timer_watchdog_clear_counter(aon);
+  aon_timer_watchdog_toggle(aon, true);
 
   return kDifAonTimerWatchdogOk;
 }
@@ -233,7 +233,7 @@ dif_aon_timer_result_t dif_aon_timer_watchdog_pet(const dif_aon_timer_t *aon) {
     return kDifAonTimerBadArg;
   }
 
-  aon_clear_watchdog_counter(aon);
+  aon_timer_watchdog_clear_counter(aon);
 
   return kDifAonTimerOk;
 }
@@ -255,7 +255,7 @@ dif_aon_timer_result_t dif_aon_timer_watchdog_is_locked(
     return kDifAonTimerBadArg;
   }
 
-  *is_locked = aon_watchdog_is_locked(aon);
+  *is_locked = aon_timer_watchdog_is_locked(aon);
 
   return kDifAonTimerOk;
 }
