@@ -534,8 +534,6 @@ module spi_device (
           DpNone: begin
             io_mode = sub_iomode[IoModeCmdParse];
 
-            p2s_valid = sub_p2s_valid[IoModeCmdParse];
-            p2s_data  = sub_p2s_data[IoModeCmdParse];
             sub_p2s_sent[IoModeCmdParse] = p2s_sent;
 
             // Leave SRAM default;
@@ -565,8 +563,6 @@ module spi_device (
           default: begin
             io_mode = sub_iomode[IoModeCmdParse];
 
-            p2s_valid = sub_p2s_valid[IoModeCmdParse];
-            p2s_data  = sub_p2s_data[IoModeCmdParse];
             sub_p2s_sent[IoModeCmdParse] = p2s_sent;
           end
         endcase

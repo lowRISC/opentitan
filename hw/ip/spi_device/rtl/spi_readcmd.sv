@@ -161,6 +161,12 @@ module spi_readcmd
   assign unused_threshold = ^readbuf_threshold_i;
   assign read_watermark_o = 1'b 0;
 
+  logic unused_p2s_sent ;
+  assign unused_p2s_sent = p2s_sent_i;
+
+  spi_mode_e unused_spi_mode ; // will be used for passthrough for output enable
+  assign unused_spi_mode = spi_mode_i;
+
   /////////////////
   // Definitions //
   /////////////////
@@ -244,6 +250,7 @@ module spi_readcmd
 
   // Double buffering signals
   logic readbuf_idx; // 0 or 1
+  logic readbuf_flip; // if this is asserted, readbuf_idx flips.
 
   // bit count within a word
   logic bitcnt_update;
@@ -251,7 +258,7 @@ module spi_readcmd
   logic [4:0] bitcnt; // count down from 31 or partial for first unaligned
 
   // FIFO
-  logic fifo_rvalid, fifo_pop;
+  logic unused_fifo_rvalid, fifo_pop;
   sram_data_t fifo_rdata;
 
   // offset_update: latch addr_d[1:0] into fifo_byteoffset when the statemachine
@@ -311,6 +318,17 @@ module spi_readcmd
     end else begin
       // 3B
       addr_ready_in_word = (s2p_bitcnt_i == BitCntW'(8+16+6)) ? 1'b 1 : 1'b 0;
+    end
+  end
+
+  always_comb begin
+    addr_latched = 1'b 0;
+
+    // TODO: handle the QuadIO case.
+    if (addr_4b_en_i) begin
+      addr_latched = (s2p_bitcnt_i == BitCntW'(8+32)) ? 1'b 1 : 1'b 0;
+    end else begin
+      addr_latched = (s2p_bitcnt_i == BitCntW'(8+24)) ? 1'b 1 : 1'b 0;
     end
   end
 
@@ -420,6 +438,32 @@ module spi_readcmd
     end
   end
   //- END:   FIFO to P2S datapath ---------------------------------------------
+
+  //= BEGIN: Double Buffering =================================================
+
+  // Readbuf Index:
+  //
+  // this signal is not reset by CSb. The value should be alive throughout the
+  // CSb event. (last_access_addr too)
+
+  always_ff @(posedge clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      readbuf_idx <= 1'b 0;
+    end else if (readbuf_flip) begin
+      // readbuf_flip happens when the module completes the second to the last
+      // byte of a buffer through SPI. There will be a chance that will be
+      // cancelled by de-asserting CSb. This logic does not guarantee to cover
+      // that corner case. It expects to complete a byte transfer if it sends
+      // the first beat of the byte.
+      readbuf_idx <= ~readbuf_idx;
+    end
+  end
+
+  // readbuf_flip
+  // TODO: implement. Below is temporary.
+  assign readbuf_flip = (main_st == MainOutput && addr_q[9:0] == '1);
+
+  //- END:   Double Buffering -------------------------------------------------
 
   ///////////////////
   // State Machine //
@@ -554,6 +598,10 @@ module spi_readcmd
         end
       end
 
+      MainError: begin
+        main_st_d = MainError;
+      end
+
       default: begin
         main_st_d = MainReset;
       end
@@ -583,7 +631,7 @@ module spi_readcmd
     .wready_o (), // not used
     .wdata_i  (sram_rdata_i),
 
-    .rvalid_o (fifo_rvalid),
+    .rvalid_o (unused_fifo_rvalid),
     .rready_i (fifo_pop),
     .rdata_o  (fifo_rdata),
 
