@@ -579,7 +579,7 @@ def clean_odirs(odir, max_odirs, ts_format=TS_FORMAT):
                   key=os.path.getctime,
                   reverse=True)
 
-    for old in dirs[max_odirs - 1:]:
+    for old in dirs[max(0, max_odirs - 1):]:
         shutil.rmtree(old, ignore_errors=True)
 
-    return dirs[0:max_odirs - 2]
+    return [] if max_odirs == 0 else dirs[:max_odirs - 1]
