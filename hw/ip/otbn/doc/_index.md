@@ -2,13 +2,6 @@
 title: OpenTitan Big Number Accelerator (OTBN) Technical Specification
 ---
 
-<div class="bd-callout bd-callout-warning">
-  <h5>Note on the status of this document</h5>
-
-  **This specification is work in progress and will see significant changes before it can be considered final.**
-  We invite input of all kind through the standard means of the OpenTitan project; a good starting point is filing an issue in our [GitHub issue tracker](https://github.com/lowRISC/opentitan/issues).
-</div>
-
 # Overview
 
 This document specifies functionality of the OpenTitan Big Number Accelerator, or OTBN.
