@@ -20,16 +20,17 @@ from mako import exceptions
 from mako.template import Template
 
 import tlgen
-from reggen import access, gen_dv, gen_rtl, window
+from reggen import access, gen_rtl, window
 from reggen.inter_signal import InterSignal
 from reggen.ip_block import IpBlock
 from reggen.lib import check_list
-from reggen.top import Top
 from topgen import amend_clocks, get_hjsonobj_xbars
 from topgen import intermodule as im
 from topgen import lib as lib
 from topgen import merge_top, search_ips, validate_top
 from topgen.c import TopGenC
+from topgen.gen_dv import gen_dv
+from topgen.top import Top
 
 # Common header for generated files
 warnhdr = '''//
@@ -829,7 +830,7 @@ def generate_top_ral(top: Dict[str, object],
     chip = Top(regwidth, name_to_block, inst_to_block, if_addrs, mems, attrs)
 
     # generate the top ral model with template
-    return gen_dv.gen_top_dv(chip, dv_base_prefix, str(out_path))
+    return gen_dv(chip, dv_base_prefix, str(out_path))
 
 
 def _process_top(topcfg, args, cfg_path, out_path, pass_idx):

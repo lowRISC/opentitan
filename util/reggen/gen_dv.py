@@ -5,7 +5,7 @@
 
 import logging as log
 import os
-from typing import List, Optional, Tuple
+from typing import List
 
 import yaml
 
@@ -15,7 +15,6 @@ from pkg_resources import resource_filename
 
 from .ip_block import IpBlock
 from .register import Register
-from .top import Top
 from .window import Window
 
 
@@ -39,15 +38,10 @@ def miname(m: Window) -> str:
     return m.name.lower()
 
 
-def sv_base_addr(top: Top, if_name: Tuple[str, Optional[str]]) -> str:
-    '''Get the base address of a device interface in SV syntax'''
-    return "{}'h{:x}".format(top.regwidth, top.if_addrs[if_name])
-
-
-def _gen_core_file(outdir: str,
-                   lblock: str,
-                   dv_base_prefix: str,
-                   paths: List[str]) -> None:
+def gen_core_file(outdir: str,
+                  lblock: str,
+                  dv_base_prefix: str,
+                  paths: List[str]) -> None:
     depends = ["lowrisc:dv:dv_base_reg"]
     if dv_base_prefix and dv_base_prefix != "dv_base":
         depends.append("lowrisc:dv:{}_reg".format(dv_base_prefix))
@@ -110,31 +104,5 @@ def gen_dv(block: IpBlock, dv_base_prefix: str, outdir: str) -> int:
                 log.error(exceptions.text_error_template().render())
                 return 1
 
-    _gen_core_file(outdir, lblock, dv_base_prefix, generated)
-    return 0
-
-
-def gen_top_dv(top: Top,
-               dv_base_prefix: str,
-               outdir: str) -> int:
-    '''Generate DV RAL model for a Top'''
-    # Read template
-    lookup = TemplateLookup(directories=[resource_filename('reggen', '.')])
-    uvm_reg_tpl = lookup.get_template('top_uvm_reg.sv.tpl')
-
-    # Expand template
-    try:
-        to_write = uvm_reg_tpl.render(top=top,
-                                      dv_base_prefix=dv_base_prefix)
-    except:  # noqa: E722
-        log.error(exceptions.text_error_template().render())
-        return 1
-
-    # Dump to output file
-    dest_path = '{}/chip_ral_pkg.sv'.format(outdir)
-    with open(dest_path, 'w') as fout:
-        fout.write(to_write)
-
-    _gen_core_file(outdir, 'chip', dv_base_prefix, ['chip_ral_pkg.sv'])
-
+    gen_core_file(outdir, lblock, dv_base_prefix, generated)
     return 0
