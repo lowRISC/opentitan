@@ -75,6 +75,13 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   localparam int DecoyCopies = KmacDataIfWidth / 32;
   localparam int DecoyOutputCopies = (KeyWidth / 32) * Shares;
 
+  localparam int unsigned LastAdvRoundInt = AdvRounds - 1;
+  localparam int unsigned LastIdRoundInt = IdRounds - 1;
+  localparam int unsigned LastGenRoundInt = GenRounds - 1;
+  localparam bit [CntWidth-1:0] LastAdvRound = LastAdvRoundInt[CntWidth-1:0];
+  localparam bit [CntWidth-1:0] LastIdRound = LastIdRoundInt[CntWidth-1:0];
+  localparam bit [CntWidth-1:0] LastGenRound = LastGenRoundInt[CntWidth-1:0];
+
   // byte mask for the last transfer
   localparam logic [IfBytes-1:0] AdvByteMask = (AdvRem > 0) ? (2**(AdvRem/8)-1) : {IfBytes{1'b1}};
   localparam logic [IfBytes-1:0] IdByteMask  = (IdRem > 0)  ? (2**(IdRem/8)-1)  : {IfBytes{1'b1}};
@@ -151,11 +158,11 @@ module keymgr_kmac_if import keymgr_pkg::*;(
         if (start) begin
           cnt_set = 1'b1;
           if (adv_en_i) begin
-            rounds = AdvRounds - 1;
+            rounds = LastAdvRound;
           end else if (id_en_i) begin
-            rounds = IdRounds - 1;
+            rounds = LastIdRound;
           end else if (gen_en_i) begin
-            rounds = GenRounds - 1;
+            rounds = LastGenRound;
           end
 
           // we are sending only 1 entry
@@ -262,11 +269,11 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     if (|cmd_error_o || inputs_invalid_o || fsm_error_o) begin
       kmac_data_o.data  = decoy_data;
     end else if (valid && adv_en_i) begin
-      kmac_data_o.data  = adv_data[AdvRounds-1-cnt];
+      kmac_data_o.data  = adv_data[LastAdvRound - cnt];
     end else if (valid && id_en_i) begin
-      kmac_data_o.data  = id_data[IdRounds-1-cnt];
+      kmac_data_o.data  = id_data[LastIdRound - cnt];
     end else if (valid && gen_en_i) begin
-      kmac_data_o.data  = gen_data[GenRounds-1-cnt];
+      kmac_data_o.data  = gen_data[LastGenRound - cnt];
     end
   end
 

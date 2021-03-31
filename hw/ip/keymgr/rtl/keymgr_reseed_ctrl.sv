@@ -29,8 +29,9 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
   output logic [LfsrWidth-1:0] seed_o
 );
 
-  localparam int EdnRounds = LfsrWidth / EdnWidth;
-  localparam int EdnCntWidth = prim_util_pkg::vbits(EdnRounds);
+  localparam int unsigned EdnRounds = LfsrWidth / EdnWidth;
+  localparam int unsigned EdnCntWidth = prim_util_pkg::vbits(EdnRounds);
+  localparam int unsigned LastEdnRound = EdnRounds - 1;
 
   // counter to track number of edn rounds
   logic [EdnCntWidth-1:0] edn_cnt;
@@ -42,7 +43,7 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
   // This tracks how many edn rounds are required to fill up
   // one required entry.
   assign edn_txn_done = edn_req & edn_ack;
-  assign edn_done = (edn_cnt == EdnRounds - 1) & edn_txn_done;
+  assign edn_done = (edn_cnt == LastEdnRound[EdnCntWidth-1:0]) & edn_txn_done;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       edn_cnt <= '0;
