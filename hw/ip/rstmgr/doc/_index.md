@@ -14,7 +14,8 @@ This document describes the functionality of the reset controller and its intera
 *   RISC-V non-debug-module reset support.
 *   Limited and selective software controlled module reset.
 *   Always-on reset information register.
-*   Always-on alert information register.
+*   Always-on alert crash dump register.
+*   Always-on cpu crash dump register.
 
 # Theory of Operation
 
@@ -290,13 +291,30 @@ Despite 3 reset causes all labeled as warm boot, their effects on the system are
 
 This behavioral difference may be important to software, as it implies the configuration of the system may need to be different.
 
-## Alert Information
+## Crash Dump Information
+
+The reset manager manages crash dump information for software debugging across unexpected resets and watchdogs.
+When enabled, the latest alert information and latest cpu information are captured in always-on registers.
+
+When the software resumes after the reset, it is then able to examine the last cpu state or the last set of alert information to understand why the system has reset.
+
+The enable for such debug capture can be locked such that it never captures.
+
+### Alert Information
 
 The alert information register contains the value of the alert crash dump prior to a triggered reset.
 Since this information differs in length between system implementation, the alert information register only displays 32-bits at a time.
 
 The [alert_info_attr]({{< regref "ALERT_INFO_ATTR" >}}) register indicates how many 32-bit data segments must be read.
-Software then simply needs to pick the segment it wishes to read and then read out the [alert_info]({{< regref "ALERT_INFO_ATTR" >}}) register.
+Software then simply needs to pick the segment it wishes to read and then read out the [alert_info]({{< regref "ALERT_INFO" >}}) register.
+
+### CPU Information
+
+The cpu information register contains the value of the cpu state prior to a triggered reset.
+Since this information differs in length between system implementation, the information register only displays 32-bits at a time.
+
+The [cpu_info_attr]({{< regref "CPU_INFO_ATTR" >}}) register indicates how many 32-bit data segments must be read.
+Software then simply needs to pick the segment it wishes to read and then read out the [cpu_info]({{< regref "CPU_INFO" >}}) register.
 
 # Programmers Guide
 

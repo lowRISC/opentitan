@@ -153,12 +153,28 @@
       ]
     },
 
+    { name: "ALERT_REGWEN",
+      desc: "Alert write enable",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            When 1, !!ALERT_INFO_CTRL can be modified.
+          '''
+        },
+      ]
+    }
+
     { name: "ALERT_INFO_CTRL",
       desc: '''
             Alert info dump controls.
             ''',
       swaccess: "rw",
       hwaccess: "hro",
+      regwen: "ALERT_REGWEN",
       fields: [
         { bits: "0",
           name: "EN",
@@ -221,12 +237,28 @@
         },
       ]
     },
+    { name: "CPU_REGWEN",
+      desc: "Cpu write enable",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            When 1, !!CPU_INFO_CTRL can be modified.
+          '''
+        },
+      ]
+    }
+
     { name: "CPU_INFO_CTRL",
       desc: '''
             Cpu info dump controls.
             ''',
       swaccess: "rw",
       hwaccess: "hro",
+      regwen: "CPU_REGWEN",
       fields: [
         { bits: "0",
           name: "EN",

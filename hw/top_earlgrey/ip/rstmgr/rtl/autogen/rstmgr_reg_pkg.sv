@@ -124,14 +124,16 @@ package rstmgr_reg_pkg;
 
   // Register offsets
   parameter logic [BlockAw-1:0] RSTMGR_RESET_INFO_OFFSET = 6'h 0;
-  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_CTRL_OFFSET = 6'h 4;
-  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_ATTR_OFFSET = 6'h 8;
-  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_OFFSET = 6'h c;
-  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_CTRL_OFFSET = 6'h 10;
-  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_ATTR_OFFSET = 6'h 14;
-  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_OFFSET = 6'h 18;
-  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGEN_OFFSET = 6'h 1c;
-  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_REGWEN_OFFSET = 6'h 4;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_CTRL_OFFSET = 6'h 8;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_ATTR_OFFSET = 6'h c;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_OFFSET = 6'h 10;
+  parameter logic [BlockAw-1:0] RSTMGR_CPU_REGWEN_OFFSET = 6'h 14;
+  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_CTRL_OFFSET = 6'h 18;
+  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_ATTR_OFFSET = 6'h 1c;
+  parameter logic [BlockAw-1:0] RSTMGR_CPU_INFO_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGEN_OFFSET = 6'h 24;
+  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_OFFSET = 6'h 28;
 
   // Reset values for hwext registers and their fields
   parameter logic [3:0] RSTMGR_ALERT_INFO_ATTR_RESVAL = 4'h 0;
@@ -154,9 +156,11 @@ package rstmgr_reg_pkg;
   // Register index
   typedef enum int {
     RSTMGR_RESET_INFO,
+    RSTMGR_ALERT_REGWEN,
     RSTMGR_ALERT_INFO_CTRL,
     RSTMGR_ALERT_INFO_ATTR,
     RSTMGR_ALERT_INFO,
+    RSTMGR_CPU_REGWEN,
     RSTMGR_CPU_INFO_CTRL,
     RSTMGR_CPU_INFO_ATTR,
     RSTMGR_CPU_INFO,
@@ -165,16 +169,18 @@ package rstmgr_reg_pkg;
   } rstmgr_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] RSTMGR_PERMIT [9] = '{
-    4'b 0001, // index[0] RSTMGR_RESET_INFO
-    4'b 0001, // index[1] RSTMGR_ALERT_INFO_CTRL
-    4'b 0001, // index[2] RSTMGR_ALERT_INFO_ATTR
-    4'b 1111, // index[3] RSTMGR_ALERT_INFO
-    4'b 0001, // index[4] RSTMGR_CPU_INFO_CTRL
-    4'b 0001, // index[5] RSTMGR_CPU_INFO_ATTR
-    4'b 1111, // index[6] RSTMGR_CPU_INFO
-    4'b 0001, // index[7] RSTMGR_SW_RST_REGEN
-    4'b 0001  // index[8] RSTMGR_SW_RST_CTRL_N
+  parameter logic [3:0] RSTMGR_PERMIT [11] = '{
+    4'b 0001, // index[ 0] RSTMGR_RESET_INFO
+    4'b 0001, // index[ 1] RSTMGR_ALERT_REGWEN
+    4'b 0001, // index[ 2] RSTMGR_ALERT_INFO_CTRL
+    4'b 0001, // index[ 3] RSTMGR_ALERT_INFO_ATTR
+    4'b 1111, // index[ 4] RSTMGR_ALERT_INFO
+    4'b 0001, // index[ 5] RSTMGR_CPU_REGWEN
+    4'b 0001, // index[ 6] RSTMGR_CPU_INFO_CTRL
+    4'b 0001, // index[ 7] RSTMGR_CPU_INFO_ATTR
+    4'b 1111, // index[ 8] RSTMGR_CPU_INFO
+    4'b 0001, // index[ 9] RSTMGR_SW_RST_REGEN
+    4'b 0001  // index[10] RSTMGR_SW_RST_CTRL_N
   };
 
 endpackage

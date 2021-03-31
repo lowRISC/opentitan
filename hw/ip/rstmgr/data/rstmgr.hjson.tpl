@@ -149,12 +149,28 @@
     },
 
     % for dump_src in crash_dump_srcs:
+    { name: "${dump_src.upper()}_REGWEN",
+      desc: "${dump_src.capitalize()} write enable",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            When 1, !!${dump_src.upper()}_INFO_CTRL can be modified.
+          '''
+        },
+      ]
+    }
+
     { name: "${dump_src.upper()}_INFO_CTRL",
       desc: '''
             ${dump_src.capitalize()} info dump controls.
             ''',
       swaccess: "rw",
       hwaccess: "hro",
+      regwen: "${dump_src.upper()}_REGWEN",
       fields: [
         { bits: "0",
           name: "EN",
