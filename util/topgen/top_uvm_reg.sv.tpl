@@ -29,17 +29,18 @@
 // verilog_lint: waive-start package-filename
 ##
 ## Iterate over the device interfaces of blocks in Top, constructing a package
-## for each.
-% for block in top.blocks.values():
+## for each. Sorting items like this guarantees we'll work alphabetically in
+## block name.
+% for block_name, block in sorted(top.blocks.items()):
 %   for if_name, rb in block.reg_blocks.items():
 <%
       if_suffix = '' if if_name is None else '_' + if_name
-      esc_if_name = block.name.lower() + if_suffix
+      esc_if_name = block_name.lower() + if_suffix
       if_desc = '' if if_name is None else '; interface {}'.format(if_name)
       reg_block_path = 'u_reg' + if_suffix
       reg_block_path = reg_block_path if block.hier_path is None else block.hier_path + "." + reg_block_path
 %>\
-// Block: ${block.name.lower()}${if_desc}
+// Block: ${block_name.lower()}${if_desc}
 ${make_ral_pkg(dv_base_prefix, top.regwidth, reg_block_path, rb, esc_if_name)}
 %   endfor
 % endfor
@@ -55,10 +56,10 @@ ${make_ral_pkg(dv_base_prefix, top.regwidth, reg_block_path, rb, esc_if_name)}
 package chip_ral_pkg;
 <%
   if_packages = []
-  for block in top.blocks.values():
+  for block_name, block in sorted(top.blocks.items()):
     for if_name in block.reg_blocks:
       if_suffix = '' if if_name is None else '_' + if_name
-      if_packages.append('{}{}_ral_pkg'.format(block.name.lower(), if_suffix))
+      if_packages.append('{}{}_ral_pkg'.format(block_name.lower(), if_suffix))
 
   windows = top.window_block.windows
 %>\
@@ -71,12 +72,12 @@ ${make_ral_pkg_window_class(dv_base_prefix, 'chip', window)}
 
   class chip_reg_block extends ${dv_base_prefix}_reg_block;
     // sub blocks
-% for block in top.blocks.values():
-%   for inst_name in top.block_instances[block.name.lower()]:
+% for block_name, block in sorted(top.blocks.items()):
+%   for inst_name in top.block_instances[block_name.lower()]:
 %     for if_name, rb in block.reg_blocks.items():
 <%
         if_suffix = '' if if_name is None else '_' + if_name
-        esc_if_name = block.name.lower() + if_suffix
+        esc_if_name = block_name.lower() + if_suffix
         if_inst = inst_name + if_suffix
 %>\
     rand ${bcname(esc_if_name)} ${if_inst};
@@ -110,12 +111,12 @@ ${make_ral_pkg_window_class(dv_base_prefix, 'chip', window)}
       end
 
       // create sub blocks and add their maps
-% for block in top.blocks.values():
-%   for inst_name in top.block_instances[block.name.lower()]:
+% for block_name, block in sorted(top.blocks.items()):
+%   for inst_name in top.block_instances[block_name.lower()]:
 %     for if_name, rb in block.reg_blocks.items():
 <%
         if_suffix = '' if if_name is None else '_' + if_name
-        esc_if_name = block.name.lower() + if_suffix
+        esc_if_name = block_name.lower() + if_suffix
         if_inst = inst_name + if_suffix
 
         if top.attrs.get(inst_name) == 'reggen_only':
