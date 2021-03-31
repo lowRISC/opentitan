@@ -11,7 +11,7 @@ import hjson  # type: ignore
 from .alert import Alert
 from .bus_interfaces import BusInterfaces
 from .inter_signal import InterSignal
-from .lib import (check_keys, check_name, check_int, check_str, check_bool,
+from .lib import (check_keys, check_name, check_int, check_bool,
                   check_list, check_optional_str, check_name_list)
 from .params import ReggenParams, LocalParam
 from .reg_block import RegBlock
