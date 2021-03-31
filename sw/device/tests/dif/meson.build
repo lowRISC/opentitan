@@ -242,6 +242,22 @@ test('dif_clkmgr_unittest', executable(
   cpp_args: ['-DMOCK_MMIO'],
 ))
 
+test('dif_csrng_unittest', executable(
+  'dif_csrng_unittest',
+  sources: [
+    hw_ip_csrng_reg_h,
+    meson.source_root() / 'sw/device/lib/dif/dif_csrng.c',
+    'dif_csrng_unittest.cc',
+  ],
+  dependencies: [
+    sw_vendor_gtest,
+    sw_lib_testing_mock_mmio,
+  ],
+  native: true,
+  c_args: ['-DMOCK_MMIO'],
+  cpp_args: ['-DMOCK_MMIO'],
+))
+
 test('dif_entropy_unittest', executable(
   'dif_entropy_unittest',
   sources: [
@@ -458,6 +474,23 @@ dif_clkmgr_smoketest_lib = declare_dependency(
 sw_tests += {
   'dif_clkmgr_smoketest': {
     'library': dif_clkmgr_smoketest_lib,
+  }
+}
+
+dif_csrng_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'dif_csrng_smoketest_lib',
+    sources: ['dif_csrng_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_csrng,
+      sw_lib_mmio,
+      sw_lib_runtime_log,
+    ],
+  ),
+)
+sw_tests += {
+  'dif_csrng_smoketest': {
+    'library': dif_csrng_smoketest_lib,
   }
 }
 

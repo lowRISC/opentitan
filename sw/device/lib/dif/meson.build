@@ -16,6 +16,20 @@ sw_lib_dif_clkmgr = declare_dependency(
   )
 )
 
+# CSRNG DIF Library (dif_csrng)
+sw_lib_dif_csrng = declare_dependency(
+  link_with: static_library(
+    'csrng_ot',
+    sources: [
+      hw_ip_csrng_reg_h,
+      'dif_csrng.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # UART DIF library (dif_uart)
 sw_lib_dif_uart = declare_dependency(
   link_with: static_library(

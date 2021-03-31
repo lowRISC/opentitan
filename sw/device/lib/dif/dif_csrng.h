@@ -421,8 +421,8 @@ dif_csrng_result_t dif_csrng_get_output_status(
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_csrng_result_t dif_csrng_read_output(const dif_csrng *csrng, uint32_t *buf,
-                                         size_t len);
+dif_csrng_result_t dif_csrng_read_output(const dif_csrng_t *csrng,
+                                         uint32_t *buf, size_t len);
 
 /**
  * Locks out CSRNG functionality.
