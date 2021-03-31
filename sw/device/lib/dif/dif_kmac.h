@@ -97,21 +97,6 @@ typedef struct dif_kmac_params {
 } dif_kmac_params_t;
 
 /**
- * Supported byte order options.
- */
-typedef enum dif_kmac_endianness {
-  /**
-   * Little endian byte ordering.
-   */
-  kDifKmacEndiannessLittle = 0,
-
-  /**
-   * Big endian byte ordering.
-   */
-  kDifKmacEndiannessBig,
-} dif_kmac_endianness_t;
-
-/**
  * Supported entropy modes.
  *
  * Entropy may be provided by the entropy distribution network (EDN) or using a
@@ -138,7 +123,7 @@ typedef struct dif_kmac_config {
    * Entropy fast process mode when enabled prevents the KMAC unit consuming
    * entropy unless it is processing a secret key.
    */
-  dif_kmac_toggle_t entropy_fast_process;
+  bool entropy_fast_process;
 
   /**
    * Entropy seed. Only used when the source of entropy is software.
@@ -159,14 +144,17 @@ typedef struct dif_kmac_config {
   uint16_t entropy_wait_timer;
 
   /**
-   * Byte order used for message.
+   * Convert the message to big-endian byte order.
+   * Note: this option currently had no effect since the message is sent a byte
+   * at a time but will in the future.
    */
-  dif_kmac_endianness_t message_endianness;
+  bool message_big_endian;
 
   /**
-   * Byte order used for output state (digest).
+   * Convert the output state (digest) to big-endian byte order on a word
+   * granularity.
    */
-  dif_kmac_endianness_t output_state_endianness;
+  bool output_big_endian;
 } dif_kmac_config_t;
 
 /**
@@ -179,7 +167,28 @@ typedef struct dif_kmac_config {
 typedef struct dif_kmac {
   dif_kmac_params_t params;
 
-  // TODO: counters and offsets to support streaming APIs.
+  /**
+   * Whether the 'squeezing' phase has been started.
+   */
+  bool squeezing;
+
+  /**
+   * Offset into the output state.
+   */
+  size_t offset;
+
+  /**
+   * The rate (r) in 32-bit words.
+   */
+  size_t r;
+
+  /**
+   * The output length (d) in 32-bit words.
+   *
+   * If the output length is not fixed then this field will be set to 0.
+   */
+  size_t d;
+
 } dif_kmac_t;
 
 /**
@@ -611,12 +620,13 @@ dif_kmac_result_t dif_kmac_absorb(dif_kmac_t *kmac, const void *msg, size_t len,
  *
  * @param kmac A KMAC handle.
  * @param[out] out Pointer to output buffer.
- * @param[out] len Number of bytes to write to output buffer.
- * @param[out] processed Number of bytes written to output buffer (optional).
+ * @param[out] len Number of 32-bit words to write to output buffer.
+ * @param[out] processed Number of 32-bit words written to output buffer
+ * (optional).
  * @preturn The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_squeeze(dif_kmac_t *kmac, void *out, size_t len,
+dif_kmac_result_t dif_kmac_squeeze(dif_kmac_t *kmac, uint32_t *out, size_t len,
                                    size_t *processed);
 
 /**
