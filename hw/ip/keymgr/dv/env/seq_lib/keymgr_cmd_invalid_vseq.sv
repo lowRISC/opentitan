@@ -42,7 +42,7 @@ class keymgr_cmd_invalid_vseq extends keymgr_lc_disable_vseq;
     do_reset_at_end_of_seq = 1;
     super.post_start();
     cfg.en_scb = 1;
-    $assertoff(1, "tb.keymgr_kmac_intf");
-    $assertoff(1, "tb.dut.tlul_assert_device.gen_device.dDataKnown_A");
+    $asserton(0, "tb.keymgr_kmac_intf");
+    $asserton(0, "tb.dut.tlul_assert_device.gen_device.dDataKnown_A");
   endtask
 endclass : keymgr_cmd_invalid_vseq
