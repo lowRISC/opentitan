@@ -9,9 +9,6 @@ class otp_ctrl_parallel_lc_req_vseq extends otp_ctrl_parallel_base_vseq;
 
   `uvm_object_new
 
-  // TODO: set it to 0 once support reset in otp program, and remove related logic
-  bit lc_prog_blocking = 1;
-
   // disable checks in case lc_program and check triggered at the same time
   constraint regwens_c {
     check_regwen_val dist {0 :/ 1, 1 :/ 9};
@@ -21,16 +18,6 @@ class otp_ctrl_parallel_lc_req_vseq extends otp_ctrl_parallel_base_vseq;
   constraint lc_trans_c {
     do_lc_trans == 0;
   }
-
-  virtual task pre_start();
-    super.pre_start();
-    check_lc_err();
-  endtask
-
-  virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init(reset_kind);
-    if (do_reset_in_seq) lc_prog_blocking = 1;
-  endtask
 
   virtual task run_parallel_seq(ref bit base_vseq_done);
     forever begin
@@ -56,16 +43,6 @@ class otp_ctrl_parallel_lc_req_vseq extends otp_ctrl_parallel_base_vseq;
         end
       end join
     end
-  endtask
-
-  virtual task check_lc_err();
-    fork
-      forever begin
-        wait(cfg.otp_ctrl_vif.lc_prog_err == 1);
-        lc_prog_blocking = 0;
-        wait(lc_prog_blocking == 1);
-      end
-    join_none;
   endtask
 
   virtual task post_start();

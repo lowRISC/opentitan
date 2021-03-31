@@ -35,13 +35,17 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   // during the transition.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      lc_prog_err_dly1 <= 0;
-      lc_esc_dly1      <= lc_ctrl_pkg::Off;
-      lc_esc_dly2      <= lc_ctrl_pkg::Off;
+      lc_prog_err_dly1  <= 0;
+      lc_esc_dly1       <= lc_ctrl_pkg::Off;
+      lc_esc_dly2       <= lc_ctrl_pkg::Off;
+      lc_check_byp_en_i <= lc_ctrl_pkg::Off;
     end else begin
       lc_prog_err_dly1 <= lc_prog_err;
       lc_esc_dly1      <= lc_escalate_en_i;
       lc_esc_dly2      <= lc_esc_dly1;
+      if (lc_prog_req && lc_check_byp_en_i == lc_ctrl_pkg::Off) begin
+        lc_check_byp_en_i <= lc_ctrl_pkg::On;
+      end
     end
   end
 

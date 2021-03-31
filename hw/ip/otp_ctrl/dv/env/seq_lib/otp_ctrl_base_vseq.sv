@@ -13,6 +13,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // various knobs to enable certain routines
   bit do_otp_ctrl_init = 1'b1;
   bit do_otp_pwr_init  = 1'b1;
+  bit collect_used_addr = 1;
 
   rand bit [NumOtpCtrlIntr-1:0] en_intr;
   bit [TL_AW-1:0] used_dai_addr_q[$];
@@ -22,6 +23,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   bit [NumPart-2:0] digest_calculated;
 
   bit default_req_blocking = 1;
+  // TODO: set it to 0 once support reset in otp program, and remove related logic
+  bit lc_prog_blocking = 1;
 
   `uvm_object_new
 
@@ -32,7 +35,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     cfg.otp_ctrl_vif.init();
     if (do_otp_ctrl_init && do_apply_reset) otp_ctrl_init();
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
-    if (do_otp_pwr_init) otp_pwr_init();
+    if (do_otp_pwr_init && do_apply_reset) otp_pwr_init();
   endtask
 
   // Cfg errors are cleared after reset

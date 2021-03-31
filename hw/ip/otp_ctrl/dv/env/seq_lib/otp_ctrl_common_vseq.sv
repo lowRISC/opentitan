@@ -19,11 +19,17 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     cfg.clk_rst_vif.wait_clks(3);
   endtask
 
-  task post_start();
-    super.post_start();
+  virtual task post_start();
     // Random CSR rw might trigger alert. Some alerts will conintuously be triggered until reset
     // applied, which will cause alert_monitor phase_ready_to_end timeout.
-    apply_reset();
+    if (do_apply_reset) begin
+      apply_reset();
+    end else wait(0); // wait until upper seq resets and kills this seq
+
+    // delay to avoid race condition when sending item and checking no item after reset occur
+    // at the same time
+    #1ps;
+    super.post_start();
   endtask
 
   virtual task body();

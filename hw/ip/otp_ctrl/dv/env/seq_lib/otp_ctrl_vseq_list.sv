@@ -17,3 +17,4 @@
 `include "otp_ctrl_parallel_lc_esc_vseq.sv"
 `include "otp_ctrl_regwen_vseq.sv"
 `include "otp_ctrl_test_access_vseq.sv"
+`include "otp_ctrl_stress_all_vseq.sv"
