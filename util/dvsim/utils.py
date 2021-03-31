@@ -165,7 +165,7 @@ def _subst_wildcards(var, mdict, ignored, ignore_error, seen):
             # command and we're done.
             cmd_matches = list(wildcard_re.finditer(cmd))
             if not cmd_matches:
-                var = var[:idx] + run_cmd(cmd)
+                var = var[:match.start()] + run_cmd(cmd)
                 continue
 
             # Otherwise, check that each of them is ignored, or that
