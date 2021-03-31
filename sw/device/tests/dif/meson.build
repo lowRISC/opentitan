@@ -370,6 +370,24 @@ sw_tests += {
   }
 }
 
+dif_kmac_smoketest_lib = declare_dependency(
+  link_with: static_library(
+    'dif_kmac_smoketest_lib',
+    sources: ['dif_kmac_smoketest.c'],
+    dependencies: [
+      sw_lib_dif_kmac,
+      sw_lib_runtime_log,
+      sw_lib_mmio,
+      sw_lib_runtime_hart,
+    ],
+  ),
+)
+sw_tests += {
+  'dif_kmac_smoketest': {
+    'library': dif_kmac_smoketest_lib,
+  }
+}
+
 dif_rstmgr_smoketest_lib = declare_dependency(
   link_with: static_library(
     'dif_rstmgr_smoketest_lib',

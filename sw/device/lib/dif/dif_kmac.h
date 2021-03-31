@@ -179,7 +179,28 @@ typedef struct dif_kmac_config {
 typedef struct dif_kmac {
   dif_kmac_params_t params;
 
-  // TODO: counters and offsets to support streaming APIs.
+  /**
+   * Whether the 'squeezing' phase has been started.
+   */
+  bool squeezing;
+
+  /**
+   * Offset into the output state.
+   */
+  size_t offset;
+
+  /**
+   * The rate (r).
+   */
+  size_t r;
+
+  /**
+   * The output length (d).
+   *
+   * If the output length is not fixed then this field should be set to 0.
+   */
+  size_t d;
+
 } dif_kmac_t;
 
 /**
@@ -650,8 +671,8 @@ typedef enum dif_kmac_absorb_result {
  * @preturn The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_absorb(dif_kmac_t *kmac, const void *msg, size_t len,
-                                  size_t *processed);
+dif_kmac_absorb_result_t dif_kmac_absorb(dif_kmac_t *kmac, const void *msg,
+                                         size_t len, size_t *processed);
 
 /**
  * The result of an squeeze operation.
@@ -699,6 +720,9 @@ typedef enum dif_kmac_squeeze_result {
  * If `processed` is not provided then this function will block until `len`
  * bytes have been written to `out` or an error occurs.
  *
+ * Issuing squeeze with a `len` of 0 will trigger the 'process' command without
+ * blocking.
+ *
  * @param kmac A KMAC handle.
  * @param[out] out Pointer to output buffer.
  * @param[out] len Number of bytes to write to output buffer.
@@ -706,8 +730,8 @@ typedef enum dif_kmac_squeeze_result {
  * @preturn The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_kmac_result_t dif_kmac_squeeze(dif_kmac_t *kmac, void *out, size_t len,
-                                   size_t *processed);
+dif_kmac_squeeze_result_t dif_kmac_squeeze(dif_kmac_t *kmac, void *out,
+                                           size_t len, size_t *processed);
 
 /**
  * Ends a squeeze operation and resets the hardware so it is ready for a new

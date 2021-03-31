@@ -81,6 +81,9 @@ TEST_APPS_SELFCHECKING = [
     #    "targets": ["sim_verilator"],
     #},
     {
+        "name": "dif_kmac_smoketest",
+    },
+    {
         "name": "flash_ctrl_test",
     },
     {
