@@ -239,11 +239,12 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
             if (get_fault_err()) begin
               current_state = keymgr_pkg::StDisabled;
               update_result = NotUpdate;
-            end else if (!get_op_err()) begin
+            end else if (get_op_err()) begin
+              update_result = NotUpdate;
+            end else begin
               // if it's StOwnerKey, it advacens to OpDisable. Key is just random value
               if (current_state == keymgr_pkg::StOwnerKey) update_result = NotUpdate;
               else                                         update_result = UpdateInternalKey;
-
               update_state(get_next_state(current_state));
               // set sw_binding_regwen after advance OP
               void'(ral.sw_binding_regwen.predict(.value(1)));
