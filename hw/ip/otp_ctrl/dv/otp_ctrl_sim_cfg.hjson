@@ -112,6 +112,12 @@
       name: otp_ctrl_test_access
       uvm_test_seq: otp_ctrl_test_access_vseq
     }
+
+    {
+      name: otp_ctrl_stress_all
+      uvm_test_seq: otp_ctrl_stress_all_vseq
+    }
+
   ]
 
   // List of regressions.

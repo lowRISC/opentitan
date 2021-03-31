@@ -11,7 +11,6 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
   `uvm_object_new
 
-  bit collect_used_addr = 1;
   bit do_reset_in_seq = 1;
 
   rand bit                           do_req_keys, do_lc_trans;
@@ -63,14 +62,27 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   constraint ecc_err_c {ecc_err_mask == 0;}
 
   virtual task dut_init(string reset_kind = "HARD");
-    if (!do_reset_in_seq) return;
-    super.dut_init(reset_kind);
-    csr_wr(ral.intr_enable, en_intr);
+    if (do_reset_in_seq && do_apply_reset) begin
+      super.dut_init(reset_kind);
+      lc_prog_blocking = 1;
+      csr_wr(ral.intr_enable, en_intr);
+    end
   endtask
 
   virtual task pre_start();
     super.pre_start();
     num_dai_op.rand_mode(0);
+    check_lc_err();
+  endtask
+
+  virtual task check_lc_err();
+    fork
+      forever begin
+        wait(cfg.otp_ctrl_vif.lc_prog_err == 1);
+        lc_prog_blocking = 0;
+        wait(lc_prog_blocking == 1);
+      end
+    join_none;
   endtask
 
   task body();
@@ -145,7 +157,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       end
 
       if (do_lc_trans) begin
-        req_lc_transition(do_lc_trans);
+        req_lc_transition(do_lc_trans, lc_prog_blocking);
         req_lc_token();
         if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
       end
