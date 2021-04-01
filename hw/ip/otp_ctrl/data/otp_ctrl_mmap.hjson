@@ -147,6 +147,10 @@
                     name:    "EN_SRAM_IFETCH",
                     size:    "1",
                 },
+                {
+                    name:    "EN_ENTROPY_SRC_FW_READ",
+                    size:    "1",
+                },
             ],
             desc: '''Hardware configuration bits used to hardwire
             specific hardware functionality. E.g., raw entropy

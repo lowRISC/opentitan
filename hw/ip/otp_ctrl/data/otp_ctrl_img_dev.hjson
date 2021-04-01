@@ -48,7 +48,11 @@
                 {
                     name:  "DEVICE_ID",
                     value: "<random>",
-                }
+                },
+                {
+                    name:  "EN_ENTROPY_SRC_FW_READ",
+                    value: "0xA5",
+                },
             ],
         }
         {

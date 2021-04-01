@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:lfsr
       - lowrisc:ip:tlul
       - lowrisc:ip:sha3
+      - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:entropy_src_pkg
     files:
       - rtl/entropy_src_reg_pkg.sv
