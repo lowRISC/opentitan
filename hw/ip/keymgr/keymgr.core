@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:lfsr
       - lowrisc:prim:lc_sync
+      - lowrisc:prim:msb_extend
       - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:kmac_pkg
     files:
