@@ -413,7 +413,10 @@ module keymgr_ctrl import keymgr_pkg::*;(
       StCtrlWipe: begin
         update_sel = KeyUpdateWipe;
         stage_sel_o = Disable;
+
+        // while wiping, accept commands, but treat them all as invalid operations
         op_accept = 1'b1;
+        invalid_op = 1'b1;
 
         // If the enable is dropped during the middle of a transaction, we clear and wait for that
         // transaction to gracefully complete (if it can).
