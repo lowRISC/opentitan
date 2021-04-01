@@ -162,9 +162,20 @@ set SPI_DEV_TCK 16.0
 create_clock -name SPI_DEV_CLK  -period ${SPI_DEV_TCK} [get_ports ${SPI_DEV_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_DEV_CLK]
 
+create_generated_clock -name SPI_DEV_IN_CLK -source SPI_DEV_CLK -divide_by 1 \
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/clk_o]
+create_generated_clock -name SPI_DEV_OUT_CLK -source SPI_DEV_CLK -divide_by 1 \
+    -invert [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/clk_o]
+
+## TODO: Define SRAM clock, which is muxed clock. Do we need set_case_analysis?
+## sram_clk is after clock gating cell
+create_generated_clock -name SPI_SRAM_CLK -source SPI_DEV_CLK -divide_by 1 \
+    [get_pins top_earlgrey/u_spi_device/u_sram_clk_cg/clk_o]
+
 ## TODO: these are dummy constraints and likely incorrect, need to properly constrain min/max
-set SPI_DEV_IN_DEL_FRACTION 0.7
-set SPI_DEV_OUT_DEL_FRACTION 0.7
+# FRACTION is reduced to 0.2 as internal datapath for SPI is half clk period
+set SPI_DEV_IN_DEL_FRACTION 0.2
+set SPI_DEV_OUT_DEL_FRACTION 0.2
 set SPI_DEV_IN_DEL    [expr ${SPI_DEV_IN_DEL_FRACTION} * ${SPI_DEV_TCK}]
 set SPI_DEV_OUT_DEL   [expr ${SPI_DEV_OUT_DEL_FRACTION} * ${SPI_DEV_TCK}]
 
@@ -180,6 +191,13 @@ set_output_delay ${SPI_DEV_OUT_DEL} [get_ports SPI_DEV_D0]   -clock SPI_DEV_CLK
 set_output_delay ${SPI_DEV_OUT_DEL} [get_ports SPI_DEV_D1]   -clock SPI_DEV_CLK
 set_output_delay ${SPI_DEV_OUT_DEL} [get_ports SPI_DEV_D2]   -clock SPI_DEV_CLK
 set_output_delay ${SPI_DEV_OUT_DEL} [get_ports SPI_DEV_D3]   -clock SPI_DEV_CLK
+
+# False path from CSb to return to host as CSb for that path behaves as reset.
+#set_ideal_network [get_pins top_earlgrey/u_spi_device/u_csb_rst_scan_mux/clk_o]
+set_false_path -through [get_pins top_earlgrey/u_spi_device/cio_csb_i] \
+               -through [get_pins top_earlgrey/u_spi_device/cio_sd_en_o*]
+set_false_path -through [get_pins top_earlgrey/u_spi_device/cio_csb_i] \
+               -through [get_pins top_earlgrey/u_spi_device/cio_sd_o*]
 
 #####################
 # SPI HOST clock   #
