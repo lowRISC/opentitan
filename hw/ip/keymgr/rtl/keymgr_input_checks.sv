@@ -32,16 +32,69 @@ module keymgr_input_checks import keymgr_pkg::*;(
   assign key_version_vld_o = key_version_i <= cur_max_key_version;
 
   // general data check
-  assign creator_seed_vld_o = valid_chk(MaxWidth'(creator_seed_i));
-  assign owner_seed_vld_o = valid_chk(MaxWidth'(owner_seed_i));
-  assign devid_vld_o = valid_chk(MaxWidth'(devid_i));
-  assign health_state_vld_o = valid_chk(MaxWidth'(health_state_i));
+  logic [MaxWidth-1:0] creator_seed_padded, owner_seed_padded, devid_padded, health_state_padded;
+
+  prim_msb_extend #(
+    .InWidth(KeyWidth),
+    .OutWidth(MaxWidth)
+  ) u_creator_seed (
+    .in_i(creator_seed_i),
+    .out_o(creator_seed_padded)
+  );
+
+  prim_msb_extend #(
+    .InWidth(KeyWidth),
+    .OutWidth(MaxWidth)
+  ) u_owner_seed (
+    .in_i(owner_seed_i),
+    .out_o(owner_seed_padded)
+  );
+
+  prim_msb_extend #(
+    .InWidth(DevIdWidth),
+    .OutWidth(MaxWidth)
+  ) u_devid (
+    .in_i(devid_i),
+    .out_o(devid_padded)
+  );
+
+  prim_msb_extend #(
+    .InWidth(HealthStateWidth),
+    .OutWidth(MaxWidth)
+  ) u_health_state (
+    .in_i(health_state_i),
+    .out_o(health_state_padded)
+  );
+
+  assign creator_seed_vld_o = valid_chk(creator_seed_padded);
+  assign owner_seed_vld_o = valid_chk(owner_seed_padded);
+  assign devid_vld_o = valid_chk(devid_padded);
+  assign health_state_vld_o = valid_chk(health_state_padded);
 
   // key check
   logic unused_key_vld;
   assign unused_key_vld = key_i.valid;
-  assign key_vld_o = valid_chk(MaxWidth'(key_i.key_share0)) &
-                     valid_chk(MaxWidth'(key_i.key_share1));
+
+  logic [MaxWidth-1:0] key_share0_padded;
+  logic [MaxWidth-1:0] key_share1_padded;
+
+  prim_msb_extend #(
+    .InWidth(KeyWidth),
+    .OutWidth(MaxWidth)
+  ) u_key_share0 (
+    .in_i(key_i.key_share0),
+    .out_o(key_share0_padded)
+  );
+
+  prim_msb_extend #(
+    .InWidth(KeyWidth),
+    .OutWidth(MaxWidth)
+  ) u_key_share1 (
+    .in_i(key_i.key_share1),
+    .out_o(key_share1_padded)
+  );
+
+  assign key_vld_o = valid_chk(key_share0_padded) & valid_chk(key_share1_padded);
 
   // checks for all 0's or all 1's of value
   function automatic logic valid_chk (logic [MaxWidth-1:0] value);
