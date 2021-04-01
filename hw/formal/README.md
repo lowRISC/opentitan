@@ -252,7 +252,7 @@ can be used to add coverpoints to your design, where the cover
 property uses the same SVA syntax, operators, and system functions as the the
 assert properties.
 
-## How To Run FPV on OpenTitan
+## Running FPV
 
 ### Cadence JapserGold
 If you have access to JasperGold from Cadence, you can formally verify your
@@ -323,6 +323,41 @@ This script generates a report of all FPV runs. The report is printed at the end
 which lists the total number of assertions and the number of proven, vacuous,
 covered and failing assertions for each block. CRASH identifies modules that
 fail to run VC Formal.
+
+## Running Connectivity Tests
+Connectivity tests use formal method to exhaustively verify system-level
+connections, which are specified in a high-level format (for example: CSV format
+for JasperGold).
+
+### Cadence JapserGold
+With Cadence JasperGold, there are two ways to run connectivity tests:
+
+#### Batch Script
+You can trigger the `formal_conn.sh` batch script with the following command:
+```
+  cd hw/formal
+  formal_conn.sh -f {path_to_connectivity_csv_file}
+```
+It takes the following arguments:
+* `-top {top_name}`: specify which top_level to run. Default is `top_earlgrey`
+* `-p {core_path}`: specify which fusesoc core file to use. Default is
+  `lowrisc:systems:top_earlgrey`
+* `-gui`: run the connectivity script with GUI mode
+* `-cov`: collect connectivity test coverage. TODO: currently coverage takes a
+  long time
+* `-t {tool}`: specify which tool to run. Default is `JasperGold` and currently
+  only support JasperGold
+
+#### DVSim
+The `dvsim` formal flow supports connectivity test. Each top-level can create its
+own connectivity setting with a customized Hjson file.
+For example, `top_earlgrey` has `hw/top_earlgrey/formal/chip_conn_cfgs.hjson`
+that specifies its top_level name, fusesoc_core file, and csv file path.
+You can trigger top_earlgrey's connectivity test using `dvsim`:
+```
+  util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfgs.hjson
+```
+The dvsim connectivity flow will support GUI mode soon.
 
 ## Naming Conventions
 For assertions, it is preferred to use postfix `_A` for assertions,
