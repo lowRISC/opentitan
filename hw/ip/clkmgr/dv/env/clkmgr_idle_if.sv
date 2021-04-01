@@ -21,20 +21,8 @@ interface clkmgr_idle_if(input logic clk);
     idle = value;
   endfunction
 
-  function automatic void update_aes(input logic value);
-    idle[TransAes] = value;
-  endfunction
-
-  function automatic void update_hmac(input logic value);
-    idle[TransHmac] = value;
-  endfunction
-
-  function automatic void update_kmac(input logic value);
-    idle[TransKmac] = value;
-  endfunction
-
-  function automatic void update_otbn(input logic value);
-    idle[TransOtbn] = value;
+  function automatic void update_trans(input logic value, trans_e trans);
+    idle[trans] = value;
   endfunction
 
   task automatic go_idle(trans_e trans, int cycles);
