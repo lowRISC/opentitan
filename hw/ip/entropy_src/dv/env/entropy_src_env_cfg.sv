@@ -18,19 +18,27 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   virtual pins_if  efuse_es_sw_reg_en_vif;
 
   // Knobs & Weights
-  uint            efuse_es_sw_reg_en_pct, enable_lfsr_pct, enable_ptrng_pct, route_software_pct,
-                  type_bypass_pct;
-  rand bit        efuse_es_sw_reg_en, route_software, type_bypass;
-  rand enable_e   enable;
+  uint          efuse_es_sw_reg_en_pct, enable_pct, mode_ptrng_pct, route_software_pct,
+                type_bypass_pct;
+  rand bit      efuse_es_sw_reg_en, enable, route_software, type_bypass;
+  rand mode_e   mode;
 
   // Constraints
   constraint c_efuse_es_sw_reg_en {efuse_es_sw_reg_en dist { 1 :/ efuse_es_sw_reg_en_pct,
                                                              0 :/ (100 - efuse_es_sw_reg_en_pct) };}
 
-  constraint c_enable {
-     enable dist { LFSR_Mode :/ enable_lfsr_pct, PTRNG_Mode :/ enable_ptrng_pct,
-                   Disable :/ 100 - enable_lfsr_pct - enable_ptrng_pct };
+  constraint c_enable {enable dist { 1 :/ enable_pct,
+                                     0 :/ 100 - enable_pct };
   }
+
+  constraint c_mode {
+    solve enable before mode;
+
+    if (enable)
+      mode dist { PtrngMode :/ mode_ptrng_pct,
+                  LfsrMode  :/ (100 - mode_ptrng_pct) };
+    else
+      mode == Disabled;}
 
   constraint c_route {route_software dist { 1 :/ route_software_pct,
                                             0 :/ (100 - route_software_pct) };}
@@ -63,13 +71,15 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     string str = "";
     str = {str, "\n"};
     str = {str,  $sformatf("\n\t |********** entropy_src_env_cfg ****************| \t")                  };
+    str = {str,  $sformatf("\n\t |***** enable                 : %10d *****| \t", enable)                };
+    str = {str,  $sformatf("\n\t |***** mode                   : %10s *****| \t", mode.name())           };
     str = {str,  $sformatf("\n\t |***** efuse_es_sw_reg_en     : %10d *****| \t", efuse_es_sw_reg_en)    };
-    str = {str,  $sformatf("\n\t |***** enable                 : %10s *****| \t", enable.name())         };
     str = {str,  $sformatf("\n\t |***** route_software         : %10d *****| \t", route_software)        };
+    str = {str,  $sformatf("\n\t |***** type_bypass            : %10d *****| \t", type_bypass)           };
     str = {str,  $sformatf("\n\t |---------- knobs ------------------------------| \t")                  };
+    str = {str,  $sformatf("\n\t |***** enable_pct             : %10d *****| \t", enable_pct)            };
+    str = {str,  $sformatf("\n\t |***** mode_ptrng_pct         : %10d *****| \t", mode_ptrng_pct)        };
     str = {str,  $sformatf("\n\t |***** efuse_es_sw_reg_en_pct : %10d *****| \t", efuse_es_sw_reg_en_pct)};
-    str = {str,  $sformatf("\n\t |***** enable_lfsr_pct        : %10d *****| \t", enable_lfsr_pct)       };
-    str = {str,  $sformatf("\n\t |***** enable_ptrng_pct       : %10d *****| \t", enable_ptrng_pct)      };
     str = {str,  $sformatf("\n\t |***** route_software_pct     : %10d *****| \t", route_software_pct)    };
     str = {str,  $sformatf("\n\t |***** type_bypass_pct        : %10d *****| \t", type_bypass_pct)       };
     str = {str,  $sformatf("\n\t |***********************************************| \t")                  };
