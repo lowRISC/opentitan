@@ -197,8 +197,7 @@ module otp_ctrl
     .intg_error_o(                    ),
     .rdata_i     (  tlul_rdata        ),
     .rvalid_i    (  tlul_rvalid       ),
-    .rerror_i    (  tlul_rerror       ),
-    .req_type_o  (                    )
+    .rerror_i    (  tlul_rerror       )
   );
 
   logic [NumPart-1:0] tlul_part_sel_oh;

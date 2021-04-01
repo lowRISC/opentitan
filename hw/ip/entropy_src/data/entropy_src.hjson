@@ -39,12 +39,11 @@
       act:     "req",
       package: "entropy_src_pkg",
     }
-    { struct:  "logic"
-      type:    "uni"
-      name:    "efuse_es_sw_reg_en"
-      act:     "rcv"
-      width:   1
-      package: ""
+    { struct:  "otp_hw_cfg",
+      type:    "uni",
+      name:    "otp_hw_cfg",
+      act:     "rcv",
+      package: "otp_ctrl_part_pkg",
     }
     { struct:  "logic"
       type:    "uni"

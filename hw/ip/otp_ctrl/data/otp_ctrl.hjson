@@ -227,6 +227,18 @@
       default: "1",
       local: "true"
     },
+    { name: "EnEntropySrcFwReadOffset",
+      desc: "Offset of EN_ENTROPY_SRC_FW_READ",
+      type: "int",
+      default: "1569",
+      local: "true"
+    },
+    { name: "EnEntropySrcFwReadSize",
+      desc: "Size of EN_ENTROPY_SRC_FW_READ",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
     { name: "HwCfgDigestOffset",
       desc: "Offset of HW_CFG_DIGEST",
       type: "int",
