@@ -638,6 +638,12 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           if (`gmv(ral.check_timeout) > 0 && `gmv(ral.check_timeout) <= CHK_TIMEOUT_CYC) begin
             set_exp_alert("fatal_check_error", 1, `gmv(ral.check_timeout));
             predict_err(OtpTimeoutErrIdx);
+          end else begin
+            if (get_field_val(ral.check_trigger.consistency, item.a_data)) begin
+              foreach(cfg.ecc_chk_err[i]) begin
+                if (cfg.ecc_chk_err[i] == OtpEccCorrErr) predict_err(i, OtpMacroEccCorrError);
+              end
+            end
           end
         end
       end

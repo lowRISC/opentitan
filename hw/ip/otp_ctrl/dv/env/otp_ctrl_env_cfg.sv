@@ -24,6 +24,9 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_reg_block));
   // This value is updated in sequence when backdoor inject ECC error
   otp_ecc_err_e ecc_err = OtpNoEccErr;
 
+  // Check ECC errors
+  otp_ecc_err_e ecc_chk_err [NumPart] = '{default:OtpNoEccErr};
+
   `uvm_object_utils_begin(otp_ctrl_env_cfg)
   `uvm_object_utils_end
 
