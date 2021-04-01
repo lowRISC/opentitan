@@ -29,7 +29,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Common CIP test lists
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
-                // Disable alert and interrupt tests until RTL adds support.'
+                // Disable alert and interrupt tests until RTL adds support.
                 // "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
                 // "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
@@ -46,6 +46,9 @@
   // Default UVM test and seq class name.
   uvm_test: clkmgr_base_test
   uvm_test_seq: clkmgr_base_vseq
+
+  // Disable clearing interrupts since clkmgr doesn't yet have any.
+  run_opts: ["+do_clear_all_interrupts=0"]
 
   // List of test specifications.
   tests: [

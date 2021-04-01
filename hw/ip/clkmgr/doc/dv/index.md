@@ -13,10 +13,10 @@ applicable. Once done, remove this comment before making a PR. -->
 
 ## Goals
 * **DV**
-  * Verify all CLKMGR IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Verify all CLKMGR IP features by running dynamic simulations with a SV/UVM based testbench.
+  * Develop and run all tests based on the [DV plan](#dv-plan) below towards closing code and functional coverage on the IP and all of its sub-modules.
 * **FPV**
-  * Verify TileLink device protocol compliance with an SVA based testbench
+  * Verify TileLink device protocol compliance with an SVA based testbench.
 
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
@@ -24,7 +24,7 @@ applicable. Once done, remove this comment before making a PR. -->
 * [Simulation results](https://reports.opentitan.org/hw/ip/clkmgr/dv/latest/results.html)
 
 ## Design features
-For detailed information on CLKMGR design features, please see the [CLKMGR HWIP technical specification]({{< relref "hw/ip/clkmgr/doc" >}}).
+The detailed information on CLKMGR design features at the [CLKMGR HWIP technical specification]({{< relref "hw/ip/clkmgr/doc" >}}) is obsolete.
 
 ## Testbench architecture
 CLKMGR testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
@@ -33,14 +33,16 @@ CLKMGR testbench has been constructed based on the [CIP testbench architecture](
 ![Block diagram](tb.svg)
 
 ### Top level testbench
-Top level testbench is located at `hw/ip/clkmgr/dv/tb/tb.sv`. It instantiates the CLKMGR DUT module `hw/ip/clkmgr/rtl/clkmgr.sv`.
+Top level testbench is located at `hw/ip/clkmgr/dv/tb.sv`. It instantiates the CLKMGR DUT module `hw/ip/clkmgr/rtl/clkmgr.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 * CLKMGR IOs
-* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
-* Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
-* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
+* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
+* Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
+* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
+* Pwrmgr interface: "hw/ip/clkmgr/dv/env/clkmgr_pwrmgr_if.sv"
+* Idle interface: "hw/ip/clkmgr/dv/env/clkmgr_idle_if.sv"
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
@@ -54,7 +56,11 @@ The following utilities provide generic helper tasks and functions to perform ac
 All common types and methods defined at the package level can be found in
 `clkmgr_env_pkg`. Some of them in use are:
 ```systemverilog
-[list a few parameters, types & methods; no need to mention all]
+  typedef virtual clkmgr_pwrmgr_if clkmgr_pwrmgr_vif;
+  typedef virtual clkmgr_idle_if clkmgr_idle_vif;
+  typedef virtual clk_rst_if clk_rst_vif;
+  typedef enum int {io_div4, io_div2, usb} peri_e;
+  typedef enum int {aes, hmac, kmac, otbn} trans_e; 
 ```
 ### TL_agent
 CLKMGR testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})

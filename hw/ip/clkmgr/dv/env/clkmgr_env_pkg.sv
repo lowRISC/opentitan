@@ -18,9 +18,17 @@ package clkmgr_env_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  typedef virtual clkmgr_pwrmgr_if clkmgr_pwrmgr_vif;
+  typedef virtual clkmgr_idle_if clkmgr_idle_vif;
+  typedef virtual clk_rst_if clk_rst_vif;
+
   // parameters
+  localparam int  NUM_TRANS = 4;
 
   // types
+  // The enum values for these match the bit order in the CSRs.
+  typedef enum int {PeriDiv4, PeriDiv2, PeriUsb} peri_e;
+  typedef enum int {TransAes, TransHmac, TransKmac, TransOtbn} trans_e;
 
   // functions
 
