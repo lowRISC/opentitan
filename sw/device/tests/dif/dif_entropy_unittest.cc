@@ -143,9 +143,21 @@ TEST_F(ReadTest, WordBadArg) {
   EXPECT_EQ(dif_entropy_read(&entropy_, nullptr), kDifEntropyBadArg);
 }
 
+TEST_F(ReadTest, ReadDataUnAvailable) {
+  EXPECT_READ32(ENTROPY_SRC_INTR_STATE_REG_OFFSET, 0);
+  uint32_t got_word;
+  EXPECT_EQ(dif_entropy_read(&entropy_, &got_word), kDifEntropyDataUnAvailable);
+}
+
 TEST_F(ReadTest, ReadOk) {
   const uint32_t expected_word = 0x65585497;
+  EXPECT_READ32(ENTROPY_SRC_INTR_STATE_REG_OFFSET,
+                1 << ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT);
   EXPECT_READ32(ENTROPY_SRC_ENTROPY_DATA_REG_OFFSET, expected_word);
+  EXPECT_READ32(ENTROPY_SRC_INTR_STATE_REG_OFFSET,
+                1 << ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT);
+  EXPECT_WRITE32(ENTROPY_SRC_INTR_STATE_REG_OFFSET,
+                 {{ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT, true}});
 
   uint32_t got_word;
   EXPECT_EQ(dif_entropy_read(&entropy_, &got_word), kDifEntropyOk);

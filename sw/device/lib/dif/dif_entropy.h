@@ -363,6 +363,14 @@ typedef enum dif_entropy_result {
    * succeed until hardware reset.
    */
   kDifEntropyLocked = 3,
+  /**
+   * Indicates that entropy is not yet available for software consumption
+   */
+  kDifEntropyDataUnAvailable = 4,
+  /**
+   * Indicates that entropy is not idle
+   */
+  kDifEntropyNotIdle = 5,
 } dif_entropy_result_t;
 
 /**
@@ -484,6 +492,15 @@ dif_entropy_result_t dif_entropy_lock(const dif_entropy_t *entropy);
 DIF_WARN_UNUSED_RESULT
 dif_entropy_result_t dif_entropy_is_locked(const dif_entropy_t *entropy,
                                            bool *is_locked);
+
+/**
+ * Checks to see if entropy is available for software consumption
+ *
+ * @param entropy An entropy source handle.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_entropy_result_t dif_entropy_avail(const dif_entropy_t *entropy);
 
 /**
  * Reads off a word of entropy from the entropy source.
@@ -681,6 +698,24 @@ dif_entropy_result_t dif_entropy_fifo_set_capacity(const dif_entropy_t *entropy,
  */
 DIF_WARN_UNUSED_RESULT
 dif_entropy_result_t dif_entropy_fifo_reconnect(const dif_entropy_t *entropy);
+
+/**
+ * Disables the entropy module
+ *
+ * @param entropy An entropy source handle.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_entropy_result_t dif_entropy_disable(const dif_entropy_t *entropy);
+
+/**
+ * Get main entropy fsm idle status
+ *
+ * @param entropy An entropy source handle.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_entropy_result_t dif_entropy_get_idle(const dif_entropy_t *entropy);
 
 #ifdef __cplusplus
 }  // extern "C"
