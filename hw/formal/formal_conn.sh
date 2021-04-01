@@ -18,7 +18,7 @@
 # -t: choose which formal tool to use, current only support jaspergold
 #
 # Example:
-#   formal_conn -cov -f top_earlgrey_conn.csv
+#   formal_conn -f {path_to_csv_file}
 #
 
 set -e
@@ -57,7 +57,7 @@ while [ "$1" != "" ]; do
       ;;
     "-f")
       shift
-      CSV_PATH=../../../../top_earlgrey/formal/fconn_csvs/$1
+      CSV_PATH=$1
       echo "csv path: $CSV_PATH"
       ;;
     *)
