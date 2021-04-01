@@ -22,7 +22,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   rand bit                           check_regwen_val, check_trigger_regwen_val;
   rand bit [TL_DW-1:0]               check_timeout_val;
   rand bit [1:0]                     check_trigger_val;
-  rand bit [TL_DW-1:0]               ecc_err_mask;
+  rand bit [TL_DW-1:0]               ecc_err_mask, ecc_chk_err_mask;
 
   constraint no_access_err_c {access_locked_parts == 0;}
 
@@ -60,6 +60,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   }
 
   constraint ecc_err_c {ecc_err_mask == 0;}
+
+  constraint ecc_chk_err_c {ecc_chk_err_mask == 0;}
 
   virtual task dut_init(string reset_kind = "HARD");
     if (do_reset_in_seq && do_apply_reset) begin
@@ -109,7 +111,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       if (check_trigger_val && `gmv(ral.check_trigger_regwen)) begin
         csr_wr(ral.check_timeout, check_timeout_val);
       end
-      trigger_checks(.val(check_trigger_val), .wait_done(1));
+      trigger_checks(.val(check_trigger_val), .wait_done(1), .ecc_err_mask(ecc_chk_err_mask));
 
       if (do_req_keys) begin
         req_otbn_key();

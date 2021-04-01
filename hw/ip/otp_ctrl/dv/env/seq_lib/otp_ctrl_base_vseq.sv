@@ -109,7 +109,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     bit backdoor_wr;
     addr = randomize_dai_addr(addr);
     if (cfg.ecc_err != OtpEccUncorrErr && addr < LifeCycleOffset) begin
-      backdoor_rd_val = backdoor_inject_ecc_err(addr, ecc_err_mask);
+      backdoor_rd_val = backdoor_inject_ecc_err(addr, ecc_err_mask, cfg.ecc_err);
       backdoor_wr = 1;
     end
 
@@ -212,21 +212,22 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // This function will output original backdoor read data for the given address.
   // TODO: move it to mem_bkdr_if once #4794 landed
   virtual function bit [TL_DW-1:0] backdoor_inject_ecc_err(bit [TL_DW-1:0] addr,
-                                                           bit [TL_DW-1:0] err_mask);
+                                                           bit [TL_DW-1:0] err_mask,
+                                                           ref otp_ecc_err_e ecc_err_type);
     bit [TL_DW-1:0] val, backdoor_val;
-    addr = {addr[TL_DW-3:2], 2'b00};
+    addr = {addr[TL_DW-1:2], 2'b00};
     val = cfg.mem_bkdr_vif.read32(addr);
     if (err_mask == 0 || addr >= LifeCycleOffset) begin
-      cfg.ecc_err = OtpNoEccErr;
+      ecc_err_type = OtpNoEccErr;
       return val;
     end
 
     // If every byte at most has one ECC error bit, it is a correctable error
     // If any byte at more than one ECC error bit, it is a uncorrectable error
-    cfg.ecc_err = OtpEccCorrErr;
+    ecc_err_type = OtpEccCorrErr;
     for (int i = 0; i < 2; i++) begin
       if (!$onehot(err_mask[i*16+:16]) && err_mask[i*16+:16]) begin
-        cfg.ecc_err = OtpEccUncorrErr;
+        ecc_err_type = OtpEccUncorrErr;
         break;
       end
     end
@@ -235,14 +236,35 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     foreach (err_mask[i]) backdoor_val[i] = err_mask[i] ? ~val[i] : val[i];
     cfg.mem_bkdr_vif.write32(addr, backdoor_val);
     `uvm_info(`gfn, $sformatf("original val %0h, backdoor val %0h, err_mask %0h err_type %0s",
-                              val, backdoor_val, err_mask, cfg.ecc_err.name), UVM_HIGH)
+                              val, backdoor_val, err_mask, ecc_err_type.name), UVM_HIGH)
 
     return val;
   endfunction
 
-  virtual task trigger_checks(bit [1:0] val, bit wait_done = 1);
+  virtual task trigger_checks(bit [1:0] val, bit wait_done = 1, bit [TL_DW-1:0] ecc_err_mask = 0);
+    bit [TL_DW-1:0] backdoor_rd_val, addr;
+    // Backdoor write ECC errors
+    if (ecc_err_mask) begin
+      int part_idx = $urandom_range(HwCfgIdx, LifeCycleIdx);
+
+      // Only HW cfgs check digest correctness
+      if (part_idx != LifeCycleIdx) begin
+        addr = $urandom_range(0, 1) ? PART_OTP_DIGEST_ADDRS[part_idx] << 2 :
+                                      (PART_OTP_DIGEST_ADDRS[part_idx] + 1) << 2;
+      end else begin
+        addr = $urandom_range(LifeCycleOffset, LifeCycleOffset + LifeCycleSize - 1);
+        addr = {addr[TL_DW-1:2], 2'b00};
+      end
+      backdoor_rd_val = backdoor_inject_ecc_err(addr, ecc_err_mask, cfg.ecc_chk_err[part_idx]);
+    end
+
     csr_wr(ral.check_trigger, val);
     if (wait_done && val) csr_spinwait(ral.status.check_pending, 0);
+
+    if (ecc_err_mask) begin
+      cfg.mem_bkdr_vif.write32(addr, backdoor_rd_val);
+      cfg.ecc_chk_err = '{default: OtpNoEccErr};
+    end
   endtask
 
   // For a DAI interface operation to finish, either way until status dai_idle is set, or check
