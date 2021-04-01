@@ -10,12 +10,7 @@ class entropy_src_rng_test extends entropy_src_base_test;
   function void configure_env();
     super.configure_env();
 
-    cfg.enable_lfsr_pct    = 0;
-    cfg.enable_ptrng_pct   = 100;
-    cfg.route_software_pct = 100;
-    cfg.type_bypass_pct    = 100;
-
-    // TODO: Modify cfg_knob randomization to include lfsr/hardware
+    // TODO: Modify cfg_knob randomization to include both lfsr/hardware
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)
