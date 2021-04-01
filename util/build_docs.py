@@ -97,6 +97,7 @@ config = {
         "hw/ip/aes/data/aes_testplan.hjson",
         "hw/ip/alert_handler/data/alert_handler_testplan.hjson",
         "hw/ip/aon_timer/data/aon_timer_testplan.hjson",
+        "hw/ip/clkmgr/data/clkmgr_testplan.hjson",
         "hw/ip/entropy_src/data/entropy_src_testplan.hjson",
         "hw/ip/csrng/data/csrng_testplan.hjson",
         "hw/ip/adc_ctrl/data/adc_ctrl_testplan.hjson",
