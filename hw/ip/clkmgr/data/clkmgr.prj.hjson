@@ -5,7 +5,7 @@
 {
     name:               "clkmgr",
     design_spec:        "../doc",
-    dv_doc:             "/hw/top_earlgrey/doc/dv",
+    dv_doc:             "../doc/dv",
     hw_checklist:       "../doc/checklist",
     sw_checklist:       "/sw/device/lib/dif/dif_clkmgr",
     revisions: [
