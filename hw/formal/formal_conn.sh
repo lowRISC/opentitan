@@ -43,7 +43,7 @@ while [ "$1" != "" ]; do
       CORE_PATH=$1
       ;;
     "-batch")
-      batch="-batch"
+      batch="-batch -command exit"
       echo "runnin in batch mode"
       ;;
     "-cov")
@@ -57,7 +57,7 @@ while [ "$1" != "" ]; do
       ;;
     "-f")
       shift
-      CSV_PATH=../../../../top_earlgrey/fpv/fconn_csvs/$1
+      CSV_PATH=../../../../top_earlgrey/formal/fconn_csvs/$1
       echo "csv path: $CSV_PATH"
       ;;
     *)
@@ -94,7 +94,6 @@ if [ "${tool}" == "jg" ]; then
       ${REPO_PATH}/hw/formal/tools/jaspergold/conn.tcl \
       -proj {REPO_PATH}/hw/formal/jgproject \
       -allow_unsupported_OS \
-      -command exit \
       | tee ${REPO_PATH}/hw/formal/jg_conn.log
 else
  echo "ERROR: TOOL ${tool} not supported"
