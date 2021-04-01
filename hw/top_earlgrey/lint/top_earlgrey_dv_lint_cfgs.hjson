@@ -33,6 +33,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip/aon_timer/dv/lint/{tool}"
              },
+             {    name: clkmgr
+                  fusesoc_core: lowrisc:dv:clkmgr_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/clkmgr/dv/lint/{tool}"
+             },
              {    name: csrng
                   fusesoc_core: lowrisc:dv:csrng_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]

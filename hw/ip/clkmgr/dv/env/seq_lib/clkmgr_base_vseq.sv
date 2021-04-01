@@ -25,9 +25,25 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     // TODO
   endtask
 
+  virtual task apply_reset(string reset_kind = "HARD");
+    fork
+      super.apply_reset(reset_kind);
+      if (reset_kind == "HARD") fork
+        cfg.main_clk_rst_vif.apply_reset();
+        cfg.io_clk_rst_vif.apply_reset();
+        cfg.usb_clk_rst_vif.apply_reset();
+        cfg.aon_clk_rst_vif.apply_reset();
+      join
+    join
+  endtask
+
   // setup basic clkmgr features
   virtual task clkmgr_init();
-    `uvm_error(`gfn, "FIXME")
+    // Initialize input clock frequencies.
+    cfg.main_clk_rst_vif.set_freq_mhz(100);
+    cfg.io_clk_rst_vif.set_freq_mhz(96);
+    cfg.usb_clk_rst_vif.set_freq_mhz(48);
+    cfg.aon_clk_rst_vif.set_freq_khz(200);
   endtask
 
 endclass : clkmgr_base_vseq
