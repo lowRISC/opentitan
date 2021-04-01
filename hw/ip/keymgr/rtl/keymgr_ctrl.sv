@@ -56,6 +56,9 @@ module keymgr_ctrl import keymgr_pkg::*;(
   localparam int EntropyRounds = KeyWidth / EntropyWidth;
   localparam int CntWidth = $clog2(EntropyRounds);
 
+  localparam int unsigned LastEntropyRoundInt = EntropyRounds - 1;
+  localparam bit [CntWidth-1:0] LastEntropyRound = LastEntropyRoundInt[CntWidth-1:0];
+
   // Enumeration for working state
   typedef enum logic [3:0] {
     StCtrlReset,
@@ -301,7 +304,7 @@ module keymgr_ctrl import keymgr_pkg::*;(
         // This is the default mask
         update_sel = KeyUpdateRandom;
 
-        if (cnt < EntropyRounds-1) begin
+        if (cnt < LastEntropyRound) begin
           cnt_en = 1'b1;
         end
         // when mask population is complete, xor the root_key into the zero share
