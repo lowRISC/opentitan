@@ -37,6 +37,10 @@
                 "--cov={cov}",
                 "--dut={dut}"]
 
+  // Common fail patterns.
+  build_fail_patterns: [// FuseSoC build error
+                        "^ERROR:.*$"]
+
   // Vars that need to exported to the env
   exports: [
     { DUT_TOP: "{dut}" },

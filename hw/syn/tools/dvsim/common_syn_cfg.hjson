@@ -41,6 +41,10 @@
   sv_flist_gen_dir:   "{build_dir}/syn-icarus"
   sv_flist:           "{sv_flist_gen_dir}/{fusesoc_core_}.scr"
 
+  // Common fail patterns.
+  build_fail_patterns: [// FuseSoC build error
+                        "^ERROR:.*$"]
+
   exports: [
     { syn_root: "{syn_root}" },
     { foundry_root: "{foundry_root}" },
