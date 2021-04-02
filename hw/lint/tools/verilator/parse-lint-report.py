@@ -8,8 +8,8 @@ import argparse
 import logging as log
 import re
 import sys
-from pathlib import Path
 from collections import OrderedDict
+from pathlib import Path
 
 import hjson
 
@@ -45,7 +45,8 @@ def parse_lint_log(str_buffer):
         ("fusesoc-error",
          r"^ERROR: Failed to build .* 'make' exited with an error code"),
         ("errors",
-         r"^(?!ERROR: Failed to build .* 'make' exited with an error code)ERROR: .*"),
+         r"^(?!ERROR: Failed to build .* 'make' exited with an error code)ERROR: .*"
+         ),
         ("errors",
          # This is a redundant Verilator error that we ignore, since we
          # already parse out each individual error.
@@ -111,15 +112,16 @@ def main():
         """)
     parser.add_argument('--logpath',
                         type=str,
-                        default="lint.log",
+                        default="verilator.log",
                         help=('FPV log file path. Defaults to `lint.log` '
                               'under the current script directory.'))
 
-    parser.add_argument('--reppath',
-                        type=str,
-                        default="results.hjson",
-                        help=('Parsed output hjson file path. Defaults to '
-                              '`results.hjson` under the current script directory.'))
+    parser.add_argument(
+        '--reppath',
+        type=str,
+        default="results.hjson",
+        help=('Parsed output hjson file path. Defaults to '
+              '`results.hjson` under the current script directory.'))
 
     args = parser.parse_args()
 
@@ -137,7 +139,8 @@ def main():
     n_errors = len(results["errors"]) + len(results["lint_errors"])
     n_warnings = len(results["warnings"]) + len(results["lint_warnings"])
     if n_errors > 0 or n_warnings > 0:
-        log.info("Found %d lint errors and %d lint warnings", n_errors, n_warnings)
+        log.info("Found %d lint errors and %d lint warnings", n_errors,
+                 n_warnings)
         sys.exit(1)
 
     log.info("Lint logfile parsed succesfully")
