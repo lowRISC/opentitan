@@ -91,7 +91,7 @@ _start:
   sw   t0, CSRNG_CTRL_REG_OFFSET(a0)
 
   li   a0, TOP_EARLGREY_EDN0_BASE_ADDR
-  li   t0, 0x1
+  li   t0, 0x9
   sw   t0, EDN_CTRL_REG_OFFSET(a0)
 
   // Request memory scrambling and init

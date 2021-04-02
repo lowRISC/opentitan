@@ -131,12 +131,9 @@ module edn_reg_top (
   logic ctrl_cmd_fifo_rst_qs;
   logic ctrl_cmd_fifo_rst_wd;
   logic ctrl_cmd_fifo_rst_we;
-  logic ctrl_auto_req_mode_qs;
-  logic ctrl_auto_req_mode_wd;
-  logic ctrl_auto_req_mode_we;
-  logic ctrl_boot_req_dis_qs;
-  logic ctrl_boot_req_dis_wd;
-  logic ctrl_boot_req_dis_we;
+  logic [1:0] ctrl_hw_req_mode_qs;
+  logic [1:0] ctrl_hw_req_mode_wd;
+  logic ctrl_hw_req_mode_we;
   logic sum_sts_req_mode_sm_sts_qs;
   logic sum_sts_req_mode_sm_sts_wd;
   logic sum_sts_req_mode_sm_sts_we;
@@ -406,18 +403,18 @@ module edn_reg_top (
   );
 
 
-  //   F[auto_req_mode]: 2:2
+  //   F[hw_req_mode]: 3:2
   prim_subreg #(
-    .DW      (1),
+    .DW      (2),
     .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_ctrl_auto_req_mode (
+    .RESVAL  (2'h0)
+  ) u_ctrl_hw_req_mode (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (ctrl_auto_req_mode_we),
-    .wd     (ctrl_auto_req_mode_wd),
+    .we     (ctrl_hw_req_mode_we),
+    .wd     (ctrl_hw_req_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -425,36 +422,10 @@ module edn_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl.auto_req_mode.q ),
+    .q      (reg2hw.ctrl.hw_req_mode.q ),
 
     // to register interface (read)
-    .qs     (ctrl_auto_req_mode_qs)
-  );
-
-
-  //   F[boot_req_dis]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_ctrl_boot_req_dis (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (ctrl_boot_req_dis_we),
-    .wd     (ctrl_boot_req_dis_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.ctrl.boot_req_dis.q ),
-
-    // to register interface (read)
-    .qs     (ctrl_boot_req_dis_qs)
+    .qs     (ctrl_hw_req_mode_qs)
   );
 
 
@@ -944,11 +915,8 @@ module edn_reg_top (
   assign ctrl_cmd_fifo_rst_we = addr_hit[5] & reg_we & !reg_error;
   assign ctrl_cmd_fifo_rst_wd = reg_wdata[1];
 
-  assign ctrl_auto_req_mode_we = addr_hit[5] & reg_we & !reg_error;
-  assign ctrl_auto_req_mode_wd = reg_wdata[2];
-
-  assign ctrl_boot_req_dis_we = addr_hit[5] & reg_we & !reg_error;
-  assign ctrl_boot_req_dis_wd = reg_wdata[3];
+  assign ctrl_hw_req_mode_we = addr_hit[5] & reg_we & !reg_error;
+  assign ctrl_hw_req_mode_wd = reg_wdata[3:2];
 
   assign sum_sts_req_mode_sm_sts_we = addr_hit[6] & reg_we & !reg_error;
   assign sum_sts_req_mode_sm_sts_wd = reg_wdata[0];
@@ -1004,8 +972,7 @@ module edn_reg_top (
       addr_hit[5]: begin
         reg_rdata_next[0] = ctrl_edn_enable_qs;
         reg_rdata_next[1] = ctrl_cmd_fifo_rst_qs;
-        reg_rdata_next[2] = ctrl_auto_req_mode_qs;
-        reg_rdata_next[3] = ctrl_boot_req_dis_qs;
+        reg_rdata_next[3:2] = ctrl_hw_req_mode_qs;
       end
 
       addr_hit[6]: begin

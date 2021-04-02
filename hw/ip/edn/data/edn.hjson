@@ -84,9 +84,18 @@
                 software before any further commands can be issued to these FIFOs.
                 '''
         }
-        { bits: "2",
-          name: "AUTO_REQ_MODE",
-          desc: '''
+        { bits: "3:2",
+          name: "HW_REQ_MODE",
+          resval: 0
+          desc: This field determines what hardware-based operational modes the EDN block will operate in.
+          enum: [
+            { value: 0,
+              name: "DISABLED",
+              desc: Disables BOOT_REQ_MODE and AUTO_REQ_MODE.
+            },
+            { value: 1,
+              name: "AUTO_REQ_MODE",
+              desc: '''
                 Setting this bit will enable the EDN block to automatically send another request to
                 CSRNG application interface. It is assumed that the command has been set up ahead of
                 time, such that when the previous command has returned ack, then a new command will be
@@ -94,15 +103,17 @@
                 will be sent repeatedly so that a continuous supply of entropy can be delivered to the
                 endpoints.
                 '''
-        },
-        { bits: "3",
-          name: "BOOT_REQ_DIS",
-          desc: '''
-                Setting this bit will disable the feature where the EDN block will automatically
+            },
+            { value: 2,
+              name: "BOOT_REQ_MODE",
+              desc: '''
+                This decode will enable the feature where the EDN block will automatically
                 send a boot-time request to the CSRNG application interface.
                 The purpose of this feature is to request entropy as fast as possible after reset,
                 and during chip boot-time.
                 '''
+            },
+          ]
         },
       ]
     },
