@@ -62,11 +62,8 @@ package edn_reg_pkg;
       logic        q;
     } cmd_fifo_rst;
     struct packed {
-      logic        q;
-    } auto_req_mode;
-    struct packed {
-      logic        q;
-    } boot_req_dis;
+      logic [1:0]  q;
+    } hw_req_mode;
   } edn_reg2hw_ctrl_reg_t;
 
   typedef struct packed {

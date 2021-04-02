@@ -295,7 +295,7 @@ module edn_core import edn_pkg::*;
   // cmd req
   assign sw_cmd_req_load = reg2hw.sw_cmd_req.qe;
   assign sw_cmd_req_bus = reg2hw.sw_cmd_req.q;
-  assign auto_req_mode = reg2hw.ctrl.auto_req_mode.q;
+  assign auto_req_mode = (reg2hw.ctrl.hw_req_mode.q == 2'b01);
   assign hw2reg.sum_sts.req_mode_sm_sts.de = 1'b1;
   assign hw2reg.sum_sts.req_mode_sm_sts.d = seq_auto_req_mode;
   assign hw2reg.sum_sts.boot_inst_ack.de = 1'b1;
@@ -447,16 +447,16 @@ module edn_core import edn_pkg::*;
 
   assign cmd_fifo_cnt_d =
          (cmd_fifo_rst || !seq_auto_req_mode) ? '0 :
-         capt_gencmd_fifo_cnt ? (sfifo_gencmd_depth-1) :
-         capt_rescmd_fifo_cnt ? (sfifo_rescmd_depth-1) :
+         capt_gencmd_fifo_cnt ? (sfifo_gencmd_depth) :
+         capt_rescmd_fifo_cnt ? (sfifo_rescmd_depth) :
          (send_gencmd || send_rescmd)? (cmd_fifo_cnt_q-1) :
          cmd_fifo_cnt_q;
 
-  assign cmd_sent = (cmd_fifo_cnt_q == '0);
+  assign cmd_sent = (cmd_fifo_cnt_q == 13'h01);
 
 
   // boot request
-  assign boot_request = !reg2hw.ctrl.boot_req_dis.q;
+  assign boot_request = (reg2hw.ctrl.hw_req_mode.q == 2'b10);
 
   assign boot_req_d[0] =
          (!edn_enable) ? '0 :

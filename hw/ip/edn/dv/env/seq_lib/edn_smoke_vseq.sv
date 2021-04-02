@@ -13,7 +13,7 @@ class edn_smoke_vseq extends edn_base_vseq;
     super.body();
 
     // Enable edn
-    csr_wr(.ptr(ral.ctrl), .value(1'b1));
+    csr_wr(.ptr(ral.ctrl), .value(4'h9));
 
     m_endpoint_pull_seq = push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)::type_id::
         create("m_endpoint_pull_seq");

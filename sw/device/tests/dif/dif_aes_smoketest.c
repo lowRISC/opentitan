@@ -76,7 +76,7 @@ bool test_main(void) {
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
                       CSRNG_CTRL_REG_OFFSET, 0x1);
   mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
-                      EDN_CTRL_REG_OFFSET, 0x1);
+                      EDN_CTRL_REG_OFFSET, 0x9);
 
   // Initialise AES.
   dif_aes_params_t params = {
