@@ -553,9 +553,17 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     end
 
     err_code[keymgr_pkg::ErrInvalidCmd] = is_kmac_rsp_err | is_kmac_invalid_data;
-    err_code[keymgr_pkg::ErrInvalidIn]  = get_hw_invalid_input() | get_sw_invalid_input();
+
+    if (cfg.keymgr_vif.keymgr_en_sync2 == lc_ctrl_pkg::On) begin
+      err_code[keymgr_pkg::ErrInvalidIn]  = get_hw_invalid_input() | get_sw_invalid_input();
+    end
+
     err_code[keymgr_pkg::ErrInvalidOut] = is_kmac_invalid_data;
 
+    `uvm_info(`gfn, $sformatf("op_err = %0d, rsp_err = %0d, kmac_invalid =%0d, hw_invalid = %0d \
+              sw_invalid = %0d, kmac_invalid_data = %0d",
+              get_op_error(), is_kmac_rsp_err, is_kmac_invalid_data, get_hw_invalid_input(),
+              get_sw_invalid_input(), is_kmac_invalid_data), UVM_MEDIUM)
     return err_code;
   endfunction
 
@@ -867,6 +875,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
       begin
         // it takes 2 cycle to wipe sw_share. add one more negedge to avoid race condition
         cfg.clk_rst_vif.wait_n_clks(3);
+        update_state(keymgr_pkg::StInvalid);
         is_sw_share_corrupted = 1;
       end
     join_none
