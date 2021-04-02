@@ -61,8 +61,7 @@ module rstmgr import rstmgr_pkg::*; (
   for (genvar i = 0; i < PowerDomains; i++) begin : gen_rst_por_aon
     if (i == DomainAonSel) begin : gen_rst_por_aon_normal
 
-      // Workaround due to FPV compile error
-      lc_ctrl_pkg::lc_tx_t [0:0] por_aon_scanmode;
+      lc_ctrl_pkg::lc_tx_t por_aon_scanmode;
       prim_lc_sync #(
         .NumCopies(1),
         .AsyncOn(0)
@@ -77,7 +76,7 @@ module rstmgr import rstmgr_pkg::*; (
         .clk_i(clk_aon_i),
         .rst_ni, // this is the only use of rst_ni in this module
         .scan_rst_ni,
-        .scanmode_i(por_aon_scanmode[0] == lc_ctrl_pkg::On),
+        .scanmode_i(por_aon_scanmode == lc_ctrl_pkg::On),
         .rst_no(rst_por_aon_n[i])
       );
     end else begin : gen_rst_por_aon_tieoff
@@ -142,8 +141,7 @@ module rstmgr import rstmgr_pkg::*; (
   logic [PowerDomains-1:0] rst_lc_src_n;
   logic [PowerDomains-1:0] rst_sys_src_n;
 
-  // Workaround due to FPV compile error
-  lc_ctrl_pkg::lc_tx_t [0:0] rst_ctrl_scanmode;
+  lc_ctrl_pkg::lc_tx_t rst_ctrl_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
     .AsyncOn(0)
@@ -157,7 +155,7 @@ module rstmgr import rstmgr_pkg::*; (
   // lc reset sources
   rstmgr_ctrl u_lc_src (
     .clk_i,
-    .scanmode_i(rst_ctrl_scanmode[0] == lc_ctrl_pkg::On),
+    .scanmode_i(rst_ctrl_scanmode == lc_ctrl_pkg::On),
     .scan_rst_ni,
     .rst_ni(local_rst_n),
     .rst_req_i(pwr_i.rst_lc_req),
