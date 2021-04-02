@@ -24,7 +24,7 @@ const test_config_t kTestConfig;
 _Static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
                "This test assumes the target platform is little endian.");
 
-static const dif_hmac_transaction_config_t kHmacTransactionConfig = {
+static const dif_hmac_transaction_t kHmacTransactionConfig = {
     .digest_endianness = kDifHmacEndiannessLittle,
     .message_endianness = kDifHmacEndiannessLittle,
 };
