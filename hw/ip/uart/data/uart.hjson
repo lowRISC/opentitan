@@ -48,6 +48,10 @@
         { bits: "1",
           name: "RX",
           desc: "RX enable"
+          tags: [// enable RX in other tests only. In top-level, RX pin is driven by 0 when it's
+                 // not selected at pinmux, which causes RX related status updated to non-default
+                 // value
+            "excl:CsrAllTests:CsrExclWrite"]
         }
         { bits: "2",
           name: "NF",
@@ -141,17 +145,11 @@
           name: "RXIDLE"
           desc: "RX is idle"
           resval: "1",
-          tags: [// check idle in other tests only. In top-level, RX pin is driven by 0 when it's
-                 // not selected at pinmux
-            "excl:CsrAllTests:CsrExclCheck"]
         }
         { bits: "5"
           name: "RXEMPTY"
           desc: "RX FIFO is empty"
           resval: "1"
-          tags: [// check idle in other tests only. In top-level, RX pin is driven by 0 when it's
-                 // not selected at pinmux
-            "excl:CsrAllTests:CsrExclCheck"]
         }
       ]
     }
