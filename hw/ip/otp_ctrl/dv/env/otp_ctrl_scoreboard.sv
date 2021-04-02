@@ -448,6 +448,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
             otp_intr_e intr = otp_intr_e'(i);
             `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[i], (intr_en[i] & intr_exp[i]),
                               $sformatf("Interrupt_pin: %0s", intr.name));
+            if (cfg.en_cov) begin
+              cov.intr_cg.sample(i, intr_en[i], item.d_data[i]);
+              cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
+            end
           end
         end
       end
