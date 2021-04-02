@@ -6,6 +6,6 @@
 
   // Verilator lint-specific results parsing script that is called after running lint
   report_cmd: "{lint_root}/tools/{tool}/parse-lint-report.py "
-  report_opts: ["--logpath={build_dir}/lint.log",
+  report_opts: ["--logpath={build_log}",
                 "--reppath={build_dir}/results.hjson"]
 }

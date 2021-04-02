@@ -41,7 +41,7 @@ def get_results(resdir):
     }
     try:
         # check the report file for lint INFO, WARNING and ERRORs
-        with Path(resdir).joinpath('lint.log').open() as f:
+        with Path(resdir).joinpath('veriblelint.log').open() as f:
             full_file = f.read()
     except IOError as err:
         results["errors"] += ["IOError: %s" % err]
@@ -58,10 +58,8 @@ def get_results(resdir):
         # error if there are no other errors or warnings, since that
         # shows something has come unstuck. (Probably the lint tool
         # spat out a warning that we don't understand)
-        ("fusesoc-error",
-         r"^ERROR: Failed to run .*: Lint failed.*"),
-        ("errors",
-         r"^(?!ERROR: Failed to run .* Lint failed)ERROR: .*"),
+        ("fusesoc-error", r"^ERROR: Failed to run .*: Lint failed.*"),
+        ("errors", r"^(?!ERROR: Failed to run .* Lint failed)ERROR: .*"),
         ("errors", r"^.*Error: .*"),
         ("errors", r"^E .*"),
         ("errors", r"^F .*"),
@@ -136,7 +134,8 @@ def main():
     n_errors = len(results["errors"]) + len(results["lint_errors"])
     n_warnings = len(results["warnings"]) + len(results["lint_warnings"])
     if n_errors > 0 or n_warnings > 0:
-        log.info("Found %d lint errors and %d lint warnings", n_errors, n_warnings)
+        log.info("Found %d lint errors and %d lint warnings", n_errors,
+                 n_warnings)
         sys.exit(1)
 
     log.info("Lint logfile parsed succesfully")

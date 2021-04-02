@@ -40,9 +40,10 @@ def get_results(resdir):
         "lint_infos": []
     }
 
-    log_files = ['lint.log',
-                 'lint-ascentlint/ascentlint.log',
-                 'lint-ascentlint/ascentlint.rpt']
+    log_files = [
+        'ascentlint.log', 'lint-ascentlint/ascentlint.log',
+        'lint-ascentlint/ascentlint.rpt'
+    ]
     log_file_contents = []
     # Open all log files
     for name in log_files:
@@ -85,11 +86,9 @@ def get_results(resdir):
     ])
 
     # Patterns for ascentlint.rpt
-    err_warn_patterns.append([
-        ("lint_errors", r"^E  .*"),
-        ("lint_warnings", r"^W  .*"),
-        ("lint_infos", r"^I  .*")
-    ])
+    err_warn_patterns.append([("lint_errors", r"^E  .*"),
+                              ("lint_warnings", r"^W  .*"),
+                              ("lint_infos", r"^I  .*")])
 
     # Go parse the logs
     for patterns, logs in zip(err_warn_patterns, log_file_contents):
@@ -153,12 +152,12 @@ def main():
     n_errors = len(results["errors"]) + len(results["lint_errors"])
     n_warnings = len(results["warnings"]) + len(results["lint_warnings"])
     if n_errors > 0 or n_warnings > 0:
-        log.info("Found %d lint errors and %d lint warnings", n_errors, n_warnings)
+        log.info("Found %d lint errors and %d lint warnings", n_errors,
+                 n_warnings)
         sys.exit(1)
 
     log.info("Lint logfile parsed succesfully")
     sys.exit(0)
-
 
 
 if __name__ == "__main__":

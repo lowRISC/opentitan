@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
+  flow: lint
 
   // This is the primary cfg hjson for FPV linting. It imports ALL individual lint
   // cfgs of the IPs FPV environments.

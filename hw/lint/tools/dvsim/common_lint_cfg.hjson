@@ -16,7 +16,8 @@
 
   // Default directory structure for the output
   build_dir:  "{scratch_path}/{build_mode}"
-  build_log:  "{build_dir}/lint.log"
+  build_log:  "{build_dir}/{tool}.log"
+
   // We rely on fusesoc to run lint for us
   build_cmd:  "fusesoc"
   build_opts: ["--cores-root {proj_root}",
