@@ -42,7 +42,6 @@ class LocalLauncher(Launcher):
 
         self._dump_env_vars(exports)
 
-        args = shlex.split(self.deploy.cmd)
         try:
             f = open(self.deploy.get_log_path(),
                      "w",
@@ -50,7 +49,7 @@ class LocalLauncher(Launcher):
                      errors="surrogateescape")
             f.write("[Executing]:\n{}\n\n".format(self.deploy.cmd))
             f.flush()
-            self.process = subprocess.Popen(args,
+            self.process = subprocess.Popen(shlex.split(self.deploy.cmd),
                                             bufsize=4096,
                                             universal_newlines=True,
                                             stdout=f,
