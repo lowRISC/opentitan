@@ -6,4 +6,33 @@
 
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
+# clkmgr idle connectivity
 CONNECTION,CLKMGR_IDLE0,u_clkmgr_aon,idle_i[0],u_aes,idle_o
+CONNECTION,CLKMGR_IDLE1,u_clkmgr_aon,idle_i[1],u_hmac,idle_o
+CONNECTION,CLKMGR_IDLE2,u_clkmgr_aon,idle_i[2],u_kmac,idle_o
+CONNECTION,CLKMGR_IDLE3,u_clkmgr_aon,idle_i[3],u_otbn,idle_o
+# clkmgr peri clock connectivity
+CONNECTION,CLKMGR_PERI_CLK0_GPIO,u_clkmgr_aon,clocks_o.clk_io_div4_peri,u_gpio,clk_i
+CONNECTION,CLKMGR_PERI_CLK0_SPI_DEVICE,u_clkmgr_aon,clocks_o.clk_io_div4_peri,u_spi_device,clk_i
+CONNECTION,CLKMGR_PERI_CLK0_SPI_HOST0,u_clkmgr_aon,clocks_o.clk_io_div4_peri,u_spi_host0,clk_i
+CONNECTION,CLKMGR_PERI_CLK0_SPI_HOST1,u_clkmgr_aon,clocks_o.clk_io_div4_peri,u_spi_host1,clk_i
+CONNECTION,CLKMGR_PERI_CLK0_I2C0,u_clkmgr_aon,clocks_o.clk_io_div4_peri,u_i2c0,clk_i
+CONNECTION,CLKMGR_PERI_CLK0_I2C1,u_clkmgr_aon,clocks_o.clk_io_div4_peri,u_i2c1,clk_i
+CONNECTION,CLKMGR_PERI_CLK0_I2C2,u_clkmgr_aon,clocks_o.clk_io_div4_peri,u_i2c2,clk_i
+CONNECTION,CLKMGR_PERI_CLK0_PATTGEN,u_clkmgr_aon,clocks_o.clk_io_div4_peri,u_pattgen,clk_i
+CONNECTION,CLKMGR_PERI_CLK0_USBDEV,u_clkmgr_aon,clocks_o.clk_io_div4_peri,u_usbdev,clk_i
+CONNECTION,CLKMGR_PERI_CLK0_ADC_CTRL_AON,u_clkmgr_aon,clocks_o.clk_io_div4_peri,u_adc_ctrl_aon,clk_i
+CONNECTION,CLKMGR_PERI_CLK0_SRAM_CTRL_RET_AON,u_clkmgr_aon,clocks_o.clk_io_div4_peri,u_sram_ctrl_ret_aon,clk_i
+CONNECTION,CLKMGR_PERI_CLK0_SRAM_CTRL_RET_AON_OTP,u_clkmgr_aon,clocks_o.clk_io_div4_peri,u_sram_ctrl_ret_aon,clk_otp_i
+CONNECTION,CLKMGR_PERI_CLK1_SPI_DEVICE,u_clkmgr_aon,clocks_o.clk_io_div2_peri,u_spi_device,scan_clk_i
+CONNECTION,CLKMGR_PERI_CLK1_SPI_HOST0,u_clkmgr_aon,clocks_o.clk_io_div2_peri,u_spi_host0,clk_core_i
+CONNECTION,CLKMGR_PERI_CLK1_SPI_HOST1,u_clkmgr_aon,clocks_o.clk_io_div2_peri,u_spi_host1,clk_core_i
+CONNECTION,CLKMGR_PERI_CLK2_USBDEV,u_clkmgr_aon,clocks_o.clk_usb_peri,u_usbdev,clk_usb_48mhz_i
+# clkmgr trans clock connectivity
+CONNECTION,CLKMGR_AES,u_clkmgr_aon,clocks_o.clk_main_aes,u_aes,clk_i
+CONNECTION,CLKMGR_AES_EDN,u_clkmgr_aon,clocks_o.clk_main_aes,u_aes,clk_edn_i
+CONNECTION,CLKMGR_HMAC,u_clkmgr_aon,clocks_o.clk_main_hmac,u_hmac,clk_i
+CONNECTION,CLKMGR_KMAC,u_clkmgr_aon,clocks_o.clk_main_kmac,u_kmac,clk_i
+CONNECTION,CLKMGR_KMAC_EDN,u_clkmgr_aon,clocks_o.clk_main_kmac,u_kmac,clk_edn_i
+CONNECTION,CLKMGR_OTBN,u_clkmgr_aon,clocks_o.clk_main_otbn,u_otbn,clk_i
+CONNECTION,CLKMGR_OTBN_EDN,u_clkmgr_aon,clocks_o.clk_main_otbn,u_otbn,clk_edn_i
