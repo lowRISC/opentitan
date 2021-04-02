@@ -12,4 +12,11 @@ module clkmgr_bind;
     .h2d  (tl_i),
     .d2h  (tl_o)
   );
+
+  bind clkmgr clkmgr_csr_assert_fpv clkmgr_csr_assert (
+    .clk_i,
+    .rst_ni,
+    .h2d    (tl_i),
+    .d2h    (tl_o)
+  );
 endmodule
