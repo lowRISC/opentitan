@@ -3,8 +3,15 @@
 A DIF is a "Device Interface Function". DIFs are low-level routines for
 accessing the hardware functionality directly, and are agnostic to the
 particular environment or context they are called from. The intention is that
-DIFs can be used during design verification, and during early silicon
-verification, and by the high-level driver software in production firmware.
+DIFs are high-quality software artifacts which can be used during design
+verification and early silicon verification.
+
+Although DIFs are high-quality software artifacts, they are not a hardware
+abstraction layer (HAL), nor do they follow the device driver model of
+any particular operating system, and as such, DIFs are *not* intended
+to be used by production firmware.  DIFs, in combination with the
+hardware specification, may be illustrative for writing drivers, but should
+not be considered drivers themselves.
 
 This subtree provides headers and libraries known collectively as the DIF
 libraries.
