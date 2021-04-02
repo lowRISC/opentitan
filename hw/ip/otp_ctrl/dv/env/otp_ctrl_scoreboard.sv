@@ -13,9 +13,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   bit [TL_DW-1:0] otp_a [OTP_ARRAY_SIZE];
 
   // lc_state and lc_cnt that stored in OTP
-  bit [7:0] otp_lc_data[LifeCycleSize];
-  bit key_size_80 = SCRAMBLE_KEY_SIZE == 80;
-  bit [EDN_BUS_WIDTH-1:0] edn_data_q[$];
+  bit [LifeCycleSize*8-1:0] otp_lc_data;
+  bit                       key_size_80 = SCRAMBLE_KEY_SIZE == 80;
+  bit [EDN_BUS_WIDTH-1:0]   edn_data_q[$];
 
   // This bit is used for DAI interface to mark if the read access is valid.
   bit dai_read_valid;
@@ -175,24 +175,19 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     forever begin
       push_pull_item#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE)) rcv_item;
       bit       exp_err_bit;
-      bit [7:0] lc_wr_data[LifeCycleSize];
 
       lc_prog_fifo.get(rcv_item);
 
-      // Even if lci_error happened, design will continue to program the rest of LC partitions.
-      lc_wr_data = {>>byte{rcv_item.h_data}};
-      foreach (otp_lc_data[i]) begin
-        if ((otp_lc_data[i] & lc_wr_data[i]) == otp_lc_data[i]) begin
-          otp_lc_data[i] = lc_wr_data[i];
-        end else begin
-          exp_err_bit = 1;
-        end
+      if ((otp_lc_data & rcv_item.h_data) == otp_lc_data) begin
+        otp_lc_data = rcv_item.h_data;
+        predict_no_err(OtpLciErrIdx);
+      end else begin
+        exp_err_bit = 1;
+        predict_err(OtpLciErrIdx, OtpMacroWriteBlankError);
       end
 
       // LC program request data is valid means no OTP macro error.
       `DV_CHECK_EQ(rcv_item.d_data, exp_err_bit)
-      if (exp_err_bit) predict_err(OtpLciErrIdx, OtpMacroWriteBlankError);
-      else             predict_no_err(OtpLciErrIdx);
     end
   endtask
 
@@ -269,9 +264,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       // If during OTBN key request, the LFSR timer expired and trigger an EDN request to acquire
       // two EDN keys, then ignore the OTBN output checking, because scb did not know which EDN
       // keys are used for LFSR.
-      // With current config, LFSR EDN request cannot be triggered twice during OTBN key request,
-      // so any edn_data_q size rather than (16+2) is an error.
-      end else if (edn_data_q.size() != (NUM_OTBN_EDN_REQ + 2)) begin
+      // Thus any edn_data_q size equal to (16+2*N) is exempted from checking.
+      end else if ((edn_data_q.size() - NUM_OTBN_EDN_REQ) % 2 != 0) begin
         `uvm_error(`gfn, $sformatf("Unexpected edn_data_q size (%0d) during OTBN request",
                                    edn_data_q.size()))
       end
@@ -367,7 +361,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                              .num_round(2));
             exp_key = {exp_key_higher, exp_key_lower};
             `DV_CHECK_EQ(key, exp_key, $sformatf("sram_%0d key mismatch", index))
-          end else if (edn_data_q.size() != (NUM_SRAM_EDN_REQ + 2)) begin
+          end else if ((edn_data_q.size() - NUM_SRAM_EDN_REQ) % 2 != 0) begin
             `uvm_error(`gfn, $sformatf("Unexpected edn_data_q size (%0d) during SRAM request",
                                        edn_data_q.size()))
           end
