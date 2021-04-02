@@ -28,6 +28,10 @@
                "--build-root={build_dir}",
                "{fusesoc_core}"]
 
+  // Common fail patterns.
+  build_fail_patterns: [// FuseSoC build error
+                        "^ERROR:.*$"]
+
   // these are not needed currently, but have to be defined
   sv_flist_gen_cmd:   ""
   sv_flist_gen_opts:  []

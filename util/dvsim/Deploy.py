@@ -362,6 +362,10 @@ class CompileOneShot(Deploy):
             "report_opts": False
         })
 
+        self.mandatory_misc_attrs.update({
+            "build_fail_patterns": False
+        })
+
     def _set_attrs(self):
         super()._extract_attrs(self.build_mode_obj.__dict__)
         super()._set_attrs()
@@ -370,6 +374,7 @@ class CompileOneShot(Deploy):
         self.build_mode = self.name
         self.job_name = "{}_{}_{}".format(self.sim_cfg.name, self.target,
                                           self.build_mode)
+        self.fail_patterns = self.build_fail_patterns
 
 
 class RunTest(Deploy):

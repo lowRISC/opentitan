@@ -7,4 +7,7 @@
                "-proj jgproject",
                "-allow_unsupported_OS",
                "-command exit"]
+
+  // Jaspergold error patterns.
+  build_fail_patterns: ["^ERROR (.*): .*$"]
 }
