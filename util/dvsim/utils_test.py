@@ -64,6 +64,9 @@ def test_subst_wildcards():
     assert (subst_wildcards('{eval_cmd}echo foo {b}', {'b': 'bar'}) ==
             'foo bar')
 
+    assert (subst_wildcards('foo {eval_cmd}echo {b}', {'b': 'bar'}) ==
+            'foo bar')
+
     # Make sure that nested commands work
     assert (subst_wildcards('{eval_cmd} {eval_cmd} echo echo a', {}) == 'a')
 

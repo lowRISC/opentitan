@@ -203,9 +203,9 @@ class Deploy():
     def _construct_cmd(self):
         """Construct the command that will eventually be launched."""
 
-        args = ["make", "-f", self.flow_makefile, self.target]
+        cmd = "make -f {} {}".format(self.flow_makefile, self.target)
         if self.dry_run is True:
-            args += ["-n"]
+            cmd += " -n"
         for attr in sorted(self.mandatory_cmd_attrs.keys()):
             value = getattr(self, attr)
             if type(value) is list:
@@ -217,8 +217,8 @@ class Deploy():
                 value = int(value)
             if type(value) is str:
                 value = value.strip()
-            args += ["{}={}".format(attr, shlex.quote(value))]
-        return " ".join(args)
+            cmd += " {}={}".format(attr, shlex.quote(value))
+        return cmd
 
     def is_equivalent_job(self, item):
         """Checks if job that would be dispatched with 'item' is equivalent to
@@ -362,9 +362,7 @@ class CompileOneShot(Deploy):
             "report_opts": False
         })
 
-        self.mandatory_misc_attrs.update({
-            "build_fail_patterns": False
-        })
+        self.mandatory_misc_attrs.update({"build_fail_patterns": False})
 
     def _set_attrs(self):
         super()._extract_attrs(self.build_mode_obj.__dict__)
