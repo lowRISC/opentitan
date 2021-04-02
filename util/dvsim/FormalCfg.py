@@ -122,8 +122,6 @@ class FormalCfg(OneShotCfg):
         # The results_summary will only contain the passing rate and
         # percentages of the stimuli, coi, and proven coverage
         # The email_summary will contain all the information from results_md
-        log.info("Create a result summary")
-
         results_str = "## " + self.results_title + " (Summary)\n\n"
         results_str += "### " + self.timestamp_long + "\n"
         if self.revision:
@@ -223,18 +221,16 @@ class FormalCfg(OneShotCfg):
         if self.revision:
             results_str += "### " + self.revision + "\n"
         results_str += "### Branch: " + self.branch + "\n"
-        results_str += "### Formal Tool: " + self.tool.upper() + "\n"
-        results_str += "### LogFile dir: " + self.scratch_path + "/default\n\n"
-
+        results_str += "### Tool: " + self.tool.upper() + "\n"
         summary = [self.name]  # cfg summary for publish results
 
-        if len(self.build_modes) != 1:
-            mode_names = [mode.name for mode in self.build_modes]
-            log.error("Formal only supports mode 'default', but found these modes: %s", mode_names)
-        else:
-            mode = self.build_modes[0]
-            result_data = Path(subst_wildcards(self.build_dir, {"build_mode": mode.name}) +
-                               '/results.hjson')
+        assert len(self.deploy) == 1
+        mode = self.deploy[0]
+
+        if results[mode] == "P":
+            result_data = Path(subst_wildcards(self.build_dir,
+                                               {"build_mode": mode.name}),
+                               'results.hjson')
             try:
                 with open(result_data, "r") as results_file:
                     self.result = hjson.load(results_file, use_decimal=True)
@@ -246,21 +242,28 @@ class FormalCfg(OneShotCfg):
                     }
                 }
 
-            formal_result_str, formal_summary = self.get_summary(self.result)
-            results_str += formal_result_str
-            summary += formal_summary
+        results_str += "\n\n## Formal Results\n"
+        formal_result_str, formal_summary = self.get_summary(self.result)
+        results_str += formal_result_str
+        summary += formal_summary
 
-            if self.cov:
-                results_str += "\n\n## Coverage Results\n"
-                results_str += ("### Coverage html file dir: " +
-                                self.scratch_path + "/default/formal-icarus\n\n")
-                cov_result_str, cov_summary = self.get_coverage(self.result)
-                results_str += cov_result_str
-                summary += cov_summary
+        if self.cov:
+            results_str += "\n\n## Coverage Results\n"
+            results_str += ("### Coverage html file dir: " +
+                            self.scratch_path + "/default/formal-icarus\n\n")
+            cov_result_str, cov_summary = self.get_coverage(self.result)
+            results_str += cov_result_str
+            summary += cov_summary
+        else:
+            summary += ["N/A", "N/A", "N/A"]
 
-            messages = self.result.get("messages")
-            if messages is not None:
-                results_str += self.parse_dict_to_str(messages)
+        if results[mode] != "P":
+            results_str += "\n## List of Failures\n" + ''.join(
+                mode.launcher.fail_msg)
+
+        messages = self.result.get("messages")
+        if messages is not None:
+            results_str += self.parse_dict_to_str(messages)
 
         # Write results to the scratch area
         self.results_md = results_str
@@ -269,8 +272,6 @@ class FormalCfg(OneShotCfg):
             f.write(self.results_md)
 
         # Generate result summary
-        if not self.cov:
-            summary += ["N/A", "N/A", "N/A"]
         self.result_summary[self.name] = summary
 
         log.log(VERBOSE, "[results page]: [%s] [%s]", self.name, results_file)

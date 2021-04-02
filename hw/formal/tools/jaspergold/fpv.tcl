@@ -27,7 +27,7 @@ analyze -sv09                 \
   +define+FPV_ON              \
   -f [glob *.scr]
 
-elaborate -bbox_a 4320 -top $env(FPV_TOP) -enable_sva_isunknown
+elaborate -bbox_a 4320 -top $env(DUT_TOP) -enable_sva_isunknown
 
 #-------------------------------------------------------------------------
 # specify clock(s) and reset(s)
@@ -37,30 +37,30 @@ elaborate -bbox_a 4320 -top $env(FPV_TOP) -enable_sva_isunknown
 # note: -both_edges is needed below because the TL-UL protocol checker
 # tlul_assert.sv operates on the negedge clock
 # even clock this sampled at both_edges, input should only change at posedge clock cycle
-# TODO: create each FPV_TOP's individual config file
+# TODO: create each DUT_TOP's individual config file
 
-if {$env(FPV_TOP) == "rv_dm"} {
+if {$env(DUT_TOP) == "rv_dm"} {
   clock clk_i -both_edges
   clock jtag_req_i.tck
   clock -rate {testmode_i, unavailable_i, tl_d_i, tl_h_i} clk_i
   clock -rate {jtag_req_i.tms, jtag_req_i.tdi} jtag_req_i.tck
   reset -expr {!rst_ni !jtag_req_i.trst_n}
 
-} elseif {$env(FPV_TOP) == "spi_device"} {
+} elseif {$env(DUT_TOP) == "spi_device"} {
   clock clk_i -both_edges
   clock cio_sck_i
   clock -rate {scanmode_i, tl_i} clk_i
   clock -rate {cio_csb_i, cio_sd_i} cio_sck_i
   reset -expr {!rst_ni cio_csb_i}
 
-} elseif {$env(FPV_TOP) == "usbuart"} {
+} elseif {$env(DUT_TOP) == "usbuart"} {
   clock clk_i -both_edges
   clock clk_usb_48mhz_i
   clock -rate {tl_i, usb_state_debug_i} clk_i
   clock -rate {cio_usb_dp_i, cio_usb_dn_i, cio_usb_sense_i} clk_usb_48mhz_i
   reset -expr {!rst_ni !rst_usb_48mhz_ni}
 
-} elseif {$env(FPV_TOP) == "usbdev"} {
+} elseif {$env(DUT_TOP) == "usbdev"} {
   clock clk_i -both_edges
   clock clk_aon_i
   clock clk_usb_48mhz_i
@@ -69,7 +69,7 @@ if {$env(FPV_TOP) == "rv_dm"} {
   reset -expr {!rst_ni !rst_aon_ni !rst_usb_48mhz_ni}
 
 # TODO: work with the block owner and re-define FPV checkings for xbar
-# } elseif {$env(FPV_TOP) == "xbar_main"} {
+# } elseif {$env(DUT_TOP) == "xbar_main"} {
 #   clock clk_main_i -both_edges
 #   reset -expr {!rst_main_ni}
 
@@ -82,10 +82,10 @@ if {$env(FPV_TOP) == "rv_dm"} {
 # use counter abstractions to reduce the run time:
 # alert_handler ping_timer: timer to count until reaches ping threshold
 # hmac sha2: does not check any calculation results, so 64 rounds of calculation can be abstracted
-if {$env(FPV_TOP) == "alert_handler"} {
+if {$env(DUT_TOP) == "alert_handler"} {
   abstract -counter -env i_ping_timer.cnt_q
 
-} elseif {$env(FPV_TOP) == "hmac"} {
+} elseif {$env(DUT_TOP) == "hmac"} {
   abstract -counter -env u_sha2.round
   # disable these assertions because they are unreachable when the fifo is WO
   assert -disable {*hmac.u_tlul_adapter.u_*fifo.*.depthShallNotExceedParamDepth}
@@ -93,7 +93,7 @@ if {$env(FPV_TOP) == "alert_handler"} {
   assert -disable {*hmac.u_tlul_adapter.rvalidHighReqFifoEmpty}
   assert -disable {*hmac.u_tlul_adapter.rvalidHighWhenRspFifoFull}
 
-} elseif {$env(FPV_TOP) == "flash_ctrl"} {
+} elseif {$env(DUT_TOP) == "flash_ctrl"} {
   # disable these assertions because they are unreachable when the fifo is WO
   assert -disable {*flash_ctrl.u_to_prog_fifo.u_*fifo.depthShallNotExceedParamDepth}
   assert -disable {*flash_ctrl.u_to_prog_fifo.u_*fifo.DataKnown_A}
@@ -120,7 +120,7 @@ assume -from_assert -remove_original -regexp {^\w*\.scanmodeKnown}
 # TODO: If scanmode is set to 0, then JasperGold errors out complaining
 # about combo loops, which should be debugged further. For now, below
 # lines work around this issue
-if {$env(FPV_TOP) == "top_earlgrey"} {
+if {$env(DUT_TOP) == "top_earlgrey"} {
   assume {scanmode_i == 1}
 }
 

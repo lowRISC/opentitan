@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
+  flow: formal
 
   // This is the primary cfg hjson for FPV. It imports ALL individual FPV
   // cfgs of the IPs and the full chip used in top_earlgrey. This enables to run
@@ -10,8 +11,6 @@
 
   import_cfgs: [// common server configuration for results upload
                 "{proj_root}/hw/data/common_project_cfg.hjson"]
-
-  flow: "fpv"
 
   use_cfgs: [// TODO: implement some switch to only select "_fpv" testbenches
              // TODO: if we default "_fpv" cov to be on, and the rest of the tbs cov off, need a
