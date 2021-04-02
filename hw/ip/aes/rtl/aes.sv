@@ -67,7 +67,7 @@ module aes
   aes_hw2reg_t               hw2reg;
 
   logic      [NumAlerts-1:0] alert;
-  lc_ctrl_pkg::lc_tx_t [0:0] lc_escalate_en; // Need a degenerate array for FPV tool.
+  lc_ctrl_pkg::lc_tx_t       lc_escalate_en;
 
   logic                      edn_req;
   logic                      edn_ack;
@@ -163,7 +163,7 @@ module aes
     .entropy_masking_ack_i  ( entropy_masking_ack  ),
     .entropy_masking_i      ( edn_data             ),
 
-    .lc_escalate_en_i       ( lc_escalate_en[0]    ),
+    .lc_escalate_en_i       ( lc_escalate_en       ),
 
     .alert_recov_o          ( alert[0]             ),
     .alert_fatal_o          ( alert[1]             ),

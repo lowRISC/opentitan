@@ -116,7 +116,7 @@ module otp_ctrl
   // Life Cycle Signal Synchronization //
   ///////////////////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t [0:0] lc_creator_seed_sw_rw_en, lc_seed_hw_rd_en, lc_check_byp_en;
+  lc_ctrl_pkg::lc_tx_t       lc_creator_seed_sw_rw_en, lc_seed_hw_rd_en, lc_check_byp_en;
   lc_ctrl_pkg::lc_tx_t [1:0] lc_dft_en;
   // NumAgents + lfsr timer and scrambling datapath.
   lc_ctrl_pkg::lc_tx_t [NumAgentsIdx+1:0] lc_escalate_en;
@@ -1047,7 +1047,7 @@ module otp_ctrl
         // This is only supported by the life cycle partition. We need to prevent this partition
         // from escalating once the life cycle state in memory is being updated (and hence not
         // consistent with the values in the buffer regs anymore).
-        .check_byp_en_i    ( lc_check_byp_en[0]              ),
+        .check_byp_en_i    ( lc_check_byp_en                 ),
         .error_o           ( part_error[k]                   ),
         .access_i          ( part_access_csrs[k]             ),
         .access_o          ( part_access_dai[k]              ),
