@@ -7,8 +7,10 @@
 package spi_host_reg_pkg;
 
   // Param list
-  parameter int ByteOrder = 0;
-  parameter int MaxCS = 1;
+  parameter logic ByteOrder = 1;
+  parameter int NumCS = 1;
+  parameter int TxDepth = 72;
+  parameter int RxDepth = 64;
 
   // Address widths within the block
   parameter int BlockAw = 6;
@@ -49,28 +51,16 @@ package spi_host_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [7:0]  q;
-    } manual_cs;
-    struct packed {
-      logic        q;
-    } mancs_en;
-    struct packed {
-      logic [6:0]  q;
     } rx_watermark;
     struct packed {
-      logic [8:0]  q;
+      logic [7:0]  q;
     } tx_watermark;
     struct packed {
       logic        q;
     } passthru;
     struct packed {
       logic        q;
-    } rst_rxfifo;
-    struct packed {
-      logic        q;
-    } rst_txfifo;
-    struct packed {
-      logic        q;
-    } rst_fsm;
+    } sw_rst;
     struct packed {
       logic        q;
     } spien;
@@ -91,9 +81,6 @@ package spi_host_reg_pkg;
     } csnlead;
     struct packed {
       logic        q;
-    } csaat;
-    struct packed {
-      logic        q;
     } fullcyc;
     struct packed {
       logic        q;
@@ -104,51 +91,63 @@ package spi_host_reg_pkg;
   } spi_host_reg2hw_configopts_mreg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [3:0]  q;
-      logic        qe;
-    } tx1_cnt;
-    struct packed {
-      logic [8:0]  q;
-      logic        qe;
-    } txn_cnt;
-    struct packed {
-      logic [3:0]  q;
-      logic        qe;
-    } dummy_cycles;
+    logic [31:0] q;
+  } spi_host_reg2hw_csid_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic [8:0]  q;
       logic        qe;
-    } rx_cnt;
+    } len;
     struct packed {
       logic        q;
       logic        qe;
-    } fulldplx;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } highz;
+    } csaat;
     struct packed {
       logic [1:0]  q;
       logic        qe;
     } speed;
     struct packed {
-      logic        q;
+      logic [1:0]  q;
       logic        qe;
-    } go;
-  } spi_host_reg2hw_command_mreg_t;
+    } direction;
+  } spi_host_reg2hw_command_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } cmderr;
+    } cmdbusy;
     struct packed {
       logic        q;
     } overflow;
     struct packed {
       logic        q;
     } underflow;
+    struct packed {
+      logic        q;
+    } cmdinval;
+    struct packed {
+      logic        q;
+    } csidinval;
   } spi_host_reg2hw_error_enable_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } cmdbusy;
+    struct packed {
+      logic        q;
+    } overflow;
+    struct packed {
+      logic        q;
+    } underflow;
+    struct packed {
+      logic        q;
+    } cmdinval;
+    struct packed {
+      logic        q;
+    } csidinval;
+  } spi_host_reg2hw_error_status_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -184,11 +183,11 @@ package spi_host_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [8:0]  d;
+      logic [7:0]  d;
       logic        de;
     } txqd;
     struct packed {
-      logic [8:0]  d;
+      logic [7:0]  d;
       logic        de;
     } rxqd;
     struct packed {
@@ -241,18 +240,7 @@ package spi_host_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } go;
-  } spi_host_hw2reg_command_mreg_t;
-
-  typedef struct packed {
-    logic [31:0] d;
-  } spi_host_hw2reg_rxdata_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        d;
-      logic        de;
-    } cmderr;
+    } cmdbusy;
     struct packed {
       logic        d;
       logic        de;
@@ -261,27 +249,35 @@ package spi_host_reg_pkg;
       logic        d;
       logic        de;
     } underflow;
+    struct packed {
+      logic        d;
+      logic        de;
+    } cmdinval;
+    struct packed {
+      logic        d;
+      logic        de;
+    } csidinval;
   } spi_host_hw2reg_error_status_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    spi_host_reg2hw_intr_state_reg_t intr_state; // [117:116]
-    spi_host_reg2hw_intr_enable_reg_t intr_enable; // [115:114]
-    spi_host_reg2hw_intr_test_reg_t intr_test; // [113:110]
-    spi_host_reg2hw_control_reg_t control; // [109:80]
-    spi_host_reg2hw_configopts_mreg_t [0:0] configopts; // [79:48]
-    spi_host_reg2hw_command_mreg_t [0:0] command; // [47:9]
-    spi_host_reg2hw_error_enable_reg_t error_enable; // [8:6]
+    spi_host_reg2hw_intr_state_reg_t intr_state; // [123:122]
+    spi_host_reg2hw_intr_enable_reg_t intr_enable; // [121:120]
+    spi_host_reg2hw_intr_test_reg_t intr_test; // [119:116]
+    spi_host_reg2hw_control_reg_t control; // [115:97]
+    spi_host_reg2hw_configopts_mreg_t [0:0] configopts; // [96:66]
+    spi_host_reg2hw_csid_reg_t csid; // [65:34]
+    spi_host_reg2hw_command_reg_t command; // [33:16]
+    spi_host_reg2hw_error_enable_reg_t error_enable; // [15:11]
+    spi_host_reg2hw_error_status_reg_t error_status; // [10:6]
     spi_host_reg2hw_event_enable_reg_t event_enable; // [5:0]
   } spi_host_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    spi_host_hw2reg_intr_state_reg_t intr_state; // [85:82]
-    spi_host_hw2reg_status_reg_t status; // [81:40]
-    spi_host_hw2reg_command_mreg_t [0:0] command; // [39:38]
-    spi_host_hw2reg_rxdata_reg_t rxdata; // [37:6]
-    spi_host_hw2reg_error_status_reg_t error_status; // [5:0]
+    spi_host_hw2reg_intr_state_reg_t intr_state; // [53:50]
+    spi_host_hw2reg_status_reg_t status; // [49:10]
+    spi_host_hw2reg_error_status_reg_t error_status; // [9:0]
   } spi_host_hw2reg_t;
 
   // Register offsets
@@ -291,8 +287,8 @@ package spi_host_reg_pkg;
   parameter logic [BlockAw-1:0] SPI_HOST_CONTROL_OFFSET = 6'h c;
   parameter logic [BlockAw-1:0] SPI_HOST_STATUS_OFFSET = 6'h 10;
   parameter logic [BlockAw-1:0] SPI_HOST_CONFIGOPTS_OFFSET = 6'h 14;
-  parameter logic [BlockAw-1:0] SPI_HOST_COMMAND_OFFSET = 6'h 18;
-  parameter logic [BlockAw-1:0] SPI_HOST_RXDATA_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] SPI_HOST_CSID_OFFSET = 6'h 18;
+  parameter logic [BlockAw-1:0] SPI_HOST_COMMAND_OFFSET = 6'h 1c;
   parameter logic [BlockAw-1:0] SPI_HOST_ERROR_ENABLE_OFFSET = 6'h 24;
   parameter logic [BlockAw-1:0] SPI_HOST_ERROR_STATUS_OFFSET = 6'h 28;
   parameter logic [BlockAw-1:0] SPI_HOST_EVENT_ENABLE_OFFSET = 6'h 2c;
@@ -301,12 +297,10 @@ package spi_host_reg_pkg;
   parameter logic [1:0] SPI_HOST_INTR_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] SPI_HOST_INTR_TEST_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_HOST_INTR_TEST_SPI_EVENT_RESVAL = 1'h 0;
-  parameter logic [31:0] SPI_HOST_RXDATA_RESVAL = 32'h 0;
-  parameter logic [31:0] SPI_HOST_RXDATA_DATA_RESVAL = 32'h 0;
 
   // Window parameters
-  parameter logic [BlockAw-1:0] SPI_HOST_TXDATA_OFFSET = 6'h 1c;
-  parameter int unsigned        SPI_HOST_TXDATA_SIZE   = 'h 4;
+  parameter logic [BlockAw-1:0] SPI_HOST_DATA_OFFSET = 6'h 20;
+  parameter int unsigned        SPI_HOST_DATA_SIZE   = 'h 4;
 
   // Register index
   typedef enum int {
@@ -316,8 +310,8 @@ package spi_host_reg_pkg;
     SPI_HOST_CONTROL,
     SPI_HOST_STATUS,
     SPI_HOST_CONFIGOPTS,
+    SPI_HOST_CSID,
     SPI_HOST_COMMAND,
-    SPI_HOST_RXDATA,
     SPI_HOST_ERROR_ENABLE,
     SPI_HOST_ERROR_STATUS,
     SPI_HOST_EVENT_ENABLE
@@ -331,8 +325,8 @@ package spi_host_reg_pkg;
     4'b 1111, // index[ 3] SPI_HOST_CONTROL
     4'b 1111, // index[ 4] SPI_HOST_STATUS
     4'b 1111, // index[ 5] SPI_HOST_CONFIGOPTS
-    4'b 1111, // index[ 6] SPI_HOST_COMMAND
-    4'b 1111, // index[ 7] SPI_HOST_RXDATA
+    4'b 1111, // index[ 6] SPI_HOST_CSID
+    4'b 0011, // index[ 7] SPI_HOST_COMMAND
     4'b 0001, // index[ 8] SPI_HOST_ERROR_ENABLE
     4'b 0001, // index[ 9] SPI_HOST_ERROR_STATUS
     4'b 0001  // index[10] SPI_HOST_EVENT_ENABLE
