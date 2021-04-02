@@ -19,7 +19,7 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * HMAC interrupt configuration.
+ * HMAC interrupt  configuration.
  *
  * Enumeration used to enable, disable, test and query the HMAC interrupts.
  * Please see the comportability specification for more information:
@@ -277,9 +277,9 @@ dif_hmac_result_t dif_hmac_irq_force(const dif_hmac_t *hmac,
  * @param config The per-transaction configuration.
  * @return `kDifHmacBadArg` if `hmac` or `key` is null, `kDifHmacOk` otherwise.
  */
-dif_hmac_result_t dif_hmac_mode_hmac_start(
-    const dif_hmac_t *hmac, const uint8_t *key,
-    const dif_hmac_transaction_t config);
+dif_hmac_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
+                                           const uint8_t *key,
+                                           const dif_hmac_transaction_t config);
 
 /**
  * Resets the HMAC engine and readies it to receive a new message to process a
