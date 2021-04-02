@@ -76,71 +76,73 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   // 2. After reset deasserted, if power otp_init request is on, and if testbench uses backdoor to
   //    clear OTP memory to all zeros, clear all digests and re-calculate secret partitions
   virtual task process_otp_power_up();
-    forever begin
-      @(posedge cfg.otp_ctrl_vif.pwr_otp_init_i) begin
-        if (cfg.backdoor_clear_mem && cfg.en_scb) begin
-          bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, Secret0Idx);
-          otp_a        = '{default:0};
-          otp_lc_data  = '{default:0};
-          // secret partitions have been scrambled before writing to OTP.
-          // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
-          for (int i = SECRET0_START_ADDR; i <= SECRET0_END_ADDR; i++) begin
-            otp_a[i] = ((i - SECRET0_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
-                                                        data[TL_DW-1:0];
+    if (cfg.en_scb) begin
+      forever begin
+        @(posedge cfg.otp_ctrl_vif.pwr_otp_init_i) begin
+          if (cfg.backdoor_clear_mem) begin
+            bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, Secret0Idx);
+            otp_a        = '{default:0};
+            otp_lc_data  = '{default:0};
+            // secret partitions have been scrambled before writing to OTP.
+            // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
+            for (int i = SECRET0_START_ADDR; i <= SECRET0_END_ADDR; i++) begin
+              otp_a[i] = ((i - SECRET0_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
+                                                          data[TL_DW-1:0];
+            end
+            data = descramble_data(0, Secret1Idx);
+            for (int i = SECRET1_START_ADDR; i <= SECRET1_END_ADDR; i++) begin
+              otp_a[i] = ((i - SECRET1_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
+                                                          data[TL_DW-1:0];
+            end
+            data = descramble_data(0, Secret2Idx);
+            for (int i = SECRET2_START_ADDR; i <= SECRET2_END_ADDR; i++) begin
+              otp_a[i] = ((i - SECRET2_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
+                                                          data[TL_DW-1:0];
+            end
+            predict_digest_csrs();
+            `uvm_info(`gfn, "clear internal memory and digest", UVM_HIGH)
           end
-          data = descramble_data(0, Secret1Idx);
-          for (int i = SECRET1_START_ADDR; i <= SECRET1_END_ADDR; i++) begin
-            otp_a[i] = ((i - SECRET1_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
-                                                        data[TL_DW-1:0];
-          end
-          data = descramble_data(0, Secret2Idx);
-          for (int i = SECRET2_START_ADDR; i <= SECRET2_END_ADDR; i++) begin
-            otp_a[i] = ((i - SECRET2_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
-                                                        data[TL_DW-1:0];
-          end
-          predict_digest_csrs();
-          `uvm_info(`gfn, "clear internal memory and digest", UVM_HIGH)
         end
-      end
-      @(posedge cfg.otp_ctrl_vif.pwr_otp_done_o || cfg.under_reset) begin
-        if (!cfg.under_reset) begin
-          otp_ctrl_part_pkg::otp_hw_cfg_data_t exp_hwcfg_data;
-          otp_ctrl_pkg::otp_keymgr_key_t       exp_keymgr_data;
-          bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
+        @(posedge cfg.otp_ctrl_vif.pwr_otp_done_o || cfg.under_reset) begin
+          if (!cfg.under_reset) begin
+            otp_ctrl_part_pkg::otp_hw_cfg_data_t exp_hwcfg_data;
+            otp_ctrl_pkg::otp_keymgr_key_t       exp_keymgr_data;
+            bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
 
-          predict_digest_csrs();
+            predict_digest_csrs();
 
-          if (cfg.otp_ctrl_vif.lc_esc_on == 0) begin
-            // Dai access is unlocked because the power init is done
-            void'(ral.direct_access_regwen.predict(1));
+            if (cfg.otp_ctrl_vif.lc_esc_on == 0) begin
+              // Dai access is unlocked because the power init is done
+              void'(ral.direct_access_regwen.predict(1));
 
-            // Dai idle is set because the otp init is done
-            exp_status[OtpDaiIdleIdx] = 1;
-          end
+              // Dai idle is set because the otp init is done
+              exp_status[OtpDaiIdleIdx] = 1;
+            end
 
-          // Hwcfg_o gets data from OTP HW cfg partition
-          exp_hwcfg_data = cfg.otp_ctrl_vif.lc_esc_on ?
-                           otp_ctrl_part_pkg::PartInvDefault[HwCfgOffset*8 +: HwCfgSize*8] :
-                           otp_hw_cfg_data_t'({<<32 {otp_a[HwCfgOffset/4 +: HwCfgSize/4]}});
-          `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.data, exp_hwcfg_data)
+            // Hwcfg_o gets data from OTP HW cfg partition
+            exp_hwcfg_data = cfg.otp_ctrl_vif.lc_esc_on ?
+                             otp_ctrl_part_pkg::PartInvDefault[HwCfgOffset*8 +: HwCfgSize*8] :
+                             otp_hw_cfg_data_t'({<<32 {otp_a[HwCfgOffset/4 +: HwCfgSize/4]}});
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.data, exp_hwcfg_data)
 
-          // Otp_keymgr outputs creator root key shares from the secret2 partition.
-          // Depends on lc_seed_hw_rd_en_i, it will output the real keys or a constant
-          exp_keymgr_data.valid = get_otp_digest_val(Secret2Idx) != 0;
-          if (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) begin
-            exp_keymgr_data.key_share0 =
-                {<<32 {otp_a[CreatorRootKeyShare0Offset/4 +: CreatorRootKeyShare0Size/4]}};
-            exp_keymgr_data.key_share1 =
-                {<<32 {otp_a[CreatorRootKeyShare1Offset/4 +: CreatorRootKeyShare1Size/4]}};
-          end else begin
-            exp_keymgr_data.key_share0 =
-                PartInvDefault[CreatorRootKeyShare0Offset*8 +: CreatorRootKeyShare0Size*8];
-            exp_keymgr_data.key_share1 =
-                PartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
-          end
-          // Check keymgr_key_o in otp_ctrl_if
-          if (cfg.otp_ctrl_vif.lc_esc_on == 0) begin
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
+            // Otp_keymgr outputs creator root key shares from the secret2 partition.
+            // Depends on lc_seed_hw_rd_en_i, it will output the real keys or a constant
+            exp_keymgr_data.valid = get_otp_digest_val(Secret2Idx) != 0;
+            if (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) begin
+              exp_keymgr_data.key_share0 =
+                  {<<32 {otp_a[CreatorRootKeyShare0Offset/4 +: CreatorRootKeyShare0Size/4]}};
+              exp_keymgr_data.key_share1 =
+                  {<<32 {otp_a[CreatorRootKeyShare1Offset/4 +: CreatorRootKeyShare1Size/4]}};
+            end else begin
+              exp_keymgr_data.key_share0 =
+                  PartInvDefault[CreatorRootKeyShare0Offset*8 +: CreatorRootKeyShare0Size*8];
+              exp_keymgr_data.key_share1 =
+                  PartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
+            end
+            // Check keymgr_key_o in otp_ctrl_if
+            if (cfg.otp_ctrl_vif.lc_esc_on == 0) begin
+              `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
+            end
           end
         end
       end

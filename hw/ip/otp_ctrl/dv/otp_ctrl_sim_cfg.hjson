@@ -66,6 +66,12 @@
     }
 
     {
+      name: otp_ctrl_init_fail
+      uvm_test_seq: otp_ctrl_init_fail_vseq
+      run_opts: ["+en_scb=0"]
+    }
+
+    {
       name: otp_ctrl_parallel_lc_req
       uvm_test_seq: otp_ctrl_parallel_lc_req_vseq
     }
