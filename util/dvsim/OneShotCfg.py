@@ -88,7 +88,8 @@ class OneShotCfg(FlowCfg):
         super()._expand()
 
         # Stuff below only pertains to individual cfg (not primary cfg).
-        if not self.is_primary_cfg:
+        if not self.is_primary_cfg and (not self.select_cfgs or
+                                        self.name in self.select_cfgs):
             # Print scratch_path at the start:
             log.info("[scratch_path]: [%s] [%s]", self.name, self.scratch_path)
 
