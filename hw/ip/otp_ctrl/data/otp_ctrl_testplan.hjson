@@ -72,6 +72,23 @@
       tests: ["otp_ctrl_check_fail"]
     }
     {
+      name: init_fail
+      desc: '''
+            This test is based on OTP_CTRL smoke test and creats OTP_CTRL's initialization failure:
+            - Write and read OTP memory via DAI interface
+            - Lock HW partitions
+            - Keep writing to OTP memory via DAI interface
+            - Issue reset and power initialization
+
+            This test will check:
+            - Otp_initialization failure triggers fatal alert
+            - Status register reflect the correct error
+            - Otp_ctrl's power init output stays 0
+            '''
+      milestone: V2
+      tests: ["otp_ctrl_init_fail"]
+    }
+    {
       name: regwen_during_otp_init
       desc: '''
             DIRECT_ACCESS_REGWEN is RO reg and it gates bunch of write access of other registers,
