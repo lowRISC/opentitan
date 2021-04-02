@@ -540,7 +540,7 @@ package csr_utils_pkg;
                                           input bit             compare_vs_ral = 1,
                                           input csr_excl_type_e csr_excl_type = CsrNoExcl,
                                           input csr_test_type_e csr_test_type = CsrRwTest,
-                                          input csr_excl_item   csr_excl_item = null);
+                                          input csr_excl_item   csr_excl_item = get_excl_item(csr));
     uvm_reg_data_t compare_mask;
 
     // Check if parent block or register is excluded from read-check
@@ -730,10 +730,12 @@ package csr_utils_pkg;
   function automatic uvm_reg_data_t get_mask_excl_fields(uvm_reg csr,
                                                          csr_excl_type_e csr_excl_type,
                                                          csr_test_type_e csr_test_type,
-                                                         csr_excl_item m_csr_excl_item);
+                                                         csr_excl_item m_csr_excl_item =
+                                                                       get_excl_item(csr));
     uvm_reg_field flds[$];
     csr.get_fields(flds);
     get_mask_excl_fields = '1;
+
     if (m_csr_excl_item != null) begin
       foreach (flds[i]) begin
         if (m_csr_excl_item.is_excl(flds[i], csr_excl_type, csr_test_type)) begin
@@ -746,6 +748,20 @@ package csr_utils_pkg;
     end
   endfunction
 
+  function automatic csr_excl_item get_excl_item(uvm_object ptr);
+    csr_field_t       csr_or_fld;
+    dv_base_reg_block blk;
+
+    csr_or_fld = decode_csr_or_field(ptr);
+    `downcast(blk, csr_or_fld.csr.get_parent(), , , msg_id)
+
+    // csr_excl is at the highest level of reg block
+    while (blk.csr_excl == null) begin
+      `downcast(blk, blk.get_parent(), , , msg_id)
+      `DV_CHECK_NE_FATAL(blk, null, "", msg_id)
+    end
+    return blk.csr_excl;
+  endfunction
   // sources
   `include "csr_seq_lib.sv"
 

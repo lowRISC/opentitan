@@ -109,62 +109,37 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     csr_utils_pkg::wait_no_outstanding_access();
   endtask
 
-  // function to add csr exclusions of the given type using the csr_excl_item item
-  // arg csr_test_type: this the the type of csr test run - we may want additional exclusions
-  // depending on what test seq we are running
-  // arg csr_excl: this is the csr exclusion object that maintains the list of exclusions
-  // the same object handle is to be passed to csr sequences in csr_seq_lib so that they can query
-  // those exclusions
-  virtual function void add_csr_exclusions(string           csr_test_type,
-                                           csr_excl_item    csr_excl,
-                                           string           scope = "ral");
-    `uvm_info(`gfn, "no exclusion item added from this function", UVM_DEBUG)
-  endfunction
-
-  // TODO: temp support, can delete this once all IPs update their exclusion in hjson
-  virtual function csr_excl_item add_and_return_csr_excl(string csr_test_type);
-    add_csr_exclusions(csr_test_type, ral.csr_excl);
-    ral.csr_excl.print_exclusions();
-    return ral.csr_excl;
-  endfunction
-
   // wrapper task around run_csr_vseq - the purpose is to be able to call this directly for actual
   // csr tests (as opposed to higher level stress test that could also run csr seq as a fork by
   // calling run_csr_vseq(..) task)
   virtual task run_csr_vseq_wrapper(int num_times = 1);
     string        csr_test_type;
-    csr_excl_item csr_excl;
 
     // env needs to have a ral instance
-    `DV_CHECK_EQ_FATAL(cfg.has_ral, 1'b1)
+    `DV_CHECK_GE_FATAL(cfg.ral_models.size(), 1)
 
     // get csr_test_type from plusarg
     void'($value$plusargs("csr_%0s", csr_test_type));
-
-    // create csr exclusions before running the csr seq
-    csr_excl = add_and_return_csr_excl(csr_test_type);
 
     // run the csr seq
     for (int i = 1; i <= num_times; i++) begin
       `uvm_info(`gfn, $sformatf("running csr %0s vseq iteration %0d/%0d",
                                 csr_test_type, i, num_times), UVM_LOW)
-      run_csr_vseq(.csr_test_type(csr_test_type), .csr_excl(csr_excl));
+      run_csr_vseq(.csr_test_type(csr_test_type));
     end
   endtask
 
   // capture the entire csr seq as a task that can be overridden if desired
   // arg csr_test_type: what csr test to run {hw_reset, rw, bit_bash, aliasing}
-  // arg csr_excl: csr exclusion object - needs to be created and exclusions set before call
   // arg num_test_csrs:instead of testing the entire ral model or passing test chunk info via
   // plusarg, provide ability to set a random number of csrs to test from higher level sequence
   virtual task run_csr_vseq(string          csr_test_type = "",
-                            csr_excl_item   csr_excl = null,
                             int             num_test_csrs = 0,
                             bit             do_rand_wr_and_reset = 1);
     csr_base_seq  m_csr_seq;
 
     // env needs to have a ral instance
-    `DV_CHECK_EQ_FATAL(cfg.has_ral, 1'b1)
+    `DV_CHECK_GE_FATAL(cfg.ral_models.size(), 1)
 
     // check which csr test type
     case (csr_test_type)
@@ -193,7 +168,6 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
       m_csr_write_seq.models = cfg.ral_models;
       m_csr_write_seq.external_checker = cfg.en_scb;
       m_csr_write_seq.en_rand_backdoor_write = 1'b1;
-      m_csr_write_seq.set_csr_excl_item(csr_excl);
       m_csr_write_seq.start(null);
 
       // run dut_shutdown before asserting reset
@@ -211,7 +185,6 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     m_csr_seq.models = cfg.ral_models;
     m_csr_seq.external_checker = cfg.en_scb;
     m_csr_seq.num_test_csrs = num_test_csrs;
-    m_csr_seq.set_csr_excl_item(csr_excl);
     m_csr_seq.start(null);
   endtask
 

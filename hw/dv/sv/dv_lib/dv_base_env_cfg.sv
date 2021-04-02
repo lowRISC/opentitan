@@ -9,7 +9,15 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   bit en_scb_tl_err_chk = 1;
   bit en_scb_mem_chk    = 1;
   bit en_cov            = 0; // Enable via plusarg, only if coverage collection is turned on.
-  bit has_ral           = 1;
+
+  // A queue of the names of RAL models that should be created in the `initialize` function
+  // Related agents, adapters will be created in env as well as connecting them with scb
+  // For example, if the IP has an additional RAL model named `ral1`, add it into the list as below
+  //   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+  //     list_of_rals.push_back("ral1");
+  //     super.initialize(csr_base_addr);
+  string list_of_rals[$] = {RAL_T::type_name};
+
   bit under_reset       = 0;
   bit is_initialized;        // Indicates that the initialize() method has been called.
 
@@ -55,16 +63,17 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
     is_initialized = 1'b1;
 
     // build the ral model
-    if (has_ral) begin
+    foreach (list_of_rals[i]) begin
       uvm_reg_addr_t base_addr;
+      dv_base_reg_block reg_blk = create_ral_by_name(list_of_rals[i]);
 
-      ral = RAL_T::type_id::create("ral");
+      if (reg_blk.get_name() == RAL_T::type_name) `downcast(ral, reg_blk)
 
       // Build the register block with an arbitrary base address (we choose 0). We'll change it
       // later.
-      ral.build(.base_addr(0), .csr_excl(null));
+      reg_blk.build(.base_addr(0), .csr_excl(null));
       apply_ral_fixes();
-      ral.lock_model();
+      reg_blk.lock_model();
 
       // Now the model is locked, we know its layout. Set the base address for the register block.
       // The function internally picks a random one if we pass '1 to it, and performs an integrity
@@ -75,12 +84,12 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
       base_addr = (&csr_base_addr ?
                    {`UVM_REG_ADDR_WIDTH{1'b1}} :
                    {{(`UVM_REG_ADDR_WIDTH - bus_params_pkg::BUS_AW){1'b0}}, csr_base_addr});
-      ral.set_base_addr(base_addr);
+      reg_blk.set_base_addr(base_addr);
 
       // Get list of valid csr addresses (useful in seq to randomize addr as well as in scb checks)
-      get_csr_addrs(ral, csr_addrs);
-      get_mem_addr_ranges(ral, mem_ranges);
-      ral_models.push_back(ral);
+      get_csr_addrs(reg_blk, csr_addrs);
+      get_mem_addr_ranges(reg_blk, mem_ranges);
+      ral_models.push_back(reg_blk);
     end
   endfunction
 
@@ -100,4 +109,21 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
     csr_utils_pkg::reset_deasserted();
   endfunction
 
+  virtual function dv_base_reg_block create_ral_by_name(string name);
+    uvm_object        obj;
+    uvm_factory       factory;
+    dv_base_reg_block ral;
+
+    factory = uvm_factory::get();
+    obj = factory.create_object_by_name(.requested_type_name(name), .name(name));
+    if (obj == null) begin
+      // print factory overrides to help debug
+      factory.print(1);
+      `uvm_fatal(msg_id, $sformatf("could not create %0s as a RAL model", name))
+    end
+    if (!$cast(ral, obj)) begin
+      `uvm_fatal(msg_id, $sformatf("cast failed - %0s is not a dv_base_reg_block", name))
+    end
+    return ral;
+  endfunction
 endclass

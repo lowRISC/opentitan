@@ -342,7 +342,7 @@ class dv_base_reg extends uvm_reg;
     string parent_name = this.get_parent().get_name();
 
     // block level alert name is input alert name from hjson
-    if (parent_name == "ral") return update_err_alert_name;
+    if (get_parent().get_parent() == null) return update_err_alert_name;
 
     // top-level alert name is ${block_name} + alert name from hjson
     return ($sformatf("%0s_%0s", parent_name, update_err_alert_name));
@@ -360,7 +360,7 @@ class dv_base_reg extends uvm_reg;
     string parent_name = this.get_parent().get_name();
 
     // block level alert name is input alert name from hjson
-    if (parent_name == "ral") return storage_err_alert_name;
+    if (get_parent().get_parent() == null) return storage_err_alert_name;
 
     // top-level alert name is ${block_name} + alert name from hjson
     return ($sformatf("%0s_%0s", parent_name, storage_err_alert_name));

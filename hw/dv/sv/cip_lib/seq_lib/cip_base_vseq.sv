@@ -469,7 +469,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // override csr_vseq to control adapter to abort transaction
   virtual task run_csr_vseq(string          csr_test_type = "",
-                            csr_excl_item   csr_excl = null,
                             int             num_test_csrs = 0,
                             bit             do_rand_wr_and_reset = 1);
 
@@ -479,7 +478,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     // checking the status.
     if (csr_access_abort_pct > 0) csr_utils_pkg::default_csr_check = UVM_NO_CHECK;
     else                          csr_utils_pkg::default_csr_check = UVM_CHECK;
-    super.run_csr_vseq(csr_test_type, csr_excl, num_test_csrs, do_rand_wr_and_reset);
+    super.run_csr_vseq(csr_test_type, num_test_csrs, do_rand_wr_and_reset);
   endtask
 
 
@@ -546,17 +545,15 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   virtual task read_and_check_all_csrs_after_reset();
-    csr_excl_item csr_excl = add_and_return_csr_excl("hw_reset");
     `uvm_info(`gfn, "running csr hw_reset vseq", UVM_HIGH)
 
-    run_csr_vseq(.csr_test_type("hw_reset"), .csr_excl(csr_excl), .do_rand_wr_and_reset(0));
+    run_csr_vseq(.csr_test_type("hw_reset"), .do_rand_wr_and_reset(0));
     // abort should not occur after this, as the following is normal seq
     cfg.m_tl_agent_cfg.csr_access_abort_pct_in_adapter = 0;
     csr_utils_pkg::default_csr_check = UVM_CHECK;
   endtask
 
   virtual task run_same_csr_outstanding_vseq(int num_times);
-    csr_excl_item   csr_excl = add_and_return_csr_excl("csr_excl");
     csr_test_type_e csr_test_type = CsrRwTest; // share the same exclusion as csr_rw_test
     dv_base_reg     test_csrs[$];
 
@@ -573,9 +570,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
       foreach (test_csrs[i]) begin
         uvm_reg_data_t exp_data = test_csrs[i].get_mirrored_value();
         uvm_reg_data_t rd_data, wr_data, rd_mask, wr_mask;
+        csr_excl_item  csr_excl = get_excl_item(test_csrs[i]);
 
-        rd_mask = get_mask_excl_fields(test_csrs[i], CsrExclWriteCheck, csr_test_type, csr_excl);
-        wr_mask = get_mask_excl_fields(test_csrs[i], CsrExclWrite, csr_test_type, csr_excl);
+        rd_mask = get_mask_excl_fields(test_csrs[i], CsrExclWriteCheck, csr_test_type);
+        wr_mask = get_mask_excl_fields(test_csrs[i], CsrExclWrite, csr_test_type);
 
         repeat ($urandom_range(2, 20)) begin
           // do read, exclude CsrExclWriteCheck, CsrExclCheck
@@ -663,7 +661,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   virtual task run_shadow_reg_errors(int num_times);
-    csr_excl_item      csr_excl = add_and_return_csr_excl("csr_excl");
+    csr_excl_item      csr_excl;
     dv_base_reg        shadowed_csrs[$], test_csrs[$];
     uvm_reg_data_t     wdata;
     bit                alert_triggered;
@@ -682,6 +680,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         if ($urandom_range(1, 10) == 10) dut_init("HARD");
 
         foreach (test_csrs[i]) begin
+          csr_excl = get_excl_item(test_csrs[i]);
           // check if parent block or register is excluded from write
           // if the excluded reg is shadow_reg, it won't skip writing
           if (csr_excl.is_excl(test_csrs[i], CsrExclWrite, CsrRwTest) &&
@@ -785,8 +784,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                                      .compare(1),
                                      .compare_vs_ral(1),
                                      .csr_excl_type(CsrExclWriteCheck),
-                                     .csr_test_type(CsrRwTest),
-                                     .csr_excl_item(csr_excl));
+                                     .csr_test_type(CsrRwTest));
             csr_utils_pkg::wait_if_max_outstanding_accesses_reached();
           end
           // read shadow_regs again in case they are excluded from read_check
@@ -882,9 +880,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   virtual task run_csr_mem_rw_vseq(int num_times);
     fork
       begin
-        csr_excl_item csr_excl = add_and_return_csr_excl("rw");
         `uvm_info(`gfn, "running csr rw vseq", UVM_HIGH)
-        run_csr_vseq(.csr_test_type("rw"), .csr_excl(csr_excl), .do_rand_wr_and_reset(0));
+        run_csr_vseq(.csr_test_type("rw"), .do_rand_wr_and_reset(0));
       end
       if (cfg.mem_ranges.size > 0) run_mem_partial_access_vseq(num_times);
     join
