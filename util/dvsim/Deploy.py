@@ -486,6 +486,7 @@ class CovUnr(Deploy):
 
         self.mandatory_misc_attrs.update({
             "cov_unr_dir": False,
+            "cov_merge_db_dir": False,
             "build_fail_patterns": False
         })
 
@@ -493,6 +494,7 @@ class CovUnr(Deploy):
         super()._set_attrs()
         self.qual_name = self.target
         self.full_name = self.sim_cfg.name + ":" + self.qual_name
+        self.input_dirs += [self.cov_merge_db_dir]
 
         # Reuse the build_fail_patterns set in the HJson.
         self.fail_patterns = self.build_fail_patterns
@@ -622,6 +624,8 @@ class CovAnalyze(Deploy):
     target = "cov_analyze"
 
     def __init__(self, sim_cfg):
+        # Enforce GUI mode for coverage analysis.
+        sim_cfg.gui = True
         super().__init__(sim_cfg)
 
     def _define_attrs(self):
@@ -642,3 +646,4 @@ class CovAnalyze(Deploy):
         super()._set_attrs()
         self.qual_name = self.target
         self.full_name = self.sim_cfg.name + ":" + self.qual_name
+        self.input_dirs += [self.cov_merge_db_dir]
