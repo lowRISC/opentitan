@@ -240,7 +240,8 @@ class Launcher:
         chk_passed = bool(pass_patterns) and (self.exit_code == 0)
 
         try:
-            with open(self.deploy.get_log_path(), "r", encoding="UTF-8") as f:
+            with open(self.deploy.get_log_path(), "r", encoding="UTF-8",
+                      errors="surrogateescape") as f:
                 lines = f.readlines()
         except OSError as e:
             err_msg = "Error opening file {}:\n{}".format(
