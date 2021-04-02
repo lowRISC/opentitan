@@ -390,6 +390,24 @@ Highlights for this unit:
 - `coreCmdCnf` is only updated and acknowledged (using `cc_ack`) when the FSM is not busy.
 
 {{< wavejson >}}
+{signal: [
+  {name: "command_i", wave: "x3x..........|4x.|........."},
+  {name: "command_valid_i", wave: "010..........|10.|........."},
+  {name: "command_q", wave: "x.3..........|.4.|........."},
+  {name: "req_q", wave: "0.1....0.....|.1.|...0....."},
+  {name: "core_req", wave: "0...1....0...|..1|.....0..."},
+  {name: "core_command_ready_i", wave: "1....0.......|...|10......."},
+  {name: "core_command_valid_o (core_req & ~core_ack_q)", wave: "0...10.......|...|10......."},
+  {name: "core_command_ack", wave: "0...10.......|...|10......."},
+  {name: "core_ack_q", wave: "0....1....0..|...|.1....0.."},
+  {name: "core_ack = core_command_ack | ack_core_q", wave: "0...1.....0..|...|1.....0.."},
+  {name: "ack", wave: "0.....1.....0|...|..1.....0"},
+  {name: "cs_ready_bus_o", wave: "10..........1|0..|........1"},
+]
+}
+{{< /wavejson >}}
+
+{{< wavejson >}}
 { signal: [
   {name: "clk", wave: "p..............................."},
   {name: "READY",         wave: "1.0..........1|.0..|...........1"},
@@ -442,6 +460,60 @@ edge: [],
   },
    foot: {
    }
+}
+{{< /wavejson >}}
+
+{{< wavejson >}}
+{signal: [
+  {name: "clk_core_i", wave: "p..........................."},
+  {name: "wr_en_i", wave: "010..10..10..10..10..10..1.0"}, 
+  {name: "shift_en_i", wave: "0..10..10..10..10..10..10..."}, 
+  {name: "fsm_rd_en_i", wave: "0....10..10..10..10..10..1.0"},
+  {name: "rxvalid_o", wave: "0.....10..1....0..10..1....."},
+  {name: "rxready_i", wave: "1......0.....1.....0......1.", 
+                      node: ".......A.....B.....C......D"},
+  {name: "fsm_rd_ready_o", wave: "1.........0..1........0...1."},
+  {name: "fsm:rxstall", wave: "0........................10."},
+  {name: "", wave: ""},
+],
+  edge: ["A<->B 6 clocks: No Stall", "C<->D 7 clocks will stall FSM"],
+  head: {text: "SPI_HOST Shift Register: Tolerance to Gaps in rxready_i", tick:1}
+}
+{{< /wavejson >}}
+
+{{< wavejson >}}
+{signal: [
+  {name: "clk_core_i", wave: "p......................"},
+  {name: "wr_en_i", wave: "010..10..10..10..10..10"}, 
+  {name: "shift_en_i", wave: "0..10..10..10..10..10.."}, 
+  {name: "fsm_rd_en_i", wave: "0....10..10..10..10..10"},
+  {name: "rxvalid_o", wave: "0.....10..1............"},
+  {name: "rxready_i", wave: "1......0.....10..10..10", 
+                      node: ".......A.....BC..D"},
+  {name: "fsm_rd_ready_o", wave: "1.........0..10..10..10"},
+  {name: "fsm:rxstall", wave: "0......................"},
+  {name: "", wave: ""},
+],
+  edge: ["A<->B 1st Gap: 6 clocks", "C<->D 2nd Gap: 3 clocks"],
+  head: {text: "SPI_HOST Shift Register: Back-to-back gaps in rxready_i", tick:1} 
+}
+{{< /wavejson >}}
+
+{{< wavejson >}}
+{signal: [
+  {name: "clk_core_i", wave: "p..........................."},
+  {name: "wr_en_i", wave: "010..10..10..10..10..10..1.0"}, 
+  {name: "shift_en_i", wave: "0..10..10..10..10..10..10..."}, 
+  {name: "fsm_rd_en_i", wave: "0....10..10..10..10..10..1.0"},
+  {name: "rxvalid_o", wave: "0.....10..1.0.1..01........."},
+  {name: "rxready_i", wave: "1......0...10...10...10...10", 
+                      node: ".......A...BC...D"},
+  {name: "fsm_rd_ready_o", wave: "1.........01..0.1.0..10...10"},
+  {name: "fsm:rxstall", wave: "0........................10."},
+],
+  edge: ["A<->B 4 clocks", "C<->D 4 clocks"],
+  head: {text: "SPI_HOST Shift Register: Hypothetical RX Congestion Scenario", tick:1},
+ foot: {text: "Six back-to-back quad reads 1-byte each, same CSID, CSAAT enabled"}
 }
 {{< /wavejson >}}
 
