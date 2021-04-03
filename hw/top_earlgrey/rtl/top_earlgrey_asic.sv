@@ -20,10 +20,10 @@ module top_earlgrey_asic (
   inout               SPI_DEV_CS_L,
   inout               IOA0,  // MIO 0
   inout               IOA1,  // MIO 1
-  inout               IOA2,  // MIO 2
-  inout               IOA3,  // MIO 3
-  inout               IOA4,  // MIO 4
-  inout               IOA5,  // MIO 5
+ `INOUT_AO            IOA2,  // MIO 2
+ `INOUT_AO            IOA3,  // MIO 3
+ `INOUT_AI            IOA4,  // MIO 4
+ `INOUT_AI            IOA5,  // MIO 5
   // Bank B (VIOB domain)
   inout               IOB0,  // MIO 6
   inout               IOB1,  // MIO 7
@@ -66,8 +66,8 @@ module top_earlgrey_asic (
   inout               IOR12, // MIO 42
   inout               IOR13, // MIO 43
   // DCD (VCC domain)
-  inout               CC1,
-  inout               CC2,
+ `INOUT_AI            CC1,
+ `INOUT_AI            CC2,
   // USB (VCC domain)
   inout               USB_P,
   inout               USB_N,
@@ -195,8 +195,8 @@ module top_earlgrey_asic (
     .rst_pad_ni          ( POR_N      ),
     .clk_o               (            ),
     .rst_no              ( rst_n      ),
-    .cc1_i               ( CC1        ),
-    .cc2_i               ( CC2        ),
+    .cc1_i               ( `CC1_M     ),
+    .cc2_i               ( `CC2_M     ),
     // "special"
     // MIO Pads
     .mio_pad_io          ( { // RBox
@@ -241,10 +241,10 @@ module top_earlgrey_asic (
                              IOB1,  // MIO 7
                              IOB0,  // MIO 6
                              // Bank A
-                             IOA5,  // MIO 5
-                             IOA4,  // MIO 4
-                             IOA3,  // MIO 3
-                             IOA2,  // MIO 2
+                            `IOA5_M,  // MIO 5
+                            `IOA4_M,  // MIO 4
+                            `IOA3_M,  // MIO 3
+                            `IOA2_M,  // MIO 2
                              IOA1,  // MIO 1
                              IOA0   // MIO 0
                             } ),
