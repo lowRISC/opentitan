@@ -26,7 +26,7 @@ set -e
 CORE_PATH=systems:top_earlgrey
 REPO_PATH=$(readlink -f ../..)
 
-export TOP="top_earlgrey"
+export DUT_TOP="top_earlgrey"
 gui="-batch -command exit"  # default Batch mode
 tool="jg"
 export COV=0
@@ -36,7 +36,7 @@ while [ "$1" != "" ]; do
   case "$1" in
     "-top")
       shift
-      TOP=$1
+      DUT_TOP=$1
       ;;
     "-p")
       shift
@@ -72,7 +72,7 @@ echo "-------------------------------------------------------------------------"
 echo "-- Generate file list using FuseSoC"
 echo "-------------------------------------------------------------------------"
 echo ""
-echo "Top: $TOP"
+echo "Top: $DUT_TOP"
 echo ""
 
 rm -Rf build jgproject
@@ -87,7 +87,7 @@ echo "-------------------------------------------------------------------------"
 echo "-- Run JasperGold"
 echo "-------------------------------------------------------------------------"
 
-cd build/*${TOP}*/default-icarus
+cd build/*${DUT_TOP}*/default-icarus
 
 if [ "${tool}" == "jg" ]; then
     jg ${gui} \

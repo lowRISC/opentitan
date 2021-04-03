@@ -205,7 +205,6 @@ def main():
                   len(err_msgs.get("unreachable")))
     if n_errors > 0 or n_failures > 0:
         log.info("Found %d errors,  %d failures", n_errors, n_failures)
-        return 1
 
     log.info("Formal logfile parsed succesfully")
     return 0
