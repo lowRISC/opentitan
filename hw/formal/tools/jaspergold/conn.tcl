@@ -29,10 +29,10 @@ blackbox_assistant -config -connectivity_Map $env(CSV_PATH)
 # This is jg work-around when black-boxing with inout ports
 set_port_direction_handling coercion_weak_bbox
 
-elaborate -top $env(TOP)
+elaborate -top $env(DUT_TOP)
 
 # Currently only for top_earlgrey
-if {$env(TOP) == "top_earlgrey"} {
+if {$env(DUT_TOP) == "top_earlgrey"} {
   clock clk_main_i
   clock clk_io_i
   clock clk_usb_i

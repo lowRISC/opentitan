@@ -15,21 +15,22 @@
   // Default directory structure for the output
   dut:              "{name}"
   build_dir:        "{scratch_path}/{build_mode}"
-  build_log:        "{build_dir}/{tool}.log"
+  build_log:        "{build_dir}/{sub_flow}.log"
 
   // we rely on Fusesoc to generate the filelist for formal
   sv_flist_gen_cmd:  fusesoc
 
   // TODO: switch the tool to formal once the corresponding edalize backend is avaiable
 
+  fusesoc_target:    formal
   sv_flist_gen_opts: ["--cores-root {proj_root}",
                       "run",
                       "--flag=fileset_{design_level}",
                       "--tool=icarus",
-                      "--target=default",
+                      "--target={fusesoc_target}",
                       "--build-root={build_dir}",
                       "--setup {fusesoc_core}"]
-  sv_flist_gen_dir:  "{build_dir}/default-icarus"
+  sv_flist_gen_dir:  "{build_dir}/{fusesoc_target}-icarus"
 
   report_cmd:  "python3 {formal_root}/tools/{tool}/parse-formal-report.py"
   report_opts: ["--logpath={build_log}",
@@ -43,8 +44,8 @@
 
   // Vars that need to exported to the env
   exports: [
-    { DUT_TOP: "{dut}" },
-    { COV: "{cov}" },
+    { DUT_TOP:  "{dut}" },
+    { COV:      "{cov}" },
     { sub_flow: "{sub_flow}"}
   ]
 }

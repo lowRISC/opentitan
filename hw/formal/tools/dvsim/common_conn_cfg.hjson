@@ -10,11 +10,17 @@
     {CSV_PATH: "{csv_path}"}
   ]
 
-  // Connectivity test should all be in top_level design
   overrides: [
+    // Connectivity test should all be in top_level design
     {
       name:  design_level
       value: "top"
+    }
+
+    // Connectivity test won't run any assertions, so here we use default RTL target
+    {
+      name:  fusesoc_target
+      value: "default"
     }
   ]
 }

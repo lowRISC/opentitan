@@ -27,7 +27,7 @@
 # Note that the module to be tested needs to have an _fpv testbench
 # and a corresponding core file for this to work.
 
-export FPV_TOP=$1
+export DUT_TOP=$1
 shift
 gui=0
 tool="jg"
@@ -71,16 +71,16 @@ echo "-------------------------------------------------------------------------"
 echo "-- Generate file list using FuseSoC"
 echo "-------------------------------------------------------------------------"
 echo ""
-echo "Top: $FPV_TOP"
+echo "Top: $DUT_TOP"
 echo ""
 
 \rm -Rf build jgproject
 # we just run the setup for the default target in order to generate the filelist
 if [ "${CORE_PATH}" == "" ]; then
-  if [[ $FPV_TOP == *"_fpv" ]]; then
-    CORE_PATH="fpv:${FPV_TOP}"
+  if [[ $DUT_TOP == *"_fpv" ]]; then
+    CORE_PATH="fpv:${DUT_TOP}"
   else
-    CORE_PATH="dv:${FPV_TOP}_sva"
+    CORE_PATH="dv:${DUT_TOP}_sva"
   fi
 fi
 echo "core_file path: lowrisc:${CORE_PATH}"
