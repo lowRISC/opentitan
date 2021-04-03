@@ -34,6 +34,7 @@ module chip_earlgrey_asic (
   inout FLASH_TEST_MODE3, // Manual Pad
   inout FLASH_TEST_VOLT, // Manual Pad
   inout IOR8, // Dedicated Pad for sysrst_ctrl_aon_ec_rst_out_l
+  inout IOR9, // Dedicated Pad for sysrst_ctrl_aon_pwrb_out
 
   // Muxed Pads
   inout IOA0, // MIO Pad 0
@@ -42,43 +43,47 @@ module chip_earlgrey_asic (
   inout IOA3, // MIO Pad 3
   inout IOA4, // MIO Pad 4
   inout IOA5, // MIO Pad 5
-  inout IOB0, // MIO Pad 6
-  inout IOB1, // MIO Pad 7
-  inout IOB2, // MIO Pad 8
-  inout IOB3, // MIO Pad 9
-  inout IOB4, // MIO Pad 10
-  inout IOB5, // MIO Pad 11
-  inout IOB6, // MIO Pad 12
-  inout IOB7, // MIO Pad 13
-  inout IOB8, // MIO Pad 14
-  inout IOB9, // MIO Pad 15
-  inout IOB10, // MIO Pad 16
-  inout IOB11, // MIO Pad 17
-  inout IOC0, // MIO Pad 18
-  inout IOC1, // MIO Pad 19
-  inout IOC2, // MIO Pad 20
-  inout IOC3, // MIO Pad 21
-  inout IOC4, // MIO Pad 22
-  inout IOC5, // MIO Pad 23
-  inout IOC6, // MIO Pad 24
-  inout IOC7, // MIO Pad 25
-  inout IOC8, // MIO Pad 26
-  inout IOC9, // MIO Pad 27
-  inout IOC10, // MIO Pad 28
-  inout IOC11, // MIO Pad 29
-  inout IOR0, // MIO Pad 30
-  inout IOR1, // MIO Pad 31
-  inout IOR2, // MIO Pad 32
-  inout IOR3, // MIO Pad 33
-  inout IOR4, // MIO Pad 34
-  inout IOR5, // MIO Pad 35
-  inout IOR6, // MIO Pad 36
-  inout IOR7, // MIO Pad 37
-  inout IOR9, // MIO Pad 38
-  inout IOR10, // MIO Pad 39
-  inout IOR11, // MIO Pad 40
-  inout IOR12, // MIO Pad 41
-  inout IOR13  // MIO Pad 42
+  inout IOA6, // MIO Pad 6
+  inout IOA7, // MIO Pad 7
+  inout IOA8, // MIO Pad 8
+  inout IOB0, // MIO Pad 9
+  inout IOB1, // MIO Pad 10
+  inout IOB2, // MIO Pad 11
+  inout IOB3, // MIO Pad 12
+  inout IOB4, // MIO Pad 13
+  inout IOB5, // MIO Pad 14
+  inout IOB6, // MIO Pad 15
+  inout IOB7, // MIO Pad 16
+  inout IOB8, // MIO Pad 17
+  inout IOB9, // MIO Pad 18
+  inout IOB10, // MIO Pad 19
+  inout IOB11, // MIO Pad 20
+  inout IOB12, // MIO Pad 21
+  inout IOC0, // MIO Pad 22
+  inout IOC1, // MIO Pad 23
+  inout IOC2, // MIO Pad 24
+  inout IOC3, // MIO Pad 25
+  inout IOC4, // MIO Pad 26
+  inout IOC5, // MIO Pad 27
+  inout IOC6, // MIO Pad 28
+  inout IOC7, // MIO Pad 29
+  inout IOC8, // MIO Pad 30
+  inout IOC9, // MIO Pad 31
+  inout IOC10, // MIO Pad 32
+  inout IOC11, // MIO Pad 33
+  inout IOC12, // MIO Pad 34
+  inout IOR0, // MIO Pad 35
+  inout IOR1, // MIO Pad 36
+  inout IOR2, // MIO Pad 37
+  inout IOR3, // MIO Pad 38
+  inout IOR4, // MIO Pad 39
+  inout IOR5, // MIO Pad 40
+  inout IOR6, // MIO Pad 41
+  inout IOR7, // MIO Pad 42
+  inout IOR10, // MIO Pad 43
+  inout IOR11, // MIO Pad 44
+  inout IOR12, // MIO Pad 45
+  inout IOR13  // MIO Pad 46
 );
 
   import top_earlgrey_pkg::*;
@@ -88,15 +93,15 @@ module chip_earlgrey_asic (
   // Special Signal Indices //
   ////////////////////////////
 
-  parameter int Tap0PadIdx = 26;
-  parameter int Tap1PadIdx = 23;
-  parameter int Dft0PadIdx = 21;
-  parameter int Dft1PadIdx = 22;
-  parameter int TckPadIdx = 54;
-  parameter int TmsPadIdx = 55;
-  parameter int TrstNPadIdx = 18;
-  parameter int TdiPadIdx = 47;
-  parameter int TdoPadIdx = 48;
+  parameter int Tap0PadIdx = 30;
+  parameter int Tap1PadIdx = 27;
+  parameter int Dft0PadIdx = 25;
+  parameter int Dft1PadIdx = 26;
+  parameter int TckPadIdx = 38;
+  parameter int TmsPadIdx = 35;
+  parameter int TrstNPadIdx = 39;
+  parameter int TdiPadIdx = 37;
+  parameter int TdoPadIdx = 36;
 
   // TODO: this is temporary and will be removed in the future.
   // This specifies the tie-off values of the muxed MIO/DIOs
@@ -173,12 +178,13 @@ module chip_earlgrey_asic (
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(23),
-    .NMioPads(43),
+    .NDioPads(24),
+    .NMioPads(47),
     // TODO: need to add ScanRole parameters
     .PhysicalPads(1),
     .NIoBanks(IoBankCount),
     .DioPadBank ({
+      IoBankVcc, // IOR9
       IoBankVcc, // IOR8
       IoBankVcc, // FLASH_TEST_VOLT
       IoBankVcc, // FLASH_TEST_MODE3
@@ -208,7 +214,6 @@ module chip_earlgrey_asic (
       IoBankVcc, // IOR12
       IoBankVcc, // IOR11
       IoBankVcc, // IOR10
-      IoBankVcc, // IOR9
       IoBankVcc, // IOR7
       IoBankVcc, // IOR6
       IoBankVcc, // IOR5
@@ -217,6 +222,7 @@ module chip_earlgrey_asic (
       IoBankVcc, // IOR2
       IoBankVcc, // IOR1
       IoBankVcc, // IOR0
+      IoBankVcc, // IOC12
       IoBankVcc, // IOC11
       IoBankVcc, // IOC10
       IoBankVcc, // IOC9
@@ -229,6 +235,7 @@ module chip_earlgrey_asic (
       IoBankVcc, // IOC2
       IoBankVcc, // IOC1
       IoBankVcc, // IOC0
+      IoBankViob, // IOB12
       IoBankViob, // IOB11
       IoBankViob, // IOB10
       IoBankViob, // IOB9
@@ -241,6 +248,9 @@ module chip_earlgrey_asic (
       IoBankViob, // IOB2
       IoBankViob, // IOB1
       IoBankViob, // IOB0
+      IoBankVioa, // IOA8
+      IoBankVioa, // IOA7
+      IoBankVioa, // IOA6
       IoBankVioa, // IOA5
       IoBankVioa, // IOA4
       IoBankVioa, // IOA3
@@ -249,6 +259,7 @@ module chip_earlgrey_asic (
       IoBankVioa  // IOA0
     }),
     .DioPadType ({
+      BidirOd, // IOR9
       BidirOd, // IOR8
       InputStd, // FLASH_TEST_VOLT
       InputStd, // FLASH_TEST_MODE3
@@ -278,45 +289,49 @@ module chip_earlgrey_asic (
       BidirOd, // IOR12
       BidirOd, // IOR11
       BidirOd, // IOR10
-      BidirOd, // IOR9
-      InputStd, // IOR7
-      InputStd, // IOR6
-      InputStd, // IOR5
-      InputStd, // IOR4
-      InputStd, // IOR3
-      InputStd, // IOR2
-      InputStd, // IOR1
-      InputStd, // IOR0
+      BidirStd, // IOR7
+      BidirStd, // IOR6
+      BidirStd, // IOR5
+      BidirStd, // IOR4
+      BidirStd, // IOR3
+      BidirStd, // IOR2
+      BidirStd, // IOR1
+      BidirStd, // IOR0
+      BidirOd, // IOC12
       BidirOd, // IOC11
       BidirOd, // IOC10
-      BidirOd, // IOC9
-      BidirOd, // IOC8
-      InputStd, // IOC7
-      InputStd, // IOC6
-      InputStd, // IOC5
-      InputStd, // IOC4
-      InputStd, // IOC3
-      InputStd, // IOC2
-      InputStd, // IOC1
-      InputStd, // IOC0
-      InputStd, // IOB11
-      InputStd, // IOB10
+      BidirStd, // IOC9
+      BidirStd, // IOC8
+      BidirStd, // IOC7
+      BidirStd, // IOC6
+      BidirStd, // IOC5
+      BidirStd, // IOC4
+      BidirStd, // IOC3
+      BidirStd, // IOC2
+      BidirStd, // IOC1
+      BidirStd, // IOC0
+      BidirOd, // IOB12
+      BidirOd, // IOB11
+      BidirOd, // IOB10
       BidirOd, // IOB9
-      BidirOd, // IOB8
-      InputStd, // IOB7
-      InputStd, // IOB6
-      InputStd, // IOB5
-      InputStd, // IOB4
-      InputStd, // IOB3
-      InputStd, // IOB2
-      InputStd, // IOB1
-      InputStd, // IOB0
-      BidirOd, // IOA5
-      BidirOd, // IOA4
-      InputStd, // IOA3
-      InputStd, // IOA2
-      InputStd, // IOA1
-      InputStd  // IOA0
+      BidirStd, // IOB8
+      BidirStd, // IOB7
+      BidirStd, // IOB6
+      BidirStd, // IOB5
+      BidirStd, // IOB4
+      BidirStd, // IOB3
+      BidirStd, // IOB2
+      BidirStd, // IOB1
+      BidirStd, // IOB0
+      BidirOd, // IOA8
+      BidirOd, // IOA7
+      BidirOd, // IOA6
+      BidirStd, // IOA5
+      BidirStd, // IOA4
+      BidirStd, // IOA3
+      BidirStd, // IOA2
+      BidirStd, // IOA1
+      BidirStd  // IOA0
     })
   ) u_padring (
   // This is only used for scan and DFT purposes
@@ -328,6 +343,7 @@ module chip_earlgrey_asic (
     .mio_in_raw_o ( ),
     // Chip IOs
     .dio_pad_io ({
+      IOR9,
       IOR8,
       FLASH_TEST_VOLT,
       FLASH_TEST_MODE3,
@@ -358,7 +374,6 @@ module chip_earlgrey_asic (
       IOR12,
       IOR11,
       IOR10,
-      IOR9,
       IOR7,
       IOR6,
       IOR5,
@@ -367,6 +382,7 @@ module chip_earlgrey_asic (
       IOR2,
       IOR1,
       IOR0,
+      IOC12,
       IOC11,
       IOC10,
       IOC9,
@@ -379,6 +395,7 @@ module chip_earlgrey_asic (
       IOC2,
       IOC1,
       IOC0,
+      IOB12,
       IOB11,
       IOB10,
       IOB9,
@@ -391,6 +408,9 @@ module chip_earlgrey_asic (
       IOB2,
       IOB1,
       IOB0,
+      IOA8,
+      IOA7,
+      IOA6,
       IOA5,
       IOA4,
       IOA3,
@@ -401,6 +421,7 @@ module chip_earlgrey_asic (
 
     // Core-facing
     .dio_in_o ({
+        dio_in[DioSysrstCtrlAonPwrbOut],
         dio_in[DioSysrstCtrlAonEcRstOutL],
         manual_in_flash_test_volt,
         manual_in_flash_test_mode3,
@@ -426,6 +447,7 @@ module chip_earlgrey_asic (
         manual_in_por_n
       }),
     .dio_out_i ({
+        dio_out[DioSysrstCtrlAonPwrbOut],
         dio_out[DioSysrstCtrlAonEcRstOutL],
         manual_out_flash_test_volt,
         manual_out_flash_test_mode3,
@@ -451,6 +473,7 @@ module chip_earlgrey_asic (
         manual_out_por_n
       }),
     .dio_oe_i ({
+        dio_oe[DioSysrstCtrlAonPwrbOut],
         dio_oe[DioSysrstCtrlAonEcRstOutL],
         manual_oe_flash_test_volt,
         manual_oe_flash_test_mode3,
@@ -476,6 +499,7 @@ module chip_earlgrey_asic (
         manual_oe_por_n
       }),
     .dio_attr_i ({
+        dio_attr[DioSysrstCtrlAonPwrbOut],
         dio_attr[DioSysrstCtrlAonEcRstOutL],
         manual_attr_flash_test_volt,
         manual_attr_flash_test_mode3,
@@ -502,6 +526,10 @@ module chip_earlgrey_asic (
       }),
 
     .mio_in_o ({
+        mio_in[46],
+        mio_in[45],
+        mio_in[44],
+        mio_in[43],
         mio_in[42],
         mio_in[41],
         mio_in[40],
@@ -547,6 +575,10 @@ module chip_earlgrey_asic (
         mio_in[0]
       }),
     .mio_out_i ({
+        mio_out[46],
+        mio_out[45],
+        mio_out[44],
+        mio_out[43],
         mio_out[42],
         mio_out[41],
         mio_out[40],
@@ -592,6 +624,10 @@ module chip_earlgrey_asic (
         mio_out[0]
       }),
     .mio_oe_i ({
+        mio_oe[46],
+        mio_oe[45],
+        mio_oe[44],
+        mio_oe[43],
         mio_oe[42],
         mio_oe[41],
         mio_oe[40],
@@ -637,6 +673,10 @@ module chip_earlgrey_asic (
         mio_oe[0]
       }),
     .mio_attr_i ({
+        mio_attr[46],
+        mio_attr[45],
+        mio_attr[44],
+        mio_attr[43],
         mio_attr[42],
         mio_attr[41],
         mio_attr[40],

@@ -70,9 +70,9 @@ class chip_base_vseq extends cip_base_vseq #(
 
     // Drive strap signals at the start.
     if (do_strap_pins_init) begin
-      cfg.srst_n_vif.drive(1'b1);
-      cfg.jtag_spi_n_vif.drive(1'b1); // Select JTAG.
-      cfg.bootstrap_vif.drive(cfg.use_spi_load_bootstrap);
+      cfg.tap_straps_vif.drive(2'b10); // Select JTAG.
+      cfg.dft_straps_vif.drive(2'b00);
+      cfg.sw_straps_vif.drive({2'b00, cfg.use_spi_load_bootstrap});
     end
 
     // Now safe to do DUT init.

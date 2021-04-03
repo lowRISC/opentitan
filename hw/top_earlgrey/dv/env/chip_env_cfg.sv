@@ -20,9 +20,9 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   // chip top interfaces
   virtual clk_rst_if  usb_clk_rst_vif;
   gpio_vif            gpio_vif;
-  virtual pins_if#(1) srst_n_vif;
-  virtual pins_if#(1) jtag_spi_n_vif;
-  virtual pins_if#(1) bootstrap_vif;
+  virtual pins_if#(2) tap_straps_vif;
+  virtual pins_if#(2) dft_straps_vif;
+  virtual pins_if#(3) sw_straps_vif;
   virtual pins_if#(1) rst_n_mon_vif;
 
   // mem backdoors

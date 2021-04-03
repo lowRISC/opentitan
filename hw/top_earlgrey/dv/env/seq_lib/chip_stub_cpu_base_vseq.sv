@@ -12,8 +12,8 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
 
   virtual task pre_start();
     super.pre_start();
-    // Select SPI interface.
-    cfg.jtag_spi_n_vif.drive(1'b0);
+    // Deselect JTAG interface.
+    cfg.tap_straps_vif.drive(2'b00);
     enable_asserts_in_hw_reset_rand_wr = 0;
 
     // In top-level uart RX pin may be selected in pinmux. CSR tests may randomly enable line
@@ -41,9 +41,9 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
 
   virtual task dut_init(string reset_kind = "HARD");
     // make sure jtag rst triggers
-    cfg.jtag_spi_n_vif.drive(1'b1);
+    cfg.tap_straps_vif.drive(2'b10);
     super.dut_init(reset_kind);
-    cfg.jtag_spi_n_vif.drive(1'b0);
+    cfg.tap_straps_vif.drive(2'b00);
   endtask
 
 endclass

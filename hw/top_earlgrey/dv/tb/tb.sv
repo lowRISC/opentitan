@@ -34,8 +34,9 @@ module tb;
   wire spi_device_sdi_i;
 
   wire srst_n;
-  wire jtag_spi_n;
-  wire bootstrap;
+  wire [1:0] tap_straps;
+  wire [1:0] dft_straps;
+  wire [2:0] sw_straps;
   wire [7:0] io_dps;
 
   wire usb_dp0, usb_dn0, usb_sense0, usb_dppullup0, usb_dnpullup0;
@@ -57,8 +58,9 @@ module tb;
   alert_esc_if alert_if[NUM_ALERTS](.clk(alert_handler_clk), .rst_n(rst_n));
   pins_if #(NUM_GPIOS) gpio_if(.pins(gpio_pins));
   pins_if #(1) srst_n_if(.pins(srst_n));
-  pins_if #(1) jtag_spi_n_if(.pins(jtag_spi_n));
-  pins_if #(1) bootstrap_if(.pins(bootstrap));
+  pins_if #(2) tap_straps_if(.pins(tap_straps));
+  pins_if #(2) dft_straps_if(.pins(dft_straps));
+  pins_if #(3) sw_straps_if(.pins(sw_straps));
   pins_if #(1) rst_n_mon_if(.pins(cpu_rst_n));
   spi_if spi_if(.rst_n);
   tl_if cpu_d_tl_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
@@ -88,103 +90,100 @@ module tb;
   // We will need to feed this in via a muxed pin, once that function implemented.
 
   chip_earlgrey_asic dut (
-    // Clock and Reset
+    // Clock and Reset (VCC domain)
     .POR_N(rst_n),
-    // Bank A (VIOA domain)
+    // Dedicated SPI Host (VIOA domain)
     .SPI_HOST_D0(spi_host_tie_off[0]),
     .SPI_HOST_D1(spi_host_tie_off[1]),
     .SPI_HOST_D2(spi_host_tie_off[2]),
     .SPI_HOST_D3(spi_host_tie_off[3]),
     .SPI_HOST_CLK(spi_host_tie_off[4]),
     .SPI_HOST_CS_L(spi_host_tie_off[5]),
-    .SPI_DEV_D0(io_dps[1]),
-    .SPI_DEV_D1(io_dps[2]),
+    // Dedicated SPI Device (VIOA domain)
+    .SPI_DEV_D0(spi_device_sdi_i),
+    .SPI_DEV_D1(spi_device_sdo_o),
     .SPI_DEV_D2(spi_dev_tie_off[0]),
     .SPI_DEV_D3(spi_dev_tie_off[1]),
-    .SPI_DEV_CLK(io_dps[0]),
-    .SPI_DEV_CS_L(io_dps[3]),
+    .SPI_DEV_CLK(spi_device_sck),
+    .SPI_DEV_CS_L(spi_device_csb),
+    // Bank A (VIOA domain)
     .IOA0(gpio_pins[0]),   // MIO 0
     .IOA1(gpio_pins[1]),   // MIO 1
     .IOA2(gpio_pins[2]),   // MIO 2
     .IOA3(gpio_pins[3]),   // MIO 3
     .IOA4(gpio_pins[4]),   // MIO 4
     .IOA5(gpio_pins[5]),   // MIO 5
+    .IOA6(gpio_pins[6]),   // MIO 6
+    .IOA7(gpio_pins[7]),   // MIO 7
+    .IOA8(gpio_pins[8]),   // MIO 8
     // Bank B (VIOB domain)
-    .IOB0(gpio_pins[6]),   // MIO 6
-    .IOB1(gpio_pins[7]),   // MIO 7
-    .IOB2(gpio_pins[8]),   // MIO 8
-    .IOB3(gpio_pins[9]),   // MIO 9
-    .IOB4(gpio_pins[10]),  // MIO 10
-    .IOB5(gpio_pins[11]),  // MIO 11
-    .IOB6(gpio_pins[12]),  // MIO 12
-    .IOB7(gpio_pins[13]),  // MIO 13
-    .IOB8(gpio_pins[14]),  // MIO 14
-    .IOB9(gpio_pins[15]),  // MIO 15
-    .IOB10(io_dps[6]),     // MIO 16
-    .IOB11(io_dps[7]),     // MIO 17
+    .IOB0(gpio_pins[9]),   // MIO 9
+    .IOB1(gpio_pins[10]),  // MIO 10
+    .IOB2(gpio_pins[11]),  // MIO 11
+    .IOB3(gpio_pins[12]),  // MIO 12
+    .IOB4(gpio_pins[13]),  // MIO 13
+    .IOB5(gpio_pins[14]),  // MIO 14
+    .IOB6(gpio_pins[15]),  // MIO 15
+    .IOB7(tie_off[0]),     // MIO 16
+    .IOB8(tie_off[1]),     // MIO 17
+    .IOB9(tie_off[2]),     // MIO 18
+    .IOB10(tie_off[3]),    // MIO 19
+    .IOB11(tie_off[4]),    // MIO 20
+    .IOB12(tie_off[5]),    // MIO 21
     // Bank C (VCC domain)
-    .IOC0(io_dps[4]),      // MIO 18
-    .IOC1(io_dps[5]),      // MIO 19
-    .IOC2(tie_off[0]),     // MIO 20
-    .IOC3(tie_off[1]),     // MIO 21
-    .IOC4(tie_off[2]),     // MIO 22
-    .IOC5(jtag_spi_n),     // MIO 23 -- TAP_STRAP_SEL1
-    .IOC6(tie_off[4]),     // MIO 24
-    .IOC7(tie_off[5]),     // MIO 25
-    .IOC8(tie_off[6]),     // MIO 26 -- TAP_STRAP_SEL0
-    .IOC9(tie_off[7]),     // MIO 27
-    .IOC10(tie_off[8]),    // MIO 28
-    .IOC11(tie_off[9]),    // MIO 29
+    .IOC0(sw_straps[0]),   // MIO 22
+    .IOC1(sw_straps[1]),   // MIO 23
+    .IOC2(sw_straps[2]),   // MIO 24
+    .IOC3(dft_straps[0]),  // MIO 25
+    .IOC4(dft_straps[1]),  // MIO 26
+    .IOC5(tap_straps[1]),  // MIO 27
+    .IOC6(tie_off[6]),     // MIO 28
+    .IOC7(tie_off[7]),     // MIO 29
+    .IOC8(tap_straps[0]),  // MIO 30
+    .IOC9(tie_off[8]),     // MIO 31
+    .IOC10(uart_rx),       // MIO 32
+    .IOC11(uart_tx),       // MIO 33
+    .IOC12(tie_off[9]),    // MIO 34
     // Bank R (VCC domain)
-    .IOR0(tie_off[10]),    // MIO 30
-    .IOR1(tie_off[11]),    // MIO 31
-    .IOR2(uart_rx),        // MIO 32
-    .IOR3(uart_tx),        // MIO 33
-    .IOR4(tie_off[12]),    // MIO 34
-    .IOR5(tie_off[13]),    // MIO 35
-    .IOR6(tie_off[14]),    // MIO 36
-    .IOR7(tie_off[15]),    // MIO 37
-    .IOR8(tie_off[16]),    // MIO 38
-    .IOR9(tie_off[17]),    // MIO 39
-    .IOR10(tie_off[18]),   // MIO 40
-    .IOR11(tie_off[19]),   // MIO 41
-    .IOR12(tie_off[20]),   // MIO 42
-    .IOR13(tie_off[21]),   // MIO 43
+    .IOR0(jtag_tms),       // MIO 35
+    .IOR1(jtag_tdo),       // MIO 36
+    .IOR2(jtag_tdi),       // MIO 37
+    .IOR3(jtag_tck),       // MIO 38
+    .IOR4(jtag_trst_n),    // MIO 39
+    .IOR5(tie_off[10]),    // MIO 40
+    .IOR6(tie_off[11]),    // MIO 41
+    .IOR7(tie_off[12]),    // MIO 42
+    .IOR8(tie_off[13]),    // MIO 43
+    .IOR9(tie_off[14]),    // MIO 44
+    .IOR10(tie_off[15]),   // MIO 45
+    .IOR11(tie_off[16]),   // MIO 46
+    .IOR12(tie_off[17]),   // MIO 47
+    .IOR13(tie_off[18]),   // MIO 48
     // DCD (VCC domain)
-    .CC1(tie_off[22]),
-    .CC2(tie_off[23]),
+    .CC1(tie_off[19]),
+    .CC2(tie_off[20]),
     // USB (VCC domain)
     .USB_P(usb_dp0),
     .USB_N(usb_dn0),
     // FLASH
-    .FLASH_TEST_MODE0(tie_off[24]),
-    .FLASH_TEST_MODE1(tie_off[25]),
-    .FLASH_TEST_MODE2(tie_off[26]),
-    .FLASH_TEST_MODE3(tie_off[27]),
-    .FLASH_TEST_VOLT(tie_off[28])
+    .FLASH_TEST_MODE0(tie_off[21]),
+    .FLASH_TEST_MODE1(tie_off[22]),
+    .FLASH_TEST_MODE2(tie_off[23]),
+    .FLASH_TEST_MODE3(tie_off[24]),
+    .FLASH_TEST_VOLT(tie_off[25])
   );
 
   // connect signals
-  assign io_dps[0]  = jtag_spi_n ? jtag_tck : spi_device_sck;
-  assign io_dps[1]  = jtag_spi_n ? jtag_tdi : spi_device_sdi_i;
-  assign io_dps[3]  = jtag_spi_n ? jtag_tms : spi_device_csb;
-  assign (weak0, weak1) io_dps[4] = 1'b0;
-  assign io_dps[5]  = srst_n;
-  assign io_dps[6]  = jtag_spi_n;
-  assign io_dps[7]  = bootstrap;
-  assign spi_device_sdo_o  = jtag_spi_n ? 1'b0 : io_dps[2];
-  assign jtag_tdo          = jtag_spi_n ? io_dps[2] : 1'b0;
-
   assign jtag_tck         = jtag_if.tck;
   assign jtag_tms         = jtag_if.tms;
   assign jtag_trst_n      = jtag_if.trst_n;
   assign jtag_tdi         = jtag_if.tdi;
   assign jtag_if.tdo      = jtag_tdo;
 
-  assign spi_device_sck     = spi_if.sck;
-  assign spi_device_csb     = spi_if.csb;
-  assign spi_device_sdi_i   = spi_if.sio[0];
-  assign spi_if.sio[1]      = spi_device_sdo_o;
+  assign spi_device_sck   = spi_if.sck;
+  assign spi_device_csb   = spi_if.csb;
+  assign spi_device_sdi_i = spi_if.sio[0];
+  assign spi_if.sio[1]    = spi_device_sdo_o;
 
   // TODO: Replace this weak pull to a known value with initialization
   // in the agent/interface.
@@ -265,12 +264,12 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", cpu_d_tl_if);
 
     // Strap pins
-    uvm_config_db#(virtual pins_if #(1))::set(
-        null, "*.env", "srst_n_vif", srst_n_if);
-    uvm_config_db#(virtual pins_if #(1))::set(
-        null, "*.env", "jtag_spi_n_vif", jtag_spi_n_if);
-    uvm_config_db#(virtual pins_if #(1))::set(
-        null, "*.env", "bootstrap_vif", bootstrap_if);
+    uvm_config_db#(virtual pins_if #(2))::set(
+        null, "*.env", "tap_straps_vif", tap_straps_if);
+    uvm_config_db#(virtual pins_if #(2))::set(
+        null, "*.env", "dft_straps_vif", dft_straps_if);
+    uvm_config_db#(virtual pins_if #(3))::set(
+        null, "*.env", "sw_straps_vif", sw_straps_if);
     uvm_config_db#(virtual pins_if #(1))::set(
         null, "*.env", "rst_n_mon_vif", rst_n_mon_if);
 

@@ -1139,8 +1139,8 @@ extern const top_earlgrey_alert_peripheral_t
 
 // PERIPH_INSEL ranges from 0 to NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1
-#define NUM_MIO_PADS 43
-#define NUM_DIO_PADS 22
+#define NUM_MIO_PADS 47
+#define NUM_DIO_PADS 23
 
 #define PINMUX_PERIPH_OUTSEL_IDX_OFFSET 3
 
@@ -1228,44 +1228,48 @@ typedef enum top_earlgrey_pinmux_insel {
   kTopEarlgreyPinmuxInselIoa3 = 5, /**< MIO Pad 3 */
   kTopEarlgreyPinmuxInselIoa4 = 6, /**< MIO Pad 4 */
   kTopEarlgreyPinmuxInselIoa5 = 7, /**< MIO Pad 5 */
-  kTopEarlgreyPinmuxInselIob0 = 8, /**< MIO Pad 6 */
-  kTopEarlgreyPinmuxInselIob1 = 9, /**< MIO Pad 7 */
-  kTopEarlgreyPinmuxInselIob2 = 10, /**< MIO Pad 8 */
-  kTopEarlgreyPinmuxInselIob3 = 11, /**< MIO Pad 9 */
-  kTopEarlgreyPinmuxInselIob4 = 12, /**< MIO Pad 10 */
-  kTopEarlgreyPinmuxInselIob5 = 13, /**< MIO Pad 11 */
-  kTopEarlgreyPinmuxInselIob6 = 14, /**< MIO Pad 12 */
-  kTopEarlgreyPinmuxInselIob7 = 15, /**< MIO Pad 13 */
-  kTopEarlgreyPinmuxInselIob8 = 16, /**< MIO Pad 14 */
-  kTopEarlgreyPinmuxInselIob9 = 17, /**< MIO Pad 15 */
-  kTopEarlgreyPinmuxInselIob10 = 18, /**< MIO Pad 16 */
-  kTopEarlgreyPinmuxInselIob11 = 19, /**< MIO Pad 17 */
-  kTopEarlgreyPinmuxInselIoc0 = 20, /**< MIO Pad 18 */
-  kTopEarlgreyPinmuxInselIoc1 = 21, /**< MIO Pad 19 */
-  kTopEarlgreyPinmuxInselIoc2 = 22, /**< MIO Pad 20 */
-  kTopEarlgreyPinmuxInselIoc3 = 23, /**< MIO Pad 21 */
-  kTopEarlgreyPinmuxInselIoc4 = 24, /**< MIO Pad 22 */
-  kTopEarlgreyPinmuxInselIoc5 = 25, /**< MIO Pad 23 */
-  kTopEarlgreyPinmuxInselIoc6 = 26, /**< MIO Pad 24 */
-  kTopEarlgreyPinmuxInselIoc7 = 27, /**< MIO Pad 25 */
-  kTopEarlgreyPinmuxInselIoc8 = 28, /**< MIO Pad 26 */
-  kTopEarlgreyPinmuxInselIoc9 = 29, /**< MIO Pad 27 */
-  kTopEarlgreyPinmuxInselIoc10 = 30, /**< MIO Pad 28 */
-  kTopEarlgreyPinmuxInselIoc11 = 31, /**< MIO Pad 29 */
-  kTopEarlgreyPinmuxInselIor0 = 32, /**< MIO Pad 30 */
-  kTopEarlgreyPinmuxInselIor1 = 33, /**< MIO Pad 31 */
-  kTopEarlgreyPinmuxInselIor2 = 34, /**< MIO Pad 32 */
-  kTopEarlgreyPinmuxInselIor3 = 35, /**< MIO Pad 33 */
-  kTopEarlgreyPinmuxInselIor4 = 36, /**< MIO Pad 34 */
-  kTopEarlgreyPinmuxInselIor5 = 37, /**< MIO Pad 35 */
-  kTopEarlgreyPinmuxInselIor6 = 38, /**< MIO Pad 36 */
-  kTopEarlgreyPinmuxInselIor7 = 39, /**< MIO Pad 37 */
-  kTopEarlgreyPinmuxInselIor9 = 40, /**< MIO Pad 38 */
-  kTopEarlgreyPinmuxInselIor10 = 41, /**< MIO Pad 39 */
-  kTopEarlgreyPinmuxInselIor11 = 42, /**< MIO Pad 40 */
-  kTopEarlgreyPinmuxInselIor12 = 43, /**< MIO Pad 41 */
-  kTopEarlgreyPinmuxInselIor13 = 44, /**< MIO Pad 42 */
-  kTopEarlgreyPinmuxInselLast = 44, /**< \internal Last valid insel value */
+  kTopEarlgreyPinmuxInselIoa6 = 8, /**< MIO Pad 6 */
+  kTopEarlgreyPinmuxInselIoa7 = 9, /**< MIO Pad 7 */
+  kTopEarlgreyPinmuxInselIoa8 = 10, /**< MIO Pad 8 */
+  kTopEarlgreyPinmuxInselIob0 = 11, /**< MIO Pad 9 */
+  kTopEarlgreyPinmuxInselIob1 = 12, /**< MIO Pad 10 */
+  kTopEarlgreyPinmuxInselIob2 = 13, /**< MIO Pad 11 */
+  kTopEarlgreyPinmuxInselIob3 = 14, /**< MIO Pad 12 */
+  kTopEarlgreyPinmuxInselIob4 = 15, /**< MIO Pad 13 */
+  kTopEarlgreyPinmuxInselIob5 = 16, /**< MIO Pad 14 */
+  kTopEarlgreyPinmuxInselIob6 = 17, /**< MIO Pad 15 */
+  kTopEarlgreyPinmuxInselIob7 = 18, /**< MIO Pad 16 */
+  kTopEarlgreyPinmuxInselIob8 = 19, /**< MIO Pad 17 */
+  kTopEarlgreyPinmuxInselIob9 = 20, /**< MIO Pad 18 */
+  kTopEarlgreyPinmuxInselIob10 = 21, /**< MIO Pad 19 */
+  kTopEarlgreyPinmuxInselIob11 = 22, /**< MIO Pad 20 */
+  kTopEarlgreyPinmuxInselIob12 = 23, /**< MIO Pad 21 */
+  kTopEarlgreyPinmuxInselIoc0 = 24, /**< MIO Pad 22 */
+  kTopEarlgreyPinmuxInselIoc1 = 25, /**< MIO Pad 23 */
+  kTopEarlgreyPinmuxInselIoc2 = 26, /**< MIO Pad 24 */
+  kTopEarlgreyPinmuxInselIoc3 = 27, /**< MIO Pad 25 */
+  kTopEarlgreyPinmuxInselIoc4 = 28, /**< MIO Pad 26 */
+  kTopEarlgreyPinmuxInselIoc5 = 29, /**< MIO Pad 27 */
+  kTopEarlgreyPinmuxInselIoc6 = 30, /**< MIO Pad 28 */
+  kTopEarlgreyPinmuxInselIoc7 = 31, /**< MIO Pad 29 */
+  kTopEarlgreyPinmuxInselIoc8 = 32, /**< MIO Pad 30 */
+  kTopEarlgreyPinmuxInselIoc9 = 33, /**< MIO Pad 31 */
+  kTopEarlgreyPinmuxInselIoc10 = 34, /**< MIO Pad 32 */
+  kTopEarlgreyPinmuxInselIoc11 = 35, /**< MIO Pad 33 */
+  kTopEarlgreyPinmuxInselIoc12 = 36, /**< MIO Pad 34 */
+  kTopEarlgreyPinmuxInselIor0 = 37, /**< MIO Pad 35 */
+  kTopEarlgreyPinmuxInselIor1 = 38, /**< MIO Pad 36 */
+  kTopEarlgreyPinmuxInselIor2 = 39, /**< MIO Pad 37 */
+  kTopEarlgreyPinmuxInselIor3 = 40, /**< MIO Pad 38 */
+  kTopEarlgreyPinmuxInselIor4 = 41, /**< MIO Pad 39 */
+  kTopEarlgreyPinmuxInselIor5 = 42, /**< MIO Pad 40 */
+  kTopEarlgreyPinmuxInselIor6 = 43, /**< MIO Pad 41 */
+  kTopEarlgreyPinmuxInselIor7 = 44, /**< MIO Pad 42 */
+  kTopEarlgreyPinmuxInselIor10 = 45, /**< MIO Pad 43 */
+  kTopEarlgreyPinmuxInselIor11 = 46, /**< MIO Pad 44 */
+  kTopEarlgreyPinmuxInselIor12 = 47, /**< MIO Pad 45 */
+  kTopEarlgreyPinmuxInselIor13 = 48, /**< MIO Pad 46 */
+  kTopEarlgreyPinmuxInselLast = 48, /**< \internal Last valid insel value */
 } top_earlgrey_pinmux_insel_t;
 
 /**
@@ -1278,44 +1282,48 @@ typedef enum top_earlgrey_pinmux_mio_out {
   kTopEarlgreyPinmuxMioOutIoa3 = 3, /**< MIO Pad 3 */
   kTopEarlgreyPinmuxMioOutIoa4 = 4, /**< MIO Pad 4 */
   kTopEarlgreyPinmuxMioOutIoa5 = 5, /**< MIO Pad 5 */
-  kTopEarlgreyPinmuxMioOutIob0 = 6, /**< MIO Pad 6 */
-  kTopEarlgreyPinmuxMioOutIob1 = 7, /**< MIO Pad 7 */
-  kTopEarlgreyPinmuxMioOutIob2 = 8, /**< MIO Pad 8 */
-  kTopEarlgreyPinmuxMioOutIob3 = 9, /**< MIO Pad 9 */
-  kTopEarlgreyPinmuxMioOutIob4 = 10, /**< MIO Pad 10 */
-  kTopEarlgreyPinmuxMioOutIob5 = 11, /**< MIO Pad 11 */
-  kTopEarlgreyPinmuxMioOutIob6 = 12, /**< MIO Pad 12 */
-  kTopEarlgreyPinmuxMioOutIob7 = 13, /**< MIO Pad 13 */
-  kTopEarlgreyPinmuxMioOutIob8 = 14, /**< MIO Pad 14 */
-  kTopEarlgreyPinmuxMioOutIob9 = 15, /**< MIO Pad 15 */
-  kTopEarlgreyPinmuxMioOutIob10 = 16, /**< MIO Pad 16 */
-  kTopEarlgreyPinmuxMioOutIob11 = 17, /**< MIO Pad 17 */
-  kTopEarlgreyPinmuxMioOutIoc0 = 18, /**< MIO Pad 18 */
-  kTopEarlgreyPinmuxMioOutIoc1 = 19, /**< MIO Pad 19 */
-  kTopEarlgreyPinmuxMioOutIoc2 = 20, /**< MIO Pad 20 */
-  kTopEarlgreyPinmuxMioOutIoc3 = 21, /**< MIO Pad 21 */
-  kTopEarlgreyPinmuxMioOutIoc4 = 22, /**< MIO Pad 22 */
-  kTopEarlgreyPinmuxMioOutIoc5 = 23, /**< MIO Pad 23 */
-  kTopEarlgreyPinmuxMioOutIoc6 = 24, /**< MIO Pad 24 */
-  kTopEarlgreyPinmuxMioOutIoc7 = 25, /**< MIO Pad 25 */
-  kTopEarlgreyPinmuxMioOutIoc8 = 26, /**< MIO Pad 26 */
-  kTopEarlgreyPinmuxMioOutIoc9 = 27, /**< MIO Pad 27 */
-  kTopEarlgreyPinmuxMioOutIoc10 = 28, /**< MIO Pad 28 */
-  kTopEarlgreyPinmuxMioOutIoc11 = 29, /**< MIO Pad 29 */
-  kTopEarlgreyPinmuxMioOutIor0 = 30, /**< MIO Pad 30 */
-  kTopEarlgreyPinmuxMioOutIor1 = 31, /**< MIO Pad 31 */
-  kTopEarlgreyPinmuxMioOutIor2 = 32, /**< MIO Pad 32 */
-  kTopEarlgreyPinmuxMioOutIor3 = 33, /**< MIO Pad 33 */
-  kTopEarlgreyPinmuxMioOutIor4 = 34, /**< MIO Pad 34 */
-  kTopEarlgreyPinmuxMioOutIor5 = 35, /**< MIO Pad 35 */
-  kTopEarlgreyPinmuxMioOutIor6 = 36, /**< MIO Pad 36 */
-  kTopEarlgreyPinmuxMioOutIor7 = 37, /**< MIO Pad 37 */
-  kTopEarlgreyPinmuxMioOutIor9 = 38, /**< MIO Pad 38 */
-  kTopEarlgreyPinmuxMioOutIor10 = 39, /**< MIO Pad 39 */
-  kTopEarlgreyPinmuxMioOutIor11 = 40, /**< MIO Pad 40 */
-  kTopEarlgreyPinmuxMioOutIor12 = 41, /**< MIO Pad 41 */
-  kTopEarlgreyPinmuxMioOutIor13 = 42, /**< MIO Pad 42 */
-  kTopEarlgreyPinmuxMioOutLast = 42, /**< \internal Last valid mio output */
+  kTopEarlgreyPinmuxMioOutIoa6 = 6, /**< MIO Pad 6 */
+  kTopEarlgreyPinmuxMioOutIoa7 = 7, /**< MIO Pad 7 */
+  kTopEarlgreyPinmuxMioOutIoa8 = 8, /**< MIO Pad 8 */
+  kTopEarlgreyPinmuxMioOutIob0 = 9, /**< MIO Pad 9 */
+  kTopEarlgreyPinmuxMioOutIob1 = 10, /**< MIO Pad 10 */
+  kTopEarlgreyPinmuxMioOutIob2 = 11, /**< MIO Pad 11 */
+  kTopEarlgreyPinmuxMioOutIob3 = 12, /**< MIO Pad 12 */
+  kTopEarlgreyPinmuxMioOutIob4 = 13, /**< MIO Pad 13 */
+  kTopEarlgreyPinmuxMioOutIob5 = 14, /**< MIO Pad 14 */
+  kTopEarlgreyPinmuxMioOutIob6 = 15, /**< MIO Pad 15 */
+  kTopEarlgreyPinmuxMioOutIob7 = 16, /**< MIO Pad 16 */
+  kTopEarlgreyPinmuxMioOutIob8 = 17, /**< MIO Pad 17 */
+  kTopEarlgreyPinmuxMioOutIob9 = 18, /**< MIO Pad 18 */
+  kTopEarlgreyPinmuxMioOutIob10 = 19, /**< MIO Pad 19 */
+  kTopEarlgreyPinmuxMioOutIob11 = 20, /**< MIO Pad 20 */
+  kTopEarlgreyPinmuxMioOutIob12 = 21, /**< MIO Pad 21 */
+  kTopEarlgreyPinmuxMioOutIoc0 = 22, /**< MIO Pad 22 */
+  kTopEarlgreyPinmuxMioOutIoc1 = 23, /**< MIO Pad 23 */
+  kTopEarlgreyPinmuxMioOutIoc2 = 24, /**< MIO Pad 24 */
+  kTopEarlgreyPinmuxMioOutIoc3 = 25, /**< MIO Pad 25 */
+  kTopEarlgreyPinmuxMioOutIoc4 = 26, /**< MIO Pad 26 */
+  kTopEarlgreyPinmuxMioOutIoc5 = 27, /**< MIO Pad 27 */
+  kTopEarlgreyPinmuxMioOutIoc6 = 28, /**< MIO Pad 28 */
+  kTopEarlgreyPinmuxMioOutIoc7 = 29, /**< MIO Pad 29 */
+  kTopEarlgreyPinmuxMioOutIoc8 = 30, /**< MIO Pad 30 */
+  kTopEarlgreyPinmuxMioOutIoc9 = 31, /**< MIO Pad 31 */
+  kTopEarlgreyPinmuxMioOutIoc10 = 32, /**< MIO Pad 32 */
+  kTopEarlgreyPinmuxMioOutIoc11 = 33, /**< MIO Pad 33 */
+  kTopEarlgreyPinmuxMioOutIoc12 = 34, /**< MIO Pad 34 */
+  kTopEarlgreyPinmuxMioOutIor0 = 35, /**< MIO Pad 35 */
+  kTopEarlgreyPinmuxMioOutIor1 = 36, /**< MIO Pad 36 */
+  kTopEarlgreyPinmuxMioOutIor2 = 37, /**< MIO Pad 37 */
+  kTopEarlgreyPinmuxMioOutIor3 = 38, /**< MIO Pad 38 */
+  kTopEarlgreyPinmuxMioOutIor4 = 39, /**< MIO Pad 39 */
+  kTopEarlgreyPinmuxMioOutIor5 = 40, /**< MIO Pad 40 */
+  kTopEarlgreyPinmuxMioOutIor6 = 41, /**< MIO Pad 41 */
+  kTopEarlgreyPinmuxMioOutIor7 = 42, /**< MIO Pad 42 */
+  kTopEarlgreyPinmuxMioOutIor10 = 43, /**< MIO Pad 43 */
+  kTopEarlgreyPinmuxMioOutIor11 = 44, /**< MIO Pad 44 */
+  kTopEarlgreyPinmuxMioOutIor12 = 45, /**< MIO Pad 45 */
+  kTopEarlgreyPinmuxMioOutIor13 = 46, /**< MIO Pad 46 */
+  kTopEarlgreyPinmuxMioOutLast = 46, /**< \internal Last valid mio output */
 } top_earlgrey_pinmux_mio_out_t;
 
 /**
@@ -1392,8 +1400,7 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselSysrstCtrlAonKey0Out = 67, /**< Peripheral Output 64 */
   kTopEarlgreyPinmuxOutselSysrstCtrlAonKey1Out = 68, /**< Peripheral Output 65 */
   kTopEarlgreyPinmuxOutselSysrstCtrlAonKey2Out = 69, /**< Peripheral Output 66 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlAonPwrbOut = 70, /**< Peripheral Output 67 */
-  kTopEarlgreyPinmuxOutselLast = 70, /**< \internal Last valid outsel value */
+  kTopEarlgreyPinmuxOutselLast = 69, /**< \internal Last valid outsel value */
 } top_earlgrey_pinmux_outsel_t;
 
 /**

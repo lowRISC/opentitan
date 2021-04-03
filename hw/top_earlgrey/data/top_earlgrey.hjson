@@ -1033,7 +1033,6 @@
     //
     // Optionally, each pad can also have a 'desc' field for further description.
     pads: [
-      // TODO: this needs to be updated to the latest ASIC pinout.
       // Dedicated
       { name: 'POR_N'           , type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'System reset'},
       { name: 'SPI_HOST_D0'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
@@ -1058,50 +1057,54 @@
       { name: 'FLASH_TEST_MODE3', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
       { name: 'FLASH_TEST_VOLT' , type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test voltage input'},
       // IOA
-      { name: 'IOA0'            , type: 'InputStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOA1'            , type: 'InputStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOA2'            , type: 'InputStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOA3'            , type: 'InputStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOA4'            , type: 'BidirOd' , bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOA5'            , type: 'BidirOd' , bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA0'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA1'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA2'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA3'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA4'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA5'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA6'            , type: 'BidirOd',  bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA7'            , type: 'BidirOd',  bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA8'            , type: 'BidirOd',  bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
       // IOB
-      { name: 'IOB0'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB1'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB2'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB3'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB4'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB5'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB6'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB7'            , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB8'            , type: 'BidirOd' , bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB0'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB1'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB2'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB3'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB4'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB5'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB6'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB7'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB8'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOB9'            , type: 'BidirOd' , bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB10'           , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB11'           , type: 'InputStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB10'           , type: 'BidirOd' , bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB11'           , type: 'BidirOd' , bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB12'           , type: 'BidirOd' , bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
       // IOC
-      { name: 'IOC0'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOC1'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOC2'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOC3'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOC4'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOC5'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOC6'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOC7'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOC8'            , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOC9'            , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC0'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC1'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC2'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC3'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC4'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC5'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC6'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC7'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC8'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC9'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOC10'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOC11'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC12'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       // IOR
-      { name: 'IOR0'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOR1'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOR2'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOR3'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOR4'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOR5'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOR6'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOR7'            , type: 'InputStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOR8'            , type: 'BidirOd' , bank: 'VCC' , connection: 'direct', desc: 'Dedicated systrst_ctrl output pad'},
-      // TODO: this needs to become a direct IO as well
-      { name: 'IOR9'            , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR0'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR1'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR2'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR3'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR4'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR5'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR6'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR7'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR8'            , type: 'BidirOd' , bank: 'VCC' , connection: 'direct', desc: 'Dedicated sysrst_ctrl output (ec_rst_l)'},
+      { name: 'IOR9'            , type: 'BidirOd' , bank: 'VCC' , connection: 'direct', desc: 'Dedicated sysrst_ctrl output (pwrb_out)'},
       { name: 'IOR10'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOR11'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOR12'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
@@ -1183,7 +1186,7 @@
       { instance: "sysrst_ctrl_aon", port: 'key0_out',     connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sysrst_ctrl_aon", port: 'key1_out',     connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sysrst_ctrl_aon", port: 'key2_out',     connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl_aon", port: 'pwrb_out',     connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "sysrst_ctrl_aon", port: 'pwrb_out',     connection: 'direct', pad: 'IOR9'         , desc: ''},
     ],
 
     // Number of wakeup detectors to instantiate, and bitwidth for the wakeup counters.
@@ -1244,17 +1247,16 @@
         // Each entry may have an optional 'desc' key for further description.
         special_signals: [
           // Straps
-          { name: 'tap0',   pad: 'IOC8',         desc: 'TAP strap signal.'  },
-          { name: 'tap1',   pad: 'IOC5',         desc: 'TAP strap signal.'  },
-          { name: 'dft0',   pad: 'IOC3',         desc: 'DFT strap signal.'  },
-          { name: 'dft1',   pad: 'IOC4',         desc: 'DFT strap signal.'  },
+          { name: 'tap0',   pad: 'IOC8', desc: 'TAP strap signal.'  },
+          { name: 'tap1',   pad: 'IOC5', desc: 'TAP strap signal.'  },
+          { name: 'dft0',   pad: 'IOC3', desc: 'DFT strap signal.'  },
+          { name: 'dft1',   pad: 'IOC4', desc: 'DFT strap signal.'  },
           // JTAG
-          // TODO: this needs to be updated to the latest ASIC pinout.
-          { name: 'tck',    pad: 'SPI_DEV_CLK' , desc: 'JTAG tck signal, overlaid on SPI_DEV.'   },
-          { name: 'tms',    pad: 'SPI_DEV_CS_L', desc: 'JTAG tms signal, overlaid on SPI_DEV.'   },
-          { name: 'trst_n', pad: 'IOC0'        , desc: 'JTAG trst_n signal, maps to MIO Pad 18.' },
-          { name: 'tdi',    pad: 'SPI_DEV_D0'  , desc: 'JTAG tdi signal, overlaid on SPI_DEV.'   },
-          { name: 'tdo',    pad: 'SPI_DEV_D1'  , desc: 'JTAG tdo signal, overlaid on SPI_DEV.'   },
+          { name: 'tck',    pad: 'IOR3', desc: 'JTAG tck signal.'    },
+          { name: 'tms',    pad: 'IOR0', desc: 'JTAG tms signal.'    },
+          { name: 'trst_n', pad: 'IOR4', desc: 'JTAG trst_n signal.' },
+          { name: 'tdi',    pad: 'IOR2', desc: 'JTAG tdi signal.'    },
+          { name: 'tdo',    pad: 'IOR1', desc: 'JTAG tdo signal.'    },
         ],
       }
     },
@@ -1263,13 +1265,14 @@
       pinout: {
         remove_pads: [
           'CC1', 'CC2',
-          'IOC1', 'IOC2','IOC3','IOC4','IOC5',
           'SPI_DEV_D2', 'SPI_DEV_D3'
           'SPI_HOST_CLK', 'SPI_HOST_CS_L',
           'SPI_HOST_D0', 'SPI_HOST_D1', 'SPI_HOST_D2', 'SPI_HOST_D3',
           'FLASH_TEST_VOLT',
           'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1', 'FLASH_TEST_MODE2', 'FLASH_TEST_MODE3',
-          'IOR4', 'IOR5', 'IOR6', 'IOR7', 'IOR8', 'IOR9', 'IOR10', 'IOR11', 'IOR12', 'IOR13'
+          'IOB10', 'IOB11', 'IOB12',
+          'IOC0', 'IOC1', 'IOC12',
+          'IOR0', 'IOR1', 'IOR2', 'IOR3', 'IOR4', 'IOR5', 'IOR6', 'IOR7', 'IOR8', 'IOR9', 'IOR10', 'IOR11', 'IOR12', 'IOR13'
         ],
 
         add_pads: [
@@ -1291,17 +1294,17 @@
         ],
       },
 
-      pinmux: {
+pinmux: {
         special_signals: [
           // Straps
-          { name: 'tap0',   pad: 'IOC2' ,        desc: 'TAP strap signal, maps to a stubbed-off MIO.'  },
-          { name: 'tap1',   pad: 'IOB10',        desc: 'TAP strap signal, maps to MIO pad 16.'         },
-          { name: 'dft0',   pad: 'IOC3' ,        desc: 'DFT strap signal, maps to a stubbed-off MIO.'  },
-          { name: 'dft1',   pad: 'IOC4' ,        desc: 'DFT strap signal, maps to a stubbed-off MIO.'  },
+          { name: 'tap0',   pad: 'IOC0' ,        desc: 'TAP strap signal, maps to a stubbed-off MIO.'  },
+          { name: 'tap1',   pad: 'IOB7',         desc: 'TAP strap signal, maps to MIO pad 16.'         },
+          { name: 'dft0',   pad: 'IOC1' ,        desc: 'DFT strap signal, maps to a stubbed-off MIO.'  },
+          { name: 'dft1',   pad: 'IOC12',        desc: 'DFT strap signal, maps to a stubbed-off MIO.'  },
           // JTAG
           { name: 'tck',    pad: 'SPI_DEV_CLK' , desc: 'JTAG tck signal, overlaid on SPI_DEV.'   },
           { name: 'tms',    pad: 'SPI_DEV_CS_L', desc: 'JTAG tms signal, overlaid on SPI_DEV.'   },
-          { name: 'trst_n', pad: 'IOC0'        , desc: 'JTAG trst_n signal, maps to MIO pad 18.' },
+          { name: 'trst_n', pad: 'IOB9'        , desc: 'JTAG trst_n signal, maps to MIO pad 18.' },
           { name: 'tdi',    pad: 'SPI_DEV_D0'  , desc: 'JTAG tdi signal, overlaid on SPI_DEV.'   },
           { name: 'tdo',    pad: 'SPI_DEV_D1'  , desc: 'JTAG tdo signal, overlaid on SPI_DEV.'   },
         ],

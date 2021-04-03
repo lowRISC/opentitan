@@ -29,18 +29,19 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get gpio_vif from uvm_config_db")
     end
 
-    if (!uvm_config_db#(virtual pins_if#(1))::get(this, "", "srst_n_vif", cfg.srst_n_vif)) begin
-      `uvm_fatal(`gfn, "failed to get srst_n_vif from uvm_config_db")
+    if (!uvm_config_db#(virtual pins_if#(2))::get(this, "", "tap_straps_vif",
+        cfg.tap_straps_vif)) begin
+      `uvm_fatal(`gfn, "failed to get tap_straps_vif from uvm_config_db")
     end
 
-    if (!uvm_config_db#(virtual pins_if#(1))::get(this, "", "jtag_spi_n_vif",
-        cfg.jtag_spi_n_vif)) begin
-      `uvm_fatal(`gfn, "failed to get jtag_spi_n_vif from uvm_config_db")
+    if (!uvm_config_db#(virtual pins_if#(2))::get(this, "", "dft_straps_vif",
+        cfg.dft_straps_vif)) begin
+      `uvm_fatal(`gfn, "failed to get dft_straps_vif from uvm_config_db")
     end
 
-    if (!uvm_config_db#(virtual pins_if#(1))::get(this, "", "bootstrap_vif",
-        cfg.bootstrap_vif)) begin
-      `uvm_fatal(`gfn, "failed to get bootstrap_vif from uvm_config_db")
+    if (!uvm_config_db#(virtual pins_if#(3))::get(this, "", "sw_straps_vif",
+        cfg.sw_straps_vif)) begin
+      `uvm_fatal(`gfn, "failed to get sw_straps_vif from uvm_config_db")
     end
 
     if (!uvm_config_db#(virtual pins_if#(1))::get(this, "", "rst_n_mon_vif",
