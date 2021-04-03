@@ -96,7 +96,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // TODO, in some cases though, we might use UART logger instead of SW logger - need to keep that
     // in mind
     wait(cfg.sw_logger_vif.printed_log == "HW initialisation completed, waiting for SPI input...");
-    cfg.jtag_spi_n_vif.drive(0); // Select SPI
 
     // for the first frame of data, sdo from chip is unknown, ignore checking that
     cfg.m_spi_agent_cfg.en_monitor_checks = 0;

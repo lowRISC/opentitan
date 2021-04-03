@@ -31,7 +31,6 @@ class chip_sw_spi_tx_rx_vseq extends chip_sw_base_vseq;
   virtual task body();
     bit [7:0] spi_device_tx_data[$];
     super.body();
-    cfg.jtag_spi_n_vif.drive(1'b0); // Select SPI_DEVICE.
 
     // Wait SPI_DEVICE filled TX FIFO, otherwise SDO will be X
     cfg.clk_rst_vif.wait_clks(100);

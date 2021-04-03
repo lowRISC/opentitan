@@ -7823,7 +7823,7 @@
       }
       {
         name: IOA0
-        type: InputStd
+        type: BidirStd
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
@@ -7831,7 +7831,7 @@
       }
       {
         name: IOA1
-        type: InputStd
+        type: BidirStd
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
@@ -7839,7 +7839,7 @@
       }
       {
         name: IOA2
-        type: InputStd
+        type: BidirStd
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
@@ -7847,7 +7847,7 @@
       }
       {
         name: IOA3
-        type: InputStd
+        type: BidirStd
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
@@ -7855,7 +7855,7 @@
       }
       {
         name: IOA4
-        type: BidirOd
+        type: BidirStd
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
@@ -7863,83 +7863,107 @@
       }
       {
         name: IOA5
-        type: BidirOd
+        type: BidirStd
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
         idx: 5
       }
       {
-        name: IOB0
-        type: InputStd
-        bank: VIOB
+        name: IOA6
+        type: BidirOd
+        bank: VIOA
         connection: muxed
         desc: Muxed IO pad
         idx: 6
       }
       {
-        name: IOB1
-        type: InputStd
-        bank: VIOB
+        name: IOA7
+        type: BidirOd
+        bank: VIOA
         connection: muxed
         desc: Muxed IO pad
         idx: 7
       }
       {
-        name: IOB2
-        type: InputStd
-        bank: VIOB
+        name: IOA8
+        type: BidirOd
+        bank: VIOA
         connection: muxed
         desc: Muxed IO pad
         idx: 8
       }
       {
-        name: IOB3
-        type: InputStd
+        name: IOB0
+        type: BidirStd
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
         idx: 9
       }
       {
-        name: IOB4
-        type: InputStd
+        name: IOB1
+        type: BidirStd
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
         idx: 10
       }
       {
-        name: IOB5
-        type: InputStd
+        name: IOB2
+        type: BidirStd
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
         idx: 11
       }
       {
-        name: IOB6
-        type: InputStd
+        name: IOB3
+        type: BidirStd
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
         idx: 12
       }
       {
-        name: IOB7
-        type: InputStd
+        name: IOB4
+        type: BidirStd
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
         idx: 13
       }
       {
-        name: IOB8
-        type: BidirOd
+        name: IOB5
+        type: BidirStd
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
         idx: 14
+      }
+      {
+        name: IOB6
+        type: BidirStd
+        bank: VIOB
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 15
+      }
+      {
+        name: IOB7
+        type: BidirStd
+        bank: VIOB
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 16
+      }
+      {
+        name: IOB8
+        type: BidirStd
+        bank: VIOB
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 17
       }
       {
         name: IOB9
@@ -7947,103 +7971,111 @@
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
-        idx: 15
-      }
-      {
-        name: IOB10
-        type: InputStd
-        bank: VIOB
-        connection: muxed
-        desc: Muxed IO pad
-        idx: 16
-      }
-      {
-        name: IOB11
-        type: InputStd
-        bank: VIOB
-        connection: muxed
-        desc: Muxed IO pad
-        idx: 17
-      }
-      {
-        name: IOC0
-        type: InputStd
-        bank: VCC
-        connection: muxed
-        desc: Muxed IO pad
         idx: 18
       }
       {
-        name: IOC1
-        type: InputStd
-        bank: VCC
+        name: IOB10
+        type: BidirOd
+        bank: VIOB
         connection: muxed
         desc: Muxed IO pad
         idx: 19
       }
       {
-        name: IOC2
-        type: InputStd
-        bank: VCC
+        name: IOB11
+        type: BidirOd
+        bank: VIOB
         connection: muxed
         desc: Muxed IO pad
         idx: 20
       }
       {
-        name: IOC3
-        type: InputStd
-        bank: VCC
+        name: IOB12
+        type: BidirOd
+        bank: VIOB
         connection: muxed
         desc: Muxed IO pad
         idx: 21
       }
       {
-        name: IOC4
-        type: InputStd
+        name: IOC0
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
         idx: 22
       }
       {
-        name: IOC5
-        type: InputStd
+        name: IOC1
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
         idx: 23
       }
       {
-        name: IOC6
-        type: InputStd
+        name: IOC2
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
         idx: 24
       }
       {
-        name: IOC7
-        type: InputStd
+        name: IOC3
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
         idx: 25
       }
       {
-        name: IOC8
-        type: BidirOd
+        name: IOC4
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
         idx: 26
       }
       {
-        name: IOC9
-        type: BidirOd
+        name: IOC5
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
         idx: 27
+      }
+      {
+        name: IOC6
+        type: BidirStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 28
+      }
+      {
+        name: IOC7
+        type: BidirStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 29
+      }
+      {
+        name: IOC8
+        type: BidirStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 30
+      }
+      {
+        name: IOC9
+        type: BidirStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 31
       }
       {
         name: IOC10
@@ -8051,7 +8083,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
-        idx: 28
+        idx: 32
       }
       {
         name: IOC11
@@ -8059,87 +8091,95 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
-        idx: 29
-      }
-      {
-        name: IOR0
-        type: InputStd
-        bank: VCC
-        connection: muxed
-        desc: Muxed IO pad
-        idx: 30
-      }
-      {
-        name: IOR1
-        type: InputStd
-        bank: VCC
-        connection: muxed
-        desc: Muxed IO pad
-        idx: 31
-      }
-      {
-        name: IOR2
-        type: InputStd
-        bank: VCC
-        connection: muxed
-        desc: Muxed IO pad
-        idx: 32
-      }
-      {
-        name: IOR3
-        type: InputStd
-        bank: VCC
-        connection: muxed
-        desc: Muxed IO pad
         idx: 33
       }
       {
-        name: IOR4
-        type: InputStd
+        name: IOC12
+        type: BidirOd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
         idx: 34
       }
       {
-        name: IOR5
-        type: InputStd
+        name: IOR0
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
         idx: 35
       }
       {
-        name: IOR6
-        type: InputStd
+        name: IOR1
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
         idx: 36
       }
       {
-        name: IOR7
-        type: InputStd
+        name: IOR2
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
         idx: 37
       }
       {
+        name: IOR3
+        type: BidirStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 38
+      }
+      {
+        name: IOR4
+        type: BidirStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 39
+      }
+      {
+        name: IOR5
+        type: BidirStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 40
+      }
+      {
+        name: IOR6
+        type: BidirStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 41
+      }
+      {
+        name: IOR7
+        type: BidirStd
+        bank: VCC
+        connection: muxed
+        desc: Muxed IO pad
+        idx: 42
+      }
+      {
         name: IOR8
         type: BidirOd
         bank: VCC
         connection: direct
-        desc: Dedicated systrst_ctrl output pad
+        desc: Dedicated sysrst_ctrl output (ec_rst_l)
         idx: 22
       }
       {
         name: IOR9
         type: BidirOd
         bank: VCC
-        connection: muxed
-        desc: Muxed IO pad
-        idx: 38
+        connection: direct
+        desc: Dedicated sysrst_ctrl output (pwrb_out)
+        idx: 23
       }
       {
         name: IOR10
@@ -8147,7 +8187,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
-        idx: 39
+        idx: 43
       }
       {
         name: IOR11
@@ -8155,7 +8195,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
-        idx: 40
+        idx: 44
       }
       {
         name: IOR12
@@ -8163,7 +8203,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
-        idx: 41
+        idx: 45
       }
       {
         name: IOR13
@@ -8171,7 +8211,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
-        idx: 42
+        idx: 46
       }
     ]
   }
@@ -8434,8 +8474,8 @@
       {
         instance: sysrst_ctrl_aon
         port: pwrb_out
-        connection: muxed
-        pad: ""
+        connection: direct
+        pad: IOR9
         desc: ""
       }
     ]
@@ -9456,9 +9496,9 @@
         width: 1
         type: output
         idx: -1
-        pad: ""
-        connection: muxed
-        glob_idx: 67
+        pad: IOR9
+        connection: direct
+        glob_idx: 22
       }
     ]
     io_counts:
@@ -9467,15 +9507,15 @@
       {
         inouts: 11
         inputs: 3
-        outputs: 8
-        pads: 23
+        outputs: 9
+        pads: 24
       }
       muxed:
       {
         inouts: 42
         inputs: 23
-        outputs: 26
-        pads: 43
+        outputs: 25
+        pads: 47
       }
     }
   }
@@ -9496,55 +9536,55 @@
             name: tap0
             pad: IOC8
             desc: TAP strap signal.
-            idx: 26
+            idx: 30
           }
           {
             name: tap1
             pad: IOC5
             desc: TAP strap signal.
-            idx: 23
+            idx: 27
           }
           {
             name: dft0
             pad: IOC3
             desc: DFT strap signal.
-            idx: 21
+            idx: 25
           }
           {
             name: dft1
             pad: IOC4
             desc: DFT strap signal.
-            idx: 22
+            idx: 26
           }
           {
             name: tck
-            pad: SPI_DEV_CLK
-            desc: JTAG tck signal, overlaid on SPI_DEV.
-            idx: 54
+            pad: IOR3
+            desc: JTAG tck signal.
+            idx: 38
           }
           {
             name: tms
-            pad: SPI_DEV_CS_L
-            desc: JTAG tms signal, overlaid on SPI_DEV.
-            idx: 55
+            pad: IOR0
+            desc: JTAG tms signal.
+            idx: 35
           }
           {
             name: trst_n
-            pad: IOC0
-            desc: JTAG trst_n signal, maps to MIO Pad 18.
-            idx: 18
+            pad: IOR4
+            desc: JTAG trst_n signal.
+            idx: 39
           }
           {
             name: tdi
-            pad: SPI_DEV_D0
-            desc: JTAG tdi signal, overlaid on SPI_DEV.
-            idx: 47
+            pad: IOR2
+            desc: JTAG tdi signal.
+            idx: 37
           }
           {
             name: tdo
-            pad: SPI_DEV_D1
-            desc: JTAG tdo signal, overlaid on SPI_DEV.
-            idx: 48
+            pad: IOR1
+            desc: JTAG tdo signal.
+            idx: 36
           }
         ]
       }
@@ -9557,11 +9597,6 @@
         [
           CC1
           CC2
-          IOC1
-          IOC2
-          IOC3
-          IOC4
-          IOC5
           SPI_DEV_D2
           SPI_DEV_D3
           SPI_HOST_CLK
@@ -9575,6 +9610,16 @@
           FLASH_TEST_MODE1
           FLASH_TEST_MODE2
           FLASH_TEST_MODE3
+          IOB10
+          IOB11
+          IOB12
+          IOC0
+          IOC1
+          IOC12
+          IOR0
+          IOR1
+          IOR2
+          IOR3
           IOR4
           IOR5
           IOR6
@@ -9687,43 +9732,43 @@
         [
           {
             name: tap0
-            pad: IOC2
+            pad: IOC0
             desc: TAP strap signal, maps to a stubbed-off MIO.
-            idx: 20
+            idx: 22
           }
           {
             name: tap1
-            pad: IOB10
+            pad: IOB7
             desc: TAP strap signal, maps to MIO pad 16.
             idx: 16
           }
           {
             name: dft0
-            pad: IOC3
+            pad: IOC1
             desc: DFT strap signal, maps to a stubbed-off MIO.
-            idx: 21
+            idx: 23
           }
           {
             name: dft1
-            pad: IOC4
+            pad: IOC12
             desc: DFT strap signal, maps to a stubbed-off MIO.
-            idx: 22
+            idx: 34
           }
           {
             name: tck
             pad: SPI_DEV_CLK
             desc: JTAG tck signal, overlaid on SPI_DEV.
-            idx: 54
+            idx: 58
           }
           {
             name: tms
             pad: SPI_DEV_CS_L
             desc: JTAG tms signal, overlaid on SPI_DEV.
-            idx: 55
+            idx: 59
           }
           {
             name: trst_n
-            pad: IOC0
+            pad: IOB9
             desc: JTAG trst_n signal, maps to MIO pad 18.
             idx: 18
           }
@@ -9731,13 +9776,13 @@
             name: tdi
             pad: SPI_DEV_D0
             desc: JTAG tdi signal, overlaid on SPI_DEV.
-            idx: 47
+            idx: 51
           }
           {
             name: tdo
             pad: SPI_DEV_D1
             desc: JTAG tdo signal, overlaid on SPI_DEV.
-            idx: 48
+            idx: 52
           }
         ]
       }
