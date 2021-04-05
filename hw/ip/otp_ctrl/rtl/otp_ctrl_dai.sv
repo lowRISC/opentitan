@@ -604,7 +604,7 @@ module otp_ctrl_dai
       // an FsmStateError error code is assigned here, in case no error code has
       // been assigned yet.
       ErrorSt: begin
-        if (!error_q) begin
+        if (error_q == NoError) begin
           error_d = FsmStateError;
         end
       end

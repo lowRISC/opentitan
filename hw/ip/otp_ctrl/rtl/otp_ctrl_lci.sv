@@ -190,7 +190,7 @@ module otp_ctrl_lci
       // Make sure the partition signals an error state if no error
       // code has been latched so far, and lock the buffer regs down.
       ErrorSt: begin
-        if (!error_q) begin
+        if (error_q == NoError) begin
           error_d = FsmStateError;
         end
       end
