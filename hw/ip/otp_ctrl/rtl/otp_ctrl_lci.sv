@@ -221,9 +221,10 @@ module otp_ctrl_lci
   assign cnt_d = (cnt_clr) ? '0           :
                  (cnt_en)  ? cnt_q + 1'b1 : cnt_q;
 
-  // Note that OTP works on halfword (16bit) addresses, hence need to
-  // shift the addresses appropriately.
-  assign otp_addr_o = (Info.offset >> OtpAddrShift) + cnt_q;
+  // The output address is "offset + count", but we have to convert Info.offset from a byte address
+  // to a halfword (16-bit) address by discarding the bottom OtpAddrShift bits. We also make the
+  // zero-extension of cnt_q explicit (to avoid width mismatch warnings).
+  assign otp_addr_o = Info.offset[OtpByteAddrWidth-1:OtpAddrShift] + OtpAddrWidth'(cnt_q);
 
   // Always transfer 16bit blocks.
   assign otp_size_o = '0;
