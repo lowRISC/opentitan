@@ -57,6 +57,9 @@ module otp_ctrl_lci
   localparam int NumLcOtpWords = int'(Info.size) >> OtpAddrShift;
   localparam int CntWidth = vbits(NumLcOtpWords);
 
+  localparam int unsigned LastLcOtpWordInt = NumLcOtpWords - 1;
+  localparam bit [CntWidth-1:0] LastLcOtpWord = LastLcOtpWordInt[CntWidth-1:0];
+
   // This is required, since each native OTP word can only be programmed once.
   `ASSERT_INIT(LcValueMustBeWiderThanNativeOtpWidth_A, lc_ctrl_state_pkg::LcValueWidth >= OtpWidth)
 
@@ -166,7 +169,7 @@ module otp_ctrl_lci
 
           // Check whether we programmed all OTP words.
           // If yes, we are done and can go back to idle.
-          if (cnt_q == NumLcOtpWords-1) begin
+          if (cnt_q == LastLcOtpWord) begin
             state_d = IdleSt;
             lc_ack_o = 1'b1;
             // If in any of the words a programming error has occurred,
