@@ -43,7 +43,7 @@ package lc_ctrl_pkg;
   parameter int RmaSeedWidth = 32;
   typedef logic [RmaSeedWidth-1:0] lc_flash_rma_seed_t;
 
-  parameter int LcKeymgrDivWidth = 64;
+  parameter int LcKeymgrDivWidth = 128;
   typedef logic [LcKeymgrDivWidth-1:0] lc_keymgr_div_t;
 
   ////////////////////

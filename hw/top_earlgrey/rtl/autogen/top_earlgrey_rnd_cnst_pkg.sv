@@ -30,17 +30,17 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for lc state group diversification value
   parameter lc_ctrl_pkg::lc_keymgr_div_t RndCnstLcCtrlLcKeymgrDivInvalid = {
-    64'h4440722325A93144
+    128'hFDB92558E2D9C5D24440722325A93144
   };
 
   // Compile-time random bits for lc state group diversification value
   parameter lc_ctrl_pkg::lc_keymgr_div_t RndCnstLcCtrlLcKeymgrDivTestDevRma = {
-    64'hFDB92558E2D9C5D2
+    128'h6FAF88F22BCCD612D1C09F5C02B2C8D1
   };
 
   // Compile-time random bits for lc state group diversification value
   parameter lc_ctrl_pkg::lc_keymgr_div_t RndCnstLcCtrlLcKeymgrDivProduction = {
-    64'hD1C09F5C02B2C8D1
+    128'h79EE911CE801484BA8373086F9DD4EEE
   };
 
   ////////////////////////////////////////////
@@ -48,12 +48,12 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for initial LFSR seed
   parameter alert_pkg::lfsr_seed_t RndCnstAlertHandlerLfsrSeed = {
-    32'h2BCCD612
+    32'h7B93136F
   };
 
   // Compile-time random permutation for LFSR output
   parameter alert_pkg::lfsr_perm_t RndCnstAlertHandlerLfsrPerm = {
-    160'hB265E7161A57CD840E2D9B32B38A840DC1C7F6BB
+    160'hAF33379628B29DF3261A1E1BE933AB38A840EEE0
   };
 
   ////////////////////////////////////////////
@@ -61,17 +61,17 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random reset value for SRAM scrambling key.
   parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlRetAonSramKey = {
-    128'h9FBB73A9BF8C393C12965C7DE10023EC
+    128'h738F30D9006289A1D7D9D0CE1DD7D7C
   };
 
   // Compile-time random reset value for SRAM scrambling nonce.
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlRetAonSramNonce = {
-    128'h1D7D9D0CE1DD7D7C60C06703B494B3FF
+    128'hFE8F673FBA39BB679D58AA91AEB2691C
   };
 
   // Compile-time random permutation for LFSR output
   parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlRetAonSramLfsrPerm = {
-    160'h8C24F71703EDA8A2378916B6BF80C76651EBCEA1
+    160'h25DA5869DC96FE354F1DA55E9123CB082C63B331
   };
 
   ////////////////////////////////////////////
@@ -79,22 +79,22 @@ package top_earlgrey_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for default address key
   parameter flash_ctrl_pkg::flash_key_t RndCnstFlashCtrlAddrKey = {
-    128'h48BAE844C87B69111A24D5E4442BCFB7
+    128'h369AE283EEC5E43D4B16446726A27B8F
   };
 
   // Compile-time random bits for default data key
   parameter flash_ctrl_pkg::flash_key_t RndCnstFlashCtrlDataKey = {
-    128'hEEC5E43D4B16446726A27B8F0B30AD50
+    128'h1A07EB42A37DBFB7BE9BB6E69A7D3C5F
   };
 
   // Compile-time random bits for initial LFSR seed
   parameter flash_ctrl_pkg::lfsr_seed_t RndCnstFlashCtrlLfsrSeed = {
-    32'h369AE283
+    32'h96F534D
   };
 
   // Compile-time random permutation for LFSR output
   parameter flash_ctrl_pkg::lfsr_perm_t RndCnstFlashCtrlLfsrPerm = {
-    160'hB0DD7870FFED25342F40F3D8926051DA8B96D426
+    160'hC0FB0F38E6BD6744364B005EC493761479F5173A
   };
 
   ////////////////////////////////////////////
