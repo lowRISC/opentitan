@@ -35,7 +35,7 @@
  * @param[in]  x24: set to 16, pointer to in/out reg for Barrett routine
  * @param[in]  x25: set to 17, pointer to in/out reg for Barrett routine
  * @param[in]  x26: dptr_P, dmem pointer to point P in dmem
- * @param[in]  x27: dptr_P, dmem pointer to point Q in dmem
+ * @param[in]  x27: dptr_Q, dmem pointer to point Q in dmem
  * @param[in]  x28: dptr_b, dmem pointer to domain parameter b of P-384 in dmem
  * @param[in]  [w13, w12]: p, modulus of underlying field of P-384
  * @param[in]  [w15, w14]: u[383:0] lower 384 bit of Barrett constant u for
@@ -52,7 +52,6 @@
  * clobbered registers: w0 to w30
  * clobbered flag groups: FG0
  */
-
 .globl proj_add_p384
 proj_add_p384:
   /* mapping of parameters to symbols of [2] (Algorithm 4):
@@ -257,9 +256,9 @@ proj_add_p384:
   bn.mov    w27, w16
   bn.mov    w28, w17
 
-  /* 19: [w30, w29] = Z3 <= b*t2 = dmem[x5+0]*[w5, w4] */
-  bn.lid    x22, 0(x5)
-  bn.lid    x23, 32(x5)
+  /* 19: [w30, w29] = Z3 <= b*t2 = dmem[x28+0]*[w5, w4] */
+  bn.lid    x22, 0(x28)
+  bn.lid    x23, 32(x28)
   bn.mov    w16, w4
   bn.mov    w17, w5
   jal       x1, barrett384_p384
@@ -316,9 +315,9 @@ proj_add_p384:
   bn.mov    w25, w16
   bn.mov    w26, w17
 
-  /* 25: [w28, w27] = Y3 <= b*Y3 = dmem[x5+0]*[w28, w27] */
-  bn.lid    x22, 0(x5)
-  bn.lid    x23, 32(x5)
+  /* 25: [w28, w27] = Y3 <= b*Y3 = dmem[x28+0]*[w28, w27] */
+  bn.lid    x22, 0(x28)
+  bn.lid    x23, 32(x28)
   bn.mov    w16, w27
   bn.mov    w17, w28
   jal       x1, barrett384_p384
