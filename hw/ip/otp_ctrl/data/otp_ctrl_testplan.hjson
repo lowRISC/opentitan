@@ -76,14 +76,19 @@
       desc: '''
             This test is based on OTP_CTRL smoke test and creats OTP_CTRL's initialization failure:
             - Write and read OTP memory via DAI interface
-            - Lock HW partitions
+            - Randomly issue DAI digest command to lock HW partitions
             - Keep writing to OTP memory via DAI interface
+            - If digests are not locked, backdoor inject ECC correctable or uncorrectable errors
             - Issue reset and power initialization
 
-            This test will check:
+            If fatal alert is triggered, this test will check:
             - Otp_initialization failure triggers fatal alert
-            - Status register reflect the correct error
+            - Status register reflects the correct error
             - Otp_ctrl's power init output stays 0
+
+            If OTP init finished without fatal alert, this test will check:
+            - OTP init finishes with power init output goes to 1
+            - Status and interrupt registers reflect the correct ecc correctable error
             '''
       milestone: V2
       tests: ["otp_ctrl_init_fail"]
