@@ -7,7 +7,8 @@
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
   entries: [
     {
       name: wake_up
@@ -198,7 +199,7 @@
             - Randomly add reset between each sequence
             '''
       milestone: V2
-      tests: []
+      tests: ["otp_ctrl_stress_all"]
     }
   ]
 }

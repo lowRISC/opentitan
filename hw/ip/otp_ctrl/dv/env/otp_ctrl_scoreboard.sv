@@ -664,7 +664,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       "direct_access_wdata_1", "direct_access_address", "direct_access_rdata_0",
       "direct_access_rdata_1", "check_regwen", "check_trigger_regwen", "check_trigger",
       "check_timeout", "intr_enable", "creator_sw_cfg_read_lock",
-      "owner_sw_cfg_read_lock": begin
+      "owner_sw_cfg_read_lock", "integrity_check_period", "consistency_check_period",
+      "alert_test": begin
         // Do nothing
       end
       default: begin
