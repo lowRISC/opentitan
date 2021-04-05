@@ -11,7 +11,7 @@ class otp_ctrl_dai_errs_vseq extends otp_ctrl_dai_lock_vseq;
 
   `uvm_object_new
 
-  constraint num_iterations_c {
+  constraint num_trans_c {
     num_trans  inside {[1:5]};
     num_dai_op inside {[100:500]};
   }

@@ -334,6 +334,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task req_sram_key_sub(int index);
     push_pull_host_seq#(.DeviceDataWidth(SRAM_DATA_SIZE)) sram_pull_seq;
+    wait(cfg.under_reset == 0);
     `uvm_create_on(sram_pull_seq, p_sequencer.sram_pull_sequencer_h[index]);
     `DV_CHECK_RANDOMIZE_FATAL(sram_pull_seq)
     `uvm_send(sram_pull_seq)
@@ -361,6 +362,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task req_otbn_key_sub();
     push_pull_host_seq#(.DeviceDataWidth(OTBN_DATA_SIZE)) otbn_pull_seq;
+    wait(cfg.under_reset == 0);
     `uvm_create_on(otbn_pull_seq, p_sequencer.otbn_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(otbn_pull_seq)
     `uvm_send(otbn_pull_seq)
@@ -384,6 +386,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task req_flash_addr_key_sub();
     push_pull_host_seq#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_pull_seq;
+    wait(cfg.under_reset == 0);
     `uvm_create_on(flash_addr_pull_seq, p_sequencer.flash_addr_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(flash_addr_pull_seq)
     `uvm_send(flash_addr_pull_seq)
@@ -407,6 +410,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task req_flash_data_key_sub();
     push_pull_host_seq#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_pull_seq;
+    wait(cfg.under_reset == 0);
     `uvm_create_on(flash_data_pull_seq, p_sequencer.flash_data_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(flash_data_pull_seq)
     `uvm_send(flash_data_pull_seq)
@@ -434,6 +438,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0]               intr_val;
     push_pull_host_seq#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
                         lc_prog_pull_seq;
+    wait(cfg.under_reset == 0);
     `uvm_create_on(lc_prog_pull_seq, p_sequencer.lc_prog_pull_sequencer_h);
 
     // Even though OTP does not check input lc_state or lc_cnt is valid enum,
@@ -443,7 +448,6 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       `DV_CHECK_STD_RANDOMIZE_FATAL(lc_cnt)
       cfg.m_lc_prog_pull_agent_cfg.add_h_user_data({lc_state, lc_cnt});
     end
-
     `DV_CHECK_RANDOMIZE_FATAL(lc_prog_pull_seq)
     `uvm_send(lc_prog_pull_seq)
 
@@ -468,6 +472,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task req_lc_token_sub();
     push_pull_host_seq#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) lc_token_pull_seq;
+    wait(cfg.under_reset == 0);
     `uvm_create_on(lc_token_pull_seq, p_sequencer.lc_token_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(lc_token_pull_seq)
     `uvm_send(lc_token_pull_seq)

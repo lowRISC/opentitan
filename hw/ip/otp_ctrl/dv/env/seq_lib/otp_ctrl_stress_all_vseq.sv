@@ -10,6 +10,17 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
 
   `uvm_object_new
 
+  virtual task dut_init(string reset_kind = "HARD");
+    super.dut_init(reset_kind);
+    // Drive dft_en pins to access the test_access memory, this is used for tl_error sequence in
+    // stress_all_with_rand_reset test
+    cfg.otp_ctrl_vif.drive_lc_dft_en(lc_ctrl_pkg::On);
+
+    // Once turn on lc_dft_en regiser, will need some time to update the state register
+    // Two clock cycles for lc_async mode, one clock cycle for driving dft_en
+    cfg.clk_rst_vif.wait_clks(3);
+  endtask
+
   task body();
     // TODO: support more sequences
     string seq_names[] = {//"otp_ctrl_common_vseq",
@@ -53,8 +64,16 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
     end
   endtask : body
 
+  virtual task read_and_check_all_csrs_after_reset();
+    otp_pwr_init();
+    super.read_and_check_all_csrs_after_reset();
+  endtask
+
   virtual task post_start();
-    apply_reset();
+    // Use reset to clear lc interrupt error
+    if (do_apply_reset) begin
+      apply_reset();
+    end else wait(0); // wait until upper seq resets and kills this seq
 
     // delay to avoid race condition when sending item and checking no item after reset occur
     // at the same time

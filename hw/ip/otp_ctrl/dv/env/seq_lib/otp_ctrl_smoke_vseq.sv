@@ -45,7 +45,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
     if (part_idx inside {[Secret0Idx:Secret2Idx]}) dai_addr % 8 == 0;
   }
 
-  constraint num_iterations_c {
+  constraint num_trans_c {
     num_trans  inside {[1:20]};
     num_dai_op inside {[1:50]};
   }
