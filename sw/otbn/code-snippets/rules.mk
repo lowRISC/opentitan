@@ -142,3 +142,9 @@ $(otbn-code-snippets-bin-dir)/p384_proj_add_test.elf: \
   $(otbn-code-snippets-obj-dir)/p384.o
 $(otbn-code-snippets-bin-dir)/p384_proj_add_test.elf: \
   otbn-libs += $(otbn-code-snippets-obj-dir)/p384.o
+
+# p384_scalar_mult_test depends on p384_scalar_mult_int defined in p384.s
+$(otbn-code-snippets-bin-dir)/p384_scalar_mult_test.elf: \
+  $(otbn-code-snippets-obj-dir)/p384.o
+$(otbn-code-snippets-bin-dir)/p384_scalar_mult_test.elf: \
+  otbn-libs += $(otbn-code-snippets-obj-dir)/p384.o
