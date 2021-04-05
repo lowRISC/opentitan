@@ -767,6 +767,8 @@
                 Note this function is meant to be set as a mode and not toggled on/off every time
                 usb enters / exit suspend.
                 '''
+          tags: [// Prevent usb wake functions from being turned on outside of directed tests
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         }
         {
           bits: "1",
