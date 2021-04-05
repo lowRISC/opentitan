@@ -419,28 +419,28 @@
       default: "56",
       local: "true"
     },
-    { name: "LcStateOffset",
-      desc: "Offset of LC_STATE",
-      type: "int",
-      default: "1992",
-      local: "true"
-    },
-    { name: "LcStateSize",
-      desc: "Size of LC_STATE",
-      type: "int",
-      default: "24",
-      local: "true"
-    },
     { name: "LcTransitionCntOffset",
       desc: "Offset of LC_TRANSITION_CNT",
       type: "int",
-      default: "2016",
+      default: "1992",
       local: "true"
     },
     { name: "LcTransitionCntSize",
       desc: "Size of LC_TRANSITION_CNT",
       type: "int",
       default: "32",
+      local: "true"
+    },
+    { name: "LcStateOffset",
+      desc: "Offset of LC_STATE",
+      type: "int",
+      default: "2024",
+      local: "true"
+    },
+    { name: "LcStateSize",
+      desc: "Size of LC_STATE",
+      type: "int",
+      default: "24",
       local: "true"
     },
   ]

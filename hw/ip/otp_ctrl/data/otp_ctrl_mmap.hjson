@@ -257,15 +257,26 @@
             key_sel:    "NoKey",
             bkout_type: "False",
             items: [
-                {
-                    name: "LC_STATE",
-                    inv_default: "<random>",
-                    size: "24"
-                }
+                // The life cycle transition count is specified
+                // first such that any programming attempt of the life cycle
+                // partition through the LCI will always write the transition
+                // counter words first when programming an updated state vector.
+                // This is an additional safeguard, to the sequencing in the
+                // life cycle controller to ensure that the counter is always written
+                // before any state update. I.e., the life cycle controller
+                // already splits the counter and state updates into two
+                // supsequent requests through the LCI, where the first request
+                // only contains the updated transition counter, and the second
+                // request the updated transition counter and state.
                 {
                     name: "LC_TRANSITION_CNT",
                     inv_default: "<random>",
                     size: "32"
+                }
+                {
+                    name: "LC_STATE",
+                    inv_default: "<random>",
+                    size: "24"
                 }
             ],
             desc: '''Life-cycle related bits. This

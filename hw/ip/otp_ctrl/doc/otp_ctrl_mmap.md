@@ -23,5 +23,5 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                |            |      64bit       |                CREATOR_ROOT_KEY_SHARE0                |     0x780      |     32     |
 |         |                |            |      64bit       |                CREATOR_ROOT_KEY_SHARE1                |     0x7A0      |     32     |
 |         |                |            |      64bit       |        [SECRET2_DIGEST](#Reg_secret2_digest_0)        |     0x7C0      |     8      |
-|    6    |   LIFE_CYCLE   |     56     |      32bit       |                       LC_STATE                        |     0x7C8      |     24     |
-|         |                |            |      32bit       |                   LC_TRANSITION_CNT                   |     0x7E0      |     32     |
+|    6    |   LIFE_CYCLE   |     56     |      32bit       |                   LC_TRANSITION_CNT                   |     0x7C8      |     32     |
+|         |                |            |      32bit       |                       LC_STATE                        |     0x7E8      |     24     |
