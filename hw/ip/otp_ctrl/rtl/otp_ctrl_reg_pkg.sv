@@ -65,10 +65,10 @@ package otp_ctrl_reg_pkg;
   parameter int Secret2DigestSize = 8;
   parameter int LifeCycleOffset = 1992;
   parameter int LifeCycleSize = 56;
-  parameter int LcStateOffset = 1992;
-  parameter int LcStateSize = 24;
-  parameter int LcTransitionCntOffset = 2016;
+  parameter int LcTransitionCntOffset = 1992;
   parameter int LcTransitionCntSize = 32;
+  parameter int LcStateOffset = 2024;
+  parameter int LcStateSize = 24;
   parameter int NumAlerts = 2;
 
   // Address widths within the block
