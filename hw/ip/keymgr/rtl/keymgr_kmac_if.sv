@@ -260,6 +260,14 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   // immediately assert errors
   assign inputs_invalid_o = |inputs_invalid_d;
 
+  // Subtracting cnt from the last round in various modes. The only reason not to do this as part of
+  // the bit selects when assigning to kmac_data_o is to work around a Verilator bug (#1613). Maybe
+  // revert this once that's fixed and we depend on a Verilator version that contains the fix.
+  logic [CntWidth-1:0] adv_idx, id_idx, gen_idx;
+  assign adv_idx = LastAdvRound - cnt;
+  assign id_idx = LastIdRound - cnt;
+  assign gen_idx = LastGenRound - cnt;
+
   // The count is maintained as a downcount
   // so a subtract is necessary to send the right byte
   // alternatively we can also reverse the order of the input
@@ -269,11 +277,11 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     if (|cmd_error_o || inputs_invalid_o || fsm_error_o) begin
       kmac_data_o.data  = decoy_data;
     end else if (valid && adv_en_i) begin
-      kmac_data_o.data  = adv_data[LastAdvRound - cnt];
+      kmac_data_o.data  = adv_data[adv_idx];
     end else if (valid && id_en_i) begin
-      kmac_data_o.data  = id_data[LastIdRound - cnt];
+      kmac_data_o.data  = id_data[id_idx];
     end else if (valid && gen_en_i) begin
-      kmac_data_o.data  = gen_data[LastGenRound - cnt];
+      kmac_data_o.data  = gen_data[gen_idx];
     end
   end
 
