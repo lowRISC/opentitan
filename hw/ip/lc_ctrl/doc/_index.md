@@ -438,7 +438,7 @@ For all signals except ESCALATE_EN, it is recommended to structure the design su
 
 #### Key Manager Interface
 
-The `lc_keymgr_div_o` signal is a 64bit diversification constant that is output to the key manager once the life cycle controller has initialized, and is asserted at the same time as `lc_keymgr_en_o`.
+The `lc_keymgr_div_o` signal is a 128bit diversification constant that is output to the key manager once the life cycle controller has initialized, and is asserted at the same time as `lc_keymgr_en_o`.
 Depending on which group the life cycle state is in, this signal is assigned a different random netlist constant as defined in the table below.
 
 Life Cycle State Group     | Assigned Diversification Constant

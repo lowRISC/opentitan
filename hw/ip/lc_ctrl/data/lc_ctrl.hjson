@@ -32,19 +32,19 @@
     { name:      "RndCnstLcKeymgrDivInvalid",
       desc:      "Compile-time random bits for lc state group diversification value",
       type:      "lc_ctrl_pkg::lc_keymgr_div_t",
-      randcount: "64",
+      randcount: "128",
       randtype:  "data",
     }
     { name:      "RndCnstLcKeymgrDivTestDevRma",
       desc:      "Compile-time random bits for lc state group diversification value",
       type:      "lc_ctrl_pkg::lc_keymgr_div_t",
-      randcount: "64",
+      randcount: "128",
       randtype:  "data",
     }
     { name:      "RndCnstLcKeymgrDivProduction",
       desc:      "Compile-time random bits for lc state group diversification value",
       type:      "lc_ctrl_pkg::lc_keymgr_div_t",
-      randcount: "64",
+      randcount: "128",
       randtype:  "data",
     }
     // Regular parameters

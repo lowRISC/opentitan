@@ -312,7 +312,7 @@ module keymgr
   assign adv_matrix[Creator] = AdvDataWidth'({reg2hw.sw_binding,
                                               RndCnstRevisionSeed,
                                               otp_hw_cfg_i.data.device_id,
-                                              HealthStateWidth'(lc_keymgr_div_i),
+                                              lc_keymgr_div_i,
                                               creator_seed});
 
   logic unused_otp_bits;
