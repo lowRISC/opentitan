@@ -7,7 +7,7 @@
 
 module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
   input  clk_aon_i,
-  input  rst_slow_ni,
+  input  rst_aon_ni,
 
   input  cio_pwrb_in_i,
   input  cio_key0_in_i,
@@ -53,7 +53,7 @@ module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_pwrb_i_inv (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(key_invert_ctl_i.pwrb_in.q),
     .q_o(cfg_pwrb_i_inv)
   );
@@ -62,7 +62,7 @@ module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_key0_i_inv (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(key_invert_ctl_i.key0_in.q),
     .q_o(cfg_key0_i_inv)
   );
@@ -71,7 +71,7 @@ module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_key1_i_inv (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(key_invert_ctl_i.key1_in.q),
     .q_o(cfg_key1_i_inv)
   );
@@ -80,7 +80,7 @@ module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_key2_i_inv (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(key_invert_ctl_i.key2_in.q),
     .q_o(cfg_key2_i_inv)
   );
@@ -89,7 +89,7 @@ module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_ac_present_i_inv (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(key_invert_ctl_i.ac_present.q),
     .q_o(cfg_ac_present_i_inv)
   );
@@ -98,7 +98,7 @@ module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_pwrb_o_inv (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(key_invert_ctl_i.pwrb_out.q),
     .q_o(cfg_pwrb_o_inv)
   );
@@ -107,7 +107,7 @@ module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_key0_o_inv (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(key_invert_ctl_i.key0_out.q),
     .q_o(cfg_key0_o_inv)
   );
@@ -116,7 +116,7 @@ module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_key1_o_inv (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(key_invert_ctl_i.key1_out.q),
     .q_o(cfg_key1_o_inv)
   );
@@ -125,7 +125,7 @@ module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_key2_o_inv (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(key_invert_ctl_i.key2_out.q),
     .q_o(cfg_key2_o_inv)
   );
@@ -134,7 +134,7 @@ module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_bat_disable_o_inv (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(key_invert_ctl_i.bat_disable.q),
     .q_o(cfg_bat_disable_o_inv)
   );

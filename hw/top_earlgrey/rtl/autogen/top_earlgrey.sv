@@ -35,13 +35,13 @@ module top_earlgrey #(
   input               rst_ni,
 
   // Multiplexed I/O
-  input        [43:0] mio_in_i,
-  output logic [43:0] mio_out_o,
-  output logic [43:0] mio_oe_o,
+  input        [42:0] mio_in_i,
+  output logic [42:0] mio_out_o,
+  output logic [42:0] mio_oe_o,
   // Dedicated I/O
-  input        [20:0] dio_in_i,
-  output logic [20:0] dio_out_o,
-  output logic [20:0] dio_oe_o,
+  input        [21:0] dio_in_i,
+  output logic [21:0] dio_out_o,
+  output logic [21:0] dio_oe_o,
 
   // pad attributes to padring
   output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr_o,
@@ -116,12 +116,12 @@ module top_earlgrey #(
   import top_earlgrey_rnd_cnst_pkg::*;
 
   // Signals
-  logic [58:0] mio_p2d;
-  logic [62:0] mio_d2p;
-  logic [62:0] mio_en_d2p;
-  logic [20:0] dio_p2d;
-  logic [20:0] dio_d2p;
-  logic [20:0] dio_en_d2p;
+  logic [64:0] mio_p2d;
+  logic [67:0] mio_d2p;
+  logic [67:0] mio_en_d2p;
+  logic [21:0] dio_p2d;
+  logic [21:0] dio_d2p;
+  logic [21:0] dio_en_d2p;
   // uart0
   logic        cio_uart0_rx_p2d;
   logic        cio_uart0_tx_d2p;
@@ -222,6 +222,25 @@ module top_earlgrey #(
   // pwrmgr_aon
   // rstmgr_aon
   // clkmgr_aon
+  // sysrst_ctrl_aon
+  logic        cio_sysrst_ctrl_aon_ac_present_p2d;
+  logic        cio_sysrst_ctrl_aon_ec_rst_in_l_p2d;
+  logic        cio_sysrst_ctrl_aon_key0_in_p2d;
+  logic        cio_sysrst_ctrl_aon_key1_in_p2d;
+  logic        cio_sysrst_ctrl_aon_key2_in_p2d;
+  logic        cio_sysrst_ctrl_aon_pwrb_in_p2d;
+  logic        cio_sysrst_ctrl_aon_bat_disable_d2p;
+  logic        cio_sysrst_ctrl_aon_bat_disable_en_d2p;
+  logic        cio_sysrst_ctrl_aon_ec_rst_out_l_d2p;
+  logic        cio_sysrst_ctrl_aon_ec_rst_out_l_en_d2p;
+  logic        cio_sysrst_ctrl_aon_key0_out_d2p;
+  logic        cio_sysrst_ctrl_aon_key0_out_en_d2p;
+  logic        cio_sysrst_ctrl_aon_key1_out_d2p;
+  logic        cio_sysrst_ctrl_aon_key1_out_en_d2p;
+  logic        cio_sysrst_ctrl_aon_key2_out_d2p;
+  logic        cio_sysrst_ctrl_aon_key2_out_en_d2p;
+  logic        cio_sysrst_ctrl_aon_pwrb_out_d2p;
+  logic        cio_sysrst_ctrl_aon_pwrb_out_en_d2p;
   // adc_ctrl_aon
   // pinmux_aon
   // aon_timer_aon
@@ -250,7 +269,7 @@ module top_earlgrey #(
   // rom_ctrl
 
 
-  logic [177:0]  intr_vector;
+  logic [178:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -370,6 +389,7 @@ module top_earlgrey #(
   logic intr_alert_handler_classc;
   logic intr_alert_handler_classd;
   logic intr_pwrmgr_aon_wakeup;
+  logic intr_sysrst_ctrl_aon_sysrst_ctrl;
   logic intr_adc_ctrl_aon_debug_cable;
   logic intr_aon_timer_aon_wkup_timer_expired;
   logic intr_aon_timer_aon_wdog_timer_bark;
@@ -589,6 +609,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       sram_ctrl_ret_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       aon_timer_aon_tl_req;
   tlul_pkg::tl_d2h_t       aon_timer_aon_tl_rsp;
+  tlul_pkg::tl_h2d_t       sysrst_ctrl_aon_tl_req;
+  tlul_pkg::tl_d2h_t       sysrst_ctrl_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       adc_ctrl_aon_tl_req;
   tlul_pkg::tl_d2h_t       adc_ctrl_aon_tl_rsp;
   rstmgr_pkg::rstmgr_out_t       rstmgr_aon_resets;
@@ -1651,6 +1673,44 @@ module top_earlgrey #(
       .rst_io_div4_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel])
   );
 
+  sysrst_ctrl u_sysrst_ctrl_aon (
+
+      // Input
+      .cio_ac_present_i      (cio_sysrst_ctrl_aon_ac_present_p2d),
+      .cio_ec_rst_in_l_i     (cio_sysrst_ctrl_aon_ec_rst_in_l_p2d),
+      .cio_key0_in_i         (cio_sysrst_ctrl_aon_key0_in_p2d),
+      .cio_key1_in_i         (cio_sysrst_ctrl_aon_key1_in_p2d),
+      .cio_key2_in_i         (cio_sysrst_ctrl_aon_key2_in_p2d),
+      .cio_pwrb_in_i         (cio_sysrst_ctrl_aon_pwrb_in_p2d),
+
+      // Output
+      .cio_bat_disable_o     (cio_sysrst_ctrl_aon_bat_disable_d2p),
+      .cio_bat_disable_en_o  (cio_sysrst_ctrl_aon_bat_disable_en_d2p),
+      .cio_ec_rst_out_l_o    (cio_sysrst_ctrl_aon_ec_rst_out_l_d2p),
+      .cio_ec_rst_out_l_en_o (cio_sysrst_ctrl_aon_ec_rst_out_l_en_d2p),
+      .cio_key0_out_o        (cio_sysrst_ctrl_aon_key0_out_d2p),
+      .cio_key0_out_en_o     (cio_sysrst_ctrl_aon_key0_out_en_d2p),
+      .cio_key1_out_o        (cio_sysrst_ctrl_aon_key1_out_d2p),
+      .cio_key1_out_en_o     (cio_sysrst_ctrl_aon_key1_out_en_d2p),
+      .cio_key2_out_o        (cio_sysrst_ctrl_aon_key2_out_d2p),
+      .cio_key2_out_en_o     (cio_sysrst_ctrl_aon_key2_out_en_d2p),
+      .cio_pwrb_out_o        (cio_sysrst_ctrl_aon_pwrb_out_d2p),
+      .cio_pwrb_out_en_o     (cio_sysrst_ctrl_aon_pwrb_out_en_d2p),
+
+      // Interrupt
+      .intr_sysrst_ctrl_o (intr_sysrst_ctrl_aon_sysrst_ctrl),
+
+      // Inter-module signals
+      .tl_i(sysrst_ctrl_aon_tl_req),
+      .tl_o(sysrst_ctrl_aon_tl_rsp),
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
+      .clk_aon_i (clkmgr_aon_clocks.clk_aon_secure),
+      .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
+      .rst_aon_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel])
+  );
+
   adc_ctrl u_adc_ctrl_aon (
 
       // Interrupt
@@ -2207,153 +2267,154 @@ module top_earlgrey #(
 
   // interrupt assignments
   assign intr_vector = {
-      intr_otbn_done, // ID 146
-      intr_edn1_edn_fatal_err, // ID 145
-      intr_edn1_edn_cmd_req_done, // ID 144
-      intr_edn0_edn_fatal_err, // ID 143
-      intr_edn0_edn_cmd_req_done, // ID 142
-      intr_entropy_src_es_fatal_err, // ID 141
-      intr_entropy_src_es_health_test_failed, // ID 140
-      intr_entropy_src_es_entropy_valid, // ID 139
-      intr_csrng_cs_fatal_err, // ID 138
-      intr_csrng_cs_hw_inst_exc, // ID 137
-      intr_csrng_cs_entropy_req, // ID 136
-      intr_csrng_cs_cmd_req_done, // ID 135
-      intr_keymgr_op_done, // ID 134
-      intr_kmac_kmac_err, // ID 133
-      intr_kmac_fifo_empty, // ID 132
-      intr_kmac_kmac_done, // ID 131
-      intr_hmac_hmac_err, // ID 130
-      intr_hmac_fifo_empty, // ID 129
-      intr_hmac_hmac_done, // ID 128
-      intr_flash_ctrl_err, // ID 127
-      intr_flash_ctrl_op_done, // ID 126
-      intr_flash_ctrl_rd_lvl, // ID 125
-      intr_flash_ctrl_rd_full, // ID 124
-      intr_flash_ctrl_prog_lvl, // ID 123
-      intr_flash_ctrl_prog_empty, // ID 122
-      intr_aon_timer_aon_wdog_timer_bark, // ID 121
-      intr_aon_timer_aon_wkup_timer_expired, // ID 120
-      intr_adc_ctrl_aon_debug_cable, // ID 119
-      intr_pwrmgr_aon_wakeup, // ID 118
-      intr_alert_handler_classd, // ID 117
-      intr_alert_handler_classc, // ID 116
-      intr_alert_handler_classb, // ID 115
-      intr_alert_handler_classa, // ID 114
-      intr_otp_ctrl_otp_error, // ID 113
-      intr_otp_ctrl_otp_operation_done, // ID 112
-      intr_usbdev_link_out_err, // ID 111
-      intr_usbdev_connected, // ID 110
-      intr_usbdev_frame, // ID 109
-      intr_usbdev_rx_bitstuff_err, // ID 108
-      intr_usbdev_rx_pid_err, // ID 107
-      intr_usbdev_rx_crc_err, // ID 106
-      intr_usbdev_link_in_err, // ID 105
-      intr_usbdev_av_overflow, // ID 104
-      intr_usbdev_rx_full, // ID 103
-      intr_usbdev_av_empty, // ID 102
-      intr_usbdev_link_resume, // ID 101
-      intr_usbdev_link_suspend, // ID 100
-      intr_usbdev_link_reset, // ID 99
-      intr_usbdev_host_lost, // ID 98
-      intr_usbdev_disconnected, // ID 97
-      intr_usbdev_pkt_sent, // ID 96
-      intr_usbdev_pkt_received, // ID 95
-      intr_rv_timer_timer_expired_0_0, // ID 94
-      intr_pattgen_done_ch1, // ID 93
-      intr_pattgen_done_ch0, // ID 92
-      intr_i2c2_host_timeout, // ID 91
-      intr_i2c2_ack_stop, // ID 90
-      intr_i2c2_acq_overflow, // ID 89
-      intr_i2c2_tx_overflow, // ID 88
-      intr_i2c2_tx_nonempty, // ID 87
-      intr_i2c2_tx_empty, // ID 86
-      intr_i2c2_trans_complete, // ID 85
-      intr_i2c2_sda_unstable, // ID 84
-      intr_i2c2_stretch_timeout, // ID 83
-      intr_i2c2_sda_interference, // ID 82
-      intr_i2c2_scl_interference, // ID 81
-      intr_i2c2_nak, // ID 80
-      intr_i2c2_rx_overflow, // ID 79
-      intr_i2c2_fmt_overflow, // ID 78
-      intr_i2c2_rx_watermark, // ID 77
-      intr_i2c2_fmt_watermark, // ID 76
-      intr_i2c1_host_timeout, // ID 75
-      intr_i2c1_ack_stop, // ID 74
-      intr_i2c1_acq_overflow, // ID 73
-      intr_i2c1_tx_overflow, // ID 72
-      intr_i2c1_tx_nonempty, // ID 71
-      intr_i2c1_tx_empty, // ID 70
-      intr_i2c1_trans_complete, // ID 69
-      intr_i2c1_sda_unstable, // ID 68
-      intr_i2c1_stretch_timeout, // ID 67
-      intr_i2c1_sda_interference, // ID 66
-      intr_i2c1_scl_interference, // ID 65
-      intr_i2c1_nak, // ID 64
-      intr_i2c1_rx_overflow, // ID 63
-      intr_i2c1_fmt_overflow, // ID 62
-      intr_i2c1_rx_watermark, // ID 61
-      intr_i2c1_fmt_watermark, // ID 60
-      intr_i2c0_host_timeout, // ID 59
-      intr_i2c0_ack_stop, // ID 58
-      intr_i2c0_acq_overflow, // ID 57
-      intr_i2c0_tx_overflow, // ID 56
-      intr_i2c0_tx_nonempty, // ID 55
-      intr_i2c0_tx_empty, // ID 54
-      intr_i2c0_trans_complete, // ID 53
-      intr_i2c0_sda_unstable, // ID 52
-      intr_i2c0_stretch_timeout, // ID 51
-      intr_i2c0_sda_interference, // ID 50
-      intr_i2c0_scl_interference, // ID 49
-      intr_i2c0_nak, // ID 48
-      intr_i2c0_rx_overflow, // ID 47
-      intr_i2c0_fmt_overflow, // ID 46
-      intr_i2c0_rx_watermark, // ID 45
-      intr_i2c0_fmt_watermark, // ID 44
-      intr_spi_host1_spi_event, // ID 43
-      intr_spi_host1_error, // ID 42
-      intr_spi_host0_spi_event, // ID 41
-      intr_spi_host0_error, // ID 40
-      intr_spi_device_txunderflow, // ID 39
-      intr_spi_device_rxoverflow, // ID 38
-      intr_spi_device_rxerr, // ID 37
-      intr_spi_device_txlvl, // ID 36
-      intr_spi_device_rxlvl, // ID 35
-      intr_spi_device_rxf, // ID 34
-      intr_gpio_gpio, // ID 33
-      intr_uart3_rx_parity_err, // ID 32
-      intr_uart3_rx_timeout, // ID 31
-      intr_uart3_rx_break_err, // ID 30
-      intr_uart3_rx_frame_err, // ID 29
-      intr_uart3_rx_overflow, // ID 28
-      intr_uart3_tx_empty, // ID 27
-      intr_uart3_rx_watermark, // ID 26
-      intr_uart3_tx_watermark, // ID 25
-      intr_uart2_rx_parity_err, // ID 24
-      intr_uart2_rx_timeout, // ID 23
-      intr_uart2_rx_break_err, // ID 22
-      intr_uart2_rx_frame_err, // ID 21
-      intr_uart2_rx_overflow, // ID 20
-      intr_uart2_tx_empty, // ID 19
-      intr_uart2_rx_watermark, // ID 18
-      intr_uart2_tx_watermark, // ID 17
-      intr_uart1_rx_parity_err, // ID 16
-      intr_uart1_rx_timeout, // ID 15
-      intr_uart1_rx_break_err, // ID 14
-      intr_uart1_rx_frame_err, // ID 13
-      intr_uart1_rx_overflow, // ID 12
-      intr_uart1_tx_empty, // ID 11
-      intr_uart1_rx_watermark, // ID 10
-      intr_uart1_tx_watermark, // ID 9
-      intr_uart0_rx_parity_err, // ID 8
-      intr_uart0_rx_timeout, // ID 7
-      intr_uart0_rx_break_err, // ID 6
-      intr_uart0_rx_frame_err, // ID 5
-      intr_uart0_rx_overflow, // ID 4
-      intr_uart0_tx_empty, // ID 3
-      intr_uart0_rx_watermark, // ID 2
-      intr_uart0_tx_watermark, // ID 1
-      1'b 0 // ID 0 is a special case and tied to zero.
+      intr_otbn_done, // IDs [178 +: 1]
+      intr_edn1_edn_fatal_err, // IDs [177 +: 1]
+      intr_edn1_edn_cmd_req_done, // IDs [176 +: 1]
+      intr_edn0_edn_fatal_err, // IDs [175 +: 1]
+      intr_edn0_edn_cmd_req_done, // IDs [174 +: 1]
+      intr_entropy_src_es_fatal_err, // IDs [173 +: 1]
+      intr_entropy_src_es_health_test_failed, // IDs [172 +: 1]
+      intr_entropy_src_es_entropy_valid, // IDs [171 +: 1]
+      intr_csrng_cs_fatal_err, // IDs [170 +: 1]
+      intr_csrng_cs_hw_inst_exc, // IDs [169 +: 1]
+      intr_csrng_cs_entropy_req, // IDs [168 +: 1]
+      intr_csrng_cs_cmd_req_done, // IDs [167 +: 1]
+      intr_keymgr_op_done, // IDs [166 +: 1]
+      intr_kmac_kmac_err, // IDs [165 +: 1]
+      intr_kmac_fifo_empty, // IDs [164 +: 1]
+      intr_kmac_kmac_done, // IDs [163 +: 1]
+      intr_hmac_hmac_err, // IDs [162 +: 1]
+      intr_hmac_fifo_empty, // IDs [161 +: 1]
+      intr_hmac_hmac_done, // IDs [160 +: 1]
+      intr_flash_ctrl_err, // IDs [159 +: 1]
+      intr_flash_ctrl_op_done, // IDs [158 +: 1]
+      intr_flash_ctrl_rd_lvl, // IDs [157 +: 1]
+      intr_flash_ctrl_rd_full, // IDs [156 +: 1]
+      intr_flash_ctrl_prog_lvl, // IDs [155 +: 1]
+      intr_flash_ctrl_prog_empty, // IDs [154 +: 1]
+      intr_aon_timer_aon_wdog_timer_bark, // IDs [153 +: 1]
+      intr_aon_timer_aon_wkup_timer_expired, // IDs [152 +: 1]
+      intr_adc_ctrl_aon_debug_cable, // IDs [151 +: 1]
+      intr_sysrst_ctrl_aon_sysrst_ctrl, // IDs [150 +: 1]
+      intr_pwrmgr_aon_wakeup, // IDs [149 +: 1]
+      intr_alert_handler_classd, // IDs [148 +: 1]
+      intr_alert_handler_classc, // IDs [147 +: 1]
+      intr_alert_handler_classb, // IDs [146 +: 1]
+      intr_alert_handler_classa, // IDs [145 +: 1]
+      intr_otp_ctrl_otp_error, // IDs [144 +: 1]
+      intr_otp_ctrl_otp_operation_done, // IDs [143 +: 1]
+      intr_usbdev_link_out_err, // IDs [142 +: 1]
+      intr_usbdev_connected, // IDs [141 +: 1]
+      intr_usbdev_frame, // IDs [140 +: 1]
+      intr_usbdev_rx_bitstuff_err, // IDs [139 +: 1]
+      intr_usbdev_rx_pid_err, // IDs [138 +: 1]
+      intr_usbdev_rx_crc_err, // IDs [137 +: 1]
+      intr_usbdev_link_in_err, // IDs [136 +: 1]
+      intr_usbdev_av_overflow, // IDs [135 +: 1]
+      intr_usbdev_rx_full, // IDs [134 +: 1]
+      intr_usbdev_av_empty, // IDs [133 +: 1]
+      intr_usbdev_link_resume, // IDs [132 +: 1]
+      intr_usbdev_link_suspend, // IDs [131 +: 1]
+      intr_usbdev_link_reset, // IDs [130 +: 1]
+      intr_usbdev_host_lost, // IDs [129 +: 1]
+      intr_usbdev_disconnected, // IDs [128 +: 1]
+      intr_usbdev_pkt_sent, // IDs [127 +: 1]
+      intr_usbdev_pkt_received, // IDs [126 +: 1]
+      intr_rv_timer_timer_expired_0_0, // IDs [125 +: 1]
+      intr_pattgen_done_ch1, // IDs [124 +: 1]
+      intr_pattgen_done_ch0, // IDs [123 +: 1]
+      intr_i2c2_host_timeout, // IDs [122 +: 1]
+      intr_i2c2_ack_stop, // IDs [121 +: 1]
+      intr_i2c2_acq_overflow, // IDs [120 +: 1]
+      intr_i2c2_tx_overflow, // IDs [119 +: 1]
+      intr_i2c2_tx_nonempty, // IDs [118 +: 1]
+      intr_i2c2_tx_empty, // IDs [117 +: 1]
+      intr_i2c2_trans_complete, // IDs [116 +: 1]
+      intr_i2c2_sda_unstable, // IDs [115 +: 1]
+      intr_i2c2_stretch_timeout, // IDs [114 +: 1]
+      intr_i2c2_sda_interference, // IDs [113 +: 1]
+      intr_i2c2_scl_interference, // IDs [112 +: 1]
+      intr_i2c2_nak, // IDs [111 +: 1]
+      intr_i2c2_rx_overflow, // IDs [110 +: 1]
+      intr_i2c2_fmt_overflow, // IDs [109 +: 1]
+      intr_i2c2_rx_watermark, // IDs [108 +: 1]
+      intr_i2c2_fmt_watermark, // IDs [107 +: 1]
+      intr_i2c1_host_timeout, // IDs [106 +: 1]
+      intr_i2c1_ack_stop, // IDs [105 +: 1]
+      intr_i2c1_acq_overflow, // IDs [104 +: 1]
+      intr_i2c1_tx_overflow, // IDs [103 +: 1]
+      intr_i2c1_tx_nonempty, // IDs [102 +: 1]
+      intr_i2c1_tx_empty, // IDs [101 +: 1]
+      intr_i2c1_trans_complete, // IDs [100 +: 1]
+      intr_i2c1_sda_unstable, // IDs [99 +: 1]
+      intr_i2c1_stretch_timeout, // IDs [98 +: 1]
+      intr_i2c1_sda_interference, // IDs [97 +: 1]
+      intr_i2c1_scl_interference, // IDs [96 +: 1]
+      intr_i2c1_nak, // IDs [95 +: 1]
+      intr_i2c1_rx_overflow, // IDs [94 +: 1]
+      intr_i2c1_fmt_overflow, // IDs [93 +: 1]
+      intr_i2c1_rx_watermark, // IDs [92 +: 1]
+      intr_i2c1_fmt_watermark, // IDs [91 +: 1]
+      intr_i2c0_host_timeout, // IDs [90 +: 1]
+      intr_i2c0_ack_stop, // IDs [89 +: 1]
+      intr_i2c0_acq_overflow, // IDs [88 +: 1]
+      intr_i2c0_tx_overflow, // IDs [87 +: 1]
+      intr_i2c0_tx_nonempty, // IDs [86 +: 1]
+      intr_i2c0_tx_empty, // IDs [85 +: 1]
+      intr_i2c0_trans_complete, // IDs [84 +: 1]
+      intr_i2c0_sda_unstable, // IDs [83 +: 1]
+      intr_i2c0_stretch_timeout, // IDs [82 +: 1]
+      intr_i2c0_sda_interference, // IDs [81 +: 1]
+      intr_i2c0_scl_interference, // IDs [80 +: 1]
+      intr_i2c0_nak, // IDs [79 +: 1]
+      intr_i2c0_rx_overflow, // IDs [78 +: 1]
+      intr_i2c0_fmt_overflow, // IDs [77 +: 1]
+      intr_i2c0_rx_watermark, // IDs [76 +: 1]
+      intr_i2c0_fmt_watermark, // IDs [75 +: 1]
+      intr_spi_host1_spi_event, // IDs [74 +: 1]
+      intr_spi_host1_error, // IDs [73 +: 1]
+      intr_spi_host0_spi_event, // IDs [72 +: 1]
+      intr_spi_host0_error, // IDs [71 +: 1]
+      intr_spi_device_txunderflow, // IDs [70 +: 1]
+      intr_spi_device_rxoverflow, // IDs [69 +: 1]
+      intr_spi_device_rxerr, // IDs [68 +: 1]
+      intr_spi_device_txlvl, // IDs [67 +: 1]
+      intr_spi_device_rxlvl, // IDs [66 +: 1]
+      intr_spi_device_rxf, // IDs [65 +: 1]
+      intr_gpio_gpio, // IDs [33 +: 32]
+      intr_uart3_rx_parity_err, // IDs [32 +: 1]
+      intr_uart3_rx_timeout, // IDs [31 +: 1]
+      intr_uart3_rx_break_err, // IDs [30 +: 1]
+      intr_uart3_rx_frame_err, // IDs [29 +: 1]
+      intr_uart3_rx_overflow, // IDs [28 +: 1]
+      intr_uart3_tx_empty, // IDs [27 +: 1]
+      intr_uart3_rx_watermark, // IDs [26 +: 1]
+      intr_uart3_tx_watermark, // IDs [25 +: 1]
+      intr_uart2_rx_parity_err, // IDs [24 +: 1]
+      intr_uart2_rx_timeout, // IDs [23 +: 1]
+      intr_uart2_rx_break_err, // IDs [22 +: 1]
+      intr_uart2_rx_frame_err, // IDs [21 +: 1]
+      intr_uart2_rx_overflow, // IDs [20 +: 1]
+      intr_uart2_tx_empty, // IDs [19 +: 1]
+      intr_uart2_rx_watermark, // IDs [18 +: 1]
+      intr_uart2_tx_watermark, // IDs [17 +: 1]
+      intr_uart1_rx_parity_err, // IDs [16 +: 1]
+      intr_uart1_rx_timeout, // IDs [15 +: 1]
+      intr_uart1_rx_break_err, // IDs [14 +: 1]
+      intr_uart1_rx_frame_err, // IDs [13 +: 1]
+      intr_uart1_rx_overflow, // IDs [12 +: 1]
+      intr_uart1_tx_empty, // IDs [11 +: 1]
+      intr_uart1_rx_watermark, // IDs [10 +: 1]
+      intr_uart1_tx_watermark, // IDs [9 +: 1]
+      intr_uart0_rx_parity_err, // IDs [8 +: 1]
+      intr_uart0_rx_timeout, // IDs [7 +: 1]
+      intr_uart0_rx_break_err, // IDs [6 +: 1]
+      intr_uart0_rx_frame_err, // IDs [5 +: 1]
+      intr_uart0_rx_overflow, // IDs [4 +: 1]
+      intr_uart0_tx_empty, // IDs [3 +: 1]
+      intr_uart0_rx_watermark, // IDs [2 +: 1]
+      intr_uart0_tx_watermark, // IDs [1 +: 1]
+      1'b 0 // ID [0 +: 1] is a special case and tied to zero.
   };
 
   // TL-UL Crossbar
@@ -2562,6 +2623,10 @@ module top_earlgrey #(
     .tl_aon_timer_aon_o(aon_timer_aon_tl_req),
     .tl_aon_timer_aon_i(aon_timer_aon_tl_rsp),
 
+    // port: tl_sysrst_ctrl_aon
+    .tl_sysrst_ctrl_aon_o(sysrst_ctrl_aon_tl_req),
+    .tl_sysrst_ctrl_aon_i(sysrst_ctrl_aon_tl_rsp),
+
     // port: tl_adc_ctrl_aon
     .tl_adc_ctrl_aon_o(adc_ctrl_aon_tl_req),
     .tl_adc_ctrl_aon_i(adc_ctrl_aon_tl_rsp),
@@ -2635,6 +2700,12 @@ module top_earlgrey #(
   assign cio_sensor_ctrl_aon_ast_debug_in_p2d[7] = mio_p2d[MioInSensorCtrlAonAstDebugIn7];
   assign cio_sensor_ctrl_aon_ast_debug_in_p2d[8] = mio_p2d[MioInSensorCtrlAonAstDebugIn8];
   assign cio_sensor_ctrl_aon_ast_debug_in_p2d[9] = mio_p2d[MioInSensorCtrlAonAstDebugIn9];
+  assign cio_sysrst_ctrl_aon_ac_present_p2d = mio_p2d[MioInSysrstCtrlAonAcPresent];
+  assign cio_sysrst_ctrl_aon_ec_rst_in_l_p2d = mio_p2d[MioInSysrstCtrlAonEcRstInL];
+  assign cio_sysrst_ctrl_aon_key0_in_p2d = mio_p2d[MioInSysrstCtrlAonKey0In];
+  assign cio_sysrst_ctrl_aon_key1_in_p2d = mio_p2d[MioInSysrstCtrlAonKey1In];
+  assign cio_sysrst_ctrl_aon_key2_in_p2d = mio_p2d[MioInSysrstCtrlAonKey2In];
+  assign cio_sysrst_ctrl_aon_pwrb_in_p2d = mio_p2d[MioInSysrstCtrlAonPwrbIn];
 
   // All muxed outputs
   assign mio_d2p[MioOutGpioGpio0] = cio_gpio_gpio_d2p[0];
@@ -2700,6 +2771,11 @@ module top_earlgrey #(
   assign mio_d2p[MioOutSensorCtrlAonAstDebugOut7] = cio_sensor_ctrl_aon_ast_debug_out_d2p[7];
   assign mio_d2p[MioOutSensorCtrlAonAstDebugOut8] = cio_sensor_ctrl_aon_ast_debug_out_d2p[8];
   assign mio_d2p[MioOutSensorCtrlAonAstDebugOut9] = cio_sensor_ctrl_aon_ast_debug_out_d2p[9];
+  assign mio_d2p[MioOutSysrstCtrlAonBatDisable] = cio_sysrst_ctrl_aon_bat_disable_d2p;
+  assign mio_d2p[MioOutSysrstCtrlAonKey0Out] = cio_sysrst_ctrl_aon_key0_out_d2p;
+  assign mio_d2p[MioOutSysrstCtrlAonKey1Out] = cio_sysrst_ctrl_aon_key1_out_d2p;
+  assign mio_d2p[MioOutSysrstCtrlAonKey2Out] = cio_sysrst_ctrl_aon_key2_out_d2p;
+  assign mio_d2p[MioOutSysrstCtrlAonPwrbOut] = cio_sysrst_ctrl_aon_pwrb_out_d2p;
 
   // All muxed output enables
   assign mio_en_d2p[MioOutGpioGpio0] = cio_gpio_gpio_en_d2p[0];
@@ -2765,9 +2841,14 @@ module top_earlgrey #(
   assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut7] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[7];
   assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut8] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[8];
   assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut9] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[9];
+  assign mio_en_d2p[MioOutSysrstCtrlAonBatDisable] = cio_sysrst_ctrl_aon_bat_disable_en_d2p;
+  assign mio_en_d2p[MioOutSysrstCtrlAonKey0Out] = cio_sysrst_ctrl_aon_key0_out_en_d2p;
+  assign mio_en_d2p[MioOutSysrstCtrlAonKey1Out] = cio_sysrst_ctrl_aon_key1_out_en_d2p;
+  assign mio_en_d2p[MioOutSysrstCtrlAonKey2Out] = cio_sysrst_ctrl_aon_key2_out_en_d2p;
+  assign mio_en_d2p[MioOutSysrstCtrlAonPwrbOut] = cio_sysrst_ctrl_aon_pwrb_out_en_d2p;
 
   // All dedicated inputs
-  logic [20:0] unused_dio_p2d;
+  logic [21:0] unused_dio_p2d;
   assign cio_spi_host0_sd_p2d[0] = dio_p2d[DioSpiHost0Sd0];
   assign cio_spi_host0_sd_p2d[1] = dio_p2d[DioSpiHost0Sd1];
   assign cio_spi_host0_sd_p2d[2] = dio_p2d[DioSpiHost0Sd2];
@@ -2789,6 +2870,7 @@ module top_earlgrey #(
   assign unused_dio_p2d[4] = dio_p2d[DioUsbdevDnPullup];
   assign unused_dio_p2d[5] = dio_p2d[DioUsbdevTxModeSe];
   assign unused_dio_p2d[6] = dio_p2d[DioUsbdevSuspend];
+  assign unused_dio_p2d[7] = dio_p2d[DioSysrstCtrlAonEcRstOutL];
 
     // All dedicated outputs
   assign dio_d2p[DioSpiHost0Sd0] = cio_spi_host0_sd_d2p[0];
@@ -2812,6 +2894,7 @@ module top_earlgrey #(
   assign dio_d2p[DioUsbdevDnPullup] = cio_usbdev_dn_pullup_d2p;
   assign dio_d2p[DioUsbdevTxModeSe] = cio_usbdev_tx_mode_se_d2p;
   assign dio_d2p[DioUsbdevSuspend] = cio_usbdev_suspend_d2p;
+  assign dio_d2p[DioSysrstCtrlAonEcRstOutL] = cio_sysrst_ctrl_aon_ec_rst_out_l_d2p;
 
   // All dedicated output enables
   assign dio_en_d2p[DioSpiHost0Sd0] = cio_spi_host0_sd_en_d2p[0];
@@ -2835,6 +2918,7 @@ module top_earlgrey #(
   assign dio_en_d2p[DioUsbdevDnPullup] = cio_usbdev_dn_pullup_en_d2p;
   assign dio_en_d2p[DioUsbdevTxModeSe] = cio_usbdev_tx_mode_se_en_d2p;
   assign dio_en_d2p[DioUsbdevSuspend] = cio_usbdev_suspend_en_d2p;
+  assign dio_en_d2p[DioSysrstCtrlAonEcRstOutL] = cio_sysrst_ctrl_aon_ec_rst_out_l_en_d2p;
 
 
   // make sure scanmode_i is never X (including during reset)

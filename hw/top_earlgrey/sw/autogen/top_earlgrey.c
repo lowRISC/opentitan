@@ -11,7 +11,7 @@
  * `top_earlgrey_plic_peripheral_t`.
  */
 const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[178] = {
+    top_earlgrey_plic_interrupt_for_peripheral[179] = {
   [kTopEarlgreyPlicIrqIdNone] = kTopEarlgreyPlicPeripheralUnknown,
   [kTopEarlgreyPlicIrqIdUart0TxWatermark] = kTopEarlgreyPlicPeripheralUart0,
   [kTopEarlgreyPlicIrqIdUart0RxWatermark] = kTopEarlgreyPlicPeripheralUart0,
@@ -162,6 +162,7 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdAlertHandlerClassc] = kTopEarlgreyPlicPeripheralAlertHandler,
   [kTopEarlgreyPlicIrqIdAlertHandlerClassd] = kTopEarlgreyPlicPeripheralAlertHandler,
   [kTopEarlgreyPlicIrqIdPwrmgrAonWakeup] = kTopEarlgreyPlicPeripheralPwrmgrAon,
+  [kTopEarlgreyPlicIrqIdSysrstCtrlAonSysrstCtrl] = kTopEarlgreyPlicPeripheralSysrstCtrlAon,
   [kTopEarlgreyPlicIrqIdAdcCtrlAonDebugCable] = kTopEarlgreyPlicPeripheralAdcCtrlAon,
   [kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired] = kTopEarlgreyPlicPeripheralAonTimerAon,
   [kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark] = kTopEarlgreyPlicPeripheralAonTimerAon,

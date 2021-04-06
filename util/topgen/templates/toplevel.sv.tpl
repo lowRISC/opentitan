@@ -708,11 +708,13 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 
 % endfor
   // interrupt assignments
+<% base = interrupt_num %>\
   assign intr_vector = {
-  % for k, intr in enumerate(top["interrupt"][::-1]):
-      intr_${intr["name"]}, // ID ${len(top["interrupt"])-k}
+  % for intr in top["interrupt"][::-1]:
+<% base -= intr["width"] %>\
+      intr_${intr["name"]}, // IDs [${base} +: ${intr['width']}]
   % endfor
-      1'b 0 // ID 0 is a special case and tied to zero.
+      1'b 0 // ID [0 +: 1] is a special case and tied to zero.
   };
 
   // TL-UL Crossbar

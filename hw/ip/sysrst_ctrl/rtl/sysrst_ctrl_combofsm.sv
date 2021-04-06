@@ -9,7 +9,7 @@ module sysrst_ctrl_combofsm #(
   parameter int unsigned TIMER2BIT = 32
   ) (
   input                clk_aon_i,
-  input                rst_slow_ni,
+  input                rst_aon_ni,
   input                trigger_h_i,//input vector is all "1"
   input                trigger_l_i,//input vector is all "0"
   input [TIMER1BIT-1:0] cfg_timer1_i,//debounce
@@ -27,16 +27,16 @@ module sysrst_ctrl_combofsm #(
   logic [TIMER2BIT-1:0] timer2_cnt_d, timer2_cnt_q;
   logic timer2_cnt_clr, timer2_cnt_en;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_trigger_h_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_trigger_h_reg
+    if (!rst_aon_ni) begin
       trigger_h_q    <= 1'b0;
     end else begin
       trigger_h_q    <= trigger_h_i;
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_trigger_l_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_trigger_l_reg
+    if (!rst_aon_ni) begin
       trigger_l_q    <= 1'b0;
     end else begin
       trigger_l_q    <= trigger_l_i;
@@ -65,8 +65,8 @@ module sysrst_ctrl_combofsm #(
 
   timer_state_e timer_state_q, timer_state_d;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_timer_state_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_timer_state_reg
+    if (!rst_aon_ni) begin
       timer_state_q    <= IDLE;
     end else begin
       timer_state_q    <= timer_state_d;
@@ -76,8 +76,8 @@ module sysrst_ctrl_combofsm #(
   assign timer1_cnt_d = (timer1_cnt_en) ? timer1_cnt_q + 1'b1 : timer1_cnt_q;
   assign timer2_cnt_d = (timer2_cnt_en) ? timer2_cnt_q + 1'b1 : timer2_cnt_q;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_timer1_cnt_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_timer1_cnt_reg
+    if (!rst_aon_ni) begin
       timer1_cnt_q    <= '0;
     end
     else if (timer1_cnt_clr) begin
@@ -87,8 +87,8 @@ module sysrst_ctrl_combofsm #(
     end
   end
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_timer2_cnt_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_timer2_cnt_reg
+    if (!rst_aon_ni) begin
       timer2_cnt_q    <= '0;
     end
     else if (timer2_cnt_clr) begin

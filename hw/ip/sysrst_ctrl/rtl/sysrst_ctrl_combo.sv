@@ -6,7 +6,7 @@
 //
 module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
   input  clk_aon_i,
-  input  rst_slow_ni,
+  input  rst_aon_ni,
   input  clk_i,
   input  rst_ni,
 
@@ -15,7 +15,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
   input  key1_int,
   input  key2_int,
   input  ac_present_int,
-  input  cio_ec_rst_l_i,
+  input  cio_ec_rst_in_l_i,
 
   input  sysrst_ctrl_reg2hw_ec_rst_ctl_reg_t ec_rst_ctl_i,
   input  sysrst_ctrl_reg2hw_key_intr_debounce_ctl_reg_t key_intr_debounce_ctl_i,
@@ -76,8 +76,8 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_ec_rst_l_int_i (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
-    .d_i(cio_ec_rst_l_i),
+    .rst_ni(rst_aon_ni),
+    .d_i(cio_ec_rst_in_l_i),
     .q_o(ec_rst_l_int_i)
   );
 
@@ -87,7 +87,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_com_sel_key0 (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(com_sel_ctl_i[k].key0_in_sel.q),
     .q_o(cfg_key0_in_sel_com[k])
   );
@@ -96,7 +96,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_com_sel_key1 (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(com_sel_ctl_i[k].key1_in_sel.q),
     .q_o(cfg_key1_in_sel_com[k])
   );
@@ -105,7 +105,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_com_sel_key2 (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(com_sel_ctl_i[k].key2_in_sel.q),
     .q_o(cfg_key2_in_sel_com[k])
   );
@@ -114,7 +114,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_com_sel_pwrb (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(com_sel_ctl_i[k].pwrb_in_sel.q),
     .q_o(cfg_pwrb_in_sel_com[k])
   );
@@ -123,7 +123,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_com_sel_ac_present (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(com_sel_ctl_i[k].ac_present_sel.q),
     .q_o(cfg_ac_present_sel_com[k])
   );
@@ -142,15 +142,15 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .wdepth_o  (),
 
     .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_slow_ni),
+    .rst_rd_ni (rst_aon_ni),
     .rvalid_o  (load_combo_timer[k]),
     .rready_i  (1'b1),
     .rdata_o   (cfg_combo_timer_d[k]),
     .rdepth_o  ()
   );
 
-    always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_cfg_combo_timer_reg
-      if (!rst_slow_ni) begin
+    always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_cfg_combo_timer_reg
+      if (!rst_aon_ni) begin
         cfg_combo_timer[k]    <= '0;
       end else if (load_combo_timer[k]) begin
         cfg_combo_timer[k]    <= cfg_combo_timer_d[k];
@@ -170,15 +170,15 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .wdepth_o  (),
 
     .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_slow_ni),
+    .rst_rd_ni (rst_aon_ni),
     .rvalid_o  (load_debounce_timer),
     .rready_i  (1'b1),
     .rdata_o   (cfg_debounce_timer_d),
     .rdepth_o  ()
   );
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_cfg_debounce_timer_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_cfg_debounce_timer_reg
+    if (!rst_aon_ni) begin
       cfg_debounce_timer    <= '0;
     end else if (load_debounce_timer) begin
       cfg_debounce_timer    <= cfg_debounce_timer_d;
@@ -190,7 +190,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_com_bat_disable (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(com_out_ctl_i[k].bat_disable.q),
     .q_o(cfg_bat_disable_com[k])
   );
@@ -199,7 +199,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_com_intr (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(com_out_ctl_i[k].interrupt.q),
     .q_o(cfg_intr_com[k])
   );
@@ -208,7 +208,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_com_ec_rst (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(com_out_ctl_i[k].ec_rst.q),
     .q_o(cfg_ec_rst_com[k])
   );
@@ -217,7 +217,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_com_gsc_rst (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(com_out_ctl_i[k].gsc_rst.q),
     .q_o(cfg_gsc_rst_com[k])
   );
@@ -228,7 +228,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_pwrb_int_i (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pwrb_int),
     .q_o(pwrb_int_i)
   );
@@ -237,7 +237,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_key0_int_i (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(key0_int),
     .q_o(key0_int_i)
   );
@@ -246,7 +246,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_key1_int_i (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(key1_int),
     .q_o(key1_int_i)
   );
@@ -255,7 +255,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_key2_int_i (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(key2_int),
     .q_o(key2_int_i)
   );
@@ -264,7 +264,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_ac_present_int_i (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(ac_present_int),
     .q_o(ac_present_int_i)
   );
@@ -297,7 +297,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
       .TIMER2BIT(32)
     ) i_combo_fsm (
       .clk_aon_i(clk_aon_i),
-      .rst_slow_ni(rst_slow_ni),
+      .rst_aon_ni(rst_aon_ni),
       .trigger_h_i(trigger_h[k]),
       .trigger_l_i(trigger_l[k]),
       .cfg_timer1_i(cfg_debounce_timer),
@@ -311,7 +311,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
   for (genvar k = 0 ; k < NumCombo ; k++) begin : gen_combo_act
     sysrst_ctrl_comboact i_combo_act (
       .clk_aon_i(clk_aon_i),
-      .rst_slow_ni(rst_slow_ni),
+      .rst_aon_ni(rst_aon_ni),
       .clk_i(clk_i),
       .rst_ni(rst_ni),
       .cfg_intr_en(cfg_intr_com[k]),
@@ -340,7 +340,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
   prim_pulse_sync i_combo0_intr (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_slow_ni),
+    .rst_src_ni  (rst_aon_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (combo_intr_pulse[0]),
     .dst_pulse_o (combo0_h2l_intr)
@@ -351,7 +351,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
   prim_pulse_sync i_combo1_intr (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_slow_ni),
+    .rst_src_ni  (rst_aon_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (combo_intr_pulse[1]),
     .dst_pulse_o (combo1_h2l_intr)
@@ -362,7 +362,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
   prim_pulse_sync i_combo2_intr (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_slow_ni),
+    .rst_src_ni  (rst_aon_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (combo_intr_pulse[2]),
     .dst_pulse_o (combo2_h2l_intr)
@@ -373,7 +373,7 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
   prim_pulse_sync i_combo3_intr (
     .clk_src_i   (clk_aon_i),
     .clk_dst_i   (clk_i),
-    .rst_src_ni  (rst_slow_ni),
+    .rst_src_ni  (rst_aon_ni),
     .rst_dst_ni  (rst_ni),
     .src_pulse_i (combo_intr_pulse[3]),
     .dst_pulse_o (combo3_h2l_intr)

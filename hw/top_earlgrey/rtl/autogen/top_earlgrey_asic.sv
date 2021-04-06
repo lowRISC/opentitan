@@ -34,6 +34,7 @@ module top_earlgrey_asic (
   inout FLASH_TEST_MODE2, // Manual Pad
   inout FLASH_TEST_MODE3, // Manual Pad
   inout FLASH_TEST_VOLT, // Manual Pad
+  inout IOR8, // Dedicated Pad for sysrst_ctrl_aon_ec_rst_out_l
 
   // Muxed Pads
   inout IOA0, // MIO Pad 0
@@ -74,12 +75,11 @@ module top_earlgrey_asic (
   inout IOR5, // MIO Pad 35
   inout IOR6, // MIO Pad 36
   inout IOR7, // MIO Pad 37
-  inout IOR8, // MIO Pad 38
-  inout IOR9, // MIO Pad 39
-  inout IOR10, // MIO Pad 40
-  inout IOR11, // MIO Pad 41
-  inout IOR12, // MIO Pad 42
-  inout IOR13  // MIO Pad 43
+  inout IOR9, // MIO Pad 38
+  inout IOR10, // MIO Pad 39
+  inout IOR11, // MIO Pad 40
+  inout IOR12, // MIO Pad 41
+  inout IOR13  // MIO Pad 42
 );
 
   import top_earlgrey_pkg::*;
@@ -93,11 +93,11 @@ module top_earlgrey_asic (
   parameter int Tap1PadIdx = 23;
   parameter int Dft0PadIdx = 21;
   parameter int Dft1PadIdx = 22;
-  parameter int TckPadIdx = 55;
-  parameter int TmsPadIdx = 56;
+  parameter int TckPadIdx = 54;
+  parameter int TmsPadIdx = 55;
   parameter int TrstNPadIdx = 18;
-  parameter int TdiPadIdx = 48;
-  parameter int TdoPadIdx = 49;
+  parameter int TdiPadIdx = 47;
+  parameter int TdoPadIdx = 48;
 
   // TODO: this is temporary and will be removed in the future.
   // This specifies the tie-off values of the muxed MIO/DIOs
@@ -174,12 +174,13 @@ module top_earlgrey_asic (
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(22),
-    .NMioPads(44),
+    .NDioPads(23),
+    .NMioPads(43),
     // TODO: need to add ScanRole parameters
     .PhysicalPads(1),
     .NIoBanks(IoBankCount),
     .DioPadBank ({
+      IoBankVcc, // IOR8
       IoBankVcc, // FLASH_TEST_VOLT
       IoBankVcc, // FLASH_TEST_MODE3
       IoBankVcc, // FLASH_TEST_MODE2
@@ -209,7 +210,6 @@ module top_earlgrey_asic (
       IoBankVcc, // IOR11
       IoBankVcc, // IOR10
       IoBankVcc, // IOR9
-      IoBankVcc, // IOR8
       IoBankVcc, // IOR7
       IoBankVcc, // IOR6
       IoBankVcc, // IOR5
@@ -250,6 +250,7 @@ module top_earlgrey_asic (
       IoBankVioa  // IOA0
     }),
     .DioPadType ({
+      BidirOd, // IOR8
       InputStd, // FLASH_TEST_VOLT
       InputStd, // FLASH_TEST_MODE3
       InputStd, // FLASH_TEST_MODE2
@@ -279,7 +280,6 @@ module top_earlgrey_asic (
       BidirOd, // IOR11
       BidirOd, // IOR10
       BidirOd, // IOR9
-      BidirOd, // IOR8
       InputStd, // IOR7
       InputStd, // IOR6
       InputStd, // IOR5
@@ -329,6 +329,7 @@ module top_earlgrey_asic (
     .mio_in_raw_o ( ),
     // Chip IOs
     .dio_pad_io ({
+      IOR8,
       FLASH_TEST_VOLT,
       FLASH_TEST_MODE3,
       FLASH_TEST_MODE2,
@@ -359,7 +360,6 @@ module top_earlgrey_asic (
       IOR11,
       IOR10,
       IOR9,
-      IOR8,
       IOR7,
       IOR6,
       IOR5,
@@ -402,6 +402,7 @@ module top_earlgrey_asic (
 
     // Core-facing
     .dio_in_o ({
+        dio_in[DioSysrstCtrlAonEcRstOutL],
         manual_in_flash_test_volt,
         manual_in_flash_test_mode3,
         manual_in_flash_test_mode2,
@@ -426,6 +427,7 @@ module top_earlgrey_asic (
         manual_in_por_n
       }),
     .dio_out_i ({
+        dio_out[DioSysrstCtrlAonEcRstOutL],
         manual_out_flash_test_volt,
         manual_out_flash_test_mode3,
         manual_out_flash_test_mode2,
@@ -450,6 +452,7 @@ module top_earlgrey_asic (
         manual_out_por_n
       }),
     .dio_oe_i ({
+        dio_oe[DioSysrstCtrlAonEcRstOutL],
         manual_oe_flash_test_volt,
         manual_oe_flash_test_mode3,
         manual_oe_flash_test_mode2,
@@ -474,6 +477,7 @@ module top_earlgrey_asic (
         manual_oe_por_n
       }),
     .dio_attr_i ({
+        dio_attr[DioSysrstCtrlAonEcRstOutL],
         manual_attr_flash_test_volt,
         manual_attr_flash_test_mode3,
         manual_attr_flash_test_mode2,
@@ -499,7 +503,6 @@ module top_earlgrey_asic (
       }),
 
     .mio_in_o ({
-        mio_in[43],
         mio_in[42],
         mio_in[41],
         mio_in[40],
@@ -545,7 +548,6 @@ module top_earlgrey_asic (
         mio_in[0]
       }),
     .mio_out_i ({
-        mio_out[43],
         mio_out[42],
         mio_out[41],
         mio_out[40],
@@ -591,7 +593,6 @@ module top_earlgrey_asic (
         mio_out[0]
       }),
     .mio_oe_i ({
-        mio_oe[43],
         mio_oe[42],
         mio_oe[41],
         mio_oe[40],
@@ -637,7 +638,6 @@ module top_earlgrey_asic (
         mio_oe[0]
       }),
     .mio_attr_i ({
-        mio_attr[43],
         mio_attr[42],
         mio_attr[41],
         mio_attr[40],

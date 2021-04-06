@@ -7,7 +7,7 @@
 
 module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   input  clk_aon_i,
-  input  rst_slow_ni,
+  input  rst_aon_ni,
   input  clk_i,
   input  rst_ni,
 
@@ -16,7 +16,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   input  cio_key1_in_i,
   input  cio_key2_in_i,
   input  cio_ac_present_i,
-  input  cio_ec_rst_l_i,
+  input  cio_ec_rst_in_l_i,
 
   input  pwrb_out_hw,
   input  key0_out_hw,
@@ -36,7 +36,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   output key1_out_int,
   output key2_out_int,
   output bat_disable_int,
-  output cio_ec_rst_l_o
+  output cio_ec_rst_out_l_o
 
 );
 
@@ -89,7 +89,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   ) i_cfg_ec_rst_l_i_pin (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d_i(cio_ec_rst_l_i),
+    .d_i(cio_ec_rst_in_l_i),
     .q_o(cfg_ec_rst_l_i_pin)
   );
 
@@ -150,7 +150,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_bat_disable_0_allow (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.bat_disable_0.q),
     .q_o(cfg_bat_disable_0_allow)
   );
@@ -160,7 +160,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue(1'b1)//ec_rst_l_0_allow is enabled by default
   ) i_cfg_ec_rst_l_0_allow (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.ec_rst_l_0.q),
     .q_o(cfg_ec_rst_l_0_allow)
   );
@@ -170,7 +170,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_pwrb_out_0_allow (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.pwrb_out_0.q),
     .q_o(cfg_pwrb_out_0_allow)
   );
@@ -180,7 +180,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_key0_out_0_allow (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.key0_out_0.q),
     .q_o(cfg_key0_out_0_allow)
   );
@@ -190,7 +190,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_key1_out_0_allow (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.key1_out_0.q),
     .q_o(cfg_key1_out_0_allow)
   );
@@ -200,7 +200,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_key2_out_0_allow (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.key2_out_0.q),
     .q_o(cfg_key2_out_0_allow)
   );
@@ -210,7 +210,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_bat_disable_1_allow (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.bat_disable_1.q),
     .q_o(cfg_bat_disable_1_allow)
   );
@@ -220,7 +220,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_ec_rst_l_1_allow (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.ec_rst_l_1.q),
     .q_o(cfg_ec_rst_l_1_allow)
   );
@@ -230,7 +230,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_pwrb_out_1_allow (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.pwrb_out_1.q),
     .q_o(cfg_pwrb_out_1_allow)
   );
@@ -240,7 +240,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_key0_out_1_allow (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.key0_out_1.q),
     .q_o(cfg_key0_out_1_allow)
   );
@@ -250,7 +250,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_key1_out_1_allow (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.key1_out_1.q),
     .q_o(cfg_key1_out_1_allow)
   );
@@ -260,7 +260,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_key2_out_1_allow (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.key2_out_1.q),
     .q_o(cfg_key2_out_1_allow)
   );
@@ -270,7 +270,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_bat_disable_ov (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_out_ctl_i.bat_disable.q),
     .q_o(cfg_bat_disable_ov)
   );
@@ -280,7 +280,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue(1'b1)//ec_rst_l override is enabled by default
   ) i_cfg_ec_rst_l_ov (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_out_ctl_i.ec_rst_l.q),
     .q_o(cfg_ec_rst_l_ov)
   );
@@ -290,7 +290,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_pwrb_out_ov (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_out_ctl_i.pwrb_out.q),
     .q_o(cfg_pwrb_out_ov)
   );
@@ -300,7 +300,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_key0_out_ov (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_out_ctl_i.key0_out.q),
     .q_o(cfg_key0_out_ov)
   );
@@ -310,7 +310,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_key1_out_ov (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_out_ctl_i.key1_out.q),
     .q_o(cfg_key1_out_ov)
   );
@@ -320,7 +320,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_key2_out_ov (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_out_ctl_i.key2_out.q),
     .q_o(cfg_key2_out_ov)
   );
@@ -330,7 +330,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_bat_disable_q (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_out_value_i.bat_disable.q),
     .q_o(cfg_bat_disable_q)
   );
@@ -340,7 +340,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_ec_rst_l_q (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_out_value_i.ec_rst_l.q),
     .q_o(cfg_ec_rst_l_q)
   );
@@ -350,7 +350,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_pwrb_out_q (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_out_value_i.pwrb_out.q),
     .q_o(cfg_pwrb_out_q)
   );
@@ -360,7 +360,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_key0_out_q (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_out_value_i.key0_out.q),
     .q_o(cfg_key0_out_q)
   );
@@ -370,7 +370,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_key1_out_q (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_out_value_i.key1_out.q),
     .q_o(cfg_key1_out_q)
   );
@@ -380,7 +380,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .ResetValue('0)
   ) i_cfg_key2_out_q (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pin_out_value_i.key2_out.q),
     .q_o(cfg_key2_out_q)
   );
@@ -402,7 +402,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
           ((cfg_bat_disable_ov && cfg_bat_disable_1_allow && cfg_bat_disable_q) ? 1'b1 :
           bat_disable_hw);
 
-  assign cio_ec_rst_l_o = (cfg_ec_rst_l_ov && cfg_ec_rst_l_0_allow && !cfg_ec_rst_l_q) ? 1'b0 :
+  assign cio_ec_rst_out_l_o = (cfg_ec_rst_l_ov && cfg_ec_rst_l_0_allow && !cfg_ec_rst_l_q) ? 1'b0 :
                ((cfg_ec_rst_l_ov && cfg_ec_rst_l_1_allow && cfg_ec_rst_l_q) ? 1'b1 : ec_rst_l_hw);
 
 endmodule

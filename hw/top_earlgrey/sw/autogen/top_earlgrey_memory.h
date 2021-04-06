@@ -202,6 +202,13 @@
  */
 #define TOP_EARLGREY_CLKMGR_AON_BASE_ADDR 0x40420000
 /**
+ * Peripheral base address for sysrst_ctrl_aon in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR 0x40430000
+/**
  * Peripheral base address for adc_ctrl_aon in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped

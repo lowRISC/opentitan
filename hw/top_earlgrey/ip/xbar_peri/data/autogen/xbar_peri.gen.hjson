@@ -54,6 +54,7 @@
       sram_ctrl_ret_aon
       aon_timer_aon
       adc_ctrl_aon
+      sysrst_ctrl_aon
     ]
   }
   nodes:
@@ -512,6 +513,24 @@
       [
         {
           base_addr: 0x40470000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline_byp: "true"
+    }
+    {
+      name: sysrst_ctrl_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: "false"
+      inst_type: sysrst_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x40430000
           size_byte: 0x1000
         }
       ]

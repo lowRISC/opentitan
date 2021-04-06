@@ -423,7 +423,7 @@ package sysrst_ctrl_reg_pkg;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] SYSRST_CTRL_INTR_TEST_RESVAL = 1'h 0;
-  parameter logic [0:0] SYSRST_CTRL_INTR_TEST_SYSRST_CTRL_COMMON_RESVAL = 1'h 0;
+  parameter logic [0:0] SYSRST_CTRL_INTR_TEST_SYSRST_CTRL_RESVAL = 1'h 0;
 
   // Register index
   typedef enum int {

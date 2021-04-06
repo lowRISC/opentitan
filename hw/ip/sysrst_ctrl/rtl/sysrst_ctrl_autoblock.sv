@@ -6,7 +6,7 @@
 
 module sysrst_ctrl_autoblock import sysrst_ctrl_reg_pkg::*; (
   input  clk_aon_i,
-  input  rst_slow_ni,
+  input  rst_aon_ni,
   input  clk_i,
   input  rst_ni,
 
@@ -47,7 +47,7 @@ module sysrst_ctrl_autoblock import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_auto_block_en (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(auto_block_debounce_ctl_i.auto_block_enable.q),
     .q_o(cfg_auto_block_en)
   );
@@ -66,15 +66,15 @@ module sysrst_ctrl_autoblock import sysrst_ctrl_reg_pkg::*; (
     .wdepth_o  (),
 
     .clk_rd_i  (clk_aon_i),
-    .rst_rd_ni (rst_slow_ni),
+    .rst_rd_ni (rst_aon_ni),
     .rvalid_o  (load_auto_block_timer),
     .rready_i  (1'b1),
     .rdata_o   (cfg_auto_block_timer_d),
     .rdepth_o  ()
   );
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_cfg_auto_block_timer_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_cfg_auto_block_timer_reg
+    if (!rst_aon_ni) begin
       cfg_auto_block_timer    <= '0;
     end else if (load_auto_block_timer) begin
       cfg_auto_block_timer    <= cfg_auto_block_timer_d;
@@ -85,7 +85,7 @@ module sysrst_ctrl_autoblock import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_key0_o_sel (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(auto_block_out_ctl_i.key0_out_sel.q),
     .q_o(cfg_key0_o_sel)
   );
@@ -94,7 +94,7 @@ module sysrst_ctrl_autoblock import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_key1_o_sel (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(auto_block_out_ctl_i.key1_out_sel.q),
     .q_o(cfg_key1_o_sel)
   );
@@ -103,7 +103,7 @@ module sysrst_ctrl_autoblock import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_key2_o_sel (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(auto_block_out_ctl_i.key2_out_sel.q),
     .q_o(cfg_key2_o_sel)
   );
@@ -112,7 +112,7 @@ module sysrst_ctrl_autoblock import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_key0_o_q (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(auto_block_out_ctl_i.key0_out_value.q),
     .q_o(cfg_key0_o_q)
   );
@@ -121,7 +121,7 @@ module sysrst_ctrl_autoblock import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_key1_o_q (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(auto_block_out_ctl_i.key1_out_value.q),
     .q_o(cfg_key1_o_q)
   );
@@ -130,7 +130,7 @@ module sysrst_ctrl_autoblock import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_cfg_key2_o_q (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(auto_block_out_ctl_i.key2_out_value.q),
     .q_o(cfg_key2_o_q)
   );
@@ -140,7 +140,7 @@ module sysrst_ctrl_autoblock import sysrst_ctrl_reg_pkg::*; (
     .Width(1)
   ) i_pwrb_in_i (
     .clk_i(clk_aon_i),
-    .rst_ni(rst_slow_ni),
+    .rst_ni(rst_aon_ni),
     .d_i(pwrb_int),
     .q_o(pwrb_int_i)
   );
@@ -149,7 +149,7 @@ module sysrst_ctrl_autoblock import sysrst_ctrl_reg_pkg::*; (
     .TIMERBIT(16)
   ) i_ab_fsm (
     .clk_aon_i(clk_aon_i),
-    .rst_slow_ni(rst_slow_ni),
+    .rst_aon_ni(rst_aon_ni),
     .trigger_i(pwrb_int_i),
     .cfg_timer_i(cfg_auto_block_timer),
     .cfg_l2h_en_i(1'b0),

@@ -83,11 +83,11 @@ module top_earlgrey_nexysvideo #(
   parameter int Tap1PadIdx = 16;
   parameter int Dft0PadIdx = 21;
   parameter int Dft1PadIdx = 22;
-  parameter int TckPadIdx = 55;
-  parameter int TmsPadIdx = 56;
+  parameter int TckPadIdx = 54;
+  parameter int TmsPadIdx = 55;
   parameter int TrstNPadIdx = 18;
-  parameter int TdiPadIdx = 48;
-  parameter int TdoPadIdx = 49;
+  parameter int TdiPadIdx = 47;
+  parameter int TdoPadIdx = 48;
 
   // TODO: this is temporary and will be removed in the future.
   // This specifies the tie-off values of the muxed MIO/DIOs
@@ -203,18 +203,18 @@ module top_earlgrey_nexysvideo #(
   assign unused_sig[58] = mio_out[36] ^ mio_oe[36];
   assign mio_in[37] = 1'b0;
   assign unused_sig[59] = mio_out[37] ^ mio_oe[37];
+  assign dio_in[DioSysrstCtrlAonEcRstOutL] = 1'b0;
+  assign unused_sig[60] = dio_out[DioSysrstCtrlAonEcRstOutL] ^ dio_oe[DioSysrstCtrlAonEcRstOutL];
   assign mio_in[38] = 1'b0;
-  assign unused_sig[60] = mio_out[38] ^ mio_oe[38];
+  assign unused_sig[61] = mio_out[38] ^ mio_oe[38];
   assign mio_in[39] = 1'b0;
-  assign unused_sig[61] = mio_out[39] ^ mio_oe[39];
+  assign unused_sig[62] = mio_out[39] ^ mio_oe[39];
   assign mio_in[40] = 1'b0;
-  assign unused_sig[62] = mio_out[40] ^ mio_oe[40];
+  assign unused_sig[63] = mio_out[40] ^ mio_oe[40];
   assign mio_in[41] = 1'b0;
-  assign unused_sig[63] = mio_out[41] ^ mio_oe[41];
+  assign unused_sig[64] = mio_out[41] ^ mio_oe[41];
   assign mio_in[42] = 1'b0;
-  assign unused_sig[64] = mio_out[42] ^ mio_oe[42];
-  assign mio_in[43] = 1'b0;
-  assign unused_sig[65] = mio_out[43] ^ mio_oe[43];
+  assign unused_sig[65] = mio_out[42] ^ mio_oe[42];
 
   //////////////////////
   // Padring Instance //
