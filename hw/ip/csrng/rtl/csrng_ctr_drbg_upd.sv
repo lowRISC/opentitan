@@ -143,7 +143,7 @@ module csrng_ctr_drbg_upd #(
   logic               concat_outblk_shift;
   logic               concat_ctr_done;
   logic               concat_ctr_inc;
-  logic [SeedLen+BlkLen-1:0] concat_outblk_shifted_value; // ri lint_check_waive NOT_READ
+  logic [SeedLen+BlkLen-1:0] concat_outblk_shifted_value;
 
   // flops
   logic [CtrLen-1:0]  v_ctr_q, v_ctr_d;
@@ -492,6 +492,10 @@ module csrng_ctr_drbg_upd #(
          sfifo_bencack_pop ? {concat_outblk_q[SeedLen-1:BlkLen],sfifo_bencack_v} :
          concat_outblk_shift ? concat_outblk_shifted_value[SeedLen-1:0] :
          concat_outblk_q;
+
+  // The following signal is used to avoid possible lint errors.
+  logic [BlkLen-1:0] unused_concat_outblk_shifted_value;
+  assign unused_concat_outblk_shifted_value = concat_outblk_shifted_value[SeedLen+BlkLen-1:SeedLen];
 
   // concatination counter
   assign concat_ctr_d =
