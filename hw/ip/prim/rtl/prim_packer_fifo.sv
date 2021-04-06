@@ -113,7 +113,7 @@ module prim_packer_fifo #(
     assign rvalid_o = (depth_q == FullDepth) && !clr_q;
 
   end else begin : gen_unpack_mode
-    logic [MaxW-1:0] rdata_shifted; // ri lint_check_waive NOT_READ
+    logic [MaxW-1:0] rdata_shifted;
     logic            pull_data;
     logic [DepthW:0] ptr_q, ptr_d;
     logic [DepthW:0] lsb_is_one;
@@ -127,7 +127,7 @@ module prim_packer_fifo #(
       end
     end
 
-    assign lsb_is_one = {{DepthW{1'b0}},1'b1}; // ri lint_check_waive ZERO_REP
+    assign lsb_is_one = {{DepthW{1'b0}},1'b1};
     assign max_value = FullDepth;
     assign rdata_shifted = data_q >> ptr_q*OutW;
     assign clear_data = (rready_i && (depth_q == lsb_is_one)) || clr_q;
@@ -152,6 +152,11 @@ module prim_packer_fifo #(
     assign rdata_o =  rdata_shifted[OutW-1:0];
     assign rvalid_o = !(depth_q == '0) && !clr_q;
 
+    // Avoid possible lint errors in case InW > OutW.
+    if (InW > OutW) begin : gen_unused
+      logic [MaxW-MinW-1:0] unused_rdata_shifted;
+      assign unused_rdata_shifted = rdata_shifted[MaxW-1:MinW];
+    end
   end
 
 

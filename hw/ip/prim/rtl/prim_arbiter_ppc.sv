@@ -113,7 +113,9 @@ module prim_arbiter_ppc #(
       end
     end else begin: gen_nodatapath
       assign data_o = '1;
-      // TODO: waive data_i from NOT_READ error
+      // The following signal is used to avoid possible lint errors.
+      logic [DW-1:0] unused_data [N];
+      assign unused_data = data_i;
     end
 
     always_comb begin
