@@ -235,11 +235,6 @@ module otbn
   assign imem_rerror_bus  = !imem_access_core ? {imem_rerror, 1'b0} : 2'b00;
   assign imem_rerror_core = imem_rerror;
 
-  // The top bits of IMEM rdata aren't currently used (they will eventually be used for integrity
-  // checks both on the bus and within the core)
-  logic unused_imem_top_rdata;
-  assign unused_imem_top_rdata = &{1'b0, imem_rdata[38:32]};
-
   // Data Memory (DMEM) ========================================================
 
   localparam int DmemSizeWords = DmemSizeByte / (WLEN / 8);
