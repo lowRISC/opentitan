@@ -7,10 +7,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/print.h"
+#include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/rom_exts/rom_ext_manifest_parser.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -23,8 +26,25 @@ typedef void(boot_fn)(void);
 void mask_rom_exception_handler(void) { wait_for_interrupt(); }
 void mask_rom_nmi_handler(void) { wait_for_interrupt(); }
 
+uart_t uart;
+
 void mask_rom_boot(void) {
+  // Initialize pinmux configuration so we can use the UART.
   pinmux_init();
+
+  // Configure UART0 as stdout.
+  uart.base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR);
+  uart.baudrate = kUartBaudrate;
+  uart.clk_freq_hz = kClockFreqPeripheralHz;
+  uart_init(&uart);
+  base_set_stdout((buffer_sink_t){
+      .data = &uart,
+      .sink = uart_sink,
+  });
+
+  // FIXME: what (if anything) should we print at startup?
+  base_printf("MaskROM\r\n");
+
   // boot_reason = read_boot_reason(); // Boot Policy Module
 
   // Clean Device State Part 2.
@@ -160,6 +180,7 @@ void mask_rom_boot(void) {
 
       // Jump to ROM_EXT entry point.
       boot_fn *rom_ext_entry = (boot_fn *)rom_ext_get_entry(rom_ext);
+      base_printf("rom_ext_entry: %p\r\n", rom_ext_entry);
       rom_ext_entry();
       // NOTE: never expecting a return, but if something were to go wrong
       // in the real `jump` implementation, we need to enter a failure case.

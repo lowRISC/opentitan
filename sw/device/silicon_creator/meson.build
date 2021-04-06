@@ -2,5 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+subdir('lib')
 subdir('rom_exts')
 subdir('mask_rom')
