@@ -10,8 +10,8 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
 
   `uvm_component_param_utils(cip_base_env #(CFG_T, VIRTUAL_SEQUENCER_T, SCOREBOARD_T, COV_T))
 
-  tl_agent                                           m_tl_agent;
-  tl_reg_adapter#(cip_tl_seq_item)                   m_tl_reg_adapter;
+  tl_agent                                           m_tl_agents[string];
+  tl_reg_adapter#(cip_tl_seq_item)                   m_tl_reg_adapters[string];
   alert_esc_agent                                    m_alert_agent[string];
   push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent;
 
@@ -31,11 +31,15 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     end
 
     // Create & configure the TL agent.
-    m_tl_agent = tl_agent::type_id::create("m_tl_agent", this);
-    m_tl_reg_adapter = tl_reg_adapter#(cip_tl_seq_item)::type_id::create("m_tl_reg_adapter");
-    m_tl_reg_adapter.cfg = cfg.m_tl_agent_cfg;
-    uvm_config_db#(tl_agent_cfg)::set(this, "m_tl_agent*", "cfg", cfg.m_tl_agent_cfg);
-    cfg.m_tl_agent_cfg.en_cov = cfg.en_cov;
+    foreach (cfg.m_tl_agent_cfgs[i]) begin
+      m_tl_agents[i] = tl_agent::type_id::create({"m_tl_agent_", i}, this);
+      m_tl_reg_adapters[i] = tl_reg_adapter#(cip_tl_seq_item)::type_id::create(
+                             {"m_tl_reg_adapter_", i});
+      m_tl_reg_adapters[i].cfg = cfg.m_tl_agent_cfgs[i];
+      uvm_config_db#(tl_agent_cfg)::set(this, $sformatf("m_tl_agent_%s*", i), "cfg",
+                                        cfg.m_tl_agent_cfgs[i]);
+      cfg.m_tl_agent_cfgs[i].en_cov = cfg.en_cov;
+    end
 
     // Create & configure the alert agents.
     foreach(cfg.list_of_alerts[i]) begin
@@ -66,14 +70,16 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
 
     // Pass on the zero_delays setting.
     if (cfg.zero_delays) begin
-      cfg.m_tl_agent_cfg.a_valid_delay_min = 0;
-      cfg.m_tl_agent_cfg.a_valid_delay_max = 0;
-      cfg.m_tl_agent_cfg.d_valid_delay_min = 0;
-      cfg.m_tl_agent_cfg.d_valid_delay_max = 0;
-      cfg.m_tl_agent_cfg.a_ready_delay_min = 0;
-      cfg.m_tl_agent_cfg.a_ready_delay_max = 0;
-      cfg.m_tl_agent_cfg.d_ready_delay_min = 0;
-      cfg.m_tl_agent_cfg.d_ready_delay_max = 0;
+      foreach (cfg.m_tl_agent_cfgs[i]) begin
+        cfg.m_tl_agent_cfgs[i].a_valid_delay_min = 0;
+        cfg.m_tl_agent_cfgs[i].a_valid_delay_max = 0;
+        cfg.m_tl_agent_cfgs[i].d_valid_delay_min = 0;
+        cfg.m_tl_agent_cfgs[i].d_valid_delay_max = 0;
+        cfg.m_tl_agent_cfgs[i].a_ready_delay_min = 0;
+        cfg.m_tl_agent_cfgs[i].a_ready_delay_max = 0;
+        cfg.m_tl_agent_cfgs[i].d_ready_delay_min = 0;
+        cfg.m_tl_agent_cfgs[i].d_ready_delay_max = 0;
+      end
       foreach (cfg.m_alert_agent_cfg[i]) begin
         cfg.m_alert_agent_cfg[i].alert_delay_min = 0;
         cfg.m_alert_agent_cfg[i].alert_delay_max = 0;
@@ -84,16 +90,23 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
 
   virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    m_tl_agent.monitor.a_chan_port.connect(scoreboard.tl_a_chan_fifo.analysis_export);
-    m_tl_agent.monitor.d_chan_port.connect(scoreboard.tl_d_chan_fifo.analysis_export);
+    foreach (m_tl_agents[i]) begin
+      m_tl_agents[i].monitor.a_chan_port.connect(scoreboard.tl_a_chan_fifos[i].analysis_export);
+      m_tl_agents[i].monitor.d_chan_port.connect(scoreboard.tl_d_chan_fifos[i].analysis_export);
+    end
     foreach (cfg.list_of_alerts[i]) begin
       string alert_name = cfg.list_of_alerts[i];
       m_alert_agent[alert_name].monitor.alert_esc_port.connect(
           scoreboard.alert_fifos[alert_name].analysis_export);
     end
 
-    if (cfg.is_active) begin
-      virtual_sequencer.tl_sequencer_h = m_tl_agent.sequencer;
+    foreach (cfg.m_tl_agent_cfgs[i]) begin
+      if (cfg.m_tl_agent_cfgs[i].is_active) begin
+        virtual_sequencer.tl_sequencer_hs[i] = m_tl_agents[i].sequencer;
+        if (i == cfg.ral.get_type_name()) begin
+          virtual_sequencer.tl_sequencer_h = m_tl_agents[i].sequencer;
+        end
+      end
     end
     foreach(cfg.list_of_alerts[i]) begin
       if (cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].is_active) begin
@@ -111,8 +124,10 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
   virtual function void end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
     // Set the TL adapter / sequencer to the default_map.
-    if (cfg.m_tl_agent_cfg.is_active) begin
-      cfg.ral.default_map.set_sequencer(m_tl_agent.sequencer, m_tl_reg_adapter);
+    foreach (cfg.m_tl_agent_cfgs[i]) begin
+      if (cfg.m_tl_agent_cfgs[i].is_active) begin
+        cfg.ral.default_map.set_sequencer(m_tl_agents[i].sequencer, m_tl_reg_adapters[i]);
+      end
     end
   endfunction : end_of_elaboration_phase
 

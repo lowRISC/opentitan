@@ -10,14 +10,6 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   bit en_scb_mem_chk    = 1;
   bit en_cov            = 0; // Enable via plusarg, only if coverage collection is turned on.
 
-  // A queue of the names of RAL models that should be created in the `initialize` function
-  // Related agents, adapters will be created in env as well as connecting them with scb
-  // For example, if the IP has an additional RAL model named `ral1`, add it into the list as below
-  //   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
-  //     list_of_rals.push_back("ral1");
-  //     super.initialize(csr_base_addr);
-  string list_of_rals[$] = {RAL_T::type_name};
-
   bit under_reset       = 0;
   bit is_initialized;        // Indicates that the initialize() method has been called.
 
@@ -37,7 +29,15 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
 
   // reg model & q of valid csr addresses
   RAL_T                             ral;
-  dv_base_reg_block                 ral_models[$];
+  dv_base_reg_block                 ral_models[string];
+  // A queue of the names of RAL models that should be created in the `initialize` function
+  // Related agents, adapters will be created in env as well as connecting them with scb
+  // For example, if the IP has an additional RAL model named `ral1`, add it into the list as below
+  //   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+  //     ral_model_names.push_back("ral1");
+  //     super.initialize(csr_base_addr);
+  string ral_model_names[$] = {RAL_T::type_name};
+
   bit [bus_params_pkg::BUS_AW-1:0]  csr_addrs[$];
   addr_range_t                      mem_ranges[$];
 
@@ -63,9 +63,29 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
     is_initialized = 1'b1;
 
     // build the ral model
-    foreach (list_of_rals[i]) begin
+    create_ral_models(csr_base_addr);
+  endfunction
+
+  // ral flow is limited in terms of setting correct field access policies and reset values
+  // We apply those fixes here - please note these fixes need to be reflected in the scoreboard
+  protected virtual function void apply_ral_fixes();
+    // fix access policies & reset values
+  endfunction
+
+  virtual function void reset_asserted();
+    this.under_reset = 1;
+    csr_utils_pkg::reset_asserted();
+  endfunction
+
+  virtual function void reset_deasserted();
+    this.under_reset = 0;
+    csr_utils_pkg::reset_deasserted();
+  endfunction
+
+  virtual function void create_ral_models(bit [bus_params_pkg::BUS_AW-1:0] csr_base_addr = '1);
+    foreach (ral_model_names[i]) begin
       uvm_reg_addr_t base_addr;
-      dv_base_reg_block reg_blk = create_ral_by_name(list_of_rals[i]);
+      dv_base_reg_block reg_blk = create_ral_by_name(ral_model_names[i]);
 
       if (reg_blk.get_name() == RAL_T::type_name) `downcast(ral, reg_blk)
 
@@ -89,24 +109,14 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
       // Get list of valid csr addresses (useful in seq to randomize addr as well as in scb checks)
       get_csr_addrs(reg_blk, csr_addrs);
       get_mem_addr_ranges(reg_blk, mem_ranges);
-      ral_models.push_back(reg_blk);
+      ral_models[ral_model_names[i]] = reg_blk;
     end
-  endfunction
 
-  // ral flow is limited in terms of setting correct field access policies and reset values
-  // We apply those fixes here - please note these fixes need to be reflected in the scoreboard
-  protected virtual function void apply_ral_fixes();
-    // fix access policies & reset values
-  endfunction
-
-  virtual function void reset_asserted();
-    this.under_reset = 1;
-    csr_utils_pkg::reset_asserted();
-  endfunction
-
-  virtual function void reset_deasserted();
-    this.under_reset = 0;
-    csr_utils_pkg::reset_deasserted();
+    if (ral_model_names.size > 0) begin
+      `DV_CHECK_FATAL(ral_models.exists(RAL_T::type_name))
+      `downcast(ral, ral_models[RAL_T::type_name])
+      `DV_CHECK_NE_FATAL(ral, null)
+    end
   endfunction
 
   virtual function dv_base_reg_block create_ral_by_name(string name);
@@ -118,8 +128,9 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
     obj = factory.create_object_by_name(.requested_type_name(name), .name(name));
     if (obj == null) begin
       // print factory overrides to help debug
-      factory.print(1);
-      `uvm_fatal(msg_id, $sformatf("could not create %0s as a RAL model", name))
+      factory.print();
+      `uvm_fatal(msg_id, $sformatf("could not create %0s as a RAL model, see above for a list of \
+                                    type/instance overrides", name))
     end
     if (!$cast(ral, obj)) begin
       `uvm_fatal(msg_id, $sformatf("cast failed - %0s is not a dv_base_reg_block", name))

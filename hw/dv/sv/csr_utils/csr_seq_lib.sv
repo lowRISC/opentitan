@@ -23,7 +23,7 @@
 class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
   `uvm_object_utils(csr_base_seq)
 
-  uvm_reg_block   models[$];
+  uvm_reg_block   models[string];
   uvm_reg         all_csrs[$];
   uvm_reg         test_csrs[$];
 
