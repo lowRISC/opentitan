@@ -14,14 +14,7 @@ All processing steps as well as the invocation to Hugo are combined in the scrip
 
 ### Prerequisites
 
-If you have already followed the [prepare the system]({{< relref "install_instructions#system-preparation" >}}) instructions you will have the required tools to build the documentation.
-
-If not, install the required tools by running the following command from the repository root:
-
-```console
-$ sudo apt install curl python3 python3-pip doxygen xsltproc
-$ pip3 install --user -r python-requirements.txt
-```
+The documentation build requirements are covered in the [install instructions 'System preperation' section]({{< relref "install_instructions#system-preparation" >}}). You don't need to install the compiler or fpga tools for building documentation. 
 
 ### Running the server
 
