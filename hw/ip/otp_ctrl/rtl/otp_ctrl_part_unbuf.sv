@@ -302,8 +302,10 @@ module otp_ctrl_part_unbuf
 
   // Note that OTP works on halfword (16bit) addresses, hence need to
   // shift the addresses appropriately.
-  assign otp_addr_o = (otp_addr_sel == DigestAddr) ? (DigestOffset >> OtpAddrShift) :
-                                                     {tlul_addr_q, 2'b00} >> OtpAddrShift;
+  logic [OtpByteAddrWidth-1:0] addr_calc;
+  assign addr_calc = (otp_addr_sel == DigestAddr) ? DigestOffset : {tlul_addr_q, 2'b00};
+  assign otp_addr_o = addr_calc[OtpByteAddrWidth-1:OtpAddrShift];
+
   // Request 32bit except in case of the digest.
   assign otp_size_o = (otp_addr_sel == DigestAddr) ?
                       OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth - 1)) :
