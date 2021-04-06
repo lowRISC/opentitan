@@ -13,9 +13,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   bit [TL_DW-1:0] otp_a [OTP_ARRAY_SIZE];
 
   // lc_state and lc_cnt that stored in OTP
-  bit [LifeCycleSize*8-1:0] otp_lc_data;
-  bit                       key_size_80 = SCRAMBLE_KEY_SIZE == 80;
-  bit [EDN_BUS_WIDTH-1:0]   edn_data_q[$];
+  bit [LC_PROG_DATA_SIZE-1:0] otp_lc_data;
+  bit [EDN_BUS_WIDTH-1:0]     edn_data_q[$];
 
   // This bit is used for DAI interface to mark if the read access is valid.
   bit dai_read_valid;
@@ -125,6 +124,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                              otp_hw_cfg_data_t'({<<32 {otp_a[HwCfgOffset/4 +: HwCfgSize/4]}});
             `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.data, exp_hwcfg_data)
 
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.count, otp_lc_data[0 +: LcCountWidth])
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.state, otp_lc_data[LcCountWidth +: LcStateWidth])
+
             // Otp_keymgr outputs creator root key shares from the secret2 partition.
             // Depends on lc_seed_hw_rd_en_i, it will output the real keys or a constant
             exp_keymgr_data.valid = get_otp_digest_val(Secret2Idx) != 0;
@@ -176,17 +178,21 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   virtual task process_lc_prog_req();
     forever begin
       push_pull_item#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE)) rcv_item;
-      bit       exp_err_bit;
+      bit        exp_err_bit;
+      bit [15:0] rcv_words [LC_PROG_DATA_SIZE/16];
 
       lc_prog_fifo.get(rcv_item);
 
-      if ((otp_lc_data & rcv_item.h_data) == otp_lc_data) begin
-        otp_lc_data = rcv_item.h_data;
-        predict_no_err(OtpLciErrIdx);
-      end else begin
-        exp_err_bit = 1;
-        predict_err(OtpLciErrIdx, OtpMacroWriteBlankError);
+      // LCI is updated by OTP word.
+      rcv_words = {<< 16{rcv_item.h_data}};
+      foreach (rcv_words[i]) begin
+        bit [15:0] curr_word = otp_lc_data[i*16 +: 16];
+        if ((curr_word & rcv_words[i]) == curr_word) otp_lc_data[i*16 +: 16] = rcv_words[i];
+        else                                         exp_err_bit = 1;
       end
+
+      if (exp_err_bit) predict_err(OtpLciErrIdx, OtpMacroWriteBlankError);
+      else             predict_no_err(OtpLciErrIdx);
 
       // LC program request data is valid means no OTP macro error.
       `DV_CHECK_EQ(rcv_item.d_data, exp_err_bit)
@@ -844,7 +850,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       end
 
       // Trigger 32 round of PRESENT encrypt
-      crypto_dpi_present_pkg::sv_dpi_present_encrypt(input_data, key, key_size_80, enc_array);
+      crypto_dpi_present_pkg::sv_dpi_present_encrypt(input_data, key, SCRAMBLE_KEY_SIZE == 80,
+                                                     enc_array);
       // XOR the previous state into the digest result according to the Davies-Meyer scheme.
       digest = enc_array[NUM_ROUND-1] ^ input_data;
     end
@@ -852,7 +859,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     // Last 32 round of digest is calculated with a digest constant
     crypto_dpi_present_pkg::sv_dpi_present_encrypt(digest,
                                                    RndCnstDigestConst[0],
-                                                   key_size_80,
+                                                   SCRAMBLE_KEY_SIZE == 80,
                                                    enc_array);
     // XOR the previous state into the digest result according to the Davies-Meyer scheme.
     digest ^= enc_array[NUM_ROUND-1];
@@ -867,7 +874,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] output_data;
     crypto_dpi_present_pkg::sv_dpi_present_encrypt(input_data,
                                                    RndCnstKey[secret_idx],
-                                                   key_size_80,
+                                                   SCRAMBLE_KEY_SIZE == 80,
                                                    output_data);
     scramble_data = output_data[NUM_ROUND-1];
   endfunction
@@ -879,7 +886,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] output_data;
     crypto_dpi_present_pkg::sv_dpi_present_decrypt(input_data,
                                                    RndCnstKey[secret_idx],
-                                                   key_size_80,
+                                                   SCRAMBLE_KEY_SIZE == 80,
                                                    output_data);
     descramble_data = output_data[NUM_ROUND-1];
   endfunction
@@ -897,20 +904,20 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                                                 int                          num_round = 1);
     bit [NUM_ROUND-1:0] [SCRAMBLE_DATA_SIZE-1:0] enc_array;
     bit [SCRAMBLE_DATA_SIZE-1:0] intermediate_state;
-    crypto_dpi_present_pkg::sv_dpi_present_encrypt(data, key, key_size_80, enc_array);
+    crypto_dpi_present_pkg::sv_dpi_present_encrypt(data, key, SCRAMBLE_KEY_SIZE == 80, enc_array);
     // XOR the previous state into the digest result according to the Davies-Meyer scheme.
     intermediate_state = data ^ enc_array[NUM_ROUND-1];
 
     if (num_round == 2) begin
       crypto_dpi_present_pkg::sv_dpi_present_encrypt(intermediate_state, second_key,
-                                                     key_size_80, enc_array);
+                                                     SCRAMBLE_KEY_SIZE == 80, enc_array);
       intermediate_state = intermediate_state ^ enc_array[NUM_ROUND-1];
     end else if (num_round > 2) begin
       `uvm_fatal(`gfn, $sformatf("does not support num_round: %0d > 2", num_round))
     end
 
     crypto_dpi_present_pkg::sv_dpi_present_encrypt(intermediate_state, final_const,
-                                                   key_size_80, enc_array);
+                                                   SCRAMBLE_KEY_SIZE == 80, enc_array);
     // XOR the previous state into the digest result according to the Davies-Meyer scheme.
     present_encode_with_final_const = enc_array[NUM_ROUND-1] ^ intermediate_state;
   endfunction
