@@ -91,7 +91,7 @@ class LsfLauncher(Launcher):
         lines += ["case $1 in\n"]
         for job in LsfLauncher.jobs[cfg][job_name]:
             # Redirect the job's stdout and stderr to its log file.
-            cmd = "{} > {} 2>&1".format(job.deploy.cmd,
+            cmd = "{} > {} 2>&1".format(" ".join(job.deploy.cmd),
                                         job.deploy.get_log_path())
             lines += ["  {})\n".format(job.index), "    {};;\n".format(cmd)]
 
