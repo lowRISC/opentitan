@@ -165,8 +165,8 @@ module prim_fifo_async #(
 
   end
 
-  assign wready_o = !full_wclk;
-  assign rvalid_o = !empty_rclk;
+  assign wready_o = ~full_wclk;
+  assign rvalid_o = ~empty_rclk;
 
   /////////////
   // Storage //
