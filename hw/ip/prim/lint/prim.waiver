@@ -16,6 +16,10 @@ waive -rules {LINE_LENGTH} -location {prim_assert.sv} -msg {Line length of} \
 waive -rules INTEGER           -location {prim_packer.sv} -msg {'i' of type int used as a non-constant value} \
       -comment "This assigns int i (signed) to a multibit logic variable (unsigned), which is fine"
 
+# prim_packer_fifo
+waive -rules {ZERO_REP} -location {prim_packer_fifo.sv} -regexp {Replication count is zero in .*DepthW.*} \
+      -comment "If InW equals OutW, DepthW is zero"
+
 # TL-UL fifo
 waive -rules {HIER_BRANCH_NOT_READ} -location {tlul_fifo_sync.sv} -regexp {Connected net '(clk_i|rst_ni)' at prim_fifo_sync.sv:.* is not read from in module 'prim_fifo_sync'} \
       -comment "In passthrough mode, clk and reset are not read form within this module"

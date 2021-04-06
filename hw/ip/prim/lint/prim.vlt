@@ -4,6 +4,10 @@
 
 `verilator_config
 
+// prim_arbiter_ppc
+// ppc_out[i] depends on ppc_out[i-1]
+lint_off -rule ALWCOMBORDER -file "*/rtl/prim_arbiter_ppc.sv" -match "*ppc_out*"
+
 // prim_lfsr
 // lfsr_perm_test is just used for an SVA
 lint_off -rule UNUSED -file "*/rtl/prim_lfsr.sv" -match "*lfsr_perm_test*"
