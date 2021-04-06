@@ -21,9 +21,12 @@ package otp_ctrl_part_pkg;
 
   parameter int NumScrmblKeys = 3;
   parameter int NumDigestSets = 5;
-  parameter int ConstSelWidth = (NumScrmblKeys > NumDigestSets) ?
-                                vbits(NumScrmblKeys) :
-                                vbits(NumDigestSets);
+
+  parameter int ScrmblKeySelWidth = vbits(NumScrmblKeys);
+  parameter int DigestSetSelWidth = vbits(NumDigestSets);
+  parameter int ConstSelWidth = (ScrmblKeySelWidth > DigestSetSelWidth) ?
+                                ScrmblKeySelWidth :
+                                DigestSetSelWidth;
 
   typedef enum logic [ConstSelWidth-1:0] {
     StandardMode,

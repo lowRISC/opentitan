@@ -39,9 +39,12 @@ package otp_ctrl_part_pkg;
 
   parameter int NumScrmblKeys = ${len(otp_mmap.config["scrambling"]["keys"])};
   parameter int NumDigestSets = ${len(otp_mmap.config["scrambling"]["digests"])};
-  parameter int ConstSelWidth = (NumScrmblKeys > NumDigestSets) ?
-                                vbits(NumScrmblKeys) :
-                                vbits(NumDigestSets);
+
+  parameter int ScrmblKeySelWidth = vbits(NumScrmblKeys);
+  parameter int DigestSetSelWidth = vbits(NumDigestSets);
+  parameter int ConstSelWidth = (ScrmblKeySelWidth > DigestSetSelWidth) ?
+                                ScrmblKeySelWidth :
+                                DigestSetSelWidth;
 
   typedef enum logic [ConstSelWidth-1:0] {
     StandardMode,

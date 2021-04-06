@@ -97,6 +97,11 @@ module otp_ctrl_scrmbl
 
   logic [NumScrmblKeys-1:0][ScrmblKeyWidth-1:0] otp_dec_key_lut;
 
+  localparam int unsigned LastScrmblKeyInt = NumScrmblKeys - 1;
+  localparam int unsigned LastDigestSetInt = NumDigestSets - 1;
+  localparam bit [ConstSelWidth-1:0] LastScrmblKey = LastScrmblKeyInt[ConstSelWidth-1:0];
+  localparam bit [ConstSelWidth-1:0] LastDigestSet = LastDigestSetInt[ConstSelWidth-1:0];
+
   // This pre-calculates the inverse scrambling keys at elab time.
   `ASSERT_INIT(NumMaxPresentRounds_A, NumPresentRounds <= 31)
 
@@ -142,14 +147,15 @@ module otp_ctrl_scrmbl
   logic data_state_en, data_shadow_copy, data_shadow_load, digest_state_en, key_state_en;
   digest_mode_e digest_mode_d, digest_mode_q;
 
-  assign otp_enc_key_mux      = (sel_i < NumScrmblKeys) ?
-                                RndCnstKey[sel_i[vbits(NumScrmblKeys)-1:0]]         : '0;
-  assign otp_dec_key_mux      = (sel_i < NumScrmblKeys) ?
-                                otp_dec_key_lut[sel_i[vbits(NumScrmblKeys)-1:0]]    : '0;
-  assign otp_digest_const_mux = (sel_i < NumDigestSets) ?
-                                RndCnstDigestConst[sel_i[vbits(NumDigestSets)-1:0]] : '0;
-  assign otp_digest_iv_mux    = (sel_i < NumDigestSets) ?
-                                RndCnstDigestIV[sel_i[vbits(NumDigestSets)-1:0]]    : '0;
+  logic [ScrmblKeySelWidth-1:0] scrmbl_key_sel;
+  logic [DigestSetSelWidth-1:0] digest_set_sel;
+  assign scrmbl_key_sel = sel_i[ScrmblKeySelWidth-1:0];
+  assign digest_set_sel = sel_i[DigestSetSelWidth-1:0];
+
+  assign otp_enc_key_mux      = (sel_i <= LastScrmblKey) ? RndCnstKey[scrmbl_key_sel] : '0;
+  assign otp_dec_key_mux      = (sel_i <= LastScrmblKey) ? otp_dec_key_lut[scrmbl_key_sel] : '0;
+  assign otp_digest_const_mux = (sel_i <= LastDigestSet) ? RndCnstDigestConst[digest_set_sel] : '0;
+  assign otp_digest_iv_mux    = (sel_i <= LastDigestSet) ? RndCnstDigestIV[digest_set_sel] : '0;
 
   // Make sure we always select a valid key / digest constant.
   `ASSERT(CheckNumEncKeys_A, key_state_sel == SelEncKeyInit  |-> sel_i < NumScrmblKeys)
