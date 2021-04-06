@@ -5,11 +5,7 @@
 # clear previous settings
 clear -all
 
-# We use parameter instead of localparam in packages to allow redefinition
-# at elaboration time.
-# Disabling the warning
-# "parameter declared inside package XXX shall be treated as localparam".
-set_message -disable VERI-2418
+source $env(COMMON_MSG_TCL_PATH)
 
 if {$env(COV) == 1} {
   check_cov -init -model {branch statement functional} \
@@ -20,7 +16,9 @@ if {$env(COV) == 1} {
 #-------------------------------------------------------------------------
 
 # only one scr file exists in this folder
-analyze -sv09 -f [glob *.scr]
+analyze -sv09                 \
+  +define+FPV_ON              \
+  -f [glob *.scr]
 
 # Black-box assistant will blackbox the modules which are not needed by looking at
 # the connectivity csv.
@@ -63,7 +61,7 @@ report -task Connectivity
 # check coverage and report
 #-------------------------------------------------------------------------
 if {$env(COV) == 1} {
-  check_cov -measure
+  check_cov -measure -time_limit 2h
   check_cov -report -type all -no_return -report_file cover.html \
       -html -force -exclude { reset waived }
 }

@@ -8,6 +8,7 @@
                "-allow_unsupported_OS",
                "-command exit"]
 
-  // Jaspergold error patterns.
-  build_fail_patterns: ["^ERROR (.*): .*$"]
+  exports: [
+    {COMMON_MSG_TCL_PATH: "{formal_root}/tools/{tool}/jaspergold_common_message_process.tcl"}
+  ]
 }
