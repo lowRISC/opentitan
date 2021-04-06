@@ -219,6 +219,9 @@ module otp_ctrl_scrmbl
   } state_e;
 
   localparam int CntWidth = $clog2(NumPresentRounds+1);
+  localparam int unsigned LastPresentRoundInt = NumPresentRounds - 1;
+  localparam bit [CntWidth-1:0] LastPresentRound = LastPresentRoundInt[CntWidth-1:0];
+
   state_e state_d, state_q;
   logic [CntWidth-1:0] cnt_d, cnt_q;
   logic cnt_clr, cnt_en;
@@ -308,7 +311,7 @@ module otp_ctrl_scrmbl
         data_state_en  = 1'b1;
         key_state_en   = 1'b1;
         cnt_en         = 1'b1;
-        if (cnt_q == NumPresentRounds-1) begin
+        if (cnt_q == LastPresentRound) begin
           state_d = IdleSt;
           valid_d = 1'b1;
         end
@@ -321,7 +324,7 @@ module otp_ctrl_scrmbl
         data_state_en  = 1'b1;
         key_state_en   = 1'b1;
         cnt_en         = 1'b1;
-        if (cnt_q == NumPresentRounds-1) begin
+        if (cnt_q == LastPresentRound) begin
           state_d = IdleSt;
           valid_d = 1'b1;
         end
@@ -335,7 +338,7 @@ module otp_ctrl_scrmbl
         data_state_en  = 1'b1;
         key_state_en   = 1'b1;
         cnt_en         = 1'b1;
-        if (cnt_q == NumPresentRounds-1) begin
+        if (cnt_q == LastPresentRound) begin
           state_d = IdleSt;
           valid_d = 1'b1;
           // Apply XOR for Davies-Meyer construction.
