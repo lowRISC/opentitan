@@ -65,8 +65,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
   virtual task dut_init(string reset_kind = "HARD");
     if (do_reset_in_seq && do_apply_reset) begin
-      super.dut_init(reset_kind);
       lc_prog_blocking = 1;
+      super.dut_init(reset_kind);
       csr_wr(ral.intr_enable, en_intr);
     end
   endtask
