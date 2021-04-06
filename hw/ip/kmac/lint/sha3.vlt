@@ -1,0 +1,10 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// waiver file for kmac
+
+`verilator_config
+
+// index_z is of type int but we only use bits 5:0.
+lint_off -rule UNUSED -file "*/rtl/keccak_2share.sv" -match "*index_z*"

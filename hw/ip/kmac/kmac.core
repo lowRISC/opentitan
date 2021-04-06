@@ -43,7 +43,6 @@ filesets:
       - lowrisc:lint:common
     files:
       - lint/kmac.waiver
-      - lint/sha3.waiver
     file_type: waiver
 
   files_veriblelint_waiver:

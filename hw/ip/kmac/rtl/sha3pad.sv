@@ -501,7 +501,6 @@ module sha3pad
   // It means always `1` is followed by the function pad.
   logic [4:0] funcpad;
 
-  logic [MsgWidth-1:0] funcpad_merged [Share];
   logic [MsgWidth-1:0] funcpad_data [Share];
 
   always_comb begin
