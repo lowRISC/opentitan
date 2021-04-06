@@ -73,9 +73,12 @@ module otp_ctrl_part_buf
 
   import prim_util_pkg::vbits;
 
-  localparam int DigestOffset = int'(Info.offset) + int'(Info.size) - ScrmblBlockWidth/8;
+  localparam int unsigned DigestOffsetInt = (int'(Info.offset) +
+                                             int'(Info.size) - ScrmblBlockWidth/8);
   localparam int NumScrmblBlocks = int'(Info.size) / (ScrmblBlockWidth/8);
   localparam int CntWidth = vbits(NumScrmblBlocks);
+
+  localparam bit [OtpByteAddrWidth-1:0] DigestOffset = DigestOffsetInt[OtpByteAddrWidth-1:0];
 
   localparam int unsigned LastScrmblBlockInt = NumScrmblBlocks - 1;
   localparam int unsigned PenultimateScrmblBlockInt = NumScrmblBlocks - 2;
@@ -85,6 +88,7 @@ module otp_ctrl_part_buf
   // Integration checks for parameters.
   `ASSERT_INIT(OffsetMustBeBlockAligned_A, (Info.offset % (ScrmblBlockWidth/8)) == 0)
   `ASSERT_INIT(SizeMustBeBlockAligned_A, (Info.size % (ScrmblBlockWidth/8)) == 0)
+  `ASSERT_INIT(DigestOffsetMustBeRepresentable_A, DigestOffsetInt == int'(DigestOffset))
   `ASSERT(ScrambledImpliesDigest_A, Info.secret |-> Info.hw_digest)
   `ASSERT(WriteLockImpliesDigest_A, Info.read_lock |-> Info.hw_digest)
   `ASSERT(ReadLockImpliesDigest_A, Info.write_lock |-> Info.hw_digest)
