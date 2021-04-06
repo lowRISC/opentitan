@@ -59,11 +59,14 @@ module otp_ctrl_part_unbuf
 
   localparam logic [OtpByteAddrWidth:0] PartEnd = (OtpByteAddrWidth+1)'(Info.offset) +
                                                   (OtpByteAddrWidth+1)'(Info.size);
-  localparam int DigestOffset = int'(PartEnd) - ScrmblBlockWidth/8;
+  localparam int unsigned DigestOffsetInt = int'(PartEnd) - ScrmblBlockWidth/8;
+
+  localparam bit [OtpByteAddrWidth-1:0] DigestOffset = DigestOffsetInt[OtpByteAddrWidth-1:0];
 
   // Integration checks for parameters.
   `ASSERT_INIT(OffsetMustBeBlockAligned_A, (Info.offset % (ScrmblBlockWidth/8)) == 0)
   `ASSERT_INIT(SizeMustBeBlockAligned_A, (Info.size % (ScrmblBlockWidth/8)) == 0)
+  `ASSERT_INIT(DigestOffsetMustBeRepresentable_A, DigestOffsetInt == int'(DigestOffset))
 
   ///////////////////////
   // OTP Partition FSM //
