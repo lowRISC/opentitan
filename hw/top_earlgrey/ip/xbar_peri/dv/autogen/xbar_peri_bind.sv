@@ -164,6 +164,12 @@ module xbar_peri_bind;
     .h2d    (tl_aon_timer_aon_o),
     .d2h    (tl_aon_timer_aon_i)
   );
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_sysrst_ctrl_aon (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_sysrst_ctrl_aon_o),
+    .d2h    (tl_sysrst_ctrl_aon_i)
+  );
   bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_adc_ctrl_aon (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),

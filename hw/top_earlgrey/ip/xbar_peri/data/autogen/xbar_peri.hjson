@@ -171,6 +171,12 @@
     }
     { struct: "tl"
       type:   "req_rsp"
+      name:   "tl_sysrst_ctrl_aon"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
       name:   "tl_adc_ctrl_aon"
       act:    "req"
       package: "tlul_pkg"

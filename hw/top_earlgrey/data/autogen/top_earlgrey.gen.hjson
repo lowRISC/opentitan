@@ -127,6 +127,7 @@
         clocks:
         {
           clk_io_div4_secure: io_div4
+          clk_aon_secure: aon
           clk_main_secure: main
         }
       }
@@ -2577,6 +2578,48 @@
       base_addrs:
       {
         null: 0x40420000
+      }
+    }
+    {
+      name: sysrst_ctrl_aon
+      type: sysrst_ctrl
+      clock_srcs:
+      {
+        clk_i: io_div4
+        clk_aon_i: aon
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni: rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]
+        rst_aon_ni: rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel]
+      }
+      domain: Aon
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_io_div4_secure
+        clk_aon_i: clkmgr_aon_clocks.clk_aon_secure
+      }
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: sysrst_ctrl_aon
+          default: ""
+          end_idx: -1
+          top_signame: sysrst_ctrl_aon_tl
+          index: -1
+        }
+      ]
+      base_addrs:
+      {
+        null: 0x40430000
       }
     }
     {
@@ -5879,6 +5922,10 @@
       [
         peri.tl_aon_timer_aon
       ]
+      sysrst_ctrl_aon.tl:
+      [
+        peri.tl_sysrst_ctrl_aon
+      ]
       adc_ctrl_aon.tl:
       [
         peri.tl_adc_ctrl_aon
@@ -6701,6 +6748,7 @@
           sram_ctrl_ret_aon
           aon_timer_aon
           adc_ctrl_aon
+          sysrst_ctrl_aon
         ]
       }
       nodes:
@@ -7167,6 +7215,24 @@
           pipeline_byp: "true"
         }
         {
+          name: sysrst_ctrl_aon
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: "false"
+          inst_type: sysrst_ctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x40430000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline_byp: "true"
+        }
+        {
           name: adc_ctrl_aon
           type: device
           clock: clk_peri_i
@@ -7517,6 +7583,18 @@
           inst_name: peri
           default: ""
           top_signame: aon_timer_aon_tl
+          index: -1
+        }
+        {
+          name: tl_sysrst_ctrl_aon
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: peri
+          default: ""
+          top_signame: sysrst_ctrl_aon_tl
           index: -1
         }
         {
@@ -8042,9 +8120,9 @@
         name: IOR8
         type: BidirOd
         bank: VCC
-        connection: muxed
-        desc: Muxed IO pad
-        idx: 38
+        connection: direct
+        desc: Dedicated systrst_ctrl output pad
+        idx: 22
       }
       {
         name: IOR9
@@ -8052,7 +8130,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
-        idx: 39
+        idx: 38
       }
       {
         name: IOR10
@@ -8060,7 +8138,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
-        idx: 40
+        idx: 39
       }
       {
         name: IOR11
@@ -8068,7 +8146,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
-        idx: 41
+        idx: 40
       }
       {
         name: IOR12
@@ -8076,7 +8154,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
-        idx: 42
+        idx: 41
       }
       {
         name: IOR13
@@ -8084,7 +8162,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
-        idx: 43
+        idx: 42
       }
     ]
   }
@@ -8263,6 +8341,90 @@
       {
         instance: sensor_ctrl_aon
         port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: sysrst_ctrl_aon
+        port: ac_present
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: sysrst_ctrl_aon
+        port: ec_rst_in_l
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: sysrst_ctrl_aon
+        port: key0_in
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: sysrst_ctrl_aon
+        port: key1_in
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: sysrst_ctrl_aon
+        port: key2_in
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: sysrst_ctrl_aon
+        port: pwrb_in
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: sysrst_ctrl_aon
+        port: bat_disable
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: sysrst_ctrl_aon
+        port: ec_rst_out_l
+        connection: direct
+        pad: IOR8
+        desc: ""
+      }
+      {
+        instance: sysrst_ctrl_aon
+        port: key0_out
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: sysrst_ctrl_aon
+        port: key1_out
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: sysrst_ctrl_aon
+        port: key2_out
+        connection: muxed
+        pad: ""
+        desc: ""
+      }
+      {
+        instance: sysrst_ctrl_aon
+        port: pwrb_out
         connection: muxed
         pad: ""
         desc: ""
@@ -8930,6 +9092,60 @@
         glob_idx: 58
       }
       {
+        name: sysrst_ctrl_aon_ac_present
+        width: 1
+        type: input
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 59
+      }
+      {
+        name: sysrst_ctrl_aon_ec_rst_in_l
+        width: 1
+        type: input
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 60
+      }
+      {
+        name: sysrst_ctrl_aon_key0_in
+        width: 1
+        type: input
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 61
+      }
+      {
+        name: sysrst_ctrl_aon_key1_in
+        width: 1
+        type: input
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 62
+      }
+      {
+        name: sysrst_ctrl_aon_key2_in
+        width: 1
+        type: input
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 63
+      }
+      {
+        name: sysrst_ctrl_aon_pwrb_in
+        width: 1
+        type: input
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 64
+      }
+      {
         name: spi_host0_sck
         width: 1
         type: output
@@ -9181,6 +9397,60 @@
         connection: muxed
         glob_idx: 62
       }
+      {
+        name: sysrst_ctrl_aon_bat_disable
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 63
+      }
+      {
+        name: sysrst_ctrl_aon_ec_rst_out_l
+        width: 1
+        type: output
+        idx: -1
+        pad: IOR8
+        connection: direct
+        glob_idx: 21
+      }
+      {
+        name: sysrst_ctrl_aon_key0_out
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 64
+      }
+      {
+        name: sysrst_ctrl_aon_key1_out
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 65
+      }
+      {
+        name: sysrst_ctrl_aon_key2_out
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 66
+      }
+      {
+        name: sysrst_ctrl_aon_pwrb_out
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        connection: muxed
+        glob_idx: 67
+      }
     ]
     io_counts:
     {
@@ -9188,15 +9458,15 @@
       {
         inouts: 11
         inputs: 3
-        outputs: 7
-        pads: 22
+        outputs: 8
+        pads: 23
       }
       muxed:
       {
         inouts: 42
-        inputs: 17
-        outputs: 21
-        pads: 44
+        inputs: 23
+        outputs: 26
+        pads: 43
       }
     }
   }
@@ -9241,13 +9511,13 @@
             name: tck
             pad: SPI_DEV_CLK
             desc: JTAG tck signal, overlaid on SPI_DEV.
-            idx: 55
+            idx: 54
           }
           {
             name: tms
             pad: SPI_DEV_CS_L
             desc: JTAG tms signal, overlaid on SPI_DEV.
-            idx: 56
+            idx: 55
           }
           {
             name: trst_n
@@ -9259,13 +9529,13 @@
             name: tdi
             pad: SPI_DEV_D0
             desc: JTAG tdi signal, overlaid on SPI_DEV.
-            idx: 48
+            idx: 47
           }
           {
             name: tdo
             pad: SPI_DEV_D1
             desc: JTAG tdo signal, overlaid on SPI_DEV.
-            idx: 49
+            idx: 48
           }
         ]
       }
@@ -9434,13 +9704,13 @@
             name: tck
             pad: SPI_DEV_CLK
             desc: JTAG tck signal, overlaid on SPI_DEV.
-            idx: 55
+            idx: 54
           }
           {
             name: tms
             pad: SPI_DEV_CS_L
             desc: JTAG tms signal, overlaid on SPI_DEV.
-            idx: 56
+            idx: 55
           }
           {
             name: trst_n
@@ -9452,13 +9722,13 @@
             name: tdi
             pad: SPI_DEV_D0
             desc: JTAG tdi signal, overlaid on SPI_DEV.
-            idx: 48
+            idx: 47
           }
           {
             name: tdo
             pad: SPI_DEV_D1
             desc: JTAG tdo signal, overlaid on SPI_DEV.
-            idx: 49
+            idx: 48
           }
         ]
       }
@@ -9547,6 +9817,7 @@
     otp_ctrl
     alert_handler
     pwrmgr_aon
+    sysrst_ctrl_aon
     adc_ctrl_aon
     aon_timer_aon
     flash_ctrl
@@ -10268,6 +10539,12 @@
       width: 1
       type: interrupt
       module_name: pwrmgr_aon
+    }
+    {
+      name: sysrst_ctrl_aon_sysrst_ctrl
+      width: 1
+      type: interrupt
+      module_name: sysrst_ctrl_aon
     }
     {
       name: adc_ctrl_aon_debug_cable
@@ -12141,6 +12418,19 @@
         default: ""
         end_idx: -1
         top_signame: clkmgr_aon_tl
+        index: -1
+      }
+      {
+        name: tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: sysrst_ctrl_aon
+        default: ""
+        end_idx: -1
+        top_signame: sysrst_ctrl_aon_tl
         index: -1
       }
       {
@@ -14370,6 +14660,18 @@
         inst_name: peri
         default: ""
         top_signame: aon_timer_aon_tl
+        index: -1
+      }
+      {
+        name: tl_sysrst_ctrl_aon
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: peri
+        default: ""
+        top_signame: sysrst_ctrl_aon_tl
         index: -1
       }
       {
@@ -16899,6 +17201,28 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: aon_timer_aon_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: sysrst_ctrl_aon_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: sysrst_ctrl_aon_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

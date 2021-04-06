@@ -8,7 +8,7 @@ module sysrst_ctrl_timerfsm #(
   parameter int unsigned TIMERBIT = 16
   ) (
   input                clk_aon_i,
-  input                rst_slow_ni,
+  input                rst_aon_ni,
   input                trigger_i,
   input [TIMERBIT-1:0] cfg_timer_i,
   input                cfg_l2h_en_i,
@@ -25,8 +25,8 @@ module sysrst_ctrl_timerfsm #(
   logic [TIMERBIT-1:0] timer_cnt_d, timer_cnt_q;
   logic timer_cnt_clr, timer_cnt_en;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_trigger_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_trigger_reg
+    if (!rst_aon_ni) begin
       trigger_q    <= 1'b0;
     end else begin
       trigger_q    <= trigger_i;
@@ -56,8 +56,8 @@ module sysrst_ctrl_timerfsm #(
 
   timer_state_e timer_state_q, timer_state_d;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_timer_state_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_timer_state_reg
+    if (!rst_aon_ni) begin
       timer_state_q    <= IDLE;
     end else begin
       timer_state_q    <= timer_state_d;
@@ -66,8 +66,8 @@ module sysrst_ctrl_timerfsm #(
 
   assign timer_cnt_d = (timer_cnt_en) ? timer_cnt_q + 1'b1 : timer_cnt_q;
 
-  always_ff @(posedge clk_aon_i or negedge rst_slow_ni) begin: i_timer_cnt_reg
-    if (!rst_slow_ni) begin
+  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin: i_timer_cnt_reg
+    if (!rst_aon_ni) begin
       timer_cnt_q    <= '0;
     end
     else if (timer_cnt_clr) begin

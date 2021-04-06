@@ -26,6 +26,7 @@ package clkmgr_pkg;
   logic clk_io_powerup;
   logic clk_usb_powerup;
   logic clk_io_div2_powerup;
+  logic clk_aon_secure;
   logic clk_aon_peri;
   logic clk_aon_timers;
   logic clk_main_aes;

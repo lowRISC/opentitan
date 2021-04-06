@@ -211,6 +211,16 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_CLKMGR_AON_SIZE_BYTES = 32'h1000;
 
   /**
+   * Peripheral base address for sysrst_ctrl_aon in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR = 32'h40430000;
+
+  /**
+   * Peripheral size in bytes for sysrst_ctrl_aon in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SYSRST_CTRL_AON_SIZE_BYTES = 32'h1000;
+
+  /**
    * Peripheral base address for adc_ctrl_aon in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR = 32'h40440000;
@@ -522,7 +532,13 @@ package top_earlgrey_pkg;
     MioInSensorCtrlAonAstDebugIn7 = 56,
     MioInSensorCtrlAonAstDebugIn8 = 57,
     MioInSensorCtrlAonAstDebugIn9 = 58,
-    MioInCount = 59
+    MioInSysrstCtrlAonAcPresent = 59,
+    MioInSysrstCtrlAonEcRstInL = 60,
+    MioInSysrstCtrlAonKey0In = 61,
+    MioInSysrstCtrlAonKey1In = 62,
+    MioInSysrstCtrlAonKey2In = 63,
+    MioInSysrstCtrlAonPwrbIn = 64,
+    MioInCount = 65
   } mio_in_e;
 
   typedef enum {
@@ -589,7 +605,12 @@ package top_earlgrey_pkg;
     MioOutSensorCtrlAonAstDebugOut7 = 60,
     MioOutSensorCtrlAonAstDebugOut8 = 61,
     MioOutSensorCtrlAonAstDebugOut9 = 62,
-    MioOutCount = 63
+    MioOutSysrstCtrlAonBatDisable = 63,
+    MioOutSysrstCtrlAonKey0Out = 64,
+    MioOutSysrstCtrlAonKey1Out = 65,
+    MioOutSysrstCtrlAonKey2Out = 66,
+    MioOutSysrstCtrlAonPwrbOut = 67,
+    MioOutCount = 68
   } mio_out_e;
 
   // Enumeration for DIO signals, used on both the top and chip-levels.
@@ -615,7 +636,8 @@ package top_earlgrey_pkg;
     DioUsbdevDnPullup = 18,
     DioUsbdevTxModeSe = 19,
     DioUsbdevSuspend = 20,
-    DioCount = 21
+    DioSysrstCtrlAonEcRstOutL = 21,
+    DioCount = 22
   } dio_e;
 
   // Raw MIO/DIO input array indices on chip-level.
@@ -660,12 +682,11 @@ package top_earlgrey_pkg;
     MioPadIor5 = 35,
     MioPadIor6 = 36,
     MioPadIor7 = 37,
-    MioPadIor8 = 38,
-    MioPadIor9 = 39,
-    MioPadIor10 = 40,
-    MioPadIor11 = 41,
-    MioPadIor12 = 42,
-    MioPadIor13 = 43,
+    MioPadIor9 = 38,
+    MioPadIor10 = 39,
+    MioPadIor11 = 40,
+    MioPadIor12 = 41,
+    MioPadIor13 = 42,
     MioPadCount
   } mio_pad_e;
 
@@ -692,6 +713,7 @@ package top_earlgrey_pkg;
     DioPadFlashTestMode2 = 19,
     DioPadFlashTestMode3 = 20,
     DioPadFlashTestVolt = 21,
+    DioPadIor8 = 22,
     DioPadCount
   } dio_pad_e;
 
