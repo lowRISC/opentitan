@@ -31,6 +31,7 @@ gui="-batch -command exit"  # default Batch mode
 tool="jg"
 export COV=0
 export CSV_PATH
+export COMMON_MSG_TCL_PATH=$(readlink -f tools/jaspergold/jaspergold_common_message_process.tcl)
 
 while [ "$1" != "" ]; do
   case "$1" in

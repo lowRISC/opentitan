@@ -27,6 +27,8 @@
 # Note that the module to be tested needs to have an _fpv testbench
 # and a corresponding core file for this to work.
 
+set -e
+
 export DUT_TOP=$1
 shift
 gui=0
@@ -34,6 +36,7 @@ tool="jg"
 flag="fileset_top"
 export COV=0
 export CHECK=0
+export COMMON_MSG_TCL_PATH=$(readlink -f tools/jaspergold/jaspergold_common_message_process.tcl)
 
 while [ "$1" != "" ]; do
   case "$1" in
