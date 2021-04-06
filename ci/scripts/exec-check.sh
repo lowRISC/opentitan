@@ -5,17 +5,13 @@
 
 set -e
 
-noexec_suffixes=(
-    c
-    cc
-    core
-    h
-    sv
-    tpl
+allowed_suffixes=(
+    py
+    sh
 )
 
 suff_re=""
-for suff in "${noexec_suffixes[@]}"; do
+for suff in "${allowed_suffixes[@]}"; do
     suff_re="${suff_re}$suff\\|"
 done
 suff_re="\\(${suff_re:0:-2}\\)"
@@ -29,7 +25,9 @@ TMPFILE="$(mktemp)" || {
 trap 'rm -f "$TMPFILE"' EXIT
 
 find -name vendor -prune -o \
-     -type f -executable -regex "$path_re" -print >"$TMPFILE"
+     -name .git -prune -o \
+     -type f -executable -name '*.*' -not -regex "$path_re" \
+     -print >"$TMPFILE"
 if [ -s "$TMPFILE" ]; then
     echo -n "##vso[task.logissue type=error]"
     echo "One or more files have the executable bit set when they shouldn't."
