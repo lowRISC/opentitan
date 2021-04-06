@@ -473,7 +473,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                             bit             do_rand_wr_and_reset = 1);
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(csr_access_abort_pct)
-    cfg.m_tl_agent_cfg.csr_access_abort_pct_in_adapter = csr_access_abort_pct;
+    foreach (cfg.m_tl_agent_cfgs[i]) begin
+      cfg.m_tl_agent_cfgs[i].csr_access_abort_pct_in_adapter = csr_access_abort_pct;
+    end
     // when allowing TL transaction to be aborted, TL adapter will return status UVM_NOT_OK, skip
     // checking the status.
     if (csr_access_abort_pct > 0) csr_utils_pkg::default_csr_check = UVM_NO_CHECK;
@@ -549,7 +551,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
     run_csr_vseq(.csr_test_type("hw_reset"), .do_rand_wr_and_reset(0));
     // abort should not occur after this, as the following is normal seq
-    cfg.m_tl_agent_cfg.csr_access_abort_pct_in_adapter = 0;
+    foreach (cfg.m_tl_agent_cfgs[i]) begin
+      cfg.m_tl_agent_cfgs[i].csr_access_abort_pct_in_adapter = 0;
+    end
     csr_utils_pkg::default_csr_check = UVM_CHECK;
   endtask
 

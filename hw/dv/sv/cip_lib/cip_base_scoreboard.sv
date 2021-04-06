@@ -9,8 +9,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   `uvm_component_param_utils(cip_base_scoreboard #(RAL_T, CFG_T, COV_T))
 
   // TLM fifos to pick up the packets
-  uvm_tlm_analysis_fifo #(tl_seq_item)  tl_a_chan_fifo;
-  uvm_tlm_analysis_fifo #(tl_seq_item)  tl_d_chan_fifo;
+  uvm_tlm_analysis_fifo #(tl_seq_item)  tl_a_chan_fifos[string];
+  uvm_tlm_analysis_fifo #(tl_seq_item)  tl_d_chan_fifos[string];
 
   // Alert_fifo to notify scb if DUT sends an alert
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifos[string];
@@ -31,8 +31,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    tl_a_chan_fifo = new("tl_a_chan_fifo", this);
-    tl_d_chan_fifo = new("tl_d_chan_fifo", this);
+    foreach (cfg.m_tl_agent_cfgs[i]) begin
+      tl_a_chan_fifos[i] = new({"tl_a_chan_fifo_", i}, this);
+      tl_d_chan_fifos[i] = new({"tl_d_chan_fifo_", i}, this);
+    end
     foreach(cfg.list_of_alerts[i]) begin
       string alert_name = cfg.list_of_alerts[i];
       alert_fifos[alert_name] = new($sformatf("alert_fifo[%s]", alert_name), this);
@@ -52,35 +54,50 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endtask
 
   virtual task process_tl_a_chan_fifo();
-    tl_seq_item item;
-    forever begin
-      tl_a_chan_fifo.get(item);
+    foreach (tl_a_chan_fifos[i]) begin
+      automatic string ral_name = i;
+      fork
+        forever begin
+          tl_seq_item item;
+          tl_a_chan_fifos[ral_name].get(item);
+          `uvm_info(`gfn, $sformatf("received tl a_chan item:\n%0s", item.sprint()), UVM_HIGH)
 
-      if (cfg.en_scb_tl_err_chk) begin
-        if (predict_tl_err(item, AddrChannel)) continue;
-      end
-      if (cfg.en_scb_mem_chk && item.is_write() && is_mem_addr(item)) process_mem_write(item);
+          // TODO, handle multi-ral for predict_tl_err and process_mem_read
+          if (cfg.en_scb_tl_err_chk) begin
+            if (predict_tl_err(item, AddrChannel)) continue;
+          end
+          if (cfg.en_scb_mem_chk && item.is_write() && is_mem_addr(item)) process_mem_write(item);
 
-      if (!cfg.en_scb) continue;
-      process_tl_access(item, AddrChannel);
+          if (!cfg.en_scb) continue;
+
+          process_tl_access(item, AddrChannel, ral_name);
+        end // forever
+      join_none
     end
   endtask
 
   virtual task process_tl_d_chan_fifo();
-    tl_seq_item item;
-    forever begin
-      tl_d_chan_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("received tl d_chan item:\n%0s", item.sprint()), UVM_HIGH)
+    foreach (tl_d_chan_fifos[i]) begin
+      automatic string ral_name = i;
+      fork
+        forever begin
+          tl_seq_item item;
+          tl_d_chan_fifos[ral_name].get(item);
+          `uvm_info(`gfn, $sformatf("received tl d_chan item:\n%0s", item.sprint()), UVM_HIGH)
 
-      if (cfg.en_scb_tl_err_chk) begin
-        // check tl packet integrity
-        void'(item.is_ok());
-        if (predict_tl_err(item, DataChannel)) continue;
-      end
-      if (cfg.en_scb_mem_chk && !item.is_write() && is_mem_addr(item)) process_mem_read(item);
+          // TODO, handle mult-ral for predict_tl_err and process_mem_read
+          if (cfg.en_scb_tl_err_chk) begin
+            // check tl packet integrity
+            void'(item.is_ok());
+            if (predict_tl_err(item, DataChannel)) continue;
+          end
+          if (cfg.en_scb_mem_chk && !item.is_write() && is_mem_addr(item)) process_mem_read(item);
 
-      if (!cfg.en_scb) continue;
-      process_tl_access(item, DataChannel);
+          if (!cfg.en_scb) continue;
+
+          process_tl_access(item, DataChannel, ral_name);
+        end // forever
+      join_none
     end
   endtask
 
@@ -195,7 +212,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endfunction
 
   // task to process tl access
-  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
+  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
   endtask
 
@@ -313,8 +330,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
-    tl_a_chan_fifo.flush();
-    tl_d_chan_fifo.flush();
+    foreach (tl_a_chan_fifos[i]) tl_a_chan_fifos[i].flush();
+    foreach (tl_d_chan_fifos[i]) tl_d_chan_fifos[i].flush();
     if (cfg.has_edn) edn_fifo.flush();
     foreach(cfg.list_of_alerts[i]) begin
       alert_fifos[cfg.list_of_alerts[i]].flush();
@@ -327,8 +344,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   virtual function void check_phase(uvm_phase phase);
     super.check_phase(phase);
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_a_chan_fifo)
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_d_chan_fifo)
+    foreach (tl_a_chan_fifos[i]) `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_a_chan_fifos[i])
+    foreach (tl_d_chan_fifos[i]) `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_d_chan_fifos[i])
   endfunction
 
 endclass

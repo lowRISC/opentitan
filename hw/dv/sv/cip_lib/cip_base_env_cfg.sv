@@ -4,7 +4,13 @@
 
 class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg #(RAL_T);
   // Downstream agent cfg objects.
-  rand tl_agent_cfg   m_tl_agent_cfg;
+
+  // if the block supports only one RAL, just use `m_tl_agent_cfg`
+  // if there are multiple RALs, `m_tl_agent_cfg` is the default one for RAL with type `RAL_T`
+  // for the other RAL, can get from ral_models[string] and agent cfg from m_tl_agent_cfgs[string]
+  tl_agent_cfg        m_tl_agent_cfg;
+  rand tl_agent_cfg   m_tl_agent_cfgs[string];
+
   alert_esc_agent_cfg m_alert_agent_cfg[string];
   push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent_cfg;
 
@@ -29,7 +35,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   string list_of_alerts[] = {};
 
   `uvm_object_param_utils_begin(cip_base_env_cfg #(RAL_T))
-    `uvm_field_object          (m_tl_agent_cfg,    UVM_DEFAULT)
+    `uvm_field_aa_object_string(m_tl_agent_cfgs,   UVM_DEFAULT)
     `uvm_field_aa_object_string(m_alert_agent_cfg, UVM_DEFAULT)
     `uvm_field_int             (num_interrupts,    UVM_DEFAULT)
  `uvm_object_utils_end
@@ -39,10 +45,22 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   virtual function void initialize(bit [BUS_AW-1:0] csr_base_addr = '1);
     super.initialize(csr_base_addr);
     // Create downstream agent cfg objects.
-    m_tl_agent_cfg = tl_agent_cfg::type_id::create("m_tl_agent_cfg");
-    m_tl_agent_cfg.if_mode = dv_utils_pkg::Host;
-    // TL host cannot support device same cycle response. Host may drive d_ready=0 when a_valid=1.
-    m_tl_agent_cfg.host_can_stall_rsp_when_a_valid_high = $urandom_range(0, 1);
+    foreach (ral_model_names[i]) begin
+      string ral_name = ral_model_names[i];
+      m_tl_agent_cfgs[ral_name] = tl_agent_cfg::type_id::create({"m_tl_agent_cfg_", ral_name});
+      if (ral_name == RAL_T::type_name) m_tl_agent_cfg = m_tl_agent_cfgs[ral_name];
+
+      m_tl_agent_cfgs[ral_name].if_mode = dv_utils_pkg::Host;
+      // TL host cannot support device same cycle response. Host may drive d_ready=0 when a_valid=1.
+      m_tl_agent_cfgs[ral_name].host_can_stall_rsp_when_a_valid_high = $urandom_range(0, 1);
+    end
+
+    // Assign handle to the default `m_tl_agent_cfg` for default `RAL_T`
+    if (ral_model_names.size > 0) begin
+      `DV_CHECK_FATAL(m_tl_agent_cfgs.exists(RAL_T::type_name))
+      m_tl_agent_cfg = m_tl_agent_cfgs[RAL_T::type_name];
+      `DV_CHECK_NE_FATAL(m_tl_agent_cfg, null)
+    end
 
     check_shadow_reg_alerts();
     if (list_of_alerts.size() > 0) begin
