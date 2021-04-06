@@ -27,8 +27,7 @@ module otp_ctrl_lci
   // Note that a transition request will fail if the request attempts to
   // clear already programmed bits within OTP.
   input                                     lc_req_i,
-  input  lc_ctrl_state_pkg::lc_state_e      lc_state_i,
-  input  lc_ctrl_state_pkg::lc_cnt_e        lc_count_i,
+  input  logic [Info.size*8-1:0]            lc_data_i,
   output logic                              lc_ack_o,
   output logic                              lc_err_o,
   // Output error state of partition, to be consumed by OTP error/alert logic.
@@ -230,7 +229,7 @@ module otp_ctrl_lci
   assign otp_size_o = '0;
 
   logic [NumLcOtpWords-1:0][OtpWidth-1:0] data;
-  assign data        = {lc_count_i, lc_state_i};
+  assign data        = lc_data_i;
   assign otp_wdata_o = (otp_req_o) ? OtpIfWidth'(data[cnt_q]) : '0;
 
   logic unused_rdata;
