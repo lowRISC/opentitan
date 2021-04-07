@@ -45,6 +45,9 @@ module hmac_core import hmac_pkg::*; (
   localparam int unsigned BlockSizeBits = $clog2(BlockSize);
   localparam int unsigned HashWordBits = $clog2($bits(sha_word_t));
 
+  localparam bit [63:0]            BlockSize64 = 64'(BlockSize);
+  localparam bit [BlockSizeBits:0] BlockSizeBSB = BlockSize[BlockSizeBits:0];
+
   logic hash_start; // generated from internal state machine
   logic hash_process; // generated from internal state machine to trigger hash
   logic hmac_hash_done;
@@ -118,12 +121,12 @@ module hmac_core import hmac_pkg::*; (
     (sel_rdata == SelFifo) ? fifo_rdata                                               :
     '{default: '0};
 
-  assign sha_message_length = (!hmac_en)                 ? message_length             :
-                              (sel_msglen == SelIPadMsg) ? message_length + BlockSize :
-                              (sel_msglen == SelOPadMsg) ? BlockSize + 256            :
+  assign sha_message_length = (!hmac_en)                 ? message_length               :
+                              (sel_msglen == SelIPadMsg) ? message_length + BlockSize64 :
+                              (sel_msglen == SelOPadMsg) ? BlockSize64 + 64'd256        :
                               '0 ;
 
-  assign txcnt_eq_blksz = (txcount[BlockSizeBits:0] == BlockSize);
+  assign txcnt_eq_blksz = (txcount[BlockSizeBits:0] == BlockSizeBSB);
 
   assign inc_txcount = sha_rready && sha_rvalid;
 
