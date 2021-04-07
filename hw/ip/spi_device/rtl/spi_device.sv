@@ -776,6 +776,7 @@ module spi_device (
     .tl_o        (tl_sram_d2h [0]),
     .en_ifetch_i (tlul_pkg::InstrDis),
     .req_o       (mem_a_req),
+    .req_type_o  (),
     .gnt_i       (mem_a_req),  //Always grant when request
     .we_o        (mem_a_write),
     .addr_o      (mem_a_addr),

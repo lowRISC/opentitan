@@ -295,6 +295,7 @@ module hmac
     .tl_o        (tl_win_d2h[0]),
     .en_ifetch_i (tlul_pkg::InstrDis),
     .req_o       (msg_fifo_req   ),
+    .req_type_o  (),
     .gnt_i       (msg_fifo_gnt   ),
     .we_o        (msg_fifo_we    ),
     .addr_o      (msg_fifo_addr  ), // Doesn't care the address other than sub-word

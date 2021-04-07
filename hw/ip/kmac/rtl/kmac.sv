@@ -656,6 +656,7 @@ module kmac
     .tl_o        (tl_win_d2h[WinMsgFifo]),
 
     .req_o       (tlram_req),
+    .req_type_o  (),
     .gnt_i       (tlram_gnt),
     .we_o        (tlram_we ),
     .addr_o      (tlram_addr),

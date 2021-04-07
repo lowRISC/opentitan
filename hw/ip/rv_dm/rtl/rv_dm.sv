@@ -344,6 +344,7 @@ module rv_dm #(
     .rst_ni,
     .en_ifetch_i (en_ifetch),
     .req_o       (req),
+    .req_type_o  (),
     .gnt_i       (1'b1),
     .we_o        (we),
     .addr_o      (addr_w),
