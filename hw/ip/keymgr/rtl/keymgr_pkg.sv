@@ -82,7 +82,7 @@ package keymgr_pkg;
   parameter int KDFMaxWidth = 1600;
 
   // Enumeration for operations
-  typedef enum logic [2:0] {
+  typedef enum logic [1:0] {
     Creator   = 0,
     OwnerInt  = 1,
     Owner     = 2,
