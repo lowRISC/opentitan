@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:all
       - lowrisc:ip:tlul
     files:
       - rtl/pattgen_reg_pkg.sv
