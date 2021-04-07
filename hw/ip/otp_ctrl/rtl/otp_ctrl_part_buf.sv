@@ -13,7 +13,7 @@ module otp_ctrl_part_buf
   import otp_ctrl_part_pkg::*;
 #(
   // Partition information.
-  parameter part_info_t             Info = part_info_t'(0),
+  parameter part_info_t             Info = PartInfoDefault,
   parameter logic [Info.size*8-1:0] DataDefault = '0
 ) (
   input                               clk_i,
@@ -577,6 +577,11 @@ module otp_ctrl_part_buf
   logic [OtpByteAddrWidth-1:0] addr_calc;
   assign addr_calc = OtpByteAddrWidth'({cnt_q, {$clog2(ScrmblBlockWidth/8){1'b0}}}) + addr_base;
   assign otp_addr_o = addr_calc[OtpByteAddrWidth-1:OtpAddrShift];
+
+  if (OtpAddrShift > 0) begin : gen_unused
+    logic unused_bits;
+    assign unused_bits = ^addr_calc[OtpAddrShift-1:0];
+  end
 
   // Always transfer 64bit blocks.
   assign otp_size_o = OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth) - 1);

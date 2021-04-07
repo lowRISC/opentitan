@@ -13,7 +13,7 @@ module otp_ctrl_lci
   import otp_ctrl_part_pkg::*;
 #(
   // Lifecycle partition information
-  parameter part_info_t Info = part_info_t'(0)
+  parameter part_info_t Info = PartInfoDefault
 ) (
   input                                     clk_i,
   input                                     rst_ni,

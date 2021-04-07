@@ -81,7 +81,8 @@ module prim_generic_otp
     .intg_error_o(                    ),
     .rdata_i     ( tlul_rdata_q       ),
     .rvalid_i    ( tlul_rvalid_q      ),
-    .rerror_i    ( '0                 )
+    .rerror_i    ( '0                 ),
+    .req_type_o  (                    )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_tlul_testreg

@@ -13,7 +13,7 @@ module otp_ctrl_part_unbuf
   import otp_ctrl_part_pkg::*;
 #(
   // Partition information.
-  parameter part_info_t Info = part_info_t'(0)
+  parameter part_info_t Info = PartInfoDefault
 ) (
   input                               clk_i,
   input                               rst_ni,
@@ -305,6 +305,11 @@ module otp_ctrl_part_unbuf
   logic [OtpByteAddrWidth-1:0] addr_calc;
   assign addr_calc = (otp_addr_sel == DigestAddr) ? DigestOffset : {tlul_addr_q, 2'b00};
   assign otp_addr_o = addr_calc[OtpByteAddrWidth-1:OtpAddrShift];
+
+  if (OtpAddrShift > 0) begin : gen_unused
+    logic unused_bits;
+    assign unused_bits = ^addr_calc[OtpAddrShift-1:0];
+  end
 
   // Request 32bit except in case of the digest.
   assign otp_size_o = (otp_addr_sel == DigestAddr) ?
