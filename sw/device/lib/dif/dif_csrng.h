@@ -199,11 +199,11 @@ typedef enum dif_csrng_entropy_src_toggle {
    * Note: Software may opt to XOR the seed material with a seed to implement
    * a software assisted FIPS mode of operation.
    */
-  kDifCsrngEntropySrcToggleDisable,
+  kDifCsrngEntropySrcToggleDisable = 1,
   /**
    * Entropy source XOR'ed with the provided seed material.
    */
-  kDifCsrngEntropySrcToggleEnable,
+  kDifCsrngEntropySrcToggleEnable = 0,
 } dif_csrng_entropy_src_toggle_t;
 
 /**
