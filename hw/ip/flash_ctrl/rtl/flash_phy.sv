@@ -14,6 +14,7 @@ module flash_phy import flash_ctrl_pkg::*; (
   input clk_i,
   input rst_ni,
   input host_req_i,
+  input host_intg_err_i,
   input tlul_pkg::tl_type_e host_req_type_i,
   input [BusAddrW-1:0] host_addr_i,
   output logic host_req_rdy_o,
@@ -94,6 +95,8 @@ module flash_phy import flash_ctrl_pkg::*; (
   assign flash_ctrl_o.rd_data = rd_data[ctrl_bank_sel];
   assign flash_ctrl_o.rd_err = rd_err[ctrl_bank_sel];
   assign flash_ctrl_o.init_busy = init_busy;
+  // feed through host integrity error directly
+  assign flash_ctrl_o.intg_err = host_intg_err_i;
 
   // This fifo holds the expected return order
   prim_fifo_sync #(
@@ -186,6 +189,8 @@ module flash_phy import flash_ctrl_pkg::*; (
     flash_phy_core u_core (
       .clk_i,
       .rst_ni,
+      // integrity error is either from host or from controller
+      .intg_err_i(host_intg_err_i | flash_ctrl_i.intg_err),
       .req_i(ctrl_req),
       .scramble_en_i(flash_ctrl_i.scramble_en),
       .ecc_en_i(flash_ctrl_i.ecc_en),
@@ -211,6 +216,8 @@ module flash_phy import flash_ctrl_pkg::*; (
       .prog_type_i(flash_ctrl_i.prog_type),
       .addr_key_i(flash_ctrl_i.addr_key),
       .data_key_i(flash_ctrl_i.data_key),
+      .rand_addr_key_i(flash_ctrl_i.rand_addr_key),
+      .rand_data_key_i(flash_ctrl_i.rand_data_key),
       .rd_buf_en_i(flash_ctrl_i.rd_buf_en),
       .host_req_rdy_o(host_req_rdy[bank]),
       .host_req_done_o(host_req_done[bank]),

@@ -515,6 +515,7 @@ mem_name = lib.Name(mem_name[1:])
   logic flash_host_rderr;
   logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
   logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
+  logic flash_host_intg_err;
 
   tlul_adapter_sram #(
     .SramAw(flash_ctrl_pkg::BusAddrW),
@@ -543,7 +544,7 @@ mem_name = lib.Name(mem_name[1:])
     .addr_o      (flash_host_addr),
     .wdata_o     (),
     .wmask_o     (),
-    .intg_error_o(),  // TODO: connect to flash controller and flash scramble later
+    .intg_error_o(flash_host_intg_err),
     .rdata_i     (flash_host_rdata),
     .rvalid_i    (flash_host_req_done),
     .rerror_i    ({flash_host_rderr,1'b0})
@@ -557,6 +558,7 @@ mem_name = lib.Name(mem_name[1:])
     .${key}   (${value}),
     % endfor
     .host_req_i        (flash_host_req),
+    .host_intg_err_i   (flash_host_intg_err),
     .host_req_type_i   (flash_host_req_type),
     .host_addr_i       (flash_host_addr),
     .host_req_rdy_o    (flash_host_req_rdy),

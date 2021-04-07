@@ -82,7 +82,9 @@ module flash_ctrl
   tlul_pkg::tl_d2h_t tl_win_d2h [2];
 
   assign prim_tl_o = flash_i.tl_flash_p2c;
+
   // Register module
+  logic intg_err;
   flash_ctrl_core_reg_top u_reg_core (
     .clk_i,
     .rst_ni,
@@ -96,7 +98,7 @@ module flash_ctrl
     .reg2hw,
     .hw2reg,
 
-    .intg_err_o (),
+    .intg_err_o (intg_err),
     .devmode_i  (1'b1)
   );
 
@@ -157,7 +159,9 @@ module flash_ctrl
 
   // Flash control arbitration connections to hardware interface
   flash_key_t addr_key;
+  flash_key_t rand_addr_key;
   flash_key_t data_key;
+  flash_key_t rand_data_key;
   flash_ctrl_reg2hw_control_reg_t hw_ctrl;
   logic hw_req;
   logic [top_pkg::TL_AW-1:0] hw_addr;
@@ -418,6 +422,8 @@ module flash_ctrl
     .otp_key_rsp_i(otp_i),
     .addr_key_o(addr_key),
     .data_key_o(data_key),
+    .rand_addr_key_o(rand_addr_key),
+    .rand_data_key_o(rand_data_key),
 
     // entropy interface
     .edn_req_o(lfsr_seed_en),
@@ -781,6 +787,8 @@ module flash_ctrl
   assign flash_o.region_cfgs = region_cfgs;
   assign flash_o.addr_key = addr_key;
   assign flash_o.data_key = data_key;
+  assign flash_o.rand_addr_key = rand_addr_key;
+  assign flash_o.rand_data_key = rand_data_key;
   assign flash_o.tl_flash_c2p = prim_tl_i;
   assign flash_o.alert_trig = reg2hw.phy_alert_cfg.alert_trig.q;
   assign flash_o.alert_ack = reg2hw.phy_alert_cfg.alert_ack.q;
@@ -789,11 +797,13 @@ module flash_ctrl
   assign flash_o.jtag_req.tdi = cio_tdi_i;
   assign flash_o.jtag_req.trst_n = '0;
   assign flash_o.ecc_multi_err_en = reg2hw.phy_err_cfg.q;
+  assign flash_o.intg_err = intg_err;
   assign cio_tdo_o = flash_i.jtag_rsp.tdo;
   assign cio_tdo_en_o = flash_i.jtag_rsp.tdo_oe;
   assign flash_rd_err = flash_i.rd_err;
   assign flash_rd_data = flash_i.rd_data;
   assign flash_phy_busy = flash_i.init_busy;
+
 
 
 
@@ -829,19 +839,26 @@ module flash_ctrl
   logic recov_ecc_err;
   assign recov_ecc_err = |flash_i.ecc_single_err | |flash_i.ecc_multi_err;
 
-  assign alert_srcs = { recov_ecc_err,
+  logic fatal_intg_err;
+  assign fatal_intg_err = flash_i.intg_err | intg_err;
+
+  assign alert_srcs = { fatal_intg_err,
+                        recov_ecc_err,
                         recov_mp_err,
                         recov_err
                       };
 
-  assign alert_tests = { reg2hw.alert_test.recov_ecc_err.q & reg2hw.alert_test.recov_ecc_err.qe,
+  assign alert_tests = { reg2hw.alert_test.fatal_intg_err.q & reg2hw.alert_test.fatal_intg_err.qe,
+                         reg2hw.alert_test.recov_ecc_err.q & reg2hw.alert_test.recov_ecc_err.qe,
                          reg2hw.alert_test.recov_mp_err.q  & reg2hw.alert_test.recov_mp_err.qe,
                          reg2hw.alert_test.recov_err.q     & reg2hw.alert_test.recov_err.qe
                        };
 
+  localparam logic [NumAlerts-1:0] IsFatal = {1'b1, 1'b0, 1'b0, 1'b0};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
     prim_alert_sender #(
-      .AsyncOn(AlertAsyncOn[i])
+      .AsyncOn(AlertAsyncOn[i]),
+      .IsFatal(IsFatal[i])
     ) u_alert_sender (
       .clk_i,
       .rst_ni,

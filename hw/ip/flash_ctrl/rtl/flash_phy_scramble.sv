@@ -12,6 +12,7 @@
 module flash_phy_scramble import flash_phy_pkg::*; (
   input clk_i,
   input rst_ni,
+  input intg_err_i,
   input calc_req_i, // calculate galois multiplier mask
   input op_req_i,   // request primitive operation
   input cipher_ops_e op_type_i,  // sramble or de-scramble
@@ -20,6 +21,8 @@ module flash_phy_scramble import flash_phy_pkg::*; (
   input [DataWidth-1:0] scrambled_data_i,
   input [KeySize-1:0] addr_key_i,
   input [KeySize-1:0] data_key_i,
+  input [KeySize-1:0] rand_addr_key_i,
+  input [KeySize-1:0] rand_data_key_i,
   output logic calc_ack_o,
   output logic op_ack_o,
   output logic [DataWidth-1:0] mask_o,
@@ -31,8 +34,11 @@ module flash_phy_scramble import flash_phy_pkg::*; (
   localparam int UnusedWidth = KeySize - AddrPadWidth;
 
   // unused portion of addr_key
+  logic [KeySize-1:0] muxed_addr_key;
+  assign muxed_addr_key = intg_err_i ? rand_addr_key_i : addr_key_i;
+
   logic [UnusedWidth-1:0] unused_key;
-  assign unused_key = addr_key_i[KeySize-1 -: UnusedWidth];
+  assign unused_key = muxed_addr_key[KeySize-1 -: UnusedWidth];
 
   // Galois Multiply portion
   prim_gf_mult # (
@@ -42,8 +48,8 @@ module flash_phy_scramble import flash_phy_pkg::*; (
     .clk_i,
     .rst_ni,
     .req_i(calc_req_i),
-    .operand_a_i({addr_key_i[DataWidth +: AddrPadWidth], addr_i}),
-    .operand_b_i(addr_key_i[DataWidth-1:0]),
+    .operand_a_i({muxed_addr_key[DataWidth +: AddrPadWidth], addr_i}),
+    .operand_b_i(muxed_addr_key[DataWidth-1:0]),
     .ack_o(calc_ack_o),
     .prod_o(mask_o)
   );
@@ -68,7 +74,7 @@ module flash_phy_scramble import flash_phy_pkg::*; (
     .rst_ni,
     .valid_i(op_req_i),
     .data_i(dec ? scrambled_data_i : plain_data_i),
-    .key_i(data_key_i),
+    .key_i(intg_err_i ? rand_data_key_i : data_key_i),
     .dec_i(dec),
     .data_o(data),
     .valid_o(op_ack_o)
