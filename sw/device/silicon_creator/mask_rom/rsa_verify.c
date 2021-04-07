@@ -26,6 +26,24 @@ static void subtract(uint32_t *a, const uint32_t *b) {
   }
 }
 
+/**
+ * Checks if `a` is greater than or equal to `b`.
+ *
+ * @param a A `kRsaNumWords` long buffer, little-endian.
+ * @param b A `kRsaNumWords` long buffer, little-endian.
+ * @return Comparison result.
+ */
+static bool greater_equal(const uint32_t *a, const uint32_t *b) {
+  // TODO(#33): Hardening?
+  // Note: Loop terminates when `i` wraps around.
+  for (size_t i = kRsaNumWords - 1; i < kRsaNumWords; --i) {
+    if (a[i] != b[i]) {
+      return a[i] > b[i];
+    }
+  }
+  return true;
+}
+
 // FIXME: Merge this comment with the one in the header file.
 // This function implements Alg. 14.36 in Handbook of Applied Cryptography:
 // 1. result = 0
@@ -35,7 +53,7 @@ static void subtract(uint32_t *a, const uint32_t *b) {
 // 3. If result >= m then result = result - m
 // 4. Return result
 void mont_mul(const uint32_t *x, const uint32_t *y, const uint32_t *m,
-              const uint32_t m_prime, uint32_t *result) {
+              const uint32_t m0_inv, uint32_t *result) {
   memset(result, 0, kRsaNumWords * sizeof(uint32_t));
 
   for (size_t i = 0; i < kRsaNumWords; ++i) {
@@ -50,7 +68,7 @@ void mont_mul(const uint32_t *x, const uint32_t *y, const uint32_t *m,
 
     // Holds the sum of the first two addends in step 2.2.
     uint64_t acc0 = (uint64_t)x[i] * y[0] + result[0];
-    const uint32_t u_i = (uint32_t)acc0 * m_prime;
+    const uint32_t u_i = (uint32_t)acc0 * m0_inv;
     // Holds the sum of the all three addends in step 2.2.
     uint64_t acc1 = (uint64_t)u_i * m[0] + (uint32_t)acc0;
 
@@ -77,4 +95,40 @@ void mont_mul(const uint32_t *x, const uint32_t *y, const uint32_t *m,
       subtract(result, m);
     }
   }
+}
+
+bool mod_exp(const uint32_t *sig, const rsa_verify_exponent_t e,
+             const uint32_t *r_square, const uint32_t *m, const uint32_t m0_inv,
+             uint32_t *result) {
+  uint32_t buf[kRsaNumWords];
+
+  if (e == kRsaVerifyExponent3) {
+    // result = sig * R mod m
+    mont_mul(sig, r_square, m, m0_inv, result);
+    // buf = sig^2 * R mod m
+    mont_mul(result, result, m, m0_inv, buf);
+  } else if (e == kRsaVerifyExponent65537) {
+    // buf = sig * R mod m
+    mont_mul(sig, r_square, m, m0_inv, buf);
+    for (size_t i = 0; i < 8; ++i) {
+      // result = sig^{2*i+1} * R mod m (sig's exponent: 2, 8, 32, ..., 32768)
+      mont_mul(buf, buf, m, m0_inv, result);
+      // buf = sig^{4*i+2} * R mod m (sig's exponent: 4, 16, 64, ..., 65536)
+      mont_mul(result, result, m, m0_inv, buf);
+    }
+  } else {
+    return false;
+  }
+  // result = sig^e mod m
+  mont_mul(buf, sig, m, m0_inv, result);
+
+  // We need this check because the result of `mont_mul` is not guaranteed to be
+  // the least non-negative residue. We need to subtract `m` from `result` at
+  // most once because  `m` is the modulus of an RSA public key and therefore
+  // R/2 < m < R.
+  if (greater_equal(result, m)) {
+    subtract(result, m);
+  }
+
+  return true;
 }
