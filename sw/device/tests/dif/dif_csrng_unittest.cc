@@ -4,6 +4,9 @@
 
 #include "sw/device/lib/dif/dif_csrng.h"
 
+#include <array>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/testing/mock_mmio.h"
@@ -130,6 +133,132 @@ TEST_F(GetOutputStatusTest, ValidStatus) {
   EXPECT_EQ(dif_csrng_get_output_status(&csrng_, &status), kDifCsrngOk);
   EXPECT_EQ(status.valid_data, true);
   EXPECT_EQ(status.fips_mode, false);
+}
+
+/**
+ * DRBG commands are tested using this test group as the underlying
+ * command interface is shared across API functions.
+ */
+class CommandTest : public DifCsrngTest {
+ protected:
+  dif_csrng_seed_material_t seed_material_ = {
+      .seed_material_len = 0,
+      .seed_material = {0},
+  };
+};
+
+TEST_F(CommandTest, InstantiateOk) {
+  EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000101);
+  EXPECT_EQ(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleDisable,
+                                  &seed_material_),
+            kDifCsrngOk);
+
+  EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000001);
+  EXPECT_EQ(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleEnable,
+                                  &seed_material_),
+            kDifCsrngOk);
+
+  seed_material_.seed_material[0] = 0x5a5a5a5a;
+  seed_material_.seed_material_len = 1;
+  EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000011);
+  EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
+  EXPECT_EQ(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleEnable,
+                                  &seed_material_),
+            kDifCsrngOk);
+}
+
+TEST_F(CommandTest, InstantiateBadArgs) {
+  EXPECT_EQ(dif_csrng_instantiate(nullptr, kDifCsrngEntropySrcToggleDisable,
+                                  &seed_material_),
+            kDifCsrngBadArg);
+
+  // Failed overflow check.
+  seed_material_.seed_material_len = 16;
+  EXPECT_EQ(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleDisable,
+                                  &seed_material_),
+            kDifCsrngBadArg);
+}
+
+TEST_F(CommandTest, ReseedOk) {
+  EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000002);
+  EXPECT_EQ(dif_csrng_reseed(&csrng_, &seed_material_), kDifCsrngOk);
+
+  seed_material_.seed_material[0] = 0x5a5a5a5a;
+  seed_material_.seed_material_len = 1;
+  EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000012);
+  EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
+  EXPECT_EQ(dif_csrng_reseed(&csrng_, &seed_material_), kDifCsrngOk);
+}
+
+TEST_F(CommandTest, ReseedBadArgs) {
+  EXPECT_EQ(dif_csrng_reseed(nullptr, &seed_material_), kDifCsrngBadArg);
+
+  // Failed overflow check.
+  seed_material_.seed_material_len = 16;
+  EXPECT_EQ(dif_csrng_reseed(&csrng_, &seed_material_), kDifCsrngBadArg);
+}
+
+TEST_F(CommandTest, UpdateOk) {
+  EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000004);
+  EXPECT_EQ(dif_csrng_update(&csrng_, &seed_material_), kDifCsrngOk);
+
+  seed_material_.seed_material[0] = 0x5a5a5a5a;
+  seed_material_.seed_material_len = 1;
+  EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000014);
+  EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
+  EXPECT_EQ(dif_csrng_update(&csrng_, &seed_material_), kDifCsrngOk);
+}
+
+TEST_F(CommandTest, UpdateBadArgs) {
+  EXPECT_EQ(dif_csrng_update(nullptr, &seed_material_), kDifCsrngBadArg);
+}
+
+TEST_F(CommandTest, GenerateOk) {
+  // 512bits = 16 x 32bit = 4 x 128bit blocks
+  EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00004003);
+  EXPECT_EQ(dif_csrng_generate(&csrng_, /*len=*/16), kDifCsrngOk);
+
+  // 576bits = 18 x 32bit = 5 x 128bit blocks (rounded up)
+  EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00005003);
+  EXPECT_EQ(dif_csrng_generate(&csrng_, /*len=*/18), kDifCsrngOk);
+}
+
+TEST_F(CommandTest, GenerateBadArgs) {
+  EXPECT_EQ(dif_csrng_generate(nullptr, /*len=*/1), kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_generate(&csrng_, /*len=*/0), kDifCsrngBadArg);
+}
+
+TEST_F(CommandTest, UninstantiateOk) {
+  EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000005);
+  EXPECT_EQ(dif_csrng_uninstantiate(&csrng_), kDifCsrngOk);
+}
+
+class ReadOutputTest : public DifCsrngTest {};
+
+TEST_F(ReadOutputTest, ReadOk) {
+  constexpr std::array<uint32_t, 4> kExpected = {
+      0x00000000,
+      0x11111111,
+      0x22222222,
+      0x33333333,
+  };
+
+  for (const uint32_t val : kExpected) {
+    EXPECT_READ32(CSRNG_GENBITS_REG_OFFSET, val);
+  }
+
+  std::vector<uint32_t> got(kExpected.size());
+  EXPECT_EQ(dif_csrng_read_output(&csrng_, got.data(), got.size()),
+            kDifCsrngOk);
+  EXPECT_THAT(got, testing::ElementsAreArray(kExpected));
+}
+
+TEST_F(ReadOutputTest, ReadBadArgs) {
+  EXPECT_EQ(dif_csrng_read_output(&csrng_, nullptr, /*len=*/0),
+            kDifCsrngBadArg);
+
+  uint32_t data;
+  EXPECT_EQ(dif_csrng_read_output(nullptr, &data, /*len=*/1), kDifCsrngBadArg);
 }
 
 }  // namespace
