@@ -22,7 +22,7 @@ VERIBLE_ARGS="--formal_parameters_indentation=indent \
               --port_declarations_indentation=indent \
               --inplace"
 
-if [ -z $VERIBLE_VERSION ]; then
+if [[ -z $VERIBLE_VERSION ]]; then
     echo "verible-verilog-format either not installed or not visible in PATH"
     exit 1
 fi
@@ -31,13 +31,31 @@ fi
 # overwriting of uncomitted changes
 git add -u
 
-# get all system verilog files and pipe through style formatter
-find . -type f -name "*.sv" -o -name "*.svh" |                           \
-    xargs -n 1 -P $NUM_PROCS verible-verilog-format                      \
-    $VERIBLE_ARGS
+# By default format only files in allow list
+MODE=${MODE:-allowlist}
+
+case $MODE in
+    allowlist)
+        FILES_TO_FORMAT=`grep -v '^#' util/verible-format-allowlist.txt`
+        ;;
+
+    all)
+        # get all system verilog files and pipe through style formatter
+        FILES_TO_FORMAT=`find . -type f -name "*.sv" -o -name "*.svh"`
+        ;;
+
+    *)
+        echo "verible-format.sh: Unknown mode $MODE"
+        exit 1
+        ;;
+esac
+
+echo $FILES_TO_FORMAT | \
+      xargs -n 1 -P $NUM_PROCS verible-verilog-format \
+      $VERIBLE_ARGS
 
 
-echo "Usign verible-verilog-format version $VERIBLE_VERSION" > $REPORT_FILE
+echo "Using verible-verilog-format version $VERIBLE_VERSION" > $REPORT_FILE
 
 # report changed files
 git status                  | \

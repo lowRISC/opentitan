@@ -1,0 +1,18 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# This is a list of files to be passed to Verible formatter
+# by calling verible-format.sh
+
+hw/ip/adc_ctrl/dv/tests/adc_ctrl_test_pkg.sv
+hw/ip/adc_ctrl/dv/env/adc_ctrl_env_pkg.sv
+hw/ip/gpio/dv/tests/gpio_test_pkg.sv
+hw/ip/adc_ctrl/dv/env/seq_lib/adc_ctrl_vseq_list.sv
+hw/ip/adc_ctrl/dv/env/seq_lib/adc_ctrl_smoke_vseq.sv
+hw/ip/prim_xilinx/rtl/prim_xilinx_buf.sv
+hw/ip/pwm/dv/tests/pwm_test_pkg.sv
+hw/ip/pwm/dv/env/pwm_env_pkg.sv
+hw/ip/pwm/dv/env/seq_lib/pwm_smoke_vseq.sv
+hw/ip/pwm/dv/env/seq_lib/pwm_vseq_list.sv
+hw/ip/gpio/dv/env/seq_lib/gpio_vseq_list.sv
