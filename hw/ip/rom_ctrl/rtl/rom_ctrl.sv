@@ -80,6 +80,7 @@ module rom_ctrl
     .tl_o         (tl_rom_d2h[0]),
     .en_ifetch_i  (tlul_pkg::InstrEn),
     .req_o        (rom_req),
+    .req_type_o   (),
     .gnt_i        (1'b1),
     .we_o         (),
     .addr_o       (rom_index),
