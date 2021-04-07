@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class adc_ctrl_base_test extends cip_base_test #(
-    .CFG_T(adc_ctrl_env_cfg),
-    .ENV_T(adc_ctrl_env)
-  );
+  .CFG_T(adc_ctrl_env_cfg),
+  .ENV_T(adc_ctrl_env)
+);
 
   `uvm_component_utils(adc_ctrl_base_test)
   `uvm_component_new

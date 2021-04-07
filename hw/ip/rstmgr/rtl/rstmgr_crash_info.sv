@@ -10,7 +10,7 @@ module rstmgr_crash_info
   import rstmgr_reg_pkg::IdxWidth;
   import rstmgr_reg_pkg::RdWidth;
 #(
-  parameter int CrashDumpWidth = 32,
+  parameter  int CrashDumpWidth = 32,
   localparam int CrashRemainder = CrashDumpWidth % RdWidth > 0 ? 1 : 0,
   localparam int CrashStoreSlot = CrashDumpWidth / RdWidth + CrashRemainder,
   localparam int SlotCntWidth   = $clog2(CrashStoreSlot)
@@ -26,7 +26,7 @@ module rstmgr_crash_info
 
   localparam int TotalWidth = CrashStoreSlot * RdWidth;
   logic [2**SlotCntWidth-1:0][RdWidth-1:0] slots;
-  logic [CrashStoreSlot-1:0][RdWidth-1:0] slots_q;
+  logic [ CrashStoreSlot-1:0][RdWidth-1:0] slots_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -53,4 +53,4 @@ module rstmgr_crash_info
   `ASSERT_INIT(CntStoreSlot_A, CrashStoreSlot < (1 << IdxWidth))
   `ASSERT_INIT(CntWidth_A, SlotCntWidth <= IdxWidth)
 
-endmodule // rstmgr_crash_info
+endmodule  // rstmgr_crash_info

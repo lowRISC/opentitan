@@ -85,7 +85,7 @@ class gpio_intr_rand_pgm_vseq extends gpio_base_vseq;
       end
       `uvm_info(msg_id, "End of Transaction", UVM_HIGH)
 
-    end // end for
+    end  // end for
 
   endtask : body
 

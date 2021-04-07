@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class pwm_base_test extends cip_base_test #(
-    .CFG_T(pwm_env_cfg),
-    .ENV_T(pwm_env)
-  );
+  .CFG_T(pwm_env_cfg),
+  .ENV_T(pwm_env)
+);
 
   `uvm_component_utils(pwm_base_test)
   `uvm_component_new
@@ -18,7 +18,7 @@ class pwm_base_test extends cip_base_test #(
   // the run_phase; as such, nothing more needs to be done
   virtual function void build_phase(uvm_phase phase);
     max_quit_count  = 50;
-    test_timeout_ns = 600_000_000; // 600ms
+    test_timeout_ns = 600_000_000;  // 600ms
     super.build_phase(phase);
   endfunction : build_phase
 

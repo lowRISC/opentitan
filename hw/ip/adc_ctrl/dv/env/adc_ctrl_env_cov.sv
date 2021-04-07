@@ -8,7 +8,9 @@
  * Covergroups may also be wrapped inside helper classes if needed.
  */
 
-class adc_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(adc_ctrl_env_cfg));
+class adc_ctrl_env_cov extends cip_base_env_cov #(
+  .CFG_T(adc_ctrl_env_cfg)
+);
   `uvm_component_utils(adc_ctrl_env_cov)
 
   // the base class provides the following handles for use:

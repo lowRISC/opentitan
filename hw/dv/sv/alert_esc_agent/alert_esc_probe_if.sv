@@ -8,7 +8,10 @@
 // state the expected resp_p should be high or not. However, from the esc_receiver interface, we
 // can only see "esc_p/n", which follows "esc_en_i" with one clock cycle delay.
 // Thus we need to probe this signal to accurately predict the signal integrity fail count.
-interface alert_esc_probe_if(input clk, input rst_n);
+interface alert_esc_probe_if (
+  input clk,
+  input rst_n
+);
 
   wire esc_en;
 
