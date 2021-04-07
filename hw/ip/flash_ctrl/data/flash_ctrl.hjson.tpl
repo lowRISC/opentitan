@@ -47,6 +47,9 @@
     { name: "recov_ecc_err",
       desc: "recoverable flash alert for ecc error"
     },
+    { name: "fatal_intg_err",
+      desc: "Fatal integrity error"
+    },
   ],
 
   // Define flash_ctrl <-> flash_phy struct package

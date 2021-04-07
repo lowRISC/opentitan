@@ -211,6 +211,8 @@ module flash_ctrl_core_reg_top (
   logic alert_test_recov_mp_err_we;
   logic alert_test_recov_ecc_err_wd;
   logic alert_test_recov_ecc_err_we;
+  logic alert_test_fatal_intg_err_wd;
+  logic alert_test_fatal_intg_err_we;
   logic ctrl_regwen_qs;
   logic ctrl_regwen_re;
   logic control_start_qs;
@@ -1669,6 +1671,21 @@ module flash_ctrl_core_reg_top (
     .qre    (),
     .qe     (reg2hw.alert_test.recov_ecc_err.qe),
     .q      (reg2hw.alert_test.recov_ecc_err.q ),
+    .qs     ()
+  );
+
+
+  //   F[fatal_intg_err]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_fatal_intg_err (
+    .re     (1'b0),
+    .we     (alert_test_fatal_intg_err_we),
+    .wd     (alert_test_fatal_intg_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.alert_test.fatal_intg_err.qe),
+    .q      (reg2hw.alert_test.fatal_intg_err.q ),
     .qs     ()
   );
 
@@ -11074,6 +11091,9 @@ module flash_ctrl_core_reg_top (
   assign alert_test_recov_ecc_err_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_recov_ecc_err_wd = reg_wdata[2];
 
+  assign alert_test_fatal_intg_err_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_fatal_intg_err_wd = reg_wdata[3];
+
   assign ctrl_regwen_re = addr_hit[4] & reg_re & !reg_error;
 
   assign control_start_we = addr_hit[5] & reg_we & !reg_error;
@@ -12101,6 +12121,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
+        reg_rdata_next[3] = '0;
       end
 
       addr_hit[4]: begin

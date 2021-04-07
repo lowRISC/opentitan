@@ -103,6 +103,7 @@ module flash_ctrl_wrapper (
   tlul_pkg::tl_type_e flash_host_req_type;
   logic flash_host_req_rdy;
   logic flash_host_req_done;
+  logic flash_host_intg_err;
   logic [flash_ctrl_pkg::BusWidth-1:0] flash_host_rdata;
   logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
 
@@ -113,28 +114,30 @@ module flash_ctrl_wrapper (
     .ByteAccess(0),
     .ErrOnWrite(1)
   ) u_tl_adapter_eflash (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_ni),
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
 
-    .tl_i       (eflash_tl_i),
-    .tl_o       (eflash_tl_o),
+    .tl_i         (eflash_tl_i),
+    .tl_o         (eflash_tl_o),
 
-    .req_o      (flash_host_req),
-    .req_type_o (flash_host_req_type),
-    .gnt_i      (flash_host_req_rdy),
-    .we_o       (),
-    .addr_o     (flash_host_addr),
-    .wdata_o    (),
-    .wmask_o    (),
-    .rdata_i    (flash_host_rdata),
-    .rvalid_i   (flash_host_req_done),
-    .rerror_i   (2'b00)
+    .req_o        (flash_host_req),
+    .req_type_o   (flash_host_req_type),
+    .gnt_i        (flash_host_req_rdy),
+    .we_o         (),
+    .addr_o       (flash_host_addr),
+    .wdata_o      (),
+    .wmask_o      (),
+    .rdata_i      (flash_host_rdata),
+    .rvalid_i     (flash_host_req_done),
+    .rerror_i     (2'b00),
+    .intg_error_o (flash_host_intg_err)
   );
 
   flash_phy u_flash_eflash (
     .clk_i,
     .rst_ni,
     .host_req_i             (flash_host_req     ),
+    .host_intg_err_i        (flash_host_intg_err),
     .host_req_type_i        (flash_host_req_type),
     .host_addr_i            (flash_host_addr    ),
     .host_req_rdy_o         (flash_host_req_rdy ),

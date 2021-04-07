@@ -182,10 +182,12 @@ package otp_ctrl_pkg;
   } otbn_otp_key_req_t;
 
   typedef struct packed {
-    logic data_ack;                // Ack for data key.
-    logic addr_ack;                // Ack for address key.
-    logic [FlashKeyWidth-1:0] key; // 128bit static scrambling key.
-    logic seed_valid;              // Set to 1 if the key seed has been provisioned and is valid.
+    logic data_ack;                    // Ack for data key.
+    logic addr_ack;                    // Ack for address key.
+    logic [FlashKeyWidth-1:0] key;     // 128bit static scrambling key.
+    logic [FlashKeyWidth-1:0] rand_key;
+    logic seed_valid;                  // Set to 1 if the key seed has been provisioned and is
+                                       // valid.
   } flash_otp_key_rsp_t;
 
   // Default for dangling connection
@@ -193,6 +195,7 @@ package otp_ctrl_pkg;
     data_ack: 1'b1,
     addr_ack: 1'b1,
     key: '0,
+    rand_key: '0,
     seed_valid: 1'b1
   };
 

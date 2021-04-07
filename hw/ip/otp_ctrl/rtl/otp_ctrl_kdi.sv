@@ -131,15 +131,15 @@ module otp_ctrl_kdi
   assign req_bundles[1] = '{ingest_entropy: 1'b0, // no random entropy added
                             chained_digest: 1'b0, // revert to netlist IV between blocks
                             digest_sel:     FlashDataKey,
-                            fetch_nonce:    1'b0, // no nonce needed
-                            nonce_size:     '0,
+                            fetch_nonce:    1'b1,
+                            nonce_size:     2'(FlashKeyWidth/EdnDataWidth-1),
                             seed_valid:     scrmbl_key_seed_valid_i,
                             seed:           flash_data_key_seed_i}; // 2x128bit
   // Flash addr key
   assign req_bundles[2] = '{ingest_entropy: 1'b0, // no random entropy added
                             chained_digest: 1'b0, // revert to netlist IV between blocks
                             digest_sel:     FlashAddrKey,
-                            fetch_nonce:    1'b0, // no nonce needed
+                            fetch_nonce:    1'b1,
                             nonce_size:     '0,
                             seed_valid:     scrmbl_key_seed_valid_i,
                             seed:           flash_addr_key_seed_i}; // 2x128bit
@@ -148,7 +148,7 @@ module otp_ctrl_kdi
                             chained_digest: 1'b0, // revert to netlist IV between blocks
                             digest_sel:     SramDataKey,
                             fetch_nonce:    1'b1, // fetch nonce
-                            nonce_size:     2'(OtbnNonceWidth/64-1),
+                            nonce_size:     2'(OtbnNonceWidth/EdnDataWidth-1),
                             seed_valid:     scrmbl_key_seed_valid_i,
                             seed:           {sram_data_key_seed_i,   // reuse same seed
                                              sram_data_key_seed_i}};
@@ -161,7 +161,7 @@ module otp_ctrl_kdi
                               chained_digest: 1'b0, // revert to netlist IV between blocks
                               digest_sel:     SramDataKey,
                               fetch_nonce:    1'b1, // fetch nonce
-                              nonce_size:     2'(SramNonceWidth/64-1),
+                              nonce_size:     2'(SramNonceWidth/EdnDataWidth-1),
                               seed_valid:     scrmbl_key_seed_valid_i,
                               seed:           {sram_data_key_seed_i,   // reuse same seed
                                                sram_data_key_seed_i}};
@@ -222,11 +222,14 @@ module otp_ctrl_kdi
 
   // Connect keys/nonce outputs to output regs.
   assign lc_otp_token_o.hashed_token = key_out_q;
-  assign flash_otp_key_o.key         = key_out_q;
-  assign flash_otp_key_o.seed_valid  = seed_valid_q;
   assign otbn_otp_key_o.key          = key_out_q;
   assign otbn_otp_key_o.nonce        = nonce_out_q;
   assign otbn_otp_key_o.seed_valid   = seed_valid_q;
+
+  localparam int FlashNonceSel = FlashKeyWidth / ScrmblBlockWidth;
+  assign flash_otp_key_o.key         = key_out_q;
+  assign flash_otp_key_o.rand_key    = nonce_out_q[FlashNonceSel-1:0];
+  assign flash_otp_key_o.seed_valid  = seed_valid_q;
 
   localparam int NonceIdx = SramNonceWidth / ScrmblBlockWidth;
   for (genvar k = 0; k < NumSramKeyReqSlots; k++) begin : gen_out_assign

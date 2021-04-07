@@ -62,6 +62,8 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   input otp_ctrl_pkg::flash_otp_key_rsp_t otp_key_rsp_i,
   output flash_key_t addr_key_o,
   output flash_key_t data_key_o,
+  output flash_key_t rand_addr_key_o,
+  output flash_key_t rand_data_key_o,
 
   // entropy interface
   output logic edn_req_o,
@@ -251,10 +253,12 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     end else begin
       if (addr_key_req_d && addr_key_ack_q) begin
         addr_key_o <= flash_key_t'(otp_key_rsp_i.key);
+        rand_addr_key_o <= flash_key_t'(otp_key_rsp_i.rand_key);
       end
 
       if (data_key_req_d && data_key_ack_q) begin
         data_key_o <= flash_key_t'(otp_key_rsp_i.key);
+        rand_data_key_o <= flash_key_t'(otp_key_rsp_i.rand_key);
       end
     end
   end
