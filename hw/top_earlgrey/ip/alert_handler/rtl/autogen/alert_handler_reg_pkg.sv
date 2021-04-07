@@ -7,10 +7,10 @@
 package alert_handler_reg_pkg;
 
   // Param list
-  parameter int NAlerts = 30;
+  parameter int NAlerts = 31;
   parameter int EscCntDw = 32;
   parameter int AccuCntDw = 16;
-  parameter logic [NAlerts-1:0] AsyncOn = 30'b111111111111111110000000000000;
+  parameter logic [NAlerts-1:0] AsyncOn = 31'b1111111111111111110000000000000;
   parameter int N_CLASSES = 4;
   parameter int N_ESC_SEV = 4;
   parameter int N_PHASES = 4;
@@ -454,14 +454,14 @@ package alert_handler_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    alert_handler_reg2hw_intr_state_reg_t intr_state; // [944:941]
-    alert_handler_reg2hw_intr_enable_reg_t intr_enable; // [940:937]
-    alert_handler_reg2hw_intr_test_reg_t intr_test; // [936:929]
-    alert_handler_reg2hw_regwen_reg_t regwen; // [928:928]
-    alert_handler_reg2hw_ping_timeout_cyc_reg_t ping_timeout_cyc; // [927:904]
-    alert_handler_reg2hw_alert_en_mreg_t [29:0] alert_en; // [903:874]
-    alert_handler_reg2hw_alert_class_mreg_t [29:0] alert_class; // [873:814]
-    alert_handler_reg2hw_alert_cause_mreg_t [29:0] alert_cause; // [813:784]
+    alert_handler_reg2hw_intr_state_reg_t intr_state; // [948:945]
+    alert_handler_reg2hw_intr_enable_reg_t intr_enable; // [944:941]
+    alert_handler_reg2hw_intr_test_reg_t intr_test; // [940:933]
+    alert_handler_reg2hw_regwen_reg_t regwen; // [932:932]
+    alert_handler_reg2hw_ping_timeout_cyc_reg_t ping_timeout_cyc; // [931:908]
+    alert_handler_reg2hw_alert_en_mreg_t [30:0] alert_en; // [907:877]
+    alert_handler_reg2hw_alert_class_mreg_t [30:0] alert_class; // [876:815]
+    alert_handler_reg2hw_alert_cause_mreg_t [30:0] alert_cause; // [814:784]
     alert_handler_reg2hw_loc_alert_en_mreg_t [3:0] loc_alert_en; // [783:780]
     alert_handler_reg2hw_loc_alert_class_mreg_t [3:0] loc_alert_class; // [779:772]
     alert_handler_reg2hw_loc_alert_cause_mreg_t [3:0] loc_alert_cause; // [771:768]
@@ -501,8 +501,8 @@ package alert_handler_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    alert_handler_hw2reg_intr_state_reg_t intr_state; // [287:280]
-    alert_handler_hw2reg_alert_cause_mreg_t [29:0] alert_cause; // [279:220]
+    alert_handler_hw2reg_intr_state_reg_t intr_state; // [289:282]
+    alert_handler_hw2reg_alert_cause_mreg_t [30:0] alert_cause; // [281:220]
     alert_handler_hw2reg_loc_alert_cause_mreg_t [3:0] loc_alert_cause; // [219:212]
     alert_handler_hw2reg_classa_regwen_reg_t classa_regwen; // [211:210]
     alert_handler_hw2reg_classa_accum_cnt_reg_t classa_accum_cnt; // [209:194]
