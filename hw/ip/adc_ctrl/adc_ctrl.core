@@ -20,10 +20,22 @@ filesets:
       - rtl/adc_ctrl.sv
     file_type: systemVerilogSource
 
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      # - lint/adc_ctrl.vlt
+    file_type: vlt
+
   files_ascentlint_waiver:
     depend:
       # common waivers
       - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      # - lint/adc_ctrl.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
@@ -40,7 +52,9 @@ parameters:
 targets:
   default: &default_target
     filesets:
+      - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
     toplevel: adc_ctrl
 
