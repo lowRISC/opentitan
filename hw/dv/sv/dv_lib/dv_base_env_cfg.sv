@@ -38,8 +38,8 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   //     super.initialize(csr_base_addr);
   string ral_model_names[$] = {RAL_T::type_name};
 
-  bit [bus_params_pkg::BUS_AW-1:0]  csr_addrs[$];
-  addr_range_t                      mem_ranges[$];
+  bit [bus_params_pkg::BUS_AW-1:0]  csr_addrs[string][$];
+  addr_range_t                      mem_ranges[string][$];
 
   // clk_rst_if & freq
   virtual clk_rst_if  clk_rst_vif;
@@ -84,8 +84,9 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
 
   virtual function void create_ral_models(bit [bus_params_pkg::BUS_AW-1:0] csr_base_addr = '1);
     foreach (ral_model_names[i]) begin
+      string ral_name = ral_model_names[i];
       uvm_reg_addr_t base_addr;
-      dv_base_reg_block reg_blk = create_ral_by_name(ral_model_names[i]);
+      dv_base_reg_block reg_blk = create_ral_by_name(ral_name);
 
       if (reg_blk.get_name() == RAL_T::type_name) `downcast(ral, reg_blk)
 
@@ -107,9 +108,9 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
       reg_blk.set_base_addr(base_addr);
 
       // Get list of valid csr addresses (useful in seq to randomize addr as well as in scb checks)
-      get_csr_addrs(reg_blk, csr_addrs);
-      get_mem_addr_ranges(reg_blk, mem_ranges);
-      ral_models[ral_model_names[i]] = reg_blk;
+      get_csr_addrs(reg_blk, csr_addrs[ral_name]);
+      get_mem_addr_ranges(reg_blk, mem_ranges[ral_name]);
+      ral_models[ral_name] = reg_blk;
     end
 
     if (ral_model_names.size > 0) begin

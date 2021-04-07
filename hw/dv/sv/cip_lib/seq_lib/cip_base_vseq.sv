@@ -2,6 +2,21 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`define loop_ral_models_to_create_threads(body) \
+  fork \
+    begin : isolation_fork \
+      foreach (cfg.ral_models[i]) begin \
+        automatic string ral_name = i; \
+        fork \
+          begin \
+            body \
+          end \
+        join_none \
+      end \
+      wait fork; \
+    end : isolation_fork \
+  join
+
 class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                       type CFG_T               = cip_base_env_cfg,
                       type COV_T               = cip_base_env_cov,
@@ -31,12 +46,12 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     bit [BUS_DBW-1:0] mask;
   } addr_mask_t;
 
-  addr_mask_t mem_exist_addr_q[$];
+  addr_mask_t mem_exist_addr_q[string][$];
 
   // mem_ranges without base address
-  addr_range_t     updated_mem_ranges[$];
+  addr_range_t     updated_mem_ranges[string][$];
   // mask out bits out of the csr/mem range and LSB 2 bits
-  bit [BUS_AW-1:0] csr_addr_mask;
+  bit [BUS_AW-1:0] csr_addr_mask[string];
 
   rand uint delay_to_reset;
   constraint delay_to_reset_c {
@@ -61,7 +76,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   `uvm_object_param_utils_begin(cip_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T))
     `uvm_field_string(common_seq_type, UVM_DEFAULT)
-    `uvm_field_queue_int(mem_exist_addr_q, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `include "cip_base_vseq__tl_errors.svh"
@@ -559,48 +573,45 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   virtual task run_same_csr_outstanding_vseq(int num_times);
     csr_test_type_e csr_test_type = CsrRwTest; // share the same exclusion as csr_rw_test
-    dv_base_reg     test_csrs[$];
-
-    ral.get_dv_base_regs(test_csrs);
 
     for (int trans = 1; trans <= num_times; trans++) begin
       `uvm_info(`gfn, $sformatf("Running same CSR outstanding test iteration %0d/%0d",
                                  trans, num_times), UVM_LOW)
-      test_csrs.shuffle();
+      all_csrs.shuffle();
 
       // first iteration already issued dut_init in pre_start
       if (trans != 1 && $urandom_range(0, 1)) dut_init();
 
-      foreach (test_csrs[i]) begin
-        uvm_reg_data_t exp_data = test_csrs[i].get_mirrored_value();
+      foreach (all_csrs[i]) begin
+        uvm_reg_data_t exp_data = all_csrs[i].get_mirrored_value();
         uvm_reg_data_t rd_data, wr_data, rd_mask, wr_mask;
-        csr_excl_item  csr_excl = get_excl_item(test_csrs[i]);
+        csr_excl_item  csr_excl = get_excl_item(all_csrs[i]);
 
-        rd_mask = get_mask_excl_fields(test_csrs[i], CsrExclWriteCheck, csr_test_type);
-        wr_mask = get_mask_excl_fields(test_csrs[i], CsrExclWrite, csr_test_type);
+        rd_mask = get_mask_excl_fields(all_csrs[i], CsrExclWriteCheck, csr_test_type);
+        wr_mask = get_mask_excl_fields(all_csrs[i], CsrExclWrite, csr_test_type);
 
         repeat ($urandom_range(2, 20)) begin
           // do read, exclude CsrExclWriteCheck, CsrExclCheck
           if ($urandom_range(0, 1) &&
-              !csr_excl.is_excl(test_csrs[i], CsrExclWriteCheck, csr_test_type)) begin
-            tl_access(.addr(test_csrs[i].get_address()), .write(0), .data(rd_data),
+              !csr_excl.is_excl(all_csrs[i], CsrExclWriteCheck, csr_test_type)) begin
+            tl_access(.addr(all_csrs[i].get_address()), .write(0), .data(rd_data),
                       .exp_data(exp_data), .check_exp_data(1), .compare_mask(rd_mask),
                       .blocking(0));
           end
           // do write, exclude CsrExclWrite
           if ($urandom_range(0, 1) &&
-              !csr_excl.is_excl(test_csrs[i], CsrExclWrite, csr_test_type)) begin
+              !csr_excl.is_excl(all_csrs[i], CsrExclWrite, csr_test_type)) begin
             `DV_CHECK_STD_RANDOMIZE_FATAL(wr_data)
             wr_data &= wr_mask;
-            tl_access(.addr(test_csrs[i].get_address()), .write(1), .data(wr_data), .blocking(0));
-            void'(test_csrs[i].predict(.value(wr_data), .kind(UVM_PREDICT_WRITE)));
-            exp_data = test_csrs[i].get_mirrored_value();
+            tl_access(.addr(all_csrs[i].get_address()), .write(1), .data(wr_data), .blocking(0));
+            void'(all_csrs[i].predict(.value(wr_data), .kind(UVM_PREDICT_WRITE)));
+            exp_data = all_csrs[i].get_mirrored_value();
           end
         end
         csr_utils_pkg::wait_no_outstanding_access();
 
         // Manually lock lockable flds because we use tl_access() instead of csr_wr().
-        if (test_csrs[i].is_wen_reg()) test_csrs[i].lock_lockable_flds(`gmv(test_csrs[i]));
+        if (all_csrs[i].is_wen_reg()) all_csrs[i].lock_lockable_flds(`gmv(all_csrs[i]));
       end
     end
   endtask
@@ -670,7 +681,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     uvm_reg_data_t     wdata;
     bit                alert_triggered;
 
-    ral.get_shadowed_regs(shadowed_csrs);
+    foreach (cfg.ral_models[i]) cfg.ral_models[i].get_shadowed_regs(shadowed_csrs);
 
     for (int trans = 1; trans <= num_times; trans++) begin
       `uvm_info(`gfn, $sformatf("Running shadow reg error test iteration %0d/%0d", trans,
@@ -805,6 +816,14 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // test partial mem read with non-blocking random read/write
   virtual task run_mem_partial_access_vseq(int num_times);
+    `loop_ral_models_to_create_threads(
+        if (cfg.mem_ranges[ral_name].size > 0) begin
+          run_mem_partial_access_vseq_sub(num_times, ral_name);
+        end)
+  endtask
+
+  virtual task run_mem_partial_access_vseq_sub(int num_times, string ral_name);
+    addr_range_t loc_mem_range[$] = cfg.mem_ranges[ral_name];
     uint num_accesses;
     // limit to 100k accesses if mem is very big
     uint max_accesses = 100_000;
@@ -812,9 +831,9 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     void'($value$plusargs("max_accesses_for_partial_mem_access_vseq=%0d", max_accesses));
 
     // calculate how many accesses to run based on mem size, up to 100k
-    foreach (cfg.mem_ranges[i]) begin
-      if (get_mem_access_by_addr(ral, cfg.mem_ranges[i].start_addr) != "RO") begin
-        num_accesses += (cfg.mem_ranges[i].end_addr - cfg.mem_ranges[i].start_addr) >> 2;
+    foreach (loc_mem_range[i]) begin
+      if (get_mem_access_by_addr(ral, loc_mem_range[i].start_addr) != "RO") begin
+        num_accesses += (loc_mem_range[i].end_addr - loc_mem_range[i].start_addr) >> 2;
         if (num_accesses >= max_accesses) begin
           num_accesses = max_accesses;
           break;
@@ -833,31 +852,35 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
           randcase
             1: begin // write
               dv_base_mem mem;
-              int mem_idx = $urandom_range(0, cfg.mem_ranges.size - 1);
+              int mem_idx = $urandom_range(0, loc_mem_range.size - 1);
 
               `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
-                  addr inside {[cfg.mem_ranges[mem_idx].start_addr :
-                                cfg.mem_ranges[mem_idx].end_addr]};)
+                  addr inside {[loc_mem_range[mem_idx].start_addr :
+                                loc_mem_range[mem_idx].end_addr]};)
 
               if (get_mem_access_by_addr(ral, addr) != "RO") begin
-                `downcast(mem, get_mem_by_addr(ral, cfg.mem_ranges[mem_idx].start_addr))
+                `downcast(mem, get_mem_by_addr(cfg.ral_models[ral_name],
+                                               loc_mem_range[mem_idx].start_addr))
+
                 if (mem.get_mem_partial_write_support()) mask = get_rand_contiguous_mask();
                 else                                     mask = '1;
                 data = $urandom;
                 tl_access_w_abort(.addr(addr), .write(1), .data(data), .status(status), .mask(mask),
-                                  .blocking(1), .req_abort_pct($urandom_range(0, 100)));
+                                  .blocking(1), .req_abort_pct($urandom_range(0, 100)),
+                                  .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
 
                 if (!cfg.under_reset && status == UVM_IS_OK) begin
                   addr[1:0] = 0;
-                  mem_exist_addr_q.push_back(addr_mask_t'{addr, mask});
+                  mem_exist_addr_q[ral_name].push_back(addr_mask_t'{addr, mask});
                 end
               end
             end
             // Randomly pick a previously written address for partial read.
-            mem_exist_addr_q.size() > 0: begin // read
+            mem_exist_addr_q[ral_name].size() > 0: begin // read
               // get all the programmed addresses and randomly pick one
-              addr_mask_t addr_mask = mem_exist_addr_q[$urandom_range(0,
-                                                                      mem_exist_addr_q.size - 1)];
+              addr_mask_t addr_mask = mem_exist_addr_q[ral_name][
+                   $urandom_range(0, mem_exist_addr_q[ral_name].size - 1)];
+
               // TODO, Remove this if condition when #5262 is solved
               // Only read when it's fully written
               if (addr_mask.mask == '1) begin
@@ -865,7 +888,8 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                 if (get_mem_access_by_addr(ral, addr) != "WO") begin
                   mask = get_rand_contiguous_mask(addr_mask.mask);
                   tl_access_w_abort(.addr(addr), .write(0), .data(data), .status(status), .mask(mask),
-                                    .blocking(1), .req_abort_pct($urandom_range(0, 100)));
+                                    .blocking(1), .req_abort_pct($urandom_range(0, 100)),
+                                    .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
                 end
                 num_accesses--;
               end
@@ -887,7 +911,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         `uvm_info(`gfn, "running csr rw vseq", UVM_HIGH)
         run_csr_vseq(.csr_test_type("rw"), .do_rand_wr_and_reset(0));
       end
-      if (cfg.mem_ranges.size > 0) run_mem_partial_access_vseq(num_times);
+      run_mem_partial_access_vseq(num_times);
     join
   endtask
 
@@ -943,3 +967,5 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   endfunction
 
 endclass
+
+`undef loop_ral_models_to_create_threads

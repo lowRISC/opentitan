@@ -47,9 +47,8 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
     // Create downstream agent cfg objects.
     foreach (ral_model_names[i]) begin
       string ral_name = ral_model_names[i];
-      m_tl_agent_cfgs[ral_name] = tl_agent_cfg::type_id::create({"m_tl_agent_cfg_", ral_name});
-      if (ral_name == RAL_T::type_name) m_tl_agent_cfg = m_tl_agent_cfgs[ral_name];
 
+      m_tl_agent_cfgs[ral_name] = tl_agent_cfg::type_id::create({"m_tl_agent_cfg_", ral_name});
       m_tl_agent_cfgs[ral_name].if_mode = dv_utils_pkg::Host;
       // TL host cannot support device same cycle response. Host may drive d_ready=0 when a_valid=1.
       m_tl_agent_cfgs[ral_name].host_can_stall_rsp_when_a_valid_high = $urandom_range(0, 1);
