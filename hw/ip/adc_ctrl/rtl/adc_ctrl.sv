@@ -7,10 +7,10 @@
 `include "prim_assert.sv"
 
 module adc_ctrl (
-  input clk_i,//regular core clock for SW config interface
-  input clk_aon_i,//always-on slow clock for internal logic
-  input rst_ni,//power-on hardware reset
-  input rst_slow_ni,//power-on reset for the 200KHz clock(logic)
+  input clk_i,  //regular core clock for SW config interface
+  input clk_aon_i,  //always-on slow clock for internal logic
+  input rst_ni,  //power-on hardware reset
+  input rst_slow_ni,  //power-on reset for the 200KHz clock(logic)
 
   //Regster interface
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -39,7 +39,7 @@ module adc_ctrl (
   //input  [2:0] pwr_sts,//3’b001: deep sleep, 3’b010: normal sleep, 3’b100: fully active
 );
 
-  import adc_ctrl_reg_pkg::* ;
+  import adc_ctrl_reg_pkg::*;
 
   adc_ctrl_reg2hw_t reg2hw;
   adc_ctrl_hw2reg_t hw2reg;
@@ -55,7 +55,7 @@ module adc_ctrl (
     .reg2hw(reg2hw),
     .hw2reg(hw2reg),
     .intg_err_o(),
-    .devmode_i  (1'b1)
+    .devmode_i(1'b1)
   );
 
   // Instantiate DCD core module

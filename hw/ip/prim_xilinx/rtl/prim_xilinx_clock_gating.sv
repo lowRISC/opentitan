@@ -15,9 +15,9 @@ module prim_xilinx_clock_gating #(
     assign clk_o = clk_i;
   end else begin : gen_gate
     BUFGCE u_bufgce (
-      .I  (clk_i),
-      .CE (en_i | test_en_i),
-      .O  (clk_o)
+      .I (clk_i),
+      .CE(en_i | test_en_i),
+      .O (clk_o)
     );
   end
 

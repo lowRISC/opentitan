@@ -18,8 +18,7 @@ package dv_test_status_pkg;
       $display("  | |  __/\\__ \\ |_  | |_) | (_| \\__ \\__ \\  __/ (_| |_|");
       $display("  |_|\\___||___/\\__| | .__/ \\__,_|___/___/\\___|\\__,_(_)");
       $display("                    |_|                               \n");
-    end
-    else begin
+    end else begin
       $display("\nTEST FAILED CHECKS");
       $display(" _____         _      __       _ _          _ _ ");
       $display("|_   _|__  ___| |_   / _| __ _(_) | ___  __| | |");

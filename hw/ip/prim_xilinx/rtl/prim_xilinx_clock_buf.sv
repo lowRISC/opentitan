@@ -8,8 +8,8 @@ module prim_xilinx_clock_buf (
 );
 
   BUFG bufg_i (
-    .I (clk_i),
-    .O (clk_o)
+    .I(clk_i),
+    .O(clk_o)
   );
 
 endmodule

@@ -14,23 +14,23 @@ module pinmux_jtag_buf (
     .clk_o(req_o.tck)
   );
   prim_buf prim_buf_trst_n (
-    .in_i(req_i.trst_n),
+    .in_i (req_i.trst_n),
     .out_o(req_o.trst_n)
   );
   prim_buf prim_buf_tms (
-    .in_i(req_i.tms),
+    .in_i (req_i.tms),
     .out_o(req_o.tms)
   );
   prim_buf prim_buf_tdi (
-    .in_i(req_i.tdi),
+    .in_i (req_i.tdi),
     .out_o(req_o.tdi)
   );
   prim_buf prim_buf_tdo (
-    .in_i(rsp_i.tdo),
+    .in_i (rsp_i.tdo),
     .out_o(rsp_o.tdo)
   );
   prim_buf prim_buf_tdo_oe (
-    .in_i(rsp_i.tdo_oe),
+    .in_i (rsp_i.tdo_oe),
     .out_o(rsp_o.tdo_oe)
   );
 

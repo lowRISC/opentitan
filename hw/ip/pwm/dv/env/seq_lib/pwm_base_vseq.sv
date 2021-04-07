@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class pwm_base_vseq extends cip_base_vseq #(
-    .RAL_T               (pwm_reg_block),
-    .CFG_T               (pwm_env_cfg),
-    .COV_T               (pwm_env_cov),
-    .VIRTUAL_SEQUENCER_T (pwm_virtual_sequencer)
-  );
+  .RAL_T              (pwm_reg_block),
+  .CFG_T              (pwm_env_cfg),
+  .COV_T              (pwm_env_cov),
+  .VIRTUAL_SEQUENCER_T(pwm_virtual_sequencer)
+);
   `uvm_object_utils(pwm_base_vseq)
   `uvm_object_new
 
@@ -24,8 +24,8 @@ class pwm_base_vseq extends cip_base_vseq #(
 
   virtual task pre_start();
     cfg.m_pwm_agent_cfg.en_monitor = cfg.en_scb;
-    `uvm_info(`gfn, $sformatf("\n--> %s monitor and scoreboard",
-        cfg.en_scb ? "enable" : "disable"), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("\n--> %s monitor and scoreboard", cfg.en_scb ? "enable" : "disable"),
+              UVM_DEBUG)
     num_runs.rand_mode(0);
     // unset to disable intr test because pwm does not have intr pins
     do_clear_all_interrupts = 1'b0;
@@ -63,6 +63,6 @@ class pwm_base_vseq extends cip_base_vseq #(
         cfg.clk_rst_core_vif.wait_clks($urandom_range(5, 10));
       join
     end
-  endtask : do_phase_align_reset 
+  endtask : do_phase_align_reset
 
 endclass : pwm_base_vseq

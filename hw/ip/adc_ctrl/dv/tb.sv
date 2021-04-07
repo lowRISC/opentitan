@@ -18,25 +18,34 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
-  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
-  clk_rst_if clk_aon_rst_if(.clk(clk_aon), .rst_n(rst_aon_n));
-  pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if #(1) devmode_if(devmode);
-  tl_if tl_if(.clk(clk), .rst_n(rst_n));
+  clk_rst_if clk_rst_if (
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
+  clk_rst_if clk_aon_rst_if (
+    .clk  (clk_aon),
+    .rst_n(rst_aon_n)
+  );
+  pins_if #(NUM_MAX_INTERRUPTS) intr_if (interrupts);
+  pins_if #(1) devmode_if (devmode);
+  tl_if tl_if (
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
 
 
   // dut
   adc_ctrl dut (
-    .clk_i                (clk      ),
-    .rst_ni               (rst_n    ),
-    .clk_aon_i            (clk_aon  ),
-    .rst_slow_ni          (rst_aon_n),
-    .tl_i                 (tl_if.h2d),
-    .tl_o                 (tl_if.d2h),
-    .adc_o                (),
-    .adc_i                ('0),
-    .intr_debug_cable_o   (interrupts[0]),
-    .debug_cable_wakeup_o ()
+    .clk_i               (clk),
+    .rst_ni              (rst_n),
+    .clk_aon_i           (clk_aon),
+    .rst_slow_ni         (rst_aon_n),
+    .tl_i                (tl_if.h2d),
+    .tl_o                (tl_if.d2h),
+    .adc_o               (),
+    .adc_i               ('0),
+    .intr_debug_cable_o  (interrupts[0]),
+    .debug_cable_wakeup_o()
   );
 
   initial begin
