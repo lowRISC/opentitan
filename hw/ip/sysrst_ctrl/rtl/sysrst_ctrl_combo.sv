@@ -381,7 +381,10 @@ module sysrst_ctrl_combo import sysrst_ctrl_reg_pkg::*; (
 
   assign combo_intr_status_o.combo3_h2l.de = combo3_h2l_intr;
 
-  assign sysrst_ctrl_combo_intr = combo0_h2l_intr | combo1_h2l_intr | combo2_h2l_intr | combo3_h2l_intr;
+  assign sysrst_ctrl_combo_intr = combo0_h2l_intr |
+                                  combo1_h2l_intr |
+                                  combo2_h2l_intr |
+                                  combo3_h2l_intr;
 
   //To write into interrupt status register
   assign combo_intr_status_o.combo0_h2l.d = 1'b1;

@@ -80,7 +80,8 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
 
   logic [NumAdcFilter-1:0] chn0_match, chn1_match, adc_ctrl_match;
   logic [NumAdcFilter-1:0] adc_ctrl_match_pulse;
-  logic adc_ctrl_done, oneshot_done;//write enable for the ADC sample when the interrupt is triggered
+  //write enable for the ADC sample when the interrupt is triggered
+  logic adc_ctrl_done, oneshot_done;
   logic cfg_adc_ctrl_done, cfg_oneshot_done;
   //CFG clock domain synchronized write enable when interrupt is triggered
   logic cfg_chn_val_intr_we;//Either oneshot_done or adc_ctrl_done
