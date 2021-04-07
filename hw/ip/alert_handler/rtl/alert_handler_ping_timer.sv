@@ -183,7 +183,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
           lfsr_en = 1'b1;
           cnt_clr = 1'b1;
           if (timeout_ge) begin
-            if (id_to_ping < NAlerts) begin
+            if (id_to_ping < IdDw'(NAlerts)) begin
               alert_ping_fail_o = 1'b1;
             end else begin
               esc_ping_fail_o   = 1'b1;
