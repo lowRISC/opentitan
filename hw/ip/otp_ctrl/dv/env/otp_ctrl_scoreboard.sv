@@ -145,6 +145,12 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
             if (cfg.otp_ctrl_vif.lc_esc_on == 0) begin
               `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
             end
+
+            if (cfg.en_cov) begin
+              bit [NumPart-2:0] parts_locked;
+              foreach (parts_locked[i]) parts_locked[i] = (get_otp_digest_val(i) != 0);
+              cov.power_on_cg.sample(cfg.otp_ctrl_vif.lc_esc_on, parts_locked);
+            end
           end
         end
       end
@@ -196,6 +202,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
       // LC program request data is valid means no OTP macro error.
       `DV_CHECK_EQ(rcv_item.d_data, exp_err_bit)
+
+      if (cfg.en_cov) cov.lc_prog_cg.sample(exp_err_bit);
     end
   endtask
 
@@ -269,6 +277,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         exp_key = {exp_key_higher, exp_key_lower};
         `DV_CHECK_EQ(key, exp_key, "otbn key mismatch")
 
+        if (cfg.en_cov) cov.otbn_req_cg.sample(part_locked);
+
       // If during OTBN key request, the LFSR timer expired and trigger an EDN request to acquire
       // two EDN keys, then ignore the OTBN output checking, because scb did not know which EDN
       // keys are used for LFSR.
@@ -320,6 +330,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                            .final_const(RndCnstDigestConst[sel_flash]));
           exp_key = {exp_key_higher, exp_key_lower};
           `DV_CHECK_EQ(key, exp_key, $sformatf("flash %s key mismatch", sel_flash.name()))
+
+          if (cfg.en_cov) cov.flash_req_cg.sample(sel_flash, part_locked);
         end
       join_none;
     end
@@ -369,6 +381,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                              .num_round(2));
             exp_key = {exp_key_higher, exp_key_lower};
             `DV_CHECK_EQ(key, exp_key, $sformatf("sram_%0d key mismatch", index))
+            if (cfg.en_cov) cov.sram_req_cg.sample(index, part_locked);
+
           end else if ((edn_data_q.size() - NUM_SRAM_EDN_REQ) % 2 != 0) begin
             `uvm_error(`gfn, $sformatf("Unexpected edn_data_q size (%0d) during SRAM request",
                                        edn_data_q.size()))
