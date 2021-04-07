@@ -189,7 +189,6 @@ module otp_ctrl
     .tl_i        ( tl_win_h2d[0]      ),
     .tl_o        ( tl_win_d2h[0]      ),
     .req_o       (  tlul_req          ),
-    .req_type_o  (                    ),
     .gnt_i       (  tlul_gnt          ),
     .we_o        (                    ), // unused
     .addr_o      (  tlul_addr         ),
