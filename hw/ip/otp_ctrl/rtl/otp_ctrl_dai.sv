@@ -637,9 +637,9 @@ module otp_ctrl_dai
 
   logic [NumPart-1:0] part_sel_oh;
   for (genvar k = 0; k < NumPart; k++) begin : gen_part_sel
-    localparam int PartEndInt = int'(PartInfo[k].offset) + int'(PartInfo[k].size);
-    localparam int DigestOffsetInt = PartEndInt - ScrmblBlockWidth / 8;
-    localparam int DigestAddrLutInt = DigestOffsetInt >> OtpAddrShift;
+    localparam int unsigned PartEndInt = 32'(PartInfo[k].offset) + 32'(PartInfo[k].size);
+    localparam int unsigned DigestOffsetInt = PartEndInt - ScrmblBlockWidth / 8;
+    localparam int unsigned DigestAddrLutInt = DigestOffsetInt >> OtpAddrShift;
 
     // PartEnd has an extra bit to cope with the case where offset + size overflows. However, we
     // arrange the address map to make sure that PartEndInt is at most 1 << OtpByteAddrWidth. Check
