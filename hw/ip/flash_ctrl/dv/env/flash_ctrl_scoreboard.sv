@@ -69,10 +69,10 @@ class flash_ctrl_scoreboard #(type CFG_T = flash_ctrl_env_cfg)
     bit data_phase_write  = (write && channel == DataChannel);
 
     // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.csr_addrs}) begin
+    if (csr_addr inside {cfg.csr_addrs[ral_name]}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
-    end else if (is_mem_addr(item)) begin
+    end else if (is_mem_addr(item, ral_name)) begin
       // TODO: check if rd_fifo and prog_fifo can be implemented as CSRs rather than windows.
       return;
     end
