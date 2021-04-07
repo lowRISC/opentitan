@@ -181,9 +181,9 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_entropy_smoketest
+      name: chip_dif_csrng_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_entropy_smoketest:1"]
+      sw_images: ["sw/device/tests/dif_csrng_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
