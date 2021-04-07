@@ -10883,6 +10883,13 @@
       module_name: flash_ctrl
     }
     {
+      name: flash_ctrl_fatal_intg_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: flash_ctrl
+    }
+    {
       name: aes_recov_ctrl_update_err
       width: 1
       type: alert

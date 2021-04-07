@@ -20,7 +20,7 @@ package flash_ctrl_reg_pkg;
   parameter int BytesPerWord = 8;
   parameter int BytesPerPage = 2048;
   parameter int BytesPerBank = 524288;
-  parameter int NumAlerts = 3;
+  parameter int NumAlerts = 4;
 
   // Address widths within the block
   parameter int CoreAw = 9;
@@ -112,6 +112,10 @@ package flash_ctrl_reg_pkg;
       logic        q;
       logic        qe;
     } recov_ecc_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fatal_intg_err;
   } flash_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -570,10 +574,10 @@ package flash_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [554:549]
-    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [548:543]
-    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [542:531]
-    flash_ctrl_reg2hw_alert_test_reg_t alert_test; // [530:525]
+    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [556:551]
+    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [550:545]
+    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [544:533]
+    flash_ctrl_reg2hw_alert_test_reg_t alert_test; // [532:525]
     flash_ctrl_reg2hw_control_reg_t control; // [524:505]
     flash_ctrl_reg2hw_addr_reg_t addr; // [504:473]
     flash_ctrl_reg2hw_prog_type_en_reg_t prog_type_en; // [472:471]
@@ -723,10 +727,11 @@ package flash_ctrl_reg_pkg;
   parameter logic [0:0] FLASH_CTRL_INTR_TEST_RD_LVL_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_INTR_TEST_OP_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_INTR_TEST_ERR_RESVAL = 1'h 0;
-  parameter logic [2:0] FLASH_CTRL_ALERT_TEST_RESVAL = 3'h 0;
+  parameter logic [3:0] FLASH_CTRL_ALERT_TEST_RESVAL = 4'h 0;
   parameter logic [0:0] FLASH_CTRL_ALERT_TEST_RECOV_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_ALERT_TEST_RECOV_MP_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_ALERT_TEST_RECOV_ECC_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] FLASH_CTRL_ALERT_TEST_FATAL_INTG_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_CTRL_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] FLASH_CTRL_CTRL_REGWEN_EN_RESVAL = 1'h 1;
 

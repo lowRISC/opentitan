@@ -305,10 +305,13 @@ package flash_ctrl_pkg;
     mp_region_cfg_t [MpRegions:0] region_cfgs;
     logic [KeyWidth-1:0]  addr_key;
     logic [KeyWidth-1:0]  data_key;
+    logic [KeyWidth-1:0]  rand_addr_key;
+    logic [KeyWidth-1:0]  rand_data_key;
     tlul_pkg::tl_h2d_t    tl_flash_c2p;
     logic                 alert_trig;
     logic                 alert_ack;
     jtag_pkg::jtag_req_t  jtag_req;
+    logic                 intg_err;
   } flash_req_t;
 
   // default value of flash_req_t (for dangling ports)
@@ -333,10 +336,13 @@ package flash_ctrl_pkg;
     region_cfgs:   '0,
     addr_key:      RndCnstAddrKeyDefault,
     data_key:      RndCnstDataKeyDefault,
+    rand_addr_key: '0,
+    rand_data_key: '0,
     tl_flash_c2p:  '0,
     alert_trig:    1'b0,
     alert_ack:     1'b0,
-    jtag_req:      '0
+    jtag_req:      '0,
+    intg_err:      '0
   };
 
   // memory to flash controller
@@ -356,6 +362,7 @@ package flash_ctrl_pkg;
     logic [NumBanks-1:0] ecc_multi_err;
     logic [NumBanks-1:0][BusAddrW-1:0] ecc_addr;
     jtag_pkg::jtag_rsp_t jtag_rsp;
+    logic                intg_err;
   } flash_rsp_t;
 
   // default value of flash_rsp_t (for dangling ports)
@@ -374,7 +381,8 @@ package flash_ctrl_pkg;
     ecc_single_err:     '0,
     ecc_multi_err:      '0,
     ecc_addr:           '0,
-    jtag_rsp:           '0
+    jtag_rsp:           '0,
+    intg_err:           '0
   };
 
   // RMA entries
