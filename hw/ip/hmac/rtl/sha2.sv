@@ -27,13 +27,15 @@ module sha2 import hmac_pkg::*; (
   output sha_word_t [7:0] digest
 );
 
+  localparam int unsigned RoundWidth = $clog2(NumRound);
+
   logic msg_feed_complete;
 
   logic      shaf_rready;
   sha_word_t shaf_rdata;
   logic      shaf_rvalid;
 
-  logic [$clog2(NumRound)-1:0] round;
+  logic [RoundWidth-1:0] round;
 
   logic      [3:0]  w_index;
   sha_word_t [15:0] w;
@@ -128,7 +130,7 @@ module sha2 import hmac_pkg::*; (
     end else if (!sha_en) begin
       round <= '0;
     end else if (run_hash) begin
-      if (round == (NumRound-1)) begin
+      if (round == RoundWidth'(NumRound-1)) begin
         round <= '0;
       end else begin
         round <= round + 1;
