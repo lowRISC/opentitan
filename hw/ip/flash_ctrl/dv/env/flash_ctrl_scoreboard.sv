@@ -57,7 +57,7 @@ class flash_ctrl_scoreboard #(type CFG_T = flash_ctrl_env_cfg)
     end
   endtask
 
-  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
+  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
     bit     do_read_check   = 1'b1;
     bit     write           = item.is_write();
