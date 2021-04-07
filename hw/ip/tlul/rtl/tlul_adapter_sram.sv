@@ -288,11 +288,8 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   if (CmdIntgCheck) begin : gen_cmd_intg_check
     tlul_cmd_intg_chk u_cmd_intg_chk (
       .tl_i,
-      .err_o ()
+      .err_o (intg_error)
     );
-
-    // TODO, hook up err_o once memory initialization is done
-    assign intg_error = '0;
   end else begin : gen_no_cmd_intg_check
     assign intg_error = '0;
   end
@@ -307,7 +304,10 @@ module tlul_adapter_sram import tlul_pkg::*; #(
       intg_error_q <= 1'b1;
     end
   end
-  assign intg_error_o = intg_error_q;
+
+  // integrity error output is permanent and should be used for alert generation
+  // or other downstream effects
+  assign intg_error_o = intg_error | intg_error_q;
 
   tlul_err u_err (
     .clk_i,
@@ -316,8 +316,9 @@ module tlul_adapter_sram import tlul_pkg::*; #(
     .err_o (tlul_error)
   );
 
+  // error return is transactional and thus does not used the "latched" intg_err signal
   assign error_internal = wr_attr_error | wr_vld_error | rd_vld_error | instr_error |
-                          tlul_error    | intg_error   | intg_error_q;
+                          tlul_error    | intg_error;
   // End: Request Error Detection
 
   assign reqfifo_wvalid = a_ack ; // Push to FIFO only when granted
