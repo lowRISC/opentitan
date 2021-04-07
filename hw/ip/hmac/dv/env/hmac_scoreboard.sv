@@ -37,7 +37,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     uvm_reg_addr_t  csr_addr        = ral.get_word_aligned_addr(item.a_addr);
 
     // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.csr_addrs}) begin
+    if (csr_addr inside {cfg.csr_addrs[ral_name]}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
       csr_name = csr.get_name();
