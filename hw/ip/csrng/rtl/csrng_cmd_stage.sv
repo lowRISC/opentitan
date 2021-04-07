@@ -139,7 +139,8 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   assign cmd_arb_bus_o =
          cmd_gen_inc_req ? {16'b0,cmd_stage_shid_i,cmd_gen_cmd_q} :
          cmd_gen_1st_req ? {16'b0,cmd_stage_shid_i,sfifo_cmd_rdata[11:0]} :  // pad,id,f,clen,cmd
-         sfifo_cmd_rdata;
+         cmd_arb_mop_o   ? sfifo_cmd_rdata :
+         '0;
 
   assign cmd_stage_rdy_o = !sfifo_cmd_full;
 
