@@ -167,11 +167,6 @@ create_generated_clock -name SPI_DEV_IN_CLK -source SPI_DEV_CLK -divide_by 1 \
 create_generated_clock -name SPI_DEV_OUT_CLK -source SPI_DEV_CLK -divide_by 1 \
     -invert [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/clk_o]
 
-## TODO: Define SRAM clock, which is muxed clock. Do we need set_case_analysis?
-## sram_clk is after clock gating cell
-create_generated_clock -name SPI_SRAM_CLK -source SPI_DEV_CLK -divide_by 1 \
-    [get_pins top_earlgrey/u_spi_device/u_sram_clk_cg/clk_o]
-
 ## TODO: these are dummy constraints and likely incorrect, need to properly constrain min/max
 # FRACTION is reduced to 0.2 as internal datapath for SPI is half clk period
 set SPI_DEV_IN_DEL_FRACTION 0.2
@@ -262,16 +257,17 @@ set_max_delay ${SPI_HIDO_PASS_MAX_DELAY} -from [get_ports SPI_HOST_D3] -to [get_
 #####################
 
 # this may need some refinement (and max delay / skew needs to be constrained)
-set_clock_groups -name group1 -async -group [get_clocks MAIN_CLK     ] \
-                                     -group [get_clocks USB_CLK      ] \
-                                     -group [get_clocks SPI_DEV_CLK  ] \
-                                     -group [get_clocks SPI_HOST_CLK ] \
-                                     -group [get_clocks IO_CLK       ] \
-                                     -group [get_clocks IO_DIV2_CLK  ] \
-                                     -group [get_clocks IO_DIV4_CLK  ] \
-                                     -group [get_clocks RNG_CLK      ] \
-                                     -group [get_clocks JTAG_TCK     ] \
-                                     -group [get_clocks AON_CLK      ]
+set_clock_groups -name group1 -async                                  \
+    -group [get_clocks MAIN_CLK                                     ] \
+    -group [get_clocks USB_CLK                                      ] \
+    -group [get_clocks {SPI_DEV_CLK SPI_DEV_IN_CLK SPI_DEV_OUT_CLK} ] \
+    -group [get_clocks SPI_HOST_CLK                                 ] \
+    -group [get_clocks IO_CLK                                       ] \
+    -group [get_clocks IO_DIV2_CLK                                  ] \
+    -group [get_clocks IO_DIV4_CLK                                  ] \
+    -group [get_clocks RNG_CLK                                      ] \
+    -group [get_clocks JTAG_TCK                                     ] \
+    -group [get_clocks AON_CLK                                      ]
 
 # UART loopback path can be considered to be a false path
 set_false_path -through [get_pins top_earlgrey/u_uart*/cio_rx_i] -through [get_pins top_earlgrey/u_uart*/cio_tx_o]
