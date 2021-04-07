@@ -289,7 +289,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     return update_result;
   endfunction
 
-  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
+  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     dv_base_reg dv_reg;
     uvm_reg csr;
     bit     do_read_check   = 1'b1;

@@ -58,7 +58,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     end
   endtask : run_phase
 
-  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
+  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg   csr;
     i2c_item  sb_exp_wr_item;
     i2c_item  sb_exp_rd_item;

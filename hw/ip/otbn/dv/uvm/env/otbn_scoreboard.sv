@@ -41,7 +41,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     // reset local fifos queues and variables
   endfunction
 
-  task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
+  task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     case (channel)
       AddrChannel: process_tl_addr(item);
       DataChannel: process_tl_data(item);

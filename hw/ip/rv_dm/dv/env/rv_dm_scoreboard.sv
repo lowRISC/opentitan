@@ -98,12 +98,12 @@ class rv_dm_scoreboard extends dv_base_scoreboard #(
   endtask
 
   // task to process tl access
-  virtual task process_tl_host_access(tl_seq_item item, tl_channels_e channel = DataChannel);
+  virtual task process_tl_host_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
   endtask
 
   // task to process tl access
-  virtual task process_tl_device_access(tl_seq_item item, tl_channels_e channel = DataChannel);
+  virtual task process_tl_device_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
   endtask
 

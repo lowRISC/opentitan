@@ -27,7 +27,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     join_none
   endtask
 
-  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
+  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
     bit     do_read_check           = 1'b1;
     bit     do_cycle_accurate_check = 1'b1;

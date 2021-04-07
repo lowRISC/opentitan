@@ -66,7 +66,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
   endtask
 
 
-  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
+  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg        csr;
     string         csr_name;
     aes_seq_item   input_clone;

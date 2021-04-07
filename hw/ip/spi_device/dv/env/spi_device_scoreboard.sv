@@ -64,7 +64,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
   // process_tl_access:this task processes incoming access into the IP over tl interface
   // this is already called in cip_base_scoreboard::process_tl_a/d_chan_fifo tasks
-  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel = DataChannel);
+  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
     bit     do_read_check   = 1'b0; // TODO: fixme
     bit     write           = item.is_write();
