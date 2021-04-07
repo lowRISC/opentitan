@@ -38,6 +38,8 @@ module sha2 import hmac_pkg::*; (
   logic      [3:0]  w_index;
   sha_word_t [15:0] w;
 
+  localparam sha_word_t ZeroWord = '0;
+
   // w, hash, digest update logic control signals
   logic update_w_from_fifo, calculate_next_w;
   logic init_hash, run_hash, complete_one_chunk;
@@ -79,7 +81,7 @@ module sha2 import hmac_pkg::*; (
     //  end
     end else if (run_hash) begin
       // Just shift-out. There's no incoming data
-      w <= {sha_word_t'(0), w[15:1]};
+      w <= {ZeroWord, w[15:1]};
     end
   end : fill_w
 
