@@ -66,6 +66,7 @@
     # Code taken from Chromium, so covered by the BSD licence
     'sw/otbn/code-snippets/modexp.s',
     'sw/otbn/code-snippets/p256.s',
+    'sw/otbn/code-snippets/rsa_verify.s',
     # Mersenne Twister PRNG
     'sw/device/sca/lib/prng.c',
   ],
