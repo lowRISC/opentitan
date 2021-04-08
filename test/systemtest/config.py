@@ -72,10 +72,14 @@ TEST_APPS_SELFCHECKING = [
     {
         "name": "dif_csrng_smoketest",
     },
-    {
-        "name": "dif_entropy_smoketest",
-        "targets": ["sim_verilator"],
-    },
+    # TODO: The entropy smoketest is too unstable without #5941.
+    # Any change in the processor sequence causes the timing of the disable / enable to change
+    # and thus might produce different results.  This test will be completely removed for
+    # now until the feature is ready.
+    #{
+    #    "name": "dif_entropy_smoketest",
+    #    "targets": ["sim_verilator"],
+    #},
     {
         "name": "flash_ctrl_test",
     },
