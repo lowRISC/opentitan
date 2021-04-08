@@ -63,9 +63,9 @@ module entropy_src_repcnts_ht #(
 
     // NIST B counter
     assign rep_cntr_d =
-           (!active_i || clear_i) ? {{RegWidth-1{1'b0}},1'b1} :
+           (!active_i || clear_i) ? RegWidth'(1) :
            samples_match_pulse ? (rep_cntr_q+1) :
-           samples_no_match_pulse ?  '0 :
+           samples_no_match_pulse ? RegWidth'(1) :
            rep_cntr_q;
 
     assign rep_cnt_fail = (rep_cntr_q >= thresh_i);

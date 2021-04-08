@@ -48,7 +48,7 @@ module entropy_src_repcnt_ht #(
   //
   // Test operation
   //  This test will look for catastrophic stuck bit failures. The rep_cntr
-  //  uses zero as the starting value, differing from the NIST value of one.
+  //  uses one as the starting value, just as the NIST algorithm does.
 
 
   for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_cntrs
@@ -65,9 +65,9 @@ module entropy_src_repcnt_ht #(
 
     // NIST B counter
     assign rep_cntr_d[sh] =
-           (!active_i || clear_i) ? '0 :
+           (!active_i || clear_i) ? RegWidth'(1) :
            samples_match_pulse[sh] ? (rep_cntr_q[sh]+1) :
-           samples_no_match_pulse[sh] ?  '0 :
+           samples_no_match_pulse[sh] ? RegWidth'(1) :
            rep_cntr_q[sh];
 
     assign rep_cnt_fail[sh] = (rep_cntr_q[sh] >= thresh_i);
