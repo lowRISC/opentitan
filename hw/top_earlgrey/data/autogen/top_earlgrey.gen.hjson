@@ -2604,6 +2604,15 @@
       inter_signal_list:
       [
         {
+          name: gsc_rst
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: sysrst_ctrl_aon
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -12418,6 +12427,15 @@
         default: ""
         end_idx: -1
         top_signame: clkmgr_aon_tl
+        index: -1
+      }
+      {
+        name: gsc_rst
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: sysrst_ctrl_aon
         index: -1
       }
       {
