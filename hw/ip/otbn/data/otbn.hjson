@@ -207,16 +207,24 @@
       hwaccess: "hwo",
       fields: [
         { bits: "0",
+          name: "bus_integrity_error",
+          resval: 0,
+          desc: '''
+            Set by a failed integrity check on a bus access.
+            Note that this can happen even when OTBN is not running.
+          '''
+        }
+        { bits: "1",
           name: "imem_error",
           resval: 0,
           desc: "Set on any ECC error in IMEM"
         }
-        { bits: "1",
+        { bits: "2",
           name: "dmem_error",
           resval: 0,
           desc: "Set on any ECC error in DMEM"
         }
-        { bits: "2",
+        { bits: "3",
           name: "reg_error",
           resval: 0,
           desc: "Set on any ECC error in a register file"
