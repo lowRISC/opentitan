@@ -243,14 +243,12 @@ module sram_ctrl
   // SRAM Execution //
   ////////////////////
 
-  import tlul_pkg::tl_instr_en_e;
-
   if (InstrExec) begin : gen_instr_ctrl
-    tl_instr_en_e lc_ifetch_en;
-    tl_instr_en_e reg_ifetch_en;
+    tlul_pkg::tl_instr_en_e lc_ifetch_en;
+    tlul_pkg::tl_instr_en_e reg_ifetch_en;
     assign lc_ifetch_en = (lc_hw_debug_en_i == lc_ctrl_pkg::On) ? tlul_pkg::InstrEn :
                                                                   tlul_pkg::InstrDis;
-    assign reg_ifetch_en = tl_instr_en_e'(reg2hw.exec.q);
+    assign reg_ifetch_en = tlul_pkg::tl_instr_en_e'(reg2hw.exec.q);
     assign en_ifetch_o = (otp_hw_cfg_i.data.en_sram_ifetch == EnSramIfetch) ? reg_ifetch_en :
                                                                               lc_ifetch_en;
   end else begin : gen_tieoff
