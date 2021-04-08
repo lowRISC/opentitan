@@ -178,7 +178,7 @@ module csrng_block_encrypt #(
 
   // simple aes cipher activity detector
   assign block_encrypt_quiet_o =
-         (cipher_in_valid == aes_pkg::SP2V_LOW) && (cipher_in_ready == aes_pkg::SP2V_LOW) ||
+         ((cipher_in_valid == aes_pkg::SP2V_LOW) || (cipher_in_ready == aes_pkg::SP2V_LOW)) &&
          (cipher_crypt_busy == aes_pkg::SP2V_LOW);
 
 endmodule
