@@ -61,17 +61,15 @@ void mont_mul(const uint32_t *x, const uint32_t *y, const uint32_t *m,
 /**
  * Computes the modular exponentiation of an integer.
  *
- * Given sig, e, R^2 mod m, m, and m', this function computes sig^e mod m using
- * Montgomery multiplication, where
- * - sig, R^2 mod m, and m are integers with kRsaNumWords base b digits,
+ * Given sig, e, m, and m', this function computes sig^e mod m using Montgomery
+ * multiplication, where
+ * - sig and m are integers with kRsaNumWords base b digits,
  * - e is the exponent (3 or 65537),
  * - m' = -m^-1 mod b,
- * - R is b^kRsaNumWords, e.g. 2^3072 for RSA-3072, and
  * - b is 2^32.
  *
  * @param sig A `kRsaNumWords` long buffer, little-endian.
  * @param exponent Exponent to use for signature verification.
- * @param r_square A `kRsaNumWords` long buffer, little-endian.
  * @param m A `kRsaNumWords` long buffer, little-endian.
  * @param m0_inv Negative of the multiplicative inverse of m modulo b.
  * @param[out] result A `kRsaNumWords` long buffer, little-endian.
@@ -80,9 +78,8 @@ void mont_mul(const uint32_t *x, const uint32_t *y, const uint32_t *m,
 // TODO(#22): Update this after we decide on a key storage format.
 // FIXME: Error codes are still under discussion, update after we reach a
 // decision.
-bool mod_exp(const uint32_t *sig, rsa_verify_exponent_t e,
-             const uint32_t *r_square, const uint32_t *m, uint32_t m0_inv,
-             uint32_t *result);
+bool mod_exp(const uint32_t *sig, rsa_verify_exponent_t e, const uint32_t *m,
+             uint32_t m0_inv, uint32_t *result);
 
 #ifdef __cplusplus
 }  // extern "C"

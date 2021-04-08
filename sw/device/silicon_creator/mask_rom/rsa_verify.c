@@ -8,22 +8,32 @@
 #include <stddef.h>
 
 /**
+ * Constants used in this file.
+ */
+enum {
+  /**
+   * Number of bits of RSA modulus.
+   */
+  kRsaNumBits = kRsaNumWords * sizeof(uint32_t) * 8,
+};
+
+/**
  * Subtracts `b` from `a` in-place, i.e. `a -= b`.
  *
- * `a` must be greater than or equal to `b`.
- *
- * See Handbook of Applied Cryptography, Ch. 14, Alg. 14.9.
+ * Since a can be smaller than b, this function also returns the borrow.
  *
  * @param a A `kRsaNumWords` long buffer, little-endian.
  * @param b A `kRsaNumWords` long buffer, little-endian.
+ * @return Borrow.
  */
-static void subtract(uint32_t *a, const uint32_t *b) {
+static uint32_t subtract(uint32_t *a, const uint32_t *b) {
   uint32_t borrow = 0;
   for (size_t i = 0; i < kRsaNumWords; ++i) {
     uint64_t diff = (uint64_t)a[i] - b[i] - borrow;
     borrow = diff > a[i];
     a[i] = (uint32_t)diff;
   }
+  return borrow;
 }
 
 /**
@@ -42,6 +52,47 @@ static bool greater_equal(const uint32_t *a, const uint32_t *b) {
     }
   }
   return true;
+}
+
+/**
+ * Shifts `a` left one bit in-place, i.e. `a <<= 1`.
+ *
+ * Since the result may not fit in `kRsaNumWords`, this function also returns
+ * the most significant bit of the result.
+ *
+ * @param a A `kRsaNumWords` long buffer, little-endian.
+ * @return Most significant bit of the result.
+ */
+static uint32_t shift_left(uint32_t *a) {
+  const uint32_t msb = a[kRsaNumWords - 1] >> 31;
+  for (size_t i = kRsaNumWords - 1; i > 0; --i) {
+    a[i] = (a[i] << 1) | (a[i - 1] >> 31);
+  }
+  a[0] <<= 1;
+  return msb;
+}
+
+/**
+ * Calculates R^2 mod m, where R = b^kRsaNumWords, and b is 2^32.
+ *
+ * @param m A `kRsaNumWords` long buffer, little-endian.
+ * @param[out] result A `kRsaNumWords` long buffer, little-endian.
+ */
+static void calc_r_square(const uint32_t *m, uint32_t *result) {
+  memset(result, 0, kRsaNumWords * sizeof(uint32_t));
+  // Since R/2 < m < R, this subtraction ensures that result = R mod m and
+  // fits in `kRsaNumWords` going into the loop.
+  subtract(result, m);
+
+  // Iteratively shift and reduce `result`.
+  for (size_t i = 0; i < kRsaNumBits; ++i) {
+    uint32_t msb = shift_left(result);
+    // Reduce until result < m. Doing this at every iteration minimizes the
+    // total number of subtractions that we need to perform.
+    while (msb > 0 || greater_equal(result, m)) {
+      msb -= subtract(result, m);
+    }
+  }
 }
 
 // FIXME: Merge this comment with the one in the header file.
@@ -98,18 +149,21 @@ void mont_mul(const uint32_t *x, const uint32_t *y, const uint32_t *m,
 }
 
 bool mod_exp(const uint32_t *sig, const rsa_verify_exponent_t e,
-             const uint32_t *r_square, const uint32_t *m, const uint32_t m0_inv,
-             uint32_t *result) {
+             const uint32_t *m, const uint32_t m0_inv, uint32_t *result) {
   uint32_t buf[kRsaNumWords];
 
   if (e == kRsaVerifyExponent3) {
+    // buf = R^2 mod m
+    calc_r_square(m, buf);
     // result = sig * R mod m
-    mont_mul(sig, r_square, m, m0_inv, result);
+    mont_mul(sig, buf, m, m0_inv, result);
     // buf = sig^2 * R mod m
     mont_mul(result, result, m, m0_inv, buf);
   } else if (e == kRsaVerifyExponent65537) {
+    // result = R^2 mod m
+    calc_r_square(m, result);
     // buf = sig * R mod m
-    mont_mul(sig, r_square, m, m0_inv, buf);
+    mont_mul(sig, result, m, m0_inv, buf);
     for (size_t i = 0; i < 8; ++i) {
       // result = sig^{2*i+1} * R mod m (sig's exponent: 2, 8, 32, ..., 32768)
       mont_mul(buf, buf, m, m0_inv, result);
