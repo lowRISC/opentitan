@@ -56,6 +56,7 @@ fn main() {
 
     // Produce the signature from concatenated system_state_value,
     // device_usage_value and the portion of the "signed" portion of the image.
+    image.update_timestamp_field();
     let image_sign_data = image.data_to_sign();
     let device_usage_value =
         &device_usage_value(&config.input_files.usage_constraints_path);

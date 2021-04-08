@@ -90,10 +90,19 @@ impl RawImage {
 
         let lockdown_info = &config.peripheral_lockdown_info;
         self.update_peripheral_lockdown_info_field(lockdown_info);
+    }
 
-        // TODO: calculated at runtime, so we should probably rename this
-        //       function.
-        self.update_timestamp_field();
+    /// Updates ROM_EXT manifest timestamp field.
+    ///
+    /// The generated time stamp is u64. Normally time stamp is a signed
+    /// integer, however there is no risk of overflow into a "negative".
+    pub fn update_timestamp_field(&mut self) {
+        let duration = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Failed to obtain the current time!");
+
+        let bytes = duration.as_secs().to_le_bytes();
+        self.update_field(&bytes, manifest::ROM_EXT_IMAGE_TIMESTAMP_OFFSET);
     }
 
     /// Updates ROM_EXT manifest signature key public exponent field.
@@ -168,19 +177,6 @@ impl RawImage {
             &[0xA5; 16],
             manifest::ROM_EXT_PERIPHERAL_LOCKDOWN_INFO_OFFSET,
         );
-    }
-
-    /// Updates ROM_EXT manifest timestamp field.
-    ///
-    /// The generated time stamp is u64. Normally time stamp is a signed
-    /// integer, however there is no risk of overflow into a "negative".
-    fn update_timestamp_field(&mut self) {
-        let duration = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("Failed to obtain the current time!");
-
-        let bytes = &duration.as_secs().to_le_bytes();
-        self.update_field(bytes, manifest::ROM_EXT_IMAGE_TIMESTAMP_OFFSET);
     }
 
     /// Updates a ROM_EXT manifest field.
