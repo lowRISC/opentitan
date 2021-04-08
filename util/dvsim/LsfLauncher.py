@@ -9,7 +9,7 @@ import subprocess
 import tarfile
 from pathlib import Path
 
-from Launcher import Launcher, LauncherError
+from Launcher import ErrorMessage, Launcher, LauncherError
 from utils import VERBOSE, clean_odirs
 
 
@@ -264,7 +264,11 @@ class LsfLauncher(Launcher):
             except IOError as e:
                 self._post_finish(
                     "F",
-                    "ERROR: Failed to open {}\n{}.".format(self.bsub_out, e))
+                    ErrorMessage(
+                        line_number=None,
+                        message="ERROR: Failed to open {}\n{}.".format(
+                            self.bsub_out, e),
+                        context=[]))
                 return "F"
 
         # Now that the job has completed, we need to determine its status.
@@ -299,7 +303,9 @@ class LsfLauncher(Launcher):
             status, err_msg = self._check_status()
             # Prioritize error messages from bsub over the job's log file.
             if self.bsub_out_err_msg:
-                err_msg = self.bsub_out_err_msg
+                err_msg = ErrorMessage(line_number=None,
+                                       message=self.bsub_out_err_msg,
+                                       context=[])
             self._post_finish(status, err_msg)
             return status
 
@@ -396,4 +402,6 @@ class LsfLauncher(Launcher):
         err_msg is the error message indicating the cause of failure.'''
 
         for job in LsfLauncher.jobs[cfg][job_name]:
-            job._post_finish("F", err_msg)
+            job._post_finish("F", ErrorMessage(line_number=None,
+                                               message=err_msg,
+                                               context=[]))

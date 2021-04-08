@@ -15,10 +15,13 @@ from collections import OrderedDict
 from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, RunTest
 from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes, Regressions, RunModes, Tests
+from SimResults import SimResults
 from tabulate import tabulate
-from testplanner.class_defs import Testplan, TestResult
+from testplanner.class_defs import Testplan
 from testplanner.testplan_utils import parse_testplan
 from utils import VERBOSE, rm_path
+
+_MAX_TESTS_PER_BUCKET = 10
 
 
 def pick_wave_format(fmts):
@@ -39,46 +42,6 @@ def pick_wave_format(fmts):
         return pick_wave_format(fmts[1:])
 
     return fmt
-
-
-class Results:
-    '''An object wrapping up a table of results for some tests
-
-    self.table is a list of TestResult objects, each of which
-    corresponds to one or more runs of the test with a given name.
-
-    self.fail_msgs is a list of error messages, one per failing run.
-
-    '''
-    def __init__(self, items, results):
-        self.table = []
-        self.fail_msgs = []
-
-        self._name_to_row = {}
-        for item in items:
-            self._add_item(item, results)
-
-    def _add_item(self, item, results):
-        '''Recursively add a single item to the table of results'''
-        status = results[item]
-        if status == "F":
-            self.fail_msgs.append(item.launcher.fail_msg)
-
-        # Runs get added to the table directly
-        if item.target == "run":
-            self._add_run(item, status)
-
-    def _add_run(self, item, status):
-        '''Add an entry to table for item'''
-        row = self._name_to_row.get(item.name)
-        if row is None:
-            row = TestResult(item.name)
-            self.table.append(row)
-            self._name_to_row[item.name] = row
-
-        if status == 'P':
-            row.passing += 1
-        row.total += 1
 
 
 class SimCfg(FlowCfg):
@@ -577,12 +540,20 @@ class SimCfg(FlowCfg):
         result is in markdown format.
         '''
 
-        deployed_items = self.deploy
-        results = Results(deployed_items, run_results)
+        def create_failure_message(test, line, context):
+            message = [f"    * {test.qual_name}"]
+            if line:
+                message.append(
+                    f"      Line {line}, in log {test.get_log_path()}<br>")
+            else:
+                message.append(f"      Log {test.get_log_path()}<br>")
+            if context:
+                message.extend([f"      {c.rstrip()}<br>" for c in context])
+            message.append("")
+            return message
 
-        # Set a flag if anything failed
-        if results.fail_msgs:
-            self.errors_seen = True
+        deployed_items = self.deploy
+        results = SimResults(deployed_items, run_results)
 
         # Generate results table for runs.
         results_str = "## " + self.results_title + "\n"
@@ -616,7 +587,7 @@ class SimCfg(FlowCfg):
             results_str += "\n"
             self.results_summary = self.testplan.results_summary
 
-            # Append coverage results of coverage was enabled.
+            # Append coverage results if coverage was enabled.
             if self.cov_report_deploy is not None:
                 report_status = run_results[self.cov_report_deploy]
                 if report_status == "P":
@@ -640,10 +611,26 @@ class SimCfg(FlowCfg):
             self.results_summary["Name"] = self._get_results_page_link(
                 self.results_summary["Name"])
 
-        # Append failures for triage
-        if results.fail_msgs:
-            fail_msgs = "\n## List of Failures\n" + ''.join(results.fail_msgs)
-            results_str += fail_msgs
+        # Append bucketized failures for triage, sorted by descending number
+        # of failures.
+        if results.buckets:
+            self.errors_seen = True
+            by_tests = sorted(results.buckets.items(),
+                              key=lambda i: len(i[1]),
+                              reverse=True)
+            fail_msgs = ["\n## Failure Buckets", ""]
+            for bucket, tests in by_tests:
+                fail_msgs.append(f"* ```{bucket}```:")
+                # The tests could be sorted by ascending wall clock time.
+                for count, (test, line, context) in enumerate(tests):
+                    if count == _MAX_TESTS_PER_BUCKET:
+                        fail_msgs.append(
+                            f"    * ... {len(tests) - count} more tests.")
+                        break
+                    fail_msgs.extend(create_failure_message(
+                        test, line, context))
+            fail_msgs.append("")
+            results_str += "\n".join(fail_msgs)
 
         self.results_md = results_str
 
