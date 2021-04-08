@@ -9,10 +9,12 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/csr.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/rom_exts/rom_ext_manifest_parser.h"
 
@@ -21,18 +23,51 @@
 // This is the expected ROM_EXT Manifest Identifier
 static const uint32_t kRomExtIdentifierExpected = 0x4552544F;
 
+// TODO: Remove once we have sig_verify integrated.
+static const uint32_t kROMExtIdentifierExpectedDigest[8] = {
+    0xe4ce261b, 0xc45462eb, 0xde9b0b29, 0x23f3ccf3,
+    0x933d551c, 0xa85d09fe, 0x82cfed52, 0x6924c711,
+};
+
 typedef void(boot_fn)(void);
 
 void mask_rom_exception_handler(void) { wait_for_interrupt(); }
 void mask_rom_nmi_handler(void) { wait_for_interrupt(); }
 
+hmac_t hmac;
 uart_t uart;
+
+// FIXME: Temporary workaround to run functional test of SHA256.
+static int verify_rom_ext_identifier(rom_ext_manifest_t rom_ext) {
+  uint32_t rom_ext_identifier = rom_ext_get_identifier(rom_ext);
+
+  if (rom_ext_identifier != kRomExtIdentifierExpected) {
+    return -1;
+  }
+
+  if (hmac_sha256_init(&hmac) != 0) {
+    return -1;
+  }
+
+  if (hmac_sha256_update(&hmac, &rom_ext_identifier, sizeof(uint32_t)) != 0) {
+    return -1;
+  }
+
+  hmac_digest_t digest;
+  if (hmac_sha256_final(&hmac, &digest) != 0) {
+    return -1;
+  }
+
+  return memcmp(digest.digest, kROMExtIdentifierExpectedDigest,
+                sizeof(digest.digest));
+}
 
 void mask_rom_boot(void) {
   // Initialize pinmux configuration so we can use the UART.
   pinmux_init();
 
   // Configure UART0 as stdout.
+  // TODO(lowrisc/opentitan-embargoed#39): Move to constant driver handles.
   uart.base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR);
   uart.baudrate = kUartBaudrate;
   uart.clk_freq_hz = kClockFreqPeripheralHz;
@@ -41,6 +76,10 @@ void mask_rom_boot(void) {
       .data = &uart,
       .sink = uart_sink,
   });
+
+  // Map HMAC registers.
+  // TODO(lowrisc/opentitan-embargoed#39): Move to constant driver handles.
+  hmac.base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
 
   // FIXME: what (if anything) should we print at startup?
   base_printf("MaskROM\r\n");
@@ -122,7 +161,7 @@ void mask_rom_boot(void) {
     //    break
     //}
     // Temporary implementation for the two above `if` blocks.
-    if (rom_ext_get_identifier(rom_ext) != kRomExtIdentifierExpected) {
+    if (verify_rom_ext_identifier(rom_ext) != 0) {
       break;
     }
 
