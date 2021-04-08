@@ -97,6 +97,10 @@ package otbn_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } bus_integrity_error;
+    struct packed {
+      logic        d;
+      logic        de;
     } imem_error;
     struct packed {
       logic        d;
@@ -120,10 +124,10 @@ package otbn_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [24:23]
-    otbn_hw2reg_status_reg_t status; // [22:22]
-    otbn_hw2reg_err_bits_reg_t err_bits; // [21:6]
-    otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [5:0]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [26:25]
+    otbn_hw2reg_status_reg_t status; // [24:24]
+    otbn_hw2reg_err_bits_reg_t err_bits; // [23:8]
+    otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [7:0]
   } otbn_hw2reg_t;
 
   // Register offsets

@@ -183,6 +183,7 @@ module otbn_reg_top (
   logic err_bits_fatal_reg_qs;
   logic [31:0] start_addr_wd;
   logic start_addr_we;
+  logic fatal_alert_cause_bus_integrity_error_qs;
   logic fatal_alert_cause_imem_error_qs;
   logic fatal_alert_cause_dmem_error_qs;
   logic fatal_alert_cause_reg_error_qs;
@@ -552,7 +553,32 @@ module otbn_reg_top (
 
   // R[fatal_alert_cause]: V(False)
 
-  //   F[imem_error]: 0:0
+  //   F[bus_integrity_error]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_fatal_alert_cause_bus_integrity_error (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.fatal_alert_cause.bus_integrity_error.de),
+    .d      (hw2reg.fatal_alert_cause.bus_integrity_error.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (fatal_alert_cause_bus_integrity_error_qs)
+  );
+
+
+  //   F[imem_error]: 1:1
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RO"),
@@ -577,7 +603,7 @@ module otbn_reg_top (
   );
 
 
-  //   F[dmem_error]: 1:1
+  //   F[dmem_error]: 2:2
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RO"),
@@ -602,7 +628,7 @@ module otbn_reg_top (
   );
 
 
-  //   F[reg_error]: 2:2
+  //   F[reg_error]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RO"),
@@ -727,9 +753,10 @@ module otbn_reg_top (
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[0] = fatal_alert_cause_imem_error_qs;
-        reg_rdata_next[1] = fatal_alert_cause_dmem_error_qs;
-        reg_rdata_next[2] = fatal_alert_cause_reg_error_qs;
+        reg_rdata_next[0] = fatal_alert_cause_bus_integrity_error_qs;
+        reg_rdata_next[1] = fatal_alert_cause_imem_error_qs;
+        reg_rdata_next[2] = fatal_alert_cause_dmem_error_qs;
+        reg_rdata_next[3] = fatal_alert_cause_reg_error_qs;
       end
 
       default: begin

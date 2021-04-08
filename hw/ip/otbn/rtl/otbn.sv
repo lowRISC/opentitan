@@ -137,6 +137,8 @@ module otbn
   logic imem_rvalid_bus;
   logic [1:0] imem_rerror_bus;
 
+  logic imem_bus_integrity_error;
+
   logic [ImemAddrWidth-1:0] imem_addr_core;
   assign imem_index_core = imem_addr_core[ImemAddrWidth-1:2];
 
@@ -180,20 +182,20 @@ module otbn
   ) u_tlul_adapter_sram_imem (
     .clk_i,
     .rst_ni,
-    .tl_i        (tl_win_h2d[TlWinImem]),
-    .tl_o        (tl_win_d2h[TlWinImem]),
-    .en_ifetch_i (tlul_pkg::InstrDis),
-    .req_o       (imem_req_bus   ),
-    .req_type_o  (),
-    .gnt_i       (imem_gnt_bus   ),
-    .we_o        (imem_write_bus ),
-    .addr_o      (imem_index_bus ),
-    .wdata_o     (imem_wdata_bus ),
-    .wmask_o     (imem_wmask_bus ),
-    .intg_error_o(               ),
-    .rdata_i     (imem_rdata_bus ),
-    .rvalid_i    (imem_rvalid_bus),
-    .rerror_i    (imem_rerror_bus)
+    .tl_i        (tl_win_h2d[TlWinImem]   ),
+    .tl_o        (tl_win_d2h[TlWinImem]   ),
+    .en_ifetch_i (tlul_pkg::InstrDis      ),
+    .req_o       (imem_req_bus            ),
+    .req_type_o  (                        ),
+    .gnt_i       (imem_gnt_bus            ),
+    .we_o        (imem_write_bus          ),
+    .addr_o      (imem_index_bus          ),
+    .wdata_o     (imem_wdata_bus          ),
+    .wmask_o     (imem_wmask_bus          ),
+    .intg_error_o(imem_bus_integrity_error),
+    .rdata_i     (imem_rdata_bus          ),
+    .rvalid_i    (imem_rvalid_bus         ),
+    .rerror_i    (imem_rerror_bus         )
   );
 
   // Mux core and bus access into IMEM
@@ -275,6 +277,8 @@ module otbn
   logic dmem_rvalid_bus;
   logic [1:0] dmem_rerror_bus;
 
+  logic dmem_bus_integrity_error;
+
   logic [DmemAddrWidth-1:0] dmem_addr_core;
   assign dmem_index_core = dmem_addr_core[DmemAddrWidth-1:DmemAddrWidth-DmemIndexWidth];
 
@@ -317,20 +321,20 @@ module otbn
   ) u_tlul_adapter_sram_dmem (
     .clk_i,
     .rst_ni,
-    .tl_i        (tl_win_h2d[TlWinDmem]),
-    .tl_o        (tl_win_d2h[TlWinDmem]),
-    .en_ifetch_i (tlul_pkg::InstrDis   ),
-    .req_o       (dmem_req_bus         ),
-    .req_type_o  (),
-    .gnt_i       (dmem_gnt_bus         ),
-    .we_o        (dmem_write_bus       ),
-    .addr_o      (dmem_index_bus       ),
-    .wdata_o     (dmem_wdata_bus       ),
-    .wmask_o     (dmem_wmask_bus       ),
-    .intg_error_o(                     ),
-    .rdata_i     (dmem_rdata_bus       ),
-    .rvalid_i    (dmem_rvalid_bus      ),
-    .rerror_i    (dmem_rerror_bus      )
+    .tl_i        (tl_win_h2d[TlWinDmem]   ),
+    .tl_o        (tl_win_d2h[TlWinDmem]   ),
+    .en_ifetch_i (tlul_pkg::InstrDis      ),
+    .req_o       (dmem_req_bus            ),
+    .req_type_o  (                        ),
+    .gnt_i       (dmem_gnt_bus            ),
+    .we_o        (dmem_write_bus          ),
+    .addr_o      (dmem_index_bus          ),
+    .wdata_o     (dmem_wdata_bus          ),
+    .wmask_o     (dmem_wmask_bus          ),
+    .intg_error_o(dmem_bus_integrity_error),
+    .rdata_i     (dmem_rdata_bus          ),
+    .rvalid_i    (dmem_rvalid_bus         ),
+    .rerror_i    (dmem_rerror_bus         )
   );
 
   // Mux core and bus access into dmem
@@ -362,6 +366,8 @@ module otbn
 
   // Registers =================================================================
 
+  logic reg_bus_integrity_error;
+
   otbn_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -373,9 +379,13 @@ module otbn
     .reg2hw,
     .hw2reg,
 
-    .intg_err_o(),
+    .intg_err_o(reg_bus_integrity_error),
     .devmode_i (1'b1)
   );
+
+  logic bus_integrity_error;
+  assign bus_integrity_error = (imem_bus_integrity_error | dmem_bus_integrity_error |
+                                reg_bus_integrity_error);
 
   // CMD register
   // CMD.start ("start" is omitted by reggen since it is the only field)
@@ -419,6 +429,8 @@ module otbn
 
   // FATAL_ALERT_CAUSE register. The .de and .d values are equal for each bit, so that it can only
   // be set, not cleared.
+  assign hw2reg.fatal_alert_cause.bus_integrity_error.de = bus_integrity_error;
+  assign hw2reg.fatal_alert_cause.bus_integrity_error.d  = bus_integrity_error;
   assign hw2reg.fatal_alert_cause.imem_error.de = imem_rerror;
   assign hw2reg.fatal_alert_cause.imem_error.d  = imem_rerror;
   assign hw2reg.fatal_alert_cause.dmem_error.de = dmem_rerror;
@@ -436,7 +448,7 @@ module otbn
                                   reg2hw.alert_test.recov.qe;
 
   logic [NumAlerts-1:0] alerts;
-  assign alerts[AlertFatal] = imem_rerror | dmem_rerror;
+  assign alerts[AlertFatal] = bus_integrity_error | imem_rerror | dmem_rerror;
   assign alerts[AlertRecov] = 1'b0; // TODO: Implement
 
   for (genvar i = 0; i < NumAlerts; i++) begin: gen_alert_tx
