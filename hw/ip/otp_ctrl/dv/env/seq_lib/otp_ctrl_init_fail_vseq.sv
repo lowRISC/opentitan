@@ -10,6 +10,7 @@
 // If any of the hardware partition is updated, then in next power cycle, the initialization will
 // fail.
 // If no check failure, we will random inject ECC errors to create init macro errors.
+// We will also trigger sw partition ECC reg failure by forcing the ECC reg error output.
 //
 // This sequence will check the following items if OTP init failed with fatal error:
 // - Otp_initialization failure triggers fatal alert
@@ -62,22 +63,22 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       end
 
       // OTP read via DAI, check data in scb
-      dai_rd_check(dai_addr, wdata0, wdata1);
+      dai_rd(dai_addr, 0, wdata0, wdata1);
 
       // If write sw partitions, check tlul window
       if (is_sw_part(dai_addr)) begin
         uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
-        tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_rsp(1),
-                  .check_exp_data(1), .exp_data(wdata0));
+        tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_rsp(0));
       end
 
       if (i == num_to_lock_digests) cal_hw_digests('1);
 
-      csr_rd_check(.ptr(ral.status), .compare_value(1'b1 << OtpDaiIdleIdx));
+      csr_rd(ral.status, tlul_val);
     end
 
     do_otp_ctrl_init = 0;
     do_otp_pwr_init  = 0;
+    cfg.en_scb       = 0;
     dut_init();
 
     if (init_chk_err) begin
@@ -87,7 +88,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
         if (init_chk_err[i]) exp_status |= 1'b1 << i;
       end
 
-      check_fatal_init_err("fatal_check_error", exp_status);
+      check_otp_fatal_err("fatal_check_error", exp_status);
 
     // If not check error, force ECC correctable and uncorrectable error
     end else begin
@@ -112,9 +113,23 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       end
 
       if (is_fatal) begin
+        // ECC uncorrectable error.
         `uvm_info(`gfn, "OTP_init macro ECC uncorrectable failure", UVM_LOW)
-        check_fatal_init_err("fatal_macro_error", exp_status);
+        check_otp_fatal_err("fatal_macro_error", exp_status);
+      end else if ($urandom_range(0, 1)) begin
+
+        // Randomly force ECC reg in sw partitions to create a check failure
+        bit [1:0] sw_check_fail = $urandom_range(1, 3);
+        cfg.otp_ctrl_vif.force_sw_check_fail(sw_check_fail);
+        `uvm_info(`gfn, $sformatf("OTP_init SW ECC check failure with index %0h", sw_check_fail),
+                  UVM_LOW)
+        foreach(sw_check_fail[i]) begin
+          if (sw_check_fail[i]) exp_status[i] = 1;
+        end
+        check_otp_fatal_err("fatal_check_error", exp_status);
       end else begin
+
+        // Expect the OTP init to continue with an ECC correctable interrupt.
         `uvm_info(`gfn, "OTP_init macro ECC correctable failure", UVM_LOW)
         exp_status[OtpDaiIdleIdx] = 1;
         cfg.otp_ctrl_vif.drive_pwr_otp_init(1);
@@ -122,11 +137,18 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
         wait(cfg.otp_ctrl_vif.pwr_otp_idle_o == 1);
         csr_rd_check(.ptr(ral.status), .compare_value(exp_status));
         csr_rd_check(.ptr(ral.intr_state.otp_error), .compare_value(1));
+
+        // Create LC check failure.
+        cfg.otp_ctrl_vif.lc_check_byp_en = 0;
+        req_lc_transition(1);
+        trigger_checks(.val('1), .wait_done(0));
+        exp_status[OtpLifeCycleErrIdx] = 1;
+        check_otp_fatal_err("fatal_check_error", exp_status, 0);
       end
     end
   endtask
 
-  virtual task check_fatal_init_err(string alert_name, bit [TL_DW-1:0] exp_status);
+  virtual task check_otp_fatal_err(string alert_name, bit [TL_DW-1:0] exp_status, bit is_init = 1);
     cfg.otp_ctrl_vif.drive_pwr_otp_init(1);
 
     // Wait until OTP_INIT process the error
@@ -142,11 +164,17 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
 
     csr_rd_check(.ptr(ral.status), .compare_value(exp_status));
 
-    `DV_CHECK_EQ(cfg.otp_ctrl_vif.pwr_otp_done_o, 0)
-    `DV_CHECK_EQ(cfg.otp_ctrl_vif.pwr_otp_idle_o, 0)
+    if (is_init) begin
+      `DV_CHECK_EQ(cfg.otp_ctrl_vif.pwr_otp_done_o, 0)
+      `DV_CHECK_EQ(cfg.otp_ctrl_vif.pwr_otp_idle_o, 0)
+    end
 
     // Issue reset to stop fatal alert
-    dut_init();
+    apply_reset();
+
+    // delay to avoid race condition when sending item and checking no item after reset occur
+    // at the same time
+    #1ps;
   endtask
 
 endclass

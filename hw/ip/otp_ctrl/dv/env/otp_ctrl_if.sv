@@ -4,6 +4,8 @@
 
 // This interface collect the broadcast output data from OTP,
 // and drive input requests coming into OTP.
+`define ECC_REG_PATH u_otp_ctrl_ecc_reg.gen_ecc_dec[0].u_prim_secded_72_64_dec
+
 interface otp_ctrl_if(input clk_i, input rst_ni);
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
@@ -29,6 +31,8 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   lc_ctrl_pkg::lc_tx_e lc_esc_dly1, lc_esc_dly2;
   // For lc_escalate_en, every value that is not Off is a On.
   bit                  lc_esc_on;
+  bit                  lc_check_byp_en = 1;
+  bit [1:0]            force_sw_parts_ecc_reg;
 
   // Lc_err could trigger during LC program, so check intr and status after lc_req is finished.
   // Lc_err takes one clock cycle to propogate to intr signal. So avoid intr check if it happens
@@ -43,7 +47,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
       lc_prog_err_dly1 <= lc_prog_err;
       lc_esc_dly1      <= lc_escalate_en_i;
       lc_esc_dly2      <= lc_esc_dly1;
-      if (lc_prog_req && lc_check_byp_en_i == lc_ctrl_pkg::Off) begin
+      if (lc_prog_req && lc_check_byp_en_i == lc_ctrl_pkg::Off && lc_check_byp_en) begin
         lc_check_byp_en_i <= lc_ctrl_pkg::On;
       end
     end
@@ -78,6 +82,32 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     lc_escalate_en_i = val;
   endtask
 
+  // SW partitions do not have any internal checks.
+  // Here we force internal ECC check to fail.
+  task automatic force_sw_check_fail(bit[1:0] fail_idx = $urandom_range(1, 3));
+    @(posedge clk_i);
+    if (fail_idx[0]) begin
+      force tb.dut.gen_partitions[0].gen_unbuffered.u_part_unbuf.`ECC_REG_PATH.syndrome_o[0] = 1;
+      force_sw_parts_ecc_reg[0] = 1;
+    end
+    if (fail_idx[1]) begin
+      force tb.dut.gen_partitions[1].gen_unbuffered.u_part_unbuf.`ECC_REG_PATH.syndrome_o[0] = 1;
+      force_sw_parts_ecc_reg[1] = 1;
+    end
+  endtask
+
+  task automatic release_sw_check_fail(bit[1:0] fail_idx);
+    @(posedge clk_i);
+    if (fail_idx[0]) begin
+      release tb.dut.gen_partitions[0].gen_unbuffered.u_part_unbuf.`ECC_REG_PATH.syndrome_o[0];
+      force_sw_parts_ecc_reg[0] = 0;
+    end
+    if (fail_idx[1]) begin
+      release tb.dut.gen_partitions[1].gen_unbuffered.u_part_unbuf.`ECC_REG_PATH.syndrome_o[0];
+      force_sw_parts_ecc_reg[0] = 0;
+    end
+  endtask
+
   `define OTP_ASSERT_WO_LC_ESC(NAME, SEQ) \
     `ASSERT(NAME, SEQ, clk_i, !rst_ni || lc_esc_on)
 
@@ -103,4 +133,5 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
   // TODO: add assertions when esc_en is On
   `undef OTP_ASSERT_WO_LC_ESC
+  `undef ECC_REG_PATH
 endinterface
