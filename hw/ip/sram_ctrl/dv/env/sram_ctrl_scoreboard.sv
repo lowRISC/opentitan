@@ -16,6 +16,9 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
   bit in_key_req = 0;
 
+  // this bit goes high for the duration of memory initialization
+  bit in_init = 0;
+
   // This bit goes high as soon as a LC escalation request is seen on the interface,
   // and goes low once the scoreboard has finished all internal handling logic up to
   // resetting the key and nonce (one cycle after `exp_status` is updated).
@@ -206,12 +209,35 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+      process_sram_init();
       process_lc_escalation();
       process_sram_tl_a_chan_fifo();
       process_sram_tl_d_chan_fifo();
       process_kdi_fifo();
       process_completed_trans();
     join_none
+  endtask
+
+  virtual task process_sram_init();
+    // SRAM initialization happens once at the beginning of each simulation and requires a key to be
+    // provisioned from OTP first.
+    // As a result we simply just wait for the first key request to end, and then wait for each line
+    // of the memory to be written.
+    forever begin
+      wait(!cfg.under_reset);
+      @(posedge in_init);
+      // initialization process only starts once the corresponding key request finishes
+      @(negedge in_key_req);
+      // wait 1 cycle for initialization to start
+      cfg.clk_rst_vif.wait_clks(1);
+      // initialization process will randomize each line in the SRAM, one cycle each
+      //
+      // thus we just need to wait for a number of cycles equal to the total size
+      // of the sram address space
+      cfg.clk_rst_vif.wait_clks(cfg.mem_bkdr_vif.mem_depth);
+      in_init = 0;
+      `uvm_info(`gfn, "dropped in_init", UVM_HIGH)
+    end
   endtask
 
   virtual task process_lc_escalation();
@@ -644,13 +670,22 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
         // do nothing
       end
       "ctrl": begin
-        // TODO: need to correctly handle init timing
-        do_read_check = 1'b0;
-
         // do nothing if 0 is written
-        if (addr_phase_write && item.a_data) begin
-          in_key_req = 1;
-          exp_status[SramCtrlScrKeyValid] = 0;
+        if (addr_phase_write) begin
+          if (item.a_data[SramCtrlRenewScrKey]) begin
+            in_key_req = 1;
+            exp_status[SramCtrlScrKeyValid] = 0;
+          end
+          if (item.a_data[SramCtrlInit]) begin
+            in_init = 1;
+            `uvm_info(`gfn, "raised in_init", UVM_HIGH)
+          end
+        end else if (addr_phase_read) begin
+          // CTRL.renew_scr_key always reads as 0
+          void'(ral.ctrl.renew_scr_key.predict(.value(0), .kind(UVM_PREDICT_READ)));
+
+          // CTRL.init will be set to 0 once initialization is complete
+          void'(ral.ctrl.init.predict(.value(in_init), .kind(UVM_PREDICT_READ)));
         end
       end
       "error_address": begin

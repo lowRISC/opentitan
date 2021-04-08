@@ -35,8 +35,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
 
   // setup basic sram_ctrl features
   virtual task sram_ctrl_init();
-    // TODO: Can this be removed? and rely on mem init below?
-    cfg.mem_bkdr_vif.clear_mem();
+    cfg.mem_bkdr_vif.init();
     req_scr_key();
     req_mem_init();
   endtask
