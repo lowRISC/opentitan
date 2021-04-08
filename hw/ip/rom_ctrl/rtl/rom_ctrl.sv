@@ -37,6 +37,8 @@ module rom_ctrl
   tlul_pkg::tl_h2d_t tl_rom_h2d [1];
   tlul_pkg::tl_d2h_t tl_rom_d2h [1];
 
+  logic  rom_reg_integrity_error;
+
   rom_ctrl_rom_reg_top u_rom_top (
       .clk_i      (clk_i),
       .rst_ni     (rst_ni),
@@ -45,8 +47,7 @@ module rom_ctrl
       .tl_win_o   (tl_rom_h2d),
       .tl_win_i   (tl_rom_d2h),
 
-      // TODO
-      .intg_err_o (),
+      .intg_err_o (rom_reg_integrity_error),
 
       .devmode_i  (1'b1)
     );
@@ -63,6 +64,8 @@ module rom_ctrl
   logic [RomIndexWidth-1:0] rom_index;
   logic [39:0]              rom_rdata;
   logic                     rom_rvalid;
+
+  logic                     rom_integrity_error;
 
   tlul_adapter_sram #(
     .SramAw(RomIndexWidth),
@@ -86,7 +89,7 @@ module rom_ctrl
     .addr_o       (rom_index),
     .wdata_o      (),
     .wmask_o      (),
-    .intg_error_o (),
+    .intg_error_o (rom_integrity_error),
     .rdata_i      (rom_rdata[31:0]),
     .rvalid_i     (rom_rvalid),
     .rerror_i     (2'b00)
@@ -131,9 +134,12 @@ module rom_ctrl
     .devmode_i  (1'b1)
    );
 
+  logic bus_integrity_error;
+  assign bus_integrity_error = rom_reg_integrity_error | rom_integrity_error | reg_integrity_error;
+
   // FATAL_ALERT_CAUSE register
-  assign hw2reg.fatal_alert_cause.integrity_error.d  = reg_integrity_error;
-  assign hw2reg.fatal_alert_cause.integrity_error.de = reg_integrity_error;
+  assign hw2reg.fatal_alert_cause.integrity_error.d  = bus_integrity_error;
+  assign hw2reg.fatal_alert_cause.integrity_error.de = bus_integrity_error;
   assign hw2reg.fatal_alert_cause.dummy.d  = 1'b0;
   assign hw2reg.fatal_alert_cause.dummy.de = 1'b0;
 
