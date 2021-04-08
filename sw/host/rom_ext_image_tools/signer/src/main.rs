@@ -34,15 +34,15 @@ fn main() {
 
     // Get the private key used for signature generation. It is also used to
     // extract key public exponent and modulus.
-    let private_key_der =
-        fs::read(&config.input_files.private_key_der_path).expect("Failed to read the image!");
+    let private_key_der = fs::read(&config.input_files.private_key_der_path)
+        .expect("Failed to read the image!");
 
     // Update "signed" manifest fields.
     image.update_static_fields(&config);
 
     // Convert ASN.1 DER private key into Mundane RsaPrivKey.
-    let private_key =
-        RsaPrivKey::parse_from_der(&private_key_der).expect("Failed to parse private key!");
+    let private_key = RsaPrivKey::parse_from_der(&private_key_der)
+        .expect("Failed to parse private key!");
 
     let mut exponent = private_key.public_exponent_be();
     // Encode public key components in little-endian byte order.
@@ -57,17 +57,21 @@ fn main() {
     // Produce the signature from concatenated system_state_value,
     // device_usage_value and the portion of the "signed" portion of the image.
     let image_sign_data = image.data_to_sign();
-    let device_usage_value = &device_usage_value(&config.input_files.usage_constraints_path);
-    let system_state_value = &system_state_value(&config.input_files.system_state_value_path);
+    let device_usage_value =
+        &device_usage_value(&config.input_files.usage_constraints_path);
+    let system_state_value =
+        &system_state_value(&config.input_files.system_state_value_path);
 
     let mut message_to_sign = Vec::<u8>::new();
     message_to_sign.extend_from_slice(system_state_value);
     message_to_sign.extend_from_slice(device_usage_value);
     message_to_sign.extend_from_slice(image_sign_data);
 
-    let signature =
-        RsaSignature::<B3072, RsaPkcs1v15, Sha256>::sign(&private_key, &message_to_sign)
-            .expect("Failed to sign!");
+    let signature = RsaSignature::<B3072, RsaPkcs1v15, Sha256>::sign(
+        &private_key,
+        &message_to_sign,
+    )
+    .expect("Failed to sign!");
 
     image.update_signature_field(&signature.bytes());
 
@@ -80,7 +84,8 @@ fn main() {
 /// This value is extrapolated from the ROM_EXT manifest usage_constraints
 /// field, and does not reside in the ROM_EXT manifest directly.
 pub fn device_usage_value(path: &Path) -> Vec<u8> {
-    let _usage_constraints = fs::read(path).expect("Failed to read usage constraints!");
+    let _usage_constraints =
+        fs::read(path).expect("Failed to read usage constraints!");
 
     // TODO: generate the device_usage_value from usage_constraints.
     //       meanwhile use a "dummy" hard-coded vector.

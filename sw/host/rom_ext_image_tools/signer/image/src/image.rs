@@ -106,7 +106,10 @@ impl RawImage {
 
     /// Updates ROM_EXT manifest signature key modulus field.
     pub fn update_modulus_field(&mut self, modulus: &[u8]) {
-        self.update_field(modulus, manifest::ROM_EXT_SIGNATURE_KEY_MODULUS_OFFSET);
+        self.update_field(
+            modulus,
+            manifest::ROM_EXT_SIGNATURE_KEY_MODULUS_OFFSET,
+        );
     }
 
     /// Updates ROM_EXT manifest signature field.
@@ -128,20 +131,23 @@ impl RawImage {
     ///
     /// Places the new file alongside the original, with a "new_" prefix.
     pub fn write_file(&self) {
-        let file_name = self.path.file_name().expect("Failed to get file stem!");
+        let file_name =
+            self.path.file_name().expect("Failed to get file stem!");
 
         let mut new_file_name = OsString::from("new_");
         new_file_name.push(file_name);
 
         let output_file = self.path.with_file_name(new_file_name);
 
-        fs::write(output_file, &self.data).expect("Failed to write the new binary file!");
+        fs::write(output_file, &self.data)
+            .expect("Failed to write the new binary file!");
     }
 
     /// Updates ROM_EXT manifest usage constraints field.
     fn update_usage_constraints_field(&mut self, path: &Path) {
         // Update fields from config.
-        let usage_constraints = fs::read(path).expect("Failed to read usage constraints!");
+        let usage_constraints =
+            fs::read(path).expect("Failed to read usage constraints!");
         self.update_field(
             &usage_constraints,
             manifest::ROM_EXT_USAGE_CONSTRAINTS_OFFSET,
@@ -151,7 +157,10 @@ impl RawImage {
     /// Updates ROM_EXT manifest peripheral lockdown info field.
     ///
     /// The information is encoded into the 128-bit binary blob.
-    fn update_peripheral_lockdown_info_field(&mut self, _info: &PeripheralLockdownInfo) {
+    fn update_peripheral_lockdown_info_field(
+        &mut self,
+        _info: &PeripheralLockdownInfo,
+    ) {
         // TODO: generate the peripheral_lockdown_blob from
         //       PeripheralLockdownInfo, meanwhile use a hard-coded vector.
 
