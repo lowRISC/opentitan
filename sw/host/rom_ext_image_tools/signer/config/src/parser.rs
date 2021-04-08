@@ -46,13 +46,14 @@ pub struct Extension {
 impl ParsedConfig {
     pub fn new(config: &Path) -> Self {
         // Read the entire configuration file.
-        let config_data = fs::read_to_string(config).expect("Failed to read the config file!");
+        let config_data = fs::read_to_string(config)
+            .expect("Failed to read the config file!");
 
-        let data: Value =
-            serde_hjson::from_str(&config_data).expect("Failed to parse the hjson config file!");
+        let data: Value = serde_hjson::from_str(&config_data)
+            .expect("Failed to parse the hjson config file!");
 
-        let deserialized: ParsedConfig =
-            serde_hjson::from_value(data).expect("Failed to deserialize hjson config data!");
+        let deserialized: ParsedConfig = serde_hjson::from_value(data)
+            .expect("Failed to deserialize hjson config data!");
 
         deserialized
     }
