@@ -311,12 +311,13 @@ module hmac
 
   assign msg_write = msg_fifo_req & msg_fifo_we & ~hmac_fifo_wsel & msg_allowed;
 
-  logic [$clog2(32+1)-1:0] wmask_ones;
+  localparam int unsigned WmaskAccWidth = $clog2(32 + 1);
+  logic [WmaskAccWidth-1:0] wmask_ones;
 
   always_comb begin
     wmask_ones = '0;
     for (int i = 0 ; i < 32 ; i++) begin
-      wmask_ones = wmask_ones + msg_fifo_wmask[i];
+      wmask_ones = wmask_ones + WmaskAccWidth'(msg_fifo_wmask[i]);
     end
   end
 
