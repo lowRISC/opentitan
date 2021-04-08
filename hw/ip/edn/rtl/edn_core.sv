@@ -47,6 +47,8 @@ module edn_core import edn_pkg::*;
   localparam int CSGenBitsWidth = 128;
   localparam int EndPointBusWidth = 32;
 
+  localparam int RescmdFifoIdxWidth = $clog2(RescmdFifoDepth);
+
   // signals
   logic event_edn_cmd_req_done;
   logic event_edn_fatal_err;
@@ -99,7 +101,7 @@ module edn_core import edn_pkg::*;
   logic [EndPointBusWidth-1:0] packer_ep_rdata [NumEndPoints];
 
   // rescmd fifo
-  logic [$clog2(RescmdFifoDepth)-1:0] sfifo_rescmd_depth;
+  logic [RescmdFifoIdxWidth-1:0]      sfifo_rescmd_depth;
   logic [RescmdFifoWidth-1:0]         sfifo_rescmd_rdata;
   logic                               sfifo_rescmd_clr;
   logic                               sfifo_rescmd_push;
@@ -134,7 +136,7 @@ module edn_core import edn_pkg::*;
   logic                               cs_cmd_req_vld_q, cs_cmd_req_vld_d;
   logic [31:0]                        cs_cmd_req_out_q, cs_cmd_req_out_d;
   logic                               cs_cmd_req_vld_out_q, cs_cmd_req_vld_out_d;
-  logic [$clog2(RescmdFifoDepth)-1:0] cmd_fifo_cnt_q, cmd_fifo_cnt_d;
+  logic [RescmdFifoIdxWidth-1:0]      cmd_fifo_cnt_q, cmd_fifo_cnt_d;
   logic                               send_rescmd_q, send_rescmd_d;
   logic                               send_gencmd_q, send_gencmd_d;
   logic [31:0]                        max_reqs_cnt_q, max_reqs_cnt_d;
@@ -452,7 +454,7 @@ module edn_core import edn_pkg::*;
          (send_gencmd || send_rescmd)? (cmd_fifo_cnt_q-1) :
          cmd_fifo_cnt_q;
 
-  assign cmd_sent = (cmd_fifo_cnt_q == 13'h01);
+  assign cmd_sent = (cmd_fifo_cnt_q == RescmdFifoIdxWidth'(1));
 
 
   // boot request
