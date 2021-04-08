@@ -1701,6 +1701,7 @@ module top_earlgrey #(
       .intr_sysrst_ctrl_o (intr_sysrst_ctrl_aon_sysrst_ctrl),
 
       // Inter-module signals
+      .gsc_rst_o(),
       .tl_i(sysrst_ctrl_aon_tl_req),
       .tl_o(sysrst_ctrl_aon_tl_rsp),
 

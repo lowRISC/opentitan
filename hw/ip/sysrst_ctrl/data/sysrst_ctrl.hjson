@@ -42,6 +42,15 @@
     { name: "key2_out", desc: "Passthrough from key2_in, can be configured to invert" }
     { name: "pwrb_out", desc: "Passthrough from pwrb_in, can be configured to invert" }
   ],
+  inter_signal_list: [
+    { name:    "gsc_rst",
+      package: "",
+      struct:  "logic",
+      act:     "req"
+      type:    "uni",
+      width:   "1"
+    }
+  ],
   regwidth: "32",
   registers: [
     { name: "REGWEN",
