@@ -14,13 +14,10 @@ lint_off -rule ALWCOMBORDER -file "*/rtl/aes_key_expand.sv" -match "*'regular'"
 lint_off -rule DECLFILENAME -file "*/rtl/aes_sbox_*_masked*.sv" -match "Filename 'aes_sbox_*_masked*' does not match MODULE name: *"
 lint_off -rule DECLFILENAME -file "*/rtl/aes_sbox_dom*.sv" -match "Filename 'aes_sbox_dom*' does not match MODULE name: *"
 
-// The tool erroneously thinks there would be circular logic through the aes_mux_sel_buf_chk units inside aes_cipher_control.sv.
-// If these units are not generated inside a for loop, everything is fine.
-lint_off -rule UNOPTFLAT -file "*/rtl/aes_core.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*cipher_out_valid'"
-lint_off -rule UNOPTFLAT -file "*/rtl/aes_control.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*sp2v_sig'"
-lint_off -rule UNOPTFLAT -file "*/rtl/aes_cipher_control.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*sp2v_sig_chk_raw'"
-
-// The tool erroneously thinks there would be circular logic through the aes_mux_sel_buf_chk units inside aes_control.sv.
-// If unit for cipher_out_done is not generated inside a for loop, everything is fine.
-lint_off -rule UNOPTFLAT -file "*/rtl/aes_control.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*cipher_out_done'"
-lint_off -rule UNOPTFLAT -file "*/rtl/aes_control.sv" -match "Signal unoptimizable: Feedback to clock or circular logic: '*sp2v_sig_chk_raw'"
+// In the sp2v_sig* arrays some members may depend on others.
+// There are no circular dependencies but the tool must be told to analyze each member separately for simulation, i.e., to split up the arrays internally.
+// Otherwise the tool needs to evaluate corresponding statements multiple times before the entire signal settles.
+// This slows down simulation and causes the tool to print UNOPTFLAT lint warnings.
+split_var -module "aes_control" -var "*sp2v_sig*"
+split_var -module "aes_cipher_control" -var "*sp2v_sig"
+split_var -module "aes_cipher_control" -var "*sp2v_sig_chk*"
