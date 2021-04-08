@@ -622,7 +622,7 @@ module kmac_app
   always_comb begin
     priority casez ({fsm_err.valid, mux_err.valid})
       2'b ?1: error_o = mux_err;
-      2'b 1?: error_o = fsm_err;
+      2'b 10: error_o = fsm_err;
       default: error_o = '{valid: 1'b0, code: ErrNone, info: '0};
     endcase
   end

@@ -19,6 +19,6 @@ waive -rules {TWO_STATE_TYPE} -location {kmac.sv} \
     -regexp {'tl_window_e' is of two state type} \
     -comment "Window enum is used to select, not synthesized"
 
-waive -rules {TAG_OVERLAP} -location {kmac_keymgr.sv} \
+waive -rules {TAG_OVERLAP} -location {kmac_app.sv} \
     -regexp {Case tag expression '2'b1.* overlaps with previous tag} \
     -comment "priority casez makes the condition check explicitly"
