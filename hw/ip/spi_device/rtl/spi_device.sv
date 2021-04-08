@@ -598,7 +598,7 @@ module spi_device (
 
     // Config (changed dynamically)
     .order_i      (rxorder),
-    .io_mode_i    (io_mode)
+    .io_mode_i    (io_mode_outclk)
   );
 
   spi_p2s u_p2s (
