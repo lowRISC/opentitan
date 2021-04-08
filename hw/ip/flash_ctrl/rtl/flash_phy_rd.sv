@@ -434,6 +434,15 @@ module flash_phy_rd import flash_phy_pkg::*; (
   logic fifo_forward_pop;
   assign fifo_forward_pop = hint_forward & fifo_data_valid;
 
+  logic [1:0] unused_rd_depth, unused_mask_depth;
+  logic rd_and_mask_fifo_pop;
+  assign rd_and_mask_fifo_pop = fifo_data_ready | fifo_forward_pop;
+
+  logic descram_q, forward_q;
+  assign hint_descram = fifo_data_valid & descram_q;
+  assign hint_forward = fifo_data_valid & forward_q;
+
+  //TODO: Cleanup the FIFO popping a bit more
   prim_fifo_sync #(
     .Width   (DataWidth + 3 + NumBuf),
     .Pass    (0),
@@ -446,11 +455,11 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .wvalid_i(rd_done),
     .wready_o(data_fifo_rdy),
     .wdata_i ({alloc_q, descram, forward, data_err, data_int}),
-    .depth_o (),
+    .depth_o (unused_rd_depth),
     .full_o (),
     .rvalid_o(fifo_data_valid),
-    .rready_i(fifo_data_ready | fifo_forward_pop),
-    .rdata_o ({alloc_q2, hint_descram, hint_forward, data_err_q, fifo_data})
+    .rready_i(rd_and_mask_fifo_pop),
+    .rdata_o ({alloc_q2, descram_q, forward_q, data_err_q, fifo_data})
   );
 
   // storage for mask calculations
@@ -466,10 +475,10 @@ module flash_phy_rd import flash_phy_pkg::*; (
     .wvalid_i(calc_req_o & calc_ack_i),
     .wready_o(mask_fifo_rdy),
     .wdata_i (mask_i),
-    .depth_o (),
+    .depth_o (unused_mask_depth),
     .full_o (),
     .rvalid_o(mask_valid),
-    .rready_i(fifo_data_ready | fifo_forward_pop),
+    .rready_i(rd_and_mask_fifo_pop),
     .rdata_o (mask)
   );
 
@@ -508,7 +517,8 @@ module flash_phy_rd import flash_phy_pkg::*; (
   // if no de-scramble required, return data on read complete
   // if data is all empty (erased), also return data on read complete
   // if descramble is required, return data when descrambler finishes
-  assign data_valid = forward | fifo_data_ready;
+  // if descramble is not required, but there are transctions ahead, return from fifo when ready
+  assign data_valid = forward | ~hint_forward & fifo_data_ready;
 
 
   /////////////////////////////////
@@ -602,6 +612,9 @@ module flash_phy_rd import flash_phy_pkg::*; (
 
   // Whenever response is coming from buffer, ecc error cannot be set
   `ASSERT(BufferMatchEcc_A, |buf_rsp_match |-> muxed_err == '0)
+
+  // The read storage depth and mask depth should always be the same after popping
+  `ASSERT(FifoSameDepth_A, rd_and_mask_fifo_pop |=> unused_rd_depth == unused_mask_depth)
 
   /////////////////////////////////
   // Functional coverage points to add
