@@ -336,17 +336,17 @@
                   regwen_multi: "true",
                   cname:        "MIO_PAD",
                   fields: [
-                    { bits: "9:0",
+                    { bits: "12:0",
                       name: "ATTR",
-                      desc: '''Bit   0: input/output inversion,
-                               Bit   1: Virtual open drain enable.
-                               Bit   2: Pull enable.
-                               Bit   3: Pull select (0: pull down, 1: pull up).
-                               Bit   4: Keeper enable.
-                               Bit   5: Schmitt trigger enable.
-                               Bit   6: Slew rate (0: slow, 1: fast).
-                               Bit 7/8: Drive strength (00: weakest, 11: strongest).
-                               Bit   9: Reserved.
+                      desc: '''Bit    0: input/output inversion,
+                               Bit    1: Virtual open drain enable.
+                               Bit    2: Pull enable.
+                               Bit    3: Pull select (0: pull down, 1: pull up).
+                               Bit    4: Keeper enable.
+                               Bit    5: Schmitt trigger enable.
+                               Bit    6: Open-drain enable
+                               Bit  7-8: Slew rate (b00: slowest, b11: fastest).
+                               Bit 9-12: Drive strength (0: weakest, 3: strongest)
                       '''
                       resval: 0
                     }
@@ -398,17 +398,17 @@
                   regwen_multi: "true",
                   cname:        "DIO_PAD",
                   fields: [
-                    { bits: "9:0",
+                    { bits: "12:0",
                       name: "ATTR",
-                      desc: '''Bit   0: input/output inversion,
-                               Bit   1: Virtual open drain enable.
-                               Bit   2: Pull enable.
-                               Bit   3: Pull select (0: pull down, 1: pull up).
-                               Bit   4: Keeper enable.
-                               Bit   5: Schmitt trigger enable.
-                               Bit   6: Slew rate (0: slow, 1: fast).
-                               Bit 7/8: Drive strength (00: weakest, 11: strongest).
-                               Bit   9: Reserved.
+                      desc: '''Bit    0: input/output inversion,
+                               Bit    1: Virtual open drain enable.
+                               Bit    2: Pull enable.
+                               Bit    3: Pull select (0: pull down, 1: pull up).
+                               Bit    4: Keeper enable.
+                               Bit    5: Schmitt trigger enable.
+                               Bit    6: Open-drain enable
+                               Bit  7-8: Slew rate (b00: slowest, b11: fastest).
+                               Bit 9-12: Drive strength (0: weakest, 3: strongest)
                       '''
                       resval: 0
                     }
