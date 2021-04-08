@@ -6,7 +6,7 @@ import os
 import shlex
 import subprocess
 
-from Launcher import Launcher, LauncherError
+from Launcher import ErrorMessage, Launcher, LauncherError
 
 
 class LocalLauncher(Launcher):
@@ -99,7 +99,9 @@ class LocalLauncher(Launcher):
         except subprocess.TimeoutExpired:
             self.process.kill()
 
-        self._post_finish('K', 'Job killed!')
+        self._post_finish('K', ErrorMessage(line_number=None,
+                                            message='Job killed!',
+                                            context=[]))
 
     def _post_finish(self, status, err_msg):
         super()._post_finish(status, err_msg)
