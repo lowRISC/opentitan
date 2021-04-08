@@ -80,6 +80,7 @@
     {
       name: "{variant}_bijection"
       uvm_test_seq: sram_ctrl_bijection_vseq
+      run_opts: ["+test_timeout_ns=1000000000"]
     }
     {
       name: "{variant}_stress_pipeline"
