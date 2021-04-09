@@ -8,9 +8,9 @@ module prim_generic_flop #(
   parameter int               Width      = 1,
   parameter logic [Width-1:0] ResetValue = 0
 ) (
-  input clk_i,
-  input rst_ni,
-  input [Width-1:0] d_i,
+  input                    clk_i,
+  input                    rst_ni,
+  input        [Width-1:0] d_i,
   output logic [Width-1:0] q_o
 );
 
