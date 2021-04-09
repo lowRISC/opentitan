@@ -58,13 +58,14 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_errs_vseq;
     // After LC_escalate is On, we trigger the dai_errs_vseq to check interfaces will return
     // default values and the design won't hang.
     otp_ctrl_dai_errs_vseq::body();
+    do_reset_in_seq = 1;
   endtask
 
   virtual task post_start();
     // Use reset to clear lc interrupt error
     if (do_apply_reset) begin
-      apply_reset();
       cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
+      dut_init();
     end else wait(0); // wait until upper seq resets and kills this seq
 
     // delay to avoid race condition when sending item and checking no item after reset occur

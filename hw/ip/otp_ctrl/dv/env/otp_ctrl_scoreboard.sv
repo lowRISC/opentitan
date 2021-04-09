@@ -166,6 +166,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       // LC_escalate_en will trigger fatal check alert.
       set_exp_alert("fatal_check_error", 1, 5);
 
+      recover_interrupted_op();
+
       // Update status bits.
       exp_status = '0;
       for (int i = 0; i < OtpTimeoutErrIdx; i++) begin
@@ -710,20 +712,27 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  virtual function void reset(string kind = "HARD");
-    // If reset is issued during otp program, backdoor update otp memory write value because scb
-    // did not know how many cells haven been written.
+  // If reset or lc_escalate_en is issued during otp program, this function will backdoor update
+  // otp memory write value because scb did not know how many cells haven been written.
+  virtual function void recover_interrupted_op();
     if (dai_wr_ip) begin
       bit [TL_DW-1:0] otp_addr = get_scb_otp_addr();
       bit [TL_DW-1:0] dai_addr = otp_addr << 2;
       otp_a[otp_addr] = cfg.mem_bkdr_vif.read32(dai_addr);
 
-      if (is_secret(dai_addr << 2)) begin
-        otp_a[otp_addr+1] = cfg.mem_bkdr_vif.read32(dai_addr+1);
+      if (is_secret(dai_addr)) begin
+        int part_idx = get_part_index(dai_addr);
+        bit [TL_DW*2-1:0] mem_rd_val      = cfg.mem_bkdr_vif.read64(dai_addr);
+        bit [TL_DW*2-1:0] descrabmled_val = descramble_data(mem_rd_val, part_idx);
+        otp_a[otp_addr+1] = descrabmled_val[TL_DW*2-1:TL_DW];
+        otp_a[otp_addr]   = descrabmled_val[TL_DW-1:0];
       end
       dai_wr_ip = 0;
     end
+  endfunction
 
+  virtual function void reset(string kind = "HARD");
+    recover_interrupted_op();
     super.reset(kind);
     // flush fifos
     otbn_fifo.flush();
@@ -918,11 +927,16 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                                                         int part_idx);
     int secret_idx = part_idx - Secret0Idx;
     bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] output_data;
-    crypto_dpi_present_pkg::sv_dpi_present_decrypt(input_data,
+    bit [NUM_ROUND-1:0][SCRAMBLE_DATA_SIZE-1:0] padded_input;
+
+    padded_input[NUM_ROUND-1] = input_data;
+    crypto_dpi_present_pkg::sv_dpi_present_decrypt(padded_input,
                                                    RndCnstKey[secret_idx],
                                                    SCRAMBLE_KEY_SIZE == 80,
                                                    output_data);
     descramble_data = output_data[NUM_ROUND-1];
+    if (input_data != 0) begin
+    end
   endfunction
 
   // this function go through present encode algo two or three iterations:
