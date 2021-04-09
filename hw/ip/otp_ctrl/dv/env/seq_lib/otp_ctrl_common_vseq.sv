@@ -23,7 +23,7 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     // Random CSR rw might trigger alert. Some alerts will conintuously be triggered until reset
     // applied, which will cause alert_monitor phase_ready_to_end timeout.
     if (do_apply_reset) begin
-      apply_reset();
+      dut_init();
     end else wait(0); // wait until upper seq resets and kills this seq
 
     // delay to avoid race condition when sending item and checking no item after reset occur

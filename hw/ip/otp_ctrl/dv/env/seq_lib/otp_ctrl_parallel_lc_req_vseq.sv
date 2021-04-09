@@ -48,7 +48,7 @@ class otp_ctrl_parallel_lc_req_vseq extends otp_ctrl_parallel_base_vseq;
   virtual task post_start();
     // Use reset to clear lc interrupt error
     if (do_apply_reset) begin
-      apply_reset();
+      dut_init();
     end else wait(0); // wait until upper seq resets and kills this seq
 
     // delay to avoid race condition when sending item and checking no item after reset occur
