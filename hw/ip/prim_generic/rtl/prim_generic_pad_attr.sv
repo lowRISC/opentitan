@@ -15,6 +15,13 @@ module prim_generic_pad_attr
 
   // Currently supported pad attributes of the generic pad library:
   //
+  // Input-only:
+  //
+  // - inversion
+  // - pullup / pulldown
+  //
+  // Bidirectional:
+  //
   // - inversion
   // - virtual open drain
   // - keeper
@@ -22,18 +29,42 @@ module prim_generic_pad_attr
   // - 1 driving strength bit
   //
   // Note that the last three attributes are not supported on Verilator.
-  always_comb begin : p_attr
-    attr_warl_o = '0;
-    attr_warl_o.invert = 1'b1;
-    attr_warl_o.virt_od_en = 1'b1;
-    attr_warl_o.keep_en = 1'b1;
-// Driving strength and pulls are not supported by Verilator
-`ifndef VERILATOR
-    attr_warl_o.pull_en = 1'b1;
-    attr_warl_o.pull_select = 1'b1;
-    // Only one driving strength bit is supported.
-    attr_warl_o.drive_strength[0] = 1'b1;
-`endif
+  if (PadType == InputStd) begin : gen_input_only_warl
+    always_comb begin : p_attr
+      attr_warl_o = '0;
+      attr_warl_o.invert = 1'b1;
+  // Driving strength and pulls are not supported by Verilator
+  `ifndef VERILATOR
+      attr_warl_o.pull_en = 1'b1;
+      attr_warl_o.pull_select = 1'b1;
+  `endif
+    end
+  end else if (PadType == BidirStd ||
+               PadType == BidirTol ||
+               PadType == BidirOd) begin : gen_bidir_warl
+    always_comb begin : p_attr
+      attr_warl_o = '0;
+      attr_warl_o.invert = 1'b1;
+      attr_warl_o.virt_od_en = 1'b1;
+      attr_warl_o.keep_en = 1'b1;
+  // Driving strength and pulls are not supported by Verilator
+  `ifndef VERILATOR
+      attr_warl_o.pull_en = 1'b1;
+      attr_warl_o.pull_select = 1'b1;
+      // Only one driving strength bit is supported.
+      attr_warl_o.drive_strength[0] = 1'b1;
+  `endif
+    end
+  end else if (PadType == AnalogIn0) begin : gen_analog0_warl
+    // The analog pad type is basically just a feedthrough,
+    // and does hence not support any of the attributes.
+    always_comb begin : p_attr
+      attr_warl_o = '0;
+    end
+  end else begin : gen_invalid_config
+    // this should throw link warnings in elaboration
+    assert_static_in_generate_config_not_available
+        assert_static_in_generate_config_not_available();
   end
 
 endmodule : prim_generic_pad_attr

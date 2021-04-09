@@ -29,6 +29,9 @@ module prim_generic_pad_wrapper
   input pad_attr_t   attr_i    // additional pad attributes
 );
 
+  // analog pads cannot have a scan role.
+  `ASSERT_INIT(AnalogNoScan_A, PadType != AnalogIn0 || ScanRole == NoScan)
+
   // not all signals are used here.
   logic unused_sigs;
   assign unused_sigs = ^{attr_i.slew_rate,
@@ -38,26 +41,59 @@ module prim_generic_pad_wrapper
                          scanmode_i,
                          pok_i};
 
-  assign in_raw_o = (ie_i) ? inout_io  : 1'bz;
-  // input inversion
-  assign in_o = attr_i.invert ^ in_raw_o;
+  if (PadType == InputStd) begin : gen_input_only
+    logic unused_sigs;
+    assign unused_sigs = ^{out_i,
+                           oe_i,
+                           attr_i.virt_od_en,
+                           attr_i.drive_strength};
 
-  // virtual open drain emulation
-  logic oe, out;
-  assign out = out_i ^ attr_i.invert;
-  assign oe  = oe_i & ((attr_i.virt_od_en & ~out) | ~attr_i.virt_od_en);
+    assign in_raw_o = (ie_i) ? inout_io  : 1'bz;
+    // input inversion
+    assign in_o = attr_i.invert ^ in_raw_o;
 
-// drive strength attributes are not supported by verilator
-`ifdef VERILATOR
-  assign inout_io = (oe)   ? out : 1'bz;
-`else
-  // different driver types
-  assign (strong0, strong1) inout_io = (oe && attr_i.drive_strength[0]) ? out : 1'bz;
-  assign (pull0, pull1)     inout_io = (oe && !attr_i.drive_strength[0]) ? out : 1'bz;
-  // pullup / pulldown termination
-  assign (weak0, weak1)     inout_io = attr_i.pull_en ? attr_i.pull_select : 1'bz;
-  // fake trireg emulation
-  assign (weak0, weak1)     inout_io = (attr_i.keep_en) ? inout_io : 1'bz;
-`endif
+  // pulls are not supported by verilator
+  `ifndef VERILATOR
+    // pullup / pulldown termination
+    assign (weak0, weak1) inout_io = attr_i.pull_en ? attr_i.pull_select : 1'bz;
+  `endif
+  end else if (PadType == BidirTol ||
+               PadType == BidirOd ||
+               PadType == BidirStd) begin : gen_bidir
+
+    assign in_raw_o = (ie_i) ? inout_io  : 1'bz;
+    // input inversion
+    assign in_o = attr_i.invert ^ in_raw_o;
+
+    // virtual open drain emulation
+    logic oe, out;
+    assign out = out_i ^ attr_i.invert;
+    assign oe  = oe_i & ((attr_i.virt_od_en & ~out) | ~attr_i.virt_od_en);
+
+  // drive strength attributes are not supported by verilator
+  `ifdef VERILATOR
+    assign inout_io = (oe)   ? out : 1'bz;
+  `else
+    // different driver types
+    assign (strong0, strong1) inout_io = (oe && attr_i.drive_strength[0]) ? out : 1'bz;
+    assign (pull0, pull1)     inout_io = (oe && !attr_i.drive_strength[0]) ? out : 1'bz;
+    // pullup / pulldown termination
+    assign (weak0, weak1)     inout_io = attr_i.pull_en ? attr_i.pull_select : 1'bz;
+    // fake trireg emulation
+    assign (weak0, weak1)     inout_io = (attr_i.keep_en) ? inout_io : 1'bz;
+  `endif
+  end else if (PadType == AnalogIn0) begin : gen_analog0
+
+    logic unused_sigs;
+    assign unused_sigs = ^{attr_i, out_i, oe_i, ie_i};
+
+    assign in_o = inout_io;
+    assign in_raw_o = inout_io;
+
+  end else begin : gen_invalid_config
+    // this should throw link warnings in elaboration
+    assert_static_in_generate_config_not_available
+        assert_static_in_generate_config_not_available();
+  end
 
 endmodule : prim_generic_pad_wrapper

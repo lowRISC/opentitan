@@ -14,18 +14,41 @@ module prim_xilinx_pad_attr
   output pad_attr_t attr_warl_o
 );
 
-  // Currently supporte pad attributes of the Xilinx pad library.
+  // Currently supported pad attributes of the Xilinx pad library.
+  //
+  // Input-only:
+  //
+  // - inversion
+  //
+  // Bidirectional:
   //
   // - inversion
   // - virtual open drain
   //
-  // TODO: add support for dynamic pull-up/down using the PULLUP/PULLDOWN primitives
-  // from the vivado-7series library (https://www.xilinx.com/support/documentation/
-  // sw_manuals/xilinx2020_2/ug953-vivado-7series-libraries.pdf)
-  always_comb begin : p_attr
-    attr_warl_o = '0;
-    attr_warl_o.invert = 1'b1;
-    attr_warl_o.virt_od_en = 1'b1;
+  if (PadType == InputStd) begin : gen_input_only_warl
+    always_comb begin : p_attr
+      attr_warl_o = '0;
+      attr_warl_o.invert = 1'b1;
+    end
+  end else if (PadType == BidirStd ||
+               PadType == BidirTol ||
+               PadType == BidirOd) begin : gen_bidir_warl
+    always_comb begin : p_attr
+      attr_warl_o = '0;
+      attr_warl_o.invert = 1'b1;
+      attr_warl_o.virt_od_en = 1'b1;
+    end
+  end else if (PadType == Analog0) begin : gen_analog0_warl
+    // The analog pad type is basically just a feedthrough,
+    // and does hence not support any of the attributes.
+    always_comb begin : p_attr
+      attr_warl_o = '0;
+    end
+  end else begin : gen_invalid_config
+    // this should throw link warnings in elaboration
+    assert_static_in_generate_config_not_available
+        assert_static_in_generate_config_not_available();
   end
+
 
 endmodule : prim_xilinx_pad_attr
