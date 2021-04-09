@@ -16,7 +16,7 @@
 /**
  * Precomputation of a constant m0' for Montgomery modular arithmetic
  *
- * Word-wise montgomery modular arithmetic requires a quantity m0' to be
+ * Word-wise Montgomery modular arithmetic requires a quantity m0' to be
  * precomputed once per modulus M. m0' is the negative of the
  * modular multiplicative inverse of the lowest limb m0 of the modulus M, in
  * the field GF(2^w), where w is the number of bits per limb. w is set to 256
@@ -36,14 +36,19 @@
  *        FG0.C is always set.
  *        FG1 is not modified in this subroutine.
  *
- * @param[in]  w28: m0, the lowest 256 bit limb of the modulus M
+ * @param[in]  x16: dptr_m, pointer to modulus M in dmem
+ * @param[in]  x17: dptr_m0inv, pointer to dmem location to store m0inv
  * @param[in]  w31: all-zero.
- * @param[out] w29: m0', negative of inverse of m0 in GF(2^256)
  *
- * clobbered registers: w0, w1, w29
+ * clobbered registers: x8, w0, w1, w28, w29
  * clobbered flag groups: FG0
  */
-m0inv:
+compute_m0inv:
+
+  /* load lowest limb of modulus to w28 */
+  li       x8, 28
+  bn.lid   x8, 0(x16)
+
   /* w0 keeps track of loop iterations in one-hot encoding, i.e.
      w0 = 2^i in the loop body below and initialized here with w0 = 1
      It is used for both the comparison in step 4 of [Dus] and the
@@ -89,7 +94,12 @@ m0inv:
      w29 = m0' = -(m0^-1) mod 2^256 = -y_255 = 0 - y_255 = w31 - w29 */
   bn.sub    w29, w31, w29
 
+    /* Store Montgomery constant in dmem */
+  li       x8, 29
+  bn.sid   x8, 0(x17)
+
   ret
+
 
 /**
  * Constant time conditional subtraction of modulus from a bigint
@@ -268,6 +278,8 @@ compute_rr:
   loop      x30, 2
     bn.sid    x8, 0(x18++)
     addi      x8, x8, 1
+
+  nop
 
   ret
 
@@ -979,11 +991,12 @@ modexp:
  * clobbered Flag Groups: FG0, FG1
  */
 modexp_65537:
-  /* prepare pointers to temp regs */
-  li         x8, 4
-  li         x9, 3
-  li        x10, 4
-  li        x11, 2
+  /* prepare all-zero reg */
+  bn.xor   w31, w31, w31
+
+  /* load number of limbs */
+  lw        x30, 4(x0)
+  addi      x31, x30, -1
 
   /* load pointer to modulus */
   lw        x16, 16(x0)
@@ -991,9 +1004,20 @@ modexp_65537:
   /* load pointer to m0' */
   lw        x17, 8(x0)
 
-  /* load number of limbs */
-  lw        x30, 4(x0)
-  addi      x31, x30, -1
+  /* load pointer to RR (dptr_rr) */
+  lw        x18, 12(x0)
+
+  /* Compute Montgomery constants and reaload clobbered pointers */
+  jal       x1, compute_m0inv
+  jal       x1, compute_rr
+  lw        x16, 16(x0)
+  lw        x18, 12(x0)
+
+  /* prepare pointers to temp regs */
+  li         x8, 4
+  li         x9, 3
+  li        x10, 4
+  li        x11, 2
 
   /* convert to montgomery domain montmul(A,RR)
   in = montmul(A,RR) montmul(A,RR) = C*R mod M */
@@ -1086,56 +1110,5 @@ modexp_65537:
   lw        x19, 28(x0)
   lw        x21, 28(x0)
   jal       x1, montmul_mul1
-
-  ret
-
-
-/**
- * Externally callable wrapper for computing Montgomery parameters
- *
- * Computes:
- *   - Montgomery Constant m0'
- *   - Squared Montgomery modulus RR mod N
- *
- * Needs to be executed once per constant Modulus.
- *
- * @param[in]  dmem[2] dptr_rr: pointer to RR in dmem
- * @param[in]  dmem[4] N: Number of limbs per bignum
- * @param[in]  dmem[8] dptr_m0d: pointer to m0' in dmem
- * @param[in]  dmem[12] dptr_rr: pointer to RR in dmem
- * @param[in]  dmem[16] dptr_m: pointer to first limb of modulus in dmem
- * @param[out] [dmem[dptr_m0d+31]:dmem[dptr_m0d]] computed m0'
- * @parma[out] [dmem[dptr_RR+N*32-1]:dmem[dptr_RR]] computed RR
- */
-modload:
-
-  /* prepare all-zero reg */
-  bn.xor   w31, w31, w31
-
-  /* load pointer to modulus (dptr_m) */
-  lw       x16, 16(x0)
-
-  /* load pointer to m0' (dptr_m0d) */
-  lw       x17, 8(x0)
-
-  /* load pointer to RR (dptr_rr) */
-  lw       x18, 12(x0)
-
-  /* load number of limbs (N) */
-  lw       x30, 4(x0)
-
-  /* load lowest limb of modulus to w28 */
-  li       x8, 28
-  bn.lid   x8, 0(x16)
-
-  /* Compute Montgomery constant */
-  jal      x1, m0inv
-
-  /* Store Montgomery constant in dmem */
-  li       x9, 29
-  bn.sid   x9, 0(x17)
-
-  /* Compute square of Montgomery modulus */
-  jal      x1, compute_rr
 
   ret
