@@ -61,6 +61,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   // technically we can randomize values here once scb supports
   task automatic init();
     lc_creator_seed_sw_rw_en_i = lc_ctrl_pkg::On;
+    // TODO: check with designer if we will remove this
     lc_seed_hw_rd_en_i         = lc_ctrl_pkg::Off;
     lc_dft_en_i                = lc_ctrl_pkg::Off;
     lc_escalate_en_i           = lc_ctrl_pkg::Off;
@@ -72,6 +73,10 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
   task automatic drive_pwr_otp_init(logic val);
     pwr_otp_init_i = val;
+  endtask
+
+  task automatic drive_lc_creator_seed_sw_rw_en_i(lc_ctrl_pkg::lc_tx_e val);
+    lc_creator_seed_sw_rw_en_i = val;
   endtask
 
   task automatic drive_lc_dft_en(lc_ctrl_pkg::lc_tx_e val);
