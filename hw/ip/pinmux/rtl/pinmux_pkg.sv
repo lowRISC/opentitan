@@ -17,7 +17,6 @@ package pinmux_pkg;
   // the concatenated {DIO, MIO} packed array.
   typedef struct packed {
     logic                     const_sampling; // TODO: check whether this can be eliminated.
-    logic        [NumIOs-1:0] tie_offs;       // TODO: check whether this can be eliminated.
     integer                   tck_idx;
     integer                   tms_idx;
     integer                   trst_idx;
@@ -37,7 +36,6 @@ package pinmux_pkg;
 
   parameter target_cfg_t DefaultTargetCfg = '{
     const_sampling:    1'b0,
-    tie_offs:          '0,
     tck_idx:           0,
     tms_idx:           0,
     trst_idx:          0,

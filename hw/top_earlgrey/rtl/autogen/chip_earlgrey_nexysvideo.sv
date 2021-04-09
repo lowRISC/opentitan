@@ -88,16 +88,9 @@ module chip_earlgrey_nexysvideo #(
   parameter int TdiPadIdx = 51;
   parameter int TdoPadIdx = 52;
 
-  // TODO: this is temporary and will be removed in the future.
-  // This specifies the tie-off values of the muxed MIO/DIOs
-  // when the JTAG is active. SPI CSB is active low.
-  localparam logic [pinmux_pkg::NumIOs-1:0] TieOffValues = pinmux_pkg::NumIOs'(1'b1 << (
-      pinmux_reg_pkg::NMioPads + DioSpiDeviceCsb));
-
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
     const_sampling:    1'b1,
-    tie_offs:          TieOffValues, // TODO: can we remove this and just set it to zero?
     tck_idx:           TckPadIdx,
     tms_idx:           TmsPadIdx,
     trst_idx:          TrstNPadIdx,

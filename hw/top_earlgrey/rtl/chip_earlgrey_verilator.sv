@@ -126,7 +126,6 @@ module chip_earlgrey_verilator (
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
     const_sampling: 1'b1,
-    tie_offs:       '0,
     tck_idx:        pinmux_reg_pkg::NMioPads +
                     top_earlgrey_pkg::DioSpiDeviceSck,
     tms_idx:        pinmux_reg_pkg::NMioPads +

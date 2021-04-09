@@ -250,7 +250,7 @@ module pinmux_strap_sampling
         k == TargetCfg.trst_idx ||
         k == TargetCfg.tdi_idx  ||
         k == TargetCfg.tdo_idx) begin : gen_jtag_signal
-      assign in_core_o[k] = (jtag_en) ? TargetCfg.tie_offs[k] : in_padring_i[k];
+      assign in_core_o[k] = (jtag_en) ? 1'b0 : in_padring_i[k];
     end else begin : gen_other_inputs
       assign in_core_o[k] = in_padring_i[k];
     end
