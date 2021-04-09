@@ -20,6 +20,9 @@
 // The `MEM_PARITY` parameter is used to indicate whether the target memory uses parity checks.
 // If so, we need to take care to modify the read/write indices, as the total memory width will be
 // `mem_bytes_per_word * 8 + mem_bytes_per_word` as we have one parity bit per data byte.
+// Enabling this parameter also allows access to parity error injection functionality - to use this
+// all that needs to be done is to set the `inject_parity_err` argument in any of the backdoor write
+// functions.
 //
 // The `MEM_ECC` parameter is used to indicate whether the target memory uses an ECC implementation,
 // so we can ensure to usethe proper data encoding scheme.
@@ -153,10 +156,18 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
     return 'x;
   endfunction
 
-  function automatic void write8(input bit [bus_params_pkg::BUS_AW-1:0] addr, input bit [7:0] data);
+  function automatic void write8(input bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                 input bit [7:0] data,
+                                 input bit inject_parity_err = 0);
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
       bit [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[mem_index];
+
+      // Prepare corrupted data if a parity error injection is requested
+      bit [2:0] idx_to_corrupt = $urandom_range(0, 7);
+      bit [7:0] corrupted_data = data;
+      corrupted_data[idx_to_corrupt] = !corrupted_data[idx_to_corrupt];
+
       // Note that if memory parity checks are enabled,
       // we have to write the correct parity bit as well.
       // Odd parity is used, rather than even parity checking.
@@ -167,24 +178,36 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
           rw_data[0 +: 8] = data;
           if (MEM_PARITY) begin
             rw_data[0 + 8] = ~(^data);
+            if (inject_parity_err) begin
+              rw_data[0 +: 8] = corrupted_data;
+            end
           end
         end
         2: begin
           rw_data[addr[0] * MEM_BYTE_MSB +: 8] = data;
           if (MEM_PARITY) begin
             rw_data[addr[0] * MEM_BYTE_MSB + 8] = ~(^data);
+            if (inject_parity_err) begin
+              rw_data[addr[0] * MEM_BYTE_MSB +: 8] = corrupted_data;
+            end
           end
         end
         4: begin
           rw_data[addr[1:0] * MEM_BYTE_MSB +: 8] = data;
           if (MEM_PARITY) begin
             rw_data[addr[1:0] * MEM_BYTE_MSB + 8] = ~(^data);
+            if (inject_parity_err) begin
+              rw_data[addr[1:0] * MEM_BYTE_MSB +: 8] = corrupted_data;
+            end
           end
         end
         8: begin
           rw_data[addr[2:0] * MEM_BYTE_MSB +: 8] = data;
           if (MEM_PARITY) begin
             rw_data[addr[2:0] * MEM_BYTE_MSB + 8] = ~(^data);
+            if (inject_parity_err) begin
+              rw_data[addr[2:0] * MEM_BYTE_MSB +: 8] = corrupted_data;
+            end
           end
         end
         default: ;
@@ -194,28 +217,37 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
   endfunction
 
   function automatic void write16(input bit [bus_params_pkg::BUS_AW-1:0] addr,
-                                  input bit [15:0] data);
+                                  input bit [15:0] data,
+                                  input bit inject_parity_err = 0);
+    // ensure that parity errors are only injected into one sub-byte write
+    bit inject_parity_err_in_first_sub_write = $urandom_range(0, 1);
     `DV_CHECK_EQ_FATAL(addr[0], '0, $sformatf("addr 0x%0h not 16-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
-      write8(addr, data[7:0]);
-      write8(addr + 1, data[15:8]);
+      write8(addr, data[7:0], inject_parity_err_in_first_sub_write && inject_parity_err);
+      write8(addr + 1, data[15:8], !inject_parity_err_in_first_sub_write && inject_parity_err);
     end
   endfunction
 
   function automatic void write32(input bit [bus_params_pkg::BUS_AW-1:0] addr,
-                                  input bit [31:0] data);
+                                  input bit [31:0] data,
+                                  input bit inject_parity_err = 0);
+    // ensure that parity errors are only injected into one sub-byte write
+    bit inject_parity_err_in_first_sub_write = $urandom_range(0, 1);
     `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
-      write16(addr, data[15:0]);
-      write16(addr + 2, data[31:16]);
+      write16(addr, data[15:0], inject_parity_err_in_first_sub_write && inject_parity_err);
+      write16(addr + 2, data[31:16], !inject_parity_err_in_first_sub_write && inject_parity_err);
     end
   endfunction
 
   function automatic void write64(input bit [bus_params_pkg::BUS_AW-1:0] addr,
-                                  input bit [63:0] data);
+                                  input bit [63:0] data,
+                                  input bit inject_parity_err = 0);
+    // ensure that parity errors are only injected into one sub-byte write
+    bit inject_parity_err_in_first_sub_write = $urandom_range(0, 1);
     `DV_CHECK_EQ_FATAL(addr[2:0], '0, $sformatf("addr 0x%0h not 64-bit aligned", addr), path)
-    write32(addr, data[31:0]);
-    write32(addr + 4, data[63:32]);
+    write32(addr, data[31:0], inject_parity_err_in_first_sub_write && inject_parity_err);
+    write32(addr + 4, data[63:32], !inject_parity_err_in_first_sub_write && inject_parity_err);
   endfunction
 
   ///////////////////////////////////////////////////////////
