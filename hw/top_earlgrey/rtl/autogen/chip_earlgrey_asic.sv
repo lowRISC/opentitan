@@ -12,6 +12,13 @@
 module chip_earlgrey_asic (
   // Dedicated Pads
   inout POR_N, // Manual Pad
+  inout USB_P, // Manual Pad
+  inout USB_N, // Manual Pad
+  inout CC1, // Manual Pad
+  inout CC2, // Manual Pad
+  inout FLASH_TEST_VOLT, // Manual Pad
+  inout FLASH_TEST_MODE0, // Manual Pad
+  inout FLASH_TEST_MODE1, // Manual Pad
   inout SPI_HOST_D0, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_D1, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_D2, // Dedicated Pad for spi_host0_sd
@@ -24,15 +31,6 @@ module chip_earlgrey_asic (
   inout SPI_DEV_D3, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_CLK, // Dedicated Pad for spi_device_sck
   inout SPI_DEV_CS_L, // Dedicated Pad for spi_device_csb
-  inout USB_P, // Manual Pad
-  inout USB_N, // Manual Pad
-  inout CC1, // Manual Pad
-  inout CC2, // Manual Pad
-  inout FLASH_TEST_MODE0, // Manual Pad
-  inout FLASH_TEST_MODE1, // Manual Pad
-  inout FLASH_TEST_MODE2, // Manual Pad
-  inout FLASH_TEST_MODE3, // Manual Pad
-  inout FLASH_TEST_VOLT, // Manual Pad
   inout IOR8, // Dedicated Pad for sysrst_ctrl_aon_ec_rst_out_l
   inout IOR9, // Dedicated Pad for sysrst_ctrl_aon_pwrb_out
 
@@ -148,22 +146,18 @@ module chip_earlgrey_asic (
   logic manual_in_usb_n, manual_out_usb_n, manual_oe_usb_n;
   logic manual_in_cc1, manual_out_cc1, manual_oe_cc1;
   logic manual_in_cc2, manual_out_cc2, manual_oe_cc2;
+  logic manual_in_flash_test_volt, manual_out_flash_test_volt, manual_oe_flash_test_volt;
   logic manual_in_flash_test_mode0, manual_out_flash_test_mode0, manual_oe_flash_test_mode0;
   logic manual_in_flash_test_mode1, manual_out_flash_test_mode1, manual_oe_flash_test_mode1;
-  logic manual_in_flash_test_mode2, manual_out_flash_test_mode2, manual_oe_flash_test_mode2;
-  logic manual_in_flash_test_mode3, manual_out_flash_test_mode3, manual_oe_flash_test_mode3;
-  logic manual_in_flash_test_volt, manual_out_flash_test_volt, manual_oe_flash_test_volt;
 
   pad_attr_t manual_attr_por_n;
   pad_attr_t manual_attr_usb_p;
   pad_attr_t manual_attr_usb_n;
   pad_attr_t manual_attr_cc1;
   pad_attr_t manual_attr_cc2;
+  pad_attr_t manual_attr_flash_test_volt;
   pad_attr_t manual_attr_flash_test_mode0;
   pad_attr_t manual_attr_flash_test_mode1;
-  pad_attr_t manual_attr_flash_test_mode2;
-  pad_attr_t manual_attr_flash_test_mode3;
-  pad_attr_t manual_attr_flash_test_volt;
 
 
   //////////////////////
@@ -178,7 +172,7 @@ module chip_earlgrey_asic (
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(24),
+    .NDioPads(22),
     .NMioPads(47),
     // TODO: need to add ScanRole parameters
     .PhysicalPads(1),
@@ -186,15 +180,6 @@ module chip_earlgrey_asic (
     .DioPadBank ({
       IoBankVcc, // IOR9
       IoBankVcc, // IOR8
-      IoBankVcc, // FLASH_TEST_VOLT
-      IoBankVcc, // FLASH_TEST_MODE3
-      IoBankVcc, // FLASH_TEST_MODE2
-      IoBankVcc, // FLASH_TEST_MODE1
-      IoBankVcc, // FLASH_TEST_MODE0
-      IoBankAvcc, // CC2
-      IoBankAvcc, // CC1
-      IoBankVcc, // USB_N
-      IoBankVcc, // USB_P
       IoBankVioa, // SPI_DEV_CS_L
       IoBankVioa, // SPI_DEV_CLK
       IoBankVioa, // SPI_DEV_D3
@@ -207,6 +192,13 @@ module chip_earlgrey_asic (
       IoBankVioa, // SPI_HOST_D2
       IoBankVioa, // SPI_HOST_D1
       IoBankVioa, // SPI_HOST_D0
+      IoBankVcc, // FLASH_TEST_MODE1
+      IoBankVcc, // FLASH_TEST_MODE0
+      IoBankVcc, // FLASH_TEST_VOLT
+      IoBankAvcc, // CC2
+      IoBankAvcc, // CC1
+      IoBankVcc, // USB_N
+      IoBankVcc, // USB_P
       IoBankVcc  // POR_N
     }),
     .MioPadBank ({
@@ -261,15 +253,6 @@ module chip_earlgrey_asic (
     .DioPadType ({
       BidirOd, // IOR9
       BidirOd, // IOR8
-      InputStd, // FLASH_TEST_VOLT
-      InputStd, // FLASH_TEST_MODE3
-      InputStd, // FLASH_TEST_MODE2
-      InputStd, // FLASH_TEST_MODE1
-      InputStd, // FLASH_TEST_MODE0
-      InputStd, // CC2
-      InputStd, // CC1
-      BidirTol, // USB_N
-      BidirTol, // USB_P
       InputStd, // SPI_DEV_CS_L
       InputStd, // SPI_DEV_CLK
       BidirStd, // SPI_DEV_D3
@@ -282,6 +265,13 @@ module chip_earlgrey_asic (
       BidirStd, // SPI_HOST_D2
       BidirStd, // SPI_HOST_D1
       BidirStd, // SPI_HOST_D0
+      InputStd, // FLASH_TEST_MODE1
+      InputStd, // FLASH_TEST_MODE0
+      AnalogIn0, // FLASH_TEST_VOLT
+      InputStd, // CC2
+      InputStd, // CC1
+      BidirTol, // USB_N
+      BidirTol, // USB_P
       InputStd  // POR_N
     }),
     .MioPadType ({
@@ -345,15 +335,6 @@ module chip_earlgrey_asic (
     .dio_pad_io ({
       IOR9,
       IOR8,
-      FLASH_TEST_VOLT,
-      FLASH_TEST_MODE3,
-      FLASH_TEST_MODE2,
-      FLASH_TEST_MODE1,
-      FLASH_TEST_MODE0,
-      CC2,
-      CC1,
-      USB_N,
-      USB_P,
       SPI_DEV_CS_L,
       SPI_DEV_CLK,
       SPI_DEV_D3,
@@ -366,6 +347,13 @@ module chip_earlgrey_asic (
       SPI_HOST_D2,
       SPI_HOST_D1,
       SPI_HOST_D0,
+      FLASH_TEST_MODE1,
+      FLASH_TEST_MODE0,
+      FLASH_TEST_VOLT,
+      CC2,
+      CC1,
+      USB_N,
+      USB_P,
       POR_N
     }),
 
@@ -423,15 +411,6 @@ module chip_earlgrey_asic (
     .dio_in_o ({
         dio_in[DioSysrstCtrlAonPwrbOut],
         dio_in[DioSysrstCtrlAonEcRstOutL],
-        manual_in_flash_test_volt,
-        manual_in_flash_test_mode3,
-        manual_in_flash_test_mode2,
-        manual_in_flash_test_mode1,
-        manual_in_flash_test_mode0,
-        manual_in_cc2,
-        manual_in_cc1,
-        manual_in_usb_n,
-        manual_in_usb_p,
         dio_in[DioSpiDeviceCsb],
         dio_in[DioSpiDeviceSck],
         dio_in[DioSpiDeviceSd3],
@@ -444,20 +423,18 @@ module chip_earlgrey_asic (
         dio_in[DioSpiHost0Sd2],
         dio_in[DioSpiHost0Sd1],
         dio_in[DioSpiHost0Sd0],
+        manual_in_flash_test_mode1,
+        manual_in_flash_test_mode0,
+        manual_in_flash_test_volt,
+        manual_in_cc2,
+        manual_in_cc1,
+        manual_in_usb_n,
+        manual_in_usb_p,
         manual_in_por_n
       }),
     .dio_out_i ({
         dio_out[DioSysrstCtrlAonPwrbOut],
         dio_out[DioSysrstCtrlAonEcRstOutL],
-        manual_out_flash_test_volt,
-        manual_out_flash_test_mode3,
-        manual_out_flash_test_mode2,
-        manual_out_flash_test_mode1,
-        manual_out_flash_test_mode0,
-        manual_out_cc2,
-        manual_out_cc1,
-        manual_out_usb_n,
-        manual_out_usb_p,
         dio_out[DioSpiDeviceCsb],
         dio_out[DioSpiDeviceSck],
         dio_out[DioSpiDeviceSd3],
@@ -470,20 +447,18 @@ module chip_earlgrey_asic (
         dio_out[DioSpiHost0Sd2],
         dio_out[DioSpiHost0Sd1],
         dio_out[DioSpiHost0Sd0],
+        manual_out_flash_test_mode1,
+        manual_out_flash_test_mode0,
+        manual_out_flash_test_volt,
+        manual_out_cc2,
+        manual_out_cc1,
+        manual_out_usb_n,
+        manual_out_usb_p,
         manual_out_por_n
       }),
     .dio_oe_i ({
         dio_oe[DioSysrstCtrlAonPwrbOut],
         dio_oe[DioSysrstCtrlAonEcRstOutL],
-        manual_oe_flash_test_volt,
-        manual_oe_flash_test_mode3,
-        manual_oe_flash_test_mode2,
-        manual_oe_flash_test_mode1,
-        manual_oe_flash_test_mode0,
-        manual_oe_cc2,
-        manual_oe_cc1,
-        manual_oe_usb_n,
-        manual_oe_usb_p,
         dio_oe[DioSpiDeviceCsb],
         dio_oe[DioSpiDeviceSck],
         dio_oe[DioSpiDeviceSd3],
@@ -496,20 +471,18 @@ module chip_earlgrey_asic (
         dio_oe[DioSpiHost0Sd2],
         dio_oe[DioSpiHost0Sd1],
         dio_oe[DioSpiHost0Sd0],
+        manual_oe_flash_test_mode1,
+        manual_oe_flash_test_mode0,
+        manual_oe_flash_test_volt,
+        manual_oe_cc2,
+        manual_oe_cc1,
+        manual_oe_usb_n,
+        manual_oe_usb_p,
         manual_oe_por_n
       }),
     .dio_attr_i ({
         dio_attr[DioSysrstCtrlAonPwrbOut],
         dio_attr[DioSysrstCtrlAonEcRstOutL],
-        manual_attr_flash_test_volt,
-        manual_attr_flash_test_mode3,
-        manual_attr_flash_test_mode2,
-        manual_attr_flash_test_mode1,
-        manual_attr_flash_test_mode0,
-        manual_attr_cc2,
-        manual_attr_cc1,
-        manual_attr_usb_n,
-        manual_attr_usb_p,
         dio_attr[DioSpiDeviceCsb],
         dio_attr[DioSpiDeviceSck],
         dio_attr[DioSpiDeviceSd3],
@@ -522,6 +495,13 @@ module chip_earlgrey_asic (
         dio_attr[DioSpiHost0Sd2],
         dio_attr[DioSpiHost0Sd1],
         dio_attr[DioSpiHost0Sd0],
+        manual_attr_flash_test_mode1,
+        manual_attr_flash_test_mode0,
+        manual_attr_flash_test_volt,
+        manual_attr_cc2,
+        manual_attr_cc1,
+        manual_attr_usb_n,
+        manual_attr_usb_p,
         manual_attr_por_n
       }),
 
@@ -734,15 +714,6 @@ module chip_earlgrey_asic (
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
 
-  assign manual_out_flash_test_mode0 = 1'b0;
-  assign manual_oe_flash_test_mode0 = 1'b0;
-  assign manual_out_flash_test_mode1 = 1'b0;
-  assign manual_oe_flash_test_mode1 = 1'b0;
-  assign manual_out_flash_test_mode2 = 1'b0;
-  assign manual_oe_flash_test_mode2 = 1'b0;
-  assign manual_out_flash_test_mode3 = 1'b0;
-  assign manual_oe_flash_test_mode3 = 1'b0;
-
   assign manual_out_cc1 = 1'b0;
   assign manual_oe_cc1 = 1'b0;
   assign manual_out_cc2 = 1'b0;
@@ -755,20 +726,12 @@ module chip_earlgrey_asic (
   assign manual_attr_por_n = '0;
   assign manual_attr_cc1 = '0;
   assign manual_attr_cc2 = '0;
-  assign manual_attr_flash_test_mode0 = '0;
-  assign manual_attr_flash_test_mode1 = '0;
-  assign manual_attr_flash_test_mode2 = '0;
-  assign manual_attr_flash_test_mode3 = '0;
   assign manual_attr_flash_test_volt = '0;
 
   logic unused_manual_sigs;
   assign unused_manual_sigs = ^{
     manual_in_cc2,
     manual_in_cc1,
-    manual_in_flash_test_mode3,
-    manual_in_flash_test_mode2,
-    manual_in_flash_test_mode1,
-    manual_in_flash_test_mode0,
     manual_in_flash_test_volt
   };
 
@@ -1191,9 +1154,7 @@ module chip_earlgrey_asic (
     .ast2pinmux_i                 ( ast2pinmux                 ),
 
     // Flash test mode voltages
-    .flash_test_mode_a_io         ( {FLASH_TEST_MODE3,
-                                     FLASH_TEST_MODE2,
-                                     FLASH_TEST_MODE1,
+    .flash_test_mode_a_io         ( {FLASH_TEST_MODE1,
                                      FLASH_TEST_MODE0}         ),
     .flash_test_voltage_h_io      ( FLASH_TEST_VOLT            ),
 

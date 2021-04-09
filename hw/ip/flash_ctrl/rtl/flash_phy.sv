@@ -27,7 +27,7 @@ module flash_phy import flash_ctrl_pkg::*; (
   input scan_rst_ni,
   input flash_power_ready_h_i,
   input flash_power_down_h_i,
-  inout [3:0] flash_test_mode_a_io,
+  inout [1:0] flash_test_mode_a_io,
   inout flash_test_voltage_h_io,
   input lc_ctrl_pkg::lc_tx_t flash_bist_enable_i,
   input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i
