@@ -43,6 +43,9 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     'mask_rom_' + device_name,
     name_suffix: 'elf',
     link_depends: rom_link_deps,
+    link_args: [
+      '-Wl,-Map=@0@/mask_rom_@1@.map'.format(meson.current_build_dir(), device_name),
+    ],
     dependencies: [
       device_lib,
       mask_rom_lib,
