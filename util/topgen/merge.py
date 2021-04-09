@@ -945,6 +945,7 @@ def amend_pinmux_io(top: Dict, name_to_block: Dict[str, IpBlock]):
             # Augment this signal instance with additional information.
             sig_inst.update({'idx': idx,
                              'pad': sig['pad'],
+                             'attr': sig['attr'],
                              'connection': sig['connection']})
             sig_inst['name'] = mod_name + '_' + sig_inst['name']
             append_io_signal(temp, sig_inst)
@@ -962,12 +963,14 @@ def amend_pinmux_io(top: Dict, name_to_block: Dict[str, IpBlock]):
                         sig_inst_copy = deepcopy(sig_inst)
                         sig_inst_copy.update({'idx': idx,
                                               'pad': sig['pad'],
+                                              'attr': sig['attr'],
                                               'connection': sig['connection']})
                         sig_inst_copy['name'] = sig['instance'] + '_' + sig_inst_copy['name']
                         append_io_signal(temp, sig_inst_copy)
                 else:
                     sig_inst.update({'idx': -1,
                                      'pad': sig['pad'],
+                                     'attr': sig['attr'],
                                      'connection': sig['connection']})
                     sig_inst['name'] = sig['instance'] + '_' + sig_inst['name']
                     append_io_signal(temp, sig_inst)

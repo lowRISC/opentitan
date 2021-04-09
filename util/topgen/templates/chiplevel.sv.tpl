@@ -145,7 +145,30 @@ module chip_${top["name"]}_${target["name"]} (
     usb_dp_idx:        DioUsbdevDp,
     usb_dn_idx:        DioUsbdevDn,
     usb_dp_pullup_idx: DioUsbdevDpPullup,
-    usb_dn_pullup_idx: DioUsbdevDnPullup
+    usb_dn_pullup_idx: DioUsbdevDnPullup,
+    // Pad types for attribute WARL behavior
+    dio_pad_type: {
+<%
+  pad_attr = []
+  for sig in list(reversed(top["pinmux"]["ios"])):
+    if sig["connection"] != "muxed":
+      pad_attr.append((sig['name'], sig["attr"]))
+%>\
+% for name, attr in pad_attr:
+      ${attr}${" " if loop.last else ","} // DIO ${name}
+% endfor
+    },
+    mio_pad_type: {
+<%
+  pad_attr = []
+  for pad in list(reversed(pinout["pads"])):
+    if pad["connection"] == "muxed":
+      pad_attr.append(pad["type"])
+%>\
+% for attr in pad_attr:
+      ${attr}${" " if loop.last else ","} // MIO Pad ${len(pad_attr) - loop.index - 1}
+% endfor
+    }
   };
 
   ////////////////////////
@@ -519,17 +542,26 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_out_flash_test_volt = 1'b0;
   assign manual_oe_flash_test_volt = 1'b0;
 
+  assign manual_out_flash_test_mode0 = 1'b0;
+  assign manual_out_flash_test_mode1 = 1'b0;
+  assign manual_oe_flash_test_mode0 = 1'b0;
+  assign manual_oe_flash_test_mode1 = 1'b0;
+
   // These pad attributes currently tied off permanently (these are all input-only pads).
   assign manual_attr_por_n = '0;
   assign manual_attr_cc1 = '0;
   assign manual_attr_cc2 = '0;
   assign manual_attr_flash_test_volt = '0;
+  assign manual_attr_flash_test_mode0 = '0;
+  assign manual_attr_flash_test_mode1 = '0;
 
   logic unused_manual_sigs;
   assign unused_manual_sigs = ^{
     manual_in_cc2,
     manual_in_cc1,
-    manual_in_flash_test_volt
+    manual_in_flash_test_volt,
+    manual_in_flash_test_mode0,
+    manual_in_flash_test_mode1
   };
 
   ///////////////////////////////

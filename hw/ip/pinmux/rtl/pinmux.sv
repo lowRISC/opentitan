@@ -121,17 +121,28 @@ module pinmux
   // Connect attributes //
   ////////////////////////
 
-  // TODO(#5221): rework the WARL behavior
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_attr
     prim_pad_wrapper_pkg::pad_attr_t warl_mask;
-    assign warl_mask = '0;
+
+    prim_pad_attr #(
+      .PadType(TargetCfg.dio_pad_type[k])
+    ) u_prim_pad_attr (
+      .attr_warl_o(warl_mask)
+    );
+
     assign dio_attr_o[k]            = dio_pad_attr_q[k] & warl_mask;
     assign hw2reg.dio_pad_attr[k].d = dio_pad_attr_q[k] & warl_mask;
   end
 
   for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_attr
     prim_pad_wrapper_pkg::pad_attr_t warl_mask;
-    assign warl_mask = '0;
+
+    prim_pad_attr #(
+      .PadType(TargetCfg.mio_pad_type[k])
+    ) u_prim_pad_attr (
+      .attr_warl_o(warl_mask)
+    );
+
     assign mio_attr_o[k]            = mio_pad_attr_q[k] & warl_mask;
     assign hw2reg.mio_pad_attr[k].d = mio_pad_attr_q[k] & warl_mask;
   end

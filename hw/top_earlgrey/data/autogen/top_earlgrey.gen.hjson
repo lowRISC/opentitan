@@ -8196,6 +8196,7 @@
         connection: direct
         pad: SPI_HOST_CLK
         desc: ""
+        attr: BidirStd
       }
       {
         instance: spi_host0
@@ -8203,6 +8204,7 @@
         connection: direct
         pad: SPI_HOST_CS_L
         desc: ""
+        attr: BidirStd
       }
       {
         instance: spi_host0
@@ -8210,6 +8212,7 @@
         connection: direct
         pad: SPI_HOST_D0
         desc: ""
+        attr: BidirStd
       }
       {
         instance: spi_host0
@@ -8217,6 +8220,7 @@
         connection: direct
         pad: SPI_HOST_D1
         desc: ""
+        attr: BidirStd
       }
       {
         instance: spi_host0
@@ -8224,6 +8228,7 @@
         connection: direct
         pad: SPI_HOST_D2
         desc: ""
+        attr: BidirStd
       }
       {
         instance: spi_host0
@@ -8231,6 +8236,7 @@
         connection: direct
         pad: SPI_HOST_D3
         desc: ""
+        attr: BidirStd
       }
       {
         instance: spi_device
@@ -8238,6 +8244,7 @@
         connection: direct
         pad: SPI_DEV_CLK
         desc: ""
+        attr: InputStd
       }
       {
         instance: spi_device
@@ -8245,6 +8252,7 @@
         connection: direct
         pad: SPI_DEV_CS_L
         desc: ""
+        attr: InputStd
       }
       {
         instance: spi_device
@@ -8252,6 +8260,7 @@
         connection: direct
         pad: SPI_DEV_D0
         desc: ""
+        attr: BidirStd
       }
       {
         instance: spi_device
@@ -8259,6 +8268,7 @@
         connection: direct
         pad: SPI_DEV_D1
         desc: ""
+        attr: BidirStd
       }
       {
         instance: spi_device
@@ -8266,6 +8276,7 @@
         connection: direct
         pad: SPI_DEV_D2
         desc: ""
+        attr: BidirStd
       }
       {
         instance: spi_device
@@ -8273,6 +8284,7 @@
         connection: direct
         pad: SPI_DEV_D3
         desc: ""
+        attr: BidirStd
       }
       {
         instance: usbdev
@@ -8280,6 +8292,7 @@
         connection: manual
         pad: ""
         desc: ""
+        attr: BidirTol
       }
       {
         instance: gpio
@@ -8287,6 +8300,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: uart0
@@ -8294,6 +8308,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: uart1
@@ -8301,6 +8316,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: uart2
@@ -8308,6 +8324,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: uart3
@@ -8315,6 +8332,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: i2c0
@@ -8322,6 +8340,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: i2c1
@@ -8329,6 +8348,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: i2c2
@@ -8336,6 +8356,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: pattgen
@@ -8343,6 +8364,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: spi_host1
@@ -8350,6 +8372,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: flash_ctrl
@@ -8357,6 +8380,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: sensor_ctrl_aon
@@ -8364,6 +8388,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: sysrst_ctrl_aon
@@ -8371,6 +8396,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: sysrst_ctrl_aon
@@ -8378,6 +8404,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: sysrst_ctrl_aon
@@ -8385,6 +8412,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: sysrst_ctrl_aon
@@ -8392,6 +8420,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: sysrst_ctrl_aon
@@ -8399,6 +8428,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: sysrst_ctrl_aon
@@ -8406,6 +8436,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: sysrst_ctrl_aon
@@ -8413,6 +8444,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: sysrst_ctrl_aon
@@ -8420,6 +8452,7 @@
         connection: direct
         pad: IOR8
         desc: ""
+        attr: BidirOd
       }
       {
         instance: sysrst_ctrl_aon
@@ -8427,6 +8460,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: sysrst_ctrl_aon
@@ -8434,6 +8468,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: sysrst_ctrl_aon
@@ -8441,6 +8476,7 @@
         connection: muxed
         pad: ""
         desc: ""
+        attr: ""
       }
       {
         instance: sysrst_ctrl_aon
@@ -8448,6 +8484,7 @@
         connection: direct
         pad: IOR9
         desc: ""
+        attr: BidirOd
       }
     ]
     num_wkup_detect: 8
@@ -8460,6 +8497,7 @@
         type: inout
         idx: 0
         pad: SPI_HOST_D0
+        attr: BidirStd
         connection: direct
         glob_idx: 0
       }
@@ -8469,6 +8507,7 @@
         type: inout
         idx: 1
         pad: SPI_HOST_D1
+        attr: BidirStd
         connection: direct
         glob_idx: 1
       }
@@ -8478,6 +8517,7 @@
         type: inout
         idx: 2
         pad: SPI_HOST_D2
+        attr: BidirStd
         connection: direct
         glob_idx: 2
       }
@@ -8487,6 +8527,7 @@
         type: inout
         idx: 3
         pad: SPI_HOST_D3
+        attr: BidirStd
         connection: direct
         glob_idx: 3
       }
@@ -8496,6 +8537,7 @@
         type: inout
         idx: 0
         pad: SPI_DEV_D0
+        attr: BidirStd
         connection: direct
         glob_idx: 4
       }
@@ -8505,6 +8547,7 @@
         type: inout
         idx: 1
         pad: SPI_DEV_D1
+        attr: BidirStd
         connection: direct
         glob_idx: 5
       }
@@ -8514,6 +8557,7 @@
         type: inout
         idx: 2
         pad: SPI_DEV_D2
+        attr: BidirStd
         connection: direct
         glob_idx: 6
       }
@@ -8523,6 +8567,7 @@
         type: inout
         idx: 3
         pad: SPI_DEV_D3
+        attr: BidirStd
         connection: direct
         glob_idx: 7
       }
@@ -8532,6 +8577,7 @@
         type: inout
         idx: -1
         pad: ""
+        attr: BidirTol
         connection: manual
         glob_idx: 8
       }
@@ -8541,6 +8587,7 @@
         type: inout
         idx: -1
         pad: ""
+        attr: BidirTol
         connection: manual
         glob_idx: 9
       }
@@ -8550,6 +8597,7 @@
         type: inout
         idx: -1
         pad: ""
+        attr: BidirTol
         connection: manual
         glob_idx: 10
       }
@@ -8559,6 +8607,7 @@
         type: inout
         idx: 0
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 0
       }
@@ -8568,6 +8617,7 @@
         type: inout
         idx: 1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 1
       }
@@ -8577,6 +8627,7 @@
         type: inout
         idx: 2
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 2
       }
@@ -8586,6 +8637,7 @@
         type: inout
         idx: 3
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 3
       }
@@ -8595,6 +8647,7 @@
         type: inout
         idx: 4
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 4
       }
@@ -8604,6 +8657,7 @@
         type: inout
         idx: 5
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 5
       }
@@ -8613,6 +8667,7 @@
         type: inout
         idx: 6
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 6
       }
@@ -8622,6 +8677,7 @@
         type: inout
         idx: 7
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 7
       }
@@ -8631,6 +8687,7 @@
         type: inout
         idx: 8
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 8
       }
@@ -8640,6 +8697,7 @@
         type: inout
         idx: 9
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 9
       }
@@ -8649,6 +8707,7 @@
         type: inout
         idx: 10
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 10
       }
@@ -8658,6 +8717,7 @@
         type: inout
         idx: 11
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 11
       }
@@ -8667,6 +8727,7 @@
         type: inout
         idx: 12
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 12
       }
@@ -8676,6 +8737,7 @@
         type: inout
         idx: 13
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 13
       }
@@ -8685,6 +8747,7 @@
         type: inout
         idx: 14
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 14
       }
@@ -8694,6 +8757,7 @@
         type: inout
         idx: 15
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 15
       }
@@ -8703,6 +8767,7 @@
         type: inout
         idx: 16
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 16
       }
@@ -8712,6 +8777,7 @@
         type: inout
         idx: 17
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 17
       }
@@ -8721,6 +8787,7 @@
         type: inout
         idx: 18
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 18
       }
@@ -8730,6 +8797,7 @@
         type: inout
         idx: 19
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 19
       }
@@ -8739,6 +8807,7 @@
         type: inout
         idx: 20
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 20
       }
@@ -8748,6 +8817,7 @@
         type: inout
         idx: 21
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 21
       }
@@ -8757,6 +8827,7 @@
         type: inout
         idx: 22
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 22
       }
@@ -8766,6 +8837,7 @@
         type: inout
         idx: 23
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 23
       }
@@ -8775,6 +8847,7 @@
         type: inout
         idx: 24
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 24
       }
@@ -8784,6 +8857,7 @@
         type: inout
         idx: 25
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 25
       }
@@ -8793,6 +8867,7 @@
         type: inout
         idx: 26
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 26
       }
@@ -8802,6 +8877,7 @@
         type: inout
         idx: 27
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 27
       }
@@ -8811,6 +8887,7 @@
         type: inout
         idx: 28
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 28
       }
@@ -8820,6 +8897,7 @@
         type: inout
         idx: 29
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 29
       }
@@ -8829,6 +8907,7 @@
         type: inout
         idx: 30
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 30
       }
@@ -8838,6 +8917,7 @@
         type: inout
         idx: 31
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 31
       }
@@ -8847,6 +8927,7 @@
         type: inout
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 32
       }
@@ -8856,6 +8937,7 @@
         type: inout
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 33
       }
@@ -8865,6 +8947,7 @@
         type: inout
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 34
       }
@@ -8874,6 +8957,7 @@
         type: inout
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 35
       }
@@ -8883,6 +8967,7 @@
         type: inout
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 36
       }
@@ -8892,6 +8977,7 @@
         type: inout
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 37
       }
@@ -8901,6 +8987,7 @@
         type: inout
         idx: 0
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 38
       }
@@ -8910,6 +8997,7 @@
         type: inout
         idx: 1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 39
       }
@@ -8919,6 +9007,7 @@
         type: inout
         idx: 2
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 40
       }
@@ -8928,6 +9017,7 @@
         type: inout
         idx: 3
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 41
       }
@@ -8937,6 +9027,7 @@
         type: input
         idx: -1
         pad: SPI_DEV_CLK
+        attr: InputStd
         connection: direct
         glob_idx: 11
       }
@@ -8946,6 +9037,7 @@
         type: input
         idx: -1
         pad: SPI_DEV_CS_L
+        attr: InputStd
         connection: direct
         glob_idx: 12
       }
@@ -8955,6 +9047,7 @@
         type: input
         idx: -1
         pad: ""
+        attr: BidirTol
         connection: manual
         glob_idx: 13
       }
@@ -8964,6 +9057,7 @@
         type: input
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 42
       }
@@ -8973,6 +9067,7 @@
         type: input
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 43
       }
@@ -8982,6 +9077,7 @@
         type: input
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 44
       }
@@ -8991,6 +9087,7 @@
         type: input
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 45
       }
@@ -9000,6 +9097,7 @@
         type: input
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 46
       }
@@ -9009,6 +9107,7 @@
         type: input
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 47
       }
@@ -9018,6 +9117,7 @@
         type: input
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 48
       }
@@ -9027,6 +9127,7 @@
         type: input
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 49
       }
@@ -9036,6 +9137,7 @@
         type: input
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 50
       }
@@ -9045,6 +9147,7 @@
         type: input
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 51
       }
@@ -9054,6 +9157,7 @@
         type: input
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 52
       }
@@ -9063,6 +9167,7 @@
         type: input
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 53
       }
@@ -9072,6 +9177,7 @@
         type: input
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 54
       }
@@ -9081,6 +9187,7 @@
         type: output
         idx: -1
         pad: SPI_HOST_CLK
+        attr: BidirStd
         connection: direct
         glob_idx: 14
       }
@@ -9090,6 +9197,7 @@
         type: output
         idx: -1
         pad: SPI_HOST_CS_L
+        attr: BidirStd
         connection: direct
         glob_idx: 15
       }
@@ -9099,6 +9207,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: BidirTol
         connection: manual
         glob_idx: 16
       }
@@ -9108,6 +9217,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: BidirTol
         connection: manual
         glob_idx: 17
       }
@@ -9117,6 +9227,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: BidirTol
         connection: manual
         glob_idx: 18
       }
@@ -9126,6 +9237,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: BidirTol
         connection: manual
         glob_idx: 19
       }
@@ -9135,6 +9247,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: BidirTol
         connection: manual
         glob_idx: 20
       }
@@ -9144,6 +9257,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 42
       }
@@ -9153,6 +9267,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 43
       }
@@ -9162,6 +9277,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 44
       }
@@ -9171,6 +9287,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 45
       }
@@ -9180,6 +9297,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 46
       }
@@ -9189,6 +9307,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 47
       }
@@ -9198,6 +9317,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 48
       }
@@ -9207,6 +9327,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 49
       }
@@ -9216,6 +9337,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 50
       }
@@ -9225,6 +9347,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 51
       }
@@ -9234,6 +9357,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 52
       }
@@ -9243,6 +9367,7 @@
         type: output
         idx: 0
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 53
       }
@@ -9252,6 +9377,7 @@
         type: output
         idx: 1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 54
       }
@@ -9261,6 +9387,7 @@
         type: output
         idx: 2
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 55
       }
@@ -9270,6 +9397,7 @@
         type: output
         idx: 3
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 56
       }
@@ -9279,6 +9407,7 @@
         type: output
         idx: 4
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 57
       }
@@ -9288,6 +9417,7 @@
         type: output
         idx: 5
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 58
       }
@@ -9297,6 +9427,7 @@
         type: output
         idx: 6
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 59
       }
@@ -9306,6 +9437,7 @@
         type: output
         idx: 7
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 60
       }
@@ -9315,6 +9447,7 @@
         type: output
         idx: 8
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 61
       }
@@ -9324,6 +9457,7 @@
         type: output
         idx: 9
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 62
       }
@@ -9333,6 +9467,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 63
       }
@@ -9342,6 +9477,7 @@
         type: output
         idx: -1
         pad: IOR8
+        attr: BidirOd
         connection: direct
         glob_idx: 21
       }
@@ -9351,6 +9487,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 64
       }
@@ -9360,6 +9497,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 65
       }
@@ -9369,6 +9507,7 @@
         type: output
         idx: -1
         pad: ""
+        attr: ""
         connection: muxed
         glob_idx: 66
       }
@@ -9378,6 +9517,7 @@
         type: output
         idx: -1
         pad: IOR9
+        attr: BidirOd
         connection: direct
         glob_idx: 22
       }

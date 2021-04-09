@@ -38,7 +38,7 @@ module prim_xilinx_pad_attr
       attr_warl_o.invert = 1'b1;
       attr_warl_o.virt_od_en = 1'b1;
     end
-  end else if (PadType == Analog0) begin : gen_analog0_warl
+  end else if (PadType == AnalogIn0) begin : gen_analog0_warl
     // The analog pad type is basically just a feedthrough,
     // and does hence not support any of the attributes.
     always_comb begin : p_attr

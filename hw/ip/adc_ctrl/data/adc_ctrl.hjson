@@ -367,6 +367,9 @@
       swaccess: "rw1c",
       hwaccess: "hwo",
       resval: "0",
+      tags: [ // the value of these regs is determined by the
+              // value on the pins, hence it cannot be predicted.
+              "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         { bits: "0",
 	  name: "cc_sink_det",
