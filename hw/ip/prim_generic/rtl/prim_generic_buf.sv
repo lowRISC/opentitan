@@ -4,11 +4,13 @@
 
 `include "prim_assert.sv"
 
-module prim_generic_buf (
-  input in_i,
-  output logic out_o
+module prim_generic_buf #(
+  parameter int Width = 1
+) (
+  input        [Width-1:0] in_i,
+  output logic [Width-1:0] out_o
 );
 
   assign out_o = in_i;
 
-endmodule : prim_generic_buf
+endmodule
