@@ -3,12 +3,12 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: "lowrisc:prim_xilinx:flop"
-description: "Xilinx flop"
+name: "lowrisc:prim_xilinx:flop_en"
+description: "Xilinx enable flop"
 filesets:
   files_rtl:
     files:
-      - rtl/prim_xilinx_flop.sv
+      - rtl/prim_xilinx_flop_en.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
