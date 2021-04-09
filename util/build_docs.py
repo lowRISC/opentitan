@@ -81,6 +81,7 @@ config = {
         "hw/ip/spi_host/data/spi_host.hjson",
         "hw/ip/spi_device/data/spi_device.hjson",
         "hw/ip/sram_ctrl/data/sram_ctrl.hjson",
+        "hw/ip/sysrst_ctrl/data/sysrst_ctrl.hjson",
         "hw/ip/uart/data/uart.hjson",
         "hw/ip/usbdev/data/usbdev.hjson",
         "hw/ip/usbuart/data/usbuart.hjson",
