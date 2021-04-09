@@ -199,7 +199,7 @@ module aes_masked_inverse_gf2p8_noreuse (
   assign b   = b_4 ^ mul_m0_m1;
 
   // b is masked by q, b_inv is masked by t.
-  aes_masked_inverse_gf2p4_noreuse aes_masked_inverse_gf2p4 (
+  aes_masked_inverse_gf2p4_noreuse u_aes_masked_inverse_gf2p4 (
     .b     ( b     ),
     .q     ( q     ),
     .r     ( r     ),
@@ -286,7 +286,7 @@ module aes_sbox_canright_masked_noreuse (
                                                  aes_mvm(mask_o, S2X);
 
   // Do the inversion in normal basis X.
-  aes_masked_inverse_gf2p8_noreuse aes_masked_inverse_gf2p8 (
+  aes_masked_inverse_gf2p8_noreuse u_aes_masked_inverse_gf2p8 (
     .a     ( in_data_basis_x  ), // input
     .m     ( in_mask_basis_x  ), // input
     .n     ( out_mask_basis_x ), // input
