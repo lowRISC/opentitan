@@ -108,6 +108,7 @@ module chip_earlgrey_nexysvideo #(
     dio_pad_type: {
       BidirOd, // DIO sysrst_ctrl_aon_pwrb_out
       BidirOd, // DIO sysrst_ctrl_aon_ec_rst_out_l
+      BidirTol, // DIO usbdev_rx_enable
       BidirTol, // DIO usbdev_suspend
       BidirTol, // DIO usbdev_tx_mode_se
       BidirTol, // DIO usbdev_dn_pullup
@@ -740,6 +741,9 @@ module chip_earlgrey_nexysvideo #(
                                              manual_in_io_usb_sense0;
   assign manual_out_io_uphy_sense = 1'b0;
   assign manual_oe_io_uphy_sense = 1'b0;
+
+  // DioUsbdevRxEnable
+  assign dio_in[DioUsbdevRxEnable] = 1'b0;
 
   // Additional outputs for uphy
   assign manual_oe_io_uphy_dppullup = 1'b1;

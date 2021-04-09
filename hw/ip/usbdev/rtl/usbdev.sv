@@ -44,6 +44,8 @@ module usbdev import usbdev_pkg::*; (
   output logic       cio_suspend_en_o,
   output logic       cio_tx_mode_se_o,
   output logic       cio_tx_mode_se_en_o,
+  output logic       cio_rx_enable_o,
+  output logic       cio_rx_enable_en_o,
 
   // Direct pinmux aon detect connections
   output logic       usb_out_of_rst_o,
@@ -1004,6 +1006,9 @@ module usbdev import usbdev_pkg::*; (
     .usb_suspend_i          (usb_event_link_suspend)
   );
 
+  // enable rx only when in differential mode and not suspended.
+  assign cio_rx_enable_o = reg2hw.phy_config.rx_differential_mode.q & ~usb_suspend_o;
+
   ////////////////////////
   // USB Output Enables //
   ////////////////////////
@@ -1017,6 +1022,7 @@ module usbdev import usbdev_pkg::*; (
   assign cio_se0_en_o        = 1'b1;
   assign cio_suspend_en_o    = 1'b1;
   assign cio_tx_mode_se_en_o = 1'b1;
+  assign cio_rx_enable_en_o  = 1'b1;
 
   // Pullup
   assign cio_dp_pullup_o     = 1'b1;
