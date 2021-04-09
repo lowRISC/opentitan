@@ -207,7 +207,7 @@ module aes_dom_dep_mul_gf2pn_unopt #(
   aes_dom_indep_mul_gf2pn #(
     .NPower   ( NPower   ),
     .Pipeline ( Pipeline )
-  ) aes_dom_indep_mul_gf2pn (
+  ) u_aes_dom_indep_mul_gf2pn (
     .clk_i  ( clk_i     ),
     .rst_ni ( rst_ni    ),
     .we_i   ( we_i      ),
@@ -558,7 +558,7 @@ module aes_dom_inverse_gf2p4 (
     .NPower      ( 2    ),
     .Pipeline    ( 1'b1 ),
     .PreDomIndep ( 1'b0 )
-  ) aes_dom_mul_gamma1_gamma0 (
+  ) u_aes_dom_mul_gamma1_gamma0 (
     .clk_i  ( clk_i           ),
     .rst_ni ( rst_ni          ),
     .we_i   ( we_i[0]         ),
@@ -602,7 +602,7 @@ module aes_dom_inverse_gf2p4 (
     .NPower      ( 2    ),
     .Pipeline    ( 1'b1 ),
     .PreDomIndep ( 1'b0 )
-  ) aes_dom_mul_omega_gamma1 (
+  ) u_aes_dom_mul_omega_gamma1 (
     .clk_i  ( clk_i            ),
     .rst_ni ( rst_ni           ),
     .we_i   ( we_i[1]          ),
@@ -620,7 +620,7 @@ module aes_dom_inverse_gf2p4 (
     .NPower      ( 2    ),
     .Pipeline    ( 1'b1 ),
     .PreDomIndep ( 1'b0 )
-  ) aes_dom_mul_omega_gamma0 (
+  ) u_aes_dom_mul_omega_gamma0 (
     .clk_i  ( clk_i            ),
     .rst_ni ( rst_ni           ),
     .we_i   ( we_i[1]          ),
@@ -681,7 +681,7 @@ module aes_dom_inverse_gf2p8 (
     .NPower      ( 4    ),
     .Pipeline    ( 1'b1 ),
     .PreDomIndep ( 1'b0 )
-  ) aes_dom_mul_y1_y0 (
+  ) u_aes_dom_mul_y1_y0 (
     .clk_i  ( clk_i          ),
     .rst_ni ( rst_ni         ),
     .we_i   ( we_i[0]        ),
@@ -705,7 +705,7 @@ module aes_dom_inverse_gf2p8 (
   logic [3:0] a_theta, b_theta;
 
   // a_gamma is masked by b_gamma, a_gamma_inv is masked by b_gamma_inv.
-  aes_dom_inverse_gf2p4 aes_dom_inverse_gf2p4 (
+  aes_dom_inverse_gf2p4 u_aes_dom_inverse_gf2p4 (
     .clk_i       ( clk_i     ),
     .rst_ni      ( rst_ni    ),
     .we_i        ( we_i[2:1] ),
@@ -740,7 +740,7 @@ module aes_dom_inverse_gf2p8 (
   aes_dom_indep_mul_gf2pn #(
     .NPower   ( 4    ),
     .Pipeline ( 1'b1 )
-  ) aes_dom_mul_theta_y1 (
+  ) u_aes_dom_mul_theta_y1 (
     .clk_i  ( clk_i          ),
     .rst_ni ( rst_ni         ),
     .we_i   ( we_i[3]        ),
@@ -756,7 +756,7 @@ module aes_dom_inverse_gf2p8 (
   aes_dom_indep_mul_gf2pn #(
     .NPower   ( 4    ),
     .Pipeline ( 1'b1 )
-  ) aes_dom_mul_theta_y0 (
+  ) u_aes_dom_mul_theta_y0 (
     .clk_i  ( clk_i          ),
     .rst_ni ( rst_ni         ),
     .we_i   ( we_i[3]        ),
@@ -804,7 +804,7 @@ module aes_sbox_dom (
                                                  aes_mvm(mask_i, S2X);
 
   // Do the inversion in normal basis X.
-  aes_dom_inverse_gf2p8 aes_dom_inverse_gf2p8 (
+  aes_dom_inverse_gf2p8 u_aes_dom_inverse_gf2p8 (
     .clk_i   ( clk_i            ),
     .rst_ni  ( rst_ni           ),
     .we_i    ( we               ),
