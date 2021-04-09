@@ -161,7 +161,7 @@ module ibex_simple_system (
     .cfg_device_addr_mask
   );
 
-  ibex_core_tracing #(
+  ibex_top_tracing #(
       .SecureIbex      ( SecureIbex      ),
       .PMPEnable       ( PMPEnable       ),
       .PMPGranularity  ( PMPGranularity  ),
@@ -178,7 +178,7 @@ module ibex_simple_system (
       .BranchPredictor ( BranchPredictor ),
       .DmHaltAddr      ( 32'h00100000    ),
       .DmExceptionAddr ( 32'h00100000    )
-    ) u_core (
+    ) u_top (
       .clk_i                 (clk_sys),
       .rst_ni                (rst_sys_n),
 
@@ -282,7 +282,7 @@ module ibex_simple_system (
   export "DPI-C" function mhpmcounter_get;
 
   function automatic longint unsigned mhpmcounter_get(int index);
-    return u_core.u_ibex_core.cs_registers_i.mhpmcounter[index];
+    return u_top.u_ibex_top.u_ibex_core.cs_registers_i.mhpmcounter[index];
   endfunction
 
 endmodule

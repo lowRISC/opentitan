@@ -23,13 +23,13 @@ lint_off -rule PINCONNECTEMPTY
 // matches when you set a 1-bit value to a literal 1, so it won't hide
 // silly mistakes like setting it to 2.
 //
-lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv"
+lint_off -rule WIDTH -file "*/rtl/ibex_top_tracing.sv"
          -match "*expects 1 bits*Initial value's CONST '32'h1'*"
 
 // Operator expects 1 bit on initial value but initial value's CONST generates
 // 32 bits, need a specific RV32B waiver as it uses enums so the above catch-all
 // waiver doesn't work.
-lint_off -rule WIDTH -file "*/rtl/ibex_core_tracing.sv" -match "*'RV32B'*"
+lint_off -rule WIDTH -file "*/rtl/ibex_top_tracing.sv" -match "*'RV32B'*"
 
 // Bits of signal are not used: be_i[3:1]
 // Bits of signal are not used: addr_i[31:10,1:0]

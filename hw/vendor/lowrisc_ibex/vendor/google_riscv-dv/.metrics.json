@@ -1,15 +1,8 @@
 {
-    "variables": {
-        "DSIM" : "${DSIM_HOME}/bin/dsim",
-        "DSIM_LIB_PATH" : "${DSIM_HOME}/uvm-1.2/src/dpi",
-        "RISCV_GCC" : "${RISCV_TOOLCHAIN}/bin/riscv-none-embed-gcc",
-        "RISCV_OBJCOPY" : "${RISCV_TOOLCHAIN}/bin/riscv-none-embed-objcopy",
-        "OVPSIM_PATH" : "/customer-tools/riscv-ovpsim/bin/Linux64"
-    },
     "builds": {
       "list": [{
         "name": "rv32imc",
-        "image": "ibex-dsim-toolchain:latest",
+        "image": "ibex-toolchain:v2",
         "memory" : "1",  
         "cmd": "python3 run.py --test riscv_arithmetic_basic_test --simulator dsim --output out --verbose --co",
         "wavesCmd": "python3 run.py --test riscv_arithmetic_basic_test --simulator dsim --output out --verbose --co"
@@ -27,8 +20,8 @@
                   "name": "riscv_arithmetic_basic_test",
                   "build": "rv32imc",
                   "iterations": 2,
-                  "cmd": "cd /mux-flow/results; python3 <rootDir>/run.py --test riscv_arithmetic_basic_test --seed <seed> --simulator dsim --iss ovpsim --so --out <rootDir>/out --verbose; <rootDir>/scripts/check-status $?; rm -fr <rootDir>/out/dsim",
-                  "wavesCmd": "python3 <rootDir>/run.py --test riscv_arithmetic_basic_test --seed <seed> --simulator dsim --iss ovpsim --so --out <rootDir>/out --verbose; <rootDir>/scripts/check-status $?; rm -rf out/dsim",
+                  "cmd": "cd /mux-flow/results; python3 <rootDir>/run.py --test riscv_arithmetic_basic_test --seed <seed> --simulator dsim --iss spike --so --out <rootDir>/out --verbose; <rootDir>/scripts/check-status $?; rm -fr <rootDir>/out/dsim",
+                  "wavesCmd": "python3 <rootDir>/run.py --test riscv_arithmetic_basic_test --seed <seed> --simulator dsim --iss spike --so --out <rootDir>/out --verbose; <rootDir>/scripts/check-status $?; rm -rf out/dsim",
                   "logFile": "simulation.log",
                   "metricsFile": "metrics.db",
                   "isPass": "Test passed",

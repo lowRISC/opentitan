@@ -57,7 +57,6 @@
       - "vlog -64
         +incdir+<setting>
         +incdir+<user_extension>
-        -access=rwc
         -f <cwd>/files.f
         -sv
         -mfcu -cuname design_cuname

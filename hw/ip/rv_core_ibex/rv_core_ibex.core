@@ -7,7 +7,7 @@ description: "Wrapper around ibex with TL-UL ports"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ibex:ibex_core
+      - lowrisc:ibex:ibex_top
       - lowrisc:prim:all
       - lowrisc:prim:clock_gating
       - lowrisc:ip:tlul

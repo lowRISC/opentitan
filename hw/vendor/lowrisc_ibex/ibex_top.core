@@ -2,39 +2,20 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ibex:ibex_core:0.1"
-description: "Ibex CPU Core Components"
+name: "lowrisc:ibex:ibex_top:0.1"
+description: "Ibex, a small RV32 CPU core"
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:assert
-      - lowrisc:prim:clock_gating
-      - lowrisc:prim:lfsr
       - lowrisc:ibex:ibex_pkg
-      - lowrisc:ibex:ibex_icache
-      - lowrisc:dv:dv_fcov_macros
+      - lowrisc:ibex:ibex_core
     files:
-      - rtl/ibex_alu.sv
-      - rtl/ibex_branch_predict.sv
-      - rtl/ibex_compressed_decoder.sv
-      - rtl/ibex_controller.sv
-      - rtl/ibex_cs_registers.sv
-      - rtl/ibex_csr.sv
-      - rtl/ibex_counter.sv
-      - rtl/ibex_decoder.sv
-      - rtl/ibex_ex_block.sv
-      - rtl/ibex_fetch_fifo.sv
-      - rtl/ibex_id_stage.sv
-      - rtl/ibex_if_stage.sv
-      - rtl/ibex_load_store_unit.sv
-      - rtl/ibex_multdiv_fast.sv
-      - rtl/ibex_multdiv_slow.sv
-      - rtl/ibex_prefetch_buffer.sv
-      - rtl/ibex_pmp.sv
-      - rtl/ibex_wb_stage.sv
-      - rtl/ibex_dummy_instr.sv
-      - rtl/ibex_core.sv
+      - rtl/ibex_register_file_ff.sv # generic FF-based
+      - rtl/ibex_register_file_fpga.sv # FPGA
+      - rtl/ibex_register_file_latch.sv # ASIC
+      - rtl/ibex_lockstep.sv
+      - rtl/ibex_top.sv
     file_type: systemVerilogSource
 
   files_lint_verilator:
@@ -148,7 +129,7 @@ targets:
       - tool_veriblelint ? (files_lint_verible)
       - files_rtl
       - files_check_tool_requirements
-    toplevel: ibex_core
+    toplevel: ibex_top
     parameters:
       - tool_vivado ? (FPGA_XILINX=true)
   lint:
@@ -172,8 +153,9 @@ targets:
       - SYNTHESIS=true
       - RVFI=true
     default_tool: veribleformat
-    toplevel: ibex_core
+    toplevel: ibex_top
     tools:
       veribleformat:
         verible_format_args:
           - "--inplace"
+

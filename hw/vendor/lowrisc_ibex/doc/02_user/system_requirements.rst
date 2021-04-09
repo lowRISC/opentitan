@@ -10,7 +10,7 @@ Please `file an issue <https://github.com/lowRISC/ibex/issues>`_ if you experien
 - Synopsys Design Compiler
 - Xilinx Vivado
 - Verilator, version |tool_requirements.verilator| and up.
-- Synopsys VCS
+- Synopsys VCS, version at least |tool_requirements.vcs|.
 - Cadence Incisive/Xcelium
 - Mentor Questa
 - Aldec Riviera Pro

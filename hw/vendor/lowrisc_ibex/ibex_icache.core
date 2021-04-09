@@ -10,6 +10,7 @@ filesets:
       - lowrisc:prim:secded
       - lowrisc:prim:ram_1p
       - lowrisc:prim:assert
+      - lowrisc:ibex:ibex_pkg
     files:
       - rtl/ibex_icache.sv
     file_type: systemVerilogSource

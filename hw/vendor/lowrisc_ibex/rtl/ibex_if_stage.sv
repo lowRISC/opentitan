@@ -12,19 +12,21 @@
 
 `include "prim_assert.sv"
 
-module ibex_if_stage #(
+module ibex_if_stage import ibex_pkg::*; #(
     parameter int unsigned DmHaltAddr        = 32'h1A110800,
     parameter int unsigned DmExceptionAddr   = 32'h1A110808,
     parameter bit          DummyInstructions = 1'b0,
     parameter bit          ICache            = 1'b0,
     parameter bit          ICacheECC         = 1'b0,
+    parameter int unsigned BusSizeECC        = BUS_SIZE,
+    parameter int unsigned TagSizeECC        = IC_TAG_SIZE,
+    parameter int unsigned LineSizeECC       = IC_LINE_SIZE,
     parameter bit          PCIncrCheck       = 1'b0,
     parameter bit          BranchPredictor   = 1'b0
 ) (
     input  logic                         clk_i,
     input  logic                         rst_ni,
 
-    input  prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
     input  logic [31:0]                  boot_addr_i,              // also used for mtvec
     input  logic                         req_i,                    // instruction request control
 
@@ -37,6 +39,18 @@ module ibex_if_stage #(
     input  logic                        instr_err_i,
     input  logic                        instr_pmp_err_i,
 
+    // ICache RAM IO
+    output logic [IC_NUM_WAYS-1:0]      ic_tag_req_o,
+    output logic                        ic_tag_write_o,
+    output logic [IC_INDEX_W-1:0]       ic_tag_addr_o,
+    output logic [TagSizeECC-1:0]       ic_tag_wdata_o,
+    input  logic [TagSizeECC-1:0]       ic_tag_rdata_i [IC_NUM_WAYS],
+    output logic [IC_NUM_WAYS-1:0]      ic_data_req_o,
+    output logic                        ic_data_write_o,
+    output logic [IC_INDEX_W-1:0]       ic_data_addr_o,
+    output logic [LineSizeECC-1:0]      ic_data_wdata_o,
+    input  logic [LineSizeECC-1:0]      ic_data_rdata_i [IC_NUM_WAYS],
+
     // output of ID stage
     output logic                        instr_valid_id_o,         // instr in IF-ID is valid
     output logic                        instr_new_id_o,           // instr in IF-ID is new
@@ -45,7 +59,7 @@ module ibex_if_stage #(
                                                                   // to reduce fan-out
     output logic [15:0]                 instr_rdata_c_id_o,       // compressed instr for ID stage
                                                                   // (mtval), meaningful only if
-                                                                 // instr_is_compressed_id_o = 1'b1
+                                                                  // instr_is_compressed_id_o = 1'b1
     output logic                        instr_is_compressed_id_o, // compressed decoder thinks this
                                                                   // is a compressed instr
     output logic                        instr_bp_taken_o,         // instruction was predicted to be
@@ -62,11 +76,11 @@ module ibex_if_stage #(
     input  logic                        instr_valid_clear_i,      // clear instr valid bit in IF-ID
     input  logic                        pc_set_i,                 // set the PC to a new value
     input  logic                        pc_set_spec_i,
-    input  ibex_pkg::pc_sel_e           pc_mux_i,                 // selector for PC multiplexer
+    input  pc_sel_e                     pc_mux_i,                 // selector for PC multiplexer
     input  logic                        nt_branch_mispredict_i,   // Not-taken branch in ID/EX was
                                                                   // mispredicted (predicted taken)
-    input  ibex_pkg::exc_pc_sel_e       exc_pc_mux_i,             // selects ISR address
-    input  ibex_pkg::exc_cause_e        exc_cause,                // selects ISR address for
+    input  exc_pc_sel_e                 exc_pc_mux_i,             // selects ISR address
+    input  exc_cause_e                  exc_cause,                // selects ISR address for
                                                                   // vectorized interrupt lines
     input logic                         dummy_instr_en_i,
     input logic [2:0]                   dummy_instr_mask_i,
@@ -93,8 +107,6 @@ module ibex_if_stage #(
     output logic                        pc_mismatch_alert_o,
     output logic                        if_busy_o                 // IF stage is busy fetching instr
 );
-
-  import ibex_pkg::*;
 
   logic              instr_valid_id_d, instr_valid_id_q;
   logic              instr_new_id_d, instr_new_id_q;
@@ -186,7 +198,10 @@ module ibex_if_stage #(
     // Full I-Cache option
     ibex_icache #(
       .BranchPredictor (BranchPredictor),
-      .ICacheECC       (ICacheECC)
+      .ICacheECC       (ICacheECC),
+      .BusSizeECC      (BusSizeECC),
+      .TagSizeECC      (TagSizeECC),
+      .LineSizeECC     (LineSizeECC)
     ) icache_i (
         .clk_i               ( clk_i                      ),
         .rst_ni              ( rst_ni                     ),
@@ -214,7 +229,17 @@ module ibex_if_stage #(
         .instr_err_i         ( instr_err_i                ),
         .instr_pmp_err_i     ( instr_pmp_err_i            ),
 
-        .ram_cfg_i           ( ram_cfg_i                  ),
+        .ic_tag_req_o        ( ic_tag_req_o               ),
+        .ic_tag_write_o      ( ic_tag_write_o             ),
+        .ic_tag_addr_o       ( ic_tag_addr_o              ),
+        .ic_tag_wdata_o      ( ic_tag_wdata_o             ),
+        .ic_tag_rdata_i      ( ic_tag_rdata_i             ),
+        .ic_data_req_o       ( ic_data_req_o              ),
+        .ic_data_write_o     ( ic_data_write_o            ),
+        .ic_data_addr_o      ( ic_data_addr_o             ),
+        .ic_data_wdata_o     ( ic_data_wdata_o            ),
+        .ic_data_rdata_i     ( ic_data_rdata_i            ),
+
         .icache_enable_i     ( icache_enable_i            ),
         .icache_inval_i      ( icache_inval_i             ),
         .busy_o              ( prefetch_busy              )
@@ -253,11 +278,21 @@ module ibex_if_stage #(
         .busy_o              ( prefetch_busy              )
     );
     // ICache tieoffs
-    logic unused_icen, unused_icinv;
-    prim_ram_1p_pkg::ram_1p_cfg_t unused_ram_cfg;
-    assign unused_icen    = icache_enable_i;
-    assign unused_icinv   = icache_inval_i;
-    assign unused_ram_cfg = ram_cfg_i;
+    logic                   unused_icen, unused_icinv;
+    logic [TagSizeECC-1:0]  unused_tag_ram_input [IC_NUM_WAYS];
+    logic [LineSizeECC-1:0] unused_data_ram_input [IC_NUM_WAYS];
+    assign unused_icen           = icache_enable_i;
+    assign unused_icinv          = icache_inval_i;
+    assign unused_tag_ram_input  = ic_tag_rdata_i;
+    assign unused_data_ram_input = ic_data_rdata_i;
+    assign ic_tag_req_o          = 'b0;
+    assign ic_tag_write_o        = 'b0;
+    assign ic_tag_addr_o         = 'b0;
+    assign ic_tag_wdata_o        = 'b0;
+    assign ic_data_req_o         = 'b0;
+    assign ic_data_write_o       = 'b0;
+    assign ic_data_addr_o        = 'b0;
+    assign ic_data_wdata_o       = 'b0;
   end
 
   assign unused_fetch_addr_n0 = fetch_addr_n[0];

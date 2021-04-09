@@ -204,7 +204,7 @@ This isn't an attempt to describe the cache's performance characteristics.
 The I$ has a single clock (``clk_i``) and asynchronous reset (``rst_ni``).
 
 Data is requested from the instruction memory with the ports prefixed by ``instr_``. These work as described in :ref:`instruction-fetch`.
-Note that there's one extra port on the I$, which doesn't appear at the ``ibex_core`` top-level.
+Note that there's one extra port on the I$, which doesn't appear at the ``ibex_top`` top-level.
 This is ``instr_pmp_err_i``.
 If the PMP block disallows a fetch for a certain address, it will squash the outgoing memory request entirely and set ``instr_pmp_err_i``.
 If that happens, the cache drops ``instr_req_o`` and stops making any further requests for that cache line.

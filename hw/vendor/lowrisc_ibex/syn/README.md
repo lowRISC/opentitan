@@ -72,10 +72,10 @@ flow. All outputs are placed under the `syn/syn_out` directory with the prefix
       - sta.log - Log of the OpenSTA run
     - `generated`
       - *.v - Ibex RTL after sv2v processing
-      - ibex_core.pre_map.v - Pre-mapping synthesis netlists
-      - ibex_core_netlist.v - Post-synthesis netlist
-      - ibex_core_netlist.sta.v - Post-synthesis netlist usable by OpenSTA
-      - ibex_core.[library-name].out.sdc - Generated .sdc timing constraints
+      - ibex_top.pre_map.v - Pre-mapping synthesis netlists
+      - ibex_top_netlist.v - Post-synthesis netlist
+      - ibex_top_netlist.sta.v - Post-synthesis netlist usable by OpenSTA
+      - ibex_top.[library-name].out.sdc - Generated .sdc timing constraints
         file
 
 If you wish to change the results directory naming or location edit
@@ -86,7 +86,7 @@ If you wish to change the results directory naming or location edit
 Two files specify the timing constraints and timing related settings for the
 flow. These are used to generate a single .sdc file
 
-* `ibex_core_lr_synth_core.tcl` - This specifies the constraints on all inputs
+* `ibex_top_lr_synth_core.tcl` - This specifies the constraints on all inputs
   and outputs as a fraction of a clock cycle, the names of the clock and reset
   inputs and the desired clock period in ps
 * `ibex.[library-name].sdc` - Header to include in generated .sdc file. Settings

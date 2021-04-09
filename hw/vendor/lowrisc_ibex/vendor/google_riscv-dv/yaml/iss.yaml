@@ -20,7 +20,7 @@
 - iss: ovpsim
   path_var: OVPSIM_PATH
   cmd: >
-    <path_var>/riscvOVPsim.exe
+    <path_var>/riscvOVPsimPlus.exe
     --controlfile <cfg_path>/riscvOVPsim.ic
     --objfilenoentry <elf>
     --override riscvOVPsim/cpu/simulateexceptions=T

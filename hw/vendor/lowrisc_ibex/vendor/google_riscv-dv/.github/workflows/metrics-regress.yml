@@ -7,8 +7,8 @@ name: metrics-regress
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
+#  pull_request_target:
+#    branches: [ master ]
 
 # If you fork this repository, you must create a new Metrics project for your fork
 # and set the environment variable $METRICS_PROJECT_ID accordingly
@@ -22,5 +22,6 @@ jobs:
           METRICS_CI_TOKEN: ${{ secrets.METRICS_CI_TOKEN }}
           METRICS_REGRESSION_NAME: riscv-dv_regression
           METRICS_PROJECT_ID: ${{ secrets.METRICS_PROJECT_ID }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         shell: bash
 

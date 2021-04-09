@@ -173,7 +173,7 @@ module rv_core_ibex #(
     .lc_en_o(lc_cpu_en)
   );
 
-  ibex_core #(
+  ibex_top #(
     .PMPEnable                ( PMPEnable                ),
     .PMPGranularity           ( PMPGranularity           ),
     .PMPNumRegions            ( PMPNumRegions            ),

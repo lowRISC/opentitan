@@ -4,7 +4,7 @@ Tracer
 ======
 
 The module ``ibex_tracer`` can be used to create a log of the executed instructions.
-It is used by ``ibex_core_tracing`` which forwards the `RVFI signals <https://github.com/SymbioticEDA/riscv-formal/blob/master/docs/rvfi.md>`_ to the tracer (see also :ref:`rvfi`).
+It is used by ``ibex_top_tracing`` which forwards the `RVFI signals <https://github.com/SymbioticEDA/riscv-formal/blob/master/docs/rvfi.md>`_ to the tracer (see also :ref:`rvfi`).
 
 Output file
 -----------

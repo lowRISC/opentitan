@@ -96,6 +96,10 @@ class riscv_illegal_instr extends uvm_object;
       kHintInstr               := 3,
       kIllegalSystemInstr      := 3
     };
+    if (!(RV32C inside {supported_isa})) {
+      exception != kHintInstr;
+      compressed == 1'b0;
+    }
   }
 
   constraint instr_bit_assignment_c {

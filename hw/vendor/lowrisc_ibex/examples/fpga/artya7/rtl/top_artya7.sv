@@ -42,11 +42,11 @@ module top_artya7 (
   logic [31:0] mem_rdata;
 
 
-  ibex_core #(
+  ibex_top #(
      .RegFile(ibex_pkg::RegFileFPGA),
      .DmHaltAddr(32'h00000000),
      .DmExceptionAddr(32'h00000000)
-  ) u_core (
+  ) u_top (
      .clk_i                 (clk_sys),
      .rst_ni                (rst_sys_n),
 

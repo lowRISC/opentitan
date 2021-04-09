@@ -30,55 +30,55 @@ class riscv_compressed_instr(riscv_instr):
 
     @vsc.constraint
     def rvc_csr_c(self):
-        # Registers specified by the three-bit rs1’, rs2’, and rd’
-        with vsc.implies(self.format.inside(vsc.rangelist(riscv_instr_format_t.CIW_FORMAT,
+        # Registers specified by the three-bit rs1, rs2, and rd
+        with vsc.if_then(self.format.inside(vsc.rangelist(riscv_instr_format_t.CIW_FORMAT,
                                                           riscv_instr_format_t.CL_FORMAT,
                                                           riscv_instr_format_t.CS_FORMAT,
                                                           riscv_instr_format_t.CB_FORMAT,
                                                           riscv_instr_format_t.CA_FORMAT))):
-            with vsc.implies(self.has_rs1 == 1):
+            with vsc.if_then(self.has_rs1 == 1):
                 self.rs1.inside(vsc.rangelist(riscv_reg_t.S0, riscv_reg_t.S1, riscv_reg_t.A0,
                                               riscv_reg_t.A1, riscv_reg_t.A2, riscv_reg_t.A3,
                                               riscv_reg_t.A4, riscv_reg_t.A5))
-            with vsc.implies(self.has_rs2 == 1):
+            with vsc.if_then(self.has_rs2 == 1):
                 self.rs2.inside(vsc.rangelist(riscv_reg_t.S0, riscv_reg_t.S1, riscv_reg_t.A0,
                                               riscv_reg_t.A1, riscv_reg_t.A2, riscv_reg_t.A3,
                                               riscv_reg_t.A4, riscv_reg_t.A5))
-            with vsc.implies(self.has_rd == 1):
+            with vsc.if_then(self.has_rd == 1):
                 self.rd.inside(vsc.rangelist(riscv_reg_t.S0, riscv_reg_t.S1, riscv_reg_t.A0,
                                              riscv_reg_t.A1, riscv_reg_t.A2, riscv_reg_t.A3,
                                              riscv_reg_t.A4, riscv_reg_t.A5))
         # _ADDI16SP is only valid when rd == SP
-        with vsc.implies(self.instr_name == riscv_instr_name_t.C_ADDI16SP):
+        with vsc.if_then(self.instr_name == riscv_instr_name_t.C_ADDI16SP):
             self.rd == riscv_reg_t.SP
-        with vsc.implies(self.instr_name.inside(vsc.rangelist(riscv_instr_name_t.C_JR,
+        with vsc.if_then(self.instr_name.inside(vsc.rangelist(riscv_instr_name_t.C_JR,
                                                               riscv_instr_name_t.C_JALR))):
             self.rs1 != riscv_reg_t.ZERO
             self.rs2 == riscv_reg_t.ZERO
 
     @vsc.constraint
     def imm_val_c(self):
-        with vsc.implies(self.imm_type.inside(vsc.rangelist(imm_t.NZIMM, imm_t.NZUIMM))):
+        with vsc.if_then(self.imm_type.inside(vsc.rangelist(imm_t.NZIMM, imm_t.NZUIMM))):
             self.imm[5:0] != 0
-            with vsc.implies(self.instr_name == riscv_instr_name_t.C_LUI):
+            with vsc.if_then(self.instr_name == riscv_instr_name_t.C_LUI):
                 self.imm[31:5] == 0
-            with vsc.implies(self.instr_name.inside(vsc.rangelist(riscv_instr_name_t.C_SRAI,
+            with vsc.if_then(self.instr_name.inside(vsc.rangelist(riscv_instr_name_t.C_SRAI,
                                                                   riscv_instr_name_t.C_SRLI,
                                                                   riscv_instr_name_t.C_SLLI))):
                 self.imm[31:5] == 0
-            with vsc.implies(self.instr_name == riscv_instr_name_t.C_ADDI4SPN):
+            with vsc.if_then(self.instr_name == riscv_instr_name_t.C_ADDI4SPN):
                 self.imm[1:0] == 0
 
     # C_JAL is RV32C only instruction
     @vsc.constraint
     def jal_c(self):
-        with vsc.implies(self.XLEN != 32):
+        with vsc.if_then(self.XLEN != 32):
             self.instr_name != riscv_instr_name_t.C_JAL
 
     # Avoid generating HINT or illegal instruction by default as it's not supported by the compiler
     @vsc.constraint
     def no_hint_illegal_instr_c(self):
-        with vsc.implies(self.instr_name.inside(vsc.rangelist(riscv_instr_name_t.C_ADDI,
+        with vsc.if_then(self.instr_name.inside(vsc.rangelist(riscv_instr_name_t.C_ADDI,
                                                               riscv_instr_name_t.C_ADDIW,
                                                               riscv_instr_name_t.C_LI,
                                                               riscv_instr_name_t.C_LUI,
@@ -90,12 +90,12 @@ class riscv_compressed_instr(riscv_instr):
                                                               riscv_instr_name_t.C_ADD,
                                                               riscv_instr_name_t.C_LWSP))):
             self.rd != riscv_reg_t.ZERO
-        with vsc.implies(self.instr_name == riscv_instr_name_t.C_JR):
+        with vsc.if_then(self.instr_name == riscv_instr_name_t.C_JR):
             self.rs1 != riscv_reg_t.ZERO
-        with vsc.implies(self.instr_name.inside(vsc.rangelist(riscv_instr_name_t.C_ADD,
+        with vsc.if_then(self.instr_name.inside(vsc.rangelist(riscv_instr_name_t.C_ADD,
                                                               riscv_instr_name_t.C_MV))):
             self.rs2 != riscv_reg_t.ZERO
-        with vsc.implies(self.instr_name == riscv_instr_name_t.C_LUI):
+        with vsc.if_then(self.instr_name == riscv_instr_name_t.C_LUI):
             self.rd != riscv_reg_t.SP
 
     def set_imm_len(self):

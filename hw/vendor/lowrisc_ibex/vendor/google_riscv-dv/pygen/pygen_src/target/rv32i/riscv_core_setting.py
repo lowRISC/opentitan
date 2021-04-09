@@ -32,6 +32,8 @@ NUM_HARTS = 1
 
 support_pmp = 0
 
+support_debug_mode = 0
+
 unsupported_instr = []
 
 support_umode_trap = 0
@@ -40,3 +42,5 @@ support_umode_trap = 0
 NUM_FLOAT_GPR = 32
 NUM_GPR = 32
 NUM_VEC_GPR = 32
+
+max_interrupt_vector_num = 16

@@ -186,7 +186,9 @@ class riscv_rand_instr_stream(riscv_instr_stream):
         self.setup_instruction_dist(no_branch, no_load_store)
 
     def randomize_avail_regs(self):
-        if self.avail_regs.size > 0:
+        pass
+        # TODO
+        '''if self.avail_regs.size > 0:
             try:
                 with vsc.randomize_with(self.avail_regs):
                     vsc.unique(self.avail_regs)
@@ -197,7 +199,7 @@ class riscv_rand_instr_stream(riscv_instr_stream):
                                                       self.reserved_rd))
             except Exception:
                 logging.critical("Cannot randomize avail_regs")
-                sys.exit(1)
+                sys.exit(1)'''
 
     def setup_instruction_dist(self, no_branch = 0, no_load_store = 1):
         if cfg.dist_control_mode:

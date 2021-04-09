@@ -20,7 +20,7 @@
 
 import json
 
-runCmdBase = "cd /mux-flow/results; python3 <rootDir>/run.py --test TESTNAME --simulator dsim --iss ovpsim --seed <seed> --so --out <rootDir>/out --verbose; <rootDir>/scripts/check-status $?; rm -fr <rootDir>/out/dsim"
+runCmdBase = "cd /mux-flow/results; python3 <rootDir>/run.py --test TESTNAME --simulator dsim --iss spike --seed <seed> --so --out <rootDir>/out --verbose; <rootDir>/scripts/check-status $?; rm -fr <rootDir>/out/dsim"
 
 ## Based on testlist located in <rootDir>/yaml/base_testlist.yaml
 base_testList = ["riscv_arithmetic_basic_test",

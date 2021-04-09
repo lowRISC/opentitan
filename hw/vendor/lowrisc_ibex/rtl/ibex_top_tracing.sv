@@ -6,7 +6,7 @@
  * Top level module of the ibex RISC-V core with tracing enabled
  */
 
-module ibex_core_tracing #(
+module ibex_top_tracing #(
     parameter bit                 PMPEnable        = 1'b0,
     parameter int unsigned        PMPGranularity   = 0,
     parameter int unsigned        PMPNumRegions    = 4,
@@ -107,7 +107,7 @@ module ibex_core_tracing #(
   logic [31:0] rvfi_mem_rdata;
   logic [31:0] rvfi_mem_wdata;
 
-  ibex_core #(
+  ibex_top #(
     .PMPEnable        ( PMPEnable        ),
     .PMPGranularity   ( PMPGranularity   ),
     .PMPNumRegions    ( PMPNumRegions    ),
@@ -127,7 +127,7 @@ module ibex_core_tracing #(
     .SecureIbex       ( SecureIbex       ),
     .DmHaltAddr       ( DmHaltAddr       ),
     .DmExceptionAddr  ( DmExceptionAddr  )
-  ) u_ibex_core (
+  ) u_ibex_top (
     .clk_i,
     .rst_ni,
 

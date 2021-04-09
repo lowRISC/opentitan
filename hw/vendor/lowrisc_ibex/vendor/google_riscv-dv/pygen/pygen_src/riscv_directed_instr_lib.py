@@ -21,7 +21,9 @@ from pygen_src.riscv_instr_stream import riscv_rand_instr_stream
 from pygen_src.isa.riscv_instr import riscv_instr
 from pygen_src.riscv_instr_gen_config import cfg
 from pygen_src.riscv_instr_pkg import (riscv_reg_t,
-                                       riscv_pseudo_instr_name_t, riscv_instr_name_t, pkg_ins)
+                                       riscv_pseudo_instr_name_t,
+                                       riscv_instr_name_t, pkg_ins,
+                                       mem_region_t)
 from pygen_src.riscv_pseudo_instr import riscv_pseudo_instr
 rcs = import_module("pygen_src.target." + cfg.argv.target + ".riscv_core_setting")
 
@@ -51,15 +53,16 @@ class riscv_mem_access_stream(riscv_directed_instr_stream):
         super().__init__()
         self.max_data_page_id = vsc.int32_t()
         self.load_store_shared_memory = 0
-        self.data_page = {}
+        self.data_page = vsc.list_t(mem_region_t())
 
     def pre_randomize(self):
+        self.data_page.clear()
         if self.load_store_shared_memory:
-            self.data_page = cfg.amo_region
+            self.data_page.extend(cfg.amo_region)
         elif self.kernel_mode:
-            self.data_page = cfg.s_mem_region
+            self.data_page.extend(cfg.s_mem_region)
         else:
-            self.data_page = cfg.mem_region
+            self.data_page.extend(cfg.mem_region)
         self.max_data_page_id = len(self.data_page)
 
     def add_rs1_init_la_instr(self, gpr, idx, base = 0):
@@ -67,13 +70,13 @@ class riscv_mem_access_stream(riscv_directed_instr_stream):
         la_instr.pseudo_instr_name = riscv_pseudo_instr_name_t.LA
         la_instr.rd = gpr
         if self.load_store_shared_memory:
-            la_instr.imm_str = "{}+{}".format(cfg.amo_region[idx]['name'], base)
+            la_instr.imm_str = "{}+{}".format(cfg.amo_region[idx].name, base)
         elif self.kernel_mode:
             la_instr.imm_str = "{}{}+{}".format(pkg_ins.hart_prefix(self.hart),
-                                                cfg.s_mem_region[idx]['name'], base)
+                                                cfg.s_mem_region[idx].name, base)
         else:
             la_instr.imm_str = "{}{}+{}".format(pkg_ins.hart_prefix(self.hart),
-                                                cfg.mem_region[idx]['name'], base)
+                                                cfg.mem_region[idx].name, base)
         self.instr_list.insert(0, la_instr)
 
     def add_mixed_instr(self, instr_cnt):
