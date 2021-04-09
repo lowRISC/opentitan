@@ -47,8 +47,9 @@ for file in ../rtl/*.sv; do
   sv2v \
     --define=SYNTHESIS \
     ../rtl/*_pkg.sv \
+    ../vendor/lowrisc_ip/ip/prim/rtl/prim_ram_1p_pkg.sv \
     -I../vendor/lowrisc_ip/ip/prim/rtl \
-    -I../dv/fcov \
+    -I../vendor/lowrisc_ip/dv/sv/dv_utils \
     $file \
     > $LR_SYNTH_OUT_DIR/generated/${module}.v
 done

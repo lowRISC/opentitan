@@ -5,7 +5,7 @@
 puts "=================== Flow Vars ==================="
 
 set_flow_var cell_library_path "cmos_cells.lib" "Path to cell library"
-set_flow_var top_module "ibex_core" "top module"
+set_flow_var top_module "ibex_top" "top module"
 set_flow_var out_dir "syn_out" "Output directory for synthesis"
 set_flow_var pre_map_out "./${lr_synth_out_dir}/generated/${lr_synth_top_module}.pre_map.v" "Pre-mapping netlist out"
 set_flow_var netlist_out "./${lr_synth_out_dir}/generated/${lr_synth_top_module}_netlist.v" "netlist out"

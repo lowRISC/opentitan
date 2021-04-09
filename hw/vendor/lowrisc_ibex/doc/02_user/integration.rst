@@ -3,7 +3,10 @@
 Core Integration
 ================
 
-The main module is named ``ibex_core`` and can be found in ``ibex_core.sv``.
+The main module is named ``ibex_top`` and can be found in ``ibex_top.sv``.
+Note that the core logic is split-out from the register file and RAMs under ``ibex_top``.
+This is to facilitate a dual-core lockstep implementation (see :ref:`security`).
+
 Below, the instantiation template is given and the parameters and interfaces are described.
 
 Instantiation Template
@@ -11,7 +14,7 @@ Instantiation Template
 
 .. code-block:: verilog
 
-  ibex_core #(
+  ibex_top #(
       .PMPEnable        ( 0                   ),
       .PMPGranularity   ( 0                   ),
       .PMPNumRegions    ( 4                   ),
@@ -28,7 +31,7 @@ Instantiation Template
       .DbgTriggerEn     ( 0                   ),
       .DmHaltAddr       ( 32'h1A110800        ),
       .DmExceptionAddr  ( 32'h1A110808        )
-  ) u_core (
+  ) u_top (
       // Clock and reset
       .clk_i          (),
       .rst_ni         (),

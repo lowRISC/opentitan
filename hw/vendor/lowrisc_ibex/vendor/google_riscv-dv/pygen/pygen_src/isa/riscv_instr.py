@@ -98,16 +98,16 @@ class riscv_instr:
 
     @vsc.constraint
     def imm_c(self):
-        with vsc.implies(self.instr_name.inside(vsc.rangelist(riscv_instr_name_t.SLLIW,
+        with vsc.if_then(self.instr_name.inside(vsc.rangelist(riscv_instr_name_t.SLLIW,
                                                               riscv_instr_name_t.SRLIW,
                                                               riscv_instr_name_t.SRAIW))):
             self.imm[11:5] == 0
-        with vsc.implies(self.instr_name.inside(vsc.rangelist(riscv_instr_name_t.SLLI,
+        with vsc.if_then(self.instr_name.inside(vsc.rangelist(riscv_instr_name_t.SLLI,
                                                               riscv_instr_name_t.SRLI,
                                                               riscv_instr_name_t.SRAI))):
-            with vsc.implies(self.XLEN == 32):
+            with vsc.if_then(self.XLEN == 32):
                 self.imm[11:5] == 0
-            with vsc.implies(self.XLEN != 32):
+            with vsc.if_then(self.XLEN != 32):
                 self.imm[11:6] == 0
 
     @classmethod

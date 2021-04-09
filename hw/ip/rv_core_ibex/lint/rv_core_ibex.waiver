@@ -4,7 +4,7 @@
 #
 # waiver file for Ibex core
 
-waive -rules EXPLICIT_BITLEN      -location {ibex_core.sv} -regexp {Bit length not specified for constant .*h2} \
+waive -rules EXPLICIT_BITLEN      -location {ibex_top.sv} -regexp {Bit length not specified for constant .*h2} \
       -comment "better way to write it?"
 waive -rules HIER_BRANCH_NOT_READ -location {ibex_decoder.sv} -regexp {Net 'instr_rdata_i.*is not read from in module} \
       -comment "not all bits are used"
@@ -16,7 +16,7 @@ waive -rules INPUT_NOT_READ       -location {ibex_register_file_ff.sv} -regexp {
       -comment "testability signal used in some versions of register file"
 waive -rules INPUT_NOT_READ       -location {ibex_register_file_fpga.sv} -regexp {Input port 'test_en_i' is not read from} \
       -comment "testability signal used in some versions of register file"
-waive -rules INPUT_NOT_READ       -location {ibex_core.sv} -regexp {Input port 'clock_en_i' is not read from} \
+waive -rules INPUT_NOT_READ       -location {ibex_top.sv} -regexp {Input port 'clock_en_i' is not read from} \
       -comment "clock enable signal used in behavioral code"
 waive -rules HIER_NET_NOT_READ    -location {rv_core_ibex.sv} -regexp {Net 'instr_addr_o.1.0.' is not read from} \
       -comment "Bottom bits not needed, cleaner to keep them as inputs"
@@ -30,7 +30,7 @@ waive -rules HIER_NET_NOT_READ    -location {ibex_ex_block.sv} -regexp {Net 'alu
       -comment "Bottom bit is round, not needed"
 waive -rules HIER_NET_NOT_READ    -location {ibex_ex_block.sv} -regexp {Connected net 'alu_adder_ext_i.0.' .* is not read from} \
       -comment "Bottom bit is round, not needed"
-waive -rules HIER_NET_NOT_READ    -location {ibex_core.sv} -regexp {[nN]et 'boot_addr_i.7:0.' .* is not read from} \
+waive -rules HIER_NET_NOT_READ    -location {ibex_top.sv} -regexp {[nN]et 'boot_addr_i.7:0.' .* is not read from} \
       -comment "Boot address is 256B aligned, cleaner to pass all bits in"
 waive -rules {INPUT_NOT_READ HIER_BRANCH_NOT_READ} -location {ibex_if_stage.sv} -regexp {'boot_addr_i.7:0.' is not read from} \
       -comment "Boot address is 256B aligned, cleaner to pass all bits in"
@@ -77,20 +77,20 @@ waive -rules NOT_USED             -location {ibex_cs_registers.sv} -regexp {Sign
 waive -rules NOT_READ             -location {ibex_alu.sv} -regexp {Signal 'shift_right_result_ext.32.' is not read from} \
       -comment "As mentioned in the RTL, MSB of shift_right_result_ext can be safely ignored"
 waive -rules NOT_READ             -location {ibex_id_stage.sv} -regexp {Signal 'operand_b_fw_id' is not read from in module 'ibex_id_stage'} \
-      -comment "This signal is actually used (not via a port but through hierarchical path) in ibex_core.sv"
+      -comment "This signal is actually used (not via a port but through hierarchical path) in ibex_top.sv"
 waive -rules INTEGER              -location {ibex_register_file_ff.sv rv_core_ibex.sv} -msg {'i' of type int used as a non-constant value} \
       -comment "This assigns int i (signed) to a multibit logic variable (unsigned), which is fine"
-waive -rules ONE_BIT_MEM_WIDTH             -location {ibex_core.sv} -regexp {Memory 'pmp_req_err' has word width which is single bit wide} \
+waive -rules ONE_BIT_MEM_WIDTH             -location {ibex_top.sv} -regexp {Memory 'pmp_req_err' has word width which is single bit wide} \
       -comment "For consistency with related signals, we use an unpacked array for this signal."
 waive -rules HIER_BRANCH_NOT_READ -location {ibex_decoder.sv ibex_compressed_decoder.sv} -regexp {Net '(clk_i|rst_ni)' is not read from in module '(ibex_decoder|ibex_compressed_decoder)'.*} \
       -comment "These signals are only used for assertions inside these two modules"
 waive -rules INPUT_NOT_READ -location {ibex_decoder.sv ibex_compressed_decoder.sv} -regexp {Input port '(clk_i|rst_ni)' is not read from in module '(ibex_decoder|ibex_compressed_decoder)'.*} \
       -comment "These signals are only used for assertions inside these two modules"
-waive -rules IFDEF_CODE -location {ibex_core.sv} -regexp {Assignment to 'unused_instr_new_id' contained within `else block} \
+waive -rules IFDEF_CODE -location {ibex_top.sv} -regexp {Assignment to 'unused_instr_new_id' contained within `else block} \
       -comment "Declaration of signal and assignment to it are in same `else block"
-waive -rules IFDEF_CODE -location {ibex_core.sv} -regexp {Assignment to 'unused_instr_id_done' contained within `else block} \
+waive -rules IFDEF_CODE -location {ibex_top.sv} -regexp {Assignment to 'unused_instr_id_done' contained within `else block} \
       -comment "Declaration of signal and assignment to it are in same `else block"
-waive -rules IFDEF_CODE -location {ibex_core.sv} -regexp {Assignment to 'unused_instr_done_wb' contained within `else block} \
+waive -rules IFDEF_CODE -location {ibex_top.sv} -regexp {Assignment to 'unused_instr_done_wb' contained within `else block} \
       -comment "Declaration of signal and assignment to it are in same `else block"
 waive -rules IFDEF_CODE -location {rv_core_ibex.sv} -regexp {Assignment to 'tl_d_o' contained within `else block} \
       -comment "DV environment will drive things when `else block isn't used so assignment only occurs in `else block"

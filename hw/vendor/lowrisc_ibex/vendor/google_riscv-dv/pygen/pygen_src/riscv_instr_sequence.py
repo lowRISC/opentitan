@@ -19,6 +19,7 @@ import vsc
 from importlib import import_module
 from collections import defaultdict
 from pygen_src.riscv_instr_stream import riscv_rand_instr_stream
+from pygen_src.riscv_illegal_instr import riscv_illegal_instr, illegal_instr_type_e
 from pygen_src.riscv_instr_gen_config import cfg
 from pygen_src.riscv_instr_pkg import (pkg_ins, riscv_instr_name_t, riscv_reg_t,
                                        riscv_instr_category_t)
@@ -42,6 +43,7 @@ class riscv_instr_sequence:
         self.branch_idx = [None] * 30
         self.instr_stack_enter = riscv_push_stack_instr()
         self.instr_stack_exit = riscv_pop_stack_instr()
+        self.illegal_instr = riscv_illegal_instr()
 
     def gen_instr(self, is_main_program, no_branch = 1):
         self.is_main_program = is_main_program
@@ -151,7 +153,7 @@ class riscv_instr_sequence:
                 reserved loop registers
                 '''
                 branch_target_label = 0
-                branch_byte_offset = 0
+                # branch_byte_offset = 0
                 branch_target_label = self.instr_stream.instr_list[j].idx + \
                     self.branch_idx[branch_cnt]
                 if(branch_target_label >= label_idx):
@@ -204,7 +206,6 @@ class riscv_instr_sequence:
                 else:
                     prefix = pkg_ins.format_string(string = '{}:'.format(
                         self.label_name), length = pkg_ins.LABEL_STR_LEN)
-
                 self.instr_stream.instr_list[i].has_label = 1
             else:
                 if(self.instr_stream.instr_list[i].has_label):
@@ -214,15 +215,15 @@ class riscv_instr_sequence:
                     prefix = pkg_ins.format_string(string = " ", length = pkg_ins.LABEL_STR_LEN)
             string = prefix + self.instr_stream.instr_list[i].convert2asm()
             self.instr_string_list.append(string)
-            if(rcs.support_pmp and not re.search("main", self.label_name)):
-                self.instr_string_list.insert(0, ".align 2")
-            self.insert_illegal_hint_instr()
-            prefix = pkg_ins.format_string(str(i), pkg_ins.LABEL_STR_LEN)
-            if not self.is_main_program:
-                self.generate_return_routine(prefix)
+        if(rcs.support_pmp and not re.search("main", self.label_name)):
+            self.instr_string_list.insert(0, ".align 2")
+        self.insert_illegal_hint_instr()
+        prefix = pkg_ins.format_string(str(i), pkg_ins.LABEL_STR_LEN)
+        if not self.is_main_program:
+            self.generate_return_routine(prefix)
 
     def generate_return_routine(self, prefix):
-        string = ''
+        routine_str = ''
         jump_instr = [riscv_instr_name_t.JALR]
         rand_lsb = random.randrange(0, 1)
         ra = vsc.rand_enum_t(riscv_reg_t)
@@ -233,25 +234,49 @@ class riscv_instr_sequence:
         except Exception:
             logging.critical("Cannot randomize ra")
             sys.exit(1)
-        string = (prefix + pkg_ins.format_string("{}addi x{} x{} {}".format(ra.name,
-                                                                            cfg.ra.name, rand_lsb)))
-        self.instr_string_list.append(string)
-        if(not cfg.disable_compressed_instr):
+        routine_str = prefix + "addi x{} x{} {}".format(ra.name, cfg.ra.name, rand_lsb)
+        self.instr_string_list.append(routine_str)
+        if not cfg.disable_compressed_instr:
             jump_instr.append(riscv_instr_name_t.C_JR)
-            if(not (riscv_reg_t.RA in {cfg.reserved_regs})):
+            if not (riscv_reg_t.RA in cfg.reserved_regs):
                 jump_instr.append(riscv_instr_name_t.C_JALR)
         i = random.randrange(0, len(jump_instr) - 1)
-        if (jump_instr[i] == riscv_instr_name_t.C_JAL):
-            string = prefix + pkg_ins.format_string("{}c.jalr x{}".format(ra.name))
-        elif(jump_instr[i] == riscv_instr_name_t.C_JR):
-            string = prefix + pkg_ins.format_string("{}c.jr x{}".format(ra.name))
-        elif(jump_instr[i] == riscv_instr_name_t.JALR):
-            string = prefix + pkg_ins.format_string("{}c.jalr x{} x{} 0".format(ra.name, ra.name))
+        if jump_instr[i] == riscv_instr_name_t.C_JAL:
+            routine_str = prefix + "c.jalr x{}".format(ra.name)
+        elif jump_instr[i] == riscv_instr_name_t.C_JR:
+            routine_str = prefix + "c.jr x{}".format(ra.name)
+        elif jump_instr[i] == riscv_instr_name_t.JALR:
+            routine_str = prefix + "jalr x{} x{} 0".format(ra.name, ra.name)
         else:
-            logging.critical("Unsupported jump_instr: %0s" % (jump_instr[i]))
+            logging.critical("Unsupported jump_instr: {}".format(jump_instr[i]))
             sys.exit(1)
-            self.instr_string_list.append(string)
+        self.instr_string_list.append(routine_str)
 
-    # TODO
     def insert_illegal_hint_instr(self):
-        pass
+        idx = 0
+        insert_str = ""
+        self.illegal_instr.initialize()
+        bin_instr_cnt = int(self.instr_cnt * cfg.illegal_instr_ratio / 1000)
+        if bin_instr_cnt >= 0:
+            logging.info("Injecting {} illegal instructions, ratio {}/100".
+                         format(bin_instr_cnt, cfg.illegal_instr_ratio))
+            for _ in range(bin_instr_cnt):
+                with vsc.randomize_with(self.illegal_instr):
+                    self.illegal_instr.exception != illegal_instr_type_e.kHintInstr
+                insert_str = "{}.4byte {} # {}".format(pkg_ins.indent,
+                                                       self.illegal_instr.get_bin_str(),
+                                                       self.illegal_instr.comment)
+                idx = random.randrange(0, len(self.instr_string_list))
+                self.instr_string_list.insert(idx, insert_str)
+        bin_instr_cnt = int(self.instr_cnt * cfg.hint_instr_ratio / 1000)
+        if bin_instr_cnt >= 0:
+            logging.info("Injecting {} HINT instructions, ratio {}/100".format(
+                bin_instr_cnt, cfg.hint_instr_ratio))
+            for _ in range(int(bin_instr_cnt)):
+                with vsc.randomize_with(self.illegal_instr):
+                    self.illegal_instr.exception == illegal_instr_type_e.kHintInstr
+                insert_str = "{}.2byte {} # {}".format(pkg_ins.indent,
+                                                       self.illegal_instr.get_bin_str(),
+                                                       self.illegal_instr.comment)
+                idx = random.randrange(0, len(self.instr_string_list))
+                self.instr_string_list.insert(idx, insert_str)

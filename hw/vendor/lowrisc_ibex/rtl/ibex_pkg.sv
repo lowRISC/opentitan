@@ -19,6 +19,14 @@ typedef struct packed {
   logic [31:0] exception_addr;
 } crash_dump_t;
 
+typedef struct packed {
+  logic        dummy_instr_id;
+  logic [4:0]  raddr_a;
+  logic [4:0]  waddr_a;
+  logic        we_a;
+  logic [4:0]  raddr_b;
+} core2rf_t;
+
 /////////////////////
 // Parameter Enums //
 /////////////////////
@@ -310,6 +318,24 @@ typedef enum logic [2:0] {
   DBG_CAUSE_HALTREQ = 3'h3,
   DBG_CAUSE_STEP    = 3'h4
 } dbg_cause_e;
+
+// ICache constants
+parameter int unsigned ADDR_W          = 32;
+parameter int unsigned BUS_SIZE        = 32;
+parameter int unsigned BUS_BYTES       = BUS_SIZE/8;
+parameter int unsigned BUS_W           = $clog2(BUS_BYTES);
+parameter int unsigned IC_SIZE_BYTES   = 4096;
+parameter int unsigned IC_NUM_WAYS     = 2;
+parameter int unsigned IC_LINE_SIZE    = 64;
+parameter int unsigned IC_LINE_BYTES   = IC_LINE_SIZE/8;
+parameter int unsigned IC_LINE_W       = $clog2(IC_LINE_BYTES);
+parameter int unsigned IC_NUM_LINES    = IC_SIZE_BYTES / IC_NUM_WAYS / IC_LINE_BYTES;
+parameter int unsigned IC_LINE_BEATS   = IC_LINE_BYTES / BUS_BYTES;
+parameter int unsigned IC_LINE_BEATS_W = $clog2(IC_LINE_BEATS);
+parameter int unsigned IC_INDEX_W      = $clog2(IC_NUM_LINES);
+parameter int unsigned IC_INDEX_HI     = IC_INDEX_W + IC_LINE_W - 1;
+parameter int unsigned IC_TAG_SIZE     = ADDR_W - IC_INDEX_W - IC_LINE_W + 1; // 1 valid bit
+parameter int unsigned IC_OUTPUT_BEATS = (BUS_BYTES / 2); // number of halfwords
 
 // PMP constants
 parameter int unsigned PMP_MAX_REGIONS      = 16;

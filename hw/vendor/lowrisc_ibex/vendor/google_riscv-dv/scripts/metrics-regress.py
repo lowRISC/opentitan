@@ -39,15 +39,21 @@ getRegressionRunInfo = '/api/v1/projects/'+args.projectId+'/regressionRuns/'
 ## Start regression
 reqParams = {}
 reqParams['regressionName'] = args.regressionName
-reqParams['branch'] = str(os.environ['GITHUB_REF'])
+
+# Determine the git reference to pass to Metrics. For PRs, the reference
+# is of the format refs/pull/<PR-number>/merge
+if str(os.environ['GITHUB_EVENT_NAME']) == 'pull_request_target':
+    reqParams['branch'] = 'refs/pull/' + str(os.environ['PR_NUMBER']) + '/merge'
+else:
+    reqParams['branch'] = str(os.environ['GITHUB_REF'])
 params = json.dumps(reqParams)
 
 response, regressionData = make_http_request('POST', postRegression, params) 
 
 ## Check response
-if response.status is not 201:
+if response.status != 201:
     print('Error, regression was not started. Response: ' + str(response.status) + ':' \
-          + str(response.reason))
+          + str(response.reason) + ' ' + str(regressionData))
     print('Exit with code 1')
     exit(1)
 else:
@@ -59,7 +65,7 @@ regressionRunId = regressionData['id']
 while True:
     time.sleep(10)
     response, regressionData = make_http_request('GET', getRegressionRunInfo+regressionRunId)
-    if response.status is 200:
+    if response.status == 200:
         if 'complete' in regressionData['status']:
             print('Regression complete')
             break

@@ -17,8 +17,10 @@ int main(int argc, char **argv) {
   simctrl.SetTop(&top, &top.IO_CLK, &top.IO_RST_N,
                  VerilatorSimCtrlFlags::ResetPolarityNegative);
 
-  memutil.RegisterMemoryArea(
-      "ram", "TOP.ibex_simple_system.u_ram.u_ram.gen_generic.u_impl_generic");
+  MemArea ram("TOP.ibex_simple_system.u_ram.u_ram.gen_generic.u_impl_generic",
+              1024 * 1024 / 4, 4);
+
+  memutil.RegisterMemoryArea("ram", 0x0, &ram);
   simctrl.RegisterExtension(&memutil);
 
   bool exit_app = false;

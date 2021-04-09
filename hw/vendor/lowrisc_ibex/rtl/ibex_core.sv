@@ -12,33 +12,35 @@
 /**
  * Top level module of the ibex RISC-V core
  */
-module ibex_core #(
-    parameter bit                 PMPEnable        = 1'b0,
-    parameter int unsigned        PMPGranularity   = 0,
-    parameter int unsigned        PMPNumRegions    = 4,
-    parameter int unsigned        MHPMCounterNum   = 0,
-    parameter int unsigned        MHPMCounterWidth = 40,
-    parameter bit                 RV32E            = 1'b0,
-    parameter ibex_pkg::rv32m_e   RV32M            = ibex_pkg::RV32MFast,
-    parameter ibex_pkg::rv32b_e   RV32B            = ibex_pkg::RV32BNone,
-    parameter ibex_pkg::regfile_e RegFile          = ibex_pkg::RegFileFF,
-    parameter bit                 BranchTargetALU  = 1'b0,
-    parameter bit                 WritebackStage   = 1'b0,
-    parameter bit                 ICache           = 1'b0,
-    parameter bit                 ICacheECC        = 1'b0,
-    parameter bit                 BranchPredictor  = 1'b0,
-    parameter bit                 DbgTriggerEn     = 1'b0,
-    parameter int unsigned        DbgHwBreakNum    = 1,
-    parameter bit                 SecureIbex       = 1'b0,
-    parameter int unsigned        DmHaltAddr       = 32'h1A110800,
-    parameter int unsigned        DmExceptionAddr  = 32'h1A110808
+module ibex_core import ibex_pkg::*; #(
+    parameter bit          PMPEnable         = 1'b0,
+    parameter int unsigned PMPGranularity    = 0,
+    parameter int unsigned PMPNumRegions     = 4,
+    parameter int unsigned MHPMCounterNum    = 0,
+    parameter int unsigned MHPMCounterWidth  = 40,
+    parameter bit          RV32E             = 1'b0,
+    parameter rv32m_e      RV32M             = RV32MFast,
+    parameter rv32b_e      RV32B             = RV32BNone,
+    parameter bit          BranchTargetALU   = 1'b0,
+    parameter bit          WritebackStage    = 1'b0,
+    parameter bit          ICache            = 1'b0,
+    parameter bit          ICacheECC         = 1'b0,
+    parameter int unsigned BusSizeECC        = BUS_SIZE,
+    parameter int unsigned TagSizeECC        = IC_TAG_SIZE,
+    parameter int unsigned LineSizeECC       = IC_LINE_SIZE,
+    parameter bit          BranchPredictor   = 1'b0,
+    parameter bit          DbgTriggerEn      = 1'b0,
+    parameter int unsigned DbgHwBreakNum     = 1,
+    parameter bit          SecureIbex        = 1'b0,
+    parameter bit          DummyInstructions = 1'b0,
+    parameter bit          RegFileECC        = 1'b0,
+    parameter int unsigned RegFileDataWidth  = 32,
+    parameter int unsigned DmHaltAddr        = 32'h1A110800,
+    parameter int unsigned DmExceptionAddr   = 32'h1A110808
 ) (
     // Clock and Reset
     input  logic                         clk_i,
     input  logic                         rst_ni,
-
-    input  logic                         test_en_i,     // enable all clock gates for testing
-    input  prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
 
     input  logic [31:0]                  hart_id_i,
     input  logic [31:0]                  boot_addr_i,
@@ -62,16 +64,39 @@ module ibex_core #(
     input  logic [31:0]                  data_rdata_i,
     input  logic                         data_err_i,
 
+    // Register file interface
+    output logic                         dummy_instr_id_o,
+    output logic [4:0]                   rf_raddr_a_o,
+    output logic [4:0]                   rf_raddr_b_o,
+    output logic [4:0]                   rf_waddr_wb_o,
+    output logic                         rf_we_wb_o,
+    output logic [RegFileDataWidth-1:0]  rf_wdata_wb_ecc_o,
+    input  logic [RegFileDataWidth-1:0]  rf_rdata_a_ecc_i,
+    input  logic [RegFileDataWidth-1:0]  rf_rdata_b_ecc_i,
+
+    // RAMs interface
+    output logic [IC_NUM_WAYS-1:0]       ic_tag_req_o,
+    output logic                         ic_tag_write_o,
+    output logic [IC_INDEX_W-1:0]        ic_tag_addr_o,
+    output logic [TagSizeECC-1:0]        ic_tag_wdata_o,
+    input  logic [TagSizeECC-1:0]        ic_tag_rdata_i [IC_NUM_WAYS],
+    output logic [IC_NUM_WAYS-1:0]       ic_data_req_o,
+    output logic                         ic_data_write_o,
+    output logic [IC_INDEX_W-1:0]        ic_data_addr_o,
+    output logic [LineSizeECC-1:0]       ic_data_wdata_o,
+    input  logic [LineSizeECC-1:0]       ic_data_rdata_i [IC_NUM_WAYS],
+
     // Interrupt inputs
     input  logic                         irq_software_i,
     input  logic                         irq_timer_i,
     input  logic                         irq_external_i,
     input  logic [14:0]                  irq_fast_i,
     input  logic                         irq_nm_i,       // non-maskeable interrupt
+    output logic                         irq_pending_o,
 
     // Debug Interface
     input  logic                         debug_req_i,
-    output ibex_pkg::crash_dump_t        crash_dump_o,
+    output crash_dump_t                  crash_dump_o,
 
     // RISC-V Formal Interface
     // Does not comply with the coding standards of _i/_o suffixes, but follows
@@ -103,26 +128,20 @@ module ibex_core #(
 `endif
 
     // CPU Control Signals
-    input  logic                         fetch_enable_i,
     output logic                         alert_minor_o,
     output logic                         alert_major_o,
-    output logic                         core_sleep_o
+    output logic                         core_busy_o
 );
-
-  import ibex_pkg::*;
 
   localparam int unsigned PMP_NUM_CHAN      = 2;
   localparam bit          DataIndTiming     = SecureIbex;
-  localparam bit          DummyInstructions = SecureIbex;
   localparam bit          PCIncrCheck       = SecureIbex;
-  localparam bit          ShadowCSR         = SecureIbex;
+  localparam bit          ShadowCSR         = 1'b0;
   // Speculative branch option, trades-off performance against timing.
   // Setting this to 1 eases branch target critical paths significantly but reduces performance
   // by ~3% (based on CoreMark/MHz score).
   // Set by default in the max PMP config which has the tightest budget for branch target timing.
   localparam bit          SpecBranch        = PMPEnable & (PMPNumRegions == 16);
-  localparam bit          RegFileECC        = SecureIbex;
-  localparam int unsigned RegFileDataWidth  = RegFileECC ? 32 + 7 : 32;
 
   // IF/ID signals
   logic        dummy_instr_id;
@@ -179,7 +198,6 @@ module ibex_core #(
   logic        ctrl_busy;
   logic        if_busy;
   logic        lsu_busy;
-  logic        core_busy_d, core_busy_q;
 
   // Register File
   logic [4:0]  rf_raddr_a;
@@ -196,6 +214,7 @@ module ibex_core #(
   logic [31:0] rf_wdata_lsu;
   logic        rf_we_wb;
   logic        rf_we_lsu;
+  logic        rf_ecc_err_comb;
 
   logic [4:0]  rf_waddr_id;
   logic [31:0] rf_wdata_id;
@@ -263,7 +282,6 @@ module ibex_core #(
   logic           outstanding_store_wb;
 
   // Interrupts
-  logic        irq_pending;
   logic        nmi_mode;
   irqs_t       irqs;
   logic        csr_mstatus_mie;
@@ -358,43 +376,9 @@ module ibex_core #(
   // Clock management //
   //////////////////////
 
-  logic        clk;
-
-  logic        clock_en;
-
   // Before going to sleep, wait for I- and D-side
   // interfaces to finish ongoing operations.
-  assign core_busy_d = ctrl_busy | if_busy | lsu_busy;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      core_busy_q <= 1'b0;
-    end else begin
-      core_busy_q <= core_busy_d;
-    end
-  end
-  // capture fetch_enable_i in fetch_enable_q, once for ever
-  logic fetch_enable_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      fetch_enable_q <= 1'b0;
-    end else if (fetch_enable_i) begin
-      fetch_enable_q <= 1'b1;
-    end
-  end
-
-  assign clock_en     = fetch_enable_q & (core_busy_q | debug_req_i | irq_pending | irq_nm_i);
-  assign core_sleep_o = ~clock_en;
-
-  // main clock gate of the core
-  // generates all clocks except the one for the debug unit which is
-  // independent
-  prim_clock_gating core_clock_gate_i (
-      .clk_i     ( clk_i           ),
-      .en_i      ( clock_en        ),
-      .test_en_i ( test_en_i       ),
-      .clk_o     ( clk             )
-  );
+  assign core_busy_o = ctrl_busy | if_busy | lsu_busy;
 
   //////////////
   // IF stage //
@@ -406,13 +390,15 @@ module ibex_core #(
       .DummyInstructions ( DummyInstructions ),
       .ICache            ( ICache            ),
       .ICacheECC         ( ICacheECC         ),
+      .BusSizeECC        ( BusSizeECC        ),
+      .TagSizeECC        ( TagSizeECC        ),
+      .LineSizeECC       ( LineSizeECC       ),
       .PCIncrCheck       ( PCIncrCheck       ),
       .BranchPredictor   ( BranchPredictor   )
   ) if_stage_i (
-      .clk_i                    ( clk                    ),
+      .clk_i                    ( clk_i                  ),
       .rst_ni                   ( rst_ni                 ),
 
-      .ram_cfg_i                ( ram_cfg_i              ),
       .boot_addr_i              ( boot_addr_i            ),
       .req_i                    ( instr_req_int          ), // instruction request control
 
@@ -424,6 +410,17 @@ module ibex_core #(
       .instr_rdata_i            ( instr_rdata_i          ),
       .instr_err_i              ( instr_err_i            ),
       .instr_pmp_err_i          ( pmp_req_err[PMP_I]     ),
+
+      .ic_tag_req_o             ( ic_tag_req_o           ),
+      .ic_tag_write_o           ( ic_tag_write_o         ),
+      .ic_tag_addr_o            ( ic_tag_addr_o          ),
+      .ic_tag_wdata_o           ( ic_tag_wdata_o         ),
+      .ic_tag_rdata_i           ( ic_tag_rdata_i         ),
+      .ic_data_req_o            ( ic_data_req_o          ),
+      .ic_data_write_o          ( ic_data_write_o        ),
+      .ic_data_addr_o           ( ic_data_addr_o         ),
+      .ic_data_wdata_o          ( ic_data_wdata_o        ),
+      .ic_data_rdata_i          ( ic_data_rdata_i        ),
 
       // outputs to ID stage
       .instr_valid_id_o         ( instr_valid_id         ),
@@ -492,7 +489,7 @@ module ibex_core #(
       .WritebackStage  ( WritebackStage  ),
       .BranchPredictor ( BranchPredictor )
   ) id_stage_i (
-      .clk_i                        ( clk                      ),
+      .clk_i                        ( clk_i                    ),
       .rst_ni                       ( rst_ni                   ),
 
       // Processor Enable
@@ -586,7 +583,7 @@ module ibex_core #(
 
       // Interrupt Signals
       .csr_mstatus_mie_i            ( csr_mstatus_mie          ),
-      .irq_pending_i                ( irq_pending              ),
+      .irq_pending_i                ( irq_pending_o            ),
       .irqs_i                       ( irqs                     ),
       .irq_nm_i                     ( irq_nm_i                 ),
       .nmi_mode_o                   ( nmi_mode                 ),
@@ -646,7 +643,7 @@ module ibex_core #(
       .RV32B                    ( RV32B                    ),
       .BranchTargetALU          ( BranchTargetALU          )
   ) ex_block_i (
-      .clk_i                    ( clk                      ),
+      .clk_i                    ( clk_i                    ),
       .rst_ni                   ( rst_ni                   ),
 
       // ALU signal from ID stage
@@ -694,7 +691,7 @@ module ibex_core #(
   assign lsu_resp_err = lsu_load_err | lsu_store_err;
 
   ibex_load_store_unit load_store_unit_i (
-      .clk_i                 ( clk                 ),
+      .clk_i                 ( clk_i               ),
       .rst_ni                ( rst_ni              ),
 
       // data interface
@@ -742,7 +739,7 @@ module ibex_core #(
   ibex_wb_stage #(
     .WritebackStage ( WritebackStage )
   ) wb_stage_i (
-    .clk_i                          ( clk                          ),
+    .clk_i                          ( clk_i                        ),
     .rst_ni                         ( rst_ni                       ),
     .en_wb_i                        ( en_wb                        ),
     .instr_type_wb_i                ( instr_type_wb                ),
@@ -777,14 +774,15 @@ module ibex_core #(
     .instr_done_wb_o                ( instr_done_wb                )
   );
 
-  ///////////////////////
-  // Register file ECC //
-  ///////////////////////
+  /////////////////////////////
+  // Register file interface //
+  /////////////////////////////
 
-  logic [RegFileDataWidth-1:0] rf_wdata_wb_ecc;
-  logic [RegFileDataWidth-1:0] rf_rdata_a_ecc;
-  logic [RegFileDataWidth-1:0] rf_rdata_b_ecc;
-  logic                        rf_ecc_err_comb;
+  assign dummy_instr_id_o = dummy_instr_id;
+  assign rf_raddr_a_o     = rf_raddr_a;
+  assign rf_waddr_wb_o    = rf_waddr_wb;
+  assign rf_we_wb_o       = rf_we_wb;
+  assign rf_raddr_b_o     = rf_raddr_b;
 
   if (RegFileECC) begin : gen_regfile_ecc
 
@@ -794,26 +792,26 @@ module ibex_core #(
     // ECC checkbit generation for regiter file wdata
     prim_secded_39_32_enc regfile_ecc_enc (
       .in  (rf_wdata_wb),
-      .out (rf_wdata_wb_ecc)
+      .out (rf_wdata_wb_ecc_o)
     );
 
     // ECC checking on register file rdata
     prim_secded_39_32_dec regfile_ecc_dec_a (
-      .in         (rf_rdata_a_ecc),
+      .in         (rf_rdata_a_ecc_i),
       .d_o        (),
       .syndrome_o (),
       .err_o      (rf_ecc_err_a)
     );
     prim_secded_39_32_dec regfile_ecc_dec_b (
-      .in         (rf_rdata_b_ecc),
+      .in         (rf_rdata_b_ecc_i),
       .d_o        (),
       .syndrome_o (),
       .err_o      (rf_ecc_err_b)
     );
 
     // Assign read outputs - no error correction, just trigger an alert
-    assign rf_rdata_a = rf_rdata_a_ecc[31:0];
-    assign rf_rdata_b = rf_rdata_b_ecc[31:0];
+    assign rf_rdata_a = rf_rdata_a_ecc_i[31:0];
+    assign rf_rdata_b = rf_rdata_b_ecc_i[31:0];
 
     // Calculate errors - qualify with WB forwarding to avoid xprop into the alert signal
     assign rf_ecc_err_a_id = |rf_ecc_err_a & rf_ren_a & ~rf_rd_a_wb_match;
@@ -830,73 +828,12 @@ module ibex_core #(
     assign unused_rf_ren_b         = rf_ren_b;
     assign unused_rf_rd_a_wb_match = rf_rd_a_wb_match;
     assign unused_rf_rd_b_wb_match = rf_rd_b_wb_match;
-    assign rf_wdata_wb_ecc         = rf_wdata_wb;
-    assign rf_rdata_a              = rf_rdata_a_ecc;
-    assign rf_rdata_b              = rf_rdata_b_ecc;
+    assign rf_wdata_wb_ecc_o       = rf_wdata_wb;
+    assign rf_rdata_a              = rf_rdata_a_ecc_i;
+    assign rf_rdata_b              = rf_rdata_b_ecc_i;
     assign rf_ecc_err_comb         = 1'b0;
   end
 
-  if (RegFile == RegFileFF) begin : gen_regfile_ff
-    ibex_register_file_ff #(
-        .RV32E             ( RV32E             ),
-        .DataWidth         ( RegFileDataWidth  ),
-        .DummyInstructions ( DummyInstructions )
-    ) register_file_i (
-        .clk_i            ( clk_i           ),
-        .rst_ni           ( rst_ni          ),
-
-        .test_en_i        ( test_en_i       ),
-        .dummy_instr_id_i ( dummy_instr_id  ),
-
-        .raddr_a_i        ( rf_raddr_a      ),
-        .rdata_a_o        ( rf_rdata_a_ecc  ),
-        .raddr_b_i        ( rf_raddr_b      ),
-        .rdata_b_o        ( rf_rdata_b_ecc  ),
-        .waddr_a_i        ( rf_waddr_wb     ),
-        .wdata_a_i        ( rf_wdata_wb_ecc ),
-        .we_a_i           ( rf_we_wb        )
-    );
-  end else if (RegFile == RegFileFPGA) begin : gen_regfile_fpga
-    ibex_register_file_fpga #(
-        .RV32E             ( RV32E             ),
-        .DataWidth         ( RegFileDataWidth  ),
-        .DummyInstructions ( DummyInstructions )
-    ) register_file_i (
-        .clk_i            ( clk_i           ),
-        .rst_ni           ( rst_ni          ),
-
-        .test_en_i        ( test_en_i       ),
-        .dummy_instr_id_i ( dummy_instr_id  ),
-
-        .raddr_a_i        ( rf_raddr_a      ),
-        .rdata_a_o        ( rf_rdata_a_ecc  ),
-        .raddr_b_i        ( rf_raddr_b      ),
-        .rdata_b_o        ( rf_rdata_b_ecc  ),
-        .waddr_a_i        ( rf_waddr_wb     ),
-        .wdata_a_i        ( rf_wdata_wb_ecc ),
-        .we_a_i           ( rf_we_wb        )
-    );
-  end else if (RegFile == RegFileLatch) begin : gen_regfile_latch
-    ibex_register_file_latch #(
-        .RV32E             ( RV32E             ),
-        .DataWidth         ( RegFileDataWidth  ),
-        .DummyInstructions ( DummyInstructions )
-    ) register_file_i (
-        .clk_i            ( clk_i           ),
-        .rst_ni           ( rst_ni          ),
-
-        .test_en_i        ( test_en_i       ),
-        .dummy_instr_id_i ( dummy_instr_id  ),
-
-        .raddr_a_i        ( rf_raddr_a      ),
-        .rdata_a_o        ( rf_rdata_a_ecc  ),
-        .raddr_b_i        ( rf_raddr_b      ),
-        .rdata_b_o        ( rf_rdata_b_ecc  ),
-        .waddr_a_i        ( rf_waddr_wb     ),
-        .wdata_a_i        ( rf_wdata_wb_ecc ),
-        .we_a_i           ( rf_we_wb        )
-    );
-  end
 
   ///////////////////////
   // Crash dump output //
@@ -917,9 +854,6 @@ module ibex_core #(
 
   // Major alert - core is unrecoverable
   assign alert_major_o = rf_ecc_err_comb | pc_mismatch_alert | csr_shadow_err;
-
-  `ASSERT_KNOWN(IbexAlertMinorX, alert_minor_o)
-  `ASSERT_KNOWN(IbexAlertMajorX, alert_major_o)
 
   // Explict INC_ASSERT block to avoid unused signal lint warnings were asserts are not included
   `ifdef INC_ASSERT
@@ -993,7 +927,7 @@ module ibex_core #(
       .RV32M             ( RV32M             ),
       .RV32B             ( RV32B             )
   ) cs_registers_i (
-      .clk_i                   ( clk                          ),
+      .clk_i                   ( clk_i                        ),
       .rst_ni                  ( rst_ni                       ),
 
       // Hart ID from outside
@@ -1021,7 +955,7 @@ module ibex_core #(
       .irq_external_i          ( irq_external_i               ),
       .irq_fast_i              ( irq_fast_i                   ),
       .nmi_mode_i              ( nmi_mode                     ),
-      .irq_pending_o           ( irq_pending                  ),
+      .irq_pending_o           ( irq_pending_o                ),
       .irqs_o                  ( irqs                         ),
       .csr_mstatus_mie_o       ( csr_mstatus_mie              ),
       .csr_mstatus_tw_o        ( csr_mstatus_tw               ),
@@ -1104,7 +1038,7 @@ module ibex_core #(
         .PMPNumChan            ( PMP_NUM_CHAN    ),
         .PMPNumRegions         ( PMPNumRegions   )
     ) pmp_i (
-        .clk_i                 ( clk             ),
+        .clk_i                 ( clk_i           ),
         .rst_ni                ( rst_ni          ),
         // Interface to CSRs
         .csr_pmp_cfg_i         ( csr_pmp_cfg     ),
@@ -1212,7 +1146,7 @@ module ibex_core #(
 
     assign rvfi_instr_new_wb = rvfi_instr_new_wb_q;
 
-    always_ff @(posedge clk or negedge rst_ni) begin
+    always_ff @(posedge clk_i or negedge rst_ni) begin
       if (~rst_ni) begin
         rvfi_instr_new_wb_q <= 0;
       end else begin
@@ -1229,7 +1163,7 @@ module ibex_core #(
   end
 
   for (genvar i = 0;i < RVFI_STAGES; i = i + 1) begin : g_rvfi_stages
-    always_ff @(posedge clk or negedge rst_ni) begin
+    always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         rvfi_stage_halt[i]      <= '0;
         rvfi_stage_trap[i]      <= '0;
@@ -1338,7 +1272,7 @@ module ibex_core #(
     end
   end
 
-  always_ff @(posedge clk or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       rvfi_mem_addr_q  <= '0;
       rvfi_mem_rdata_q <= '0;
@@ -1386,7 +1320,7 @@ module ibex_core #(
       rvfi_rs3_addr_d = rf_raddr_a;
     end
   end
-  always_ff @(posedge clk or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       rvfi_rs1_data_q <= '0;
       rvfi_rs1_addr_q <= '0;
@@ -1425,7 +1359,7 @@ module ibex_core #(
 
   // RD write register is refreshed only once per cycle and
   // then it is kept stable for the cycle.
-  always_ff @(posedge clk or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       rvfi_rd_addr_q    <= '0;
       rvfi_rd_wdata_q   <= '0;
@@ -1453,7 +1387,7 @@ module ibex_core #(
     end
   end
 
-  always_ff @(posedge clk or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       rvfi_set_trap_pc_q <= 1'b0;
       rvfi_intr_q        <= 1'b0;

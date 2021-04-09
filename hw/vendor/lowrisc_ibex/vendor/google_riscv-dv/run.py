@@ -302,7 +302,8 @@ def do_simulate(sim_cmd, simulator, test_list, cwd, sim_opts, seed_gen,
                               (" --log_file_name={}/sim_{}_{}{}.log ".format(
                                   output_dir,
                                   test['test'], i, log_suffix)) + \
-                              (" --target=%s " % (target))
+                              (" --target=%s " % (target)) + \
+                              (" --gen_test=%s " % (test['gen_test']))
                     else:
                         cmd = lsf_cmd + " " + sim_cmd.rstrip() + \
                               (" +UVM_TESTNAME={} ".format(test['gen_test'])) + \

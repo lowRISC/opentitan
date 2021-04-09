@@ -282,6 +282,9 @@ module ibex_compressed_decoder (
   // Assertions //
   ////////////////
 
+  // The valid_i signal used to gate below assertions must be known.
+  `ASSERT_KNOWN(IbexInstrValidKnown, valid_i)
+
   // Selectors must be known/valid.
   `ASSERT(IbexInstrLSBsKnown, valid_i |->
       !$isunknown(instr_i[1:0]))

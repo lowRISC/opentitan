@@ -77,3 +77,13 @@ Shadow CSRs
 Certain critical CSRs (`mstatus`, `mtvec`, `cpuctrl`, `pmpcfg` and `pmpaddr`) have extra glitch detection enabled.
 This creates a second copy of the register which stores a complemented version of the main CSR data.
 A constant check is made that the two copies are consistent, and a major alert is signalled if not.
+
+Dual core lockstep
+------------------
+
+This configuration option instantiates a second copy of the core logic, referred to as the shadow core.
+The shadow core executes using a delayed version of all inputs supplied to the main core.
+All outputs of the shadow core are compared against a delayed version of the outputs of the main core.
+Any mismatch between the two sets of outputs will trigger a major alert.
+
+Note that the register file and icache RAMs are not duplicated since these units are covered by ECC protection.

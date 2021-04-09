@@ -7,7 +7,7 @@ description: "Generic simple system for running binaries on ibex using verilator
 filesets:
   files_sim:
     depend:
-      - lowrisc:ibex:ibex_core_tracing
+      - lowrisc:ibex:ibex_top_tracing
       - lowrisc:ibex:sim_shared
     files:
       - rtl/ibex_simple_system.sv
