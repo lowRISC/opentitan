@@ -129,7 +129,7 @@ module flash_phy_rd import flash_phy_pkg::*; (
 
   assign buf_invalid_alloc[0] = buf_invalid[0];
   for (genvar i = 1; i < NumBuf; i++) begin: gen_inv_alloc_bufs
-    assign buf_invalid_alloc[i] = buf_invalid[i] & ~|buf_invalid_alloc[i-1:0];
+    assign buf_invalid_alloc[i] = buf_invalid[i] & ~|buf_invalid[i-1:0];
   end
 
   // a prim arbiter is used to somewhat fairly select among the valid buffers
