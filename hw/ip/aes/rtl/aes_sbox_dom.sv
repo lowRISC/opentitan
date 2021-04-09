@@ -19,6 +19,14 @@
 // [2] Canright, "A very compact 'perfectly masked' S-box for AES (corrected)" available at
 //     https://eprint.iacr.org/2009/011.pdf
 // [3] Canright, "A very compact Rijndael S-box" available at https://hdl.handle.net/10945/25608
+//
+// Using the Coco-Alma tool in transient mode, this implementation has been formally verified to be
+// secure against first-order side-channel analysis (SCA). For more information on the tool,
+// refer to the following papers:
+// [4] Gigerl, "COCO: Co-design and co-verification of masked software implementations on CPUs"
+//     available at https://eprint.iacr.org/2020/1294.pdf
+// [5] Bloem, "Formal verification of masked hardware implementations in the presence of glitches"
+//     available at https://eprint.iacr.org/2017/897.pdf
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // IMPORTANT NOTE:                                                                               //
