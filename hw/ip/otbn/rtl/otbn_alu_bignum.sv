@@ -78,6 +78,7 @@ module otbn_alu_bignum
   input  logic [BaseWordsPerWLEN-1:0] ispr_base_wr_en_i,
   input  logic [WLEN-1:0]             ispr_bignum_wdata_i,
   input  logic                        ispr_bignum_wr_en_i,
+  input  logic                        ispr_init_i,
   output logic [WLEN-1:0]             ispr_rdata_o,
 
   input  logic [WLEN-1:0]             ispr_acc_i,
@@ -111,11 +112,10 @@ module otbn_alu_bignum
   assign logic_update_flags_en = operation_i.alu_flag_en & logic_update_flags_en_raw;
   assign mac_update_flags_en   = operation_i.mac_flag_en;
 
-  assign ispr_update_flags_en = (ispr_base_wr_en_i[0] & (ispr_addr_i == IsprFlags));
-
+  assign ispr_update_flags_en = ispr_base_wr_en_i[0] & (ispr_addr_i == IsprFlags);
 
   `ASSERT(UpdateFlagsOnehot,
-          $onehot0({adder_update_flags_en, logic_update_flags_en, mac_update_flags_en,
+          $onehot0({ispr_init_i, adder_update_flags_en, logic_update_flags_en, mac_update_flags_en,
                     ispr_update_flags_en}))
 
   assign selected_flags = flags_q[operation_i.flag_group];
@@ -142,6 +142,7 @@ module otbn_alu_bignum
       flags_d[i_fg] = adder_update_flags;
 
       unique case (1'b1)
+        ispr_init_i:           flags_d[i_fg] = '0;
         adder_update_flags_en: flags_d[i_fg] = adder_update_flags;
         logic_update_flags_en: flags_d[i_fg] = logic_update_flags;
         mac_update_flags_en:   flags_d[i_fg] = mac_update_flags;
@@ -150,7 +151,7 @@ module otbn_alu_bignum
       endcase
     end
 
-    assign flags_en[i_fg] = ispr_update_flags_en |
+    assign flags_en[i_fg] = ispr_init_i | ispr_update_flags_en |
       (adder_update_flags_en & is_operation_flag_group[i_fg]) |
       (logic_update_flags_en & is_operation_flag_group[i_fg]) |
       (mac_update_flags_en   & is_operation_flag_group[i_fg]);
@@ -170,15 +171,24 @@ module otbn_alu_bignum
       end
     end
 
-    assign mod_d[i_word*32+:32] = ispr_base_wr_en_i[i_word] ? ispr_base_wdata_i :
-                                                              ispr_bignum_wdata_i[i_word*32+:32];
+    always_comb begin
+      mod_d[i_word*32+:32] = ispr_bignum_wdata_i[i_word*32+:32];
 
-    assign mod_wr_en[i_word] = (ispr_addr_i == IsprMod) & (ispr_base_wr_en_i[i_word] |
-                                                           ispr_bignum_wr_en_i);
+      unique case (1'b1)
+        ispr_init_i:               mod_d[i_word*32+:32] = '0;
+        ispr_base_wr_en_i[i_word]: mod_d[i_word*32+:32] = ispr_base_wdata_i;
+        default: ;
+      endcase
+    end
+
+    `ASSERT(ModWrSelOneHot, $onehot0({ispr_init_i, ispr_base_wr_en_i[i_word]}))
+
+    assign mod_wr_en[i_word] = ispr_init_i |
+      ((ispr_addr_i == IsprMod) & (ispr_base_wr_en_i[i_word] | ispr_bignum_wr_en_i));
   end
 
-  assign ispr_acc_wr_en_o   = (ispr_addr_i == IsprAcc) & ispr_bignum_wr_en_i;
-  assign ispr_acc_wr_data_o = ispr_bignum_wdata_i;
+  assign ispr_acc_wr_en_o   = ((ispr_addr_i == IsprAcc) & ispr_bignum_wr_en_i) | ispr_init_i;
+  assign ispr_acc_wr_data_o = ispr_init_i ? '0 : ispr_bignum_wdata_i;
 
   always_comb begin
     ispr_rdata_o = mod_q;

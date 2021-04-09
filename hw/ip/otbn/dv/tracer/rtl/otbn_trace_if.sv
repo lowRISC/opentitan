@@ -65,6 +65,7 @@ interface otbn_trace_if
   input logic [otbn_pkg::WLEN-1:0] dmem_rdata_i,
 
   input otbn_pkg::ispr_e                 ispr_addr,
+  input logic                            ispr_init,
   input otbn_pkg::insn_dec_shared_t      insn_dec_shared,
   input otbn_pkg::alu_bignum_operation_t alu_bignum_operation,
   input logic                            mac_bignum_en,
@@ -171,7 +172,7 @@ interface otbn_trace_if
       (insn_dec_shared.ispr_rd_insn | insn_dec_shared.ispr_rs_insn) & insn_fetch_resp_valid;
 
 
-  assign ispr_write[IsprMod] = |u_otbn_alu_bignum.mod_wr_en;
+  assign ispr_write[IsprMod] = |u_otbn_alu_bignum.mod_wr_en & ~ispr_init;
 
   for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_mod_words
     assign ispr_write_data[IsprMod][i_word*32+:32] =
@@ -184,7 +185,7 @@ interface otbn_trace_if
 
   assign ispr_read_data[IsprMod] = u_otbn_alu_bignum.mod_q;
 
-  assign ispr_write[IsprAcc] = u_otbn_mac_bignum.acc_en;
+  assign ispr_write[IsprAcc] = u_otbn_mac_bignum.acc_en & ~ispr_init;
   assign ispr_write_data[IsprAcc] = u_otbn_mac_bignum.acc_d;
 
   assign ispr_read[IsprAcc] = (any_ispr_read & (ispr_addr == IsprAcc)) | mac_bignum_en;
@@ -215,7 +216,7 @@ interface otbn_trace_if
                                        AluOpBignumNot});
 
   for (genvar i_fg = 0; i_fg < NFlagGroups; i_fg++) begin : g_flag_group_acceses
-    assign flags_write[i_fg] = u_otbn_alu_bignum.flags_en[i_fg];
+    assign flags_write[i_fg] = u_otbn_alu_bignum.flags_en[i_fg] & ~ispr_init;
     assign flags_write_data[i_fg] = u_otbn_alu_bignum.flags_d[i_fg];
 
     assign flags_read[i_fg] = (any_ispr_read & (ispr_addr == IsprFlags)) |
