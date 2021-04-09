@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:systems:top_englishbreakfast:0.1
       - lowrisc:systems:topgen
+      - lowrisc:systems:padring
     file_type: systemVerilogSource
 
   files_constraints:

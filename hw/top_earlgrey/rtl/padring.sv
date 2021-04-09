@@ -14,12 +14,13 @@ module padring
 #(
   parameter int NDioPads = 1,
   parameter int NMioPads = 1,
-  parameter bit PhysicalPads = 0, // Only used for ASIC target
+  parameter pad_type_e [NDioPads-1:0] DioPadType = {NDioPads{BidirStd}},
+  parameter pad_type_e [NMioPads-1:0] MioPadType = {NMioPads{BidirStd}},
+  // Only used for ASIC target
+  parameter bit PhysicalPads = 0,
   parameter int NIoBanks = 4,
   parameter logic [NDioPads-1:0][$clog2(NIoBanks)-1:0] DioPadBank = '0,
   parameter logic [NMioPads-1:0][$clog2(NIoBanks)-1:0] MioPadBank = '0,
-  parameter pad_type_e [NDioPads-1:0] DioPadType = {NDioPads{BidirStd}},
-  parameter pad_type_e [NMioPads-1:0] MioPadType = {NMioPads{BidirStd}},
   parameter scan_role_e [NDioPads-1:0] DioScanRole = {NDioPads{NoScan}},
   parameter scan_role_e [NMioPads-1:0] MioScanRole = {NMioPads{NoScan}}
 ) (
@@ -97,15 +98,14 @@ module padring
   end
 
   if (PhysicalPads) begin : gen_physical_pads
-    // TODO: Need to add this to the closed source repo first.
-    // physical_pads #(
-    //   .NIoBanks(NIoBanks)
-    // ) (
-    //   .pad_pok_o(pad_pok)
-    // );
-    assign pad_pok = '0;
+    physical_pads #(
+      .NIoBanks(NIoBanks)
+    ) u_physical_pads (
+      .pad_pok_o(pad_pok)
+    );
   end else begin : gen_no_physical_pads
     assign pad_pok = '0;
+    assign phys_in_o = '0;
   end
 
 endmodule : padring
