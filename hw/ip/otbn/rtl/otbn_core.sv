@@ -146,6 +146,7 @@ module otbn_core
   logic [WLEN-1:0]             ispr_acc;
   logic [WLEN-1:0]             ispr_acc_wr_data;
   logic                        ispr_acc_wr_en;
+  logic                        ispr_init;
 
   // Depending on its usage, the instruction address (program counter) is qualified by two valid
   // signals: insn_fetch_resp_valid (together with the undecoded instruction data), and insn_valid
@@ -287,6 +288,7 @@ module otbn_core
     .ispr_base_wr_en_o   (ispr_base_wr_en),
     .ispr_bignum_wdata_o (ispr_bignum_wdata),
     .ispr_bignum_wr_en_o (ispr_bignum_wr_en),
+    .ispr_init_o         (ispr_init),
     .ispr_rdata_i        (ispr_rdata)
   );
 
@@ -394,6 +396,7 @@ module otbn_core
     .ispr_base_wr_en_i        (ispr_base_wr_en),
     .ispr_bignum_wdata_i      (ispr_bignum_wdata),
     .ispr_bignum_wr_en_i      (ispr_bignum_wr_en),
+    .ispr_init_i              (ispr_init),
     .ispr_rdata_o             (ispr_rdata),
 
     .ispr_acc_i               (ispr_acc),

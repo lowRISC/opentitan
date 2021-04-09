@@ -107,6 +107,7 @@ module otbn_controller
   output logic [BaseWordsPerWLEN-1:0] ispr_base_wr_en_o,
   output logic [WLEN-1:0]             ispr_bignum_wdata_o,
   output logic                        ispr_bignum_wr_en_o,
+  output logic                        ispr_init_o,
   input  logic [WLEN-1:0]             ispr_rdata_i
 );
   otbn_state_e state_q, state_d, state_raw;
@@ -210,6 +211,7 @@ module otbn_controller
     state_raw                = state_q;
     insn_fetch_req_valid_raw = 1'b0;
     insn_fetch_req_addr_o    = start_addr_i;
+    ispr_init_o              = 1'b0;
 
     // TODO: Harden state machine
     // TODO: Jumps/branches
@@ -217,8 +219,11 @@ module otbn_controller
       OtbnStateHalt: begin
         if (start_i) begin
           state_raw = OtbnStateRun;
+
           insn_fetch_req_addr_o    = start_addr_i;
           insn_fetch_req_valid_raw = 1'b1;
+
+          ispr_init_o = 1'b1;
         end
       end
       OtbnStateRun: begin
