@@ -521,6 +521,14 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                   // DAI interface access error, even though injected ECC error, it won't be read
                   // out and detected. (TODO: can remove this once ECC is adopted in mem_bkdr_if)
                   cfg.ecc_err = OtpNoEccErr;
+
+                // If the partition is secret2 and lc_creator_seed_sw_rw is disable, then cannot
+                // return access error.
+                end else if (part_idx == Secret2Idx &&
+                             cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i == lc_ctrl_pkg::Off &&
+                             !is_digest(dai_addr)) begin
+                  predict_err(OtpDaiErrIdx, OtpAccessError);
+                  predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
                 end else begin
                   bit [TL_AW-1:0] otp_addr = get_scb_otp_addr();
                   if (cfg.ecc_err == OtpNoEccErr) begin
@@ -550,6 +558,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                 bit[TL_AW-1:0] otp_addr = get_scb_otp_addr();
                 // check if write locked
                 if (get_digest_reg_val(part_idx) != 0) begin
+                  predict_err(OtpDaiErrIdx, OtpAccessError);
+                end else if (part_idx == Secret2Idx &&
+                             cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i == lc_ctrl_pkg::Off &&
+                             !is_digest(dai_addr)) begin
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                 end else begin
                   predict_no_err(OtpDaiErrIdx);
@@ -842,6 +854,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
     if (get_digest_reg_val(part_idx) != 0 ||
         part_idx inside {CreatorSwCfgIdx, OwnerSwCfgIdx, LifeCycleIdx}) begin
+      predict_err(OtpDaiErrIdx, OtpAccessError);
+      return;
+    end else if (part_idx == Secret2Idx &&
+                 cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i == lc_ctrl_pkg::Off) begin
       predict_err(OtpDaiErrIdx, OtpAccessError);
       return;
     end else begin
