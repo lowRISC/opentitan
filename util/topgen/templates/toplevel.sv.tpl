@@ -90,7 +90,7 @@ module top_${top["name"]} #(
   % endfor
 
   // Flash specific voltages
-  inout [3:0] flash_test_mode_a_io,
+  inout [1:0] flash_test_mode_a_io,
   inout flash_test_voltage_h_io,
 
 % endif

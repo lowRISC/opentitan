@@ -500,15 +500,6 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
 
-  assign manual_out_flash_test_mode0 = 1'b0;
-  assign manual_oe_flash_test_mode0 = 1'b0;
-  assign manual_out_flash_test_mode1 = 1'b0;
-  assign manual_oe_flash_test_mode1 = 1'b0;
-  assign manual_out_flash_test_mode2 = 1'b0;
-  assign manual_oe_flash_test_mode2 = 1'b0;
-  assign manual_out_flash_test_mode3 = 1'b0;
-  assign manual_oe_flash_test_mode3 = 1'b0;
-
   assign manual_out_cc1 = 1'b0;
   assign manual_oe_cc1 = 1'b0;
   assign manual_out_cc2 = 1'b0;
@@ -521,20 +512,12 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_attr_por_n = '0;
   assign manual_attr_cc1 = '0;
   assign manual_attr_cc2 = '0;
-  assign manual_attr_flash_test_mode0 = '0;
-  assign manual_attr_flash_test_mode1 = '0;
-  assign manual_attr_flash_test_mode2 = '0;
-  assign manual_attr_flash_test_mode3 = '0;
   assign manual_attr_flash_test_volt = '0;
 
   logic unused_manual_sigs;
   assign unused_manual_sigs = ^{
     manual_in_cc2,
     manual_in_cc1,
-    manual_in_flash_test_mode3,
-    manual_in_flash_test_mode2,
-    manual_in_flash_test_mode1,
-    manual_in_flash_test_mode0,
     manual_in_flash_test_volt
   };
 
@@ -957,9 +940,7 @@ module chip_${top["name"]}_${target["name"]} (
     .ast2pinmux_i                 ( ast2pinmux                 ),
 
     // Flash test mode voltages
-    .flash_test_mode_a_io         ( {FLASH_TEST_MODE3,
-                                     FLASH_TEST_MODE2,
-                                     FLASH_TEST_MODE1,
+    .flash_test_mode_a_io         ( {FLASH_TEST_MODE1,
                                      FLASH_TEST_MODE0}         ),
     .flash_test_voltage_h_io      ( FLASH_TEST_VOLT            ),
 

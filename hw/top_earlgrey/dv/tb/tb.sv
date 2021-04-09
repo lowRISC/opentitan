@@ -69,7 +69,7 @@ module tb;
 
   // TODO: Replace with correct interfaces once
   // pinmux/padring and pinout have been updated.
-  wire [28:0] tie_off;
+  wire [23:0] tie_off;
   wire [5:0] spi_host_tie_off;
   wire [1:0] spi_dev_tie_off;
   assign (weak0, weak1) tie_off = '0;
@@ -168,9 +168,7 @@ module tb;
     // FLASH
     .FLASH_TEST_MODE0(tie_off[21]),
     .FLASH_TEST_MODE1(tie_off[22]),
-    .FLASH_TEST_MODE2(tie_off[23]),
-    .FLASH_TEST_MODE3(tie_off[24]),
-    .FLASH_TEST_VOLT(tie_off[25])
+    .FLASH_TEST_VOLT(tie_off[23])
   );
 
   // connect signals

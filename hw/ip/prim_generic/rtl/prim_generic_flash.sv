@@ -14,7 +14,7 @@ module prim_generic_flash #(
   parameter int WordsPerPage   = 256,// words per page
   parameter int DataWidth      = 32, // bits per word
   parameter int MetaDataWidth  = 12, // metadata such as ECC
-  parameter int TestModeWidth  = 4
+  parameter int TestModeWidth  = 2
 ) (
   input clk_i,
   input rst_ni,

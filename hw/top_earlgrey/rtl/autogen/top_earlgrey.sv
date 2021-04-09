@@ -88,7 +88,7 @@ module top_earlgrey #(
   output rstmgr_pkg::rstmgr_ast_out_t       rsts_ast_o,
 
   // Flash specific voltages
-  inout [3:0] flash_test_mode_a_io,
+  inout [1:0] flash_test_mode_a_io,
   inout flash_test_voltage_h_io,
 
   input                      scan_rst_ni, // reset used for test mode

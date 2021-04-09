@@ -7654,108 +7654,12 @@
         idx: 0
       }
       {
-        name: SPI_HOST_D0
-        type: BidirStd
-        bank: VIOA
-        connection: direct
-        desc: SPI host data
-        idx: 1
-      }
-      {
-        name: SPI_HOST_D1
-        type: BidirStd
-        bank: VIOA
-        connection: direct
-        desc: SPI host data
-        idx: 2
-      }
-      {
-        name: SPI_HOST_D2
-        type: BidirStd
-        bank: VIOA
-        connection: direct
-        desc: SPI host data
-        idx: 3
-      }
-      {
-        name: SPI_HOST_D3
-        type: BidirStd
-        bank: VIOA
-        connection: direct
-        desc: SPI host data
-        idx: 4
-      }
-      {
-        name: SPI_HOST_CLK
-        type: BidirStd
-        bank: VIOA
-        connection: direct
-        desc: SPI host clock
-        idx: 5
-      }
-      {
-        name: SPI_HOST_CS_L
-        type: BidirStd
-        bank: VIOA
-        connection: direct
-        desc: SPI host chip select
-        idx: 6
-      }
-      {
-        name: SPI_DEV_D0
-        type: BidirStd
-        bank: VIOA
-        connection: direct
-        desc: SPI device data
-        idx: 7
-      }
-      {
-        name: SPI_DEV_D1
-        type: BidirStd
-        bank: VIOA
-        connection: direct
-        desc: SPI device data
-        idx: 8
-      }
-      {
-        name: SPI_DEV_D2
-        type: BidirStd
-        bank: VIOA
-        connection: direct
-        desc: SPI device data
-        idx: 9
-      }
-      {
-        name: SPI_DEV_D3
-        type: BidirStd
-        bank: VIOA
-        connection: direct
-        desc: SPI device data
-        idx: 10
-      }
-      {
-        name: SPI_DEV_CLK
-        type: InputStd
-        bank: VIOA
-        connection: direct
-        desc: SPI device clock
-        idx: 11
-      }
-      {
-        name: SPI_DEV_CS_L
-        type: InputStd
-        bank: VIOA
-        connection: direct
-        desc: SPI device chip select
-        idx: 12
-      }
-      {
         name: USB_P
         type: BidirTol
         bank: VCC
         connection: manual
         desc: USB P signal
-        idx: 13
+        idx: 1
       }
       {
         name: USB_N
@@ -7763,7 +7667,7 @@
         bank: VCC
         connection: manual
         desc: USB N signal
-        idx: 14
+        idx: 2
       }
       {
         name: CC1
@@ -7771,7 +7675,7 @@
         bank: AVCC
         connection: manual
         desc: ADC input 1
-        idx: 15
+        idx: 3
       }
       {
         name: CC2
@@ -7779,7 +7683,15 @@
         bank: AVCC
         connection: manual
         desc: ADC input 2
-        idx: 16
+        idx: 4
+      }
+      {
+        name: FLASH_TEST_VOLT
+        type: AnalogIn0
+        bank: VCC
+        connection: manual
+        desc: Flash test voltage input
+        idx: 5
       }
       {
         name: FLASH_TEST_MODE0
@@ -7787,7 +7699,7 @@
         bank: VCC
         connection: manual
         desc: Flash test mode signal
-        idx: 17
+        idx: 6
       }
       {
         name: FLASH_TEST_MODE1
@@ -7795,31 +7707,103 @@
         bank: VCC
         connection: manual
         desc: Flash test mode signal
+        idx: 7
+      }
+      {
+        name: SPI_HOST_D0
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI host data
+        idx: 8
+      }
+      {
+        name: SPI_HOST_D1
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI host data
+        idx: 9
+      }
+      {
+        name: SPI_HOST_D2
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI host data
+        idx: 10
+      }
+      {
+        name: SPI_HOST_D3
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI host data
+        idx: 11
+      }
+      {
+        name: SPI_HOST_CLK
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI host clock
+        idx: 12
+      }
+      {
+        name: SPI_HOST_CS_L
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI host chip select
+        idx: 13
+      }
+      {
+        name: SPI_DEV_D0
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI device data
+        idx: 14
+      }
+      {
+        name: SPI_DEV_D1
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI device data
+        idx: 15
+      }
+      {
+        name: SPI_DEV_D2
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI device data
+        idx: 16
+      }
+      {
+        name: SPI_DEV_D3
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI device data
+        idx: 17
+      }
+      {
+        name: SPI_DEV_CLK
+        type: InputStd
+        bank: VIOA
+        connection: direct
+        desc: SPI device clock
         idx: 18
       }
       {
-        name: FLASH_TEST_MODE2
+        name: SPI_DEV_CS_L
         type: InputStd
-        bank: VCC
-        connection: manual
-        desc: Flash test mode signal
+        bank: VIOA
+        connection: direct
+        desc: SPI device chip select
         idx: 19
-      }
-      {
-        name: FLASH_TEST_MODE3
-        type: InputStd
-        bank: VCC
-        connection: manual
-        desc: Flash test mode signal
-        idx: 20
-      }
-      {
-        name: FLASH_TEST_VOLT
-        type: InputStd
-        bank: VCC
-        connection: manual
-        desc: Flash test voltage input
-        idx: 21
       }
       {
         name: IOA0
@@ -8171,7 +8155,7 @@
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (ec_rst_l)
-        idx: 22
+        idx: 20
       }
       {
         name: IOR9
@@ -8179,7 +8163,7 @@
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (pwrb_out)
-        idx: 23
+        idx: 21
       }
       {
         name: IOR10
@@ -9508,7 +9492,7 @@
         inouts: 11
         inputs: 3
         outputs: 9
-        pads: 24
+        pads: 22
       }
       muxed:
       {
@@ -9608,8 +9592,6 @@
           FLASH_TEST_VOLT
           FLASH_TEST_MODE0
           FLASH_TEST_MODE1
-          FLASH_TEST_MODE2
-          FLASH_TEST_MODE3
           IOB10
           IOB11
           IOB12

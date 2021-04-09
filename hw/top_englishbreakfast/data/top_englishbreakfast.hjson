@@ -801,8 +801,16 @@
     //
     // Optionally, each pad can also have a 'desc' field for further description.
     pads: [
-      // Dedicated
+      // Special manually connected pads
       { name: 'POR_N'           , type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'System reset'},
+      { name: 'USB_P'           , type: 'BidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB P signal'},
+      { name: 'USB_N'           , type: 'BidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB N signal'},
+      { name: 'CC1'             , type: 'InputStd', bank: 'AVCC', connection: 'manual', desc: 'ADC input 1'},
+      { name: 'CC2'             , type: 'InputStd', bank: 'AVCC', connection: 'manual', desc: 'ADC input 2'},
+      { name: 'FLASH_TEST_VOLT' , type: 'AnalogIn0',bank: 'VCC' , connection: 'manual', desc: 'Flash test voltage input'},
+      { name: 'FLASH_TEST_MODE0', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
+      { name: 'FLASH_TEST_MODE1', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
+      // Dedicated IOs
       { name: 'SPI_HOST_D0'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
       { name: 'SPI_HOST_D1'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
       { name: 'SPI_HOST_D2'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
@@ -815,15 +823,6 @@
       { name: 'SPI_DEV_D3'      , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
       { name: 'SPI_DEV_CLK'     , type: 'InputStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device clock'},
       { name: 'SPI_DEV_CS_L'    , type: 'InputStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device chip select'},
-      { name: 'USB_P'           , type: 'BidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB P signal'},
-      { name: 'USB_N'           , type: 'BidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB N signal'},
-      { name: 'CC1'             , type: 'InputStd', bank: 'AVCC', connection: 'manual', desc: 'ADC input 1'},
-      { name: 'CC2'             , type: 'InputStd', bank: 'AVCC', connection: 'manual', desc: 'ADC input 2'},
-      { name: 'FLASH_TEST_MODE0', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
-      { name: 'FLASH_TEST_MODE1', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
-      { name: 'FLASH_TEST_MODE2', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
-      { name: 'FLASH_TEST_MODE3', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
-      { name: 'FLASH_TEST_VOLT' , type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test voltage input'},
       // IOA
       { name: 'IOA0'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOA1'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
@@ -959,7 +958,7 @@
           'SPI_HOST_CLK', 'SPI_HOST_CS_L',
           'SPI_HOST_D0', 'SPI_HOST_D1', 'SPI_HOST_D2', 'SPI_HOST_D3',
           'FLASH_TEST_VOLT',
-          'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1', 'FLASH_TEST_MODE2', 'FLASH_TEST_MODE3',
+          'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
           'IOB10', 'IOB11', 'IOB12',
           'IOC0', 'IOC1', 'IOC2', 'IOC3', 'IOC4', 'IOC5', 'IOC6', 'IOC7', 'IOC8', 'IOC9', 'IOC12',
           'IOR0', 'IOR1', 'IOR2', 'IOR3', 'IOR4', 'IOR5', 'IOR6', 'IOR7', 'IOR10', 'IOR11', 'IOR12', 'IOR13'
