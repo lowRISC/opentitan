@@ -172,7 +172,7 @@
     { name: "NDioPads",
       desc: "Number of dedicated IO pads",
       type: "int",
-      default: "23",
+      default: "24",
       local: "true"
     },
     { name: "NWkupDetect",

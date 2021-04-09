@@ -8288,7 +8288,79 @@
       }
       {
         instance: usbdev
-        port: ""
+        port: d
+        connection: manual
+        pad: ""
+        desc: ""
+        attr: BidirTol
+      }
+      {
+        instance: usbdev
+        port: dp
+        connection: manual
+        pad: ""
+        desc: ""
+        attr: BidirTol
+      }
+      {
+        instance: usbdev
+        port: dn
+        connection: manual
+        pad: ""
+        desc: ""
+        attr: BidirTol
+      }
+      {
+        instance: usbdev
+        port: sense
+        connection: manual
+        pad: ""
+        desc: ""
+        attr: BidirTol
+      }
+      {
+        instance: usbdev
+        port: se0
+        connection: manual
+        pad: ""
+        desc: ""
+        attr: BidirTol
+      }
+      {
+        instance: usbdev
+        port: dp_pullup
+        connection: manual
+        pad: ""
+        desc: ""
+        attr: BidirTol
+      }
+      {
+        instance: usbdev
+        port: dn_pullup
+        connection: manual
+        pad: ""
+        desc: ""
+        attr: BidirTol
+      }
+      {
+        instance: usbdev
+        port: tx_mode_se
+        connection: manual
+        pad: ""
+        desc: ""
+        attr: BidirTol
+      }
+      {
+        instance: usbdev
+        port: suspend
+        connection: manual
+        pad: ""
+        desc: ""
+        attr: BidirTol
+      }
+      {
+        instance: usbdev
+        port: rx_enable
         connection: manual
         pad: ""
         desc: ""
@@ -9252,6 +9324,16 @@
         glob_idx: 20
       }
       {
+        name: usbdev_rx_enable
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        attr: BidirTol
+        connection: manual
+        glob_idx: 21
+      }
+      {
         name: uart0_tx
         width: 1
         type: output
@@ -9479,7 +9561,7 @@
         pad: IOR8
         attr: BidirOd
         connection: direct
-        glob_idx: 21
+        glob_idx: 22
       }
       {
         name: sysrst_ctrl_aon_key0_out
@@ -9519,7 +9601,7 @@
         pad: IOR9
         attr: BidirOd
         connection: direct
-        glob_idx: 22
+        glob_idx: 23
       }
     ]
     io_counts:
@@ -9528,7 +9610,7 @@
       {
         inouts: 11
         inputs: 3
-        outputs: 9
+        outputs: 10
         pads: 22
       }
       muxed:

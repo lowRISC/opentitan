@@ -121,6 +121,7 @@ module chip_earlgrey_asic (
     dio_pad_type: {
       BidirOd, // DIO sysrst_ctrl_aon_pwrb_out
       BidirOd, // DIO sysrst_ctrl_aon_ec_rst_out_l
+      BidirTol, // DIO usbdev_rx_enable
       BidirTol, // DIO usbdev_suspend
       BidirTol, // DIO usbdev_tx_mode_se
       BidirTol, // DIO usbdev_dn_pullup
@@ -907,10 +908,10 @@ module chip_earlgrey_asic (
   assign usb_pullup_p_en = dio_out[DioUsbdevDpPullup] & dio_oe[DioUsbdevDpPullup];
   assign usb_pullup_n_en = dio_out[DioUsbdevDnPullup] & dio_oe[DioUsbdevDnPullup];
 
-  // TODO(#5925): connect this to AST?
-  logic usbdev_aon_usb_rx_enable;
+  logic usb_rx_enable;
+  assign usb_rx_enable = dio_out[DioUsbdevRxEnable] & dio_oe[DioUsbdevRxEnable];
+
   logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
-  assign usbdev_aon_usb_rx_enable = 1'b0;
 
   // pwrmgr interface
   pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
@@ -919,14 +920,14 @@ module chip_earlgrey_asic (
   prim_usb_diff_rx #(
     .CalibW(ast_pkg::UsbCalibWidth)
   ) u_prim_usb_diff_rx (
-    .input_pi      ( USB_P                    ),
-    .input_ni      ( USB_N                    ),
-    .input_en_i    ( usbdev_aon_usb_rx_enable ),
-    .core_pok_i    ( ast_base_pwr.main_pok    ),
-    .pullup_p_en_i ( usb_pullup_p_en          ),
-    .pullup_n_en_i ( usb_pullup_n_en          ),
-    .calibration_i ( usb_io_pu_cal            ),
-    .input_o       ( dio_in[DioUsbdevD]  )
+    .input_pi      ( USB_P                 ),
+    .input_ni      ( USB_N                 ),
+    .input_en_i    ( usb_rx_enable         ),
+    .core_pok_i    ( ast_base_pwr.main_pok ),
+    .pullup_p_en_i ( usb_pullup_p_en       ),
+    .pullup_n_en_i ( usb_pullup_n_en       ),
+    .calibration_i ( usb_io_pu_cal         ),
+    .input_o       ( dio_in[DioUsbdevD]    )
   );
 
   // Tie-off unused signals
@@ -936,6 +937,7 @@ module chip_earlgrey_asic (
   assign dio_in[DioUsbdevDnPullup] = 1'b0;
   assign dio_in[DioUsbdevTxModeSe] = 1'b0;
   assign dio_in[DioUsbdevSuspend] = 1'b0;
+  assign dio_in[DioUsbdevRxEnable] = 1'b0;
 
   logic unused_usb_sigs;
   assign unused_usb_sigs = ^{
@@ -955,6 +957,8 @@ module chip_earlgrey_asic (
     dio_out[DioUsbdevSuspend],
     dio_oe[DioUsbdevSuspend],
     dio_attr[DioUsbdevSuspend],
+    // Rx enable
+    dio_attr[DioUsbdevRxEnable],
     // D is used as an input only
     dio_out[DioUsbdevD],
     dio_oe[DioUsbdevD],
