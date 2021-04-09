@@ -14,7 +14,7 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
 
   // access locked means no memory clear, constraint to ensure there are enough dai address
   constraint num_iterations_up_to_num_valid_addr_c {
-    num_trans * num_dai_op <= DAI_ADDR_SIZE;
+    collect_used_addr -> num_trans * num_dai_op <= DAI_ADDR_SIZE;
   }
 
   virtual task pre_start();

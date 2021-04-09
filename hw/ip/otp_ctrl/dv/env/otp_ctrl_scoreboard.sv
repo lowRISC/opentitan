@@ -16,6 +16,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   bit [LC_PROG_DATA_SIZE-1:0] otp_lc_data;
   bit [EDN_BUS_WIDTH-1:0]     edn_data_q[$];
 
+  // This flag is used when reset is issued during otp dai write access.
+  bit dai_wr_ip;
+
   // This bit is used for DAI interface to mark if the read access is valid.
   bit dai_read_valid;
 
@@ -550,6 +553,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                 end else begin
                   predict_no_err(OtpDaiErrIdx);
+                  dai_wr_ip = 1;
                   // write digest
                   if (is_sw_digest(dai_addr)) begin
                     bit [TL_DW*2-1:0] curr_digest, prev_digest;
@@ -624,7 +628,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           if (cfg.otp_ctrl_vif.lc_prog_no_sta_check) status_mask[OtpLciErrIdx] = 1;
 
         end else if (data_phase_read) begin
-          if (item.d_data[OtpDaiIdleIdx]) check_otp_idle(1);
+          if (item.d_data[OtpDaiIdleIdx]) begin
+            check_otp_idle(1);
+            dai_wr_ip = 0;
+          end
 
           // STATUS register check with mask
           if (do_read_check) begin
@@ -704,6 +711,19 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual function void reset(string kind = "HARD");
+    // If reset is issued during otp program, backdoor update otp memory write value because scb
+    // did not know how many cells haven been written.
+    if (dai_wr_ip) begin
+      bit [TL_DW-1:0] otp_addr = get_scb_otp_addr();
+      bit [TL_DW-1:0] dai_addr = otp_addr << 2;
+      otp_a[otp_addr] = cfg.mem_bkdr_vif.read32(dai_addr);
+
+      if (is_secret(dai_addr << 2)) begin
+        otp_a[otp_addr+1] = cfg.mem_bkdr_vif.read32(dai_addr+1);
+      end
+      dai_wr_ip = 0;
+    end
+
     super.reset(kind);
     // flush fifos
     otbn_fifo.flush();
