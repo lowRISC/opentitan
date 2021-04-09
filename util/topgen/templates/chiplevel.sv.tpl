@@ -227,17 +227,26 @@ module chip_${top["name"]}_${target["name"]} (
     .NDioPads(${len(dedicated_pads)}),
     .NMioPads(${len(muxed_pads)}),
 % if target["name"] == "asic":
-    // TODO: need to add ScanRole parameters
     .PhysicalPads(1),
     .NIoBanks(IoBankCount),
+    .DioScanRole ({
+% for pad in list(reversed(dedicated_pads)):
+      scan_role_pkg::${lib.Name.from_snake_case('dio_pad_' + pad["name"] + '_scan_role').as_camel_case()}${"" if loop.last else ","}
+% endfor
+    }),
+    .MioScanRole ({
+% for pad in list(reversed(muxed_pads)):
+      scan_role_pkg::${lib.Name.from_snake_case('mio_pad_' + pad["name"] + '_scan_role').as_camel_case()}${"" if loop.last else ","}
+% endfor
+    }),
     .DioPadBank ({
 % for pad in list(reversed(dedicated_pads)):
-      ${lib.Name(['io', 'bank', pad["bank"]]).as_camel_case()}${" " if loop.last else ","} // ${pad['name']}
+      ${lib.Name.from_snake_case('io_bank_' + pad["bank"]).as_camel_case()}${" " if loop.last else ","} // ${pad['name']}
 % endfor
     }),
     .MioPadBank ({
 % for pad in list(reversed(muxed_pads)):
-      ${lib.Name(['io', 'bank', pad["bank"]]).as_camel_case()}${" " if loop.last else ","} // ${pad['name']}
+      ${lib.Name.from_snake_case('io_bank_' + pad["bank"]).as_camel_case()}${" " if loop.last else ","} // ${pad['name']}
 % endfor
     }),
 % endif
