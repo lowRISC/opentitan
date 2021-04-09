@@ -95,7 +95,8 @@ pinmux_sig_required = {
 pinmux_sig_optional = {
     'port': ['s', 'Port name of module'],
     'pad': ['s', 'Pad name for direct connections'],
-    'desc': ['s', 'Signal description']
+    'desc': ['s', 'Signal description'],
+    'attr': ['s', 'Pad type for generating the correct attribute CSR']
 }
 pinmux_sig_added = {}
 
@@ -397,9 +398,11 @@ def check_pinmux(top: Dict, prefix: str) -> int:
     # This is used for the direct connection accounting below,
     # where we tick off already connected direct pads.
     known_direct_pads = {}
+    direct_pad_attr = {}
     for pad in top['pinout']['pads']:
         if pad['connection'] == 'direct':
             known_direct_pads[pad['name']] = 1
+            direct_pad_attr[pad['name']] = pad['type']
 
     # Note: the actual signal crosscheck is deferred until the merge stage,
     # since we have no idea at this point which IOs comportable IPs expose.
@@ -420,6 +423,7 @@ def check_pinmux(top: Dict, prefix: str) -> int:
             if padname in known_direct_pads:
                 if known_direct_pads[padname] == 1:
                     known_direct_pads[padname] = 0
+                    padattr = direct_pad_attr[padname]
                 else:
                     log.warning('Warning, direct pad {} is already connected'
                                 .format(padname))
@@ -439,6 +443,17 @@ def check_pinmux(top: Dict, prefix: str) -> int:
 
         # Check that only direct connections have pad keys
         if sig['connection'] == 'direct':
+            if sig.setdefault('attr', '') != '':
+                log.warning('Direct connection of instance {} port {} '
+                            'must not have an associated pad attribute field'
+                            .format(sig['instance'],
+                                    sig['port']))
+                error += 1
+            # Since the signal is directly connected, we can automatically infer
+            # the pad type needed to instantiate the correct attribute CSR WARL
+            # module inside the pinmux.
+            sig['attr'] = padattr
+
             if padname == '':
                 log.warning('Instance {} port {} connection is of direct type '
                             'and therefore must have an associated pad name.'
@@ -451,9 +466,27 @@ def check_pinmux(top: Dict, prefix: str) -> int:
                             .format(sig['instance'],
                                     sig['port']))
                 error += 1
-        else:
+        elif sig['connection'] == 'muxed':
+            # Muxed signals do not have a corresponding pad and attribute CSR,
+            # since they first go through the pinmux matrix.
+            if sig.setdefault('attr', '') != '':
+                log.warning('Muxed connection of instance {} port {} '
+                            'must not have an associated pad attribute field'
+                            .format(sig['instance'],
+                                    sig['port']))
+                error += 1
             if padname != '':
-                log.warning('Muxed/manual connection of instance {} port {} '
+                log.warning('Muxed connection of instance {} port {} '
+                            'must not have an associated pad'
+                            .format(sig['instance'],
+                                    sig['port']))
+                error += 1
+        elif sig['connection'] == 'manual':
+            # This pad attr key is only allowed in the manual case,
+            # as there is no way to infer the pad type automatically.
+            sig.setdefault('attr', 'BidirStd')
+            if padname != '':
+                log.warning('Manual connection of instance {} port {} '
                             'must not have an associated pad'
                             .format(sig['instance'],
                                     sig['port']))

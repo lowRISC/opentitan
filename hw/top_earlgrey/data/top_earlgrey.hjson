@@ -1142,6 +1142,11 @@
     //        This is not required for 'muxed' and 'manual' connections.
     //
     // - desc: Optional description field.
+    //
+    // - attr: Manual direct IOs may specify an additional pad attr field.
+    //         This is used to create the correct pad attribute CSR for that DIO channel (since the
+    //         DIO is manual, there is no way to automatically infer the corresponding pad type).
+    //
     signals: [
       // SPI Host0
       { instance: 'spi_host0',       port: 'sck',          connection: 'direct', pad: 'SPI_HOST_CLK' , desc: ''},
@@ -1158,7 +1163,7 @@
       { instance: 'spi_device',      port: 'sd[2]',        connection: 'direct', pad: 'SPI_DEV_D2'   , desc: ''},
       { instance: 'spi_device',      port: 'sd[3]',        connection: 'direct', pad: 'SPI_DEV_D3'   , desc: ''},
       // USBDEV
-      { instance: 'usbdev',          port: '',             connection: 'manual', pad: ''             , desc: ''},
+      { instance: 'usbdev',          port: '',             connection: 'manual', pad: ''             , desc: '', attr: 'BidirTol'},
       // MIOs
       { instance: "gpio",            port: '',             connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "uart0",           port: '',             connection: 'muxed' , pad: ''             , desc: ''},

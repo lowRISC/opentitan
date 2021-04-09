@@ -124,7 +124,82 @@ module chip_earlgrey_asic (
     usb_dp_idx:        DioUsbdevDp,
     usb_dn_idx:        DioUsbdevDn,
     usb_dp_pullup_idx: DioUsbdevDpPullup,
-    usb_dn_pullup_idx: DioUsbdevDnPullup
+    usb_dn_pullup_idx: DioUsbdevDnPullup,
+    // Pad types for attribute WARL behavior
+    dio_pad_type: {
+      BidirOd, // DIO sysrst_ctrl_aon_pwrb_out
+      BidirOd, // DIO sysrst_ctrl_aon_ec_rst_out_l
+      BidirTol, // DIO usbdev_suspend
+      BidirTol, // DIO usbdev_tx_mode_se
+      BidirTol, // DIO usbdev_dn_pullup
+      BidirTol, // DIO usbdev_dp_pullup
+      BidirTol, // DIO usbdev_se0
+      BidirStd, // DIO spi_host0_csb
+      BidirStd, // DIO spi_host0_sck
+      BidirTol, // DIO usbdev_sense
+      InputStd, // DIO spi_device_csb
+      InputStd, // DIO spi_device_sck
+      BidirTol, // DIO usbdev_dn
+      BidirTol, // DIO usbdev_dp
+      BidirTol, // DIO usbdev_d
+      BidirStd, // DIO spi_device_sd
+      BidirStd, // DIO spi_device_sd
+      BidirStd, // DIO spi_device_sd
+      BidirStd, // DIO spi_device_sd
+      BidirStd, // DIO spi_host0_sd
+      BidirStd, // DIO spi_host0_sd
+      BidirStd, // DIO spi_host0_sd
+      BidirStd  // DIO spi_host0_sd
+    },
+    mio_pad_type: {
+      BidirOd, // MIO Pad 46
+      BidirOd, // MIO Pad 45
+      BidirOd, // MIO Pad 44
+      BidirOd, // MIO Pad 43
+      BidirStd, // MIO Pad 42
+      BidirStd, // MIO Pad 41
+      BidirStd, // MIO Pad 40
+      BidirStd, // MIO Pad 39
+      BidirStd, // MIO Pad 38
+      BidirStd, // MIO Pad 37
+      BidirStd, // MIO Pad 36
+      BidirStd, // MIO Pad 35
+      BidirOd, // MIO Pad 34
+      BidirOd, // MIO Pad 33
+      BidirOd, // MIO Pad 32
+      BidirStd, // MIO Pad 31
+      BidirStd, // MIO Pad 30
+      BidirStd, // MIO Pad 29
+      BidirStd, // MIO Pad 28
+      BidirStd, // MIO Pad 27
+      BidirStd, // MIO Pad 26
+      BidirStd, // MIO Pad 25
+      BidirStd, // MIO Pad 24
+      BidirStd, // MIO Pad 23
+      BidirStd, // MIO Pad 22
+      BidirOd, // MIO Pad 21
+      BidirOd, // MIO Pad 20
+      BidirOd, // MIO Pad 19
+      BidirOd, // MIO Pad 18
+      BidirStd, // MIO Pad 17
+      BidirStd, // MIO Pad 16
+      BidirStd, // MIO Pad 15
+      BidirStd, // MIO Pad 14
+      BidirStd, // MIO Pad 13
+      BidirStd, // MIO Pad 12
+      BidirStd, // MIO Pad 11
+      BidirStd, // MIO Pad 10
+      BidirStd, // MIO Pad 9
+      BidirOd, // MIO Pad 8
+      BidirOd, // MIO Pad 7
+      BidirOd, // MIO Pad 6
+      BidirStd, // MIO Pad 5
+      BidirStd, // MIO Pad 4
+      BidirStd, // MIO Pad 3
+      BidirStd, // MIO Pad 2
+      BidirStd, // MIO Pad 1
+      BidirStd  // MIO Pad 0
+    }
   };
 
   ////////////////////////
@@ -796,17 +871,26 @@ module chip_earlgrey_asic (
   assign manual_out_flash_test_volt = 1'b0;
   assign manual_oe_flash_test_volt = 1'b0;
 
+  assign manual_out_flash_test_mode0 = 1'b0;
+  assign manual_out_flash_test_mode1 = 1'b0;
+  assign manual_oe_flash_test_mode0 = 1'b0;
+  assign manual_oe_flash_test_mode1 = 1'b0;
+
   // These pad attributes currently tied off permanently (these are all input-only pads).
   assign manual_attr_por_n = '0;
   assign manual_attr_cc1 = '0;
   assign manual_attr_cc2 = '0;
   assign manual_attr_flash_test_volt = '0;
+  assign manual_attr_flash_test_mode0 = '0;
+  assign manual_attr_flash_test_mode1 = '0;
 
   logic unused_manual_sigs;
   assign unused_manual_sigs = ^{
     manual_in_cc2,
     manual_in_cc1,
-    manual_in_flash_test_volt
+    manual_in_flash_test_volt,
+    manual_in_flash_test_mode0,
+    manual_in_flash_test_mode1
   };
 
   ///////////////////////////////
