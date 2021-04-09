@@ -3,13 +3,13 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: "lowrisc:prim_xilinx:flop"
-description: "Xilinx flop"
+name: "lowrisc:prim:flop_en"
+description: "Generic enable flop"
 filesets:
-  files_rtl:
-    files:
-      - rtl/prim_xilinx_flop.sv
-    file_type: systemVerilogSource
+  primgen_dep:
+    depend:
+      - lowrisc:prim:prim_pkg
+      - lowrisc:prim:primgen
 
   files_verilator_waiver:
     depend:
@@ -23,6 +23,7 @@ filesets:
       # common waivers
       - lowrisc:lint:common
     files:
+      - lint/prim_flop_en.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
@@ -30,10 +31,18 @@ filesets:
       # common waivers
       - lowrisc:lint:common
 
+generate:
+  impl:
+    generator: primgen
+    parameters:
+      prim_name: flop_en
+
 targets:
   default:
     filesets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
-      - files_rtl
+      - primgen_dep
+    generate:
+      - impl
