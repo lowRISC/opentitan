@@ -28,6 +28,9 @@ module prim_xilinx_pad_wrapper
   input pad_attr_t   attr_i    // additional pad attributes
 );
 
+  // analog pads cannot have a scan role.
+  `ASSERT_INIT(AnalogNoScan_A, PadType != AnalogIn0 || ScanRole == NoScan)
+
   // not all signals are used here.
   logic unused_sigs;
   assign unused_sigs = ^{attr_i.slew_rate,
@@ -40,24 +43,63 @@ module prim_xilinx_pad_wrapper
                          scanmode_i,
                          pok_i};
 
-  // input inversion
-  logic in;
-  assign in_raw_o = (ie_i) ? in  : 1'bz;
-  assign in_o = attr_i.invert ^ in_raw_o;
 
-  // virtual open drain emulation
-  logic oe_n, out;
-  assign out      = out_i ^ attr_i.invert;
-  // oe_n = 0: enable driver
-  // oe_n = 1: disable driver
-  assign oe_n     = ~oe_i | (out & attr_i.virt_od_en);
+  if (PadType == InputStd) begin : gen_input_only
+    logic unused_sigs;
+    assign unused_sigs = ^{out_i,
+                           oe_i,
+                           attr_i.virt_od_en};
 
-  // driver
-  IOBUF u_iobuf (
-    .T  ( oe_n     ),
-    .I  ( out      ),
-    .O  ( in       ),
-    .IO ( inout_io )
-  );
+    // input inversion
+    logic in;
+    assign in_raw_o = (ie_i) ? in  : 1'bz;
+    assign in_o = attr_i.invert ^ in_raw_o;
+
+    IBUF u_ibuf (
+      .I ( inout_io ),
+      .O ( in       )
+    );
+  end else if (PadType == BidirTol ||
+               PadType == BidirOd ||
+               PadType == BidirStd) begin : gen_bidir
+
+    // input inversion
+    logic in;
+    assign in_raw_o = (ie_i) ? in  : 1'bz;
+    assign in_o = attr_i.invert ^ in_raw_o;
+
+    // virtual open drain emulation
+    logic oe_n, out;
+    assign out      = out_i ^ attr_i.invert;
+    // oe_n = 0: enable driver
+    // oe_n = 1: disable driver
+    assign oe_n     = ~oe_i | (out & attr_i.virt_od_en);
+
+    IOBUF u_iobuf (
+      .T  ( oe_n     ),
+      .I  ( out      ),
+      .O  ( in       ),
+      .IO ( inout_io )
+    );
+  end else if (PadType == AnalogIn0) begin : gen_analog0
+
+    logic unused_sigs;
+    assign unused_sigs = ^{out_i,
+                           oe_i,
+                           attr_i.invert,
+                           attr_i.virt_od_en};
+    // this is currently modeled as a logic feed through.
+    IBUF u_ibuf (
+      .I ( inout_io ),
+      .O ( in_raw_o )
+    );
+
+    assign in_raw_o = inout_io;
+
+  end else begin : gen_invalid_config
+    // this should throw link warnings in elaboration
+    assert_static_in_generate_config_not_available
+        assert_static_in_generate_config_not_available();
+  end
 
 endmodule : prim_xilinx_pad_wrapper
