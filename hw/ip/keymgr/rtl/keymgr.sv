@@ -232,6 +232,8 @@ module keymgr
   // working state is always visible
   assign hw2reg.working_state.de = 1'b1;
 
+  logic cfg_regwen;
+
   // key manager registers cannot be changed once an operation starts
   keymgr_cfg_en #(
     .NonInitClr(1'b1) // clear has effect even when non-init
@@ -242,9 +244,10 @@ module keymgr
     .en_i(lc_keymgr_en[KeyMgrEnCfgEn] == lc_ctrl_pkg::On),
     .set_i(reg2hw.control.start.q & op_done),
     .clr_i(reg2hw.control.start.q),
-    .out_o(hw2reg.cfg_regwen.d)
+    .out_o(cfg_regwen)
   );
 
+  assign hw2reg.cfg_regwen.d = cfg_regwen;
 
   logic sw_binding_set;
   logic sw_binding_clr;
@@ -271,7 +274,7 @@ module keymgr
     .out_o(sw_binding_regwen)
   );
 
-  assign hw2reg.sw_binding_regwen.d = sw_binding_regwen & hw2reg.cfg_regwen.d;
+  assign hw2reg.sw_binding_regwen.d = sw_binding_regwen & cfg_regwen;
 
   /////////////////////////////////////
   //  Key Manager Input Construction
