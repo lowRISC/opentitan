@@ -71,6 +71,8 @@ def main():
         description=wrapped_docstring(),
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.register('action', 'extend', ExtendAction)
+    parser.add_argument('--quiet', '-q', action='store_true',
+                        help='''Don't print out progress messages.''')
     parser.add_argument('--img-seed',
                         type=int,
                         metavar='<seed>',
@@ -141,6 +143,9 @@ def main():
                         ''')
 
     args = parser.parse_args()
+
+    if args.quiet:
+        log.getLogger().setLevel(log.WARNING)
 
     log.info('Loading LC state definition file {}'.format(lc_state_def_file))
     with open(lc_state_def_file, 'r') as infile:

@@ -52,6 +52,7 @@ extract_sw_logs_sim_dv_depend_files = [
 make_otp_img_inputs = [meson.source_root() / 'hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson']
 make_otp_img_command = [
   prog_python, meson.source_root() / 'util/design/gen-otp-img.py',
+  '--quiet',
   '--img-cfg', '@INPUT@',
   '--out', '@OUTPUT@',
 ]
