@@ -18,6 +18,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // This flag is used when reset is issued during otp dai write access.
   bit dai_wr_ip;
+  int dai_digest_ip = LifeCycleIdx; // Default to LC as it does not have digest.
 
   // This bit is used for DAI interface to mark if the read access is valid.
   bit dai_read_valid;
@@ -111,6 +112,12 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
             otp_ctrl_pkg::otp_keymgr_key_t       exp_keymgr_data;
             bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
 
+            if (dai_digest_ip != LifeCycleIdx) begin
+              bit [TL_DW-1:0] otp_addr = PART_OTP_DIGEST_ADDRS[dai_digest_ip];
+              otp_a[otp_addr]   = cfg.mem_bkdr_vif.read32(otp_addr << 2);
+              otp_a[otp_addr+1] = cfg.mem_bkdr_vif.read32((otp_addr << 2) + 4);
+              dai_digest_ip = LifeCycleIdx;
+            end
             predict_digest_csrs();
 
             if (cfg.otp_ctrl_vif.lc_esc_on == 0) begin
@@ -127,8 +134,11 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                              otp_hw_cfg_data_t'({<<32 {otp_a[HwCfgOffset/4 +: HwCfgSize/4]}});
             `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.data, exp_hwcfg_data)
 
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.count, otp_lc_data[0 +: LcCountWidth])
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.state, otp_lc_data[LcCountWidth +: LcStateWidth])
+            if (!cfg.otp_ctrl_vif.lc_esc_on) begin
+              `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.count, otp_lc_data[0 +: LcCountWidth])
+              `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.state,
+                           otp_lc_data[LcCountWidth +: LcStateWidth])
+            end
 
             // Otp_keymgr outputs creator root key shares from the secret2 partition.
             // Depends on lc_seed_hw_rd_en_i, it will output the real keys or a constant
@@ -166,8 +176,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       // LC_escalate_en will trigger fatal check alert.
       set_exp_alert("fatal_check_error", 1, 5);
 
-      recover_interrupted_op();
-
       // Update status bits.
       exp_status = '0;
       for (int i = 0; i < OtpTimeoutErrIdx; i++) begin
@@ -179,8 +187,11 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       // Update digest values and direct_access_regwen.
       predict_rdata(1, 0, 0);
       void'(ral.direct_access_regwen.predict(0));
-      void'(ral.creator_sw_cfg_read_lock.predict(0));
-      void'(ral.owner_sw_cfg_read_lock.predict(0));
+
+      // Unlike reset, OTP write won't exit immediately when lc_escalate_en is On.
+      // So here wait until otp program done, then backdoor read.
+      cfg.clk_rst_vif.wait_clks(12);
+      recover_interrupted_op();
 
       wait(cfg.otp_ctrl_vif.lc_esc_on == 0);
     end
@@ -513,24 +524,22 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                   sw_read_lock = `gmv(ral.owner_sw_cfg_read_lock) == 0;
                 end
 
-                // SW partitions write read_lock_csr can lock read access
-                // Secret partitions cal digest can also lock read access
-                // However, digest is always readable except SW partitions (Issue #5752)
-                if (sw_read_lock || (is_secret(dai_addr) && get_digest_reg_val(part_idx) != 0 &&
-                    !is_digest(dai_addr))) begin
+                    // SW partitions write read_lock_csr can lock read access.
+                if (sw_read_lock ||
+                    // Secret partitions cal digest can also lock read access.
+                    // However, digest is always readable except SW partitions (Issue #5752).
+                    (is_secret(dai_addr) && get_digest_reg_val(part_idx) != 0 &&
+                     !is_digest(dai_addr)) ||
+                    // If the partition is secret2 and lc_creator_seed_sw_rw is disable, then
+                    // return access error.
+                    (part_idx == Secret2Idx && !is_digest(dai_addr) &&
+                     cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i == lc_ctrl_pkg::Off)) begin
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                   predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
                   // DAI interface access error, even though injected ECC error, it won't be read
                   // out and detected. (TODO: can remove this once ECC is adopted in mem_bkdr_if)
                   cfg.ecc_err = OtpNoEccErr;
 
-                // If the partition is secret2 and lc_creator_seed_sw_rw is disable, then cannot
-                // return access error.
-                end else if (part_idx == Secret2Idx &&
-                             cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i == lc_ctrl_pkg::Off &&
-                             !is_digest(dai_addr)) begin
-                  predict_err(OtpDaiErrIdx, OtpAccessError);
-                  predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
                 end else begin
                   bit [TL_AW-1:0] otp_addr = get_scb_otp_addr();
                   if (cfg.ecc_err == OtpNoEccErr) begin
@@ -559,11 +568,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
               DaiWrite: begin
                 bit[TL_AW-1:0] otp_addr = get_scb_otp_addr();
                 // check if write locked
-                if (get_digest_reg_val(part_idx) != 0) begin
-                  predict_err(OtpDaiErrIdx, OtpAccessError);
-                end else if (part_idx == Secret2Idx &&
-                             cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i == lc_ctrl_pkg::Off &&
-                             !is_digest(dai_addr)) begin
+                if (get_digest_reg_val(part_idx) != 0 ||
+                    (part_idx == Secret2Idx && !is_digest(dai_addr) &&
+                     cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i == lc_ctrl_pkg::Off)) begin
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                 end else begin
                   predict_no_err(OtpDaiErrIdx);
@@ -645,6 +652,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           if (item.d_data[OtpDaiIdleIdx]) begin
             check_otp_idle(1);
             dai_wr_ip = 0;
+            dai_digest_ip = LifeCycleIdx;
           end
 
           // STATUS register check with mask
@@ -815,25 +823,25 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     void'(ral.owner_sw_cfg_digest_1.predict(
           .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.hw_cfg_digest_0.predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.hw_cfg_digest_1.predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.hw_cfg_digest_0.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+          otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.hw_cfg_digest_1.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+          otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.secret0_digest_0.predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret0_digest_1.predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret0_digest_0.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+          otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret0_digest_1.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+          otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.secret1_digest_0.predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret1_digest_1.predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret1_digest_0.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+          otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret1_digest_1.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+          otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.secret2_digest_0.predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret2_digest_1.predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret2_digest_0.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+          otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret2_digest_1.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+          otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
   endfunction
 
   function void update_digest_to_otp(int part_idx, bit [TL_DW*2-1:0] digest);
@@ -871,6 +879,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       return;
     end else begin
       predict_no_err(OtpDaiErrIdx);
+      dai_digest_ip = part_idx;
     end
     case (part_idx)
       HwCfgIdx:   mem_q = otp_a[HW_CFG_START_ADDR:HW_CFG_END_ADDR];
@@ -1075,16 +1084,16 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   virtual function bit is_tl_mem_access_allowed(tl_seq_item item, string ral_name);
     // If sw partition is read locked, then access policy changes from RO to no access
     uvm_reg_addr_t addr = ral.get_word_aligned_addr(item.a_addr);
-    if (`gmv(ral.creator_sw_cfg_read_lock) == 0) begin
+    if (`gmv(ral.creator_sw_cfg_read_lock) == 0 || cfg.otp_ctrl_vif.lc_esc_on == 1) begin
       if (addr inside {[cfg.mem_ranges[ral_name][0].start_addr :
-                      cfg.mem_ranges[ral_name][0].start_addr + CreatorSwCfgSize - 1]}) begin
+                       cfg.mem_ranges[ral_name][0].start_addr + CreatorSwCfgSize - 1]}) begin
         predict_err(OtpCreatorSwCfgErrIdx, OtpAccessError);
         `DV_CHECK_EQ(item.d_data, 0,
                      $sformatf("locked mem read mismatch at TLUL addr %0h in CreatorSwCfg", addr))
         return 0;
       end
     end
-    if (`gmv(ral.owner_sw_cfg_read_lock) == 0) begin
+    if (`gmv(ral.owner_sw_cfg_read_lock) == 0 ||  cfg.otp_ctrl_vif.lc_esc_on == 1) begin
       if (addr inside {[cfg.mem_ranges[ral_name][0].start_addr + OwnerSwCfgOffset :
           cfg.mem_ranges[ral_name][0].start_addr + OwnerSwCfgSize + OwnerSwCfgOffset - 1]}) begin
         predict_err(OtpOwnerSwCfgErrIdx, OtpAccessError);

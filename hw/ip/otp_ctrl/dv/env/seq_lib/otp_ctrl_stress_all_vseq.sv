@@ -18,6 +18,7 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
     // Drive dft_en pins to access the test_access memory, this is used for tl_error sequence in
     // stress_all_with_rand_reset test
     cfg.otp_ctrl_vif.drive_lc_dft_en(lc_ctrl_pkg::On);
+    if ($urandom_range(0, 1)) cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
 
     // Once turn on lc_dft_en regiser, will need some time to update the state register
     // Two clock cycles for lc_async mode, one clock cycle for driving dft_en
@@ -32,6 +33,7 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
                           "otp_ctrl_test_access_vseq",
                           // TODO: support this seq:
                           // "otp_ctrl_parallel_lc_req_vseq",
+                          "otp_ctrl_parallel_lc_esc_vseq",
                           "otp_ctrl_parallel_key_req_vseq"};
 
     for (int i = 1; i <= num_trans; i++) begin
@@ -76,6 +78,7 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
   endtask : body
 
   virtual task read_and_check_all_csrs_after_reset();
+    cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
     otp_pwr_init();
     super.read_and_check_all_csrs_after_reset();
   endtask

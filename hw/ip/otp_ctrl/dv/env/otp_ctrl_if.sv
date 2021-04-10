@@ -43,6 +43,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
       lc_esc_dly1       <= lc_ctrl_pkg::Off;
       lc_esc_dly2       <= lc_ctrl_pkg::Off;
       lc_check_byp_en_i <= lc_ctrl_pkg::Off;
+      lc_esc_on         <= 0;
     end else begin
       lc_prog_err_dly1 <= lc_prog_err;
       lc_esc_dly1      <= lc_escalate_en_i;
@@ -50,12 +51,13 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
       if (lc_prog_req && lc_check_byp_en_i == lc_ctrl_pkg::Off && lc_check_byp_en) begin
         lc_check_byp_en_i <= lc_ctrl_pkg::On;
       end
+      if (lc_esc_dly2 == lc_ctrl_pkg::On && !lc_esc_on) begin
+        lc_esc_on <= 1;
+      end
     end
   end
 
   assign lc_prog_no_sta_check = lc_prog_err | lc_prog_err_dly1 | lc_prog_req | lc_esc_on;
-
-  assign lc_esc_on = lc_esc_dly2 != lc_ctrl_pkg::Off;
 
   // TODO: for lc_tx, except esc_en signal, all value different from On is treated as Off,
   // technically we can randomize values here once scb supports
