@@ -255,7 +255,7 @@ module chip_${top["name"]}_${target["name"]} (
     .NMioPads(${len(muxed_pads)}),
 % if target["name"] == "asic":
     .PhysicalPads(1),
-    .NIoBanks(IoBankCount),
+    .NIoBanks(int'(IoBankCount)),
     .DioScanRole ({
 % for pad in list(reversed(dedicated_pads)):
       scan_role_pkg::${lib.Name.from_snake_case('dio_pad_' + pad["name"] + '_scan_role').as_camel_case()}${"" if loop.last else ","}
@@ -539,6 +539,10 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_out_cc2 = 1'b0;
   assign manual_oe_cc2 = 1'b0;
 
+  assign manual_out_flash_test_mode0 = 1'b0;
+  assign manual_oe_flash_test_mode0 = 1'b0;
+  assign manual_out_flash_test_mode1 = 1'b0;
+  assign manual_oe_flash_test_mode1 = 1'b0;
   assign manual_out_flash_test_volt = 1'b0;
   assign manual_oe_flash_test_volt = 1'b0;
 
@@ -551,6 +555,8 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_attr_por_n = '0;
   assign manual_attr_cc1 = '0;
   assign manual_attr_cc2 = '0;
+  assign manual_attr_flash_test_mode0 = '0;
+  assign manual_attr_flash_test_mode1 = '0;
   assign manual_attr_flash_test_volt = '0;
   assign manual_attr_flash_test_mode0 = '0;
   assign manual_attr_flash_test_mode1 = '0;
@@ -612,6 +618,8 @@ module chip_${top["name"]}_${target["name"]} (
   // Tie-off unused signals
   assign dio_in[DioUsbdevSense] = 1'b0;
   assign dio_in[DioUsbdevSe0] = 1'b0;
+  assign dio_in[DioUsbdevDpPullup] = 1'b0;
+  assign dio_in[DioUsbdevDnPullup] = 1'b0;
   assign dio_in[DioUsbdevTxModeSe] = 1'b0;
   assign dio_in[DioUsbdevSuspend] = 1'b0;
 
@@ -664,9 +672,8 @@ module chip_${top["name"]}_${target["name"]} (
   logic usb_ref_val;
 
   // adc
-  // The adc package definition should eventually be moved to the adc module
-  ast_pkg::adc_ast_req_t adc_i;
-  ast_pkg::adc_ast_rsp_t adc_o;
+  ast_pkg::adc_ast_req_t adc_req;
+  ast_pkg::adc_ast_rsp_t adc_rsp;
 
   // entropy source interface
   // The entropy source pacakge definition should eventually be moved to es
@@ -726,10 +733,6 @@ module chip_${top["name"]}_${target["name"]} (
   import rstmgr_pkg::PowerDomains;
   import rstmgr_pkg::DomainAonSel;
   import rstmgr_pkg::Domain0Sel;
-
-  // adc connections
-  ast_pkg::adc_ast_req_t adc_req;
-  ast_pkg::adc_ast_rsp_t adc_rsp;
 
   // external clock comes in at a fixed position
   logic ext_clk;

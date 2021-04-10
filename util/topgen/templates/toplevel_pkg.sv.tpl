@@ -42,7 +42,7 @@ package top_${top["name"]}_pkg;
 
   // Enumeration of IO power domains.
   // Only used in ASIC target.
-  typedef enum {
+  typedef enum logic [${len(top["pinout"]["banks"]).bit_length()-1}:0] {
 % for bank in top["pinout"]["banks"]:
     ${lib.Name(['io', 'bank', bank]).as_camel_case()} = ${loop.index},
 % endfor

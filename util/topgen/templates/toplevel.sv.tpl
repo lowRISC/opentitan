@@ -775,14 +775,13 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
   // All dedicated inputs
 <% idx = 0 %>\
   logic [${num_dio_total-1}:0] unused_dio_p2d;
+  assign unused_dio_p2d = dio_p2d;
   % for sig in top["pinmux"]["ios"]:
 <% literal = lib.get_io_enum_literal(sig, 'dio') %>\
     % if sig["connection"] != "muxed" and sig["type"] in ["inout"]:
   assign cio_${sig["name"]}_p2d${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""} = dio_p2d[${literal}];
     % elif sig["connection"] != "muxed" and sig["type"] in ["input"]:
   assign cio_${sig["name"]}_p2d${"[" + str(sig["idx"]) +"]" if sig["idx"] !=-1  else ""} = dio_p2d[${literal}];
-    % elif sig["connection"] != "muxed" and sig["type"] in ["output"]:
-  assign unused_dio_p2d[${idx}] = dio_p2d[${literal}];<% idx += 1 %>
     % endif
   % endfor
 

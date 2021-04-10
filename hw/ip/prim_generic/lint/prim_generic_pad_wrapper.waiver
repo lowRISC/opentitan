@@ -19,4 +19,5 @@ waive -rules Z_USE -regexp {Constant with 'Z literal value '1'bz' encountered} -
       -comment "This z assignment is correct."
 waive -rules PARAM_NOT_USED -regexp {Parameter 'Variant' not used in module 'prim_generic_pad_wrapper'} -location {prim_generic_pad_wrapper.sv} \
       -comment "This parameter has been provisioned for later and is currently unused."
-
+waive -rules PARAM_NOT_USED -regexp {Parameter 'ScanRole' not used in module 'prim_generic_pad_wrapper'} -location {prim_generic_pad_wrapper.sv} \
+      -comment "This parameter has been provisioned for later and is currently unused."

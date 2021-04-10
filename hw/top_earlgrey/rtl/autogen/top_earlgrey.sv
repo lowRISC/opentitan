@@ -2836,6 +2836,7 @@ module top_earlgrey #(
 
   // All dedicated inputs
   logic [22:0] unused_dio_p2d;
+  assign unused_dio_p2d = dio_p2d;
   assign cio_spi_host0_sd_p2d[0] = dio_p2d[DioSpiHost0Sd0];
   assign cio_spi_host0_sd_p2d[1] = dio_p2d[DioSpiHost0Sd1];
   assign cio_spi_host0_sd_p2d[2] = dio_p2d[DioSpiHost0Sd2];
@@ -2850,15 +2851,6 @@ module top_earlgrey #(
   assign cio_spi_device_sck_p2d = dio_p2d[DioSpiDeviceSck];
   assign cio_spi_device_csb_p2d = dio_p2d[DioSpiDeviceCsb];
   assign cio_usbdev_sense_p2d = dio_p2d[DioUsbdevSense];
-  assign unused_dio_p2d[0] = dio_p2d[DioSpiHost0Sck];
-  assign unused_dio_p2d[1] = dio_p2d[DioSpiHost0Csb];
-  assign unused_dio_p2d[2] = dio_p2d[DioUsbdevSe0];
-  assign unused_dio_p2d[3] = dio_p2d[DioUsbdevDpPullup];
-  assign unused_dio_p2d[4] = dio_p2d[DioUsbdevDnPullup];
-  assign unused_dio_p2d[5] = dio_p2d[DioUsbdevTxModeSe];
-  assign unused_dio_p2d[6] = dio_p2d[DioUsbdevSuspend];
-  assign unused_dio_p2d[7] = dio_p2d[DioSysrstCtrlAonEcRstOutL];
-  assign unused_dio_p2d[8] = dio_p2d[DioSysrstCtrlAonPwrbOut];
 
     // All dedicated outputs
   assign dio_d2p[DioSpiHost0Sd0] = cio_spi_host0_sd_d2p[0];

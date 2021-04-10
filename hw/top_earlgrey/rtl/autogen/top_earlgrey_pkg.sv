@@ -463,7 +463,7 @@ package top_earlgrey_pkg;
 
   // Enumeration of IO power domains.
   // Only used in ASIC target.
-  typedef enum {
+  typedef enum logic [2:0] {
     IoBankVcc = 0,
     IoBankAvcc = 1,
     IoBankVioa = 2,

@@ -105,7 +105,6 @@ module padring
     );
   end else begin : gen_no_physical_pads
     assign pad_pok = '0;
-    assign phys_in_o = '0;
   end
 
 endmodule : padring
