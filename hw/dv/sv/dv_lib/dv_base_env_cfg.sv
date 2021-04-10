@@ -115,8 +115,6 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
 
     if (ral_model_names.size > 0) begin
       `DV_CHECK_FATAL(ral_models.exists(RAL_T::type_name))
-      `downcast(ral, ral_models[RAL_T::type_name])
-      `DV_CHECK_NE_FATAL(ral, null)
     end
   endfunction
 
