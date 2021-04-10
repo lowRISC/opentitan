@@ -18,7 +18,7 @@ package ast_pkg;
   parameter int AdcDataWidth    = top_pkg::ADC_DATAW;
   parameter int UsbCalibWidth   = 16;
   parameter int Ast2PadOutWidth = 10;
-  parameter int Pad2AstInWidth  = 10;
+  parameter int Pad2AstInWidth  = 6;
 
   // Memories Read-Write Margin Interface
   typedef struct packed {

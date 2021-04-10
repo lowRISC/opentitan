@@ -1197,23 +1197,13 @@ typedef enum top_earlgrey_pinmux_peripheral_in {
   kTopEarlgreyPinmuxPeripheralInFlashCtrlTck = 46, /**< Peripheral Input 46 */
   kTopEarlgreyPinmuxPeripheralInFlashCtrlTms = 47, /**< Peripheral Input 47 */
   kTopEarlgreyPinmuxPeripheralInFlashCtrlTdi = 48, /**< Peripheral Input 48 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn0 = 49, /**< Peripheral Input 49 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn1 = 50, /**< Peripheral Input 50 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn2 = 51, /**< Peripheral Input 51 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn3 = 52, /**< Peripheral Input 52 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn4 = 53, /**< Peripheral Input 53 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn5 = 54, /**< Peripheral Input 54 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn6 = 55, /**< Peripheral Input 55 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn7 = 56, /**< Peripheral Input 56 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn8 = 57, /**< Peripheral Input 57 */
-  kTopEarlgreyPinmuxPeripheralInSensorCtrlAonAstDebugIn9 = 58, /**< Peripheral Input 58 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonAcPresent = 59, /**< Peripheral Input 59 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonEcRstInL = 60, /**< Peripheral Input 60 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In = 61, /**< Peripheral Input 61 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In = 62, /**< Peripheral Input 62 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In = 63, /**< Peripheral Input 63 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn = 64, /**< Peripheral Input 64 */
-  kTopEarlgreyPinmuxPeripheralInLast = 64, /**< \internal Last valid peripheral input */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonAcPresent = 49, /**< Peripheral Input 49 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonEcRstInL = 50, /**< Peripheral Input 50 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In = 51, /**< Peripheral Input 51 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In = 52, /**< Peripheral Input 52 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In = 53, /**< Peripheral Input 53 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn = 54, /**< Peripheral Input 54 */
+  kTopEarlgreyPinmuxPeripheralInLast = 54, /**< \internal Last valid peripheral input */
 } top_earlgrey_pinmux_peripheral_in_t;
 
 /**

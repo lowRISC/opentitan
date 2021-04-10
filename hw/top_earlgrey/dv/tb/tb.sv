@@ -137,7 +137,7 @@ module tb;
     .IOC3(dft_straps[0]),  // MIO 25
     .IOC4(dft_straps[1]),  // MIO 26
     .IOC5(tap_straps[1]),  // MIO 27
-    .IOC6(tie_off[6]),     // MIO 28
+    .IOC6(clk),            // MIO 28 - external clock fed in at a fixed position
     .IOC7(tie_off[7]),     // MIO 29
     .IOC8(tap_straps[0]),  // MIO 30
     .IOC9(tie_off[8]),     // MIO 31

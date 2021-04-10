@@ -80,7 +80,6 @@ module top_earlgrey #(
   input  ast_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req_i,
   output ast_pkg::ast_alert_rsp_t       sensor_ctrl_ast_alert_rsp_o,
   input  ast_pkg::ast_status_t       sensor_ctrl_ast_status_i,
-  output logic [9:0] pinmux2ast_o,
   input  logic [9:0] ast2pinmux_i,
   output logic       usbdev_usb_ref_val_o,
   output logic       usbdev_usb_ref_pulse_o,
@@ -116,7 +115,7 @@ module top_earlgrey #(
   import top_earlgrey_rnd_cnst_pkg::*;
 
   // Signals
-  logic [64:0] mio_p2d;
+  logic [54:0] mio_p2d;
   logic [66:0] mio_d2p;
   logic [66:0] mio_en_d2p;
   logic [22:0] dio_p2d;
@@ -245,7 +244,6 @@ module top_earlgrey #(
   // pinmux_aon
   // aon_timer_aon
   // sensor_ctrl_aon
-  logic [9:0] cio_sensor_ctrl_aon_ast_debug_in_p2d;
   logic [9:0] cio_sensor_ctrl_aon_ast_debug_out_d2p;
   logic [9:0] cio_sensor_ctrl_aon_ast_debug_out_en_d2p;
   // sram_ctrl_ret_aon
@@ -1809,9 +1807,6 @@ module top_earlgrey #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[10:4])
   ) u_sensor_ctrl_aon (
 
-      // Input
-      .cio_ast_debug_in_i     (cio_sensor_ctrl_aon_ast_debug_in_p2d),
-
       // Output
       .cio_ast_debug_out_o    (cio_sensor_ctrl_aon_ast_debug_out_d2p),
       .cio_ast_debug_out_en_o (cio_sensor_ctrl_aon_ast_debug_out_en_d2p),
@@ -1830,7 +1825,6 @@ module top_earlgrey #(
       .ast_alert_o(sensor_ctrl_ast_alert_rsp_o),
       .ast_status_i(sensor_ctrl_ast_status_i),
       .ast2pinmux_i(ast2pinmux_i),
-      .pinmux2ast_o(pinmux2ast_o),
       .tl_i(sensor_ctrl_aon_tl_req),
       .tl_o(sensor_ctrl_aon_tl_rsp),
 
@@ -2691,16 +2685,6 @@ module top_earlgrey #(
   assign cio_flash_ctrl_tck_p2d = mio_p2d[MioInFlashCtrlTck];
   assign cio_flash_ctrl_tms_p2d = mio_p2d[MioInFlashCtrlTms];
   assign cio_flash_ctrl_tdi_p2d = mio_p2d[MioInFlashCtrlTdi];
-  assign cio_sensor_ctrl_aon_ast_debug_in_p2d[0] = mio_p2d[MioInSensorCtrlAonAstDebugIn0];
-  assign cio_sensor_ctrl_aon_ast_debug_in_p2d[1] = mio_p2d[MioInSensorCtrlAonAstDebugIn1];
-  assign cio_sensor_ctrl_aon_ast_debug_in_p2d[2] = mio_p2d[MioInSensorCtrlAonAstDebugIn2];
-  assign cio_sensor_ctrl_aon_ast_debug_in_p2d[3] = mio_p2d[MioInSensorCtrlAonAstDebugIn3];
-  assign cio_sensor_ctrl_aon_ast_debug_in_p2d[4] = mio_p2d[MioInSensorCtrlAonAstDebugIn4];
-  assign cio_sensor_ctrl_aon_ast_debug_in_p2d[5] = mio_p2d[MioInSensorCtrlAonAstDebugIn5];
-  assign cio_sensor_ctrl_aon_ast_debug_in_p2d[6] = mio_p2d[MioInSensorCtrlAonAstDebugIn6];
-  assign cio_sensor_ctrl_aon_ast_debug_in_p2d[7] = mio_p2d[MioInSensorCtrlAonAstDebugIn7];
-  assign cio_sensor_ctrl_aon_ast_debug_in_p2d[8] = mio_p2d[MioInSensorCtrlAonAstDebugIn8];
-  assign cio_sensor_ctrl_aon_ast_debug_in_p2d[9] = mio_p2d[MioInSensorCtrlAonAstDebugIn9];
   assign cio_sysrst_ctrl_aon_ac_present_p2d = mio_p2d[MioInSysrstCtrlAonAcPresent];
   assign cio_sysrst_ctrl_aon_ec_rst_in_l_p2d = mio_p2d[MioInSysrstCtrlAonEcRstInL];
   assign cio_sysrst_ctrl_aon_key0_in_p2d = mio_p2d[MioInSysrstCtrlAonKey0In];

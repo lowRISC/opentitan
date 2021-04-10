@@ -13,7 +13,7 @@ module ast #(
   parameter int AdcDataWidth    = 10,
   parameter int EntropyStreams  = 4,
   parameter int Ast2PadOutWidth = 16,  // TODO:final size
-  parameter int Pad2AstInWidth  = 16,  // TODO:final size
+  parameter int Pad2AstInWidth  = 6,   // TODO:final size
   parameter int UsbCalibWidth   = 16   // TODO:final size
 ) (
   // tlul if
