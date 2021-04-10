@@ -179,7 +179,7 @@ module chip_earlgrey_asic (
     .NDioPads(22),
     .NMioPads(47),
     .PhysicalPads(1),
-    .NIoBanks(IoBankCount),
+    .NIoBanks(int'(IoBankCount)),
     .DioScanRole ({
       scan_role_pkg::DioPadIor9ScanRole,
       scan_role_pkg::DioPadIor8ScanRole,
@@ -793,6 +793,10 @@ module chip_earlgrey_asic (
   assign manual_out_cc2 = 1'b0;
   assign manual_oe_cc2 = 1'b0;
 
+  assign manual_out_flash_test_mode0 = 1'b0;
+  assign manual_oe_flash_test_mode0 = 1'b0;
+  assign manual_out_flash_test_mode1 = 1'b0;
+  assign manual_oe_flash_test_mode1 = 1'b0;
   assign manual_out_flash_test_volt = 1'b0;
   assign manual_oe_flash_test_volt = 1'b0;
 
@@ -800,6 +804,8 @@ module chip_earlgrey_asic (
   assign manual_attr_por_n = '0;
   assign manual_attr_cc1 = '0;
   assign manual_attr_cc2 = '0;
+  assign manual_attr_flash_test_mode0 = '0;
+  assign manual_attr_flash_test_mode1 = '0;
   assign manual_attr_flash_test_volt = '0;
 
   logic unused_manual_sigs;
@@ -857,6 +863,8 @@ module chip_earlgrey_asic (
   // Tie-off unused signals
   assign dio_in[DioUsbdevSense] = 1'b0;
   assign dio_in[DioUsbdevSe0] = 1'b0;
+  assign dio_in[DioUsbdevDpPullup] = 1'b0;
+  assign dio_in[DioUsbdevDnPullup] = 1'b0;
   assign dio_in[DioUsbdevTxModeSe] = 1'b0;
   assign dio_in[DioUsbdevSuspend] = 1'b0;
 
@@ -909,9 +917,8 @@ module chip_earlgrey_asic (
   logic usb_ref_val;
 
   // adc
-  // The adc package definition should eventually be moved to the adc module
-  ast_pkg::adc_ast_req_t adc_i;
-  ast_pkg::adc_ast_rsp_t adc_o;
+  ast_pkg::adc_ast_req_t adc_req;
+  ast_pkg::adc_ast_rsp_t adc_rsp;
 
   // entropy source interface
   // The entropy source pacakge definition should eventually be moved to es
@@ -971,10 +978,6 @@ module chip_earlgrey_asic (
   import rstmgr_pkg::PowerDomains;
   import rstmgr_pkg::DomainAonSel;
   import rstmgr_pkg::Domain0Sel;
-
-  // adc connections
-  ast_pkg::adc_ast_req_t adc_req;
-  ast_pkg::adc_ast_rsp_t adc_rsp;
 
   // external clock comes in at a fixed position
   logic ext_clk;

@@ -42,11 +42,11 @@ module prim_generic_pad_wrapper
                          pok_i};
 
   if (PadType == InputStd) begin : gen_input_only
-    logic unused_sigs;
-    assign unused_sigs = ^{out_i,
-                           oe_i,
-                           attr_i.virt_od_en,
-                           attr_i.drive_strength};
+    logic unused_in_sigs;
+    assign unused_in_sigs = ^{out_i,
+                              oe_i,
+                              attr_i.virt_od_en,
+                              attr_i.drive_strength};
 
     assign in_raw_o = (ie_i) ? inout_io  : 1'bz;
     // input inversion
@@ -84,8 +84,8 @@ module prim_generic_pad_wrapper
   `endif
   end else if (PadType == AnalogIn0) begin : gen_analog0
 
-    logic unused_sigs;
-    assign unused_sigs = ^{attr_i, out_i, oe_i, ie_i};
+    logic unused_ana_sigs;
+    assign unused_ana_sigs = ^{attr_i, out_i, oe_i, ie_i};
 
     assign in_o = inout_io;
     assign in_raw_o = inout_io;
