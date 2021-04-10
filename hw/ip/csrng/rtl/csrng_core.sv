@@ -308,6 +308,8 @@ module csrng_core import csrng_pkg::*; #(
   logic                    ctr_drbg_gen_es_ack;
   logic                    block_encrypt_quiet;
 
+  logic [StateId-1:0]      track_inst_id[NApps];
+
   // flops
   logic [2:0]  acmd_q, acmd_d;
   logic [3:0]  shid_q, shid_d;
@@ -317,7 +319,7 @@ module csrng_core import csrng_pkg::*; #(
   logic        lc_hw_debug_not_on_q, lc_hw_debug_not_on_d;
   logic        lc_hw_debug_on_q, lc_hw_debug_on_d;
   logic        cmd_req_dly_q, cmd_req_dly_d;
-  logic        cs_aes_halt_q, cs_aes_halt_d;
+  logic           cs_aes_halt_q, cs_aes_halt_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -1319,6 +1321,69 @@ module csrng_core import csrng_pkg::*; #(
   // es to cs halt request to reduce power spikes
   assign cs_aes_halt_d = ctr_drbg_upd_es_ack && ctr_drbg_gen_es_ack && block_encrypt_quiet;
   assign cs_aes_halt_o.cs_aes_halt_ack = cs_aes_halt_q;
+
+  //--------------------------------------------
+  // tracking state machine
+  //--------------------------------------------
+
+  for (genvar i = 0; i < NApps; i = i+1) begin : gen_track_sm
+
+    assign track_inst_id[i] = i;
+
+
+  csrng_track_sm #(
+    .Cmd(Cmd),
+    .StateId(StateId)
+  ) u_csrng_track_sm (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .inst_id_i(track_inst_id[i]),
+    .acmd_avail_i(acmd_avail),
+    .acmd_accept_i(acmd_accept),
+    .acmd_i(acmd_hold),
+    .shid_i(shid),
+    .ctr_drbg_cmd_req_i(ctr_drbg_cmd_req),
+    .ctr_drbg_cmd_req_rdy_i(ctr_drbg_cmd_req_rdy),
+    .ctr_drbg_cmd_ccmd_i(acmd_hold),
+    .ctr_drbg_cmd_inst_id_i(shid_q),
+    .updblk_arb_vld_i(updblk_arb_vld),
+    .updblk_arb_rdy_i(updblk_arb_rdy),
+    .updblk_arb_ccmd_i(updblk_arb_ccmd),
+    .updblk_arb_inst_id_i(updblk_arb_inst_id),
+    .benblk_arb_vld_i(benblk_arb_vld),
+    .benblk_arb_rdy_i(benblk_arb_rdy),
+    .benblk_arb_ccmd_i(benblk_arb_cmd),
+    .benblk_arb_inst_id_i(benblk_arb_inst_id),
+    .benblk_updblk_ack_i(benblk_updblk_ack),
+    .updblk_benblk_ack_rdy_i(updblk_benblk_ack_rdy),
+    .benblk_cmd_i(benblk_cmd),
+    .benblk_inst_id_i(benblk_inst_id),
+    .updblk_cmdblk_ack_i(updblk_cmdblk_ack),
+    .cmdblk_updblk_ack_rdy_i(cmdblk_updblk_ack_rdy),
+    .updblk_cmdblk_ccmd_i(updblk_ccmd),
+    .updblk_cmdblk_inst_id_i(updblk_inst_id),
+    .ctr_drbg_gen_req_i(ctr_drbg_gen_req),
+    .ctr_drbg_gen_req_rdy_i(ctr_drbg_gen_req_rdy),
+    .ctr_drbg_gen_ccmd_i(cmd_result_ccmd),
+    .ctr_drbg_gen_inst_id_i(cmd_result_inst_id),
+    .benblk_genblk_ack_i(benblk_genblk_ack),
+    .genblk_benblk_ack_rdy_i(genblk_benblk_ack_rdy),
+    .updblk_genblk_ack_i(updblk_genblk_ack),
+    .genblk_updblk_ack_rdy_i(genblk_updblk_ack_rdy),
+    .updblk_ccmd_i(updblk_ccmd),
+    .updblk_inst_id_i(updblk_inst_id),
+    .genbits_stage_vld_i(genbits_stage_vld[i]),
+    .genbits_stage_rdy_i(genbits_stage_rdy[i]),
+    .state_db_wr_req_i(state_db_wr_req),
+    .state_db_wr_req_rdy_i(state_db_wr_req_rdy),
+    .state_db_wr_ccmd_i(state_db_wr_ccmd),
+    .state_db_wr_inst_id_i(state_db_wr_inst_id),
+    .cmd_core_ack_i(cmd_core_ack[i]),
+    .cmd_stage_ack_i(cmd_stage_ack[i]),
+    .track_sm_o()
+  );
+
+  end : gen_track_sm
 
   //--------------------------------------------
   // report csrng request summary
