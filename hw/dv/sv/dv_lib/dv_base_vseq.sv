@@ -86,8 +86,22 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   virtual task apply_reset(string kind = "HARD");
     if (kind == "HARD") begin
-      cfg.clk_rst_vif.apply_reset();
-    end
+      if (cfg.clk_rst_vifs.size > 0) begin
+        fork
+          begin : isolation_fork
+            foreach (cfg.clk_rst_vifs[i]) begin
+              automatic string ral_name = i;
+              fork
+                cfg.clk_rst_vifs[ral_name].apply_reset();
+              join_none
+            end
+            wait fork;
+          end : isolation_fork
+        join
+      end else begin // no ral model and only has default clk_rst_vif
+        cfg.clk_rst_vif.apply_reset();
+      end
+    end // if (kind == "HARD")
   endtask
 
   virtual task wait_for_reset(string reset_kind     = "HARD",

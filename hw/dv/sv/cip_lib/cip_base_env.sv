@@ -49,6 +49,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
       uvm_config_db#(alert_esc_agent_cfg)::set(this, agent_name, "cfg",
           cfg.m_alert_agent_cfg[alert_name]);
       cfg.m_alert_agent_cfg[alert_name].en_cov = cfg.en_cov;
+      // TODO, should be async clk?
       cfg.m_alert_agent_cfg[alert_name].clk_freq_mhz = int'(cfg.clk_freq_mhz);
     end
 
