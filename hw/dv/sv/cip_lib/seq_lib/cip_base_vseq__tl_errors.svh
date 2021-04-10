@@ -24,8 +24,8 @@
   end
 
 virtual task tl_access_unmapped_addr(string ral_name);
-  bit [BUS_AW-1:0] normalized_csr_addrs[] = new[cfg.csr_addrs.size()];
-  bit [BUS_AW-1:0] csr_base_addr = cfg.ral.default_map.get_base_addr();
+  bit [BUS_AW-1:0] normalized_csr_addrs[] = new[cfg.csr_addrs[ral_name].size()];
+  bit [BUS_AW-1:0] csr_base_addr = cfg.ral_models[ral_name].default_map.get_base_addr();
 
   // calculate normalized address outside the loop to improve perf
   foreach (cfg.csr_addrs[ral_name][i]) begin
@@ -120,7 +120,8 @@ virtual task tl_write_mem_less_than_word(string ral_name);
     // if more than one memories, randomly select one memory
     mem_idx = $urandom_range(0, loc_mem_ranges.size - 1);
     // only test when mem doesn't support partial write
-    `downcast(mem, get_mem_by_addr(ral, cfg.mem_ranges[ral_name][mem_idx].start_addr))
+    `downcast(mem, get_mem_by_addr(cfg.ral_models[ral_name],
+                                   cfg.mem_ranges[ral_name][mem_idx].start_addr))
     if (mem.get_mem_partial_write_support()) continue;
 
     `create_tl_access_error_case(
@@ -141,7 +142,8 @@ virtual task tl_read_mem_err(string ral_name);
     if (cfg.under_reset) return;
     // if more than one memories, randomly select one memory
     mem_idx = $urandom_range(0, loc_mem_ranges.size - 1);
-    if (get_mem_access_by_addr(ral, cfg.mem_ranges[ral_name][mem_idx].start_addr) != "WO") continue;
+    if (get_mem_access_by_addr(cfg.ral_models[ral_name],
+        cfg.mem_ranges[ral_name][mem_idx].start_addr) != "WO") continue;
     `create_tl_access_error_case(
         tl_read_mem_err,
         opcode == tlul_pkg::Get;
@@ -160,12 +162,12 @@ endtask
 virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, string ral_name);
   addr_range_t loc_mem_range[$] = cfg.mem_ranges[ral_name];
   bit has_mem = (loc_mem_range.size > 0);
-  bit [BUS_AW-1:0] csr_base_addr = cfg.ral.default_map.get_base_addr();
+  bit [BUS_AW-1:0] csr_base_addr = cfg.ral_models[ral_name].default_map.get_base_addr();
   bit has_unmapped_addr;
 
   // get_addr_mask returns address map size - 1 and get_max_offset return the offset of high byte
   // in address map. The difference btw them is unmapped address
-  csr_addr_mask[ral_name] = cfg.ral.get_addr_mask();
+  csr_addr_mask[ral_name] = cfg.ral_models[ral_name].get_addr_mask();
   has_unmapped_addr = csr_addr_mask[ral_name] > cfg.ral_models[ral_name].get_max_offset();
 
   // word aligned. This is used to constrain the random address and LSB 2 bits are masked out
