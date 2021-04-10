@@ -600,11 +600,13 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
       for (int i = 0; i < mem_size_bytes; i++) begin
         write8(i, '0);
       end
-    end
+    end else if (MEM_ECC) begin
     // TODO - temporary workaround until ECC encoding is implemented
-    if (MEM_ECC) begin
+      `MEM_ARR_PATH_SLICE = '{default:'0};
+    end else begin
       `MEM_ARR_PATH_SLICE = '{default:'0};
     end
+
   endfunction // clr_mem
 
   function automatic void set_mem();
@@ -615,11 +617,13 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
       for (int i = 0; i < mem_size_bytes; i++) begin
         write8(i, '1);
       end
-    end
+    end else if (MEM_ECC) begin
     // TODO - temporary workaround until ECC encoding is implemented
-    if (MEM_ECC) begin
+      `MEM_ARR_PATH_SLICE = '{default:'1};
+    end else begin
       `MEM_ARR_PATH_SLICE = '{default:'1};
     end
+
   endfunction
 
   // randomize the memory
