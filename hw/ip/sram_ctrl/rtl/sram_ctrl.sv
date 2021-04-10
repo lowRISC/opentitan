@@ -80,6 +80,13 @@ module sram_ctrl
   assign sram_scr_o.key    = key_q;
   assign sram_scr_o.nonce  = nonce_q[NonceWidth-1:0];
 
+  // tie-off unused nonce bits
+  if (otp_ctrl_pkg::SramNonceWidth > NonceWidth) begin : gen_nonce_tieoff
+    logic unused_nonce;
+    assign unused_nonce = ^nonce_q[otp_ctrl_pkg::SramNonceWidth-1:NonceWidth];
+  end
+
+
   // Status register outputs
   logic parity_error_d, parity_error_q;
   logic escalated_q;
@@ -102,6 +109,12 @@ module sram_ctrl
   // Correctable RAM errors are not supported
   logic unused_error;
   assign unused_error = sram_scr_i.rerror[0];
+
+  // Parameter not used within module
+  // The memory is the user of the perm parameter.  At the moment memories are not instantianted
+  // inside sram_ctrl but parallel to it.
+  lfsr_perm_t unused_perm_param;
+  assign unused_perm_param = RndCnstSramLfsrPerm;
 
 
   //////////////////
@@ -265,6 +278,8 @@ module sram_ctrl
 
   logic unused_otp_bits;
   assign unused_otp_bits = ^otp_hw_cfg_i;
+
+
 
   ////////////////
   // Assertions //
