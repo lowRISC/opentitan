@@ -155,7 +155,7 @@ module spi_device (
   logic        sub_p2s_sent[IoModeEnd];
 
   // CMD interface
-  sel_datapath_e cmd_dp_sel;
+  sel_datapath_e cmd_dp_sel, cmd_dp_sel_outclk;
   spi_byte_t     cmd_opcode;
 
 
@@ -496,6 +496,11 @@ module spi_device (
     else            io_mode_outclk <= io_mode;
   end
 
+  always_ff @(posedge clk_spi_out_buf or negedge rst_spi_n) begin
+    if (!rst_spi_n) cmd_dp_sel_outclk <= DpNone;
+    else            cmd_dp_sel_outclk <= cmd_dp_sel;
+  end
+
   always_comb begin
     io_mode = SingleIO;
     p2s_valid = 1'b 0;
@@ -530,7 +535,7 @@ module spi_device (
       end
 
       FlashMode: begin
-        unique case (cmd_dp_sel)
+        unique case (cmd_dp_sel_outclk)
           DpNone: begin
             io_mode = sub_iomode[IoModeCmdParse];
 
