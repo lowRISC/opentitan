@@ -76,12 +76,10 @@ module pinmux_strap_sampling
   // Strap Sampling Logic //
   //////////////////////////
 
-  logic strap_en_q;
   logic dft_strap_valid_d, dft_strap_valid_q;
   logic lc_strap_sample_en, rv_strap_sample_en, dft_strap_sample_en;
   logic [NTapStraps-1:0] tap_strap_d, tap_strap_q;
   logic [NDFTStraps-1:0] dft_strap_d, dft_strap_q;
-  lc_ctrl_pkg::lc_tx_e continue_sampling_d, continue_sampling_q;
 
   // The LC strap at index 0 has a slightly different
   // enable condition than the DFT strap at index 1.
@@ -104,11 +102,12 @@ module pinmux_strap_sampling
     lc_strap_sample_en = 1'b0;
     rv_strap_sample_en = 1'b0;
     dft_strap_sample_en = 1'b0;
-    continue_sampling_d = continue_sampling_q;
 
     // Initial strap sampling pulse from pwrmgr,
     // qualified by life cycle signals.
-    if (strap_en_i || continue_sampling_q == lc_ctrl_pkg::On) begin
+    // In DFT-enabled life cycle states we continously
+    // sample all straps.
+    if (strap_en_i || lc_dft_en[0] == lc_ctrl_pkg::On) begin
       lc_strap_sample_en = 1'b1;
       if (lc_hw_debug_en[0] == lc_ctrl_pkg::On) begin
         rv_strap_sample_en = 1'b1;
@@ -117,38 +116,17 @@ module pinmux_strap_sampling
         dft_strap_sample_en = 1'b1;
       end
     end
-
-    // In case DFT is enabled, and in case the TAP straps
-    // where not set to functional mode upon the first
-    // sampling event, we continue sampling all straps
-    // until system reset. This is used during the
-    // DFT-enabled life cycle states only.
-    if (lc_dft_en[0] == lc_ctrl_pkg::On) begin
-      if (strap_en_q &&
-          tap_strap_t'(tap_strap_q) != FuncSel) begin
-        continue_sampling_d = lc_ctrl_pkg::On;
-      end
-    end
-    // TODO: this can currently be overridden with a parameter for legacy reasons.
-    // This parameter will be removed in the future.
-    if (TargetCfg.const_sampling) begin
-      continue_sampling_d = lc_ctrl_pkg::On;
-    end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_strap_sample
     if (!rst_ni) begin
       tap_strap_q         <= '0;
       dft_strap_q         <= '0;
-      strap_en_q          <= 1'b0;
       dft_strap_valid_q   <= 1'b0;
-      continue_sampling_q <= lc_ctrl_pkg::Off;
     end else begin
       tap_strap_q         <= tap_strap_d;
       dft_strap_q         <= dft_strap_d;
-      strap_en_q          <= strap_en_i;
       dft_strap_valid_q   <= dft_strap_valid_d;
-      continue_sampling_q <= continue_sampling_d;
     end
   end
 

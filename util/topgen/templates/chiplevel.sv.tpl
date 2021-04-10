@@ -124,7 +124,6 @@ module chip_${top["name"]}_${target["name"]} (
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
-    const_sampling:    1'b1,
     tck_idx:           TckPadIdx,
     tms_idx:           TmsPadIdx,
     trst_idx:          TrstNPadIdx,
