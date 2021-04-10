@@ -45,11 +45,13 @@ extract_sw_logs_sim_dv_depend_files = [
 
 # Generates the OTP image containing root secrets, sw configuration partitions and
 # the life cycle state.
-# TODO: This just puts the device into DEV life cycle state, with randomized root keys.
+# TODO: This just puts the device into RMA life cycle state, with randomized root keys.
+# We are using RMA in order to open up all debug and functional infrastructure
+# as our testing and emulation environments require that.
 # Need to make this more flexible in the future.
 # TODO: additional OTP partitions can be included with the --add-cfg switch
 # see also util/design/README.md
-make_otp_img_inputs = [meson.source_root() / 'hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson']
+make_otp_img_inputs = [meson.source_root() / 'hw/ip/otp_ctrl/data/otp_ctrl_img_rma.hjson']
 make_otp_img_command = [
   prog_python, meson.source_root() / 'util/design/gen-otp-img.py',
   '--quiet',

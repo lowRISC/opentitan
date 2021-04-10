@@ -125,7 +125,6 @@ module chip_englishbreakfast_verilator (
   // to be split into a Verilator TB and a Verilator chiplevel.
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
-    const_sampling: 1'b1,
     tck_idx:        pinmux_reg_pkg::NMioPads +
                     top_englishbreakfast_pkg::DioSpiDeviceSck,
     tms_idx:        pinmux_reg_pkg::NMioPads +

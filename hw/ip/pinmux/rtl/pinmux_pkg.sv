@@ -16,7 +16,6 @@ package pinmux_pkg;
   // datastructure below serves this purpose. Note that all the indices below are with respect to
   // the concatenated {DIO, MIO} packed array.
   typedef struct packed {
-    logic                     const_sampling; // TODO: check whether this can be eliminated.
     integer                   tck_idx;
     integer                   tms_idx;
     integer                   trst_idx;
@@ -35,7 +34,6 @@ package pinmux_pkg;
   } target_cfg_t;
 
   parameter target_cfg_t DefaultTargetCfg = '{
-    const_sampling:    1'b0,
     tck_idx:           0,
     tms_idx:           0,
     trst_idx:          0,
@@ -49,8 +47,8 @@ package pinmux_pkg;
     usb_dn_idx:        0,
     usb_dp_pullup_idx: 0,
     usb_dn_pullup_idx: 0,
-    dio_pad_type: {NDioPads{BidirStd}},
-    mio_pad_type: {NMioPads{BidirStd}}
+    dio_pad_type:      {NDioPads{BidirStd}},
+    mio_pad_type:      {NMioPads{BidirStd}}
   };
 
   // Wakeup Detector Modes
