@@ -157,9 +157,13 @@ module chip_${top["name"]}_${target["name"]} (
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_out;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
+
+  logic unused_mio_in_raw;
+  assign unused_mio_in_raw = ^mio_in_raw;
 
   // Manual pads
 % for pad in dedicated_pads:
@@ -271,10 +275,8 @@ module chip_${top["name"]}_${target["name"]} (
     .clk_scan_i   ( 1'b0                  ),
     .scanmode_i   ( lc_ctrl_pkg::Off      ),
   % endif
-  // TODO: wire this up to AST. Hint: the top_<name>_pkg contains
-  // generated parameters that can be used to index pads by name.
     .dio_in_raw_o ( ),
-    .mio_in_raw_o ( ),
+    .mio_in_raw_o ( mio_in_raw            ),
     // Chip IOs
     .dio_pad_io ({
 % for pad in list(reversed(dedicated_pads)):
@@ -558,6 +560,10 @@ module chip_${top["name"]}_${target["name"]} (
   logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
   assign usbdev_aon_usb_rx_enable = 1'b0;
 
+  // pwrmgr interface
+  pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
+  pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+
   prim_usb_diff_rx #(
     .CalibW(ast_pkg::UsbCalibWidth)
   ) u_prim_usb_diff_rx (
@@ -614,10 +620,6 @@ module chip_${top["name"]}_${target["name"]} (
   // ast clocks and resets
   logic aon_pok;
 
-  // pwrmgr interface
-  pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
-  pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
-
   // synchronization clocks / rests
   clkmgr_pkg::clkmgr_ast_out_t clks_ast;
   rstmgr_pkg::rstmgr_ast_out_t rsts_ast;
@@ -664,7 +666,17 @@ module chip_${top["name"]}_${target["name"]} (
 
   // Debug connections
   logic [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux;
-  logic [ast_pkg::Pad2AstInWidth-1:0] pinmux2ast;
+  logic [ast_pkg::Pad2AstInWidth-1:0] pad2ast;
+
+  assign pad2ast = {
+                     mio_in_raw[MioPadIob8],
+                     mio_in_raw[MioPadIob7],
+                     mio_in_raw[MioPadIoc3],
+                     mio_in_raw[MioPadIob2],
+                     mio_in_raw[MioPadIob1],
+                     mio_in_raw[MioPadIob0]
+                   };
+
 
   // Jitter enable
   logic jen;
@@ -687,9 +699,9 @@ module chip_${top["name"]}_${target["name"]} (
   ast_pkg::adc_ast_req_t adc_req;
   ast_pkg::adc_ast_rsp_t adc_rsp;
 
-  // TODO: need to mux the external clock.
+  // external clock comes in at a fixed position
   logic ext_clk;
-  assign ext_clk = 1'b0;
+  assign ext_clk = mio_in_raw[MioPadIoc6];
 
   // Memory configuration connections
   ast_pkg::spm_rm_t ast_ram_1p_cfg;
@@ -876,7 +888,7 @@ module chip_${top["name"]}_${target["name"]} (
     .dft_strap_test_i      ( dft_strap_test   ),
     .lc_dft_en_i           ( dft_en           ),
     // pinmux related
-    .padmux2ast_i          ( pinmux2ast ),
+    .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
     // Direct short to PAD
     .pad2ast_t0_ai         ( IOA4 ),
@@ -945,7 +957,6 @@ module chip_${top["name"]}_${target["name"]} (
     .es_rng_fips_o                ( es_rng_fips                ),
     .ast_clk_byp_req_o            ( ast_clk_byp_req            ),
     .ast_clk_byp_ack_i            ( ast_clk_byp_ack            ),
-    .pinmux2ast_o                 ( pinmux2ast                 ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
 
     // Flash test mode voltages
@@ -1100,7 +1111,6 @@ module chip_${top["name"]}_${target["name"]} (
     .es_rng_req_o                 (                  ),
     .es_rng_rsp_i                 ( '0               ),
     .es_rng_fips_o                (                  ),
-    .pinmux2ast_o                 (                  ),
     .ast2pinmux_i                 ( '0               ),
 % endif
 

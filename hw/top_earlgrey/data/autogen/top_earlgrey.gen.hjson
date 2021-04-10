@@ -3134,18 +3134,6 @@
           index: -1
         }
         {
-          name: pinmux2ast
-          struct: logic
-          type: uni
-          act: req
-          width: 10
-          inst_name: sensor_ctrl_aon
-          default: ""
-          external: true
-          top_signame: pinmux2ast
-          index: -1
-        }
-        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -5978,7 +5966,6 @@
       otp_ctrl.otp_ast_pwr_seq_h: ""
       sensor_ctrl_aon.ast_alert: sensor_ctrl_ast_alert
       sensor_ctrl_aon.ast_status: sensor_ctrl_ast_status
-      sensor_ctrl_aon.pinmux2ast: pinmux2ast
       sensor_ctrl_aon.ast2pinmux: ast2pinmux
       usbdev.usb_ref_val: ""
       usbdev.usb_ref_pulse: ""
@@ -9035,103 +9022,13 @@
         glob_idx: 48
       }
       {
-        name: sensor_ctrl_aon_ast_debug_in
-        width: 10
-        type: input
-        idx: 0
-        pad: ""
-        connection: muxed
-        glob_idx: 49
-      }
-      {
-        name: sensor_ctrl_aon_ast_debug_in
-        width: 10
-        type: input
-        idx: 1
-        pad: ""
-        connection: muxed
-        glob_idx: 50
-      }
-      {
-        name: sensor_ctrl_aon_ast_debug_in
-        width: 10
-        type: input
-        idx: 2
-        pad: ""
-        connection: muxed
-        glob_idx: 51
-      }
-      {
-        name: sensor_ctrl_aon_ast_debug_in
-        width: 10
-        type: input
-        idx: 3
-        pad: ""
-        connection: muxed
-        glob_idx: 52
-      }
-      {
-        name: sensor_ctrl_aon_ast_debug_in
-        width: 10
-        type: input
-        idx: 4
-        pad: ""
-        connection: muxed
-        glob_idx: 53
-      }
-      {
-        name: sensor_ctrl_aon_ast_debug_in
-        width: 10
-        type: input
-        idx: 5
-        pad: ""
-        connection: muxed
-        glob_idx: 54
-      }
-      {
-        name: sensor_ctrl_aon_ast_debug_in
-        width: 10
-        type: input
-        idx: 6
-        pad: ""
-        connection: muxed
-        glob_idx: 55
-      }
-      {
-        name: sensor_ctrl_aon_ast_debug_in
-        width: 10
-        type: input
-        idx: 7
-        pad: ""
-        connection: muxed
-        glob_idx: 56
-      }
-      {
-        name: sensor_ctrl_aon_ast_debug_in
-        width: 10
-        type: input
-        idx: 8
-        pad: ""
-        connection: muxed
-        glob_idx: 57
-      }
-      {
-        name: sensor_ctrl_aon_ast_debug_in
-        width: 10
-        type: input
-        idx: 9
-        pad: ""
-        connection: muxed
-        glob_idx: 58
-      }
-      {
         name: sysrst_ctrl_aon_ac_present
         width: 1
         type: input
         idx: -1
         pad: ""
         connection: muxed
-        glob_idx: 59
+        glob_idx: 49
       }
       {
         name: sysrst_ctrl_aon_ec_rst_in_l
@@ -9140,7 +9037,7 @@
         idx: -1
         pad: ""
         connection: muxed
-        glob_idx: 60
+        glob_idx: 50
       }
       {
         name: sysrst_ctrl_aon_key0_in
@@ -9149,7 +9046,7 @@
         idx: -1
         pad: ""
         connection: muxed
-        glob_idx: 61
+        glob_idx: 51
       }
       {
         name: sysrst_ctrl_aon_key1_in
@@ -9158,7 +9055,7 @@
         idx: -1
         pad: ""
         connection: muxed
-        glob_idx: 62
+        glob_idx: 52
       }
       {
         name: sysrst_ctrl_aon_key2_in
@@ -9167,7 +9064,7 @@
         idx: -1
         pad: ""
         connection: muxed
-        glob_idx: 63
+        glob_idx: 53
       }
       {
         name: sysrst_ctrl_aon_pwrb_in
@@ -9176,7 +9073,7 @@
         idx: -1
         pad: ""
         connection: muxed
-        glob_idx: 64
+        glob_idx: 54
       }
       {
         name: spi_host0_sck
@@ -9497,7 +9394,7 @@
       muxed:
       {
         inouts: 42
-        inputs: 23
+        inputs: 13
         outputs: 25
         pads: 47
       }
@@ -12822,18 +12719,6 @@
         index: -1
       }
       {
-        name: pinmux2ast
-        struct: logic
-        type: uni
-        act: req
-        width: 10
-        inst_name: sensor_ctrl_aon
-        default: ""
-        external: true
-        top_signame: pinmux2ast
-        index: -1
-      }
-      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -15263,18 +15148,6 @@
         conn_type: false
         index: -1
         netname: sensor_ctrl_ast_status
-      }
-      {
-        package: ""
-        struct: logic
-        signame: pinmux2ast_o
-        width: 10
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: pinmux2ast
       }
       {
         package: ""

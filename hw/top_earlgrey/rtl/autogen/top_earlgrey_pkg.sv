@@ -522,23 +522,13 @@ package top_earlgrey_pkg;
     MioInFlashCtrlTck = 46,
     MioInFlashCtrlTms = 47,
     MioInFlashCtrlTdi = 48,
-    MioInSensorCtrlAonAstDebugIn0 = 49,
-    MioInSensorCtrlAonAstDebugIn1 = 50,
-    MioInSensorCtrlAonAstDebugIn2 = 51,
-    MioInSensorCtrlAonAstDebugIn3 = 52,
-    MioInSensorCtrlAonAstDebugIn4 = 53,
-    MioInSensorCtrlAonAstDebugIn5 = 54,
-    MioInSensorCtrlAonAstDebugIn6 = 55,
-    MioInSensorCtrlAonAstDebugIn7 = 56,
-    MioInSensorCtrlAonAstDebugIn8 = 57,
-    MioInSensorCtrlAonAstDebugIn9 = 58,
-    MioInSysrstCtrlAonAcPresent = 59,
-    MioInSysrstCtrlAonEcRstInL = 60,
-    MioInSysrstCtrlAonKey0In = 61,
-    MioInSysrstCtrlAonKey1In = 62,
-    MioInSysrstCtrlAonKey2In = 63,
-    MioInSysrstCtrlAonPwrbIn = 64,
-    MioInCount = 65
+    MioInSysrstCtrlAonAcPresent = 49,
+    MioInSysrstCtrlAonEcRstInL = 50,
+    MioInSysrstCtrlAonKey0In = 51,
+    MioInSysrstCtrlAonKey1In = 52,
+    MioInSysrstCtrlAonKey2In = 53,
+    MioInSysrstCtrlAonPwrbIn = 54,
+    MioInCount = 55
   } mio_in_e;
 
   typedef enum {

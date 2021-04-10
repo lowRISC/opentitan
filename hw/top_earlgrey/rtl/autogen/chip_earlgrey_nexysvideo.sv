@@ -123,9 +123,13 @@ module chip_earlgrey_nexysvideo #(
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_out;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
+
+  logic unused_mio_in_raw;
+  assign unused_mio_in_raw = ^mio_in_raw;
 
   // Manual pads
   logic manual_in_por_n, manual_out_por_n, manual_oe_por_n;
@@ -292,10 +296,8 @@ module chip_earlgrey_nexysvideo #(
   // This is only used for scan and DFT purposes
     .clk_scan_i   ( 1'b0                  ),
     .scanmode_i   ( lc_ctrl_pkg::Off      ),
-  // TODO: wire this up to AST. Hint: the top_<name>_pkg contains
-  // generated parameters that can be used to index pads by name.
     .dio_in_raw_o ( ),
-    .mio_in_raw_o ( ),
+    .mio_in_raw_o ( mio_in_raw            ),
     // Chip IOs
     .dio_pad_io ({
       IO_UPHY_DPPULLUP,
@@ -788,7 +790,6 @@ module chip_earlgrey_nexysvideo #(
     .es_rng_req_o                 (                  ),
     .es_rng_rsp_i                 ( '0               ),
     .es_rng_fips_o                (                  ),
-    .pinmux2ast_o                 (                  ),
     .ast2pinmux_i                 ( '0               ),
 
     // Multiplexed I/O
