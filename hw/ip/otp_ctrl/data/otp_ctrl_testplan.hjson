@@ -60,7 +60,7 @@
       tests: ["otp_ctrl_partition_walk"]
     }
     {
-      name: partition_check_failure
+      name: partition_check
       desc: '''
             Randomly program partition check related registers including: `check_timeout`,
             `integrity_check_period`, `consistency_check_period`, and `check_trigger`.
@@ -68,9 +68,11 @@
 
             - Check if the corresponding alerts are triggered
             - Check if the error_code register is set correctly
+            Note that due to limited simulation time, for background checks, this test only write
+            random value that is less than 'd20 to the check period.
             '''
       milestone: V2
-      tests: ["otp_ctrl_check_fail"]
+      tests: ["otp_ctrl_check_fail", "otp_ctrl_background_chks"]
     }
     {
       name: init_fail
