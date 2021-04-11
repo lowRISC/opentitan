@@ -31,6 +31,7 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
                           "otp_ctrl_dai_lock_vseq",
                           "otp_ctrl_smoke_vseq",
                           "otp_ctrl_test_access_vseq",
+                          "otp_ctrl_background_chks_vseq",
                           // TODO: support this seq:
                           // "otp_ctrl_parallel_lc_req_vseq",
                           "otp_ctrl_parallel_lc_esc_vseq",

@@ -68,6 +68,11 @@
       name: otp_ctrl_init_fail
       uvm_test_seq: otp_ctrl_init_fail_vseq
     }
+    {
+      name: otp_ctrl_background_chks
+      uvm_test_seq: otp_ctrl_background_chks_vseq
+      reseed: 10
+    }
 
     {
       name: otp_ctrl_parallel_lc_req
