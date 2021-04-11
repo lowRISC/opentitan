@@ -13,6 +13,9 @@ spiflash_bin = executable(
   implicit_include_directories: false,
   dependencies: [
     dependency('libcrypto', native: true),
+    # The libftdi1 dependency needs to be explicit to manage
+    # include paths on some systems.
+    dependency('libftdi1', native: true),
     libmpsse
   ],
   native: true,
