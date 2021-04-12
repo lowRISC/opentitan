@@ -15,8 +15,7 @@ module csrng_track_sm import csrng_pkg::*; #(
 
    // ins req interface
   input logic [StateId-1:0]  inst_id_i,
-  input logic                acmd_avail_i,
-  input logic                acmd_accept_i,
+  input logic                acmd_hdr_capt_i,
   input logic [Cmd-1:0]      acmd_i,
   input logic [StateId-1:0]  shid_i,
   input logic                ctr_drbg_cmd_req_i,
@@ -59,6 +58,13 @@ module csrng_track_sm import csrng_pkg::*; #(
   input logic                cmd_stage_ack_i,
   output logic [7:0]         track_sm_o
 );
+
+  // signals
+  logic  ben_ack_cntr_inc;
+  logic  ben_ack_cntr_clr;
+
+  // flops
+  logic [1:0] ben_ack_cntr_q, ben_ack_cntr_d;
 
 
   localparam int StateWidth = 8;
@@ -133,14 +139,27 @@ module csrng_track_sm import csrng_pkg::*; #(
     .q_o ( state_raw_q )
   );
 
+  always_ff @(posedge clk_i or negedge rst_ni)
+    if (!rst_ni) begin
+      ben_ack_cntr_q      <= '0;
+    end else begin
+      ben_ack_cntr_q     <= ben_ack_cntr_d;
+    end
+
+  assign  ben_ack_cntr_d = ben_ack_cntr_inc ? (ben_ack_cntr_q+1) :
+                           ben_ack_cntr_clr ? '0 :
+                           ben_ack_cntr_q;
+
   assign state_q = state_e'(state_raw_q);
   assign track_sm_o = state_raw_q;
 
   always_comb begin
     state_d = state_q;
+    ben_ack_cntr_inc = 1'b0;
+    ben_ack_cntr_clr = 1'b0;
     unique case (state_q)
       Idle: begin
-        if (acmd_avail_i && acmd_accept_i && (inst_id_i == shid_i)) begin
+        if (acmd_hdr_capt_i && (inst_id_i == shid_i)) begin
           if (acmd_i == INS) begin
             state_d = InsCmdCap;
           end else if (acmd_i == RES) begin
@@ -264,10 +283,15 @@ module csrng_track_sm import csrng_pkg::*; #(
           state_d = GenDrbgUpd1Rtn;
         end
       end
-      GenDrbgUpd1Rtn: begin
+      GenDrbgUpd1Rtn: begin // wait for 3 acks
         if (benblk_updblk_ack_i && updblk_benblk_ack_rdy_i &&
             (benblk_cmd_i == GEN) && (benblk_inst_id_i == inst_id_i)) begin
-          state_d = GenDrbgCmd1Rtn;
+          if (ben_ack_cntr_q != 2) begin
+            ben_ack_cntr_inc = 1'b1;
+          end else begin
+            ben_ack_cntr_clr = 1'b1;
+            state_d = GenDrbgCmd1Rtn;
+          end
         end
       end
       GenDrbgCmd1Rtn: begin
@@ -306,10 +330,15 @@ module csrng_track_sm import csrng_pkg::*; #(
           state_d = GenDrbgUpd2Rtn;
         end
       end
-      GenDrbgUpd2Rtn: begin
+      GenDrbgUpd2Rtn: begin // wait for 3 acks
         if (benblk_updblk_ack_i && updblk_benblk_ack_rdy_i &&
             (benblk_cmd_i == GENU) && (benblk_inst_id_i == inst_id_i)) begin
-          state_d = GenDrbgGen2Rtn;
+          if (ben_ack_cntr_q != 2) begin
+            ben_ack_cntr_inc = 1'b1;
+          end else begin
+            ben_ack_cntr_clr = 1'b1;
+            state_d = GenDrbgGen2Rtn;
+          end
         end
       end
       GenDrbgGen2Rtn: begin
