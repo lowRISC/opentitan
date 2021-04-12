@@ -11,18 +11,20 @@ rom_ext_tests = {
 }
 
 test('rom_ext_parser_unittest', executable(
-  'rom_ext_parser_unittest',
-  sources: [
-    'rom_ext_parser_unittest.cc',
-    meson.source_root() / 'sw/device/silicon_creator/rom_exts/rom_ext_manifest_parser.c',
-    rom_exts_manifest_offsets_header,
-  ],
-  dependencies: [
-    sw_vendor_gtest,
-    sw_lib_base_testing_mock_mmio,
-    sw_lib_testing_bitfield,
-  ],
-  native: true,
-  c_args: ['-DMOCK_MMIO'],
-  cpp_args: ['-DMOCK_MMIO'],
-))
+    'rom_ext_parser_unittest',
+    sources: [
+      'rom_ext_parser_unittest.cc',
+      meson.source_root() / 'sw/device/silicon_creator/rom_exts/rom_ext_manifest_parser.c',
+      rom_exts_manifest_offsets_header,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+      sw_lib_testing_bitfield,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+    ),
+  suite: 'mask_rom',
+)

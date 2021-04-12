@@ -23,9 +23,11 @@ static uint32_t subtract_modulus(const sigverify_rsa_key_t *key,
                                  sigverify_rsa_buffer_t *a) {
   uint32_t borrow = 0;
   for (size_t i = 0; i < ARRAYSIZE(a->data); ++i) {
-    uint64_t diff = (uint64_t)a->data[i] - key->n.data[i] - borrow;
-    borrow = diff > a->data[i];
-    a->data[i] = (uint32_t)diff;
+    uint32_t temp = a->data[i] - borrow;
+    // We borrow if either the above or the below subtraction wraps around.
+    // Note: borrow can only be 0 or 1.
+    borrow = (a->data[i] < borrow) + (temp < key->n.data[i]);
+    a->data[i] = temp - key->n.data[i];
   }
   return borrow;
 }

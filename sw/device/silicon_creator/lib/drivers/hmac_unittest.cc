@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/testing/mock_mmio.h"
+#include "sw/device/silicon_creator/lib/error.h"
 
 #include "hmac_regs.h"  // Generated.
 
@@ -30,8 +31,7 @@ class HmacTest : public Test, public MmioTest {
 class Sha256InitTest : public HmacTest {};
 
 TEST_F(Sha256InitTest, NullArgs) {
-  // FIXME: unified error space.
-  EXPECT_EQ(hmac_sha256_init(nullptr), -1);
+  EXPECT_EQ(hmac_sha256_init(nullptr), kErrorHmacInvalidArgument);
 }
 
 TEST_F(Sha256InitTest, Initialize) {
@@ -45,16 +45,17 @@ TEST_F(Sha256InitTest, Initialize) {
                                           {HMAC_CFG_HMAC_EN_BIT, false},
                                       });
   EXPECT_WRITE32(HMAC_CMD_REG_OFFSET, {{HMAC_CMD_HASH_START_BIT, true}});
-  EXPECT_EQ(hmac_sha256_init(&hmac_), 0);
+  EXPECT_EQ(hmac_sha256_init(&hmac_), kErrorOk);
 }
 
 class Sha256UpdateTest : public HmacTest {};
 
 TEST_F(Sha256UpdateTest, NullArgs) {
-  EXPECT_EQ(hmac_sha256_update(&hmac_, nullptr, 0), -1);
+  EXPECT_EQ(hmac_sha256_update(&hmac_, nullptr, 0), kErrorHmacInvalidArgument);
 
   uint32_t data;
-  EXPECT_EQ(hmac_sha256_update(nullptr, &data, sizeof(uint32_t)), -1);
+  EXPECT_EQ(hmac_sha256_update(nullptr, &data, sizeof(uint32_t)),
+            kErrorHmacInvalidArgument);
 }
 
 TEST_F(Sha256UpdateTest, SendData) {
@@ -66,11 +67,11 @@ TEST_F(Sha256UpdateTest, SendData) {
   // Trigger 8bit aligned writes.
   EXPECT_WRITE8(HMAC_MSG_FIFO_REG_OFFSET, 0x01);
   EXPECT_WRITE8(HMAC_MSG_FIFO_REG_OFFSET, 0x02);
-  EXPECT_EQ(hmac_sha256_update(&hmac_, &kData[1], 2), 0);
+  EXPECT_EQ(hmac_sha256_update(&hmac_, &kData[1], 2), kErrorOk);
 
   // Trigger a single 32bit aligned write.
   EXPECT_WRITE32(HMAC_MSG_FIFO_REG_OFFSET, 0x03020100);
-  EXPECT_EQ(hmac_sha256_update(&hmac_, &kData[0], 4), 0);
+  EXPECT_EQ(hmac_sha256_update(&hmac_, &kData[0], 4), kErrorOk);
 
   // Trigger 8bit/32bit/8bit sequence.
   EXPECT_WRITE8(HMAC_MSG_FIFO_REG_OFFSET, 0x02);
@@ -78,16 +79,16 @@ TEST_F(Sha256UpdateTest, SendData) {
   EXPECT_WRITE32(HMAC_MSG_FIFO_REG_OFFSET, 0x07060504);
   EXPECT_WRITE8(HMAC_MSG_FIFO_REG_OFFSET, 0x08);
   EXPECT_WRITE8(HMAC_MSG_FIFO_REG_OFFSET, 0x09);
-  EXPECT_EQ(hmac_sha256_update(&hmac_, &kData[2], 8), 0);
+  EXPECT_EQ(hmac_sha256_update(&hmac_, &kData[2], 8), kErrorOk);
 }
 
 class Sha256FinalTest : public HmacTest {};
 
 TEST_F(Sha256FinalTest, NullArgs) {
-  EXPECT_EQ(hmac_sha256_final(&hmac_, nullptr), -1);
+  EXPECT_EQ(hmac_sha256_final(&hmac_, nullptr), kErrorHmacInvalidArgument);
 
   hmac_digest_t digest;
-  EXPECT_EQ(hmac_sha256_final(nullptr, &digest), -1);
+  EXPECT_EQ(hmac_sha256_final(nullptr, &digest), kErrorHmacInvalidArgument);
 }
 
 TEST_F(Sha256FinalTest, GetDigest) {
@@ -125,7 +126,7 @@ TEST_F(Sha256FinalTest, GetDigest) {
   EXPECT_READ32(HMAC_DIGEST_7_REG_OFFSET, kExpectedDigest[7]);
 
   hmac_digest_t got_digest;
-  EXPECT_EQ(hmac_sha256_final(&hmac_, &got_digest), 0);
+  EXPECT_EQ(hmac_sha256_final(&hmac_, &got_digest), kErrorOk);
   EXPECT_THAT(got_digest.digest, ElementsAreArray(kExpectedDigest));
 }
 

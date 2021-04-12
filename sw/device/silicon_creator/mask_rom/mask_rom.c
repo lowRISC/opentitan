@@ -42,24 +42,20 @@ static int verify_rom_ext_identifier(rom_ext_manifest_t rom_ext) {
   uint32_t rom_ext_identifier = rom_ext_get_identifier(rom_ext);
 
   if (rom_ext_identifier != kRomExtIdentifierExpected) {
-    return -1;
+    return kErrorUnknown;
   }
 
-  if (hmac_sha256_init(&hmac) != 0) {
-    return -1;
-  }
-
-  if (hmac_sha256_update(&hmac, &rom_ext_identifier, sizeof(uint32_t)) != 0) {
-    return -1;
-  }
+  RETURN_IF_ERROR(hmac_sha256_init(&hmac));
+  RETURN_IF_ERROR(
+      hmac_sha256_update(&hmac, &rom_ext_identifier, sizeof(uint32_t)));
 
   hmac_digest_t digest;
-  if (hmac_sha256_final(&hmac, &digest) != 0) {
-    return -1;
-  }
+  RETURN_IF_ERROR(hmac_sha256_final(&hmac, &digest));
 
   return memcmp(digest.digest, kROMExtIdentifierExpectedDigest,
-                sizeof(digest.digest));
+                sizeof(digest.digest)) == 0
+             ? kErrorOk
+             : kErrorUnknown;
 }
 
 void mask_rom_boot(void) {
@@ -161,7 +157,7 @@ void mask_rom_boot(void) {
     //    break
     //}
     // Temporary implementation for the two above `if` blocks.
-    if (verify_rom_ext_identifier(rom_ext) != 0) {
+    if (verify_rom_ext_identifier(rom_ext) != kErrorOk) {
       break;
     }
 
