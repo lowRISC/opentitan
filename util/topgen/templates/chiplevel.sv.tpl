@@ -693,9 +693,9 @@ module chip_${top["name"]}_${target["name"]} (
   logic [ast_pkg::Pad2AstInWidth-1:0] pad2ast;
 
   assign pad2ast = {
+                     mio_in_raw[MioPadIoc3],
                      mio_in_raw[MioPadIob8],
                      mio_in_raw[MioPadIob7],
-                     mio_in_raw[MioPadIoc3],
                      mio_in_raw[MioPadIob2],
                      mio_in_raw[MioPadIob1],
                      mio_in_raw[MioPadIob0]
