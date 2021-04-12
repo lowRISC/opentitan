@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,9 +38,9 @@ typedef struct uart {
  * Initialize the UART with the request parameters.
  *
  * @param uart Pointer to uart_t with the requested parameters.
- * @return 0 if successful, -1 otherwise (FIXME: unified error space).
+ * @return kErrorOk if successful, else an error code.
  */
-int uart_init(const uart_t *uart);
+rom_error_t uart_init(const uart_t *uart);
 
 /**
  * Write a single byte to the UART.

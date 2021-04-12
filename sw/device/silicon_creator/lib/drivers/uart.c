@@ -10,6 +10,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/silicon_creator/lib/error.h"
 
 #include "uart_regs.h"  // Generated.
 
@@ -32,15 +33,13 @@ static void uart_reset(const uart_t *uart) {
   mmio_region_write32(uart->base_addr, UART_INTR_STATE_REG_OFFSET, UINT32_MAX);
 }
 
-int uart_init(const uart_t *uart) {
-  // TODO(#34): Change to use unified error space.
+rom_error_t uart_init(const uart_t *uart) {
   if (uart == NULL) {
-    return -1;
+    return kErrorUartInvalidArgument;
   }
 
-  // TODO(#34): Change to use unified error space.
   if (uart->baudrate == 0 || uart->clk_freq_hz == 0) {
-    return -1;
+    return kErrorUartInvalidArgument;
   }
 
   // Calculation formula: NCO = 16 * 2^nco_width * baud / fclk.
@@ -53,7 +52,7 @@ int uart_init(const uart_t *uart) {
   // Requested baudrate is too high for the given clock frequency.
   // TODO(#34): Change to use unified error space.
   if (nco != nco_masked) {
-    return -1;
+    return kErrorUartBadBaudRate;
   }
 
   // Must be called before the first write to any of the UART registers.
@@ -68,7 +67,7 @@ int uart_init(const uart_t *uart) {
 
   // Disable interrupts.
   mmio_region_write32(uart->base_addr, UART_INTR_ENABLE_REG_OFFSET, 0u);
-  return 0;
+  return kErrorOk;
 }
 
 static bool uart_tx_full(const uart_t *uart) {

@@ -50,9 +50,8 @@ class UartTest : public Test, public MmioTest {
 class InitTest : public UartTest {};
 
 TEST_F(InitTest, NullArgs) {
-  // FIXME: unified error space.
   // FIXME: add tests with `uart_` misconfigured.
-  EXPECT_EQ(uart_init(nullptr), -1);
+  EXPECT_EQ(uart_init(nullptr), kErrorUartInvalidArgument);
 }
 
 TEST_F(InitTest, Initialize) {
@@ -64,7 +63,7 @@ TEST_F(InitTest, Initialize) {
                                        });
   EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
 
-  EXPECT_EQ(uart_init(&uart_), 0);
+  EXPECT_EQ(uart_init(&uart_), kErrorOk);
 }
 
 class BytesSendTest : public UartTest {

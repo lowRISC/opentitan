@@ -15,3 +15,15 @@ sw_silicon_creator_lib_fake_deps = declare_dependency(
     ],
   ),
 )
+
+test('sw_silicon_creator_lib_error_unittest', executable(
+  'sw_silicon_creator_lib_error_unittest',
+  sources: [
+    'error_unittest.cc',
+  ],
+  dependencies: [
+    sw_vendor_gtest,
+  ],
+  native: true,
+))
+
