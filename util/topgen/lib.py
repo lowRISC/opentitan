@@ -8,7 +8,7 @@ import sys
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict, Optional, Tuple, List
+from typing import Dict, List, Optional, Tuple
 
 import hjson
 
@@ -431,3 +431,67 @@ def get_io_enum_literal(sig: Dict, prefix: str) -> str:
     if sig['width'] > 1:
         name += Name([str(sig['idx'])])
     return name.as_camel_case()
+
+
+def make_bit_concatenation(sig_name: str,
+                           indices: List[int],
+                           end_indent: int) -> str:
+    '''Return SV code for concatenating certain indices from a signal
+
+    sig_name is the name of the signal and indices is a non-empty list of the
+    indices to use, MSB first. So
+
+      make_bit_concatenation("foo", [0, 100, 20])
+
+    should give
+
+      {foo[0], foo[100], foo[20]}
+
+    Adjacent bits turn into a range select. For example:
+
+      make_bit_concatenation("foo", [0, 1, 2])
+
+    should give
+
+      foo[0:2]
+
+    If there are multiple ranges, they are printed one to a line. end_indent
+    gives the indentation of the closing brace and the range selects in between
+    get indented to end_indent + 2.
+
+    '''
+    assert 0 <= end_indent
+
+    ranges = []
+    cur_range_start = indices[0]
+    cur_range_end = indices[0]
+    for idx in indices[1:]:
+        if idx == cur_range_end + 1 and cur_range_start <= cur_range_end:
+            cur_range_end += 1
+            continue
+        if idx == cur_range_end - 1 and cur_range_start >= cur_range_end:
+            cur_range_end -= 1
+            continue
+        ranges.append((cur_range_start, cur_range_end))
+        cur_range_start = idx
+        cur_range_end = idx
+    ranges.append((cur_range_start, cur_range_end))
+
+    items = []
+    for range_start, range_end in ranges:
+        if range_start == range_end:
+            select = str(range_start)
+        else:
+            select = '{}:{}'.format(range_start, range_end)
+        items.append('{}[{}]'.format(sig_name, select))
+
+    if len(items) == 1:
+        return items[0]
+
+    item_indent = '\n' + (' ' * (end_indent + 2))
+
+    acc = ['{', item_indent, items[0]]
+    for item in items[1:]:
+        acc += [',', item_indent, item]
+    acc += ['\n', ' ' * end_indent, '}']
+    return ''.join(acc)

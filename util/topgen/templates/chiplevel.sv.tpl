@@ -305,11 +305,11 @@ module chip_${top["name"]}_${target["name"]} (
 % endfor
 
 % for port in ["in_o", "out_i", "oe_i", "attr_i"]:
-    .mio_${port} ({
-  % for pad in list(reversed(muxed_pads)):
-        mio_${port[:-2]}[${pad["idx"]}]${"" if loop.last else ","}
-  % endfor
-      })${"" if loop.last else ","}
+<%
+    sig_name = 'mio_' + port[:-2]
+    indices = list(reversed(list(pad['idx'] for pad in muxed_pads)))
+%>\
+    .mio_${port} (${lib.make_bit_concatenation(sig_name, indices, 6)})${"" if loop.last else ","}
 % endfor
   );
 
