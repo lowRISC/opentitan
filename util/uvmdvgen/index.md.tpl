@@ -33,13 +33,13 @@ ${'###'} Block diagram
 ![Block diagram](tb.svg)
 
 ${'###'} Top level testbench
-Top level testbench is located at `hw/ip/${name}/dv/tb/tb.sv`. It instantiates the ${name.upper()} DUT module `hw/ip/${name}/rtl/${name}.sv`.
+Top level testbench is located at `hw/ip/${name}/dv/tb.sv`. It instantiates the ${name.upper()} DUT module `hw/ip/${name}/rtl/${name}.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 * ${name.upper()} IOs
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
-* Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
+* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}})
 * Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
 
 ${'###'} Common DV utility components
@@ -61,6 +61,14 @@ ${'###'} TL_agent
 ${name.upper()} testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into ${name.upper()} device.
+
+% endif
+% if has_alerts:
+${'###'} Alert agents
+${name.upper()} testbench instantiates (already handled in CIP base env) [alert_agents]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}):
+[list alert names].
+The alert_agents provide the ability to drive and independently monitor alert handshakes via
+alert interfaces in ${name.upper()} device.
 
 % endif
 % for agent in env_agents:
