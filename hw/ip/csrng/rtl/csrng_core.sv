@@ -123,12 +123,14 @@ module csrng_core import csrng_pkg::*; #(
   logic [BlkLen-1:0]      gen_result_bits;
 
   logic                   acmd_accept;
+  logic                   acmd_hdr_capt;
   logic                   instant_req;
   logic                   reseed_req;
   logic                   generate_req;
   logic                   update_req;
   logic                   uninstant_req;
   logic [3:0]             fifo_sel;
+  logic [Cmd-1:0]         ctr_drbg_cmd_ccmd;
   logic                   ctr_drbg_cmd_req;
   logic                   ctr_drbg_gen_req;
   logic                   ctr_drbg_gen_req_rdy;
@@ -319,6 +321,7 @@ module csrng_core import csrng_pkg::*; #(
   logic        lc_hw_debug_not_on_q, lc_hw_debug_not_on_d;
   logic        lc_hw_debug_on_q, lc_hw_debug_on_d;
   logic        cmd_req_dly_q, cmd_req_dly_d;
+  logic [Cmd-1:0] cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
   logic           cs_aes_halt_q, cs_aes_halt_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
@@ -331,6 +334,7 @@ module csrng_core import csrng_pkg::*; #(
       lc_hw_debug_not_on_q <= '0;
       lc_hw_debug_on_q <= '0;
       cmd_req_dly_q <= '0;
+      cmd_req_ccmd_dly_q <= '0;
       cs_aes_halt_q <= '0;
     end else begin
       acmd_q  <= acmd_d;
@@ -341,6 +345,7 @@ module csrng_core import csrng_pkg::*; #(
       lc_hw_debug_not_on_q <= lc_hw_debug_not_on_d;
       lc_hw_debug_on_q <= lc_hw_debug_on_d;
       cmd_req_dly_q <= cmd_req_dly_d;
+      cmd_req_ccmd_dly_q <= cmd_req_ccmd_dly_d;
       cs_aes_halt_q <= cs_aes_halt_d;
     end
 
@@ -809,6 +814,7 @@ module csrng_core import csrng_pkg::*; #(
     .rst_ni(rst_ni),
     .acmd_avail_i(acmd_avail),
     .acmd_accept_o(acmd_accept),
+    .acmd_hdr_capt_o(acmd_hdr_capt),
     .acmd_i(acmd_hold),
     .acmd_eop_i(acmd_eop),
     .ctr_drbg_cmd_req_rdy_i(ctr_drbg_cmd_req_rdy),
@@ -820,6 +826,7 @@ module csrng_core import csrng_pkg::*; #(
     .generate_req_o(generate_req),
     .update_req_o(update_req),
     .uninstant_req_o(uninstant_req),
+    .cmd_complete_i(state_db_wr_req),
     .halt_main_sm_i(halt_main_sm),
     .main_sm_halted_o(main_sm_sts),
     .main_sm_err_o(main_sm_err)
@@ -987,6 +994,9 @@ module csrng_core import csrng_pkg::*; #(
 
 
 
+  assign cmd_req_ccmd_dly_d = acmd_hold;
+  assign ctr_drbg_cmd_ccmd = cmd_req_ccmd_dly_q;
+
   assign cmd_req_dly_d =
          instant_req || reseed_req || generate_req || update_req || uninstant_req;
 
@@ -1005,7 +1015,7 @@ module csrng_core import csrng_pkg::*; #(
     .ctr_drbg_cmd_enable_i(cs_enable),
     .ctr_drbg_cmd_req_i(ctr_drbg_cmd_req),
     .ctr_drbg_cmd_rdy_o(ctr_drbg_cmd_req_rdy),
-    .ctr_drbg_cmd_ccmd_i(acmd_hold),
+    .ctr_drbg_cmd_ccmd_i(ctr_drbg_cmd_ccmd),
     .ctr_drbg_cmd_inst_id_i(shid_q),
     .ctr_drbg_cmd_entropy_i(cmd_entropy),
     .ctr_drbg_cmd_entropy_fips_i(cmd_entropy_fips), // send to state_db
@@ -1338,13 +1348,12 @@ module csrng_core import csrng_pkg::*; #(
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .inst_id_i(track_inst_id[i]),
-    .acmd_avail_i(acmd_avail),
-    .acmd_accept_i(acmd_accept),
+    .acmd_hdr_capt_i(acmd_hdr_capt),
     .acmd_i(acmd_hold),
-    .shid_i(shid),
+    .shid_i(shid_q),
     .ctr_drbg_cmd_req_i(ctr_drbg_cmd_req),
     .ctr_drbg_cmd_req_rdy_i(ctr_drbg_cmd_req_rdy),
-    .ctr_drbg_cmd_ccmd_i(acmd_hold),
+    .ctr_drbg_cmd_ccmd_i(ctr_drbg_cmd_ccmd),
     .ctr_drbg_cmd_inst_id_i(shid_q),
     .updblk_arb_vld_i(updblk_arb_vld),
     .updblk_arb_rdy_i(updblk_arb_rdy),
