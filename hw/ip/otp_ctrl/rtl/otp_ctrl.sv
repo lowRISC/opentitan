@@ -119,7 +119,7 @@ module otp_ctrl
   lc_ctrl_pkg::lc_tx_t       lc_creator_seed_sw_rw_en, lc_seed_hw_rd_en, lc_check_byp_en;
   lc_ctrl_pkg::lc_tx_t [1:0] lc_dft_en;
   // NumAgents + lfsr timer and scrambling datapath.
-  lc_ctrl_pkg::lc_tx_t [NumAgentsIdx+1:0] lc_escalate_en;
+  lc_ctrl_pkg::lc_tx_t [NumAgentsIdx+1:0] lc_escalate_en, lc_escalate_en_synced;
 
   prim_lc_sync #(
     .NumCopies(NumAgentsIdx+2)
@@ -127,7 +127,7 @@ module otp_ctrl
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_escalate_en_i),
-    .lc_en_o(lc_escalate_en)
+    .lc_en_o(lc_escalate_en_synced)
   );
 
   prim_lc_sync #(
@@ -361,6 +361,8 @@ module otp_ctrl
     // alert events via the alert senders. These regs can only be cleared via a system reset.
     fatal_macro_error_d = fatal_macro_error_q;
     fatal_check_error_d = fatal_check_error_q;
+    // These are the per-partition buffered escalation inputs
+    lc_escalate_en = lc_escalate_en_synced;
     // Aggregate all the errors from the partitions and the DAI/LCI
     for (int k = 0; k < NumPart+2; k++) begin
       // Set the error bit if the error status of the corresponding partition is nonzero.
@@ -375,6 +377,13 @@ module otp_ctrl
                              lfsr_fsm_err      |
                              scrmbl_fsm_err    |
                              key_deriv_fsm_err;
+
+      // If a fatal alert has been observed in any of the partitions/FSMs,
+      // we locally trigger escalation within OTP, which moves all FSMs
+      // to a terminal error state.
+      if (fatal_macro_error_q || fatal_check_error_q) begin
+        lc_escalate_en[k] = lc_escalate_en_synced[k] | lc_ctrl_pkg::On;
+      end
     end
   end
 
