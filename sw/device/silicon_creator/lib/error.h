@@ -44,6 +44,7 @@ enum module_ {
   X(kErrorOk, 0x739), \
   X(kErrorUartInvalidArgument, ERROR_(1, kModuleUart, kInvalidArgument)), \
   X(kErrorUartBadBaudRate,     ERROR_(2, kModuleUart, kInvalidArgument)), \
+  X(kErrorHmacInvalidArgument, ERROR_(1, kModuleHmac, kInvalidArgument)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 

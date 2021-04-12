@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,7 +41,7 @@ typedef struct hmac_digest {
  * @param hmac A HMAC handle.
  * @return The result of the operation.
  */
-int hmac_sha256_init(const hmac_t *hmac);
+rom_error_t hmac_sha256_init(const hmac_t *hmac);
 
 /**
  * Sends `len` bytes from `data` to the SHA2-256 function.
@@ -54,7 +55,8 @@ int hmac_sha256_init(const hmac_t *hmac);
  * @param len size of the `data` buffer.
  * @return The result of the operation.
  */
-int hmac_sha256_update(const hmac_t *hmac, const void *data, size_t len);
+rom_error_t hmac_sha256_update(const hmac_t *hmac, const void *data,
+                               size_t len);
 
 /**
  * Finalizes SHA256 operation and writes `digest` buffer.
@@ -63,7 +65,7 @@ int hmac_sha256_update(const hmac_t *hmac, const void *data, size_t len);
  * @param[out] digest Buffer to copy digest to.
  * @return The result of the operation.
  */
-int hmac_sha256_final(const hmac_t *hmac, hmac_digest_t *digest);
+rom_error_t hmac_sha256_final(const hmac_t *hmac, hmac_digest_t *digest);
 
 #ifdef __cplusplus
 }

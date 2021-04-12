@@ -7,13 +7,13 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/silicon_creator/lib/error.h"
 
 #include "hmac_regs.h"  // Generated.
 
-// TODO(#34): Use the unified error space
-int hmac_sha256_init(const hmac_t *hmac) {
+rom_error_t hmac_sha256_init(const hmac_t *hmac) {
   if (hmac == NULL) {
-    return -1;
+    return kErrorHmacInvalidArgument;
   }
 
   // Clear the config, stopping the SHA engine.
@@ -34,12 +34,13 @@ int hmac_sha256_init(const hmac_t *hmac) {
   reg = bitfield_bit32_write(reg, HMAC_CMD_HASH_START_BIT, true);
   mmio_region_write32(hmac->base_addr, HMAC_CMD_REG_OFFSET, reg);
 
-  return 0;
+  return kErrorOk;
 }
 
-int hmac_sha256_update(const hmac_t *hmac, const void *data, size_t len) {
+rom_error_t hmac_sha256_update(const hmac_t *hmac, const void *data,
+                               size_t len) {
   if (hmac == NULL || data == NULL) {
-    return -1;
+    return kErrorHmacInvalidArgument;
   }
   const uint8_t *data_sent = (const uint8_t *)data;
 
@@ -60,12 +61,12 @@ int hmac_sha256_update(const hmac_t *hmac, const void *data, size_t len) {
   for (; len != 0; --len) {
     mmio_region_write8(hmac->base_addr, HMAC_MSG_FIFO_REG_OFFSET, *data_sent++);
   }
-  return 0;
+  return kErrorOk;
 }
 
-int hmac_sha256_final(const hmac_t *hmac, hmac_digest_t *digest) {
+rom_error_t hmac_sha256_final(const hmac_t *hmac, hmac_digest_t *digest) {
   if (hmac == NULL || digest == NULL) {
-    return -1;
+    return kErrorHmacInvalidArgument;
   }
 
   uint32_t reg = 0;
@@ -82,5 +83,5 @@ int hmac_sha256_final(const hmac_t *hmac, hmac_digest_t *digest) {
   mmio_region_memcpy_from_mmio32(hmac->base_addr, HMAC_DIGEST_0_REG_OFFSET,
                                  digest->digest,
                                  HMAC_PARAM_NUMWORDS * sizeof(uint32_t));
-  return 0;
+  return kErrorOk;
 }
