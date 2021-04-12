@@ -172,6 +172,15 @@ module tb;
   );
 
   // connect signals
+  // TODO: Replace this weak pull to a known value with initialization
+  // in the agent/interface.
+  // Without these pulls, we may get Xes that propagate through the design
+  // (one example is the interference IRQ of the I2C that propagates into the PLIC).
+  assign (weak0, weak1) jtag_tck = 1'b0;
+  assign (weak0, weak1) jtag_tms = 1'b0;
+  assign (weak0, weak1) jtag_trst_n = 1'b0;
+  assign (weak0, weak1) jtag_tdi = 1'b0;
+  assign (weak0, weak1) jtag_tdo = 1'b0;
   assign jtag_tck         = jtag_if.tck;
   assign jtag_tms         = jtag_if.tms;
   assign jtag_trst_n      = jtag_if.trst_n;
