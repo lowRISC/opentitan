@@ -601,7 +601,7 @@
         { bits:   "0",
           desc: '''
           When cleared to 0, the !!CHECK_TRIGGER register cannot be written anymore.
-          Write 1 to clear this bit.
+          Write 0 to clear this bit.
           '''
           resval: 1,
         },
@@ -643,7 +643,7 @@
         { bits:   "0",
           desc: '''
           When cleared to 0, !!INTEGRITY_CHECK_PERIOD and !!CONSISTENCY_CHECK_PERIOD registers cannot be written anymore.
-          Write 1 to clear this bit.
+          Write 0 to clear this bit.
           '''
           resval: 1,
         },
@@ -725,7 +725,7 @@
       desc: '''
             Runtime read lock for the ${part["name"]} partition.
             ''',
-      swaccess: "rw1c",
+      swaccess: "rw0c",
       hwaccess: "hro",
       regwen:   "DIRECT_ACCESS_REGWEN",
       tags:     [ // The enable register "DIRECT_ACCESS_REGWEN" is HW controlled,
@@ -735,7 +735,7 @@
         { bits:   "0",
           desc: '''
           When cleared to 0, read access to the ${part["name"]} partition is locked.
-          Write 1 to clear this bit.
+          Write 0 to clear this bit.
           '''
           resval: 1,
         },

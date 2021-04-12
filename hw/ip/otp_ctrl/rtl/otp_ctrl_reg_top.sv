@@ -1192,7 +1192,7 @@ module otp_ctrl_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_creator_sw_cfg_read_lock (
     .clk_i   (clk_i    ),
@@ -1219,7 +1219,7 @@ module otp_ctrl_reg_top (
 
   prim_subreg #(
     .DW      (1),
-    .SWACCESS("W1C"),
+    .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_owner_sw_cfg_read_lock (
     .clk_i   (clk_i    ),
