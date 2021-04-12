@@ -991,6 +991,9 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "CHECK_REGWEN",
+      tags: [ // Do not write to this automatically, as it may trigger unintended side effects
+              // like spurious escalations / alerts.
+              "excl:CsrAllTests:CsrExclWrite"],
       fields: [
         { bits: "31:0",
           desc: '''
