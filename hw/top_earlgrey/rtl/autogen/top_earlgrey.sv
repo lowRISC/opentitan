@@ -29,7 +29,8 @@ module top_earlgrey #(
   // Manually defined parameters
   parameter ibex_pkg::regfile_e IbexRegFile = ibex_pkg::RegFileFF,
   parameter bit IbexICache = 1,
-  parameter bit IbexPipeLine = 0
+  parameter bit IbexPipeLine = 0,
+  parameter bit SecureIbex = 1
 ) (
   // Reset, clocks defined as part of intermodule
   input               rst_ni,
@@ -718,7 +719,7 @@ module top_earlgrey #(
     .ICacheECC                (1),
     .BranchPredictor          (0),
     .DbgTriggerEn             (1),
-    .SecureIbex               (0),
+    .SecureIbex               (SecureIbex),
     .DmHaltAddr               (ADDR_SPACE_DEBUG_MEM + dm::HaltAddress[31:0]),
     .DmExceptionAddr          (ADDR_SPACE_DEBUG_MEM + dm::ExceptionAddress[31:0]),
     .PipeLine                 (IbexPipeLine)
