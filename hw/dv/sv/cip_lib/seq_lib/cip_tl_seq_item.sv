@@ -10,6 +10,8 @@ class cip_tl_seq_item extends tl_seq_item;
 
   `uvm_object_new
 
+  tlul_pkg::tl_type_e tl_type = DataType;
+
   function void post_randomize();
     a_user = get_a_user_val();
     d_user = get_d_user_val();
@@ -23,7 +25,7 @@ class cip_tl_seq_item extends tl_seq_item;
     logic [D2HRspFullWidth - 1 : 0] data_intg;
 
     // construct command integrity
-    cmd_intg_payload.tl_type = DataType;
+    cmd_intg_payload.tl_type = tl_type;
     cmd_intg_payload.addr = a_addr;
     cmd_intg_payload.opcode = tl_a_op_e'(a_opcode);
     cmd_intg_payload.mask = a_mask;
@@ -33,7 +35,7 @@ class cip_tl_seq_item extends tl_seq_item;
     data_intg = prim_secded_pkg::prim_secded_64_57_enc(DataMaxWidth'(a_data));
 
     user.rsvd = '0;
-    user.tl_type = DataType;
+    user.tl_type = tl_type;
     user.cmd_intg = payload_intg[H2DCmdFullWidth -1 -: H2DCmdIntgWidth];
     user.data_intg = data_intg[DataFullWidth -1 -: DataIntgWidth];;
     return user;
