@@ -12,11 +12,9 @@ package csrng_test_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // local types
-
-  // functions
-
   // package sources
   `include "csrng_base_test.sv"
+  `include "csrng_smoke_test.sv"
+  `include "csrng_cmds_test.sv"
 
 endpackage

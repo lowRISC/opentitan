@@ -5,3 +5,4 @@
 `include "csrng_base_vseq.sv"
 `include "csrng_smoke_vseq.sv"
 `include "csrng_common_vseq.sv"
+`include "csrng_cmds_vseq.sv"
