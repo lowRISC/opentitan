@@ -11,7 +11,7 @@ class csrng_smoke_vseq extends csrng_base_vseq;
   task body();
     // Enable CSRNG, Disable AES Cipher Core
     ral.ctrl.enable.set(1'b1);
-    ral.ctrl.aes_cipher_disable.set(1'b1);
+    ral.ctrl.aes_cipher_disable.set(cfg.aes_cipher_disable);
     csr_update(.csr(ral.ctrl));
 
     // Wait for CSRNG cmd_rdy

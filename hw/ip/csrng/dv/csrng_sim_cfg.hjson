@@ -48,7 +48,14 @@
   tests: [
     {
       name: csrng_smoke
+      uvm_test: csrng_smoke_test
       uvm_test_seq: csrng_smoke_vseq
+    }
+
+    {
+      name: csrng_cmds
+      uvm_test: csrng_cmds_test
+      uvm_test_seq: csrng_cmds_vseq
     }
 
     // TODO: add more tests here

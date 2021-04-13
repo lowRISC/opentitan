@@ -15,7 +15,7 @@ class csrng_agent extends dv_base_agent #(
   `uvm_component_utils(csrng_agent)
   `uvm_component_new
 
-  push_pull_agent#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH))          m_req_push_agent;
+  push_pull_agent#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH))          m_cmd_push_agent;
   push_pull_agent#(.HostDataWidth(csrng_pkg::FIPS_GENBITS_BUS_WIDTH))   m_genbits_push_agent;
 
   function void build_phase(uvm_phase phase);
@@ -26,13 +26,13 @@ class csrng_agent extends dv_base_agent #(
     end
 
     // create agents, agent_cfgs
-    m_req_push_agent = push_pull_agent#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::
-                       create("m_req_push_agent", this);
-    cfg.m_req_push_agent_cfg = push_pull_agent_cfg#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::
-                               create("m_req_push_agent.cfg");
-    cfg.m_req_push_agent_cfg.is_active   = cfg.is_active;
-    cfg.m_req_push_agent_cfg.agent_type  = PushAgent;
-    cfg.m_req_push_agent_cfg.if_mode     = cfg.if_mode;
+    m_cmd_push_agent = push_pull_agent#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::
+                       create("m_cmd_push_agent", this);
+    cfg.m_cmd_push_agent_cfg = push_pull_agent_cfg#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::
+                               create("m_cmd_push_agent.cfg");
+    cfg.m_cmd_push_agent_cfg.is_active   = cfg.is_active;
+    cfg.m_cmd_push_agent_cfg.agent_type  = PushAgent;
+    cfg.m_cmd_push_agent_cfg.if_mode     = cfg.if_mode;
 
     m_genbits_push_agent = push_pull_agent#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)::type_id::
                            create("m_genbits_push_agent", this);
@@ -51,12 +51,12 @@ class csrng_agent extends dv_base_agent #(
 
     // pass cfg and vif
     uvm_config_db#(push_pull_agent_cfg#(csrng_pkg::CSRNG_CMD_WIDTH))::set(this,
-         "m_req_push_agent*", "cfg", cfg.m_req_push_agent_cfg);
+         "m_cmd_push_agent*", "cfg", cfg.m_cmd_push_agent_cfg);
     uvm_config_db#(push_pull_agent_cfg#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH))::set(this,
          "m_genbits_push_agent*", "cfg", cfg.m_genbits_push_agent_cfg);
 
     uvm_config_db#(virtual push_pull_if#(csrng_pkg::CSRNG_CMD_WIDTH))::set(this,
-         "m_req_push_agent*", "vif", cfg.vif.req_push_if);
+         "m_cmd_push_agent*", "vif", cfg.vif.cmd_push_if);
     uvm_config_db#(virtual push_pull_if#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH))::set(this,
          "m_genbits_push_agent*", "vif", cfg.vif.genbits_push_if);
   endfunction
@@ -68,6 +68,9 @@ class csrng_agent extends dv_base_agent #(
       if (cfg.if_mode == dv_utils_pkg::Device) begin
         monitor.req_analysis_port.connect(sequencer.req_analysis_fifo.analysis_export);
         sequencer.m_genbits_push_sequencer = m_genbits_push_agent.sequencer;
+      end
+      else begin
+        sequencer.m_cmd_push_sequencer = m_cmd_push_agent.sequencer;
       end
     end
   endfunction

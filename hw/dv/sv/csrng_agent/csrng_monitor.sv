@@ -51,8 +51,8 @@ class csrng_monitor extends dv_base_monitor #(
   virtual protected task collect_request();
     csrng_item   item;
     forever begin
-      @(cfg.vif.req_push_if.mon_cb);
-      if (cfg.vif.req_push_if.mon_cb.valid) begin
+      @(cfg.vif.cmd_push_if.mon_cb);
+      if (cfg.vif.cmd_push_if.mon_cb.valid) begin
         // TODO: sample any covergroups
 	// TODO: Implement suggestion in PR #5456
         item = csrng_item::type_id::create("item");
