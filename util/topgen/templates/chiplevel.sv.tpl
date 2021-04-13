@@ -546,11 +546,6 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_out_flash_test_volt = 1'b0;
   assign manual_oe_flash_test_volt = 1'b0;
 
-  assign manual_out_flash_test_mode0 = 1'b0;
-  assign manual_out_flash_test_mode1 = 1'b0;
-  assign manual_oe_flash_test_mode0 = 1'b0;
-  assign manual_oe_flash_test_mode1 = 1'b0;
-
   // These pad attributes currently tied off permanently (these are all input-only pads).
   assign manual_attr_por_n = '0;
   assign manual_attr_cc1 = '0;
@@ -558,8 +553,6 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_attr_flash_test_mode0 = '0;
   assign manual_attr_flash_test_mode1 = '0;
   assign manual_attr_flash_test_volt = '0;
-  assign manual_attr_flash_test_mode0 = '0;
-  assign manual_attr_flash_test_mode1 = '0;
 
   logic unused_manual_sigs;
   assign unused_manual_sigs = ^{
