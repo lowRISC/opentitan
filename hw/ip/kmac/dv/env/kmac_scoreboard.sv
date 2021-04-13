@@ -524,9 +524,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           #0;
           if (kmac_cmd == CmdProcess && !cmd_process_in_header) begin
             `uvm_info(`gfn, "detected CmdProcess 1 cycle after process prefix/key", UVM_HIGH)
-            fifo_rd_ptr++;
-            num_blocks_filled++;
-            cmd_process_in_header = 1;
+            // if we hit this edge case but only have a single fifo entry,
+            // need to wait for 4 cycles for fifo flushing
+            if (msg.size() > KMAC_FIFO_BYTES_PER_ENTRY) begin
+              cmd_process_in_header = 1;
+              fifo_rd_ptr++;
+              num_blocks_filled++;
+            end
             cfg.clk_rst_vif.wait_clks(1);
           end
         end
@@ -587,28 +591,31 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                       // - kdf_last is seen during keccak hashing of full dadta block
                       // - kdf_last is seen during processing of the prefix and secret key
                       if (!in_kdf || kdf_last_in_keccak || kdf_last_in_header) begin
-                        // If both of the following two conditions are NOT true:
+                        // This bit represents whether the fifo depthis 0 at this point in time
+                        bit cmd_process_fifo_depth = (fifo_depth == 0);
+
+                        // If all of the following two conditions are NOT true:
+                        //  - we are in KDF mode
                         //  - we've seen CmdProcess during an earlier keccak run and still have
                         //    some data left in msgfifo/sha3pad
                         //  - we've seen CmdProcess while processing prefix and secret keys
                         //    (only in KMAC mode)
+                        //  - the input msg is longer than the total KeccakRate block size
                         // Wait for the msgfifo to be flushed, while simultaneously detecting
                         // for a msgfifo write during the flushing process
                         if (!in_kdf && !cmd_process_in_keccak_and_blocks_left &&
-                            !cmd_process_in_header) begin
+                            !cmd_process_in_header && cmd_process_fifo_depth) begin
                           // If fifo_wr_ptr increments on the same cycle that we start flushing,
                           // need to immediately increment fifo_rd_ptr to match.
                           if (incr_fifo_wr_in_process) begin
                             do_increment = 1;
                             num_blocks_filled++;
-                            cfg.clk_rst_vif.wait_n_clks(1);
-                            do_increment = 0;
                           end
                           // This section waits several cycles for the flushing process to
                           // be completed, while also checking for an edge case where a fifo write
                           // goes through on the same cycle as the flush
                           fork
-                            begin : wait_fifo_wr_in_flush
+                            if (!incr_fifo_wr_in_process) begin : wait_fifo_wr_in_flush
                               // If the fifo write pointer is incremented while we are flushing,
                               // we need to wait for another 2 cycles for the data to be correctly
                               // latched by the flushing logic.
@@ -620,6 +627,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                               num_blocks_filled++;
                               `uvm_info(`gfn, "seen fifo_wr_ptr increment during flushing", UVM_HIGH)
                             end : wait_fifo_wr_in_flush
+
                             begin : wait_flush_cycles
                               // wait 2 cycles for the flushing process
                               `uvm_info(`gfn, "waiting 2 cycles for flushing", UVM_HIGH)
@@ -629,6 +637,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                           join
 
                           if (incr_fifo_wr_in_flush || incr_fifo_wr_in_process) begin
+                            if (incr_fifo_wr_in_process) begin
+                              do_increment = 1;
+                              cfg.clk_rst_vif.wait_n_clks(1);
+                              do_increment = 0;
+                            end
                             cfg.clk_rst_vif.wait_clks(2);
                           end
                         end
@@ -659,7 +672,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                             // waiting an extra cycle delay if the `incr_fifo_wr_in_process` condition
                             // was met.
                             if (in_kdf || cmd_process_in_keccak_and_blocks_left ||
-                                cmd_process_in_header) begin
+                                cmd_process_in_header || !cmd_process_fifo_depth) begin
                               cfg.clk_rst_vif.wait_clks(3);
                               if (incr_fifo_wr_in_process) begin
                                 cfg.clk_rst_vif.wait_clks(1);
