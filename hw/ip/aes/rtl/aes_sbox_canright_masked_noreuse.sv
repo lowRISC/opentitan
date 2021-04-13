@@ -21,10 +21,10 @@
 // IMPORTANT NOTE:                                                                               //
 //                            DO NOT USE THIS FOR SYNTHESIS BLINDLY!                             //
 //                                                                                               //
-// This implementation targets primarily Xilinx Vivado synthesis as well as RTL simulation. It   //
-// contains synthesis attributes specific to Xilinx Vivado to enforce the correct ordering of    //
-// operations and avoid aggressive optimization. Other synthesis tools might still heavily       //
-// optimize the design. The result is likely insecure. Use with care.                            //
+// This implementation relies on primitive cells like prim_buf containing tool-specific          //
+// synthesis attributes to enforce the correct ordering of operations and avoid aggressive       //
+// optimization. Without the proper primitives, synthesis tools might heavily optimize the       //
+// design. The result is likely insecure. Use with care.                                         //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Masked inverse in GF(2^4), using normal basis [z^4, z]
@@ -40,7 +40,7 @@ module aes_masked_inverse_gf2p4_noreuse (
   import aes_pkg::*;
   import aes_sbox_canright_pkg::*;
 
-  logic [1:0] b1, b0, q1, q0, c, c_inv, r_sq, t1, t0, b1_inv, b0_inv;
+  logic [1:0] b1, b0, q1, q0, c_inv, r_sq, t1, t0;
   assign b1 = b[3:2];
   assign b0 = b[1:0];
   assign q1 = q[3:2];
@@ -48,17 +48,18 @@ module aes_masked_inverse_gf2p4_noreuse (
   assign t1 = t[3:2];
   assign t0 = t[1:0];
 
-  // Formula 13
+  ////////////////
+  // Formula 13 //
+  ////////////////
   // IMPORTANT: The following ops must be executed in order (left to right):
   // c = r ^ aes_scale_omega2_gf2p2(aes_square_gf2p2(b1 ^ b0))
   //       ^ aes_scale_omega2_gf2p2(aes_square_gf2p2(q1 ^ q0))
   //       ^ aes_mul_gf2p2(b1, b0)
   //       ^ aes_mul_gf2p2(b1, q0) ^ aes_mul_gf2p2(b0, q1) ^ aes_mul_gf2p2(q1, q0);
-  //
-  // Get intermediate terms. The terms they are added to depend on the same inputs.
-  // Avoid aggressive synthesis optimizations.
-  (* keep = "true" *) logic [1:0] scale_omega2_b, scale_omega2_q;
-  (* keep = "true" *) logic [1:0] mul_b1_b0, mul_b1_q0, mul_b0_q1, mul_q1_q0;
+
+  // Get intermediate terms.
+  logic [1:0] scale_omega2_b, scale_omega2_q;
+  logic [1:0] mul_b1_b0, mul_b1_q0, mul_b0_q1, mul_q1_q0;
   assign scale_omega2_b = aes_scale_omega2_gf2p2(aes_square_gf2p2(b1 ^ b0));
   assign scale_omega2_q = aes_scale_omega2_gf2p2(aes_square_gf2p2(q1 ^ q0));
   assign mul_b1_b0 = aes_mul_gf2p2(b1, b0);
@@ -66,30 +67,63 @@ module aes_masked_inverse_gf2p4_noreuse (
   assign mul_b0_q1 = aes_mul_gf2p2(b0, q1);
   assign mul_q1_q0 = aes_mul_gf2p2(q1, q0);
 
-  // Generate c step by step.
-  (* keep = "true" *) logic [1:0] c_0, c_1, c_2, c_3, c_4;
-  assign c_0 = r   ^ scale_omega2_b;
-  assign c_1 = c_0 ^ scale_omega2_q;
-  assign c_2 = c_1 ^ mul_b1_b0;
-  assign c_3 = c_2 ^ mul_b1_q0;
-  assign c_4 = c_3 ^ mul_b0_q1;
-  assign c   = c_4 ^ mul_q1_q0;
+  // These terms are added to other terms that depend on the same inputs.
+  // Avoid aggressive synthesis optimizations.
+  logic [1:0] scale_omega2_b_buf, scale_omega2_q_buf;
+  prim_buf #(
+    .Width ( 4 )
+  ) u_prim_buf_scale_omega2_bq (
+    .in_i  ( {scale_omega2_b,     scale_omega2_q}     ),
+    .out_o ( {scale_omega2_b_buf, scale_omega2_q_buf} )
+  );
+  logic [1:0] mul_b1_b0_buf, mul_b1_q0_buf, mul_b0_q1_buf, mul_q1_q0_buf;
+  prim_buf #(
+    .Width ( 8 )
+  ) u_prim_buf_mul_bq01 (
+    .in_i  ( {mul_b1_b0,     mul_b1_q0,     mul_b0_q1,     mul_q1_q0}     ),
+    .out_o ( {mul_b1_b0_buf, mul_b1_q0_buf, mul_b0_q1_buf, mul_q1_q0_buf} )
+  );
 
-  // Formulas 14 and 15
-  assign c_inv = aes_square_gf2p2(c);
+  // Generate c step by step.
+  logic [1:0] c [6];
+  logic [1:0] c_buf [6];
+  assign c[0] = r        ^ scale_omega2_b_buf;
+  assign c[1] = c_buf[0] ^ scale_omega2_q_buf;
+  assign c[2] = c_buf[1] ^ mul_b1_b0_buf;
+  assign c[3] = c_buf[2] ^ mul_b1_q0_buf;
+  assign c[4] = c_buf[3] ^ mul_b0_q1_buf;
+  assign c[5] = c_buf[4] ^ mul_q1_q0_buf;
+
+  // Avoid aggressive synthesis optimizations.
+  for (genvar i = 0; i < 6; i++) begin : gen_c_buf
+    prim_buf #(
+      .Width ( 2 )
+    ) u_prim_buf_c_i (
+      .in_i  ( c[i]     ),
+      .out_o ( c_buf[i] )
+    );
+  end
+
+  ////////////////////////
+  // Formulas 14 and 15 //
+  ////////////////////////
+  // Note: aes_square_gf2p2 contains no logic, it's just a bit swap. There is no need to insert
+  // additional buffers to stop aggressive synthesis optimizations here.
+  assign c_inv = aes_square_gf2p2(c_buf[5]);
   assign r_sq  = aes_square_gf2p2(r);
 
-  // Formulas 16 and 17
+  ////////////////////////
+  // Formulas 16 and 17 //
+  ////////////////////////
   // IMPORTANT: The following ops must be executed in order (left to right):
   // b1_inv = t1 ^ aes_mul_gf2p2(b0, c_inv)
   //             ^ aes_mul_gf2p2(b0, r_sq) ^ aes_mul_gf2p2(q0, c_inv) ^ aes_mul_gf2p2(q0, r_sq);
   // b0_inv = t0 ^ aes_mul_gf2p2(b1, c_inv)
   //             ^ aes_mul_gf2p2(b1, r_sq) ^ aes_mul_gf2p2(q1, c_inv) ^ aes_mul_gf2p2(q1, r_sq);
-  //
-  // Get intermediate terms. The terms they are added to depend on the same inputs.
-  // Avoid aggressive synthesis optimizations.
-  (* keep = "true" *) logic [1:0] mul_b0_r_sq, mul_q0_c_inv, mul_q0_r_sq;
-  (* keep = "true" *) logic [1:0] mul_b1_r_sq, mul_q1_c_inv, mul_q1_r_sq;
+
+  // Get intermediate terms.
+  logic [1:0] mul_b0_r_sq, mul_q0_c_inv, mul_q0_r_sq;
+  logic [1:0] mul_b1_r_sq, mul_q1_c_inv, mul_q1_r_sq;
   assign mul_b0_r_sq  = aes_mul_gf2p2(b0, r_sq);
   assign mul_q0_c_inv = aes_mul_gf2p2(q0, c_inv);
   assign mul_q0_r_sq  = aes_mul_gf2p2(q0, r_sq);
@@ -97,20 +131,55 @@ module aes_masked_inverse_gf2p4_noreuse (
   assign mul_q1_c_inv = aes_mul_gf2p2(q1, c_inv);
   assign mul_q1_r_sq  = aes_mul_gf2p2(q1, r_sq);
 
+  // The multiplier outputs are added to terms that depend on the same inputs.
+  // Avoid aggressive synthesis optimizations.
+  logic [1:0] mul_b0_r_sq_buf, mul_q0_c_inv_buf, mul_q0_r_sq_buf;
+  prim_buf #(
+    .Width ( 6 )
+  ) u_prim_buf_mul_bq0 (
+    .in_i  ( {mul_b0_r_sq,     mul_q0_c_inv,     mul_q0_r_sq}     ),
+    .out_o ( {mul_b0_r_sq_buf, mul_q0_c_inv_buf, mul_q0_r_sq_buf} )
+  );
+  logic [1:0] mul_b1_r_sq_buf, mul_q1_c_inv_buf, mul_q1_r_sq_buf;
+  prim_buf #(
+    .Width ( 6 )
+  ) u_prim_buf_mul_bq1 (
+    .in_i  ( {mul_b1_r_sq,     mul_q1_c_inv,     mul_q1_r_sq}     ),
+    .out_o ( {mul_b1_r_sq_buf, mul_q1_c_inv_buf, mul_q1_r_sq_buf} )
+  );
+
   // Generate b1_inv and b0_inv step by step.
-  (* keep = "true" *) logic [1:0] b1_inv_0, b1_inv_1, b1_inv_2;
-  (* keep = "true" *) logic [1:0] b0_inv_0, b0_inv_1, b0_inv_2;
-  assign b1_inv_0 = t1       ^ aes_mul_gf2p2(b0, c_inv); // t1 does not depend on b0, c_inv.
-  assign b1_inv_1 = b1_inv_0 ^ mul_b0_r_sq;
-  assign b1_inv_2 = b1_inv_1 ^ mul_q0_c_inv;
-  assign b1_inv   = b1_inv_2 ^ mul_q0_r_sq;
-  assign b0_inv_0 = t0       ^ aes_mul_gf2p2(b1, c_inv); // t0 does not depend on b1, c_inv.
-  assign b0_inv_1 = b0_inv_0 ^ mul_b1_r_sq;
-  assign b0_inv_2 = b0_inv_1 ^ mul_q1_c_inv;
-  assign b0_inv   = b0_inv_2 ^ mul_q1_r_sq;
+  logic [1:0] b1_inv [4];
+  logic [1:0] b1_inv_buf [4];
+  logic [1:0] b0_inv [4];
+  logic [1:0] b0_inv_buf [4];
+  assign b1_inv[0] = t1            ^ aes_mul_gf2p2(b0, c_inv); // t1 does not depend on b0, c_inv.
+  assign b1_inv[1] = b1_inv_buf[0] ^ mul_b0_r_sq_buf;
+  assign b1_inv[2] = b1_inv_buf[1] ^ mul_q0_c_inv_buf;
+  assign b1_inv[3] = b1_inv_buf[2] ^ mul_q0_r_sq_buf;
+  assign b0_inv[0] = t0            ^ aes_mul_gf2p2(b1, c_inv); // t0 does not depend on b1, c_inv.
+  assign b0_inv[1] = b0_inv_buf[0] ^ mul_b1_r_sq_buf;
+  assign b0_inv[2] = b0_inv_buf[1] ^ mul_q1_c_inv_buf;
+  assign b0_inv[3] = b0_inv_buf[2] ^ mul_q1_r_sq_buf;
+
+  // Avoid aggressive synthesis optimizations.
+  for (genvar i = 0; i < 4; i++) begin : gen_a01_inv_buf
+    prim_buf #(
+      .Width ( 2 )
+    ) u_prim_buf_b1_inv_i (
+      .in_i  ( b1_inv[i]     ),
+      .out_o ( b1_inv_buf[i] )
+    );
+    prim_buf #(
+      .Width ( 2 )
+    ) u_prim_buf_b0_inv_i (
+      .in_i  ( b0_inv[i]     ),
+      .out_o ( b0_inv_buf[i] )
+    );
+  end
 
   // Note: b_inv is masked by t, b was masked by q.
-  assign b_inv = {b1_inv, b0_inv};
+  assign b_inv = {b1_inv_buf[3], b0_inv_buf[3]};
 
 endmodule
 
@@ -127,13 +196,8 @@ module aes_masked_inverse_gf2p8_noreuse (
   import aes_pkg::*;
   import aes_sbox_canright_pkg::*;
 
-  logic [3:0] a1, a0, m1, m0, q, s1, s0, t, a1_inv, a0_inv;
+  logic [3:0] a1, a0, m1, m0, q, b_inv, s1, s0, t;
   logic [1:0] r;
-
-  // The output of the inverse over GF(2^4) and signals derived from that are again recombined
-  // with inputs to the GF(2^4) inverter. Aggressive synthesis optimizations across the GF(2^4)
-  // inverter may result in SCA leakage and should be avoided.
-  (* keep = "true" *) logic [3:0] b, b_inv;
 
   assign a1 = a[7:4];
   assign a0 = a[3:0];
@@ -175,72 +239,150 @@ module aes_masked_inverse_gf2p8_noreuse (
   assign s1 = n[7:4];
   assign s0 = n[3:0];
 
-  // Formula 12
+  ////////////////
+  // Formula 12 //
+  ////////////////
   // IMPORTANT: The following ops must be executed in order (left to right):
   // b = q ^ aes_square_scale_gf2p4_gf2p2(a1 ^ a0)
   //       ^ aes_square_scale_gf2p4_gf2p2(m1 ^ m0)
   //       ^ aes_mul_gf2p4(a1, a0)
   //       ^ aes_mul_gf2p4(a1, m0) ^ aes_mul_gf2p4(a0, m1) ^ aes_mul_gf2p4(m0, m1);
-  //
-  // Get intermediate terms. The terms they are added to depend on the same inputs.
-  // Avoid aggressive synthesis optimizations.
-  (* keep = "true" *) logic [3:0] mul_a1_a0, mul_a1_m0, mul_a0_m1, mul_m0_m1;
+
+  // Get intermediate terms.
+  logic [3:0] ss_a1_a0, ss_m1_m0;
+  assign ss_a1_a0 = aes_square_scale_gf2p4_gf2p2(a1 ^ a0);
+  assign ss_m1_m0 = aes_square_scale_gf2p4_gf2p2(m1 ^ m0);
+
+  logic [3:0] mul_a1_a0, mul_a1_m0, mul_a0_m1, mul_m0_m1;
   assign mul_a1_a0 = aes_mul_gf2p4(a1, a0);
   assign mul_a1_m0 = aes_mul_gf2p4(a1, m0);
   assign mul_a0_m1 = aes_mul_gf2p4(a0, m1);
   assign mul_m0_m1 = aes_mul_gf2p4(m0, m1);
+
+  // The multiplier outputs are added to terms that depend on the same inputs.
+  // Avoid aggressive synthesis optimizations.
+  logic [3:0] mul_a1_a0_buf, mul_a1_m0_buf, mul_a0_m1_buf, mul_m0_m1_buf;
+  prim_buf #(
+    .Width ( 16 )
+  ) u_prim_buf_mul_am01 (
+    .in_i  ( {mul_a1_a0,     mul_a1_m0,     mul_a0_m1,     mul_m0_m1}     ),
+    .out_o ( {mul_a1_a0_buf, mul_a1_m0_buf, mul_a0_m1_buf, mul_m0_m1_buf} )
+  );
+
   // Generate b step by step.
-  (* keep = "true" *) logic [3:0] b_0, b_1, b_2, b_3, b_4;
-  assign b_0 = q   ^ aes_square_scale_gf2p4_gf2p2(a1 ^ a0); // q does not depend on a1, a0.
-  assign b_1 = b_0 ^ aes_square_scale_gf2p4_gf2p2(m1 ^ m0); // b_0 does not depend on m1, m0.
-  assign b_2 = b_1 ^ mul_a1_a0;
-  assign b_3 = b_2 ^ mul_a1_m0;
-  assign b_4 = b_3 ^ mul_a0_m1;
-  assign b   = b_4 ^ mul_m0_m1;
+  logic [3:0] b [6];
+  logic [3:0] b_buf [6];
+  assign b[0] = q        ^ ss_a1_a0; // q does not depend on a1, a0.
+  assign b[1] = b_buf[0] ^ ss_m1_m0; // b[0] does not depend on m1, m0.
+  assign b[2] = b_buf[1] ^ mul_a1_a0_buf;
+  assign b[3] = b_buf[2] ^ mul_a1_m0_buf;
+  assign b[4] = b_buf[3] ^ mul_a0_m1_buf;
+  assign b[5] = b_buf[4] ^ mul_m0_m1_buf;
+
+  // Avoid aggressive synthesis optimizations.
+  for (genvar i = 0; i < 6; i++) begin : gen_b_buf
+    prim_buf #(
+      .Width ( 4 )
+    ) u_prim_buf_b_i (
+      .in_i  ( b[i]     ),
+      .out_o ( b_buf[i] )
+    );
+  end
+
+  //////////////////////
+  // GF(2^4) Inverter //
+  //////////////////////
 
   // b is masked by q, b_inv is masked by t.
   aes_masked_inverse_gf2p4_noreuse u_aes_masked_inverse_gf2p4 (
-    .b     ( b     ),
-    .q     ( q     ),
-    .r     ( r     ),
-    .t     ( t     ),
-    .b_inv ( b_inv )
+    .b     ( b_buf[5] ),
+    .q     ( q        ),
+    .r     ( r        ),
+    .t     ( t        ),
+    .b_inv ( b_inv    )
   );
 
-  // Formulas 18 and 19
+  // The output of the inverse over GF(2^4) and signals derived from that are again recombined
+  // with inputs to the GF(2^4) inverter. Aggressive synthesis optimizations across the GF(2^4)
+  // inverter may result in SCA leakage and should be avoided.
+  logic [3:0] b_inv_buf;
+  prim_buf #(
+    .Width ( 4 )
+  ) u_prim_buf_b_inv (
+    .in_i  ( b_inv     ),
+    .out_o ( b_inv_buf )
+  );
+
+  ////////////////////////
+  // Formulas 18 and 19 //
+  ////////////////////////
   // IMPORTANT: The following ops must be executed in order (left to right):
   // a1_inv = s1 ^ aes_mul_gf2p4(a0, b_inv)
   //             ^ aes_mul_gf2p4(a0, t) ^ aes_mul_gf2p4(m0, b_inv) ^ aes_mul_gf2p4(m0, t);
   // a0_inv = s0 ^ aes_mul_gf2p4(a1, b_inv)
   //             ^ aes_mul_gf2p4(a1, t) ^ aes_mul_gf2p4(m1, b_inv) ^ aes_mul_gf2p4(m1, t);
-  //
-  // Get intermediate terms. The terms they are added to depend on the same inputs.
-  // Avoid aggressive synthesis optimizations.
-  (* keep = "true" *) logic [3:0] mul_a0_b_inv, mul_a0_t, mul_m0_b_inv, mul_m0_t;
-  (* keep = "true" *) logic [3:0] mul_a1_b_inv, mul_a1_t, mul_m1_b_inv, mul_m1_t;
-  assign mul_a0_b_inv = aes_mul_gf2p4(a0, b_inv);
+
+  // Get intermediate terms.
+  logic [3:0] mul_a0_b_inv, mul_a0_t, mul_m0_b_inv, mul_m0_t;
+  logic [3:0] mul_a1_b_inv, mul_a1_t, mul_m1_b_inv, mul_m1_t;
+  assign mul_a0_b_inv = aes_mul_gf2p4(a0, b_inv_buf);
   assign mul_a0_t     = aes_mul_gf2p4(a0, t);
-  assign mul_m0_b_inv = aes_mul_gf2p4(m0, b_inv);
+  assign mul_m0_b_inv = aes_mul_gf2p4(m0, b_inv_buf);
   assign mul_m0_t     = aes_mul_gf2p4(m0, t);
-  assign mul_a1_b_inv = aes_mul_gf2p4(a1, b_inv);
+  assign mul_a1_b_inv = aes_mul_gf2p4(a1, b_inv_buf);
   assign mul_a1_t     = aes_mul_gf2p4(a1, t);
-  assign mul_m1_b_inv = aes_mul_gf2p4(m1, b_inv);
+  assign mul_m1_b_inv = aes_mul_gf2p4(m1, b_inv_buf);
   assign mul_m1_t     = aes_mul_gf2p4(m1, t);
 
+  // The multiplier outputs are added to terms that depend on the same inputs.
+  // Avoid aggressive synthesis optimizations.
+  logic [3:0] mul_a0_b_inv_buf, mul_a0_t_buf, mul_m0_b_inv_buf, mul_m0_t_buf;
+  prim_buf #(
+    .Width ( 16 )
+  ) u_prim_buf_mul_am0 (
+    .in_i  ( {mul_a0_b_inv,     mul_a0_t,     mul_m0_b_inv,     mul_m0_t}     ),
+    .out_o ( {mul_a0_b_inv_buf, mul_a0_t_buf, mul_m0_b_inv_buf, mul_m0_t_buf} )
+  );
+  logic [3:0] mul_a1_b_inv_buf, mul_a1_t_buf, mul_m1_b_inv_buf, mul_m1_t_buf;
+  prim_buf #(
+    .Width ( 16 )
+  ) u_prim_buf_mul_am1 (
+    .in_i  ( {mul_a1_b_inv,     mul_a1_t,     mul_m1_b_inv,     mul_m1_t}     ),
+    .out_o ( {mul_a1_b_inv_buf, mul_a1_t_buf, mul_m1_b_inv_buf, mul_m1_t_buf} )
+  );
+
   // Generate a1_inv and a0_inv step by step.
-  (* keep = "true" *) logic [3:0] a1_inv_0, a1_inv_1, a1_inv_2;
-  (* keep = "true" *) logic [3:0] a0_inv_0, a0_inv_1, a0_inv_2;
-  assign a1_inv_0 = s1       ^ mul_a0_b_inv;
-  assign a1_inv_1 = a1_inv_0 ^ mul_a0_t;
-  assign a1_inv_2 = a1_inv_1 ^ mul_m0_b_inv;
-  assign a1_inv   = a1_inv_2 ^ mul_m0_t;
-  assign a0_inv_0 = s0       ^ mul_a1_b_inv;
-  assign a0_inv_1 = a0_inv_0 ^ mul_a1_t;
-  assign a0_inv_2 = a0_inv_1 ^ mul_m1_b_inv;
-  assign a0_inv   = a0_inv_2 ^ mul_m1_t;
+  logic [3:0] a1_inv [4];
+  logic [3:0] a1_inv_buf [4];
+  logic [3:0] a0_inv [4];
+  logic [3:0] a0_inv_buf [4];
+  assign a1_inv[0] = s1            ^ mul_a0_b_inv_buf;
+  assign a1_inv[1] = a1_inv_buf[0] ^ mul_a0_t_buf;
+  assign a1_inv[2] = a1_inv_buf[1] ^ mul_m0_b_inv_buf;
+  assign a1_inv[3] = a1_inv_buf[2] ^ mul_m0_t_buf;
+  assign a0_inv[0] = s0            ^ mul_a1_b_inv_buf;
+  assign a0_inv[1] = a0_inv_buf[0] ^ mul_a1_t_buf;
+  assign a0_inv[2] = a0_inv_buf[1] ^ mul_m1_b_inv_buf;
+  assign a0_inv[3] = a0_inv_buf[2] ^ mul_m1_t_buf;
+
+  // Avoid aggressive synthesis optimizations.
+  for (genvar i = 0; i < 4; i++) begin : gen_a01_inv_buf
+    prim_buf #(
+      .Width ( 4 )
+    ) u_prim_buf_a1_inv_i (
+      .in_i  ( a1_inv[i]     ),
+      .out_o ( a1_inv_buf[i] )
+    );
+    prim_buf #(
+      .Width ( 4 )
+    ) u_prim_buf_a0_inv_i (
+      .in_i  ( a0_inv[i]     ),
+      .out_o ( a0_inv_buf[i] )
+    );
+  end
 
   // Note: a_inv is masked by s (= n), a was masked by m.
-  assign a_inv = {a1_inv, a0_inv};
+  assign a_inv = {a1_inv_buf[3], a0_inv_buf[3]};
 
 endmodule
 
