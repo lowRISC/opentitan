@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
+  // TODO: flow and sub_flow should not needed here. Update dvsim to support it.
   flow: formal
+
+  sub_flow: fpv
 
   // This is the primary cfg hjson for FPV. It imports ALL individual FPV
   // cfgs of the IPs and the full chip used in top_earlgrey. This enables to run

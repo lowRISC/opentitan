@@ -48,4 +48,12 @@
     { COV:      "{cov}" },
     { sub_flow: "{sub_flow}"}
   ]
+
+  overrides: [
+    // Add formal sub_flow to the scratch path
+    {
+      name:  scratch_path
+      value: "{scratch_base_path}/{dut}-{flow}-{sub_flow}-{tool}"
+    }
+  ]
 }

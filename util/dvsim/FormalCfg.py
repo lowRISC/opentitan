@@ -22,8 +22,15 @@ class FormalCfg(OneShotCfg):
         super().__init__(flow_cfg_file, hjson_data, args, mk_config)
         self.header = ["name", "errors", "warnings", "proven", "cex", "undetermined",
                        "covered", "unreachable", "pass_rate", "cov_rate"]
+
+        # Default not to publish child cfg results.
+        if "publish_report" in hjson_data:
+            self.publish_report = hjson_data["publish_report"]
+        else:
+            self.publish_report = False
+        self.sub_flow = hjson_data['sub_flow']
         self.summary_header = ["name", "pass_rate", "stimuli_cov", "coi_cov", "prove_cov"]
-        self.results_title = self.name.upper() + " Formal Results"
+        self.results_title = self.name.upper() + " Formal " + self.sub_flow.upper() + " Results"
 
     def parse_dict_to_str(self, input_dict, excl_keys = []):
         # This is a helper function to parse dictionary items into a string.
@@ -242,7 +249,7 @@ class FormalCfg(OneShotCfg):
                     }
                 }
 
-        results_str += "\n\n## Formal Results\n"
+        results_str += "\n\n## Formal " + self.sub_flow.upper() + " Results\n"
         formal_result_str, formal_summary = self.get_summary(self.result)
         results_str += formal_result_str
         summary += formal_summary
@@ -278,9 +285,16 @@ class FormalCfg(OneShotCfg):
         return self.results_md
 
     def _publish_results(self):
-        '''This does nothing: detailed messages from the logfile are not published
-
-        Our agreement with tool vendors allows us to publish the summary
+        ''' our agreement with tool vendors allows us to publish the summary
         results (as in gen_results_summary).
+
+        In default this method does nothing: detailed messages from each child
+        cfg will not be published.
+        If the publish_report argument is set to true, this method will only
+        publish a result summary of the child cfg.
         '''
-        return
+        if self.publish_report:
+            self.publish_results_md = self.gen_results_summary()
+            super()._publish_results()
+        else:
+            return

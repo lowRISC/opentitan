@@ -43,7 +43,7 @@ Finally, we provide the same set of information for all available [top level des
   * [Design specification]({{< relref "hw/top_earlgrey/doc" >}})
   * [dv document]({{< relref "hw/top_earlgrey/doc/dv" >}})
   * [DV simulation results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/latest/results.html)
-  * FPV results (nightly) (TBD)
+  * [Connectivity results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/conn/jaspergold/latest/results.html)
   * [AscentLint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/ascentlint/latest/results.html)
   * [Verilator lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/verilator/latest/results.html)
   * [Style lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/veriblelint/latest/results.html)

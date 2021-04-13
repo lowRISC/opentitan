@@ -13,4 +13,8 @@
 
   // TODO: reduce run time and turn on coverage
   cov: false
+
+  rel_path: "hw/top_earlgrey/{sub_flow}/{tool}"
+
+  publish_report: true
 }
