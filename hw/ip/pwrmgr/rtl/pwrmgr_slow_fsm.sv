@@ -46,6 +46,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   // All power signals and signals going to analog logic are flopped to avoid transitional glitches
   logic pd_nq, pd_nd;
   logic pwr_clamp_q, pwr_clamp_d;
+  logic pwr_clamp_early_q, pwr_clamp_early_d;
   logic core_clk_en_q, core_clk_en_d;
   logic io_clk_en_q, io_clk_en_d;
   logic usb_clk_en_q, usb_clk_en_d;
@@ -73,6 +74,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       // pwrmgr resets assuming main power domain is already ready
       pd_nq          <= 1'b1;
       pwr_clamp_q    <= 1'b0;
+      pwr_clamp_early_q <= 1'b0;
       core_clk_en_q  <= 1'b0;
       io_clk_en_q    <= 1'b0;
       usb_clk_en_q   <= 1'b0;
@@ -84,6 +86,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       cause_toggle_q <= cause_toggle_d;
       pd_nq          <= pd_nd;
       pwr_clamp_q    <= pwr_clamp_d;
+      pwr_clamp_early_q <= pwr_clamp_early_d;
       core_clk_en_q  <= core_clk_en_d;
       io_clk_en_q    <= io_clk_en_d;
       usb_clk_en_q   <= usb_clk_en_d;
@@ -98,6 +101,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
     pd_nd          = pd_nq;
     cause_toggle_d = cause_toggle_q;
     pwr_clamp_d    = pwr_clamp_q;
+    pwr_clamp_early_d = pwr_clamp_early_q;
     core_clk_en_d  = core_clk_en_q;
     io_clk_en_d    = io_clk_en_q;
     usb_clk_en_d   = usb_clk_en_q;
@@ -126,9 +130,14 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
         pd_nd = 1'b1;
 
         if (ast_i.main_pok) begin
-          pwr_clamp_d = 1'b0;
-          state_d = SlowPwrStateClocksOn;
+          pwr_clamp_early_d = 1'b0;
+          state_d = SlowPwrStatePwrClampOff;
         end
+      end
+
+      SlowPwrStatePwrClampOff: begin
+        pwr_clamp_d = 1'b0;
+        state_d = SlowPwrStateClocksOn;
       end
 
       SlowPwrStateClocksOn: begin
@@ -177,10 +186,16 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
         usb_clk_en_d = usb_clk_en_lp_i;
 
         if (all_clks_invalid) begin
-          // if main power is turned off, assert clamp ahead
-          pwr_clamp_d = ~main_pd_ni;
-          state_d = SlowPwrStateMainPowerOff;
+          // if main power is turned off, assert early clamp ahead
+          pwr_clamp_early_d = ~main_pd_ni;
+          state_d = SlowPwrStatePwrClampOn;
         end
+      end
+
+      SlowPwrStatePwrClampOn: begin
+        // if main power is turned off, assert clamp ahead
+        pwr_clamp_d = pwr_clamp_early_q;
+        state_d = SlowPwrStateMainPowerOff;
       end
 
       SlowPwrStateMainPowerOff: begin
@@ -215,8 +230,8 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   assign ast_o.io_clk_en = io_clk_en_q;
   assign ast_o.usb_clk_en = usb_clk_en_q;
   assign ast_o.main_pd_n = pd_nq;
+  assign ast_o.pwr_clamp_early = pwr_clamp_early_q;
   assign ast_o.pwr_clamp = pwr_clamp_q;
-
   // This is hardwired to 1 all the time
   assign ast_o.slow_clk_en = 1'b1;
 
