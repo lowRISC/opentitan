@@ -14,10 +14,22 @@ lint_off -rule ALWCOMBORDER -file "*/rtl/aes_key_expand.sv" -match "*'regular'"
 lint_off -rule DECLFILENAME -file "*/rtl/aes_sbox_*_masked*.sv" -match "Filename 'aes_sbox_*_masked*' does not match MODULE name: *"
 lint_off -rule DECLFILENAME -file "*/rtl/aes_sbox_dom*.sv" -match "Filename 'aes_sbox_dom*' does not match MODULE name: *"
 
-// In the sp2v_sig* arrays some members may depend on others.
+// In the following arrays some members may depend on others.
 // There are no circular dependencies but the tool must be told to analyze each member separately for simulation, i.e., to split up the arrays internally.
 // Otherwise the tool needs to evaluate corresponding statements multiple times before the entire signal settles.
 // This slows down simulation and causes the tool to print UNOPTFLAT lint warnings.
 split_var -module "aes_control" -var "*sp2v_sig*"
 split_var -module "aes_cipher_control" -var "*sp2v_sig"
 split_var -module "aes_cipher_control" -var "*sp2v_sig_chk*"
+split_var -module "aes_masked_inverse_gf2p8*" -var "b"
+split_var -module "aes_masked_inverse_gf2p8*" -var "b_buf"
+split_var -module "aes_masked_inverse_gf2p8*" -var "a1_inv"
+split_var -module "aes_masked_inverse_gf2p8*" -var "a1_inv_buf"
+split_var -module "aes_masked_inverse_gf2p8*" -var "a0_inv"
+split_var -module "aes_masked_inverse_gf2p8*" -var "a0_inv_buf"
+split_var -module "aes_masked_inverse_gf2p4*" -var "c"
+split_var -module "aes_masked_inverse_gf2p4*" -var "c_buf"
+split_var -module "aes_masked_inverse_gf2p4*" -var "b1_inv"
+split_var -module "aes_masked_inverse_gf2p4*" -var "b1_inv_buf"
+split_var -module "aes_masked_inverse_gf2p4*" -var "b0_inv"
+split_var -module "aes_masked_inverse_gf2p4*" -var "b0_inv_buf"
