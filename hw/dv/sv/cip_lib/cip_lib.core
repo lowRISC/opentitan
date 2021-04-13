@@ -28,6 +28,7 @@ filesets:
       - seq_lib/cip_base_vseq.sv: {is_include_file: true}
       - seq_lib/cip_base_vseq__tl_errors.svh: {is_include_file: true}
       - seq_lib/cip_tl_seq_item.sv: {is_include_file: true}
+      - seq_lib/cip_tl_host_single_seq.sv: {is_include_file: true}
       - cip_base_test.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
