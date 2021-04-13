@@ -52,6 +52,11 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
       m_tl_agent_cfgs[ral_name].if_mode = dv_utils_pkg::Host;
       // TL host cannot support device same cycle response. Host may drive d_ready=0 when a_valid=1.
       m_tl_agent_cfgs[ral_name].host_can_stall_rsp_when_a_valid_high = $urandom_range(0, 1);
+
+      // OpenTitan host should hold a_valid high until receiving a_ready, but it's valid behavior
+      // to drop a_valid without a_ready
+      // randomize `allow_a_valid_drop_wo_a_ready` to test TL device can support it
+      m_tl_agent_cfgs[ral_name].allow_a_valid_drop_wo_a_ready = $urandom_range(0, 1);
     end
 
     // Assign handle to the default `m_tl_agent_cfg` for default `RAL_T`
