@@ -139,7 +139,7 @@ prim_flop_2sync #(
   .ResetValue ( 1'b0 )
 ) u_entropy_clr_sync (
   .clk_i ( clk_ast_es_i ),
-  .rst_ni ( rst_ast_es_ni ),
+  .rst_ni ( 1'b1 ),
   .d_i ( !(clk_src_sys_en_i && clk_src_sys_jen_i) ),
   .q_o ( entropy_clr )
 );

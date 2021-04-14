@@ -16,8 +16,8 @@ module rglts_pdm_3p3v (
   input vcmain_pok_h_i,                  // VCMAIN (1.1v) Exist @3.3v
   input vcmain_pok_o_h_i,                // vcmain_pok_o signal (1.1v) @3.3v
   input clk_src_aon_h_i,                 // AON Clock @3.3v
-  input main_pd_h_ni,                    // VCMAIN/Regulator Power Down @3.3v
-  input main_iso_en_i,                   // Isolation enable for main core power (VCMAIN).
+  input main_pd_h_ni,                    // MAIN Regulator Power Down @3.3v
+  input main_env_iso_en_h_i,             // Enveloped ISOlation ENable for MAIN @3.3v
   input [1:0] otp_power_seq_h_i,         // MMR0,24 in @3.3v
   output logic vcaon_pok_h_o,            // VCAON (1.1v) Exist @3.3v
   output logic main_pwr_dly_o,           // For modeling only.
