@@ -21,8 +21,9 @@ extern "C" {
  */
 enum module_ {
   kModuleUnknown = 0,
-  kModuleUart = 0x4155,  // ASCII "UA".
-  kModuleHmac = 0x4d48,  // ASCII "HM".
+  kModuleUart = 0x4155,       // ASCII "UA".
+  kModuleHmac = 0x4d48,       // ASCII "HM".
+  kModuleSigverify = 0x5653,  // ASCII "SV".
 };
 
 /**
@@ -42,9 +43,10 @@ enum module_ {
 //       after the ROM is frozen.
 #define DEFINE_ERRORS(X) \
   X(kErrorOk, 0x739), \
-  X(kErrorUartInvalidArgument, ERROR_(1, kModuleUart, kInvalidArgument)), \
-  X(kErrorUartBadBaudRate,     ERROR_(2, kModuleUart, kInvalidArgument)), \
-  X(kErrorHmacInvalidArgument, ERROR_(1, kModuleHmac, kInvalidArgument)), \
+  X(kErrorUartInvalidArgument,      ERROR_(1, kModuleUart, kInvalidArgument)), \
+  X(kErrorUartBadBaudRate,          ERROR_(2, kModuleUart, kInvalidArgument)), \
+  X(kErrorHmacInvalidArgument,      ERROR_(1, kModuleHmac, kInvalidArgument)), \
+  X(kErrorSigverifyInvalidArgument, ERROR_(1, kModuleSigverify, kInvalidArgument)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 
