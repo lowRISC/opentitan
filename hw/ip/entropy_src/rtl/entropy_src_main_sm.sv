@@ -105,60 +105,97 @@ module entropy_src_main_sm (
         end
       end
       BootHTRunning: begin
-        if (ht_done_pulse_i) begin
-          if (ht_fail_pulse_i) begin
-            state_d = Idle;
-          end else begin
-            state_d = BootPostHTChk;
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (ht_done_pulse_i) begin
+            if (ht_fail_pulse_i) begin
+              state_d = Idle;
+            end else begin
+              state_d = BootPostHTChk;
+            end
           end
         end
       end
       BootPostHTChk: begin
-        if (!bypass_stage_rdy_i) begin
-        end else begin
-          rst_alert_cntr_o = 1'b1;
-          rst_bypass_mode_o = 1'b1;
-          bypass_stage_pop_o = 1'b1;
+        if (!enable_i) begin
           state_d = Idle;
+        end else begin
+          if (!bypass_stage_rdy_i) begin
+          end else begin
+            rst_alert_cntr_o = 1'b1;
+            rst_bypass_mode_o = 1'b1;
+            bypass_stage_pop_o = 1'b1;
+            state_d = Idle;
+          end
         end
       end
       NormHTStart: begin
-        sha3_start_o = 1'b1;
-        state_d = NormHTRunning;
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          sha3_start_o = 1'b1;
+          state_d = NormHTRunning;
+        end
       end
       NormHTRunning: begin
-        if (ht_done_pulse_i) begin
-          if (ht_fail_pulse_i) begin
-            sha3_done_o = 1'b1;
-            state_d = Idle;
-          end else begin
-            state_d = NormSha3CSReq;
+        if (!enable_i) begin
+          sha3_done_o = 1'b1;
+          state_d = Idle;
+        end else begin
+          if (ht_done_pulse_i) begin
+            if (ht_fail_pulse_i) begin
+              sha3_done_o = 1'b1;
+              state_d = Idle;
+            end else begin
+              state_d = NormSha3CSReq;
+            end
           end
         end
       end
       NormSha3CSReq: begin
-        cs_aes_halt_req_o = 1'b1;
-        if (cs_aes_halt_ack_i) begin
-        state_d = NormSha3Process;
+        if (!enable_i) begin
+          sha3_done_o = 1'b1;
+          state_d = Idle;
+        end else begin
+          cs_aes_halt_req_o = 1'b1;
+          if (cs_aes_halt_ack_i) begin
+            state_d = NormSha3Process;
+          end
         end
       end
       NormSha3Process: begin
-        cs_aes_halt_req_o = 1'b1;
-        rst_alert_cntr_o = 1'b1;
-        sha3_process_o = 1'b1;
-        state_d = NormSha3Valid;
+        if (!enable_i) begin
+          sha3_done_o = 1'b1;
+          state_d = Idle;
+        end else begin
+          cs_aes_halt_req_o = 1'b1;
+          rst_alert_cntr_o = 1'b1;
+          sha3_process_o = 1'b1;
+          state_d = NormSha3Valid;
+        end
       end
       NormSha3Valid: begin
-        cs_aes_halt_req_o = 1'b1;
-        if (sha3_state_vld_i) begin
-          state_d = NormSha3Done;
+        if (!enable_i) begin
+          sha3_done_o = 1'b1;
+          state_d = Idle;
+        end else begin
+          cs_aes_halt_req_o = 1'b1;
+          if (sha3_state_vld_i) begin
+            state_d = NormSha3Done;
+          end
         end
       end
       NormSha3Done: begin
-        if (main_stage_rdy_i) begin
+        if (!enable_i) begin
           sha3_done_o = 1'b1;
-          main_stage_pop_o = 1'b1;
           state_d = Idle;
+        end else begin
+          if (main_stage_rdy_i) begin
+            sha3_done_o = 1'b1;
+            main_stage_pop_o = 1'b1;
+            state_d = Idle;
+          end
         end
       end
       Error: begin
