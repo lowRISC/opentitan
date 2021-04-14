@@ -107,8 +107,11 @@ module otbn_controller
   output logic [BaseWordsPerWLEN-1:0] ispr_base_wr_en_o,
   output logic [WLEN-1:0]             ispr_bignum_wdata_o,
   output logic                        ispr_bignum_wr_en_o,
-  output logic                        ispr_init_o,
-  input  logic [WLEN-1:0]             ispr_rdata_i
+  input  logic [WLEN-1:0]             ispr_rdata_i,
+
+  output logic rnd_req_o,
+  output logic rnd_prefetch_req_o,
+  input  logic rnd_valid_i
 );
   otbn_state_e state_q, state_d, state_raw;
 
@@ -118,6 +121,7 @@ module otbn_controller
   logic insn_fetch_req_valid_raw;
 
   logic stall;
+  logic ispr_stall;
   logic mem_stall;
   logic branch_taken;
   logic insn_executing;
@@ -143,7 +147,7 @@ module otbn_controller
 
   ispr_e                               ispr_addr_bignum;
 
-  logic                                ispr_wr_insn;
+  logic                                ispr_wr_insn, ispr_rd_insn;
   logic                                ispr_wr_base_insn;
   logic                                ispr_wr_bignum_insn;
 
@@ -185,7 +189,10 @@ module otbn_controller
   // just ensure incoming store error stops anything else happening.
   assign mem_stall = lsu_load_req_raw;
 
-  assign stall = mem_stall;
+  // Reads to RND must stall until data is available
+  assign ispr_stall = rnd_req_o & ~rnd_valid_i;
+
+  assign stall = mem_stall | ispr_stall;
 
   // OTBN is done (raising the 'done' interrupt) either when it executes an ecall or an error
   // occurs. The ecall triggered done is factored out as `done_complete` to avoid logic loops in the
@@ -211,7 +218,6 @@ module otbn_controller
     state_raw                = state_q;
     insn_fetch_req_valid_raw = 1'b0;
     insn_fetch_req_addr_o    = start_addr_i;
-    ispr_init_o              = 1'b0;
 
     // TODO: Harden state machine
     // TODO: Jumps/branches
@@ -222,8 +228,6 @@ module otbn_controller
 
           insn_fetch_req_addr_o    = start_addr_i;
           insn_fetch_req_valid_raw = 1'b1;
-
-          ispr_init_o = 1'b1;
         end
       end
       OtbnStateRun: begin
@@ -309,7 +313,8 @@ module otbn_controller
 
   `ASSERT(ErrBitSetOnErr, err |-> |err_bits_o)
 
-  `ASSERT(ControllerStateValid, state_q inside {OtbnStateHalt, OtbnStateRun, OtbnStateStall})
+  `ASSERT(ControllerStateValid, state_q inside {OtbnStateHalt, OtbnStateRun,
+                                                OtbnStateStall})
   // Branch only takes effect in OtbnStateRun so must not go into stall state for branch
   // instructions.
   `ASSERT(NoStallOnBranch,
@@ -579,6 +584,14 @@ module otbn_controller
         ispr_addr_base      = IsprRnd;
         ispr_word_addr_base = '0;
       end
+      CsrRndPrefetch: begin
+        // Reading from RND_PREFETCH results in 0, there is no ISPR to read so no address is set.
+        // The csr_rdata mux logic takes care of producing the 0.
+      end
+      CsrUrnd: begin
+        ispr_addr_base      = IsprUrnd;
+        ispr_word_addr_base = '0;
+      end
       default: csr_illegal_addr = 1'b1;
     endcase
   end
@@ -600,10 +613,11 @@ module otbn_controller
   always_comb begin
     csr_rdata = csr_rdata_raw;
 
-    unique case(csr_addr)
+    unique case (csr_addr)
       // For FG0/FG1 select out appropriate bits from FLAGS ISPR and pad the rest with zeros.
-      CsrFg0: csr_rdata = {28'b0, csr_rdata_raw[3:0]};
-      CsrFg1: csr_rdata = {28'b0, csr_rdata_raw[7:4]};
+      CsrFg0:         csr_rdata = {28'b0, csr_rdata_raw[3:0]};
+      CsrFg1:         csr_rdata = {28'b0, csr_rdata_raw[7:4]};
+      CsrRndPrefetch: csr_rdata = '0;
       default: ;
     endcase
   end
@@ -615,7 +629,7 @@ module otbn_controller
   always_comb begin
     csr_wdata = csr_wdata_raw;
 
-    unique case(csr_addr)
+    unique case (csr_addr)
       // For FG0/FG1 only modify relevant part of FLAGS ISPR.
       CsrFg0: csr_wdata = {24'b0, csr_rdata_raw[7:4], csr_wdata_raw[3:0]};
       CsrFg1: csr_wdata = {24'b0, csr_wdata_raw[3:0], csr_rdata_raw[3:0]};
@@ -637,9 +651,10 @@ module otbn_controller
     wsr_illegal_addr = 1'b0;
 
     unique case (wsr_addr)
-      WsrMod: ispr_addr_bignum = IsprMod;
-      WsrRnd: ispr_addr_bignum = IsprRnd;
-      WsrAcc: ispr_addr_bignum = IsprAcc;
+      WsrMod:  ispr_addr_bignum = IsprMod;
+      WsrRnd:  ispr_addr_bignum = IsprRnd;
+      WsrAcc:  ispr_addr_bignum = IsprAcc;
+      WsrUrnd: ispr_addr_bignum = IsprUrnd;
       default: wsr_illegal_addr = 1'b1;
     endcase
   end
@@ -655,7 +670,12 @@ module otbn_controller
                                                         insn_dec_shared_i.ispr_rs_insn);
 
   assign ispr_wr_insn = insn_dec_shared_i.ispr_wr_insn | insn_dec_shared_i.ispr_rs_insn;
-  assign ispr_wr_base_insn   = ispr_wr_insn & (insn_dec_shared_i.subset == InsnSubsetBase);
+  assign ispr_rd_insn = insn_dec_shared_i.ispr_rd_insn | insn_dec_shared_i.ispr_rs_insn;
+
+  // Write to RND_PREFETCH must not produce ISR write
+  assign ispr_wr_base_insn =
+    ispr_wr_insn & (insn_dec_shared_i.subset == InsnSubsetBase) & (csr_addr != CsrRndPrefetch);
+
   assign ispr_wr_bignum_insn = ispr_wr_insn & (insn_dec_shared_i.subset == InsnSubsetBignum);
 
   assign ispr_addr_o         = insn_dec_shared_i.subset == InsnSubsetBase ? ispr_addr_base :
@@ -692,6 +712,11 @@ module otbn_controller
       insn_valid_i & (lsu_load_req_raw | lsu_store_req_raw) & (dmem_addr_overflow         |
                                                                dmem_addr_unaligned_bignum |
                                                                dmem_addr_unaligned_base);
+
+  assign rnd_req_o = insn_valid_i & ispr_rd_insn & (ispr_addr_o == IsprRnd);
+
+  assign rnd_prefetch_req_o = insn_valid_i & ispr_wr_insn &
+      (insn_dec_shared_i.subset == InsnSubsetBase) & (csr_addr == CsrRndPrefetch);
 
   // RF Read enables for bignum RF are unused for now. Future security hardening work may make use
   // of them.

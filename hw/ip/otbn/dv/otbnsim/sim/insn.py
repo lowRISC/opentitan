@@ -280,6 +280,14 @@ class CSRRS(OTBNInsn):
         self.csr = op_vals['csr']
         self.grs1 = op_vals['grs1']
 
+    def pre_execute(self, state: OTBNState) -> bool:
+        if self.csr == 0xfc0:
+            # Will return False if RND value not available, causing instruction
+            # to stall
+            return state.wsrs.RND.request_value()
+
+        return True
+
     def execute(self, state: OTBNState) -> None:
         old_val = state.read_csr(self.csr)
         bits_to_set = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -297,6 +305,14 @@ class CSRRW(OTBNInsn):
         self.grd = op_vals['grd']
         self.csr = op_vals['csr']
         self.grs1 = op_vals['grs1']
+
+    def pre_execute(self, state: OTBNState) -> bool:
+        if self.csr == 0xfc0 and self.grd != 0:
+            # Will return False if RND value not available, causing instruction
+            # to stall
+            return state.wsrs.RND.request_value()
+
+        return True
 
     def execute(self, state: OTBNState) -> None:
         new_val = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -976,6 +992,14 @@ class BNWSRR(OTBNInsn):
         super().__init__(raw, op_vals)
         self.wrd = op_vals['wrd']
         self.wsr = op_vals['wsr']
+
+    def pre_execute(self, state: OTBNState) -> bool:
+        if self.wsr == 0x1:
+            # Will return False if RND value not available, causing instruction
+            # to stall
+            return state.wsrs.RND.request_value()
+
+        return True
 
     def execute(self, state: OTBNState) -> None:
         val = state.wsrs.read_at_idx(self.wsr)

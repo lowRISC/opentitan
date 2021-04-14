@@ -13,7 +13,11 @@ module otbn
   import otbn_reg_pkg::*;
 #(
   parameter regfile_e             RegFile      = RegFileFF,
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+
+  // Default seed and permutation for URND LFSR
+  parameter urnd_lfsr_seed_t       RndCnstUrndLfsrSeed      = RndCnstUrndLfsrSeedDefault,
+  parameter urnd_chunk_lfsr_perm_t RndCnstUrndChunkLfsrPerm = RndCnstUrndChunkLfsrPermDefault
 ) (
   input clk_i,
   input rst_ni,
@@ -531,9 +535,12 @@ module otbn
     end
 
     // Mux between model and RTL implementation at runtime.
-    logic      done_model, done_rtl;
-    logic      start_model, start_rtl;
-    err_bits_t err_bits_model, err_bits_rtl;
+    logic         done_model, done_rtl;
+    logic         start_model, start_rtl;
+    err_bits_t    err_bits_model, err_bits_rtl;
+    logic         edn_rnd_data_valid;
+    logic         edn_urnd_data_valid;
+    logic [255:0] edn_rnd_data_model;
 
     assign done = otbn_use_model ? done_model : done_rtl;
     assign err_bits = otbn_use_model ? err_bits_model : err_bits_rtl;
@@ -541,6 +548,15 @@ module otbn
     assign start_rtl = start & ~otbn_use_model;
 
     // Model (Instruction Set Simulator)
+    // In model only runs, leave valid signals high and supply constant RND data for EDN which will
+    // allow the model to continue without RND/URND related stalls.
+    // TODO: Implement proper EDN requests in model only runs
+    localparam logic [WLEN-1:0] ModelOnlyEdnVal = {{(WLEN / 4){4'h9}}};
+
+    assign edn_rnd_data_valid = otbn_use_model ? 1'b1 : edn_rnd_req & edn_rnd_ack;
+    assign edn_urnd_data_valid = otbn_use_model ? 1'b1 : edn_urnd_req & edn_urnd_ack;
+    assign edn_rnd_data_model = otbn_use_model ? ModelOnlyEdnVal : edn_rnd_data;
+
     otbn_core_model #(
       .DmemSizeByte(DmemSizeByte),
       .ImemSizeByte(ImemSizeByte),
@@ -557,14 +573,20 @@ module otbn
 
       .start_addr_i (start_addr),
 
-      .err_o ()
+      .err_o (),
+
+      .edn_rnd_data_valid_i  ( edn_rnd_data_valid ),
+      .edn_rnd_data_i        ( edn_rnd_data ),
+      .edn_urnd_data_valid_i ( edn_urnd_data_valid )
     );
 
     // RTL implementation
     otbn_core #(
       .RegFile(RegFile),
       .DmemSizeByte(DmemSizeByte),
-      .ImemSizeByte(ImemSizeByte)
+      .ImemSizeByte(ImemSizeByte),
+      .RndCnstUrndLfsrSeed(RndCnstUrndLfsrSeed),
+      .RndCnstUrndChunkLfsrPerm(RndCnstUrndChunkLfsrPerm)
     ) u_otbn_core (
       .clk_i,
       .rst_ni,
@@ -590,7 +612,15 @@ module otbn
       .dmem_wmask_o  (dmem_wmask_core_nointeg),
       .dmem_rdata_i  (dmem_rdata_core_nointeg),
       .dmem_rvalid_i (dmem_rvalid_core),
-      .dmem_rerror_i (dmem_rerror_core)
+      .dmem_rerror_i (dmem_rerror_core),
+
+      .edn_rnd_req_o   (edn_rnd_req),
+      .edn_rnd_ack_i   (edn_rnd_ack),
+      .edn_rnd_data_i  (edn_rnd_data),
+
+      .edn_urnd_req_o  (edn_urnd_req),
+      .edn_urnd_ack_i  (edn_urnd_ack),
+      .edn_urnd_data_i (edn_urnd_data)
     );
   `else
     otbn_core #(

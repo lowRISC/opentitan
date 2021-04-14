@@ -19,6 +19,7 @@ filesets:
     files:
       - otbn_top_sim.cc: { file_type: cppSource }
       - otbn_top_sim.sv: { file_type: systemVerilogSource }
+      - otbn_mock_edn.sv: { file_type: systemVerilogSource }
   files_verilator_waiver:
     files:
       - otbn_top_sim_waivers.vlt

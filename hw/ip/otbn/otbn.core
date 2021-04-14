@@ -10,6 +10,9 @@ filesets:
     depend:
       - lowrisc:prim:assert
       - lowrisc:prim:util
+      - lowrisc:prim:lfsr
+      - lowrisc:prim:cipher_pkg
+      - lowrisc:ip:edn_pkg
       - lowrisc:ip:otbn_pkg
     files:
       - rtl/otbn_controller.sv
@@ -26,6 +29,8 @@ filesets:
       - rtl/otbn_mac_bignum.sv
       - rtl/otbn_loop_controller.sv
       - rtl/otbn_stack.sv
+      - rtl/otbn_rnd.sv
+      - rtl/otbn_start_stop_control.sv
       - rtl/otbn_core.sv
     file_type: systemVerilogSource
 

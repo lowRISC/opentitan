@@ -14,6 +14,7 @@ filesets:
     depend:
       - lowrisc:dv:otbn_test
       - lowrisc:dv:otbn_sva
+      - lowrisc:ip:edn_pkg
     files:
       - tb.sv
     file_type: systemVerilogSource

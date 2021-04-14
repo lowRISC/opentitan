@@ -39,7 +39,11 @@ module otbn_core_model
 
   input  logic [ImemAddrWidth-1:0] start_addr_i, // start byte address in IMEM
 
-  output bit err_o        // something went wrong
+  output bit err_o, // something went wrong
+
+  input logic            edn_rnd_data_valid_i, // provide RND data from EDN
+  input logic [WLEN-1:0] edn_rnd_data_i,
+  input logic            edn_urnd_data_valid_i // URND reseed from EDN is valid
 );
 
   import "DPI-C" context function chandle otbn_model_init(string mem_scope,
@@ -48,11 +52,15 @@ module otbn_core_model
                                                           int unsigned dmem_words);
   import "DPI-C" function void otbn_model_destroy(chandle handle);
   import "DPI-C" context function
-    int unsigned otbn_model_step(chandle           model,
-                                 logic             start_i,
-                                 int unsigned      start_addr,
-                                 int unsigned      status,
-                                 inout bit [31:0]  err_code);
+    int unsigned otbn_model_step(chandle          model,
+                                 logic            start,
+                                 int unsigned     start_addr,
+                                 int unsigned     status,
+                                 logic            edn_rnd_data_valid,
+                                 logic [WLEN-1:0] edn_rnd_data,
+                                 logic            edn_urnd_data_valid,
+                                 inout bit [31:0] err_code);
+
 
   localparam int ImemSizeWords = ImemSizeByte / 4;
   localparam int DmemSizeWords = DmemSizeByte / (WLEN / 8);
@@ -107,7 +115,10 @@ module otbn_core_model
       if (start_i | running | check_due) begin
         status <= otbn_model_step(model_handle,
                                   start_i, start_addr_32,
-                                  status, raw_err_bits_d);
+                                  status,
+                                  edn_rnd_data_valid_i, edn_rnd_data_i,
+                                  edn_urnd_data_valid_i,
+                                  raw_err_bits_d);
         raw_err_bits_q <= raw_err_bits_d;
       end else begin
         // If we're not running and we're not being told to start, there's nothing to do.

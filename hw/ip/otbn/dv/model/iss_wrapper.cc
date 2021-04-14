@@ -8,6 +8,7 @@
 #include <cstring>
 #include <fcntl.h>
 #include <ftw.h>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <regex>
@@ -218,6 +219,17 @@ static uint32_t read_ext_reg(const std::string &reg_name,
   return val;
 }
 
+static std::string wlen_val_to_hex_str(uint32_t val[8]) {
+  std::ostringstream oss;
+
+  oss << std::hex << "0x";
+  for (int i = 7; i >= 0; --i) {
+    oss << std::setfill('0') << std::setw(8) << val[i];
+  }
+
+  return oss.str();
+}
+
 ISSWrapper::ISSWrapper() : tmpdir(new TmpDir()) {
   std::string model_path(find_otbn_model());
 
@@ -320,6 +332,16 @@ void ISSWrapper::start(uint32_t addr) {
   std::ostringstream oss;
   oss << "start " << addr << "\n";
   run_command(oss.str(), nullptr);
+}
+
+void ISSWrapper::edn_rnd_data(uint32_t edn_rnd_data[8]) {
+  std::ostringstream oss;
+  oss << "edn_rnd_data " << wlen_val_to_hex_str(edn_rnd_data) << "\n";
+  run_command(oss.str(), nullptr);
+}
+
+void ISSWrapper::edn_urnd_reseed_complete() {
+  run_command("edn_urnd_reseed_complete\n", nullptr);
 }
 
 std::pair<int, uint32_t> ISSWrapper::step(bool gen_trace) {

@@ -214,4 +214,18 @@ package top_earlgrey_rnd_cnst_pkg;
     160'h33D0BEDD4D8C36CB029C0CFD5CB87F2170991F42
   };
 
+  ////////////////////////////////////////////
+  // otbn
+  ////////////////////////////////////////////
+  // Default seed of the PRNG used for URND.
+  parameter otbn_pkg::urnd_lfsr_seed_t RndCnstOtbnUrndLfsrSeed = {
+    256'h1102BE301EB1A8D04814AC33B45DE425069E5959DF06D42254A25AFAE52A5963
+  };
+
+  // Permutation applied to the LFSR chunks of the PRNG used for URND.
+  parameter otbn_pkg::urnd_chunk_lfsr_perm_t RndCnstOtbnUrndChunkLfsrPerm = {
+    128'h96C27A70B8A45CFD2D3B52B1F040DB79,
+    256'hA46ED80E5942BC02513FBDFD5A98A66805BC17DDED6CCD3271A3E37A08C92847
+  };
+
 endpackage : top_earlgrey_rnd_cnst_pkg

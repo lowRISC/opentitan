@@ -89,6 +89,7 @@ module otbn_tracer
       IsprAcc: return "ACC";
       IsprRnd: return "RND";
       IsprFlags: return "FLAGS";
+      IsprUrnd: return "URND";
       default: return "UNKNOWN_ISPR";
     endcase
   endfunction
