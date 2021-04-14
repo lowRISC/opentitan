@@ -493,7 +493,7 @@ module edn_core import edn_pkg::*;
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .req_i(packer_arb_req), // N number of reqs
-    .data_i('{NumEndPoints{'0}}),
+    .data_i('{default: 1'b0}),
     .gnt_o(packer_arb_gnt), // N number of gnts
     .idx_o(), //NC
     .valid_o(packer_arb_valid),
