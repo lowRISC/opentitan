@@ -13,8 +13,8 @@
 // vulnerable to higher-order differential side-channel analysis, but it remains secure against
 // first-order attacks. This implementation is commonly referred to as THE Canright Masked SBox.
 //
-// A formal analysis using REBECCA (static mode) shows that this implementation is not secure.
-// It is thus recommended to use the "noreuse" variant of the masked Canright S-Box.
+// A formal analysis using REBECCA (stable and transient mode) shows that this implementation is
+// not secure. It's usage is thus discouraged. It's included here mainly for reference.
 //
 // For details on the REBECCA tool, see the following paper:
 // Bloem, "Formal verification of masked hardware implementations in the presence of glitches"
