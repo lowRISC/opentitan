@@ -37,12 +37,11 @@ filesets:
       - rtl/io_osc.sv
       - rtl/rglts_pdm_3p3v.sv
       - rtl/rng.sv
-      - rtl/rng_osc.sv
       - rtl/sys_clk.sv
       - rtl/sys_osc.sv
       - rtl/usb_clk.sv
       - rtl/usb_osc.sv
-
+      
     file_type: systemVerilogSource
 
 
@@ -71,7 +70,7 @@ targets:
           - "-Wall"
 
   sim:
-    <<: *default_target
+    <<: *default_target  
     default_tool: vcs
     filesets:
       - files_rtl
@@ -79,3 +78,4 @@ targets:
       vcs:
         vcs_options: [-timescale=1ns/1ps -l vcs.log]
     toplevel: ast
+  

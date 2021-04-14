@@ -980,7 +980,7 @@ module chip_earlgrey_asic (
     .vioa_pok_o            ( ast_status.io_pok[0] ),
     .viob_pok_o            ( ast_status.io_pok[1] ),
     // main regulator
-    .main_iso_en_i         ( base_ast_pwr.pwr_clamp ),
+    .main_env_iso_en_i     ( base_ast_pwr.pwr_clamp ),
     .main_pd_ni            ( base_ast_pwr.main_pd_n ),
     // pdm control (flash)/otp
     .flash_power_down_h_o  ( flash_power_down_h ),

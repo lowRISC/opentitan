@@ -13,7 +13,7 @@ module ast #(
   parameter int AdcDataWidth    = 10,
   parameter int EntropyStreams  = 4,
   parameter int Ast2PadOutWidth = 16,  // TODO:final size
-  parameter int Pad2AstInWidth  = 6,   // TODO:final size
+  parameter int Pad2AstInWidth  = 16,  // TODO:final size
   parameter int UsbCalibWidth   = 16   // TODO:final size
 ) (
   // tlul if
@@ -52,7 +52,7 @@ module ast #(
 
   // Power and IO pin connections
   input main_pd_ni,                           // MAIN Regulator Power Down
-  input main_iso_en_i,                        // Isolation enable for main core power (VCMAIN).
+  input main_env_iso_en_i,                    // Enveloped ISOlation ENable for MAIN
 
   // power down monitor logic - flash/otp related
   output logic flash_power_down_h_o,          // Flash Power Down
@@ -282,7 +282,7 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .vcmain_pok_o_h_i ( vcmain_pok_por ),
   .clk_src_aon_h_i ( clk_src_aon_o ),
   .main_pd_h_ni ( main_pd_ni ),
-  .main_iso_en_i ( main_iso_en_i ),
+  .main_env_iso_en_h_i ( main_env_iso_en_i ),
   .otp_power_seq_h_i ( otp_power_seq_i[1:0] ),
   .vcaon_pok_h_o ( vcaon_pok_h_int ),
   .main_pwr_dly_o ( main_pwr_dly_o ),
@@ -412,15 +412,17 @@ ast_entropy #(
 ///////////////////////////////////////
 // RNG (Always ON)
 ///////////////////////////////////////
+
 rng #(
   .EntropyStreams ( EntropyStreams )
 ) u_rng (
-  .clk_i ( clk_ast_rng_i ),
-  .rst_ni ( rst_ast_rng_ni ),
-  .vcaon_pok_i ( vcaon_pok ),
+  .clk_i ( clk_ast_tlul_i ),
+  .rst_ni ( rst_ast_tlul_ni ),
+  .clk_ast_rng_i ( clk_ast_rng_i ),
+  .rst_ast_rng_ni ( rst_ast_rng_ni ),
   .rng_en_i ( rng_en_i ),
+  .rng_fips_i ( rng_fips_i ),
   .scan_mode_i ( scan_mode ),
-  .scan_reset_ni ( scan_reset_n ),
   .rng_b_o ( rng_b_o[EntropyStreams-1:0] ),
   .rng_val_o ( rng_val_o )
 );  // of u_rng
