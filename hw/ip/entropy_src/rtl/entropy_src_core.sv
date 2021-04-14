@@ -352,6 +352,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   logic [sha3_pkg::StateW-1:0] sha3_state[Sha3Share];
   logic [PreCondWidth-1:0] msg_data[Sha3Share];
+  logic [7:0]              es_main_sm;
+
+  logic [22:0]             unused_err_code_test_bit;
+  logic [1215:0]           unused_sha3_state;
+  logic [31:0]             unused_entropy_data;
+  logic [31:0]             unused_fw_ov_rd_data;
+  logic                    unused_regwen;
+
 
   // flops
   logic [15:0] es_rate_cntr_q, es_rate_cntr_d;
@@ -1991,7 +1999,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .sha3_done_o        (sha3_done),
     .cs_aes_halt_req_o  (cs_aes_halt_req),
     .cs_aes_halt_ack_i  (cs_aes_halt_i.cs_aes_halt_ack),
-    .main_sm_err_o      (es_main_sm_err)
+    .main_sm_err_o      (es_main_sm_err),
+    .main_sm_o          (es_main_sm)
   );
 
   // es to cs halt request to reduce power spikes
@@ -2082,16 +2091,19 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // set the es entropy to the read reg
   assign hw2reg.entropy_data.d = es_enable ? pfifo_swread_rdata : '0;
   assign sw_es_rd_pulse = efuse_es_sw_reg_en_i && reg2hw.entropy_data.re;
-  //--------------------------------------------
-  // diag settings
-  //--------------------------------------------
 
-  assign hw2reg.debug_status.diag.d  =
-         (|err_code_test_bit[19:3]) ||
-         (|err_code_test_bit[27:22]) ||
-         (|sha3_state[0][sha3_pkg::StateW-1:SeedLen])||
-         reg2hw.regwen.q &&
-         (&reg2hw.entropy_data.q) &&
-         (&reg2hw.fw_ov_rd_data.q);
+  //--------------------------------------------
+  // debug register
+  //--------------------------------------------
+  assign hw2reg.debug_status.main_sm.d = es_main_sm;
+
+  //--------------------------------------------
+  // unused signals
+  //--------------------------------------------
+  assign unused_err_code_test_bit = {err_code_test_bit[27:22],err_code_test_bit[19:3]};
+  assign unused_sha3_state = sha3_state[0][sha3_pkg::StateW-1:SeedLen];
+  assign unused_entropy_data = reg2hw.entropy_data.q;
+  assign unused_fw_ov_rd_data = reg2hw.fw_ov_rd_data.q;
+  assign unused_regwen = reg2hw.regwen.q;
 
 endmodule

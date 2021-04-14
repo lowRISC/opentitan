@@ -1091,9 +1091,9 @@
           name: "SHA3_ERR",
           desc: "This is a logic-or of all of the SHA3 error signals."
         }
-        { bits: "31",
-          name: "DIAG",
-          desc: "This bit is for internal debug only."
+        { bits: "31:24",
+          name: "MAIN_SM",
+          desc: "Main state machine current state."
         }
       ]
     },

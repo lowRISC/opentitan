@@ -367,8 +367,8 @@ module entropy_src_reg_top (
   logic debug_status_sha3_absorbed_re;
   logic debug_status_sha3_err_qs;
   logic debug_status_sha3_err_re;
-  logic debug_status_diag_qs;
-  logic debug_status_diag_re;
+  logic [7:0] debug_status_main_sm_qs;
+  logic debug_status_main_sm_re;
   logic [3:0] seed_qs;
   logic [3:0] seed_wd;
   logic seed_we;
@@ -2274,18 +2274,18 @@ module entropy_src_reg_top (
   );
 
 
-  //   F[diag]: 31:31
+  //   F[main_sm]: 31:24
   prim_subreg_ext #(
-    .DW    (1)
-  ) u_debug_status_diag (
-    .re     (debug_status_diag_re),
+    .DW    (8)
+  ) u_debug_status_main_sm (
+    .re     (debug_status_main_sm_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.debug_status.diag.d),
+    .d      (hw2reg.debug_status.main_sm.d),
     .qre    (),
     .qe     (),
     .q      (),
-    .qs     (debug_status_diag_qs)
+    .qs     (debug_status_main_sm_qs)
   );
 
 
@@ -2927,7 +2927,7 @@ module entropy_src_reg_top (
 
   assign debug_status_sha3_err_re = addr_hit[47] & reg_re & !reg_error;
 
-  assign debug_status_diag_re = addr_hit[47] & reg_re & !reg_error;
+  assign debug_status_main_sm_re = addr_hit[47] & reg_re & !reg_error;
 
   assign seed_we = addr_hit[48] & reg_we & !reg_error;
   assign seed_wd = reg_wdata[3:0];
@@ -3182,7 +3182,7 @@ module entropy_src_reg_top (
         reg_rdata_next[7] = debug_status_sha3_squeezing_qs;
         reg_rdata_next[8] = debug_status_sha3_absorbed_qs;
         reg_rdata_next[9] = debug_status_sha3_err_qs;
-        reg_rdata_next[31] = debug_status_diag_qs;
+        reg_rdata_next[31:24] = debug_status_main_sm_qs;
       end
 
       addr_hit[48]: begin

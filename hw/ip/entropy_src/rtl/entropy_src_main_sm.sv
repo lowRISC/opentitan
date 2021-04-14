@@ -6,27 +6,30 @@
 //
 //   determines when new entropy is ready to be forwarded
 
-module entropy_src_main_sm (
-  input logic                clk_i,
-  input logic                rst_ni,
+module entropy_src_main_sm #(
+  localparam int StateWidth = 8
+) (
+  input logic                   clk_i,
+  input logic                   rst_ni,
 
-  input logic                enable_i,
-  input logic                ht_done_pulse_i,
-  input logic                ht_fail_pulse_i,
-  output logic               rst_alert_cntr_o,
-  input logic                bypass_mode_i,
-  output logic               rst_bypass_mode_o,
-  input logic                main_stage_rdy_i,
-  input logic                bypass_stage_rdy_i,
-  input logic                sha3_state_vld_i,
-  output logic               main_stage_pop_o,
-  output logic               bypass_stage_pop_o,
-  output logic               sha3_start_o,
-  output logic               sha3_process_o,
-  output logic               sha3_done_o,
-  output logic               cs_aes_halt_req_o,
-  input logic                cs_aes_halt_ack_i,
-  output logic               main_sm_err_o
+  input logic                   enable_i,
+  input logic                   ht_done_pulse_i,
+  input logic                   ht_fail_pulse_i,
+  output logic                  rst_alert_cntr_o,
+  input logic                   bypass_mode_i,
+  output logic                  rst_bypass_mode_o,
+  input logic                   main_stage_rdy_i,
+  input logic                   bypass_stage_rdy_i,
+  input logic                   sha3_state_vld_i,
+  output logic                  main_stage_pop_o,
+  output logic                  bypass_stage_pop_o,
+  output logic                  sha3_start_o,
+  output logic                  sha3_process_o,
+  output logic                  sha3_done_o,
+  output logic                  cs_aes_halt_req_o,
+  input logic                   cs_aes_halt_ack_i,
+  output logic                  main_sm_err_o,
+  output logic [StateWidth-1:0] main_sm_o
 );
 
 // Encoding generated with:
@@ -51,7 +54,6 @@ module entropy_src_main_sm (
 // Maximum Hamming weight: 5
 //
 
-  localparam int StateWidth = 8;
   typedef enum logic [StateWidth-1:0] {
     Idle              = 8'b01110110, // idle
     BootHTRunning     = 8'b01011011, // boot mode, wait for health test done pulse
@@ -82,6 +84,7 @@ module entropy_src_main_sm (
   );
 
   assign state_q = state_e'(state_raw_q);
+  assign main_sm_o = state_raw_q;
 
   always_comb begin
     state_d = state_q;

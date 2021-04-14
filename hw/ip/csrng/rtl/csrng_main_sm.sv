@@ -28,7 +28,7 @@ module csrng_main_sm import csrng_pkg::*; (
   input logic                cmd_complete_i,
   input logic                halt_main_sm_i,
   output logic               main_sm_halted_o,
-  output logic               main_sm_err_o
+  output logic[7:0]          main_sm_err_o
 );
 
 // Encoding generated with:
