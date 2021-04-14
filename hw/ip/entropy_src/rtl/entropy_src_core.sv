@@ -348,6 +348,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [2:0]               sha3_fsm;
   logic [32:0]              sha3_err;
   logic                     cs_aes_halt_req;
+  logic                     sha3_msg_rdy;
 
 
   logic [sha3_pkg::StateW-1:0] sha3_state[Sha3Share];
@@ -397,6 +398,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign es_enable_lfsr = reg2hw.conf.enable.q[1];
   assign es_enable_rng = reg2hw.conf.enable.q[0];
   assign load_seed = !es_enable;
+  assign hw2reg.regwen.d = !es_enable; // hw reg lock implementation
   assign pre_cond_fifo_depth = reg2hw.pre_cond_fifo_depth.q;
 
   // firmware override controls
@@ -469,7 +471,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
 
   assign lfsr_incr = es_enable_lfsr && es_rate_entropy_pulse;
-  assign lfsr_incr_dly_d = lfsr_incr;
+  assign lfsr_incr_dly_d =
+         !es_enable ? 1'b0 :
+         lfsr_incr;
 
   prim_lfsr #(
     .LfsrDw(RngBusWidth),
@@ -690,9 +694,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
          (es_enable_rng && rng_bit_en) ? pfifo_esbit_pop :
          sfifo_esrng_pop;
 
-  assign ht_esbus_vld_dly_d = health_test_esbus_vld;
-  assign ht_esbus_dly_d     = health_test_esbus;
-  assign ht_esbus_vld_dly2_d = ht_esbus_vld_dly_q;
+  assign ht_esbus_vld_dly_d = es_enable && health_test_esbus_vld;
+  assign ht_esbus_dly_d     = es_enable ? health_test_esbus : '0;
+  assign ht_esbus_vld_dly2_d = es_enable && ht_esbus_vld_dly_q;
 
   assign repcnt_active = !reg2hw.conf.repcnt_disable.q && es_enable;
   assign repcnts_active = !reg2hw.conf.repcnts_disable.q && es_enable;
@@ -702,6 +706,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign extht_active = reg2hw.conf.extht_enable.q && es_enable;
 
   assign health_test_clr = reg2hw.conf.health_test_clr.q;
+
   assign health_test_fips_window = reg2hw.health_test_windows.fips_window.q;
   assign health_test_bypass_window = reg2hw.health_test_windows.bypass_window.q;
 
@@ -1073,6 +1078,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign boot_bypass_disable = reg2hw.conf.boot_bypass_disable.q;
 
   assign boot_bypass_d =
+         (!es_enable) ? 1'b1 :  // special case for reset
          boot_bypass_disable ? 1'b0 :
          rst_bypass_mode ? 1'b0 :
          boot_bypass_q;
@@ -1088,6 +1094,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // Window counter
   assign window_cntr_d =
+         (!es_enable) ? 1'b0 :
          health_test_clr ? '0 :
          health_test_done_pulse ? '0  :
          health_test_esbus_vld ? (window_cntr_q+1) :
@@ -1626,7 +1633,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
          extht_hi_fail_pulse || extht_lo_fail_pulse;
 
 
-  assign ht_failed_d = sfifo_esfinal_push ? 1'b0 :
+  assign ht_failed_d =
+         (!es_enable) ? 1'b0 :
+         sfifo_esfinal_push ? 1'b0 :
          (any_fail_pulse && health_test_done_pulse) ? 1'b1 :
          ht_failed_q;
 
@@ -1890,6 +1899,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign pfifo_cond_not_empty = sha3_state_vld;
   assign sha3_msgfifo_ready = sha3_msg_rdy_q;
 
+  assign sha3_msg_rdy_d = es_enable && sha3_msg_rdy;
+
   // SHA3 hashing engine
   sha3 #(
     .EnMasking (Sha3EnMasking),
@@ -1902,7 +1913,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .msg_valid_i (pfifo_cond_push),
     .msg_data_i  (msg_data),
     .msg_strb_i  ({8{pfifo_cond_push}}),
-    .msg_ready_o (sha3_msg_rdy_d),
+    .msg_ready_o (sha3_msg_rdy),
 
     // Entropy interface - not using
     .rand_valid_i    (1'b0),
@@ -1995,7 +2006,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // es to cs halt request to reduce power spikes
-  assign cs_aes_halt_d = cs_aes_halt_req;
+  assign cs_aes_halt_d = es_enable && cs_aes_halt_req;
   assign cs_aes_halt_o.cs_aes_halt_req = cs_aes_halt_q;
 
   //--------------------------------------------
@@ -2046,6 +2057,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   entropy_src_ack_sm u_entropy_src_ack_sm (
     .clk_i            (clk_i),
     .rst_ni           (rst_ni),
+    .enable_i         (es_enable),
     .req_i            (es_hw_if_req),
     .ack_o            (es_hw_if_ack),
     .fifo_not_empty_i (sfifo_esfinal_not_empty && !es_route_to_sw),
@@ -2090,7 +2102,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
          (|err_code_test_bit[19:3]) ||
          (|err_code_test_bit[27:22]) ||
          (|sha3_state[0][sha3_pkg::StateW-1:SeedLen])||
-         reg2hw.regwen.q &&
          (&reg2hw.entropy_data.q) &&
          (&reg2hw.fw_ov_rd_data.q);
 

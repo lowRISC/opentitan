@@ -66,8 +66,9 @@
   registers: [
     { name: "REGWEN",
       desc: "Register write enable for all control registers",
-      swaccess: "rw0c",
-      hwaccess: "hro",
+      swaccess: "ro", // lock is managed by HW
+      hwaccess: "hwo",
+      hwext: "true",
       fields: [
         {
             bits: "0",
@@ -105,7 +106,6 @@
       desc: "Configuration register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGWEN",
       fields: [
         { bits: "1:0",
           name: "ENABLE",

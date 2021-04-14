@@ -67,10 +67,6 @@ package entropy_src_reg_pkg;
   } entropy_src_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
-    logic        q;
-  } entropy_src_reg2hw_regwen_reg_t;
-
-  typedef struct packed {
     struct packed {
       logic [1:0]  q;
     } enable;
@@ -285,6 +281,10 @@ package entropy_src_reg_pkg;
       logic        de;
     } es_fatal_err;
   } entropy_src_hw2reg_intr_state_reg_t;
+
+  typedef struct packed {
+    logic        d;
+  } entropy_src_hw2reg_regwen_reg_t;
 
   typedef struct packed {
     logic [31:0] d;
@@ -594,11 +594,10 @@ package entropy_src_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    entropy_src_reg2hw_intr_state_reg_t intr_state; // [536:534]
-    entropy_src_reg2hw_intr_enable_reg_t intr_enable; // [533:531]
-    entropy_src_reg2hw_intr_test_reg_t intr_test; // [530:525]
-    entropy_src_reg2hw_alert_test_reg_t alert_test; // [524:521]
-    entropy_src_reg2hw_regwen_reg_t regwen; // [520:520]
+    entropy_src_reg2hw_intr_state_reg_t intr_state; // [535:533]
+    entropy_src_reg2hw_intr_enable_reg_t intr_enable; // [532:530]
+    entropy_src_reg2hw_intr_test_reg_t intr_test; // [529:524]
+    entropy_src_reg2hw_alert_test_reg_t alert_test; // [523:520]
     entropy_src_reg2hw_conf_reg_t conf; // [519:507]
     entropy_src_reg2hw_rate_reg_t rate; // [506:491]
     entropy_src_reg2hw_entropy_control_reg_t entropy_control; // [490:489]
@@ -624,7 +623,8 @@ package entropy_src_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    entropy_src_hw2reg_intr_state_reg_t intr_state; // [1035:1030]
+    entropy_src_hw2reg_intr_state_reg_t intr_state; // [1036:1031]
+    entropy_src_hw2reg_regwen_reg_t regwen; // [1030:1030]
     entropy_src_hw2reg_entropy_data_reg_t entropy_data; // [1029:998]
     entropy_src_hw2reg_repcnt_thresholds_reg_t repcnt_thresholds; // [997:966]
     entropy_src_hw2reg_repcnts_thresholds_reg_t repcnts_thresholds; // [965:934]
@@ -723,6 +723,8 @@ package entropy_src_reg_pkg;
   parameter logic [1:0] ENTROPY_SRC_ALERT_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] ENTROPY_SRC_ALERT_TEST_RECOV_ALERT_RESVAL = 1'h 0;
   parameter logic [0:0] ENTROPY_SRC_ALERT_TEST_FATAL_ALERT_RESVAL = 1'h 0;
+  parameter logic [0:0] ENTROPY_SRC_REGWEN_RESVAL = 1'h 1;
+  parameter logic [0:0] ENTROPY_SRC_REGWEN_REGWEN_RESVAL = 1'h 1;
   parameter logic [31:0] ENTROPY_SRC_ENTROPY_DATA_RESVAL = 32'h 0;
   parameter logic [31:0] ENTROPY_SRC_REPCNT_THRESHOLDS_RESVAL = 32'h ffffffff;
   parameter logic [15:0] ENTROPY_SRC_REPCNT_THRESHOLDS_FIPS_THRESH_RESVAL = 16'h ffff;

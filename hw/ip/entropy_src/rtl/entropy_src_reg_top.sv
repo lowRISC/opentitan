@@ -133,8 +133,7 @@ module entropy_src_reg_top (
   logic alert_test_fatal_alert_wd;
   logic alert_test_fatal_alert_we;
   logic regwen_qs;
-  logic regwen_wd;
-  logic regwen_we;
+  logic regwen_re;
   logic [7:0] rev_abi_revision_qs;
   logic [7:0] rev_hw_revision_qs;
   logic [7:0] rev_chip_type_qs;
@@ -624,29 +623,18 @@ module entropy_src_reg_top (
   );
 
 
-  // R[regwen]: V(False)
+  // R[regwen]: V(True)
 
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W0C"),
-    .RESVAL  (1'h1)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (regwen_we),
-    .wd     (regwen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
+    .re     (regwen_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.regwen.d),
+    .qre    (),
     .qe     (),
-    .q      (reg2hw.regwen.q ),
-
-    // to register interface (read)
+    .q      (),
     .qs     (regwen_qs)
   );
 
@@ -679,8 +667,8 @@ module entropy_src_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface (qualified with register enable)
-    .we     (conf_enable_we & regwen_qs),
+    // from register interface
+    .we     (conf_enable_we),
     .wd     (conf_enable_wd),
 
     // from internal hardware
@@ -705,8 +693,8 @@ module entropy_src_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface (qualified with register enable)
-    .we     (conf_boot_bypass_disable_we & regwen_qs),
+    // from register interface
+    .we     (conf_boot_bypass_disable_we),
     .wd     (conf_boot_bypass_disable_wd),
 
     // from internal hardware
@@ -731,8 +719,8 @@ module entropy_src_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface (qualified with register enable)
-    .we     (conf_repcnt_disable_we & regwen_qs),
+    // from register interface
+    .we     (conf_repcnt_disable_we),
     .wd     (conf_repcnt_disable_wd),
 
     // from internal hardware
@@ -757,8 +745,8 @@ module entropy_src_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface (qualified with register enable)
-    .we     (conf_adaptp_disable_we & regwen_qs),
+    // from register interface
+    .we     (conf_adaptp_disable_we),
     .wd     (conf_adaptp_disable_wd),
 
     // from internal hardware
@@ -783,8 +771,8 @@ module entropy_src_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface (qualified with register enable)
-    .we     (conf_bucket_disable_we & regwen_qs),
+    // from register interface
+    .we     (conf_bucket_disable_we),
     .wd     (conf_bucket_disable_wd),
 
     // from internal hardware
@@ -809,8 +797,8 @@ module entropy_src_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface (qualified with register enable)
-    .we     (conf_markov_disable_we & regwen_qs),
+    // from register interface
+    .we     (conf_markov_disable_we),
     .wd     (conf_markov_disable_wd),
 
     // from internal hardware
@@ -835,8 +823,8 @@ module entropy_src_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface (qualified with register enable)
-    .we     (conf_health_test_clr_we & regwen_qs),
+    // from register interface
+    .we     (conf_health_test_clr_we),
     .wd     (conf_health_test_clr_wd),
 
     // from internal hardware
@@ -861,8 +849,8 @@ module entropy_src_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface (qualified with register enable)
-    .we     (conf_rng_bit_en_we & regwen_qs),
+    // from register interface
+    .we     (conf_rng_bit_en_we),
     .wd     (conf_rng_bit_en_wd),
 
     // from internal hardware
@@ -887,8 +875,8 @@ module entropy_src_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface (qualified with register enable)
-    .we     (conf_rng_bit_sel_we & regwen_qs),
+    // from register interface
+    .we     (conf_rng_bit_sel_we),
     .wd     (conf_rng_bit_sel_wd),
 
     // from internal hardware
@@ -913,8 +901,8 @@ module entropy_src_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface (qualified with register enable)
-    .we     (conf_extht_enable_we & regwen_qs),
+    // from register interface
+    .we     (conf_extht_enable_we),
     .wd     (conf_extht_enable_wd),
 
     // from internal hardware
@@ -939,8 +927,8 @@ module entropy_src_reg_top (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
-    // from register interface (qualified with register enable)
-    .we     (conf_repcnts_disable_we & regwen_qs),
+    // from register interface
+    .we     (conf_repcnts_disable_we),
     .wd     (conf_repcnts_disable_wd),
 
     // from internal hardware
@@ -2694,8 +2682,7 @@ module entropy_src_reg_top (
   assign alert_test_fatal_alert_we = addr_hit[3] & reg_we & !reg_error;
   assign alert_test_fatal_alert_wd = reg_wdata[1];
 
-  assign regwen_we = addr_hit[4] & reg_we & !reg_error;
-  assign regwen_wd = reg_wdata[0];
+  assign regwen_re = addr_hit[4] & reg_re & !reg_error;
 
   assign conf_enable_we = addr_hit[6] & reg_we & !reg_error;
   assign conf_enable_wd = reg_wdata[1:0];
