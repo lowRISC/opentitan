@@ -89,7 +89,6 @@ module csrng_core import csrng_pkg::*; #(
   logic [AppCmdWidth-1:0] acmd_bus;
 
   logic [SeedLen-1:0]     packer_adata;
-  logic                   packer_adata_rrdy;
 
   logic                   cmd_entropy_req;
   logic                   cmd_entropy_avail;
@@ -323,6 +322,7 @@ module csrng_core import csrng_pkg::*; #(
   logic        cmd_req_dly_q, cmd_req_dly_d;
   logic [Cmd-1:0] cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
   logic           cs_aes_halt_q, cs_aes_halt_d;
+  logic           packer_adata_pop_q, packer_adata_pop_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -336,6 +336,7 @@ module csrng_core import csrng_pkg::*; #(
       cmd_req_dly_q <= '0;
       cmd_req_ccmd_dly_q <= '0;
       cs_aes_halt_q <= '0;
+      packer_adata_pop_q <= '0;
     end else begin
       acmd_q  <= acmd_d;
       shid_q  <= shid_d;
@@ -347,6 +348,7 @@ module csrng_core import csrng_pkg::*; #(
       cmd_req_dly_q <= cmd_req_dly_d;
       cmd_req_ccmd_dly_q <= cmd_req_ccmd_dly_d;
       cs_aes_halt_q <= cs_aes_halt_d;
+      packer_adata_pop_q <= packer_adata_pop_d;
     end
 
   //--------------------------------------------
@@ -865,11 +867,11 @@ module csrng_core import csrng_pkg::*; #(
     .wready_o   (),
     .rvalid_o   (),
     .rdata_o    (packer_adata),
-    .rready_i   (packer_adata_rrdy),
+    .rready_i   (packer_adata_pop_q),
     .depth_o    ()
   );
 
-  assign packer_adata_rrdy = cs_enable &&
+  assign packer_adata_pop_d = cs_enable &&
          ((instant_req && flag0_q) ||
           reseed_req ||
           update_req ||
