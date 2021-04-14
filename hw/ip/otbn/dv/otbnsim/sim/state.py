@@ -38,11 +38,13 @@ class OTBNState:
         # returning false from OTBNInsn.pre_execute. For non instruction related
         # stalls setting self.non_insn_stall will produce a stall.
         #
-        # As a special case, we stall for one cycle before fetching the first
-        # instruction (to match the behaviour of the RTL). This is modelled by
-        # setting self._start_stall and self.non_insn_stall
+        # As a special case, we stall until the URND reseed is completed then
+        # stall for one more cycle before fetching the first instruction (to
+        # match the behaviour of the RTL). This is modelled by setting
+        # self._start_stall, self._urnd_stall and self.non_insn_stall
         self.non_insn_stall = False
         self._start_stall = False
+        self._urnd_stall = False
 
         self.loop_stack = LoopStack()
         self.ext_regs = OTBNExtRegs()
@@ -50,6 +52,15 @@ class OTBNState:
 
         self._err_bits = 0
         self.pending_halt = False
+
+        self._new_rnd_data = None # type: Optional[int]
+        self._urnd_reseed_complete = False
+
+    def set_rnd_data(self, rnd_data: int) -> None:
+        self._new_rnd_data = rnd_data
+
+    def set_urnd_reseed_complete(self) -> None:
+        self._urnd_reseed_complete = True
 
     def loop_start(self, iterations: int, bodysize: int) -> None:
         next_pc = int(self.pc) + 4
@@ -78,6 +89,16 @@ class OTBNState:
         # imply pending_halt is set), we shouldn't get as far as commit.
         assert not self.pending_halt
         assert self._err_bits == 0
+
+        if self._new_rnd_data:
+            self.wsrs.RND.set_unsigned(self._new_rnd_data)
+            self._new_rnd_data = None
+
+        if self._urnd_stall:
+            if self._urnd_reseed_complete:
+                self._urnd_stall = False
+
+            return
 
         # If self._start_stall, this is the end of the stall cycle at the start
         # of a run. Clear self.non_insn_stall and self._start_stall
@@ -119,9 +140,11 @@ class OTBNState:
         self.ext_regs.set_bits('STATUS', 1 << 0)
         self.running = True
         self._start_stall = True
+        self._urnd_stall = True
         self.non_insn_stall = True
         self.pending_halt = False
         self._err_bits = 0
+        self._urnd_reseed_complete = False
 
         self.pc = addr
 

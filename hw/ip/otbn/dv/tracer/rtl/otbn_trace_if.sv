@@ -70,7 +70,11 @@ interface otbn_trace_if
   input otbn_pkg::alu_bignum_operation_t alu_bignum_operation,
   input logic                            mac_bignum_en,
 
-  input logic [otbn_pkg::WLEN-1:0] rnd
+  input logic [otbn_pkg::WLEN-1:0] rnd_data,
+  input logic                      rnd_req,
+  input logic                      rnd_valid,
+
+  input logic [otbn_pkg::WLEN-1:0] urnd_data
 );
   import otbn_pkg::*;
 
@@ -196,9 +200,14 @@ interface otbn_trace_if
 
   assign ispr_write[IsprRnd] = 1'b0;
   assign ispr_write_data[IsprRnd] = '0;
+  assign ispr_write[IsprUrnd] = 1'b0;
+  assign ispr_write_data[IsprUrnd] = '0;
 
-  assign ispr_read[IsprRnd] = any_ispr_read & (ispr_addr == IsprRnd);
-  assign ispr_read_data[IsprRnd] = rnd;
+  assign ispr_read[IsprRnd] = any_ispr_read & (ispr_addr == IsprRnd) & rnd_req & rnd_valid;
+  assign ispr_read_data[IsprRnd] = rnd_data;
+
+  assign ispr_read[IsprUrnd] = any_ispr_read & (ispr_addr == IsprUrnd);
+  assign ispr_read_data[IsprUrnd] = urnd_data;
 
   // Seperate per flag group tracking using the flags_t struct so tracer can cleanly present flag
   // accesses.

@@ -88,7 +88,8 @@ module otbn_alu_bignum
   input  flags_t                      mac_operation_flags_i,
   input  flags_t                      mac_operation_flags_en_i,
 
-  input  logic [WLEN-1:0]             rnd_i
+  input  logic [WLEN-1:0]             rnd_data_i,
+  input  logic [WLEN-1:0]             urnd_data_i
 );
   ///////////
   // ISPRs //
@@ -195,7 +196,8 @@ module otbn_alu_bignum
 
     unique case (ispr_addr_i)
       IsprMod:   ispr_rdata_o = mod_q;
-      IsprRnd:   ispr_rdata_o = rnd_i;
+      IsprRnd:   ispr_rdata_o = rnd_data_i;
+      IsprUrnd:  ispr_rdata_o = urnd_data_i;
       IsprAcc:   ispr_rdata_o = ispr_acc_i;
       IsprFlags: ispr_rdata_o = {{(WLEN - (NFlagGroups * FlagsWidth)){1'b0}}, flags_flattened};
       default: ;

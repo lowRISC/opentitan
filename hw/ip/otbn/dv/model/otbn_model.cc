@@ -104,28 +104,28 @@ int otbn_stack_element_peek(int index, svBitVecVal *val) __attribute__((weak));
 //    Bit 3:      failed_cmp    Consistency check at end of run failed
 //
 // The otbn_model_step function should only be called when either the model is
-// running (bit 0 of status), has a check due (bit 1 of status), or when
-// start_i is asserted. At other times, it will return immediately (but wastes
-// a DPI call).
+// running (bit 0 of status), has a check due (bit 1 of status), or when start
+// is asserted. At other times, it will return immediately (but wastes a DPI
+// call).
 //
-// If the model is running and start_i is false, otbn_model_step steps the ISS
-// by a single cycle. If something goes wrong, it will set failed_step to true
-// and running to false.
+// If the model is running and start is false, otbn_model_step steps the ISS by
+// a single cycle. If something goes wrong, it will set failed_step to true and
+// running to false.
 //
-// If nothing goes wrong, but the ISS finishes its run, we set running to
-// false, write out err_bits and do the post-run task. If the model's
-// design_scope is non-empty, it should be the scope of an RTL implementation.
-// In that case, we compare register and memory contents with that
-// implementation, printing to stderr and setting the failed_cmp bit if there
-// are any mismatches. If the model's design_scope is the empty string, we grab
-// the contents of DMEM from the ISS and inject them into the simulation
-// memory.
+// If nothing goes wrong, but the ISS finishes its run, we set running to false,
+// write out err_bits and do the post-run task. If the model's design_scope is
+// non-empty, it should be the scope of an RTL implementation.  In that case, we
+// compare register and memory contents with that implementation, printing to
+// stderr and setting the failed_cmp bit if there are any mismatches. If the
+// model's design_scope is the empty string, we grab the contents of DMEM from
+// the ISS and inject them into the simulation memory.
 //
-// If start_i is true, we start the model at start_addr and then step once (as
+// If start is true, we start the model at start_addr and then step once (as
 // described above).
-extern "C" unsigned otbn_model_step(OtbnModel *model, svLogic start_i,
-                                    unsigned start_addr, unsigned status,
-                                    svBitVecVal *err_bits /* bit [31:0] */);
+extern "C" unsigned otbn_model_step(
+    OtbnModel *model, svLogic start, unsigned start_addr, unsigned status,
+    svLogic edn_rnd_data_valid, svLogicVecVal *edn_rnd_data, /* logic [255:0] */
+    svLogic edn_urnd_data_valid, svBitVecVal *err_bits /* bit [31:0] */);
 
 static std::vector<uint8_t> read_vector_from_file(const std::string &path,
                                                   size_t num_bytes) {
@@ -216,17 +216,54 @@ static int start_model(OtbnModel &model, unsigned start_addr) {
   return 0;
 }
 
+// Extract 256-bit RND EDN data from a 4 state logic value. RND data is placed
+// into 8 element uint32_t array dst.
+static void set_rnd_data(uint32_t dst[8], const svLogicVecVal src[8]) {
+  for (int i = 0; i < 8; ++i) {
+    // All bits should be known
+    assert(src[i].bval == 0);
+    dst[i] = src[i].aval;
+  }
+}
+
+// Pack uint32_t-based error bitfield into a SystemVerilog bit vector that
+// represents a "bit [31:0]" (as in the SV prototype of otbn_model_step)
+static void set_err_bits(svBitVecVal *dst, uint32_t src) {
+  for (int i = 0; i < 32; ++i) {
+    svBit bit = (src >> i) & 1;
+    svPutBitselBit(dst, i, bit);
+  }
+}
+
+static bool is_xz(svLogic l) { return l == sv_x || l == sv_z; }
+
 // Step once in the model. Returns 1 if the model has finished, 0 if not and -1
 // on failure. If gen_trace is true, pass trace entries to the trace checker.
 // If the model has finished, writes otbn.ERR_BITS to *err_bits.
-static int step_model(OtbnModel &model, bool gen_trace, uint32_t *err_bits) {
+static int step_model(OtbnModel &model, svLogic edn_rnd_data_valid,
+                      svLogicVecVal *edn_rnd_data, /* logic [255:0] */
+                      svLogic edn_urnd_data_valid, bool gen_trace,
+                      svBitVecVal *err_bits /* bit [31:0] */) {
   assert(err_bits);
 
   ISSWrapper *iss = model.get_wrapper(true);
   if (!iss)
     return -1;
 
+  assert(!is_xz(edn_rnd_data_valid));
+  assert(!is_xz(edn_urnd_data_valid));
+
   try {
+    if (edn_rnd_data_valid) {
+      uint32_t int_edn_rnd_data[8];
+      set_rnd_data(int_edn_rnd_data, edn_rnd_data);
+      iss->edn_rnd_data(int_edn_rnd_data);
+    }
+
+    if (edn_urnd_data_valid) {
+      iss->edn_urnd_reseed_complete();
+    }
+
     std::pair<int, uint32_t> ret = iss->step(gen_trace);
     switch (ret.first) {
       case -1:
@@ -236,7 +273,7 @@ static int step_model(OtbnModel &model, bool gen_trace, uint32_t *err_bits) {
 
       case 1:
         // The simulation has stopped. Extract err_bits
-        *err_bits = ret.second;
+        set_err_bits(err_bits, ret.second);
         return 1;
 
       case 0:
@@ -532,19 +569,11 @@ int check_model(OtbnModel *model) {
   return good ? 1 : 0;
 }
 
-// Pack uint32_t-based error bitfield (as generated by step_model) into a
-// SystemVerilog bit vector that represents a "bit [31:0]" (as in the SV
-// prototype of otbn_model_step)
-static void set_err_bits(svBitVecVal *dst, uint32_t src) {
-  for (int i = 0; i < 32; ++i) {
-    svBit bit = (src >> i) & 1;
-    svPutBitselBit(dst, i, bit);
-  }
-}
-
-extern "C" unsigned otbn_model_step(OtbnModel *model, svLogic start_i,
-                                    unsigned start_addr, unsigned status,
-                                    svBitVecVal *err_bits /* bit [31:0] */) {
+extern "C" unsigned otbn_model_step(
+    OtbnModel *model, svLogic start, unsigned start_addr, unsigned status,
+    svLogic edn_rnd_data_valid, svLogicVecVal *edn_rnd_data, /* logic [255:0] */
+    svLogic edn_urnd_data_valid, svBitVecVal *err_bits       /* bit [31:0] */
+) {
   assert(model && err_bits);
 
   // Run model checks if needed. This usually happens just after an operation
@@ -568,8 +597,10 @@ extern "C" unsigned otbn_model_step(OtbnModel *model, svLogic start_i,
     status &= ~CHECK_DUE_BIT;
   }
 
+  assert(!is_xz(start));
+
   // Start the model if requested
-  if (start_i) {
+  if (start) {
     switch (start_model(*model, start_addr)) {
       case 0:
         // All good
@@ -587,8 +618,8 @@ extern "C" unsigned otbn_model_step(OtbnModel *model, svLogic start_i,
     return status;
 
   // Step the model once
-  uint32_t int_err_bits;
-  switch (step_model(*model, check_rtl, &int_err_bits)) {
+  switch (step_model(*model, edn_rnd_data_valid, edn_rnd_data,
+                     edn_urnd_data_valid, check_rtl, err_bits)) {
     case 0:
       // Still running: no change
       break;
@@ -596,7 +627,6 @@ extern "C" unsigned otbn_model_step(OtbnModel *model, svLogic start_i,
     case 1:
       // Finished
       status = (status & ~RUNNING_BIT) | CHECK_DUE_BIT;
-      set_err_bits(err_bits, int_err_bits);
       break;
 
     default:

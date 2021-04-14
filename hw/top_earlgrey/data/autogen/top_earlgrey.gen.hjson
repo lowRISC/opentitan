@@ -4918,6 +4918,26 @@
           expose: "true"
           name_top: OtbnRegFile
         }
+        {
+          name: RndCnstUrndLfsrSeed
+          desc: Default seed of the PRNG used for URND.
+          type: otbn_pkg::urnd_lfsr_seed_t
+          randcount: 256
+          randtype: data
+          name_top: RndCnstOtbnUrndLfsrSeed
+          default: 0x1102be301eb1a8d04814ac33b45de425069e5959df06d42254a25afae52a5963
+          randwidth: 256
+        }
+        {
+          name: RndCnstUrndChunkLfsrPerm
+          desc: Permutation applied to the LFSR chunks of the PRNG used for URND.
+          type: otbn_pkg::urnd_chunk_lfsr_perm_t
+          randcount: 64
+          randtype: perm
+          name_top: RndCnstOtbnUrndChunkLfsrPerm
+          default: 0x96c27a70b8a45cfd2d3b52b1f040db79a46ed80e5942bc02513fbdfd5a98a66805bc17dded6ccd3271a3e37a08c92847
+          randwidth: 384
+        }
       ]
       inter_signal_list:
       [

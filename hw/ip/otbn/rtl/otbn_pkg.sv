@@ -173,39 +173,43 @@ package otbn_pkg;
   // Control and Status Registers (CSRs)
   parameter int CsrNumWidth = 12;
   typedef enum logic [CsrNumWidth-1:0] {
-    CsrFg0   = 12'h7C0,
-    CsrFg1   = 12'h7C1,
-    CsrFlags = 12'h7C8,
-    CsrMod0  = 12'h7D0,
-    CsrMod1  = 12'h7D1,
-    CsrMod2  = 12'h7D2,
-    CsrMod3  = 12'h7D3,
-    CsrMod4  = 12'h7D4,
-    CsrMod5  = 12'h7D5,
-    CsrMod6  = 12'h7D6,
-    CsrMod7  = 12'h7D7,
-    CsrRnd   = 12'hFC0
+    CsrFg0         = 12'h7C0,
+    CsrFg1         = 12'h7C1,
+    CsrFlags       = 12'h7C8,
+    CsrMod0        = 12'h7D0,
+    CsrMod1        = 12'h7D1,
+    CsrMod2        = 12'h7D2,
+    CsrMod3        = 12'h7D3,
+    CsrMod4        = 12'h7D4,
+    CsrMod5        = 12'h7D5,
+    CsrMod6        = 12'h7D6,
+    CsrMod7        = 12'h7D7,
+    CsrRnd         = 12'hFC0,
+    CsrRndPrefetch = 12'hFC1,
+    CsrUrnd        = 12'hFC2
   } csr_e;
 
   // Wide Special Purpose Registers (WSRs)
-  parameter int NWsr = 3; // Number of WSRs
+  parameter int NWsr = 4; // Number of WSRs
   parameter int WsrNumWidth = $clog2(NWsr);
   typedef enum logic [WsrNumWidth-1:0] {
     WsrMod   = 'd0,
     WsrRnd   = 'd1,
-    WsrAcc   = 'd2
+    WsrAcc   = 'd2,
+    WsrUrnd  = 'd3
   } wsr_e;
 
   // Internal Special Purpose Registers (ISPRs)
   // CSRs and WSRs have some overlap into what they map into. ISPRs are the actual registers in the
   // design which CSRs and WSRs are mapped on to.
-  parameter int NIspr = NWsr + 1;
+  parameter int NIspr = 5;
   parameter int IsprNumWidth = $clog2(NIspr);
   typedef enum logic [IsprNumWidth-1:0] {
     IsprMod   = 'd0,
     IsprRnd   = 'd1,
     IsprAcc   = 'd2,
-    IsprFlags = 'd3
+    IsprFlags = 'd3,
+    IsprUrnd  = 'd4
   } ispr_e;
 
   typedef logic [$clog2(NFlagGroups)-1:0] flag_group_t;
@@ -352,8 +356,33 @@ package otbn_pkg;
   // States for controller state machine
   typedef enum logic [1:0] {
     OtbnStateHalt,
+    OtbnStateUrndRefresh,
     OtbnStateRun,
     OtbnStateStall
   } otbn_state_e;
+
+  typedef enum logic [1:0] {
+    OtbnStartStopStateHalt,
+    OtbnStartStopStateUrndRefresh,
+    OtbnStartStopStateRunning
+  } otbn_start_stop_state_e;
+
+  // URNG PRNG default LFSR seed and permutation
+  // A single default seed is split into 64 bit chunks, a seperate LFSR is used for each chunk. All
+  // LFSR chunks use the same permutation.
+  // These LFSR parameters have been generated with
+  // $ ./util/design/gen-lfsr-seed.py --width 256 --seed 2840984437 --prefix "Urnd"
+  parameter int UrndLfsrWidth = 256;
+  typedef logic [UrndLfsrWidth-1:0] urnd_lfsr_seed_t;
+  parameter urnd_lfsr_seed_t RndCnstUrndLfsrSeedDefault = 256'h84ddfadaf7e1134d70aa1c59de6197ff25a4fe335d095f1e2cba89acbe4a07e9;
+
+  // These LFSR parameters have been generated with
+  // $ ./util/design/gen-lfsr-seed.py --width 64 --seed 2840984437 --prefix "UrndChunk"
+  parameter int UrndChunkLfsrWidth = 64;
+  typedef logic [UrndChunkLfsrWidth-1:0][$clog2(UrndChunkLfsrWidth)-1:0] urnd_chunk_lfsr_perm_t;
+  parameter urnd_chunk_lfsr_perm_t RndCnstUrndChunkLfsrPermDefault = {
+    128'h911992e063cafd4f3b13ee5682b969be,
+    256'h86c701ecc39d9d483bdcacb5a15340b0988e2336e955ddd0dc01ab17e173726e
+  };
 
 endpackage

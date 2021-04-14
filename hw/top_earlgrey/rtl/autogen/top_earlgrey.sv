@@ -2243,7 +2243,9 @@ module top_earlgrey #(
 
   otbn #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[29:28]),
-    .RegFile(OtbnRegFile)
+    .RegFile(OtbnRegFile),
+    .RndCnstUrndLfsrSeed(RndCnstOtbnUrndLfsrSeed),
+    .RndCnstUrndChunkLfsrPerm(RndCnstOtbnUrndChunkLfsrPerm)
   ) u_otbn (
 
       // Interrupt

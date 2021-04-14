@@ -43,6 +43,10 @@ class CSRFile:
             # RND register
             return wsrs.RND.read_u32()
 
+        if idx == 0xfc1:
+            # RND_PREFETCH register
+            return 0
+
         raise RuntimeError('Unknown CSR index: {:#x}'.format(idx))
 
     def write_unsigned(self, wsrs: WSRFile, idx: int, value: int) -> None:
@@ -67,8 +71,8 @@ class CSRFile:
             wsrs.MOD.write_unsigned(self._set_field(mod_n, 32, value, old))
             return
 
-        if idx == 0xfc0:
-            # RND register (writes are ignored)
+        if idx == 0xfc0 or idx == 0xfc1:
+            # RND/RND_PREFETCH register (writes are ignored)
             return
 
         raise RuntimeError('Unknown CSR index: {:#x}'.format(idx))
