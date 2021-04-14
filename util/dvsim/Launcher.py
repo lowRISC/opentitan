@@ -277,7 +277,7 @@ class Launcher:
         # exit code for whatever reason, then show the last 10 lines of the log
         # as the failure message, which might help with the debug.
         if self.exit_code != 0:
-            return "F", ErrorMessage(max(1, line_number=len(lines) - 10),
+            return "F", ErrorMessage(line_number=max(1, len(lines) - 10),
                                      message="Job returned non-zero exit code",
                                      context=[])
         if chk_passed:
