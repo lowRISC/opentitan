@@ -9,6 +9,7 @@ import glob
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 
 def replace_module_name(file_name, string_search, string_replace):
@@ -21,12 +22,23 @@ def replace_module_name(file_name, string_search, string_replace):
     fin.close()
 
 
-rtl_path = '../../rtl/'
+path_root = str(Path(__file__).resolve().parents[5])
+rtl_path = path_root + '/hw/ip/aes/rtl/'
+prim_path = path_root + '/hw/ip/prim/rtl/'
+prim_xilinx_path = path_root + '/hw/ip/prim_xilinx/rtl/'
 
-# List all S-Box reference implementation + AES package
+# Specify S-Box reference implementation
 impl_gold = 'aes_sbox_lut'
 file_pkg = 'aes_pkg.sv'
-file_pkg_canright = 'aes_sbox_canright_pkg'
+
+# Specify dependencies
+dep_list = [
+    rtl_path + 'aes_pkg.sv',
+    rtl_path + 'aes_reg_pkg.sv',
+    rtl_path + 'aes_sbox_canright_pkg.sv',
+    prim_xilinx_path + 'prim_xilinx_buf.sv',
+    prim_xilinx_path + 'prim_xilinx_xor2.sv',
+]
 
 # Detect all S-Box implementations to check
 impl_list = glob.glob(rtl_path + 'aes_sbox_*.sv')
@@ -37,14 +49,14 @@ impl_list = [
 impl_list.remove('aes_sbox_dom')
 # Remove reference implementation and package files.
 impl_list.remove(impl_gold)
-impl_list.remove(file_pkg_canright)
-file_pkg_canright = file_pkg_canright + '.sv'
+impl_list.remove('aes_sbox_canright_pkg')
 
 # Create workdir
 os.makedirs('scratch', exist_ok=True)
 
 # Convert the reference implementation to Verilog
-sv2v_cmd = ['sv2v', rtl_path + impl_gold + '.sv', rtl_path + file_pkg]
+sv2v_cmd = ['sv2v', '-I', prim_path
+            ] + dep_list + [rtl_path + impl_gold + '.sv']
 with open('scratch/aes_sbox_ref.v', 'w') as outfile:
     subprocess.run(sv2v_cmd, stdout=outfile)
 
@@ -59,10 +71,8 @@ num_impl_failed = 0
 for impl_dut in impl_list:
 
     # Prepare Verilog conversion of DUT
-    sv2v_cmd = [
-        'sv2v', rtl_path + impl_dut + '.sv', rtl_path + file_pkg,
-        rtl_path + file_pkg_canright
-    ]
+    sv2v_cmd = ['sv2v', '-I', prim_path
+                ] + dep_list + [rtl_path + impl_dut + '.sv']
 
     # Masked implementations require a wrapper
     if 'masked' in impl_dut:
@@ -76,7 +86,7 @@ for impl_dut in impl_list:
                             impl_dut)
 
         # Include in conversion
-        sv2v_cmd.insert(2, 'scratch/' + file_wrap)
+        sv2v_cmd.insert(3, 'scratch/' + file_wrap)
 
     # Convert DUT to Verilog
     with open('scratch/aes_sbox_dut.v', 'w') as outfile:
@@ -88,6 +98,9 @@ for impl_dut in impl_list:
                             'aes_sbox_dut')
     else:
         replace_module_name('scratch/aes_sbox_dut.v', impl_dut, 'aes_sbox_dut')
+
+    # Use Xilinx implementation for primitives
+    replace_module_name('scratch/aes_sbox_dut.v', 'prim_xilinx_', 'prim_')
 
     # Perform LEC in Yosys
     yosys_cmd = ['yosys', '../aes_sbox_lec.ys']
