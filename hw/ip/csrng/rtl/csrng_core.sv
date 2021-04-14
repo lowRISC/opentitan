@@ -311,6 +311,8 @@ module csrng_core import csrng_pkg::*; #(
   logic                    block_encrypt_quiet;
 
   logic [StateId-1:0]      track_inst_id[NApps];
+  logic [7:0]              track_sm[16];
+  logic [1:0]              sel_track_sm_grp;
 
   // flops
   logic [2:0]  acmd_q, acmd_d;
@@ -1389,10 +1391,26 @@ module csrng_core import csrng_pkg::*; #(
     .state_db_wr_inst_id_i(state_db_wr_inst_id),
     .cmd_core_ack_i(cmd_core_ack[i]),
     .cmd_stage_ack_i(cmd_stage_ack[i]),
-    .track_sm_o()
+    .track_sm_o(track_sm[i])
   );
 
   end : gen_track_sm
+
+  for (genvar i = NApps; i < 16; i = i+1) begin : gen_track_sm_null
+    assign track_sm[i] = '0;
+  end : gen_track_sm_null
+
+
+  // attach track sm output to observation register
+
+  assign sel_track_sm_grp = reg2hw.sel_tracking_sm.q;
+
+  assign hw2reg.tracking_sm_obs.de = cs_enable;
+  assign hw2reg.tracking_sm_obs.d =
+         (sel_track_sm_grp == 2'h3) ? {track_sm[15],track_sm[14],track_sm[13],track_sm[12]} :
+         (sel_track_sm_grp == 2'h2) ? {track_sm[11],track_sm[10],track_sm[9],track_sm[8]} :
+         (sel_track_sm_grp == 2'h1) ? {track_sm[7],track_sm[6],track_sm[5],track_sm[4]} :
+         {track_sm[3],track_sm[2],track_sm[1],track_sm[0]};
 
   //--------------------------------------------
   // report csrng request summary

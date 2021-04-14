@@ -201,6 +201,9 @@ module csrng_reg_top (
   logic [4:0] err_code_test_qs;
   logic [4:0] err_code_test_wd;
   logic err_code_test_we;
+  logic [1:0] sel_tracking_sm_wd;
+  logic sel_tracking_sm_we;
+  logic [31:0] tracking_sm_obs_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -1554,9 +1557,61 @@ module csrng_reg_top (
   );
 
 
+  // R[sel_tracking_sm]: V(False)
+
+  prim_subreg #(
+    .DW      (2),
+    .SWACCESS("WO"),
+    .RESVAL  (2'h0)
+  ) u_sel_tracking_sm (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (sel_tracking_sm_we),
+    .wd     (sel_tracking_sm_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.sel_tracking_sm.q ),
+
+    .qs     ()
+  );
 
 
-  logic [17:0] addr_hit;
+  // R[tracking_sm_obs]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_tracking_sm_obs (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.tracking_sm_obs.de),
+    .d      (hw2reg.tracking_sm_obs.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (tracking_sm_obs_qs)
+  );
+
+
+
+
+  logic [19:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CSRNG_INTR_STATE_OFFSET);
@@ -1577,6 +1632,8 @@ module csrng_reg_top (
     addr_hit[15] = (reg_addr == CSRNG_HW_EXC_STS_OFFSET);
     addr_hit[16] = (reg_addr == CSRNG_ERR_CODE_OFFSET);
     addr_hit[17] = (reg_addr == CSRNG_ERR_CODE_TEST_OFFSET);
+    addr_hit[18] = (reg_addr == CSRNG_SEL_TRACKING_SM_OFFSET);
+    addr_hit[19] = (reg_addr == CSRNG_TRACKING_SM_OBS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1602,6 +1659,8 @@ module csrng_reg_top (
     if (addr_hit[15] && reg_we && (CSRNG_PERMIT[15] != (CSRNG_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[16] && reg_we && (CSRNG_PERMIT[16] != (CSRNG_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
     if (addr_hit[17] && reg_we && (CSRNG_PERMIT[17] != (CSRNG_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[18] && reg_we && (CSRNG_PERMIT[18] != (CSRNG_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
+    if (addr_hit[19] && reg_we && (CSRNG_PERMIT[19] != (CSRNG_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
   end
 
   assign intr_state_cs_cmd_req_done_we = addr_hit[0] & reg_we & !reg_error;
@@ -1677,6 +1736,9 @@ module csrng_reg_top (
 
   assign err_code_test_we = addr_hit[17] & reg_we & !reg_error;
   assign err_code_test_wd = reg_wdata[4:0];
+
+  assign sel_tracking_sm_we = addr_hit[18] & reg_we & !reg_error;
+  assign sel_tracking_sm_wd = reg_wdata[1:0];
 
   // Read data return
   always_comb begin
@@ -1790,6 +1852,14 @@ module csrng_reg_top (
 
       addr_hit[17]: begin
         reg_rdata_next[4:0] = err_code_test_qs;
+      end
+
+      addr_hit[18]: begin
+        reg_rdata_next[1:0] = '0;
+      end
+
+      addr_hit[19]: begin
+        reg_rdata_next[31:0] = tracking_sm_obs_qs;
       end
 
       default: begin

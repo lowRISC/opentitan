@@ -571,5 +571,43 @@
         },
       ]
     },
+    { name: "SEL_TRACKING_SM",
+      desc: "Select debug tracking state machine register",
+      swaccess: "wo",
+      hwaccess: "hro",
+      fields: [
+        {
+            bits: "1:0",
+            name: "SEL_TRACKING_SM",
+            desc: '''
+                  These encoded bits will select one of four groups of
+                  state machine tracking registers. Each tracking debug field is 8 bits
+                  wide, so up to four debug fields can be observed at one time.
+                  Each tracking field will follow a per instance csrng application command
+                  through the csrng design unit.
+                  '''
+        },
+      ]
+    },
+    { name: "TRACKING_SM_OBS",
+      desc: "CSRNG application command tracking state machine observation register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "31:0",
+          name: "TRACKING_SM_OBS",
+          desc: '''
+                This field will hold 4 csrng command tracking state machine fields,
+                each field being 8 bits. Bits 7:0 hold tracking field 0 for instance 0,
+                Bits 16:8 hold tracking field 1 for instance 1, etc.
+                If more than 4 instances are active, then the selection register
+                can be programmed to select up to 3 other groups.
+                '''
+          tags: [// Internal HW can modify status register
+                 "excl:CsrAllTests:CsrExclCheck"]
+          resval: "0"
+        }
+      ]
+    },
   ]
 }
