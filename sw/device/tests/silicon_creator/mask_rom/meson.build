@@ -6,6 +6,7 @@ test('rsa_verify_unittest', executable(
   'rsa_verify_unittest',
   sources: [
     meson.source_root() / 'sw/device/silicon_creator/mask_rom/rsa_verify.c',
+    meson.source_root() / 'sw/device/silicon_creator/mask_rom/sig_verify_keys.c',
     'rsa_verify_unittest.cc',
   ],
   dependencies: [

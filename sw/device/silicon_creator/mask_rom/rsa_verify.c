@@ -4,51 +4,46 @@
 
 #include "sw/device/silicon_creator/mask_rom/rsa_verify.h"
 
-#include <memory.h>
 #include <stddef.h>
 
-/**
- * Constants used in this file.
- */
-enum {
-  /**
-   * Number of bits of RSA modulus.
-   */
-  kRsaNumBits = kRsaNumWords * sizeof(uint32_t) * 8,
-};
+#include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/mask_rom/sig_verify_keys.h"
 
 /**
- * Subtracts `b` from `a` in-place, i.e. `a -= b`.
+ * Subtracts the modulus of `key` from `a` in-place, i.e. `a -= n`.
  *
- * Since a can be smaller than b, this function also returns the borrow.
+ * Since `a` can be smaller than the modulus, this function also returns the
+ * borrow.
  *
- * @param a A `kRsaNumWords` long buffer, little-endian.
- * @param b A `kRsaNumWords` long buffer, little-endian.
+ * @param key An RSA public key.
+ * @param[in,out] a Buffer that holds `a`, little-endian.
  * @return Borrow.
  */
-static uint32_t subtract(uint32_t *a, const uint32_t *b) {
+static uint32_t subtract_modulus(const sigverify_rsa_key_t *key,
+                                 sigverify_rsa_buffer_t *a) {
   uint32_t borrow = 0;
-  for (size_t i = 0; i < kRsaNumWords; ++i) {
-    uint64_t diff = (uint64_t)a[i] - b[i] - borrow;
-    borrow = diff > a[i];
-    a[i] = (uint32_t)diff;
+  for (size_t i = 0; i < ARRAYSIZE(a->data); ++i) {
+    uint64_t diff = (uint64_t)a->data[i] - key->n.data[i] - borrow;
+    borrow = diff > a->data[i];
+    a->data[i] = (uint32_t)diff;
   }
   return borrow;
 }
 
 /**
- * Checks if `a` is greater than or equal to `b`.
+ * Checks if `a` is greater than or equal to the modulus of `key`.
  *
- * @param a A `kRsaNumWords` long buffer, little-endian.
- * @param b A `kRsaNumWords` long buffer, little-endian.
+ * @param key An RSA public key.
+ * @param a Buffer that holds `a`, little-endian.
  * @return Comparison result.
  */
-static bool greater_equal(const uint32_t *a, const uint32_t *b) {
+static bool greater_equal_modulus(const sigverify_rsa_key_t *key,
+                                  const sigverify_rsa_buffer_t *a) {
   // TODO(#33): Hardening?
   // Note: Loop terminates when `i` wraps around.
-  for (size_t i = kRsaNumWords - 1; i < kRsaNumWords; --i) {
-    if (a[i] != b[i]) {
-      return a[i] > b[i];
+  for (size_t i = ARRAYSIZE(a->data) - 1; i < ARRAYSIZE(a->data); --i) {
+    if (a->data[i] != key->n.data[i]) {
+      return a->data[i] > key->n.data[i];
     }
   }
   return true;
@@ -57,40 +52,41 @@ static bool greater_equal(const uint32_t *a, const uint32_t *b) {
 /**
  * Shifts `a` left one bit in-place, i.e. `a <<= 1`.
  *
- * Since the result may not fit in `kRsaNumWords`, this function also returns
- * the most significant bit of the result.
+ * Since the result may not fit in `a`, this function also returns the most
+ * significant bit of the result.
  *
- * @param a A `kRsaNumWords` long buffer, little-endian.
+ * @param[in,out] a Buffer that holds `a`, little-endian.
  * @return Most significant bit of the result.
  */
-static uint32_t shift_left(uint32_t *a) {
-  const uint32_t msb = a[kRsaNumWords - 1] >> 31;
-  for (size_t i = kRsaNumWords - 1; i > 0; --i) {
-    a[i] = (a[i] << 1) | (a[i - 1] >> 31);
+static uint32_t shift_left(sigverify_rsa_buffer_t *a) {
+  const uint32_t msb = a->data[ARRAYSIZE(a->data) - 1] >> 31;
+  for (size_t i = ARRAYSIZE(a->data) - 1; i > 0; --i) {
+    a->data[i] = (a->data[i] << 1) | (a->data[i - 1] >> 31);
   }
-  a[0] <<= 1;
+  a->data[0] <<= 1;
   return msb;
 }
 
 /**
- * Calculates R^2 mod m, where R = b^kRsaNumWords, and b is 2^32.
+ * Calculates R^2 mod n, where R = 2^kSigVerifyRsaNumBits.
  *
- * @param m A `kRsaNumWords` long buffer, little-endian.
- * @param[out] result A `kRsaNumWords` long buffer, little-endian.
+ * @param key An RSA public key.
+ * @param[out] result Buffer to write the result to, little-endian.
  */
-static void calc_r_square(const uint32_t *m, uint32_t *result) {
-  memset(result, 0, kRsaNumWords * sizeof(uint32_t));
-  // Since R/2 < m < R, this subtraction ensures that result = R mod m and
-  // fits in `kRsaNumWords` going into the loop.
-  subtract(result, m);
+static void calc_r_square(const sigverify_rsa_key_t *key,
+                          sigverify_rsa_buffer_t *result) {
+  memset(result->data, 0, sizeof(result->data));
+  // Since R/2 < n < R, this subtraction ensures that result = R mod n and
+  // fits in `kSigVerifyRsaNumWords` going into the loop.
+  subtract_modulus(key, result);
 
   // Iteratively shift and reduce `result`.
-  for (size_t i = 0; i < kRsaNumBits; ++i) {
+  for (size_t i = 0; i < kSigVerifyRsaNumBits; ++i) {
     uint32_t msb = shift_left(result);
-    // Reduce until result < m. Doing this at every iteration minimizes the
+    // Reduce until result < n. Doing this at every iteration minimizes the
     // total number of subtractions that we need to perform.
-    while (msb > 0 || greater_equal(result, m)) {
-      msb -= subtract(result, m);
+    while (msb > 0 || greater_equal_modulus(key, result)) {
+      msb -= subtract_modulus(key, result);
     }
   }
 }
@@ -103,11 +99,11 @@ static void calc_r_square(const uint32_t *m, uint32_t *result) {
 // 		2.2. result = (result + x_i * y + u_i * m) / b
 // 3. If result >= m then result = result - m
 // 4. Return result
-void mont_mul(const uint32_t *x, const uint32_t *y, const uint32_t *m,
-              const uint32_t m0_inv, uint32_t *result) {
-  memset(result, 0, kRsaNumWords * sizeof(uint32_t));
+void mont_mul(const sigverify_rsa_key_t *key, const sigverify_rsa_buffer_t *x,
+              const sigverify_rsa_buffer_t *y, sigverify_rsa_buffer_t *result) {
+  memset(result->data, 0, sizeof(result->data));
 
-  for (size_t i = 0; i < kRsaNumWords; ++i) {
+  for (size_t i = 0; i < ARRAYSIZE(x->data); ++i) {
     // The loop below reads one word ahead of writes to avoid a separate loop
     // for the division by `b` in step 2.2 of the algorithm. Thus, `acc0` and
     // `acc1` are initialized here before the loop. `acc0` holds the sum of
@@ -118,70 +114,69 @@ void mont_mul(const uint32_t *x, const uint32_t *y, const uint32_t *m,
     // 0xffff_ffff_ffff_ffff.
 
     // Holds the sum of the first two addends in step 2.2.
-    uint64_t acc0 = (uint64_t)x[i] * y[0] + result[0];
-    const uint32_t u_i = (uint32_t)acc0 * m0_inv;
+    uint64_t acc0 = (uint64_t)x->data[i] * y->data[0] + result->data[0];
+    const uint32_t u_i = (uint32_t)acc0 * key->n0_inv;
     // Holds the sum of the all three addends in step 2.2.
-    uint64_t acc1 = (uint64_t)u_i * m[0] + (uint32_t)acc0;
+    uint64_t acc1 = (uint64_t)u_i * key->n.data[0] + (uint32_t)acc0;
 
     // Process the i^th digit of `x`, i.e. `x[i]`.
-    for (size_t j = 1; j < kRsaNumWords; ++j) {
-      acc0 = (uint64_t)x[i] * y[j] + result[j] + (acc0 >> 32);
-      acc1 = (uint64_t)u_i * m[j] + (uint32_t)acc0 + (acc1 >> 32);
-      result[j - 1] = (uint32_t)acc1;
+    for (size_t j = 1; j < ARRAYSIZE(result->data); ++j) {
+      acc0 = (uint64_t)x->data[i] * y->data[j] + result->data[j] + (acc0 >> 32);
+      acc1 = (uint64_t)u_i * key->n.data[j] + (uint32_t)acc0 + (acc1 >> 32);
+      result->data[j - 1] = (uint32_t)acc1;
     }
     acc0 = (acc0 >> 32) + (acc1 >> 32);
-    result[kRsaNumWords - 1] = (uint32_t)acc0;
+    result->data[ARRAYSIZE(result->data) - 1] = (uint32_t)acc0;
 
     // The intermediate result of this algorithm before the check below is
-    // bounded by R + m (Eq. (4) in Montgomery Arithmetic from a Software
-    // Perspective, Bos. J. W, Montgomery, P. L.) where `m` is an integer with
-    // `kRsaNumWords` base 2^32 digits, `R` is 2^(`kRsaNumWords`*32), and m < R.
-    // Therefore, if there is a carry, then `result` is not the least
-    // non-negative residue of x*y*R^-1 mod m. Since `acc0 >> 32` here is at
-    // most 1, we can subtract `m` from `result` without taking it into account
-    // and fit `result` into `kRsaNumWords`. Since this is not a direct
-    // comparison with `m`, the final result is not guaranteed to be the the
-    // least non-negative residue of x*y*R^-1 mod m.
+    // bounded by R + n (Eq. (4) in Montgomery Arithmetic from a Software
+    // Perspective, Bos. J. W, Montgomery, P. L.) where n is the modulus of
+    // `key` and n < R. Therefore, if there is a carry, then `result` is not the
+    // least non-negative residue of x*y*R^-1 mod n. Since `acc0 >> 32` here is
+    // at most 1, we can subtract the modulus from `result` without taking it
+    // into account and fit `result` into `kSigVerifyRsaNumWords`. Since this is
+    // not a direct comparison with the modulus, the final result is not
+    // guaranteed to be the the least non-negative residue of x*y*R^-1 mod n.
     if (acc0 >> 32) {
-      subtract(result, m);
+      subtract_modulus(key, result);
     }
   }
 }
 
-bool mod_exp(const uint32_t *sig, const rsa_verify_exponent_t e,
-             const uint32_t *m, const uint32_t m0_inv, uint32_t *result) {
-  uint32_t buf[kRsaNumWords];
+bool sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
+                            const sigverify_rsa_buffer_t *sig,
+                            sigverify_rsa_buffer_t *result) {
+  sigverify_rsa_buffer_t buf;
 
-  if (e == kRsaVerifyExponent3) {
-    // buf = R^2 mod m
-    calc_r_square(m, buf);
-    // result = sig * R mod m
-    mont_mul(sig, buf, m, m0_inv, result);
-    // buf = sig^2 * R mod m
-    mont_mul(result, result, m, m0_inv, buf);
-  } else if (e == kRsaVerifyExponent65537) {
-    // result = R^2 mod m
-    calc_r_square(m, result);
-    // buf = sig * R mod m
-    mont_mul(sig, result, m, m0_inv, buf);
+  if (key->exponent == 3) {
+    // buf = R^2 mod n
+    calc_r_square(key, &buf);
+    // result = sig * R mod n
+    mont_mul(key, sig, &buf, result);
+    // buf = sig^2 * R mod n
+    mont_mul(key, result, result, &buf);
+  } else if (key->exponent == 65537) {
+    // result = R^2 mod n
+    calc_r_square(key, result);
+    // buf = sig * R mod n
+    mont_mul(key, sig, result, &buf);
     for (size_t i = 0; i < 8; ++i) {
-      // result = sig^{2*i+1} * R mod m (sig's exponent: 2, 8, 32, ..., 32768)
-      mont_mul(buf, buf, m, m0_inv, result);
-      // buf = sig^{4*i+2} * R mod m (sig's exponent: 4, 16, 64, ..., 65536)
-      mont_mul(result, result, m, m0_inv, buf);
+      // result = sig^{2*i+1} * R mod n (sig's exponent: 2, 8, 32, ..., 32768)
+      mont_mul(key, &buf, &buf, result);
+      // buf = sig^{4*i+2} * R mod n (sig's exponent: 4, 16, 64, ..., 65536)
+      mont_mul(key, result, result, &buf);
     }
   } else {
     return false;
   }
-  // result = sig^e mod m
-  mont_mul(buf, sig, m, m0_inv, result);
+  // result = sig^e mod n
+  mont_mul(key, &buf, sig, result);
 
   // We need this check because the result of `mont_mul` is not guaranteed to be
-  // the least non-negative residue. We need to subtract `m` from `result` at
-  // most once because  `m` is the modulus of an RSA public key and therefore
-  // R/2 < m < R.
-  if (greater_equal(result, m)) {
-    subtract(result, m);
+  // the least non-negative residue. We need to subtract the modulus n from
+  // `result` at most once because R/2 < n < R.
+  if (greater_equal_modulus(key, result)) {
+    subtract_modulus(key, result);
   }
 
   return true;
