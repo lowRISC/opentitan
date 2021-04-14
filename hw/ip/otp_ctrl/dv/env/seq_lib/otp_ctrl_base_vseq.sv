@@ -283,7 +283,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
             cfg.clk_rst_vif.wait_clks(1);
             csr_rd(.ptr(ral.err_code.err_code_7), .value(err_val), .backdoor(1));
             // Break if error will cause fatal alerts
-            if (err_val inside {OtpMacroEccUncorrError, OtpFsmStateError}) break;
+            if (err_val inside {OTP_TERMINAL_ERRS}) break;
           end
         end
       join_any

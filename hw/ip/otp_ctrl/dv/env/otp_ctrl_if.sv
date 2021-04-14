@@ -23,6 +23,9 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
                        lc_creator_seed_sw_rw_en_i, lc_seed_hw_rd_en_i;
   otp_ast_rsp_t        otp_ast_pwr_seq_h_i;
 
+  // probe design signal for alert request
+  logic                alert_reqs;
+
   // connect with lc_prog push-pull interface
   logic                lc_prog_req, lc_prog_err;
   logic                lc_prog_err_dly1, lc_prog_no_sta_check;
@@ -31,6 +34,9 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   lc_ctrl_pkg::lc_tx_e lc_esc_dly1, lc_esc_dly2;
   // For lc_escalate_en, every value that is not Off is a On.
   bit                  lc_esc_on;
+  // Usually the lc_check_byp will be automatically set to On when lc_prog_req is issued but reset
+  // has not been issued, otherwise internal check will fail.
+  // Set this variable to 0 might cause otp_check_fail.
   bit                  lc_check_byp_en = 1;
   bit [1:0]            force_sw_parts_ecc_reg;
 
@@ -89,6 +95,10 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     lc_escalate_en_i = val;
   endtask
 
+  function automatic bit under_error_states();
+    return lc_esc_on | alert_reqs;
+  endfunction
+
   // SW partitions do not have any internal checks.
   // Here we force internal ECC check to fail.
   task automatic force_sw_check_fail(bit[1:0] fail_idx = $urandom_range(1, 3));
@@ -116,7 +126,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   endtask
 
   `define OTP_ASSERT_WO_LC_ESC(NAME, SEQ) \
-    `ASSERT(NAME, SEQ, clk_i, !rst_ni || lc_esc_on)
+    `ASSERT(NAME, SEQ, clk_i, !rst_ni || lc_esc_on || alert_reqs)
 
   // If pwr_otp_idle is set only if pwr_otp init is done
   `OTP_ASSERT_WO_LC_ESC(OtpPwrDoneWhenIdle_A, pwr_otp_idle_o |-> pwr_otp_done_o)

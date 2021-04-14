@@ -113,11 +113,17 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       end
       trigger_checks(.val(check_trigger_val), .wait_done(1), .ecc_err_mask(ecc_chk_err_mask));
 
-      if (do_req_keys) begin
+      if (do_req_keys && !cfg.otp_ctrl_vif.alert_reqs) begin
         req_otbn_key();
         req_flash_addr_key();
         req_flash_data_key();
         req_all_sram_keys();
+      end
+
+      if (do_lc_trans && !cfg.otp_ctrl_vif.alert_reqs) begin
+        req_lc_transition(do_lc_trans, lc_prog_blocking);
+        req_lc_token();
+        if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
       end
 
       if ($urandom_range(0, 1) && access_locked_parts) write_sw_rd_locks();
@@ -148,19 +154,12 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
           // random issue reset, OTP content should not be cleared
           if ($urandom_range(0, 9) == 9) dut_init();
-
           // tlul error rsp is checked in scoreboard
           tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_rsp(0));
         end
 
         if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(tlul_val));
         if ($urandom_range(0, 1)) csr_rd(.ptr(ral.status), .value(tlul_val));
-        if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
-      end
-
-      if (do_lc_trans) begin
-        req_lc_transition(do_lc_trans, lc_prog_blocking);
-        req_lc_token();
         if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
       end
 
@@ -181,6 +180,21 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
       // read and check digest in scb
       rd_digests();
+
+      // send request to the interfaces again after partitions are locked
+      if (do_lc_trans && !cfg.otp_ctrl_vif.alert_reqs) begin
+        req_lc_transition(do_lc_trans, lc_prog_blocking);
+        req_lc_token();
+        if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
+      end
+
+      if (do_req_keys && !cfg.otp_ctrl_vif.alert_reqs) begin
+        req_otbn_key();
+        req_flash_addr_key();
+        req_flash_data_key();
+        req_all_sram_keys();
+      end
+
     end
 
   endtask : body
