@@ -59,7 +59,7 @@ package otp_ctrl_env_pkg;
   parameter uint SECRET2_DIGEST_ADDR = Secret2DigestOffset / (TL_DW / 8);
   parameter uint SECRET2_END_ADDR    = SECRET2_DIGEST_ADDR - 1;
 
-  // TODO: did not count for LC partition
+  // LC has its own storage in scb
   parameter uint OTP_ARRAY_SIZE = (CreatorSwCfgSize + OwnerSwCfgSize + HwCfgSize + Secret0Size +
                                    Secret1Size + Secret2Size) / (TL_DW / 8);
 
@@ -150,8 +150,18 @@ package otp_ctrl_env_pkg;
     OtpEccUncorrErr
   } otp_ecc_err_e;
 
+  typedef enum bit [1:0] {
+    OtpNoAlert,
+    OtpCheckAlert,
+    OtpMacroAlert
+  } otp_alert_e;
+
   typedef virtual mem_bkdr_if #(.MEM_ECC(1)) mem_bkdr_vif;
   typedef virtual otp_ctrl_if otp_ctrl_vif;
+
+  parameter otp_err_code_e OTP_TERMINAL_ERRS[3] = {OtpMacroEccUncorrError,
+                                                   OtpCheckFailError,
+                                                   OtpFsmStateError};
 
   // functions
   function automatic int get_part_index(bit [TL_DW-1:0] addr);

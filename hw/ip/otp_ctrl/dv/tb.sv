@@ -57,6 +57,11 @@ module tb;
 
   assign otp_ctrl_if.lc_prog_req = lc_prog_if.req;
   assign otp_ctrl_if.lc_prog_err = lc_prog_if.d_data;
+  // This signal probes design's alert request to avoid additional logic for triggering alert and
+  // disable assertions.
+  // Alert checkings are done independently in otp_ctrl's scb.
+  // The correctness of this probed signal is checked in otp_ctrl's scb as well.
+  assign otp_ctrl_if.alert_reqs = dut.alerts[0] | dut.alerts[1];
 
   // leave this unconnected for now.
   wire otp_ext_voltage_h;

@@ -27,7 +27,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   bit under_chk, under_dai_access;
   bit [TL_DW-1:0] exp_status, status_mask;
 
-  bit macro_alert_triggered;
+  otp_alert_e exp_alert = OtpNoAlert;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(SRAM_DATA_SIZE)))
@@ -120,7 +120,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
             end
             predict_digest_csrs();
 
-            if (cfg.otp_ctrl_vif.lc_esc_on == 0) begin
+            if (cfg.otp_ctrl_vif.under_error_states() == 0) begin
               // Dai access is unlocked because the power init is done
               void'(ral.direct_access_regwen.predict(1));
 
@@ -129,12 +129,12 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
             end
 
             // Hwcfg_o gets data from OTP HW cfg partition
-            exp_hwcfg_data = cfg.otp_ctrl_vif.lc_esc_on ?
+            exp_hwcfg_data = cfg.otp_ctrl_vif.under_error_states() ?
                              otp_ctrl_part_pkg::PartInvDefault[HwCfgOffset*8 +: HwCfgSize*8] :
                              otp_hw_cfg_data_t'({<<32 {otp_a[HwCfgOffset/4 +: HwCfgSize/4]}});
             `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.data, exp_hwcfg_data)
 
-            if (!cfg.otp_ctrl_vif.lc_esc_on) begin
+            if (!cfg.otp_ctrl_vif.under_error_states()) begin
               `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.count, otp_lc_data[0 +: LcCountWidth])
               `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.state,
                            otp_lc_data[LcCountWidth +: LcStateWidth])
@@ -155,7 +155,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                   PartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
             end
             // Check keymgr_key_o in otp_ctrl_if
-            if (cfg.otp_ctrl_vif.lc_esc_on == 0) begin
+            if (cfg.otp_ctrl_vif.under_error_states() == 0) begin
               `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
             end
 
@@ -170,19 +170,33 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  // This task monitors internal escalation triggered by two methods:
+  // 1. Externally lc_escalation_en is set to lc_ctrl_pkg::On.
+  // 2. Internal fatal alert triggered and all partitions are driven to error states.
   virtual task process_lc_esc();
     forever begin
-      wait(cfg.otp_ctrl_vif.lc_esc_on == 1);
-      // LC_escalate_en will trigger fatal check alert.
-      set_exp_alert("fatal_check_error", 1, 5);
+      wait(cfg.otp_ctrl_vif.alert_reqs == 1 && cfg.en_scb);
+      if (cfg.otp_ctrl_vif.lc_esc_on == 0) `DV_CHECK_NE(exp_alert, OtpNoAlert)
+
+      if (exp_alert != OtpCheckAlert) set_exp_alert("fatal_check_error", 1, 5);
+
+      // If the lc_escalation is triggered by internal fatal alert, wait 2 negedge until status is
+      // updated internally
+      if (cfg.otp_ctrl_vif.lc_esc_on == 0) begin
+        cfg.clk_rst_vif.wait_n_clks(2);
+        exp_status[OtpCheckPendingIdx] = 0;
+        exp_status[OtpDaiIdleIdx] = 0;
+      end else begin
+        exp_status = '0;
+        // Only lc_esc_on will set these bits to 1.
+        exp_status[OtpDerivKeyFsmErrIdx:OtpLfsrFsmErrIdx] = '1;
+      end
 
       // Update status bits.
-      exp_status = '0;
       for (int i = 0; i < OtpTimeoutErrIdx; i++) begin
         predict_err(.status_err_idx(otp_status_e'(i)), .err_code(OtpFsmStateError),
                     .update_esc_err(1));
       end
-      exp_status[OtpDerivKeyFsmErrIdx:OtpLfsrFsmErrIdx] = '1;
 
       // Update digest values and direct_access_regwen.
       predict_rdata(1, 0, 0);
@@ -193,7 +207,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       cfg.clk_rst_vif.wait_clks(12);
       recover_interrupted_op();
 
-      wait(cfg.otp_ctrl_vif.lc_esc_on == 0);
+      wait(cfg.otp_ctrl_vif.alert_reqs == 0);
     end
   endtask
 
@@ -454,15 +468,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       if (ral.direct_access_regwen.locks_reg_or_fld(dv_reg) &&
           `gmv(ral.direct_access_regwen) == 0) return;
 
-      // Skip predict if the register is accessing DAI interface while macro alert is triggered.
-      if (macro_alert_triggered) begin
-        if (csr.get_name() inside {"direct_access_cmd", "creator_sw_cfg_read_lock",
-          "owner_sw_cfg_read_lock", "direct_access_wdata_0", "direct_access_wdata_1",
-          "direct_access_address"}) begin
-          return;
-        end
-      end
-
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
     end
 
@@ -501,7 +506,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         end
       end
       "direct_access_cmd": begin
-        if (addr_phase_write && !cfg.otp_ctrl_vif.lc_esc_on) begin
+        if (addr_phase_write && !cfg.otp_ctrl_vif.under_error_states()) begin
           // here only normalize to 2 lsb, if is secret, will be reduced further
           bit [TL_AW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
           int part_idx = get_part_index(dai_addr);
@@ -560,7 +565,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                     // Max wait 20 clock cycles because scb did not know when exactly OTP will
                     // finish reading and reporting the uncorrectable error.
                     set_exp_alert("fatal_macro_error", 1, 20);
-                    macro_alert_triggered = 1;
                     predict_rdata(1, 0, 0);
                   end
                 end
@@ -669,7 +673,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
             end
           end
 
-          if (under_dai_access && !cfg.otp_ctrl_vif.lc_esc_on) begin
+          if (under_dai_access && !cfg.otp_ctrl_vif.under_error_states()) begin
             if (item.d_data[OtpDaiIdleIdx]) begin
               under_dai_access = 0;
               void'(ral.direct_access_regwen.predict(1));
@@ -699,7 +703,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1", "owner_sw_cfg_digest_0",
       "owner_sw_cfg_digest_1": begin
         // TODO: temp ignore checking until stress_all_with_rand_reset is supported
-        if (cfg.otp_ctrl_vif.lc_esc_on) do_read_check = 0;
+        if (cfg.otp_ctrl_vif.under_error_states()) do_read_check = 0;
       end
       "err_code": begin
         // If lc_prog in progress, err_code might update anytime in DUT. Ignore checking until req
@@ -766,8 +770,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
     under_chk             = 0;
     under_dai_access      = 0;
-    macro_alert_triggered = 0;
     exp_status            = `gmv(ral.status);
+    exp_alert             = OtpNoAlert;
 
     edn_data_q.delete();
 
@@ -801,7 +805,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                  cfg.m_lc_token_pull_agent_cfg.vif.req ||
                  // When lc_escalation is on, the DAI interface goes to ErrorSt, so ignore
                  // otp_idle checking.
-                 cfg.otp_ctrl_vif.lc_esc_on ||
+                 cfg.otp_ctrl_vif.alert_reqs ||
                  // Check timeout will keep doing background check, issue #5616
                  exp_status[OtpTimeoutErrIdx]);
           end
@@ -823,24 +827,24 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     void'(ral.owner_sw_cfg_digest_1.predict(
           .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.hw_cfg_digest_0.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+    void'(ral.hw_cfg_digest_0.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.hw_cfg_digest_1.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+    void'(ral.hw_cfg_digest_1.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.secret0_digest_0.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+    void'(ral.secret0_digest_0.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret0_digest_1.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+    void'(ral.secret0_digest_1.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.secret1_digest_0.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+    void'(ral.secret1_digest_0.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret1_digest_1.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+    void'(ral.secret1_digest_1.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.secret2_digest_0.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+    void'(ral.secret2_digest_0.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret2_digest_1.predict(.value((cfg.otp_ctrl_vif.lc_esc_on) ? 0 :
+    void'(ral.secret2_digest_1.predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
           otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
   endfunction
 
@@ -867,7 +871,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     real              key_factor  = SCRAMBLE_KEY_SIZE / TL_DW;
     bit [TL_DW*2-1:0] digest, prev_digest;
 
-    if (cfg.otp_ctrl_vif.lc_esc_on) return;
+    if (cfg.otp_ctrl_vif.under_error_states()) return;
 
     if (get_digest_reg_val(part_idx) != 0 ||
         part_idx inside {CreatorSwCfgIdx, OwnerSwCfgIdx, LifeCycleIdx}) begin
@@ -1005,7 +1009,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   virtual function void predict_err(otp_status_e   status_err_idx,
                                     otp_err_code_e err_code = OtpNoError,
                                     bit            update_esc_err = 0);
-    if (cfg.otp_ctrl_vif.lc_esc_on && !update_esc_err) return;
+    if (cfg.otp_ctrl_vif.under_error_states() && !update_esc_err) return;
 
     // Update intr_state
     void'(ral.intr_state.otp_error.predict(.value(1), .kind(UVM_PREDICT_READ)));
@@ -1019,14 +1023,22 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         `uvm_error(`gfn, $sformatf("please set status error: %0s error code", status_err_idx.name))
       end
       ral.err_code.get_dv_base_reg_fields(err_code_flds);
-      void'(err_code_flds[status_err_idx].predict(.value(err_code), .kind(UVM_PREDICT_READ)));
+
+      if (`gmv(err_code_flds[status_err_idx]) inside {OTP_TERMINAL_ERRS}) begin
+        `uvm_info(`gfn, "terminal error cannot be updated", UVM_HIGH)
+      end else if (status_err_idx == OtpLciErrIdx &&
+                   `gmv(err_code_flds[status_err_idx]) != OtpNoError) begin
+        `uvm_info(`gfn, "For LC partition, all errors are terminal error!", UVM_HIGH)
+      end else begin
+        void'(err_code_flds[status_err_idx].predict(.value(err_code), .kind(UVM_PREDICT_READ)));
+      end
     end
 
   endfunction
 
   // TODO: consider combine it with function predict_err()
   virtual function void predict_no_err(otp_status_e status_err_idx);
-    if (cfg.otp_ctrl_vif.lc_esc_on) return;
+    if (cfg.otp_ctrl_vif.under_error_states()) return;
 
     exp_status[status_err_idx] = 0;
     if (status_err_idx == OtpDaiErrIdx) exp_status[OtpDaiIdleIdx] = 1;
@@ -1084,7 +1096,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   virtual function bit is_tl_mem_access_allowed(tl_seq_item item, string ral_name);
     // If sw partition is read locked, then access policy changes from RO to no access
     uvm_reg_addr_t addr = ral.get_word_aligned_addr(item.a_addr);
-    if (`gmv(ral.creator_sw_cfg_read_lock) == 0 || cfg.otp_ctrl_vif.lc_esc_on == 1) begin
+    if (`gmv(ral.creator_sw_cfg_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
       if (addr inside {[cfg.mem_ranges[ral_name][0].start_addr :
                        cfg.mem_ranges[ral_name][0].start_addr + CreatorSwCfgSize - 1]}) begin
         predict_err(OtpCreatorSwCfgErrIdx, OtpAccessError);
@@ -1093,7 +1105,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
         return 0;
       end
     end
-    if (`gmv(ral.owner_sw_cfg_read_lock) == 0 ||  cfg.otp_ctrl_vif.lc_esc_on == 1) begin
+    if (`gmv(ral.owner_sw_cfg_read_lock) == 0 ||  cfg.otp_ctrl_vif.under_error_states()) begin
       if (addr inside {[cfg.mem_ranges[ral_name][0].start_addr + OwnerSwCfgOffset :
           cfg.mem_ranges[ral_name][0].start_addr + OwnerSwCfgSize + OwnerSwCfgOffset - 1]}) begin
         predict_err(OtpOwnerSwCfgErrIdx, OtpAccessError);
@@ -1103,5 +1115,10 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       end
     end
     return super.is_tl_mem_access_allowed(item, ral_name);
+  endfunction
+
+  virtual function void set_exp_alert(string alert_name, bit is_fatal = 0, int max_delay = 0);
+    exp_alert = alert_name == "fatal_check_error" ? OtpCheckAlert : OtpMacroAlert;
+    super.set_exp_alert(alert_name, is_fatal, max_delay);
   endfunction
 endclass
