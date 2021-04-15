@@ -175,9 +175,9 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_aes_encr
+      name: chip_dif_aes_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/aes_test:1"]
+      sw_images: ["sw/device/tests/dif/dif_aes_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
