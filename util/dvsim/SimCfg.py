@@ -541,14 +541,16 @@ class SimCfg(FlowCfg):
         '''
 
         def create_failure_message(test, line, context):
-            message = [f"    * {test.qual_name}"]
+            spaces = " " * 12
+            message = [f"    * {test.qual_name}", ""]
             if line:
                 message.append(
-                    f"      Line {line}, in log {test.get_log_path()}<br>")
+                    f"{spaces}Line {line}, in log {test.get_log_path()}")
             else:
-                message.append(f"      Log {test.get_log_path()}<br>")
+                message.append(f"{spaces}Log {test.get_log_path()}")
             if context:
-                message.extend([f"      {c.rstrip()}<br>" for c in context])
+                lines = [f"{spaces}{c.rstrip()}" for c in context]
+                message.extend(lines)
             message.append("")
             return message
 
