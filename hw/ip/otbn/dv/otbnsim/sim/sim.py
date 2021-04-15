@@ -107,6 +107,6 @@ class OTBNSim:
         return self.state.dmem.dump_le_words()
 
     def _print_trace(self, pc: int, disasm: str, changes: List[Trace]) -> None:
-        '''Print a trace of the current instruction to verbose_file'''
+        '''Print a trace of the current instruction'''
         changes_str = ', '.join([t.trace() for t in changes])
         print('{:08x} | {:45} | [{}]'.format(pc, disasm, changes_str))
