@@ -4,9 +4,13 @@
 #
 # waiver file for LC controller
 
-waive -rules CONST_FF -location {lc_ctrl_signal_decode.sv} -regexp {Flip-flop 'lc_keymgr_div_q\[.*\]' is driven by constant zeros.*} \
+waive -rules CONST_FF -location {lc_ctrl_signal_decode.sv} -regexp {Flip-flop 'lc_keymgr_div_q\[.*\]' is driven by constant.*} \
       -comment {Some of these bits may be constantly zero, depending on the RndCnst parameters.}
 
 # dmi_jtag_tap clock mux for scan mode
 waive -rules CLOCK_MUX -location {lc_ctrl.sv} -regexp {Clock 'tck_muxed' is driven by a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap.sv} \
+      -comment "This is needed such that the clock can be properly controlled during scanmode."
+
+waive -rules CLOCK_USE -location {lc_ctrl.sv} \
+      -msg {'clk_i' is connected to 'prim_clock_mux2' port 'clk1_i',} \
       -comment "This is needed such that the clock can be properly controlled during scanmode."
