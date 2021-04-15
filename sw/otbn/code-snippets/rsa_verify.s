@@ -166,6 +166,57 @@ cond_sub_mod:
 
 
 /**
+ * Variable time multi-limb bigint compare
+ *
+ * Compares two bigints (a, b) located in regfile (a) and dmem (b).
+ *
+ * Flags: When leaving this subroutine, flags of FG1 depend on the comparison
+ *        result of the highest unequal limba, or, if all limbs are equal on
+ *        those of the lowest limbs.
+ *
+ * @param[in] x10: constant 3, used as pointer to w3
+ * @param[in] x11: constant 2, used as pointer to w2
+ * @param[in] x8: rptr_a, pointer to lowest limb of a in regfile
+ * @param[in] x9: rptr_a_h, pointer to highest limb of a in regfile
+ * @param[in] x17: dptr_b_h, pointer to highest limb of b in dmem
+ * @param[out] x3, bit 0: (b > a), equals FG1.C
+ * @param[out] x3, bit 3: (a == b), equals FG1.Z
+ *
+ * clobbered registers: x3, x5, x7, x9, x17, x19, w2, w3
+ * clobbered flag groups: FG1
+ */
+cmp_dmem_reg_buf:
+
+  addi      x19, x17, 0
+  addi      x7, x9, 0
+
+  cmp_loop:
+
+  /* load limbs from dmem and regfile: w2 <= a[i]; w3 <= b[i] */
+  bn.lid    x10, 0(x19)
+  bn.movr   x11, x7
+
+  /* compare limbs and store comparison result in x3 */
+  bn.cmp    w2, w3, FG1
+  csrrs     x3, 0x7c1, x0
+
+  /* leave loop if lowest limb was reached */
+  beq       x8, x7, cmp_end
+
+  /* reduce limb pointers */
+  addi      x19, x19, -32
+  addi      x7, x7, -1
+
+  /* if limbs were equal (FG1.Z == 1), compare next lower limb */
+  andi      x5, x3, 8
+  bne       x5, x0, cmp_loop
+
+  cmp_end:
+  nop
+  ret
+
+
+/**
 * Compute square of Montgomery modulus
 *
 * Returns RR = R^2 mod M
@@ -180,106 +231,117 @@ cond_sub_mod:
 * Flags: The states of both FG0 and FG1 depend on intermediate values and are
 *        not usable after return.
 *
-* @param[in]  x16: dptr_M, pointer to first limb of modulus in dmem
-* @param[in]  x18: dptr_RR: dmem pointer to first limb of output buffer for RR
+* @param[in]  x16: dptr_n, pointer to first limb of modulus in dmem
+* @param[in]  x18: dptr_rr: dmem pointer to first limb of output buffer for RR
 * @param[in]  x30: N, number of limbs
+* @param[in]  x31: N-1, number of limbs minus 1
 * @param[in]  w31: all-zero
 * @param[out] dmem[x18+N*32:x18]: computed RR
 *
-* clobbered registers: x3, x8, x10, x11, x16, x18
+* clobbered registers: x3, x4, x5, x8, x9, x10, x11, x16, x18, x22, x24
 *                      w0, w2, w3, w4, w5 to w20 depending on N
 * clobbered flag groups: FG0, FG1
 */
 compute_rr:
-  /* save pointer to modulus */
+  /* save pointer to modulus x22 <= dptr_m = x16 */
   addi      x22, x16, 0
 
-  /* zeroize w3 */
-  bn.xor    w3, w3, w3
+  /* x17 = dptr_m + (N-1)*32 points to highest limb of modulus in dmem */
+  slli      x17, x31, 5
+  add       x17, x22, x17
+
+  li        x8, 5
+
+  /* x9 = rptr_buf_h <= rptr_buf + N-1 */
+  add       x9, x31, x8
 
   /* compute full length of current bigint size in bits
-     N*w = x24 = N*256 = N*2^8 = x30 << 8 */
+     N*w = x24 <= N*256 = N*2^8 = x30 << 8 */
   slli      x24, x30, 8
 
-  /* reg pointers */
-  li        x8, 5
+  /* reg pointers to current limb of buffer and modulus
+  /* x10 = rptr_limb_mod = &w3 */
   li        x10, 3
+  /* x11 = rptr_limb_buf = &w2 */
+  li        x11, 2
 
-  /* zeroize w3 */
-  bn.xor    w3, w3, w3
 
-  /* zeroize all limbs of bigint in regfile */
-  loop      x30, 1
+  /* clear flags */
+  bn.add    w31, w31, w31
+  /* init buffer with R - m
+     buf = w[5+N-1:5] <= R - m = unsigned(0 - m) */
+
+  loop      x30, 3
+    bn.lid    x10, 0(x16++)
+    bn.subb   w3, w31, w3
     bn.movr   x8++, x10
 
-  /* compute R-M
-     since R = 2^(N*w), this can be computed as R-M = unsigned(0-M) */
-  bn.addi w0, w31, 1
-  bn.sub    w3, w31, w0, FG1
-  addi      x16, x22, 0
-  jal       x1, cond_sub_mod
-
   /* Compute R^2 mod M = R*2^(N*w) mod M.
-     => R^2 mod M can be computed by performing N*w duplications of R.
-     We directly perform a modulo reduction in each step such that the
-     final result will already be reduced. */
-  loop      x24, 18
-    /* reset pointer */
-    li        x8, 5
-
-    /* zeroize w3 reset flags of FG1 */
-    bn.sub    w3, w3, w3, FG1
+     R^2 mod M can be computed by performing N*w duplications of R,
+     interleaved with conditional subtractions of modulus. Modulus is
+     subtracted if dobiling result is greater than modulus, i.e. either
+     there was a final carry at the end of the doubling procedure or the lower
+     N*w bits of the result are greater than the modulus. */
+  loop      x24, 27
 
     /* Duplicate the intermediate bigint result. This can overflow such that
-       bit 2^(N*w) (represented by the carry bit after the final loop cycle)
+       bit 2^(N*w) (represented by the carry flag after final loop cycle)
        is set. */
+    li        x8, 5
+    bn.add    w31, w31, w31, FG1
     loop      x30, 3
-      /* copy current limb of bigint to w2 */
       bn.movr   x11, x8
-
-      /* perform the doubling */
       bn.addc   w2, w2, w2, FG1
-
-      /* copy result back to bigint in regfile */
       bn.movr   x8++, x11
 
-    /* Conditionally subtract the modulus from the current bigint Y if there
-       was an overflow. Again, just considering the lowest N*w bits is
-       sufficient, since (in case of an overflow) we can write
-       2*Y as 2^(N*w) + X with M > X >= 0.
-       Then, 2*Y - M = 2^(N*w) + X - M = X + unsigned(0-M) */
-    addi      x16, x22, 0
-    jal       x1, cond_sub_mod
+    /* In case of final carry in doubling procedure substract modulus */
+    /* Jump to 'rr_sub' if FG1.C == 1 */
+    csrrs     x3, 0x7c1, x0
+    andi      x3, x3, 1
+    bne       x3, x0, rr_sub
 
-    /* reset pointer to 1st limb of bigint in regfile */
+    /* In case there was no final carry in the addition, we have to check
+       wether the N*w sized bigint w/o carry is greater than the modulus. */
+    bn.lid    x10, 0(x17)
+    bn.movr   x11, x9
+    bn.cmp    w2, w3, FG1
+    csrrs     x3, 0x7c1, x0
+
+    /* If the highest limbs of buf and mod are equal we have to run a
+       multi-limb comparison. This is very unlikely to happen. If this
+       verification is not used with keys where this situation occurs, the
+       following 3 lines and (if not needed elsewhere) the compare routine
+       can be removed. */
+    andi      x5, x3, 8
+    beq       x5, x0, rr_cmp
+    jal       x1, cmp_dmem_reg_buf
+
+    /* if m > r: jump to end_loop (without subtraction) */
+    rr_cmp:
+    andi      x5, x3, 1
+    bne       x5, x0, rr_end_loop
+
+    /* subtract modulus from current buffer
+       buf = w[5+N-1:5] <= buf - m */
+    rr_sub:
     li        x8, 5
-
-    /* reset pointer to modulus in dmem */
     addi      x16, x22, 0
-
-    /* reset flags of FG1 */
-    bn.sub    w3, w3, w3, FG1
-
-    /* compare intermediate bigint y with modulus
-       subtract modulus if Y > M */
-    loop      x30, 3
+    bn.add    w31, w31, w31, FG1
+    loop      x30, 4
       bn.lid    x10, 0(x16++)
-      bn.movr   x11, x8++
-      bn.cmpb   w3, w2, FG1
-    addi      x16, x22, 0
-    jal       x1, cond_sub_mod
+      bn.movr   x11, x8
+      bn.subb   w3, w2, w3, FG1
+      bn.movr   x8++, x10
 
-    li        x0, 0
+    rr_end_loop:
+      nop
 
-  /* reset pointer to 1st limb of bigint in regfile */
+  /* store computed RR in dmem
+     [dmem[dptr_RR+N*32-1]:dmem[dptr_RR]] <= buf = w[5+N-1:5] */
   li        x8, 5
-
-  /* store computed RR in dmem */
   loop      x30, 2
     bn.sid    x8, 0(x18++)
     addi      x8, x8, 1
-
-  nop
 
   ret
 
