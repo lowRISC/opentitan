@@ -725,7 +725,8 @@ module csrng_core import csrng_pkg::*; #(
   );
 
   // flops for SW fips status
-  assign genbits_stage_fips_sw_d = !cs_enable ? 1'b0 :
+  assign genbits_stage_fips_sw_d =
+         (!cs_enable) ? 1'b0 :
          (genbits_stage_rdy[NApps-1] && genbits_stage_vld[NApps-1]) ? genbits_stage_fips[NApps-1] :
          genbits_stage_fips_sw_q;
 
@@ -806,16 +807,27 @@ module csrng_core import csrng_pkg::*; #(
   assign flag0 = acmd_bus[8];
   assign shid = acmd_bus[15:12];
 
-  assign acmd_d = acmd_sop ? acmd_bus[2:0] : acmd_q;
-  assign shid_d = acmd_sop ? shid :
+  assign acmd_d =
+         (!cs_enable) ? '0 :
+         acmd_sop ? acmd_bus[2:0] :
+         acmd_q;
+
+  assign shid_d =
+         (!cs_enable) ? '0 :
+         acmd_sop ? shid :
          state_db_reg_rd_id_pulse ? state_db_reg_rd_id :
          shid_q;
-  assign flag0_d = acmd_sop ? flag0 : flag0_q;
+
+  assign flag0_d =
+         (!cs_enable) ? '0 :
+         acmd_sop ? flag0 :
+         flag0_q;
 
   // sm to process all instantiation requests
   csrng_main_sm u_csrng_main_sm (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
+    .enable_i(cs_enable),
     .acmd_avail_i(acmd_avail),
     .acmd_accept_o(acmd_accept),
     .acmd_hdr_capt_o(acmd_hdr_capt),
@@ -937,7 +949,10 @@ module csrng_core import csrng_pkg::*; #(
     .state_db_sts_id_o(state_db_sts_id)
   );
 
-  assign statedb_wr_select_d = !statedb_wr_select_q;
+  assign statedb_wr_select_d =
+         (!cs_enable) ? '0 :
+         !statedb_wr_select_q;
+
   assign cmd_blk_select = !statedb_wr_select_q;
   assign gen_blk_select =  statedb_wr_select_q;
 
@@ -998,11 +1013,16 @@ module csrng_core import csrng_pkg::*; #(
 
 
 
-  assign cmd_req_ccmd_dly_d = acmd_hold;
+  assign cmd_req_ccmd_dly_d =
+         (!cs_enable) ? '0 :
+         acmd_hold;
+
   assign ctr_drbg_cmd_ccmd = cmd_req_ccmd_dly_q;
 
+
   assign cmd_req_dly_d =
-         instant_req || reseed_req || generate_req || update_req || uninstant_req;
+         (!cs_enable) ? '0 :
+         (instant_req || reseed_req || generate_req || update_req || uninstant_req);
 
   assign ctr_drbg_cmd_req = cmd_req_dly_q;
 
@@ -1178,8 +1198,13 @@ module csrng_core import csrng_pkg::*; #(
   assign      lc_hw_debug_on = (lc_hw_debug_en_out[1] == lc_ctrl_pkg::On);
 
   // flop for better timing
-  assign      lc_hw_debug_not_on_d = lc_hw_debug_not_on;
-  assign      lc_hw_debug_on_d = lc_hw_debug_on;
+  assign      lc_hw_debug_not_on_d =
+              (!cs_enable) ? '0 :
+              lc_hw_debug_not_on;
+
+  assign      lc_hw_debug_on_d =
+              (!cs_enable) ? '0 :
+              lc_hw_debug_on;
 
   //-------------------------------------
   // csrng_block_encrypt instantiation
@@ -1333,7 +1358,10 @@ module csrng_core import csrng_pkg::*; #(
 
 
   // es to cs halt request to reduce power spikes
-  assign cs_aes_halt_d = ctr_drbg_upd_es_ack && ctr_drbg_gen_es_ack && block_encrypt_quiet;
+  assign cs_aes_halt_d =
+         (!cs_enable) ? '0 :
+         (ctr_drbg_upd_es_ack && ctr_drbg_gen_es_ack && block_encrypt_quiet);
+
   assign cs_aes_halt_o.cs_aes_halt_ack = cs_aes_halt_q;
 
   //--------------------------------------------
