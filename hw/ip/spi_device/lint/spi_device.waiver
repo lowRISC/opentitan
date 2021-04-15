@@ -97,12 +97,12 @@ waive -rules CASE_INC -location {spi_fwm_*xf_ctrl.sv} -regexp {Case statement ta
 
 #### NOT used
 ####   For the convenience of the design, below signals are intentionally unused
-waive -rules {NOT_USED NOT_READ} -location {spi_device.sv}
-      -regexp {'sub_sram_.*\[1\]' is not (used|read)}
+waive -rules {NOT_USED NOT_READ} -location {spi_device.sv} \
+      -regexp {'sub_sram_.*\[1\]' is not (used|read)} \
       -comment "CmdParse does not have SRAM intf"
 
 #### SRAM mux
 #### SRAM has unpacked array to mux/demux. Waive one bit unpacked array
-waive -rules {ONE_BIT_MEM_WIDTH} -location {spi_device.sv}
-      -regexp {Memory 'sub_.*' has word width which is a single bit wide}
+waive -rules {ONE_BIT_MEM_WIDTH} -location {spi_device.sv} \
+      -regexp {Memory 'sub_.*' has word width which is a single bit wide} \
       -comment "Unpacked array for mux/demux"
