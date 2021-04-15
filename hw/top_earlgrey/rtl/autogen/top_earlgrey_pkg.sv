@@ -482,7 +482,7 @@ package top_earlgrey_pkg;
   } pwr_dom_e;
 
   // Enumeration for MIO signals on the top-level.
-  typedef enum {
+  typedef enum int unsigned {
     MioInGpioGpio0 = 0,
     MioInGpioGpio1 = 1,
     MioInGpioGpio2 = 2,
@@ -619,7 +619,7 @@ package top_earlgrey_pkg;
   } mio_out_e;
 
   // Enumeration for DIO signals, used on both the top and chip-levels.
-  typedef enum {
+  typedef enum int unsigned {
     DioSpiHost0Sd0 = 0,
     DioSpiHost0Sd1 = 1,
     DioSpiHost0Sd2 = 2,
@@ -650,7 +650,7 @@ package top_earlgrey_pkg;
   // Raw MIO/DIO input array indices on chip-level.
   // TODO: Does not account for target specific stubbed/added pads.
   // Need to make a target-specific package for those.
-  typedef enum {
+  typedef enum int unsigned {
     MioPadIoa0 = 0,
     MioPadIoa1 = 1,
     MioPadIoa2 = 2,
@@ -701,7 +701,7 @@ package top_earlgrey_pkg;
     MioPadCount
   } mio_pad_e;
 
-  typedef enum {
+  typedef enum int unsigned {
     DioPadPorN = 0,
     DioPadUsbP = 1,
     DioPadUsbN = 2,

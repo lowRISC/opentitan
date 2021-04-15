@@ -50,7 +50,7 @@ package top_${top["name"]}_pkg;
   } pwr_dom_e;
 
   // Enumeration for MIO signals on the top-level.
-  typedef enum {
+  typedef enum int unsigned {
 % for sig in top["pinmux"]["ios"]:
   % if sig['type'] in ['inout', 'input'] and sig['connection'] == 'muxed':
     ${lib.get_io_enum_literal(sig, 'mio_in')} = ${sig['glob_idx']},
@@ -73,7 +73,7 @@ package top_${top["name"]}_pkg;
   } mio_out_e;
 
   // Enumeration for DIO signals, used on both the top and chip-levels.
-  typedef enum {
+  typedef enum int unsigned {
 % for sig in top["pinmux"]["ios"]:
   % if sig['connection'] != 'muxed':
     ${lib.get_io_enum_literal(sig, 'dio')} = ${sig['glob_idx']},
@@ -88,7 +88,7 @@ package top_${top["name"]}_pkg;
   // Raw MIO/DIO input array indices on chip-level.
   // TODO: Does not account for target specific stubbed/added pads.
   // Need to make a target-specific package for those.
-  typedef enum {
+  typedef enum int unsigned {
 % for pad in top["pinout"]["pads"]:
   % if pad["connection"] == "muxed":
     ${lib.Name.from_snake_case("mio_pad_" + pad["name"]).as_camel_case()} = ${pad["idx"]},
@@ -97,7 +97,7 @@ package top_${top["name"]}_pkg;
     ${lib.Name.from_snake_case("mio_pad_count").as_camel_case()}
   } mio_pad_e;
 
-  typedef enum {
+  typedef enum int unsigned {
 % for pad in top["pinout"]["pads"]:
   % if pad["connection"] != "muxed":
     ${lib.Name.from_snake_case("dio_pad_" + pad["name"]).as_camel_case()} = ${pad["idx"]},
