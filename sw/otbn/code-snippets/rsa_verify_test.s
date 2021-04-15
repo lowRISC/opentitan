@@ -15,8 +15,8 @@
  * Copies the encrypted message to wide registers for comparison (starting at
  * w0). See comment at the end of the file for expected values.
  */
-run_rsa_1024_enc:
-  jal      x1, modexp_65537
+run_rsa_verify:
+  jal      x1, modexp_var
   /* pointer to out buffer */
   lw        x21, 28(x0)
 
@@ -31,8 +31,8 @@ run_rsa_1024_enc:
 
 .data
 
-/* reserved */
-.word 0x00000000
+/* exponent of the exponent (e') (Full exponent is e=2^e'+1) */
+.word 0x00000010
 
 /* number of limbs (N) */
 .word 0x0000000C
