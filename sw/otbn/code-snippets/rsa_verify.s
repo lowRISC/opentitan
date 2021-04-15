@@ -9,9 +9,7 @@
 
 
 .text
-.globl modexp_65537
-.globl modexp
-.globl modload
+.globl modexp_var
 
 /**
  * Precomputation of a constant m0' for Montgomery modular arithmetic
@@ -469,7 +467,7 @@ cond_sub_to_reg:
 
 
 /**
- * Main loop body for constant-time Montgomery Modular Multiplication
+ * Main loop body for variable-time Montgomery Modular Multiplication
  *
  * Returns: C <= (C + A*b_i + M*m0'*(C[0] + A[0]*b_i))/(2^WLEN) mod R
  *
@@ -478,13 +476,12 @@ cond_sub_to_reg:
  * Cryptography (HAC) 14.36 (steps 2.1 and 2.2) and step 3.
  * This subroutine has to be called for every iteration of the loop in step 2
  * of HAC 14.36, i.e. once per limb of operand B (x in HAC notation). The limb
- * is supplied via w2. In the explanations below, the index i refers to the
+ * is supplied via w2. In the comments below, the index i refers to the
  * i_th call to this subroutine within one full Montgomery Multiplication run.
  * Step 3 of HAC 14.36 is replaced by the approach to perform the conditional
  * subtraction when the intermediate result is larger than R instead of m. See
  * e.g. https://eprint.iacr.org/2017/1057 section 2.4.2 for a justification.
- * This does not omit the conditional subtraction, but simplifies the
- * comparison. The subtraction is carried out in constant time manner.
+ * This does not omit the conditional subtraction.
  * Variable names of HAC are mapped as follows to the ones used in the
  * this library: x=B, y=A, A=C, b=2^WLEN, m=M, R=R, m' = m0', n=N.
  *
@@ -542,9 +539,9 @@ mont_loop:
   jal       x1, mul256_w30xw25
 
 
-  /* With the computation of u_i, the compuations in a cycle 0 of the loop
+  /* With the computation of u_i, the compuations for a cycle 0 for the loop
      below are already partly done. The following instructions (until the
-     start of the loop) implement the remainder, such that cylce 0 can be
+     start of the loop) implement the remaining steps, such that cylce 0 can be
      omitted in the loop */
 
   /* [_, u_i] = [w28, w25] = [w26, w27]  */
@@ -619,17 +616,28 @@ mont_loop:
   bn.addc   w24, w29, w28, FG1
   bn.movr   x10++, x13
 
-  /* restore pointers */
+  /* No subtracion if carry bit of addition of carry words not set. */
+  csrrs     x2, 0x7c1, x0
+  andi      x2, x2, 1
+  beq       x2, x0, mont_loop_no_sub
+
+  /* limb-wise subtraction */
+  li        x12, 30
+  li        x13, 24
   addi      x16, x22, 0
   li        x8, 4
-  li        x10, 4
+  loop      x30, 4
+    bn.lid    x13, 0(x16++)
+    bn.movr   x12, x8
+    bn.subb   w24, w30, w24
+    bn.movr   x8++, x13
 
-  /* This replaces Step 3 of HAC 14.36 and performs conditional constant-time
-     subtraction of the modulus from the output buffer  */
-  jal       x1, cond_sub_to_reg
 
-  /* restore pointer */
+  mont_loop_no_sub:
+
+  /* restore pointers */
   li        x8, 4
+  li        x10, 4
 
   ret
 
@@ -786,7 +794,7 @@ montmul_mul1:
 
 
 /**
- * Constant-time Montgomery Modular Multiplication
+ * Variable-time Montgomery Modular Multiplication
  *
  * Returns: C = montmul(A,B) = A*B*R^(-1) mod M
  *
@@ -809,7 +817,7 @@ montmul_mul1:
  * @param[in]  x11: pointer to temp reg, must be set to 2
  * @param[out] [w[4+N-1]:w4]: result C
  *
- * clobbered registers: x5, x6, x7, x8, x10, x12, x13, x16, x17, x19, x20, x21
+ * clobbered registers: x5, x6, x7, x8, x10, x12, x13, x17, x19, x20, x21
  *                      w2, w3, w24 to w30, w4 to w[4+N-1]
  * clobbered Flag Groups: FG0, FG1
  */
@@ -829,7 +837,6 @@ montmul:
     bn.lid    x11, 0(x20++)
 
     /* save some regs */
-    addi      x5, x20, 0
     addi      x6, x16, 0
     addi      x7, x19, 0
 
@@ -837,7 +844,6 @@ montmul:
     jal       x1, mont_loop
 
     /* restore regs */
-    addi      x20, x5, 0
     addi      x16, x6, 0
     addi      x19, x7, 0
 
@@ -1020,14 +1026,13 @@ modexp:
 
 
 /**
- * Bigint modular exponentiation with fixed exponent of 65537
+ * Variable time modular exponentiation with exponent of the form e=2^e'+1
  *
- * Returns: C = modexp(A,65537) = A^65537 mod M
+ * Returns: C = modexp(A,2^e'+1) = A^(2^e'+1) mod M
  *
- * This implements the square and multiply algorithm for the fixed exponent
- * of E=65537. Note that this implementation (in contrast to modexp) runs the
- * multiplication step only for bits being actually set in the exponent.
- * Since the exponent is fixed, this is inherently constant-time.
+ * This implements the square and multiply algorithm for exponents of the
+ * form e=2^e'+1. Thus, the routine can be used for exponentiation with Fermat
+ * primes (by setting e'=16 for e=F4=65537 and e'=1 for e=F0=3).
  *
  * The squared Montgomery modulus RR and the Montgomery constant m0' have to
  * be precomputed and provided at the appropriate locations in dmem.
@@ -1039,40 +1044,43 @@ modexp:
  * to the output buffer. Note, that the content of the input buffer is
  * modified during execution.
  *
- * @param[in]  dmem[2] dptr_rr: pointer to RR in dmem
+ * @param[in]  dmem[0] e': number for exponent derivation (e = 2^e+1)
  * @param[in]  dmem[4] N: Number of limbs per bignum
- * @param[in]  dmem[8] dptr_m0d: pointer to m0' in dmem
+ * @param[in]  dmem[8] dptr_m0inv: pointer to m0' in dmem
  * @param[in]  dmem[12] dptr_rr: pointer to RR in dmem
- * @param[in]  dmem[16] dptr_m: pointer to first limb of modulus in dmem
- * @param[in]  dmem[20] dptr_in: pointer to input/base buffer
- * @param[in]  dmem[28] dptr_out: pointer to output/result buffer
+ * @param[in]  dmem[16] dptr_m: pointer to first limb of modulus M in dmem
+ * @param[in]  dmem[20] dptr_sig: pointer to signature in dmem
+ * @param[in]  dmem[28] dptr_out: pointer to recovered message
  *
- * clobbered registers: x3 to x13, x16 to x31
- *                      w0 to w3, w24 to w30
- *                      w4 to w[4+N-1]
+ * clobbered registers: x2, x5 to x13, x16 to x21, x29, x30, x31
+                        w2, w3, w24 to w31, w4 to w[4+N-1]
  * clobbered Flag Groups: FG0, FG1
  */
-modexp_65537:
+modexp_var:
   /* prepare all-zero reg */
-  bn.xor   w31, w31, w31
+  bn.xor    w31, w31, w31
 
-  /* load number of limbs */
+  /* load number of limbs (x30 <= N; x31 = N-1 <= N1) */
   lw        x30, 4(x0)
   addi      x31, x30, -1
 
-  /* load pointer to modulus */
+  /* load pointer to modulus (x16 <= dptr_m) */
   lw        x16, 16(x0)
 
-  /* load pointer to m0' */
+  /* load pointer to m0' (x17 <= dptr_m0inv)*/
   lw        x17, 8(x0)
 
-  /* load pointer to RR (dptr_rr) */
+  /* load pointer to RR (x18 <= dptr_rr) */
   lw        x18, 12(x0)
 
-  /* Compute Montgomery constants and reaload clobbered pointers */
+  /* load exponent (x29 <= e') */
+  lw        x29, 0(x0)
+
+  /* Compute Montgomery constants and reload clobbered pointers */
   jal       x1, compute_m0inv
   jal       x1, compute_rr
   lw        x16, 16(x0)
+  lw        x17, 8(x0)
   lw        x18, 12(x0)
 
   /* prepare pointers to temp regs */
@@ -1081,96 +1089,67 @@ modexp_65537:
   li        x10, 4
   li        x11, 2
 
-  /* convert to montgomery domain montmul(A,RR)
-  in = montmul(A,RR) montmul(A,RR) = C*R mod M */
+  /* convert signature to Montgomery domain
+     out_buf = *x28 = *dmem[28]
+         <= montmul(*x19, *x20) = montmul(*dptr_sig, *dptr_rr) = sig*R mod M */
   lw        x19, 20(x0)
   lw        x20, 12(x0)
-  lw        x21, 20(x0)
+  lw        x21, 28(x0)
   jal       x1, montmul
-  /* Store result in dmem starting at dmem[dptr_c] */
+  /* store result in dmem starting at dmem[dptr_out] */
   loop      x30, 2
     bn.sid    x8, 0(x21++)
     addi      x8, x8, 1
 
-  /* pointer to out buffer */
-  lw        x21, 28(x0)
-
-  /* zeroize w2 and reset flags */
-  bn.sub    w2, w2, w2
-
-  /* this loop initializes the output buffer with -M */
-  loop      x30, 3
-    /* load limb from modulus */
-    bn.lid    x11, 0(x16++)
-
-    /* subtract limb from 0 */
-    bn.subb   w2, w31, w2
-
-    /* store limb in dmem */
-    bn.sid    x11, 0(x21++)
-
-  /* reload pointer to 1st limb of modulus */
-  lw        x16, 16(x0)
-
-  /* 65537 = 0b10000000000000001
-               ^ sqr + mult
-    out = montmul(out,out)       */
-  lw        x19, 28(x0)
-  lw        x20, 28(x0)
-  lw        x21, 28(x0)
-  jal       x1, montmul
-  /* Store result in dmem starting at dmem[dptr_c] */
-  loop      x30, 2
-    bn.sid    x8, 0(x21++)
-    addi      x8, x8, 1
-
-  /* out = montmul(in,out)       */
-  lw        x19, 20(x0)
-  lw        x20, 28(x0)
-  lw        x20, 28(x0)
-  jal       x1, montmul
-
-  /* store multiplication result in output buffer */
-  lw        x21, 28(x0)
-  li        x8, 4
-  loop      x30, 2
-    /* store selected limb to dmem */
-    bn.sid    x8, 0(x21++)
-    addi      x8, x8, 1
-
-  /* 65537 = 0b10000000000000001
-                ^<< 16 x sqr >>^   */
-  loopi      16, 8
-    /* square: out = montmul(out, out) */
+  /* 16 consecutive Montgomery squares on the outbut buffer, i.e. after loop:
+     out_buf <= out_buf^65536*R mod M */
+  loop      x29, 8
+    /* out_buf  = *x28 = *dmem[28]
+               <= montmul(*x28, *x20) = montmul(*dptr_out, *dptr_out)
+                = out_buf^2*R mod M */
     lw        x19, 28(x0)
     lw        x20, 28(x0)
     lw        x21, 28(x0)
     jal       x1, montmul
-    /* Store result in dmem starting at dmem[dptr_c] */
+    /* Store result in dmem starting at dmem[dptr_out] */
     loop      x30, 2
       bn.sid    x8, 0(x21++)
       addi      x8, x8, 1
     nop
 
-  /* 65537 = 0b10000000000000001
-                          mult ^
-     out = montmul(in,out)       */
+  /* final multiplication and conversion of result from Montgomery domain
+     out_buf  = *x28 = *dmem[28]
+             <= montmul(*x28, *x20) = montmul(*dptr_sig, *dptr_out)
+              = out_buf*sig/R mod M = sig^65537 mod M */
   lw        x19, 20(x0)
   lw        x20, 28(x0)
   lw        x21, 28(x0)
   jal       x1, montmul
 
-  /* store multiplication result in output buffer */
-  lw        x21, 28(x0)
+  /* Final conditional subtraction of modulus if mod >= out_buf. This could
+     be done in variable time, but for the sake of reduced code we use a loop
+     with N cycles. */
+  bn.add    w31, w31, w31
+  li        x17, 16
+  loop      x30, 4
+    bn.movr   x11, x8++
+    bn.lid    x9, 0(x16++)
+    bn.subb   w2, w2, w3
+    bn.movr   x17++, x11
+  csrrs     x2, 0x7c0, x0
+  /* TODO: currently we subtract the modulus if out_buf == M. This should
+            never happen in an RSA context. We could catch this and raise an
+            alert. */
+  andi      x2, x2, 1
   li        x8, 4
+  bne       x2, x0, no_sub
+  li        x8, 16
+  no_sub:
+
+   /* store result in dmem starting at dmem[dptr_out] */
+  lw        x21, 28(x0)
   loop      x30, 2
     bn.sid    x8, 0(x21++)
     addi      x8, x8, 1
-
-  /* convert back from montgomery domain */
-  /* out = montmul(out,1) = out/R mod M  */
-  lw        x19, 28(x0)
-  lw        x21, 28(x0)
-  jal       x1, montmul_mul1
 
   ret
