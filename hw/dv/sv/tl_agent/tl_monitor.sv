@@ -86,6 +86,7 @@ class tl_monitor extends dv_base_monitor#(
         req.a_data   = h2d.a_data;
         req.a_mask   = h2d.a_mask;
         req.a_source = h2d.a_source;
+        req.a_user   = h2d.a_user;
         `uvm_info("tl_logging", $sformatf("[%0s][a_chan] : %0s",
                    agent_name, req.convert2string()), UVM_HIGH)
 

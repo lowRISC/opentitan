@@ -113,8 +113,28 @@
       tests: ["{name}_lc_escalation"]
     }
     {
+      name: executable
+      desc: '''
+            This test is intended to test the "execute from SRAM" feature, in which TLUL memory
+            transactions tagged with the `InstrType` value in the user bits are allowed to be
+            handled by the SRAM memory.
+
+            This behavior is enabled by either setting the `exec` CSR to 1 or by driving a second
+            lifecycle input to `On` - both of these are muxed between with a `otp_hw_cfg_t` input
+            from the OTP controller.
+
+            If this functionality is disabled, any memory transaction NOT tagged as `DataType` should
+            error out, however `DataType` transactions should be successful when the SRAM is
+            configured to be executable.
+            '''
+      milestone: V2
+      tests: ["{name}_executable"]
+    }
+    {
       name: parity
       desc: '''
+            TODO - to be changed into an ECC test
+
             This test is the same as the multiple_keys test, except we randomly inject a parity
             error into the memory (TODO: figure out how exactly to do this).
             Verify that the SRAM reports the error and the faulty address correctly, and that the
@@ -123,25 +143,8 @@
             This error is terminal, so like the lc_escalation test, issue a reset and then perform
             some memory accesses to make sure everything comes back online correctly.
             '''
-      milestone: V2
-      tests: ["{name}_parity"]
-    }
-    {
-      name: executable
-      desc: '''
-            TODO: This feature is not yet implemented, so this description will become
-                  more detailed at that time.
-
-            This test is meant to test executable SRAM (Ibex fetching  data from SRAM).
-
-            This test is the same as the multiple_keys test, except now we randomly set the
-            `sram_fetch` (name TBD) input(s) from the OTP controller.
-
-            Verify that in this scenario all memory transactions matching the Host user ID go
-            through, but all transactions with mismatched user IDs error out.
-            '''
       milestone: V3
-      tests: ["{name}_executable"]
+      tests: ["{name}_parity"]
     }
   ]
 }

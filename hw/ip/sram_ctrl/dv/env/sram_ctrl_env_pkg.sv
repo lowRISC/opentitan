@@ -40,6 +40,7 @@ package sram_ctrl_env_pkg;
   // types
   typedef virtual mem_bkdr_if #(.MEM_PARITY(1)) mem_bkdr_vif;
   typedef virtual sram_ctrl_lc_if lc_vif;
+  typedef virtual sram_ctrl_exec_if exec_vif;
 
   typedef enum bit {
     SramCtrlRenewScrKey = 0,

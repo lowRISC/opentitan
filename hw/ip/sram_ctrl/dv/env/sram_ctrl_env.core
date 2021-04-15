@@ -13,6 +13,7 @@ filesets:
     files:
       - sram_ctrl_env_pkg.sv
       - sram_ctrl_lc_if.sv
+      - sram_ctrl_exec_if.sv
       - sram_ctrl_env_cfg.sv: {is_include_file: true}
       - sram_ctrl_env_cov.sv: {is_include_file: true}
       - sram_ctrl_virtual_sequencer.sv: {is_include_file: true}
@@ -28,6 +29,7 @@ filesets:
       - seq_lib/sram_ctrl_lc_escalation_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_mem_tl_errors_vseq.sv: {is_include_file: true}
       - seq_lib/sram_ctrl_access_during_key_req_vseq.sv: {is_include_file: true}
+      - seq_lib/sram_ctrl_executable_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

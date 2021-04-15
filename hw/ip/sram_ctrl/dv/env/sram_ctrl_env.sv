@@ -32,6 +32,11 @@ class sram_ctrl_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get lc_vif from uvm_config_db")
     end
 
+    // Get the SRAM execution interface
+    if (!uvm_config_db#(virtual sram_ctrl_exec_if)::get(this, "", "exec_vif", cfg.exec_vif)) begin
+      `uvm_fatal(`gfn, "failed to get exec_vif from uvm_config_db")
+    end
+
     // Get the mem_bkdr interface
     if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "mem_bkdr_vif", cfg.mem_bkdr_vif)) begin
       `uvm_fatal(`gfn, "failed to get mem_bkdr_vif from uvm_config_db")

@@ -24,6 +24,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset();
     cfg.lc_vif.init();
+    cfg.exec_vif.init();
     if (kind == "HARD") begin
       cfg.otp_clk_rst_vif.apply_reset();
     end
@@ -57,10 +58,11 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
 
   // Task to perform a single SRAM read at the specified location
   virtual task do_single_read(input bit [TL_AW-1:0]    addr,
-                              input bit [TL_DBW-1:0]   mask = get_rand_contiguous_mask(),
-                              input bit                blocking = $urandom_range(0, 1),
-                              input bit                check_rdata = 0,
-                              input bit [TL_DW-1:0]    exp_rdata = '0,
+                              input bit [TL_DBW-1:0]   mask         = get_rand_contiguous_mask(),
+                              input bit                blocking     = $urandom_range(0, 1),
+                              input bit                check_rdata  = 0,
+                              input bit [TL_DW-1:0]    exp_rdata    = '0,
+                              input tlul_pkg::tl_type_e tl_type     = tlul_pkg::DataType,
                               output logic [TL_DW-1:0] rdata);
     tl_access(.addr(addr),
               .data(rdata),
@@ -70,6 +72,7 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
               .check_exp_data(check_rdata),
               .exp_data(exp_rdata),
               .compare_mask(mask),
+              .tl_type(tl_type),
               .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));
     csr_utils_pkg::wait_no_outstanding_access();
   endtask
@@ -77,13 +80,15 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
   // Task to perform a single SRAM write at the specified location
   virtual task do_single_write(bit [TL_AW-1:0]  addr,
                                bit [TL_DW-1:0]  data,
-                               bit [TL_DBW-1:0] mask = get_rand_contiguous_mask(),
-                               bit              blocking = $urandom_range(0, 1));
+                               bit [TL_DBW-1:0] mask        = get_rand_contiguous_mask(),
+                               bit              blocking    = $urandom_range(0, 1),
+                               tlul_pkg::tl_type_e tl_type  = tlul_pkg::DataType);
     tl_access(.addr(addr),
               .data(data),
               .mask(mask),
               .write(1'b1),
               .blocking(blocking),
+              .tl_type(tl_type),
               .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));
     csr_utils_pkg::wait_no_outstanding_access();
   endtask
@@ -91,15 +96,25 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
   // This task is designed to kick off `num_stress_ops` back to back memory transactions
   // to the same address, to stress the SRAM pipelining implementation
   virtual task do_stress_ops(bit [TL_AW-1:0] addr,
-                             int num_stress_ops);
+                             int num_stress_ops,
+                             bit en_ifetch = 0);
     bit [TL_DW-1:0] data;
+    tlul_pkg::tl_type_e tl_type;
+
     repeat (num_stress_ops) begin
+      // fully randomize data
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)
+
+      // never send InstrType transactions unless en_ifetch is enabled
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tl_type, !en_ifetch -> tl_type == tlul_pkg::DataType;)
+
       tl_access(.addr(addr),
                 .data(data),
                 .mask(get_rand_contiguous_mask()),
                 .write($urandom_range(0, 1)),
+                .check_rsp(!en_ifetch),
                 .blocking(1'b0),
+                .tl_type(tl_type),
                 .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h));
     end
     csr_utils_pkg::wait_no_outstanding_access();
@@ -112,24 +127,30 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
   // This is useful for when we are testing memory operations during terminal states
   // (such as during LC escalations or parity errors), which are expected to not respond at all.
   virtual task do_rand_ops(int num_ops,
-                           bit blocking = $urandom_range(0, 1),
-                           bit abort    = 0);
+                           bit blocking  = $urandom_range(0, 1),
+                           bit abort     = 0,
+                           bit en_ifetch = 0);
     uvm_status_e status;
 
     bit [TL_DW-1:0] data;
     bit [TL_AW-1:0] addr;
-    bit we;
+    tlul_pkg::tl_type_e tl_type;
     repeat (num_ops) begin
+      // full randomize addr and data
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)
-      `DV_CHECK_STD_RANDOMIZE_FATAL(we)
       `DV_CHECK_STD_RANDOMIZE_FATAL(addr)
+
+      // never send InstrType transactions unless en_ifetch is enabled
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tl_type, !en_ifetch -> tl_type == tlul_pkg::DataType;)
 
       tl_access_w_abort(.addr(addr),
                         .data(data),
                         .status(status),
                         .mask(get_rand_contiguous_mask()),
-                        .write(we),
+                        .write($urandom_range(0, 1)),
                         .blocking(blocking),
+                        .check_rsp(!en_ifetch),
+                        .tl_type(tl_type),
                         .tl_sequencer_h(p_sequencer.sram_tl_sequencer_h),
                         .req_abort_pct((abort) ? 100 : 0));
     end

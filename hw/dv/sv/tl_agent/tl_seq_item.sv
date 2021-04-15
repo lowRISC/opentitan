@@ -145,6 +145,7 @@ class tl_seq_item extends uvm_sequence_item;
     `uvm_field_int  (a_param,             UVM_DEFAULT)
     `uvm_field_int  (a_source,            UVM_DEFAULT)
     `uvm_field_int  (a_opcode,            UVM_DEFAULT)
+    `uvm_field_int  (a_user,              UVM_DEFAULT)
     `uvm_field_int  (d_param,             UVM_DEFAULT)
     `uvm_field_int  (d_source,            UVM_DEFAULT)
     `uvm_field_int  (d_data,              UVM_DEFAULT)
@@ -185,6 +186,7 @@ class tl_seq_item extends uvm_sequence_item;
            $sformatf("a_param = 0x%0h ", a_param),
            $sformatf("a_source = 0x%0h ", a_source),
            $sformatf("a_opcode = %0s ", a_opcode_name),
+           $sformatf("a_user = 0x%0h ", a_user),
            $sformatf("d_data = 0x%0h ", d_data),
            $sformatf("d_size = 0x%0h ", d_size),
            $sformatf("d_param = 0x%0h ", d_param),

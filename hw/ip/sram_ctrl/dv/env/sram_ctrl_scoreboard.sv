@@ -29,6 +29,23 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
   // the LC escalation has finished propagating through the design
   bit status_lc_esc;
 
+  // internal state for executable-mode information
+  bit       allow_ifetch;
+
+  // The values detected from interface and EXEC csr writes - are not immediately valid
+  // as they need to be "latched" by the internal scb logic whenever an addr_phase_write
+  // is detected on the sram_tl_a_chan_fifo.
+  bit [2:0] detected_csr_exec = '0;
+  bit [3:0] detected_hw_debug_en = '0;
+  bit [7:0] detected_en_sram_ifetch = '0;
+
+  // The values that are "latched" by sram_tl_a_chan_fifo and are assumed to be valid
+  bit [2:0] valid_csr_exec;
+  bit [3:0] valid_hw_debug_en;
+  bit [7:0] valid_en_sram_ifetch;
+
+  bit in_executable_mode;
+
   typedef struct {
     // 1 for writes, 0 for reads
     bit we;
@@ -183,10 +200,18 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
                         item.get_error_size_over_max()),
               UVM_HIGH)
 
+    if (item.a_user[15:14] == tlul_pkg::InstrType) begin
+      // 2 error cases if an InstrType transaction is seen:
+      // - if it is a write transaction
+      // - if the SRAM is not configured in executable mode
+      is_tl_err = (allow_ifetch) ? (item.a_opcode != tlul_pkg::Get) : 1'b1;
+    end
+
     if (channel == DataChannel) begin
       `DV_CHECK_EQ(item.d_error, is_tl_err,
           $sformatf("item_err: %0d", is_tl_err))
     end
+
 
     return is_tl_err;
   endfunction
@@ -211,6 +236,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     fork
       process_sram_init();
       process_lc_escalation();
+      process_sram_executable();
       process_sram_tl_a_chan_fifo();
       process_sram_tl_d_chan_fifo();
       process_kdi_fifo();
@@ -299,12 +325,37 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  virtual task process_sram_executable();
+    forever begin
+      @(cfg.exec_vif.lc_hw_debug_en, cfg.exec_vif.otp_hw_cfg, detected_csr_exec);
+
+      // "latch" these values with a slight delay to ensure everything has settled
+      #1;
+
+      detected_hw_debug_en = cfg.exec_vif.lc_hw_debug_en;
+      detected_en_sram_ifetch = cfg.exec_vif.otp_hw_cfg.data.en_sram_ifetch;
+
+      `uvm_info(`gfn, $sformatf("detected_hw_debug_en: %0b", detected_hw_debug_en), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("detected_en_sram_ifetch: %0b", detected_en_sram_ifetch), UVM_HIGH)
+
+    end
+  endtask
+
   virtual task process_sram_tl_a_chan_fifo();
     tl_seq_item item;
     sram_trans_t addr_trans;
     forever begin
       if (sram_tl_a_chan_fifo.try_get(item) > 0) begin // received a tl_seq_item
         `uvm_info(`gfn, $sformatf("Received sram_tl_a_chan item:\n%0s", item.sprint()), UVM_HIGH)
+
+        // update internal state related to instruction type and SRAM execution
+        valid_csr_exec = detected_csr_exec;
+        valid_hw_debug_en = detected_hw_debug_en;
+        valid_en_sram_ifetch = detected_en_sram_ifetch;
+
+        allow_ifetch = (valid_en_sram_ifetch == sram_ctrl_pkg::EnSramIfetch) ?
+                       (valid_csr_exec == tlul_pkg::InstrEn)                 :
+                       (valid_hw_debug_en == lc_ctrl_pkg::On);
 
         if (!cfg.en_scb) continue;
 
@@ -646,20 +697,14 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     // for read, update predication at address phase and compare at data phase
     case (csr.get_name())
       // add individual case item for each csr
-      "intr_state": begin
-        // FIXME
-        do_read_check = 1'b0;
-      end
-      "intr_enable": begin
-        // FIXME
-      end
-      "intr_test": begin
-        // FIXME
-      end
       "exec_regwen": begin
         // do nothing
       end
       "exec": begin
+        if (addr_phase_write) begin
+          #1;
+          detected_csr_exec = item.a_data;
+        end
       end
       "status": begin
         if (addr_phase_read) begin
@@ -715,6 +760,9 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     exp_status = '0;
     handling_lc_esc = 0;
     status_lc_esc = 0;
+    detected_csr_exec = '0;
+    detected_hw_debug_en = '0;
+    detected_en_sram_ifetch = '0;
   endfunction
 
   function void check_phase(uvm_phase phase);
