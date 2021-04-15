@@ -100,6 +100,10 @@
       name: "{variant}_access_during_key_req"
       uvm_test_seq: sram_ctrl_access_during_key_req_vseq
     }
+    {
+      name: "{variant}_executable"
+      uvm_test_seq: sram_ctrl_executable_vseq
+    }
   ]
 
   // List of regressions.

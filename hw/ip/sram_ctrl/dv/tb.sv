@@ -32,6 +32,9 @@ module tb;
 
   lc_ctrl_pkg::lc_tx_t lc_esc_en;
 
+  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en;
+  otp_ctrl_part_pkg::otp_hw_cfg_t otp_hw_cfg;
+
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
@@ -49,6 +52,9 @@ module tb;
 
   // Interface for lifecycle escalation
   sram_ctrl_lc_if lc_if();
+
+  // Interface for SRAM execution
+  sram_ctrl_exec_if exec_if();
 
   `DV_ALERT_IF_CONNECT
 
@@ -72,25 +78,28 @@ module tb;
     .DataWidth(`SRAM_DATA_WIDTH)
   ) dut (
     // main clock
-    .clk_i(clk),
-    .rst_ni(rst_n),
+    .clk_i            (clk                    ),
+    .rst_ni           (rst_n                  ),
     // OTP clock
-    .clk_otp_i(clk_otp),
-    .rst_otp_ni(rst_otp_n),
+    .clk_otp_i        (clk_otp                ),
+    .rst_otp_ni       (rst_otp_n              ),
     // TLUL interface for CSR regfile
-    .csr_tl_i(tl_if.h2d),
-    .csr_tl_o(tl_if.d2h),
+    .csr_tl_i         (tl_if.h2d              ),
+    .csr_tl_o         (tl_if.d2h              ),
     // TLUL interface for SRAM memory
-    .sram_tl_i(sram_tl_if.h2d),
-    .sram_tl_o(sram_tl_if.d2h),
+    .sram_tl_i        (sram_tl_if.h2d         ),
+    .sram_tl_o        (sram_tl_if.d2h         ),
     // Alert I/O
-    .alert_rx_i(alert_rx),
-    .alert_tx_o(alert_tx),
+    .alert_rx_i       (alert_rx               ),
+    .alert_tx_o       (alert_tx               ),
     // Life cycle escalation
-    .lc_escalate_en_i(lc_if.lc_esc_en),
+    .lc_escalate_en_i (lc_if.lc_esc_en        ),
     // OTP key derivation interface
-    .sram_otp_key_o(key_req),
-    .sram_otp_key_i(key_rsp)
+    .sram_otp_key_o   (key_req                ),
+    .sram_otp_key_i   (key_rsp                ),
+    // SRAM ifetch interface
+    .lc_hw_debug_en_i (exec_if.lc_hw_debug_en ),
+    .otp_hw_cfg_i     (exec_if.otp_hw_cfg     )
   );
 
   // KDI interface assignments
@@ -121,6 +130,7 @@ module tb;
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(KDI_DATA_SIZE)))::set(null,
       "*.env.m_kdi_agent*", "vif", kdi_if);
     uvm_config_db#(virtual sram_ctrl_lc_if)::set(null, "*.env", "lc_vif", lc_if);
+    uvm_config_db#(virtual sram_ctrl_exec_if)::set(null, "*.env", "exec_vif", exec_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_sram_tl_agent*", "vif", sram_tl_if);
     uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", "mem_bkdr_vif",

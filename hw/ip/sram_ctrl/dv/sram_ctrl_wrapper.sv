@@ -34,7 +34,10 @@ module sram_ctrl_wrapper
   input lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
   // Key request to OTP
   output otp_ctrl_pkg::sram_otp_key_req_t           sram_otp_key_o,
-  input otp_ctrl_pkg::sram_otp_key_rsp_t            sram_otp_key_i
+  input otp_ctrl_pkg::sram_otp_key_rsp_t            sram_otp_key_i,
+  // Executable SRAM inputs
+  input lc_ctrl_pkg::lc_tx_t                        lc_hw_debug_en_i,
+  input otp_ctrl_part_pkg::otp_hw_cfg_t             otp_hw_cfg_i
 );
 
   // Scrambling key interface between sram_ctrl and scrambling RAM
@@ -45,15 +48,16 @@ module sram_ctrl_wrapper
 
 
   // SRAM interface between TLUL adapter and scrambling RAM
-  wire                  req;
-  wire                  gnt;
-  wire                  we;
-  wire [AddrWidth-1:0]  addr;
-  wire [DataWidth-1:0]  wdata;
-  wire [DataWidth-1:0]  wmask;
-  wire [DataWidth-1:0]  rdata;
-  wire                  rvalid;
-  wire                  intg_error;
+  wire                    req;
+  wire                    gnt;
+  wire                    we;
+  wire [AddrWidth-1:0]    addr;
+  wire [DataWidth-1:0]    wdata;
+  wire [DataWidth-1:0]    wmask;
+  wire [DataWidth-1:0]    rdata;
+  wire                    rvalid;
+  wire                    intg_error;
+  tlul_pkg::tl_instr_en_e en_ifetch;
 
   // SRAM Controller
   sram_ctrl u_sram_ctrl (
@@ -80,7 +84,11 @@ module sram_ctrl_wrapper
     .sram_scr_init_o  (scr_init_req     ),
     .sram_scr_init_i  (scr_init_rsp     ),
     // Integrity error
-    .intg_error_i     (intg_error)
+    .intg_error_i     (intg_error       ),
+    // Executable SRAM
+    .lc_hw_debug_en_i (lc_hw_debug_en_i ),
+    .otp_hw_cfg_i     (otp_hw_cfg_i     ),
+    .en_ifetch_o      (en_ifetch        )
   );
 
   // TLUL Adapter SRAM
@@ -89,21 +97,23 @@ module sram_ctrl_wrapper
     .SramDw(DataWidth),
     .Outstanding(2)
   ) u_tl_adapter_sram (
-    .clk_i    (clk_i          ),
-    .rst_ni   (rst_ni         ),
+    .clk_i        (clk_i          ),
+    .rst_ni       (rst_ni         ),
     // TLUL interface to SRAM memory
-    .tl_i     (sram_tl_i      ),
-    .tl_o     (sram_tl_o      ),
+    .tl_i         (sram_tl_i      ),
+    .tl_o         (sram_tl_o      ),
+    // Ifetch control interface
+    .en_ifetch_i  (en_ifetch),
     // Corresponding SRAM request interface
-    .req_o    (req            ),
-    .gnt_i    (gnt            ),
-    .we_o     (we             ),
-    .addr_o   (addr           ),
-    .wdata_o  (wdata          ),
-    .wmask_o  (wmask          ),
-    .rdata_i  (rdata          ),
-    .rvalid_i (rvalid         ),
-    .rerror_i (scr_rsp.rerror )
+    .req_o        (req            ),
+    .gnt_i        (gnt            ),
+    .we_o         (we             ),
+    .addr_o       (addr           ),
+    .wdata_o      (wdata          ),
+    .wmask_o      (wmask          ),
+    .rdata_i      (rdata          ),
+    .rvalid_i     (rvalid         ),
+    .rerror_i     (scr_rsp.rerror )
   );
 
   // Scrambling memory

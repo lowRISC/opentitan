@@ -16,6 +16,7 @@ class sram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(sram_ctrl_reg_block));
   // ext interfaces
   virtual clk_rst_if otp_clk_rst_vif;
   virtual sram_ctrl_lc_if lc_vif;
+  virtual sram_ctrl_exec_if exec_vif;
   mem_bkdr_vif mem_bkdr_vif;
 
   // otp clk freq
