@@ -9,7 +9,7 @@ module tb;
   import lc_ctrl_env_pkg::*;
   import lc_ctrl_test_pkg::*;
   import otp_ctrl_pkg::*;
-  import jtag_agent_pkg::*;
+  import jtag_riscv_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -107,7 +107,10 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(pwr_lc_vif)::set(null, "*.env", "pwr_lc_vif", pwr_lc_if);
     uvm_config_db#(virtual lc_ctrl_if)::set(null, "*.env", "lc_ctrl_vif", lc_ctrl_if);
-    uvm_config_db#(virtual jtag_if)::set(null, "*env.m_jtag_agent*", "vif", jtag_if);
+
+    // The jtag_agent is a low_level agent that configured inside jtag_riscv_agent.
+    uvm_config_db#(virtual jtag_if)::set(null, "*.env.m_jtag_riscv_agent.m_jtag_agent*", "vif",
+                                         jtag_if);
 
     uvm_config_db#(virtual alert_esc_if)::set(null, "*env.m_esc_wipe_secrets_agent*", "vif",
                                               esc_wipe_secrets_if);
