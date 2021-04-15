@@ -19,9 +19,6 @@
 #   on all targets if not given (optional).
 TEST_APPS_SELFCHECKING = [
     {
-        "name": "aes_test",
-    },
-    {
         "name": "crt_test",
     },
     {
@@ -76,10 +73,10 @@ TEST_APPS_SELFCHECKING = [
     # Any change in the processor sequence causes the timing of the disable / enable to change
     # and thus might produce different results.  This test will be completely removed for
     # now until the feature is ready.
-    #{
+    # {
     #    "name": "dif_entropy_smoketest",
     #    "targets": ["sim_verilator"],
-    #},
+    # },
     {
         "name": "flash_ctrl_test",
     },
