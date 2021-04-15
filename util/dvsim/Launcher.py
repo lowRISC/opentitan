@@ -6,6 +6,7 @@ import collections
 import logging as log
 import os
 import re
+import sys
 from pathlib import Path
 
 from utils import VERBOSE, clean_odirs, rm_path
@@ -16,10 +17,11 @@ class LauncherError(Exception):
         self.msg = msg
 
 
-class ErrorMessage(collections.namedtuple(
-    'ErrorMessage',
-    ['line_number', 'message', 'context'],
-)):
+class ErrorMessage(
+        collections.namedtuple(
+            'ErrorMessage',
+            ['line_number', 'message', 'context'],
+        )):
     """Contains error-related information.
 
     This support classification of failures into buckets. The message field
@@ -41,6 +43,15 @@ class Launcher:
 
     # Type of launcher used as string.
     variant = None
+
+    # Max jobs running at one time
+    max_parallel = sys.maxsize
+
+    # Max jobs polled at one time
+    max_poll = 10000
+
+    # Poll job's completion status every this many seconds
+    poll_freq = 1
 
     # Points to the python virtual env area.
     pyvenv = None
@@ -217,7 +228,8 @@ class Launcher:
 
         Returns (status, err_msg) extracted from the log, where the status is
         "P" if the it passed, "F" otherwise. This is invoked by poll() just
-        after the job finishes.
+        after the job finishes. err_msg is an instance of the named tuple
+        ErrorMessage.
         """
         def _find_patterns(patterns, line):
             """Helper function that returns the pattern if any of the given
@@ -242,7 +254,9 @@ class Launcher:
         chk_passed = bool(pass_patterns) and (self.exit_code == 0)
 
         try:
-            with open(self.deploy.get_log_path(), "r", encoding="UTF-8",
+            with open(self.deploy.get_log_path(),
+                      "r",
+                      encoding="UTF-8",
                       errors="surrogateescape") as f:
                 lines = f.readlines()
         except OSError as e:
@@ -288,6 +302,9 @@ class Launcher:
         """Do post-completion activities, such as preparing the results.
 
         Must be invoked by poll(), after the job outcome is determined.
+
+        status is the status of the job, either 'P', 'F' or 'K'.
+        err_msg is an instance of the named tuple ErrorMessage.
         """
 
         assert status in ['P', 'F', 'K']
@@ -296,14 +313,6 @@ class Launcher:
         self.deploy.post_finish(status)
         log.debug("Item %s has completed execution: %s", self, status)
         if status != "P":
-            self._log_fail_msg(err_msg)
-
-    def _log_fail_msg(self, msg):
-        """Logs the fail msg for the final report.
-
-        Invoked in _post_finish() only if the job did not pass.
-        """
-
-        assert msg and isinstance(msg, ErrorMessage)
-        self.fail_msg = msg
-        log.log(VERBOSE, msg)
+            assert err_msg and isinstance(err_msg, ErrorMessage)
+            self.fail_msg = err_msg
+            log.log(VERBOSE, err_msg.message)

@@ -12,6 +12,7 @@ from shutil import which
 
 import hjson
 from CfgJson import set_target_attribute
+from LauncherFactory import get_launcher_cls
 from Scheduler import Scheduler
 from utils import (VERBOSE, find_and_substitute_wildcards, md_results_to_html,
                    rm_path, subst_wildcards)
@@ -371,7 +372,7 @@ class FlowCfg():
             log.fatal("Nothing to run!")
             sys.exit(1)
 
-        return Scheduler(deploy).run()
+        return Scheduler(deploy, get_launcher_cls()).run()
 
     def _gen_results(self, results):
         '''

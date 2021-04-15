@@ -19,13 +19,35 @@ def sum_dict_lists(d):
     return sum([len(d[k]) for k in d])
 
 
+def get_next_item(arr, index):
+    '''Perpetually get an item from a list.
+
+    Returns the next item on the list by advancing the index by 1. If the index
+    is already the last item on the list, it loops back to the start, thus
+    implementing a circular list.
+
+    arr is a subscriptable list.
+    index is the index of the last item returned.
+
+    Returns (item, index) if successful.
+    Raises IndexError if arr is empty.
+    '''
+    index += 1
+    try:
+        item = arr[index]
+    except IndexError:
+        index = 0
+        try:
+            item = arr[index]
+        except IndexError:
+            raise IndexError("List is empty!")
+
+    return item, index
+
+
 class Scheduler:
     '''An object that runs one or more Deploy items'''
-
-    # Max jobs running at one time
-    max_parallel = 16
-
-    def __init__(self, items):
+    def __init__(self, items, launcher_cls):
         self.items = items
 
         # 'scheduled[target][cfg]' is a list of Deploy objects for the chosen
@@ -48,19 +70,29 @@ class Scheduler:
         # _queued is a list so that we dispatch things in order (relevant
         # for things like tests where we have ordered things cleverly to
         # try to see failures early). They are maintained for each target.
+
+        # The list of available targets and the list of running items in each
+        # target are polled in a circular fashion, looping back to the start.
+        # This is done to allow us to poll a smaller subset of jobs rather than
+        # the entire regression. We keep rotating through our list of running
+        # items, picking up where we left off on the last poll.
+        self._targets = list(self._scheduled.keys())
         self._queued = {}
         self._running = {}
         self._passed = {}
         self._failed = {}
         self._killed = {}
         self._total = {}
+        self.last_target_polled_idx = -1
+        self.last_item_polled_idx = {}
         for target in self._scheduled:
             self._queued[target] = []
-            self._running[target] = set()
+            self._running[target] = []
             self._passed[target] = set()
             self._failed[target] = set()
             self._killed[target] = set()
             self._total[target] = sum_dict_lists(self._scheduled[target])
+            self.last_item_polled_idx[target] = -1
 
             # Stuff for printing the status.
             width = len(str(self._total[target]))
@@ -75,6 +107,10 @@ class Scheduler:
         # corresponding to membership in the dicts above. This is not
         # per-target.
         self.item_to_status = {}
+
+        # The chosen launcher class. This allows us to access launcher
+        # variant-specific settings such as max parallel jobs & poll rate.
+        self.launcher_cls = launcher_cls
 
     def run(self):
         '''Run all scheduled jobs and return the results.
@@ -122,7 +158,8 @@ class Scheduler:
                 # polling loop. But we do it with a bounded wait on stop_now so
                 # that we jump back to the polling loop immediately on a
                 # signal.
-                stop_now.wait(timeout=1)
+                stop_now.wait(timeout=self.launcher_cls.poll_freq)
+
         finally:
             signal(SIGINT, old_handler)
 
@@ -303,49 +340,54 @@ class Scheduler:
         '''
 
         changed = False
-        for target in self._scheduled:
-            to_pass = []
-            to_fail = []
-            for item in self._running[target]:
+        max_poll = min(self.launcher_cls.max_poll,
+                       sum_dict_lists(self._running))
+
+        while max_poll:
+            target, self.last_target_polled_idx = get_next_item(
+                self._targets, self.last_target_polled_idx)
+
+            while self._running[target] and max_poll:
+                max_poll -= 1
+                item, self.last_item_polled_idx[target] = get_next_item(
+                    self._running[target], self.last_item_polled_idx[target])
                 status = item.launcher.poll()
-                assert status in ['D', 'P', 'F']
+                level = VERBOSE
+
+                assert status in ['D', 'P', 'F', 'K']
                 if status == 'D':
-                    # Still running
                     continue
                 elif status == 'P':
-                    log.log(VERBOSE, "[%s]: [%s]: [status] [%s: P]", hms,
-                            target, item.full_name)
-                    to_pass.append(item)
+                    self._passed[target].add(item)
+                elif status == 'F':
+                    self._failed[target].add(item)
+                    level = log.ERROR
                 else:
-                    log.error("[%s]: [%s]: [status] [%s: F]", hms, target,
-                              item.full_name)
-                    to_fail.append(item)
+                    self._killed[target].add(item)
+                    level = log.ERROR
 
-            for item in to_pass:
-                self._passed[target].add(item)
-                self._running[target].remove(item)
-                self.item_to_status[item] = 'P'
-                self._enqueue_successors(item)
+                self._running[target].pop(self.last_item_polled_idx[target])
+                self.last_item_polled_idx[target] -= 1
+                self.item_to_status[item] = status
+                log.log(level, "[%s]: [%s]: [status] [%s: %s]", hms, target,
+                        item.full_name, status)
 
-            for item in to_fail:
-                self._failed[target].add(item)
-                self._running[target].remove(item)
-                self.item_to_status[item] = 'F'
+                # Enqueue item's successors regardless of its status.
+                #
                 # It may be possible that a failed item's successor may not
                 # need all of its dependents to pass (if it has other dependent
                 # jobs). Hence we enqueue all successors rather than canceling
-                # them right here. We leave it to `_dispatch()` to figure out
+                # them right here. We leave it to _dispatch() to figure out
                 # whether an enqueued item can be run or not.
                 self._enqueue_successors(item)
-
-            changed = changed or to_pass or to_fail
+                changed = True
 
         return changed
 
     def _dispatch(self, hms):
         '''Dispatch some queued items if possible.'''
 
-        slots = Scheduler.max_parallel - sum_dict_lists(self._running)
+        slots = self.launcher_cls.max_parallel - sum_dict_lists(self._running)
         if slots <= 0:
             return
 
@@ -404,7 +446,7 @@ class Scheduler:
                     ", ".join(item.full_name for item in to_dispatch))
 
             for item in to_dispatch:
-                self._running[target].add(item)
+                self._running[target].append(item)
                 self.item_to_status[item] = 'D'
                 try:
                     item.launcher.launch()
@@ -423,7 +465,7 @@ class Scheduler:
 
         # Kill any running items. Again, take a copy of the set to avoid
         # modifying it while iterating over it.
-        for target in self._queued:
+        for target in self._running:
             for item in [item for item in self._running[target]]:
                 self._kill_item(item)
 
