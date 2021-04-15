@@ -13,9 +13,9 @@ class lc_ctrl_env extends cip_base_env #(
   push_pull_agent#(.HostDataWidth(OTP_PROG_HDATA_WIDTH), .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))
                    m_otp_prog_pull_agent;
   push_pull_agent#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) m_otp_token_pull_agent;
-  alert_esc_agent m_esc_wipe_secrets_agent;
-  alert_esc_agent m_esc_scrap_state_agent;
-  jtag_agent      m_jtag_agent;
+  alert_esc_agent  m_esc_wipe_secrets_agent;
+  alert_esc_agent  m_esc_scrap_state_agent;
+  jtag_riscv_agent m_jtag_riscv_agent;
 
   `uvm_component_new
 
@@ -40,9 +40,10 @@ class lc_ctrl_env extends cip_base_env #(
                                              cfg.m_esc_scrap_state_agent_cfg);
     cfg.m_esc_scrap_state_agent_cfg.en_cov = cfg.en_cov;
 
-    m_jtag_agent = jtag_agent::type_id::create("m_jtag_agent", this);
-    uvm_config_db#(jtag_agent_cfg)::set(this, "m_jtag_agent", "cfg", cfg.m_jtag_agent_cfg);
-    cfg.m_jtag_agent_cfg.en_cov = cfg.en_cov;
+    m_jtag_riscv_agent = jtag_riscv_agent::type_id::create("m_jtag_riscv_agent", this);
+    uvm_config_db#(jtag_riscv_agent_cfg)::set(this, "m_jtag_riscv_agent", "cfg",
+                                              cfg.m_jtag_riscv_agent_cfg);
+    cfg.m_jtag_riscv_agent_cfg.en_cov = cfg.en_cov;
 
     m_otp_prog_pull_agent = push_pull_agent#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
         .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))::type_id::create("m_otp_prog_pull_agent", this);
@@ -64,7 +65,7 @@ class lc_ctrl_env extends cip_base_env #(
     virtual_sequencer.otp_token_pull_sequencer_h = m_otp_token_pull_agent.sequencer;
     virtual_sequencer.esc_wipe_secrets_sequencer_h = m_esc_wipe_secrets_agent.sequencer;
     virtual_sequencer.esc_scrap_state_sequencer_h = m_esc_scrap_state_agent.sequencer;
-    virtual_sequencer.jtag_sequencer_h = m_jtag_agent.sequencer;
+    virtual_sequencer.jtag_riscv_sequencer_h = m_jtag_riscv_agent.sequencer;
     if (cfg.en_scb) begin
       m_otp_prog_pull_agent.monitor.analysis_port.connect(
           scoreboard.otp_prog_fifo.analysis_export);

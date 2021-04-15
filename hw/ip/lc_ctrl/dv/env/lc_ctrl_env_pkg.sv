@@ -17,7 +17,7 @@ package lc_ctrl_env_pkg;
   import otp_ctrl_pkg::*;
   import push_pull_agent_pkg::*;
   import alert_esc_agent_pkg::*;
-  import jtag_agent_pkg::*;
+  import jtag_riscv_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

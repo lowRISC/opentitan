@@ -12,6 +12,7 @@ class jtag_riscv_agent_cfg extends dv_base_agent_cfg;
     super.new(name);
 
     // This is a high level agent and will use jtag_agent's driver.
+    // TODO: consider move it to build_phase
     this.has_driver = 0;
   endfunction : new
 

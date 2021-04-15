@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:dv:jtag_agent
+      - lowrisc:dv:jtag_riscv_agent
     files:
       - lc_ctrl_env_pkg.sv
       - lc_ctrl_if.sv
