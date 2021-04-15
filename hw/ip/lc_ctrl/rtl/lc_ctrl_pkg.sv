@@ -32,13 +32,13 @@ package lc_ctrl_pkg;
   ////////////////////////////////
 
   parameter int TxWidth = 4;
-  typedef logic [TxWidth-1:0] lc_tx_t;
-  typedef enum  lc_tx_t {
+
+  typedef enum logic [TxWidth-1:0] {
     On  = 4'b1010,
     Off = 4'b0101
   } lc_tx_e;
-
-  parameter lc_tx_t LC_TX_DEFAULT = Off;
+  typedef logic [TxWidth-1:0] lc_tx_t;
+  parameter lc_tx_t LC_TX_DEFAULT = lc_tx_t'(Off);
 
   parameter int RmaSeedWidth = 32;
   typedef logic [RmaSeedWidth-1:0] lc_flash_rma_seed_t;
