@@ -20,8 +20,7 @@ filesets:
       - seq_lib/clkmgr_base_vseq.sv: {is_include_file: true}
       - seq_lib/clkmgr_common_vseq.sv: {is_include_file: true}
       - seq_lib/clkmgr_smoke_vseq.sv: {is_include_file: true}
-      - clkmgr_idle_if.sv
-      - clkmgr_pwrmgr_if.sv
+      - clkmgr_if.sv
     file_type: systemVerilogSource
 
 generate:

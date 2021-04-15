@@ -18,8 +18,7 @@ package clkmgr_env_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  typedef virtual clkmgr_pwrmgr_if clkmgr_pwrmgr_vif;
-  typedef virtual clkmgr_idle_if clkmgr_idle_vif;
+  typedef virtual clkmgr_if clkmgr_vif;
   typedef virtual clk_rst_if clk_rst_vif;
 
   // parameters
