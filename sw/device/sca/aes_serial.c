@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/aes.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
 #include "sw/device/sca/lib/simple_serial.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**
  * OpenTitan program for AES side-channel analysis.
@@ -37,7 +39,7 @@ enum {
   kIbexAesSleepCycles = 400,
 };
 
-static aes_cfg_t aes_cfg;
+static dif_aes_t aes;
 
 /**
  * Simple serial 'k' (set key) command handler.
@@ -51,7 +53,23 @@ static aes_cfg_t aes_cfg;
  */
 static void aes_serial_set_key(const uint8_t *key, size_t key_len) {
   SS_CHECK(key_len == kAesKeyLength);
-  aes_key_put(key, /*key_share1=*/(uint8_t[kAesKeyLength]){0}, aes_cfg.key_len);
+  dif_aes_transaction_t transaction = {
+      .key_len = kDifAesKey128,
+      .masking = kDifAesMaskingInternalPrng,
+      .mode = kDifAesModeEncrypt,
+      .operation = kDifAesOperationManual,
+  };
+  dif_aes_key_share_t key_shares;
+  memcpy(key_shares.share0, key, sizeof(key_shares.share0));
+  memset(key_shares.share1, 0, sizeof(key_shares.share1));
+  SS_CHECK(dif_aes_start_ecb(&aes, &transaction, key_shares) == kDifAesOk);
+}
+
+/**
+ * Callback wrapper for AES manual trigger function.
+ */
+static void aes_manual_trigger(void) {
+  SS_CHECK(dif_aes_trigger(&aes, kDifAesTriggerStart) == kDifAesOk);
 }
 
 /**
@@ -66,7 +84,15 @@ static void aes_serial_set_key(const uint8_t *key, size_t key_len) {
  * @return Result of the operation.
  */
 static void aes_serial_encrypt(const uint8_t *plaintext, size_t plaintext_len) {
-  aes_data_put_wait(plaintext);
+  bool ready = false;
+  do {
+    SS_CHECK(dif_aes_get_status(&aes, kDifAesStatusInputReady, &ready) ==
+             kDifAesOk);
+  } while (!ready);
+  dif_aes_data_t data;
+  SS_CHECK(plaintext_len <= sizeof(data.data));
+  memcpy(data.data, plaintext, plaintext_len);
+  SS_CHECK(dif_aes_load_data(&aes, data) == kDifAesOk);
 
   // Start AES operation (this triggers the capture) and go to sleep.
   // Using the SecAesStartTriggerDelay hardware parameter, the AES unit is
@@ -93,9 +119,16 @@ static void aes_serial_single_encrypt(const uint8_t *plaintext,
   aes_serial_encrypt(plaintext, plaintext_len);
   sca_set_trigger_low();
 
-  uint8_t ciphertext[kAesTextLength] = {0};
-  aes_data_get_wait(ciphertext);
-  simple_serial_send_packet('r', ciphertext, ARRAYSIZE(ciphertext));
+  bool ready = false;
+  do {
+    SS_CHECK(dif_aes_get_status(&aes, kDifAesStatusOutputValid, &ready) ==
+             kDifAesOk);
+  } while (!ready);
+
+  dif_aes_data_t ciphertext;
+  SS_CHECK(dif_aes_read_output(&aes, &ciphertext) == kDifAesOk);
+  simple_serial_send_packet('r', (uint8_t *)ciphertext.data,
+                            sizeof(ciphertext.data));
 }
 
 /**
@@ -135,24 +168,27 @@ static void aes_serial_batch_encrypt(const uint8_t *data, size_t data_len) {
   }
   sca_set_trigger_low();
 
-  uint8_t ciphertext[kAesTextLength] = {0};
-  aes_data_get_wait(ciphertext);
-  simple_serial_send_packet('r', ciphertext, ARRAYSIZE(ciphertext));
+  bool ready = false;
+  do {
+    SS_CHECK(dif_aes_get_status(&aes, kDifAesStatusOutputValid, &ready) ==
+             kDifAesOk);
+  } while (!ready);
+
+  dif_aes_data_t ciphertext;
+  SS_CHECK(dif_aes_read_output(&aes, &ciphertext) == kDifAesOk);
+  simple_serial_send_packet('r', (uint8_t *)ciphertext.data,
+                            sizeof(ciphertext.data));
 }
 
 /**
  * Initializes the AES peripheral.
  */
 static void init_aes(void) {
-  aes_cfg.key_len = kAes128;
-  aes_cfg.operation = kAesEnc;
-  aes_cfg.mode = kAesEcb;
-  aes_cfg.manual_operation = true;
-  aes_clear();
-  while (!aes_idle()) {
-    ;
-  }
-  aes_init(aes_cfg);
+  dif_aes_params_t params = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR),
+  };
+  SS_CHECK(dif_aes_init(params, &aes) == kDifAesOk);
+  SS_CHECK(dif_aes_reset(&aes) == kDifAesOk);
 }
 
 /**
