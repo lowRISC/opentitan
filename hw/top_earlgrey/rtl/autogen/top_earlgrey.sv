@@ -81,7 +81,7 @@ module top_earlgrey #(
   input  ast_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req_i,
   output ast_pkg::ast_alert_rsp_t       sensor_ctrl_ast_alert_rsp_o,
   input  ast_pkg::ast_status_t       sensor_ctrl_ast_status_i,
-  input  logic [9:0] ast2pinmux_i,
+  input  logic [8:0] ast2pinmux_i,
   output logic       usbdev_usb_ref_val_o,
   output logic       usbdev_usb_ref_pulse_o,
   output clkmgr_pkg::clkmgr_ast_out_t       clks_ast_o,
@@ -117,8 +117,8 @@ module top_earlgrey #(
 
   // Signals
   logic [54:0] mio_p2d;
-  logic [72:0] mio_d2p;
-  logic [72:0] mio_en_d2p;
+  logic [71:0] mio_d2p;
+  logic [71:0] mio_en_d2p;
   logic [23:0] dio_p2d;
   logic [23:0] dio_d2p;
   logic [23:0] dio_en_d2p;
@@ -250,8 +250,8 @@ module top_earlgrey #(
   // pinmux_aon
   // aon_timer_aon
   // sensor_ctrl_aon
-  logic [9:0] cio_sensor_ctrl_aon_ast_debug_out_d2p;
-  logic [9:0] cio_sensor_ctrl_aon_ast_debug_out_en_d2p;
+  logic [8:0]  cio_sensor_ctrl_aon_ast_debug_out_d2p;
+  logic [8:0]  cio_sensor_ctrl_aon_ast_debug_out_en_d2p;
   // sram_ctrl_ret_aon
   // flash_ctrl
   logic        cio_flash_ctrl_tck_p2d;
@@ -2789,7 +2789,6 @@ module top_earlgrey #(
   assign mio_d2p[MioOutSensorCtrlAonAstDebugOut6] = cio_sensor_ctrl_aon_ast_debug_out_d2p[6];
   assign mio_d2p[MioOutSensorCtrlAonAstDebugOut7] = cio_sensor_ctrl_aon_ast_debug_out_d2p[7];
   assign mio_d2p[MioOutSensorCtrlAonAstDebugOut8] = cio_sensor_ctrl_aon_ast_debug_out_d2p[8];
-  assign mio_d2p[MioOutSensorCtrlAonAstDebugOut9] = cio_sensor_ctrl_aon_ast_debug_out_d2p[9];
   assign mio_d2p[MioOutPwmAonPwm0] = cio_pwm_aon_pwm_d2p[0];
   assign mio_d2p[MioOutPwmAonPwm1] = cio_pwm_aon_pwm_d2p[1];
   assign mio_d2p[MioOutPwmAonPwm2] = cio_pwm_aon_pwm_d2p[2];
@@ -2864,7 +2863,6 @@ module top_earlgrey #(
   assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut6] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[6];
   assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut7] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[7];
   assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut8] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[8];
-  assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut9] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[9];
   assign mio_en_d2p[MioOutPwmAonPwm0] = cio_pwm_aon_pwm_en_d2p[0];
   assign mio_en_d2p[MioOutPwmAonPwm1] = cio_pwm_aon_pwm_en_d2p[1];
   assign mio_en_d2p[MioOutPwmAonPwm2] = cio_pwm_aon_pwm_en_d2p[2];
