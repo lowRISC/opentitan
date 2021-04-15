@@ -12,12 +12,29 @@ waive -rules IFDEF_CODE -location {rv_dm.sv} -regexp {DMIDirectTAP} \
 waive -rules CLOCK_MUX  -location {rv_dm.sv} \
       -regexp {Clock 'tck_muxed' is driven by a multiplexer here, used as a clock} \
       -comment "The signal is coming out of a prim_clock_mux2 block."
+waive -rules CLOCK_USE -location {rv_dm.sv} \
+      -msg {'clk_i' is connected to 'prim_clock_mux2' port 'clk1_i',} \
+      -comment "This is needed such that the clock can be properly controlled during scanmode."
+waive -rules CLOCK_USE -location {rv_dm.sv} \
+      -msg {'clk_i' is connected to 'prim_clock_mux2' port 'clk1_i',} \
+      -comment "This clock usage is OK and is due to hand instantiated primitives on the clock line."
 
 # dmi_jtag_tap
 waive -rules CLOCK_MUX -location {dmi_jtag_tap.sv} -regexp {Clock 'tck_n' is driven by a multiplexer here, used as a clock at dmi_jtag_tap.sv} \
       -comment "This is permissible for now, but should be revised as soon as ASIC targets come into play."
 waive -rules INV_CLOCK -location {dmi_jtag_tap.sv} -regexp {'tck_i' is inverted, used as clock at dmi_jtag_tap.sv} \
       -comment "This is permissible for now, but should be revised as soon as ASIC targets come into play."
+waive -rules CLOCK_DRIVER -location {dmi_jtag_tap.sv} -msg {'tck_n' is driven by instance 'i_tck_inv' of module 'prim_clock_inv'} \
+      -comment "This is due to clocking primitives on the clock line."
+waive -rules CLOCK_DRIVER -location {dmi_jtag_tap.sv} -msg {'clk_no' driven in module 'prim_clock_inv' by port 'gen_*.clk_no' at prim_clock_inv.} \
+      -comment "This is due to clocking primitives on the clock line."
+waive -rules CLOCK_DRIVER -location {dmi_jtag_tap.sv} -regexp {'clk_no' driven in module .* by port 'gen_scan.u_size_only_mux2.X' at.*} \
+      -comment "This is due to clocking primitives on the clock line."
+waive -rules CLOCK_DRIVER -location {dmi_jtag_tap.sv} -msg {'X' driven in module 'SEN_MUXI2_S_4' at} \
+      -comment "This is permissible for now as it appears to be related to how lint translates the LIB - but it should be reviewed before tapeout."
+waive -rules CLOCK_USE -location {dmi_jtag_tap.sv} -msg {'tck_i' is connected to 'prim_clock_inv' port 'clk_i', and used as a clock at dmi_jtag_tap} \
+      -comment "This is a clock inverter in the design."
+
 
 # dm_csrs
 waive -rules CONST_FF -location {dm_csrs.sv} -regexp {Flip-flop 'dmcontrol_q.*' is driven by constant zero} \
