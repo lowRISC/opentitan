@@ -18,14 +18,15 @@ def main() -> int:
         '--dump-dmem',
         metavar="FILE",
         type=argparse.FileType('wb'),
-        help="after execution, write the data memory contents to this file")
+        help=("after execution, write the data memory contents to this file. "
+              "Use '-' to write to STDOUT.")
+    )
     parser.add_argument(
         '--dump-regs',
         metavar="FILE",
         type=argparse.FileType('w'),
-        default=sys.stdout,
-        help=
-        "after execution, write the GPR and WDR contents to this file (default: STDOUT)"
+        help=("after execution, write the GPR and WDR contents to this file. "
+              "Use '-' to write to STDOUT.")
     )
 
     args = parser.parse_args()
