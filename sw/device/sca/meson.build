@@ -12,7 +12,7 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     dependencies: [
       device_lib,
       riscv_crt,
-      sw_lib_aes,
+      sw_lib_dif_aes,
       sw_lib_mmio,
       sw_lib_runtime_hart,
       sw_lib_runtime_log,
