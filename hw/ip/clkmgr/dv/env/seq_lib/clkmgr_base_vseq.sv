@@ -15,9 +15,17 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
+  task pre_start();
+    fork
+      // Initialize the interface first since pre_start consumes time.
+      cfg.clkmgr_vif.init();
+      if (do_clkmgr_init) clkmgr_init();
+      super.pre_start();
+    join
+  endtask
+
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
-    if (do_clkmgr_init) clkmgr_init();
   endtask
 
   virtual task dut_shutdown();
@@ -25,14 +33,23 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     // TODO
   endtask
 
-  virtual task apply_reset(string reset_kind = "HARD");
+  task start_aon_clk();
+    // This makes it so the aon clock starts without waiting for its reset,
+    // and we won't need to call apply_reset for it.
+    #1ps;
+    cfg.aon_clk_rst_vif.drive_rst_pin(1'b0);
+  endtask
+
+  virtual task apply_reset(string kind = "HARD");
     fork
-      super.apply_reset(reset_kind);
-      if (reset_kind == "HARD") fork
+      super.apply_reset(kind);
+      if (kind == "HARD") fork
         cfg.main_clk_rst_vif.apply_reset();
         cfg.io_clk_rst_vif.apply_reset();
         cfg.usb_clk_rst_vif.apply_reset();
-        cfg.aon_clk_rst_vif.apply_reset();
+        // There is no reset for the aon clock: we just want it to start
+        // ASAP, especially given its very low frequency.
+        start_aon_clk();
       join
     join
   endtask
@@ -43,7 +60,9 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.main_clk_rst_vif.set_freq_mhz(100);
     cfg.io_clk_rst_vif.set_freq_mhz(96);
     cfg.usb_clk_rst_vif.set_freq_mhz(48);
-    cfg.aon_clk_rst_vif.set_freq_khz(200);
+    // The real clock rate for aon is 200kHz, but that slows testing down.
+    // Increasing its frequency increases DV efficiency withoug compromising quality.
+    cfg.aon_clk_rst_vif.set_freq_mhz(7);
   endtask
 
 endclass : clkmgr_base_vseq

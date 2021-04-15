@@ -7,8 +7,7 @@ class clkmgr_env_cfg extends cip_base_env_cfg #(.RAL_T(clkmgr_reg_block));
   // ext component cfgs
 
   // ext interfaces
-  clkmgr_pwrmgr_vif clkmgr_pwrmgr_vif;
-  clkmgr_idle_vif clkmgr_idle_vif;
+  clkmgr_vif clkmgr_vif;
   virtual clk_rst_if main_clk_rst_vif;
   virtual clk_rst_if io_clk_rst_vif;
   virtual clk_rst_if usb_clk_rst_vif;
@@ -21,7 +20,7 @@ class clkmgr_env_cfg extends cip_base_env_cfg #(.RAL_T(clkmgr_reg_block));
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     super.initialize(csr_base_addr);
-    // clkmgr has no interrupts or alerts yet.
+    // clkmgr has no interrupts, alerts, or devmode yet.
   endfunction
 
 endclass

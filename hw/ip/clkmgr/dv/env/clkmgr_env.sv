@@ -15,23 +15,25 @@ class clkmgr_env extends cip_base_env #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
-    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "main_clk_rst_vif", cfg.main_clk_rst_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get main_clk_rst_vif from uvm_config_db")
+    if (!uvm_config_db#(virtual clk_rst_if)::get(
+        this, "", "main_clk_rst_vif", cfg.main_clk_rst_vif)) begin
+      `uvm_fatal(`gfn, "failed to get main_clk_rst_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "io_clk_rst_vif", cfg.io_clk_rst_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get io_clk_rst_vif from uvm_config_db")
+    if (!uvm_config_db#(virtual clk_rst_if)::get(
+        this, "", "io_clk_rst_vif", cfg.io_clk_rst_vif)) begin
+      `uvm_fatal(`gfn, "failed to get io_clk_rst_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "usb_clk_rst_vif", cfg.usb_clk_rst_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get usb_clk_rst_vif from uvm_config_db")
+    if (!uvm_config_db#(virtual clk_rst_if)::get(
+        this, "", "usb_clk_rst_vif", cfg.usb_clk_rst_vif)) begin
+      `uvm_fatal(`gfn, "failed to get usb_clk_rst_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "aon_clk_rst_vif", cfg.aon_clk_rst_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get aon_clk_rst_vif from uvm_config_db")
+    if (!uvm_config_db#(virtual clk_rst_if)::get(
+        this, "", "aon_clk_rst_vif", cfg.aon_clk_rst_vif)) begin
+      `uvm_fatal(`gfn, "failed to get aon_clk_rst_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(virtual clkmgr_idle_if)::get(this, "", "clkmgr_idle_vif", cfg.clkmgr_idle_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get clkmgr_idle_vif from uvm_config_db")
-    end
-    if (!uvm_config_db#(clkmgr_pwrmgr_vif)::get(this, "", "clkmgr_pwrmgr_vif", cfg.clkmgr_pwrmgr_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get clkmgr_pwrmgr_vif from uvm_config_db")
+    if (!uvm_config_db#(virtual clkmgr_if)::get(
+        this, "", "clkmgr_vif", cfg.clkmgr_vif)) begin
+      `uvm_fatal(`gfn, "failed to get clkmgr_vif from uvm_config_db")
     end
   endfunction
 
