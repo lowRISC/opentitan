@@ -6,6 +6,7 @@ import logging as log
 import pprint
 import random
 import shlex
+from pathlib import Path
 
 from LauncherFactory import get_launcher
 from sim_utils import get_cov_summary_table
@@ -143,8 +144,11 @@ class Deploy():
         # 'aes:default', 'uart:default' builds.
         self.full_name = self.sim_cfg.name + ":" + self.qual_name
 
-        # Job name is used to group the job by cfg and target.
-        self.job_name = "{}_{}".format(self.sim_cfg.name, self.target)
+        # Job name is used to group the job by cfg and target. The scratch path
+        # directory name is assumed to be uniquified, in case there are more
+        # than one sim_cfgs with the same name.
+        self.job_name = "{}_{}".format(
+            Path(self.sim_cfg.scratch_path).name, self.target)
 
         # Input directories (other than self) this job depends on.
         self.input_dirs = []
@@ -316,8 +320,7 @@ class CompileSim(Deploy):
 
         # 'build_mode' is used as a substitution variable in the HJson.
         self.build_mode = self.name
-        self.job_name = "{}_{}_{}".format(self.sim_cfg.name, self.target,
-                                          self.build_mode)
+        self.job_name += f"_{self.build_mode}"
         if self.sim_cfg.cov:
             self.output_dirs += [self.cov_db_dir]
         self.pass_patterns = self.build_pass_patterns
@@ -370,8 +373,7 @@ class CompileOneShot(Deploy):
 
         # 'build_mode' is used as a substitution variable in the HJson.
         self.build_mode = self.name
-        self.job_name = "{}_{}_{}".format(self.sim_cfg.name, self.target,
-                                          self.build_mode)
+        self.job_name += f"_{self.build_mode}"
         self.fail_patterns = self.build_fail_patterns
 
 
@@ -433,8 +435,7 @@ class RunTest(Deploy):
         self.build_mode = self.test_obj.build_mode.name
         self.qual_name = self.run_dir_name + "." + str(self.seed)
         self.full_name = self.sim_cfg.name + ":" + self.qual_name
-        self.job_name = "{}_{}_{}".format(self.sim_cfg.name, self.target,
-                                          self.build_mode)
+        self.job_name += f"_{self.build_mode}"
         if self.sim_cfg.cov:
             self.output_dirs += [self.cov_db_test_dir]
 
