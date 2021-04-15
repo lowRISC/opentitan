@@ -146,8 +146,8 @@ module csrng_state_db import csrng_pkg::*; #(
   assign reg_rd_ptr_inc = state_db_reg_rd_sel_i;
 
   assign reg_rd_ptr_d =
-         !state_db_enable_i ? 4'hf :
-         !state_db_lc_en_i ? 4'hf :
+         (!state_db_enable_i) ? 4'hf :
+         (!state_db_lc_en_i) ? 4'hf :
          (reg_rd_ptr_q == 4'he) ? '0 :
          state_db_reg_rd_id_pulse_i ? '0 :
          reg_rd_ptr_inc ? (reg_rd_ptr_q+1) :
@@ -183,9 +183,17 @@ module csrng_state_db import csrng_pkg::*; #(
 
   assign state_db_write = state_db_enable_i && state_db_wr_req_i;
 
-  assign state_db_sts_ack_d = state_db_write;
-  assign state_db_sts_sts_d = state_db_sts;
-  assign state_db_sts_id_d = state_db_id;
+  assign state_db_sts_ack_d =
+         (!state_db_enable_i) ? '0 :
+         state_db_write;
+
+  assign state_db_sts_sts_d =
+         (!state_db_enable_i) ? '0 :
+         state_db_sts;
+
+  assign state_db_sts_id_d =
+         (!state_db_enable_i) ? '0 :
+         state_db_id;
 
   assign state_db_sts_ack_o = state_db_sts_ack_q;
   assign state_db_sts_sts_o = state_db_sts_sts_q;

@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description: csrng instantiation request state machine module
+// Description: csrng app cmd request state machine module
 //
-//   handles instantiation requests from all requesting interfaces
+//  - handles all app cmd requests from all requesting interfaces
 
 module csrng_main_sm import csrng_pkg::*; (
   input logic                clk_i,
   input logic                rst_ni,
 
-   // ins req interface
+  input logic                enable_i,
   input logic                acmd_avail_i,
   output logic               acmd_accept_o,
   output logic               acmd_hdr_capt_o,
@@ -192,6 +192,10 @@ module csrng_main_sm import csrng_pkg::*; (
       end
       default: state_d = Error;
     endcase
+    // Master override for FSM
+    if (!enable_i) begin
+      state_d = Idle;
+    end
   end
 
 endmodule

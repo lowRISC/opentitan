@@ -284,14 +284,17 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     assign v_first = genreq_v + 1;
   end
 
-  assign v_ctr_d = v_ctr_load ? v_first[CtrLen-1:0] :
-                   v_ctr_inc  ? (v_ctr_q + 1) :
-                   v_ctr_q;
+  assign v_ctr_d =
+                  (!ctr_drbg_gen_enable_i) ? '0 :
+                  v_ctr_load ? v_first[CtrLen-1:0] :
+                  v_ctr_inc  ? (v_ctr_q + 1) :
+                  v_ctr_q;
 
   assign v_sized = {v_first[BlkLen-1:CtrLen],v_ctr_q};
 
   // interation counter
   assign interate_ctr_d =
+         (!ctr_drbg_gen_enable_i) ? '0 :
          interate_ctr_done ? '0 :
          interate_ctr_inc ? (interate_ctr_q + 1) :
          interate_ctr_q;

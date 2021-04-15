@@ -155,19 +155,26 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   assign cmd_len = sfifo_cmd_rdata[7:4];
 
   // capture the length of csrng command
-  assign cmd_len_d = cmd_arb_sop_o ? cmd_len :
+  assign cmd_len_d =
+         (!cs_enable_i) ? '0 :
+         cmd_arb_sop_o ? cmd_len :
          cmd_len_dec ? (cmd_len_q-1) :
          cmd_len_q;
 
   // for gen commands, capture information from the orignal command for use later
-  assign cmd_gen_flag_d = cmd_gen_1st_req ? (sfifo_cmd_rdata[2:0] == GEN) :
+  assign cmd_gen_flag_d =
+         (!cs_enable_i) ? '0 :
+         cmd_gen_1st_req ? (sfifo_cmd_rdata[2:0] == GEN) :
          cmd_gen_flag_q;
 
-  assign cmd_gen_cnt_d = cmd_gen_1st_req ? sfifo_cmd_rdata[30:12] :
+  assign cmd_gen_cnt_d =
+         (!cs_enable_i) ? '0 :
+         cmd_gen_1st_req ? sfifo_cmd_rdata[30:12] :
          cmd_gen_cnt_dec ? (cmd_gen_cnt_q-1) :
          cmd_gen_cnt_q;
 
   assign cmd_gen_cmd_d =
+         (!cs_enable_i) ? '0 :
          cmd_gen_1st_req ? {sfifo_cmd_rdata[11:0]} :
          cmd_gen_cmd_q;
 
@@ -357,10 +364,17 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   // ack logic
   //---------------------------------------------------------
 
-  assign cmd_ack_d = cmd_final_ack;
+  assign cmd_ack_d =
+         (!cs_enable_i) ? '0 :
+         cmd_final_ack;
+
   assign cmd_stage_ack_o = cmd_ack_q;
 
-  assign cmd_ack_sts_d = cmd_final_ack ? cmd_ack_sts_i : cmd_ack_sts_q;
+  assign cmd_ack_sts_d =
+         (!cs_enable_i) ? '0 :
+         cmd_final_ack ? cmd_ack_sts_i :
+         cmd_ack_sts_q;
+
   assign cmd_stage_ack_sts_o = cmd_ack_sts_q;
 
 endmodule

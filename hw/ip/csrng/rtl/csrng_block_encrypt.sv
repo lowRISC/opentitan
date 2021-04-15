@@ -165,7 +165,10 @@ module csrng_block_encrypt #(
   assign block_encrypt_cmd_o = sfifo_blkenc_cmd;
   assign block_encrypt_id_o = sfifo_blkenc_id;
   assign block_encrypt_v_o = !aes_cipher_core_enable ? sfifo_blkenc_v : cipher_data_out;
-  assign cipher_out_ready = block_encrypt_rdy_i ? aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
+  assign cipher_out_ready =
+         (!block_encrypt_enable_i) ? aes_pkg::SP2V_HIGH : // flush out AES in halt case
+         block_encrypt_rdy_i ? aes_pkg::SP2V_HIGH :
+         aes_pkg::SP2V_LOW;
 
   assign block_encrypt_sfifo_blkenc_err_o =
          {(sfifo_blkenc_push && sfifo_blkenc_full),

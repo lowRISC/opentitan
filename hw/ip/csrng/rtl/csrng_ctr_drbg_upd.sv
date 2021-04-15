@@ -310,14 +310,17 @@ module csrng_ctr_drbg_upd #(
     assign v_first = sfifo_updreq_v + 1;
   end
 
-  assign v_ctr_d = v_ctr_load ? v_first[CtrLen-1:0] :
-                   v_ctr_inc  ? (v_ctr_q + 1) :
-                   v_ctr_q;
+  assign v_ctr_d =
+                  (!ctr_drbg_upd_enable_i) ? '0 :
+                  v_ctr_load ? v_first[CtrLen-1:0] :
+                  v_ctr_inc  ? (v_ctr_q + 1) :
+                  v_ctr_q;
 
   assign     v_sized = {v_first[BlkLen-1:CtrLen],v_ctr_q};
 
   // interation counter
   assign     interate_ctr_d =
+             (!ctr_drbg_upd_enable_i) ? '0 :
              interate_ctr_done ? '0 :
              interate_ctr_inc ? (interate_ctr_q + 1) :
              interate_ctr_q;
@@ -489,6 +492,7 @@ module csrng_ctr_drbg_upd #(
   assign concat_outblk_shifted_value = {concat_outblk_q, {BlkLen{1'b0}}};
 
   assign concat_outblk_d =
+         (!ctr_drbg_upd_enable_i) ? '0 :
          sfifo_bencack_pop ? {concat_outblk_q[SeedLen-1:BlkLen],sfifo_bencack_v} :
          concat_outblk_shift ? concat_outblk_shifted_value[SeedLen-1:0] :
          concat_outblk_q;
@@ -499,14 +503,22 @@ module csrng_ctr_drbg_upd #(
 
   // concatination counter
   assign concat_ctr_d =
+         (!ctr_drbg_upd_enable_i) ? '0 :
          concat_ctr_done ? '0 :
          concat_ctr_inc ? (concat_ctr_q + 1) :
          concat_ctr_q;
 
   assign concat_ctr_done = (int'(concat_ctr_q) >= (SeedLen/BlkLen));
 
-  assign concat_inst_id_d = sfifo_bencack_pop ? sfifo_bencack_inst_id : concat_inst_id_q;
-  assign concat_ccmd_d = sfifo_bencack_pop ? sfifo_bencack_ccmd : concat_ccmd_q;
+  assign concat_inst_id_d =
+         (!ctr_drbg_upd_enable_i) ? '0 :
+         sfifo_bencack_pop ? sfifo_bencack_inst_id :
+         concat_inst_id_q;
+
+  assign concat_ccmd_d =
+         (!ctr_drbg_upd_enable_i) ? '0 :
+         sfifo_bencack_pop ? sfifo_bencack_ccmd :
+         concat_ccmd_q;
 
   //--------------------------------------------
   // state machine to receive values from block_encrypt
