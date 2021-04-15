@@ -18,6 +18,20 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
 
   `uvm_object_new
 
+  // Knobs & Weights
+  uint                 enable_pct, auto_req_mode_pct;
+
+  rand bit             enable;
+  rand hw_req_mode_e   hw_req_mode;
+
+  // Constraints
+  constraint c_enable {enable dist { 1 :/ enable_pct,
+                                     0:/ (100 - enable_pct) };}
+
+  // boot_req_mode_pct is (100 - auto_req_mode_pct)
+  constraint c_hw_req_mode {hw_req_mode dist { AutoReqMode :/ auto_req_mode_pct,
+                                               BootReqMode :/ (100 - auto_req_mode_pct) };}
+
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = edn_env_pkg::LIST_OF_ALERTS;
     super.initialize(csr_base_addr);
@@ -37,6 +51,20 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
         num_interrupts = ral.intr_state.get_n_used_bits();
       end
     end
+  endfunction
+
+  virtual function string convert2string();
+    string str = "";
+    str = {str, "\n"};
+    str = {str,  $sformatf("\n\t |************** edn_env_cfg *******************| \t")              };
+    str = {str,  $sformatf("\n\t |***** enable                : %10d *****| \t", enable)            };
+    str = {str,  $sformatf("\n\t |***** hw_req_mode          : %10s *****| \t", hw_req_mode.name()) };
+    str = {str,  $sformatf("\n\t |---------- knobs -----------------------------| \t")              };
+    str = {str,  $sformatf("\n\t |***** enable_pct            : %10d *****| \t", enable_pct)        };
+    str = {str,  $sformatf("\n\t |***** auto_req_mode_pct     : %10d *****| \t", auto_req_mode_pct) };
+    str = {str,  $sformatf("\n\t |**********************************************| \t")              };
+    str = {str, "\n"};
+    return str;
   endfunction
 
 endclass

@@ -48,6 +48,7 @@
   tests: [
     {
       name: edn_smoke
+      uvm_test: edn_smoke_test
       uvm_test_seq: edn_smoke_vseq
     }
 

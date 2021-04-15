@@ -30,6 +30,11 @@ package edn_env_pkg;
     FifoErr    = 1
   } edn_intr_e;
 
+  typedef enum int {
+    AutoReqMode = 1,
+    BootReqMode = 2
+  } hw_req_mode_e;
+
   // package sources
   `include "edn_env_cfg.sv"
   `include "edn_env_cov.sv"
