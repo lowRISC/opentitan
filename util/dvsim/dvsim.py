@@ -31,9 +31,9 @@ from pathlib import Path
 
 import Launcher
 import LauncherFactory
+import LocalLauncher
 from CfgFactory import make_cfg
 from Deploy import RunTest
-from Scheduler import Scheduler
 from Timer import Timer
 from utils import (TS_FORMAT, TS_FORMAT_LONG, VERBOSE, rm_path,
                    run_cmd_with_timeout)
@@ -327,7 +327,8 @@ def parse_args():
                       help=('Run only up to N builds/tests at a time. '
                             'Default value 16, unless the DVSIM_MAX_PARALLEL '
                             'environment variable is set, in which case that '
-                            'is used.'))
+                            'is used. Only applicable when launching jobs '
+                            'locally.'))
 
     pathg = parser.add_argument_group('File management')
 
@@ -645,7 +646,7 @@ def main():
 
     # Register the common deploy settings.
     Timer.print_interval = args.print_interval
-    Scheduler.max_parallel = args.max_parallel
+    LocalLauncher.LocalLauncher.max_parallel = args.max_parallel
     Launcher.Launcher.max_odirs = args.max_odirs
     LauncherFactory.set_launcher_type(args.local)
 
