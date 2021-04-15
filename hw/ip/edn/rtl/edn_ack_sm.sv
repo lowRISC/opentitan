@@ -9,6 +9,7 @@ module edn_ack_sm (
   input logic                clk_i,
   input logic                rst_ni,
 
+  input logic                enable_i,
   input logic                req_i,
   output logic               ack_o,
   input logic                fifo_not_empty_i,
@@ -69,16 +70,22 @@ module edn_ack_sm (
     ack_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
-        if (req_i) begin
-          if (fifo_not_empty_i) begin
-            fifo_pop_o = 1'b1;
+        if (enable_i) begin
+          if (req_i) begin
+            if (fifo_not_empty_i) begin
+              fifo_pop_o = 1'b1;
+            end
+            state_d = DataWait;
           end
-          state_d = DataWait;
         end
       end
       DataWait: begin
-        if (fifo_not_empty_i) begin
-          state_d = AckPls;
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (fifo_not_empty_i) begin
+            state_d = AckPls;
+          end
         end
       end
       AckPls: begin
