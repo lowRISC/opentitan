@@ -230,11 +230,6 @@ class Launcher:
                     return pattern
             return None
 
-        def _get_n_lines(pos, num):
-            "Helper function that returns next N lines starting at pos index."
-
-            return ''.join(lines[pos:pos + num - 1]).strip()
-
         if self.deploy.dry_run:
             return "P", None
 
@@ -263,9 +258,10 @@ class Launcher:
                 if chk_failed:
                     if _find_patterns(self.deploy.fail_patterns, line):
                         # If failed, then nothing else to do. Just return.
+                        # Privide some extra lines for context.
                         return "F", ErrorMessage(line_number=cnt + 1,
                                                  message=line.strip(),
-                                                 context=[])
+                                                 context=lines[cnt:cnt + 5])
 
                 if chk_passed:
                     pattern = _find_patterns(pass_patterns, line)
@@ -277,14 +273,14 @@ class Launcher:
         # exit code for whatever reason, then show the last 10 lines of the log
         # as the failure message, which might help with the debug.
         if self.exit_code != 0:
-            return "F", ErrorMessage(line_number=max(1, len(lines) - 10),
+            return "F", ErrorMessage(line_number=None,
                                      message="Job returned non-zero exit code",
-                                     context=[])
+                                     context=lines[-10:])
         if chk_passed:
             return "F", ErrorMessage(
-                line_number=max(1, len(lines) - 10),
+                line_number=None,
                 message=f"Some pass patterns missing: {pass_patterns}",
-                context=[],
+                context=lines[-10:],
             )
         return "P", None
 
