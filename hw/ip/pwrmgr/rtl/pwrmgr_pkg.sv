@@ -25,7 +25,7 @@ package pwrmgr_pkg;
   // pwrmgr to ast
   typedef struct packed {
     logic main_pd_n;
-    logic pwr_clamp_early;
+    logic pwr_clamp_env;
     logic pwr_clamp;
     logic slow_clk_en;
     logic core_clk_en;
