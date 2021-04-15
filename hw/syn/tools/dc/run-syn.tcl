@@ -84,6 +84,21 @@ set DEFINE "PRIM_DEFAULT_IMPL=${PRIM_DEFAULT_IMPL}+${PRIM_STD_CELL_VARIANT}"
 set PARAMS ""
 
 ###########################
+##   Env var file        ##
+###########################
+
+set fp [open "${BUILD_DIR}/env_variables.tcl" w+]
+puts $fp "set ::env(INTERACTIVE) 1"
+puts $fp "set ::env(syn_root) $syn_root"
+puts $fp "set ::env(foundry_root) $foundry_root"
+puts $fp "set ::env(SV_FLIST) $SV_FLIST"
+puts $fp "set ::env(BUILD_DIR) $BUILD_DIR"
+puts $fp "set ::env(DUT) $DUT"
+puts $fp "set ::env(CONSTRAINT) $CONSTRAINT"
+puts $fp "set ::env(FOUNDRY_CONSTRAINT) $FOUNDRY_CONSTRAINT"
+close $fp
+
+###########################
 ##   ELABORATE DESIGN    ##
 ###########################
 
