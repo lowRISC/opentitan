@@ -24,9 +24,11 @@ module prim_generic_usb_diff_rx #(
 
   logic unused_pullup_p_en, unused_pullup_n_en;
   logic [CalibW-1:0] unused_calibration;
+  logic unused_core_pok;
 
   assign unused_calibration = calibration_i;
   assign unused_pullup_p_en = pullup_p_en_i;
   assign unused_pullup_n_en = pullup_n_en_i;
+  assign unused_core_pok = core_pok_i;
 
 endmodule : prim_generic_usb_diff_rx
