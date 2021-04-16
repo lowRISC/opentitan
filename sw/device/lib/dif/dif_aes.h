@@ -5,11 +5,6 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_AES_H_
 #define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_AES_H_
 
-/**
- * @file
- * @brief <a href="/hw/ip/aes/doc/">AES</a> Device Interface Functions
- */
-
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -21,6 +16,10 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ *
+ * @file
+ * @brief <a href="/hw/ip/aes/doc/">AES</a> Device Interface Functions
+ *
  * This API assumes transactional nature of work, where the peripheral is
  * configured once per message (data consisting of 1..N 128-bit blocks), and
  * then "de-initialised" when this message has been fully encrypted/decrypted.
@@ -212,6 +211,14 @@ typedef enum dif_aes_result {
    * When this value is returned, no hardware operations occurred.
    */
   kDifAesBadArg = 2,
+  /**
+   * Device is busy, and cannot perform the requested operation.
+   */
+  kDifAesBusy,
+  /**
+   * The AES unit has no valid output.
+   */
+  kDifAesOutputInvalid,
 } dif_aes_result_t;
 
 /**
@@ -227,31 +234,6 @@ DIF_WARN_UNUSED_RESULT
 dif_aes_result_t dif_aes_init(dif_aes_params_t params, dif_aes_t *aes);
 
 /**
- * The result of a AES reset operation.
- */
-typedef enum dif_aes_reset_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifAesResetOk = kDifAesOk,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifAesResetError = kDifAesError,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifAesResetBadArg = kDifAesBadArg,
-  /**
-   * Device is busy, and cannot perform the requested operation.
-   */
-  kDifAesResetBusy,
-} dif_aes_reset_result_t;
-
-/**
  * Resets an instance of AES.
  *
  * Clears the internal state along with the interface registers.
@@ -260,32 +242,7 @@ typedef enum dif_aes_reset_result {
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_aes_reset_result_t dif_aes_reset(const dif_aes_t *aes);
-
-/**
- * The result of a AES start operation.
- */
-typedef enum dif_aes_start_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifAesStartOk = kDifAesOk,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifAesStartError = kDifAesError,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifAesStartBadArg = kDifAesBadArg,
-  /**
-   * Device is busy, and cannot perform the requested operation.
-   */
-  kDifAesStartBusy,
-} dif_aes_start_result_t;
+dif_aes_result_t dif_aes_reset(const dif_aes_t *aes);
 
 /**
  * Begins an AES transaction in ECB mode.
@@ -299,18 +256,17 @@ typedef enum dif_aes_start_result {
  * Note: it is discouraged to use this cipher mode, due to inpractical amount
  *       of different keys required to encrypt/decrypt multi-block messages.
  *
- * The peripheral must be in IDLE state for this operation to take
- * effect, and will return `kDifAesStartBusy` if this condition is not
- * met.
+ * The peripheral must be in IDLE state for this operation to take effect, and
+ * will return `kDifAesBusy` if this condition is not met.
  *
  * @param aes AES state data.
  * @param transaction Configuration data.
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_aes_start_result_t dif_aes_start_ecb(
-    const dif_aes_t *aes, const dif_aes_transaction_t *transaction,
-    dif_aes_key_share_t key);
+dif_aes_result_t dif_aes_start_ecb(const dif_aes_t *aes,
+                                   const dif_aes_transaction_t *transaction,
+                                   dif_aes_key_share_t key);
 
 /**
  * Begins an AES transaction in CBC mode.
@@ -335,9 +291,9 @@ dif_aes_start_result_t dif_aes_start_ecb(
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_aes_start_result_t dif_aes_start_cbc(
-    const dif_aes_t *aes, const dif_aes_transaction_t *transaction,
-    dif_aes_key_share_t key, dif_aes_iv_t iv);
+dif_aes_result_t dif_aes_start_cbc(const dif_aes_t *aes,
+                                   const dif_aes_transaction_t *transaction,
+                                   dif_aes_key_share_t key, dif_aes_iv_t iv);
 
 /**
  * Begins an AES transaction in CTR mode.
@@ -360,34 +316,9 @@ dif_aes_start_result_t dif_aes_start_cbc(
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_aes_start_result_t dif_aes_start_ctr(
-    const dif_aes_t *aes, const dif_aes_transaction_t *transaction,
-    dif_aes_key_share_t key, dif_aes_iv_t iv);
-
-/**
- * The result of an AES end operation.
- */
-typedef enum dif_aes_end_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifAesEndOk = kDifAesOk,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifAesEndError = kDifAesError,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifAesEndBadArg = kDifAesBadArg,
-  /**
-   * Device is busy, and cannot perform the requested operation.
-   */
-  kDifAesEndBusy,
-} dif_aes_end_result_t;
+dif_aes_result_t dif_aes_start_ctr(const dif_aes_t *aes,
+                                   const dif_aes_transaction_t *transaction,
+                                   dif_aes_key_share_t key, dif_aes_iv_t iv);
 
 /**
  * Ends an AES transaction.
@@ -402,32 +333,7 @@ typedef enum dif_aes_end_result {
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_aes_end_result_t dif_aes_end(const dif_aes_t *aes);
-
-/**
- * The result of an AES load data operation.
- */
-typedef enum dif_aes_load_data_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifAesLoadDataOk = kDifAesOk,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifAesLoadDataError = kDifAesError,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifAesLoadDataBadArg = kDifAesBadArg,
-  /**
-   * Device is busy, and cannot perform the requested operation.
-   */
-  kDifAesLoadDataBusy,
-} dif_aes_load_data_result_t;
+dif_aes_result_t dif_aes_end(const dif_aes_t *aes);
 
 /**
  * Loads AES Input Data.
@@ -443,33 +349,8 @@ typedef enum dif_aes_load_data_result {
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_aes_load_data_result_t dif_aes_load_data(const dif_aes_t *aes,
-                                             const dif_aes_data_t data);
-
-/**
- * The result of an AES data read operation.
- */
-typedef enum dif_aes_read_data_result {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  kDifAesReadOutputOk = kDifAesOk,
-  /**
-   * Indicates some unspecified failure.
-   */
-  kDifAesReadOutputError = kDifAesError,
-  /**
-   * Indicates that some parameter passed into a function failed a
-   * precondition.
-   *
-   * When this value is returned, no hardware operations occurred.
-   */
-  kDifAesReadOutputBadArg = kDifAesBadArg,
-  /**
-   * The AES unit has no valid output.
-   */
-  kDifAesReadOutputInvalid,
-} dif_aes_read_output_result_t;
+dif_aes_result_t dif_aes_load_data(const dif_aes_t *aes,
+                                   const dif_aes_data_t data);
 
 /**
  * Reads AES Output Data.
@@ -483,8 +364,8 @@ typedef enum dif_aes_read_data_result {
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_aes_read_output_result_t dif_aes_read_output(const dif_aes_t *aes,
-                                                 dif_aes_data_t *data);
+dif_aes_result_t dif_aes_read_output(const dif_aes_t *aes,
+                                     dif_aes_data_t *data);
 
 /**
  * AES Trigger flags.
