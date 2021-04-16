@@ -35,9 +35,20 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   input tl_h2d_t h2d,
   input tl_d2h_t d2h
 );
+<%
+  addr_width = rb.get_addr_width()
+  addr_msb  = addr_width - 1
+  hro_regs_list = [r for r in rb.flat_regs if not r.hwaccess.allows_write()]
+  num_hro_regs = len(hro_regs_list)
+  hro_map = {r.offset: (idx, r) for idx, r in enumerate(hro_regs_list)}
+%>\
 
+// Currently FPV csr assertion only support HRO registers.
+% if num_hro_regs > 0:
 `ifndef VERILATOR
 `ifndef SYNTHESIS
+
+  parameter bit[3:0] MAX_A_SOURCE = 10; // used for FPV only to reduce runtime
 
   typedef struct packed {
     logic [TL_DW-1:0] wr_data;
@@ -56,33 +67,43 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   assign a_mask_bit[23:16] = h2d.a_mask[2] ? '1 : '0;
   assign a_mask_bit[31:24] = h2d.a_mask[3] ? '1 : '0;
 
-<%
-  addr_width = rb.get_addr_width()
-  addr_msb  = addr_width - 1
-  block_size = ((rb.flat_regs[-1].offset) >> 2) + 1
-%>\
+  bit [${addr_msb}-2:0] hro_idx; // index for exp_vals
+  bit [${addr_msb}:0]   normalized_addr;
+
+  // Map register address with hro_idx in exp_vals array.
+  always_comb begin: decode_hro_addr_to_idx
+    unique case (pend_trans[d2h.d_source].addr)
+% for idx, r in hro_map.values():
+      ${r.offset}: hro_idx <= ${idx};
+% endfor
+      // If the register is not a HRO register, the write data will all update to this default idx.
+      default: hro_idx <= ${num_hro_regs + 1};
+    endcase
+  end
+
   // store internal expected values for HW ReadOnly registers
-  logic [TL_DW-1:0] exp_vals[${block_size}];
-  pend_item_t [2**TL_AIW-1:0] pend_trans;
+  logic [TL_DW-1:0] exp_vals[${num_hro_regs + 1}];
+
+  `ifdef FPV_ON
+    pend_item_t [MAX_A_SOURCE:0] pend_trans;
+  `else
+    pend_item_t [2**TL_AIW-1:0] pend_trans;
+  `endif
 
   // normalized address only take the [${addr_msb}:2] address from the TLUL a_address
-  bit [${addr_msb}:0] normalized_addr;
   assign normalized_addr = {h2d.a_address[${addr_msb}:2], 2'b0};
 
-<%
-  hro_regs_list = [r for r in rb.flat_regs if not r.hwaccess.allows_write()]
-%>\
-% if len(hro_regs_list) > 0:
+% if num_hro_regs > 0:
   // for write HRO registers, store the write data into exp_vals
   always_ff @(negedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
        pend_trans <= '0;
   % for hro_reg in hro_regs_list:
-       exp_vals[${hro_reg.offset >> 2}] <= ${hro_reg.resval};
+       exp_vals[${hro_map.get(hro_reg.offset)[0]}] <= ${hro_reg.resval};
   % endfor
     end else begin
       if (h2d.a_valid && d2h.a_ready) begin
-        pend_trans[h2d.a_source].addr <= normalized_addr >> 2;
+        pend_trans[h2d.a_source].addr <= normalized_addr;
         if (h2d.a_opcode inside {PutFullData, PutPartialData}) begin
           pend_trans[h2d.a_source].wr_data <= h2d.a_data & a_mask_bit;
           pend_trans[h2d.a_source].wr_pending <= 1'b1;
@@ -93,7 +114,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
       if (d2h.d_valid) begin
         if (pend_trans[d2h.d_source].wr_pending == 1) begin
           if (!d2h.d_error) begin
-            exp_vals[pend_trans[d2h.d_source].addr] <= pend_trans[d2h.d_source].wr_data;
+            exp_vals[hro_idx] <= pend_trans[d2h.d_source].wr_data;
           end
           pend_trans[d2h.d_source].wr_pending <= 1'b0;
         end
@@ -120,14 +141,17 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
 %>\
     % if reg_mask != 0:
 <%  reg_mask_hex = format(reg_mask, 'x') %>\
-    `ASSERT(${r_name}_rd_A, d2h.d_valid && pend_trans[d2h.d_source].rd_pending &&
-           pend_trans[d2h.d_source].addr == (${addr_width}'h${reg_addr_hex} >> 2) |->
-           d2h.d_error ||
-           (d2h.d_data & 'h${reg_mask_hex}) == (exp_vals[${reg_addr >> 2}] & 'h${reg_mask_hex}))
+  `ASSERT(${r_name}_rd_A, d2h.d_valid && pend_trans[d2h.d_source].rd_pending &&
+         pend_trans[d2h.d_source].addr == ${addr_width}'h${reg_addr_hex} |->
+         d2h.d_error ||
+         (d2h.d_data & 'h${reg_mask_hex}) == (exp_vals[${hro_map.get(reg_addr)[0]}] & 'h${reg_mask_hex}))
 
     % endif
   % endfor
 % endif
+
+  // This FPV only assumption is to reduce the FPV runtime.
+  `ASSUME_FPV(TlulSource_M, h2d.a_source >=  0 && h2d.a_source <= MAX_A_SOURCE, clk_i, !rst_ni)
 
   `ifdef UVM
     initial forever begin
@@ -140,8 +164,9 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
     end
   `endif
 
+`endif
+`endif
+% endif
+endmodule
 </%def>\
 ${construct_classes(block)}
-`endif
-`endif
-endmodule
