@@ -357,7 +357,7 @@ module spi_host
   assign sw_rst     = reg2hw.control.sw_rst.q;
   assign en_sw      = reg2hw.control.spien.q;
 
-  prim_generic_flop_2sync #(
+  prim_flop_2sync #(
     .Width(3)
   ) u_sync_stat_from_core (
     .clk_i,
@@ -366,7 +366,7 @@ module spi_host
     .q_o      ({     rx_stall,      tx_stall,      active})
   );
 
-  prim_generic_flop_2sync #(
+  prim_flop_2sync #(
     .Width(2)
   ) u_sync_en_to_core (
     .clk_i    (clk_core_i),

@@ -29,7 +29,7 @@ module pwm_cdc #(
 
   reg [31:0] common_sync_q;
 
-  prim_generic_flop_2sync #(
+  prim_flop_2sync #(
     .Width(32),
     .ResetValue(32'h0)
   ) u_common_sync (
@@ -79,7 +79,7 @@ module pwm_cdc #(
 
     reg [83:0] chan_sync_q;
 
-    prim_generic_flop_2sync #(
+    prim_flop_2sync #(
       .Width(84),
       .ResetValue(84'h0)
     ) u_common_sync (
