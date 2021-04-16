@@ -48,7 +48,7 @@ module sysrst_ctrl (
   logic pwrb_out_hw, key0_out_hw, key1_out_hw, key2_out_hw, ec_rst_l_hw, bat_disable_hw;
   logic pwrb_out_int, key0_out_int, key1_out_int, key2_out_int, bat_disable_int;
   logic sysrst_ctrl_combo_intr, sysrst_ctrl_key_intr;
-  logic nc_intg_err_o;//FIXME
+  logic unused_nc_intg_err;//FIXME
 
   //Always-on pins
   assign cio_ec_rst_out_l_en_o = 1'b1;
@@ -66,7 +66,7 @@ module sysrst_ctrl (
     .tl_o(tl_o),
     .reg2hw(reg2hw),
     .hw2reg(hw2reg),
-    .intg_err_o(nc_intg_err_o),
+    .intg_err_o(unused_nc_intg_err),
     .devmode_i  (1'b1)
   );
 
