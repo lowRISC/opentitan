@@ -1359,7 +1359,6 @@ module csrng_core import csrng_pkg::*; #(
 
   // es to cs halt request to reduce power spikes
   assign cs_aes_halt_d =
-         (!cs_enable) ? '0 :
          (ctr_drbg_upd_es_ack && ctr_drbg_gen_es_ack && block_encrypt_quiet);
 
   assign cs_aes_halt_o.cs_aes_halt_ack = cs_aes_halt_q;
