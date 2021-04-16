@@ -125,9 +125,9 @@
     },
 
     { struct: "pwr_flash",
-      type: "req_rsp",
+      type: "uni",
       name: "pwrmgr",
-      act:  "rsp",
+      act:  "req",
       package: "pwrmgr_pkg"
     },
 

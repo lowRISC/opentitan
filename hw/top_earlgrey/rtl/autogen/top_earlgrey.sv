@@ -473,8 +473,7 @@ module top_earlgrey #(
   logic       ram_ret_aon_intg_error;
   otp_ctrl_pkg::sram_otp_key_req_t [1:0] otp_ctrl_sram_otp_key_req;
   otp_ctrl_pkg::sram_otp_key_rsp_t [1:0] otp_ctrl_sram_otp_key_rsp;
-  pwrmgr_pkg::pwr_flash_req_t       pwrmgr_aon_pwr_flash_req;
-  pwrmgr_pkg::pwr_flash_rsp_t       pwrmgr_aon_pwr_flash_rsp;
+  pwrmgr_pkg::pwr_flash_t       pwrmgr_aon_pwr_flash;
   pwrmgr_pkg::pwr_rst_req_t       pwrmgr_aon_pwr_rst_req;
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_aon_pwr_rst_rsp;
   pwrmgr_pkg::pwr_clk_req_t       pwrmgr_aon_pwr_clk_req;
@@ -1608,8 +1607,7 @@ module top_earlgrey #(
       .pwr_otp_i(pwrmgr_aon_pwr_otp_rsp),
       .pwr_lc_o(pwrmgr_aon_pwr_lc_req),
       .pwr_lc_i(pwrmgr_aon_pwr_lc_rsp),
-      .pwr_flash_o(pwrmgr_aon_pwr_flash_req),
-      .pwr_flash_i(pwrmgr_aon_pwr_flash_rsp),
+      .pwr_flash_i(pwrmgr_aon_pwr_flash),
       .esc_rst_tx_i(alert_handler_esc_tx[3]),
       .esc_rst_rx_o(alert_handler_esc_rx[3]),
       .pwr_cpu_i(pwrmgr_aon_pwr_cpu),
@@ -1942,8 +1940,7 @@ module top_earlgrey #(
       .rma_req_i(flash_ctrl_rma_req),
       .rma_ack_o(flash_ctrl_rma_ack),
       .rma_seed_i(flash_ctrl_rma_seed),
-      .pwrmgr_i(pwrmgr_aon_pwr_flash_req),
-      .pwrmgr_o(pwrmgr_aon_pwr_flash_rsp),
+      .pwrmgr_o(pwrmgr_aon_pwr_flash),
       .keymgr_o(flash_ctrl_keymgr),
       .core_tl_i(flash_ctrl_core_tl_req),
       .core_tl_o(flash_ctrl_core_tl_rsp),

@@ -40,7 +40,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   output pwr_lc_req_t pwr_lc_o,
 
   // flash interface
-  input  pwr_flash_rsp_t pwr_flash_i,
+  input  pwr_flash_t pwr_flash_i,
 
   // processor interface
   input  pwr_cpu_t pwr_cpu_i,
@@ -100,7 +100,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   logic low_power_fall_through;
   logic low_power_abort;
 
-  pwr_flash_rsp_t flash_rsp;
+  pwr_flash_t flash_rsp;
   pwr_otp_rsp_t otp_rsp;
 
   ////////////////////////////

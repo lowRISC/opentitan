@@ -132,15 +132,9 @@ package pwrmgr_pkg;
 
   typedef struct packed {
     logic flash_idle;
-  } pwr_flash_rsp_t;
+  } pwr_flash_t;
 
-  // default value (for dangling ports)
-  parameter pwr_flash_req_t PWR_FLASH_REQ_DEFAULT = '{
-    flash_init: 1'b1
-  };
-
-  parameter pwr_flash_rsp_t PWR_FLASH_RSP_DEFAULT = '{
-    flash_done: 1'b1,
+  parameter pwr_flash_t PWR_FLASH_DEFAULT = '{
     flash_idle: 1'b1
   };
 

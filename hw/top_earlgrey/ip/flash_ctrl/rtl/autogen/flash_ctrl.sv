@@ -53,7 +53,7 @@ module flash_ctrl
   input        lc_ctrl_pkg::lc_tx_t rma_req_i,
   input        lc_ctrl_pkg::lc_flash_rma_seed_t rma_seed_i,
   output       lc_ctrl_pkg::lc_tx_t rma_ack_o,
-  output       pwrmgr_pkg::pwr_flash_rsp_t pwrmgr_o,
+  output       pwrmgr_pkg::pwr_flash_t pwrmgr_o,
   output       keymgr_flash_t keymgr_o,
 
   // IOs

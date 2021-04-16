@@ -90,7 +90,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   logic [PowerDomains-1:0] rst_lc_req_d, rst_sys_req_d;
   logic otp_init;
   logic lc_init;
-  logic flash_init_d;
   logic low_power_q, low_power_d;
 
   assign pd_n_rsts_asserted = pwr_rst_i.rst_lc_src_n[PowerDomains-1:1] == '0 &
@@ -183,7 +182,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
     rst_lc_req_d = rst_lc_req_q;
     rst_sys_req_d = rst_sys_req_q;
     reset_cause_d = reset_cause_q;
-    flash_init_d = 1'b0;
     low_power_d = low_power_q;
 
     unique case(state_q)
