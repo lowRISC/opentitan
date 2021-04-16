@@ -101,9 +101,9 @@ module spi_fwmode
   spi_byte_t txf_wdata;
 
   // SRAM FIFO control
-  typedef enum int {
-    FwModeRxFifo = 0,
-    FwModeTxFifo = 1
+  typedef enum logic {
+    FwModeRxFifo = 1'b0,
+    FwModeTxFifo = 1'b1
   } fwm_fifo_e;
 
   logic        [1:0] fwm_sram_req;
