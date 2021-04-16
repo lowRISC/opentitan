@@ -49,8 +49,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input lc_idle_i,
 
   // flash
-  output logic flash_init_o,
-  input flash_done_i,
   input flash_idle_i,
 
   // pinmux
@@ -231,15 +229,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
       FastPwrStateStrap: begin
         strap_o = ~strap_sampled;
-        state_d =  FastPwrStateFlashInit;
-      end
-
-      FastPwrStateFlashInit: begin
-        flash_init_d = 1'b1;
-
-        if (flash_done_i) begin
-          state_d = FastPwrStateAckPwrUp;
-        end
+        state_d =  FastPwrStateAckPwrUp;
       end
 
       FastPwrStateAckPwrUp: begin
@@ -366,17 +356,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   assign pwr_rst_o.rstreqs = reset_reqs_i;
 
   assign ips_clk_en_o = ip_clk_en_q;
-
-  prim_flop #(
-    .Width(1),
-    // TODO: Is a value of 1 correct here?
-    .ResetValue(1'b1)
-  ) u_reg_flash_init (
-    .clk_i,
-    .rst_ni,
-    .d_i(flash_init_d),
-    .q_o(flash_init_o)
-  );
 
   prim_flop #(
     .Width(1),

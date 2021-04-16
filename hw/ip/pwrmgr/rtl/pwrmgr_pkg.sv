@@ -130,13 +130,7 @@ package pwrmgr_pkg;
     lc_idle: 1'b1
   };
 
-  // flash to pwrmgr
   typedef struct packed {
-    logic flash_init;
-  } pwr_flash_req_t;
-
-  typedef struct packed {
-    logic flash_done;
     logic flash_idle;
   } pwr_flash_rsp_t;
 
@@ -192,7 +186,6 @@ package pwrmgr_pkg;
     FastPwrStateOtpInit,
     FastPwrStateLcInit,
     FastPwrStateStrap,
-    FastPwrStateFlashInit,
     FastPwrStateAckPwrUp,
     FastPwrStateActive,
     FastPwrStateDisClks,

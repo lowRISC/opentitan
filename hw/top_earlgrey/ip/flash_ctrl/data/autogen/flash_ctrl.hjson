@@ -268,6 +268,25 @@
   regwidth: "32",
   registers: {
     core: [
+      { name: "INIT",
+        desc: "Controller init register",
+        swaccess: "rw1s",
+        hwaccess: "hro",
+        fields: [
+          { bits: "0",
+            name: "VAL",
+            desc: '''
+              Initializes the flash controller.
+              During the initialization process, the flash controller reads out the root seeds
+              before allowing other usage of the flash controller.
+              '''
+            resval: "0"
+            tags: [// Dont init flash, it has several side effects on the status bits
+                   "excl:CsrAllTests:CsrExclWrite"],
+          },
+        ]
+      },
+
       { name: "CTRL_REGWEN",
         swaccess: "ro",
         hwaccess: "hwo",

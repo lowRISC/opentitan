@@ -53,7 +53,6 @@ module flash_ctrl
   input        lc_ctrl_pkg::lc_tx_t rma_req_i,
   input        lc_ctrl_pkg::lc_flash_rma_seed_t rma_seed_i,
   output       lc_ctrl_pkg::lc_tx_t rma_ack_o,
-  input        pwrmgr_pkg::pwr_flash_req_t pwrmgr_i,
   output       pwrmgr_pkg::pwr_flash_rsp_t pwrmgr_o,
   output       keymgr_flash_t keymgr_o,
 
@@ -388,8 +387,7 @@ module flash_ctrl
     .clk_otp_i,
     .rst_otp_ni,
 
-    .init_i(pwrmgr_i.flash_init),
-    .init_done_o(pwrmgr_o.flash_done),
+    .init_i(reg2hw.init),
     .provision_en_i(lc_seed_hw_rd_en == lc_ctrl_pkg::On),
 
     // interface to ctrl arb control ports
