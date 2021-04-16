@@ -770,7 +770,10 @@ module chip_earlgrey_asic (
     // D is used as an input only
     dio_out[DioUsbdevD],
     dio_oe[DioUsbdevD],
-    dio_attr[DioUsbdevD]
+    dio_attr[DioUsbdevD],
+    // Pullup/down
+    dio_attr[DioUsbdevDpPullup],
+    dio_attr[DioUsbdevDnPullup]
   };
 
   //////////////////////
