@@ -20,10 +20,10 @@ module prim_lc_sender (
   logic [lc_ctrl_pkg::TxWidth-1:0] lc_en, lc_en_out;
   assign lc_en = lc_ctrl_pkg::TxWidth'(lc_en_i);
 
-  prim_generic_flop #(
+  prim_flop #(
     .Width(lc_ctrl_pkg::TxWidth),
     .ResetValue(lc_ctrl_pkg::TxWidth'(lc_ctrl_pkg::Off))
-  ) u_prim_generic_flop (
+  ) u_prim_flop (
     .clk_i,
     .rst_ni,
     .d_i   ( lc_en     ),

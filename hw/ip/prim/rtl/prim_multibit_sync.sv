@@ -59,10 +59,10 @@ module prim_multibit_sync #(
   logic [NumChecks:0][Width-1:0]   data_check_d;
   logic [NumChecks-1:0][Width-1:0] data_check_q;
 
-  prim_generic_flop_2sync #(
+  prim_flop_2sync #(
     .Width(Width),
     .ResetValue(ResetValue)
-  ) i_prim_generic_flop_2sync (
+  ) i_prim_flop_2sync (
     .clk_i,
     .rst_ni,
     .d_i(data_i),

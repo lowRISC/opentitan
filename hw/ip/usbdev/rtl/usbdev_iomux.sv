@@ -126,7 +126,7 @@ module usbdev_iomux
   // D+/D- can be swapped based on a config register.
   assign pinflip = sys_reg2hw_config_i.pinflip.q;
 
-  prim_generic_clock_mux2 #(
+  prim_clock_mux2 #(
     .NoFpgaBufG(1)
   ) i_mux_tx_d_flip (
     .clk0_i (usb_tx_d_i),
@@ -134,7 +134,7 @@ module usbdev_iomux
     .sel_i  (pinflip),
     .clk_o  (cio_usb_d_flipped)
   );
-  prim_generic_clock_mux2 #(
+  prim_clock_mux2 #(
     .NoFpgaBufG(1)
   ) i_mux_dp_pull_flip (
     .clk0_i (usb_pullup_en_i),
@@ -142,7 +142,7 @@ module usbdev_iomux
     .sel_i  (pinflip),
     .clk_o  (cio_usb_dp_pullup_en)
   );
-  prim_generic_clock_mux2 #(
+  prim_clock_mux2 #(
     .NoFpgaBufG(1)
   ) i_mux_dn_pull_flip (
     .clk0_i (1'b0),
@@ -195,7 +195,7 @@ module usbdev_iomux
   // Clock muxes should be used here to achieve the best match between
   // rising and falling edges on an ASIC. This mismatch on the data line
   // degrades performance in the JK-KJ jitter test.
-  prim_generic_clock_mux2 #(
+  prim_clock_mux2 #(
     .NoFpgaBufG(1)
   ) i_mux_tx_d (
     .clk0_i (cio_usb_d_flipped),
@@ -203,7 +203,7 @@ module usbdev_iomux
     .sel_i  (sys_reg2hw_drive_i.en.q),
     .clk_o  (cio_usb_d_o)
   );
-  prim_generic_clock_mux2 #(
+  prim_clock_mux2 #(
     .NoFpgaBufG(1)
   ) i_mux_tx_se0 (
     .clk0_i (usb_tx_se0_i),
@@ -211,7 +211,7 @@ module usbdev_iomux
     .sel_i  (sys_reg2hw_drive_i.en.q),
     .clk_o  (cio_usb_se0_o)
   );
-  prim_generic_clock_mux2 #(
+  prim_clock_mux2 #(
     .NoFpgaBufG(1)
   ) i_mux_tx_oe (
     .clk0_i (usb_tx_oe_i),
