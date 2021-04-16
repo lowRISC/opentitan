@@ -1094,7 +1094,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // Window counter
   assign window_cntr_d =
-         (!es_enable) ? 1'b0 :
+         (!es_enable) ? '0 :
          health_test_clr ? '0 :
          health_test_done_pulse ? '0  :
          health_test_esbus_vld ? (window_cntr_q+1) :
