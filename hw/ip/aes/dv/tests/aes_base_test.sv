@@ -16,6 +16,14 @@ class aes_base_test extends cip_base_test #(
 
   //this will serve as the default setting.
   // overrides should happen in the specific testcase.
+
+  virtual function void end_of_elaboration_phase(uvm_phase phase);
+    super.end_of_elaboration_phase(phase);
+    if (uvm_top.get_report_verbosity_level() > UVM_LOW) begin
+      uvm_top.print_topology();
+    end
+  endfunction // end_of_elaboration
+
   virtual function void configure_env();
 
 
@@ -73,7 +81,7 @@ class aes_base_test extends cip_base_test #(
   //  010: malicous injection
   //  100: random resets
     cfg.error_types                 = 3'b111;
-
     cfg.config_error_pct            = 0;           // percentage of configuration errors
+    cfg.flip_rst_split_pct           = 60;
   endfunction
 endclass : aes_base_test
