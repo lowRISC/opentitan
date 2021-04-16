@@ -90,9 +90,6 @@ TEST_APPS_SELFCHECKING = [
         "name": "pmp_smoketest_tor",
     },
     {
-        "name": "sha256_test",
-    },
-    {
         "name": "usbdev_test",
         "targets": ["sim_verilator"],
     },

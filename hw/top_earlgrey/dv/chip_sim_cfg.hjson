@@ -224,9 +224,9 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_hmac_sha256_encr
+      name: chip_dif_hmac_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/sha256_test:1"]
+      sw_images: ["sw/device/tests/dif_hmac_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {

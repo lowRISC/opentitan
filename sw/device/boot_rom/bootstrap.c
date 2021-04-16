@@ -14,7 +14,6 @@
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/flash_ctrl.h"
-#include "sw/device/lib/runtime/check.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/check.h"
@@ -70,7 +69,12 @@ static int erase_flash(void) {
  */
 static void compute_sha256(const dif_hmac_t *hmac, const void *data, size_t len,
                            dif_hmac_digest_t *digest) {
-  CHECK(dif_hmac_mode_sha256_start(hmac) == kDifHmacOk);
+  const dif_hmac_transaction_t config = {
+      .digest_endianness = kDifHmacEndiannessLittle,
+      .message_endianness = kDifHmacEndiannessLittle,
+  };
+  CHECK(dif_hmac_mode_sha256_start(hmac, config) == kDifHmacOk,
+        "Error on hmac start.");
   const char *data8 = (const char *)data;
   size_t data_left = len;
   while (data_left > 0) {
@@ -85,10 +89,10 @@ static void compute_sha256(const dif_hmac_t *hmac, const void *data, size_t len,
     data_left -= bytes_sent;
   }
 
-  CHECK(dif_hmac_process(hmac) == kDifHmacOk);
+  CHECK(dif_hmac_process(hmac) == kDifHmacOk, "Error processing digest.");
   dif_hmac_digest_result_t digest_result = kDifHmacDigestProcessing;
   while (digest_result == kDifHmacDigestProcessing) {
-    digest_result = dif_hmac_digest_read(hmac, digest);
+    digest_result = dif_hmac_finish(hmac, digest);
   }
   CHECK(digest_result == kDifHmacDigestOk, "Error reading the digest.");
 }
@@ -212,8 +216,6 @@ int bootstrap(void) {
   dif_hmac_t hmac;
   dif_hmac_config_t config = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR),
-      .message_endianness = kDifHmacEndiannessBig,
-      .digest_endianness = kDifHmacEndiannessBig,
   };
   CHECK(dif_hmac_init(&config, &hmac) == kDifHmacOk,
         "Failed to configure HMAC.");
