@@ -20,7 +20,7 @@ module sysrst_ctrl_keyfsm #(
 
   logic trigger_q;
   logic trigger_h2l, trigger_l2h, trigger_l2l, trigger_h2h;
-  logic trigger_tgl, trigger_sty;
+  //logic trigger_tgl, trigger_sty;
 
   logic [TIMERBIT-1:0] timer_cnt_d, timer_cnt_q;
   logic timer_cnt_clr, timer_cnt_en;
@@ -37,8 +37,8 @@ module sysrst_ctrl_keyfsm #(
   assign trigger_l2h = (trigger_q == 1'b0) && (trigger_i == 1'b1);
   assign trigger_l2l = (trigger_q == 1'b0) && (trigger_i == 1'b0);
   assign trigger_h2h = (trigger_q == 1'b1) && (trigger_i == 1'b1);
-  assign trigger_tgl = trigger_q != trigger_i;
-  assign trigger_sty = trigger_q == trigger_i;
+  //assign trigger_tgl = trigger_q != trigger_i;
+  //assign trigger_sty = trigger_q == trigger_i;
 
   //five-state FSM
   //IDLE->WAITH2L->DONEH2L->WAITL2H->DONEL2H or
