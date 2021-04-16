@@ -120,15 +120,16 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [Clog2EsFifoDepth:0] sfifo_esfinal_depth;
   logic [(1+SeedLen)-1:0] sfifo_esfinal_wdata;
   logic [(1+SeedLen)-1:0] sfifo_esfinal_rdata;
+  logic                   sfifo_esfinal_upstream_push;
   logic                   sfifo_esfinal_push;
   logic                   sfifo_esfinal_pop;
   logic                   sfifo_esfinal_clr;
-  logic                   sfifo_esfinal_not_full;
   logic                   sfifo_esfinal_full;
   logic                   sfifo_esfinal_not_empty;
   logic [2:0]             sfifo_esfinal_err;
   logic [SeedLen-1:0]     esfinal_data;
   logic                   esfinal_fips_flag;
+  logic                   sfifo_esfinal_drop;
 
   logic                   any_active;
   logic                   any_fail_pulse;
@@ -368,6 +369,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    sha3_err_q, sha3_err_d;
   logic        cs_aes_halt_q, cs_aes_halt_d;
   logic [1:0]  es_enable_q, es_enable_d;
+  logic        sfifo_esfinal_pop_q, sfifo_esfinal_pop_d;
+  logic        sfifo_esfinal_full_q, sfifo_esfinal_full_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -383,6 +386,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_err_q            <= '0;
       cs_aes_halt_q         <= '0;
       es_enable_q           <= '0;
+      sfifo_esfinal_pop_q   <= '0;
+      sfifo_esfinal_full_q  <= '0;
     end else begin
       es_rate_cntr_q        <= es_rate_cntr_d;
       lfsr_incr_dly_q       <= lfsr_incr_dly_d;
@@ -396,6 +401,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_err_q            <= sha3_err_d;
       cs_aes_halt_q         <= cs_aes_halt_d;
       es_enable_q           <= es_enable_d;
+      sfifo_esfinal_pop_q   <= sfifo_esfinal_pop_d;
+      sfifo_esfinal_full_q  <= sfifo_esfinal_full_d;
     end
 
   assign es_enable_d = reg2hw.conf.enable.q;
@@ -2028,7 +2035,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni         (rst_ni),
     .clr_i          (sfifo_esfinal_clr),
     .wvalid_i       (sfifo_esfinal_push),
-    .wready_o       (sfifo_esfinal_not_full),
+    .wready_o       (),
     .wdata_i        (sfifo_esfinal_wdata),
     .rvalid_o       (sfifo_esfinal_not_empty),
     .rready_i       (sfifo_esfinal_pop),
@@ -2040,13 +2047,20 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign fips_compliance = !es_bypass_mode && es_enable_rng && !es_enable_lfsr && !rng_bit_en;
 
   // fifo controls
-  assign sfifo_esfinal_push = sfifo_esfinal_not_full &&
-         ((main_stage_pop || bypass_stage_pop) && !ht_failed_q);
+  // a window of health checks that fails is dropped here
+  assign sfifo_esfinal_upstream_push = ((main_stage_pop || bypass_stage_pop) && !ht_failed_q);
+  assign sfifo_esfinal_push = sfifo_esfinal_full_q ? sfifo_esfinal_pop_q :
+         sfifo_esfinal_upstream_push;
   assign sfifo_esfinal_clr  = !es_enable;
   assign sfifo_esfinal_wdata = {fips_compliance,final_es_data};
-  assign sfifo_esfinal_pop = es_route_to_sw ? pfifo_swread_push :
-         es_hw_if_fifo_pop;
+  assign sfifo_esfinal_pop = (es_route_to_sw ? pfifo_swread_push :
+                              es_hw_if_fifo_pop) || sfifo_esfinal_drop;
   assign {esfinal_fips_flag,esfinal_data} = sfifo_esfinal_rdata;
+
+  // esfinal output drop case
+  assign sfifo_esfinal_drop = (sfifo_esfinal_upstream_push && sfifo_esfinal_full);
+  assign sfifo_esfinal_pop_d = sfifo_esfinal_pop;
+  assign sfifo_esfinal_full_d = sfifo_esfinal_full;
 
   // fifo err
   assign sfifo_esfinal_err =
