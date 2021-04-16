@@ -20,7 +20,7 @@ module sysrst_ctrl_combofsm #(
 );
 
   logic trigger_h_q, trigger_l_q;
-  logic trigger_h2l, trigger_l2h, trigger_h2h, trigger_l2l;
+  logic trigger_h2l, trigger_l2h, trigger_l2l;
 
   logic [TIMER1BIT-1:0] timer1_cnt_d, timer1_cnt_q;
   logic timer1_cnt_clr, timer1_cnt_en;
@@ -45,7 +45,7 @@ module sysrst_ctrl_combofsm #(
 
   assign trigger_h2l = (trigger_h_q == 1'b1) && (trigger_l_i == 1'b1);
   assign trigger_l2h = (trigger_l_q == 1'b1) && (trigger_h_i == 1'b1);
-  assign trigger_h2h = (trigger_h_q == 1'b1) && (trigger_h_i == 1'b1);
+  //assign trigger_h2h = (trigger_h_q == 1'b1) && (trigger_h_i == 1'b1);
   assign trigger_l2l = (trigger_l_q == 1'b1) && (trigger_l_i == 1'b1);
 
   //Four-state FSM

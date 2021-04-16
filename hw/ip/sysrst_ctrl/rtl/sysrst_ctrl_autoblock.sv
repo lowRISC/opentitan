@@ -39,8 +39,8 @@ module sysrst_ctrl_autoblock import sysrst_ctrl_reg_pkg::*; (
   logic ab_cond_met;
   logic pwrb_int_i;
 
-  //nc_ means no connect
-  logic nc_auto_block_enable;
+  //unused_ means no connect
+  logic unused_auto_block_enable;
 
   //synchronize between cfg(24MHz) and always-on(200KHz)
   prim_flop_2sync # (
@@ -52,7 +52,7 @@ module sysrst_ctrl_autoblock import sysrst_ctrl_reg_pkg::*; (
     .q_o(cfg_auto_block_en)
   );
 
-  assign nc_auto_block_enable = auto_block_debounce_ctl_i.auto_block_enable.qe;
+  assign unused_auto_block_enable = auto_block_debounce_ctl_i.auto_block_enable.qe;
 
   prim_fifo_async #(
     .Width(16),
