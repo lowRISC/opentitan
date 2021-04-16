@@ -30,6 +30,20 @@ sw_lib_dif_csrng = declare_dependency(
   )
 )
 
+# EDN DIF Library (dif_csrng)
+sw_lib_dif_edn = declare_dependency(
+  link_with: static_library(
+    'edn_ot',
+    sources: [
+      hw_ip_edn_reg_h,
+      'dif_edn.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  )
+)
+
 # UART DIF library (dif_uart)
 sw_lib_dif_uart = declare_dependency(
   link_with: static_library(
