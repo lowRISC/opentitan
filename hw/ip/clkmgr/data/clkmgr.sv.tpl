@@ -189,8 +189,8 @@ srcs = clks_attr['srcs']
     .en_o(clk_${src}_en),
     .clk_o(clk_${src}_root)
   );
-% endfor
 
+% endfor
   // an async AND of all the synchronized enables
   // return feedback to pwrmgr only when all clocks are enabled
   assign wait_enable =
@@ -360,7 +360,7 @@ srcs = clks_attr['srcs']
 % for intf, eps in export_clks.items():
   % for ep, clks in eps.items():
     % for clk in clks:
-      assign clocks_${intf}_o.clk_${intf}_${ep}_${clk} = clocks_o.clk_${clk};
+  assign clocks_${intf}_o.clk_${intf}_${ep}_${clk} = clocks_o.clk_${clk};
     % endfor
   % endfor
 % endfor
