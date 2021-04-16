@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
+class spi_host_env_cfg extends cip_base_env_cfg #(
+  .RAL_T(spi_host_reg_block)
+);
 
   // reset kinds for core and dut
   string reset_kinds[] = {"HARD", "TL_IF", "CORE_IF"};
@@ -62,5 +64,5 @@ class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
 
     return clk_core_mhz;
   endfunction : get_clk_core_freq
-  
+
 endclass : spi_host_env_cfg

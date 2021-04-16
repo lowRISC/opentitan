@@ -12,18 +12,18 @@ module entropy_src_bucket_ht #(
   input logic clk_i,
   input logic rst_ni,
 
-   // ins req interface
-  input logic [RngBusWidth-1:0] entropy_bit_i,
-  input logic                   entropy_bit_vld_i,
-  input logic                   clear_i,
-  input logic                   active_i,
-  input logic [RegWidth-1:0]    thresh_i,
-  input logic                   window_wrap_pulse_i,
-  output logic [RegWidth-1:0]   test_cnt_o,
-  output logic                  test_fail_pulse_o
+  // ins req interface
+  input  logic [RngBusWidth-1:0] entropy_bit_i,
+  input  logic                   entropy_bit_vld_i,
+  input  logic                   clear_i,
+  input  logic                   active_i,
+  input  logic [   RegWidth-1:0] thresh_i,
+  input  logic                   window_wrap_pulse_i,
+  output logic [   RegWidth-1:0] test_cnt_o,
+  output logic                   test_fail_pulse_o
 );
 
-  localparam int NUM_BINS = 2**RngBusWidth;
+  localparam int NUM_BINS = 2 ** RngBusWidth;
 
   // signals
   logic [NUM_BINS-1:0] bin_incr;
@@ -35,11 +35,11 @@ module entropy_src_bucket_ht #(
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
-      test_cnt_q       <= '0;
-      bin_cntr_q       <= '{default:0};
+      test_cnt_q <= '0;
+      bin_cntr_q <= '{default: 0};
     end else begin
-      test_cnt_q       <= test_cnt_d;
-      bin_cntr_q       <= bin_cntr_d;
+      test_cnt_q <= test_cnt_d;
+      bin_cntr_q <= bin_cntr_d;
     end
 
 

@@ -14,8 +14,8 @@ class otp_ctrl_parallel_base_vseq extends otp_ctrl_dai_errs_vseq;
   `uvm_object_new
 
   constraint num_trans_c {
-    num_trans  inside {[1:5]};
-    num_dai_op inside {[1:500]};
+    num_trans inside {[1 : 5]};
+    num_dai_op inside {[1 : 500]};
   }
 
   virtual task body();
@@ -38,7 +38,7 @@ class otp_ctrl_parallel_base_vseq extends otp_ctrl_dai_errs_vseq;
   endtask
 
   virtual task wait_clk_or_reset(int wait_clks);
-    repeat(wait_clks) begin
+    repeat (wait_clks) begin
       @(posedge cfg.clk_rst_vif.clk);
       if (cfg.under_reset) break;
     end

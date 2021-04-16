@@ -22,7 +22,7 @@ class i2c_seq_cfg extends uvm_object;
   uint i2c_max_data              = 255;
   uint i2c_min_dly               = 0;
   uint i2c_max_dly               = 5;
-  uint i2c_min_timing            = 1; // at least 1
+  uint i2c_min_timing            = 1;  // at least 1
   uint i2c_max_timing            = 5;
   uint i2c_time_range            = i2c_max_timing - i2c_min_timing;
   uint i2c_min_timeout           = 1;
@@ -39,19 +39,19 @@ class i2c_seq_cfg extends uvm_object;
 
   // bits to control fifos access
   // set en_fmt_overflow to ensure fmt_overflow irq is triggered
-  bit en_fmt_overflow            = 1'b0;
+  bit  en_fmt_overflow           = 1'b0;
   // set en_rx_overflow to ensure ensure rx_overflow irq is triggered
-  bit en_rx_overflow             = 1'b0;
+  bit  en_rx_overflow            = 1'b0;
   // set en_rx_watermark to ensure rx_watermark irq is triggered
-  bit en_rx_watermark            = 1'b0;
+  bit  en_rx_watermark           = 1'b0;
 
   // bits to control interference and unstable interrupts
   // set en_sda_unstable to allow sda_unstable irq is triggered
-  bit en_sda_unstable            = 1'b0;
+  bit  en_sda_unstable           = 1'b0;
   // set en_scl_interference to allow scl_interference irq is triggered
-  bit en_scl_interference        = 1'b0;
+  bit  en_scl_interference       = 1'b0;
   // set en_sda_interference to allow sda_interference irq is triggered
-  bit en_sda_interference        = 1'b0;
+  bit  en_sda_interference       = 1'b0;
 
   `uvm_object_new
 

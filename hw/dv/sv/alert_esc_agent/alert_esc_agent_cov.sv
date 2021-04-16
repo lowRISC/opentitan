@@ -2,40 +2,34 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-covergroup alert_handshake_complete_cg with function sample(alert_esc_trans_type_e trans,
-                                                            alert_handshake_e      status);
+covergroup alert_handshake_complete_cg with function sample (
+    alert_esc_trans_type_e trans, alert_handshake_e status
+);
   option.per_instance = 1;
 
-  cp_handshake_complete: coverpoint status {
-    bins complete = {AlertAckComplete};
-  }
-  cp_trans_type: coverpoint trans {
-    bins alert_triggered = {AlertEscSigTrans};
-  }
+  cp_handshake_complete: coverpoint status {bins complete = {AlertAckComplete};}
+  cp_trans_type: coverpoint trans {bins alert_triggered = {AlertEscSigTrans};}
 
   alert_handshake_complete: cross cp_handshake_complete, cp_trans_type;
 endgroup : alert_handshake_complete_cg
 
-covergroup esc_handshake_complete_cg with function sample(alert_esc_trans_type_e trans,
-                                                          esc_handshake_e        status);
+covergroup esc_handshake_complete_cg with function sample (
+    alert_esc_trans_type_e trans, esc_handshake_e status
+);
   option.per_instance = 1;
 
-  cp_handshake_complete: coverpoint status {
-    bins complete = {EscRespComplete};
-  }
-  cp_trans_type: coverpoint trans {
-    bins esc_triggered = {AlertEscSigTrans};
-  }
+  cp_handshake_complete: coverpoint status {bins complete = {EscRespComplete};}
+  cp_trans_type: coverpoint trans {bins esc_triggered = {AlertEscSigTrans};}
 
   esc_handshake_complete: cross cp_handshake_complete, cp_trans_type;
 endgroup : esc_handshake_complete_cg
 
-covergroup alert_esc_trans_cg with function sample(alert_esc_trans_type_e trans);
+covergroup alert_esc_trans_cg with function sample (alert_esc_trans_type_e trans);
   option.per_instance = 1;
 
   cp_handshake_complete: coverpoint trans {
     bins alert_esc_trans = {AlertEscSigTrans};
-    bins ping_trans      = {AlertEscPingTrans};
+    bins ping_trans = {AlertEscPingTrans};
   }
 endgroup : alert_esc_trans_cg
 
@@ -53,8 +47,8 @@ class alert_esc_agent_cov extends dv_base_agent_cov #(alert_esc_agent_cfg);
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     if (cfg.en_ping_cov) m_alert_esc_trans_cg = new();
-    if (cfg.is_alert)    m_alert_handshake_complete_cg = new();
-    else                 m_esc_handshake_complete_cg = new();
+    if (cfg.is_alert) m_alert_handshake_complete_cg = new();
+    else m_esc_handshake_complete_cg = new();
   endfunction : build_phase
 
 endclass

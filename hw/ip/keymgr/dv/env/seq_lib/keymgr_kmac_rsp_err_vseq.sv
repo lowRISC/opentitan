@@ -11,14 +11,19 @@ class keymgr_kmac_rsp_err_vseq extends keymgr_hwsw_invalid_input_vseq;
 
   // enable key_version error with 1/5 chance
   constraint is_key_version_err_c {
-    is_key_version_err dist {0 :/ 9, 1 :/ 1};
+    is_key_version_err dist {
+      0 :/ 9,
+      1 :/ 1
+    };
   }
 
   // enable HW invalid input
   constraint num_invalid_hw_input_c {
-    num_invalid_hw_input dist {0     :/ 18,
-                               1     :/ 1,
-                               [2:6] :/ 1};
+    num_invalid_hw_input dist {
+      0       :/ 18,
+      1       :/ 1,
+      [2 : 6] :/ 1
+    };
   }
 
   task pre_start();

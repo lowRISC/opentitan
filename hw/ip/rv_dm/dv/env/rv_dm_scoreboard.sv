@@ -3,27 +3,27 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class rv_dm_scoreboard extends dv_base_scoreboard #(
-    .CFG_T(rv_dm_env_cfg),
-    .RAL_T(rv_dm_reg_block),
-    .COV_T(rv_dm_env_cov)
-  );
+  .CFG_T(rv_dm_env_cfg),
+  .RAL_T(rv_dm_reg_block),
+  .COV_T(rv_dm_env_cov)
+);
   `uvm_component_utils(rv_dm_scoreboard)
 
   // local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(jtag_item) jtag_fifo;
+  uvm_tlm_analysis_fifo #(jtag_item)   jtag_fifo;
 
-  uvm_tlm_analysis_fifo #(tl_seq_item)  tl_host_a_chan_fifo;
-  uvm_tlm_analysis_fifo #(tl_seq_item)  tl_host_d_chan_fifo;
+  uvm_tlm_analysis_fifo #(tl_seq_item) tl_host_a_chan_fifo;
+  uvm_tlm_analysis_fifo #(tl_seq_item) tl_host_d_chan_fifo;
 
-  uvm_tlm_analysis_fifo #(tl_seq_item)  tl_device_a_chan_fifo;
-  uvm_tlm_analysis_fifo #(tl_seq_item)  tl_device_d_chan_fifo;
+  uvm_tlm_analysis_fifo #(tl_seq_item) tl_device_a_chan_fifo;
+  uvm_tlm_analysis_fifo #(tl_seq_item) tl_device_d_chan_fifo;
 
   // local queues to hold incoming packets pending comparison
-  jtag_item     jtag_q[$];
-  tl_seq_item   tl_host_q[$];
-  tl_seq_item   tl_device_q[$];
+  jtag_item                            jtag_q[$];
+  tl_seq_item                          tl_host_q[$];
+  tl_seq_item                          tl_device_q[$];
 
   `uvm_component_new
 

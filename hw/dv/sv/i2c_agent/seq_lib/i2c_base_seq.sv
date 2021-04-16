@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class i2c_base_seq extends dv_base_seq #(
-    .REQ         (i2c_item),
-    .CFG_T       (i2c_agent_cfg),
-    .SEQUENCER_T (i2c_sequencer)
-  );
+  .REQ        (i2c_item),
+  .CFG_T      (i2c_agent_cfg),
+  .SEQUENCER_T(i2c_sequencer)
+);
   `uvm_object_utils(i2c_base_seq)
   `uvm_object_new
 
   // queue monitor requests which ask the re-active driver to response host dut
-  i2c_item req_q[$];
+  i2c_item  req_q[$];
 
   // data to be sent to target dut
   bit [7:0] data_q[$];
@@ -25,12 +25,12 @@ class i2c_base_seq extends dv_base_seq #(
       // get seq for agent running in Device mode
       fork
         forever begin
-          i2c_item  req;
+          i2c_item req;
           p_sequencer.req_analysis_fifo.get(req);
           req_q.push_back(req);
         end
         forever begin
-          i2c_item  rsp;
+          i2c_item rsp;
           wait(req_q.size > 0);
           rsp = req_q.pop_front();
           start_item(rsp);

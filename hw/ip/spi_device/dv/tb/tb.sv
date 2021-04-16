@@ -32,40 +32,46 @@ module tb;
   wire intr_txunderflow;
 
   // interfaces
-  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
-  tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
-  pins_if #(1) devmode_if(devmode);
-  spi_if  spi_if(.rst_n(rst_n));
+  clk_rst_if clk_rst_if (
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
+  tl_if tl_if (
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
+  pins_if #(NUM_MAX_INTERRUPTS) intr_if (.pins(interrupts));
+  pins_if #(1) devmode_if (devmode);
+  spi_if spi_if (.rst_n(rst_n));
 
   // dut
   spi_device dut (
-    .clk_i          (clk       ),
-    .rst_ni         (rst_n     ),
+    .clk_i (clk),
+    .rst_ni(rst_n),
 
-    .tl_i           (tl_if.h2d ),
-    .tl_o           (tl_if.d2h ),
+    .tl_i(tl_if.h2d),
+    .tl_o(tl_if.d2h),
 
-    .cio_sck_i      (sck       ),
-    .cio_csb_i      (csb       ),
-    .cio_sd_o       (sd_out    ),
-    .cio_sd_en_o    (sd_out_en ),
-    .cio_sd_i       (sd_in     ),
+    .cio_sck_i  (sck),
+    .cio_csb_i  (csb),
+    .cio_sd_o   (sd_out),
+    .cio_sd_en_o(sd_out_en),
+    .cio_sd_i   (sd_in),
 
-    .intr_rxf_o     (intr_rxf  ),
-    .intr_rxlvl_o   (intr_rxlvl),
-    .intr_txlvl_o   (intr_txlvl),
-    .intr_rxerr_o   (intr_rxerr),
+    .intr_rxf_o        (intr_rxf),
+    .intr_rxlvl_o      (intr_rxlvl),
+    .intr_txlvl_o      (intr_txlvl),
+    .intr_rxerr_o      (intr_rxerr),
     .intr_rxoverflow_o (intr_rxoverflow),
     .intr_txunderflow_o(intr_txunderflow),
-    .scanmode_i     (lc_ctrl_pkg::Off)
+    .scanmode_i        (lc_ctrl_pkg::Off)
   );
 
-  assign sck           = spi_if.sck;
-  assign csb           = spi_if.csb[0];
+  assign sck                         = spi_if.sck;
+  assign csb                         = spi_if.csb[0];
   // TODO: quad SPI mode is currently not yet implemented
-  assign sd_in         = {3'b000, spi_if.sio[0]};
-  assign spi_if.sio[1] = sd_out_en[1] ? sd_out[1] : 1'bz;
+  assign sd_in                       = {3'b000, spi_if.sio[0]};
+  assign spi_if.sio[1]               = sd_out_en[1] ? sd_out[1] : 1'bz;
 
   assign interrupts[RxFifoFull]      = intr_rxf;
   assign interrupts[RxFifoGeLevel]   = intr_rxlvl;

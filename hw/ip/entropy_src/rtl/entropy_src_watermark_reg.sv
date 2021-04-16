@@ -9,15 +9,15 @@ module entropy_src_watermark_reg #(
   parameter int RegWidth = 16,
   parameter bit HighWatermark = 1
 ) (
-  input logic                   clk_i,
-  input logic                   rst_ni,
+  input logic clk_i,
+  input logic rst_ni,
 
-   // functional interface
-  input logic                   clear_i,
-  input logic                   active_i,
-  input logic                   event_i,
-  input logic [RegWidth-1:0]    value_i,
-  output logic [RegWidth-1:0]   value_o
+  // functional interface
+  input  logic                clear_i,
+  input  logic                active_i,
+  input  logic                event_i,
+  input  logic [RegWidth-1:0] value_i,
+  output logic [RegWidth-1:0] value_o
 );
 
   // signals
@@ -29,9 +29,9 @@ module entropy_src_watermark_reg #(
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
-      event_cntr_q       <= reg_reset;
+      event_cntr_q <= reg_reset;
     end else begin
-      event_cntr_q       <= event_cntr_d;
+      event_cntr_q <= event_cntr_d;
     end
 
   assign event_cntr_d = (!active_i || clear_i) ? reg_reset :

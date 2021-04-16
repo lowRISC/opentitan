@@ -8,9 +8,7 @@ class keymgr_smoke_vseq extends keymgr_base_vseq;
   `uvm_object_new
 
   // limit to SW operations
-  constraint gen_operation_c {
-    gen_operation inside {keymgr_pkg::OpGenId, keymgr_pkg::OpGenSwOut};
-  }
+  constraint gen_operation_c {gen_operation inside {keymgr_pkg::OpGenId, keymgr_pkg::OpGenSwOut};}
 
   task body();
     keymgr_pkg::keymgr_working_state_e state;

@@ -7,38 +7,38 @@
 `include "prim_assert.sv"
 
 module i2c (
-  input                     clk_i,
-  input                     rst_ni,
+  input clk_i,
+  input rst_ni,
 
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
   // Generic IO
-  input                     cio_scl_i,
-  output logic              cio_scl_o,
-  output logic              cio_scl_en_o,
-  input                     cio_sda_i,
-  output logic              cio_sda_o,
-  output logic              cio_sda_en_o,
+  input        cio_scl_i,
+  output logic cio_scl_o,
+  output logic cio_scl_en_o,
+  input        cio_sda_i,
+  output logic cio_sda_o,
+  output logic cio_sda_en_o,
 
   // Interrupts
-  output logic              intr_fmt_watermark_o,
-  output logic              intr_rx_watermark_o,
-  output logic              intr_fmt_overflow_o,
-  output logic              intr_rx_overflow_o,
-  output logic              intr_nak_o,
-  output logic              intr_scl_interference_o,
-  output logic              intr_sda_interference_o,
-  output logic              intr_stretch_timeout_o,
-  output logic              intr_sda_unstable_o,
-  output logic              intr_trans_complete_o,
-  output logic              intr_tx_empty_o,
-  output logic              intr_tx_nonempty_o,
-  output logic              intr_tx_overflow_o,
-  output logic              intr_acq_overflow_o,
-  output logic              intr_ack_stop_o,
-  output logic              intr_host_timeout_o
+  output logic intr_fmt_watermark_o,
+  output logic intr_rx_watermark_o,
+  output logic intr_fmt_overflow_o,
+  output logic intr_rx_overflow_o,
+  output logic intr_nak_o,
+  output logic intr_scl_interference_o,
+  output logic intr_sda_interference_o,
+  output logic intr_stretch_timeout_o,
+  output logic intr_sda_unstable_o,
+  output logic intr_trans_complete_o,
+  output logic intr_tx_empty_o,
+  output logic intr_tx_nonempty_o,
+  output logic intr_tx_overflow_o,
+  output logic intr_acq_overflow_o,
+  output logic intr_ack_stop_o,
+  output logic intr_host_timeout_o
 );
 
   import i2c_reg_pkg::*;
@@ -54,7 +54,7 @@ module i2c (
     .reg2hw,
     .hw2reg,
     .intg_err_o(),
-    .devmode_i(1'b1)
+    .devmode_i (1'b1)
   );
 
   logic scl_int;

@@ -9,9 +9,9 @@ class alert_sender_seq extends alert_sender_base_seq;
   `uvm_object_new
 
   constraint alert_sender_seq_c {
-    s_alert_send     == 1;
+    s_alert_send == 1;
     s_alert_ping_rsp == 0;
-    ping_timeout     == 0;
+    ping_timeout == 0;
   }
 
 endclass : alert_sender_seq

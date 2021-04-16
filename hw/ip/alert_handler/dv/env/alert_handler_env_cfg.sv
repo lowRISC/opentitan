@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class alert_handler_env_cfg extends cip_base_env_cfg #(.RAL_T(alert_handler_reg_block));
+class alert_handler_env_cfg extends cip_base_env_cfg #(
+  .RAL_T(alert_handler_reg_block)
+);
 
   // ext component cfgs
   esc_en_vif               esc_en_vif;
@@ -32,15 +34,13 @@ class alert_handler_env_cfg extends cip_base_env_cfg #(.RAL_T(alert_handler_reg_
     alert_host_cfg = new[NUM_ALERTS];
     esc_device_cfg = new[NUM_ESCS];
     foreach (alert_host_cfg[i]) begin
-      alert_host_cfg[i] =
-          alert_esc_agent_cfg::type_id::create($sformatf("alert_host_cfg[%0d]", i));
+      alert_host_cfg[i] = alert_esc_agent_cfg::type_id::create($sformatf("alert_host_cfg[%0d]", i));
       alert_host_cfg[i].if_mode = dv_utils_pkg::Host;
       alert_host_cfg[i].is_async = ASYNC_ON[i];
     end
     foreach (esc_device_cfg[i]) begin
-      esc_device_cfg[i] =
-          alert_esc_agent_cfg::type_id::create($sformatf("esc_device_cfg[%0d]", i));
-      esc_device_cfg[i].if_mode  = dv_utils_pkg::Device;
+      esc_device_cfg[i] = alert_esc_agent_cfg::type_id::create($sformatf("esc_device_cfg[%0d]", i));
+      esc_device_cfg[i].if_mode = dv_utils_pkg::Device;
       esc_device_cfg[i].is_alert = 0;
     end
     // only support 1 outstanding TL items in tlul_adapter

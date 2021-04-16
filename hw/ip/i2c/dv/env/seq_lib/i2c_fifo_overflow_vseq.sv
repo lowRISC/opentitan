@@ -8,10 +8,10 @@ class i2c_fifo_overflow_vseq extends i2c_rx_tx_vseq;
   `uvm_object_new
 
   // fast write data to fmt_fifo to quickly trigger fmt_watermark interrupt
-  constraint fmt_fifo_access_dly_c { fmt_fifo_access_dly == 0;}
+  constraint fmt_fifo_access_dly_c {fmt_fifo_access_dly == 0;}
 
   // fast read data from rd_fifo to quickly finish simulation (increasing sim. performance)
-  constraint rx_fifo_access_dly_c { rx_fifo_access_dly == 0;}
+  constraint rx_fifo_access_dly_c {rx_fifo_access_dly == 0;}
 
   // write transaction length is more than fmt_fifo depth to cross fmtilvl
   constraint num_wr_bytes_c {
@@ -20,7 +20,7 @@ class i2c_fifo_overflow_vseq extends i2c_rx_tx_vseq;
   }
 
   // send more one data than rx_fifo depth to trigger rx_overflow
-  constraint num_rd_bytes_c { num_rd_bytes == I2C_RX_FIFO_DEPTH + 1; }
+  constraint num_rd_bytes_c {num_rd_bytes == I2C_RX_FIFO_DEPTH + 1;}
 
   // counting the number of received overflow interrupts
   local uint cnt_fmt_overflow;

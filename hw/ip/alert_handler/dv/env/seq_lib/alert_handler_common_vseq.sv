@@ -7,9 +7,7 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
 
   rand bit entropy_bit;
 
-  constraint num_trans_c {
-    num_trans inside {[1:2]};
-  }
+  constraint num_trans_c {num_trans inside {[1 : 2]};}
 
   `uvm_object_new
 

@@ -18,51 +18,60 @@ module tb;
 
   wire clk, rst_n;
   wire clk_core, rst_core_n;
-  wire devmode;
-  wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  wire                             devmode;
+  wire    [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
-  lc_tx_t           scanmode_i;
-  wire              cio_sck_o;
-  wire              cio_sck_en_o;
-  wire  [MaxCS-1:0] cio_csb_o;
-  wire  [MaxCS-1:0] cio_csb_en_o;
-  logic [3:0]       cio_sd_o;
-  logic [3:0]       cio_sd_en_o;
-  logic [3:0]       cio_sd_i;
-  logic             intr_error;
-  logic             intr_event;
+  lc_tx_t                          scanmode_i;
+  wire                             cio_sck_o;
+  wire                             cio_sck_en_o;
+  wire    [             MaxCS-1:0] cio_csb_o;
+  wire    [             MaxCS-1:0] cio_csb_en_o;
+  logic   [                   3:0] cio_sd_o;
+  logic   [                   3:0] cio_sd_en_o;
+  logic   [                   3:0] cio_sd_i;
+  logic                            intr_error;
+  logic                            intr_event;
 
   // interfaces
-  clk_rst_if   clk_rst_if(.clk(clk), .rst_n(rst_n));
-  clk_rst_if   clk_rst_core_if(.clk(clk_core), .rst_n(rst_core_n));
-  pins_if #(1) devmode_if(devmode);
-  pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
-  tl_if        tl_if(.clk(clk), .rst_n(rst_n));
-  spi_if       spi_if(.rst_n(rst_core_n));
+  clk_rst_if clk_rst_if (
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
+  clk_rst_if clk_rst_core_if (
+    .clk  (clk_core),
+    .rst_n(rst_core_n)
+  );
+  pins_if #(1) devmode_if (devmode);
+  pins_if #(NUM_MAX_INTERRUPTS) intr_if (.pins(interrupts));
+  tl_if tl_if (
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
+  spi_if spi_if (.rst_n(rst_core_n));
 
   // dut
   spi_host spi_host (
-    .clk_i                (clk),
-    .rst_ni               (rst_n),
+    .clk_i (clk),
+    .rst_ni(rst_n),
 
     // tl i/f
-    .tl_i                 (tl_if.h2d),
-    .tl_o                 (tl_if.d2h),
+    .tl_i            (tl_if.h2d),
+    .tl_o            (tl_if.d2h),
     // scan mode
-    .clk_core_i           (clk_core),
-    .rst_core_ni          (rst_core_n),
-    .scanmode_i           (scanmode_i),
+    .clk_core_i      (clk_core),
+    .rst_core_ni     (rst_core_n),
+    .scanmode_i      (scanmode_i),
     // spi i/o
-    .cio_sck_o            (cio_sck_o),
-    .cio_sck_en_o         (cio_sck_en_o),
-    .cio_csb_o            (cio_csb_o),
-    .cio_csb_en_o         (cio_csb_en_o),
-    .cio_sd_o             (cio_sd_o),
-    .cio_sd_en_o          (cio_sd_en_o),
-    .cio_sd_i             (cio_sd_i),
+    .cio_sck_o       (cio_sck_o),
+    .cio_sck_en_o    (cio_sck_en_o),
+    .cio_csb_o       (cio_csb_o),
+    .cio_csb_en_o    (cio_csb_en_o),
+    .cio_sd_o        (cio_sd_o),
+    .cio_sd_en_o     (cio_sd_en_o),
+    .cio_sd_i        (cio_sd_i),
     // intr i/f
-    .intr_error_o         (intr_error),
-    .intr_spi_event_o     (intr_event)
+    .intr_error_o    (intr_error),
+    .intr_spi_event_o(intr_event)
   );
 
   assign spi_if.sck = (cio_sck_en_o) ? cio_sck_o : 1'b0;
@@ -79,7 +88,7 @@ module tb;
 
   assign interrupts[SpiHostError] = intr_error;
   assign interrupts[SpiHostEvent] = intr_event;
-  
+
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();

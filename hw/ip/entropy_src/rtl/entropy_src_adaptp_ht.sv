@@ -12,17 +12,17 @@ module entropy_src_adaptp_ht #(
   input logic clk_i,
   input logic rst_ni,
 
-   // ins req interface
-  input logic [RngBusWidth-1:0] entropy_bit_i,
-  input logic                   entropy_bit_vld_i,
-  input logic                   clear_i,
-  input logic                   active_i,
-  input logic [RegWidth-1:0]    thresh_hi_i,
-  input logic [RegWidth-1:0]    thresh_lo_i,
-  input logic                   window_wrap_pulse_i,
-  output logic [RegWidth-1:0]   test_cnt_o,
-  output logic                  test_fail_hi_pulse_o,
-  output logic                  test_fail_lo_pulse_o
+  // ins req interface
+  input  logic [RngBusWidth-1:0] entropy_bit_i,
+  input  logic                   entropy_bit_vld_i,
+  input  logic                   clear_i,
+  input  logic                   active_i,
+  input  logic [   RegWidth-1:0] thresh_hi_i,
+  input  logic [   RegWidth-1:0] thresh_lo_i,
+  input  logic                   window_wrap_pulse_i,
+  output logic [   RegWidth-1:0] test_cnt_o,
+  output logic                   test_fail_hi_pulse_o,
+  output logic                   test_fail_lo_pulse_o
 );
 
   // signals
@@ -33,9 +33,9 @@ module entropy_src_adaptp_ht #(
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
-      test_cnt_q       <= '0;
+      test_cnt_q <= '0;
     end else begin
-      test_cnt_q       <= test_cnt_d;
+      test_cnt_q <= test_cnt_d;
     end
 
 

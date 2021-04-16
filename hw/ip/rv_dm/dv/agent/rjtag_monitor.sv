@@ -12,7 +12,7 @@ class rjtag_monitor extends uvm_monitor;
 
   `uvm_component_utils(rjtag_monitor)
 
-  function new (string name, uvm_component parent);
+  function new(string name, uvm_component parent);
     super.new(name, parent);
     trans_collected = new();
     item_collected_port = new("item_collected_port", this);
@@ -20,9 +20,8 @@ class rjtag_monitor extends uvm_monitor;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    if (!uvm_config_db#(virtual jtag_if)::get(this,"","vif",vif)) begin
-      `uvm_fatal("NO_VIF", {"virtual interface must be set for:",
-        get_full_name(),".vif"});
+    if (!uvm_config_db#(virtual jtag_if)::get(this, "", "vif", vif)) begin
+      `uvm_fatal("NO_VIF", {"virtual interface must be set for:", get_full_name(), ".vif"});
     end
   endfunction : build_phase
 

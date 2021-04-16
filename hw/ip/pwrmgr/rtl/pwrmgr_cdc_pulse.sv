@@ -43,7 +43,7 @@ module pwrmgr_cdc_pulse (
   end
 
 
-  prim_flop_2sync # (
+  prim_flop_2sync #(
     .Width(1)
   ) i_pos_sync (
     .clk_i,
@@ -52,7 +52,7 @@ module pwrmgr_cdc_pulse (
     .q_o(clk_slow_pq)
   );
 
-  prim_flop_2sync # (
+  prim_flop_2sync #(
     .Width(1)
   ) i_neg_sync (
     .clk_i,
@@ -82,10 +82,10 @@ module pwrmgr_cdc_pulse (
   end
 
   // toggle is found on either positive and negative edges of clk_slow_i
-  assign toggle = clk_slow_pq2 ^ clk_slow_pq | clk_slow_nq2 ^ clk_slow_nq;
+  assign toggle  = clk_slow_pq2 ^ clk_slow_pq | clk_slow_nq2 ^ clk_slow_nq;
   assign pulse_o = valid & toggle;
 
 
 
 
-endmodule // pwrmgr
+endmodule  // pwrmgr

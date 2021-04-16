@@ -9,7 +9,7 @@ class rjtag_agent extends uvm_agent;
 
   `uvm_component_utils(rjtag_agent)
 
-  function new (string name, uvm_component parent);
+  function new(string name, uvm_component parent);
     super.new(name, parent);
   endfunction : new
 
@@ -17,7 +17,7 @@ class rjtag_agent extends uvm_agent;
     super.build_phase(phase);
 
     if (get_is_active() == UVM_ACTIVE) begin
-      m_drv = rjtag_driver::type_id::create("m_drv", this);
+      m_drv  = rjtag_driver::type_id::create("m_drv", this);
       m_seqr = rjtag_sequencer::type_id::create("m_seqr", this);
     end
 

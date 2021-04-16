@@ -8,6 +8,6 @@ class i2c_smoke_vseq extends i2c_rx_tx_vseq;
   `uvm_object_new
 
   // increase num_trans to cover all transaction types
-  constraint num_trans_c { num_trans inside {[50 : 100]}; }
+  constraint num_trans_c {num_trans inside {[50 : 100]};}
 
 endclass : i2c_smoke_vseq

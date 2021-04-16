@@ -15,12 +15,12 @@ class spi_device_seq extends spi_base_seq;
   virtual task body();
     fork
       forever begin
-        spi_item  req;
+        spi_item req;
         p_sequencer.req_analysis_fifo.get(req);
         req_q.push_back(req);
       end
       forever begin
-        spi_item  rsp;
+        spi_item rsp;
         wait(req_q.size > 0);
         rsp = req_q.pop_front();
         start_item(rsp);
@@ -28,5 +28,5 @@ class spi_device_seq extends spi_base_seq;
       end
     join
   endtask : body
-  
+
 endclass : spi_device_seq

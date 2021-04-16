@@ -6,30 +6,30 @@
 //
 
 module uart_rx (
-  input           clk_i,
-  input           rst_ni,
+  input clk_i,
+  input rst_ni,
 
-  input           rx_enable,
-  input           tick_baud_x16,
-  input           parity_enable,
-  input           parity_odd,
+  input rx_enable,
+  input tick_baud_x16,
+  input parity_enable,
+  input parity_odd,
 
-  output logic    tick_baud,
-  output logic    rx_valid,
-  output [7:0]    rx_data,
-  output logic    idle,
-  output          frame_err,
-  output          rx_parity_err,
+  output logic       tick_baud,
+  output logic       rx_valid,
+  output       [7:0] rx_data,
+  output logic       idle,
+  output             frame_err,
+  output             rx_parity_err,
 
-  input           rx
+  input rx
 );
 
-  logic            rx_valid_q;
-  logic   [10:0]   sreg_q, sreg_d;
-  logic    [3:0]   bit_cnt_q, bit_cnt_d;
-  logic    [3:0]   baud_div_q, baud_div_d;
-  logic            tick_baud_d, tick_baud_q;
-  logic            idle_d, idle_q;
+  logic rx_valid_q;
+  logic [10:0] sreg_q, sreg_d;
+  logic [3:0] bit_cnt_q, bit_cnt_d;
+  logic [3:0] baud_div_q, baud_div_d;
+  logic tick_baud_d, tick_baud_q;
+  logic idle_d, idle_q;
 
   assign tick_baud = tick_baud_q;
   assign idle      = idle_q;
@@ -64,7 +64,7 @@ module uart_rx (
       baud_div_d  = baud_div_q;
       idle_d      = idle_q;
       if (tick_baud_x16) begin
-        {tick_baud_d, baud_div_d} = {1'b0,baud_div_q} + 5'h1;
+        {tick_baud_d, baud_div_d} = {1'b0, baud_div_q} + 5'h1;
       end
 
       if (idle_q && !rx) begin
@@ -91,7 +91,7 @@ module uart_rx (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) rx_valid_q <= 1'b0;
-    else         rx_valid_q <= tick_baud_q & (bit_cnt_q == 4'h1);
+    else rx_valid_q <= tick_baud_q & (bit_cnt_q == 4'h1);
 
   end
 
@@ -99,7 +99,6 @@ module uart_rx (
   assign rx_data       = parity_enable ? sreg_q[8:1] : sreg_q[9:2];
   //    (rx_parity     = sreg_q[9])
   assign frame_err     = rx_valid_q & ~sreg_q[10];
-  assign rx_parity_err = parity_enable & rx_valid_q &
-                         (^{sreg_q[9:1],parity_odd});
+  assign rx_parity_err = parity_enable & rx_valid_q & (^{sreg_q[9:1], parity_odd});
 
 endmodule

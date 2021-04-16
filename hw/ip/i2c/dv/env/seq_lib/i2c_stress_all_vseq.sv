@@ -14,10 +14,10 @@ class i2c_stress_all_vseq extends i2c_rx_tx_vseq;
   `uvm_object_new
 
   local string str, seq_name;
-  local int    seq_run_hist[string];
+  local int seq_run_hist[string];
 
   string seq_names[$] = {
-    "i2c_common_vseq",      // for intr_test
+    "i2c_common_vseq",  // for intr_test
     "i2c_smoke_vseq",
     "i2c_fifo_full_vseq",
     "i2c_fifo_overflow_vseq",
@@ -45,13 +45,13 @@ class i2c_stress_all_vseq extends i2c_rx_tx_vseq;
     end
 
     for (int i = 1; i <= num_runs; i++) begin
-      uvm_sequence   seq;
-      i2c_base_vseq  i2c_vseq;
-      uint           seq_idx = $urandom_range(0, seq_names.size() - 1);
+      uvm_sequence  seq;
+      i2c_base_vseq i2c_vseq;
+      uint          seq_idx = $urandom_range(0, seq_names.size() - 1);
 
       seq_name = seq_names[seq_idx];
-      `uvm_info(`gfn, $sformatf("\n  -> start stressing vseq %s (%0d/%0d)",
-          seq_name, i, num_runs), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("\n  -> start stressing vseq %s (%0d/%0d)", seq_name, i, num_runs),
+                UVM_LOW)
       seq = create_seq_by_name(seq_name);
       `downcast(i2c_vseq, seq)
 

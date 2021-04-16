@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class spi_agent extends dv_base_agent#(
-    .CFG_T          (spi_agent_cfg),
-    .DRIVER_T       (spi_driver),
-    .HOST_DRIVER_T  (spi_host_driver),
-    .DEVICE_DRIVER_T(spi_device_driver),
-    .SEQUENCER_T    (spi_sequencer),
-    .MONITOR_T      (spi_monitor),
-    .COV_T          (spi_agent_cov)
-  );
+class spi_agent extends dv_base_agent #(
+  .CFG_T          (spi_agent_cfg),
+  .DRIVER_T       (spi_driver),
+  .HOST_DRIVER_T  (spi_host_driver),
+  .DEVICE_DRIVER_T(spi_device_driver),
+  .SEQUENCER_T    (spi_sequencer),
+  .MONITOR_T      (spi_monitor),
+  .COV_T          (spi_agent_cov)
+);
   `uvm_component_utils(spi_agent)
 
   `uvm_component_new

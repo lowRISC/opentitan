@@ -7,13 +7,9 @@ class spi_device_dummy_item_extra_dly_vseq extends spi_device_txrx_vseq;
   `uvm_object_utils(spi_device_dummy_item_extra_dly_vseq)
   `uvm_object_new
 
-  constraint en_dummy_host_xfer_c {
-    en_dummy_host_xfer == 1;
-  }
+  constraint en_dummy_host_xfer_c {en_dummy_host_xfer == 1;}
 
-  constraint en_extra_dly_c {
-    en_extra_dly == 1;
-  }
+  constraint en_extra_dly_c {en_extra_dly == 1;}
 
   virtual task spi_device_init();
     super.spi_device_init();

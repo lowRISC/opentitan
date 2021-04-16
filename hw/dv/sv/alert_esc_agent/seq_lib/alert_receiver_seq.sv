@@ -11,7 +11,7 @@ class alert_receiver_seq extends alert_receiver_base_seq;
 
   constraint alert_receiver_seq_c {
     r_alert_ping_send == 1;
-    r_alert_rsp       == 0;
+    r_alert_rsp == 0;
   }
 
 endclass : alert_receiver_seq

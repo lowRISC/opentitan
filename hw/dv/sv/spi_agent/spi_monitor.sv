@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class spi_monitor extends dv_base_monitor#(
-    .ITEM_T (spi_item),
-    .CFG_T  (spi_agent_cfg),
-    .COV_T  (spi_agent_cov)
-  );
+class spi_monitor extends dv_base_monitor #(
+  .ITEM_T(spi_item),
+  .CFG_T (spi_agent_cfg),
+  .COV_T (spi_agent_cov)
+);
   `uvm_component_utils(spi_monitor)
 
   spi_item host_item;
@@ -41,16 +41,16 @@ class spi_monitor extends dv_base_monitor#(
 
   virtual protected task collect_curr_trans();
     fork
-      begin: isolation_thread
+      begin : isolation_thread
         fork
-          begin: csb_deassert_thread
+          begin : csb_deassert_thread
             wait(cfg.vif.csb[0] == 1'b1);
           end
-          begin: sample_thread
+          begin : sample_thread
             // for mode 1 and 3, get the leading edges out of the way
             cfg.wait_sck_edge(LeadingEdge);
             forever begin
-              bit [7:0] host_byte;    // from sio
+              bit [7:0] host_byte;  // from sio
               bit [7:0] device_byte;  // from sio
               int       which_bit;
               for (int i = 0; i < 8; i++) begin
@@ -64,7 +64,7 @@ class spi_monitor extends dv_base_monitor#(
                 // sample sio[0] for tx
                 which_bit = cfg.host_bit_dir ? i : 7 - i;
                 host_byte[which_bit] = cfg.vif.sio[0];
-                cfg.vif.host_bit  = which_bit;
+                cfg.vif.host_bit = which_bit;
                 cfg.vif.host_byte = host_byte;
                 // sample sio[1] for rx
                 which_bit = cfg.device_bit_dir ? i : 7 - i;
@@ -87,8 +87,8 @@ class spi_monitor extends dv_base_monitor#(
                 host_item   = spi_item::type_id::create("host_item", this);
                 device_item = spi_item::type_id::create("device_item", this);
               end
-            end // forever
-          end: sample_thread
+            end  // forever
+          end : sample_thread
         join_any
         disable fork;
       end

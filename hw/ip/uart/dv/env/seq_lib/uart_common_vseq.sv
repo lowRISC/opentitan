@@ -5,9 +5,7 @@
 class uart_common_vseq extends uart_base_vseq;
   `uvm_object_utils(uart_common_vseq)
 
-  constraint num_trans_c {
-    num_trans inside {[1:2]};
-  }
+  constraint num_trans_c {num_trans inside {[1 : 2]};}
   `uvm_object_new
 
   virtual task body();

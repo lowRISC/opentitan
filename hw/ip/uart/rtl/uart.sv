@@ -7,27 +7,27 @@
 `include "prim_assert.sv"
 
 module uart (
-  input           clk_i,
-  input           rst_ni,
+  input clk_i,
+  input rst_ni,
 
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
   // Generic IO
-  input           cio_rx_i,
-  output logic    cio_tx_o,
-  output logic    cio_tx_en_o,
+  input        cio_rx_i,
+  output logic cio_tx_o,
+  output logic cio_tx_en_o,
 
   // Interrupts
-  output logic    intr_tx_watermark_o ,
-  output logic    intr_rx_watermark_o ,
-  output logic    intr_tx_empty_o  ,
-  output logic    intr_rx_overflow_o  ,
-  output logic    intr_rx_frame_err_o ,
-  output logic    intr_rx_break_err_o ,
-  output logic    intr_rx_timeout_o   ,
-  output logic    intr_rx_parity_err_o
+  output logic intr_tx_watermark_o,
+  output logic intr_rx_watermark_o,
+  output logic intr_tx_empty_o,
+  output logic intr_rx_overflow_o,
+  output logic intr_rx_frame_err_o,
+  output logic intr_rx_break_err_o,
+  output logic intr_rx_timeout_o,
+  output logic intr_rx_parity_err_o
 );
 
   import uart_reg_pkg::*;
@@ -42,8 +42,8 @@ module uart (
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o (),
-    .devmode_i  (1'b1)
+    .intg_err_o(),
+    .devmode_i (1'b1)
   );
 
   uart_core uart_core (
@@ -52,8 +52,8 @@ module uart (
     .reg2hw,
     .hw2reg,
 
-    .rx    (cio_rx_i   ),
-    .tx    (cio_tx_o   ),
+    .rx(cio_rx_i),
+    .tx(cio_tx_o),
 
     .intr_tx_watermark_o,
     .intr_rx_watermark_o,
