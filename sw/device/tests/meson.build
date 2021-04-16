@@ -50,23 +50,6 @@ sw_tests += {
   }
 }
 
-sha256_test_lib = declare_dependency(
-  link_with: static_library(
-    'sha256_test_lib',
-    sources: ['sha256_test.c'],
-    dependencies: [
-      sw_lib_dif_hmac,
-      sw_lib_flash_ctrl,
-      sw_lib_runtime_log,
-    ],
-  ),
-)
-sw_tests += {
-  'sha256_test': {
-    'library': sha256_test_lib,
-  }
-}
-
 usbdev_test_lib = declare_dependency(
   link_with: static_library(
     'usbdev_test_lib',
