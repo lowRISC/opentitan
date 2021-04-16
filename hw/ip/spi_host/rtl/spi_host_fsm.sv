@@ -452,9 +452,9 @@ module spi_host_fsm
 
   assign sck_o = sck_q;
 
-  for(genvar ii = 0; ii < NumCS; ii = ii + 1) begin : csb_gen
-    always @(posedge clk_i or negedge rst_ni) begin
-      if(!rst_ni) begin
+  for (genvar ii = 0; ii < NumCS; ii = ii + 1) begin : gen_csb_gen
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
         csb_q[ii] <= 1'b1;
         sck_q     <= 1'b0;
       end else begin
@@ -464,7 +464,7 @@ module spi_host_fsm
         sck_q     <= !stall ? sck_d : sck_q;
       end
     end
-  end : csb_gen
+  end : gen_csb_gen
 
   assign csb_o = csb_q;
 
@@ -497,8 +497,8 @@ module spi_host_fsm
   // Assertions confirming valid user input.
   //
 
-  `ASSERT(BidirOnlyInStdMode_A, cmd_speed == Standard || !(cmd_rd_en && cmd_wr_en), clk_i, rst_ni);
-  `ASSERT(ValidSpeed_A, cmd_speed != RsvdSpd, clk_i, rst_ni);
-  `ASSERT(ValidCSID_A, csid < NumCS, clk_i, rst_ni);
+  `ASSERT(BidirOnlyInStdMode_A, cmd_speed == Standard || !(cmd_rd_en && cmd_wr_en), clk_i, rst_ni)
+  `ASSERT(ValidSpeed_A, cmd_speed != RsvdSpd, clk_i, rst_ni)
+  `ASSERT(ValidCSID_A, csid < NumCS, clk_i, rst_ni)
 
 endmodule

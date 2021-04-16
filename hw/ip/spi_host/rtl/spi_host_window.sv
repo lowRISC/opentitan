@@ -23,8 +23,9 @@ module spi_host_window (
   logic [AW-1:0] addr;
 
   // Only support reads/writes to the data fifo window
-  logic win_error = (tx_valid_o || rx_ready_o) &&
-                    (addr != spi_host_reg_pkg::SPI_HOST_DATA_OFFSET);
+  logic win_error;
+  assign win_error = (tx_valid_o || rx_ready_o) &&
+                     (addr != spi_host_reg_pkg::SPI_HOST_DATA_OFFSET);
 
   tlul_adapter_reg #(
     .RegAw(AW),

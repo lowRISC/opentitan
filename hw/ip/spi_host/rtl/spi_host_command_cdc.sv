@@ -5,10 +5,7 @@
 // CDC module for SPI_HOST commands
 //
 
-module spi_host_command_cdc #(
-  parameter  int unsigned NumCS = 1,
-  localparam int CSW            = prim_util_pkg::vbits(NumCS)
-) (
+module spi_host_command_cdc (
   input                              clk_i,
   input                              rst_ni,
 

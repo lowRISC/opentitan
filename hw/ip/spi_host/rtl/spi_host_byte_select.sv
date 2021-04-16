@@ -30,9 +30,9 @@ module spi_host_byte_select (
   assign do_drain     = byte_valid & ~byte_en;
   assign byte_ready   = byte_ready_i | do_drain;
 
-  for(genvar ii = 0; ii < 4; ii = ii + 1) begin : map_data_be
+  for(genvar ii = 0; ii < 4; ii = ii + 1) begin : gen_map_data_be
     assign wdata_be[9*ii +: 9] = { word_be_i[ii], word_i[8*ii +: 8] };
-  end : map_data_be
+  end : gen_map_data_be
 
   prim_packer_fifo #(
     .InW(36),

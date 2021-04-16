@@ -215,9 +215,7 @@ module spi_host
 
   logic sw_rst, core_sw_rst;
 
-  spi_host_command_cdc #(
-    .NumCS(NumCS)
-  ) u_cmd_cdc (
+  spi_host_command_cdc u_cmd_cdc (
     .clk_i,
     .rst_ni,
     .clk_core_i,

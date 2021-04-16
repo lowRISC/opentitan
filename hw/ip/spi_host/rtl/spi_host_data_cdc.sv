@@ -78,15 +78,15 @@ module spi_host_data_cdc #(
   logic [3:0]  tx_be_ordered;
   logic [31:0] rx_data_unordered;
 
-  if (SwapBytes) begin : swap
+  if (SwapBytes) begin : gen_swap
     assign tx_data_ordered = { << 8 {tx_data_i} };
     assign tx_be_ordered   = { << { tx_be_i} };
     assign rx_data_o       = { << 8 { rx_data_unordered } };
-  end else begin : do_not_swap
+  end else begin : gen_do_not_swap
     assign tx_data_ordered = tx_data_i;
     assign tx_be_ordered   = tx_be_i;
     assign rx_data_o       = rx_data_unordered;
-  end : do_not_swap
+  end : gen_do_not_swap
 
   logic [35:0] tx_data_be;
   logic [35:0] core_tx_data_be;
@@ -111,14 +111,14 @@ module spi_host_data_cdc #(
   assign tx_qd_o = tx_depth_total;
   assign rx_qd_o = rx_depth_total;
 
-  if (TxSyncDepth == 0) begin : tx_async_only
+  if (TxSyncDepth == 0) begin : gen_tx_async_only
 
     assign tx_data_be_async_fifo = tx_data_be;
     assign tx_valid_async_fifo   = tx_valid_i;
     assign tx_ready_o            = tx_ready_async_fifo;
     assign tx_depth_total        = byte'(tx_depth_async_fifo);
 
-  end else begin : tx_async_plus_sync
+  end else begin : gen_tx_async_plus_sync
 
     logic [TxSyncDepthW-1:0] tx_depth_sync_fifo;
     assign tx_depth_total = byte'(tx_depth_async_fifo) + byte'(tx_depth_sync_fifo);
@@ -141,7 +141,7 @@ module spi_host_data_cdc #(
       .depth_o  (tx_depth_sync_fifo)
     );
 
-  end : tx_async_plus_sync
+  end : gen_tx_async_plus_sync
 
   // TODO: Establish better sw_rst technique
   // Given the lack of external clear sw_rst just drains the fifo over ~64 clocks
@@ -182,14 +182,14 @@ module spi_host_data_cdc #(
     .rdepth_o  (rx_depth_async_fifo)
   );
 
-  if (RxSyncDepth == 0) begin : rx_async_only
+  if (RxSyncDepth == 0) begin : gen_rx_async_only
 
     assign rx_data_unordered   = rx_data_async_fifo;
     assign rx_valid_o          = rx_valid_async_fifo;
     assign rx_ready_async_fifo = rx_ready_i;
     assign rx_depth_total      = byte'(rx_depth_async_fifo);
 
-  end else begin : rx_async_plus_sync
+  end else begin : gen_rx_async_plus_sync
 
     logic [RxSyncDepthW-1:0] rx_depth_sync_fifo;
     assign rx_depth_total = byte'(rx_depth_async_fifo) + byte'(rx_depth_sync_fifo);
@@ -212,7 +212,7 @@ module spi_host_data_cdc #(
       .depth_o  (rx_depth_sync_fifo)
     );
 
-  end : rx_async_plus_sync
+  end : gen_rx_async_plus_sync
 
   assign tx_empty_o = (tx_qd_o == 0);
   assign rx_empty_o = (rx_qd_o == 0);
