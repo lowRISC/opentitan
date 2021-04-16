@@ -52,8 +52,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   // peripheral inputs, mixed domains
   input pwr_peri_t peri_i,
-  input pwr_flash_rsp_t flash_i,
-  output pwr_flash_rsp_t flash_o,
+  input pwr_flash_t flash_i,
+  output pwr_flash_t flash_o,
 
   // otp interface
   input  pwr_otp_rsp_t otp_i,
@@ -235,20 +235,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(peri_reqs_o)
   );
 
-  // synchronize inputs from flash
   prim_flop_2sync #(
     .Width(1),
-    .ResetValue(1'b0)
-  ) u_sync_flash_done (
-    .clk_i,
-    .rst_ni,
-    .d_i(flash_i.flash_done),
-    .q_o(flash_o.flash_done)
-  );
-
-  prim_flop_2sync #(
-    .Width(1),
-    // TODO: Is a value of 1 correct here?
     .ResetValue(1'b1)
   ) u_sync_flash_idle (
     .clk_i,

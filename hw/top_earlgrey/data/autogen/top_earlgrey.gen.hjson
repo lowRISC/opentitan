@@ -2124,12 +2124,13 @@
           name: pwr_flash
           struct: pwr_flash
           package: pwrmgr_pkg
-          type: req_rsp
-          act: req
+          type: uni
+          act: rcv
           width: 1
           inst_name: pwrmgr_aon
           default: ""
           end_idx: -1
+          top_type: broadcast
           top_signame: pwrmgr_aon_pwr_flash
           index: -1
         }
@@ -3579,8 +3580,8 @@
           name: pwrmgr
           struct: pwr_flash
           package: pwrmgr_pkg
-          type: req_rsp
-          act: rsp
+          type: uni
+          act: req
           width: 1
           inst_name: flash_ctrl
           default: ""
@@ -12408,12 +12409,13 @@
         name: pwr_flash
         struct: pwr_flash
         package: pwrmgr_pkg
-        type: req_rsp
-        act: req
+        type: uni
+        act: rcv
         width: 1
         inst_name: pwrmgr_aon
         default: ""
         end_idx: -1
+        top_type: broadcast
         top_signame: pwrmgr_aon_pwr_flash
         index: -1
       }
@@ -13423,8 +13425,8 @@
         name: pwrmgr
         struct: pwr_flash
         package: pwrmgr_pkg
-        type: req_rsp
-        act: rsp
+        type: uni
+        act: req
         width: 1
         inst_name: flash_ctrl
         default: ""
@@ -16077,24 +16079,13 @@
       }
       {
         package: pwrmgr_pkg
-        struct: pwr_flash_req
-        signame: pwrmgr_aon_pwr_flash_req
+        struct: pwr_flash
+        signame: pwrmgr_aon_pwr_flash
         width: 1
-        type: req_rsp
+        type: uni
         end_idx: -1
-        act: req
-        suffix: req
-        default: ""
-      }
-      {
-        package: pwrmgr_pkg
-        struct: pwr_flash_rsp
-        signame: pwrmgr_aon_pwr_flash_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: rsp
+        act: rcv
+        suffix: ""
         default: ""
       }
       {

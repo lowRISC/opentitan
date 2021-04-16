@@ -16,7 +16,6 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 
   // initialization command
   input init_i,
-  output logic init_done_o,
 
   // only access seeds when provisioned
   input provision_en_i,
@@ -106,7 +105,6 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
   lc_ctrl_pkg::lc_tx_t err_sts;
   logic err_sts_set;
   lc_ctrl_pkg::lc_tx_t rma_ack_d, rma_ack_q;
-  logic init_done_d;
   logic validate_q, validate_d;
   logic [SeedCntWidth-1:0] seed_cnt_q;
   logic [SeedRdsWidth-1:0] addr_cnt_q;
@@ -127,12 +125,10 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       state_q <= StIdle;
       rma_ack_q <= lc_ctrl_pkg::Off;
       validate_q <= 1'b0;
-      init_done_o <= 1'b0;
     end else begin
       state_q <= state_d;
       rma_ack_q <= rma_ack_d;
       validate_q <= validate_d;
-      init_done_o <= init_done_d;
     end
   end
 
@@ -297,13 +293,6 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     // read buffer enable
     rd_buf_en_o = 1'b0;
 
-    // init status
-    // flash_ctrl handles its own arbitration between hardware and software.
-    // So once the init kicks off it is safe to ack.  The done signal is still
-    // to give a chance to hold off further power up progression in the future
-    // if required.
-    init_done_d = 1'b1;
-
     addr_key_req_d = 1'b0;
     data_key_req_d = 1'b0;
 
@@ -318,14 +307,13 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     unique case (state_q)
 
       StIdle: begin
-        init_done_d = 1'b0;
-        phase = PhaseSeed;
         if (init_q) begin
           state_d = StReqAddrKey;
         end
       end
 
       StReqAddrKey: begin
+        phase = PhaseSeed;
         addr_key_req_d = 1'b1;
         if (addr_key_ack_q) begin
           state_d = StReqDataKey;
@@ -333,6 +321,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       end
 
       StReqDataKey: begin
+        phase = PhaseSeed;
         data_key_req_d = 1'b1;
         if (data_key_ack_q) begin
           // provision_en is only a "good" value after otp/lc initialization
@@ -351,7 +340,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
         info_sel = seed_info_sel;
 
         // we have checked all seeds, proceed
-        if (seed_cnt_q == NumSeeds[SeedCntWidth-1:0]) begin
+        if (seed_cnt_q == NumSeeds) begin
           start = 1'b0;
           state_d = StWait;
 
@@ -498,7 +487,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
     end else if (word_cnt_clr) begin
       word_cnt <= '0;
     end else if (word_cnt_incr) begin
-      word_cnt <= word_cnt + WidthMultiple[WordCntWidth-1:0];
+      word_cnt <= word_cnt + WidthMultiple;
     end
   end
 
@@ -557,7 +546,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
 
   assign rma_part_sel = RmaWipeEntries[rma_wipe_idx].part;
   assign rma_info_sel = RmaWipeEntries[rma_wipe_idx].info_sel;
-  assign rma_num_words = WidthMultiple[11:0] - 1;
+  assign rma_num_words = WidthMultiple - 1;
 
 
   //fsm for handling the actual wipe
@@ -605,7 +594,7 @@ module flash_ctrl_lcmgr import flash_ctrl_pkg::*; #(
       end
 
       StRmaWordSel: begin
-        if (word_cnt < BusWordsPerPage[WordCntWidth-1:0]) begin
+        if (word_cnt < BusWordsPerPage) begin
           rma_state_d = StRmaProgram;
         end else begin
           word_cnt_clr = 1'b1;
