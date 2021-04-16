@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_uart.h"
+#include "sw/device/lib/flash_ctrl.h"
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
@@ -32,6 +33,9 @@ static dif_uart_t uart0;
 void _boot_start(void) {
   test_status_set(kTestStatusInBootRom);
   pinmux_init();
+  flash_init();
+  while (flash_get_init_status())
+    ;
 
   CHECK(
       dif_uart_init(

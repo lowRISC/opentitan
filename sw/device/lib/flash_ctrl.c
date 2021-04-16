@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/flash_ctrl.h"
 
+#include "sw/device/lib/base/mmio.h"
+
 #include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -244,4 +246,15 @@ void flash_write_scratch_reg(uint32_t value) {
 
 uint32_t flash_read_scratch_reg(void) {
   return REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_SCRATCH_REG_OFFSET);
+}
+
+bool flash_get_init_status(void) {
+  mmio_region_t flash_base = mmio_region_from_addr(FLASH_CTRL0_BASE_ADDR);
+  return mmio_region_get_bit32(flash_base, FLASH_CTRL_STATUS_REG_OFFSET,
+                               FLASH_CTRL_STATUS_INIT_WIP_BIT);
+}
+
+void flash_init(void) {
+  mmio_region_t flash_base = mmio_region_from_addr(FLASH_CTRL0_BASE_ADDR);
+  mmio_region_write32(flash_base, FLASH_CTRL_INIT_REG_OFFSET, 1);
 }

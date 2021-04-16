@@ -136,4 +136,10 @@ void flash_write_scratch_reg(uint32_t value);
 /** Read scratch register */
 uint32_t flash_read_scratch_reg(void);
 
+/** Initialize flash controller */
+void flash_init(void);
+
+/** Get flash initialization status */
+bool flash_get_init_status(void);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_FLASH_CTRL_H_
