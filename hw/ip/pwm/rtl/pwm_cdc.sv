@@ -32,7 +32,7 @@ module pwm_cdc #(
   prim_flop_2sync #(
     .Width(32),
     .ResetValue(32'h0)
-  ) u_common_sync (
+  ) u_common_sync1 (
     .clk_i  (clk_core_i),
     .rst_ni (rst_core_ni),
     .d_i    (common_sync_in),
@@ -53,7 +53,7 @@ module pwm_cdc #(
 
   assign clr_phase_cntr = (common_sync_q != common_sync_out);
 
-  for (genvar ii = 0; ii < NOutputs; ii++) begin : chan_cdc
+  for (genvar ii = 0; ii < NOutputs; ii++) begin : gen_chan_cdc
 
     wire [83:0] chan_sync_in  = {reg2hw.pwm_en[ii].q,
                                  reg2hw.invert[ii].q,
@@ -82,7 +82,7 @@ module pwm_cdc #(
     prim_flop_2sync #(
       .Width(84),
       .ResetValue(84'h0)
-    ) u_common_sync (
+    ) u_common_sync2 (
       .clk_i  (clk_core_i),
       .rst_ni (rst_core_ni),
       .d_i    (chan_sync_in),
@@ -102,6 +102,6 @@ module pwm_cdc #(
 
     assign clr_blink_cntr[ii] = (chan_sync_q != chan_sync_out);
 
-  end : chan_cdc
+  end : gen_chan_cdc
 
 endmodule : pwm_cdc

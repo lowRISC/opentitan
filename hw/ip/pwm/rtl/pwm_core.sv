@@ -87,7 +87,7 @@ module pwm_core #(
     end
   end
 
-  for (genvar ii = 0; ii < NOutputs; ii++) begin : chan_insts
+  for (genvar ii = 0; ii < NOutputs; ii++) begin : gen_chan_insts
 
     //
     // PWM Channel Instantiation
@@ -111,6 +111,6 @@ module pwm_core #(
       .pwm_o            (pwm_o[ii])
     );
 
-  end : chan_insts
+  end : gen_chan_insts
 
 endmodule : pwm_core
