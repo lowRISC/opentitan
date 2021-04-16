@@ -101,90 +101,132 @@ module csrng_main_sm import csrng_pkg::*; (
     main_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
-        if (halt_main_sm_i) begin
-          state_d = SMHalted;
-        end else begin
-          if (ctr_drbg_cmd_req_rdy_i) begin
-            if (acmd_avail_i) begin
-              acmd_accept_o = 1'b1;
-              if (acmd_i == INS) begin
-                if (acmd_eop_i) begin
+        if (enable_i) begin
+          if (halt_main_sm_i) begin
+            state_d = SMHalted;
+          end else begin
+            if (ctr_drbg_cmd_req_rdy_i) begin
+              if (acmd_avail_i) begin
+                acmd_accept_o = 1'b1;
+                if (acmd_i == INS) begin
+                  if (acmd_eop_i) begin
+                    acmd_hdr_capt_o = 1'b1;
+                    state_d = InstantPrep;
+                  end
+                end else if (acmd_i == RES) begin
+                  if (acmd_eop_i) begin
+                    acmd_hdr_capt_o = 1'b1;
+                    state_d = ReseedPrep;
+                  end
+                end else if (acmd_i == GEN) begin
                   acmd_hdr_capt_o = 1'b1;
-                  state_d = InstantPrep;
-                end
-              end else if (acmd_i == RES) begin
-                if (acmd_eop_i) begin
+                  state_d = GenerateReq;
+                end else if (acmd_i == UPD) begin
+                  if (acmd_eop_i) begin
+                    acmd_hdr_capt_o = 1'b1;
+                    state_d = UpdatePrep;
+                  end
+                end else if (acmd_i == UNI) begin
                   acmd_hdr_capt_o = 1'b1;
-                  state_d = ReseedPrep;
+                  state_d = UninstantReq;
                 end
-              end else if (acmd_i == GEN) begin
-                acmd_hdr_capt_o = 1'b1;
-                state_d = GenerateReq;
-              end else if (acmd_i == UPD) begin
-                if (acmd_eop_i) begin
-                  acmd_hdr_capt_o = 1'b1;
-                  state_d = UpdatePrep;
-                end
-              end else if (acmd_i == UNI) begin
-                acmd_hdr_capt_o = 1'b1;
-                state_d = UninstantReq;
               end
             end
           end
         end
       end
       InstantPrep: begin
-        if (flag0_i) begin
-          // assumes all adata is present now
-          state_d = InstantReq;
+        if (!enable_i) begin
+          state_d = Idle;
         end else begin
-          // delay one clock to fix timing issue
-          cmd_entropy_req_o = 1'b1;
-          if (cmd_entropy_avail_i) begin
+          if (flag0_i) begin
+            // assumes all adata is present now
             state_d = InstantReq;
+          end else begin
+          // delay one clock to fix timing issue
+            cmd_entropy_req_o = 1'b1;
+            if (cmd_entropy_avail_i) begin
+              state_d = InstantReq;
+            end
           end
         end
       end
       InstantReq: begin
-        instant_req_o = 1'b1;
-        state_d = CmdCompWait;
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          instant_req_o = 1'b1;
+          state_d = CmdCompWait;
+        end
       end
       ReseedPrep: begin
-        cmd_entropy_req_o = 1'b1;
-        // assumes all adata is present now
-        if (cmd_entropy_avail_i) begin
-          state_d = ReseedReq;
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          cmd_entropy_req_o = 1'b1;
+          // assumes all adata is present now
+          if (cmd_entropy_avail_i) begin
+            state_d = ReseedReq;
+          end
         end
       end
       ReseedReq: begin
-        reseed_req_o = 1'b1;
-        state_d = CmdCompWait;
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          reseed_req_o = 1'b1;
+          state_d = CmdCompWait;
+        end
       end
       GenerateReq: begin
-        generate_req_o = 1'b1;
-        state_d = CmdCompWait;
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          generate_req_o = 1'b1;
+          state_d = CmdCompWait;
+        end
       end
       UpdatePrep: begin
-        // assumes all adata is present now
-        state_d = UpdateReq;
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          // assumes all adata is present now
+          state_d = UpdateReq;
+        end
       end
       UpdateReq: begin
-        update_req_o = 1'b1;
-        state_d = CmdCompWait;
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          update_req_o = 1'b1;
+          state_d = CmdCompWait;
+        end
       end
       UninstantReq: begin
-        uninstant_req_o = 1'b1;
-        state_d = CmdCompWait;
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          uninstant_req_o = 1'b1;
+          state_d = CmdCompWait;
+        end
       end
       CmdCompWait: begin
-        if (cmd_complete_i) begin
+        if (!enable_i) begin
           state_d = Idle;
+        end else begin
+          if (cmd_complete_i) begin
+            state_d = Idle;
+          end
         end
       end
       SMHalted: begin
-        main_sm_halted_o = 1'b1;
-        if (!halt_main_sm_i) begin
+        if (!enable_i) begin
           state_d = Idle;
+        end else begin
+          main_sm_halted_o = 1'b1;
+          if (!halt_main_sm_i) begin
+            state_d = Idle;
+          end
         end
       end
       Error: begin
@@ -192,10 +234,6 @@ module csrng_main_sm import csrng_pkg::*; (
       end
       default: state_d = Error;
     endcase
-    // Master override for FSM
-    if (!enable_i) begin
-      state_d = Idle;
-    end
   end
 
 endmodule
