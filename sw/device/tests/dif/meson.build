@@ -210,12 +210,12 @@ test('dif_lc_ctrl_unittest', executable(
   cpp_args: ['-DMOCK_MMIO'],
 ))
 
-test('dif_aes_test', executable(
-  'dif_aes_test',
+test('dif_aes_unittest', executable(
+  'dif_aes_unittest',
   sources: [
     hw_ip_aes_reg_h,
     meson.source_root() / 'sw/device/lib/dif/dif_aes.c',
-    'dif_aes_test.cc',
+    'dif_aes_unittest.cc',
   ],
   dependencies: [
     sw_vendor_gtest,
