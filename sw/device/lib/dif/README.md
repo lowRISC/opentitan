@@ -148,10 +148,17 @@ otherwise specified).
     * `kDif<ip>BadArg`, with value 2, to denote that the caller supplied
       incorrect arguments. This value must only be returned if the function has
       not caused any side-effects.
-* `dif_<ip>_<operation>_result_t` is an enum representing more specific failure
-  modes. These specific return code enums can be shared between multiple DIFs
-  that fail in the same way. `<operation>` need not correspond to a DIF name if
-  more than one DIF uses these return codes.
+
+  Additional, specific return code constants must all be defined after
+  these three general constants, and may cover more specific forms of the
+  return codes defined above.
+* **DEPRECATED** `dif_<ip>_<operation>_result_t` is an enum representing more
+  specific failure modes. These specific return code enums can be shared
+  between multiple DIFs that fail in the same way. `<operation>` need not
+  correspond to a DIF name if more than one DIF uses these return codes.
+
+  Operation return codes are being deprecated. See GitHub issue
+  [#6137](https://github.com/lowRISC/opentitan/issues/6137) for more details.
 
   The first three constants in these specific enums must define the following
   constants:
