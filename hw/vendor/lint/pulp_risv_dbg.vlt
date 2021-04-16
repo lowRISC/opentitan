@@ -6,3 +6,7 @@
 
 // Waive the warning that the debug module's package (dm) is in a file called dm_pkg.sv
 lint_off -rule DECLFILENAME -file "*/src/dm_pkg.sv" -match "Filename 'dm_pkg' does not match PACKAGE name: 'dm'"
+
+// Waive some unused bits warnings in dm_pkg.sv. These are in parameters to
+// functions used for encoding RISC-V instructions.
+lint_off -rule UNUSED -file "*/src/dm_pkg.sv" -match "Bits of signal are not used: 'imm'[0]"
