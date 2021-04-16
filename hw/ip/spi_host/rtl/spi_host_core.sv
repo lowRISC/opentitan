@@ -6,8 +6,7 @@
 //
 
 module spi_host_core #(
-  parameter  int NumCS     = 1,
-  localparam int CSW       = prim_util_pkg::vbits(NumCS)
+  parameter  int NumCS     = 1
 ) (
   input                             clk_i,
   input                             rst_ni,
