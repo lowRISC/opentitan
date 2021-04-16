@@ -14,3 +14,11 @@
 // address it with a 2-bit index.
 lint_off -rule WIDTH -file "*/rtl/keymgr.sv" -match "Bit extraction of var[3:0]*not 3 bits."
 lint_off -rule WIDTH -file "*/rtl/keymgr_kmac_if.sv" -match "Bit extraction of var[3:0]*not 3 bits."
+
+// Waive some width mismatch warnings in keymgr_ctrl.sv that come from
+// addressing error_o by elements of the keymgr_err_pos_e enum. The enum
+// contains 4 actual error positions plus a "last" entry, meaning that its
+// elements are represented by $clog2(5) = 3 bits. The error_o array just has
+// an entry for each of the 4 error positions, so Verilator expects to address
+// it with a 2-bit index.
+lint_off -rule WIDTH -file "*/rtl/keymgr_ctrl.sv" -match "Bit extraction of var[3:0]*not 3 bits."
