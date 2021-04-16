@@ -187,6 +187,12 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
+      name: chip_dif_entropy_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/dif_entropy_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
       name: chip_dif_gpio_smoketest
       uvm_test_seq: chip_sw_gpio_smoke_vseq
       sw_images: ["sw/device/tests/dif_gpio_smoketest:1"]
