@@ -7,6 +7,8 @@
   `define RVFI
 `endif
 
+`include "prim_assert.sv"
+
 /**
  * Top level module of the ibex RISC-V core
  */
@@ -414,6 +416,225 @@ module ibex_top #(
 
   // Redundant lockstep core implementation
   if (Lockstep) begin : gen_lockstep
+    // Note: certain synthesis tools like DC are very smart at optimizing away redundant logic.
+    // Hence, we have to insert an optimization barrier at the IOs of the lockstep Ibex.
+    // This is achieved by manually buffering each bit using prim_buf.
+    // Our Xilinx and DC synthesis flows make sure that these buffers cannot be optimized away
+    // using keep attributes (Vivado) and size_only constraints (DC).
+
+    localparam int NumBufferBits = $bits({
+      hart_id_i,
+      boot_addr_i,
+      instr_req_o,
+      instr_gnt_i,
+      instr_rvalid_i,
+      instr_addr_o,
+      instr_rdata_i,
+      instr_err_i,
+      data_req_o,
+      data_gnt_i,
+      data_rvalid_i,
+      data_we_o,
+      data_be_o,
+      data_addr_o,
+      data_wdata_o,
+      data_rdata_i,
+      data_err_i,
+      dummy_instr_id,
+      rf_raddr_a,
+      rf_raddr_b,
+      rf_waddr_wb,
+      rf_we_wb,
+      rf_wdata_wb_ecc,
+      rf_rdata_a_ecc,
+      rf_rdata_b_ecc,
+      ic_tag_req,
+      ic_tag_write,
+      ic_tag_addr,
+      ic_tag_wdata,
+      ic_data_req,
+      ic_data_write,
+      ic_data_addr,
+      ic_data_wdata,
+      irq_software_i,
+      irq_timer_i,
+      irq_external_i,
+      irq_fast_i,
+      irq_nm_i,
+      irq_pending,
+      debug_req_i,
+      crash_dump_o,
+      core_busy_d
+    });
+
+    logic [NumBufferBits-1:0] buf_in, buf_out;
+
+    logic [31:0]                  hart_id_local;
+    logic [31:0]                  boot_addr_local;
+
+    logic                         instr_req_local;
+    logic                         instr_gnt_local;
+    logic                         instr_rvalid_local;
+    logic [31:0]                  instr_addr_local;
+    logic [31:0]                  instr_rdata_local;
+    logic                         instr_err_local;
+
+    logic                         data_req_local;
+    logic                         data_gnt_local;
+    logic                         data_rvalid_local;
+    logic                         data_we_local;
+    logic [3:0]                   data_be_local;
+    logic [31:0]                  data_addr_local;
+    logic [31:0]                  data_wdata_local;
+    logic [31:0]                  data_rdata_local;
+    logic                         data_err_local;
+
+    logic                         dummy_instr_id_local;
+    logic [4:0]                   rf_raddr_a_local;
+    logic [4:0]                   rf_raddr_b_local;
+    logic [4:0]                   rf_waddr_wb_local;
+    logic                         rf_we_wb_local;
+    logic [RegFileDataWidth-1:0]  rf_wdata_wb_ecc_local;
+    logic [RegFileDataWidth-1:0]  rf_rdata_a_ecc_local;
+    logic [RegFileDataWidth-1:0]  rf_rdata_b_ecc_local;
+
+    logic [IC_NUM_WAYS-1:0]       ic_tag_req_local;
+    logic                         ic_tag_write_local;
+    logic [IC_INDEX_W-1:0]        ic_tag_addr_local;
+    logic [TagSizeECC-1:0]        ic_tag_wdata_local;
+    logic [IC_NUM_WAYS-1:0]       ic_data_req_local;
+    logic                         ic_data_write_local;
+    logic [IC_INDEX_W-1:0]        ic_data_addr_local;
+    logic [LineSizeECC-1:0]       ic_data_wdata_local;
+
+    logic                         irq_software_local;
+    logic                         irq_timer_local;
+    logic                         irq_external_local;
+    logic [14:0]                  irq_fast_local;
+    logic                         irq_nm_local;
+    logic                         irq_pending_local;
+
+    logic                         debug_req_local;
+    crash_dump_t                  crash_dump_local;
+
+    logic                         core_busy_local;
+
+    assign buf_in = {
+      hart_id_i,
+      boot_addr_i,
+      instr_req_o,
+      instr_gnt_i,
+      instr_rvalid_i,
+      instr_addr_o,
+      instr_rdata_i,
+      instr_err_i,
+      data_req_o,
+      data_gnt_i,
+      data_rvalid_i,
+      data_we_o,
+      data_be_o,
+      data_addr_o,
+      data_wdata_o,
+      data_rdata_i,
+      data_err_i,
+      dummy_instr_id,
+      rf_raddr_a,
+      rf_raddr_b,
+      rf_waddr_wb,
+      rf_we_wb,
+      rf_wdata_wb_ecc,
+      rf_rdata_a_ecc,
+      rf_rdata_b_ecc,
+      ic_tag_req,
+      ic_tag_write,
+      ic_tag_addr,
+      ic_tag_wdata,
+      ic_data_req,
+      ic_data_write,
+      ic_data_addr,
+      ic_data_wdata,
+      irq_software_i,
+      irq_timer_i,
+      irq_external_i,
+      irq_fast_i,
+      irq_nm_i,
+      irq_pending,
+      debug_req_i,
+      crash_dump_o,
+      core_busy_d
+    };
+
+    assign {
+      hart_id_local,
+      boot_addr_local,
+      instr_req_local,
+      instr_gnt_local,
+      instr_rvalid_local,
+      instr_addr_local,
+      instr_rdata_local,
+      instr_err_local,
+      data_req_local,
+      data_gnt_local,
+      data_rvalid_local,
+      data_we_local,
+      data_be_local,
+      data_addr_local,
+      data_wdata_local,
+      data_rdata_local,
+      data_err_local,
+      dummy_instr_id_local,
+      rf_raddr_a_local,
+      rf_raddr_b_local,
+      rf_waddr_wb_local,
+      rf_we_wb_local,
+      rf_wdata_wb_ecc_local,
+      rf_rdata_a_ecc_local,
+      rf_rdata_b_ecc_local,
+      ic_tag_req_local,
+      ic_tag_write_local,
+      ic_tag_addr_local,
+      ic_tag_wdata_local,
+      ic_data_req_local,
+      ic_data_write_local,
+      ic_data_addr_local,
+      ic_data_wdata_local,
+      irq_software_local,
+      irq_timer_local,
+      irq_external_local,
+      irq_fast_local,
+      irq_nm_local,
+      irq_pending_local,
+      debug_req_local,
+      crash_dump_local,
+      core_busy_local
+    } = buf_out;
+
+    // Manually buffer all input signals.
+    for (genvar k = 0; k < NumBufferBits; k++) begin : gen_buffers
+      prim_buf u_prim_buf (
+        .in_i(buf_in[k]),
+        .out_o(buf_out[k])
+      );
+    end
+
+    logic [TagSizeECC-1:0]  ic_tag_rdata_local [IC_NUM_WAYS];
+    logic [LineSizeECC-1:0] ic_data_rdata_local [IC_NUM_WAYS];
+    for (genvar k = 0; k < IC_NUM_WAYS; k++) begin : gen_ways
+      for (genvar j = 0; j < TagSizeECC; j++) begin : gen_tag_bufs
+        prim_buf u_prim_buf (
+          .in_i(ic_tag_rdata[k][j]),
+          .out_o(ic_tag_rdata_local[k][j])
+        );
+      end
+      for (genvar j = 0; j < TagSizeECC; j++) begin : gen_data_bufs
+        prim_buf u_prim_buf (
+          .in_i(ic_data_rdata[k][j]),
+          .out_o(ic_data_rdata_local[k][j])
+        );
+      end
+    end
+
+    logic lockstep_alert_minor_local, lockstep_alert_major_local;
     ibex_lockstep #(
       .PMPEnable         ( PMPEnable         ),
       .PMPGranularity    ( PMPGranularity    ),
@@ -443,60 +664,72 @@ module ibex_top #(
       .clk_i             (clk),
       .rst_ni            (rst_ni),
 
-      .hart_id_i         (hart_id_i),
-      .boot_addr_i       (boot_addr_i),
+      .hart_id_i         (hart_id_local),
+      .boot_addr_i       (boot_addr_local),
 
-      .instr_req_i       (instr_req_o),
-      .instr_gnt_i       (instr_gnt_i),
-      .instr_rvalid_i    (instr_rvalid_i),
-      .instr_addr_i      (instr_addr_o),
-      .instr_rdata_i     (instr_rdata_i),
-      .instr_err_i       (instr_err_i),
+      .instr_req_i       (instr_req_local),
+      .instr_gnt_i       (instr_gnt_local),
+      .instr_rvalid_i    (instr_rvalid_local),
+      .instr_addr_i      (instr_addr_local),
+      .instr_rdata_i     (instr_rdata_local),
+      .instr_err_i       (instr_err_local),
 
-      .data_req_i        (data_req_o),
-      .data_gnt_i        (data_gnt_i),
-      .data_rvalid_i     (data_rvalid_i),
-      .data_we_i         (data_we_o),
-      .data_be_i         (data_be_o),
-      .data_addr_i       (data_addr_o),
-      .data_wdata_i      (data_wdata_o),
-      .data_rdata_i      (data_rdata_i),
-      .data_err_i        (data_err_i),
+      .data_req_i        (data_req_local),
+      .data_gnt_i        (data_gnt_local),
+      .data_rvalid_i     (data_rvalid_local),
+      .data_we_i         (data_we_local),
+      .data_be_i         (data_be_local),
+      .data_addr_i       (data_addr_local),
+      .data_wdata_i      (data_wdata_local),
+      .data_rdata_i      (data_rdata_local),
+      .data_err_i        (data_err_local),
 
-      .dummy_instr_id_i  (dummy_instr_id),
-      .rf_raddr_a_i      (rf_raddr_a),
-      .rf_raddr_b_i      (rf_raddr_b),
-      .rf_waddr_wb_i     (rf_waddr_wb),
-      .rf_we_wb_i        (rf_we_wb),
-      .rf_wdata_wb_ecc_i (rf_wdata_wb_ecc),
-      .rf_rdata_a_ecc_i  (rf_rdata_a_ecc),
-      .rf_rdata_b_ecc_i  (rf_rdata_b_ecc),
+      .dummy_instr_id_i  (dummy_instr_id_local),
+      .rf_raddr_a_i      (rf_raddr_a_local),
+      .rf_raddr_b_i      (rf_raddr_b_local),
+      .rf_waddr_wb_i     (rf_waddr_wb_local),
+      .rf_we_wb_i        (rf_we_wb_local),
+      .rf_wdata_wb_ecc_i (rf_wdata_wb_ecc_local),
+      .rf_rdata_a_ecc_i  (rf_rdata_a_ecc_local),
+      .rf_rdata_b_ecc_i  (rf_rdata_b_ecc_local),
 
-      .ic_tag_req_i      (ic_tag_req),
-      .ic_tag_write_i    (ic_tag_write),
-      .ic_tag_addr_i     (ic_tag_addr),
-      .ic_tag_wdata_i    (ic_tag_wdata),
-      .ic_tag_rdata_i    (ic_tag_rdata),
-      .ic_data_req_i     (ic_data_req),
-      .ic_data_write_i   (ic_data_write),
-      .ic_data_addr_i    (ic_data_addr),
-      .ic_data_wdata_i   (ic_data_wdata),
-      .ic_data_rdata_i   (ic_data_rdata),
+      .ic_tag_req_i      (ic_tag_req_local),
+      .ic_tag_write_i    (ic_tag_write_local),
+      .ic_tag_addr_i     (ic_tag_addr_local),
+      .ic_tag_wdata_i    (ic_tag_wdata_local),
+      .ic_tag_rdata_i    (ic_tag_rdata_local),
+      .ic_data_req_i     (ic_data_req_local),
+      .ic_data_write_i   (ic_data_write_local),
+      .ic_data_addr_i    (ic_data_addr_local),
+      .ic_data_wdata_i   (ic_data_wdata_local),
+      .ic_data_rdata_i   (ic_data_rdata_local),
 
-      .irq_software_i    (irq_software_i),
-      .irq_timer_i       (irq_timer_i),
-      .irq_external_i    (irq_external_i),
-      .irq_fast_i        (irq_fast_i),
-      .irq_nm_i          (irq_nm_i),
-      .irq_pending_i     (irq_pending),
+      .irq_software_i    (irq_software_local),
+      .irq_timer_i       (irq_timer_local),
+      .irq_external_i    (irq_external_local),
+      .irq_fast_i        (irq_fast_local),
+      .irq_nm_i          (irq_nm_local),
+      .irq_pending_i     (irq_pending_local),
 
-      .debug_req_i       (debug_req_i),
-      .crash_dump_i      (crash_dump_o),
+      .debug_req_i       (debug_req_local),
+      .crash_dump_i      (crash_dump_local),
 
-      .alert_minor_o     (lockstep_alert_minor),
-      .alert_major_o     (lockstep_alert_major),
-      .core_busy_i       (core_busy_d)
+      .alert_minor_o     (lockstep_alert_minor_local),
+      .alert_major_o     (lockstep_alert_major_local),
+      .core_busy_i       (core_busy_local)
     );
+
+    // Manually buffer the output signals.
+    prim_buf u_prim_buf_alert_minor (
+      .in_i(lockstep_alert_minor_local),
+      .out_o(lockstep_alert_minor)
+    );
+
+    prim_buf u_prim_buf_alert_major (
+      .in_i(lockstep_alert_major_local),
+      .out_o(lockstep_alert_major)
+    );
+
   end else begin : gen_no_lockstep
     assign lockstep_alert_major = 1'b0;
     assign lockstep_alert_minor = 1'b0;

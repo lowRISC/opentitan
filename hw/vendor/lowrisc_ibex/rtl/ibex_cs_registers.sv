@@ -256,7 +256,7 @@ module ibex_cs_registers #(
   logic [31:0] csr_wdata_int;
   logic [31:0] csr_rdata_int;
   logic        csr_we_int;
-  logic        csr_wreq;
+  logic        csr_wr;
 
   // Access violation signals
   logic        illegal_csr;
@@ -279,7 +279,7 @@ module ibex_cs_registers #(
 
   // See RISC-V Privileged Specification, version 1.11, Section 2.1
   assign illegal_csr_priv   = (csr_addr[9:8] > {priv_lvl_q});
-  assign illegal_csr_write  = (csr_addr[11:10] == 2'b11) && csr_wreq;
+  assign illegal_csr_write  = (csr_addr[11:10] == 2'b11) && csr_wr;
   assign illegal_csr_insn_o = csr_access_i & (illegal_csr | illegal_csr_write | illegal_csr_priv);
 
   // mip CSR is purely combinational - must be able to re-enable the clock upon WFI
@@ -736,13 +736,10 @@ module ibex_cs_registers #(
     endcase
   end
 
-  assign csr_wreq = csr_op_en_i &
-    (csr_op_i inside {CSR_OP_WRITE,
-                      CSR_OP_SET,
-                      CSR_OP_CLEAR});
+  assign csr_wr = (csr_op_i inside {CSR_OP_WRITE, CSR_OP_SET, CSR_OP_CLEAR});
 
   // only write CSRs during one clock cycle
-  assign csr_we_int  = csr_wreq & ~illegal_csr_insn_o;
+  assign csr_we_int  = csr_wr & csr_op_en_i & ~illegal_csr_insn_o;
 
   assign csr_rdata_o = csr_rdata_int;
 

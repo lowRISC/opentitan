@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:ibex:ibex_pkg
       - lowrisc:ibex:ibex_core
+      - lowrisc:prim:buf
     files:
       - rtl/ibex_register_file_ff.sv # generic FF-based
       - rtl/ibex_register_file_fpga.sv # FPGA

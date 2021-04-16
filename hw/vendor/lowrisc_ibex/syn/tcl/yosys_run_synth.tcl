@@ -33,10 +33,10 @@ yosys "chparam -set RegFile $lr_synth_ibex_regfile $lr_synth_top_module"
 yosys "synth $flatten_opt -top $lr_synth_top_module"
 yosys "opt -purge"
 
+yosys "write_verilog $lr_synth_pre_map_out"
+
 # Map latch primitives onto latch cells
 yosys "techmap -map rtl/latch_map.v"
-
-yosys "write_verilog $lr_synth_pre_map_out"
 
 yosys "dfflibmap -liberty $lr_synth_cell_library_path"
 yosys "opt"
