@@ -27,6 +27,7 @@ package aes_env_pkg;
   parameter uint NUM_ALERTS = 2;
 
   typedef enum int { AES_CFG=0, AES_DATA=1, AES_ERR_INJ=2 } aes_item_type_e;
+  typedef enum bit { Flip_bits = 0, Pull_reset = 1 } flip_rst_e;
 
   typedef struct packed {
     bit          dataout;

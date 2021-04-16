@@ -6,3 +6,4 @@
 `include "aes_wake_up_vseq.sv"
 `include "aes_common_vseq.sv"
 `include "aes_stress_vseq.sv"
+`include "aes_alert_reset_vseq.sv"

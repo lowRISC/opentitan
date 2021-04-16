@@ -52,6 +52,20 @@
   // Update all builds to add options specific to AES C model compilation.
   en_build_modes: ["{tool}_aes_model_build_opts"]
 
+  component_a: "uvm_test_top.env.scoreboard"
+  id_a: _ALL_
+  verbosity_a: UVM_MEDIUM
+  phase_a: run
+  run_modes: [
+    {
+      name: set_verbosity_comp_a_uvm_debug
+      run_opts: ["+uvm_set_verbosity={component_a},{id_a},{verbosity_a},{phase_a}"]
+    }
+  ]
+
+
+run_opts: ["+uvm_set_verbosity={component_a},{id_a},{verbosity_a},{phase_a}"]
+
   // List of test specifications.
   tests: [
     {
@@ -85,6 +99,11 @@
       uvm_test: aes_clear_test
       uvm_test_seq: aes_stress_vseq
     }
+    {
+      name: aes_alert_reset
+      uvm_test: aes_alert_reset_test
+      uvm_test_seq: aes_alert_reset_vseq
+    }
   ]
 
   // List of regressions.
@@ -95,11 +114,11 @@
     }
     {
       name: failure
-      tests: ["aes_config_error"]
+      tests: ["aes_config_error", "aes_alert_reset"]
     }
     {
       name: stress
-      tests: ["aes_stress","aes_b2b", "aes_clear", "aes_config_error", "aes_smoke"]
+      tests: ["aes_stress","aes_b2b", "aes_clear", "aes_config_error", "aes_smoke", "aes_alert_reset"]
     }
   ]
 }

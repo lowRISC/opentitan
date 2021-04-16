@@ -11,11 +11,13 @@ class aes_stress_vseq extends aes_base_vseq;
 
   task body();
     `uvm_info(`gfn, $sformatf("\n\n\t ----| STARTING AES MAIN SEQUENCE |----\n %s",
-               cfg.convert2string()), UVM_LOW)
+                              cfg.convert2string()), UVM_LOW)
 
     // generate list of messages //
     generate_message_queue();
     // process all messages //
+
     send_msg_queue(cfg.unbalanced, cfg.read_prob, cfg.write_prob);
+
   endtask : body
 endclass

@@ -8,12 +8,8 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   `uvm_object_utils_end
   `uvm_object_new
 
-  // TODO sort knobs into test/SEQUENCE/message/item
-
   // test environment constraints //
   typedef enum { VerySlow, Slow, Fast, VeryFast } tl_ul_access_e;
-
-
     //  Message Knobs //
   int                num_messages_min            = 1;
   int                num_messages_max            = 1;
@@ -70,6 +66,16 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   //   [0]: key_len
   cfg_error_type_t   config_error_type          = 2'b00;
 
+  // min and max wait (clk) before an error injection
+  // this is only for injection and random reset
+  int                inj_min_delay              = 10;
+  int                inj_max_delay              = 500;
+  rand int           inj_delay;
+  // split between bit flipping and pulling reset
+  // pct of how many will be bitflips
+  int                flip_rst_split_pct          = 70;
+  rand flip_rst_e    flip_rst;
+
   // number of messages that was selected to be corrupt
   // these should be excluded from the num_messages count
   // when checking that all messages was processed
@@ -114,8 +120,12 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   // constraints
   constraint c_num_messages {num_messages inside {[num_messages_min : num_messages_max]};}
   constraint c_ref_model    {ref_model    dist   { 0 :/ use_c_model_pct,
-                                                    1 :/ (100 - use_c_model_pct)};}
+                                                   1 :/ (100 - use_c_model_pct)};}
 
+  constraint c_inj_delay    {inj_delay    inside {[inj_min_delay : inj_max_delay]};}
+
+  constraint flip_rst_c { flip_rst dist { 0:/flip_rst_split_pct,
+                                          1:/(100-flip_rst_split_pct) };}
 
   function void post_randomize();
     if (use_key_mask) key_mask = 1;
@@ -161,6 +171,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
     str = {str,  $sformatf("\n\t ----| OFB Weight: %d         \t ", ofb_weight)};
     str = {str,  $sformatf("\n\t ----| CTR Weight: %d         \t ", ctr_weight)};
     str = {str,  $sformatf("\n\t ----| key mask:   %b         \t ", key_mask)};
+    str = {str,  $sformatf("\n\t ----| inj delay:  %d         \t ", inj_delay)};
     str = {str, "\n"};
     return str;
   endfunction
