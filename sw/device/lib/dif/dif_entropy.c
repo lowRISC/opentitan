@@ -18,6 +18,9 @@
 static void set_config_register(const dif_entropy_t *entropy,
                                 const dif_entropy_config_t *config) {
   // TODO: Make this configurable at the API level.
+  // TODO: Currently bypass disable cannot be set, as it causes the hw fsm to
+  // get stuck
+  // uint32_t reg = 0;
   uint32_t reg =
       bitfield_bit32_write(0, ENTROPY_SRC_CONF_BOOT_BYPASS_DISABLE_BIT, 1);
 
