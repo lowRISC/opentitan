@@ -409,58 +409,82 @@ def generate_clkmgr(top, cfg_path, out_path):
     outputs = [hjson_out, rtl_out, pkg_out]
     names = ['clkmgr.hjson', 'clkmgr.sv', 'clkmgr_pkg.sv']
 
-    # clock classification
-    grps = top['clocks']['groups']
+    # A dictionary of the aon attribute for easier lookup. src_aon_attr[C] is
+    # True if clock C is always-on and False otherwise.
+    src_aon_attr = {src['name']: (src['aon'] == 'yes')
+                    for src in (top['clocks']['srcs'] +
+                                top['clocks']['derived_srcs'])}
 
-    ft_clks = OrderedDict()
-    rg_clks = OrderedDict()
-    sw_clks = OrderedDict()
-    src_aon_attr = OrderedDict()
-    hint_clks = OrderedDict()
+    # Classify the various clock signals. Here, we build the following
+    # dictionaries, each mapping the derived clock name to its source.
+    #
+    # ft_clks:  Clocks fed through clkmgr but are not disturbed in any way.
+    #           This maintains the clocking structure consistency.
+    #           This includes two groups of clocks:
+    #             - Clocks fed from the always-on source
+    #             - Clocks fed to the powerup group
+    #
+    # rg_clks: Non-feedthrough clocks that have no software control. These
+    #          clocks are root-gated and the root-gated clock is then exposed
+    #          directly in clocks_o.
+    #
+    # sw_clks: Non-feedthrough clocks that have direct software control. These
+    #          are root-gated, but (unlike rg_clks) then go through a second
+    #          clock gate which is controlled by software.
+    #
+    # hints: Non-feedthrough clocks that have "hint" software control (with a
+    #        feedback mechanism to allow blocks to avoid being suspended when
+    #        they are not idle).
+    ft_clks = {}
+    rg_clks = {}
+    sw_clks = {}
+    hints = {}
 
-    # construct a dictionary of the aon attribute for easier lookup
-    # ie, src_name_A: True, src_name_B: False
-    for src in top['clocks']['srcs'] + top['clocks']['derived_srcs']:
-        if src['aon'] == 'yes':
-            src_aon_attr[src['name']] = True
-        else:
-            src_aon_attr[src['name']] = False
+    # We also build rg_srcs_set, which is the set of non-always-on clock sources
+    # that are exposed without division. This doesn't include clock sources
+    # that are only used to derive divided clocks (we might gate the divided
+    # clocks, but don't bother gating the upstream source).
+    rg_srcs_set = set()
 
-    rg_srcs = [src for (src, attr) in src_aon_attr.items() if not attr]
-    rg_srcs.sort()
+    for grp in top['clocks']['groups']:
+        if grp['name'] == 'powerup':
+            # All clocks in the "powerup" group are considered feed-throughs.
+            ft_clks.update(grp['clocks'])
+            continue
 
-    # clocks fed through clkmgr but are not disturbed in any way
-    # This maintains the clocking structure consistency
-    # This includes two groups of clocks
-    # Clocks fed from the always-on source
-    # Clocks fed to the powerup group
-    ft_clks = OrderedDict([(clk, src) for grp in grps
-                           for (clk, src) in grp['clocks'].items()
-                           if src_aon_attr[src] or grp['name'] == 'powerup'])
+        for clk, src in grp['clocks'].items():
+            if src_aon_attr[src]:
+                # Any always-on clock is a feedthrough
+                ft_clks[clk] = src
+                continue
 
-    # root-gate clocks
-    rg_clks = OrderedDict([(clk, src) for grp in grps
-                           for (clk, src) in grp['clocks'].items()
-                           if grp['name'] != 'powerup' and
-                           grp['sw_cg'] == 'no' and not src_aon_attr[src]])
+            rg_srcs_set.add(src)
 
-    # direct sw control clocks
-    sw_clks = OrderedDict([(clk, src) for grp in grps
-                           for (clk, src) in grp['clocks'].items()
-                           if grp['sw_cg'] == 'yes' and not src_aon_attr[src]])
+            if grp['sw_cg'] == 'no':
+                # A non-feedthrough clock with no software control
+                rg_clks[clk] = src
+                continue
 
-    # sw hint clocks
-    hints = OrderedDict([(clk, src) for grp in grps
-                         for (clk, src) in grp['clocks'].items()
-                         if grp['sw_cg'] == 'hint' and not src_aon_attr[src]])
+            if grp['sw_cg'] == 'yes':
+                # A non-feedthrough clock with direct software control
+                sw_clks[clk] = src
+                continue
 
-    # hint clocks dict
-    for clk, src in hints.items():
-        # the clock is constructed as clk_{src_name}_{module_name}.
-        # so to get the module name we split from the right and pick the last entry
-        hint_clks[clk] = OrderedDict()
-        hint_clks[clk]['name'] = (clk.rsplit('_', 1)[-1])
-        hint_clks[clk]['src'] = src
+            # The only other valid value for the sw_cg field is "hint", which
+            # means a non-feedthrough clock with "hint" software control.
+            assert grp['sw_cg'] == 'hint'
+            hints[clk] = src
+            continue
+
+    # hint clocks dict.
+    #
+    # The clock is constructed as clk_{src_name}_{module_name}. So to get the
+    # module name we split from the right and pick the last entry
+    hint_clks = {clk: {'name': clk.rsplit('_', 1)[-1], 'src': src}
+                 for clk, src in hints.items()}
+
+    # Define a canonical ordering for rg_srcs
+    rg_srcs = sorted(rg_srcs_set)
 
     for idx, tpl in enumerate(tpls):
         out = ""
