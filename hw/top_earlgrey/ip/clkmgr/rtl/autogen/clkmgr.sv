@@ -244,6 +244,7 @@
     .en_o(clk_main_en),
     .clk_o(clk_main_root)
   );
+
   lc_tx_t io_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
@@ -263,6 +264,7 @@
     .en_o(clk_io_en),
     .clk_o(clk_io_root)
   );
+
   lc_tx_t usb_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
@@ -282,6 +284,7 @@
     .en_o(clk_usb_en),
     .clk_o(clk_usb_root)
   );
+
   lc_tx_t io_div2_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
@@ -301,6 +304,7 @@
     .en_o(clk_io_div2_en),
     .clk_o(clk_io_div2_root)
   );
+
   lc_tx_t io_div4_scanmode;
   prim_lc_sync #(
     .NumCopies(1),
@@ -642,15 +646,15 @@
   // Exported clocks
   ////////////////////////////////////////////////////
 
-      assign clocks_ast_o.clk_ast_usbdev_io_div4_peri = clocks_o.clk_io_div4_peri;
-      assign clocks_ast_o.clk_ast_usbdev_aon_peri = clocks_o.clk_aon_peri;
-      assign clocks_ast_o.clk_ast_usbdev_usb_peri = clocks_o.clk_usb_peri;
-      assign clocks_ast_o.clk_ast_adc_ctrl_aon_io_div4_peri = clocks_o.clk_io_div4_peri;
-      assign clocks_ast_o.clk_ast_adc_ctrl_aon_aon_peri = clocks_o.clk_aon_peri;
-      assign clocks_ast_o.clk_ast_ast_io_div4_secure = clocks_o.clk_io_div4_secure;
-      assign clocks_ast_o.clk_ast_sensor_ctrl_aon_io_div4_secure = clocks_o.clk_io_div4_secure;
-      assign clocks_ast_o.clk_ast_entropy_src_main_secure = clocks_o.clk_main_secure;
-      assign clocks_ast_o.clk_ast_edn0_main_secure = clocks_o.clk_main_secure;
+  assign clocks_ast_o.clk_ast_usbdev_io_div4_peri = clocks_o.clk_io_div4_peri;
+  assign clocks_ast_o.clk_ast_usbdev_aon_peri = clocks_o.clk_aon_peri;
+  assign clocks_ast_o.clk_ast_usbdev_usb_peri = clocks_o.clk_usb_peri;
+  assign clocks_ast_o.clk_ast_adc_ctrl_aon_io_div4_peri = clocks_o.clk_io_div4_peri;
+  assign clocks_ast_o.clk_ast_adc_ctrl_aon_aon_peri = clocks_o.clk_aon_peri;
+  assign clocks_ast_o.clk_ast_ast_io_div4_secure = clocks_o.clk_io_div4_secure;
+  assign clocks_ast_o.clk_ast_sensor_ctrl_aon_io_div4_secure = clocks_o.clk_io_div4_secure;
+  assign clocks_ast_o.clk_ast_entropy_src_main_secure = clocks_o.clk_main_secure;
+  assign clocks_ast_o.clk_ast_edn0_main_secure = clocks_o.clk_main_secure;
 
   ////////////////////////////////////////////////////
   // Assertions
