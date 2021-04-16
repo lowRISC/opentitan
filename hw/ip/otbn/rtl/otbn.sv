@@ -626,7 +626,9 @@ module otbn
     otbn_core #(
       .RegFile(RegFile),
       .DmemSizeByte(DmemSizeByte),
-      .ImemSizeByte(ImemSizeByte)
+      .ImemSizeByte(ImemSizeByte),
+      .RndCnstUrndLfsrSeed(RndCnstUrndLfsrSeed),
+      .RndCnstUrndChunkLfsrPerm(RndCnstUrndChunkLfsrPerm)
     ) u_otbn_core (
       .clk_i,
       .rst_ni,
