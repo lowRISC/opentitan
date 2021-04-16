@@ -134,12 +134,12 @@ static aes_key_field_val_t key_to_field(dif_aes_key_length_t key) {
  * @param cipher_mode_val Cipher Mode register write value.
  * @return `dif_aes_start_result_t`.
  */
-static dif_aes_start_result_t configure(
-    const dif_aes_t *aes, const dif_aes_transaction_t *transaction,
-    aes_mode_field_val_t cipher_mode_val) {
+static dif_aes_result_t configure(const dif_aes_t *aes,
+                                  const dif_aes_transaction_t *transaction,
+                                  aes_mode_field_val_t cipher_mode_val) {
   aes_key_field_val_t key_len_val = key_to_field(transaction->key_len);
   if (key_len_val == kAesKeyFieldValInvalid) {
-    return kDifAesStartError;
+    return kDifAesError;
   }
 
   uint32_t reg =
@@ -172,7 +172,7 @@ static dif_aes_start_result_t configure(
 
   aes_shadowed_write(aes->params.base_addr, AES_CTRL_SHADOWED_REG_OFFSET, reg);
 
-  return kDifAesStartOk;
+  return kDifAesOk;
 }
 
 /**
@@ -202,9 +202,9 @@ dif_aes_result_t dif_aes_init(dif_aes_params_t params, dif_aes_t *aes) {
   return kDifAesOk;
 }
 
-dif_aes_reset_result_t dif_aes_reset(const dif_aes_t *aes) {
+dif_aes_result_t dif_aes_reset(const dif_aes_t *aes) {
   if (aes == NULL) {
-    return kDifAesResetBadArg;
+    return kDifAesBadArg;
   }
 
   aes_clear_internal_state(aes);
@@ -221,23 +221,22 @@ dif_aes_reset_result_t dif_aes_reset(const dif_aes_t *aes) {
 
   aes_shadowed_write(aes->params.base_addr, AES_CTRL_SHADOWED_REG_OFFSET, reg);
 
-  return kDifAesResetOk;
+  return kDifAesOk;
 }
 
-dif_aes_start_result_t dif_aes_start_ecb(
-    const dif_aes_t *aes, const dif_aes_transaction_t *transaction,
-    dif_aes_key_share_t key) {
+dif_aes_result_t dif_aes_start_ecb(const dif_aes_t *aes,
+                                   const dif_aes_transaction_t *transaction,
+                                   dif_aes_key_share_t key) {
   if (aes == NULL || transaction == NULL) {
-    return kDifAesStartBadArg;
+    return kDifAesBadArg;
   }
 
   if (!aes_idle(aes)) {
-    return kDifAesStartBusy;
+    return kDifAesBusy;
   }
 
-  dif_aes_start_result_t result =
-      configure(aes, transaction, kAesModeFieldValEcb);
-  if (result != kDifAesStartOk) {
+  dif_aes_result_t result = configure(aes, transaction, kAesModeFieldValEcb);
+  if (result != kDifAesOk) {
     return result;
   }
 
@@ -247,51 +246,22 @@ dif_aes_start_result_t dif_aes_start_ecb(
   aes_set_multireg(aes, &key.share1[0], AES_KEY_SHARE1_MULTIREG_COUNT,
                    AES_KEY_SHARE1_0_REG_OFFSET);
 
-  return kDifAesStartOk;
+  return kDifAesOk;
 }
 
-dif_aes_start_result_t dif_aes_start_cbc(
-    const dif_aes_t *aes, const dif_aes_transaction_t *transaction,
-    dif_aes_key_share_t key, dif_aes_iv_t iv) {
+dif_aes_result_t dif_aes_start_cbc(const dif_aes_t *aes,
+                                   const dif_aes_transaction_t *transaction,
+                                   dif_aes_key_share_t key, dif_aes_iv_t iv) {
   if (aes == NULL || transaction == NULL) {
-    return kDifAesStartBadArg;
+    return kDifAesBadArg;
   }
 
   if (!aes_idle(aes)) {
-    return kDifAesStartBusy;
+    return kDifAesBusy;
   }
 
-  dif_aes_start_result_t result =
-      configure(aes, transaction, kAesModeFieldValCbc);
-  if (result != kDifAesStartOk) {
-    return result;
-  }
-
-  aes_set_multireg(aes, &key.share0[0], AES_KEY_SHARE0_MULTIREG_COUNT,
-                   AES_KEY_SHARE0_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &key.share1[0], AES_KEY_SHARE1_MULTIREG_COUNT,
-                   AES_KEY_SHARE1_0_REG_OFFSET);
-
-  aes_set_multireg(aes, &iv.iv[0], AES_IV_MULTIREG_COUNT, AES_IV_0_REG_OFFSET);
-
-  return kDifAesStartOk;
-}
-
-dif_aes_start_result_t dif_aes_start_ctr(
-    const dif_aes_t *aes, const dif_aes_transaction_t *transaction,
-    dif_aes_key_share_t key, dif_aes_iv_t iv) {
-  if (aes == NULL || transaction == NULL) {
-    return kDifAesStartBadArg;
-  }
-
-  if (!aes_idle(aes)) {
-    return kDifAesStartBusy;
-  }
-
-  dif_aes_start_result_t result =
-      configure(aes, transaction, kAesModeFieldValCtr);
-  if (result != kDifAesStartOk) {
+  dif_aes_result_t result = configure(aes, transaction, kAesModeFieldValCbc);
+  if (result != kDifAesOk) {
     return result;
   }
 
@@ -303,47 +273,74 @@ dif_aes_start_result_t dif_aes_start_ctr(
 
   aes_set_multireg(aes, &iv.iv[0], AES_IV_MULTIREG_COUNT, AES_IV_0_REG_OFFSET);
 
-  return kDifAesStartOk;
+  return kDifAesOk;
 }
 
-dif_aes_end_result_t dif_aes_end(const dif_aes_t *aes) {
+dif_aes_result_t dif_aes_start_ctr(const dif_aes_t *aes,
+                                   const dif_aes_transaction_t *transaction,
+                                   dif_aes_key_share_t key, dif_aes_iv_t iv) {
+  if (aes == NULL || transaction == NULL) {
+    return kDifAesBadArg;
+  }
+
+  if (!aes_idle(aes)) {
+    return kDifAesBusy;
+  }
+
+  dif_aes_result_t result = configure(aes, transaction, kAesModeFieldValCtr);
+  if (result != kDifAesOk) {
+    return result;
+  }
+
+  aes_set_multireg(aes, &key.share0[0], AES_KEY_SHARE0_MULTIREG_COUNT,
+                   AES_KEY_SHARE0_0_REG_OFFSET);
+
+  aes_set_multireg(aes, &key.share1[0], AES_KEY_SHARE1_MULTIREG_COUNT,
+                   AES_KEY_SHARE1_0_REG_OFFSET);
+
+  aes_set_multireg(aes, &iv.iv[0], AES_IV_MULTIREG_COUNT, AES_IV_0_REG_OFFSET);
+
+  return kDifAesOk;
+}
+
+dif_aes_result_t dif_aes_end(const dif_aes_t *aes) {
   if (aes == NULL) {
-    return kDifAesEndBadArg;
+    return kDifAesBadArg;
   }
 
   if (!aes_idle(aes)) {
-    return kDifAesEndBusy;
+    return kDifAesBusy;
   }
 
   aes_clear_internal_state(aes);
 
-  return kDifAesEndOk;
+  return kDifAesOk;
 }
 
-dif_aes_load_data_result_t dif_aes_load_data(const dif_aes_t *aes,
-                                             const dif_aes_data_t data) {
+dif_aes_result_t dif_aes_load_data(const dif_aes_t *aes,
+                                   const dif_aes_data_t data) {
   if (aes == NULL) {
-    return kDifAesLoadDataBadArg;
+    return kDifAesBadArg;
   }
 
   if (!aes_input_ready(aes)) {
-    return kDifAesLoadDataBusy;
+    return kDifAesBusy;
   }
 
   aes_set_multireg(aes, &data.data[0], AES_DATA_IN_MULTIREG_COUNT,
                    AES_DATA_IN_0_REG_OFFSET);
 
-  return kDifAesLoadDataOk;
+  return kDifAesOk;
 }
 
-dif_aes_read_output_result_t dif_aes_read_output(const dif_aes_t *aes,
-                                                 dif_aes_data_t *data) {
+dif_aes_result_t dif_aes_read_output(const dif_aes_t *aes,
+                                     dif_aes_data_t *data) {
   if (aes == NULL || data == NULL) {
-    return kDifAesReadOutputBadArg;
+    return kDifAesBadArg;
   }
 
   if (!aes_output_valid(aes)) {
-    return kDifAesReadOutputInvalid;
+    return kDifAesOutputInvalid;
   }
 
   for (int i = 0; i < AES_DATA_OUT_MULTIREG_COUNT; ++i) {
@@ -352,7 +349,7 @@ dif_aes_read_output_result_t dif_aes_read_output(const dif_aes_t *aes,
     data->data[i] = mmio_region_read32(aes->params.base_addr, offset);
   }
 
-  return kDifAesReadOutputOk;
+  return kDifAesOk;
 }
 
 dif_aes_result_t dif_aes_trigger(const dif_aes_t *aes,

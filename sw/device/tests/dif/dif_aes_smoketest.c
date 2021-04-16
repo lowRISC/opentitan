@@ -83,7 +83,7 @@ bool test_main(void) {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR),
   };
   CHECK(dif_aes_init(params, &aes) == kDifAesOk);
-  CHECK(dif_aes_reset(&aes) == kDifAesResetOk);
+  CHECK(dif_aes_reset(&aes) == kDifAesOk);
 
   // Mask the key. Note that this should not be done manually. Software is
   // expected to get the key in two shares right from the beginning.
@@ -103,7 +103,7 @@ bool test_main(void) {
       .mode = kDifAesModeEncrypt,
       .operation = kDifAesOperationAuto,
   };
-  CHECK(dif_aes_start_ecb(&aes, &transaction, key) == kDifAesStartOk);
+  CHECK(dif_aes_start_ecb(&aes, &transaction, key) == kDifAesOk);
 
   // "Convert" plain data byte arrays to `dif_aes_data_t`.
   dif_aes_data_t in_data_plain;
@@ -112,16 +112,16 @@ bool test_main(void) {
   // Load the plain text to trigger the encryption operation.
   while (!aes_input_ready(&aes)) {
   }
-  CHECK(dif_aes_load_data(&aes, in_data_plain) == kDifAesLoadDataOk);
+  CHECK(dif_aes_load_data(&aes, in_data_plain) == kDifAesOk);
 
   // Read out the produced cipher text.
   dif_aes_data_t out_data_cipher;
   while (!aes_output_valid(&aes)) {
   }
-  CHECK(dif_aes_read_output(&aes, &out_data_cipher) == kDifAesReadOutputOk);
+  CHECK(dif_aes_read_output(&aes, &out_data_cipher) == kDifAesOk);
 
   // Finish the ECB encryption transaction.
-  CHECK(dif_aes_end(&aes) == kDifAesEndOk);
+  CHECK(dif_aes_end(&aes) == kDifAesOk);
 
   // Check the produced cipher text against the reference.
   uint32_t cipher_text_gold_words[TEXT_LENGTH_IN_WORDS];
@@ -134,22 +134,22 @@ bool test_main(void) {
 
   // Setup ECB decryption transaction.
   transaction.mode = kDifAesModeDecrypt;
-  CHECK(dif_aes_start_ecb(&aes, &transaction, key) == kDifAesStartOk);
+  CHECK(dif_aes_start_ecb(&aes, &transaction, key) == kDifAesOk);
 
   // Load the previously produced cipher text to start the decryption operation.
   while (!aes_input_ready(&aes)) {
   }
-  CHECK(dif_aes_load_data(&aes, out_data_cipher) == kDifAesLoadDataOk);
+  CHECK(dif_aes_load_data(&aes, out_data_cipher) == kDifAesOk);
 
   // Read out the produced plain text.
 
   dif_aes_data_t out_data_plain;
   while (!aes_output_valid(&aes)) {
   }
-  CHECK(dif_aes_read_output(&aes, &out_data_plain) == kDifAesReadOutputOk);
+  CHECK(dif_aes_read_output(&aes, &out_data_plain) == kDifAesOk);
 
   // Finish the ECB encryption transaction.
-  CHECK(dif_aes_end(&aes) == kDifAesEndOk);
+  CHECK(dif_aes_end(&aes) == kDifAesOk);
 
   // Check the produced plain text against the reference.
   uint32_t plain_text_gold_words[TEXT_LENGTH_IN_WORDS];
