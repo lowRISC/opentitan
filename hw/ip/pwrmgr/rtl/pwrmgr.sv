@@ -40,7 +40,6 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   output pwr_lc_req_t pwr_lc_o,
 
   // flash interface
-  output pwr_flash_req_t pwr_flash_o,
   input  pwr_flash_rsp_t pwr_flash_i,
 
   // processor interface
@@ -347,8 +346,6 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .lc_idle_i         (pwr_lc_i.lc_idle),
 
     // flash
-    .flash_init_o      (pwr_flash_o.flash_init),
-    .flash_done_i      (flash_rsp.flash_done),
     .flash_idle_i      (flash_rsp.flash_idle),
 
     // pinmux and other peripherals
@@ -415,7 +412,6 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   `ASSERT_KNOWN(ClkKnownO_A,       pwr_clk_o        )
   `ASSERT_KNOWN(OtpKnownO_A,       pwr_otp_o        )
   `ASSERT_KNOWN(LcKnownO_A,        pwr_lc_o         )
-  `ASSERT_KNOWN(FlashKnownO_A,     pwr_flash_o      )
   `ASSERT_KNOWN(IntrKnownO_A,      intr_wakeup_o    )
 
 
