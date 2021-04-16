@@ -21,10 +21,10 @@ module pwm #(
 );
 
   // TODO: Deal with Regen in this block, on TLUL clock domain
-  logic                      regen;
+  logic                     unused_regen;
   pwm_reg_pkg::pwm_reg2hw_t reg2hw;
 
-  assign regen = reg2hw.regen.q;
+  assign unused_regen = reg2hw.regen.q;
 
   pwm_reg_top u_reg (
     .clk_i,
