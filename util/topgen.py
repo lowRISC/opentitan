@@ -427,6 +427,7 @@ def generate_clkmgr(top, cfg_path, out_path):
             src_aon_attr[src['name']] = False
 
     rg_srcs = [src for (src, attr) in src_aon_attr.items() if not attr]
+    rg_srcs.sort()
 
     # clocks fed through clkmgr but are not disturbed in any way
     # This maintains the clocking structure consistency
