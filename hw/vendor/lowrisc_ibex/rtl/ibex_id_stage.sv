@@ -237,6 +237,11 @@ module ibex_id_stage #(
   rf_wd_sel_e  rf_wdata_sel;
   logic        rf_we_dec, rf_we_raw;
   logic        rf_ren_a, rf_ren_b;
+  logic        rf_ren_a_dec, rf_ren_b_dec;
+
+  // Read enables should only be asserted for valid and legal instructions
+  assign rf_ren_a = instr_valid_i & ~instr_fetch_err_i & ~illegal_insn_o & rf_ren_a_dec;
+  assign rf_ren_b = instr_valid_i & ~instr_fetch_err_i & ~illegal_insn_o & rf_ren_b_dec;
 
   assign rf_ren_a_o = rf_ren_a;
   assign rf_ren_b_o = rf_ren_b;
@@ -461,8 +466,8 @@ module ibex_id_stage #(
       .rf_raddr_a_o                    ( rf_raddr_a_o         ),
       .rf_raddr_b_o                    ( rf_raddr_b_o         ),
       .rf_waddr_o                      ( rf_waddr_id_o        ),
-      .rf_ren_a_o                      ( rf_ren_a             ),
-      .rf_ren_b_o                      ( rf_ren_b             ),
+      .rf_ren_a_o                      ( rf_ren_a_dec         ),
+      .rf_ren_b_o                      ( rf_ren_b_dec         ),
 
       // ALU
       .alu_operator_o                  ( alu_operator         ),
@@ -849,9 +854,17 @@ module ibex_id_stage #(
 
   `ASSERT(StallIDIfMulticycle, (id_fsm_q == FIRST_CYCLE) & (id_fsm_d == MULTI_CYCLE) |-> stall_id)
 
-  // Stall ID/EX stage for reason that relates to instruction in ID/EX
+
+  // Stall ID/EX stage for reason that relates to instruction in ID/EX, update assertion below if
+  // modifying this.
   assign stall_id = stall_ld_hz | stall_mem | stall_multdiv | stall_jump | stall_branch |
                       stall_alu;
+
+  // Generally illegal instructions have no reason to stall, however they must still stall waiting
+  // for outstanding memory requests so exceptions related to them take priority over the illegal
+  // instruction exception.
+  `ASSERT(IllegalInsnStallMustBeMemStall, illegal_insn_o & stall_id |-> stall_mem &
+    ~(stall_ld_hz | stall_multdiv | stall_jump | stall_branch | stall_alu))
 
   assign instr_done = ~stall_id & ~flush_id & instr_executing;
 

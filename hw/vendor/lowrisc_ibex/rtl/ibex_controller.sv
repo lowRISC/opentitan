@@ -853,6 +853,7 @@ module ibex_controller #(
   `DV_FCOV_SIGNAL(logic, debug_entry_id,
       (ctrl_fsm_cs != DBG_TAKEN_ID) & (ctrl_fsm_ns == DBG_TAKEN_ID))
   `DV_FCOV_SIGNAL(logic, pipe_flush, (ctrl_fsm_cs != FLUSH) & (ctrl_fsm_ns == FLUSH))
+  `DV_FCOV_SIGNAL(logic, debug_req, debug_req_i & ~debug_mode_q)
 
   ////////////////
   // Assertions //

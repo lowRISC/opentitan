@@ -2,16 +2,21 @@
 
 # Ibex RISC-V Core
 
-Ibex is a small and efficient, 32-bit, in-order RISC-V core with a 2-stage pipeline that implements
-the RV32IMC instruction set architecture.
+Ibex is a production-quality open source 32-bit RISC-V CPU core written in
+SystemVerilog. The CPU core is heavily parametrizable and well suited for
+embedded control applications. Ibex is being extensively verified and has
+seen multiple tape-outs. Ibex supports the Integer (I) or Embedded (E),
+Integer Multiplication and Division (M), Compressed (C), and B (Bit
+Manipulation) extensions.
 
+The block diagram below shows the *small* parametrization with a 2-stage
+pipeline.
 <p align="center"><img src="doc/03_reference/images/blockdiagram.svg" width="650"></p>
 
-This core was initially developed as part of the [PULP platform](https://www.pulp-platform.org)
-under the name "Zero-riscy" \[[1](https://doi.org/10.1109/PATMOS.2017.8106976)\], and has been
+Ibex was initially developed as part of the [PULP platform](https://www.pulp-platform.org)
+under the name ["Zero-riscy"](https://doi.org/10.1109/PATMOS.2017.8106976), and has been
 contributed to [lowRISC](https://www.lowrisc.org) who maintains it and develops it further. It is
-under active development, with further code cleanups, feature additions, and test and verification
-planned for the future.
+under active development.
 
 ## Configuration
 
@@ -96,9 +101,3 @@ License, Version 2.0 (see LICENSE for full text).
 
 Many people have contributed to Ibex through the years. Please have a look at
 the [credits file](CREDITS.md) and the commit history for more information.
-
-## References
-1. [Schiavone, Pasquale Davide, et al. "Slow and steady wins the race? A comparison of
- ultra-low-power RISC-V cores for Internet-of-Things applications."
- _27th International Symposium on Power and Timing Modeling, Optimization and Simulation
- (PATMOS 2017)_](https://doi.org/10.1109/PATMOS.2017.8106976)
