@@ -117,8 +117,8 @@ class spi_device_base_vseq extends cip_base_vseq #(
       cfg.m_spi_agent_cfg.sck_period_ps = cfg.clk_rst_vif.clk_period_ps * core_spi_freq_ratio;
     end
     // update host agent
-    cfg.m_spi_agent_cfg.sck_polarity = sck_polarity;
-    cfg.m_spi_agent_cfg.sck_phase = sck_phase;
+    cfg.m_spi_agent_cfg.sck_polarity[0] = sck_polarity;
+    cfg.m_spi_agent_cfg.sck_phase[0] = sck_phase;
     cfg.m_spi_agent_cfg.host_bit_dir = host_bit_dir;
     cfg.m_spi_agent_cfg.device_bit_dir = device_bit_dir;
     // update device rtl
@@ -225,7 +225,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
       `uvm_info(`gfn, $sformatf({"tx_wptr[SRAM_MSB:0] = 0x%0h, tx_wptr_phase_bit = 0x%0h, ",
                                  "tx_sram_size_bytes = 0x%0h, tx_wptr_addr = 0x%0h"},
                                  tx_wptr[SRAM_MSB:0], tx_wptr[SRAM_PTR_PHASE_BIT],
-                                 tx_sram_size_bytes, tx_wptr_addr), UVM_MEDIUM)
+                                 tx_sram_size_bytes, tx_wptr_addr), UVM_LOW)
       tl_access(.addr(tx_wptr_addr), .write(1'b1), .data(device_data[i])); // TODO: bkdr wr?
 
       // advance tx wptr by SRAM_WORD_SIZE

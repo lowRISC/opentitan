@@ -30,6 +30,8 @@ class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
     m_spi_agent_cfg.ok_to_end_delay_ns = 8000;
     // create req_analysis_fifo for re-active slave agent
     m_spi_agent_cfg.has_req_fifo = 1'b1;
+    // default spi_mode
+    m_spi_agent_cfg.spi_mode = Single;
 
     // create the seq_cfg
     seq_cfg = spi_host_seq_cfg::type_id::create("seq_cfg");
@@ -59,7 +61,6 @@ class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
     end else begin  // bus and core has same clock frequency
       clk_core_mhz = clk_rst_vif.clk_freq_mhz;
     end
-
     return clk_core_mhz;
   endfunction : get_clk_core_freq
   

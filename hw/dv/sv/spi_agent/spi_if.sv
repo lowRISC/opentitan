@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+import spi_agent_pkg::*;
+
 interface spi_if (
   input rst_n
 );
@@ -20,4 +22,11 @@ interface spi_if (
   bit         sck_polarity;
   bit         sck_phase;
 
+  //---------------------------------
+  // common tasks
+  //---------------------------------
+  task automatic wait_for_dly(int dly);
+    repeat (dly) @(posedge sck);
+  endtask : wait_for_dly
+  
 endinterface : spi_if

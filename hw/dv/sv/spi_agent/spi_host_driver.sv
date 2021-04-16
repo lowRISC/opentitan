@@ -20,9 +20,9 @@ class spi_host_driver extends spi_driver;
     forever begin
       @(negedge cfg.vif.rst_n);
       under_reset = 1'b1;
-      cfg.vif.sck <= cfg.sck_polarity;
-      cfg.vif.csb <= 'hf;
+      cfg.vif.sck <= cfg.sck_polarity[0];
       cfg.vif.sio <= 'hz;
+      cfg.vif.csb <= 'h1;
       sck_pulses = 0;
       @(posedge cfg.vif.rst_n);
       under_reset = 1'b0;
@@ -31,6 +31,7 @@ class spi_host_driver extends spi_driver;
 
   // generate sck
   task gen_sck();
+    @(posedge cfg.vif.rst_n);
     fork
       forever begin
         if (sck_pulses > 0 || cfg.sck_on) begin
@@ -45,23 +46,23 @@ class spi_host_driver extends spi_driver;
           @(cfg.sck_on, sck_pulses);
           if (sck_pulses > 0) begin
             // drive half cycle first
-            cfg.vif.sck <= cfg.sck_polarity;
+            cfg.vif.sck <= cfg.sck_polarity[0];
             #(cfg.sck_period_ps / 2 * 1ps);
           end
         end
         cfg.vif.sck_pulses = sck_pulses;
       end
       forever begin
-        @(cfg.sck_polarity);
-        cfg.vif.sck_polarity = cfg.sck_polarity;
-        if (sck_pulses == 0) cfg.vif.sck <= cfg.sck_polarity;
+        @(cfg.sck_polarity[0]);
+        cfg.vif.sck_polarity = cfg.sck_polarity[0];
+        if (sck_pulses == 0) cfg.vif.sck <= cfg.sck_polarity[0];
       end
       forever begin
-        @(cfg.sck_phase);
-        cfg.vif.sck_phase = cfg.sck_phase;
+        @(cfg.sck_phase[0]);
+        cfg.vif.sck_phase = cfg.sck_phase[0];
       end
     join
-  endtask
+  endtask : gen_sck
 
   task get_and_drive();
     forever begin
@@ -108,7 +109,7 @@ class spi_host_driver extends spi_driver;
 
     wait(sck_pulses == 0);
     cfg.vif.csb[0] <= 1'b1;
-    cfg.vif.sio[0] <= 1'bx;
+    cfg.vif.sio[0] <= 1'bz;
   endtask
 
   task drive_sck_no_csb_item();
@@ -116,7 +117,7 @@ class spi_host_driver extends spi_driver;
       #($urandom_range(1, 100) * 1ns);
       cfg.vif.sck <= ~cfg.vif.sck;
     end
-    cfg.vif.sck <= cfg.sck_polarity;
+    cfg.vif.sck <= cfg.sck_polarity[0];
     #1ps; // make sure sck and csb (for next item) not change at the same time
   endtask
 

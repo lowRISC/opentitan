@@ -20,7 +20,7 @@
                a Little-Endian ordering is used for these registers, and the LSB of each
                gets priority for receiving and transmitting data.'''
       type: "logic",
-      default: "1"
+      default: "0"
     },
     { name: "NumCS",
       desc: "The number of active-low chip select (cs_n) lines to create.",
@@ -115,6 +115,7 @@
       desc: "Status register",
       swaccess: "ro",
       hwaccess: "hwo",
+      hwext: "true",
       fields: [
         { bits: "31",
           name: "READY",
@@ -178,8 +179,9 @@
         { bits: "22",
           name: "BYTEORDER",
           desc: '''The value of the ByteOrder parameter, provided so that firmware
-                   can confirm proper IP configuration.'''
-        }
+                   can confirm proper IP configuration.''',
+          resval: "0x0"
+        },
         { bits: "20",
           name: "RXWM",
           desc: '''If high, the number of 32-bits in the RX FIFO now exceeds the
@@ -202,10 +204,9 @@
           resval: "0x0"
         }
       ]
-      tags: [// Updated by the hw. Exclude from init and write-checks.
+      tags: [// Updated by the hw. Exclude from init or write-checks.
              "excl:CsrAllTests:CsrExclCheck"]
-
-    },
+    }
     { multireg: { name: "CONFIGOPTS",
         desc: '''Configuration options register.
 
@@ -500,7 +501,10 @@
                    goes high''',
           resval: "0x0"
         },
-      ]
+      ],
+      tags: [// Exclude from write checks because
+             // it might lead to unpreditable values on intr_spi_event register
+             "excl:CsrAllTests:CsrExclWrite"]
     }
   ]
 }

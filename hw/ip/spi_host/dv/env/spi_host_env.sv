@@ -21,6 +21,8 @@ class spi_host_env extends cip_base_env #(
     m_spi_agent = spi_agent::type_id::create("m_spi_agent", this);
     uvm_config_db#(spi_agent_cfg)::set(this, "m_spi_agent*", "cfg", cfg.m_spi_agent_cfg);
     cfg.m_spi_agent_cfg.en_cov = cfg.en_cov;
+    // spi_host dut only supports msb->lsb
+    cfg.m_spi_agent_cfg.host_bit_dir = 1'b0;
 
     if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "clk_rst_core_vif",
         cfg.clk_rst_core_vif)) begin

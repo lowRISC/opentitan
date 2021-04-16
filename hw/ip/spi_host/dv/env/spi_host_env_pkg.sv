@@ -13,20 +13,34 @@ package spi_host_env_pkg;
   import spi_agent_pkg::*;
   import cip_base_pkg::*;
   import dv_base_reg_pkg::*;
-  import spi_host_reg_pkg::*;
   import spi_host_ral_pkg::*;
+
+  // parameters
+  parameter uint SPI_HOST_NUM_CS      = spi_host_reg_pkg::NumCS;
+  parameter uint SPI_HOST_TX_DEPTH    = spi_host_reg_pkg::TxDepth;
+  parameter uint SPI_HOST_RX_DEPTH    = spi_host_reg_pkg::RxDepth;
+  parameter bit  SPI_HOST_BYTEORDER   = spi_host_reg_pkg::ByteOrder;
+  parameter uint SPI_HOST_BLOCK_AW    = spi_host_reg_pkg::BlockAw;
+  parameter uint SPI_HOST_FIFO_BASE   = spi_host_reg_pkg::SPI_HOST_DATA_OFFSET;
+  parameter uint SPI_HOST_FIFO_END    = (SPI_HOST_FIFO_BASE - 1) +
+                                        spi_host_reg_pkg::SPI_HOST_DATA_SIZE;
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
   // types
-  // parameters
   typedef enum int {
     SpiHostError     = 0,
     SpiHostEvent     = 1,
     NumSpiHostIntr   = 2
   } spi_host_intr_e;
+
+  typedef enum int {
+    TxFifo   = 0,
+    RxFifo   = 1,
+    AllFifos = 2
+  } spi_host_fifo_e;
 
   // functions
 

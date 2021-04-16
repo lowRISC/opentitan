@@ -24,8 +24,8 @@ module tb;
   lc_tx_t           scanmode_i;
   wire              cio_sck_o;
   wire              cio_sck_en_o;
-  wire  [MaxCS-1:0] cio_csb_o;
-  wire  [MaxCS-1:0] cio_csb_en_o;
+  wire  [NumCS-1:0] cio_csb_o;
+  wire  [NumCS-1:0] cio_csb_en_o;
   logic [3:0]       cio_sd_o;
   logic [3:0]       cio_sd_en_o;
   logic [3:0]       cio_sd_i;
@@ -41,7 +41,7 @@ module tb;
   spi_if       spi_if(.rst_n(rst_core_n));
 
   // dut
-  spi_host spi_host (
+  spi_host dut (
     .clk_i                (clk),
     .rst_ni               (rst_n),
 
@@ -65,15 +65,18 @@ module tb;
     .intr_spi_event_o     (intr_event)
   );
 
-  assign spi_if.sck = (cio_sck_en_o) ? cio_sck_o : 1'b0;
-  initial begin
+  assign spi_if.sck = (cio_sck_en_o) ? cio_sck_o : 1'bz;
+  assign cio_sd_i   = spi_if.sio;
+  always_comb begin
     for (int i = 0; i < 4; i++) begin
-      if (cio_sd_en_o[i] == 1'b1) begin
+      if (cio_sd_en_o[i]) begin
         spi_if.sio[i] = cio_sd_o[i];
-      end else begin
-        cio_sd_i[i] = spi_if.sio[i];
       end
-      spi_if.csb[i] = (cio_csb_en_o == 1'b1 && i < MaxCS) ? cio_csb_o[i] : 1'b1;
+      if (i < NumCS) begin
+        spi_if.csb[i] = (cio_csb_en_o[i]) ? cio_csb_o[i] : 1'b1;
+      end else begin
+        spi_if.csb[i] = 1'b1;
+      end
     end
   end
 
