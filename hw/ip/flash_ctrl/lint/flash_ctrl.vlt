@@ -4,3 +4,16 @@
 //
 // waiver file for flash_ctrl
 
+`verilator_config
+
+// When we calculate the size for the top region config, we use NumBanks *
+// PagesPerBank. This is a constant integer calculation, whose result is
+// assigned to the 10-bit "size" field. Here, the "10" comes from the hjson.
+// Waive the Verilator warning, rather than slice the result, so that
+// AscentLint will complain if we've messed up and NumBanks * PagesPerBank is
+// too big to represent.
+//
+// The slightly odd-looking path glob is to match the auto-generated version of
+// the code too (which is at .../rtl/autogen/flash_ctrl.sv)
+lint_off -rule WIDTH -file "*/rtl/*flash_ctrl.sv" -match "Operator ASSIGNW expects 10 bits*MUL generates 32 bits."
+
