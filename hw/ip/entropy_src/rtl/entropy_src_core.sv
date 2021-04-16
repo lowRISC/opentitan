@@ -83,6 +83,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic       fw_ov_fifo_rd_pulse;
   logic       fw_ov_fifo_wr_pulse;
   logic       es_enable;
+  logic       es_enable_early;
   logic       es_enable_lfsr;
   logic       es_enable_rng;
   logic       rng_bit_en;
@@ -366,6 +367,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    sha3_msg_rdy_q, sha3_msg_rdy_d;
   logic                    sha3_err_q, sha3_err_d;
   logic        cs_aes_halt_q, cs_aes_halt_d;
+  logic [1:0]  es_enable_q, es_enable_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -380,6 +382,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_msg_rdy_q        <= '0;
       sha3_err_q            <= '0;
       cs_aes_halt_q         <= '0;
+      es_enable_q           <= '0;
     end else begin
       es_rate_cntr_q        <= es_rate_cntr_d;
       lfsr_incr_dly_q       <= lfsr_incr_dly_d;
@@ -392,11 +395,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_msg_rdy_q        <= sha3_msg_rdy_d;
       sha3_err_q            <= sha3_err_d;
       cs_aes_halt_q         <= cs_aes_halt_d;
+      es_enable_q           <= es_enable_d;
     end
 
-  assign es_enable = (|reg2hw.conf.enable.q);
-  assign es_enable_lfsr = reg2hw.conf.enable.q[1];
-  assign es_enable_rng = reg2hw.conf.enable.q[0];
+  assign es_enable_d = reg2hw.conf.enable.q;
+  assign es_enable_early = (|reg2hw.conf.enable.q);
+  assign es_enable = (|es_enable_q);
+  assign es_enable_lfsr = es_enable_q[1];
+  assign es_enable_rng = es_enable_q[0];
   assign load_seed = !es_enable;
   assign hw2reg.regwen.d = !es_enable; // hw reg lock implementation
   assign pre_cond_fifo_depth = reg2hw.pre_cond_fifo_depth.q;
@@ -1078,7 +1084,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign boot_bypass_disable = reg2hw.conf.boot_bypass_disable.q;
 
   assign boot_bypass_d =
-         (!es_enable) ? 1'b1 :  // special case for reset
+         (!es_enable_early) ? 1'b1 :  // special case for reset
          boot_bypass_disable ? 1'b0 :
          rst_bypass_mode ? 1'b0 :
          boot_bypass_q;
