@@ -142,10 +142,6 @@ puts "Done applying constraints for ${DUT}"
 ##    MAP DESIGN    ##
 ######################
 
-# TODO: we may have to disable a couple of optimizations in order
-# to prevent the tool from optimizing away dummy logic or logic from blocks
-# that are only half-finished
-
 # preserve hierarchy for reports
 compile_ultra -gate_clock -scan -no_autoungroup > "${REPDIR}/compile.rpt"
 

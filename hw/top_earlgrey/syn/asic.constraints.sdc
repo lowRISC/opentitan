@@ -138,18 +138,6 @@ create_clock -name JTAG_TCK -period $JTAG_TCK_PERIOD [get_ports $JTAG_CLK_PIN]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks JTAG_TCK]
 
 #####################
-# RNG clock         #
-#####################
-set RNG_CLK_PIN  u_ast/u_rng/u_rng_osc/rng_clk_o
-# target is 100MHz, overconstrain by factor
-set RNG_TCK_TARGET_PERIOD 10
-set RNG_TCK_PERIOD [expr $RNG_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
-
-create_clock -name RNG_CLK -period $RNG_TCK_PERIOD [get_pins $RNG_CLK_PIN]
-#set_ideal_network [get_ports $RNG_CLK_PIN]
-set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks RNG_CLK]
-
-#####################
 # SPI DEV clock     #
 #####################
 # strawman constraints. Device target freq is 48MHz. Using 62.5MHz to over-constraint
@@ -265,7 +253,6 @@ set_clock_groups -name group1 -async                                  \
     -group [get_clocks IO_CLK                                       ] \
     -group [get_clocks IO_DIV2_CLK                                  ] \
     -group [get_clocks IO_DIV4_CLK                                  ] \
-    -group [get_clocks RNG_CLK                                      ] \
     -group [get_clocks JTAG_TCK                                     ] \
     -group [get_clocks AON_CLK                                      ]
 
