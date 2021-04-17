@@ -152,20 +152,21 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
   registers: [
 ##############################################################################
-# register locks for alerts and class configs
-    { name: "REGWEN",
+# register lock for ping timeout counter
+    { name: "PING_TIMER_REGWEN",
       desc: '''
-            Register write enable for all control registers.
+            Register write enable for !!PING_TIMEOUT_CYC and !!PING_TIMER_EN.
             ''',
       swaccess: "rw0c",
-      hwaccess: "hro",
+      hwaccess: "none",
       fields: [
         {
             bits:   "0",
-            desc: ''' When true, the alert enable and escalation configuration registers can be modified.
-            When false, they become read-only. Defaults true, write one to clear. Note that this needs to be
-            cleared after initial configuration at boot in order to lock in the configuration and activate
-            the ping testing.
+            desc: '''
+            When true, the !!PING_TIMEOUT_CYC and !!PING_TIMER_EN registers can be modified.
+            When false, they become read-only. Defaults true, write one to clear.
+            This should be cleared once the alert handler has been configured and the ping
+            timer mechanism has been kicked off.
             '''
             resval: 1,
         },
@@ -177,28 +178,72 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGWEN",
+      regwen:   "PING_TIMER_REGWEN",
       fields: [
         {
-          # TODO: add PING_CNT_DW parameter here
-          bits: "23:0",
+          bits: "PING_CNT_DW-1:0",
           resval:   32,
-          desc: '''Timeout value in cycles. If an alert receiver or an escalation sender does not
+          desc: '''
+          Timeout value in cycles. If an alert receiver or an escalation sender does not
           respond to a ping within this timeout window, a pingfail alert will be raised.
+          '''
+        }
+      ]
+    }
+    { name:     "PING_TIMER_EN",
+      desc:     '''
+                Ping timer enable.
+                '''
+      swaccess: "rw1s",
+      hwaccess: "hro",
+      regwen:   "PING_TIMER_REGWEN",
+      fields: [
+        {
+          bits: "0",
+          resval:   0,
+          desc: '''
+          Setting this to 1 enables the ping timer mechanism.
+          This bit cannot be cleared to 0 once it has been set to 1.
+
+          Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
           '''
         }
       ]
     }
 ##############################################################################
 # all alerts
-    {skipto: "0x20"},
+    { multireg: { name:     "ALERT_REGWEN",
+                  desc:     "Register write enable for alert enable bits.",
+                  count:    "NAlerts",
+                  compact:  "false",
+                  swaccess: "rw0c",
+                  hwaccess: "hro",
+                  hwqe:     "false",
+                  cname:    "alert",
+                  fields: [
+                    { bits:   "0",
+                      name:   "EN",
+                      desc:   '''
+                              Alert configuration write enable bit.
+                              If this is cleared to 0, the corresponding !!ALERT_EN
+                              and !!ALERT_CLASS bits are not writable anymore.
+
+                              Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
+                              ''',
+                      resval: "1",
+                    }
+                  ]
+                }
+    },
     { multireg: { name:     "ALERT_EN",
                   desc:     '''Enable register for alerts.
                   ''',
                   count:    "NAlerts",
+                  compact:  "false",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGWEN",
+                  regwen:   "ALERT_REGWEN",
+                  regwen_multi: "true",
                   cname:    "alert",
                   tags:     [// Enable `alert_en` might cause top-level escalators to trigger
                              // unexpected reset
@@ -206,25 +251,31 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                  fields: [
                     { bits: "0",
                       name: "EN_A",
-                      desc: "Alert enable "
+                      resval: 0
+                      desc: '''
+                            Alert enable bit.
+
+                            Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
+                            '''
                     }
                   ]
                 }
     },
-    {skipto: "0x120"},
     { multireg: { name:     "ALERT_CLASS",
                   desc:     '''Class assignment of alerts.
                   ''',
                   count:    "NAlerts",
+                  compact:  "false",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGWEN",
+                  regwen:   "ALERT_REGWEN",
+                  regwen_multi: "true",
                   cname:    "alert",
                   fields: [
                     {
-                      # TODO: bitwidth should be parameterized with CLASS_DW
-                      bits: "${int(math.ceil(math.log2(n_classes))-1)}:0",
+                      bits: "CLASS_DW-1:0",
                       name: "CLASS_A",
+                      resval: 0
                       desc: "Classification ",
                       enum: [
 % for i in range(n_classes):
@@ -235,16 +286,16 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   ]
                 }
     },
-    {skipto: "0x220"},
     { multireg: {
       name: "ALERT_CAUSE",
       desc: "Alert Cause Register",
       count: "NAlerts",
+      compact:  "false",
       cname: "ALERT",
       swaccess: "rw1c",
       hwaccess: "hrw",
       fields: [
-        { bits: "0", name: "A", desc: "Cause bit " }
+        { bits: "0", name: "A", desc: "Cause bit ", resval: 0}
       ],
       tags: [// The value of this register is determined by triggering different kinds of alerts
              // Cannot be auto-predicted so excluded from read check
@@ -253,20 +304,48 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     },
 ##############################################################################
 # local alerts
-    {skipto: "0x320"},
+    { multireg: { name:     "LOC_ALERT_REGWEN",
+                  desc:     "Register write enable for alert enable bits.",
+                  count:    "NAlerts",
+                  compact:  "false",
+                  swaccess: "rw0c",
+                  hwaccess: "none",
+                  cname:    "LOC_ALERT",
+                  fields: [
+                    { bits:   "0",
+                      name:   "EN",
+                      desc:   '''
+                              Alert configuration write enable bit.
+                              If this is cleared to 0, the corresponding !!LOC_ALERT_EN
+                              and !!LOC_ALERT_CLASS bits are not writable anymore.
+
+                              Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
+                              ''',
+                      resval: "1",
+                    }
+                  ]
+                }
+    },
     { multireg: { name:     "LOC_ALERT_EN",
                   desc:     '''Enable register for the aggregated local alerts "alert
                   pingfail" (0), "escalation pingfail" (1), "alert integfail" (2) and "escalation integfail" (3).
                   ''',
                   count:    "N_LOC_ALERT",
+                  compact:  "false",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGWEN",
+                  regwen:   "LOC_ALERT_REGWEN",
+                  regwen_multi: "true",
                   cname:    "LOC_ALERT",
                   fields: [
                     { bits: "0",
                       name: "EN_LA",
-                      desc: "Alert enable "
+                      resval: 0
+                      desc: '''
+                            Alert enable bit.
+
+                            Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
+                            '''
                     }
                   ]
                 }
@@ -276,15 +355,17 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                   pingfail" (0), "escalation pingfail" (1), "alert integfail" (2) and "escalation integfail" (3).
                   ''',
                   count:    "N_LOC_ALERT",
+                  compact:  "false",
                   swaccess: "rw",
                   hwaccess: "hro",
-                  regwen:   "REGWEN",
+                  regwen:   "LOC_ALERT_REGWEN",
+                  regwen_multi: "true",
                   cname:    "LOC_ALERT",
                   fields: [
                     {
-                      # TODO: bitwidth should be parameterized with CLASS_DW
-                      bits: "${int(math.ceil(math.log2(n_classes))-1)}:0",
+                      bits: "CLASS_DW-1:0",
                       name: "CLASS_LA",
+                      resval: 0
                       desc: "Classification ",
                       enum: [
 % for i in range(n_classes):
@@ -301,6 +382,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       pingfail" (0), "escalation pingfail" (1), "alert integfail" (2) and "escalation integfail" (3).
       ''',
       count: "N_LOC_ALERT",
+      compact:  "false",
       cname: "LOC_ALERT",
       swaccess: "rw1c",
       hwaccess: "hrw",
@@ -310,7 +392,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
              // TODO: remove the exclusion after set up top-level esc_receiver_driver
              "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
-        { bits: "0", name: "LA", desc: "Cause bit " }
+        { bits: "0", name: "LA", desc: "Cause bit ", resval: 0}
       ]
       }
     },
@@ -318,11 +400,28 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 # classes
 % for i in range(n_classes):
 <% c = chars[i] %>
+    { name:     "CLASS${chars[i]}_REGWEN",
+      desc:     '''
+                Lock bit for Class ${chars[i]} configuration.
+                '''
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+      {   bits:   "0",
+          desc:   '''
+                  Class configuration enable bit.
+                  If this is cleared to 0, the corresponding class configuration
+                  registers cannot be written anymore.
+                  ''',
+          resval: 1,
+        }
+      ]
+    },
     { name:     "CLASS${chars[i]}_CTRL",
-      desc:     "Escalation control register for alert Class ${chars[i]}. Can not be modified if !!REGWEN is false."
+      desc:     "Escalation control register for alert Class ${chars[i]}. Can not be modified if !!CLASS${chars[i]}_REGWEN is false."
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGWEN",
+      regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
         { bits: "0",
           name: "EN",
@@ -384,7 +483,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         }
       ]
     },
-    { name:     "CLASS${chars[i]}_REGWEN",
+    { name:     "CLASS${chars[i]}_CLR_REGWEN",
       desc:     '''
                 Clear enable for escalation protocol of Class ${chars[i]} alerts.
                 '''
@@ -406,16 +505,16 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     },
     { name:     "CLASS${chars[i]}_CLR",
       desc:     '''
-                Clear for esclation protocol of Class ${chars[i]}.
+                Clear for escalation protocol of Class ${chars[i]}.
                 '''
       swaccess: "wo",
       hwaccess: "hro",
       hwqe:     "true",
-      regwen:   "CLASS${chars[i]}_REGWEN",
+      regwen:   "CLASS${chars[i]}_CLR_REGWEN",
       fields: [
         { bits: "0",
           desc: '''Writing to this register clears the accumulator and aborts escalation
-          (if it has been triggered). This clear is disabled if !!CLASS${chars[i]}_REGWEN is false.
+          (if it has been triggered). This clear is disabled if !!CLASS${chars[i]}_CLR_REGWEN is false.
           '''
         }
       ]
@@ -423,7 +522,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     { name:     "CLASS${chars[i]}_ACCUM_CNT",
       desc:     '''
                 Current accumulation value for alert Class ${chars[i]}. Software can clear this register
-                with a write to !!CLASS${chars[i]}_CLR register unless !!CLASS${chars[i]}_REGWEN is false.
+                with a write to !!CLASS${chars[i]}_CLR register unless !!CLASS${chars[i]}_CLR_REGWEN is false.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
@@ -441,12 +540,12 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGWEN",
+      regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
         { bits: "${accu_cnt_dw - 1}:0",
           desc: '''Once the accumulation value register is equal to the threshold escalation will
           be triggered on the next alert occurrence within this class ${chars[i]} begins. Note that this
-          register can not be modified if !!REGWEN is false.
+          register can not be modified if !!CLASS${chars[i]}_REGWEN is false.
           '''
         }
       ]
@@ -457,14 +556,14 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGWEN",
+      regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
         { bits: "${esc_cnt_dw - 1}:0",
           desc: '''If the interrupt corresponding to this class is not
           handled within the specified amount of cycles, escalation will be triggered.
           Set to a positive value to enable the interrupt timeout for Class ${chars[i]}. The timeout is set to zero
           by default, which disables this feature. Note that this register can not be modified if
-          !!REGWEN is false.
+          !!CLASS${chars[i]}_REGWEN is false.
           '''
         }
       ]
@@ -476,11 +575,11 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                 '''
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "REGWEN",
+      regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
         { bits: "${esc_cnt_dw - 1}:0" ,
           desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!REGWEN is false.'''
+          modified if !!CLASS${chars[i]}_REGWEN is false.'''
         }
       ]
     }

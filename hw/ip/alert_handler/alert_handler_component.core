@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:lfsr
       - lowrisc:prim:edn_req
+      - lowrisc:prim:buf
       - "fileset_topgen ? (lowrisc:systems:topgen-reg-only)"
     files:
       - rtl/alert_pkg.sv

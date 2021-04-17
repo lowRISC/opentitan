@@ -63,8 +63,9 @@ package alert_pkg;
 
   typedef struct packed {
     // ping config
-    logic                                              config_locked;      // locked -> ping enabled
+    logic                                              ping_enable;        // ping timer enable
     logic [PING_CNT_DW-1:0]                            ping_timeout_cyc;   // ping timeout config
+    logic [NAlerts-1:0]                                alert_ping_en;      // ping enable for alerts
     // alert config
     logic [N_LOC_ALERT-1:0]                            loc_alert_en;       // alert enable
     logic [N_LOC_ALERT-1:0][CLASS_DW-1:0]              loc_alert_class;    // alert class config

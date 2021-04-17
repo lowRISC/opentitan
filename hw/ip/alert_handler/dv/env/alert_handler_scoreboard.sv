@@ -51,8 +51,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    ral.alert_cause.get_fields(alert_cause_fields);
-    ral.loc_alert_cause.get_fields(loc_alert_cause_fields);
+    ral.alert_cause_0.get_fields(alert_cause_fields);
+    ral.loc_alert_cause_0.get_fields(loc_alert_cause_fields);
     ral.intr_state.get_fields(intr_state_fields);
     `ASSIGN_CLASS_PHASE_REGS(0, a)
     `ASSIGN_CLASS_PHASE_REGS(1, b)
@@ -86,7 +86,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           bit [TL_DW-1:0] alert_en;
           alert_esc_seq_item act_item;
           alert_fifo[index].get(act_item);
-          alert_en = ral.alert_en.get_mirrored_value();
+          alert_en = ral.alert_en_0.get_mirrored_value();
           if (alert_en[index]) begin
             // alert detected
             if (act_item.alert_esc_type == AlertEscSigTrans && !act_item.ping_timeout &&
@@ -94,11 +94,11 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               process_alert_sig(index, 0);
             // alert integrity fail
             end else if (act_item.alert_esc_type == AlertEscIntFail) begin
-              bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en.get_mirrored_value();
+              bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_0.get_mirrored_value();
               if (loc_alert_en[LocalAlertIntFail]) process_alert_sig(index, 1, LocalAlertIntFail);
             end else if (act_item.alert_esc_type == AlertEscPingTrans &&
                          act_item.ping_timeout) begin
-              bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en.get_mirrored_value();
+              bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_0.get_mirrored_value();
               if (loc_alert_en[LocalAlertPingFail]) begin
                 process_alert_sig(index, 1, LocalAlertPingFail);
                 `uvm_info(`gfn, $sformatf("alert %0d ping timeout, timeout_cyc reg is %0d",
@@ -125,11 +125,11 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           // escalation integrity fail
           end else if (act_item.alert_esc_type == AlertEscIntFail ||
                (act_item.esc_handshake_sta == EscIntFail && !act_item.ping_timeout)) begin
-            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en.get_mirrored_value();
+            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_0.get_mirrored_value();
             if (loc_alert_en[LocalEscIntFail]) process_alert_sig(index, 1, LocalEscIntFail);
           // escalation ping timeout
           end else if (act_item.alert_esc_type == AlertEscPingTrans && act_item.ping_timeout) begin
-            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en.get_mirrored_value();
+            bit [TL_DW-1:0] loc_alert_en = ral.loc_alert_en_0.get_mirrored_value();
             if (loc_alert_en[LocalEscPingFail]) begin
               process_alert_sig(index, 1, LocalEscPingFail);
               `uvm_info(`gfn, $sformatf("esc %0d ping timeout, timeout_cyc reg is %0d",
@@ -160,7 +160,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
             alert_cause_field = alert_cause_fields[alert_i];
             void'(alert_cause_field.predict(1));
           end else begin
-            alert_class = ral.loc_alert_class.get_mirrored_value();
+            alert_class = ral.loc_alert_class_0.get_mirrored_value();
             class_i = (alert_class >> local_alert_type * 2) & 'b11;
             loc_alert_cause_field = loc_alert_cause_fields[local_alert_type];
             void'(loc_alert_cause_field.predict(.value(1), .kind(UVM_PREDICT_READ)));
@@ -221,7 +221,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     bit [TL_DW-1:0] class_ctrl = get_class_ctrl(class_i);
     if (class_ctrl[AlertClassCtrlLock]) begin
       uvm_reg clren_rg;
-      clren_rg = ral.get_reg_by_name($sformatf("class%s_regwen", class_name[class_i]));
+      clren_rg = ral.get_reg_by_name($sformatf("class%s_clr_regwen", class_name[class_i]));
       `DV_CHECK_NE_FATAL(clren_rg, null)
       void'(clren_rg.predict(0));
     end
@@ -233,7 +233,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     // if ping periodic check enabled, will not check cycle count, because cycle count might be
     // connected with ping request, which makes the length unpredictable
     // it is beyond this scb to check ping timer (FPV checks it).
-    if (ral.regwen.get_mirrored_value() && !cfg.under_reset) begin
+    if (ral.ping_timer_en.get_mirrored_value() && !cfg.under_reset) begin
       `DV_CHECK_EQ(cycle_cnt, esc_cnter_per_signal[esc_sig_i],
                    $sformatf("check signal_%0d", esc_sig_i))
       if (cfg.en_cov) cov.esc_sig_length_cg.sample(esc_sig_i, cycle_cnt);
@@ -303,10 +303,10 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               if (item.a_data[i] == 0) under_intr_classes[i] = 0;
             end
           end
-          "classa_clr": if (ral.classa_regwen.get_mirrored_value()) clr_reset_esc_class(0);
-          "classb_clr": if (ral.classb_regwen.get_mirrored_value()) clr_reset_esc_class(1);
-          "classc_clr": if (ral.classc_regwen.get_mirrored_value()) clr_reset_esc_class(2);
-          "classd_clr": if (ral.classd_regwen.get_mirrored_value()) clr_reset_esc_class(3);
+          "classa_clr": if (ral.classa_clr_regwen.get_mirrored_value()) clr_reset_esc_class(0);
+          "classb_clr": if (ral.classb_clr_regwen.get_mirrored_value()) clr_reset_esc_class(1);
+          "classc_clr": if (ral.classc_clr_regwen.get_mirrored_value()) clr_reset_esc_class(2);
+          "classd_clr": if (ral.classd_clr_regwen.get_mirrored_value()) clr_reset_esc_class(3);
           default: begin
            //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
           end
