@@ -823,10 +823,16 @@ the security settings process) should do the following:
 1. For each alert and each local alert:
 
     - Determine if alert is enabled (should only be false if alert is known to
-      be faulty). Set {{< regref "ALERT_EN.EN_A0" >}} and {{< regref "LOC_ALERT_EN.EN_LA0" >}} accordingly.
+      be faulty).
+      Set {{< regref "ALERT_EN.EN_A0" >}} and {{< regref "LOC_ALERT_EN.EN_LA0" >}} accordingly.
 
     - Determine which class (A..D) the alert is associated with. Set
       {{< regref "ALERT_CLASS.CLASS_A" >}} and {{< regref "LOC_ALERT_CLASS.CLASS_LA" >}} accordingly.
+
+    - Optionally lock each alert configuration by writing 0 to {{< regref "ALERT_EN_REGWEN.EN0" >}} or {{< regref "LOC_ALERT_EN_REGWEN.EN0" >}}.
+      Note however that only **locked and enabled** alerts are going to be pinged using the ping mechanism.
+      This ensures that spurious ping failures cannot occur when previously enabled alerts are being disabled again (before locking).
+
 
 2. Set the ping timeout value {{< regref "PING_TIMEOUT_CYC" >}}. This value is dependent on
    the clock ratios present in the system.
@@ -864,11 +870,12 @@ the security settings process) should do the following:
           program it via the {{< regref "CLASSA_CTRL.E0_MAP" >}} values if it needs to be
           changed from the default mapping (0->0, 1->1, 2->2, 3->3).
 
-4. After initial configuration at startup, lock the alert enable and escalation
-config registers by writing 1 to {{< regref "REGWEN" >}}. This protects the registers from being
-altered later on, and activates the ping mechanism for the enabled alerts and
-escalation signals.
+    - Optionally lock the class configuration by writing 0 to {{< regref "CLASSA_CTRL.REGWEN" >}}.
 
+4. After initial configuration at startup, enable the ping timer mechanism by writing 1 to {{< regref "PING_TIMER_EN" >}}.
+It is also recommended to lock the ping timer configuration by clearing {{< regref "PING_TIMER_REGWEN" >}}.
+Note that only **locked and enabled** alerts are going to be pinged using the ping mechanism.
+This ensures that spurious ping failures cannot occur when previously enabled alerts are being disabled again (before locking).
 
 ## Interrupt Handling
 
@@ -900,10 +907,10 @@ the following steps:
 the interrupt as follows:
 
     - Resetting the accumulation register for the class by writing {{< regref "CLASSA_CLR" >}}.
-      This also aborts escalation protocol if it has been triggered. If for some
+      This also aborts the escalation protocol if it has been triggered. If for some
       reason it is desired to never allow the accumulator or escalation to be
-      cleared, software can initialize the {{< regref "CLASSA_REGWEN" >}} register to zero.
-      If {{< regref "CLASSA_REGWEN" >}} is already false when an alert interrupt is detected
+      cleared, software can initialize the {{< regref "CLASSA_CLR_REGWEN" >}} register to zero.
+      If {{< regref "CLASSA_CLR_REGWEN" >}} is already false when an alert interrupt is detected
       (either due to software control or hardware trigger via
       {{< regref "CLASSA_CTRL.LOCK" >}}), then the accumulation counter can not be cleared and
       this step has no effect.
