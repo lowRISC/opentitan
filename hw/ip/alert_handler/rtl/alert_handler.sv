@@ -108,8 +108,8 @@ module alert_handler
     .entropy_i(entropy),
     // we enable ping testing as soon as the config
     // regs have been locked
-    .en_i               ( reg2hw_wrap.config_locked    ),
-    .alert_en_i         ( reg2hw_wrap.alert_en         ),
+    .en_i               ( reg2hw_wrap.ping_enable      ),
+    .alert_ping_en_i    ( reg2hw_wrap.alert_ping_en    ),
     .ping_timeout_cyc_i ( reg2hw_wrap.ping_timeout_cyc ),
     // this determines the range of the randomly generated
     // wait period between ping. maximum mask width is PING_CNT_DW.

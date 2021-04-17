@@ -127,17 +127,17 @@ module alert_handler_reg_wrap import alert_pkg::*; (
   // ping timeout in cycles
   // autolock can clear these regs automatically upon entering escalation
   // note: the class must be activated for this to occur
-  assign { hw2reg.classd_regwen.d,
-           hw2reg.classc_regwen.d,
-           hw2reg.classb_regwen.d,
-           hw2reg.classa_regwen.d } = '0;
+  assign { hw2reg.classd_clr_regwen.d,
+           hw2reg.classc_clr_regwen.d,
+           hw2reg.classb_clr_regwen.d,
+           hw2reg.classa_clr_regwen.d } = '0;
 
-  assign { hw2reg.classd_regwen.de,
-           hw2reg.classc_regwen.de,
-           hw2reg.classb_regwen.de,
-           hw2reg.classa_regwen.de } = hw2reg_wrap.class_esc_trig &
-                                       class_autolock_en          &
-                                       reg2hw_wrap.class_en;
+  assign { hw2reg.classd_clr_regwen.de,
+           hw2reg.classc_clr_regwen.de,
+           hw2reg.classb_clr_regwen.de,
+           hw2reg.classa_clr_regwen.de } = hw2reg_wrap.class_esc_trig &
+                                           class_autolock_en          &
+                                           reg2hw_wrap.class_en;
 
   // current accumulator counts
   assign { hw2reg.classd_accum_cnt.d,
@@ -162,12 +162,14 @@ module alert_handler_reg_wrap import alert_pkg::*; (
   /////////////////////
 
   // config register lock
-  assign reg2hw_wrap.config_locked = ~reg2hw.regwen.q;
+  assign reg2hw_wrap.ping_enable = reg2hw.ping_timer_en.q;
 
   // alert enable and class assignments
   for (genvar k = 0; k < NAlerts; k++) begin : gen_alert_en_class
-    assign reg2hw_wrap.alert_en[k]    = reg2hw.alert_en[k].q;
-    assign reg2hw_wrap.alert_class[k] = reg2hw.alert_class[k].q;
+    // we only ping enabled alerts that are locked
+    assign reg2hw_wrap.alert_ping_en[k] = reg2hw.alert_en[k].q & reg2hw.alert_regwen[k].q;
+    assign reg2hw_wrap.alert_en[k]      = reg2hw.alert_en[k].q;
+    assign reg2hw_wrap.alert_class[k]   = reg2hw.alert_class[k].q;
   end
 
   // local alert enable and class assignments
