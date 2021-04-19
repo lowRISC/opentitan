@@ -97,7 +97,7 @@ class RandWSR(WSR):
     def __init__(self, name: str):
         super().__init__(name)
 
-        self._random_value = None # type: Optional[int]
+        self._random_value = None  # type: Optional[int]
         self._random_value_read = False
         self.pending_request = False
 

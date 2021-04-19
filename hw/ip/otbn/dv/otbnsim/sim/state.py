@@ -53,7 +53,7 @@ class OTBNState:
         self._err_bits = 0
         self.pending_halt = False
 
-        self._new_rnd_data = None # type: Optional[int]
+        self._new_rnd_data = None  # type: Optional[int]
         self._urnd_reseed_complete = False
 
     def set_rnd_data(self, rnd_data: int) -> None:
