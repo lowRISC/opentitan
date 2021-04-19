@@ -4,9 +4,9 @@
 
 '''Run tests to make sure the simulator works as expected
 
-We expect a test in each directory below ./simple. This test should comprise a
-single assembly file (called <something>.s) and a file called expected.txt,
-containing a list of expected register values.
+We expect tests below ./simple. Each test is defined by two files (in the same
+directory as each other). The code for the test is in a single assembly file,
+called <name>.s, and the expected results are in a file called <name>.exp.
 
 '''
 
