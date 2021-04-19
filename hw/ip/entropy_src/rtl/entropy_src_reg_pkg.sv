@@ -554,7 +554,10 @@ package entropy_src_reg_pkg;
     } sha3_err;
     struct packed {
       logic        d;
-    } diag;
+    } main_sm_idle;
+    struct packed {
+      logic [7:0]  d;
+    } main_sm_state;
   } entropy_src_hw2reg_debug_status_reg_t;
 
   typedef struct packed {
@@ -623,42 +626,42 @@ package entropy_src_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    entropy_src_hw2reg_intr_state_reg_t intr_state; // [1036:1031]
-    entropy_src_hw2reg_regwen_reg_t regwen; // [1030:1030]
-    entropy_src_hw2reg_entropy_data_reg_t entropy_data; // [1029:998]
-    entropy_src_hw2reg_repcnt_thresholds_reg_t repcnt_thresholds; // [997:966]
-    entropy_src_hw2reg_repcnts_thresholds_reg_t repcnts_thresholds; // [965:934]
-    entropy_src_hw2reg_adaptp_hi_thresholds_reg_t adaptp_hi_thresholds; // [933:902]
-    entropy_src_hw2reg_adaptp_lo_thresholds_reg_t adaptp_lo_thresholds; // [901:870]
-    entropy_src_hw2reg_bucket_thresholds_reg_t bucket_thresholds; // [869:838]
-    entropy_src_hw2reg_markov_hi_thresholds_reg_t markov_hi_thresholds; // [837:806]
-    entropy_src_hw2reg_markov_lo_thresholds_reg_t markov_lo_thresholds; // [805:774]
-    entropy_src_hw2reg_extht_hi_thresholds_reg_t extht_hi_thresholds; // [773:742]
-    entropy_src_hw2reg_extht_lo_thresholds_reg_t extht_lo_thresholds; // [741:710]
-    entropy_src_hw2reg_repcnt_hi_watermarks_reg_t repcnt_hi_watermarks; // [709:678]
-    entropy_src_hw2reg_repcnts_hi_watermarks_reg_t repcnts_hi_watermarks; // [677:646]
-    entropy_src_hw2reg_adaptp_hi_watermarks_reg_t adaptp_hi_watermarks; // [645:614]
-    entropy_src_hw2reg_adaptp_lo_watermarks_reg_t adaptp_lo_watermarks; // [613:582]
-    entropy_src_hw2reg_extht_hi_watermarks_reg_t extht_hi_watermarks; // [581:550]
-    entropy_src_hw2reg_extht_lo_watermarks_reg_t extht_lo_watermarks; // [549:518]
-    entropy_src_hw2reg_bucket_hi_watermarks_reg_t bucket_hi_watermarks; // [517:486]
-    entropy_src_hw2reg_markov_hi_watermarks_reg_t markov_hi_watermarks; // [485:454]
-    entropy_src_hw2reg_markov_lo_watermarks_reg_t markov_lo_watermarks; // [453:422]
-    entropy_src_hw2reg_repcnt_total_fails_reg_t repcnt_total_fails; // [421:390]
-    entropy_src_hw2reg_repcnts_total_fails_reg_t repcnts_total_fails; // [389:358]
-    entropy_src_hw2reg_adaptp_hi_total_fails_reg_t adaptp_hi_total_fails; // [357:326]
-    entropy_src_hw2reg_adaptp_lo_total_fails_reg_t adaptp_lo_total_fails; // [325:294]
-    entropy_src_hw2reg_bucket_total_fails_reg_t bucket_total_fails; // [293:262]
-    entropy_src_hw2reg_markov_hi_total_fails_reg_t markov_hi_total_fails; // [261:230]
-    entropy_src_hw2reg_markov_lo_total_fails_reg_t markov_lo_total_fails; // [229:198]
-    entropy_src_hw2reg_extht_hi_total_fails_reg_t extht_hi_total_fails; // [197:166]
-    entropy_src_hw2reg_extht_lo_total_fails_reg_t extht_lo_total_fails; // [165:134]
-    entropy_src_hw2reg_alert_summary_fail_counts_reg_t alert_summary_fail_counts; // [133:102]
-    entropy_src_hw2reg_alert_fail_counts_reg_t alert_fail_counts; // [101:74]
-    entropy_src_hw2reg_extht_fail_counts_reg_t extht_fail_counts; // [73:66]
-    entropy_src_hw2reg_fw_ov_rd_data_reg_t fw_ov_rd_data; // [65:34]
-    entropy_src_hw2reg_fw_ov_fifo_sts_reg_t fw_ov_fifo_sts; // [33:27]
-    entropy_src_hw2reg_debug_status_reg_t debug_status; // [26:16]
+    entropy_src_hw2reg_intr_state_reg_t intr_state; // [1044:1039]
+    entropy_src_hw2reg_regwen_reg_t regwen; // [1038:1038]
+    entropy_src_hw2reg_entropy_data_reg_t entropy_data; // [1037:1006]
+    entropy_src_hw2reg_repcnt_thresholds_reg_t repcnt_thresholds; // [1005:974]
+    entropy_src_hw2reg_repcnts_thresholds_reg_t repcnts_thresholds; // [973:942]
+    entropy_src_hw2reg_adaptp_hi_thresholds_reg_t adaptp_hi_thresholds; // [941:910]
+    entropy_src_hw2reg_adaptp_lo_thresholds_reg_t adaptp_lo_thresholds; // [909:878]
+    entropy_src_hw2reg_bucket_thresholds_reg_t bucket_thresholds; // [877:846]
+    entropy_src_hw2reg_markov_hi_thresholds_reg_t markov_hi_thresholds; // [845:814]
+    entropy_src_hw2reg_markov_lo_thresholds_reg_t markov_lo_thresholds; // [813:782]
+    entropy_src_hw2reg_extht_hi_thresholds_reg_t extht_hi_thresholds; // [781:750]
+    entropy_src_hw2reg_extht_lo_thresholds_reg_t extht_lo_thresholds; // [749:718]
+    entropy_src_hw2reg_repcnt_hi_watermarks_reg_t repcnt_hi_watermarks; // [717:686]
+    entropy_src_hw2reg_repcnts_hi_watermarks_reg_t repcnts_hi_watermarks; // [685:654]
+    entropy_src_hw2reg_adaptp_hi_watermarks_reg_t adaptp_hi_watermarks; // [653:622]
+    entropy_src_hw2reg_adaptp_lo_watermarks_reg_t adaptp_lo_watermarks; // [621:590]
+    entropy_src_hw2reg_extht_hi_watermarks_reg_t extht_hi_watermarks; // [589:558]
+    entropy_src_hw2reg_extht_lo_watermarks_reg_t extht_lo_watermarks; // [557:526]
+    entropy_src_hw2reg_bucket_hi_watermarks_reg_t bucket_hi_watermarks; // [525:494]
+    entropy_src_hw2reg_markov_hi_watermarks_reg_t markov_hi_watermarks; // [493:462]
+    entropy_src_hw2reg_markov_lo_watermarks_reg_t markov_lo_watermarks; // [461:430]
+    entropy_src_hw2reg_repcnt_total_fails_reg_t repcnt_total_fails; // [429:398]
+    entropy_src_hw2reg_repcnts_total_fails_reg_t repcnts_total_fails; // [397:366]
+    entropy_src_hw2reg_adaptp_hi_total_fails_reg_t adaptp_hi_total_fails; // [365:334]
+    entropy_src_hw2reg_adaptp_lo_total_fails_reg_t adaptp_lo_total_fails; // [333:302]
+    entropy_src_hw2reg_bucket_total_fails_reg_t bucket_total_fails; // [301:270]
+    entropy_src_hw2reg_markov_hi_total_fails_reg_t markov_hi_total_fails; // [269:238]
+    entropy_src_hw2reg_markov_lo_total_fails_reg_t markov_lo_total_fails; // [237:206]
+    entropy_src_hw2reg_extht_hi_total_fails_reg_t extht_hi_total_fails; // [205:174]
+    entropy_src_hw2reg_extht_lo_total_fails_reg_t extht_lo_total_fails; // [173:142]
+    entropy_src_hw2reg_alert_summary_fail_counts_reg_t alert_summary_fail_counts; // [141:110]
+    entropy_src_hw2reg_alert_fail_counts_reg_t alert_fail_counts; // [109:82]
+    entropy_src_hw2reg_extht_fail_counts_reg_t extht_fail_counts; // [81:74]
+    entropy_src_hw2reg_fw_ov_rd_data_reg_t fw_ov_rd_data; // [73:42]
+    entropy_src_hw2reg_fw_ov_fifo_sts_reg_t fw_ov_fifo_sts; // [41:35]
+    entropy_src_hw2reg_debug_status_reg_t debug_status; // [34:16]
     entropy_src_hw2reg_err_code_reg_t err_code; // [15:0]
   } entropy_src_hw2reg_t;
 
