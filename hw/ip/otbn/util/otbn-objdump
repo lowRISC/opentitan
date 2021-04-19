@@ -5,13 +5,11 @@
 
 '''A wrapper around riscv32-unknown-elf-objdump for OTBN'''
 
-import os
 import re
 import subprocess
 import sys
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
-from shared.encoding import Encoding
 from shared.insn_yaml import Insn, InsnsFile, load_insns_yaml
 from shared.toolchain import find_tool
 
