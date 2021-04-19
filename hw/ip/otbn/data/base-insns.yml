@@ -501,6 +501,15 @@
     followed by an ADDI).
   python-pseudo-op: true
 
+- mnemonic: la
+  synopsis: Load absolute address
+  rv32i: true
+  operands: [grd, imm]
+  doc: |
+    Loads an address given by a symbol into a GPR. This is represented
+    as a LUI and an ADDI.
+  python-pseudo-op: true
+
 - mnemonic: ret
   synopsis: Return from subroutine
   rv32i: true

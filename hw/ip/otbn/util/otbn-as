@@ -455,19 +455,17 @@ def parse_positionals(argv: List[str]) -> Tuple[List[str], List[str], Set[str]]:
     return (positionals, others, flags)
 
 
-def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
-    '''Expand the li pseudo-op'''
-
-    # This logic is slightly complicated so it has some associated tests in the
-    # ISS testsuite (where we can run the results). If adding more cleverness
-    # to this or fixing bugs, we should also add a check at
-    # hw/ip/otbn/dv/otbnsim/test/simple/li.
-
+def _unpack_lx(where: str,
+               mnemonic: str,
+               op_to_expr: Dict[str, Optional[str]]) -> Tuple[str, str]:
+    '''Unpack the arguments to li or la'''
     if set(op_to_expr.keys()) != {'grd', 'imm'}:
-        raise RuntimeError('When expanding LI, got wrong op_to_expr keys '
-                           '({}). This is a mismatch between expand_li in '
-                           'otbn-as and the operands for LI in insns.yml.'
-                           .format(list(op_to_expr.keys())))
+        umnem = mnemonic.upper()
+        keys_list = list(op_to_expr.keys())
+        raise RuntimeError(f'When expanding {umnem}, got wrong op_to_expr '
+                           f'keys ({keys_list}). This is a mismatch between '
+                           f'expand_{mnemonic} in otbn-as and the operands '
+                           f'for {umnem} in insns.yml.')
 
     grd = op_to_expr['grd']
     imm = op_to_expr['imm']
@@ -490,7 +488,18 @@ def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
                            .format(where, err))
 
     grd_txt = gpr_type.op_val_to_str(grd_op_val, None)
+    return (grd_txt, imm)
 
+
+def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
+    '''Expand the li pseudo-op'''
+
+    # This logic is slightly complicated so it has some associated tests in the
+    # ISS testsuite (where we can run the results). If adding more cleverness
+    # to this or fixing bugs, we should also add a check at
+    # hw/ip/otbn/dv/otbnsim/test/simple/pseudos/li.s.
+
+    grd_txt, imm = _unpack_lx(where, 'li', op_to_expr)
     try:
         imm_int = int(imm, 0)
     except ValueError:
@@ -542,8 +551,30 @@ def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
             'addi {}, {}, {}'.format(grd_txt, grd_txt, imm_12)]
 
 
+def expand_la(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
+    '''Expand the la pseudo-op'''
+
+    # For RISC-V, "la rd, symbol" expands to two instructions:
+    #
+    #    auipc rd, delta[31:12] + delta[11]
+    #    addi  rd, rd, delta[11:0]
+    #
+    # where delta = symbol - pc.
+    #
+    # For OTBN, both IMEM and DMEM are small. This means that we can represent
+    # every symbol in 12 bits, so "la rd, symbol" can expand to:
+    #
+    #    addi rd, x0, %lo(symbol)
+    #
+    # Much easier!
+    grd_txt, imm = _unpack_lx(where, 'la', op_to_expr)
+    return ['lui {}, %hi({})'.format(grd_txt, imm),
+            'addi {}, {}, %lo({})'.format(grd_txt, grd_txt, imm)]
+
+
 _PSEUDO_OP_ASSEMBLERS = {
-    'li': expand_li
+    'li': expand_li,
+    'la': expand_la
 }
 
 
