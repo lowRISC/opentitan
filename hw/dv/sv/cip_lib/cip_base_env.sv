@@ -127,7 +127,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     // Set the TL adapter / sequencer to the default_map.
     foreach (cfg.m_tl_agent_cfgs[i]) begin
       if (cfg.m_tl_agent_cfgs[i].is_active) begin
-        cfg.ral.default_map.set_sequencer(m_tl_agents[i].sequencer, m_tl_reg_adapters[i]);
+        cfg.ral_models[i].default_map.set_sequencer(m_tl_agents[i].sequencer, m_tl_reg_adapters[i]);
       end
     end
   endfunction : end_of_elaboration_phase

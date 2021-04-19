@@ -831,12 +831,13 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     uint num_accesses;
     // limit to 100k accesses if mem is very big
     uint max_accesses = 100_000;
+    uvm_reg_block local_ral = cfg.ral_models[ral_name];
 
     void'($value$plusargs("max_accesses_for_partial_mem_access_vseq=%0d", max_accesses));
 
     // calculate how many accesses to run based on mem size, up to 100k
     foreach (loc_mem_range[i]) begin
-      if (get_mem_access_by_addr(ral, loc_mem_range[i].start_addr) != "RO") begin
+      if (get_mem_access_by_addr(local_ral, loc_mem_range[i].start_addr) != "RO") begin
         num_accesses += (loc_mem_range[i].end_addr - loc_mem_range[i].start_addr) >> 2;
         if (num_accesses >= max_accesses) begin
           num_accesses = max_accesses;
@@ -862,7 +863,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                   addr inside {[loc_mem_range[mem_idx].start_addr :
                                 loc_mem_range[mem_idx].end_addr]};)
 
-              if (get_mem_access_by_addr(ral, addr) != "RO") begin
+              if (get_mem_access_by_addr(local_ral, addr) != "RO") begin
                 `downcast(mem, get_mem_by_addr(cfg.ral_models[ral_name],
                                                loc_mem_range[mem_idx].start_addr))
 
@@ -889,7 +890,7 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
               // Only read when it's fully written
               if (addr_mask.mask == '1) begin
                 addr = addr_mask.addr;
-                if (get_mem_access_by_addr(ral, addr) != "WO") begin
+                if (get_mem_access_by_addr(local_ral, addr) != "WO") begin
                   mask = get_rand_contiguous_mask(addr_mask.mask);
                   tl_access_w_abort(.addr(addr), .write(0), .data(data), .status(status), .mask(mask),
                                     .blocking(1), .req_abort_pct($urandom_range(0, 100)),
