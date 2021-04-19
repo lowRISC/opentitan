@@ -144,7 +144,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
     dv_base_reg shadowed_csrs[$];
     string update_err_alert_name, storage_err_alert_name;
 
-    ral.get_shadowed_regs(shadowed_csrs);
+    foreach (ral_models[i]) ral_models[i].get_shadowed_regs(shadowed_csrs);
     foreach (shadowed_csrs[i]) begin
       update_err_alert_name = shadowed_csrs[i].get_update_err_alert_name();
       storage_err_alert_name = shadowed_csrs[i].get_storage_err_alert_name();
