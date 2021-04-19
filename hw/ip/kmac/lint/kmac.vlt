@@ -4,3 +4,10 @@
 //
 // waiver file for kmac
 
+`verilator_config
+
+// When masking is disabled, KMAC exposes ports for the EDN clock and
+// reset but doesn't use them. This is intentional; waive the
+// warnings.
+lint_off -rule UNUSED -file "*/rtl/kmac.sv" -match "Signal is not used: 'clk_edn_i'"
+lint_off -rule UNUSED -file "*/rtl/kmac.sv" -match "Signal is not used: 'rst_edn_ni'"

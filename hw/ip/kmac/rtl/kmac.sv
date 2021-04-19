@@ -860,9 +860,15 @@ module kmac
       .err_processed_i (err_processed)
     );
   end else begin : gen_empty_entropy
-    // If Masking is not used, no need of entropy. Tieing 0
+    // If Masking is not used, no need of entropy. Ignore inputs and config; tie output to 0.
     edn_pkg::edn_rsp_t unused_entropy_input;
-    assign unused_entropy_input = entropy_i;
+    entropy_mode_e     unused_entropy_mode;
+    logic              unused_entropy_fast_process;
+
+    assign unused_entropy_input        = entropy_i;
+    assign unused_entropy_mode         = entropy_mode;
+    assign unused_entropy_fast_process = entropy_fast_process;
+
     assign entropy_o = '{default: '0};
 
     logic unused_sha3_rand_consumed;
