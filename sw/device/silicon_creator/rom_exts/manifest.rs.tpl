@@ -10,20 +10,21 @@
 //     --output-dir=<destination dir>
 //     --output-files=rust
 
+pub struct ManifestField {
+    pub offset: usize,
+    pub size_bytes: usize,
+}
+
 % for name, region in regions:
-/// Manifest field ${name} offset from the base.
-pub const ${region.offset_name().as_c_define()}:u32 = ${region.base_addr};
-
-/// Manifest field ${name} size in bytes.
-pub const ${region.size_bytes_name().as_c_define()}:u32 = ${region.size_bytes};
-
-/// Manifest field ${name} size in words.
-pub const ${region.size_words_name().as_c_define()}:u32 = ${region.size_words};
+pub const ${region.name.as_c_define()}: ManifestField = ManifestField {
+    offset: ${region.base_addr},
+    size_bytes: ${region.size_bytes},
+};
 
 % endfor
 
 % for name, offset in offsets:
 /// Manifest offset ${name} from the base.
-pub const ${offset.offset_name().as_c_define()}:u32 = ${offset.offset};
+pub const ${offset.offset_name().as_c_define()}:usize = ${offset.offset};
 
 %endfor

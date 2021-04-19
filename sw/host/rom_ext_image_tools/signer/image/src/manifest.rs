@@ -10,164 +10,102 @@
 //     --output-dir=<destination dir>
 //     --output-files=rust
 
-/// Manifest field manifest_identifier offset from the base.
-pub const ROM_EXT_MANIFEST_IDENTIFIER_OFFSET: u32 = 0;
+pub struct ManifestField {
+    pub offset: usize,
+    pub size_bytes: usize,
+}
 
-/// Manifest field manifest_identifier size in bytes.
-pub const ROM_EXT_MANIFEST_IDENTIFIER_SIZE_BYTES: u32 = 4;
+pub const ROM_EXT_MANIFEST_IDENTIFIER: ManifestField = ManifestField {
+    offset: 0,
+    size_bytes: 4,
+};
 
-/// Manifest field manifest_identifier size in words.
-pub const ROM_EXT_MANIFEST_IDENTIFIER_SIZE_WORDS: u32 = 1;
+pub const ROM_EXT_IMAGE_SIGNATURE: ManifestField = ManifestField {
+    offset: 8,
+    size_bytes: 384,
+};
 
-/// Manifest field image_signature offset from the base.
-pub const ROM_EXT_IMAGE_SIGNATURE_OFFSET: u32 = 8;
+pub const ROM_EXT_IMAGE_LENGTH: ManifestField = ManifestField {
+    offset: 392,
+    size_bytes: 4,
+};
 
-/// Manifest field image_signature size in bytes.
-pub const ROM_EXT_IMAGE_SIGNATURE_SIZE_BYTES: u32 = 384;
+pub const ROM_EXT_IMAGE_VERSION: ManifestField = ManifestField {
+    offset: 396,
+    size_bytes: 4,
+};
 
-/// Manifest field image_signature size in words.
-pub const ROM_EXT_IMAGE_SIGNATURE_SIZE_WORDS: u32 = 96;
+pub const ROM_EXT_IMAGE_TIMESTAMP: ManifestField = ManifestField {
+    offset: 400,
+    size_bytes: 8,
+};
 
-/// Manifest field image_length offset from the base.
-pub const ROM_EXT_IMAGE_LENGTH_OFFSET: u32 = 392;
+pub const ROM_EXT_SIGNATURE_KEY_PUBLIC_EXPONENT: ManifestField =
+    ManifestField {
+        offset: 408,
+        size_bytes: 4,
+    };
 
-/// Manifest field image_length size in bytes.
-pub const ROM_EXT_IMAGE_LENGTH_SIZE_BYTES: u32 = 4;
+pub const ROM_EXT_USAGE_CONSTRAINTS: ManifestField = ManifestField {
+    offset: 416,
+    size_bytes: 32,
+};
 
-/// Manifest field image_length size in words.
-pub const ROM_EXT_IMAGE_LENGTH_SIZE_WORDS: u32 = 1;
+pub const ROM_EXT_PERIPHERAL_LOCKDOWN_INFO: ManifestField = ManifestField {
+    offset: 448,
+    size_bytes: 16,
+};
 
-/// Manifest field image_version offset from the base.
-pub const ROM_EXT_IMAGE_VERSION_OFFSET: u32 = 396;
+pub const ROM_EXT_SIGNATURE_KEY_MODULUS: ManifestField = ManifestField {
+    offset: 464,
+    size_bytes: 384,
+};
 
-/// Manifest field image_version size in bytes.
-pub const ROM_EXT_IMAGE_VERSION_SIZE_BYTES: u32 = 4;
+pub const ROM_EXT_EXTENSION0_OFFSET: ManifestField = ManifestField {
+    offset: 848,
+    size_bytes: 4,
+};
 
-/// Manifest field image_version size in words.
-pub const ROM_EXT_IMAGE_VERSION_SIZE_WORDS: u32 = 1;
+pub const ROM_EXT_EXTENSION0_CHECKSUM: ManifestField = ManifestField {
+    offset: 852,
+    size_bytes: 4,
+};
 
-/// Manifest field image_timestamp offset from the base.
-pub const ROM_EXT_IMAGE_TIMESTAMP_OFFSET: u32 = 400;
+pub const ROM_EXT_EXTENSION1_OFFSET: ManifestField = ManifestField {
+    offset: 856,
+    size_bytes: 4,
+};
 
-/// Manifest field image_timestamp size in bytes.
-pub const ROM_EXT_IMAGE_TIMESTAMP_SIZE_BYTES: u32 = 8;
+pub const ROM_EXT_EXTENSION1_CHECKSUM: ManifestField = ManifestField {
+    offset: 860,
+    size_bytes: 4,
+};
 
-/// Manifest field image_timestamp size in words.
-pub const ROM_EXT_IMAGE_TIMESTAMP_SIZE_WORDS: u32 = 2;
+pub const ROM_EXT_EXTENSION2_OFFSET: ManifestField = ManifestField {
+    offset: 864,
+    size_bytes: 4,
+};
 
-/// Manifest field signature_key_public_exponent offset from the base.
-pub const ROM_EXT_SIGNATURE_KEY_PUBLIC_EXPONENT_OFFSET: u32 = 408;
+pub const ROM_EXT_EXTENSION2_CHECKSUM: ManifestField = ManifestField {
+    offset: 868,
+    size_bytes: 4,
+};
 
-/// Manifest field signature_key_public_exponent size in bytes.
-pub const ROM_EXT_SIGNATURE_KEY_PUBLIC_EXPONENT_SIZE_BYTES: u32 = 4;
+pub const ROM_EXT_EXTENSION3_OFFSET: ManifestField = ManifestField {
+    offset: 872,
+    size_bytes: 4,
+};
 
-/// Manifest field signature_key_public_exponent size in words.
-pub const ROM_EXT_SIGNATURE_KEY_PUBLIC_EXPONENT_SIZE_WORDS: u32 = 1;
-
-/// Manifest field usage_constraints offset from the base.
-pub const ROM_EXT_USAGE_CONSTRAINTS_OFFSET: u32 = 416;
-
-/// Manifest field usage_constraints size in bytes.
-pub const ROM_EXT_USAGE_CONSTRAINTS_SIZE_BYTES: u32 = 32;
-
-/// Manifest field usage_constraints size in words.
-pub const ROM_EXT_USAGE_CONSTRAINTS_SIZE_WORDS: u32 = 8;
-
-/// Manifest field peripheral_lockdown_info offset from the base.
-pub const ROM_EXT_PERIPHERAL_LOCKDOWN_INFO_OFFSET: u32 = 448;
-
-/// Manifest field peripheral_lockdown_info size in bytes.
-pub const ROM_EXT_PERIPHERAL_LOCKDOWN_INFO_SIZE_BYTES: u32 = 16;
-
-/// Manifest field peripheral_lockdown_info size in words.
-pub const ROM_EXT_PERIPHERAL_LOCKDOWN_INFO_SIZE_WORDS: u32 = 4;
-
-/// Manifest field signature_key_modulus offset from the base.
-pub const ROM_EXT_SIGNATURE_KEY_MODULUS_OFFSET: u32 = 464;
-
-/// Manifest field signature_key_modulus size in bytes.
-pub const ROM_EXT_SIGNATURE_KEY_MODULUS_SIZE_BYTES: u32 = 384;
-
-/// Manifest field signature_key_modulus size in words.
-pub const ROM_EXT_SIGNATURE_KEY_MODULUS_SIZE_WORDS: u32 = 96;
-
-/// Manifest field extension0_offset offset from the base.
-pub const ROM_EXT_EXTENSION0_OFFSET_OFFSET: u32 = 848;
-
-/// Manifest field extension0_offset size in bytes.
-pub const ROM_EXT_EXTENSION0_OFFSET_SIZE_BYTES: u32 = 4;
-
-/// Manifest field extension0_offset size in words.
-pub const ROM_EXT_EXTENSION0_OFFSET_SIZE_WORDS: u32 = 1;
-
-/// Manifest field extension0_checksum offset from the base.
-pub const ROM_EXT_EXTENSION0_CHECKSUM_OFFSET: u32 = 852;
-
-/// Manifest field extension0_checksum size in bytes.
-pub const ROM_EXT_EXTENSION0_CHECKSUM_SIZE_BYTES: u32 = 4;
-
-/// Manifest field extension0_checksum size in words.
-pub const ROM_EXT_EXTENSION0_CHECKSUM_SIZE_WORDS: u32 = 1;
-
-/// Manifest field extension1_offset offset from the base.
-pub const ROM_EXT_EXTENSION1_OFFSET_OFFSET: u32 = 856;
-
-/// Manifest field extension1_offset size in bytes.
-pub const ROM_EXT_EXTENSION1_OFFSET_SIZE_BYTES: u32 = 4;
-
-/// Manifest field extension1_offset size in words.
-pub const ROM_EXT_EXTENSION1_OFFSET_SIZE_WORDS: u32 = 1;
-
-/// Manifest field extension1_checksum offset from the base.
-pub const ROM_EXT_EXTENSION1_CHECKSUM_OFFSET: u32 = 860;
-
-/// Manifest field extension1_checksum size in bytes.
-pub const ROM_EXT_EXTENSION1_CHECKSUM_SIZE_BYTES: u32 = 4;
-
-/// Manifest field extension1_checksum size in words.
-pub const ROM_EXT_EXTENSION1_CHECKSUM_SIZE_WORDS: u32 = 1;
-
-/// Manifest field extension2_offset offset from the base.
-pub const ROM_EXT_EXTENSION2_OFFSET_OFFSET: u32 = 864;
-
-/// Manifest field extension2_offset size in bytes.
-pub const ROM_EXT_EXTENSION2_OFFSET_SIZE_BYTES: u32 = 4;
-
-/// Manifest field extension2_offset size in words.
-pub const ROM_EXT_EXTENSION2_OFFSET_SIZE_WORDS: u32 = 1;
-
-/// Manifest field extension2_checksum offset from the base.
-pub const ROM_EXT_EXTENSION2_CHECKSUM_OFFSET: u32 = 868;
-
-/// Manifest field extension2_checksum size in bytes.
-pub const ROM_EXT_EXTENSION2_CHECKSUM_SIZE_BYTES: u32 = 4;
-
-/// Manifest field extension2_checksum size in words.
-pub const ROM_EXT_EXTENSION2_CHECKSUM_SIZE_WORDS: u32 = 1;
-
-/// Manifest field extension3_offset offset from the base.
-pub const ROM_EXT_EXTENSION3_OFFSET_OFFSET: u32 = 872;
-
-/// Manifest field extension3_offset size in bytes.
-pub const ROM_EXT_EXTENSION3_OFFSET_SIZE_BYTES: u32 = 4;
-
-/// Manifest field extension3_offset size in words.
-pub const ROM_EXT_EXTENSION3_OFFSET_SIZE_WORDS: u32 = 1;
-
-/// Manifest field extension3_checksum offset from the base.
-pub const ROM_EXT_EXTENSION3_CHECKSUM_OFFSET: u32 = 876;
-
-/// Manifest field extension3_checksum size in bytes.
-pub const ROM_EXT_EXTENSION3_CHECKSUM_SIZE_BYTES: u32 = 4;
-
-/// Manifest field extension3_checksum size in words.
-pub const ROM_EXT_EXTENSION3_CHECKSUM_SIZE_WORDS: u32 = 1;
+pub const ROM_EXT_EXTENSION3_CHECKSUM: ManifestField = ManifestField {
+    offset: 876,
+    size_bytes: 4,
+};
 
 /// Manifest offset signed_area_start from the base.
-pub const ROM_EXT_SIGNED_AREA_START_OFFSET: u32 = 392;
+pub const ROM_EXT_SIGNED_AREA_START_OFFSET: usize = 392;
 
 /// Manifest offset interrupt_vector from the base.
-pub const ROM_EXT_INTERRUPT_VECTOR_OFFSET: u32 = 1024;
+pub const ROM_EXT_INTERRUPT_VECTOR_OFFSET: usize = 1024;
 
 /// Manifest offset entry_point from the base.
-pub const ROM_EXT_ENTRY_POINT_OFFSET: u32 = 1152;
+pub const ROM_EXT_ENTRY_POINT_OFFSET: usize = 1152;
