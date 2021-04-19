@@ -24,7 +24,7 @@ filesets:
 
   files_verilator_waiver:
     files:
-      - lint/pulp_risv_dbg.vlt
+      - lint/pulp_riscv_dbg.vlt
     file_type: vlt
 
 targets:
