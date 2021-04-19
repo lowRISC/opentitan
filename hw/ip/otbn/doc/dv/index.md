@@ -68,7 +68,7 @@ To make sure that the processor is starting when we expect, we check start trans
 The main reference model for OTBN is the instruction set simulator (ISS), which is run as a subprocess by DPI code inside `otbn_core_model`.
 This Python-based simulator can be found at `hw/ip/otbn/dv/otbnsim`.
 
-### Stimulus strategy
+## Stimulus strategy
 
 When testing OTBN, we are careful to distinguish between
 
@@ -86,7 +86,7 @@ This results in one or more ELF files in a directory, which the simulation then 
 The pre-DV testing doesn't address external stimuli like resets or TileLink-based register accesses.
 These are driven by specialised test sequences, described below.
 
-#### Test sequences
+### Test sequences
 
 The test sequences can be found in `hw/ip/otbn/dv/uvm/env/seq_lib`.
 The basic test sequence (`otbn_base_vseq`) loads the instruction stream from a randomly chosen binary (see above), configures OTBN and then lets it run to completion.
@@ -94,22 +94,245 @@ The basic test sequence (`otbn_base_vseq`) loads the instruction stream from a r
 More specialized sequences include things like multiple runs, register accesses during operation (which should fail) and memory corruption.
 We also check things like the correct operation of the interrupt registers.
 
-#### Functional coverage
+## Functional coverage
 
-<div class="bd-callout bd-callout-warning">
+We distinguish between *architectural* and *micro-architectural* functional coverage.
+The idea is that the points that go into architectural coverage are those that a DV engineer could derive by reading the block specification.
+The points that go into micro-architectural coverage are those that require knowledge of the block's micro-architecture.
+Some of these will come from DV engineers; others from the block's designers.
+These two views are complementary and will probably duplicate coverage points.
+For example, an architectural coverage point might be "the processor executed `ADDI` and the result overflowed".
+This might overlap with something like "the `overflow` signal in the ALU was true when adding".
 
-**TODO**: Functional coverage points are not yet defined.
+### Block-based coverage
 
-</div>
+#### Call stack
+
+The [call stack]({{< relref ".#call-stack" >}}) is exposed as a special register behind `x1`.
+It has a bounded depth of 8 elements.
+We expect to see the following events:
+
+- Push to the call stack
+- Pop from the call stack
+- Push and pop from the call stack on a single instruction
+- An instruction with multiple reads from `x1`
+
+All four of these events should be crossed with the three states of the call stack: empty, partially full, and full.
+
+#### Loop stack
+
+The [loop stack]({{< relref ".#loop-stack" >}}) is accessed by executing `LOOP` and `LOOPI` instructions.
+Important events for it are tracked at those instructions, rather than separately.
+
+### Instruction-based coverage
+
+As a processor, much of OTBN's coverage points are described in terms of instructions being executed.
+Because OTBN doesn't have a complicated multi-stage pipeline or any real exception handling, we don't track much temporal information (such as sequences of instructions).
+
+As well as instruction-specific coverage points detailed below, we include a requirement that each instruction is executed at least once.
+
+For any instruction with one or more immediate fields, we require "toggle coverage" for those fields.
+That is, we expect to see execution with each bit of each immediate field being zero and one.
+We also expect to see each field with values `'0` and `'1` (all zeros and all ones).
+If the field is treated as a signed number, we also expect to see it with the extremal values for its range (just the MSB set, for the most negative value; all but the MSB set, for the most positive value).
+
+For any instruction that reads from or writes to a GPR register, we expect to see that operand equal to `x0`, `x1` and an arbitrary register in the range `x2 .. x31`.
+
+For any source GPR, we require "toggle coverage" for its value.
+For example, `ADD` reads from its `<grs1>` operand.
+We want to see each of the 32 bits of that operand set and unset (giving 64 coverage points).
+
+#### ADD
+
+- Each of the 11 interesting sign behaviours:
+  1. Positive plus positive, no overflow
+  1. Positive plus positive with overflow
+  1. Negative plus negative, no overflow
+  1. Negative plus negative with overflow
+  1. Zero plus zero
+  1. Zero plus nonzero
+  1. Nonzero plus zero
+  1. Positive plus negative, with a negative result
+  1. Positive plus negative, with a positive result
+  1. Negative plus positive, with a negative result
+  1. Negative plus positive, with a positive result
+
+#### ADDI
+
+As for `ADD`.
+
+#### LUI
+
+Nothing beyond immediate toggle coverage.
+
+#### SUB
+
+- Each of the 11 interesting sign behaviours:
+  1. Positive minus negative, no overflow
+  1. Positive minus negative with overflow
+  1. Negative minus positive, no overflow
+  1. Negative minus positive with overflow
+  1. Zero minus zero
+  1. Zero minus nonzero
+  1. Nonzero minus zero
+  1. Positive minus positive, with a negative result
+  1. Positive minus positive, with a positive result
+  1. Negative minus negative, with a negative result
+  1. Negative minus negative, with a positive result
+
+#### SLL
+
+- A shift of a nonzero value by zero.
+- A shift of a value by `0x1f` which leaves the top bit set.
+
+#### SLLI
+
+As for `SLL`.
+
+#### SRL
+
+- A shift of a nonzero value by zero.
+- A shift of a value by `0x1f` which leaves the bottom bit set.
+  (Note that this point also checks that we're performing a logical, rather than arithmetic, right shift)
+
+#### SRLI
+
+As for `SRL`.
+
+#### SRA
+
+- A shift of a nonzero value by zero.
+- A shift of a value by `0x1f` which leaves the bottom bit set.
+  (Note that this point also checks that we're performing an arithmetic, rather than logical, right shift)
+
+#### SRAI
+
+As for `SRA`.
+
+#### AND
+
+- Toggle coverage of the output result, not to `x0` (to ensure we're not just AND'ing things with zero)
+
+#### ANDI
+
+As for `AND`.
+
+#### OR
+
+- Toggle coverage of the output result, not to `x0` (to ensure we're not just OR'ing things with `'1`)
+
+#### ORI
+
+As for `OR`.
+
+#### XOR
+
+- Toggle coverage of the output result, not to `x0` (to ensure we're not just XOR'ing things with zero)
+
+#### XORI
+
+As for `XOR`.
+
+#### LW
+
+- Load from a valid address, where `<grs1>` is above the top of memory and a negative `<offset>` brings the load address in range.
+- Load from a valid address, where `<grs1>` is negative and a positive `<offset>` brings the load address in range.
+- Load from address zero
+- Load from the top word of memory
+- Load from an invalid address (aligned but above the top of memory)
+- Load from a misaligned address
+
+#### SW
+
+- Store to a valid address, where `<grs1>` is above the top of memory and a negative `<offset>` brings the load address in range.
+- Store to a valid address, where `<grs1>` is negative and a positive `<offset>` brings the load address in range.
+- Store to address zero
+- Store to the top word of memory
+- Store to an invalid address (aligned but above the top of memory)
+- Store to a misaligned address
+
+#### BEQ
+
+All points should be crossed with branch taken / branch not taken.
+
+- Branch forwards
+- Branch backwards
+- Branch to a misaligned address (offset not a multiple of 4)
+- Branch forwards to an invalid address, above the top of memory
+- Branch backwards to an invalid address (wrapping past zero)
+- Branch to current address.
+- Branch instruction at end of a loop.
+
+The "branch to current address" item is problematic if we want to take the branch.
+Probably we need some tests with short timeouts to handle this properly.
+
+#### BNE
+
+As for `BEQ`.
+
+#### JAL
+
+- Jump forwards
+- Jump backwards
+- Jump to a misaligned address (offset not a multiple of 4)
+- Jump forwards to an invalid address, above the top of memory
+- Jump backwards to an invalid address (wrapping past zero)
+- Jump to current address.
+- Jump when the current PC is the top word in IMEM.
+- Jump instruction at end of a loop.
+
+Note that the "jump to current address" item won't be a problem to test since it will quickly overflow the call stack.
+
+#### JALR
+
+- Jump with a positive offset
+- Jump with a negative offset
+- Jump with a misaligned base address which `<offset>` aligns (each of the 3 possible misalignments).
+- Jump with a large base address which wraps to a valid address by adding a positive `<offset>`.
+- Jump with a base address just above top of IMEM but wih a negative `<offset>` to give a valid target.
+- Jump with a negative offset, wrapping to give an invalid target.
+- Jump with a positive offset, giving an invalid target above top of IMEM.
+- Jump to current address.
+- Jump when the current PC is the top word in IMEM.
+- Jump instruction at end of a loop.
+
+Note that the "jump to current address" item won't be a problem to test since it will quickly over- or underflow the call stack, provided `<grd>` and `<grs1>` aren't both `x1`.
+
+#### CSRRS
+
+- Write with a non-zero `bits_to_set` to each valid CSR.
+
+#### CSRRW
+
+- Write to every valid CSR with a `<grd>` other than `x0`.
+- Write to every valid CSR with `<grd>` equal to `x0`.
+
+#### ECALL
+
+No special coverage points for this instruction.
+
+#### LOOP
+
+- Loop with a zero iteration count (causing an error)
+- Loop with a count of `'1` (the maximal value)
+- Loop when the loop end address would be above the top of memory.
+- Loop when the loop stack is full, causing an overflow.
+- Loop at the end of a loop.
+- Duplicate loop end address, matching top of stack
+- Duplicate loop end address, further down stack
+
+#### LOOPI
+
+As for `LOOP`, but without the count of `'1` (not achievable with an immediate).
 
 
-### Self-checking strategy
-#### Scoreboard
+## Self-checking strategy
+### Scoreboard
 
 Much of the checking for these tests is actually performed in `otbn_core_model`, which ensures that the RTL and ISS have the same behaviour.
 However, the scoreboard does have some checks, to ensure that interrupt and idle signals are high at the expected times.
 
-#### Assertions
+### Assertions
 
 Core TLUL protocol assertions are checked by binding the [TL-UL protocol checker]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) into the design.
 
