@@ -3,13 +3,25 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 import random
 import re
 import subprocess
+import sys
 import tempfile
 from typing import BinaryIO, IO, List, Optional, TextIO, Tuple
 
 from elftools.elf.elffile import ELFFile  # type: ignore
+
+
+_REPO_ROOT = os.path.join(os.path.dirname(__file__), '../../../..')
+_UTIL_DESIGN = os.path.normpath(os.path.join(_REPO_ROOT, 'util/design'))
+old_sys_path = sys.path
+try:
+    sys.path = sys.path + [_UTIL_DESIGN]
+    import secded_gen  # type: ignore
+finally:
+    sys.path = old_sys_path
 
 
 def red_xor32(word: int) -> int:
@@ -21,17 +33,14 @@ def red_xor32(word: int) -> int:
     return (word & 0x1) ^ (word >> 1)
 
 
-def add_ecc32(word: int) -> int:
+def add_ecc32(word: int, bitmasks: List[int]) -> int:
     '''Add Hsiao (39,32) ECC bits to a 32-bit unsigned word'''
     assert 0 <= word < (1 << 32)
-    b0 = red_xor32(word ^ 0x00850e56a2) << 32
-    b1 = red_xor32(word ^ 0x002e534c61) << 33
-    b2 = red_xor32(word ^ 0x000901a9fe) << 34
-    b3 = red_xor32(word ^ 0x007079a702) << 35
-    b4 = red_xor32(word ^ 0x00caba900d) << 36
-    b5 = red_xor32(word ^ 0x00d3c44b18) << 37
-    b6 = red_xor32(word ^ 0x0034a430d5) << 38
-    return word | b0 | b1 | b2 | b3 | b4 | b5 | b6
+    assert len(bitmasks) == 7
+    ret = word
+    for idx, bitmask in enumerate(bitmasks):
+        ret |= red_xor32(word ^ bitmask) << (32 + idx)
+    return ret
 
 
 class MemChunk:
@@ -76,7 +85,9 @@ class MemChunk:
         bits, to make 39-bit words.
 
         '''
-        self.words = [add_ecc32(w) for w in self.words]
+        codes = secded_gen.gen_code('hsiao', 32, 7)
+        bitmasks = secded_gen.calc_bitmasks(32, 7, codes, False)
+        self.words = [add_ecc32(w, bitmasks) for w in self.words]
 
 
 class MemFile:
