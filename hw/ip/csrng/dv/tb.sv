@@ -28,8 +28,9 @@ module tb;
   pins_if#(1) devmode_if(devmode);
   pins_if#(1) efuse_sw_app_enable_if(efuse_sw_app_enable);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))  entropy_src_if();
   csrng_if  csrng_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
+      entropy_src_if(.clk(clk), .rst_n(rst_n));
 
   // TODO: Hack to enable otp values
   always_comb begin
@@ -53,8 +54,8 @@ module tb;
     .lc_hw_debug_en_i        (4'b1010),
 
     .entropy_src_hw_if_o     (entropy_src_if.req),
-    .entropy_src_hw_if_i     ({entropy_src_if.ack, entropy_src_if.h_data[entropy_src_pkg::
-                               CSRNG_BUS_WIDTH-1:0], entropy_src_if.h_data[entropy_src_pkg::
+    .entropy_src_hw_if_i     ({entropy_src_if.ack, entropy_src_if.d_data[entropy_src_pkg::
+                               CSRNG_BUS_WIDTH-1:0], entropy_src_if.d_data[entropy_src_pkg::
                                CSRNG_BUS_WIDTH]}),
 
     .cs_aes_halt_i           (1'b0),
