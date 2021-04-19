@@ -10,3 +10,42 @@ lint_off -rule DECLFILENAME -file "*/src/dm_pkg.sv" -match "Filename 'dm_pkg' do
 // Waive some unused bits warnings in dm_pkg.sv. These are in parameters to
 // functions used for encoding RISC-V instructions.
 lint_off -rule UNUSED -file "*/src/dm_pkg.sv" -match "Bits of signal are not used: 'imm'[0]"
+
+// The dm_sba package doesn't use its dmactive_i input directly: it uses the
+// input because that's used by an assertion that gets bound in to the dm_sba
+// package in the test environment.
+lint_off -rule UNUSED -file "*/src/dm_sba.sv" -match "Signal is not used: 'dmactive_i'"
+
+// In dm_csrs.sv, several per-hart signals are widened out to an "aligned"
+// array, with NrHartsAligned = 2**HartSelLen entries. Since we have exactly 1
+// hart (and a degenerate 1-bit HartSelLen), this means NrHartsAligned = 2 and
+// we end up ignoring everything in entry 1 of the array. (Probably, just the
+// _q arrays should have been widened)
+lint_off -rule UNUSED -file "*/src/dm_csrs.sv" -match "Bits of signal are not used: 'halted_d_aligned'[1]"
+lint_off -rule UNUSED -file "*/src/dm_csrs.sv" -match "Bits of signal are not used: 'havereset_d_aligned'[1]"
+lint_off -rule UNUSED -file "*/src/dm_csrs.sv" -match "Bits of signal are not used: 'resuming_d_aligned'[1]"
+
+// In dm_csrs.sv, there is a helper signal called a_abstractcs that we use for
+// casting from wire bits to a struct. We don't use all the bits of the result
+// (which is fine: we're only interested in some of the fields).
+lint_off -rule UNUSED -file "*/src/dm_csrs.sv" -match "Bits of signal are not used: 'a_abstractcs'[31:11,7:0]"
+
+// The hartsel_i input to dm_mem.sv is used to index into arrays, but only
+// after extracting just the bits that are actually used (discarding the top
+// bits). Explicitly waive those top bits.
+lint_off -rule UNUSED -file "*/src/dm_mem.sv" -match "Bits of signal are not used: 'hartsel_i'[19:1]"
+
+// dm_mem.sv has the same array widening as described above in dm_csrs.sv.
+// Waive the equivalent warnings.
+lint_off -rule UNUSED -file "*/src/dm_mem.sv" -match "Bits of signal are not used: 'halted_d_aligned'[1]"
+lint_off -rule UNUSED -file "*/src/dm_mem.sv" -match "Bits of signal are not used: 'resuming_d_aligned'[1]"
+
+// In dm_mem.sv, we cast cmd_i.control to an ac_ar_cmd_t. We use most of the
+// fields, but ignore "zero1" (presumably the protocol asks for this to be zero
+// and we don't check).
+lint_off -rule UNUSED -file "*/src/dm_mem.sv" -match "Bits of signal are not used: 'ac_ar'[23]"
+
+// In dm_jtag.sv, the dmi_resp signal is the output from a CDC block
+// (originally derived from dmi_resp_i). We pass on the data field, but ignore
+// the "resp" field.
+lint_off -rule UNUSED -file "*/src/dmi_jtag.sv" -match "Bits of signal are not used: 'dmi_resp'[1:0]"
