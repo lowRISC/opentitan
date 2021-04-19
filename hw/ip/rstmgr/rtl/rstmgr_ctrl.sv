@@ -21,7 +21,7 @@ module rstmgr_ctrl
 );
 
   // the always on root reset
-  logic rst_aon_n;
+  logic rst_aon_n_premux, rst_aon_n;
 
   // the remaining resets
   logic [OffDomains-1:0] rst_pd_nd, rst_pd_nq;
@@ -44,17 +44,18 @@ module rstmgr_ctrl
     .clk_i,
     .rst_ni,
     .d_i(~rst_req_i[DomainAonSel] & rst_parent_synced[DomainAonSel]),
-    .q_o(rst_aon_n)
+    .q_o(rst_aon_n_premux)
   );
 
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_rst_aon_mux (
-    .clk0_i(rst_aon_n),
+    .clk0_i(rst_aon_n_premux),
     .clk1_i(scan_rst_ni),
     .sel_i(scanmode_i),
-    .clk_o(rst_no[DomainAonSel])
+    .clk_o(rst_aon_n)
   );
+  assign rst_no[DomainAonSel] = rst_aon_n;
 
   // the non-always-on domains
   // These reset whenever the always on domain reset, to ensure power definition consistency.
