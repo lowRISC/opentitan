@@ -25,7 +25,7 @@ interface csrng_if (input clk, input rst_n);
   push_pull_if #(.HostDataWidth(csrng_pkg::FIPS_GENBITS_BUS_WIDTH))
        genbits_push_if(.clk(clk), .rst_n(rst_n));
 
-  // TODO: assigns, clocking blocks, ASSERTs
+  // TODO: ASSERTs
   // Device assigns
   assign cmd_rsp.csrng_req_ready = (if_mode == dv_utils_pkg::Device) ? cmd_push_if.ready : 'z;
   assign cmd_push_if.valid     = (if_mode == dv_utils_pkg::Device) ? cmd_req.csrng_req_valid : 'z;
@@ -44,8 +44,10 @@ interface csrng_if (input clk, input rst_n);
   assign cmd_push_if.ready       = (if_mode == dv_utils_pkg::Host) ? cmd_rsp.csrng_req_ready : 'z;
   assign cmd_req.csrng_req_valid = (if_mode == dv_utils_pkg::Host) ? cmd_push_if.valid : 'z;
   assign cmd_req.csrng_req_bus   = (if_mode == dv_utils_pkg::Host) ? cmd_push_if.h_data : 'z;
+  assign cmd_req.genbits_ready   = (if_mode == dv_utils_pkg::Host) ? genbits_push_if.ready : 'z;
 
   assign genbits_push_if.valid   = (if_mode == dv_utils_pkg::Host) ? cmd_rsp.genbits_valid : 'z;
+  assign genbits_push_if.h_data  = (if_mode == dv_utils_pkg::Host) ? cmd_rsp.genbits_bus   : 'z;
 
   clocking mon_cb @(posedge clk);
     input cmd_req;
