@@ -1066,6 +1066,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "2:0",
           name: "ENTROPY_FIFO_DEPTH",
@@ -1091,9 +1093,13 @@
           name: "SHA3_ERR",
           desc: "This is a logic-or of all of the SHA3 error signals."
         }
-        { bits: "31",
-          name: "DIAG",
-          desc: "This bit is for internal debug only."
+        { bits: "16",
+          name: "MAIN_SM_IDLE",
+          desc: "The entropy_src main state machine is in the idle state."
+        }
+        { bits: "31:24",
+          name: "MAIN_SM_STATE",
+          desc: "This is the state of the entropy_src main state machine."
         }
       ]
     },

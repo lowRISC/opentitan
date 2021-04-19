@@ -6,27 +6,31 @@
 //
 //   determines when new entropy is ready to be forwarded
 
-module entropy_src_main_sm (
-  input logic                clk_i,
-  input logic                rst_ni,
+module entropy_src_main_sm #(
+  localparam int StateWidth = 8
+) (
+  input logic                   clk_i,
+  input logic                   rst_ni,
 
-  input logic                enable_i,
-  input logic                ht_done_pulse_i,
-  input logic                ht_fail_pulse_i,
-  output logic               rst_alert_cntr_o,
-  input logic                bypass_mode_i,
-  output logic               rst_bypass_mode_o,
-  input logic                main_stage_rdy_i,
-  input logic                bypass_stage_rdy_i,
-  input logic                sha3_state_vld_i,
-  output logic               main_stage_pop_o,
-  output logic               bypass_stage_pop_o,
-  output logic               sha3_start_o,
-  output logic               sha3_process_o,
-  output logic               sha3_done_o,
-  output logic               cs_aes_halt_req_o,
-  input logic                cs_aes_halt_ack_i,
-  output logic               main_sm_err_o
+  input logic                   enable_i,
+  input logic                   ht_done_pulse_i,
+  input logic                   ht_fail_pulse_i,
+  output logic                  rst_alert_cntr_o,
+  input logic                   bypass_mode_i,
+  output logic                  rst_bypass_mode_o,
+  input logic                   main_stage_rdy_i,
+  input logic                   bypass_stage_rdy_i,
+  input logic                   sha3_state_vld_i,
+  output logic                  main_stage_pop_o,
+  output logic                  bypass_stage_pop_o,
+  output logic                  sha3_start_o,
+  output logic                  sha3_process_o,
+  output logic                  sha3_done_o,
+  output logic                  cs_aes_halt_req_o,
+  input logic                   cs_aes_halt_ack_i,
+  output logic                  main_sm_idle_o,
+  output logic [StateWidth-1:0] main_sm_state_o,
+  output logic                  main_sm_err_o
 );
 
 // Encoding generated with:
@@ -51,7 +55,6 @@ module entropy_src_main_sm (
 // Maximum Hamming weight: 5
 //
 
-  localparam int StateWidth = 8;
   typedef enum logic [StateWidth-1:0] {
     Idle              = 8'b01110110, // idle
     BootHTRunning     = 8'b01011011, // boot mode, wait for health test done pulse
@@ -82,6 +85,7 @@ module entropy_src_main_sm (
   );
 
   assign state_q = state_e'(state_raw_q);
+  assign main_sm_state_o = state_raw_q;
 
   always_comb begin
     state_d = state_q;
@@ -93,9 +97,11 @@ module entropy_src_main_sm (
     sha3_process_o = 1'b0;
     sha3_done_o = 1'b0;
     cs_aes_halt_req_o = 1'b0;
+    main_sm_idle_o = 1'b0;
     main_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
+        main_sm_idle_o = 1'b1;
         if (enable_i) begin
           if (bypass_mode_i) begin
             state_d = BootHTRunning;
@@ -139,51 +145,28 @@ module entropy_src_main_sm (
         end
       end
       NormHTRunning: begin
-        if (!enable_i) begin
-          sha3_done_o = 1'b1;
-          state_d = Idle;
-        end else begin
-          if (ht_done_pulse_i) begin
-            if (ht_fail_pulse_i) begin
-              sha3_done_o = 1'b1;
-              state_d = Idle;
-            end else begin
-              state_d = NormSha3CSReq;
-            end
-          end
+        // pass or fail of HT is the same path
+        if (ht_done_pulse_i || !enable_i) begin
+          state_d = NormSha3CSReq;
         end
       end
       NormSha3CSReq: begin
-        if (!enable_i) begin
-          sha3_done_o = 1'b1;
-          state_d = Idle;
-        end else begin
-          cs_aes_halt_req_o = 1'b1;
-          if (cs_aes_halt_ack_i) begin
-            state_d = NormSha3Process;
-          end
+        // for normal or halt cases, always prevent a power spike
+        cs_aes_halt_req_o = 1'b1;
+        if (cs_aes_halt_ack_i) begin
+          state_d = NormSha3Process;
         end
       end
       NormSha3Process: begin
-        if (!enable_i) begin
-          sha3_done_o = 1'b1;
-          state_d = Idle;
-        end else begin
-          cs_aes_halt_req_o = 1'b1;
-          rst_alert_cntr_o = 1'b1;
-          sha3_process_o = 1'b1;
-          state_d = NormSha3Valid;
-        end
+        cs_aes_halt_req_o = 1'b1;
+        rst_alert_cntr_o = 1'b1;
+        sha3_process_o = 1'b1;
+        state_d = NormSha3Valid;
       end
       NormSha3Valid: begin
-        if (!enable_i) begin
-          sha3_done_o = 1'b1;
-          state_d = Idle;
-        end else begin
-          cs_aes_halt_req_o = 1'b1;
-          if (sha3_state_vld_i) begin
-            state_d = NormSha3Done;
-          end
+        cs_aes_halt_req_o = 1'b1;
+        if (sha3_state_vld_i) begin
+          state_d = NormSha3Done;
         end
       end
       NormSha3Done: begin

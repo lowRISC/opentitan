@@ -334,6 +334,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     es_ack_sm_err;
   logic                     es_main_sm_err_sum;
   logic                     es_main_sm_err;
+  logic                     es_main_sm_idle;
+  logic [7:0]               es_main_sm_state;
   logic                     fifo_write_err_sum;
   logic                     fifo_read_err_sum;
   logic                     fifo_status_err_sum;
@@ -354,6 +356,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   logic [sha3_pkg::StateW-1:0] sha3_state[Sha3Share];
   logic [PreCondWidth-1:0] msg_data[Sha3Share];
+
+  logic                    unused_err_code_test_bit;
+  logic                    unused_sha3_state;
+  logic                    unused_entropy_data;
+  logic                    unused_fw_ov_rd_data;
 
   // flops
   logic [15:0] es_rate_cntr_q, es_rate_cntr_d;
@@ -618,6 +625,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
          es_enable ? 1'b0 :
          {|sha3_err} ? 1'b1 :
          sha3_err_q;
+
+  // state macine status
+  assign hw2reg.debug_status.main_sm_idle.d = es_main_sm_idle;
+  assign hw2reg.debug_status.main_sm_state.d = es_main_sm_state;
 
   //--------------------------------------------
   // receive in RNG bus input
@@ -2008,6 +2019,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .sha3_done_o        (sha3_done),
     .cs_aes_halt_req_o  (cs_aes_halt_req),
     .cs_aes_halt_ack_i  (cs_aes_halt_i.cs_aes_halt_ack),
+    .main_sm_idle_o     (es_main_sm_idle),
+    .main_sm_state_o    (es_main_sm_state),
     .main_sm_err_o      (es_main_sm_err)
   );
 
@@ -2100,15 +2113,15 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // set the es entropy to the read reg
   assign hw2reg.entropy_data.d = es_enable ? pfifo_swread_rdata : '0;
   assign sw_es_rd_pulse = efuse_es_sw_reg_en_i && reg2hw.entropy_data.re;
+
   //--------------------------------------------
-  // diag settings
+  // unused signals
   //--------------------------------------------
 
-  assign hw2reg.debug_status.diag.d  =
-         (|err_code_test_bit[19:3]) ||
-         (|err_code_test_bit[27:22]) ||
-         (|sha3_state[0][sha3_pkg::StateW-1:SeedLen])||
-         (&reg2hw.entropy_data.q) &&
-         (&reg2hw.fw_ov_rd_data.q);
+  assign unused_err_code_test_bit = (|{err_code_test_bit[27:22],err_code_test_bit[19:3]});
+  assign unused_sha3_state = (|sha3_state[0][sha3_pkg::StateW-1:SeedLen]);
+  assign unused_entropy_data = (|reg2hw.entropy_data.q);
+  assign unused_fw_ov_rd_data = (|reg2hw.fw_ov_rd_data.q);
+
 
 endmodule
