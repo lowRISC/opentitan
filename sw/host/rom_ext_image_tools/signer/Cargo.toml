@@ -10,7 +10,6 @@ edition = "2018"
 
 [workspace]
 members = [
-    "config",
     "image"
 ]
 
@@ -25,8 +24,8 @@ opt-level = 2
 debug = true
 
 [dependencies]
-rom_ext_config = { path = "config" }
 rom_ext_image = { path = "image" }
+anyhow = "1.0.40"
 
 [dependencies.mundane]
 version = "0.4.4"
