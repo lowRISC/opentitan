@@ -325,6 +325,8 @@ module csrng_core import csrng_pkg::*; #(
   logic [Cmd-1:0] cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
   logic           cs_aes_halt_q, cs_aes_halt_d;
   logic           packer_adata_pop_q, packer_adata_pop_d;
+  logic [SeedLen-1:0] entropy_src_seed_q, entropy_src_seed_d;
+  logic               entropy_src_fips_q, entropy_src_fips_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -339,6 +341,8 @@ module csrng_core import csrng_pkg::*; #(
       cmd_req_ccmd_dly_q <= '0;
       cs_aes_halt_q <= '0;
       packer_adata_pop_q <= '0;
+      entropy_src_seed_q <= '0;
+      entropy_src_fips_q <= '0;
     end else begin
       acmd_q  <= acmd_d;
       shid_q  <= shid_d;
@@ -351,6 +355,8 @@ module csrng_core import csrng_pkg::*; #(
       cmd_req_ccmd_dly_q <= cmd_req_ccmd_dly_d;
       cs_aes_halt_q <= cs_aes_halt_d;
       packer_adata_pop_q <= packer_adata_pop_d;
+      entropy_src_seed_q <= entropy_src_seed_d;
+      entropy_src_fips_q <= entropy_src_fips_d;
     end
 
   //--------------------------------------------
@@ -964,13 +970,19 @@ module csrng_core import csrng_pkg::*; #(
   assign entropy_src_hw_if_o.es_req = cs_enable &&
          cmd_entropy_req;
 
-  assign cmd_entropy =
-         (instant_req && !flag0_q) ? entropy_src_hw_if_i.es_bits :
-         reseed_req ? entropy_src_hw_if_i.es_bits :
-         update_req ? entropy_src_hw_if_i.es_bits :
-         '0;
+  // Capture entropy from entropy_src
+  assign entropy_src_seed_d =
+         (cmd_entropy_avail && flag0_q) ? '0 : // special case where zero is used
+         cmd_entropy_avail ? entropy_src_hw_if_i.es_bits :
+         entropy_src_seed_q;
+  assign entropy_src_fips_d =
+         (cmd_entropy_avail && flag0_q) ? '0 : // special case where zero is used
+         cmd_entropy_avail ? entropy_src_hw_if_i.es_fips :
+         entropy_src_fips_q;
 
-  assign cmd_entropy_fips = (instant_req && !flag0_q) ? entropy_src_hw_if_i.es_fips : 1'b0;
+  assign cmd_entropy = entropy_src_seed_q;
+
+  assign cmd_entropy_fips = entropy_src_fips_q;
 
   //-------------------------------------
   // csrng_ctr_drbg_cmd instantiation
