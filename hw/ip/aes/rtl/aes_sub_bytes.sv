@@ -10,6 +10,7 @@ module aes_sub_bytes import aes_pkg::*;
 ) (
   input  logic                              clk_i,
   input  logic                              rst_ni,
+  input  lc_ctrl_pkg::lc_tx_t               scanmode_i,
   input  sp2v_e                             en_i,
   output sp2v_e                             out_req_o,
   input  sp2v_e                             out_ack_i,
@@ -61,8 +62,9 @@ module aes_sub_bytes import aes_pkg::*;
       aes_sbox #(
         .SBoxImpl ( SBoxImpl )
       ) u_aes_sbox_ij (
-        .clk_i     ( clk_i                ),
-        .rst_ni    ( rst_ni               ),
+        .clk_i,
+        .rst_ni,
+        .scanmode_i,
         .en_i      ( en == SP2V_HIGH      ),
         .out_req_o ( out_req[i][j]        ),
         .out_ack_i ( out_ack == SP2V_HIGH ),

@@ -109,6 +109,10 @@ module aes_cipher_core import aes_pkg::*;
   input  logic                        clk_i,
   input  logic                        rst_ni,
 
+  // Test mode enable (only relevant for ASIC)
+  input  lc_ctrl_pkg::lc_tx_t         scanmode_i,
+
+
   // Input handshake signals
   input  sp2v_e                       in_valid_i,
   output sp2v_e                       in_ready_o,
@@ -349,8 +353,9 @@ module aes_cipher_core import aes_pkg::*;
   aes_sub_bytes #(
     .SBoxImpl ( SBoxImpl )
   ) u_aes_sub_bytes (
-    .clk_i     ( clk_i             ),
-    .rst_ni    ( rst_ni            ),
+    .clk_i,
+    .rst_ni,
+    .scanmode_i,
     .en_i      ( sub_bytes_en      ),
     .out_req_o ( sub_bytes_out_req ),
     .out_ack_i ( sub_bytes_out_ack ),
@@ -444,8 +449,9 @@ module aes_cipher_core import aes_pkg::*;
     .Masking      ( Masking      ),
     .SBoxImpl     ( SBoxImpl     )
   ) u_aes_key_expand (
-    .clk_i       ( clk_i              ),
-    .rst_ni      ( rst_ni             ),
+    .clk_i,
+    .rst_ni,
+    .scanmode_i,
     .cfg_valid_i ( cfg_valid_i        ),
     .op_i        ( key_expand_op      ),
     .en_i        ( key_expand_en      ),

@@ -1996,6 +1996,7 @@ module top_earlgrey #(
       .edn_i(edn0_edn_rsp[5]),
       .tl_i(aes_tl_req),
       .tl_o(aes_tl_rsp),
+      .scanmode_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_aes),

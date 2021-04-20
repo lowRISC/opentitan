@@ -10,6 +10,8 @@ module prim_xilinx_flop_en #(
 ) (
   input clk_i,
   input rst_ni,
+  // this is irrelevant for the FPGA
+  input test_en_i,
   // Prevent Vivado from optimizing this signal away.
   (* keep = "true" *) input en_i,
   input [Width-1:0] d_i,

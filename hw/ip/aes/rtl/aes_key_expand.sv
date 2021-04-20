@@ -16,6 +16,7 @@ module aes_key_expand import aes_pkg::*;
 ) (
   input  logic                   clk_i,
   input  logic                   rst_ni,
+  input  lc_ctrl_pkg::lc_tx_t    scanmode_i,
   input  logic                   cfg_valid_i,
   input  ciph_op_e               op_i,
   input  sp2v_e                  en_i,
@@ -210,8 +211,9 @@ module aes_key_expand import aes_pkg::*;
     aes_sbox #(
       .SBoxImpl ( SBoxImpl )
     ) u_aes_sbox_i (
-      .clk_i     ( clk_i                                 ),
-      .rst_ni    ( rst_ni                                ),
+      .clk_i,
+      .rst_ni,
+      .scanmode_i,
       .en_i      ( en == SP2V_HIGH                       ),
       .out_req_o ( sub_word_out_req[i]                   ),
       .out_ack_i ( out_ack == SP2V_HIGH                  ),

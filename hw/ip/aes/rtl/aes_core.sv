@@ -29,6 +29,9 @@ module aes_core
   input  logic                        clk_i,
   input  logic                        rst_ni,
 
+  // Test mode enable (only relevant for ASIC)
+  input  lc_ctrl_pkg::lc_tx_t         scanmode_i,
+
   // Entropy request interfaces for clearing and masking PRNGs
   output logic                        entropy_clearing_req_o,
   input  logic                        entropy_clearing_ack_i,
@@ -391,8 +394,9 @@ module aes_core
     .RndCnstMaskingLfsrSeed   ( RndCnstMaskingLfsrSeed   ),
     .RndCnstMskgChunkLfsrPerm ( RndCnstMskgChunkLfsrPerm )
   ) u_aes_cipher_core (
-    .clk_i              ( clk_i                      ),
-    .rst_ni             ( rst_ni                     ),
+    .clk_i,
+    .rst_ni,
+    .scanmode_i,
 
     .in_valid_i         ( cipher_in_valid            ),
     .in_ready_o         ( cipher_in_ready            ),

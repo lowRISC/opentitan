@@ -39,6 +39,9 @@ module aes
   input  logic                                      clk_i,
   input  logic                                      rst_ni,
 
+  // Test mode enable (only relevant for ASIC)
+  input  lc_ctrl_pkg::lc_tx_t                       scanmode_i,
+
   // Idle indicator for clock manager
   output logic                                      idle_o,
 
@@ -153,8 +156,9 @@ module aes
     .RndCnstMaskingLfsrSeed   ( RndCnstMaskingLfsrSeed   ),
     .RndCnstMskgChunkLfsrPerm ( RndCnstMskgChunkLfsrPerm )
   ) u_aes_core (
-    .clk_i                  ( clk_i                ),
-    .rst_ni                 ( rst_ni               ),
+    .clk_i,
+    .rst_ni,
+    .scanmode_i,
 
     .entropy_clearing_req_o ( entropy_clearing_req ),
     .entropy_clearing_ack_i ( entropy_clearing_ack ),

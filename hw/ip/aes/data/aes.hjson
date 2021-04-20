@@ -13,6 +13,7 @@
   other_reset_list: [
     "rst_edn_ni"
   ]
+  scan: "true",
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],

@@ -37,6 +37,7 @@ module tb;
   ) dut (
     .clk_i            ( clk                           ),
     .rst_ni           ( rst_n                         ),
+    .scanmode_i       ( lc_ctrl_pkg::Off              ),
 
     .idle_o           (                               ),
     .lc_escalate_en_i ( lc_ctrl_pkg::Off              ),

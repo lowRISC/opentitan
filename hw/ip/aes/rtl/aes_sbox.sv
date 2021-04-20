@@ -12,6 +12,7 @@ module aes_sbox import aes_pkg::*;
 ) (
   input  logic                    clk_i,
   input  logic                    rst_ni,
+  input  lc_ctrl_pkg::lc_tx_t     scanmode_i,
   input  logic                    en_i,
   output logic                    out_req_o,
   input  logic                    out_ack_i,
@@ -36,10 +37,12 @@ module aes_sbox import aes_pkg::*;
     logic                    unused_rst;
     logic              [7:0] unused_mask;
     logic [WidthPRDSBox-1:0] unused_prd;
+    logic                    unused_scanmode;
     assign unused_clk  = clk_i;
     assign unused_rst  = rst_ni;
     assign unused_mask = mask_i;
     assign unused_prd  = prd_i;
+    assign unused_scanmode = scanmode_i;
 
     if (SBoxImpl == SBoxImplCanright) begin : gen_sbox_canright
       aes_sbox_canright u_aes_sbox (
@@ -68,8 +71,9 @@ module aes_sbox import aes_pkg::*;
       end
 
       aes_sbox_dom u_aes_sbox (
-        .clk_i      ( clk_i      ),
-        .rst_ni     ( rst_ni     ),
+        .clk_i,
+        .rst_ni,
+        .scanmode_i,
         .en_i       ( en_i       ),
         .out_req_o  ( out_req_o  ),
         .out_ack_i  ( out_ack_i  ),
@@ -87,8 +91,10 @@ module aes_sbox import aes_pkg::*;
       // Tie off unused inputs.
       logic unused_clk;
       logic unused_rst;
+      logic unused_scanmode;
       assign unused_clk = clk_i;
       assign unused_rst = rst_ni;
+      assign unused_scanmode = scanmode_i;
       if (WidthPRDSBox > 18) begin : gen_unused_prd
         logic [WidthPRDSBox-1-18:0] unused_prd;
         assign unused_prd = prd_i[WidthPRDSBox-1:18];
@@ -109,8 +115,10 @@ module aes_sbox import aes_pkg::*;
       // Tie off unused inputs.
       logic  unused_clk;
       logic  unused_rst;
+      logic  unused_scanmode;
       assign unused_clk = clk_i;
       assign unused_rst = rst_ni;
+      assign unused_scanmode = scanmode_i;
       if (WidthPRDSBox > 8) begin : gen_unused_prd
         logic [WidthPRDSBox-1-8:0] unused_prd;
         assign unused_prd = prd_i[WidthPRDSBox-1:8];

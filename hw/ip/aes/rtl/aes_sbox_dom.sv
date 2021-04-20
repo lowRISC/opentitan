@@ -58,19 +58,35 @@ module aes_dom_indep_mul_gf2pn #(
   parameter int unsigned NPower   = 4,
   parameter bit          Pipeline = 1'b0
 ) (
-  input  logic              clk_i,
-  input  logic              rst_ni,
-  input  logic              we_i,
-  input  logic [NPower-1:0] a_x,    // Share a of x
-  input  logic [NPower-1:0] a_y,    // Share a of y
-  input  logic [NPower-1:0] b_x,    // Share b of x
-  input  logic [NPower-1:0] b_y,    // Share b of y
-  input  logic [NPower-1:0] z_0,    // Randomness for resharing
-  output logic [NPower-1:0] a_q,    // Share a of q
-  output logic [NPower-1:0] b_q     // Share b of q
+  input  logic                clk_i,
+  input  logic                rst_ni,
+  input  lc_ctrl_pkg::lc_tx_t scanmode_i, // Test mode enable (only relevant for ASIC)
+  input  logic                we_i,
+  input  logic   [NPower-1:0] a_x,    // Share a of x
+  input  logic   [NPower-1:0] a_y,    // Share a of y
+  input  logic   [NPower-1:0] b_x,    // Share b of x
+  input  logic   [NPower-1:0] b_y,    // Share b of y
+  input  logic   [NPower-1:0] z_0,    // Randomness for resharing
+  output logic   [NPower-1:0] a_q,    // Share a of q
+  output logic   [NPower-1:0] b_q     // Share b of q
 );
 
   import aes_sbox_canright_pkg::*;
+
+  /////////////////
+  // LC Receiver //
+  /////////////////
+
+  lc_ctrl_pkg::lc_tx_t [1:0] scanmode;
+  prim_lc_sync #(
+    .AsyncOn(0),
+    .NumCopies(2)
+  ) u_prim_lc_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i ( scanmode_i ),
+    .lc_en_o ( scanmode   )
+  );
 
   /////////////////
   // Calculation //
@@ -111,11 +127,12 @@ module aes_dom_indep_mul_gf2pn #(
     .Width      ( 2*NPower ),
     .ResetValue ( '0       )
   ) u_prim_flop_abq_z0 (
-    .clk_i  ( clk_i              ),
-    .rst_ni ( rst_ni             ),
-    .en_i   ( we_i               ),
-    .d_i    ( {aq_z0_d, bq_z0_d} ),
-    .q_o    ( {aq_z0_q, bq_z0_q} )
+    .clk_i     ( clk_i                          ),
+    .rst_ni    ( rst_ni                         ),
+    .test_en_i ( scanmode[0] == lc_ctrl_pkg::On ),
+    .en_i      ( we_i                           ),
+    .d_i       ( {aq_z0_d, bq_z0_d}             ),
+    .q_o       ( {aq_z0_q, bq_z0_q}             )
   );
 
   /////////////////////////
@@ -133,11 +150,12 @@ module aes_dom_indep_mul_gf2pn #(
       .Width      ( 2*NPower ),
       .ResetValue ( '0       )
     ) u_prim_flop_mul_abx_aby (
-      .clk_i  ( clk_i                      ),
-      .rst_ni ( rst_ni                     ),
-      .en_i   ( we_i                       ),
-      .d_i    ( {mul_ax_ay_d, mul_bx_by_d} ),
-      .q_o    ( {mul_ax_ay_q, mul_bx_by_q} )
+      .clk_i     ( clk_i                          ),
+      .rst_ni    ( rst_ni                         ),
+      .test_en_i ( scanmode[1] == lc_ctrl_pkg::On ),
+      .en_i      ( we_i                           ),
+      .d_i       ( {mul_ax_ay_d, mul_bx_by_d}     ),
+      .q_o       ( {mul_ax_ay_q, mul_bx_by_q}     )
     );
 
     assign mul_ax_ay = mul_ax_ay_q;
@@ -183,21 +201,37 @@ module aes_dom_dep_mul_gf2pn_unopt #(
   parameter int unsigned NPower   = 4,
   parameter bit          Pipeline = 1'b0
 ) (
-  input  logic              clk_i,
-  input  logic              rst_ni,
-  input  logic              we_i,
-  input  logic [NPower-1:0] a_x,    // Share a of x
-  input  logic [NPower-1:0] a_y,    // Share a of y
-  input  logic [NPower-1:0] b_x,    // Share b of x
-  input  logic [NPower-1:0] b_y,    // Share b of y
-  input  logic [NPower-1:0] a_z,    // Randomness for blinding
-  input  logic [NPower-1:0] b_z,    // Randomness for blinding
-  input  logic [NPower-1:0] z_0,    // Randomness for resharing
-  output logic [NPower-1:0] a_q,    // Share a of q
-  output logic [NPower-1:0] b_q     // Share b of q
+  input  logic                clk_i,
+  input  logic                rst_ni,
+  input  lc_ctrl_pkg::lc_tx_t scanmode_i, // Test mode enable (only relevant for ASIC)
+  input  logic                we_i,
+  input  logic   [NPower-1:0] a_x,    // Share a of x
+  input  logic   [NPower-1:0] a_y,    // Share a of y
+  input  logic   [NPower-1:0] b_x,    // Share b of x
+  input  logic   [NPower-1:0] b_y,    // Share b of y
+  input  logic   [NPower-1:0] a_z,    // Randomness for blinding
+  input  logic   [NPower-1:0] b_z,    // Randomness for blinding
+  input  logic   [NPower-1:0] z_0,    // Randomness for resharing
+  output logic   [NPower-1:0] a_q,    // Share a of q
+  output logic   [NPower-1:0] b_q     // Share b of q
 );
 
   import aes_sbox_canright_pkg::*;
+
+  /////////////////
+  // LC Receiver //
+  /////////////////
+
+  lc_ctrl_pkg::lc_tx_t [1:0] scanmode;
+  prim_lc_sync #(
+    .AsyncOn(0),
+    .NumCopies(2)
+  ) u_prim_lc_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i ( scanmode_i ),
+    .lc_en_o ( scanmode   )
+  );
 
   //////////////
   // Blinding //
@@ -213,11 +247,12 @@ module aes_dom_dep_mul_gf2pn_unopt #(
     .Width      ( 2*NPower ),
     .ResetValue ( '0       )
   ) u_prim_flop_ab_yz (
-    .clk_i  ( clk_i            ),
-    .rst_ni ( rst_ni           ),
-    .en_i   ( we_i             ),
-    .d_i    ( {a_yz_d, b_yz_d} ),
-    .q_o    ( {a_yz_q, b_yz_q} )
+    .clk_i     ( clk_i                          ),
+    .rst_ni    ( rst_ni                         ),
+    .test_en_i ( scanmode[0] == lc_ctrl_pkg::On ),
+    .en_i      ( we_i                           ),
+    .d_i       ( {a_yz_d, b_yz_d}               ),
+    .q_o       ( {a_yz_q, b_yz_q}               )
   );
 
   ////////////////
@@ -228,8 +263,9 @@ module aes_dom_dep_mul_gf2pn_unopt #(
     .NPower   ( NPower   ),
     .Pipeline ( Pipeline )
   ) u_aes_dom_indep_mul_gf2pn (
-    .clk_i  ( clk_i     ),
-    .rst_ni ( rst_ni    ),
+    .clk_i,
+    .rst_ni,
+    .scanmode_i,
     .we_i   ( we_i      ),
     .a_x    ( a_x       ), // Share a of x
     .a_y    ( a_z       ), // Share a of z
@@ -255,11 +291,12 @@ module aes_dom_dep_mul_gf2pn_unopt #(
       .Width      ( 2*NPower ),
       .ResetValue ( '0       )
     ) u_prim_flop_ab_x (
-      .clk_i  ( clk_i          ),
-      .rst_ni ( rst_ni         ),
-      .en_i   ( we_i           ),
-      .d_i    ( {a_x,   b_x}   ),
-      .q_o    ( {a_x_q, b_x_q} )
+      .clk_i     ( clk_i                          ),
+      .rst_ni    ( rst_ni                         ),
+      .test_en_i ( scanmode[1] == lc_ctrl_pkg::On ),
+      .en_i      ( we_i                           ),
+      .d_i       ( {a_x,   b_x}                   ),
+      .q_o       ( {a_x_q, b_x_q}                 )
     );
 
     assign a_x_calc = a_x_q;
@@ -319,20 +356,36 @@ module aes_dom_dep_mul_gf2pn #(
                                             //       DOM-indep multiplier, this is the version
                                             //       discussed in [1].
 ) (
-  input  logic              clk_i,
-  input  logic              rst_ni,
-  input  logic              we_i,
-  input  logic [NPower-1:0] a_x,    // Share a of x
-  input  logic [NPower-1:0] a_y,    // Share a of y
-  input  logic [NPower-1:0] b_x,    // Share b of x
-  input  logic [NPower-1:0] b_y,    // Share b of y
-  input  logic [NPower-1:0] z_0,    // Randomness for blinding
-  input  logic [NPower-1:0] z_1,    // Randomness for resharing
-  output logic [NPower-1:0] a_q,    // Share a of q
-  output logic [NPower-1:0] b_q     // Share b of q
+  input  logic                  clk_i,
+  input  logic                  rst_ni,
+  input  lc_ctrl_pkg::lc_tx_t   scanmode_i, // Test mode enable (only relevant for ASIC)
+  input  logic                  we_i,
+  input  logic     [NPower-1:0] a_x,    // Share a of x
+  input  logic     [NPower-1:0] a_y,    // Share a of y
+  input  logic     [NPower-1:0] b_x,    // Share b of x
+  input  logic     [NPower-1:0] b_y,    // Share b of y
+  input  logic     [NPower-1:0] z_0,    // Randomness for blinding
+  input  logic     [NPower-1:0] z_1,    // Randomness for resharing
+  output logic     [NPower-1:0] a_q,    // Share a of q
+  output logic     [NPower-1:0] b_q     // Share b of q
 );
 
   import aes_sbox_canright_pkg::*;
+
+  /////////////////
+  // LC Receiver //
+  /////////////////
+
+  lc_ctrl_pkg::lc_tx_t [4:0] scanmode;
+  prim_lc_sync #(
+    .AsyncOn(0),
+    .NumCopies(5)
+  ) u_prim_lc_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i ( scanmode_i ),
+    .lc_en_o ( scanmode   )
+  );
 
   //////////////
   // Blinding //
@@ -348,11 +401,12 @@ module aes_dom_dep_mul_gf2pn #(
     .Width      ( 2*NPower ),
     .ResetValue ( '0       )
   ) u_prim_flop_ab_yz0 (
-    .clk_i  ( clk_i              ),
-    .rst_ni ( rst_ni             ),
-    .en_i   ( we_i               ),
-    .d_i    ( {a_yz0_d, b_yz0_d} ),
-    .q_o    ( {a_yz0_q, b_yz0_q} )
+    .clk_i     ( clk_i                          ),
+    .rst_ni    ( rst_ni                         ),
+    .test_en_i ( scanmode[0] == lc_ctrl_pkg::On ),
+    .en_i      ( we_i                           ),
+    .d_i       ( {a_yz0_d, b_yz0_d}             ),
+    .q_o       ( {a_yz0_q, b_yz0_q}             )
   );
 
   ////////////////
@@ -394,11 +448,12 @@ module aes_dom_dep_mul_gf2pn #(
     .Width      ( 2*NPower ),
     .ResetValue ( '0       )
   ) u_prim_flop_abxz0_z1 (
-    .clk_i  ( clk_i                  ),
-    .rst_ni ( rst_ni                 ),
-    .en_i   ( we_i                   ),
-    .d_i    ( {axz0_z1_d, bxz0_z1_d} ),
-    .q_o    ( {axz0_z1_q, bxz0_z1_q} )
+    .clk_i     ( clk_i                          ),
+    .rst_ni    ( rst_ni                         ),
+    .test_en_i ( scanmode[1] == lc_ctrl_pkg::On ),
+    .en_i      ( we_i                           ),
+    .d_i       ( {axz0_z1_d, bxz0_z1_d}         ),
+    .q_o       ( {axz0_z1_q, bxz0_z1_q}         )
   );
 
   /////////////////////////
@@ -418,11 +473,12 @@ module aes_dom_dep_mul_gf2pn #(
       .Width      ( 4*NPower ),
       .ResetValue ( '0       )
     ) u_prim_flop_ab_xy (
-      .clk_i  ( clk_i                        ),
-      .rst_ni ( rst_ni                       ),
-      .en_i   ( we_i                         ),
-      .d_i    ( {a_x,   b_x,   a_y,   b_y}   ),
-      .q_o    ( {a_x_q, b_x_q, a_y_q, b_y_q} )
+      .clk_i     ( clk_i                          ),
+      .rst_ni    ( rst_ni                         ),
+      .test_en_i ( scanmode[2] == lc_ctrl_pkg::On ),
+      .en_i      ( we_i                           ),
+      .d_i       ( {a_x,   b_x,   a_y,   b_y}     ),
+      .q_o       ( {a_x_q, b_x_q, a_y_q, b_y_q}   )
     );
 
     assign a_x_calc = a_x_q;
@@ -440,6 +496,9 @@ module aes_dom_dep_mul_gf2pn #(
     assign b_x_calc = b_x;
     assign a_y_calc = a_y;
     assign b_y_calc = b_y;
+
+    lc_ctrl_pkg::lc_tx_t unused_scanmode;
+    assign unused_scanmode = scanmode[2];
   end
 
   ///////////////////////////////
@@ -478,11 +537,12 @@ module aes_dom_dep_mul_gf2pn #(
       .Width      ( 2*NPower ),
       .ResetValue ( '0       )
     ) u_prim_flop_mul_abx_aby (
-      .clk_i  ( clk_i                      ),
-      .rst_ni ( rst_ni                     ),
-      .en_i   ( we_i                       ),
-      .d_i    ( {mul_ax_ay_d, mul_bx_by_d} ),
-      .q_o    ( {mul_ax_ay_q, mul_bx_by_q} )
+      .clk_i     ( clk_i                          ),
+      .rst_ni    ( rst_ni                         ),
+      .en_i      ( we_i                           ),
+      .test_en_i ( scanmode[3] == lc_ctrl_pkg::On ),
+      .d_i       ( {mul_ax_ay_d, mul_bx_by_d}     ),
+      .q_o       ( {mul_ax_ay_q, mul_bx_by_q}     )
     );
 
     // Input Registers
@@ -491,11 +551,12 @@ module aes_dom_dep_mul_gf2pn #(
       .Width      ( 2*NPower ),
       .ResetValue ( '0       )
     ) u_prim_flop_ab_xy (
-      .clk_i  ( clk_i                ),
-      .rst_ni ( rst_ni               ),
-      .en_i   ( we_i                 ),
-      .d_i    ( {a_x_calc, b_x_calc} ),
-      .q_o    ( {a_x_q,    b_x_q}    )
+      .clk_i     ( clk_i                          ),
+      .rst_ni    ( rst_ni                         ),
+      .test_en_i ( scanmode[4] == lc_ctrl_pkg::On ),
+      .en_i      ( we_i                           ),
+      .d_i       ( {a_x_calc, b_x_calc}           ),
+      .q_o       ( {a_x_q,    b_x_q}              )
     );
 
     // _D_y_z0 part: Cross-domain terms: d_x * _D_y_z0
@@ -564,6 +625,9 @@ module aes_dom_dep_mul_gf2pn #(
     // Integration
     assign a_q = axz0_z1_q ^ a_mul_ax_b_buf;
     assign b_q = bxz0_z1_q ^ b_mul_bx_b_buf;
+
+    lc_ctrl_pkg::lc_tx_t unused_scanmode;
+    assign unused_scanmode = scanmode[3] ^ scanmode[4];
   end
 
   // Only GF(2^4) and GF(2^2) is supported.
@@ -574,18 +638,34 @@ endmodule
 // Inverse in GF(2^4) using first-order domain-oriented masking and normal basis [z^4, z].
 // See Fig. 6 in [2] (grey block, Stages 2 and 3) and Formulas 6, 13, 14, 15, 16, 17 in [2].
 module aes_dom_inverse_gf2p4 (
-  input  logic        clk_i,
-  input  logic        rst_ni,
-  input  logic  [1:0] we_i,
-  input  logic  [3:0] a_gamma,
-  input  logic  [3:0] b_gamma,
-  input  logic  [3:0] prd_2,
-  input  logic  [7:0] prd_3,
-  output logic  [3:0] a_gamma_inv,
-  output logic  [3:0] b_gamma_inv
+  input  logic                clk_i,
+  input  logic                rst_ni,
+  input  lc_ctrl_pkg::lc_tx_t scanmode_i, // Test mode enable (only relevant for ASIC)
+  input  logic          [1:0] we_i,
+  input  logic          [3:0] a_gamma,
+  input  logic          [3:0] b_gamma,
+  input  logic          [3:0] prd_2,
+  input  logic          [7:0] prd_3,
+  output logic          [3:0] a_gamma_inv,
+  output logic          [3:0] b_gamma_inv
 );
 
   import aes_sbox_canright_pkg::*;
+
+  /////////////////
+  // LC Receiver //
+  /////////////////
+
+  lc_ctrl_pkg::lc_tx_t [1:0] scanmode;
+  prim_lc_sync #(
+    .AsyncOn(0),
+    .NumCopies(2)
+  ) u_prim_lc_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i ( scanmode_i ),
+    .lc_en_o ( scanmode   )
+  );
 
   /////////////
   // Stage 2 //
@@ -606,11 +686,12 @@ module aes_dom_inverse_gf2p4 (
     .Width      ( 4  ),
     .ResetValue ( '0 )
   ) u_prim_flop_ab_gamma_ss (
-    .clk_i  ( clk_i                        ),
-    .rst_ni ( rst_ni                       ),
-    .en_i   ( we_i[0]                      ),
-    .d_i    ( {a_gamma_ss_d, b_gamma_ss_d} ),
-    .q_o    ( {a_gamma_ss_q, b_gamma_ss_q} )
+    .clk_i     ( clk_i                          ),
+    .rst_ni    ( rst_ni                         ),
+    .test_en_i ( scanmode[0] == lc_ctrl_pkg::On ),
+    .en_i      ( we_i[0]                        ),
+    .d_i       ( {a_gamma_ss_d, b_gamma_ss_d}   ),
+    .q_o       ( {a_gamma_ss_q, b_gamma_ss_q}   )
   );
 
   aes_dom_dep_mul_gf2pn #(
@@ -618,8 +699,9 @@ module aes_dom_inverse_gf2p4 (
     .Pipeline    ( 1'b1 ),
     .PreDomIndep ( 1'b0 )
   ) u_aes_dom_mul_gamma1_gamma0 (
-    .clk_i  ( clk_i           ),
-    .rst_ni ( rst_ni          ),
+    .clk_i,
+    .rst_ni,
+    .scanmode_i,
     .we_i   ( we_i[0]         ),
     .a_x    ( a_gamma1        ), // Share a of x
     .a_y    ( a_gamma0        ), // Share a of y
@@ -656,11 +738,12 @@ module aes_dom_inverse_gf2p4 (
     .Width      ( 8  ),
     .ResetValue ( '0 )
   ) u_prim_flop_ab_gamma10 (
-    .clk_i  ( clk_i                                            ),
-    .rst_ni ( rst_ni                                           ),
-    .en_i   ( we_i[0]                                          ),
-    .d_i    ( {a_gamma1,   a_gamma0,   b_gamma1,   b_gamma0}   ),
-    .q_o    ( {a_gamma1_q, a_gamma0_q, b_gamma1_q, b_gamma0_q} )
+    .clk_i     ( clk_i                                            ),
+    .rst_ni    ( rst_ni                                           ),
+    .test_en_i ( scanmode[1] == lc_ctrl_pkg::On                   ),
+    .en_i      ( we_i[0]                                          ),
+    .d_i       ( {a_gamma1,   a_gamma0,   b_gamma1,   b_gamma0}   ),
+    .q_o       ( {a_gamma1_q, a_gamma0_q, b_gamma1_q, b_gamma0_q} )
   );
 
   aes_dom_dep_mul_gf2pn #(
@@ -668,8 +751,9 @@ module aes_dom_inverse_gf2p4 (
     .Pipeline    ( 1'b1 ),
     .PreDomIndep ( 1'b0 )
   ) u_aes_dom_mul_omega_gamma1 (
-    .clk_i  ( clk_i            ),
-    .rst_ni ( rst_ni           ),
+    .clk_i,
+    .rst_ni,
+    .scanmode_i,
     .we_i   ( we_i[1]          ),
     .a_x    ( a_gamma1_q       ), // Share a of x
     .a_y    ( a_omega_buf      ), // Share a of y
@@ -686,8 +770,9 @@ module aes_dom_inverse_gf2p4 (
     .Pipeline    ( 1'b1 ),
     .PreDomIndep ( 1'b0 )
   ) u_aes_dom_mul_omega_gamma0 (
-    .clk_i  ( clk_i            ),
-    .rst_ni ( rst_ni           ),
+    .clk_i,
+    .rst_ni,
+    .scanmode_i,
     .we_i   ( we_i[1]          ),
     .a_x    ( a_omega_buf      ), // Share a of x
     .a_y    ( a_gamma0_q       ), // Share a of y
@@ -704,17 +789,33 @@ endmodule
 // Inverse in GF(2^8) using first-order domain-oriented masking and normal basis [y^16, y].
 // See Fig. 6 in [1] and Formulas 3, 12, 18 and 19 in [2].
 module aes_dom_inverse_gf2p8 (
-  input  logic        clk_i,
-  input  logic        rst_ni,
-  input  logic  [3:0] we_i,
-  input  logic  [7:0] a_y,     // input data masked by b_y
-  input  logic  [7:0] b_y,     // input mask
-  input  prd_t        prd,     // pseudo-random data, e.g. for intermediate masks
-  output logic  [7:0] a_y_inv, // output data masked by b_y_inv
-  output logic  [7:0] b_y_inv  // output mask
+  input  logic                clk_i,
+  input  logic                rst_ni,
+  input  lc_ctrl_pkg::lc_tx_t scanmode_i, // Test mode enable (only relevant for ASIC)
+  input  logic          [3:0] we_i,
+  input  logic          [7:0] a_y,     // input data masked by b_y
+  input  logic          [7:0] b_y,     // input mask
+  input  prd_t                prd,     // pseudo-random data, e.g. for intermediate masks
+  output logic          [7:0] a_y_inv, // output data masked by b_y_inv
+  output logic          [7:0] b_y_inv  // output mask
 );
 
   import aes_sbox_canright_pkg::*;
+
+  /////////////////
+  // LC Receiver //
+  /////////////////
+
+  lc_ctrl_pkg::lc_tx_t [1:0] scanmode;
+  prim_lc_sync #(
+    .AsyncOn(0),
+    .NumCopies(2)
+  ) u_prim_lc_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i ( scanmode_i ),
+    .lc_en_o ( scanmode   )
+  );
 
   /////////////
   // Stage 1 //
@@ -735,11 +836,12 @@ module aes_dom_inverse_gf2p8 (
     .Width      ( 8  ),
     .ResetValue ( '0 )
   ) u_prim_flop_ab_y_ss (
-    .clk_i  ( clk_i                ),
-    .rst_ni ( rst_ni               ),
-    .en_i   ( we_i[0]              ),
-    .d_i    ( {a_y_ss_d, b_y_ss_d} ),
-    .q_o    ( {a_y_ss_q, b_y_ss_q} )
+    .clk_i     ( clk_i                          ),
+    .rst_ni    ( rst_ni                         ),
+    .test_en_i ( scanmode[0] == lc_ctrl_pkg::On ),
+    .en_i      ( we_i[0]                        ),
+    .d_i       ( {a_y_ss_d, b_y_ss_d}           ),
+    .q_o       ( {a_y_ss_q, b_y_ss_q}           )
   );
 
   aes_dom_dep_mul_gf2pn #(
@@ -747,8 +849,9 @@ module aes_dom_inverse_gf2p8 (
     .Pipeline    ( 1'b1 ),
     .PreDomIndep ( 1'b0 )
   ) u_aes_dom_mul_y1_y0 (
-    .clk_i  ( clk_i          ),
-    .rst_ni ( rst_ni         ),
+    .clk_i,
+    .rst_ni,
+    .scanmode_i,
     .we_i   ( we_i[0]        ),
     .a_x    ( a_y1           ), // Share a of x
     .a_y    ( a_y0           ), // Share a of y
@@ -781,8 +884,9 @@ module aes_dom_inverse_gf2p8 (
 
   // a_gamma is masked by b_gamma, a_gamma_inv is masked by b_gamma_inv.
   aes_dom_inverse_gf2p4 u_aes_dom_inverse_gf2p4 (
-    .clk_i       ( clk_i       ),
-    .rst_ni      ( rst_ni      ),
+    .clk_i,
+    .rst_ni,
+    .scanmode_i,
     .we_i        ( we_i[2:1]   ),
     .a_gamma     ( a_gamma_buf ),
     .b_gamma     ( b_gamma_buf ),
@@ -802,19 +906,21 @@ module aes_dom_inverse_gf2p8 (
     .Width      ( 16 ),
     .ResetValue ( '0 )
   ) u_prim_flop_ab_y10 (
-    .clk_i  ( clk_i                            ),
-    .rst_ni ( rst_ni                           ),
-    .en_i   ( we_i[2]                          ),
-    .d_i    ( {a_y1,   a_y0,   b_y1,   b_y0}   ),
-    .q_o    ( {a_y1_q, a_y0_q, b_y1_q, b_y0_q} )
+    .clk_i     ( clk_i                            ),
+    .rst_ni    ( rst_ni                           ),
+    .test_en_i ( scanmode[1] == lc_ctrl_pkg::On   ),
+    .en_i      ( we_i[2]                          ),
+    .d_i       ( {a_y1,   a_y0,   b_y1,   b_y0}   ),
+    .q_o       ( {a_y1_q, a_y0_q, b_y1_q, b_y0_q} )
   );
 
   aes_dom_indep_mul_gf2pn #(
     .NPower   ( 4    ),
     .Pipeline ( 1'b1 )
   ) u_aes_dom_mul_theta_y1 (
-    .clk_i  ( clk_i          ),
-    .rst_ni ( rst_ni         ),
+    .clk_i,
+    .rst_ni,
+    .scanmode_i,
     .we_i   ( we_i[3]        ),
     .a_x    ( a_y1_q         ), // Share a of x
     .a_y    ( a_theta        ), // Share a of y
@@ -829,8 +935,9 @@ module aes_dom_inverse_gf2p8 (
     .NPower   ( 4    ),
     .Pipeline ( 1'b1 )
   ) u_aes_dom_mul_theta_y0 (
-    .clk_i  ( clk_i          ),
-    .rst_ni ( rst_ni         ),
+    .clk_i,
+    .rst_ni,
+    .scanmode_i,
     .we_i   ( we_i[3]        ),
     .a_x    ( a_theta        ), // Share a of x
     .a_y    ( a_y0_q         ), // Share a of y
@@ -844,18 +951,19 @@ module aes_dom_inverse_gf2p8 (
 endmodule
 
 module aes_sbox_dom (
-  input  logic              clk_i,
-  input  logic              rst_ni,
-  input  logic              en_i,
-  output logic              out_req_o,
-  input  logic              out_ack_i,
-  input  aes_pkg::ciph_op_e op_i,
-  input  logic        [7:0] data_i, // masked, the actual input data is data_i ^ mask_i
-  input  logic        [7:0] mask_i, // input mask
-  input  logic        [7:0] prd_i,  // pseudo-random data for remasking, in total we need 28 bits
-                                    // of PRD per evaluation, but at most 8 bits per cycle
-  output logic        [7:0] data_o, // masked, the actual output data is data_o ^ mask_o
-  output logic        [7:0] mask_o  // output mask
+  input  logic                clk_i,
+  input  logic                rst_ni,
+  input  lc_ctrl_pkg::lc_tx_t scanmode_i, // Test mode enable (only relevant for ASIC)
+  input  logic                en_i,
+  output logic                out_req_o,
+  input  logic                out_ack_i,
+  input  aes_pkg::ciph_op_e   op_i,
+  input  logic          [7:0] data_i, // masked, the actual input data is data_i ^ mask_i
+  input  logic          [7:0] mask_i, // input mask
+  input  logic          [7:0] prd_i,  // pseudo-random data for remasking, in total we need 28 bits
+                                      // of PRD per evaluation, but at most 8 bits per cycle
+  output logic          [7:0] data_o, // masked, the actual output data is data_o ^ mask_o
+  output logic          [7:0] mask_o  // output mask
 );
 
   import aes_pkg::*;
@@ -877,8 +985,9 @@ module aes_sbox_dom (
 
   // Do the inversion in normal basis X.
   aes_dom_inverse_gf2p8 u_aes_dom_inverse_gf2p8 (
-    .clk_i   ( clk_i            ),
-    .rst_ni  ( rst_ni           ),
+    .clk_i,
+    .rst_ni,
+    .scanmode_i,
     .we_i    ( we               ),
     .a_y     ( in_data_basis_x  ), // input
     .b_y     ( in_mask_basis_x  ), // input

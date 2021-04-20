@@ -15,11 +15,17 @@ waive -rules {CLOCK_USE} -location {aes_sub_bytes.sv} -regexp {clk_i' is connect
 waive -rules {CLOCK_USE} -location {aes_key_expand.sv} -regexp {clk_i' is connected to 'aes_sbox' port} \
       -comment "when using fully combinational S-Box implementations, no clock is used inside aes_sbox"
 
+waive -rules {CLOCK_USE} -location {aes_sbox_dom.sv} -regexp {'clk_i' is connected to 'prim_lc_sync' port 'clk_i', and used as a clock at prim_generic_flop_en} \
+      -comment "the prim_lc_sync primitive uses the clock for assertions only in this case."
+
 waive -rules {RESET_USE} -location {aes_sub_bytes.sv} -regexp {'rst_ni' is connected to 'aes_sbox' port} \
       -comment "when using fully combinational S-Box implementations, no reset is used inside aes_sbox"
 
 waive -rules {RESET_USE} -location {aes_key_expand.sv} -regexp {'rst_ni' is connected to 'aes_sbox' port} \
       -comment "when using fully combinational S-Box implementations, no reset is used inside aes_sbox"
+
+waive -rules {RESET_USE} -location {aes_sbox_dom.sv} -regexp {'rst_ni' is connected to 'prim_lc_sync' port 'rst_ni', and used as an asynchronous reset or set at prim_generic_flop_en} \
+      -comment "the prim_lc_sync primitive uses the reset for assertions only in this case."
 
 waive -rules {CLOCK_USE} -location {aes_core.sv} -regexp {clk_i' is connected to 'aes_sel_buf_chk' port} \
       -comment "clock and reset are just used for assertions inside aes_sel_buf_chk"
