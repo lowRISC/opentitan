@@ -153,6 +153,11 @@
                     }
                   ]
              },
+             {    name: rom_ctrl
+                  fusesoc_core: lowrisc:ip:rom_ctrl
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/rom_ctrl/lint/{tool}"
+             },
              {    name: rstmgr
                   fusesoc_core: lowrisc:ip:rstmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
