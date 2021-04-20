@@ -4016,7 +4016,7 @@
           width: 3
           inst_name: kmac
           default: ""
-          end_idx: 1
+          end_idx: 2
           top_type: partial-one-to-N
           top_signame: kmac_app
           index: -1
@@ -5085,6 +5085,14 @@
           default: 0x23c074e020fd502869582e71443c8be0
           randwidth: 128
         }
+        {
+          name: SkipCheck
+          desc: Skip rom power up check
+          type: bit
+          default: "1"
+          expose: "true"
+          name_top: RomCtrlSkipCheck
+        }
       ]
       inter_signal_list:
       [
@@ -5132,7 +5140,9 @@
           act: req
           width: 1
           inst_name: rom_ctrl
-          index: -1
+          default: ""
+          top_signame: kmac_app
+          index: 1
         }
         {
           name: regs_tl
@@ -5775,6 +5785,7 @@
       kmac.app:
       [
         keymgr.kmac_data
+        rom_ctrl.kmac_data
       ]
       clkmgr_aon.idle:
       [
@@ -13647,7 +13658,7 @@
         width: 3
         inst_name: kmac
         default: ""
-        end_idx: 1
+        end_idx: 2
         top_type: partial-one-to-N
         top_signame: kmac_app
         index: -1
@@ -14291,7 +14302,9 @@
         act: req
         width: 1
         inst_name: rom_ctrl
-        index: -1
+        default: ""
+        top_signame: kmac_app
+        index: 1
       }
       {
         name: regs_tl
@@ -16417,7 +16430,7 @@
         signame: kmac_app_req
         width: 3
         type: req_rsp
-        end_idx: 1
+        end_idx: 2
         act: rsp
         suffix: req
         default: ""
@@ -16428,7 +16441,7 @@
         signame: kmac_app_rsp
         width: 3
         type: req_rsp
-        end_idx: 1
+        end_idx: 2
         act: rsp
         suffix: rsp
         default: ""

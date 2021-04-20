@@ -894,7 +894,7 @@
       'keymgr.kmac_key'         : ['kmac.keymgr_key']
 
       // KMAC Application Interface
-      'kmac.app'                : ['keymgr.kmac_data']
+      'kmac.app'                : ['keymgr.kmac_data', 'rom_ctrl.kmac_data']
 
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
