@@ -15,7 +15,9 @@ module chip_earlgrey_nexysvideo #(
   parameter BootRomInitFile = "boot_rom_fpga_nexysvideo.32.vmem",
   // Path to a VMEM file containing the contents of the emulated OTP, which will be
   // baked into the FPGA bitstream.
-  parameter OtpCtrlMemInitFile = "otp_img_fpga_nexysvideo.vmem"
+  parameter OtpCtrlMemInitFile = "otp_img_fpga_nexysvideo.vmem",
+  // TODO: Remove this 0 once infra is ready
+  parameter bit RomCtrlSkipCheck = 1
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
