@@ -25,6 +25,7 @@ module top_earlgrey #(
   parameter bit SramCtrlMainInstrExec = 1,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
   parameter  RomCtrlBootRomInitFile = "",
+  parameter bit RomCtrlSkipCheck = 1,
 
   // Manually defined parameters
   parameter ibex_pkg::regfile_e IbexRegFile = ibex_pkg::RegFileFF,
@@ -647,7 +648,6 @@ module top_earlgrey #(
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp4;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp5;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp6;
-  kmac_pkg::app_rsp_t unused_kmac_app_rsp1;
   kmac_pkg::app_rsp_t unused_kmac_app_rsp2;
 
   // assign partial inter-module tie-off
@@ -657,7 +657,6 @@ module top_earlgrey #(
   assign unused_edn1_edn_rsp4 = edn1_edn_rsp[4];
   assign unused_edn1_edn_rsp5 = edn1_edn_rsp[5];
   assign unused_edn1_edn_rsp6 = edn1_edn_rsp[6];
-  assign unused_kmac_app_rsp1 = kmac_app_rsp[1];
   assign unused_kmac_app_rsp2 = kmac_app_rsp[2];
   assign edn1_edn_req[1] = '0;
   assign edn1_edn_req[2] = '0;
@@ -665,7 +664,6 @@ module top_earlgrey #(
   assign edn1_edn_req[4] = '0;
   assign edn1_edn_req[5] = '0;
   assign edn1_edn_req[6] = '0;
-  assign kmac_app_req[1] = kmac_pkg::APP_REQ_DEFAULT;
   assign kmac_app_req[2] = kmac_pkg::APP_REQ_DEFAULT;
 
 
@@ -2278,7 +2276,8 @@ module top_earlgrey #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[30:30]),
     .BootRomInitFile(RomCtrlBootRomInitFile),
     .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
-    .RndCnstScrKey(RndCnstRomCtrlScrKey)
+    .RndCnstScrKey(RndCnstRomCtrlScrKey),
+    .SkipCheck(RomCtrlSkipCheck)
   ) u_rom_ctrl (
       // [30]: fatal
       .alert_tx_o  ( alert_tx[30:30] ),
@@ -2288,8 +2287,8 @@ module top_earlgrey #(
       .rom_cfg_i(ast_rom_cfg),
       .pwrmgr_data_o(),
       .keymgr_data_o(),
-      .kmac_data_o(),
-      .kmac_data_i(kmac_pkg::APP_RSP_DEFAULT),
+      .kmac_data_o(kmac_app_req[1]),
+      .kmac_data_i(kmac_app_rsp[1]),
       .regs_tl_i(rom_ctrl_regs_tl_req),
       .regs_tl_o(rom_ctrl_regs_tl_rsp),
       .rom_tl_i(rom_ctrl_rom_tl_req),

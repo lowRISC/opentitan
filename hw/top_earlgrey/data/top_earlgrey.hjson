@@ -448,7 +448,7 @@
       clock_reset_export: ["ast"],
       domain: "Aon",
       base_addr: "0x40440000"
-    },  
+    },
     { name: "pwm_aon",
       type: "pwm",
       clock_srcs: {clk_i: "io_div4", clk_core_i: "aon"},
@@ -893,7 +893,7 @@
       'keymgr.kmac_key'         : ['kmac.keymgr_key']
 
       // KMAC Application Interface
-      'kmac.app'                : ['keymgr.kmac_data']
+      'kmac.app'                : ['keymgr.kmac_data', 'rom_ctrl.kmac_data']
 
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
