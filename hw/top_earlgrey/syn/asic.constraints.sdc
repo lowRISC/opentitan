@@ -80,37 +80,37 @@ create_generated_clock -name IO_DIV4_CLK -divide_by 4 \
 # TODO: these are dummy constraints and likely incorrect, need to properly constrain min/max
 # note that due to the muxing, additional timing views with set_case_analysis may be needed.
 
+# aggregate all IO banks
+set IO_BANKS [get_ports IOA*]
+append_to_collection IO_BANKS [get_ports IOB*]
+append_to_collection IO_BANKS [get_ports IOC*]
+append_to_collection IO_BANKS [get_ports IOR*]
+
 # constrain muxed IOs running on IO_DIV2_CLK and IO_DIV4_CLK
-set IO_IN_DEL_FRACTION 0.7
-set IO_OUT_DEL_FRACTION 0.7
+set IO_IN_DEL_FRACTION 0.45
+set IO_OUT_DEL_FRACTION 0.45
 
 # IO_DIV2_CLK
 set IO_DIV2_IN_DEL    [expr ${IO_IN_DEL_FRACTION} * ${IO_TCK_PERIOD} * 2.0]
 set IO_DIV2_OUT_DEL   [expr ${IO_OUT_DEL_FRACTION} * ${IO_TCK_PERIOD} * 2.0]
 
-set_input_delay ${IO_DIV2_IN_DEL}   [get_ports IOA*] -clock IO_DIV2_CLK
-set_input_delay ${IO_DIV2_IN_DEL}   [get_ports IOB*] -clock IO_DIV2_CLK
-set_input_delay ${IO_DIV2_IN_DEL}   [get_ports IOC*] -clock IO_DIV2_CLK
-set_input_delay ${IO_DIV2_IN_DEL}   [get_ports IOR*] -clock IO_DIV2_CLK
-
-set_output_delay ${IO_DIV2_OUT_DEL} [get_ports IOA*] -clock IO_DIV2_CLK
-set_output_delay ${IO_DIV2_OUT_DEL} [get_ports IOB*] -clock IO_DIV2_CLK
-set_output_delay ${IO_DIV2_OUT_DEL} [get_ports IOC*] -clock IO_DIV2_CLK
-set_output_delay ${IO_DIV2_OUT_DEL} [get_ports IOR*] -clock IO_DIV2_CLK
+set_input_delay ${IO_DIV2_IN_DEL}   ${IO_BANKS} -clock IO_DIV2_CLK
+set_output_delay ${IO_DIV2_OUT_DEL} ${IO_BANKS} -clock IO_DIV2_CLK
 
 # IO_DIV4_CLK
 set IO_DIV4_IN_DEL    [expr ${IO_IN_DEL_FRACTION} * ${IO_TCK_PERIOD} * 4.0]
 set IO_DIV4_OUT_DEL   [expr ${IO_OUT_DEL_FRACTION} * ${IO_TCK_PERIOD} * 4.0]
 
-set_input_delay ${IO_DIV4_IN_DEL}   [get_ports IOA*] -clock IO_DIV4_CLK -add_delay
-set_input_delay ${IO_DIV4_IN_DEL}   [get_ports IOB*] -clock IO_DIV4_CLK -add_delay
-set_input_delay ${IO_DIV4_IN_DEL}   [get_ports IOC*] -clock IO_DIV4_CLK -add_delay
-set_input_delay ${IO_DIV4_IN_DEL}   [get_ports IOR*] -clock IO_DIV4_CLK -add_delay
+set_input_delay ${IO_DIV4_IN_DEL}   ${IO_BANKS} -clock IO_DIV4_CLK -add_delay
+set_output_delay ${IO_DIV4_OUT_DEL} ${IO_BANKS} -clock IO_DIV4_CLK -add_delay
 
-set_output_delay ${IO_DIV4_OUT_DEL} [get_ports IOA*] -clock IO_DIV4_CLK -add_delay
-set_output_delay ${IO_DIV4_OUT_DEL} [get_ports IOB*] -clock IO_DIV4_CLK -add_delay
-set_output_delay ${IO_DIV4_OUT_DEL} [get_ports IOC*] -clock IO_DIV4_CLK -add_delay
-set_output_delay ${IO_DIV4_OUT_DEL} [get_ports IOR*] -clock IO_DIV4_CLK -add_delay
+#####################
+# sysrst_ctrl       #
+#####################
+
+# MIO paths that go into sysrst_ctrl and fan out into MIOs or dedicated sysrst_ctrl outputs are async in nature, hence we constrain them using a max delay.
+set SYSRST_MAXDELAY 50.0
+set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey/u_sysrst_ctrl_aon/*] ${SYSRST_MAXDELAY}
 
 #####################
 # AON clk           #
