@@ -94,6 +94,9 @@ module top_${top["name"]} #(
   inout [1:0] flash_test_mode_a_io,
   inout flash_test_voltage_h_io,
 
+  // OTP specific voltages
+  inout otp_ext_voltage_h_io,
+
 % endif
   input                      scan_rst_ni, // reset used for test mode
   input                      scan_en_i,
@@ -693,6 +696,9 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       // alert signals
       .alert_rx_o  ( alert_rx ),
       .alert_tx_i  ( alert_tx ),
+    % endif
+    % if m["type"] == "otp_ctrl":
+      .otp_ext_voltage_h_io,
     % endif
     % if block.scan:
       .scanmode_i,

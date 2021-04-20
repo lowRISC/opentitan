@@ -67,7 +67,9 @@ module otp_ctrl
   input  otbn_otp_key_req_t                          otbn_otp_key_i,
   output otbn_otp_key_rsp_t                          otbn_otp_key_o,
   // Hardware config bits
-  output otp_hw_cfg_t                                otp_hw_cfg_o
+  output otp_hw_cfg_t                                otp_hw_cfg_o,
+  // External voltage for OTP
+  inout wire                                         otp_ext_voltage_h_io
 );
 
   import prim_util_pkg::vbits;
@@ -674,7 +676,7 @@ module otp_ctrl
     .valid_o     ( otp_rvalid                    ),
     .rdata_o     ( part_otp_rdata                ),
     .err_o       ( part_otp_err                  ),
-    .ext_voltage_io   ( unused_ext_voltage_io ),
+    .ext_voltage_io   ( otp_ext_voltage_h_io  ),
     .ext_voltage_en_i ( ext_voltage_en        ),
     .otp_alert_po     ( otp_alert_p           ),
     .otp_alert_no     ( otp_alert_n           ),

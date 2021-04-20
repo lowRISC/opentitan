@@ -540,6 +540,8 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_oe_flash_test_mode1 = 1'b0;
   assign manual_out_flash_test_volt = 1'b0;
   assign manual_oe_flash_test_volt = 1'b0;
+  assign manual_out_otp_ext_volt = 1'b0;
+  assign manual_oe_otp_ext_volt = 1'b0;
 
   // These pad attributes currently tied off permanently (these are all input-only pads).
   assign manual_attr_por_n = '0;
@@ -548,6 +550,7 @@ module chip_${top["name"]}_${target["name"]} (
   assign manual_attr_flash_test_mode0 = '0;
   assign manual_attr_flash_test_mode1 = '0;
   assign manual_attr_flash_test_volt = '0;
+  assign manual_attr_otp_ext_volt = '0;
 
   logic unused_manual_sigs;
   assign unused_manual_sigs = ^{
@@ -555,7 +558,8 @@ module chip_${top["name"]}_${target["name"]} (
     manual_in_cc1,
     manual_in_flash_test_volt,
     manual_in_flash_test_mode0,
-    manual_in_flash_test_mode1
+    manual_in_flash_test_mode1,
+    manual_in_otp_ext_volt
   };
 
   ///////////////////////////////
@@ -992,6 +996,9 @@ module chip_${top["name"]}_${target["name"]} (
     .flash_test_mode_a_io         ( {FLASH_TEST_MODE1,
                                      FLASH_TEST_MODE0}         ),
     .flash_test_voltage_h_io      ( FLASH_TEST_VOLT            ),
+
+    // OTP external voltage
+    .otp_ext_voltage_h_io         ( OTP_EXT_VOLT               ),
 
     // Multiplexed I/O
     .mio_in_i                     ( mio_in                     ),

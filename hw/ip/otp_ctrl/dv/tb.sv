@@ -57,6 +57,9 @@ module tb;
   assign otp_ctrl_if.lc_prog_req = lc_prog_if.req;
   assign otp_ctrl_if.lc_prog_err = lc_prog_if.d_data;
 
+  // leave this unconnected for now.
+  wire otp_ext_voltage_h;
+
   // dut
   otp_ctrl dut (
     .clk_i                      (clk        ),
@@ -104,7 +107,8 @@ module tb;
     .otbn_otp_key_i             (otbn_req),
     .otbn_otp_key_o             (otbn_rsp),
 
-    .otp_hw_cfg_o               (otp_ctrl_if.otp_hw_cfg_o)
+    .otp_hw_cfg_o               (otp_ctrl_if.otp_hw_cfg_o),
+    .otp_ext_voltage_h_io       (otp_ext_voltage_h)
   );
 
   for (genvar i = 0; i < NumSramKeyReqSlots; i++) begin : gen_sram_pull_if
