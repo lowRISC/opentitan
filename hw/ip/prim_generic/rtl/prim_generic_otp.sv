@@ -39,13 +39,32 @@ module prim_generic_otp
   // Response channel
   output logic                   valid_o,
   output logic [IfWidth-1:0]     rdata_o,
-  output err_e                   err_o
+  output err_e                   err_o,
+  // External programming voltage
+  inout wire ext_voltage_io, //TODO enable it after the change in prim_otp file
+  input ext_voltage_en_i, // TODO
+  //// alert indication
+  //////////////////////////
+  output otp_alert_po,  // TODO otp positive detector alert
+  output otp_alert_no,  // TODO otp negative detector alert
+  input  otp_alert_ack_i,  // TODO otp pulse ack
+  input  otp_alert_trig_i  // TODO alert force trig by SW
 );
 
   // Not supported in open-source emulation model.
   logic [PwrSeqWidth-1:0] unused_pwr_seq_h;
   assign unused_pwr_seq_h = pwr_seq_h_i;
   assign pwr_seq_o = '0;
+
+  wire unused_ext_voltage;
+  assign unused_ext_voltage = ext_voltage_io;
+  logic unused_ext_voltage_en;
+  assign unused_ext_voltage_en = ext_voltage_en_i;
+
+  logic unused_alert;
+  assign unused_alert = otp_alert_ack_i ^ otp_alert_trig_i;
+  assign otp_alert_po = 1'b0;
+  assign otp_alert_no = 1'b0;
 
   ////////////////////////////////////
   // TL-UL Test Interface Emulation //
