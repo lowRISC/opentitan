@@ -24,9 +24,10 @@
 static const uint32_t kRomExtIdentifierExpected = 0x4552544F;
 
 // TODO: Remove once we have sig_verify integrated.
+// Can be obtained by running `echo -n "OTRE" | openssl dgst -sha256`.
 static const uint32_t kROMExtIdentifierExpectedDigest[8] = {
-    0xe4ce261b, 0xc45462eb, 0xde9b0b29, 0x23f3ccf3,
-    0x933d551c, 0xa85d09fe, 0x82cfed52, 0x6924c711,
+    0x1daa6d65, 0xfb01590b, 0xee565047, 0xa1708a29,
+    0xfe239fa4, 0x91d0dfc9, 0xcf0d3e7a, 0x8b1cffcb,
 };
 
 typedef void(boot_fn)(void);

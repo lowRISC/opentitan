@@ -5,7 +5,7 @@
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 
 #include <array>
-#include <vector>
+#include <limits>
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
@@ -17,10 +17,7 @@
 namespace hmac_unittest {
 namespace {
 using ::mock_mmio::MmioTest;
-using ::mock_mmio::MockDevice;
-using ::testing::Each;
 using ::testing::ElementsAreArray;
-using ::testing::Eq;
 using ::testing::Test;
 
 class HmacTest : public Test, public MmioTest {
@@ -37,10 +34,11 @@ TEST_F(Sha256InitTest, NullArgs) {
 TEST_F(Sha256InitTest, Initialize) {
   EXPECT_WRITE32(HMAC_CFG_REG_OFFSET, 0u);
   EXPECT_WRITE32(HMAC_INTR_ENABLE_REG_OFFSET, 0u);
-  EXPECT_WRITE32(HMAC_INTR_STATE_REG_OFFSET, 0u);
+  EXPECT_WRITE32(HMAC_INTR_STATE_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
   EXPECT_WRITE32(HMAC_CFG_REG_OFFSET, {
                                           {HMAC_CFG_DIGEST_SWAP_BIT, false},
-                                          {HMAC_CFG_ENDIAN_SWAP_BIT, false},
+                                          {HMAC_CFG_ENDIAN_SWAP_BIT, true},
                                           {HMAC_CFG_SHA_EN_BIT, true},
                                           {HMAC_CFG_HMAC_EN_BIT, false},
                                       });
@@ -111,19 +109,19 @@ TEST_F(Sha256FinalTest, GetDigest) {
                 });
   EXPECT_WRITE32(HMAC_INTR_STATE_REG_OFFSET,
                  {
-                     {HMAC_INTR_STATE_HMAC_DONE_BIT, false},
+                     {HMAC_INTR_STATE_HMAC_DONE_BIT, true},
                  });
 
   // Set expectations explicitly to ensure that the registers
   // are contiguous.
-  EXPECT_READ32(HMAC_DIGEST_0_REG_OFFSET, kExpectedDigest[0]);
-  EXPECT_READ32(HMAC_DIGEST_1_REG_OFFSET, kExpectedDigest[1]);
-  EXPECT_READ32(HMAC_DIGEST_2_REG_OFFSET, kExpectedDigest[2]);
-  EXPECT_READ32(HMAC_DIGEST_3_REG_OFFSET, kExpectedDigest[3]);
-  EXPECT_READ32(HMAC_DIGEST_4_REG_OFFSET, kExpectedDigest[4]);
-  EXPECT_READ32(HMAC_DIGEST_5_REG_OFFSET, kExpectedDigest[5]);
-  EXPECT_READ32(HMAC_DIGEST_6_REG_OFFSET, kExpectedDigest[6]);
-  EXPECT_READ32(HMAC_DIGEST_7_REG_OFFSET, kExpectedDigest[7]);
+  EXPECT_READ32(HMAC_DIGEST_7_REG_OFFSET, kExpectedDigest[0]);
+  EXPECT_READ32(HMAC_DIGEST_6_REG_OFFSET, kExpectedDigest[1]);
+  EXPECT_READ32(HMAC_DIGEST_5_REG_OFFSET, kExpectedDigest[2]);
+  EXPECT_READ32(HMAC_DIGEST_4_REG_OFFSET, kExpectedDigest[3]);
+  EXPECT_READ32(HMAC_DIGEST_3_REG_OFFSET, kExpectedDigest[4]);
+  EXPECT_READ32(HMAC_DIGEST_2_REG_OFFSET, kExpectedDigest[5]);
+  EXPECT_READ32(HMAC_DIGEST_1_REG_OFFSET, kExpectedDigest[6]);
+  EXPECT_READ32(HMAC_DIGEST_0_REG_OFFSET, kExpectedDigest[7]);
 
   hmac_digest_t got_digest;
   EXPECT_EQ(hmac_sha256_final(&hmac_, &got_digest), kErrorOk);

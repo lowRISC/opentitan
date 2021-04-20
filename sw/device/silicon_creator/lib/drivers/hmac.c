@@ -19,13 +19,14 @@ rom_error_t hmac_sha256_init(const hmac_t *hmac) {
   // Clear the config, stopping the SHA engine.
   mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, 0u);
 
-  // Disable and clear interrupts
+  // Disable and clear interrupts. INTR_STATE register is rw1c.
   mmio_region_write32(hmac->base_addr, HMAC_INTR_ENABLE_REG_OFFSET, 0u);
-  mmio_region_write32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET, 0u);
+  mmio_region_write32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET, UINT32_MAX);
 
   uint32_t reg = 0;
   reg = bitfield_bit32_write(reg, HMAC_CFG_DIGEST_SWAP_BIT, false);
-  reg = bitfield_bit32_write(reg, HMAC_CFG_ENDIAN_SWAP_BIT, false);
+  // Enable endian swap since our inputs are little-endian.
+  reg = bitfield_bit32_write(reg, HMAC_CFG_ENDIAN_SWAP_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, false);
   mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, reg);
@@ -76,12 +77,14 @@ rom_error_t hmac_sha256_final(const hmac_t *hmac, hmac_digest_t *digest) {
   do {
     reg = mmio_region_read32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET);
   } while (!bitfield_bit32_read(reg, HMAC_INTR_STATE_HMAC_DONE_BIT));
-
-  reg = bitfield_bit32_write(reg, HMAC_INTR_STATE_HMAC_DONE_BIT, false);
   mmio_region_write32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET, reg);
 
-  mmio_region_memcpy_from_mmio32(hmac->base_addr, HMAC_DIGEST_0_REG_OFFSET,
-                                 digest->digest,
-                                 HMAC_PARAM_NUMWORDS * sizeof(uint32_t));
+  // Read the digest in reverse to preserve the numerical value.
+  // The least significant word is at HMAC_DIGEST_7_REG_OFFSET.
+  for (size_t i = 0; i < ARRAYSIZE(digest->digest); ++i) {
+    digest->digest[i] = mmio_region_read32(
+        hmac->base_addr, HMAC_DIGEST_7_REG_OFFSET - (i * sizeof(uint32_t)));
+  }
+
   return kErrorOk;
 }
