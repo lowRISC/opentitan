@@ -2025,7 +2025,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // es to cs halt request to reduce power spikes
-  assign cs_aes_halt_d = es_enable && cs_aes_halt_req;
+  // assign cs_aes_halt_d = es_enable && cs_aes_halt_req;
+  assign cs_aes_halt_d = cs_aes_halt_req;
   assign cs_aes_halt_o.cs_aes_halt_req = cs_aes_halt_q;
 
   //--------------------------------------------
