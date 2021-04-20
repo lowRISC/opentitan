@@ -266,7 +266,7 @@ class FormalCfg(OneShotCfg):
 
         if results[mode] != "P":
             results_str += "\n## List of Failures\n" + ''.join(
-                mode.launcher.fail_msg)
+                mode.launcher.fail_msg.message)
 
         messages = self.result.get("messages")
         if messages is not None:
