@@ -632,6 +632,21 @@ module otp_ctrl
   assign tl_win_d2h[$high(tl_win_h2d)] = (lc_dft_en[1] == lc_ctrl_pkg::On) ?
                                          tl_win_d2h_gated : '0;
 
+  // TODO: correctly wire these alerts up
+  logic unused_otp_alert;
+  logic otp_alert_p, otp_alert_n;
+  logic otp_alert_ack, otp_alert_trig;
+  assign unused_otp_alert = otp_alert_p ^
+                            otp_alert_n;
+  assign otp_alert_ack  = 1'b0;
+  assign otp_alert_trig = 1'b0;
+
+  wire unused_ext_voltage_io;
+
+  // TODO: correctly connect this to life cycle
+  logic ext_voltage_en;
+  assign ext_voltage_en = 1'b0;
+
   prim_otp #(
     .Width       ( OtpWidth            ),
     .Depth       ( OtpDepth            ),
@@ -658,7 +673,13 @@ module otp_ctrl
     // Read data out
     .valid_o     ( otp_rvalid                    ),
     .rdata_o     ( part_otp_rdata                ),
-    .err_o       ( part_otp_err                  )
+    .err_o       ( part_otp_err                  ),
+    .ext_voltage_io   ( unused_ext_voltage_io ),
+    .ext_voltage_en_i ( ext_voltage_en        ),
+    .otp_alert_po     ( otp_alert_p           ),
+    .otp_alert_no     ( otp_alert_n           ),
+    .otp_alert_ack_i  ( otp_alert_ack         ),
+    .otp_alert_trig_i ( otp_alert_trig        )
   );
 
   logic otp_fifo_valid;
