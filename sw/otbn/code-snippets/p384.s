@@ -1341,3 +1341,166 @@ scalar_mult_int_p384:
   jal       x1, proj_to_affine_p384
 
   ret
+
+
+/* constants, pointers and scratchpad memory */
+.section .data
+
+/* pointer to k (dptr_k) */
+.globl dptr_k
+dptr_k:
+  .zero 4
+
+/* pointer to rnd (dptr_rnd) */
+.globl dptr_rnd
+dptr_rnd:
+  .zero 4
+
+/* pointer to msg (dptr_msg) */
+.globl dptr_msg
+dptr_msg:
+  .zero 4
+
+/* pointer to R (dptr_r) */
+.globl dptr_r
+dptr_r:
+  .zero 4
+
+/* pointer to S (dptr_s) */
+.globl dptr_s
+dptr_s:
+  .zero 4
+
+/* pointer to X (dptr_x) */
+.globl dptr_x
+dptr_x:
+  .zero 4
+
+/* pointer to Y (dptr_y) */
+.globl dptr_y
+dptr_y:
+  .zero 4
+
+/* pointer to D (dptr_d) */
+.globl dptr_d
+dptr_d:
+  .zero 4
+
+/* P-384 domain parameter b */
+.globl p384_b
+p384_b:
+  .word 0xd3ec2aef
+  .word 0x2a85c8ed
+  .word 0x8a2ed19d
+  .word 0xc656398d
+  .word 0x5013875a
+  .word 0x0314088f
+  .word 0xfe814112
+  .word 0x181d9c6e
+  .word 0xe3f82d19
+  .word 0x988e056b
+  .word 0xe23ee7e4
+  .word 0xb3312fa7
+  .zero 16
+
+/* P-384 domain parameter p (modulus) */
+.globl p384_p
+p384_p:
+  .word 0xffffffff
+  .word 0x00000000
+  .word 0x00000000
+  .word 0xffffffff
+  .word 0xfffffffe
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .zero 16
+
+/* barrett constant u for modulus p */
+.globl p384_u_p
+p384_u_p:
+  .word 0x00000001
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0x00000000
+  .word 0x00000001
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .zero 16
+
+/* P-384 domain parameter n (order of base point) */
+p384_n:
+  .word 0xccc52973
+  .word 0xecec196a
+  .word 0x48b0a77a
+  .word 0x581a0db2
+  .word 0xf4372ddf
+  .word 0xc7634d81
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .zero 16
+
+/* barrett constant u for n */
+p384_u_n:
+  .word 0x333ad68d
+  .word 0x1313e695
+  .word 0xb74f5885
+  .word 0xa7e5f24d
+  .word 0x0bc8d220
+  .word 0x389cb27e
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .zero 16
+
+/* P-384 basepoint G affine x-coordinate */
+p384_gx:
+  .word 0x72760ab7
+  .word 0x3a545e38
+  .word 0xbf55296c
+  .word 0x5502f25d
+  .word 0x82542a38
+  .word 0x59f741e0
+  .word 0x8ba79b98
+  .word 0x6e1d3b62
+  .word 0xf320ad74
+  .word 0x8eb1c71e
+  .word 0xbe8b0537
+  .word 0xaa87ca22
+  .zero 16
+
+/* P-384 basepoint G affine y-coordinate */
+p384_gy:
+  .word 0x90ea0e5f
+  .word 0x7a431d7c
+  .word 0x1d7e819d
+  .word 0x0a60b1ce
+  .word 0xb5f0b8c0
+  .word 0xe9da3113
+  .word 0x289a147c
+  .word 0xf8f41dbd
+  .word 0x9292dc29
+  .word 0x5d9e98bf
+  .word 0x96262c6f
+  .word 0x3617de4a
+  .zero 16
+
+/* 704 bytes of scratchpad memory */
+scratchpad:
+  .zero 704
