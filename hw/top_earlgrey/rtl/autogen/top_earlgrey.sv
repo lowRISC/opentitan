@@ -773,6 +773,7 @@ module top_earlgrey #(
     .rst_ni        (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
     .hw_debug_en_i (lc_ctrl_lc_hw_debug_en),
     .scanmode_i,
+    .scan_rst_ni,
     .ndmreset_o    (ndmreset_req),
     .dmactive_o    (),
     .debug_req_o   (debug_req),
@@ -1554,6 +1555,7 @@ module top_earlgrey #(
       .tl_i(lc_ctrl_tl_req),
       .tl_o(lc_ctrl_tl_rsp),
       .scanmode_i,
+      .scan_rst_ni  (scan_rst_ni),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_timers),

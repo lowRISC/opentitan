@@ -318,6 +318,7 @@ module top_${top["name"]} #(
     .rst_ni        (${dm_rst}[rstmgr_pkg::Domain0Sel]),
     .hw_debug_en_i (lc_ctrl_lc_hw_debug_en),
     .scanmode_i,
+    .scan_rst_ni,
     .ndmreset_o    (ndmreset_req),
     .dmactive_o    (),
     .debug_req_o   (debug_req),

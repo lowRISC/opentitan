@@ -7,6 +7,7 @@
     { protocol: "tlul", direction: "device" }
   ],
   scan: "true", // Enable `scanmode_i` port
+  scan_reset: "true", // Enable `scan_rst_ni` port
   regwidth: "32",
 
 

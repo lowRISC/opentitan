@@ -21,6 +21,7 @@ module rv_dm #(
                                           // here, not the system reset
   input  lc_ctrl_pkg::lc_tx_t hw_debug_en_i,
   input  lc_ctrl_pkg::lc_tx_t scanmode_i,
+  input                       scan_rst_ni,
   output logic                ndmreset_o,  // non-debug module reset
   output logic                dmactive_o,  // debug module is active
   output logic [NrHarts-1:0]  debug_req_o, // async debug request
@@ -283,6 +284,7 @@ module rv_dm #(
 `ifndef DMIDirectTAP
 
   logic tck_muxed;
+  logic trst_n_muxed;
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_prim_clock_mux2 (
@@ -290,6 +292,15 @@ module rv_dm #(
     .clk1_i(clk_i),
     .sel_i (testmode),
     .clk_o (tck_muxed)
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_prim_rst_n_mux2 (
+    .clk0_i(jtag_req_i.trst_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i (testmode),
+    .clk_o (trst_n_muxed)
   );
 
   // JTAG TAP
@@ -312,7 +323,7 @@ module rv_dm #(
     //JTAG
     .tck_i            (tck_muxed),
     .tms_i            (jtag_req_i.tms),
-    .trst_ni          (jtag_req_i.trst_n),
+    .trst_ni          (trst_n_muxed),
     .td_i             (jtag_req_i.tdi),
     .td_o             (jtag_rsp_o.tdo),
     .tdo_oe_o         (jtag_rsp_o.tdo_oe)
