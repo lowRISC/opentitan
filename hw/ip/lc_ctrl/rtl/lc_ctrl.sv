@@ -30,6 +30,7 @@ module lc_ctrl
   input  jtag_pkg::jtag_req_t                        jtag_i,
   output jtag_pkg::jtag_rsp_t                        jtag_o,
   // This bypasses the clock inverter inside the JTAG TAP for scanmmode.
+  input                                              scan_rst_ni,
   input  lc_tx_t                                     scanmode_i,
   // Alert outputs.
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]  alert_rx_i,
@@ -148,6 +149,7 @@ module lc_ctrl
   assign scanmode = (scanmode_i == On);
 
   logic tck_muxed;
+  logic trst_n_muxed;
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_prim_clock_mux2 (
@@ -155,6 +157,15 @@ module lc_ctrl
     .clk1_i(clk_i),
     .sel_i (scanmode),
     .clk_o (tck_muxed)
+  );
+
+  prim_clock_mux2 #(
+    .NoFpgaBufG(1'b1)
+  ) u_prim_rst_n_mux2 (
+    .clk0_i(jtag_i.trst_n),
+    .clk1_i(scan_rst_ni),
+    .sel_i (scanmode),
+    .clk_o (trst_n_muxed)
   );
 
   logic req_ready;
@@ -175,7 +186,7 @@ module lc_ctrl
     .dmi_resp_valid_i ( dmi_resp_valid    ),
     .tck_i            ( tck_muxed         ),
     .tms_i            ( jtag_i.tms        ),
-    .trst_ni          ( jtag_i.trst_n     ),
+    .trst_ni          ( trst_n_muxed      ),
     .td_i             ( jtag_i.tdi        ),
     .td_o             ( jtag_o.tdo        ),
     .tdo_oe_o         ( jtag_o.tdo_oe     )
