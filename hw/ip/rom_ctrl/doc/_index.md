@@ -142,7 +142,7 @@ Parameter                   | Default (Max)         | Top Earlgrey | Description
 
 ### Signals
 
-The table below lists other ROM controller signals.
+The table below lists other ROM controller inter-module signals.
 
 <table>
   <tr>
@@ -152,107 +152,55 @@ The table below lists other ROM controller signals.
     <th>Description</th>
   </tr>
   <tr>
-    <td><code>check_done_o</code></td>
-    <td><code>logic</code></td>
+    <td><code>pwrmgr_data_o</code></td>
+    <td><code>rom_ctrl_pkg::pwrmgr_data_t</code></td>
     <td>pwrmgr</td>
     <td>
-      Becomes high when the ROM check is complete.
-      Remains high until reset.
-    </td>
-  </tr>
-  <tr>
-    <td><code>check_good_o</code></td>
-    <td><code>lc_ctrl_pkg::lc_tx_t</code></td>
-    <td>pwrmgr</td>
-    <td>
-      Only valid if <code>check_done_o</code> is high.
-      This is <code>On</code> if the digest computation matched the expected value stored in the top words of ROM and <code>Off</code> otherwise.
-      Stays constant when <code>check_done_o</code> is high.
+      <p>
+        A structure with two fields.
+        The first, <code>done</code>, becomes true when the ROM check is complete and remains true until reset.
+      </p><p>
+        The second, <code>good</code>, is only valid if <code>done</code> is true.
+        This is true if the digest computation matched the expected value stored in the top words of ROM and false otherwise.
+        This field stays constant when <code>done</code> is true.
+      </p>
     </td>
   </tr>
 
   <tr>
-    <td><code>keymgr_digest_data_o</code></td>
-    <td><code>logic [31:0]</code></td>
+    <td><code>keymgr_data_o</code></td>
+    <td><code>rom_ctrl_pkg::keymgr_data_t</code></td>
     <td>keymgr</td>
     <td>
-      A 32-bit word of digest data to pass to the key manager.
-      The 256-bit digest is sent in eight 32-bit beats.
-      The interface has a valid signal in <code>keymgr_digest_vld_o</code> and does not support back pressure.
-    </td>
-  </tr>
-  <tr>
-    <td><code>keymgr_digest_vld_o</code></td>
-    <td><code>logic</code></td>
-    <td>keymgr</td>
-    <td>
-      Valid signal for <code>keymgr_digest_data_o</code>.
-    </td>
-  </tr>
-
-
-  <tr>
-    <td><code>kmac_rom_rdy_i</code></td>
-    <td>logic</td>
-    <td>kmac</td>
-    <td>
-      Ready signal for <code>kmac_rom_data_o</code>.
-    </td>
-  </tr>
-  <tr>
-    <td><code>kmac_rom_vld_o</code></td>
-    <td>logic</td>
-    <td>kmac</td>
-    <td>
-      Valid signal for <code>kmac_rom_data_o</code>.
-    </td>
-  </tr>
-  <tr>
-    <td><code>kmac_rom_last_o</code></td>
-    <td>logic</td>
-    <td>kmac</td>
-    <td>
-      The current word in <code>kmac_rom_data_o</code> is the last one that will be signalled.
-    </td>
-  </tr>
-  <tr>
-    <td><code>kmac_rom_data_o</code></td>
-    <td>logic [63:0]</td>
-    <td>kmac</td>
-    <td>
-      A 64-bit word of scrambled ROM data to send to KMAC.
-      The interface has a valid signal in <code>kmac_rom_vld_o</code> and a ready signal in <code>kmac_rom_rdy_i</code>.
+      A 256-bit digest, together with a <code>valid</code> signal.
+      Once the ROM check is complete, <code>valid</code> will become true and will then remain true until reset.
+      The digest in <code>data</code> is only valid when <code>valid</code> is true and is be constant until reset.
     </td>
   </tr>
 
   <tr>
-    <td><code>kmac_done_i</code></td>
-    <td>logic</td>
+    <td><code>kmac_data_o</code></td>
+    <td>kmac_pkg::app_req_t</td>
     <td>kmac</td>
     <td>
-      The KMAC block has finished computing its digest.
-      Valid signal for <code>kmac_digest_data_i</code>.
+      Outgoing data to KMAC.
+      Data is sent in 64-bit words in the <code>data</code> field.
+      When a word of data is available, the <code>valid</code> field is true.
+      When this is the last word of data, the <code>last</code> field is also true.
+      Since we never send partial words, the <code>strb</code> field is always zero.
     </td>
   </tr>
   <tr>
-    <td><code>kmac_digest_share0_i</code></td>
-    <td>logic [255:0]</td>
+    <td><code>kmac_data_i</code></td>
+    <td>kmac_pkg::app_rsp_t</td>
     <td>kmac</td>
     <td>
-      A share of the 256-bit digest returned from KMAC.
-      The interface has a valid signal in <code>kmac_done_i</code> and does not support back pressure.
+      Incoming data from KMAC interface.
+      This contains a <code>ready</code> signal for passing ROM data and a <code>done</code> signal that shows a digest has been computed.
+      When <code>done</code> is true, the digest is exposed in two shares (<code>digest_share0</code> and <code>digest_share1</code>).
+      The <code>error</code> field is ignored.
     </td>
   </tr>
-  <tr>
-    <td><code>kmac_digest_share1_i</code></td>
-    <td>logic [255:0]</td>
-    <td>kmac</td>
-    <td>
-      A share of the 256-bit digest returned from KMAC.
-      The interface has a valid signal in <code>kmac_done_i</code> and does not support back pressure.
-    </td>
-  </tr>
-
 </table>
 
 # Programmer's Guide
