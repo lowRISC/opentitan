@@ -13,6 +13,11 @@ package rom_ctrl_pkg;
     logic good;
   } pwrmgr_data_t;
 
+  parameter pwrmgr_data_t PWRMGR_DATA_DEFAULT = '{
+    done: '1,
+    good: '1
+  };
+
   typedef struct packed {
     logic [255:0] data;
     logic         valid;

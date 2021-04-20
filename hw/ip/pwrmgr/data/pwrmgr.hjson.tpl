@@ -107,6 +107,20 @@
       act:     "req",
       package: "",
     },
+
+    { struct:  "pwrmgr_data",
+      type:    "uni",
+      name:    "rom_ctrl",
+      act:     "rcv",
+      package: "rom_ctrl_pkg",
+    },
+
+    { struct:  "lc_tx",
+      type:    "uni",
+      name:    "fetch_en",
+      act:     "req",
+      package: "lc_ctrl_pkg",
+    },
   ],
 
   param_list: [

@@ -181,6 +181,7 @@ package pwrmgr_pkg;
     FastPwrStateLcInit,
     FastPwrStateStrap,
     FastPwrStateAckPwrUp,
+    FastPwrStateRomCheck,
     FastPwrStateActive,
     FastPwrStateDisClks,
     FastPwrStateFallThrough,

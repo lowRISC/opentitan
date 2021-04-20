@@ -307,6 +307,7 @@ module top_${top["name"]} #(
     .crash_dump_o         (rv_core_ibex_crash_dump),
     // CPU control signals
     .lc_cpu_en_i          (lc_ctrl_lc_cpu_en),
+    .pwrmgr_cpu_en_i      (pwrmgr_aon_fetch_en),
     .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping)
   );
 

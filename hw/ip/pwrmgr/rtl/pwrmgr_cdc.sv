@@ -60,7 +60,11 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   output pwr_otp_rsp_t otp_o,
 
   // AST inputs, unknown domain
-  input pwr_ast_rsp_t ast_i
+  input pwr_ast_rsp_t ast_i,
+
+  // rom_ctrl signals
+  input rom_ctrl_done_i,
+  output logic rom_ctrl_done_o
 
 );
 
@@ -253,6 +257,16 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .rst_ni,
     .d_i(otp_i),
     .q_o(otp_o)
+  );
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_sync_rom_ctrl (
+    .clk_i,
+    .rst_ni,
+    .d_i(rom_ctrl_done_i),
+    .q_o(rom_ctrl_done_o)
   );
 
 endmodule

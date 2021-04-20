@@ -487,6 +487,7 @@ module top_earlgrey #(
   pwrmgr_pkg::pwr_lc_rsp_t       pwrmgr_aon_pwr_lc_rsp;
   logic       pwrmgr_aon_strap;
   logic       pwrmgr_aon_low_power;
+  rom_ctrl_pkg::pwrmgr_data_t       rom_ctrl_pwrmgr_data;
   ibex_pkg::crash_dump_t       rv_core_ibex_crash_dump;
   logic       usbdev_usb_out_of_rst;
   logic       usbdev_usb_aon_wake_en;
@@ -625,6 +626,7 @@ module top_earlgrey #(
   rstmgr_pkg::rstmgr_cpu_t       rstmgr_aon_cpu;
   pwrmgr_pkg::pwr_cpu_t       pwrmgr_aon_pwr_cpu;
   clkmgr_pkg::clkmgr_out_t       clkmgr_aon_clocks;
+  lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
   tlul_pkg::tl_h2d_t       main_tl_corei_req;
   tlul_pkg::tl_d2h_t       main_tl_corei_rsp;
   tlul_pkg::tl_h2d_t       main_tl_cored_req;
@@ -761,6 +763,7 @@ module top_earlgrey #(
     .crash_dump_o         (rv_core_ibex_crash_dump),
     // CPU control signals
     .lc_cpu_en_i          (lc_ctrl_lc_cpu_en),
+    .pwrmgr_cpu_en_i      (pwrmgr_aon_fetch_en),
     .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping)
   );
 
@@ -1619,6 +1622,8 @@ module top_earlgrey #(
       .rstreqs_i(pwrmgr_aon_rstreqs),
       .strap_o(pwrmgr_aon_strap),
       .low_power_o(pwrmgr_aon_low_power),
+      .rom_ctrl_i(rom_ctrl_pwrmgr_data),
+      .fetch_en_o(pwrmgr_aon_fetch_en),
       .tl_i(pwrmgr_aon_tl_req),
       .tl_o(pwrmgr_aon_tl_rsp),
 
@@ -2287,7 +2292,7 @@ module top_earlgrey #(
 
       // Inter-module signals
       .rom_cfg_i(ast_rom_cfg),
-      .pwrmgr_data_o(),
+      .pwrmgr_data_o(rom_ctrl_pwrmgr_data),
       .keymgr_data_o(),
       .kmac_data_o(),
       .kmac_data_i(kmac_pkg::APP_RSP_DEFAULT),

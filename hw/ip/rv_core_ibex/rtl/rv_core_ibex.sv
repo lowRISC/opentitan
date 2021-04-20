@@ -67,6 +67,7 @@ module rv_core_ibex #(
 
   // CPU Control Signals
   input lc_ctrl_pkg::lc_tx_t lc_cpu_en_i,
+  input lc_ctrl_pkg::lc_tx_t pwrmgr_cpu_en_i,
   output logic        core_sleep_o
 );
 
@@ -173,6 +174,14 @@ module rv_core_ibex #(
     .lc_en_o(lc_cpu_en)
   );
 
+  lc_ctrl_pkg::lc_tx_t [0:0] pwrmgr_cpu_en;
+  prim_lc_sync u_pwrmgr_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(pwrmgr_cpu_en_i),
+    .lc_en_o(pwrmgr_cpu_en)
+  );
+
   ibex_top #(
     .PMPEnable                ( PMPEnable                ),
     .PMPGranularity           ( PMPGranularity           ),
@@ -254,7 +263,7 @@ module rv_core_ibex #(
     .rvfi_mem_wdata,
 `endif
 
-    .fetch_enable_i   (lc_cpu_en[0] == lc_ctrl_pkg::On),
+    .fetch_enable_i   (lc_cpu_en[0] == lc_ctrl_pkg::On && pwrmgr_cpu_en[0] == lc_ctrl_pkg::On),
     .alert_minor_o    (alert_minor),
     .alert_major_o    (alert_major),
     .core_sleep_o
