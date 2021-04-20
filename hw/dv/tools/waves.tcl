@@ -110,7 +110,7 @@ proc wavedumpScope {scope fid {depth 0} {fsdb_flags "+all"} {probe_flags  "-all"
       if {$depth == 0} {
         set depth "all"
       }
-      probe "$scope" $probe_flags -depth $depth -shm
+      probe "$scope" $probe_flags -depth $depth -memories -shm
     }
 
     "vpd" {
@@ -124,7 +124,7 @@ proc wavedumpScope {scope fid {depth 0} {fsdb_flags "+all"} {probe_flags  "-all"
         if {$depth == 0} {
           set depth "all"
         }
-        probe "$scope" $probe_flags -depth $depth -vcd
+        probe "$scope" $probe_flags -depth $depth -memories -vcd
       }
     }
 
