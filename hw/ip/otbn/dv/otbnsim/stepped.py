@@ -89,7 +89,7 @@ def on_step(sim: OTBNSim, args: List[str]) -> None:
     pc = sim.state.pc
     assert 0 == pc & 3
 
-    insn, changes = sim.step(verbose=False)
+    insn, changes = sim.step(verbose=False, collect_stats=False)
 
     if insn is None:
         hdr = 'STALL'
@@ -108,7 +108,7 @@ def on_run(sim: OTBNSim, args: List[str]) -> None:
         raise ValueError('run expects zero arguments. Got {}.'
                          .format(args))
 
-    num_cycles = sim.run(verbose=False)
+    num_cycles = sim.run(verbose=False, collect_stats=False)
     print(' ran for {} cycles'.format(num_cycles))
 
 

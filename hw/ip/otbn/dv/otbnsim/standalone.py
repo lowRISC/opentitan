@@ -8,6 +8,7 @@ import sys
 
 from sim.elf import load_elf
 from sim.sim import OTBNSim
+from sim.stats import ExecutionStatAnalyzer
 
 
 def main() -> int:
@@ -28,14 +29,23 @@ def main() -> int:
         help=("after execution, write the GPR and WDR contents to this file. "
               "Use '-' to write to STDOUT.")
     )
+    parser.add_argument(
+        '--dump-stats',
+        metavar="FILE",
+        type=argparse.FileType('w'),
+        help=("after execution, write execution statistics to this file. "
+              "Use '-' to write to STDOUT.")
+    )
 
     args = parser.parse_args()
+
+    collect_stats = args.dump_stats is not None
 
     sim = OTBNSim()
     load_elf(sim, args.elf)
 
     sim.state.start(0)
-    sim.run(verbose=args.verbose)
+    sim.run(verbose=args.verbose, collect_stats=collect_stats)
 
     if args.dump_dmem is not None:
         args.dump_dmem.write(sim.dump_data())
@@ -45,6 +55,10 @@ def main() -> int:
             args.dump_regs.write(' x{:<2} = 0x{:08x}\n'.format(idx, value))
         for idx, value in enumerate(sim.state.wdrs.peek_unsigned_values()):
             args.dump_regs.write(' w{:<2} = 0x{:064x}\n'.format(idx, value))
+
+    if collect_stats:
+        stat_analyzer = ExecutionStatAnalyzer(sim.stats, args.elf)
+        args.dump_stats.write(stat_analyzer.dump())
 
     return 0
 

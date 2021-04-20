@@ -6,6 +6,7 @@ from typing import List, Optional, Tuple
 
 from .isa import OTBNInsn
 from .state import OTBNState
+from .stats import ExecutionStats
 from .trace import Trace
 
 _TEST_RND_DATA = \
@@ -16,6 +17,7 @@ class OTBNSim:
     def __init__(self) -> None:
         self.state = OTBNState()
         self.program = []  # type: List[OTBNInsn]
+        self.stats = ExecutionStats()
 
     def load_program(self, program: List[OTBNInsn]) -> None:
         self.program = program.copy()
@@ -23,7 +25,7 @@ class OTBNSim:
     def load_data(self, data: bytes) -> None:
         self.state.dmem.load_le_words(data)
 
-    def run(self, verbose: bool) -> int:
+    def run(self, verbose: bool, collect_stats: bool) -> int:
         '''Run until ECALL.
 
         Return the number of cycles taken.
@@ -34,7 +36,7 @@ class OTBNSim:
         # valid when in free running mode as nothing else will.
         self.state.set_urnd_reseed_complete()
         while self.state.running:
-            self.step(verbose)
+            self.step(verbose, collect_stats)
             insn_count += 1
 
             if self.state.wsrs.RND.pending_request:
@@ -44,7 +46,9 @@ class OTBNSim:
 
         return insn_count
 
-    def step(self, verbose: bool) -> Tuple[Optional[OTBNInsn], List[Trace]]:
+    def step(self,
+             verbose: bool,
+             collect_stats: bool) -> Tuple[Optional[OTBNInsn], List[Trace]]:
         '''Run a single instruction.
 
         Returns the instruction, together with a list of the architectural
@@ -78,10 +82,16 @@ class OTBNSim:
             self.state.commit(sim_stalled=True)
             disasm = '(stall)'
             changes = []
+
+            if collect_stats:
+                self.stats.record_stall()
         else:
             self.state.pre_insn(insn.affects_control)
             insn.execute(self.state)
             self.state.post_insn()
+
+            if collect_stats:
+                self.stats.record_insn(pc_before, insn, self.state)
 
             if self.state.pending_halt:
                 # Roll back any pending state changes, ensuring that a faulting

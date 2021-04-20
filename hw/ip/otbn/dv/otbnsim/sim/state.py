@@ -29,6 +29,8 @@ class OTBNState:
         self.pc = 0
         self.pc_next = None  # type: Optional[int]
 
+        self.start_addr = None  # type: Optional[int]
+
         _, imem_size = get_memory_layout()['IMEM']
         self.imem_size = imem_size
 
@@ -147,6 +149,7 @@ class OTBNState:
         self._urnd_reseed_complete = False
 
         self.pc = addr
+        self.start_addr = addr
 
         # Reset CSRs, WSRs and loop stack
         self.csrs = CSRFile()
