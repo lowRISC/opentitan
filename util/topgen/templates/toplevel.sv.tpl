@@ -284,7 +284,6 @@ module top_${top["name"]} #(
     .rst_ni               (${cpu_rst}[rstmgr_pkg::Domain0Sel]),
     .clk_esc_i            (${esc_clk}),
     .rst_esc_ni           (${esc_rst}[rstmgr_pkg::Domain0Sel]),
-    .test_en_i            (1'b0),
     .ram_cfg_i            (ast_ram_1p_cfg),
     // static pinning
     .hart_id_i            (32'b0),
@@ -308,7 +307,11 @@ module top_${top["name"]} #(
     // CPU control signals
     .lc_cpu_en_i          (lc_ctrl_lc_cpu_en),
     .pwrmgr_cpu_en_i      (pwrmgr_aon_fetch_en),
-    .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping)
+    .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping),
+
+    // dft bypass
+    .scan_rst_ni,
+    .scanmode_i
   );
 
   // Debug Module (RISC-V Debug Spec 0.13)

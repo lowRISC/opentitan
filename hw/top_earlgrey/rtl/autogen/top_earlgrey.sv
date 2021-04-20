@@ -740,7 +740,6 @@ module top_earlgrey #(
     .rst_ni               (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
     .clk_esc_i            (clkmgr_aon_clocks.clk_io_div4_timers),
     .rst_esc_ni           (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::Domain0Sel]),
-    .test_en_i            (1'b0),
     .ram_cfg_i            (ast_ram_1p_cfg),
     // static pinning
     .hart_id_i            (32'b0),
@@ -764,7 +763,11 @@ module top_earlgrey #(
     // CPU control signals
     .lc_cpu_en_i          (lc_ctrl_lc_cpu_en),
     .pwrmgr_cpu_en_i      (pwrmgr_aon_fetch_en),
-    .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping)
+    .core_sleep_o         (pwrmgr_aon_pwr_cpu.core_sleeping),
+
+    // dft bypass
+    .scan_rst_ni,
+    .scanmode_i
   );
 
   // Debug Module (RISC-V Debug Spec 0.13)
