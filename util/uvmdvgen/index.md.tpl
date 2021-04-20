@@ -38,9 +38,9 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
 * ${name.upper()} IOs
-* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
-* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}})
-* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
+* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
+* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}))
+* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 
 ${'###'} Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
