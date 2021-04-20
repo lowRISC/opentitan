@@ -49,8 +49,6 @@ waive -rules CONST_FF -location {dm_csrs.sv} -regexp {Flip-flop 'sbcs_q.sbaccess
       -comment "Parts of this struct are constantly set to zero."
 waive -rules CASE_SEL_EXPR -location {dm_csrs.sv} -regexp {Expression 'dm::dm_csr_e.*as case selector} \
       -comment "acceptable use"
-waive -rules NOT_READ -location {dm_csrs.sv} -regexp {Signal 'dmcontrol.(clrresethaltreq|dmactive|haltreq|hartreset|hartselhi|hartsello|hasel|ndmreset|resumereq|setresethaltreq|zero[0-1])' is not read from} \
-      -comment "These signals are not needed by dm_csrs module"
 waive -rules NOT_READ -location {dm_csrs.sv} -regexp {Signal 'a_abstractcs.(busy|datacount|progbufsize|zero[0-3])' is not read from} \
       -comment "These signals are not needed by dm_csrs module"
 waive -rules ARITH_CONTEXT -location {dm_csrs.sv} \

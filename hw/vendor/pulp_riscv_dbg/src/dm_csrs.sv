@@ -207,7 +207,6 @@ module dm_csrs #(
   // helper variables
   dm::dm_csr_e dm_csr_addr;
   dm::sbcs_t sbcs;
-  dm::dmcontrol_t dmcontrol;
   dm::abstractcs_t a_abstractcs;
   logic [3:0] autoexecdata_idx; // 0 == Data0 ... 11 == Data11
 
@@ -282,7 +281,6 @@ module dm_csrs #(
 
     // helper variables
     sbcs         = '0;
-    dmcontrol    = '0;
     a_abstractcs = '0;
 
     // reads
@@ -368,12 +366,11 @@ module dm_csrs #(
           end
         end
         dm::DMControl: begin
-          dmcontrol = dm::dmcontrol_t'(dmi_req_i.data);
+          dmcontrol_d = dmi_req_i.data;
           // clear the havreset of the selected hart
-          if (dmcontrol.ackhavereset) begin
+          if (dmcontrol_d.ackhavereset) begin
             havereset_d_aligned[selected_hart] = 1'b0;
           end
-          dmcontrol_d = dmi_req_i.data;
         end
         dm::DMStatus:; // write are ignored to R/O register
         dm::Hartinfo:; // hartinfo is R/O
