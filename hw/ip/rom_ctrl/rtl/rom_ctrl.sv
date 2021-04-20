@@ -231,7 +231,7 @@ module rom_ctrl
     assign exp_digest_de = 1'b0;
     assign exp_digest_idx = '0;
     assign pwrmgr_data_o = '{done: 1'b1, good: 1'b1};
-    assign keymgr_data_o = '{data: '0, valid: 1'b0, last: 1'b0};
+    assign keymgr_data_o = '{data: '0, valid: 1'b0};
     assign kmac_rom_vld = 1'b0;
     assign kmac_rom_last = 1'b0;
     // Setting this to 0 ensures the mux will give access to the TL bus

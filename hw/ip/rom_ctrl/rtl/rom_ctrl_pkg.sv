@@ -14,9 +14,8 @@ package rom_ctrl_pkg;
   } pwrmgr_data_t;
 
   typedef struct packed {
-    logic [31:0] data;
-    logic        valid;
-    logic        last;
+    logic [255:0] data;
+    logic         valid;
   } keymgr_data_t;
 
 endpackage

@@ -30,9 +30,6 @@ module rom_ctrl_compare #(
   input logic [NumWords*32-1:0]      digest_i,
   input logic [NumWords*32-1:0]      exp_digest_i,
 
-  // To keymgr
-  output rom_ctrl_pkg::keymgr_data_t keymgr_data_o,
-
   // To alert system
   output logic                       alert_o
 );
@@ -147,11 +144,6 @@ module rom_ctrl_compare #(
   assign digest_word = digest_i[digest_idx -: 32];
   assign exp_digest_word = exp_digest_i[digest_idx -: 32];
   assign matches_d = matches_q && (digest_word == exp_digest_word);
-
-  logic word_vld, word_last;
-  assign word_vld  = (state_q == Checking);
-  assign word_last = (addr_q == LastAddr);
-  assign keymgr_data_o = '{data: digest_word, valid: word_vld, last: word_last};
 
   assign done_o = (state_q == Done);
   assign good_o = matches_q;
