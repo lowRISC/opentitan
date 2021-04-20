@@ -20,6 +20,7 @@
 
   // Default directory structure for the output
   dut:              "{name}"
+  params:           ""
   build_dir:        "{scratch_path}/{build_mode}"
   build_log:        "{build_dir}/synthesis.log"
 

@@ -24,6 +24,12 @@
       name: expand_modules
       value: "top_earlgrey"
     }
+
+    {
+      name: params
+      value: "RomCtrlSkipCheck=>0"
+    }
+
   ]
 
   // Timing constraints for this module
