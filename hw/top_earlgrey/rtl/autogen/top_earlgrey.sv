@@ -91,6 +91,9 @@ module top_earlgrey #(
   inout [1:0] flash_test_mode_a_io,
   inout flash_test_voltage_h_io,
 
+  // OTP specific voltages
+  inout otp_ext_voltage_h_io,
+
   input                      scan_rst_ni, // reset used for test mode
   input                      scan_en_i,
   input lc_ctrl_pkg::lc_tx_t scanmode_i   // lc_ctrl_pkg::On for Scan
@@ -1499,6 +1502,7 @@ module top_earlgrey #(
       .otp_hw_cfg_o(otp_ctrl_otp_hw_cfg),
       .tl_i(otp_ctrl_tl_req),
       .tl_o(otp_ctrl_tl_rsp),
+      .otp_ext_voltage_h_io,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_timers),

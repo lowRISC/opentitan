@@ -7845,15 +7845,15 @@
         idx: 7
       }
       {
-        name: SPI_HOST_D0
-        type: BidirStd
-        bank: VIOA
-        connection: direct
-        desc: SPI host data
+        name: OTP_EXT_VOLT
+        type: AnalogIn0
+        bank: VCC
+        connection: manual
+        desc: OTP external voltage input
         idx: 8
       }
       {
-        name: SPI_HOST_D1
+        name: SPI_HOST_D0
         type: BidirStd
         bank: VIOA
         connection: direct
@@ -7861,7 +7861,7 @@
         idx: 9
       }
       {
-        name: SPI_HOST_D2
+        name: SPI_HOST_D1
         type: BidirStd
         bank: VIOA
         connection: direct
@@ -7869,7 +7869,7 @@
         idx: 10
       }
       {
-        name: SPI_HOST_D3
+        name: SPI_HOST_D2
         type: BidirStd
         bank: VIOA
         connection: direct
@@ -7877,12 +7877,20 @@
         idx: 11
       }
       {
+        name: SPI_HOST_D3
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI host data
+        idx: 12
+      }
+      {
         name: SPI_HOST_CLK
         type: BidirStd
         bank: VIOA
         connection: direct
         desc: SPI host clock
-        idx: 12
+        idx: 13
       }
       {
         name: SPI_HOST_CS_L
@@ -7890,7 +7898,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host chip select
-        idx: 13
+        idx: 14
       }
       {
         name: SPI_DEV_D0
@@ -7898,7 +7906,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 14
+        idx: 15
       }
       {
         name: SPI_DEV_D1
@@ -7906,7 +7914,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 15
+        idx: 16
       }
       {
         name: SPI_DEV_D2
@@ -7914,7 +7922,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 16
+        idx: 17
       }
       {
         name: SPI_DEV_D3
@@ -7922,7 +7930,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 17
+        idx: 18
       }
       {
         name: SPI_DEV_CLK
@@ -7930,7 +7938,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device clock
-        idx: 18
+        idx: 19
       }
       {
         name: SPI_DEV_CS_L
@@ -7938,7 +7946,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device chip select
-        idx: 19
+        idx: 20
       }
       {
         name: IOA0
@@ -8290,7 +8298,7 @@
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (ec_rst_l)
-        idx: 20
+        idx: 21
       }
       {
         name: IOR9
@@ -8298,7 +8306,7 @@
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (pwrb_out)
-        idx: 21
+        idx: 22
       }
       {
         name: IOR10
@@ -9817,7 +9825,7 @@
         inouts: 11
         inputs: 3
         outputs: 10
-        pads: 22
+        pads: 23
       }
       muxed:
       {
@@ -9915,6 +9923,7 @@
           SPI_HOST_D2
           SPI_HOST_D3
           FLASH_TEST_VOLT
+          OTP_EXT_VOLT
           FLASH_TEST_MODE0
           FLASH_TEST_MODE1
           IOB10
