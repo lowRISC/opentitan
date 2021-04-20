@@ -12,7 +12,7 @@ from LsfLauncher import LsfLauncher
 from Scheduler import Scheduler
 
 try:
-    from EdaCloudLauncher import EdaCloudLauncher
+    from edacloudlauncher.EdaCloudLauncher import EdaCloudLauncher
     EDACLOUD_LAUNCHER_EXISTS = True
 except ImportError:
     EDACLOUD_LAUNCHER_EXISTS = False
