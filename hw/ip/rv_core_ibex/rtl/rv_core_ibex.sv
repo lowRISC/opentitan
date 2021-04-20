@@ -36,7 +36,6 @@ module rv_core_ibex #(
   input  logic        clk_esc_i,
   input  logic        rst_esc_ni,
 
-  input  logic        test_en_i,     // enable all clock gates for testing
   input  prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
 
   input  logic [31:0] hart_id_i,
@@ -68,7 +67,11 @@ module rv_core_ibex #(
   // CPU Control Signals
   input lc_ctrl_pkg::lc_tx_t lc_cpu_en_i,
   input lc_ctrl_pkg::lc_tx_t pwrmgr_cpu_en_i,
-  output logic        core_sleep_o
+  output logic        core_sleep_o,
+
+  // dft bypass
+  input scan_rst_ni,
+  input lc_ctrl_pkg::lc_tx_t scanmode_i
 );
 
   import top_pkg::*;
@@ -205,7 +208,10 @@ module rv_core_ibex #(
     .clk_i,
     .rst_ni,
 
-    .test_en_i,
+
+    .test_en_i      (scanmode_i == lc_ctrl_pkg::On),
+    .scan_rst_ni,
+
     .ram_cfg_i,
 
     .hart_id_i,
