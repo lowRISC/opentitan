@@ -448,7 +448,7 @@
       clock_reset_export: ["ast"],
       domain: "Aon",
       base_addr: "0x40440000"
-    },  
+    },
     { name: "pwm_aon",
       type: "pwm",
       clock_srcs: {clk_i: "io_div4", clk_core_i: "aon"},
@@ -871,6 +871,7 @@
       'pwrmgr_aon.pwr_lc'       : ['lc_ctrl.pwr_lc'],
       'pwrmgr_aon.strap'        : ['pinmux_aon.strap_en'],
       'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en','aon_timer_aon.sleep_mode'],
+      'rom_ctrl.pwrmgr_data'    : ['pwrmgr_aon.rom_ctrl'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'rv_core_ibex.crash_dump'  : ['rstmgr_aon.cpu_dump'],
@@ -955,6 +956,7 @@
     // use of the signal is up to top template
     'top': [
         'rstmgr_aon.resets', 'rstmgr_aon.cpu', 'pwrmgr_aon.pwr_cpu', 'clkmgr_aon.clocks',
+        'pwrmgr_aon.fetch_en',
 
         // Xbars
         'main.tl_corei', 'main.tl_cored', 'main.tl_dm_sba', 'main.tl_debug_mem'

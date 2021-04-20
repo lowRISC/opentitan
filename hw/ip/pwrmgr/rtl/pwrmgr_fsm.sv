@@ -53,9 +53,16 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input flash_done_i,
   input flash_idle_i,
 
+  // rom_ctrl
+  input rom_ctrl_done_i,
+  input rom_ctrl_good_i,
+
   // pinmux
   output logic strap_o,
-  output logic low_power_o
+  output logic low_power_o,
+
+  // processing elements
+  output lc_ctrl_pkg::lc_tx_t fetch_en_o
 );
 
   // The code below always assumes the always on domain is index 0
@@ -82,6 +89,9 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   // strap sample should only happen on cold boot or when the
   // the system goes through a reset cycle
   logic strap_sampled;
+
+  // disable processing element fetching
+  lc_ctrl_pkg::lc_tx_t fetch_en_q, fetch_en_d;
 
   fast_pwr_state_e state_d, state_q;
   logic reset_ongoing_q, reset_ongoing_d;
@@ -143,6 +153,14 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
     end
   end
 
+  prim_lc_sender u_fetch_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(fetch_en_d),
+    .lc_en_o(fetch_en_q)
+  );
+  assign fetch_en_o = fetch_en_q;
+
   // Life cycle broadcast may take time to propagate through the system.
   // The sync below simulates that behavior using the slowest clock in the
   // system.
@@ -187,6 +205,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
     reset_cause_d = reset_cause_q;
     flash_init_d = 1'b0;
     low_power_d = low_power_q;
+    fetch_en_d = fetch_en_q;
 
     unique case(state_q)
 
@@ -251,15 +270,25 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
           ack_pwrup_d = 1'b0;
           clr_cfg_lock_o = 1'b1;
           wkup_o = pwrup_cause_i == Wake;
-          state_d = FastPwrStateActive;
+          state_d = FastPwrStateRomCheck;
         end
       end
 
-      FastPwrStateActive: begin
+      FastPwrStateRomCheck: begin
         // zero outgoing low power indication
         low_power_d = '0;
         rst_sys_req_d = '0;
         reset_cause_d = ResetNone;
+
+        if (rom_ctrl_done_i && rom_ctrl_good_i) begin
+          state_d = FastPwrStateActive;
+        end
+      end
+
+
+      FastPwrStateActive: begin
+        // only in active state, allow processor to execute
+        fetch_en_d = lc_ctrl_pkg::On;
 
         if (reset_req || low_power_entry_i) begin
           reset_cause_d = ResetUndefined;
@@ -280,7 +309,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
       FastPwrStateFallThrough: begin
         clr_hint_o = 1'b1;
 
-        // the processor was interrupted after it asserted WFI and is executing again
+        // The processor was interrupted after it asserted WFI and is executing again
         if (!low_power_entry_i) begin
           ip_clk_en_d = 1'b1;
           wkup_o = 1'b1;

@@ -45,6 +45,7 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   // processor interface
   input  pwr_cpu_t pwr_cpu_i,
+  output lc_ctrl_pkg::lc_tx_t fetch_en_o,
 
   // peripherals wakeup and reset requests
   input  [NumWkups-1:0] wakeups_i,
@@ -53,6 +54,9 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   // pinmux and other peripherals
   output logic strap_o,
   output logic low_power_o,
+
+  // rom_ctrl interface
+  input rom_ctrl_pkg::pwrmgr_data_t rom_ctrl_i,
 
   // escalation interface
   input prim_esc_pkg::esc_tx_t esc_rst_tx_i,
@@ -103,6 +107,10 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   pwr_flash_rsp_t flash_rsp;
   pwr_otp_rsp_t otp_rsp;
+
+  logic rom_ctrl_done;
+  logic rom_ctrl_good;
+
 
   ////////////////////////////
   ///  clk_slow_i domain declarations
@@ -222,10 +230,16 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
     // OTP signals
     .otp_i(pwr_otp_i),
-    .otp_o(otp_rsp)
+    .otp_o(otp_rsp),
+
+    // rom_ctrl signals
+    .rom_ctrl_done_i(rom_ctrl_i.done),
+    .rom_ctrl_done_o(rom_ctrl_done)
 
   );
-
+  // rom_ctrl_i.good is not synchronized as it acts as a "payload" signal
+  // to "done". Good is only observed if "done" is high.
+  assign rom_ctrl_good = rom_ctrl_i.good;
   assign hw2reg.cfg_cdc_sync.d = 1'b0;
 
   ////////////////////////////
@@ -350,6 +364,13 @@ module pwrmgr import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .flash_init_o      (pwr_flash_o.flash_init),
     .flash_done_i      (flash_rsp.flash_done),
     .flash_idle_i      (flash_rsp.flash_idle),
+
+    // rom_ctrl
+    .rom_ctrl_done_i   (rom_ctrl_done),
+    .rom_ctrl_good_i   (rom_ctrl_good),
+
+    // processing element
+    .fetch_en_o,
 
     // pinmux and other peripherals
     .strap_o,

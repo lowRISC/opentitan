@@ -2222,6 +2222,30 @@
           index: -1
         }
         {
+          name: rom_ctrl
+          struct: pwrmgr_data
+          package: rom_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: pwrmgr_aon
+          default: ""
+          top_signame: rom_ctrl_pwrmgr_data
+          index: -1
+        }
+        {
+          name: fetch_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: pwrmgr_aon
+          default: ""
+          top_signame: pwrmgr_aon_fetch_en
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -5083,6 +5107,10 @@
           act: req
           width: 1
           inst_name: rom_ctrl
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rom_ctrl_pwrmgr_data
           index: -1
         }
         {
@@ -5693,6 +5721,10 @@
         pinmux_aon.sleep_en
         aon_timer_aon.sleep_mode
       ]
+      rom_ctrl.pwrmgr_data:
+      [
+        pwrmgr_aon.rom_ctrl
+      ]
       rv_core_ibex.crash_dump:
       [
         rstmgr_aon.cpu_dump
@@ -6050,6 +6082,7 @@
       rstmgr_aon.cpu
       pwrmgr_aon.pwr_cpu
       clkmgr_aon.clocks
+      pwrmgr_aon.fetch_en
       main.tl_corei
       main.tl_cored
       main.tl_dm_sba
@@ -12506,6 +12539,30 @@
         index: -1
       }
       {
+        name: rom_ctrl
+        struct: pwrmgr_data
+        package: rom_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: pwrmgr_aon
+        default: ""
+        top_signame: rom_ctrl_pwrmgr_data
+        index: -1
+      }
+      {
+        name: fetch_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: pwrmgr_aon
+        default: ""
+        top_signame: pwrmgr_aon_fetch_en
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -14199,6 +14256,10 @@
         act: req
         width: 1
         inst_name: rom_ctrl
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rom_ctrl_pwrmgr_data
         index: -1
       }
       {
@@ -16208,6 +16269,17 @@
         default: ""
       }
       {
+        package: rom_ctrl_pkg
+        struct: pwrmgr_data
+        signame: rom_ctrl_pwrmgr_data
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: ""
+      }
+      {
         package: ibex_pkg
         struct: crash_dump
         signame: rv_core_ibex_crash_dump
@@ -17712,6 +17784,15 @@
         package: clkmgr_pkg
         struct: clkmgr_out
         signame: clkmgr_aon_clocks
+        width: 1
+        type: uni
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: pwrmgr_aon_fetch_en
         width: 1
         type: uni
         end_idx: -1
