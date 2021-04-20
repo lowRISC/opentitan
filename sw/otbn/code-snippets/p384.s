@@ -1062,11 +1062,11 @@ store_proj_randomize:
 
 
 /**
- * P-256 scalar point multiplication in affine space
+ * P-384 scalar point multiplication in affine space
  *
- * returns R = d*P = d*(x_p, y_p)
- *         where R, P are valid P-256 curve points in affine coordinates,
- *               d is a 256-bit scalar.
+ * returns R = k*P = k*(x_p, y_p)
+ *         where R, P are valid P-384 curve points in affine coordinates,
+ *               k is a 384-bit scalar.
  *
  * This routine performs scalar multiplication based on the group laws
  * of Weierstrass curves.
@@ -1080,7 +1080,7 @@ store_proj_randomize:
  *
  * @param[in]  x9: dptr_rnd, pointer to location in dmem containing random
  *                           number to be used for additive splitting of scalar
- * @param[in]  x19: dptr_d, pointer to scalar d (0 < d < n) in dmem
+ * @param[in]  x19: dptr_k, pointer to scalar k (0 < k < n) in dmem
  * @param[in]  x20: dptr_x, pointer to affine x-coordinate in dmem
  * @param[in]  x21: dptr_y, pointer to affine y-coordinate in dmem
  * @param[in]  x28: dptr_b, pointer to domain parameter b of P-384 in dmem
@@ -1114,7 +1114,6 @@ store_proj_randomize:
  * clobbered registers: x2, x10, x11 to x13, x18, x26, x27, w0 to w30
  * clobbered flag groups: FG0
  */
-.globl scalar_mult_int_p384
 scalar_mult_int_p384:
 
   /* set regfile pointers to in/out regs of Barrett routine. Set here to avoid
@@ -1137,13 +1136,13 @@ scalar_mult_int_p384:
   bn.sel    w0, w0, w9, C
   bn.sel    w1, w1, w8, C
 
-  /* load scalar d from dmem
-     [w3, w2] = d <= dmem[dptr_d] = [dmem[x19], dmem[x19+32]] */
+  /* load scalar k from dmem
+     [w3, w2] = k <= dmem[dptr_k] = [dmem[x19], dmem[x19+32]] */
   bn.lid    x2++, 0(x19)
   bn.lid    x2, 32(x19)
 
-  /* 2nd share (d-s0)
-     s1 = [w3, w2] <= d - s0 mod n = [w2, w3] - [w1, w0] mod [w11, w10] */
+  /* 2nd share (k-s0)
+     s1 = [w3, w2] <= k - s0 mod n = [w2, w3] - [w1, w0] mod [w11, w10] */
   bn.sub    w2, w2, w0
   bn.subb   w3, w3, w1
   bn.add    w8, w2, w10
@@ -1339,6 +1338,86 @@ scalar_mult_int_p384:
 
   /* convert coordinates to affine space */
   jal       x1, proj_to_affine_p384
+
+  ret
+
+
+/**
+ * Externally callable wrapper for P-384 scalar point multiplication
+ *
+ * returns R = k*P = k*(x_p, y_p)
+ *         where R, P are valid P-384 curve points in affine coordinates,
+ *               k is a 384-bit scalar..
+ *
+ * Sets up context and calls internal scalar multiplication routine.
+ * This routine runs in constant time.
+ *
+ * @param[in]  dmem[0]: dK, pointer to location in dmem containing scalar k
+ * @param[in]  dmem[4]: dRnd, pointer to location in dmem containing random
+ *                        number for blinding
+ * @param[in]  dmem[20]: dptr_x, pointer to affine x-coordinate in dmem
+ * @param[in]  dmem[22]: dptr_y, pointer to affine y-coordinate in dmem
+ *
+ * 384-bit quantities have to be provided in dmem in little-endian format,
+ * 512 bit aligned, with the highest 128 bit set to zero.
+ *
+ * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
+ *        the computed affine y-coordinate.
+ *
+ * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30
+ *                      w0 to w30
+ * clobbered flag groups: FG0
+ */
+.globl scalar_mult_p384
+scalar_mult_p384:
+
+  /* set dmem pointer to point x-coordinate */
+  la       x20, dptr_x
+  lw       x20, 0(x20)
+
+  /* set dmem pointer to point y-coordinate */
+  la       x21, dptr_y
+  lw       x21, 0(x21)
+
+  /* set dmem pointer to scalar k */
+  la       x19, dptr_k
+  lw       x19, 0(x19)
+
+  /* set pointer to blinding parameter */
+  la       x9, dptr_rnd
+  lw       x9, 0(x9)
+
+  /* set dmem pointer to domain parameter b */
+  la       x28, p384_b
+
+  /* set dmem pointer to scratchpad */
+  la       x30, scratchpad
+
+  /* load domain parameter p (modulus)
+     [w13, w12] = p = dmem[dptr_p] */
+  li       x2, 12
+  la       x3, p384_p
+  bn.lid   x2++, 0(x3)
+  bn.lid   x2++, 32(x3)
+
+  /* load Barrett constant u for modulus p
+     [w15, w14] = u_p = dmem[dptr_u_p] */
+  li       x2, 14
+  la       x3, p384_u_p
+  bn.lid   x2++, 0(x3)
+  bn.lid   x2++, 32(x3)
+
+  /* load domain parameter n (order of base point)
+     [w11, w10] = p = dmem[dptr_n] */
+  li       x2, 10
+  la       x3, p384_n
+  bn.lid   x2++, 0(x3)
+  bn.lid   x2++, 32(x3)
+
+  /* init all-zero reg */
+  bn.xor   w31, w31, w31
+
+  jal      x1, scalar_mult_int_p384
 
   ret
 
