@@ -10,7 +10,7 @@ from LocalLauncher import LocalLauncher
 from LsfLauncher import LsfLauncher
 
 try:
-    from EdaCloudLauncher import EdaCloudLauncher
+    from edacloudlauncher.EdaCloudLauncher import EdaCloudLauncher
     EDACLOUD_LAUNCHER_EXISTS = True
 except ImportError:
     EDACLOUD_LAUNCHER_EXISTS = False
