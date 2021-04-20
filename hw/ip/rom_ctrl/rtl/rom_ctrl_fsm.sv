@@ -89,7 +89,6 @@ module rom_ctrl_fsm
     .good_o        (checker_good),
     .digest_i      (digest_i),
     .exp_digest_i  (exp_digest_i),
-    .keymgr_data_o (keymgr_data_o),
     .alert_o       (checker_alert)
   );
 
@@ -225,6 +224,9 @@ module rom_ctrl_fsm
 
   // Pass the 'done' and 'good' signals directly from the checker
   assign pwrmgr_data_o = '{done: (state_q == Done), good: checker_good};
+
+  // Pass the digest all-at-once to the keymgr
+  assign keymgr_data_o = '{data: digest_i, valid: (state_q == Done)};
 
   // KMAC rom data interface
   //
