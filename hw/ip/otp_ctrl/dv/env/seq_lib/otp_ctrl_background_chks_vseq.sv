@@ -54,7 +54,6 @@ class otp_ctrl_background_chks_vseq extends otp_ctrl_dai_errs_vseq;
 
     cfg.clk_rst_vif.wait_clks($urandom_range(50, 1000));
     csr_rd_check(.ptr(ral.status.timeout_error), .compare_value(1));
-    csr_rd_check(.ptr(ral.status.dai_idle),      .compare_value(1));
   endtask
 
   virtual task post_start();
