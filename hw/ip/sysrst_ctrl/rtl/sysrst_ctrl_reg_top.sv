@@ -3713,35 +3713,35 @@ module sysrst_ctrl_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (SYSRST_CTRL_PERMIT[ 0] != (SYSRST_CTRL_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (SYSRST_CTRL_PERMIT[ 1] != (SYSRST_CTRL_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (SYSRST_CTRL_PERMIT[ 2] != (SYSRST_CTRL_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (SYSRST_CTRL_PERMIT[ 3] != (SYSRST_CTRL_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (SYSRST_CTRL_PERMIT[ 4] != (SYSRST_CTRL_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (SYSRST_CTRL_PERMIT[ 5] != (SYSRST_CTRL_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (SYSRST_CTRL_PERMIT[ 6] != (SYSRST_CTRL_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (SYSRST_CTRL_PERMIT[ 7] != (SYSRST_CTRL_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (SYSRST_CTRL_PERMIT[ 8] != (SYSRST_CTRL_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (SYSRST_CTRL_PERMIT[ 9] != (SYSRST_CTRL_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (SYSRST_CTRL_PERMIT[10] != (SYSRST_CTRL_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (SYSRST_CTRL_PERMIT[11] != (SYSRST_CTRL_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (SYSRST_CTRL_PERMIT[12] != (SYSRST_CTRL_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (SYSRST_CTRL_PERMIT[13] != (SYSRST_CTRL_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[14] && reg_we && (SYSRST_CTRL_PERMIT[14] != (SYSRST_CTRL_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[15] && reg_we && (SYSRST_CTRL_PERMIT[15] != (SYSRST_CTRL_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[16] && reg_we && (SYSRST_CTRL_PERMIT[16] != (SYSRST_CTRL_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[17] && reg_we && (SYSRST_CTRL_PERMIT[17] != (SYSRST_CTRL_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[18] && reg_we && (SYSRST_CTRL_PERMIT[18] != (SYSRST_CTRL_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[19] && reg_we && (SYSRST_CTRL_PERMIT[19] != (SYSRST_CTRL_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[20] && reg_we && (SYSRST_CTRL_PERMIT[20] != (SYSRST_CTRL_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[21] && reg_we && (SYSRST_CTRL_PERMIT[21] != (SYSRST_CTRL_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[22] && reg_we && (SYSRST_CTRL_PERMIT[22] != (SYSRST_CTRL_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[23] && reg_we && (SYSRST_CTRL_PERMIT[23] != (SYSRST_CTRL_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[24] && reg_we && (SYSRST_CTRL_PERMIT[24] != (SYSRST_CTRL_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[25] && reg_we && (SYSRST_CTRL_PERMIT[25] != (SYSRST_CTRL_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[26] && reg_we && (SYSRST_CTRL_PERMIT[26] != (SYSRST_CTRL_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[27] && reg_we && (SYSRST_CTRL_PERMIT[27] != (SYSRST_CTRL_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[ 0] & (|(SYSRST_CTRL_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(SYSRST_CTRL_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(SYSRST_CTRL_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(SYSRST_CTRL_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(SYSRST_CTRL_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(SYSRST_CTRL_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(SYSRST_CTRL_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(SYSRST_CTRL_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(SYSRST_CTRL_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(SYSRST_CTRL_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(SYSRST_CTRL_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(SYSRST_CTRL_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(SYSRST_CTRL_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(SYSRST_CTRL_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(SYSRST_CTRL_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(SYSRST_CTRL_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(SYSRST_CTRL_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(SYSRST_CTRL_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(SYSRST_CTRL_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(SYSRST_CTRL_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(SYSRST_CTRL_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(SYSRST_CTRL_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(SYSRST_CTRL_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(SYSRST_CTRL_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(SYSRST_CTRL_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(SYSRST_CTRL_PERMIT[25] & ~reg_be))) |
+               (addr_hit[26] & (|(SYSRST_CTRL_PERMIT[26] & ~reg_be))) |
+               (addr_hit[27] & (|(SYSRST_CTRL_PERMIT[27] & ~reg_be)))));
   end
 
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;

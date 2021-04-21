@@ -20798,610 +20798,610 @@ module pinmux_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[  0] && reg_we && (PINMUX_PERMIT[  0] != (PINMUX_PERMIT[  0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[  1] && reg_we && (PINMUX_PERMIT[  1] != (PINMUX_PERMIT[  1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[  2] && reg_we && (PINMUX_PERMIT[  2] != (PINMUX_PERMIT[  2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[  3] && reg_we && (PINMUX_PERMIT[  3] != (PINMUX_PERMIT[  3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[  4] && reg_we && (PINMUX_PERMIT[  4] != (PINMUX_PERMIT[  4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[  5] && reg_we && (PINMUX_PERMIT[  5] != (PINMUX_PERMIT[  5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[  6] && reg_we && (PINMUX_PERMIT[  6] != (PINMUX_PERMIT[  6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[  7] && reg_we && (PINMUX_PERMIT[  7] != (PINMUX_PERMIT[  7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[  8] && reg_we && (PINMUX_PERMIT[  8] != (PINMUX_PERMIT[  8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[  9] && reg_we && (PINMUX_PERMIT[  9] != (PINMUX_PERMIT[  9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 10] && reg_we && (PINMUX_PERMIT[ 10] != (PINMUX_PERMIT[ 10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 11] && reg_we && (PINMUX_PERMIT[ 11] != (PINMUX_PERMIT[ 11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 12] && reg_we && (PINMUX_PERMIT[ 12] != (PINMUX_PERMIT[ 12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 13] && reg_we && (PINMUX_PERMIT[ 13] != (PINMUX_PERMIT[ 13] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 14] && reg_we && (PINMUX_PERMIT[ 14] != (PINMUX_PERMIT[ 14] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 15] && reg_we && (PINMUX_PERMIT[ 15] != (PINMUX_PERMIT[ 15] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 16] && reg_we && (PINMUX_PERMIT[ 16] != (PINMUX_PERMIT[ 16] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 17] && reg_we && (PINMUX_PERMIT[ 17] != (PINMUX_PERMIT[ 17] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 18] && reg_we && (PINMUX_PERMIT[ 18] != (PINMUX_PERMIT[ 18] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 19] && reg_we && (PINMUX_PERMIT[ 19] != (PINMUX_PERMIT[ 19] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 20] && reg_we && (PINMUX_PERMIT[ 20] != (PINMUX_PERMIT[ 20] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 21] && reg_we && (PINMUX_PERMIT[ 21] != (PINMUX_PERMIT[ 21] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 22] && reg_we && (PINMUX_PERMIT[ 22] != (PINMUX_PERMIT[ 22] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 23] && reg_we && (PINMUX_PERMIT[ 23] != (PINMUX_PERMIT[ 23] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 24] && reg_we && (PINMUX_PERMIT[ 24] != (PINMUX_PERMIT[ 24] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 25] && reg_we && (PINMUX_PERMIT[ 25] != (PINMUX_PERMIT[ 25] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 26] && reg_we && (PINMUX_PERMIT[ 26] != (PINMUX_PERMIT[ 26] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 27] && reg_we && (PINMUX_PERMIT[ 27] != (PINMUX_PERMIT[ 27] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 28] && reg_we && (PINMUX_PERMIT[ 28] != (PINMUX_PERMIT[ 28] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 29] && reg_we && (PINMUX_PERMIT[ 29] != (PINMUX_PERMIT[ 29] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 30] && reg_we && (PINMUX_PERMIT[ 30] != (PINMUX_PERMIT[ 30] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 31] && reg_we && (PINMUX_PERMIT[ 31] != (PINMUX_PERMIT[ 31] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 32] && reg_we && (PINMUX_PERMIT[ 32] != (PINMUX_PERMIT[ 32] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 33] && reg_we && (PINMUX_PERMIT[ 33] != (PINMUX_PERMIT[ 33] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 34] && reg_we && (PINMUX_PERMIT[ 34] != (PINMUX_PERMIT[ 34] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 35] && reg_we && (PINMUX_PERMIT[ 35] != (PINMUX_PERMIT[ 35] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 36] && reg_we && (PINMUX_PERMIT[ 36] != (PINMUX_PERMIT[ 36] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 37] && reg_we && (PINMUX_PERMIT[ 37] != (PINMUX_PERMIT[ 37] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 38] && reg_we && (PINMUX_PERMIT[ 38] != (PINMUX_PERMIT[ 38] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 39] && reg_we && (PINMUX_PERMIT[ 39] != (PINMUX_PERMIT[ 39] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 40] && reg_we && (PINMUX_PERMIT[ 40] != (PINMUX_PERMIT[ 40] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 41] && reg_we && (PINMUX_PERMIT[ 41] != (PINMUX_PERMIT[ 41] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 42] && reg_we && (PINMUX_PERMIT[ 42] != (PINMUX_PERMIT[ 42] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 43] && reg_we && (PINMUX_PERMIT[ 43] != (PINMUX_PERMIT[ 43] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 44] && reg_we && (PINMUX_PERMIT[ 44] != (PINMUX_PERMIT[ 44] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 45] && reg_we && (PINMUX_PERMIT[ 45] != (PINMUX_PERMIT[ 45] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 46] && reg_we && (PINMUX_PERMIT[ 46] != (PINMUX_PERMIT[ 46] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 47] && reg_we && (PINMUX_PERMIT[ 47] != (PINMUX_PERMIT[ 47] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 48] && reg_we && (PINMUX_PERMIT[ 48] != (PINMUX_PERMIT[ 48] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 49] && reg_we && (PINMUX_PERMIT[ 49] != (PINMUX_PERMIT[ 49] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 50] && reg_we && (PINMUX_PERMIT[ 50] != (PINMUX_PERMIT[ 50] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 51] && reg_we && (PINMUX_PERMIT[ 51] != (PINMUX_PERMIT[ 51] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 52] && reg_we && (PINMUX_PERMIT[ 52] != (PINMUX_PERMIT[ 52] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 53] && reg_we && (PINMUX_PERMIT[ 53] != (PINMUX_PERMIT[ 53] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 54] && reg_we && (PINMUX_PERMIT[ 54] != (PINMUX_PERMIT[ 54] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 55] && reg_we && (PINMUX_PERMIT[ 55] != (PINMUX_PERMIT[ 55] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 56] && reg_we && (PINMUX_PERMIT[ 56] != (PINMUX_PERMIT[ 56] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 57] && reg_we && (PINMUX_PERMIT[ 57] != (PINMUX_PERMIT[ 57] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 58] && reg_we && (PINMUX_PERMIT[ 58] != (PINMUX_PERMIT[ 58] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 59] && reg_we && (PINMUX_PERMIT[ 59] != (PINMUX_PERMIT[ 59] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 60] && reg_we && (PINMUX_PERMIT[ 60] != (PINMUX_PERMIT[ 60] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 61] && reg_we && (PINMUX_PERMIT[ 61] != (PINMUX_PERMIT[ 61] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 62] && reg_we && (PINMUX_PERMIT[ 62] != (PINMUX_PERMIT[ 62] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 63] && reg_we && (PINMUX_PERMIT[ 63] != (PINMUX_PERMIT[ 63] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 64] && reg_we && (PINMUX_PERMIT[ 64] != (PINMUX_PERMIT[ 64] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 65] && reg_we && (PINMUX_PERMIT[ 65] != (PINMUX_PERMIT[ 65] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 66] && reg_we && (PINMUX_PERMIT[ 66] != (PINMUX_PERMIT[ 66] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 67] && reg_we && (PINMUX_PERMIT[ 67] != (PINMUX_PERMIT[ 67] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 68] && reg_we && (PINMUX_PERMIT[ 68] != (PINMUX_PERMIT[ 68] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 69] && reg_we && (PINMUX_PERMIT[ 69] != (PINMUX_PERMIT[ 69] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 70] && reg_we && (PINMUX_PERMIT[ 70] != (PINMUX_PERMIT[ 70] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 71] && reg_we && (PINMUX_PERMIT[ 71] != (PINMUX_PERMIT[ 71] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 72] && reg_we && (PINMUX_PERMIT[ 72] != (PINMUX_PERMIT[ 72] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 73] && reg_we && (PINMUX_PERMIT[ 73] != (PINMUX_PERMIT[ 73] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 74] && reg_we && (PINMUX_PERMIT[ 74] != (PINMUX_PERMIT[ 74] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 75] && reg_we && (PINMUX_PERMIT[ 75] != (PINMUX_PERMIT[ 75] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 76] && reg_we && (PINMUX_PERMIT[ 76] != (PINMUX_PERMIT[ 76] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 77] && reg_we && (PINMUX_PERMIT[ 77] != (PINMUX_PERMIT[ 77] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 78] && reg_we && (PINMUX_PERMIT[ 78] != (PINMUX_PERMIT[ 78] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 79] && reg_we && (PINMUX_PERMIT[ 79] != (PINMUX_PERMIT[ 79] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 80] && reg_we && (PINMUX_PERMIT[ 80] != (PINMUX_PERMIT[ 80] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 81] && reg_we && (PINMUX_PERMIT[ 81] != (PINMUX_PERMIT[ 81] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 82] && reg_we && (PINMUX_PERMIT[ 82] != (PINMUX_PERMIT[ 82] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 83] && reg_we && (PINMUX_PERMIT[ 83] != (PINMUX_PERMIT[ 83] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 84] && reg_we && (PINMUX_PERMIT[ 84] != (PINMUX_PERMIT[ 84] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 85] && reg_we && (PINMUX_PERMIT[ 85] != (PINMUX_PERMIT[ 85] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 86] && reg_we && (PINMUX_PERMIT[ 86] != (PINMUX_PERMIT[ 86] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 87] && reg_we && (PINMUX_PERMIT[ 87] != (PINMUX_PERMIT[ 87] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 88] && reg_we && (PINMUX_PERMIT[ 88] != (PINMUX_PERMIT[ 88] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 89] && reg_we && (PINMUX_PERMIT[ 89] != (PINMUX_PERMIT[ 89] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 90] && reg_we && (PINMUX_PERMIT[ 90] != (PINMUX_PERMIT[ 90] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 91] && reg_we && (PINMUX_PERMIT[ 91] != (PINMUX_PERMIT[ 91] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 92] && reg_we && (PINMUX_PERMIT[ 92] != (PINMUX_PERMIT[ 92] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 93] && reg_we && (PINMUX_PERMIT[ 93] != (PINMUX_PERMIT[ 93] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 94] && reg_we && (PINMUX_PERMIT[ 94] != (PINMUX_PERMIT[ 94] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 95] && reg_we && (PINMUX_PERMIT[ 95] != (PINMUX_PERMIT[ 95] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 96] && reg_we && (PINMUX_PERMIT[ 96] != (PINMUX_PERMIT[ 96] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 97] && reg_we && (PINMUX_PERMIT[ 97] != (PINMUX_PERMIT[ 97] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 98] && reg_we && (PINMUX_PERMIT[ 98] != (PINMUX_PERMIT[ 98] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 99] && reg_we && (PINMUX_PERMIT[ 99] != (PINMUX_PERMIT[ 99] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[100] && reg_we && (PINMUX_PERMIT[100] != (PINMUX_PERMIT[100] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[101] && reg_we && (PINMUX_PERMIT[101] != (PINMUX_PERMIT[101] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[102] && reg_we && (PINMUX_PERMIT[102] != (PINMUX_PERMIT[102] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[103] && reg_we && (PINMUX_PERMIT[103] != (PINMUX_PERMIT[103] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[104] && reg_we && (PINMUX_PERMIT[104] != (PINMUX_PERMIT[104] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[105] && reg_we && (PINMUX_PERMIT[105] != (PINMUX_PERMIT[105] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[106] && reg_we && (PINMUX_PERMIT[106] != (PINMUX_PERMIT[106] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[107] && reg_we && (PINMUX_PERMIT[107] != (PINMUX_PERMIT[107] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[108] && reg_we && (PINMUX_PERMIT[108] != (PINMUX_PERMIT[108] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[109] && reg_we && (PINMUX_PERMIT[109] != (PINMUX_PERMIT[109] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[110] && reg_we && (PINMUX_PERMIT[110] != (PINMUX_PERMIT[110] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[111] && reg_we && (PINMUX_PERMIT[111] != (PINMUX_PERMIT[111] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[112] && reg_we && (PINMUX_PERMIT[112] != (PINMUX_PERMIT[112] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[113] && reg_we && (PINMUX_PERMIT[113] != (PINMUX_PERMIT[113] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[114] && reg_we && (PINMUX_PERMIT[114] != (PINMUX_PERMIT[114] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[115] && reg_we && (PINMUX_PERMIT[115] != (PINMUX_PERMIT[115] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[116] && reg_we && (PINMUX_PERMIT[116] != (PINMUX_PERMIT[116] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[117] && reg_we && (PINMUX_PERMIT[117] != (PINMUX_PERMIT[117] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[118] && reg_we && (PINMUX_PERMIT[118] != (PINMUX_PERMIT[118] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[119] && reg_we && (PINMUX_PERMIT[119] != (PINMUX_PERMIT[119] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[120] && reg_we && (PINMUX_PERMIT[120] != (PINMUX_PERMIT[120] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[121] && reg_we && (PINMUX_PERMIT[121] != (PINMUX_PERMIT[121] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[122] && reg_we && (PINMUX_PERMIT[122] != (PINMUX_PERMIT[122] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[123] && reg_we && (PINMUX_PERMIT[123] != (PINMUX_PERMIT[123] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[124] && reg_we && (PINMUX_PERMIT[124] != (PINMUX_PERMIT[124] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[125] && reg_we && (PINMUX_PERMIT[125] != (PINMUX_PERMIT[125] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[126] && reg_we && (PINMUX_PERMIT[126] != (PINMUX_PERMIT[126] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[127] && reg_we && (PINMUX_PERMIT[127] != (PINMUX_PERMIT[127] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[128] && reg_we && (PINMUX_PERMIT[128] != (PINMUX_PERMIT[128] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[129] && reg_we && (PINMUX_PERMIT[129] != (PINMUX_PERMIT[129] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[130] && reg_we && (PINMUX_PERMIT[130] != (PINMUX_PERMIT[130] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[131] && reg_we && (PINMUX_PERMIT[131] != (PINMUX_PERMIT[131] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[132] && reg_we && (PINMUX_PERMIT[132] != (PINMUX_PERMIT[132] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[133] && reg_we && (PINMUX_PERMIT[133] != (PINMUX_PERMIT[133] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[134] && reg_we && (PINMUX_PERMIT[134] != (PINMUX_PERMIT[134] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[135] && reg_we && (PINMUX_PERMIT[135] != (PINMUX_PERMIT[135] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[136] && reg_we && (PINMUX_PERMIT[136] != (PINMUX_PERMIT[136] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[137] && reg_we && (PINMUX_PERMIT[137] != (PINMUX_PERMIT[137] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[138] && reg_we && (PINMUX_PERMIT[138] != (PINMUX_PERMIT[138] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[139] && reg_we && (PINMUX_PERMIT[139] != (PINMUX_PERMIT[139] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[140] && reg_we && (PINMUX_PERMIT[140] != (PINMUX_PERMIT[140] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[141] && reg_we && (PINMUX_PERMIT[141] != (PINMUX_PERMIT[141] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[142] && reg_we && (PINMUX_PERMIT[142] != (PINMUX_PERMIT[142] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[143] && reg_we && (PINMUX_PERMIT[143] != (PINMUX_PERMIT[143] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[144] && reg_we && (PINMUX_PERMIT[144] != (PINMUX_PERMIT[144] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[145] && reg_we && (PINMUX_PERMIT[145] != (PINMUX_PERMIT[145] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[146] && reg_we && (PINMUX_PERMIT[146] != (PINMUX_PERMIT[146] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[147] && reg_we && (PINMUX_PERMIT[147] != (PINMUX_PERMIT[147] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[148] && reg_we && (PINMUX_PERMIT[148] != (PINMUX_PERMIT[148] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[149] && reg_we && (PINMUX_PERMIT[149] != (PINMUX_PERMIT[149] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[150] && reg_we && (PINMUX_PERMIT[150] != (PINMUX_PERMIT[150] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[151] && reg_we && (PINMUX_PERMIT[151] != (PINMUX_PERMIT[151] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[152] && reg_we && (PINMUX_PERMIT[152] != (PINMUX_PERMIT[152] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[153] && reg_we && (PINMUX_PERMIT[153] != (PINMUX_PERMIT[153] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[154] && reg_we && (PINMUX_PERMIT[154] != (PINMUX_PERMIT[154] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[155] && reg_we && (PINMUX_PERMIT[155] != (PINMUX_PERMIT[155] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[156] && reg_we && (PINMUX_PERMIT[156] != (PINMUX_PERMIT[156] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[157] && reg_we && (PINMUX_PERMIT[157] != (PINMUX_PERMIT[157] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[158] && reg_we && (PINMUX_PERMIT[158] != (PINMUX_PERMIT[158] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[159] && reg_we && (PINMUX_PERMIT[159] != (PINMUX_PERMIT[159] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[160] && reg_we && (PINMUX_PERMIT[160] != (PINMUX_PERMIT[160] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[161] && reg_we && (PINMUX_PERMIT[161] != (PINMUX_PERMIT[161] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[162] && reg_we && (PINMUX_PERMIT[162] != (PINMUX_PERMIT[162] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[163] && reg_we && (PINMUX_PERMIT[163] != (PINMUX_PERMIT[163] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[164] && reg_we && (PINMUX_PERMIT[164] != (PINMUX_PERMIT[164] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[165] && reg_we && (PINMUX_PERMIT[165] != (PINMUX_PERMIT[165] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[166] && reg_we && (PINMUX_PERMIT[166] != (PINMUX_PERMIT[166] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[167] && reg_we && (PINMUX_PERMIT[167] != (PINMUX_PERMIT[167] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[168] && reg_we && (PINMUX_PERMIT[168] != (PINMUX_PERMIT[168] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[169] && reg_we && (PINMUX_PERMIT[169] != (PINMUX_PERMIT[169] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[170] && reg_we && (PINMUX_PERMIT[170] != (PINMUX_PERMIT[170] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[171] && reg_we && (PINMUX_PERMIT[171] != (PINMUX_PERMIT[171] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[172] && reg_we && (PINMUX_PERMIT[172] != (PINMUX_PERMIT[172] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[173] && reg_we && (PINMUX_PERMIT[173] != (PINMUX_PERMIT[173] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[174] && reg_we && (PINMUX_PERMIT[174] != (PINMUX_PERMIT[174] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[175] && reg_we && (PINMUX_PERMIT[175] != (PINMUX_PERMIT[175] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[176] && reg_we && (PINMUX_PERMIT[176] != (PINMUX_PERMIT[176] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[177] && reg_we && (PINMUX_PERMIT[177] != (PINMUX_PERMIT[177] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[178] && reg_we && (PINMUX_PERMIT[178] != (PINMUX_PERMIT[178] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[179] && reg_we && (PINMUX_PERMIT[179] != (PINMUX_PERMIT[179] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[180] && reg_we && (PINMUX_PERMIT[180] != (PINMUX_PERMIT[180] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[181] && reg_we && (PINMUX_PERMIT[181] != (PINMUX_PERMIT[181] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[182] && reg_we && (PINMUX_PERMIT[182] != (PINMUX_PERMIT[182] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[183] && reg_we && (PINMUX_PERMIT[183] != (PINMUX_PERMIT[183] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[184] && reg_we && (PINMUX_PERMIT[184] != (PINMUX_PERMIT[184] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[185] && reg_we && (PINMUX_PERMIT[185] != (PINMUX_PERMIT[185] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[186] && reg_we && (PINMUX_PERMIT[186] != (PINMUX_PERMIT[186] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[187] && reg_we && (PINMUX_PERMIT[187] != (PINMUX_PERMIT[187] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[188] && reg_we && (PINMUX_PERMIT[188] != (PINMUX_PERMIT[188] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[189] && reg_we && (PINMUX_PERMIT[189] != (PINMUX_PERMIT[189] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[190] && reg_we && (PINMUX_PERMIT[190] != (PINMUX_PERMIT[190] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[191] && reg_we && (PINMUX_PERMIT[191] != (PINMUX_PERMIT[191] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[192] && reg_we && (PINMUX_PERMIT[192] != (PINMUX_PERMIT[192] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[193] && reg_we && (PINMUX_PERMIT[193] != (PINMUX_PERMIT[193] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[194] && reg_we && (PINMUX_PERMIT[194] != (PINMUX_PERMIT[194] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[195] && reg_we && (PINMUX_PERMIT[195] != (PINMUX_PERMIT[195] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[196] && reg_we && (PINMUX_PERMIT[196] != (PINMUX_PERMIT[196] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[197] && reg_we && (PINMUX_PERMIT[197] != (PINMUX_PERMIT[197] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[198] && reg_we && (PINMUX_PERMIT[198] != (PINMUX_PERMIT[198] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[199] && reg_we && (PINMUX_PERMIT[199] != (PINMUX_PERMIT[199] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[200] && reg_we && (PINMUX_PERMIT[200] != (PINMUX_PERMIT[200] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[201] && reg_we && (PINMUX_PERMIT[201] != (PINMUX_PERMIT[201] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[202] && reg_we && (PINMUX_PERMIT[202] != (PINMUX_PERMIT[202] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[203] && reg_we && (PINMUX_PERMIT[203] != (PINMUX_PERMIT[203] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[204] && reg_we && (PINMUX_PERMIT[204] != (PINMUX_PERMIT[204] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[205] && reg_we && (PINMUX_PERMIT[205] != (PINMUX_PERMIT[205] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[206] && reg_we && (PINMUX_PERMIT[206] != (PINMUX_PERMIT[206] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[207] && reg_we && (PINMUX_PERMIT[207] != (PINMUX_PERMIT[207] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[208] && reg_we && (PINMUX_PERMIT[208] != (PINMUX_PERMIT[208] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[209] && reg_we && (PINMUX_PERMIT[209] != (PINMUX_PERMIT[209] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[210] && reg_we && (PINMUX_PERMIT[210] != (PINMUX_PERMIT[210] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[211] && reg_we && (PINMUX_PERMIT[211] != (PINMUX_PERMIT[211] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[212] && reg_we && (PINMUX_PERMIT[212] != (PINMUX_PERMIT[212] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[213] && reg_we && (PINMUX_PERMIT[213] != (PINMUX_PERMIT[213] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[214] && reg_we && (PINMUX_PERMIT[214] != (PINMUX_PERMIT[214] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[215] && reg_we && (PINMUX_PERMIT[215] != (PINMUX_PERMIT[215] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[216] && reg_we && (PINMUX_PERMIT[216] != (PINMUX_PERMIT[216] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[217] && reg_we && (PINMUX_PERMIT[217] != (PINMUX_PERMIT[217] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[218] && reg_we && (PINMUX_PERMIT[218] != (PINMUX_PERMIT[218] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[219] && reg_we && (PINMUX_PERMIT[219] != (PINMUX_PERMIT[219] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[220] && reg_we && (PINMUX_PERMIT[220] != (PINMUX_PERMIT[220] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[221] && reg_we && (PINMUX_PERMIT[221] != (PINMUX_PERMIT[221] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[222] && reg_we && (PINMUX_PERMIT[222] != (PINMUX_PERMIT[222] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[223] && reg_we && (PINMUX_PERMIT[223] != (PINMUX_PERMIT[223] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[224] && reg_we && (PINMUX_PERMIT[224] != (PINMUX_PERMIT[224] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[225] && reg_we && (PINMUX_PERMIT[225] != (PINMUX_PERMIT[225] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[226] && reg_we && (PINMUX_PERMIT[226] != (PINMUX_PERMIT[226] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[227] && reg_we && (PINMUX_PERMIT[227] != (PINMUX_PERMIT[227] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[228] && reg_we && (PINMUX_PERMIT[228] != (PINMUX_PERMIT[228] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[229] && reg_we && (PINMUX_PERMIT[229] != (PINMUX_PERMIT[229] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[230] && reg_we && (PINMUX_PERMIT[230] != (PINMUX_PERMIT[230] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[231] && reg_we && (PINMUX_PERMIT[231] != (PINMUX_PERMIT[231] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[232] && reg_we && (PINMUX_PERMIT[232] != (PINMUX_PERMIT[232] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[233] && reg_we && (PINMUX_PERMIT[233] != (PINMUX_PERMIT[233] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[234] && reg_we && (PINMUX_PERMIT[234] != (PINMUX_PERMIT[234] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[235] && reg_we && (PINMUX_PERMIT[235] != (PINMUX_PERMIT[235] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[236] && reg_we && (PINMUX_PERMIT[236] != (PINMUX_PERMIT[236] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[237] && reg_we && (PINMUX_PERMIT[237] != (PINMUX_PERMIT[237] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[238] && reg_we && (PINMUX_PERMIT[238] != (PINMUX_PERMIT[238] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[239] && reg_we && (PINMUX_PERMIT[239] != (PINMUX_PERMIT[239] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[240] && reg_we && (PINMUX_PERMIT[240] != (PINMUX_PERMIT[240] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[241] && reg_we && (PINMUX_PERMIT[241] != (PINMUX_PERMIT[241] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[242] && reg_we && (PINMUX_PERMIT[242] != (PINMUX_PERMIT[242] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[243] && reg_we && (PINMUX_PERMIT[243] != (PINMUX_PERMIT[243] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[244] && reg_we && (PINMUX_PERMIT[244] != (PINMUX_PERMIT[244] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[245] && reg_we && (PINMUX_PERMIT[245] != (PINMUX_PERMIT[245] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[246] && reg_we && (PINMUX_PERMIT[246] != (PINMUX_PERMIT[246] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[247] && reg_we && (PINMUX_PERMIT[247] != (PINMUX_PERMIT[247] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[248] && reg_we && (PINMUX_PERMIT[248] != (PINMUX_PERMIT[248] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[249] && reg_we && (PINMUX_PERMIT[249] != (PINMUX_PERMIT[249] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[250] && reg_we && (PINMUX_PERMIT[250] != (PINMUX_PERMIT[250] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[251] && reg_we && (PINMUX_PERMIT[251] != (PINMUX_PERMIT[251] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[252] && reg_we && (PINMUX_PERMIT[252] != (PINMUX_PERMIT[252] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[253] && reg_we && (PINMUX_PERMIT[253] != (PINMUX_PERMIT[253] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[254] && reg_we && (PINMUX_PERMIT[254] != (PINMUX_PERMIT[254] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[255] && reg_we && (PINMUX_PERMIT[255] != (PINMUX_PERMIT[255] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[256] && reg_we && (PINMUX_PERMIT[256] != (PINMUX_PERMIT[256] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[257] && reg_we && (PINMUX_PERMIT[257] != (PINMUX_PERMIT[257] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[258] && reg_we && (PINMUX_PERMIT[258] != (PINMUX_PERMIT[258] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[259] && reg_we && (PINMUX_PERMIT[259] != (PINMUX_PERMIT[259] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[260] && reg_we && (PINMUX_PERMIT[260] != (PINMUX_PERMIT[260] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[261] && reg_we && (PINMUX_PERMIT[261] != (PINMUX_PERMIT[261] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[262] && reg_we && (PINMUX_PERMIT[262] != (PINMUX_PERMIT[262] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[263] && reg_we && (PINMUX_PERMIT[263] != (PINMUX_PERMIT[263] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[264] && reg_we && (PINMUX_PERMIT[264] != (PINMUX_PERMIT[264] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[265] && reg_we && (PINMUX_PERMIT[265] != (PINMUX_PERMIT[265] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[266] && reg_we && (PINMUX_PERMIT[266] != (PINMUX_PERMIT[266] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[267] && reg_we && (PINMUX_PERMIT[267] != (PINMUX_PERMIT[267] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[268] && reg_we && (PINMUX_PERMIT[268] != (PINMUX_PERMIT[268] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[269] && reg_we && (PINMUX_PERMIT[269] != (PINMUX_PERMIT[269] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[270] && reg_we && (PINMUX_PERMIT[270] != (PINMUX_PERMIT[270] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[271] && reg_we && (PINMUX_PERMIT[271] != (PINMUX_PERMIT[271] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[272] && reg_we && (PINMUX_PERMIT[272] != (PINMUX_PERMIT[272] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[273] && reg_we && (PINMUX_PERMIT[273] != (PINMUX_PERMIT[273] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[274] && reg_we && (PINMUX_PERMIT[274] != (PINMUX_PERMIT[274] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[275] && reg_we && (PINMUX_PERMIT[275] != (PINMUX_PERMIT[275] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[276] && reg_we && (PINMUX_PERMIT[276] != (PINMUX_PERMIT[276] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[277] && reg_we && (PINMUX_PERMIT[277] != (PINMUX_PERMIT[277] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[278] && reg_we && (PINMUX_PERMIT[278] != (PINMUX_PERMIT[278] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[279] && reg_we && (PINMUX_PERMIT[279] != (PINMUX_PERMIT[279] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[280] && reg_we && (PINMUX_PERMIT[280] != (PINMUX_PERMIT[280] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[281] && reg_we && (PINMUX_PERMIT[281] != (PINMUX_PERMIT[281] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[282] && reg_we && (PINMUX_PERMIT[282] != (PINMUX_PERMIT[282] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[283] && reg_we && (PINMUX_PERMIT[283] != (PINMUX_PERMIT[283] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[284] && reg_we && (PINMUX_PERMIT[284] != (PINMUX_PERMIT[284] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[285] && reg_we && (PINMUX_PERMIT[285] != (PINMUX_PERMIT[285] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[286] && reg_we && (PINMUX_PERMIT[286] != (PINMUX_PERMIT[286] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[287] && reg_we && (PINMUX_PERMIT[287] != (PINMUX_PERMIT[287] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[288] && reg_we && (PINMUX_PERMIT[288] != (PINMUX_PERMIT[288] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[289] && reg_we && (PINMUX_PERMIT[289] != (PINMUX_PERMIT[289] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[290] && reg_we && (PINMUX_PERMIT[290] != (PINMUX_PERMIT[290] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[291] && reg_we && (PINMUX_PERMIT[291] != (PINMUX_PERMIT[291] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[292] && reg_we && (PINMUX_PERMIT[292] != (PINMUX_PERMIT[292] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[293] && reg_we && (PINMUX_PERMIT[293] != (PINMUX_PERMIT[293] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[294] && reg_we && (PINMUX_PERMIT[294] != (PINMUX_PERMIT[294] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[295] && reg_we && (PINMUX_PERMIT[295] != (PINMUX_PERMIT[295] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[296] && reg_we && (PINMUX_PERMIT[296] != (PINMUX_PERMIT[296] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[297] && reg_we && (PINMUX_PERMIT[297] != (PINMUX_PERMIT[297] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[298] && reg_we && (PINMUX_PERMIT[298] != (PINMUX_PERMIT[298] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[299] && reg_we && (PINMUX_PERMIT[299] != (PINMUX_PERMIT[299] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[300] && reg_we && (PINMUX_PERMIT[300] != (PINMUX_PERMIT[300] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[301] && reg_we && (PINMUX_PERMIT[301] != (PINMUX_PERMIT[301] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[302] && reg_we && (PINMUX_PERMIT[302] != (PINMUX_PERMIT[302] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[303] && reg_we && (PINMUX_PERMIT[303] != (PINMUX_PERMIT[303] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[304] && reg_we && (PINMUX_PERMIT[304] != (PINMUX_PERMIT[304] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[305] && reg_we && (PINMUX_PERMIT[305] != (PINMUX_PERMIT[305] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[306] && reg_we && (PINMUX_PERMIT[306] != (PINMUX_PERMIT[306] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[307] && reg_we && (PINMUX_PERMIT[307] != (PINMUX_PERMIT[307] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[308] && reg_we && (PINMUX_PERMIT[308] != (PINMUX_PERMIT[308] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[309] && reg_we && (PINMUX_PERMIT[309] != (PINMUX_PERMIT[309] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[310] && reg_we && (PINMUX_PERMIT[310] != (PINMUX_PERMIT[310] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[311] && reg_we && (PINMUX_PERMIT[311] != (PINMUX_PERMIT[311] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[312] && reg_we && (PINMUX_PERMIT[312] != (PINMUX_PERMIT[312] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[313] && reg_we && (PINMUX_PERMIT[313] != (PINMUX_PERMIT[313] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[314] && reg_we && (PINMUX_PERMIT[314] != (PINMUX_PERMIT[314] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[315] && reg_we && (PINMUX_PERMIT[315] != (PINMUX_PERMIT[315] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[316] && reg_we && (PINMUX_PERMIT[316] != (PINMUX_PERMIT[316] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[317] && reg_we && (PINMUX_PERMIT[317] != (PINMUX_PERMIT[317] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[318] && reg_we && (PINMUX_PERMIT[318] != (PINMUX_PERMIT[318] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[319] && reg_we && (PINMUX_PERMIT[319] != (PINMUX_PERMIT[319] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[320] && reg_we && (PINMUX_PERMIT[320] != (PINMUX_PERMIT[320] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[321] && reg_we && (PINMUX_PERMIT[321] != (PINMUX_PERMIT[321] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[322] && reg_we && (PINMUX_PERMIT[322] != (PINMUX_PERMIT[322] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[323] && reg_we && (PINMUX_PERMIT[323] != (PINMUX_PERMIT[323] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[324] && reg_we && (PINMUX_PERMIT[324] != (PINMUX_PERMIT[324] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[325] && reg_we && (PINMUX_PERMIT[325] != (PINMUX_PERMIT[325] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[326] && reg_we && (PINMUX_PERMIT[326] != (PINMUX_PERMIT[326] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[327] && reg_we && (PINMUX_PERMIT[327] != (PINMUX_PERMIT[327] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[328] && reg_we && (PINMUX_PERMIT[328] != (PINMUX_PERMIT[328] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[329] && reg_we && (PINMUX_PERMIT[329] != (PINMUX_PERMIT[329] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[330] && reg_we && (PINMUX_PERMIT[330] != (PINMUX_PERMIT[330] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[331] && reg_we && (PINMUX_PERMIT[331] != (PINMUX_PERMIT[331] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[332] && reg_we && (PINMUX_PERMIT[332] != (PINMUX_PERMIT[332] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[333] && reg_we && (PINMUX_PERMIT[333] != (PINMUX_PERMIT[333] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[334] && reg_we && (PINMUX_PERMIT[334] != (PINMUX_PERMIT[334] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[335] && reg_we && (PINMUX_PERMIT[335] != (PINMUX_PERMIT[335] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[336] && reg_we && (PINMUX_PERMIT[336] != (PINMUX_PERMIT[336] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[337] && reg_we && (PINMUX_PERMIT[337] != (PINMUX_PERMIT[337] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[338] && reg_we && (PINMUX_PERMIT[338] != (PINMUX_PERMIT[338] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[339] && reg_we && (PINMUX_PERMIT[339] != (PINMUX_PERMIT[339] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[340] && reg_we && (PINMUX_PERMIT[340] != (PINMUX_PERMIT[340] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[341] && reg_we && (PINMUX_PERMIT[341] != (PINMUX_PERMIT[341] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[342] && reg_we && (PINMUX_PERMIT[342] != (PINMUX_PERMIT[342] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[343] && reg_we && (PINMUX_PERMIT[343] != (PINMUX_PERMIT[343] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[344] && reg_we && (PINMUX_PERMIT[344] != (PINMUX_PERMIT[344] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[345] && reg_we && (PINMUX_PERMIT[345] != (PINMUX_PERMIT[345] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[346] && reg_we && (PINMUX_PERMIT[346] != (PINMUX_PERMIT[346] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[347] && reg_we && (PINMUX_PERMIT[347] != (PINMUX_PERMIT[347] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[348] && reg_we && (PINMUX_PERMIT[348] != (PINMUX_PERMIT[348] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[349] && reg_we && (PINMUX_PERMIT[349] != (PINMUX_PERMIT[349] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[350] && reg_we && (PINMUX_PERMIT[350] != (PINMUX_PERMIT[350] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[351] && reg_we && (PINMUX_PERMIT[351] != (PINMUX_PERMIT[351] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[352] && reg_we && (PINMUX_PERMIT[352] != (PINMUX_PERMIT[352] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[353] && reg_we && (PINMUX_PERMIT[353] != (PINMUX_PERMIT[353] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[354] && reg_we && (PINMUX_PERMIT[354] != (PINMUX_PERMIT[354] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[355] && reg_we && (PINMUX_PERMIT[355] != (PINMUX_PERMIT[355] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[356] && reg_we && (PINMUX_PERMIT[356] != (PINMUX_PERMIT[356] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[357] && reg_we && (PINMUX_PERMIT[357] != (PINMUX_PERMIT[357] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[358] && reg_we && (PINMUX_PERMIT[358] != (PINMUX_PERMIT[358] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[359] && reg_we && (PINMUX_PERMIT[359] != (PINMUX_PERMIT[359] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[360] && reg_we && (PINMUX_PERMIT[360] != (PINMUX_PERMIT[360] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[361] && reg_we && (PINMUX_PERMIT[361] != (PINMUX_PERMIT[361] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[362] && reg_we && (PINMUX_PERMIT[362] != (PINMUX_PERMIT[362] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[363] && reg_we && (PINMUX_PERMIT[363] != (PINMUX_PERMIT[363] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[364] && reg_we && (PINMUX_PERMIT[364] != (PINMUX_PERMIT[364] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[365] && reg_we && (PINMUX_PERMIT[365] != (PINMUX_PERMIT[365] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[366] && reg_we && (PINMUX_PERMIT[366] != (PINMUX_PERMIT[366] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[367] && reg_we && (PINMUX_PERMIT[367] != (PINMUX_PERMIT[367] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[368] && reg_we && (PINMUX_PERMIT[368] != (PINMUX_PERMIT[368] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[369] && reg_we && (PINMUX_PERMIT[369] != (PINMUX_PERMIT[369] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[370] && reg_we && (PINMUX_PERMIT[370] != (PINMUX_PERMIT[370] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[371] && reg_we && (PINMUX_PERMIT[371] != (PINMUX_PERMIT[371] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[372] && reg_we && (PINMUX_PERMIT[372] != (PINMUX_PERMIT[372] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[373] && reg_we && (PINMUX_PERMIT[373] != (PINMUX_PERMIT[373] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[374] && reg_we && (PINMUX_PERMIT[374] != (PINMUX_PERMIT[374] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[375] && reg_we && (PINMUX_PERMIT[375] != (PINMUX_PERMIT[375] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[376] && reg_we && (PINMUX_PERMIT[376] != (PINMUX_PERMIT[376] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[377] && reg_we && (PINMUX_PERMIT[377] != (PINMUX_PERMIT[377] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[378] && reg_we && (PINMUX_PERMIT[378] != (PINMUX_PERMIT[378] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[379] && reg_we && (PINMUX_PERMIT[379] != (PINMUX_PERMIT[379] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[380] && reg_we && (PINMUX_PERMIT[380] != (PINMUX_PERMIT[380] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[381] && reg_we && (PINMUX_PERMIT[381] != (PINMUX_PERMIT[381] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[382] && reg_we && (PINMUX_PERMIT[382] != (PINMUX_PERMIT[382] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[383] && reg_we && (PINMUX_PERMIT[383] != (PINMUX_PERMIT[383] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[384] && reg_we && (PINMUX_PERMIT[384] != (PINMUX_PERMIT[384] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[385] && reg_we && (PINMUX_PERMIT[385] != (PINMUX_PERMIT[385] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[386] && reg_we && (PINMUX_PERMIT[386] != (PINMUX_PERMIT[386] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[387] && reg_we && (PINMUX_PERMIT[387] != (PINMUX_PERMIT[387] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[388] && reg_we && (PINMUX_PERMIT[388] != (PINMUX_PERMIT[388] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[389] && reg_we && (PINMUX_PERMIT[389] != (PINMUX_PERMIT[389] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[390] && reg_we && (PINMUX_PERMIT[390] != (PINMUX_PERMIT[390] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[391] && reg_we && (PINMUX_PERMIT[391] != (PINMUX_PERMIT[391] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[392] && reg_we && (PINMUX_PERMIT[392] != (PINMUX_PERMIT[392] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[393] && reg_we && (PINMUX_PERMIT[393] != (PINMUX_PERMIT[393] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[394] && reg_we && (PINMUX_PERMIT[394] != (PINMUX_PERMIT[394] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[395] && reg_we && (PINMUX_PERMIT[395] != (PINMUX_PERMIT[395] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[396] && reg_we && (PINMUX_PERMIT[396] != (PINMUX_PERMIT[396] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[397] && reg_we && (PINMUX_PERMIT[397] != (PINMUX_PERMIT[397] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[398] && reg_we && (PINMUX_PERMIT[398] != (PINMUX_PERMIT[398] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[399] && reg_we && (PINMUX_PERMIT[399] != (PINMUX_PERMIT[399] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[400] && reg_we && (PINMUX_PERMIT[400] != (PINMUX_PERMIT[400] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[401] && reg_we && (PINMUX_PERMIT[401] != (PINMUX_PERMIT[401] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[402] && reg_we && (PINMUX_PERMIT[402] != (PINMUX_PERMIT[402] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[403] && reg_we && (PINMUX_PERMIT[403] != (PINMUX_PERMIT[403] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[404] && reg_we && (PINMUX_PERMIT[404] != (PINMUX_PERMIT[404] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[405] && reg_we && (PINMUX_PERMIT[405] != (PINMUX_PERMIT[405] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[406] && reg_we && (PINMUX_PERMIT[406] != (PINMUX_PERMIT[406] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[407] && reg_we && (PINMUX_PERMIT[407] != (PINMUX_PERMIT[407] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[408] && reg_we && (PINMUX_PERMIT[408] != (PINMUX_PERMIT[408] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[409] && reg_we && (PINMUX_PERMIT[409] != (PINMUX_PERMIT[409] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[410] && reg_we && (PINMUX_PERMIT[410] != (PINMUX_PERMIT[410] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[411] && reg_we && (PINMUX_PERMIT[411] != (PINMUX_PERMIT[411] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[412] && reg_we && (PINMUX_PERMIT[412] != (PINMUX_PERMIT[412] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[413] && reg_we && (PINMUX_PERMIT[413] != (PINMUX_PERMIT[413] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[414] && reg_we && (PINMUX_PERMIT[414] != (PINMUX_PERMIT[414] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[415] && reg_we && (PINMUX_PERMIT[415] != (PINMUX_PERMIT[415] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[416] && reg_we && (PINMUX_PERMIT[416] != (PINMUX_PERMIT[416] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[417] && reg_we && (PINMUX_PERMIT[417] != (PINMUX_PERMIT[417] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[418] && reg_we && (PINMUX_PERMIT[418] != (PINMUX_PERMIT[418] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[419] && reg_we && (PINMUX_PERMIT[419] != (PINMUX_PERMIT[419] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[420] && reg_we && (PINMUX_PERMIT[420] != (PINMUX_PERMIT[420] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[421] && reg_we && (PINMUX_PERMIT[421] != (PINMUX_PERMIT[421] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[422] && reg_we && (PINMUX_PERMIT[422] != (PINMUX_PERMIT[422] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[423] && reg_we && (PINMUX_PERMIT[423] != (PINMUX_PERMIT[423] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[424] && reg_we && (PINMUX_PERMIT[424] != (PINMUX_PERMIT[424] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[425] && reg_we && (PINMUX_PERMIT[425] != (PINMUX_PERMIT[425] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[426] && reg_we && (PINMUX_PERMIT[426] != (PINMUX_PERMIT[426] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[427] && reg_we && (PINMUX_PERMIT[427] != (PINMUX_PERMIT[427] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[428] && reg_we && (PINMUX_PERMIT[428] != (PINMUX_PERMIT[428] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[429] && reg_we && (PINMUX_PERMIT[429] != (PINMUX_PERMIT[429] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[430] && reg_we && (PINMUX_PERMIT[430] != (PINMUX_PERMIT[430] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[431] && reg_we && (PINMUX_PERMIT[431] != (PINMUX_PERMIT[431] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[432] && reg_we && (PINMUX_PERMIT[432] != (PINMUX_PERMIT[432] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[433] && reg_we && (PINMUX_PERMIT[433] != (PINMUX_PERMIT[433] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[434] && reg_we && (PINMUX_PERMIT[434] != (PINMUX_PERMIT[434] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[435] && reg_we && (PINMUX_PERMIT[435] != (PINMUX_PERMIT[435] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[436] && reg_we && (PINMUX_PERMIT[436] != (PINMUX_PERMIT[436] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[437] && reg_we && (PINMUX_PERMIT[437] != (PINMUX_PERMIT[437] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[438] && reg_we && (PINMUX_PERMIT[438] != (PINMUX_PERMIT[438] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[439] && reg_we && (PINMUX_PERMIT[439] != (PINMUX_PERMIT[439] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[440] && reg_we && (PINMUX_PERMIT[440] != (PINMUX_PERMIT[440] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[441] && reg_we && (PINMUX_PERMIT[441] != (PINMUX_PERMIT[441] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[442] && reg_we && (PINMUX_PERMIT[442] != (PINMUX_PERMIT[442] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[443] && reg_we && (PINMUX_PERMIT[443] != (PINMUX_PERMIT[443] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[444] && reg_we && (PINMUX_PERMIT[444] != (PINMUX_PERMIT[444] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[445] && reg_we && (PINMUX_PERMIT[445] != (PINMUX_PERMIT[445] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[446] && reg_we && (PINMUX_PERMIT[446] != (PINMUX_PERMIT[446] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[447] && reg_we && (PINMUX_PERMIT[447] != (PINMUX_PERMIT[447] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[448] && reg_we && (PINMUX_PERMIT[448] != (PINMUX_PERMIT[448] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[449] && reg_we && (PINMUX_PERMIT[449] != (PINMUX_PERMIT[449] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[450] && reg_we && (PINMUX_PERMIT[450] != (PINMUX_PERMIT[450] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[451] && reg_we && (PINMUX_PERMIT[451] != (PINMUX_PERMIT[451] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[452] && reg_we && (PINMUX_PERMIT[452] != (PINMUX_PERMIT[452] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[453] && reg_we && (PINMUX_PERMIT[453] != (PINMUX_PERMIT[453] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[454] && reg_we && (PINMUX_PERMIT[454] != (PINMUX_PERMIT[454] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[455] && reg_we && (PINMUX_PERMIT[455] != (PINMUX_PERMIT[455] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[456] && reg_we && (PINMUX_PERMIT[456] != (PINMUX_PERMIT[456] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[457] && reg_we && (PINMUX_PERMIT[457] != (PINMUX_PERMIT[457] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[458] && reg_we && (PINMUX_PERMIT[458] != (PINMUX_PERMIT[458] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[459] && reg_we && (PINMUX_PERMIT[459] != (PINMUX_PERMIT[459] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[460] && reg_we && (PINMUX_PERMIT[460] != (PINMUX_PERMIT[460] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[461] && reg_we && (PINMUX_PERMIT[461] != (PINMUX_PERMIT[461] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[462] && reg_we && (PINMUX_PERMIT[462] != (PINMUX_PERMIT[462] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[463] && reg_we && (PINMUX_PERMIT[463] != (PINMUX_PERMIT[463] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[464] && reg_we && (PINMUX_PERMIT[464] != (PINMUX_PERMIT[464] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[465] && reg_we && (PINMUX_PERMIT[465] != (PINMUX_PERMIT[465] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[466] && reg_we && (PINMUX_PERMIT[466] != (PINMUX_PERMIT[466] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[467] && reg_we && (PINMUX_PERMIT[467] != (PINMUX_PERMIT[467] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[468] && reg_we && (PINMUX_PERMIT[468] != (PINMUX_PERMIT[468] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[469] && reg_we && (PINMUX_PERMIT[469] != (PINMUX_PERMIT[469] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[470] && reg_we && (PINMUX_PERMIT[470] != (PINMUX_PERMIT[470] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[471] && reg_we && (PINMUX_PERMIT[471] != (PINMUX_PERMIT[471] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[472] && reg_we && (PINMUX_PERMIT[472] != (PINMUX_PERMIT[472] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[473] && reg_we && (PINMUX_PERMIT[473] != (PINMUX_PERMIT[473] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[474] && reg_we && (PINMUX_PERMIT[474] != (PINMUX_PERMIT[474] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[475] && reg_we && (PINMUX_PERMIT[475] != (PINMUX_PERMIT[475] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[476] && reg_we && (PINMUX_PERMIT[476] != (PINMUX_PERMIT[476] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[477] && reg_we && (PINMUX_PERMIT[477] != (PINMUX_PERMIT[477] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[478] && reg_we && (PINMUX_PERMIT[478] != (PINMUX_PERMIT[478] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[479] && reg_we && (PINMUX_PERMIT[479] != (PINMUX_PERMIT[479] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[480] && reg_we && (PINMUX_PERMIT[480] != (PINMUX_PERMIT[480] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[481] && reg_we && (PINMUX_PERMIT[481] != (PINMUX_PERMIT[481] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[482] && reg_we && (PINMUX_PERMIT[482] != (PINMUX_PERMIT[482] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[483] && reg_we && (PINMUX_PERMIT[483] != (PINMUX_PERMIT[483] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[484] && reg_we && (PINMUX_PERMIT[484] != (PINMUX_PERMIT[484] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[485] && reg_we && (PINMUX_PERMIT[485] != (PINMUX_PERMIT[485] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[486] && reg_we && (PINMUX_PERMIT[486] != (PINMUX_PERMIT[486] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[487] && reg_we && (PINMUX_PERMIT[487] != (PINMUX_PERMIT[487] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[488] && reg_we && (PINMUX_PERMIT[488] != (PINMUX_PERMIT[488] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[489] && reg_we && (PINMUX_PERMIT[489] != (PINMUX_PERMIT[489] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[490] && reg_we && (PINMUX_PERMIT[490] != (PINMUX_PERMIT[490] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[491] && reg_we && (PINMUX_PERMIT[491] != (PINMUX_PERMIT[491] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[492] && reg_we && (PINMUX_PERMIT[492] != (PINMUX_PERMIT[492] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[493] && reg_we && (PINMUX_PERMIT[493] != (PINMUX_PERMIT[493] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[494] && reg_we && (PINMUX_PERMIT[494] != (PINMUX_PERMIT[494] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[495] && reg_we && (PINMUX_PERMIT[495] != (PINMUX_PERMIT[495] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[496] && reg_we && (PINMUX_PERMIT[496] != (PINMUX_PERMIT[496] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[497] && reg_we && (PINMUX_PERMIT[497] != (PINMUX_PERMIT[497] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[498] && reg_we && (PINMUX_PERMIT[498] != (PINMUX_PERMIT[498] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[499] && reg_we && (PINMUX_PERMIT[499] != (PINMUX_PERMIT[499] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[500] && reg_we && (PINMUX_PERMIT[500] != (PINMUX_PERMIT[500] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[501] && reg_we && (PINMUX_PERMIT[501] != (PINMUX_PERMIT[501] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[502] && reg_we && (PINMUX_PERMIT[502] != (PINMUX_PERMIT[502] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[503] && reg_we && (PINMUX_PERMIT[503] != (PINMUX_PERMIT[503] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[504] && reg_we && (PINMUX_PERMIT[504] != (PINMUX_PERMIT[504] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[505] && reg_we && (PINMUX_PERMIT[505] != (PINMUX_PERMIT[505] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[506] && reg_we && (PINMUX_PERMIT[506] != (PINMUX_PERMIT[506] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[507] && reg_we && (PINMUX_PERMIT[507] != (PINMUX_PERMIT[507] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[508] && reg_we && (PINMUX_PERMIT[508] != (PINMUX_PERMIT[508] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[509] && reg_we && (PINMUX_PERMIT[509] != (PINMUX_PERMIT[509] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[510] && reg_we && (PINMUX_PERMIT[510] != (PINMUX_PERMIT[510] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[511] && reg_we && (PINMUX_PERMIT[511] != (PINMUX_PERMIT[511] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[512] && reg_we && (PINMUX_PERMIT[512] != (PINMUX_PERMIT[512] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[513] && reg_we && (PINMUX_PERMIT[513] != (PINMUX_PERMIT[513] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[514] && reg_we && (PINMUX_PERMIT[514] != (PINMUX_PERMIT[514] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[515] && reg_we && (PINMUX_PERMIT[515] != (PINMUX_PERMIT[515] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[516] && reg_we && (PINMUX_PERMIT[516] != (PINMUX_PERMIT[516] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[517] && reg_we && (PINMUX_PERMIT[517] != (PINMUX_PERMIT[517] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[518] && reg_we && (PINMUX_PERMIT[518] != (PINMUX_PERMIT[518] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[519] && reg_we && (PINMUX_PERMIT[519] != (PINMUX_PERMIT[519] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[520] && reg_we && (PINMUX_PERMIT[520] != (PINMUX_PERMIT[520] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[521] && reg_we && (PINMUX_PERMIT[521] != (PINMUX_PERMIT[521] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[522] && reg_we && (PINMUX_PERMIT[522] != (PINMUX_PERMIT[522] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[523] && reg_we && (PINMUX_PERMIT[523] != (PINMUX_PERMIT[523] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[524] && reg_we && (PINMUX_PERMIT[524] != (PINMUX_PERMIT[524] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[525] && reg_we && (PINMUX_PERMIT[525] != (PINMUX_PERMIT[525] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[526] && reg_we && (PINMUX_PERMIT[526] != (PINMUX_PERMIT[526] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[527] && reg_we && (PINMUX_PERMIT[527] != (PINMUX_PERMIT[527] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[528] && reg_we && (PINMUX_PERMIT[528] != (PINMUX_PERMIT[528] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[529] && reg_we && (PINMUX_PERMIT[529] != (PINMUX_PERMIT[529] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[530] && reg_we && (PINMUX_PERMIT[530] != (PINMUX_PERMIT[530] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[531] && reg_we && (PINMUX_PERMIT[531] != (PINMUX_PERMIT[531] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[532] && reg_we && (PINMUX_PERMIT[532] != (PINMUX_PERMIT[532] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[533] && reg_we && (PINMUX_PERMIT[533] != (PINMUX_PERMIT[533] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[534] && reg_we && (PINMUX_PERMIT[534] != (PINMUX_PERMIT[534] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[535] && reg_we && (PINMUX_PERMIT[535] != (PINMUX_PERMIT[535] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[536] && reg_we && (PINMUX_PERMIT[536] != (PINMUX_PERMIT[536] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[537] && reg_we && (PINMUX_PERMIT[537] != (PINMUX_PERMIT[537] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[538] && reg_we && (PINMUX_PERMIT[538] != (PINMUX_PERMIT[538] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[539] && reg_we && (PINMUX_PERMIT[539] != (PINMUX_PERMIT[539] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[540] && reg_we && (PINMUX_PERMIT[540] != (PINMUX_PERMIT[540] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[541] && reg_we && (PINMUX_PERMIT[541] != (PINMUX_PERMIT[541] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[542] && reg_we && (PINMUX_PERMIT[542] != (PINMUX_PERMIT[542] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[543] && reg_we && (PINMUX_PERMIT[543] != (PINMUX_PERMIT[543] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[544] && reg_we && (PINMUX_PERMIT[544] != (PINMUX_PERMIT[544] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[545] && reg_we && (PINMUX_PERMIT[545] != (PINMUX_PERMIT[545] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[546] && reg_we && (PINMUX_PERMIT[546] != (PINMUX_PERMIT[546] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[547] && reg_we && (PINMUX_PERMIT[547] != (PINMUX_PERMIT[547] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[548] && reg_we && (PINMUX_PERMIT[548] != (PINMUX_PERMIT[548] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[549] && reg_we && (PINMUX_PERMIT[549] != (PINMUX_PERMIT[549] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[550] && reg_we && (PINMUX_PERMIT[550] != (PINMUX_PERMIT[550] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[551] && reg_we && (PINMUX_PERMIT[551] != (PINMUX_PERMIT[551] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[552] && reg_we && (PINMUX_PERMIT[552] != (PINMUX_PERMIT[552] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[553] && reg_we && (PINMUX_PERMIT[553] != (PINMUX_PERMIT[553] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[554] && reg_we && (PINMUX_PERMIT[554] != (PINMUX_PERMIT[554] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[555] && reg_we && (PINMUX_PERMIT[555] != (PINMUX_PERMIT[555] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[556] && reg_we && (PINMUX_PERMIT[556] != (PINMUX_PERMIT[556] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[557] && reg_we && (PINMUX_PERMIT[557] != (PINMUX_PERMIT[557] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[558] && reg_we && (PINMUX_PERMIT[558] != (PINMUX_PERMIT[558] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[559] && reg_we && (PINMUX_PERMIT[559] != (PINMUX_PERMIT[559] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[560] && reg_we && (PINMUX_PERMIT[560] != (PINMUX_PERMIT[560] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[561] && reg_we && (PINMUX_PERMIT[561] != (PINMUX_PERMIT[561] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[562] && reg_we && (PINMUX_PERMIT[562] != (PINMUX_PERMIT[562] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[563] && reg_we && (PINMUX_PERMIT[563] != (PINMUX_PERMIT[563] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[564] && reg_we && (PINMUX_PERMIT[564] != (PINMUX_PERMIT[564] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[565] && reg_we && (PINMUX_PERMIT[565] != (PINMUX_PERMIT[565] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[566] && reg_we && (PINMUX_PERMIT[566] != (PINMUX_PERMIT[566] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[567] && reg_we && (PINMUX_PERMIT[567] != (PINMUX_PERMIT[567] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[568] && reg_we && (PINMUX_PERMIT[568] != (PINMUX_PERMIT[568] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[569] && reg_we && (PINMUX_PERMIT[569] != (PINMUX_PERMIT[569] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[570] && reg_we && (PINMUX_PERMIT[570] != (PINMUX_PERMIT[570] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[571] && reg_we && (PINMUX_PERMIT[571] != (PINMUX_PERMIT[571] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[572] && reg_we && (PINMUX_PERMIT[572] != (PINMUX_PERMIT[572] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[573] && reg_we && (PINMUX_PERMIT[573] != (PINMUX_PERMIT[573] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[574] && reg_we && (PINMUX_PERMIT[574] != (PINMUX_PERMIT[574] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[575] && reg_we && (PINMUX_PERMIT[575] != (PINMUX_PERMIT[575] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[576] && reg_we && (PINMUX_PERMIT[576] != (PINMUX_PERMIT[576] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[577] && reg_we && (PINMUX_PERMIT[577] != (PINMUX_PERMIT[577] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[578] && reg_we && (PINMUX_PERMIT[578] != (PINMUX_PERMIT[578] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[579] && reg_we && (PINMUX_PERMIT[579] != (PINMUX_PERMIT[579] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[580] && reg_we && (PINMUX_PERMIT[580] != (PINMUX_PERMIT[580] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[581] && reg_we && (PINMUX_PERMIT[581] != (PINMUX_PERMIT[581] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[582] && reg_we && (PINMUX_PERMIT[582] != (PINMUX_PERMIT[582] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[583] && reg_we && (PINMUX_PERMIT[583] != (PINMUX_PERMIT[583] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[584] && reg_we && (PINMUX_PERMIT[584] != (PINMUX_PERMIT[584] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[585] && reg_we && (PINMUX_PERMIT[585] != (PINMUX_PERMIT[585] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[586] && reg_we && (PINMUX_PERMIT[586] != (PINMUX_PERMIT[586] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[587] && reg_we && (PINMUX_PERMIT[587] != (PINMUX_PERMIT[587] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[588] && reg_we && (PINMUX_PERMIT[588] != (PINMUX_PERMIT[588] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[589] && reg_we && (PINMUX_PERMIT[589] != (PINMUX_PERMIT[589] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[590] && reg_we && (PINMUX_PERMIT[590] != (PINMUX_PERMIT[590] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[591] && reg_we && (PINMUX_PERMIT[591] != (PINMUX_PERMIT[591] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[592] && reg_we && (PINMUX_PERMIT[592] != (PINMUX_PERMIT[592] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[593] && reg_we && (PINMUX_PERMIT[593] != (PINMUX_PERMIT[593] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[594] && reg_we && (PINMUX_PERMIT[594] != (PINMUX_PERMIT[594] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[595] && reg_we && (PINMUX_PERMIT[595] != (PINMUX_PERMIT[595] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[596] && reg_we && (PINMUX_PERMIT[596] != (PINMUX_PERMIT[596] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[597] && reg_we && (PINMUX_PERMIT[597] != (PINMUX_PERMIT[597] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[598] && reg_we && (PINMUX_PERMIT[598] != (PINMUX_PERMIT[598] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[599] && reg_we && (PINMUX_PERMIT[599] != (PINMUX_PERMIT[599] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[600] && reg_we && (PINMUX_PERMIT[600] != (PINMUX_PERMIT[600] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[601] && reg_we && (PINMUX_PERMIT[601] != (PINMUX_PERMIT[601] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[602] && reg_we && (PINMUX_PERMIT[602] != (PINMUX_PERMIT[602] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[  0] & (|(PINMUX_PERMIT[  0] & ~reg_be))) |
+               (addr_hit[  1] & (|(PINMUX_PERMIT[  1] & ~reg_be))) |
+               (addr_hit[  2] & (|(PINMUX_PERMIT[  2] & ~reg_be))) |
+               (addr_hit[  3] & (|(PINMUX_PERMIT[  3] & ~reg_be))) |
+               (addr_hit[  4] & (|(PINMUX_PERMIT[  4] & ~reg_be))) |
+               (addr_hit[  5] & (|(PINMUX_PERMIT[  5] & ~reg_be))) |
+               (addr_hit[  6] & (|(PINMUX_PERMIT[  6] & ~reg_be))) |
+               (addr_hit[  7] & (|(PINMUX_PERMIT[  7] & ~reg_be))) |
+               (addr_hit[  8] & (|(PINMUX_PERMIT[  8] & ~reg_be))) |
+               (addr_hit[  9] & (|(PINMUX_PERMIT[  9] & ~reg_be))) |
+               (addr_hit[ 10] & (|(PINMUX_PERMIT[ 10] & ~reg_be))) |
+               (addr_hit[ 11] & (|(PINMUX_PERMIT[ 11] & ~reg_be))) |
+               (addr_hit[ 12] & (|(PINMUX_PERMIT[ 12] & ~reg_be))) |
+               (addr_hit[ 13] & (|(PINMUX_PERMIT[ 13] & ~reg_be))) |
+               (addr_hit[ 14] & (|(PINMUX_PERMIT[ 14] & ~reg_be))) |
+               (addr_hit[ 15] & (|(PINMUX_PERMIT[ 15] & ~reg_be))) |
+               (addr_hit[ 16] & (|(PINMUX_PERMIT[ 16] & ~reg_be))) |
+               (addr_hit[ 17] & (|(PINMUX_PERMIT[ 17] & ~reg_be))) |
+               (addr_hit[ 18] & (|(PINMUX_PERMIT[ 18] & ~reg_be))) |
+               (addr_hit[ 19] & (|(PINMUX_PERMIT[ 19] & ~reg_be))) |
+               (addr_hit[ 20] & (|(PINMUX_PERMIT[ 20] & ~reg_be))) |
+               (addr_hit[ 21] & (|(PINMUX_PERMIT[ 21] & ~reg_be))) |
+               (addr_hit[ 22] & (|(PINMUX_PERMIT[ 22] & ~reg_be))) |
+               (addr_hit[ 23] & (|(PINMUX_PERMIT[ 23] & ~reg_be))) |
+               (addr_hit[ 24] & (|(PINMUX_PERMIT[ 24] & ~reg_be))) |
+               (addr_hit[ 25] & (|(PINMUX_PERMIT[ 25] & ~reg_be))) |
+               (addr_hit[ 26] & (|(PINMUX_PERMIT[ 26] & ~reg_be))) |
+               (addr_hit[ 27] & (|(PINMUX_PERMIT[ 27] & ~reg_be))) |
+               (addr_hit[ 28] & (|(PINMUX_PERMIT[ 28] & ~reg_be))) |
+               (addr_hit[ 29] & (|(PINMUX_PERMIT[ 29] & ~reg_be))) |
+               (addr_hit[ 30] & (|(PINMUX_PERMIT[ 30] & ~reg_be))) |
+               (addr_hit[ 31] & (|(PINMUX_PERMIT[ 31] & ~reg_be))) |
+               (addr_hit[ 32] & (|(PINMUX_PERMIT[ 32] & ~reg_be))) |
+               (addr_hit[ 33] & (|(PINMUX_PERMIT[ 33] & ~reg_be))) |
+               (addr_hit[ 34] & (|(PINMUX_PERMIT[ 34] & ~reg_be))) |
+               (addr_hit[ 35] & (|(PINMUX_PERMIT[ 35] & ~reg_be))) |
+               (addr_hit[ 36] & (|(PINMUX_PERMIT[ 36] & ~reg_be))) |
+               (addr_hit[ 37] & (|(PINMUX_PERMIT[ 37] & ~reg_be))) |
+               (addr_hit[ 38] & (|(PINMUX_PERMIT[ 38] & ~reg_be))) |
+               (addr_hit[ 39] & (|(PINMUX_PERMIT[ 39] & ~reg_be))) |
+               (addr_hit[ 40] & (|(PINMUX_PERMIT[ 40] & ~reg_be))) |
+               (addr_hit[ 41] & (|(PINMUX_PERMIT[ 41] & ~reg_be))) |
+               (addr_hit[ 42] & (|(PINMUX_PERMIT[ 42] & ~reg_be))) |
+               (addr_hit[ 43] & (|(PINMUX_PERMIT[ 43] & ~reg_be))) |
+               (addr_hit[ 44] & (|(PINMUX_PERMIT[ 44] & ~reg_be))) |
+               (addr_hit[ 45] & (|(PINMUX_PERMIT[ 45] & ~reg_be))) |
+               (addr_hit[ 46] & (|(PINMUX_PERMIT[ 46] & ~reg_be))) |
+               (addr_hit[ 47] & (|(PINMUX_PERMIT[ 47] & ~reg_be))) |
+               (addr_hit[ 48] & (|(PINMUX_PERMIT[ 48] & ~reg_be))) |
+               (addr_hit[ 49] & (|(PINMUX_PERMIT[ 49] & ~reg_be))) |
+               (addr_hit[ 50] & (|(PINMUX_PERMIT[ 50] & ~reg_be))) |
+               (addr_hit[ 51] & (|(PINMUX_PERMIT[ 51] & ~reg_be))) |
+               (addr_hit[ 52] & (|(PINMUX_PERMIT[ 52] & ~reg_be))) |
+               (addr_hit[ 53] & (|(PINMUX_PERMIT[ 53] & ~reg_be))) |
+               (addr_hit[ 54] & (|(PINMUX_PERMIT[ 54] & ~reg_be))) |
+               (addr_hit[ 55] & (|(PINMUX_PERMIT[ 55] & ~reg_be))) |
+               (addr_hit[ 56] & (|(PINMUX_PERMIT[ 56] & ~reg_be))) |
+               (addr_hit[ 57] & (|(PINMUX_PERMIT[ 57] & ~reg_be))) |
+               (addr_hit[ 58] & (|(PINMUX_PERMIT[ 58] & ~reg_be))) |
+               (addr_hit[ 59] & (|(PINMUX_PERMIT[ 59] & ~reg_be))) |
+               (addr_hit[ 60] & (|(PINMUX_PERMIT[ 60] & ~reg_be))) |
+               (addr_hit[ 61] & (|(PINMUX_PERMIT[ 61] & ~reg_be))) |
+               (addr_hit[ 62] & (|(PINMUX_PERMIT[ 62] & ~reg_be))) |
+               (addr_hit[ 63] & (|(PINMUX_PERMIT[ 63] & ~reg_be))) |
+               (addr_hit[ 64] & (|(PINMUX_PERMIT[ 64] & ~reg_be))) |
+               (addr_hit[ 65] & (|(PINMUX_PERMIT[ 65] & ~reg_be))) |
+               (addr_hit[ 66] & (|(PINMUX_PERMIT[ 66] & ~reg_be))) |
+               (addr_hit[ 67] & (|(PINMUX_PERMIT[ 67] & ~reg_be))) |
+               (addr_hit[ 68] & (|(PINMUX_PERMIT[ 68] & ~reg_be))) |
+               (addr_hit[ 69] & (|(PINMUX_PERMIT[ 69] & ~reg_be))) |
+               (addr_hit[ 70] & (|(PINMUX_PERMIT[ 70] & ~reg_be))) |
+               (addr_hit[ 71] & (|(PINMUX_PERMIT[ 71] & ~reg_be))) |
+               (addr_hit[ 72] & (|(PINMUX_PERMIT[ 72] & ~reg_be))) |
+               (addr_hit[ 73] & (|(PINMUX_PERMIT[ 73] & ~reg_be))) |
+               (addr_hit[ 74] & (|(PINMUX_PERMIT[ 74] & ~reg_be))) |
+               (addr_hit[ 75] & (|(PINMUX_PERMIT[ 75] & ~reg_be))) |
+               (addr_hit[ 76] & (|(PINMUX_PERMIT[ 76] & ~reg_be))) |
+               (addr_hit[ 77] & (|(PINMUX_PERMIT[ 77] & ~reg_be))) |
+               (addr_hit[ 78] & (|(PINMUX_PERMIT[ 78] & ~reg_be))) |
+               (addr_hit[ 79] & (|(PINMUX_PERMIT[ 79] & ~reg_be))) |
+               (addr_hit[ 80] & (|(PINMUX_PERMIT[ 80] & ~reg_be))) |
+               (addr_hit[ 81] & (|(PINMUX_PERMIT[ 81] & ~reg_be))) |
+               (addr_hit[ 82] & (|(PINMUX_PERMIT[ 82] & ~reg_be))) |
+               (addr_hit[ 83] & (|(PINMUX_PERMIT[ 83] & ~reg_be))) |
+               (addr_hit[ 84] & (|(PINMUX_PERMIT[ 84] & ~reg_be))) |
+               (addr_hit[ 85] & (|(PINMUX_PERMIT[ 85] & ~reg_be))) |
+               (addr_hit[ 86] & (|(PINMUX_PERMIT[ 86] & ~reg_be))) |
+               (addr_hit[ 87] & (|(PINMUX_PERMIT[ 87] & ~reg_be))) |
+               (addr_hit[ 88] & (|(PINMUX_PERMIT[ 88] & ~reg_be))) |
+               (addr_hit[ 89] & (|(PINMUX_PERMIT[ 89] & ~reg_be))) |
+               (addr_hit[ 90] & (|(PINMUX_PERMIT[ 90] & ~reg_be))) |
+               (addr_hit[ 91] & (|(PINMUX_PERMIT[ 91] & ~reg_be))) |
+               (addr_hit[ 92] & (|(PINMUX_PERMIT[ 92] & ~reg_be))) |
+               (addr_hit[ 93] & (|(PINMUX_PERMIT[ 93] & ~reg_be))) |
+               (addr_hit[ 94] & (|(PINMUX_PERMIT[ 94] & ~reg_be))) |
+               (addr_hit[ 95] & (|(PINMUX_PERMIT[ 95] & ~reg_be))) |
+               (addr_hit[ 96] & (|(PINMUX_PERMIT[ 96] & ~reg_be))) |
+               (addr_hit[ 97] & (|(PINMUX_PERMIT[ 97] & ~reg_be))) |
+               (addr_hit[ 98] & (|(PINMUX_PERMIT[ 98] & ~reg_be))) |
+               (addr_hit[ 99] & (|(PINMUX_PERMIT[ 99] & ~reg_be))) |
+               (addr_hit[100] & (|(PINMUX_PERMIT[100] & ~reg_be))) |
+               (addr_hit[101] & (|(PINMUX_PERMIT[101] & ~reg_be))) |
+               (addr_hit[102] & (|(PINMUX_PERMIT[102] & ~reg_be))) |
+               (addr_hit[103] & (|(PINMUX_PERMIT[103] & ~reg_be))) |
+               (addr_hit[104] & (|(PINMUX_PERMIT[104] & ~reg_be))) |
+               (addr_hit[105] & (|(PINMUX_PERMIT[105] & ~reg_be))) |
+               (addr_hit[106] & (|(PINMUX_PERMIT[106] & ~reg_be))) |
+               (addr_hit[107] & (|(PINMUX_PERMIT[107] & ~reg_be))) |
+               (addr_hit[108] & (|(PINMUX_PERMIT[108] & ~reg_be))) |
+               (addr_hit[109] & (|(PINMUX_PERMIT[109] & ~reg_be))) |
+               (addr_hit[110] & (|(PINMUX_PERMIT[110] & ~reg_be))) |
+               (addr_hit[111] & (|(PINMUX_PERMIT[111] & ~reg_be))) |
+               (addr_hit[112] & (|(PINMUX_PERMIT[112] & ~reg_be))) |
+               (addr_hit[113] & (|(PINMUX_PERMIT[113] & ~reg_be))) |
+               (addr_hit[114] & (|(PINMUX_PERMIT[114] & ~reg_be))) |
+               (addr_hit[115] & (|(PINMUX_PERMIT[115] & ~reg_be))) |
+               (addr_hit[116] & (|(PINMUX_PERMIT[116] & ~reg_be))) |
+               (addr_hit[117] & (|(PINMUX_PERMIT[117] & ~reg_be))) |
+               (addr_hit[118] & (|(PINMUX_PERMIT[118] & ~reg_be))) |
+               (addr_hit[119] & (|(PINMUX_PERMIT[119] & ~reg_be))) |
+               (addr_hit[120] & (|(PINMUX_PERMIT[120] & ~reg_be))) |
+               (addr_hit[121] & (|(PINMUX_PERMIT[121] & ~reg_be))) |
+               (addr_hit[122] & (|(PINMUX_PERMIT[122] & ~reg_be))) |
+               (addr_hit[123] & (|(PINMUX_PERMIT[123] & ~reg_be))) |
+               (addr_hit[124] & (|(PINMUX_PERMIT[124] & ~reg_be))) |
+               (addr_hit[125] & (|(PINMUX_PERMIT[125] & ~reg_be))) |
+               (addr_hit[126] & (|(PINMUX_PERMIT[126] & ~reg_be))) |
+               (addr_hit[127] & (|(PINMUX_PERMIT[127] & ~reg_be))) |
+               (addr_hit[128] & (|(PINMUX_PERMIT[128] & ~reg_be))) |
+               (addr_hit[129] & (|(PINMUX_PERMIT[129] & ~reg_be))) |
+               (addr_hit[130] & (|(PINMUX_PERMIT[130] & ~reg_be))) |
+               (addr_hit[131] & (|(PINMUX_PERMIT[131] & ~reg_be))) |
+               (addr_hit[132] & (|(PINMUX_PERMIT[132] & ~reg_be))) |
+               (addr_hit[133] & (|(PINMUX_PERMIT[133] & ~reg_be))) |
+               (addr_hit[134] & (|(PINMUX_PERMIT[134] & ~reg_be))) |
+               (addr_hit[135] & (|(PINMUX_PERMIT[135] & ~reg_be))) |
+               (addr_hit[136] & (|(PINMUX_PERMIT[136] & ~reg_be))) |
+               (addr_hit[137] & (|(PINMUX_PERMIT[137] & ~reg_be))) |
+               (addr_hit[138] & (|(PINMUX_PERMIT[138] & ~reg_be))) |
+               (addr_hit[139] & (|(PINMUX_PERMIT[139] & ~reg_be))) |
+               (addr_hit[140] & (|(PINMUX_PERMIT[140] & ~reg_be))) |
+               (addr_hit[141] & (|(PINMUX_PERMIT[141] & ~reg_be))) |
+               (addr_hit[142] & (|(PINMUX_PERMIT[142] & ~reg_be))) |
+               (addr_hit[143] & (|(PINMUX_PERMIT[143] & ~reg_be))) |
+               (addr_hit[144] & (|(PINMUX_PERMIT[144] & ~reg_be))) |
+               (addr_hit[145] & (|(PINMUX_PERMIT[145] & ~reg_be))) |
+               (addr_hit[146] & (|(PINMUX_PERMIT[146] & ~reg_be))) |
+               (addr_hit[147] & (|(PINMUX_PERMIT[147] & ~reg_be))) |
+               (addr_hit[148] & (|(PINMUX_PERMIT[148] & ~reg_be))) |
+               (addr_hit[149] & (|(PINMUX_PERMIT[149] & ~reg_be))) |
+               (addr_hit[150] & (|(PINMUX_PERMIT[150] & ~reg_be))) |
+               (addr_hit[151] & (|(PINMUX_PERMIT[151] & ~reg_be))) |
+               (addr_hit[152] & (|(PINMUX_PERMIT[152] & ~reg_be))) |
+               (addr_hit[153] & (|(PINMUX_PERMIT[153] & ~reg_be))) |
+               (addr_hit[154] & (|(PINMUX_PERMIT[154] & ~reg_be))) |
+               (addr_hit[155] & (|(PINMUX_PERMIT[155] & ~reg_be))) |
+               (addr_hit[156] & (|(PINMUX_PERMIT[156] & ~reg_be))) |
+               (addr_hit[157] & (|(PINMUX_PERMIT[157] & ~reg_be))) |
+               (addr_hit[158] & (|(PINMUX_PERMIT[158] & ~reg_be))) |
+               (addr_hit[159] & (|(PINMUX_PERMIT[159] & ~reg_be))) |
+               (addr_hit[160] & (|(PINMUX_PERMIT[160] & ~reg_be))) |
+               (addr_hit[161] & (|(PINMUX_PERMIT[161] & ~reg_be))) |
+               (addr_hit[162] & (|(PINMUX_PERMIT[162] & ~reg_be))) |
+               (addr_hit[163] & (|(PINMUX_PERMIT[163] & ~reg_be))) |
+               (addr_hit[164] & (|(PINMUX_PERMIT[164] & ~reg_be))) |
+               (addr_hit[165] & (|(PINMUX_PERMIT[165] & ~reg_be))) |
+               (addr_hit[166] & (|(PINMUX_PERMIT[166] & ~reg_be))) |
+               (addr_hit[167] & (|(PINMUX_PERMIT[167] & ~reg_be))) |
+               (addr_hit[168] & (|(PINMUX_PERMIT[168] & ~reg_be))) |
+               (addr_hit[169] & (|(PINMUX_PERMIT[169] & ~reg_be))) |
+               (addr_hit[170] & (|(PINMUX_PERMIT[170] & ~reg_be))) |
+               (addr_hit[171] & (|(PINMUX_PERMIT[171] & ~reg_be))) |
+               (addr_hit[172] & (|(PINMUX_PERMIT[172] & ~reg_be))) |
+               (addr_hit[173] & (|(PINMUX_PERMIT[173] & ~reg_be))) |
+               (addr_hit[174] & (|(PINMUX_PERMIT[174] & ~reg_be))) |
+               (addr_hit[175] & (|(PINMUX_PERMIT[175] & ~reg_be))) |
+               (addr_hit[176] & (|(PINMUX_PERMIT[176] & ~reg_be))) |
+               (addr_hit[177] & (|(PINMUX_PERMIT[177] & ~reg_be))) |
+               (addr_hit[178] & (|(PINMUX_PERMIT[178] & ~reg_be))) |
+               (addr_hit[179] & (|(PINMUX_PERMIT[179] & ~reg_be))) |
+               (addr_hit[180] & (|(PINMUX_PERMIT[180] & ~reg_be))) |
+               (addr_hit[181] & (|(PINMUX_PERMIT[181] & ~reg_be))) |
+               (addr_hit[182] & (|(PINMUX_PERMIT[182] & ~reg_be))) |
+               (addr_hit[183] & (|(PINMUX_PERMIT[183] & ~reg_be))) |
+               (addr_hit[184] & (|(PINMUX_PERMIT[184] & ~reg_be))) |
+               (addr_hit[185] & (|(PINMUX_PERMIT[185] & ~reg_be))) |
+               (addr_hit[186] & (|(PINMUX_PERMIT[186] & ~reg_be))) |
+               (addr_hit[187] & (|(PINMUX_PERMIT[187] & ~reg_be))) |
+               (addr_hit[188] & (|(PINMUX_PERMIT[188] & ~reg_be))) |
+               (addr_hit[189] & (|(PINMUX_PERMIT[189] & ~reg_be))) |
+               (addr_hit[190] & (|(PINMUX_PERMIT[190] & ~reg_be))) |
+               (addr_hit[191] & (|(PINMUX_PERMIT[191] & ~reg_be))) |
+               (addr_hit[192] & (|(PINMUX_PERMIT[192] & ~reg_be))) |
+               (addr_hit[193] & (|(PINMUX_PERMIT[193] & ~reg_be))) |
+               (addr_hit[194] & (|(PINMUX_PERMIT[194] & ~reg_be))) |
+               (addr_hit[195] & (|(PINMUX_PERMIT[195] & ~reg_be))) |
+               (addr_hit[196] & (|(PINMUX_PERMIT[196] & ~reg_be))) |
+               (addr_hit[197] & (|(PINMUX_PERMIT[197] & ~reg_be))) |
+               (addr_hit[198] & (|(PINMUX_PERMIT[198] & ~reg_be))) |
+               (addr_hit[199] & (|(PINMUX_PERMIT[199] & ~reg_be))) |
+               (addr_hit[200] & (|(PINMUX_PERMIT[200] & ~reg_be))) |
+               (addr_hit[201] & (|(PINMUX_PERMIT[201] & ~reg_be))) |
+               (addr_hit[202] & (|(PINMUX_PERMIT[202] & ~reg_be))) |
+               (addr_hit[203] & (|(PINMUX_PERMIT[203] & ~reg_be))) |
+               (addr_hit[204] & (|(PINMUX_PERMIT[204] & ~reg_be))) |
+               (addr_hit[205] & (|(PINMUX_PERMIT[205] & ~reg_be))) |
+               (addr_hit[206] & (|(PINMUX_PERMIT[206] & ~reg_be))) |
+               (addr_hit[207] & (|(PINMUX_PERMIT[207] & ~reg_be))) |
+               (addr_hit[208] & (|(PINMUX_PERMIT[208] & ~reg_be))) |
+               (addr_hit[209] & (|(PINMUX_PERMIT[209] & ~reg_be))) |
+               (addr_hit[210] & (|(PINMUX_PERMIT[210] & ~reg_be))) |
+               (addr_hit[211] & (|(PINMUX_PERMIT[211] & ~reg_be))) |
+               (addr_hit[212] & (|(PINMUX_PERMIT[212] & ~reg_be))) |
+               (addr_hit[213] & (|(PINMUX_PERMIT[213] & ~reg_be))) |
+               (addr_hit[214] & (|(PINMUX_PERMIT[214] & ~reg_be))) |
+               (addr_hit[215] & (|(PINMUX_PERMIT[215] & ~reg_be))) |
+               (addr_hit[216] & (|(PINMUX_PERMIT[216] & ~reg_be))) |
+               (addr_hit[217] & (|(PINMUX_PERMIT[217] & ~reg_be))) |
+               (addr_hit[218] & (|(PINMUX_PERMIT[218] & ~reg_be))) |
+               (addr_hit[219] & (|(PINMUX_PERMIT[219] & ~reg_be))) |
+               (addr_hit[220] & (|(PINMUX_PERMIT[220] & ~reg_be))) |
+               (addr_hit[221] & (|(PINMUX_PERMIT[221] & ~reg_be))) |
+               (addr_hit[222] & (|(PINMUX_PERMIT[222] & ~reg_be))) |
+               (addr_hit[223] & (|(PINMUX_PERMIT[223] & ~reg_be))) |
+               (addr_hit[224] & (|(PINMUX_PERMIT[224] & ~reg_be))) |
+               (addr_hit[225] & (|(PINMUX_PERMIT[225] & ~reg_be))) |
+               (addr_hit[226] & (|(PINMUX_PERMIT[226] & ~reg_be))) |
+               (addr_hit[227] & (|(PINMUX_PERMIT[227] & ~reg_be))) |
+               (addr_hit[228] & (|(PINMUX_PERMIT[228] & ~reg_be))) |
+               (addr_hit[229] & (|(PINMUX_PERMIT[229] & ~reg_be))) |
+               (addr_hit[230] & (|(PINMUX_PERMIT[230] & ~reg_be))) |
+               (addr_hit[231] & (|(PINMUX_PERMIT[231] & ~reg_be))) |
+               (addr_hit[232] & (|(PINMUX_PERMIT[232] & ~reg_be))) |
+               (addr_hit[233] & (|(PINMUX_PERMIT[233] & ~reg_be))) |
+               (addr_hit[234] & (|(PINMUX_PERMIT[234] & ~reg_be))) |
+               (addr_hit[235] & (|(PINMUX_PERMIT[235] & ~reg_be))) |
+               (addr_hit[236] & (|(PINMUX_PERMIT[236] & ~reg_be))) |
+               (addr_hit[237] & (|(PINMUX_PERMIT[237] & ~reg_be))) |
+               (addr_hit[238] & (|(PINMUX_PERMIT[238] & ~reg_be))) |
+               (addr_hit[239] & (|(PINMUX_PERMIT[239] & ~reg_be))) |
+               (addr_hit[240] & (|(PINMUX_PERMIT[240] & ~reg_be))) |
+               (addr_hit[241] & (|(PINMUX_PERMIT[241] & ~reg_be))) |
+               (addr_hit[242] & (|(PINMUX_PERMIT[242] & ~reg_be))) |
+               (addr_hit[243] & (|(PINMUX_PERMIT[243] & ~reg_be))) |
+               (addr_hit[244] & (|(PINMUX_PERMIT[244] & ~reg_be))) |
+               (addr_hit[245] & (|(PINMUX_PERMIT[245] & ~reg_be))) |
+               (addr_hit[246] & (|(PINMUX_PERMIT[246] & ~reg_be))) |
+               (addr_hit[247] & (|(PINMUX_PERMIT[247] & ~reg_be))) |
+               (addr_hit[248] & (|(PINMUX_PERMIT[248] & ~reg_be))) |
+               (addr_hit[249] & (|(PINMUX_PERMIT[249] & ~reg_be))) |
+               (addr_hit[250] & (|(PINMUX_PERMIT[250] & ~reg_be))) |
+               (addr_hit[251] & (|(PINMUX_PERMIT[251] & ~reg_be))) |
+               (addr_hit[252] & (|(PINMUX_PERMIT[252] & ~reg_be))) |
+               (addr_hit[253] & (|(PINMUX_PERMIT[253] & ~reg_be))) |
+               (addr_hit[254] & (|(PINMUX_PERMIT[254] & ~reg_be))) |
+               (addr_hit[255] & (|(PINMUX_PERMIT[255] & ~reg_be))) |
+               (addr_hit[256] & (|(PINMUX_PERMIT[256] & ~reg_be))) |
+               (addr_hit[257] & (|(PINMUX_PERMIT[257] & ~reg_be))) |
+               (addr_hit[258] & (|(PINMUX_PERMIT[258] & ~reg_be))) |
+               (addr_hit[259] & (|(PINMUX_PERMIT[259] & ~reg_be))) |
+               (addr_hit[260] & (|(PINMUX_PERMIT[260] & ~reg_be))) |
+               (addr_hit[261] & (|(PINMUX_PERMIT[261] & ~reg_be))) |
+               (addr_hit[262] & (|(PINMUX_PERMIT[262] & ~reg_be))) |
+               (addr_hit[263] & (|(PINMUX_PERMIT[263] & ~reg_be))) |
+               (addr_hit[264] & (|(PINMUX_PERMIT[264] & ~reg_be))) |
+               (addr_hit[265] & (|(PINMUX_PERMIT[265] & ~reg_be))) |
+               (addr_hit[266] & (|(PINMUX_PERMIT[266] & ~reg_be))) |
+               (addr_hit[267] & (|(PINMUX_PERMIT[267] & ~reg_be))) |
+               (addr_hit[268] & (|(PINMUX_PERMIT[268] & ~reg_be))) |
+               (addr_hit[269] & (|(PINMUX_PERMIT[269] & ~reg_be))) |
+               (addr_hit[270] & (|(PINMUX_PERMIT[270] & ~reg_be))) |
+               (addr_hit[271] & (|(PINMUX_PERMIT[271] & ~reg_be))) |
+               (addr_hit[272] & (|(PINMUX_PERMIT[272] & ~reg_be))) |
+               (addr_hit[273] & (|(PINMUX_PERMIT[273] & ~reg_be))) |
+               (addr_hit[274] & (|(PINMUX_PERMIT[274] & ~reg_be))) |
+               (addr_hit[275] & (|(PINMUX_PERMIT[275] & ~reg_be))) |
+               (addr_hit[276] & (|(PINMUX_PERMIT[276] & ~reg_be))) |
+               (addr_hit[277] & (|(PINMUX_PERMIT[277] & ~reg_be))) |
+               (addr_hit[278] & (|(PINMUX_PERMIT[278] & ~reg_be))) |
+               (addr_hit[279] & (|(PINMUX_PERMIT[279] & ~reg_be))) |
+               (addr_hit[280] & (|(PINMUX_PERMIT[280] & ~reg_be))) |
+               (addr_hit[281] & (|(PINMUX_PERMIT[281] & ~reg_be))) |
+               (addr_hit[282] & (|(PINMUX_PERMIT[282] & ~reg_be))) |
+               (addr_hit[283] & (|(PINMUX_PERMIT[283] & ~reg_be))) |
+               (addr_hit[284] & (|(PINMUX_PERMIT[284] & ~reg_be))) |
+               (addr_hit[285] & (|(PINMUX_PERMIT[285] & ~reg_be))) |
+               (addr_hit[286] & (|(PINMUX_PERMIT[286] & ~reg_be))) |
+               (addr_hit[287] & (|(PINMUX_PERMIT[287] & ~reg_be))) |
+               (addr_hit[288] & (|(PINMUX_PERMIT[288] & ~reg_be))) |
+               (addr_hit[289] & (|(PINMUX_PERMIT[289] & ~reg_be))) |
+               (addr_hit[290] & (|(PINMUX_PERMIT[290] & ~reg_be))) |
+               (addr_hit[291] & (|(PINMUX_PERMIT[291] & ~reg_be))) |
+               (addr_hit[292] & (|(PINMUX_PERMIT[292] & ~reg_be))) |
+               (addr_hit[293] & (|(PINMUX_PERMIT[293] & ~reg_be))) |
+               (addr_hit[294] & (|(PINMUX_PERMIT[294] & ~reg_be))) |
+               (addr_hit[295] & (|(PINMUX_PERMIT[295] & ~reg_be))) |
+               (addr_hit[296] & (|(PINMUX_PERMIT[296] & ~reg_be))) |
+               (addr_hit[297] & (|(PINMUX_PERMIT[297] & ~reg_be))) |
+               (addr_hit[298] & (|(PINMUX_PERMIT[298] & ~reg_be))) |
+               (addr_hit[299] & (|(PINMUX_PERMIT[299] & ~reg_be))) |
+               (addr_hit[300] & (|(PINMUX_PERMIT[300] & ~reg_be))) |
+               (addr_hit[301] & (|(PINMUX_PERMIT[301] & ~reg_be))) |
+               (addr_hit[302] & (|(PINMUX_PERMIT[302] & ~reg_be))) |
+               (addr_hit[303] & (|(PINMUX_PERMIT[303] & ~reg_be))) |
+               (addr_hit[304] & (|(PINMUX_PERMIT[304] & ~reg_be))) |
+               (addr_hit[305] & (|(PINMUX_PERMIT[305] & ~reg_be))) |
+               (addr_hit[306] & (|(PINMUX_PERMIT[306] & ~reg_be))) |
+               (addr_hit[307] & (|(PINMUX_PERMIT[307] & ~reg_be))) |
+               (addr_hit[308] & (|(PINMUX_PERMIT[308] & ~reg_be))) |
+               (addr_hit[309] & (|(PINMUX_PERMIT[309] & ~reg_be))) |
+               (addr_hit[310] & (|(PINMUX_PERMIT[310] & ~reg_be))) |
+               (addr_hit[311] & (|(PINMUX_PERMIT[311] & ~reg_be))) |
+               (addr_hit[312] & (|(PINMUX_PERMIT[312] & ~reg_be))) |
+               (addr_hit[313] & (|(PINMUX_PERMIT[313] & ~reg_be))) |
+               (addr_hit[314] & (|(PINMUX_PERMIT[314] & ~reg_be))) |
+               (addr_hit[315] & (|(PINMUX_PERMIT[315] & ~reg_be))) |
+               (addr_hit[316] & (|(PINMUX_PERMIT[316] & ~reg_be))) |
+               (addr_hit[317] & (|(PINMUX_PERMIT[317] & ~reg_be))) |
+               (addr_hit[318] & (|(PINMUX_PERMIT[318] & ~reg_be))) |
+               (addr_hit[319] & (|(PINMUX_PERMIT[319] & ~reg_be))) |
+               (addr_hit[320] & (|(PINMUX_PERMIT[320] & ~reg_be))) |
+               (addr_hit[321] & (|(PINMUX_PERMIT[321] & ~reg_be))) |
+               (addr_hit[322] & (|(PINMUX_PERMIT[322] & ~reg_be))) |
+               (addr_hit[323] & (|(PINMUX_PERMIT[323] & ~reg_be))) |
+               (addr_hit[324] & (|(PINMUX_PERMIT[324] & ~reg_be))) |
+               (addr_hit[325] & (|(PINMUX_PERMIT[325] & ~reg_be))) |
+               (addr_hit[326] & (|(PINMUX_PERMIT[326] & ~reg_be))) |
+               (addr_hit[327] & (|(PINMUX_PERMIT[327] & ~reg_be))) |
+               (addr_hit[328] & (|(PINMUX_PERMIT[328] & ~reg_be))) |
+               (addr_hit[329] & (|(PINMUX_PERMIT[329] & ~reg_be))) |
+               (addr_hit[330] & (|(PINMUX_PERMIT[330] & ~reg_be))) |
+               (addr_hit[331] & (|(PINMUX_PERMIT[331] & ~reg_be))) |
+               (addr_hit[332] & (|(PINMUX_PERMIT[332] & ~reg_be))) |
+               (addr_hit[333] & (|(PINMUX_PERMIT[333] & ~reg_be))) |
+               (addr_hit[334] & (|(PINMUX_PERMIT[334] & ~reg_be))) |
+               (addr_hit[335] & (|(PINMUX_PERMIT[335] & ~reg_be))) |
+               (addr_hit[336] & (|(PINMUX_PERMIT[336] & ~reg_be))) |
+               (addr_hit[337] & (|(PINMUX_PERMIT[337] & ~reg_be))) |
+               (addr_hit[338] & (|(PINMUX_PERMIT[338] & ~reg_be))) |
+               (addr_hit[339] & (|(PINMUX_PERMIT[339] & ~reg_be))) |
+               (addr_hit[340] & (|(PINMUX_PERMIT[340] & ~reg_be))) |
+               (addr_hit[341] & (|(PINMUX_PERMIT[341] & ~reg_be))) |
+               (addr_hit[342] & (|(PINMUX_PERMIT[342] & ~reg_be))) |
+               (addr_hit[343] & (|(PINMUX_PERMIT[343] & ~reg_be))) |
+               (addr_hit[344] & (|(PINMUX_PERMIT[344] & ~reg_be))) |
+               (addr_hit[345] & (|(PINMUX_PERMIT[345] & ~reg_be))) |
+               (addr_hit[346] & (|(PINMUX_PERMIT[346] & ~reg_be))) |
+               (addr_hit[347] & (|(PINMUX_PERMIT[347] & ~reg_be))) |
+               (addr_hit[348] & (|(PINMUX_PERMIT[348] & ~reg_be))) |
+               (addr_hit[349] & (|(PINMUX_PERMIT[349] & ~reg_be))) |
+               (addr_hit[350] & (|(PINMUX_PERMIT[350] & ~reg_be))) |
+               (addr_hit[351] & (|(PINMUX_PERMIT[351] & ~reg_be))) |
+               (addr_hit[352] & (|(PINMUX_PERMIT[352] & ~reg_be))) |
+               (addr_hit[353] & (|(PINMUX_PERMIT[353] & ~reg_be))) |
+               (addr_hit[354] & (|(PINMUX_PERMIT[354] & ~reg_be))) |
+               (addr_hit[355] & (|(PINMUX_PERMIT[355] & ~reg_be))) |
+               (addr_hit[356] & (|(PINMUX_PERMIT[356] & ~reg_be))) |
+               (addr_hit[357] & (|(PINMUX_PERMIT[357] & ~reg_be))) |
+               (addr_hit[358] & (|(PINMUX_PERMIT[358] & ~reg_be))) |
+               (addr_hit[359] & (|(PINMUX_PERMIT[359] & ~reg_be))) |
+               (addr_hit[360] & (|(PINMUX_PERMIT[360] & ~reg_be))) |
+               (addr_hit[361] & (|(PINMUX_PERMIT[361] & ~reg_be))) |
+               (addr_hit[362] & (|(PINMUX_PERMIT[362] & ~reg_be))) |
+               (addr_hit[363] & (|(PINMUX_PERMIT[363] & ~reg_be))) |
+               (addr_hit[364] & (|(PINMUX_PERMIT[364] & ~reg_be))) |
+               (addr_hit[365] & (|(PINMUX_PERMIT[365] & ~reg_be))) |
+               (addr_hit[366] & (|(PINMUX_PERMIT[366] & ~reg_be))) |
+               (addr_hit[367] & (|(PINMUX_PERMIT[367] & ~reg_be))) |
+               (addr_hit[368] & (|(PINMUX_PERMIT[368] & ~reg_be))) |
+               (addr_hit[369] & (|(PINMUX_PERMIT[369] & ~reg_be))) |
+               (addr_hit[370] & (|(PINMUX_PERMIT[370] & ~reg_be))) |
+               (addr_hit[371] & (|(PINMUX_PERMIT[371] & ~reg_be))) |
+               (addr_hit[372] & (|(PINMUX_PERMIT[372] & ~reg_be))) |
+               (addr_hit[373] & (|(PINMUX_PERMIT[373] & ~reg_be))) |
+               (addr_hit[374] & (|(PINMUX_PERMIT[374] & ~reg_be))) |
+               (addr_hit[375] & (|(PINMUX_PERMIT[375] & ~reg_be))) |
+               (addr_hit[376] & (|(PINMUX_PERMIT[376] & ~reg_be))) |
+               (addr_hit[377] & (|(PINMUX_PERMIT[377] & ~reg_be))) |
+               (addr_hit[378] & (|(PINMUX_PERMIT[378] & ~reg_be))) |
+               (addr_hit[379] & (|(PINMUX_PERMIT[379] & ~reg_be))) |
+               (addr_hit[380] & (|(PINMUX_PERMIT[380] & ~reg_be))) |
+               (addr_hit[381] & (|(PINMUX_PERMIT[381] & ~reg_be))) |
+               (addr_hit[382] & (|(PINMUX_PERMIT[382] & ~reg_be))) |
+               (addr_hit[383] & (|(PINMUX_PERMIT[383] & ~reg_be))) |
+               (addr_hit[384] & (|(PINMUX_PERMIT[384] & ~reg_be))) |
+               (addr_hit[385] & (|(PINMUX_PERMIT[385] & ~reg_be))) |
+               (addr_hit[386] & (|(PINMUX_PERMIT[386] & ~reg_be))) |
+               (addr_hit[387] & (|(PINMUX_PERMIT[387] & ~reg_be))) |
+               (addr_hit[388] & (|(PINMUX_PERMIT[388] & ~reg_be))) |
+               (addr_hit[389] & (|(PINMUX_PERMIT[389] & ~reg_be))) |
+               (addr_hit[390] & (|(PINMUX_PERMIT[390] & ~reg_be))) |
+               (addr_hit[391] & (|(PINMUX_PERMIT[391] & ~reg_be))) |
+               (addr_hit[392] & (|(PINMUX_PERMIT[392] & ~reg_be))) |
+               (addr_hit[393] & (|(PINMUX_PERMIT[393] & ~reg_be))) |
+               (addr_hit[394] & (|(PINMUX_PERMIT[394] & ~reg_be))) |
+               (addr_hit[395] & (|(PINMUX_PERMIT[395] & ~reg_be))) |
+               (addr_hit[396] & (|(PINMUX_PERMIT[396] & ~reg_be))) |
+               (addr_hit[397] & (|(PINMUX_PERMIT[397] & ~reg_be))) |
+               (addr_hit[398] & (|(PINMUX_PERMIT[398] & ~reg_be))) |
+               (addr_hit[399] & (|(PINMUX_PERMIT[399] & ~reg_be))) |
+               (addr_hit[400] & (|(PINMUX_PERMIT[400] & ~reg_be))) |
+               (addr_hit[401] & (|(PINMUX_PERMIT[401] & ~reg_be))) |
+               (addr_hit[402] & (|(PINMUX_PERMIT[402] & ~reg_be))) |
+               (addr_hit[403] & (|(PINMUX_PERMIT[403] & ~reg_be))) |
+               (addr_hit[404] & (|(PINMUX_PERMIT[404] & ~reg_be))) |
+               (addr_hit[405] & (|(PINMUX_PERMIT[405] & ~reg_be))) |
+               (addr_hit[406] & (|(PINMUX_PERMIT[406] & ~reg_be))) |
+               (addr_hit[407] & (|(PINMUX_PERMIT[407] & ~reg_be))) |
+               (addr_hit[408] & (|(PINMUX_PERMIT[408] & ~reg_be))) |
+               (addr_hit[409] & (|(PINMUX_PERMIT[409] & ~reg_be))) |
+               (addr_hit[410] & (|(PINMUX_PERMIT[410] & ~reg_be))) |
+               (addr_hit[411] & (|(PINMUX_PERMIT[411] & ~reg_be))) |
+               (addr_hit[412] & (|(PINMUX_PERMIT[412] & ~reg_be))) |
+               (addr_hit[413] & (|(PINMUX_PERMIT[413] & ~reg_be))) |
+               (addr_hit[414] & (|(PINMUX_PERMIT[414] & ~reg_be))) |
+               (addr_hit[415] & (|(PINMUX_PERMIT[415] & ~reg_be))) |
+               (addr_hit[416] & (|(PINMUX_PERMIT[416] & ~reg_be))) |
+               (addr_hit[417] & (|(PINMUX_PERMIT[417] & ~reg_be))) |
+               (addr_hit[418] & (|(PINMUX_PERMIT[418] & ~reg_be))) |
+               (addr_hit[419] & (|(PINMUX_PERMIT[419] & ~reg_be))) |
+               (addr_hit[420] & (|(PINMUX_PERMIT[420] & ~reg_be))) |
+               (addr_hit[421] & (|(PINMUX_PERMIT[421] & ~reg_be))) |
+               (addr_hit[422] & (|(PINMUX_PERMIT[422] & ~reg_be))) |
+               (addr_hit[423] & (|(PINMUX_PERMIT[423] & ~reg_be))) |
+               (addr_hit[424] & (|(PINMUX_PERMIT[424] & ~reg_be))) |
+               (addr_hit[425] & (|(PINMUX_PERMIT[425] & ~reg_be))) |
+               (addr_hit[426] & (|(PINMUX_PERMIT[426] & ~reg_be))) |
+               (addr_hit[427] & (|(PINMUX_PERMIT[427] & ~reg_be))) |
+               (addr_hit[428] & (|(PINMUX_PERMIT[428] & ~reg_be))) |
+               (addr_hit[429] & (|(PINMUX_PERMIT[429] & ~reg_be))) |
+               (addr_hit[430] & (|(PINMUX_PERMIT[430] & ~reg_be))) |
+               (addr_hit[431] & (|(PINMUX_PERMIT[431] & ~reg_be))) |
+               (addr_hit[432] & (|(PINMUX_PERMIT[432] & ~reg_be))) |
+               (addr_hit[433] & (|(PINMUX_PERMIT[433] & ~reg_be))) |
+               (addr_hit[434] & (|(PINMUX_PERMIT[434] & ~reg_be))) |
+               (addr_hit[435] & (|(PINMUX_PERMIT[435] & ~reg_be))) |
+               (addr_hit[436] & (|(PINMUX_PERMIT[436] & ~reg_be))) |
+               (addr_hit[437] & (|(PINMUX_PERMIT[437] & ~reg_be))) |
+               (addr_hit[438] & (|(PINMUX_PERMIT[438] & ~reg_be))) |
+               (addr_hit[439] & (|(PINMUX_PERMIT[439] & ~reg_be))) |
+               (addr_hit[440] & (|(PINMUX_PERMIT[440] & ~reg_be))) |
+               (addr_hit[441] & (|(PINMUX_PERMIT[441] & ~reg_be))) |
+               (addr_hit[442] & (|(PINMUX_PERMIT[442] & ~reg_be))) |
+               (addr_hit[443] & (|(PINMUX_PERMIT[443] & ~reg_be))) |
+               (addr_hit[444] & (|(PINMUX_PERMIT[444] & ~reg_be))) |
+               (addr_hit[445] & (|(PINMUX_PERMIT[445] & ~reg_be))) |
+               (addr_hit[446] & (|(PINMUX_PERMIT[446] & ~reg_be))) |
+               (addr_hit[447] & (|(PINMUX_PERMIT[447] & ~reg_be))) |
+               (addr_hit[448] & (|(PINMUX_PERMIT[448] & ~reg_be))) |
+               (addr_hit[449] & (|(PINMUX_PERMIT[449] & ~reg_be))) |
+               (addr_hit[450] & (|(PINMUX_PERMIT[450] & ~reg_be))) |
+               (addr_hit[451] & (|(PINMUX_PERMIT[451] & ~reg_be))) |
+               (addr_hit[452] & (|(PINMUX_PERMIT[452] & ~reg_be))) |
+               (addr_hit[453] & (|(PINMUX_PERMIT[453] & ~reg_be))) |
+               (addr_hit[454] & (|(PINMUX_PERMIT[454] & ~reg_be))) |
+               (addr_hit[455] & (|(PINMUX_PERMIT[455] & ~reg_be))) |
+               (addr_hit[456] & (|(PINMUX_PERMIT[456] & ~reg_be))) |
+               (addr_hit[457] & (|(PINMUX_PERMIT[457] & ~reg_be))) |
+               (addr_hit[458] & (|(PINMUX_PERMIT[458] & ~reg_be))) |
+               (addr_hit[459] & (|(PINMUX_PERMIT[459] & ~reg_be))) |
+               (addr_hit[460] & (|(PINMUX_PERMIT[460] & ~reg_be))) |
+               (addr_hit[461] & (|(PINMUX_PERMIT[461] & ~reg_be))) |
+               (addr_hit[462] & (|(PINMUX_PERMIT[462] & ~reg_be))) |
+               (addr_hit[463] & (|(PINMUX_PERMIT[463] & ~reg_be))) |
+               (addr_hit[464] & (|(PINMUX_PERMIT[464] & ~reg_be))) |
+               (addr_hit[465] & (|(PINMUX_PERMIT[465] & ~reg_be))) |
+               (addr_hit[466] & (|(PINMUX_PERMIT[466] & ~reg_be))) |
+               (addr_hit[467] & (|(PINMUX_PERMIT[467] & ~reg_be))) |
+               (addr_hit[468] & (|(PINMUX_PERMIT[468] & ~reg_be))) |
+               (addr_hit[469] & (|(PINMUX_PERMIT[469] & ~reg_be))) |
+               (addr_hit[470] & (|(PINMUX_PERMIT[470] & ~reg_be))) |
+               (addr_hit[471] & (|(PINMUX_PERMIT[471] & ~reg_be))) |
+               (addr_hit[472] & (|(PINMUX_PERMIT[472] & ~reg_be))) |
+               (addr_hit[473] & (|(PINMUX_PERMIT[473] & ~reg_be))) |
+               (addr_hit[474] & (|(PINMUX_PERMIT[474] & ~reg_be))) |
+               (addr_hit[475] & (|(PINMUX_PERMIT[475] & ~reg_be))) |
+               (addr_hit[476] & (|(PINMUX_PERMIT[476] & ~reg_be))) |
+               (addr_hit[477] & (|(PINMUX_PERMIT[477] & ~reg_be))) |
+               (addr_hit[478] & (|(PINMUX_PERMIT[478] & ~reg_be))) |
+               (addr_hit[479] & (|(PINMUX_PERMIT[479] & ~reg_be))) |
+               (addr_hit[480] & (|(PINMUX_PERMIT[480] & ~reg_be))) |
+               (addr_hit[481] & (|(PINMUX_PERMIT[481] & ~reg_be))) |
+               (addr_hit[482] & (|(PINMUX_PERMIT[482] & ~reg_be))) |
+               (addr_hit[483] & (|(PINMUX_PERMIT[483] & ~reg_be))) |
+               (addr_hit[484] & (|(PINMUX_PERMIT[484] & ~reg_be))) |
+               (addr_hit[485] & (|(PINMUX_PERMIT[485] & ~reg_be))) |
+               (addr_hit[486] & (|(PINMUX_PERMIT[486] & ~reg_be))) |
+               (addr_hit[487] & (|(PINMUX_PERMIT[487] & ~reg_be))) |
+               (addr_hit[488] & (|(PINMUX_PERMIT[488] & ~reg_be))) |
+               (addr_hit[489] & (|(PINMUX_PERMIT[489] & ~reg_be))) |
+               (addr_hit[490] & (|(PINMUX_PERMIT[490] & ~reg_be))) |
+               (addr_hit[491] & (|(PINMUX_PERMIT[491] & ~reg_be))) |
+               (addr_hit[492] & (|(PINMUX_PERMIT[492] & ~reg_be))) |
+               (addr_hit[493] & (|(PINMUX_PERMIT[493] & ~reg_be))) |
+               (addr_hit[494] & (|(PINMUX_PERMIT[494] & ~reg_be))) |
+               (addr_hit[495] & (|(PINMUX_PERMIT[495] & ~reg_be))) |
+               (addr_hit[496] & (|(PINMUX_PERMIT[496] & ~reg_be))) |
+               (addr_hit[497] & (|(PINMUX_PERMIT[497] & ~reg_be))) |
+               (addr_hit[498] & (|(PINMUX_PERMIT[498] & ~reg_be))) |
+               (addr_hit[499] & (|(PINMUX_PERMIT[499] & ~reg_be))) |
+               (addr_hit[500] & (|(PINMUX_PERMIT[500] & ~reg_be))) |
+               (addr_hit[501] & (|(PINMUX_PERMIT[501] & ~reg_be))) |
+               (addr_hit[502] & (|(PINMUX_PERMIT[502] & ~reg_be))) |
+               (addr_hit[503] & (|(PINMUX_PERMIT[503] & ~reg_be))) |
+               (addr_hit[504] & (|(PINMUX_PERMIT[504] & ~reg_be))) |
+               (addr_hit[505] & (|(PINMUX_PERMIT[505] & ~reg_be))) |
+               (addr_hit[506] & (|(PINMUX_PERMIT[506] & ~reg_be))) |
+               (addr_hit[507] & (|(PINMUX_PERMIT[507] & ~reg_be))) |
+               (addr_hit[508] & (|(PINMUX_PERMIT[508] & ~reg_be))) |
+               (addr_hit[509] & (|(PINMUX_PERMIT[509] & ~reg_be))) |
+               (addr_hit[510] & (|(PINMUX_PERMIT[510] & ~reg_be))) |
+               (addr_hit[511] & (|(PINMUX_PERMIT[511] & ~reg_be))) |
+               (addr_hit[512] & (|(PINMUX_PERMIT[512] & ~reg_be))) |
+               (addr_hit[513] & (|(PINMUX_PERMIT[513] & ~reg_be))) |
+               (addr_hit[514] & (|(PINMUX_PERMIT[514] & ~reg_be))) |
+               (addr_hit[515] & (|(PINMUX_PERMIT[515] & ~reg_be))) |
+               (addr_hit[516] & (|(PINMUX_PERMIT[516] & ~reg_be))) |
+               (addr_hit[517] & (|(PINMUX_PERMIT[517] & ~reg_be))) |
+               (addr_hit[518] & (|(PINMUX_PERMIT[518] & ~reg_be))) |
+               (addr_hit[519] & (|(PINMUX_PERMIT[519] & ~reg_be))) |
+               (addr_hit[520] & (|(PINMUX_PERMIT[520] & ~reg_be))) |
+               (addr_hit[521] & (|(PINMUX_PERMIT[521] & ~reg_be))) |
+               (addr_hit[522] & (|(PINMUX_PERMIT[522] & ~reg_be))) |
+               (addr_hit[523] & (|(PINMUX_PERMIT[523] & ~reg_be))) |
+               (addr_hit[524] & (|(PINMUX_PERMIT[524] & ~reg_be))) |
+               (addr_hit[525] & (|(PINMUX_PERMIT[525] & ~reg_be))) |
+               (addr_hit[526] & (|(PINMUX_PERMIT[526] & ~reg_be))) |
+               (addr_hit[527] & (|(PINMUX_PERMIT[527] & ~reg_be))) |
+               (addr_hit[528] & (|(PINMUX_PERMIT[528] & ~reg_be))) |
+               (addr_hit[529] & (|(PINMUX_PERMIT[529] & ~reg_be))) |
+               (addr_hit[530] & (|(PINMUX_PERMIT[530] & ~reg_be))) |
+               (addr_hit[531] & (|(PINMUX_PERMIT[531] & ~reg_be))) |
+               (addr_hit[532] & (|(PINMUX_PERMIT[532] & ~reg_be))) |
+               (addr_hit[533] & (|(PINMUX_PERMIT[533] & ~reg_be))) |
+               (addr_hit[534] & (|(PINMUX_PERMIT[534] & ~reg_be))) |
+               (addr_hit[535] & (|(PINMUX_PERMIT[535] & ~reg_be))) |
+               (addr_hit[536] & (|(PINMUX_PERMIT[536] & ~reg_be))) |
+               (addr_hit[537] & (|(PINMUX_PERMIT[537] & ~reg_be))) |
+               (addr_hit[538] & (|(PINMUX_PERMIT[538] & ~reg_be))) |
+               (addr_hit[539] & (|(PINMUX_PERMIT[539] & ~reg_be))) |
+               (addr_hit[540] & (|(PINMUX_PERMIT[540] & ~reg_be))) |
+               (addr_hit[541] & (|(PINMUX_PERMIT[541] & ~reg_be))) |
+               (addr_hit[542] & (|(PINMUX_PERMIT[542] & ~reg_be))) |
+               (addr_hit[543] & (|(PINMUX_PERMIT[543] & ~reg_be))) |
+               (addr_hit[544] & (|(PINMUX_PERMIT[544] & ~reg_be))) |
+               (addr_hit[545] & (|(PINMUX_PERMIT[545] & ~reg_be))) |
+               (addr_hit[546] & (|(PINMUX_PERMIT[546] & ~reg_be))) |
+               (addr_hit[547] & (|(PINMUX_PERMIT[547] & ~reg_be))) |
+               (addr_hit[548] & (|(PINMUX_PERMIT[548] & ~reg_be))) |
+               (addr_hit[549] & (|(PINMUX_PERMIT[549] & ~reg_be))) |
+               (addr_hit[550] & (|(PINMUX_PERMIT[550] & ~reg_be))) |
+               (addr_hit[551] & (|(PINMUX_PERMIT[551] & ~reg_be))) |
+               (addr_hit[552] & (|(PINMUX_PERMIT[552] & ~reg_be))) |
+               (addr_hit[553] & (|(PINMUX_PERMIT[553] & ~reg_be))) |
+               (addr_hit[554] & (|(PINMUX_PERMIT[554] & ~reg_be))) |
+               (addr_hit[555] & (|(PINMUX_PERMIT[555] & ~reg_be))) |
+               (addr_hit[556] & (|(PINMUX_PERMIT[556] & ~reg_be))) |
+               (addr_hit[557] & (|(PINMUX_PERMIT[557] & ~reg_be))) |
+               (addr_hit[558] & (|(PINMUX_PERMIT[558] & ~reg_be))) |
+               (addr_hit[559] & (|(PINMUX_PERMIT[559] & ~reg_be))) |
+               (addr_hit[560] & (|(PINMUX_PERMIT[560] & ~reg_be))) |
+               (addr_hit[561] & (|(PINMUX_PERMIT[561] & ~reg_be))) |
+               (addr_hit[562] & (|(PINMUX_PERMIT[562] & ~reg_be))) |
+               (addr_hit[563] & (|(PINMUX_PERMIT[563] & ~reg_be))) |
+               (addr_hit[564] & (|(PINMUX_PERMIT[564] & ~reg_be))) |
+               (addr_hit[565] & (|(PINMUX_PERMIT[565] & ~reg_be))) |
+               (addr_hit[566] & (|(PINMUX_PERMIT[566] & ~reg_be))) |
+               (addr_hit[567] & (|(PINMUX_PERMIT[567] & ~reg_be))) |
+               (addr_hit[568] & (|(PINMUX_PERMIT[568] & ~reg_be))) |
+               (addr_hit[569] & (|(PINMUX_PERMIT[569] & ~reg_be))) |
+               (addr_hit[570] & (|(PINMUX_PERMIT[570] & ~reg_be))) |
+               (addr_hit[571] & (|(PINMUX_PERMIT[571] & ~reg_be))) |
+               (addr_hit[572] & (|(PINMUX_PERMIT[572] & ~reg_be))) |
+               (addr_hit[573] & (|(PINMUX_PERMIT[573] & ~reg_be))) |
+               (addr_hit[574] & (|(PINMUX_PERMIT[574] & ~reg_be))) |
+               (addr_hit[575] & (|(PINMUX_PERMIT[575] & ~reg_be))) |
+               (addr_hit[576] & (|(PINMUX_PERMIT[576] & ~reg_be))) |
+               (addr_hit[577] & (|(PINMUX_PERMIT[577] & ~reg_be))) |
+               (addr_hit[578] & (|(PINMUX_PERMIT[578] & ~reg_be))) |
+               (addr_hit[579] & (|(PINMUX_PERMIT[579] & ~reg_be))) |
+               (addr_hit[580] & (|(PINMUX_PERMIT[580] & ~reg_be))) |
+               (addr_hit[581] & (|(PINMUX_PERMIT[581] & ~reg_be))) |
+               (addr_hit[582] & (|(PINMUX_PERMIT[582] & ~reg_be))) |
+               (addr_hit[583] & (|(PINMUX_PERMIT[583] & ~reg_be))) |
+               (addr_hit[584] & (|(PINMUX_PERMIT[584] & ~reg_be))) |
+               (addr_hit[585] & (|(PINMUX_PERMIT[585] & ~reg_be))) |
+               (addr_hit[586] & (|(PINMUX_PERMIT[586] & ~reg_be))) |
+               (addr_hit[587] & (|(PINMUX_PERMIT[587] & ~reg_be))) |
+               (addr_hit[588] & (|(PINMUX_PERMIT[588] & ~reg_be))) |
+               (addr_hit[589] & (|(PINMUX_PERMIT[589] & ~reg_be))) |
+               (addr_hit[590] & (|(PINMUX_PERMIT[590] & ~reg_be))) |
+               (addr_hit[591] & (|(PINMUX_PERMIT[591] & ~reg_be))) |
+               (addr_hit[592] & (|(PINMUX_PERMIT[592] & ~reg_be))) |
+               (addr_hit[593] & (|(PINMUX_PERMIT[593] & ~reg_be))) |
+               (addr_hit[594] & (|(PINMUX_PERMIT[594] & ~reg_be))) |
+               (addr_hit[595] & (|(PINMUX_PERMIT[595] & ~reg_be))) |
+               (addr_hit[596] & (|(PINMUX_PERMIT[596] & ~reg_be))) |
+               (addr_hit[597] & (|(PINMUX_PERMIT[597] & ~reg_be))) |
+               (addr_hit[598] & (|(PINMUX_PERMIT[598] & ~reg_be))) |
+               (addr_hit[599] & (|(PINMUX_PERMIT[599] & ~reg_be))) |
+               (addr_hit[600] & (|(PINMUX_PERMIT[600] & ~reg_be))) |
+               (addr_hit[601] & (|(PINMUX_PERMIT[601] & ~reg_be))) |
+               (addr_hit[602] & (|(PINMUX_PERMIT[602] & ~reg_be)))));
   end
 
   assign mio_periph_insel_regwen_0_we = addr_hit[0] & reg_we & !reg_error;

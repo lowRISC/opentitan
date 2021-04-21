@@ -10958,106 +10958,106 @@ module flash_ctrl_core_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (FLASH_CTRL_CORE_PERMIT[ 0] != (FLASH_CTRL_CORE_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (FLASH_CTRL_CORE_PERMIT[ 1] != (FLASH_CTRL_CORE_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (FLASH_CTRL_CORE_PERMIT[ 2] != (FLASH_CTRL_CORE_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (FLASH_CTRL_CORE_PERMIT[ 3] != (FLASH_CTRL_CORE_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (FLASH_CTRL_CORE_PERMIT[ 4] != (FLASH_CTRL_CORE_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (FLASH_CTRL_CORE_PERMIT[ 5] != (FLASH_CTRL_CORE_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (FLASH_CTRL_CORE_PERMIT[ 6] != (FLASH_CTRL_CORE_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (FLASH_CTRL_CORE_PERMIT[ 7] != (FLASH_CTRL_CORE_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (FLASH_CTRL_CORE_PERMIT[ 8] != (FLASH_CTRL_CORE_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (FLASH_CTRL_CORE_PERMIT[ 9] != (FLASH_CTRL_CORE_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (FLASH_CTRL_CORE_PERMIT[10] != (FLASH_CTRL_CORE_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (FLASH_CTRL_CORE_PERMIT[11] != (FLASH_CTRL_CORE_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (FLASH_CTRL_CORE_PERMIT[12] != (FLASH_CTRL_CORE_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (FLASH_CTRL_CORE_PERMIT[13] != (FLASH_CTRL_CORE_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[14] && reg_we && (FLASH_CTRL_CORE_PERMIT[14] != (FLASH_CTRL_CORE_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[15] && reg_we && (FLASH_CTRL_CORE_PERMIT[15] != (FLASH_CTRL_CORE_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[16] && reg_we && (FLASH_CTRL_CORE_PERMIT[16] != (FLASH_CTRL_CORE_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[17] && reg_we && (FLASH_CTRL_CORE_PERMIT[17] != (FLASH_CTRL_CORE_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[18] && reg_we && (FLASH_CTRL_CORE_PERMIT[18] != (FLASH_CTRL_CORE_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[19] && reg_we && (FLASH_CTRL_CORE_PERMIT[19] != (FLASH_CTRL_CORE_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[20] && reg_we && (FLASH_CTRL_CORE_PERMIT[20] != (FLASH_CTRL_CORE_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[21] && reg_we && (FLASH_CTRL_CORE_PERMIT[21] != (FLASH_CTRL_CORE_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[22] && reg_we && (FLASH_CTRL_CORE_PERMIT[22] != (FLASH_CTRL_CORE_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[23] && reg_we && (FLASH_CTRL_CORE_PERMIT[23] != (FLASH_CTRL_CORE_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[24] && reg_we && (FLASH_CTRL_CORE_PERMIT[24] != (FLASH_CTRL_CORE_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[25] && reg_we && (FLASH_CTRL_CORE_PERMIT[25] != (FLASH_CTRL_CORE_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[26] && reg_we && (FLASH_CTRL_CORE_PERMIT[26] != (FLASH_CTRL_CORE_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[27] && reg_we && (FLASH_CTRL_CORE_PERMIT[27] != (FLASH_CTRL_CORE_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[28] && reg_we && (FLASH_CTRL_CORE_PERMIT[28] != (FLASH_CTRL_CORE_PERMIT[28] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[29] && reg_we && (FLASH_CTRL_CORE_PERMIT[29] != (FLASH_CTRL_CORE_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[30] && reg_we && (FLASH_CTRL_CORE_PERMIT[30] != (FLASH_CTRL_CORE_PERMIT[30] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[31] && reg_we && (FLASH_CTRL_CORE_PERMIT[31] != (FLASH_CTRL_CORE_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[32] && reg_we && (FLASH_CTRL_CORE_PERMIT[32] != (FLASH_CTRL_CORE_PERMIT[32] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[33] && reg_we && (FLASH_CTRL_CORE_PERMIT[33] != (FLASH_CTRL_CORE_PERMIT[33] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[34] && reg_we && (FLASH_CTRL_CORE_PERMIT[34] != (FLASH_CTRL_CORE_PERMIT[34] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[35] && reg_we && (FLASH_CTRL_CORE_PERMIT[35] != (FLASH_CTRL_CORE_PERMIT[35] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[36] && reg_we && (FLASH_CTRL_CORE_PERMIT[36] != (FLASH_CTRL_CORE_PERMIT[36] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[37] && reg_we && (FLASH_CTRL_CORE_PERMIT[37] != (FLASH_CTRL_CORE_PERMIT[37] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[38] && reg_we && (FLASH_CTRL_CORE_PERMIT[38] != (FLASH_CTRL_CORE_PERMIT[38] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[39] && reg_we && (FLASH_CTRL_CORE_PERMIT[39] != (FLASH_CTRL_CORE_PERMIT[39] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[40] && reg_we && (FLASH_CTRL_CORE_PERMIT[40] != (FLASH_CTRL_CORE_PERMIT[40] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[41] && reg_we && (FLASH_CTRL_CORE_PERMIT[41] != (FLASH_CTRL_CORE_PERMIT[41] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[42] && reg_we && (FLASH_CTRL_CORE_PERMIT[42] != (FLASH_CTRL_CORE_PERMIT[42] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[43] && reg_we && (FLASH_CTRL_CORE_PERMIT[43] != (FLASH_CTRL_CORE_PERMIT[43] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[44] && reg_we && (FLASH_CTRL_CORE_PERMIT[44] != (FLASH_CTRL_CORE_PERMIT[44] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[45] && reg_we && (FLASH_CTRL_CORE_PERMIT[45] != (FLASH_CTRL_CORE_PERMIT[45] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[46] && reg_we && (FLASH_CTRL_CORE_PERMIT[46] != (FLASH_CTRL_CORE_PERMIT[46] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[47] && reg_we && (FLASH_CTRL_CORE_PERMIT[47] != (FLASH_CTRL_CORE_PERMIT[47] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[48] && reg_we && (FLASH_CTRL_CORE_PERMIT[48] != (FLASH_CTRL_CORE_PERMIT[48] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[49] && reg_we && (FLASH_CTRL_CORE_PERMIT[49] != (FLASH_CTRL_CORE_PERMIT[49] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[50] && reg_we && (FLASH_CTRL_CORE_PERMIT[50] != (FLASH_CTRL_CORE_PERMIT[50] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[51] && reg_we && (FLASH_CTRL_CORE_PERMIT[51] != (FLASH_CTRL_CORE_PERMIT[51] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[52] && reg_we && (FLASH_CTRL_CORE_PERMIT[52] != (FLASH_CTRL_CORE_PERMIT[52] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[53] && reg_we && (FLASH_CTRL_CORE_PERMIT[53] != (FLASH_CTRL_CORE_PERMIT[53] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[54] && reg_we && (FLASH_CTRL_CORE_PERMIT[54] != (FLASH_CTRL_CORE_PERMIT[54] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[55] && reg_we && (FLASH_CTRL_CORE_PERMIT[55] != (FLASH_CTRL_CORE_PERMIT[55] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[56] && reg_we && (FLASH_CTRL_CORE_PERMIT[56] != (FLASH_CTRL_CORE_PERMIT[56] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[57] && reg_we && (FLASH_CTRL_CORE_PERMIT[57] != (FLASH_CTRL_CORE_PERMIT[57] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[58] && reg_we && (FLASH_CTRL_CORE_PERMIT[58] != (FLASH_CTRL_CORE_PERMIT[58] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[59] && reg_we && (FLASH_CTRL_CORE_PERMIT[59] != (FLASH_CTRL_CORE_PERMIT[59] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[60] && reg_we && (FLASH_CTRL_CORE_PERMIT[60] != (FLASH_CTRL_CORE_PERMIT[60] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[61] && reg_we && (FLASH_CTRL_CORE_PERMIT[61] != (FLASH_CTRL_CORE_PERMIT[61] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[62] && reg_we && (FLASH_CTRL_CORE_PERMIT[62] != (FLASH_CTRL_CORE_PERMIT[62] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[63] && reg_we && (FLASH_CTRL_CORE_PERMIT[63] != (FLASH_CTRL_CORE_PERMIT[63] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[64] && reg_we && (FLASH_CTRL_CORE_PERMIT[64] != (FLASH_CTRL_CORE_PERMIT[64] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[65] && reg_we && (FLASH_CTRL_CORE_PERMIT[65] != (FLASH_CTRL_CORE_PERMIT[65] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[66] && reg_we && (FLASH_CTRL_CORE_PERMIT[66] != (FLASH_CTRL_CORE_PERMIT[66] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[67] && reg_we && (FLASH_CTRL_CORE_PERMIT[67] != (FLASH_CTRL_CORE_PERMIT[67] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[68] && reg_we && (FLASH_CTRL_CORE_PERMIT[68] != (FLASH_CTRL_CORE_PERMIT[68] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[69] && reg_we && (FLASH_CTRL_CORE_PERMIT[69] != (FLASH_CTRL_CORE_PERMIT[69] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[70] && reg_we && (FLASH_CTRL_CORE_PERMIT[70] != (FLASH_CTRL_CORE_PERMIT[70] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[71] && reg_we && (FLASH_CTRL_CORE_PERMIT[71] != (FLASH_CTRL_CORE_PERMIT[71] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[72] && reg_we && (FLASH_CTRL_CORE_PERMIT[72] != (FLASH_CTRL_CORE_PERMIT[72] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[73] && reg_we && (FLASH_CTRL_CORE_PERMIT[73] != (FLASH_CTRL_CORE_PERMIT[73] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[74] && reg_we && (FLASH_CTRL_CORE_PERMIT[74] != (FLASH_CTRL_CORE_PERMIT[74] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[75] && reg_we && (FLASH_CTRL_CORE_PERMIT[75] != (FLASH_CTRL_CORE_PERMIT[75] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[76] && reg_we && (FLASH_CTRL_CORE_PERMIT[76] != (FLASH_CTRL_CORE_PERMIT[76] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[77] && reg_we && (FLASH_CTRL_CORE_PERMIT[77] != (FLASH_CTRL_CORE_PERMIT[77] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[78] && reg_we && (FLASH_CTRL_CORE_PERMIT[78] != (FLASH_CTRL_CORE_PERMIT[78] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[79] && reg_we && (FLASH_CTRL_CORE_PERMIT[79] != (FLASH_CTRL_CORE_PERMIT[79] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[80] && reg_we && (FLASH_CTRL_CORE_PERMIT[80] != (FLASH_CTRL_CORE_PERMIT[80] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[81] && reg_we && (FLASH_CTRL_CORE_PERMIT[81] != (FLASH_CTRL_CORE_PERMIT[81] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[82] && reg_we && (FLASH_CTRL_CORE_PERMIT[82] != (FLASH_CTRL_CORE_PERMIT[82] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[83] && reg_we && (FLASH_CTRL_CORE_PERMIT[83] != (FLASH_CTRL_CORE_PERMIT[83] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[84] && reg_we && (FLASH_CTRL_CORE_PERMIT[84] != (FLASH_CTRL_CORE_PERMIT[84] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[85] && reg_we && (FLASH_CTRL_CORE_PERMIT[85] != (FLASH_CTRL_CORE_PERMIT[85] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[86] && reg_we && (FLASH_CTRL_CORE_PERMIT[86] != (FLASH_CTRL_CORE_PERMIT[86] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[87] && reg_we && (FLASH_CTRL_CORE_PERMIT[87] != (FLASH_CTRL_CORE_PERMIT[87] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[88] && reg_we && (FLASH_CTRL_CORE_PERMIT[88] != (FLASH_CTRL_CORE_PERMIT[88] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[89] && reg_we && (FLASH_CTRL_CORE_PERMIT[89] != (FLASH_CTRL_CORE_PERMIT[89] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[90] && reg_we && (FLASH_CTRL_CORE_PERMIT[90] != (FLASH_CTRL_CORE_PERMIT[90] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[91] && reg_we && (FLASH_CTRL_CORE_PERMIT[91] != (FLASH_CTRL_CORE_PERMIT[91] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[92] && reg_we && (FLASH_CTRL_CORE_PERMIT[92] != (FLASH_CTRL_CORE_PERMIT[92] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[93] && reg_we && (FLASH_CTRL_CORE_PERMIT[93] != (FLASH_CTRL_CORE_PERMIT[93] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[94] && reg_we && (FLASH_CTRL_CORE_PERMIT[94] != (FLASH_CTRL_CORE_PERMIT[94] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[95] && reg_we && (FLASH_CTRL_CORE_PERMIT[95] != (FLASH_CTRL_CORE_PERMIT[95] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[96] && reg_we && (FLASH_CTRL_CORE_PERMIT[96] != (FLASH_CTRL_CORE_PERMIT[96] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[97] && reg_we && (FLASH_CTRL_CORE_PERMIT[97] != (FLASH_CTRL_CORE_PERMIT[97] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[98] && reg_we && (FLASH_CTRL_CORE_PERMIT[98] != (FLASH_CTRL_CORE_PERMIT[98] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[ 0] & (|(FLASH_CTRL_CORE_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(FLASH_CTRL_CORE_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(FLASH_CTRL_CORE_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(FLASH_CTRL_CORE_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(FLASH_CTRL_CORE_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(FLASH_CTRL_CORE_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(FLASH_CTRL_CORE_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(FLASH_CTRL_CORE_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(FLASH_CTRL_CORE_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(FLASH_CTRL_CORE_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(FLASH_CTRL_CORE_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(FLASH_CTRL_CORE_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(FLASH_CTRL_CORE_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(FLASH_CTRL_CORE_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(FLASH_CTRL_CORE_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(FLASH_CTRL_CORE_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(FLASH_CTRL_CORE_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(FLASH_CTRL_CORE_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(FLASH_CTRL_CORE_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(FLASH_CTRL_CORE_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(FLASH_CTRL_CORE_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(FLASH_CTRL_CORE_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(FLASH_CTRL_CORE_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(FLASH_CTRL_CORE_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(FLASH_CTRL_CORE_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(FLASH_CTRL_CORE_PERMIT[25] & ~reg_be))) |
+               (addr_hit[26] & (|(FLASH_CTRL_CORE_PERMIT[26] & ~reg_be))) |
+               (addr_hit[27] & (|(FLASH_CTRL_CORE_PERMIT[27] & ~reg_be))) |
+               (addr_hit[28] & (|(FLASH_CTRL_CORE_PERMIT[28] & ~reg_be))) |
+               (addr_hit[29] & (|(FLASH_CTRL_CORE_PERMIT[29] & ~reg_be))) |
+               (addr_hit[30] & (|(FLASH_CTRL_CORE_PERMIT[30] & ~reg_be))) |
+               (addr_hit[31] & (|(FLASH_CTRL_CORE_PERMIT[31] & ~reg_be))) |
+               (addr_hit[32] & (|(FLASH_CTRL_CORE_PERMIT[32] & ~reg_be))) |
+               (addr_hit[33] & (|(FLASH_CTRL_CORE_PERMIT[33] & ~reg_be))) |
+               (addr_hit[34] & (|(FLASH_CTRL_CORE_PERMIT[34] & ~reg_be))) |
+               (addr_hit[35] & (|(FLASH_CTRL_CORE_PERMIT[35] & ~reg_be))) |
+               (addr_hit[36] & (|(FLASH_CTRL_CORE_PERMIT[36] & ~reg_be))) |
+               (addr_hit[37] & (|(FLASH_CTRL_CORE_PERMIT[37] & ~reg_be))) |
+               (addr_hit[38] & (|(FLASH_CTRL_CORE_PERMIT[38] & ~reg_be))) |
+               (addr_hit[39] & (|(FLASH_CTRL_CORE_PERMIT[39] & ~reg_be))) |
+               (addr_hit[40] & (|(FLASH_CTRL_CORE_PERMIT[40] & ~reg_be))) |
+               (addr_hit[41] & (|(FLASH_CTRL_CORE_PERMIT[41] & ~reg_be))) |
+               (addr_hit[42] & (|(FLASH_CTRL_CORE_PERMIT[42] & ~reg_be))) |
+               (addr_hit[43] & (|(FLASH_CTRL_CORE_PERMIT[43] & ~reg_be))) |
+               (addr_hit[44] & (|(FLASH_CTRL_CORE_PERMIT[44] & ~reg_be))) |
+               (addr_hit[45] & (|(FLASH_CTRL_CORE_PERMIT[45] & ~reg_be))) |
+               (addr_hit[46] & (|(FLASH_CTRL_CORE_PERMIT[46] & ~reg_be))) |
+               (addr_hit[47] & (|(FLASH_CTRL_CORE_PERMIT[47] & ~reg_be))) |
+               (addr_hit[48] & (|(FLASH_CTRL_CORE_PERMIT[48] & ~reg_be))) |
+               (addr_hit[49] & (|(FLASH_CTRL_CORE_PERMIT[49] & ~reg_be))) |
+               (addr_hit[50] & (|(FLASH_CTRL_CORE_PERMIT[50] & ~reg_be))) |
+               (addr_hit[51] & (|(FLASH_CTRL_CORE_PERMIT[51] & ~reg_be))) |
+               (addr_hit[52] & (|(FLASH_CTRL_CORE_PERMIT[52] & ~reg_be))) |
+               (addr_hit[53] & (|(FLASH_CTRL_CORE_PERMIT[53] & ~reg_be))) |
+               (addr_hit[54] & (|(FLASH_CTRL_CORE_PERMIT[54] & ~reg_be))) |
+               (addr_hit[55] & (|(FLASH_CTRL_CORE_PERMIT[55] & ~reg_be))) |
+               (addr_hit[56] & (|(FLASH_CTRL_CORE_PERMIT[56] & ~reg_be))) |
+               (addr_hit[57] & (|(FLASH_CTRL_CORE_PERMIT[57] & ~reg_be))) |
+               (addr_hit[58] & (|(FLASH_CTRL_CORE_PERMIT[58] & ~reg_be))) |
+               (addr_hit[59] & (|(FLASH_CTRL_CORE_PERMIT[59] & ~reg_be))) |
+               (addr_hit[60] & (|(FLASH_CTRL_CORE_PERMIT[60] & ~reg_be))) |
+               (addr_hit[61] & (|(FLASH_CTRL_CORE_PERMIT[61] & ~reg_be))) |
+               (addr_hit[62] & (|(FLASH_CTRL_CORE_PERMIT[62] & ~reg_be))) |
+               (addr_hit[63] & (|(FLASH_CTRL_CORE_PERMIT[63] & ~reg_be))) |
+               (addr_hit[64] & (|(FLASH_CTRL_CORE_PERMIT[64] & ~reg_be))) |
+               (addr_hit[65] & (|(FLASH_CTRL_CORE_PERMIT[65] & ~reg_be))) |
+               (addr_hit[66] & (|(FLASH_CTRL_CORE_PERMIT[66] & ~reg_be))) |
+               (addr_hit[67] & (|(FLASH_CTRL_CORE_PERMIT[67] & ~reg_be))) |
+               (addr_hit[68] & (|(FLASH_CTRL_CORE_PERMIT[68] & ~reg_be))) |
+               (addr_hit[69] & (|(FLASH_CTRL_CORE_PERMIT[69] & ~reg_be))) |
+               (addr_hit[70] & (|(FLASH_CTRL_CORE_PERMIT[70] & ~reg_be))) |
+               (addr_hit[71] & (|(FLASH_CTRL_CORE_PERMIT[71] & ~reg_be))) |
+               (addr_hit[72] & (|(FLASH_CTRL_CORE_PERMIT[72] & ~reg_be))) |
+               (addr_hit[73] & (|(FLASH_CTRL_CORE_PERMIT[73] & ~reg_be))) |
+               (addr_hit[74] & (|(FLASH_CTRL_CORE_PERMIT[74] & ~reg_be))) |
+               (addr_hit[75] & (|(FLASH_CTRL_CORE_PERMIT[75] & ~reg_be))) |
+               (addr_hit[76] & (|(FLASH_CTRL_CORE_PERMIT[76] & ~reg_be))) |
+               (addr_hit[77] & (|(FLASH_CTRL_CORE_PERMIT[77] & ~reg_be))) |
+               (addr_hit[78] & (|(FLASH_CTRL_CORE_PERMIT[78] & ~reg_be))) |
+               (addr_hit[79] & (|(FLASH_CTRL_CORE_PERMIT[79] & ~reg_be))) |
+               (addr_hit[80] & (|(FLASH_CTRL_CORE_PERMIT[80] & ~reg_be))) |
+               (addr_hit[81] & (|(FLASH_CTRL_CORE_PERMIT[81] & ~reg_be))) |
+               (addr_hit[82] & (|(FLASH_CTRL_CORE_PERMIT[82] & ~reg_be))) |
+               (addr_hit[83] & (|(FLASH_CTRL_CORE_PERMIT[83] & ~reg_be))) |
+               (addr_hit[84] & (|(FLASH_CTRL_CORE_PERMIT[84] & ~reg_be))) |
+               (addr_hit[85] & (|(FLASH_CTRL_CORE_PERMIT[85] & ~reg_be))) |
+               (addr_hit[86] & (|(FLASH_CTRL_CORE_PERMIT[86] & ~reg_be))) |
+               (addr_hit[87] & (|(FLASH_CTRL_CORE_PERMIT[87] & ~reg_be))) |
+               (addr_hit[88] & (|(FLASH_CTRL_CORE_PERMIT[88] & ~reg_be))) |
+               (addr_hit[89] & (|(FLASH_CTRL_CORE_PERMIT[89] & ~reg_be))) |
+               (addr_hit[90] & (|(FLASH_CTRL_CORE_PERMIT[90] & ~reg_be))) |
+               (addr_hit[91] & (|(FLASH_CTRL_CORE_PERMIT[91] & ~reg_be))) |
+               (addr_hit[92] & (|(FLASH_CTRL_CORE_PERMIT[92] & ~reg_be))) |
+               (addr_hit[93] & (|(FLASH_CTRL_CORE_PERMIT[93] & ~reg_be))) |
+               (addr_hit[94] & (|(FLASH_CTRL_CORE_PERMIT[94] & ~reg_be))) |
+               (addr_hit[95] & (|(FLASH_CTRL_CORE_PERMIT[95] & ~reg_be))) |
+               (addr_hit[96] & (|(FLASH_CTRL_CORE_PERMIT[96] & ~reg_be))) |
+               (addr_hit[97] & (|(FLASH_CTRL_CORE_PERMIT[97] & ~reg_be))) |
+               (addr_hit[98] & (|(FLASH_CTRL_CORE_PERMIT[98] & ~reg_be)))));
   end
 
   assign intr_state_prog_empty_we = addr_hit[0] & reg_we & !reg_error;

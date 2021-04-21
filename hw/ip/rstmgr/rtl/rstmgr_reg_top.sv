@@ -443,13 +443,13 @@ module rstmgr_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[0] && reg_we && (RSTMGR_PERMIT[0] != (RSTMGR_PERMIT[0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[1] && reg_we && (RSTMGR_PERMIT[1] != (RSTMGR_PERMIT[1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[2] && reg_we && (RSTMGR_PERMIT[2] != (RSTMGR_PERMIT[2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[3] && reg_we && (RSTMGR_PERMIT[3] != (RSTMGR_PERMIT[3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[4] && reg_we && (RSTMGR_PERMIT[4] != (RSTMGR_PERMIT[4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[5] && reg_we && (RSTMGR_PERMIT[5] != (RSTMGR_PERMIT[5] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[0] & (|(RSTMGR_PERMIT[0] & ~reg_be))) |
+               (addr_hit[1] & (|(RSTMGR_PERMIT[1] & ~reg_be))) |
+               (addr_hit[2] & (|(RSTMGR_PERMIT[2] & ~reg_be))) |
+               (addr_hit[3] & (|(RSTMGR_PERMIT[3] & ~reg_be))) |
+               (addr_hit[4] & (|(RSTMGR_PERMIT[4] & ~reg_be))) |
+               (addr_hit[5] & (|(RSTMGR_PERMIT[5] & ~reg_be)))));
   end
 
   assign reset_info_por_we = addr_hit[0] & reg_we & !reg_error;

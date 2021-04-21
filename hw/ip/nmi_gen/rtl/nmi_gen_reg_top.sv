@@ -351,10 +351,10 @@ module nmi_gen_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[0] && reg_we && (NMI_GEN_PERMIT[0] != (NMI_GEN_PERMIT[0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[1] && reg_we && (NMI_GEN_PERMIT[1] != (NMI_GEN_PERMIT[1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[2] && reg_we && (NMI_GEN_PERMIT[2] != (NMI_GEN_PERMIT[2] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[0] & (|(NMI_GEN_PERMIT[0] & ~reg_be))) |
+               (addr_hit[1] & (|(NMI_GEN_PERMIT[1] & ~reg_be))) |
+               (addr_hit[2] & (|(NMI_GEN_PERMIT[2] & ~reg_be)))));
   end
 
   assign intr_state_esc0_we = addr_hit[0] & reg_we & !reg_error;

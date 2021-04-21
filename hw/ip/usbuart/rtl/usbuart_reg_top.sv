@@ -1548,21 +1548,21 @@ module usbuart_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (USBUART_PERMIT[ 0] != (USBUART_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (USBUART_PERMIT[ 1] != (USBUART_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (USBUART_PERMIT[ 2] != (USBUART_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (USBUART_PERMIT[ 3] != (USBUART_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (USBUART_PERMIT[ 4] != (USBUART_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (USBUART_PERMIT[ 5] != (USBUART_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (USBUART_PERMIT[ 6] != (USBUART_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (USBUART_PERMIT[ 7] != (USBUART_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (USBUART_PERMIT[ 8] != (USBUART_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (USBUART_PERMIT[ 9] != (USBUART_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (USBUART_PERMIT[10] != (USBUART_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (USBUART_PERMIT[11] != (USBUART_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (USBUART_PERMIT[12] != (USBUART_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (USBUART_PERMIT[13] != (USBUART_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[ 0] & (|(USBUART_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(USBUART_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(USBUART_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(USBUART_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(USBUART_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(USBUART_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(USBUART_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(USBUART_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(USBUART_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(USBUART_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(USBUART_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(USBUART_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(USBUART_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(USBUART_PERMIT[13] & ~reg_be)))));
   end
 
   assign intr_state_tx_watermark_we = addr_hit[0] & reg_we & !reg_error;

@@ -2812,29 +2812,29 @@ module i2c_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (I2C_PERMIT[ 0] != (I2C_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (I2C_PERMIT[ 1] != (I2C_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (I2C_PERMIT[ 2] != (I2C_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (I2C_PERMIT[ 3] != (I2C_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (I2C_PERMIT[ 4] != (I2C_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (I2C_PERMIT[ 5] != (I2C_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (I2C_PERMIT[ 6] != (I2C_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (I2C_PERMIT[ 7] != (I2C_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (I2C_PERMIT[ 8] != (I2C_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (I2C_PERMIT[ 9] != (I2C_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (I2C_PERMIT[10] != (I2C_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (I2C_PERMIT[11] != (I2C_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (I2C_PERMIT[12] != (I2C_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (I2C_PERMIT[13] != (I2C_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[14] && reg_we && (I2C_PERMIT[14] != (I2C_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[15] && reg_we && (I2C_PERMIT[15] != (I2C_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[16] && reg_we && (I2C_PERMIT[16] != (I2C_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[17] && reg_we && (I2C_PERMIT[17] != (I2C_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[18] && reg_we && (I2C_PERMIT[18] != (I2C_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[19] && reg_we && (I2C_PERMIT[19] != (I2C_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[20] && reg_we && (I2C_PERMIT[20] != (I2C_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[21] && reg_we && (I2C_PERMIT[21] != (I2C_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[ 0] & (|(I2C_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(I2C_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(I2C_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(I2C_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(I2C_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(I2C_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(I2C_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(I2C_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(I2C_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(I2C_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(I2C_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(I2C_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(I2C_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(I2C_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(I2C_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(I2C_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(I2C_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(I2C_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(I2C_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(I2C_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(I2C_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(I2C_PERMIT[21] & ~reg_be)))));
   end
 
   assign intr_state_fmt_watermark_we = addr_hit[0] & reg_we & !reg_error;

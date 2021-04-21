@@ -3898,45 +3898,45 @@ module rv_plic_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (RV_PLIC_PERMIT[ 0] != (RV_PLIC_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (RV_PLIC_PERMIT[ 1] != (RV_PLIC_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (RV_PLIC_PERMIT[ 2] != (RV_PLIC_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (RV_PLIC_PERMIT[ 3] != (RV_PLIC_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (RV_PLIC_PERMIT[ 4] != (RV_PLIC_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (RV_PLIC_PERMIT[ 5] != (RV_PLIC_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (RV_PLIC_PERMIT[ 6] != (RV_PLIC_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (RV_PLIC_PERMIT[ 7] != (RV_PLIC_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (RV_PLIC_PERMIT[ 8] != (RV_PLIC_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (RV_PLIC_PERMIT[ 9] != (RV_PLIC_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (RV_PLIC_PERMIT[10] != (RV_PLIC_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (RV_PLIC_PERMIT[11] != (RV_PLIC_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (RV_PLIC_PERMIT[12] != (RV_PLIC_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (RV_PLIC_PERMIT[13] != (RV_PLIC_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[14] && reg_we && (RV_PLIC_PERMIT[14] != (RV_PLIC_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[15] && reg_we && (RV_PLIC_PERMIT[15] != (RV_PLIC_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[16] && reg_we && (RV_PLIC_PERMIT[16] != (RV_PLIC_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[17] && reg_we && (RV_PLIC_PERMIT[17] != (RV_PLIC_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[18] && reg_we && (RV_PLIC_PERMIT[18] != (RV_PLIC_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[19] && reg_we && (RV_PLIC_PERMIT[19] != (RV_PLIC_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[20] && reg_we && (RV_PLIC_PERMIT[20] != (RV_PLIC_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[21] && reg_we && (RV_PLIC_PERMIT[21] != (RV_PLIC_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[22] && reg_we && (RV_PLIC_PERMIT[22] != (RV_PLIC_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[23] && reg_we && (RV_PLIC_PERMIT[23] != (RV_PLIC_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[24] && reg_we && (RV_PLIC_PERMIT[24] != (RV_PLIC_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[25] && reg_we && (RV_PLIC_PERMIT[25] != (RV_PLIC_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[26] && reg_we && (RV_PLIC_PERMIT[26] != (RV_PLIC_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[27] && reg_we && (RV_PLIC_PERMIT[27] != (RV_PLIC_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[28] && reg_we && (RV_PLIC_PERMIT[28] != (RV_PLIC_PERMIT[28] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[29] && reg_we && (RV_PLIC_PERMIT[29] != (RV_PLIC_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[30] && reg_we && (RV_PLIC_PERMIT[30] != (RV_PLIC_PERMIT[30] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[31] && reg_we && (RV_PLIC_PERMIT[31] != (RV_PLIC_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[32] && reg_we && (RV_PLIC_PERMIT[32] != (RV_PLIC_PERMIT[32] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[33] && reg_we && (RV_PLIC_PERMIT[33] != (RV_PLIC_PERMIT[33] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[34] && reg_we && (RV_PLIC_PERMIT[34] != (RV_PLIC_PERMIT[34] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[35] && reg_we && (RV_PLIC_PERMIT[35] != (RV_PLIC_PERMIT[35] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[36] && reg_we && (RV_PLIC_PERMIT[36] != (RV_PLIC_PERMIT[36] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[37] && reg_we && (RV_PLIC_PERMIT[37] != (RV_PLIC_PERMIT[37] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[ 0] & (|(RV_PLIC_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(RV_PLIC_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(RV_PLIC_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(RV_PLIC_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(RV_PLIC_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(RV_PLIC_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(RV_PLIC_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(RV_PLIC_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(RV_PLIC_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(RV_PLIC_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(RV_PLIC_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(RV_PLIC_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(RV_PLIC_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(RV_PLIC_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(RV_PLIC_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(RV_PLIC_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(RV_PLIC_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(RV_PLIC_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(RV_PLIC_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(RV_PLIC_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(RV_PLIC_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(RV_PLIC_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(RV_PLIC_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(RV_PLIC_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(RV_PLIC_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(RV_PLIC_PERMIT[25] & ~reg_be))) |
+               (addr_hit[26] & (|(RV_PLIC_PERMIT[26] & ~reg_be))) |
+               (addr_hit[27] & (|(RV_PLIC_PERMIT[27] & ~reg_be))) |
+               (addr_hit[28] & (|(RV_PLIC_PERMIT[28] & ~reg_be))) |
+               (addr_hit[29] & (|(RV_PLIC_PERMIT[29] & ~reg_be))) |
+               (addr_hit[30] & (|(RV_PLIC_PERMIT[30] & ~reg_be))) |
+               (addr_hit[31] & (|(RV_PLIC_PERMIT[31] & ~reg_be))) |
+               (addr_hit[32] & (|(RV_PLIC_PERMIT[32] & ~reg_be))) |
+               (addr_hit[33] & (|(RV_PLIC_PERMIT[33] & ~reg_be))) |
+               (addr_hit[34] & (|(RV_PLIC_PERMIT[34] & ~reg_be))) |
+               (addr_hit[35] & (|(RV_PLIC_PERMIT[35] & ~reg_be))) |
+               (addr_hit[36] & (|(RV_PLIC_PERMIT[36] & ~reg_be))) |
+               (addr_hit[37] & (|(RV_PLIC_PERMIT[37] & ~reg_be)))));
   end
 
   assign le_le_0_we = addr_hit[1] & reg_we & !reg_error;

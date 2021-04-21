@@ -1975,62 +1975,62 @@ module kmac_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (KMAC_PERMIT[ 0] != (KMAC_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (KMAC_PERMIT[ 1] != (KMAC_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (KMAC_PERMIT[ 2] != (KMAC_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (KMAC_PERMIT[ 3] != (KMAC_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (KMAC_PERMIT[ 4] != (KMAC_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (KMAC_PERMIT[ 5] != (KMAC_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (KMAC_PERMIT[ 6] != (KMAC_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (KMAC_PERMIT[ 7] != (KMAC_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (KMAC_PERMIT[ 8] != (KMAC_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (KMAC_PERMIT[ 9] != (KMAC_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (KMAC_PERMIT[10] != (KMAC_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (KMAC_PERMIT[11] != (KMAC_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (KMAC_PERMIT[12] != (KMAC_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (KMAC_PERMIT[13] != (KMAC_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[14] && reg_we && (KMAC_PERMIT[14] != (KMAC_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[15] && reg_we && (KMAC_PERMIT[15] != (KMAC_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[16] && reg_we && (KMAC_PERMIT[16] != (KMAC_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[17] && reg_we && (KMAC_PERMIT[17] != (KMAC_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[18] && reg_we && (KMAC_PERMIT[18] != (KMAC_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[19] && reg_we && (KMAC_PERMIT[19] != (KMAC_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[20] && reg_we && (KMAC_PERMIT[20] != (KMAC_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[21] && reg_we && (KMAC_PERMIT[21] != (KMAC_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[22] && reg_we && (KMAC_PERMIT[22] != (KMAC_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[23] && reg_we && (KMAC_PERMIT[23] != (KMAC_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[24] && reg_we && (KMAC_PERMIT[24] != (KMAC_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[25] && reg_we && (KMAC_PERMIT[25] != (KMAC_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[26] && reg_we && (KMAC_PERMIT[26] != (KMAC_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[27] && reg_we && (KMAC_PERMIT[27] != (KMAC_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[28] && reg_we && (KMAC_PERMIT[28] != (KMAC_PERMIT[28] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[29] && reg_we && (KMAC_PERMIT[29] != (KMAC_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[30] && reg_we && (KMAC_PERMIT[30] != (KMAC_PERMIT[30] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[31] && reg_we && (KMAC_PERMIT[31] != (KMAC_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[32] && reg_we && (KMAC_PERMIT[32] != (KMAC_PERMIT[32] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[33] && reg_we && (KMAC_PERMIT[33] != (KMAC_PERMIT[33] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[34] && reg_we && (KMAC_PERMIT[34] != (KMAC_PERMIT[34] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[35] && reg_we && (KMAC_PERMIT[35] != (KMAC_PERMIT[35] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[36] && reg_we && (KMAC_PERMIT[36] != (KMAC_PERMIT[36] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[37] && reg_we && (KMAC_PERMIT[37] != (KMAC_PERMIT[37] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[38] && reg_we && (KMAC_PERMIT[38] != (KMAC_PERMIT[38] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[39] && reg_we && (KMAC_PERMIT[39] != (KMAC_PERMIT[39] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[40] && reg_we && (KMAC_PERMIT[40] != (KMAC_PERMIT[40] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[41] && reg_we && (KMAC_PERMIT[41] != (KMAC_PERMIT[41] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[42] && reg_we && (KMAC_PERMIT[42] != (KMAC_PERMIT[42] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[43] && reg_we && (KMAC_PERMIT[43] != (KMAC_PERMIT[43] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[44] && reg_we && (KMAC_PERMIT[44] != (KMAC_PERMIT[44] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[45] && reg_we && (KMAC_PERMIT[45] != (KMAC_PERMIT[45] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[46] && reg_we && (KMAC_PERMIT[46] != (KMAC_PERMIT[46] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[47] && reg_we && (KMAC_PERMIT[47] != (KMAC_PERMIT[47] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[48] && reg_we && (KMAC_PERMIT[48] != (KMAC_PERMIT[48] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[49] && reg_we && (KMAC_PERMIT[49] != (KMAC_PERMIT[49] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[50] && reg_we && (KMAC_PERMIT[50] != (KMAC_PERMIT[50] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[51] && reg_we && (KMAC_PERMIT[51] != (KMAC_PERMIT[51] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[52] && reg_we && (KMAC_PERMIT[52] != (KMAC_PERMIT[52] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[53] && reg_we && (KMAC_PERMIT[53] != (KMAC_PERMIT[53] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[54] && reg_we && (KMAC_PERMIT[54] != (KMAC_PERMIT[54] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[ 0] & (|(KMAC_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(KMAC_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(KMAC_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(KMAC_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(KMAC_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(KMAC_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(KMAC_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(KMAC_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(KMAC_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(KMAC_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(KMAC_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(KMAC_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(KMAC_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(KMAC_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(KMAC_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(KMAC_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(KMAC_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(KMAC_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(KMAC_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(KMAC_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(KMAC_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(KMAC_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(KMAC_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(KMAC_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(KMAC_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(KMAC_PERMIT[25] & ~reg_be))) |
+               (addr_hit[26] & (|(KMAC_PERMIT[26] & ~reg_be))) |
+               (addr_hit[27] & (|(KMAC_PERMIT[27] & ~reg_be))) |
+               (addr_hit[28] & (|(KMAC_PERMIT[28] & ~reg_be))) |
+               (addr_hit[29] & (|(KMAC_PERMIT[29] & ~reg_be))) |
+               (addr_hit[30] & (|(KMAC_PERMIT[30] & ~reg_be))) |
+               (addr_hit[31] & (|(KMAC_PERMIT[31] & ~reg_be))) |
+               (addr_hit[32] & (|(KMAC_PERMIT[32] & ~reg_be))) |
+               (addr_hit[33] & (|(KMAC_PERMIT[33] & ~reg_be))) |
+               (addr_hit[34] & (|(KMAC_PERMIT[34] & ~reg_be))) |
+               (addr_hit[35] & (|(KMAC_PERMIT[35] & ~reg_be))) |
+               (addr_hit[36] & (|(KMAC_PERMIT[36] & ~reg_be))) |
+               (addr_hit[37] & (|(KMAC_PERMIT[37] & ~reg_be))) |
+               (addr_hit[38] & (|(KMAC_PERMIT[38] & ~reg_be))) |
+               (addr_hit[39] & (|(KMAC_PERMIT[39] & ~reg_be))) |
+               (addr_hit[40] & (|(KMAC_PERMIT[40] & ~reg_be))) |
+               (addr_hit[41] & (|(KMAC_PERMIT[41] & ~reg_be))) |
+               (addr_hit[42] & (|(KMAC_PERMIT[42] & ~reg_be))) |
+               (addr_hit[43] & (|(KMAC_PERMIT[43] & ~reg_be))) |
+               (addr_hit[44] & (|(KMAC_PERMIT[44] & ~reg_be))) |
+               (addr_hit[45] & (|(KMAC_PERMIT[45] & ~reg_be))) |
+               (addr_hit[46] & (|(KMAC_PERMIT[46] & ~reg_be))) |
+               (addr_hit[47] & (|(KMAC_PERMIT[47] & ~reg_be))) |
+               (addr_hit[48] & (|(KMAC_PERMIT[48] & ~reg_be))) |
+               (addr_hit[49] & (|(KMAC_PERMIT[49] & ~reg_be))) |
+               (addr_hit[50] & (|(KMAC_PERMIT[50] & ~reg_be))) |
+               (addr_hit[51] & (|(KMAC_PERMIT[51] & ~reg_be))) |
+               (addr_hit[52] & (|(KMAC_PERMIT[52] & ~reg_be))) |
+               (addr_hit[53] & (|(KMAC_PERMIT[53] & ~reg_be))) |
+               (addr_hit[54] & (|(KMAC_PERMIT[54] & ~reg_be)))));
   end
 
   assign intr_state_kmac_done_we = addr_hit[0] & reg_we & !reg_error;

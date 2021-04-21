@@ -1361,19 +1361,19 @@ module spi_device_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (SPI_DEVICE_PERMIT[ 0] != (SPI_DEVICE_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (SPI_DEVICE_PERMIT[ 1] != (SPI_DEVICE_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (SPI_DEVICE_PERMIT[ 2] != (SPI_DEVICE_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (SPI_DEVICE_PERMIT[ 3] != (SPI_DEVICE_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (SPI_DEVICE_PERMIT[ 4] != (SPI_DEVICE_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (SPI_DEVICE_PERMIT[ 5] != (SPI_DEVICE_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (SPI_DEVICE_PERMIT[ 6] != (SPI_DEVICE_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (SPI_DEVICE_PERMIT[ 7] != (SPI_DEVICE_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (SPI_DEVICE_PERMIT[ 8] != (SPI_DEVICE_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (SPI_DEVICE_PERMIT[ 9] != (SPI_DEVICE_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (SPI_DEVICE_PERMIT[10] != (SPI_DEVICE_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (SPI_DEVICE_PERMIT[11] != (SPI_DEVICE_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[ 0] & (|(SPI_DEVICE_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(SPI_DEVICE_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(SPI_DEVICE_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(SPI_DEVICE_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(SPI_DEVICE_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(SPI_DEVICE_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(SPI_DEVICE_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(SPI_DEVICE_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(SPI_DEVICE_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(SPI_DEVICE_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(SPI_DEVICE_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(SPI_DEVICE_PERMIT[11] & ~reg_be)))));
   end
 
   assign intr_state_rxf_we = addr_hit[0] & reg_we & !reg_error;

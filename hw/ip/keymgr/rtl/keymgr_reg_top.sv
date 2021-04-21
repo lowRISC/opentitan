@@ -1824,58 +1824,58 @@ module keymgr_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (KEYMGR_PERMIT[ 0] != (KEYMGR_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (KEYMGR_PERMIT[ 1] != (KEYMGR_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (KEYMGR_PERMIT[ 2] != (KEYMGR_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (KEYMGR_PERMIT[ 3] != (KEYMGR_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (KEYMGR_PERMIT[ 4] != (KEYMGR_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (KEYMGR_PERMIT[ 5] != (KEYMGR_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (KEYMGR_PERMIT[ 6] != (KEYMGR_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (KEYMGR_PERMIT[ 7] != (KEYMGR_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (KEYMGR_PERMIT[ 8] != (KEYMGR_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (KEYMGR_PERMIT[ 9] != (KEYMGR_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (KEYMGR_PERMIT[10] != (KEYMGR_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (KEYMGR_PERMIT[11] != (KEYMGR_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (KEYMGR_PERMIT[12] != (KEYMGR_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (KEYMGR_PERMIT[13] != (KEYMGR_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[14] && reg_we && (KEYMGR_PERMIT[14] != (KEYMGR_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[15] && reg_we && (KEYMGR_PERMIT[15] != (KEYMGR_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[16] && reg_we && (KEYMGR_PERMIT[16] != (KEYMGR_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[17] && reg_we && (KEYMGR_PERMIT[17] != (KEYMGR_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[18] && reg_we && (KEYMGR_PERMIT[18] != (KEYMGR_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[19] && reg_we && (KEYMGR_PERMIT[19] != (KEYMGR_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[20] && reg_we && (KEYMGR_PERMIT[20] != (KEYMGR_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[21] && reg_we && (KEYMGR_PERMIT[21] != (KEYMGR_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[22] && reg_we && (KEYMGR_PERMIT[22] != (KEYMGR_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[23] && reg_we && (KEYMGR_PERMIT[23] != (KEYMGR_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[24] && reg_we && (KEYMGR_PERMIT[24] != (KEYMGR_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[25] && reg_we && (KEYMGR_PERMIT[25] != (KEYMGR_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[26] && reg_we && (KEYMGR_PERMIT[26] != (KEYMGR_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[27] && reg_we && (KEYMGR_PERMIT[27] != (KEYMGR_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[28] && reg_we && (KEYMGR_PERMIT[28] != (KEYMGR_PERMIT[28] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[29] && reg_we && (KEYMGR_PERMIT[29] != (KEYMGR_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[30] && reg_we && (KEYMGR_PERMIT[30] != (KEYMGR_PERMIT[30] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[31] && reg_we && (KEYMGR_PERMIT[31] != (KEYMGR_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[32] && reg_we && (KEYMGR_PERMIT[32] != (KEYMGR_PERMIT[32] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[33] && reg_we && (KEYMGR_PERMIT[33] != (KEYMGR_PERMIT[33] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[34] && reg_we && (KEYMGR_PERMIT[34] != (KEYMGR_PERMIT[34] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[35] && reg_we && (KEYMGR_PERMIT[35] != (KEYMGR_PERMIT[35] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[36] && reg_we && (KEYMGR_PERMIT[36] != (KEYMGR_PERMIT[36] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[37] && reg_we && (KEYMGR_PERMIT[37] != (KEYMGR_PERMIT[37] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[38] && reg_we && (KEYMGR_PERMIT[38] != (KEYMGR_PERMIT[38] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[39] && reg_we && (KEYMGR_PERMIT[39] != (KEYMGR_PERMIT[39] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[40] && reg_we && (KEYMGR_PERMIT[40] != (KEYMGR_PERMIT[40] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[41] && reg_we && (KEYMGR_PERMIT[41] != (KEYMGR_PERMIT[41] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[42] && reg_we && (KEYMGR_PERMIT[42] != (KEYMGR_PERMIT[42] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[43] && reg_we && (KEYMGR_PERMIT[43] != (KEYMGR_PERMIT[43] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[44] && reg_we && (KEYMGR_PERMIT[44] != (KEYMGR_PERMIT[44] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[45] && reg_we && (KEYMGR_PERMIT[45] != (KEYMGR_PERMIT[45] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[46] && reg_we && (KEYMGR_PERMIT[46] != (KEYMGR_PERMIT[46] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[47] && reg_we && (KEYMGR_PERMIT[47] != (KEYMGR_PERMIT[47] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[48] && reg_we && (KEYMGR_PERMIT[48] != (KEYMGR_PERMIT[48] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[49] && reg_we && (KEYMGR_PERMIT[49] != (KEYMGR_PERMIT[49] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[50] && reg_we && (KEYMGR_PERMIT[50] != (KEYMGR_PERMIT[50] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[ 0] & (|(KEYMGR_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(KEYMGR_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(KEYMGR_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(KEYMGR_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(KEYMGR_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(KEYMGR_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(KEYMGR_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(KEYMGR_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(KEYMGR_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(KEYMGR_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(KEYMGR_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(KEYMGR_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(KEYMGR_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(KEYMGR_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(KEYMGR_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(KEYMGR_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(KEYMGR_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(KEYMGR_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(KEYMGR_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(KEYMGR_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(KEYMGR_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(KEYMGR_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(KEYMGR_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(KEYMGR_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(KEYMGR_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(KEYMGR_PERMIT[25] & ~reg_be))) |
+               (addr_hit[26] & (|(KEYMGR_PERMIT[26] & ~reg_be))) |
+               (addr_hit[27] & (|(KEYMGR_PERMIT[27] & ~reg_be))) |
+               (addr_hit[28] & (|(KEYMGR_PERMIT[28] & ~reg_be))) |
+               (addr_hit[29] & (|(KEYMGR_PERMIT[29] & ~reg_be))) |
+               (addr_hit[30] & (|(KEYMGR_PERMIT[30] & ~reg_be))) |
+               (addr_hit[31] & (|(KEYMGR_PERMIT[31] & ~reg_be))) |
+               (addr_hit[32] & (|(KEYMGR_PERMIT[32] & ~reg_be))) |
+               (addr_hit[33] & (|(KEYMGR_PERMIT[33] & ~reg_be))) |
+               (addr_hit[34] & (|(KEYMGR_PERMIT[34] & ~reg_be))) |
+               (addr_hit[35] & (|(KEYMGR_PERMIT[35] & ~reg_be))) |
+               (addr_hit[36] & (|(KEYMGR_PERMIT[36] & ~reg_be))) |
+               (addr_hit[37] & (|(KEYMGR_PERMIT[37] & ~reg_be))) |
+               (addr_hit[38] & (|(KEYMGR_PERMIT[38] & ~reg_be))) |
+               (addr_hit[39] & (|(KEYMGR_PERMIT[39] & ~reg_be))) |
+               (addr_hit[40] & (|(KEYMGR_PERMIT[40] & ~reg_be))) |
+               (addr_hit[41] & (|(KEYMGR_PERMIT[41] & ~reg_be))) |
+               (addr_hit[42] & (|(KEYMGR_PERMIT[42] & ~reg_be))) |
+               (addr_hit[43] & (|(KEYMGR_PERMIT[43] & ~reg_be))) |
+               (addr_hit[44] & (|(KEYMGR_PERMIT[44] & ~reg_be))) |
+               (addr_hit[45] & (|(KEYMGR_PERMIT[45] & ~reg_be))) |
+               (addr_hit[46] & (|(KEYMGR_PERMIT[46] & ~reg_be))) |
+               (addr_hit[47] & (|(KEYMGR_PERMIT[47] & ~reg_be))) |
+               (addr_hit[48] & (|(KEYMGR_PERMIT[48] & ~reg_be))) |
+               (addr_hit[49] & (|(KEYMGR_PERMIT[49] & ~reg_be))) |
+               (addr_hit[50] & (|(KEYMGR_PERMIT[50] & ~reg_be)))));
   end
 
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
