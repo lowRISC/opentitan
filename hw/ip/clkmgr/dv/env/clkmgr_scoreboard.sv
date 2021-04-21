@@ -42,6 +42,9 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
 
+    string access_str = write ? "write" : "read";
+    string channel_str = channel == AddrChannel ? "address" : "data";
+
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.csr_addrs[ral_name]}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
@@ -51,14 +54,15 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
-    // if incoming access is a write to a valid csr, then make updates right away
+    // If incoming access is a write to a valid csr, update prediction right away.
     if (addr_phase_write) begin
+      `uvm_info(`gfn, $sformatf("Writing 0x%0x to %s", item.a_data, csr.get_name()), UVM_HIGH)
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
     end
 
-    // process the csr req
-    // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
+    // Process the csr req:
+    // - For write, update local variable and fifo at address phase.
+    // - For read, update predication at address phase and compare at data phase.
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
@@ -71,6 +75,32 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "intr_test": begin
         // FIXME
       end
+      "extclk_sel_regwen":
+        if (addr_phase_write) begin
+          cfg.clkmgr_vif.update_extclk_sel_regwen(item.a_data);
+        end
+      "extclk_sel":
+        if (addr_phase_write) begin
+          cfg.clkmgr_vif.update_extclk_sel(item.a_data);
+        end
+      "jitter": begin
+        // The functionality of jitter is not well specified. Assumming the
+        // values just stick.
+      end
+      "clk_enables":
+        if (addr_phase_write) begin
+          cfg.clkmgr_vif.update_clk_enables(item.a_data);
+        end
+      "clk_hints":
+        // Clearing a hint sets an expectation for the status to transition to zero.
+        if (addr_phase_write) begin
+          cfg.clkmgr_vif.update_hints(item.a_data);
+        end
+      "clk_hints_status": begin
+        // The status will respond to the hint once the target unit is idle. We check it in
+        // the sequence.
+        do_read_check = 1'b0;
+      end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
@@ -78,6 +108,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (data_phase_read) begin
+      `uvm_info(`gfn, $sformatf("Reading 0x%0x from %s", item.d_data, csr.get_name()), UVM_HIGH)
       if (do_read_check) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))
