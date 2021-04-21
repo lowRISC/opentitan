@@ -25,3 +25,6 @@ waive -rules OUTPUT_NOT_DRIVEN -location {prim_flop*.sv} -regexp {.*q_o.*} \
 
 waive -rules INPUT_NOT_READ -location {prim_flop_2sync.sv} -regexp {Input port.*} \
       -comment "Silience prim related errors"
+
+waive -rules UNSIZED_BIT_CONTEXT -location {flash_ctrl_pkg.sv} -regexp {Unsized bit literal "'1" encountered within a parameter declaration} \
+      -comment "This instance of an unsized parameter literal is difficult to circumvent, as the width of the assigned field is not readily available in this package."
