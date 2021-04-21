@@ -51,11 +51,11 @@ set USB_TCK_PERIOD [expr $USB_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
 create_clock -name USB_CLK -period ${USB_TCK_PERIOD} [get_pins ${USB_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks USB_CLK]
 
-set_max_delay 1 -from [get_ports USB_N] -to [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_*u_impl_*/u_sync_1/gen_*u_impl*/gen_flops[2]*.u_size_only_reg/D]
-set_max_delay 1 -from [get_ports USB_P] -to [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_*u_impl_*/u_sync_1/gen_*u_impl*/gen_flops[3]*.u_size_only_reg/D]
-set_max_delay 1 -from [get_ports USB_*] -to [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_*u_impl_*/u_sync_1/gen_*u_impl*/gen_flops[1]*.u_size_only_reg/D]
-set_max_delay 1 -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/usb_d_q_reg/Q] -to [get_ports USB_*]
-set_max_delay 1 -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/oe_q_reg/Q] -to [get_ports USB_*]
+set_max_delay 3 -from [get_ports USB_N] -to [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_*u_impl_*/u_sync_1/gen_*u_impl*/gen_flops[2]*.u_size_only_reg/D]
+set_max_delay 3 -from [get_ports USB_P] -to [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_*u_impl_*/u_sync_1/gen_*u_impl*/gen_flops[3]*.u_size_only_reg/D]
+set_max_delay 3 -from [get_ports USB_*] -to [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_*u_impl_*/u_sync_1/gen_*u_impl*/gen_flops[1]*.u_size_only_reg/D]
+set_max_delay 3 -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/usb_d_q_reg/Q] -to [get_ports USB_*]
+set_max_delay 3 -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/oe_q_reg/Q] -to [get_ports USB_*]
 #####################
 # IO clk            #
 #####################
