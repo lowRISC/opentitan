@@ -14,3 +14,7 @@ waive -rules CLOCK_MUX -location {lc_ctrl.sv} -regexp {Clock 'tck_muxed' is driv
 waive -rules CLOCK_USE -location {lc_ctrl.sv} \
       -msg {'clk_i' is connected to 'prim_clock_mux2' port 'clk1_i',} \
       -comment "This is needed such that the clock can be properly controlled during scanmode."
+
+waive -rules RESET_MUX -location {lc_ctrl.sv} \
+      -msg {Asynchronous reset 'trst_n_muxed' is driven by a multiplexer here, used as a reset 'trst_ni' at dmi_jtag} \
+      -comment "This is needed such that the reset can be properly controlled during scanmode."
