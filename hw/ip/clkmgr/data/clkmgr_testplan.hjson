@@ -13,21 +13,96 @@
     {
       name: smoke
       desc: '''
-            Smoke test accessing a major datapath within the clkmgr.
+            Smoke test disabling peripheral and transactional clocks.
+
+            - Disables all peripheral clocks from their enabled reset state.
+            - Transactional clocks gating depends on whether they are idle.
+            - Initializes all units as busy (not idle).
+            - Clears each unit's `clk_hints` bit, which has no effect until
+              the unit becomes idle.
+            - Sets the unit's `idle_i` bit, which should disable the clock.
 
             **Stimulus**:
-            - TBD
+            - CSR writes to `clk_enables` and `clk_hints`.
+            - Setting `idle_i` clkmgr input.
 
             **Checks**:
-            - TBD
+            - SVA assertions for peripheral clocks enable and disable
+              properties.
+            - Transactional clocks check SVA properties as follows:
+              - If the hint enables it, the clock becomes active.
+              - If the hint disables it but the unit is busy, the clock remains
+                active.
+              - If the hint disables it and the unit is idle, the clock stops.
             '''
       milestone: V1
       tests: ["clkmgr_smoke"]
     }
     {
-      name: feature1
-      desc: '''Add more test entries here like above.'''
-      milestone: V1
+      name: peri_enables
+      desc: '''
+            Peripheral clocks are disabled if its `clk_enables` bit is off,
+            or `pwr_i.ip_clk_en` is off.
+            This test randomizes `ip_clk_en`, the initial setting of
+             `clk_enables`, and flips any bit in `clk_enables`.
+
+            **Checks**:
+            - SVA assertions for peripheral clocks enable and disable
+              properties.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: trans_enables
+      desc: '''
+            Transactional unit clocks are disabled if they are not busy and
+            their`clk_hints` bit is off, or `pwr_i.ip_clk_en` is off.
+            This test randomize `ip_clk_en`, the initial setting of `idle_i`
+            and `clk_hints`, and flips any bit in `clk_hints`. If the
+            corresponding unit is not idle it waits some cycles and clears its
+            `idle_i` bit.
+
+            **Checks**:
+            - SVA assertions for transactional unit clocks described in
+              clkmgr_smoke.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: extclk
+      desc: '''
+            Tests the functionality of enabling external clocks.
+
+            - External clocks can be enabled writing `lc_ctrl_pkg::On` to CSR
+              `extclk_sel`.
+            - Writes to CSR `extclk_sel` are ignored unless the value of CSR
+              `extclk_sel_regwen` is 1.
+            - Regardless of the `extclk_sel` contents, external clocks won't
+              be enabled unless `lc_dtl_en_i == lc_ctrl_pkg::On`.
+            - External clocks can also be enabled if the input
+             `lc_clk_byp_req_i == lc_ctrl_pkg::On`.
+            - A successful switch to external clocks will cause the clkmgr
+              to undo a divide by 2 for io_div4 and io_div2 clocks unless in
+              scan mode `(scanmode_i == lc_ctrl_pkg::On)`.
+
+            **Stimulus**:
+            - CSR writes to `extclk_sel` and `extclk_sel_regwen`.
+            - Setting `lc_dft_en_i`, `lc_clk_byp_req_i`, and the handshake to
+              ast via `ast_clk_byp_req_o` and `ast_clk_byp_ack_i`.
+
+            **Checks**:
+            - SVA assertions:
+              - `lc_clk_byp_req_i == lc_ctrl_pkg::On` causes
+                `ast_clk_byp_req_o == lc_ctrl_pkg::On`.
+              - `extclk_sel == lc_ctrl_pkg::On` and
+                `lc_dft_en_i == lc_ctrl_pkg::On` causes
+                `ast_clk_byp_req_o == lc_ctrl_pkg::On`.
+              - `ast_clk_byp_ack_i == lc_ctrl_pkg::On` causes the divided
+                clocks to ramp up unless `scanmode_i == lc_ctrl_pkg::On`.
+            '''
+      milestone: V2
       tests: []
     }
   ]
