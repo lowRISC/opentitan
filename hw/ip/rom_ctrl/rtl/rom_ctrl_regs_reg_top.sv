@@ -643,25 +643,25 @@ module rom_ctrl_regs_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (ROM_CTRL_REGS_PERMIT[ 0] != (ROM_CTRL_REGS_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (ROM_CTRL_REGS_PERMIT[ 1] != (ROM_CTRL_REGS_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (ROM_CTRL_REGS_PERMIT[ 2] != (ROM_CTRL_REGS_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (ROM_CTRL_REGS_PERMIT[ 3] != (ROM_CTRL_REGS_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (ROM_CTRL_REGS_PERMIT[ 4] != (ROM_CTRL_REGS_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (ROM_CTRL_REGS_PERMIT[ 5] != (ROM_CTRL_REGS_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (ROM_CTRL_REGS_PERMIT[ 6] != (ROM_CTRL_REGS_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (ROM_CTRL_REGS_PERMIT[ 7] != (ROM_CTRL_REGS_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (ROM_CTRL_REGS_PERMIT[ 8] != (ROM_CTRL_REGS_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (ROM_CTRL_REGS_PERMIT[ 9] != (ROM_CTRL_REGS_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (ROM_CTRL_REGS_PERMIT[10] != (ROM_CTRL_REGS_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (ROM_CTRL_REGS_PERMIT[11] != (ROM_CTRL_REGS_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (ROM_CTRL_REGS_PERMIT[12] != (ROM_CTRL_REGS_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (ROM_CTRL_REGS_PERMIT[13] != (ROM_CTRL_REGS_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[14] && reg_we && (ROM_CTRL_REGS_PERMIT[14] != (ROM_CTRL_REGS_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[15] && reg_we && (ROM_CTRL_REGS_PERMIT[15] != (ROM_CTRL_REGS_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[16] && reg_we && (ROM_CTRL_REGS_PERMIT[16] != (ROM_CTRL_REGS_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[17] && reg_we && (ROM_CTRL_REGS_PERMIT[17] != (ROM_CTRL_REGS_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[ 0] & (|(ROM_CTRL_REGS_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(ROM_CTRL_REGS_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(ROM_CTRL_REGS_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(ROM_CTRL_REGS_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(ROM_CTRL_REGS_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(ROM_CTRL_REGS_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(ROM_CTRL_REGS_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(ROM_CTRL_REGS_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(ROM_CTRL_REGS_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(ROM_CTRL_REGS_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(ROM_CTRL_REGS_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(ROM_CTRL_REGS_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(ROM_CTRL_REGS_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(ROM_CTRL_REGS_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(ROM_CTRL_REGS_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(ROM_CTRL_REGS_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(ROM_CTRL_REGS_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(ROM_CTRL_REGS_PERMIT[17] & ~reg_be)))));
   end
 
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;

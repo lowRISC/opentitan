@@ -1130,39 +1130,39 @@ module aes_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (AES_PERMIT[ 0] != (AES_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (AES_PERMIT[ 1] != (AES_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (AES_PERMIT[ 2] != (AES_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (AES_PERMIT[ 3] != (AES_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (AES_PERMIT[ 4] != (AES_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (AES_PERMIT[ 5] != (AES_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (AES_PERMIT[ 6] != (AES_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (AES_PERMIT[ 7] != (AES_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (AES_PERMIT[ 8] != (AES_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (AES_PERMIT[ 9] != (AES_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (AES_PERMIT[10] != (AES_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (AES_PERMIT[11] != (AES_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (AES_PERMIT[12] != (AES_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (AES_PERMIT[13] != (AES_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[14] && reg_we && (AES_PERMIT[14] != (AES_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[15] && reg_we && (AES_PERMIT[15] != (AES_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[16] && reg_we && (AES_PERMIT[16] != (AES_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[17] && reg_we && (AES_PERMIT[17] != (AES_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[18] && reg_we && (AES_PERMIT[18] != (AES_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[19] && reg_we && (AES_PERMIT[19] != (AES_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[20] && reg_we && (AES_PERMIT[20] != (AES_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[21] && reg_we && (AES_PERMIT[21] != (AES_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[22] && reg_we && (AES_PERMIT[22] != (AES_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[23] && reg_we && (AES_PERMIT[23] != (AES_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[24] && reg_we && (AES_PERMIT[24] != (AES_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[25] && reg_we && (AES_PERMIT[25] != (AES_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[26] && reg_we && (AES_PERMIT[26] != (AES_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[27] && reg_we && (AES_PERMIT[27] != (AES_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[28] && reg_we && (AES_PERMIT[28] != (AES_PERMIT[28] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[29] && reg_we && (AES_PERMIT[29] != (AES_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[30] && reg_we && (AES_PERMIT[30] != (AES_PERMIT[30] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[31] && reg_we && (AES_PERMIT[31] != (AES_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[ 0] & (|(AES_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(AES_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(AES_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(AES_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(AES_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(AES_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(AES_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(AES_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(AES_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(AES_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(AES_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(AES_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(AES_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(AES_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(AES_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(AES_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(AES_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(AES_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(AES_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(AES_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(AES_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(AES_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(AES_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(AES_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(AES_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(AES_PERMIT[25] & ~reg_be))) |
+               (addr_hit[26] & (|(AES_PERMIT[26] & ~reg_be))) |
+               (addr_hit[27] & (|(AES_PERMIT[27] & ~reg_be))) |
+               (addr_hit[28] & (|(AES_PERMIT[28] & ~reg_be))) |
+               (addr_hit[29] & (|(AES_PERMIT[29] & ~reg_be))) |
+               (addr_hit[30] & (|(AES_PERMIT[30] & ~reg_be))) |
+               (addr_hit[31] & (|(AES_PERMIT[31] & ~reg_be)))));
   end
 
   assign alert_test_recov_ctrl_update_err_we = addr_hit[0] & reg_we & !reg_error;

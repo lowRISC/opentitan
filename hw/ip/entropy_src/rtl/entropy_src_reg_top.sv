@@ -2612,58 +2612,58 @@ module entropy_src_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (ENTROPY_SRC_PERMIT[ 0] != (ENTROPY_SRC_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (ENTROPY_SRC_PERMIT[ 1] != (ENTROPY_SRC_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (ENTROPY_SRC_PERMIT[ 2] != (ENTROPY_SRC_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (ENTROPY_SRC_PERMIT[ 3] != (ENTROPY_SRC_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (ENTROPY_SRC_PERMIT[ 4] != (ENTROPY_SRC_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (ENTROPY_SRC_PERMIT[ 5] != (ENTROPY_SRC_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (ENTROPY_SRC_PERMIT[ 6] != (ENTROPY_SRC_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (ENTROPY_SRC_PERMIT[ 7] != (ENTROPY_SRC_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (ENTROPY_SRC_PERMIT[ 8] != (ENTROPY_SRC_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (ENTROPY_SRC_PERMIT[ 9] != (ENTROPY_SRC_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (ENTROPY_SRC_PERMIT[10] != (ENTROPY_SRC_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (ENTROPY_SRC_PERMIT[11] != (ENTROPY_SRC_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (ENTROPY_SRC_PERMIT[12] != (ENTROPY_SRC_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (ENTROPY_SRC_PERMIT[13] != (ENTROPY_SRC_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[14] && reg_we && (ENTROPY_SRC_PERMIT[14] != (ENTROPY_SRC_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[15] && reg_we && (ENTROPY_SRC_PERMIT[15] != (ENTROPY_SRC_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[16] && reg_we && (ENTROPY_SRC_PERMIT[16] != (ENTROPY_SRC_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[17] && reg_we && (ENTROPY_SRC_PERMIT[17] != (ENTROPY_SRC_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[18] && reg_we && (ENTROPY_SRC_PERMIT[18] != (ENTROPY_SRC_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[19] && reg_we && (ENTROPY_SRC_PERMIT[19] != (ENTROPY_SRC_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[20] && reg_we && (ENTROPY_SRC_PERMIT[20] != (ENTROPY_SRC_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[21] && reg_we && (ENTROPY_SRC_PERMIT[21] != (ENTROPY_SRC_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[22] && reg_we && (ENTROPY_SRC_PERMIT[22] != (ENTROPY_SRC_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[23] && reg_we && (ENTROPY_SRC_PERMIT[23] != (ENTROPY_SRC_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[24] && reg_we && (ENTROPY_SRC_PERMIT[24] != (ENTROPY_SRC_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[25] && reg_we && (ENTROPY_SRC_PERMIT[25] != (ENTROPY_SRC_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[26] && reg_we && (ENTROPY_SRC_PERMIT[26] != (ENTROPY_SRC_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[27] && reg_we && (ENTROPY_SRC_PERMIT[27] != (ENTROPY_SRC_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[28] && reg_we && (ENTROPY_SRC_PERMIT[28] != (ENTROPY_SRC_PERMIT[28] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[29] && reg_we && (ENTROPY_SRC_PERMIT[29] != (ENTROPY_SRC_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[30] && reg_we && (ENTROPY_SRC_PERMIT[30] != (ENTROPY_SRC_PERMIT[30] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[31] && reg_we && (ENTROPY_SRC_PERMIT[31] != (ENTROPY_SRC_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[32] && reg_we && (ENTROPY_SRC_PERMIT[32] != (ENTROPY_SRC_PERMIT[32] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[33] && reg_we && (ENTROPY_SRC_PERMIT[33] != (ENTROPY_SRC_PERMIT[33] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[34] && reg_we && (ENTROPY_SRC_PERMIT[34] != (ENTROPY_SRC_PERMIT[34] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[35] && reg_we && (ENTROPY_SRC_PERMIT[35] != (ENTROPY_SRC_PERMIT[35] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[36] && reg_we && (ENTROPY_SRC_PERMIT[36] != (ENTROPY_SRC_PERMIT[36] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[37] && reg_we && (ENTROPY_SRC_PERMIT[37] != (ENTROPY_SRC_PERMIT[37] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[38] && reg_we && (ENTROPY_SRC_PERMIT[38] != (ENTROPY_SRC_PERMIT[38] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[39] && reg_we && (ENTROPY_SRC_PERMIT[39] != (ENTROPY_SRC_PERMIT[39] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[40] && reg_we && (ENTROPY_SRC_PERMIT[40] != (ENTROPY_SRC_PERMIT[40] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[41] && reg_we && (ENTROPY_SRC_PERMIT[41] != (ENTROPY_SRC_PERMIT[41] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[42] && reg_we && (ENTROPY_SRC_PERMIT[42] != (ENTROPY_SRC_PERMIT[42] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[43] && reg_we && (ENTROPY_SRC_PERMIT[43] != (ENTROPY_SRC_PERMIT[43] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[44] && reg_we && (ENTROPY_SRC_PERMIT[44] != (ENTROPY_SRC_PERMIT[44] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[45] && reg_we && (ENTROPY_SRC_PERMIT[45] != (ENTROPY_SRC_PERMIT[45] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[46] && reg_we && (ENTROPY_SRC_PERMIT[46] != (ENTROPY_SRC_PERMIT[46] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[47] && reg_we && (ENTROPY_SRC_PERMIT[47] != (ENTROPY_SRC_PERMIT[47] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[48] && reg_we && (ENTROPY_SRC_PERMIT[48] != (ENTROPY_SRC_PERMIT[48] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[49] && reg_we && (ENTROPY_SRC_PERMIT[49] != (ENTROPY_SRC_PERMIT[49] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[50] && reg_we && (ENTROPY_SRC_PERMIT[50] != (ENTROPY_SRC_PERMIT[50] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[ 0] & (|(ENTROPY_SRC_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(ENTROPY_SRC_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(ENTROPY_SRC_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(ENTROPY_SRC_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(ENTROPY_SRC_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(ENTROPY_SRC_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(ENTROPY_SRC_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(ENTROPY_SRC_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(ENTROPY_SRC_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(ENTROPY_SRC_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(ENTROPY_SRC_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(ENTROPY_SRC_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(ENTROPY_SRC_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(ENTROPY_SRC_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(ENTROPY_SRC_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(ENTROPY_SRC_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(ENTROPY_SRC_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(ENTROPY_SRC_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(ENTROPY_SRC_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(ENTROPY_SRC_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(ENTROPY_SRC_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(ENTROPY_SRC_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(ENTROPY_SRC_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(ENTROPY_SRC_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(ENTROPY_SRC_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(ENTROPY_SRC_PERMIT[25] & ~reg_be))) |
+               (addr_hit[26] & (|(ENTROPY_SRC_PERMIT[26] & ~reg_be))) |
+               (addr_hit[27] & (|(ENTROPY_SRC_PERMIT[27] & ~reg_be))) |
+               (addr_hit[28] & (|(ENTROPY_SRC_PERMIT[28] & ~reg_be))) |
+               (addr_hit[29] & (|(ENTROPY_SRC_PERMIT[29] & ~reg_be))) |
+               (addr_hit[30] & (|(ENTROPY_SRC_PERMIT[30] & ~reg_be))) |
+               (addr_hit[31] & (|(ENTROPY_SRC_PERMIT[31] & ~reg_be))) |
+               (addr_hit[32] & (|(ENTROPY_SRC_PERMIT[32] & ~reg_be))) |
+               (addr_hit[33] & (|(ENTROPY_SRC_PERMIT[33] & ~reg_be))) |
+               (addr_hit[34] & (|(ENTROPY_SRC_PERMIT[34] & ~reg_be))) |
+               (addr_hit[35] & (|(ENTROPY_SRC_PERMIT[35] & ~reg_be))) |
+               (addr_hit[36] & (|(ENTROPY_SRC_PERMIT[36] & ~reg_be))) |
+               (addr_hit[37] & (|(ENTROPY_SRC_PERMIT[37] & ~reg_be))) |
+               (addr_hit[38] & (|(ENTROPY_SRC_PERMIT[38] & ~reg_be))) |
+               (addr_hit[39] & (|(ENTROPY_SRC_PERMIT[39] & ~reg_be))) |
+               (addr_hit[40] & (|(ENTROPY_SRC_PERMIT[40] & ~reg_be))) |
+               (addr_hit[41] & (|(ENTROPY_SRC_PERMIT[41] & ~reg_be))) |
+               (addr_hit[42] & (|(ENTROPY_SRC_PERMIT[42] & ~reg_be))) |
+               (addr_hit[43] & (|(ENTROPY_SRC_PERMIT[43] & ~reg_be))) |
+               (addr_hit[44] & (|(ENTROPY_SRC_PERMIT[44] & ~reg_be))) |
+               (addr_hit[45] & (|(ENTROPY_SRC_PERMIT[45] & ~reg_be))) |
+               (addr_hit[46] & (|(ENTROPY_SRC_PERMIT[46] & ~reg_be))) |
+               (addr_hit[47] & (|(ENTROPY_SRC_PERMIT[47] & ~reg_be))) |
+               (addr_hit[48] & (|(ENTROPY_SRC_PERMIT[48] & ~reg_be))) |
+               (addr_hit[49] & (|(ENTROPY_SRC_PERMIT[49] & ~reg_be))) |
+               (addr_hit[50] & (|(ENTROPY_SRC_PERMIT[50] & ~reg_be)))));
   end
 
   assign intr_state_es_entropy_valid_we = addr_hit[0] & reg_we & !reg_error;

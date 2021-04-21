@@ -1072,27 +1072,27 @@ module trial1_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (TRIAL1_PERMIT[ 0] != (TRIAL1_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (TRIAL1_PERMIT[ 1] != (TRIAL1_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (TRIAL1_PERMIT[ 2] != (TRIAL1_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (TRIAL1_PERMIT[ 3] != (TRIAL1_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (TRIAL1_PERMIT[ 4] != (TRIAL1_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (TRIAL1_PERMIT[ 5] != (TRIAL1_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (TRIAL1_PERMIT[ 6] != (TRIAL1_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (TRIAL1_PERMIT[ 7] != (TRIAL1_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (TRIAL1_PERMIT[ 8] != (TRIAL1_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (TRIAL1_PERMIT[ 9] != (TRIAL1_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (TRIAL1_PERMIT[10] != (TRIAL1_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (TRIAL1_PERMIT[11] != (TRIAL1_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (TRIAL1_PERMIT[12] != (TRIAL1_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (TRIAL1_PERMIT[13] != (TRIAL1_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[14] && reg_we && (TRIAL1_PERMIT[14] != (TRIAL1_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[15] && reg_we && (TRIAL1_PERMIT[15] != (TRIAL1_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[16] && reg_we && (TRIAL1_PERMIT[16] != (TRIAL1_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[17] && reg_we && (TRIAL1_PERMIT[17] != (TRIAL1_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[18] && reg_we && (TRIAL1_PERMIT[18] != (TRIAL1_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[19] && reg_we && (TRIAL1_PERMIT[19] != (TRIAL1_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[ 0] & (|(TRIAL1_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(TRIAL1_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(TRIAL1_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(TRIAL1_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(TRIAL1_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(TRIAL1_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(TRIAL1_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(TRIAL1_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(TRIAL1_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(TRIAL1_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(TRIAL1_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(TRIAL1_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(TRIAL1_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(TRIAL1_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(TRIAL1_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(TRIAL1_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(TRIAL1_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(TRIAL1_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(TRIAL1_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(TRIAL1_PERMIT[19] & ~reg_be)))));
   end
 
   assign rwtype0_we = addr_hit[0] & reg_we & !reg_error;

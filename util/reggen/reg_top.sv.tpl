@@ -331,14 +331,27 @@ ${finst_gen(f, finst_name, fsig_name, r.hwext, r.regwen, r.shadowed)}
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
 
+% if regs_flat:
+<%
+    # We want to signal wr_err if reg_be (the byte enable signal) is true for
+    # any bytes that aren't supported by a register. That's true if a
+    # addr_hit[i] and a bit is set in reg_be but not in *_PERMIT[i].
+
+    wr_err_terms = ['(addr_hit[{idx}] & (|({mod}_PERMIT[{idx}] & ~reg_be)))'
+                    .format(idx=str(i).rjust(max_regs_char),
+                            mod=u_mod_base)
+                    for i in range(len(regs_flat))]
+    wr_err_expr = (' |\n' + (' ' * 15)).join(wr_err_terms)
+%>\
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    % for i,r in enumerate(regs_flat):
-<% index_str = "{}".format(i).rjust(max_regs_char) %>\
-    if (addr_hit[${index_str}] && reg_we && (${u_mod_base}_PERMIT[${index_str}] != (${u_mod_base}_PERMIT[${index_str}] & reg_be))) wr_err = 1'b1 ;
-    % endfor
+    wr_err = (reg_we &
+              (${wr_err_expr}));
   end
+% else:
+  assign wr_error = 1'b0;
+% endif\
+
   % for i, r in enumerate(regs_flat):
     % if len(r.fields) == 1:
 ${we_gen(r.fields[0], r.name.lower(), r.hwext, r.shadowed, i)}\

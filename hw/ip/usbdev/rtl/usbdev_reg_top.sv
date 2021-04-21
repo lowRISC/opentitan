@@ -6081,37 +6081,37 @@ module usbdev_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (USBDEV_PERMIT[ 0] != (USBDEV_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (USBDEV_PERMIT[ 1] != (USBDEV_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (USBDEV_PERMIT[ 2] != (USBDEV_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (USBDEV_PERMIT[ 3] != (USBDEV_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (USBDEV_PERMIT[ 4] != (USBDEV_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (USBDEV_PERMIT[ 5] != (USBDEV_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (USBDEV_PERMIT[ 6] != (USBDEV_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (USBDEV_PERMIT[ 7] != (USBDEV_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (USBDEV_PERMIT[ 8] != (USBDEV_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (USBDEV_PERMIT[ 9] != (USBDEV_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (USBDEV_PERMIT[10] != (USBDEV_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (USBDEV_PERMIT[11] != (USBDEV_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (USBDEV_PERMIT[12] != (USBDEV_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (USBDEV_PERMIT[13] != (USBDEV_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[14] && reg_we && (USBDEV_PERMIT[14] != (USBDEV_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[15] && reg_we && (USBDEV_PERMIT[15] != (USBDEV_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[16] && reg_we && (USBDEV_PERMIT[16] != (USBDEV_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[17] && reg_we && (USBDEV_PERMIT[17] != (USBDEV_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[18] && reg_we && (USBDEV_PERMIT[18] != (USBDEV_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[19] && reg_we && (USBDEV_PERMIT[19] != (USBDEV_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[20] && reg_we && (USBDEV_PERMIT[20] != (USBDEV_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[21] && reg_we && (USBDEV_PERMIT[21] != (USBDEV_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[22] && reg_we && (USBDEV_PERMIT[22] != (USBDEV_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[23] && reg_we && (USBDEV_PERMIT[23] != (USBDEV_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[24] && reg_we && (USBDEV_PERMIT[24] != (USBDEV_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[25] && reg_we && (USBDEV_PERMIT[25] != (USBDEV_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[26] && reg_we && (USBDEV_PERMIT[26] != (USBDEV_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[27] && reg_we && (USBDEV_PERMIT[27] != (USBDEV_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[28] && reg_we && (USBDEV_PERMIT[28] != (USBDEV_PERMIT[28] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[29] && reg_we && (USBDEV_PERMIT[29] != (USBDEV_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[ 0] & (|(USBDEV_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(USBDEV_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(USBDEV_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(USBDEV_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(USBDEV_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(USBDEV_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(USBDEV_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(USBDEV_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(USBDEV_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(USBDEV_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(USBDEV_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(USBDEV_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(USBDEV_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(USBDEV_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(USBDEV_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(USBDEV_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(USBDEV_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(USBDEV_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(USBDEV_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(USBDEV_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(USBDEV_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(USBDEV_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(USBDEV_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(USBDEV_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(USBDEV_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(USBDEV_PERMIT[25] & ~reg_be))) |
+               (addr_hit[26] & (|(USBDEV_PERMIT[26] & ~reg_be))) |
+               (addr_hit[27] & (|(USBDEV_PERMIT[27] & ~reg_be))) |
+               (addr_hit[28] & (|(USBDEV_PERMIT[28] & ~reg_be))) |
+               (addr_hit[29] & (|(USBDEV_PERMIT[29] & ~reg_be)))));
   end
 
   assign intr_state_pkt_received_we = addr_hit[0] & reg_we & !reg_error;

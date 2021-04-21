@@ -2009,68 +2009,68 @@ module ast_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[ 0] && reg_we && (AST_PERMIT[ 0] != (AST_PERMIT[ 0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 1] && reg_we && (AST_PERMIT[ 1] != (AST_PERMIT[ 1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 2] && reg_we && (AST_PERMIT[ 2] != (AST_PERMIT[ 2] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 3] && reg_we && (AST_PERMIT[ 3] != (AST_PERMIT[ 3] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 4] && reg_we && (AST_PERMIT[ 4] != (AST_PERMIT[ 4] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 5] && reg_we && (AST_PERMIT[ 5] != (AST_PERMIT[ 5] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 6] && reg_we && (AST_PERMIT[ 6] != (AST_PERMIT[ 6] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 7] && reg_we && (AST_PERMIT[ 7] != (AST_PERMIT[ 7] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 8] && reg_we && (AST_PERMIT[ 8] != (AST_PERMIT[ 8] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[ 9] && reg_we && (AST_PERMIT[ 9] != (AST_PERMIT[ 9] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[10] && reg_we && (AST_PERMIT[10] != (AST_PERMIT[10] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[11] && reg_we && (AST_PERMIT[11] != (AST_PERMIT[11] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[12] && reg_we && (AST_PERMIT[12] != (AST_PERMIT[12] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[13] && reg_we && (AST_PERMIT[13] != (AST_PERMIT[13] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[14] && reg_we && (AST_PERMIT[14] != (AST_PERMIT[14] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[15] && reg_we && (AST_PERMIT[15] != (AST_PERMIT[15] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[16] && reg_we && (AST_PERMIT[16] != (AST_PERMIT[16] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[17] && reg_we && (AST_PERMIT[17] != (AST_PERMIT[17] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[18] && reg_we && (AST_PERMIT[18] != (AST_PERMIT[18] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[19] && reg_we && (AST_PERMIT[19] != (AST_PERMIT[19] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[20] && reg_we && (AST_PERMIT[20] != (AST_PERMIT[20] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[21] && reg_we && (AST_PERMIT[21] != (AST_PERMIT[21] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[22] && reg_we && (AST_PERMIT[22] != (AST_PERMIT[22] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[23] && reg_we && (AST_PERMIT[23] != (AST_PERMIT[23] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[24] && reg_we && (AST_PERMIT[24] != (AST_PERMIT[24] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[25] && reg_we && (AST_PERMIT[25] != (AST_PERMIT[25] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[26] && reg_we && (AST_PERMIT[26] != (AST_PERMIT[26] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[27] && reg_we && (AST_PERMIT[27] != (AST_PERMIT[27] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[28] && reg_we && (AST_PERMIT[28] != (AST_PERMIT[28] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[29] && reg_we && (AST_PERMIT[29] != (AST_PERMIT[29] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[30] && reg_we && (AST_PERMIT[30] != (AST_PERMIT[30] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[31] && reg_we && (AST_PERMIT[31] != (AST_PERMIT[31] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[32] && reg_we && (AST_PERMIT[32] != (AST_PERMIT[32] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[33] && reg_we && (AST_PERMIT[33] != (AST_PERMIT[33] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[34] && reg_we && (AST_PERMIT[34] != (AST_PERMIT[34] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[35] && reg_we && (AST_PERMIT[35] != (AST_PERMIT[35] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[36] && reg_we && (AST_PERMIT[36] != (AST_PERMIT[36] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[37] && reg_we && (AST_PERMIT[37] != (AST_PERMIT[37] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[38] && reg_we && (AST_PERMIT[38] != (AST_PERMIT[38] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[39] && reg_we && (AST_PERMIT[39] != (AST_PERMIT[39] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[40] && reg_we && (AST_PERMIT[40] != (AST_PERMIT[40] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[41] && reg_we && (AST_PERMIT[41] != (AST_PERMIT[41] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[42] && reg_we && (AST_PERMIT[42] != (AST_PERMIT[42] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[43] && reg_we && (AST_PERMIT[43] != (AST_PERMIT[43] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[44] && reg_we && (AST_PERMIT[44] != (AST_PERMIT[44] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[45] && reg_we && (AST_PERMIT[45] != (AST_PERMIT[45] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[46] && reg_we && (AST_PERMIT[46] != (AST_PERMIT[46] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[47] && reg_we && (AST_PERMIT[47] != (AST_PERMIT[47] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[48] && reg_we && (AST_PERMIT[48] != (AST_PERMIT[48] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[49] && reg_we && (AST_PERMIT[49] != (AST_PERMIT[49] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[50] && reg_we && (AST_PERMIT[50] != (AST_PERMIT[50] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[51] && reg_we && (AST_PERMIT[51] != (AST_PERMIT[51] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[52] && reg_we && (AST_PERMIT[52] != (AST_PERMIT[52] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[53] && reg_we && (AST_PERMIT[53] != (AST_PERMIT[53] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[54] && reg_we && (AST_PERMIT[54] != (AST_PERMIT[54] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[55] && reg_we && (AST_PERMIT[55] != (AST_PERMIT[55] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[56] && reg_we && (AST_PERMIT[56] != (AST_PERMIT[56] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[57] && reg_we && (AST_PERMIT[57] != (AST_PERMIT[57] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[58] && reg_we && (AST_PERMIT[58] != (AST_PERMIT[58] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[59] && reg_we && (AST_PERMIT[59] != (AST_PERMIT[59] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[60] && reg_we && (AST_PERMIT[60] != (AST_PERMIT[60] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[ 0] & (|(AST_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(AST_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(AST_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(AST_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(AST_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(AST_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(AST_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(AST_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(AST_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(AST_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(AST_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(AST_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(AST_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(AST_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(AST_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(AST_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(AST_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(AST_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(AST_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(AST_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(AST_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(AST_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(AST_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(AST_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(AST_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(AST_PERMIT[25] & ~reg_be))) |
+               (addr_hit[26] & (|(AST_PERMIT[26] & ~reg_be))) |
+               (addr_hit[27] & (|(AST_PERMIT[27] & ~reg_be))) |
+               (addr_hit[28] & (|(AST_PERMIT[28] & ~reg_be))) |
+               (addr_hit[29] & (|(AST_PERMIT[29] & ~reg_be))) |
+               (addr_hit[30] & (|(AST_PERMIT[30] & ~reg_be))) |
+               (addr_hit[31] & (|(AST_PERMIT[31] & ~reg_be))) |
+               (addr_hit[32] & (|(AST_PERMIT[32] & ~reg_be))) |
+               (addr_hit[33] & (|(AST_PERMIT[33] & ~reg_be))) |
+               (addr_hit[34] & (|(AST_PERMIT[34] & ~reg_be))) |
+               (addr_hit[35] & (|(AST_PERMIT[35] & ~reg_be))) |
+               (addr_hit[36] & (|(AST_PERMIT[36] & ~reg_be))) |
+               (addr_hit[37] & (|(AST_PERMIT[37] & ~reg_be))) |
+               (addr_hit[38] & (|(AST_PERMIT[38] & ~reg_be))) |
+               (addr_hit[39] & (|(AST_PERMIT[39] & ~reg_be))) |
+               (addr_hit[40] & (|(AST_PERMIT[40] & ~reg_be))) |
+               (addr_hit[41] & (|(AST_PERMIT[41] & ~reg_be))) |
+               (addr_hit[42] & (|(AST_PERMIT[42] & ~reg_be))) |
+               (addr_hit[43] & (|(AST_PERMIT[43] & ~reg_be))) |
+               (addr_hit[44] & (|(AST_PERMIT[44] & ~reg_be))) |
+               (addr_hit[45] & (|(AST_PERMIT[45] & ~reg_be))) |
+               (addr_hit[46] & (|(AST_PERMIT[46] & ~reg_be))) |
+               (addr_hit[47] & (|(AST_PERMIT[47] & ~reg_be))) |
+               (addr_hit[48] & (|(AST_PERMIT[48] & ~reg_be))) |
+               (addr_hit[49] & (|(AST_PERMIT[49] & ~reg_be))) |
+               (addr_hit[50] & (|(AST_PERMIT[50] & ~reg_be))) |
+               (addr_hit[51] & (|(AST_PERMIT[51] & ~reg_be))) |
+               (addr_hit[52] & (|(AST_PERMIT[52] & ~reg_be))) |
+               (addr_hit[53] & (|(AST_PERMIT[53] & ~reg_be))) |
+               (addr_hit[54] & (|(AST_PERMIT[54] & ~reg_be))) |
+               (addr_hit[55] & (|(AST_PERMIT[55] & ~reg_be))) |
+               (addr_hit[56] & (|(AST_PERMIT[56] & ~reg_be))) |
+               (addr_hit[57] & (|(AST_PERMIT[57] & ~reg_be))) |
+               (addr_hit[58] & (|(AST_PERMIT[58] & ~reg_be))) |
+               (addr_hit[59] & (|(AST_PERMIT[59] & ~reg_be))) |
+               (addr_hit[60] & (|(AST_PERMIT[60] & ~reg_be)))));
   end
 
   assign rega_0_we = addr_hit[1] & reg_we & !reg_error;

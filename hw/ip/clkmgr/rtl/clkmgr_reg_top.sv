@@ -294,10 +294,10 @@ module clkmgr_reg_top (
 
   // Check sub-word write is permitted
   always_comb begin
-    wr_err = 1'b0;
-    if (addr_hit[0] && reg_we && (CLKMGR_PERMIT[0] != (CLKMGR_PERMIT[0] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[1] && reg_we && (CLKMGR_PERMIT[1] != (CLKMGR_PERMIT[1] & reg_be))) wr_err = 1'b1 ;
-    if (addr_hit[2] && reg_we && (CLKMGR_PERMIT[2] != (CLKMGR_PERMIT[2] & reg_be))) wr_err = 1'b1 ;
+    wr_err = (reg_we &
+              ((addr_hit[0] & (|(CLKMGR_PERMIT[0] & ~reg_be))) |
+               (addr_hit[1] & (|(CLKMGR_PERMIT[1] & ~reg_be))) |
+               (addr_hit[2] & (|(CLKMGR_PERMIT[2] & ~reg_be)))));
   end
 
   assign clk_enables_clk_fixed_peri_en_we = addr_hit[0] & reg_we & !reg_error;
