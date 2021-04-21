@@ -106,7 +106,10 @@ module ibex_top #(
     input  logic                         fetch_enable_i,
     output logic                         alert_minor_o,
     output logic                         alert_major_o,
-    output logic                         core_sleep_o
+    output logic                         core_sleep_o,
+
+    // DFT bypass controls
+    input logic                          scan_rst_ni
 );
 
   import ibex_pkg::*;
@@ -626,7 +629,7 @@ module ibex_top #(
           .out_o(ic_tag_rdata_local[k][j])
         );
       end
-      for (genvar j = 0; j < TagSizeECC; j++) begin : gen_data_bufs
+      for (genvar j = 0; j < LineSizeECC; j++) begin : gen_data_bufs
         prim_buf u_prim_buf (
           .in_i(ic_data_rdata[k][j]),
           .out_o(ic_data_rdata_local[k][j])
@@ -716,7 +719,9 @@ module ibex_top #(
 
       .alert_minor_o     (lockstep_alert_minor_local),
       .alert_major_o     (lockstep_alert_major_local),
-      .core_busy_i       (core_busy_local)
+      .core_busy_i       (core_busy_local),
+      .test_en_i         (test_en_i),
+      .scan_rst_ni       (scan_rst_ni)
     );
 
     // Manually buffer the output signals.
@@ -733,6 +738,8 @@ module ibex_top #(
   end else begin : gen_no_lockstep
     assign lockstep_alert_major = 1'b0;
     assign lockstep_alert_minor = 1'b0;
+    logic unused_scan;
+    assign unused_scan = scan_rst_ni;
   end
 
   // TODO - need a config to reset all registers before the lockstep alert can be used

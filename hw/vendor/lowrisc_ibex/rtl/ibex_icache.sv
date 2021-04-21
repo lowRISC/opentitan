@@ -143,7 +143,8 @@ module ibex_icache import ibex_pkg::*; #(
   logic [NUM_FB-1:0][IC_LINE_BEATS_W:0]   fill_out_cnt_d, fill_out_cnt_q;
   logic [NUM_FB-1:0]                      fill_out_done;
   logic [NUM_FB-1:0]                      fill_ext_req, fill_rvd_exp, fill_ram_req, fill_out_req;
-  logic [NUM_FB-1:0]                      fill_data_sel, fill_data_reg, fill_data_hit, fill_data_rvd;
+  logic [NUM_FB-1:0]                      fill_data_sel, fill_data_reg;
+  logic [NUM_FB-1:0]                      fill_data_hit, fill_data_rvd;
   logic [NUM_FB-1:0][IC_LINE_BEATS_W-1:0] fill_ext_off, fill_rvd_off;
   logic [NUM_FB-1:0][IC_LINE_BEATS_W:0]   fill_ext_beat, fill_rvd_beat;
   logic [NUM_FB-1:0]                      fill_ext_arb, fill_ram_arb, fill_out_arb;
@@ -691,14 +692,16 @@ module ibex_icache import ibex_pkg::*; #(
 
     // Age based arbitration - all these signals are one-hot
     assign fill_ext_arb[fb]    = fill_ext_req[fb] & ~|(fill_ext_req & fill_older_q[fb]);
-    assign fill_ram_arb[fb]    = fill_ram_req[fb] & fill_grant_ic0 & ~|(fill_ram_req & fill_older_q[fb]);
+    assign fill_ram_arb[fb]    = fill_ram_req[fb] & fill_grant_ic0 &
+                                 ~|(fill_ram_req & fill_older_q[fb]);
     // Calculate which fill buffer is the oldest one which still needs to output data to IF
     assign fill_data_sel[fb]   = ~|(fill_busy_q & ~fill_out_done & ~fill_stale_q &
                                     fill_older_q[fb]);
     // Arbitrate the request which has data available to send, and is the oldest outstanding
     assign fill_out_arb[fb]    = fill_out_req[fb] & fill_data_sel[fb];
     // Assign incoming rvalid data to the oldest fill buffer expecting it
-    assign fill_rvd_arb[fb]    = instr_rvalid_i & fill_rvd_exp[fb] & ~|(fill_rvd_exp & fill_older_q[fb]);
+    assign fill_rvd_arb[fb]    = instr_rvalid_i & fill_rvd_exp[fb] &
+                                 ~|(fill_rvd_exp & fill_older_q[fb]);
 
     /////////////////////////////
     // Fill buffer data muxing //
@@ -932,9 +935,10 @@ module ibex_icache import ibex_pkg::*; #(
       (skid_valid_q ? ~(ready_i & ((skid_data_q[1:0] != 2'b11) | skid_err_q)) :
       // The skid buffer becomes valid when:
                         // - we branch to an unaligned uncompressed instruction
-                      (((output_addr_q[1] & (~output_compressed | output_err)) |
+                      (data_valid &
+                       (((output_addr_q[1] & (~output_compressed | output_err)) |
                         // - a compressed instruction misaligns the stream
-                        (~output_addr_q[1] & output_compressed & ~output_err & ready_i)) & data_valid));
+                        (~output_addr_q[1] & output_compressed & ~output_err & ready_i)))));
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
