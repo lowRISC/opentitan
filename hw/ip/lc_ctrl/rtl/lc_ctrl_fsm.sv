@@ -391,24 +391,54 @@ module lc_ctrl_fsm
   prim_flop #(
     .Width(FsmStateWidth),
     .ResetValue(FsmStateWidth'(ResetSt))
+  ) u_fsm_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( fsm_state_d     ),
+    .q_o ( fsm_state_raw_q )
+  );
+
+  logic [LcStateWidth-1:0] lc_state_raw_q;
+  assign lc_state_q = lc_state_e'(lc_state_raw_q);
+  prim_flop #(
+    .Width(LcStateWidth),
+    .ResetValue(LcStateWidth'(LcStScrap))
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( fsm_state_d ),
-    .q_o ( fsm_state_raw_q )
+    .d_i ( lc_state_d     ),
+    .q_o ( lc_state_raw_q )
+  );
+
+  logic [LcCountWidth-1:0] lc_cnt_raw_q;
+  assign lc_cnt_q = lc_cnt_e'(lc_cnt_raw_q);
+  prim_flop #(
+    .Width(LcCountWidth),
+    .ResetValue(LcCountWidth'(LcCnt16))
+  ) u_cnt_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( lc_cnt_d     ),
+    .q_o ( lc_cnt_raw_q )
+  );
+
+  logic [LcIdStateWidth-1:0] lc_id_state_raw_q;
+  assign lc_id_state_q = lc_id_state_e'(lc_id_state_raw_q);
+  prim_flop #(
+    .Width(LcIdStateWidth),
+    .ResetValue(LcIdStateWidth'(LcIdPersonalized))
+  ) u_id_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( lc_id_state_d     ),
+    .q_o ( lc_id_state_raw_q )
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      lc_state_q           <= LcStScrap;
-      lc_cnt_q             <= LcCnt16;
-      lc_id_state_q        <= LcIdPersonalized;
       lc_state_valid_q     <= 1'b0;
       hashed_token_q       <= {LcTokenWidth{1'b1}};
     end else begin
-      lc_state_q           <= lc_state_d;
-      lc_cnt_q             <= lc_cnt_d;
-      lc_id_state_q        <= lc_id_state_d;
       lc_state_valid_q     <= lc_state_valid_d;
       hashed_token_q       <= hashed_token_d;
     end
