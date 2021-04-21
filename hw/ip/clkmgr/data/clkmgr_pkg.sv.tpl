@@ -28,7 +28,7 @@ all_clocks.update(rg_clks)
 all_clocks.update(sw_clks)
 %>\
 % for clk in all_clocks:
-  logic ${clk};
+    logic ${clk};
 % endfor
 
   } clkmgr_out_t;
