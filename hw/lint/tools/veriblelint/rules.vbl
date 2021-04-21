@@ -4,10 +4,7 @@
 #
 # OpenTitan-specific style lint rule configurations
 
-# line length currently set to 150 to remove clutter in reports.
-# set this back to 100 once we can waive this rule for generated
-# files or once the file generators can respect this constraint
-line-length=length:150
+line-length=length:100
 
 # we allow "classic" verilog string parameters without explicit type
 explicit-parameter-storage-type=exempt_type:string
