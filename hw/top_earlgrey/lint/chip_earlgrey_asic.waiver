@@ -1,0 +1,8 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for chip_earlgrey_asic
+
+waive -rules {MULTI_DRIVEN} -location {chip_earlgrey_asic.sv} -regexp {'(IOA2|IOA3)' has 2 drivers, also driven at} \
+      -comment "These two pads are shorted to AST, hence this multiple driver warning is OK."

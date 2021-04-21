@@ -18,6 +18,9 @@ waive -rules RESET_MUX -location {rstmgr.sv rstmgr_por.sv rstmgr_ctrl.sv} -regex
 waive -rules RESET_MUX -location {rstmgr.sv} -regexp {Asynchronous reset 'scan_rst_ni' reaches a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
+waive -rules CLOCK_USE -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks.clk_io_div2_peri' is connected to 'spi_device' port 'scan_clk_i', and used as a clock} \
+      -comment "This connection is a scan clock connection."
+
 waive -rules CLOCK_MUX -location {clkmgr.sv top_earlgrey.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
       -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"
 
