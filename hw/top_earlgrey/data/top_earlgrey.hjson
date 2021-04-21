@@ -872,6 +872,7 @@
       'pwrmgr_aon.strap'        : ['pinmux_aon.strap_en'],
       'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en','aon_timer_aon.sleep_mode'],
       'rom_ctrl.pwrmgr_data'    : ['pwrmgr_aon.rom_ctrl'],
+      'rom_ctrl.keymgr_data'    : ['keymgr.rom_digest'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'rv_core_ibex.crash_dump'  : ['rstmgr_aon.cpu_dump'],

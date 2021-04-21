@@ -12,6 +12,7 @@ interface keymgr_if(input clk, input rst_n);
   otp_ctrl_part_pkg::otp_hw_cfg_t otp_hw_cfg;
   otp_ctrl_pkg::otp_keymgr_key_t  otp_key;
   flash_ctrl_pkg::keymgr_flash_t  flash;
+  rom_ctrl_pkg::keymgr_data_t     rom_digest;
 
   keymgr_pkg::hw_key_req_t kmac_key;
   keymgr_pkg::hw_key_req_t hmac_key;
@@ -76,6 +77,8 @@ interface keymgr_if(input clk, input rst_n);
     otp_hw_cfg.data.device_id = 'hF0F0;
     otp_key = otp_ctrl_pkg::OTP_KEYMGR_KEY_DEFAULT;
     flash   = flash_ctrl_pkg::KEYMGR_FLASH_DEFAULT;
+    rom_digest.data = 256'hA20A046CF42E6EAC560A3F82BFA76285B5C1D4AEA7C915E49A32D1C89BE0F507;
+    rom_digest.valid = '1;
   endtask
 
   // reset local exp variables when reset is issued
@@ -107,6 +110,7 @@ interface keymgr_if(input clk, input rst_n);
     bit [keymgr_pkg::DevIdWidth-1:0] local_otp_device_id;
     otp_ctrl_pkg::otp_keymgr_key_t   local_otp_key;
     flash_ctrl_pkg::keymgr_flash_t   local_flash;
+    rom_ctrl_pkg::keymgr_data_t      local_rom_digest;
 
     // async delay as these signals are from different clock domain
     #($urandom_range(1000, 0) * 1ns);
@@ -127,6 +131,10 @@ interface keymgr_if(input clk, input rst_n);
                                        foreach (local_flash.seeds[i]) {
                                          !(local_flash.seeds[i] inside {0, '1});
                                        }, , msg_id)
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_rom_digest,
+                                       local_rom_digest.valid == 1;
+                                       !(local_rom_digest.data inside {0, '1});, , msg_id)
 
     // make HW input to be all 0s or 1s
     repeat (num_invalid_input) begin
@@ -157,6 +165,7 @@ interface keymgr_if(input clk, input rst_n);
     otp_hw_cfg.data.device_id = local_otp_device_id;
     otp_key = local_otp_key;
     flash   = local_flash;
+    rom_digest = local_rom_digest;
   endtask
 
   // update kmac key for comparison during KDF

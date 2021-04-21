@@ -69,7 +69,7 @@ package keymgr_pkg;
 
   // Width calculations
   // These are the largest calculations in use across all stages
-  parameter int AdvDataWidth = SwBindingWidth + 2*KeyWidth + DevIdWidth + HealthStateWidth;
+  parameter int AdvDataWidth = SwBindingWidth + 3*KeyWidth + DevIdWidth + HealthStateWidth;
   parameter int IdDataWidth = KeyWidth;
   // key version + salt + key ID + constant
   parameter int GenDataWidth = 32 + SaltWidth + KeyWidth*2;

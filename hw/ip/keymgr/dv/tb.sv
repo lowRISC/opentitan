@@ -54,6 +54,7 @@ module tb;
     .lc_keymgr_div_i      (keymgr_if.keymgr_div),
     .otp_key_i            (keymgr_if.otp_key),
     .otp_hw_cfg_i         (keymgr_if.otp_hw_cfg),
+    .rom_digest_i         (keymgr_if.rom_digest),
     .edn_o                (edn_if.req),
     .edn_i                ({edn_if.ack, edn_if.d_data}),
     .flash_i              (keymgr_if.flash),

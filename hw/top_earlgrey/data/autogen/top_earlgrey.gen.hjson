@@ -4338,6 +4338,18 @@
           index: -1
         }
         {
+          name: rom_digest
+          struct: keymgr_data
+          package: rom_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: keymgr
+          default: ""
+          top_signame: rom_ctrl_keymgr_data
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -5130,6 +5142,10 @@
           act: req
           width: 1
           inst_name: rom_ctrl
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rom_ctrl_keymgr_data
           index: -1
         }
         {
@@ -5735,6 +5751,10 @@
       rom_ctrl.pwrmgr_data:
       [
         pwrmgr_aon.rom_ctrl
+      ]
+      rom_ctrl.keymgr_data:
+      [
+        keymgr.rom_digest
       ]
       rv_core_ibex.crash_dump:
       [
@@ -13819,6 +13839,18 @@
         index: -1
       }
       {
+        name: rom_digest
+        struct: keymgr_data
+        package: rom_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: keymgr
+        default: ""
+        top_signame: rom_ctrl_keymgr_data
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -14292,6 +14324,10 @@
         act: req
         width: 1
         inst_name: rom_ctrl
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rom_ctrl_keymgr_data
         index: -1
       }
       {
@@ -16285,6 +16321,17 @@
         package: rom_ctrl_pkg
         struct: pwrmgr_data
         signame: rom_ctrl_pwrmgr_data
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: ""
+      }
+      {
+        package: rom_ctrl_pkg
+        struct: keymgr_data
+        signame: rom_ctrl_keymgr_data
         width: 1
         type: uni
         end_idx: -1

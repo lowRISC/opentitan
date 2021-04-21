@@ -55,6 +55,9 @@ module keymgr
   output edn_pkg::edn_req_t edn_o,
   input edn_pkg::edn_rsp_t edn_i,
 
+  // connection to rom_ctrl
+  input rom_ctrl_pkg::keymgr_data_t rom_digest_i,
+
   // interrupts and alerts
   output logic intr_op_done_o,
   input  prim_alert_pkg::alert_rx_t [keymgr_reg_pkg::NumAlerts-1:0] alert_rx_i,
@@ -316,6 +319,7 @@ module keymgr
                                               RndCnstRevisionSeed,
                                               otp_hw_cfg_i.data.device_id,
                                               lc_keymgr_div_i,
+                                              rom_digest_i.data,
                                               creator_seed});
 
   logic unused_otp_bits;
@@ -323,7 +327,8 @@ module keymgr
 
   assign adv_dvalid[Creator] = creator_seed_vld &
                                devid_vld &
-                               health_state_vld;
+                               health_state_vld &
+                               rom_digest_i.valid;
 
   // Advance to owner_intermediate_key
   logic [KeyWidth-1:0] owner_seed;
