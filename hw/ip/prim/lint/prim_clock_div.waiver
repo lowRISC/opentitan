@@ -13,3 +13,6 @@ waive -rules DUAL_EDGE_CLOCK -location {prim_clock_div.sv} -regexp {.*} \
 waive -rules CLOCK_MUX -location {prim_clock_div.sv} -regexp {.*reaches a multiplexer here, used as a clock.*} \
       -comment "A mux is used during scan bypass, and for switching between div by 2 and div by 1 clocks"
 
+waive -rules CLOCK_USE -location {prim_clock_div.sv} -regexp {'clk_i' is connected to 'prim_clock_mux2' port 'clk1_i', and used as a clock} \
+      -comment "This clock mux usage is OK."
+
