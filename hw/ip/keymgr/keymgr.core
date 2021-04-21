@@ -15,6 +15,7 @@ filesets:
       - lowrisc:prim:msb_extend
       - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:kmac_pkg
+      - lowrisc:ip:rom_ctrl
     files:
       - rtl/keymgr_reg_top.sv
       - rtl/keymgr_sideload_key_ctrl.sv

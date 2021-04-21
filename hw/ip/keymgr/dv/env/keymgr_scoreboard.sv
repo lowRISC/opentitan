@@ -16,6 +16,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     bit [keymgr_pkg::KeyWidth-1:0]         HardwareRevisionSecret;
     bit [keymgr_pkg::DevIdWidth-1:0]       DeviceIdentifier;
     bit [keymgr_pkg::HealthStateWidth-1:0] HealthMeasurement;
+    bit [keymgr_pkg::KeyWidth-1:0]         RomDigest;
     bit [keymgr_pkg::KeyWidth-1:0]         DiversificationKey;
   } adv_creator_data_t;
 
@@ -627,6 +628,10 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           is_err = 1;
         end
 
+        if (cfg.keymgr_vif.rom_digest.data inside {0, '1}) begin
+          is_err = 1;
+        end
+
         if (cfg.keymgr_vif.otp_key.key_share0 inside {0, '1}) begin
           is_err = 1;
         end
@@ -686,15 +691,19 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     act = {<<8{byte_data_q}};
 
     exp.DiversificationKey = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx];
+    exp.RomDigest          = cfg.keymgr_vif.rom_digest.data;
     exp.HealthMeasurement  = cfg.keymgr_vif.keymgr_div;
     exp.DeviceIdentifier   = cfg.keymgr_vif.otp_hw_cfg.data.device_id;
     exp.HardwareRevisionSecret = keymgr_pkg::RndCnstRevisionSeedDefault;
+
     for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
       uvm_reg rg = ral.get_reg_by_name($sformatf("sw_binding_%0d", i));
       exp.SoftwareBinding[i] = `gmv(rg);
     end
 
+    // The order of the string creation must match the design
     `CREATE_CMP_STR(DiversificationKey)
+    `CREATE_CMP_STR(RomDigest)
     `CREATE_CMP_STR(HealthMeasurement)
     `CREATE_CMP_STR(DeviceIdentifier)
     `CREATE_CMP_STR(HardwareRevisionSecret)

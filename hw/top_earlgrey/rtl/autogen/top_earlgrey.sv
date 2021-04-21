@@ -489,6 +489,7 @@ module top_earlgrey #(
   logic       pwrmgr_aon_strap;
   logic       pwrmgr_aon_low_power;
   rom_ctrl_pkg::pwrmgr_data_t       rom_ctrl_pwrmgr_data;
+  rom_ctrl_pkg::keymgr_data_t       rom_ctrl_keymgr_data;
   ibex_pkg::crash_dump_t       rv_core_ibex_crash_dump;
   logic       usbdev_usb_out_of_rst;
   logic       usbdev_usb_aon_wake_en;
@@ -2092,6 +2093,7 @@ module top_earlgrey #(
       .flash_i(flash_ctrl_keymgr),
       .lc_keymgr_en_i(lc_ctrl_lc_keymgr_en),
       .lc_keymgr_div_i(lc_ctrl_lc_keymgr_div),
+      .rom_digest_i(rom_ctrl_keymgr_data),
       .tl_i(keymgr_tl_req),
       .tl_o(keymgr_tl_rsp),
 
@@ -2292,7 +2294,7 @@ module top_earlgrey #(
       // Inter-module signals
       .rom_cfg_i(ast_rom_cfg),
       .pwrmgr_data_o(rom_ctrl_pwrmgr_data),
-      .keymgr_data_o(),
+      .keymgr_data_o(rom_ctrl_keymgr_data),
       .kmac_data_o(kmac_app_req[1]),
       .kmac_data_i(kmac_app_rsp[1]),
       .regs_tl_i(rom_ctrl_regs_tl_req),

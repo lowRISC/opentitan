@@ -86,6 +86,12 @@
       act:     "rcv",
       package: "lc_ctrl_pkg",
     },
+    { struct:  "keymgr_data"
+      type:    "uni"
+      name:    "rom_digest"
+      act:     "rcv"
+      package: "rom_ctrl_pkg"
+    },
   ],
 
   param_list: [
