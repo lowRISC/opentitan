@@ -13,3 +13,7 @@ waive -rules HIER_NET_NOT_READ -location {pinmux_reg_top.sv} -regexp {.*reg_wdat
 waive -rules VAR_INDEX_RANGE -location {pinmux.sv} -regexp {.*maximum value.*} \
       -comment "Indexed arrays may not be fully populated."
 
+waive -rules RESET_USE -location {pinmux_strap_sampling.sv} -regexp {'rst_ni' is connected to 'prim_clock_mux2' port 'clk1_i
+', and used as an asynchronous reset or set at pinmux_strap_sampling} \
+      -comment "This is a clock mux for DFT."
+
