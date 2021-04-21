@@ -16,8 +16,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   `uvm_object_new
 
   task pre_start();
+    // These are independent: do them in parallel since pre_start consumes time.
     fork
-      // Initialize the interface first since pre_start consumes time.
       cfg.clkmgr_vif.init();
       if (do_clkmgr_init) clkmgr_init();
       super.pre_start();
@@ -60,8 +60,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.main_clk_rst_vif.set_freq_mhz(100);
     cfg.io_clk_rst_vif.set_freq_mhz(96);
     cfg.usb_clk_rst_vif.set_freq_mhz(48);
-    // The real clock rate for aon is 200kHz, but that slows testing down.
-    // Increasing its frequency increases DV efficiency withoug compromising quality.
+    // The real clock rate for aon is 200kHz, but that can slow testing down.
+    // Increasing its frequency improves DV efficiency without compromising quality.
     cfg.aon_clk_rst_vif.set_freq_mhz(7);
   endtask
 

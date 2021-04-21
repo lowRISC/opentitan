@@ -626,7 +626,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
          {|sha3_err} ? 1'b1 :
          sha3_err_q;
 
-  // state macine status
+  // state machine status
   assign hw2reg.debug_status.main_sm_idle.d = es_main_sm_idle;
   assign hw2reg.debug_status.main_sm_state.d = es_main_sm_state;
 
