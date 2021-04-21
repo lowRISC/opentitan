@@ -32,6 +32,7 @@ module ibex_top_tracing #(
     input  logic                         rst_ni,
 
     input  logic                         test_en_i,     // enable all clock gates for testing
+    input  logic                         scan_rst_ni,
     input  prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
 
 
@@ -132,6 +133,7 @@ module ibex_top_tracing #(
     .rst_ni,
 
     .test_en_i,
+    .scan_rst_ni,
     .ram_cfg_i,
 
     .hart_id_i,

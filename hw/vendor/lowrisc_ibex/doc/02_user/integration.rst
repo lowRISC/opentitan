@@ -36,6 +36,7 @@ Instantiation Template
       .clk_i          (),
       .rst_ni         (),
       .test_en_i      (),
+      .scan_rst_ni    (),
       .ram_cfg_i      (),
 
       // Configuration
@@ -160,7 +161,11 @@ Interfaces
 +-------------------------+-------------------------+-----+----------------------------------------+
 | ``rst_ni``              | 1                       | in  | Active-low asynchronous reset          |
 +-------------------------+-------------------------+-----+----------------------------------------+
-| ``test_en_i``           | 1                       | in  | Test input, enables clock              |
+| ``test_en_i``           | 1                       | in  | Test input, enables clock and allows   |
+|                         |                         |     | test control of reset.                 |
++-------------------------+-------------------------+-----+----------------------------------------+
+| ``scan_rst_ni``         | 1                       | in  | Test controlled reset.  If DFT not     |
+|                         |                         |     | used, tie off to 1.                    |
 +-------------------------+-------------------------+-----+----------------------------------------+
 | ``ram_cfg_i``           | 10                      | in  | RAM configuration inputs, routed to    |
 |                         |                         |     | the icache RAMs                        |
