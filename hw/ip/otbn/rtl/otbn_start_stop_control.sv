@@ -92,7 +92,9 @@ module otbn_start_stop_control
   assign controller_start_o = (state_q == OtbnStartStopStateUrndRefresh) & !urnd_reseed_busy_i;
 
   `ASSERT(StartStopStateValid,
-      state_q inside {OtbnStartStopStateHalt, OtbnStartStopStateUrndRefresh, OtbnStartStopStateRunning})
+      state_q inside {OtbnStartStopStateHalt,
+                      OtbnStartStopStateUrndRefresh,
+                      OtbnStartStopStateRunning})
 
   assign controller_start_addr_o = start_addr_q;
 endmodule

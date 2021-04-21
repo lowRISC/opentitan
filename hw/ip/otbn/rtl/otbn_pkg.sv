@@ -374,7 +374,8 @@ package otbn_pkg;
   // $ ./util/design/gen-lfsr-seed.py --width 256 --seed 2840984437 --prefix "Urnd"
   parameter int UrndLfsrWidth = 256;
   typedef logic [UrndLfsrWidth-1:0] urnd_lfsr_seed_t;
-  parameter urnd_lfsr_seed_t RndCnstUrndLfsrSeedDefault = 256'h84ddfadaf7e1134d70aa1c59de6197ff25a4fe335d095f1e2cba89acbe4a07e9;
+  parameter urnd_lfsr_seed_t RndCnstUrndLfsrSeedDefault =
+      256'h84ddfadaf7e1134d70aa1c59de6197ff25a4fe335d095f1e2cba89acbe4a07e9;
 
   // These LFSR parameters have been generated with
   // $ ./util/design/gen-lfsr-seed.py --width 64 --seed 2840984437 --prefix "UrndChunk"
