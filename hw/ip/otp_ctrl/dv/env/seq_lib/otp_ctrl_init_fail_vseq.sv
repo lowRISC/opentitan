@@ -33,8 +33,8 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
   constraint lock_digest_c {num_to_lock_digests < num_dai_op * 2;}
   constraint num_iterations_c {num_dai_op inside {[20:100]};}
   constraint ecc_err_c {
-    $countones(ecc_err_mask) dist  {1 :/ 1,  // ECC correctable error
-                                    2 :/ 1}; // ECC uncorrectable error
+    $countones(ecc_err_mask) dist {1 :/ 1,  // ECC correctable error
+                                   2 :/ 1}; // ECC uncorrectable error
   }
 
   virtual task pre_start();
@@ -143,12 +143,19 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
         req_lc_transition(1);
         trigger_checks(.val('1), .wait_done(0));
         exp_status[OtpLifeCycleErrIdx] = 1;
-        check_otp_fatal_err("fatal_check_error", exp_status, 0);
+        check_otp_fatal_err("fatal_check_error", exp_status);
       end
     end
   endtask
 
-  virtual task check_otp_fatal_err(string alert_name, bit [TL_DW-1:0] exp_status, bit is_init = 1);
+  virtual task check_otp_fatal_err(string alert_name, bit [TL_DW-1:0] exp_status);
+    int            error_cnt;
+    otp_err_code_e exp_err_code = (alert_name == "fatal_check_error") ?
+                                  OtpCheckFailError : OtpMacroEccUncorrError;
+    otp_err_code_e err_code;
+    dv_base_reg_field err_code_flds[$];
+    ral.err_code.get_dv_base_reg_fields(err_code_flds);
+
     cfg.otp_ctrl_vif.drive_pwr_otp_init(1);
 
     // Wait until OTP_INIT process the error
@@ -157,17 +164,32 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
                       $sformatf("Timeout waiting for alert %0s", alert_name))
     check_fatal_alert_nonblocking(alert_name);
 
+    // If fatal_macro_error, will trigger fatal_check_error alert due to internal escalation.
+    if (alert_name == "fatal_macro_error") check_fatal_alert_nonblocking("fatal_check_error");
+
     cfg.otp_ctrl_vif.drive_pwr_otp_init(0);
 
     // Wait until all partitions finish initialization
     cfg.clk_rst_vif.wait_clks($urandom_range(2000, 4000));
 
-    csr_rd_check(.ptr(ral.status), .compare_value(exp_status));
-
-    if (is_init) begin
-      `DV_CHECK_EQ(cfg.otp_ctrl_vif.pwr_otp_done_o, 0)
-      `DV_CHECK_EQ(cfg.otp_ctrl_vif.pwr_otp_idle_o, 0)
+    // Here we should see alert is triggered by one of the fatal errors, then it triggers internal
+    // escalation. The logic below tries to confirm the first fatal alert is triggered with the
+    // correct error code.
+    for (int i = 0; i <= OtpLciErrIdx; i++) begin
+      if (exp_status[i]) begin
+        csr_rd(err_code_flds[i], err_code);
+        if (err_code == exp_err_code) begin
+          error_cnt++;
+        end else if (err_code != OtpFsmStateError) begin
+          `uvm_error(`gfn, $sformatf("Unexpected error code_%0d: %0s", i, err_code.name));
+        end
+      end
     end
+    `DV_CHECK_EQ(error_cnt, 1)
+    csr_rd_check(.ptr(ral.status), .compare_value(exp_status | FATAL_EXP_STATUS));
+
+    `DV_CHECK_EQ(cfg.otp_ctrl_vif.pwr_otp_done_o, 1)
+    `DV_CHECK_EQ(cfg.otp_ctrl_vif.pwr_otp_idle_o, 1)
 
     // Issue reset to stop fatal alert
     apply_reset();
