@@ -40,7 +40,7 @@ module rom_ctrl_mux #(
   // TODO: sel_q will definitely need to be multi-bit for glitch resistance. We'll probably also
   // have to chase the "signal bit signals" back a bit further through the logic too.
   logic sel_q;
-  always @(posedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       sel_q <= 1'b1;
     end else begin
