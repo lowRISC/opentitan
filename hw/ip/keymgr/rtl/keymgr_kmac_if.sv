@@ -63,12 +63,6 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   localparam int GenRounds = (GenDataWidth + KmacDataIfWidth - 1) / KmacDataIfWidth;
   localparam int MaxRounds = KDFMaxWidth  / KmacDataIfWidth;
 
-  // Total transmitted bits, this is the same as *DataWidth if it all
-  // fits into kmac data interface
-  localparam int AdvWidth = KmacDataIfWidth * AdvRounds;
-  localparam int IdWidth  = KmacDataIfWidth * IdRounds;
-  localparam int GenWidth = KmacDataIfWidth * GenRounds;
-
   // calculated parameters for number of roudns and interface width
   localparam int CntWidth = $clog2(MaxRounds);
   localparam int IfBytes = KmacDataIfWidth / 8;
@@ -87,9 +81,9 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   localparam logic [IfBytes-1:0] IdByteMask  = (IdRem > 0)  ? (2**(IdRem/8)-1)  : {IfBytes{1'b1}};
   localparam logic [IfBytes-1:0] GenByteMask = (GenRem > 0) ? (2**(GenRem/8)-1) : {IfBytes{1'b1}};
 
-  logic [AdvRounds-1:0][KmacDataIfWidth-1:0] adv_data;
-  logic [IdRounds-1:0 ][KmacDataIfWidth-1:0] id_data;
-  logic [GenRounds-1:0][KmacDataIfWidth-1:0] gen_data;
+  logic [MaxRounds-1:0][KmacDataIfWidth-1:0] adv_data;
+  logic [MaxRounds-1:0][KmacDataIfWidth-1:0] id_data;
+  logic [MaxRounds-1:0][KmacDataIfWidth-1:0] gen_data;
   logic [CntWidth-1:0] cnt;
   logic [CntWidth-1:0] rounds;
   logic [KmacDataIfWidth-1:0] decoy_data;
@@ -105,9 +99,9 @@ module keymgr_kmac_if import keymgr_pkg::*;(
 
   // 0 pad to the appropriate width
   // this is basically for scenarios where *DataWidth % KmacDataIfWidth != 0
-  assign adv_data = AdvWidth'(adv_data_i);
-  assign id_data  = IdWidth'(id_data_i);
-  assign gen_data = GenWidth'(gen_data_i);
+  assign adv_data = KDFMaxWidth'(adv_data_i);
+  assign id_data  = KDFMaxWidth'(id_data_i);
+  assign gen_data = KDFMaxWidth'(gen_data_i);
 
   assign start = adv_en_i | id_en_i | gen_en_i;
 
@@ -260,6 +254,11 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   // immediately assert errors
   assign inputs_invalid_o = |inputs_invalid_d;
 
+  logic [CntWidth-1:0] adv_sel, id_sel, gen_sel;
+  assign adv_sel = LastAdvRound - cnt;
+  assign id_sel = LastIdRound - cnt;
+  assign gen_sel = LastGenRound - cnt;
+
   // The count is maintained as a downcount
   // so a subtract is necessary to send the right byte
   // alternatively we can also reverse the order of the input
@@ -269,11 +268,11 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     if (|cmd_error_o || inputs_invalid_o || fsm_error_o) begin
       kmac_data_o.data  = decoy_data;
     end else if (valid && adv_en_i) begin
-      kmac_data_o.data  = adv_data[LastAdvRound - cnt];
+      kmac_data_o.data  = adv_data[adv_sel];
     end else if (valid && id_en_i) begin
-      kmac_data_o.data  = id_data[LastIdRound - cnt];
+      kmac_data_o.data  = id_data[id_sel];
     end else if (valid && gen_en_i) begin
-      kmac_data_o.data  = gen_data[LastGenRound - cnt];
+      kmac_data_o.data  = gen_data[gen_sel];
     end
   end
 
