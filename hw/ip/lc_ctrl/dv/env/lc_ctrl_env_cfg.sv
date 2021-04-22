@@ -28,8 +28,9 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(lc_ctrl_reg_block));
     m_otp_prog_pull_agent_cfg = push_pull_agent_cfg#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
         .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))::type_id::create("m_otp_prog_pull_agent_cfg");
     `DV_CHECK_RANDOMIZE_FATAL(m_otp_prog_pull_agent_cfg)
-    m_otp_prog_pull_agent_cfg.agent_type = PullAgent;
-    m_otp_prog_pull_agent_cfg.if_mode    = Device;
+    m_otp_prog_pull_agent_cfg.agent_type            = PullAgent;
+    m_otp_prog_pull_agent_cfg.if_mode               = Device;
+    m_otp_prog_pull_agent_cfg.in_bidirectional_mode = 1;
 
     m_otp_token_pull_agent_cfg = push_pull_agent_cfg#(
                                  .HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth))

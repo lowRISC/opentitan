@@ -9,36 +9,20 @@ class lc_ctrl_prog_failure_vseq extends lc_ctrl_smoke_vseq;
 
   `uvm_object_new
 
-  virtual function void configure_vseq();
-    this.trans_success_c.constraint_mode(0);
-  endfunction
-
-  virtual task body();
-    fork
-      super.body();
-      set_prog_failure();
-    join_any
-    disable fork;
-  endtask
+  constraint otp_prog_err_c {
+    otp_prog_err == 1;
+  }
 
   virtual task post_start();
-    super.post_start();
     // trigger dut_init to make sure always on alert is not firing forever
-    dut_init();
-  endtask
+    if (do_apply_reset) begin
+      dut_init();
+    end else wait(0); // wait until upper seq resets and kills this seq
 
-  task set_prog_failure();
-    forever begin
-      wait(cfg.m_otp_prog_pull_agent_cfg.vif.req == 1);
-      if (trans_success) begin
-        cfg.lc_ctrl_vif.prog_err = 0;
-      end else begin
-        cfg.lc_ctrl_vif.prog_err = 1;
-      end
-      wait (cfg.m_otp_prog_pull_agent_cfg.vif.req == 0);
-      cfg.clk_rst_vif.wait_clks(2);
-      cfg.lc_ctrl_vif.prog_err = 0;
-    end
+    // delay to avoid race condition when sending item and checking no item after reset occur
+    // at the same time
+    #1ps;
+    super.post_start();
   endtask
 
 endclass

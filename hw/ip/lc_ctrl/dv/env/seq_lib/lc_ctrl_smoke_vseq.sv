@@ -10,7 +10,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
   rand bit clk_byp_error_rsp;
   rand bit flash_rma_error_rsp;
-  rand bit trans_success;
+  rand bit otp_prog_err;
   dec_lc_state_e next_lc_state;
 
   constraint no_err_rsps_c {
@@ -18,9 +18,14 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
     flash_rma_error_rsp == 0;
   }
 
-  constraint trans_success_c {
-    trans_success == 1;
+  constraint otp_prog_err_c {
+    otp_prog_err == 0;
   }
+
+  virtual task pre_start();
+    super.pre_start();
+    add_otp_prog_err_bit();
+  endtask
 
   task body();
     run_clk_byp_rsp_nonblocking(clk_byp_error_rsp);
@@ -46,7 +51,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
             DecLcStTestUnlocked1, DecLcStTestUnlocked2, DecLcStTestUnlocked3}) begin
           cfg.lc_ctrl_vif.set_hashed_token(lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed);
         end
-        sw_transition_req(next_lc_state, token_val, trans_success);
+        sw_transition_req(next_lc_state, token_val);
       end else begin
         // wait at least two clks for scb to finish checking lc outputs
         cfg.clk_rst_vif.wait_clks($urandom_range(2, 10));
@@ -59,6 +64,16 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
   virtual function void randomize_next_lc_state(dec_lc_state_e curr_lc_state);
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(next_lc_state,
         next_lc_state inside {VALID_NEXT_STATES[curr_lc_state]};)
+  endfunction
+
+  // This function add otp_program_i's error bit field from the otp_prog_pull_agent device driver.
+  // The pushed data length is (num_trans * 2) because for each transaction, we will have two
+  // otp_program request at most (one for lc_token and one for lc_state)
+  virtual function void add_otp_prog_err_bit();
+    repeat (num_trans * 2) begin
+      bit err_bit = otp_prog_err ? $urandom_range(0, 1) : 0;
+      cfg.m_otp_prog_pull_agent_cfg.add_d_user_data(err_bit);
+    end
   endfunction
 
 endclass : lc_ctrl_smoke_vseq
