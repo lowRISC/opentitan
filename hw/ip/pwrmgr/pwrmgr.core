@@ -11,7 +11,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:lc_sender
       - lowrisc:prim:all
-      - lowrisc:ip:rom_ctrl
+      - lowrisc:ip:rom_ctrl_pkg
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:pwrmgr_pkg
     files:
