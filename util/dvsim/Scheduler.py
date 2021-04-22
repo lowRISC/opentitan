@@ -339,10 +339,16 @@ class Scheduler:
         Returns True if something changed.
         '''
 
-        changed = False
         max_poll = min(self.launcher_cls.max_poll,
                        sum_dict_lists(self._running))
 
+        # If there are no jobs running, we are likely done (possibly because
+        # of a SIGINT). Since poll() was called anyway, signal that something
+        # has indeed changed.
+        if not max_poll:
+            return True
+
+        changed = False
         while max_poll:
             target, self.last_target_polled_idx = get_next_item(
                 self._targets, self.last_target_polled_idx)
