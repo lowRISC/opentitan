@@ -539,7 +539,6 @@ class SimCfg(FlowCfg):
         is enabled, then the summary coverage report is also generated. The final
         result is in markdown format.
         '''
-
         def create_failure_message(test, line, context):
             spaces = " " * 12
             message = [f"    * {test.qual_name}", ""]
@@ -629,8 +628,8 @@ class SimCfg(FlowCfg):
                         fail_msgs.append(
                             f"    * ... {len(tests) - count} more tests.")
                         break
-                    fail_msgs.extend(create_failure_message(
-                        test, line, context))
+                    fail_msgs.extend(
+                        create_failure_message(test, line, context))
             fail_msgs.append("")
             results_str += "\n".join(fail_msgs)
 
@@ -646,32 +645,45 @@ class SimCfg(FlowCfg):
         return results_str
 
     def gen_results_summary(self):
+        '''Generate the summary results table.
 
-        # sim summary result has 5 columns from each SimCfg.results_summary
-        header = ["Name", "Passing", "Total", "Pass Rate"]
-        if self.cov_report_deploy is not None:
-            header.append('Coverage')
-        table = []
-        colalign = ("center", ) * len(header)
-        for item in self.cfgs:
-            row = []
-            for title in item.results_summary:
-                row.append(item.results_summary[title])
-            if row:
-                table.append(row)
-        self.results_summary_md = "## " + self.results_title + " (Summary)\n"
-        self.results_summary_md += "### " + self.timestamp_long + "\n"
+        This method is specific to the primary cfg. It summarizes the results
+        from each individual cfg in a markdown table.
+
+        Prints the generated summary markdown text to stdout and returns it.
+        '''
+
+        lines = [f"## {self.results_title} (Summary)"]
+        lines += [f"### {self.timestamp_long}"]
         if self.revision:
-            self.results_summary_md += "### " + self.revision + "\n"
-        self.results_summary_md += "### Branch: " + self.branch + "\n"
-        if table:
-            self.results_summary_md += tabulate(table,
-                                                headers=header,
-                                                tablefmt="pipe",
-                                                colalign=colalign)
-        else:
-            self.results_summary_md += "\nNo results to display.\n"
+            lines += [f"### {self.revision}"]
+        lines += [f"### Branch: {self.branch}"]
 
+        table = []
+        header = []
+        for cfg in self.cfgs:
+            row = cfg.results_summary.values()
+            if row:
+                # If header is set, ensure its the same for all cfgs.
+                if header:
+                    assert header == cfg.results_summary.keys()
+                else:
+                    header = cfg.results_summary.keys()
+                table.append(row)
+
+        if table:
+            assert header
+            colalign = ("center", ) * len(header)
+            table_txt = tabulate(table,
+                                 headers=header,
+                                 tablefmt="pipe",
+                                 colalign=colalign)
+            lines += ["", table_txt, ""]
+
+        else:
+            lines += ["\nNo results to display.\n"]
+
+        self.results_summary_md = "\n".join(lines)
         print(self.results_summary_md)
         return self.results_summary_md
 
