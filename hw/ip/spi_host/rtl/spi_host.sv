@@ -507,12 +507,12 @@ module spi_host
       tx_empty_q <= 1'b0;
       rx_full_q  <= 1'b0;
     end else begin
-      idle_q     <= idle_q;
-      ready_q    <= ready_q;
-      tx_wm_q    <= tx_wm_q;
-      rx_wm_q    <= rx_wm_q;
-      tx_empty_q <= tx_empty_q;
-      rx_full_q  <= rx_full_q;
+      idle_q     <= idle_d;
+      ready_q    <= ready_d;
+      tx_wm_q    <= tx_wm_d;
+      rx_wm_q    <= rx_wm_d;
+      tx_empty_q <= tx_empty_d;
+      rx_full_q  <= rx_full_d;
     end
   end
 

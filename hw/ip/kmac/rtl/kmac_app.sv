@@ -230,7 +230,7 @@ module kmac_app
   // clear digest right after done to not leak info to other interface
   always_comb begin
     for (int unsigned i = 0 ; i < NumAppIntf ; i++) begin
-      if (AppIdxW'(i) == app_id) begin
+      if (i == app_id) begin
         app_o[i] = '{
           ready:         app_data_ready,
           done:          app_digest_done,
@@ -574,7 +574,7 @@ module kmac_app
       StAppMsg: begin
         // Check app intf cfg
         for (int unsigned i = 0 ; i < NumAppIntf ; i++) begin
-          if (app_id == AppIdxW'(i)) begin
+          if (app_id == i) begin
             if (AppCfg[i].PrefixMode == 1'b 0) begin
               sha3_prefix_o = reg_prefix_i;
             end else begin
