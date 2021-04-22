@@ -65,3 +65,35 @@ test('sw_silicon_creator_lib_driver_uart_unittest', executable(
   ),
   suite: 'mask_rom',
 )
+
+# Mask OTP uart driver
+sw_silicon_creator_lib_driver_otp = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_otp',
+    sources: [
+      hw_ip_otp_ctrl_reg_h,
+      'otp.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  ),
+)
+
+test('sw_silicon_creator_lib_driver_otp_unittest', executable(
+    'sw_silicon_creator_lib_driver_otp_unittest',
+    sources: [
+      'otp_unittest.cc',
+      hw_ip_otp_ctrl_reg_h,
+      'otp.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+    ),
+  suite: 'mask_rom',
+)
