@@ -4948,6 +4948,14 @@
       param_list:
       [
         {
+          name: Stub
+          desc: Stub out the core of Otbn logic
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: OtbnStub
+        }
+        {
           name: RegFile
           desc: Selection of the register file implementation. See otbn_pkg.sv.
           type: otbn_pkg::regfile_e

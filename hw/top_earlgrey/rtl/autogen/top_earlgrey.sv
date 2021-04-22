@@ -23,6 +23,7 @@ module top_earlgrey #(
   parameter int KmacReuseShare = 0,
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
   parameter bit SramCtrlMainInstrExec = 1,
+  parameter bit OtbnStub = 0,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
   parameter  RomCtrlBootRomInitFile = "",
   parameter bit RomCtrlSkipCheck = 1,
@@ -2251,6 +2252,7 @@ module top_earlgrey #(
 
   otbn #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[29:28]),
+    .Stub(OtbnStub),
     .RegFile(OtbnRegFile),
     .RndCnstUrndLfsrSeed(RndCnstOtbnUrndLfsrSeed),
     .RndCnstUrndChunkLfsrPerm(RndCnstOtbnUrndChunkLfsrPerm)
