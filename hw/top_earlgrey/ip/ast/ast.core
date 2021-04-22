@@ -14,7 +14,7 @@ filesets:
       - lowrisc:prim:clock_inv
       - lowrisc:prim:prim_pkg
       - lowrisc:prim:lc_dec
-      - lowrisc:top_earlgrey:pinmux_reg
+      - lowrisc:ip:pinmux_reg
       - lowrisc:ip:pinmux_component
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:edn_pkg
@@ -78,4 +78,3 @@ targets:
       vcs:
         vcs_options: [-timescale=1ns/1ps -l vcs.log]
     toplevel: ast
-

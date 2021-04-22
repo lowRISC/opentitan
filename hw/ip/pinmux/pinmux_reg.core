@@ -8,10 +8,11 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:tlul:headers
-
+      - "fileset_top ? (lowrisc:systems:pinmux_reg)"
+      - "fileset_topgen ? (lowrisc:systems:topgen-reg-only)"
     files:
-      - rtl/pinmux_reg_pkg.sv
-      - rtl/pinmux_reg_top.sv
+      - "fileset_ip ? (rtl/pinmux_reg_pkg.sv)"
+      - "fileset_ip ? (rtl/pinmux_reg_top.sv)"
     file_type: systemVerilogSource
 
 

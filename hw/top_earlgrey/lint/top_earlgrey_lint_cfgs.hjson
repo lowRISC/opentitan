@@ -141,6 +141,12 @@
                   fusesoc_core: lowrisc:ip:pinmux
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/pinmux/lint/{tool}"
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
              },
              {    name: pwrmgr
                   fusesoc_core: lowrisc:ip:pwrmgr
