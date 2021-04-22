@@ -24,6 +24,10 @@ waive -rules CLOCK_USE -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks.c
 waive -rules CLOCK_MUX -location {clkmgr.sv top_earlgrey.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
       -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"
 
+# scan reset is a legal asynchronous reset
+waive -rules RESET_USE -location {top_earlgrey.sv} -regexp {'scan_rst_ni' is connected to .* port 'scan_rst_ni', and used as an asynchronous reset or set 'rst_ni' at} \
+      -comment "Scan reset is a legal asynchronous reset"
+
 # Combo loops through uart loopback can be ignored
 waive -rules {COMBO_LOOP} -location {chip_earlgrey_asic.sv} -regexp {'tx' driven in module 'uart_core' by 'rx' at uart_core.sv} \
       -comment "there is technically a loopback path through uart, however RX / TX should never be configured to the same pin"
