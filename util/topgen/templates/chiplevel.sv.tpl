@@ -1113,6 +1113,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecAesSkipPRNGReseeding(1'b0),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
+    .OtbnStub(1'b1),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .RomCtrlBootRomInitFile(BootRomInitFile),
 % endif

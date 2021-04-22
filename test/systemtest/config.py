@@ -25,6 +25,7 @@ TEST_APPS_SELFCHECKING = [
         "name": "dif_otbn_smoketest_rtl",
         "binary_name": "dif_otbn_smoketest",
         "verilator_extra_args": ['+OTBN_USE_MODEL=0'],
+        "targets": ["sim_verilator"],
     },
     {
         "name": "dif_otbn_smoketest_model",
@@ -34,14 +35,14 @@ TEST_APPS_SELFCHECKING = [
     },
     # The OTBN end-to-end tests can be run in simulation, but take a long time
     # there. Run them on FPGAs only for faster test results.
-    {
-        "name": "otbn_rsa_test",
-        "targets": ["fpga_nexysvideo"],
-    },
-    {
-        "name": "otbn_ecdsa_p256_test",
-        "targets": ["fpga_nexysvideo"],
-    },
+    #{
+    #    "name": "otbn_rsa_test",
+    #    "targets": ["fpga_nexysvideo"],
+    #},
+    #{
+    #    "name": "otbn_ecdsa_p256_test",
+    #    "targets": ["fpga_nexysvideo"],
+    #},
     {
         "name": "dif_aes_smoketest",
     },
