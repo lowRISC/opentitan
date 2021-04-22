@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <assert.h>
+
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
@@ -21,8 +23,8 @@ const test_config_t kTestConfig;
 // RISC-V is little-endian, so the first of these `kHmacTransactionConfig`
 // values is the one we expect to be used, but we include the other for
 // completeness.
-_Static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
-               "This test assumes the target platform is little endian.");
+static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
+              "This test assumes the target platform is little endian.");
 
 static const dif_hmac_transaction_t kHmacTransactionConfig = {
     .digest_endianness = kDifHmacEndiannessLittle,

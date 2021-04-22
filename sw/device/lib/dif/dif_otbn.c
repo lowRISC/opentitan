@@ -4,29 +4,31 @@
 
 #include "sw/device/lib/dif/dif_otbn.h"
 
+#include <assert.h>
+
 #include "sw/device/lib/base/bitfield.h"
 
 #include "otbn_regs.h"  // Generated.
 
-_Static_assert(kDifOtbnErrBitsBadDataAddr ==
-                   (1 << OTBN_ERR_BITS_BAD_DATA_ADDR_BIT),
-               "Layout of error bits changed.");
-_Static_assert(kDifOtbnErrBitsBadInsnAddr ==
-                   (1 << OTBN_ERR_BITS_BAD_INSN_ADDR_BIT),
-               "Layout of error bits changed.");
-_Static_assert(kDifOtbnErrBitsCallStack == (1 << OTBN_ERR_BITS_CALL_STACK_BIT),
-               "Layout of error bits changed.");
-_Static_assert(kDifOtbnErrBitsIllegalInsn ==
-                   (1 << OTBN_ERR_BITS_ILLEGAL_INSN_BIT),
-               "Layout of error bits changed.");
-_Static_assert(kDifOtbnErrBitsLoop == (1 << OTBN_ERR_BITS_LOOP_BIT),
-               "Layout of error bits changed.");
-_Static_assert(kDifOtbnErrBitsFatalImem == (1 << OTBN_ERR_BITS_FATAL_IMEM_BIT),
-               "Layout of error bits changed.");
-_Static_assert(kDifOtbnErrBitsFatalDmem == (1 << OTBN_ERR_BITS_FATAL_DMEM_BIT),
-               "Layout of error bits changed.");
-_Static_assert(kDifOtbnErrBitsFatalReg == (1 << OTBN_ERR_BITS_FATAL_REG_BIT),
-               "Layout of error bits changed.");
+static_assert(kDifOtbnErrBitsBadDataAddr ==
+                  (1 << OTBN_ERR_BITS_BAD_DATA_ADDR_BIT),
+              "Layout of error bits changed.");
+static_assert(kDifOtbnErrBitsBadInsnAddr ==
+                  (1 << OTBN_ERR_BITS_BAD_INSN_ADDR_BIT),
+              "Layout of error bits changed.");
+static_assert(kDifOtbnErrBitsCallStack == (1 << OTBN_ERR_BITS_CALL_STACK_BIT),
+              "Layout of error bits changed.");
+static_assert(kDifOtbnErrBitsIllegalInsn ==
+                  (1 << OTBN_ERR_BITS_ILLEGAL_INSN_BIT),
+              "Layout of error bits changed.");
+static_assert(kDifOtbnErrBitsLoop == (1 << OTBN_ERR_BITS_LOOP_BIT),
+              "Layout of error bits changed.");
+static_assert(kDifOtbnErrBitsFatalImem == (1 << OTBN_ERR_BITS_FATAL_IMEM_BIT),
+              "Layout of error bits changed.");
+static_assert(kDifOtbnErrBitsFatalDmem == (1 << OTBN_ERR_BITS_FATAL_DMEM_BIT),
+              "Layout of error bits changed.");
+static_assert(kDifOtbnErrBitsFatalReg == (1 << OTBN_ERR_BITS_FATAL_REG_BIT),
+              "Layout of error bits changed.");
 
 /**
  * Data width of big number subset, in bytes.

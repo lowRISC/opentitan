@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/dif/dif_rstmgr.h"
 
+#include <assert.h>
 #include <stdint.h>
 
 #include "sw/device/lib/base/bitfield.h"
@@ -11,23 +12,23 @@
 
 #include "rstmgr_regs.h"  // Generated.
 
-// This macro simplifies the `_Static_assert` check to make sure that the
+// This macro simplifies the `static_assert` check to make sure that the
 // public reset info register bitfield matches register bits.
-#define RSTMGR_RESET_INFO_CHECK(pub_name, priv_name)          \
-  _Static_assert(kDifRstmgrResetInfo##pub_name ==             \
-                     (0x1 << RSTMGR_RESET_##priv_name##_BIT), \
-                 "kDifRstmgrResetInfo" #pub_name              \
-                 " must match the register definition!")
+#define RSTMGR_RESET_INFO_CHECK(pub_name, priv_name)         \
+  static_assert(kDifRstmgrResetInfo##pub_name ==             \
+                    (0x1 << RSTMGR_RESET_##priv_name##_BIT), \
+                "kDifRstmgrResetInfo" #pub_name              \
+                " must match the register definition!")
 
 RSTMGR_RESET_INFO_CHECK(Por, INFO_POR);
 RSTMGR_RESET_INFO_CHECK(LowPowerExit, INFO_LOW_POWER_EXIT);
 RSTMGR_RESET_INFO_CHECK(Ndm, INFO_NDM_RESET);
 
-_Static_assert(kDifRstmgrResetInfoHwReq == (RSTMGR_RESET_INFO_HW_REQ_MASK
-                                            << RSTMGR_RESET_INFO_HW_REQ_OFFSET),
-               "kDifRstmgrResetInfoHwReq must match the register definition!");
+static_assert(kDifRstmgrResetInfoHwReq == (RSTMGR_RESET_INFO_HW_REQ_MASK
+                                           << RSTMGR_RESET_INFO_HW_REQ_OFFSET),
+              "kDifRstmgrResetInfoHwReq must match the register definition!");
 
-_Static_assert(
+static_assert(
     RSTMGR_PARAM_NUMSWRESETS == 7,
     "Number of software resets has changed, please update this file!");
 
@@ -36,7 +37,7 @@ _Static_assert(
 // there will be multiple of Reset Enable and Reset Control registers. The
 // appropriate offset from the peripheral base would then have to be
 // calculated.
-_Static_assert(
+static_assert(
     RSTMGR_PARAM_NUMSWRESETS <= 32,
     "Reset Enable and Control registers span across multiple registers!");
 
@@ -45,7 +46,7 @@ _Static_assert(
 // inclusive). However, in reality it only supports 15, as
 // `RSTMGR_ALERT_INFO_ATTR_CNT_AVAIL_MASK` is of the same size, but value of
 // 0 indicates that there is no alert info crash dump.
-_Static_assert(
+static_assert(
     DIF_RSTMGR_ALERT_INFO_MAX_SIZE == RSTMGR_ALERT_INFO_CTRL_INDEX_MASK,
     "Alert info dump max size has grown, please update the public define!");
 

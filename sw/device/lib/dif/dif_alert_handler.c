@@ -4,16 +4,18 @@
 
 #include "sw/device/lib/dif/dif_alert_handler.h"
 
+#include <assert.h>
+
 #include "sw/device/lib/base/bitfield.h"
 
 #include "alert_handler_regs.h"  // Generated.
 
-_Static_assert(ALERT_HANDLER_PARAM_N_CLASSES == 4,
-               "Expected four alert classes!");
-_Static_assert(ALERT_HANDLER_PARAM_N_ESC_SEV == 4,
-               "Expected four escalation signals!");
-_Static_assert(ALERT_HANDLER_PARAM_N_PHASES == 4,
-               "Expected four escalation phases!");
+static_assert(ALERT_HANDLER_PARAM_N_CLASSES == 4,
+              "Expected four alert classes!");
+static_assert(ALERT_HANDLER_PARAM_N_ESC_SEV == 4,
+              "Expected four escalation signals!");
+static_assert(ALERT_HANDLER_PARAM_N_PHASES == 4,
+              "Expected four escalation phases!");
 
 dif_alert_handler_result_t dif_alert_handler_init(
     dif_alert_handler_params_t params, dif_alert_handler_t *handler) {
