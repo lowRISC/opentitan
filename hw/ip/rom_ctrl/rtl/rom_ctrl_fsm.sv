@@ -212,9 +212,9 @@ module rom_ctrl_fsm
   assign rel_addr_wide = counter_addr - TopStartAddr;
   assign rel_addr = rel_addr_wide[TAW-1:0];
 
-  // The top bits of rel_addr_wide should always be zero (because TAW bits should be enough to
-  // encode the difference between counter_addr and TopStartAddr)
-  `ASSERT(RelAddrWide_A, ~|rel_addr_wide[AW-1:TAW])
+  // The top bits of rel_addr_wide should always be zero if we're reading the top bits (because TAW
+  // bits should be enough to encode the difference between counter_addr and TopStartAddr)
+  `ASSERT(RelAddrWide_A, exp_digest_vld_o |-> ~|rel_addr_wide[AW-1:TAW])
   logic unused_top_rel_addr_wide;
   assign unused_top_rel_addr_wide = |rel_addr_wide[AW-1:TAW];
 
