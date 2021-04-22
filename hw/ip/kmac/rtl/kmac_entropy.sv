@@ -407,6 +407,10 @@ module kmac_entropy
     unique case (st)
       StRandReset: begin
         if (entropy_ready_i) begin
+
+          // As SW ready, discard current dummy entropy and refresh.
+          rand_valid_clear = 1'b 1;
+
           // SW has configured KMAC
           unique case (mode_i)
             EntropyModeSw: begin
@@ -429,6 +433,11 @@ module kmac_entropy
           endcase
         end else begin
           st_d = StRandReset;
+
+          // Setting the dummy rand gate until SW prepares.
+          // This lets the Application Interface move forward out of reset
+          // without SW intervention.
+          rand_valid_set = 1'b 1;
         end
       end
 
