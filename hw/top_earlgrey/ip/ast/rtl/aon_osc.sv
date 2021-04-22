@@ -53,7 +53,6 @@ always begin
   #(AonClkPeriod/2) clk = ~clk && en_osc;
 end
 
-assign aon_clk_o = clk;
 `else  // of SYNTHESIS
 localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
 
@@ -78,11 +77,14 @@ if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
   // FPGA Specific (place holder)
   ///////////////////////////////////////
   assign clk = (/*TODO*/ 1'b1) && en_osc;
-  assign aon_clk_o = clk;
 end else begin : gen_generic
   assign clk = (/*TODO*/ 1'b1) && en_osc;
-  assign aon_clk_o = clk;
 end
 `endif
+
+prim_buf u_buf (
+  .in_i(clk),
+  .out_o(aon_clk_o)
+);
 
 endmodule : aon_osc
