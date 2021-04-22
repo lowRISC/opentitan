@@ -271,7 +271,7 @@ module tlul_adapter_sram import tlul_pkg::*; #(
 
   // An instruction type transaction is only valid if en_ifetch is enabled
   assign instr_error = tl_i.a_user.tl_type == InstrType &
-                       en_ifetch_i == InstrDis;
+                       en_ifetch_i != InstrEn;
 
   if (ErrOnWrite == 1) begin : gen_no_writes
     assign wr_vld_error = tl_i.a_opcode != Get;
