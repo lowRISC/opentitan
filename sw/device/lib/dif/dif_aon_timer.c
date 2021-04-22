@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/dif/dif_aon_timer.h"
 
+#include <assert.h>
 #include <stddef.h>
 
 #include "sw/device/lib/base/bitfield.h"
@@ -11,12 +12,12 @@
 
 #include "aon_timer_regs.h"  // Generated.
 
-_Static_assert(AON_TIMER_INTR_STATE_WKUP_TIMER_EXPIRED_BIT ==
-                   AON_TIMER_INTR_TEST_WKUP_TIMER_EXPIRED_BIT,
-               "Wake-up IRQ have different indexes in different registers!");
-_Static_assert(AON_TIMER_INTR_STATE_WDOG_TIMER_EXPIRED_BIT ==
-                   AON_TIMER_INTR_TEST_WDOG_TIMER_EXPIRED_BIT,
-               "Watchdog IRQ have different indexes in different registers!");
+static_assert(AON_TIMER_INTR_STATE_WKUP_TIMER_EXPIRED_BIT ==
+                  AON_TIMER_INTR_TEST_WKUP_TIMER_EXPIRED_BIT,
+              "Wake-up IRQ have different indexes in different registers!");
+static_assert(AON_TIMER_INTR_STATE_WDOG_TIMER_EXPIRED_BIT ==
+                  AON_TIMER_INTR_TEST_WDOG_TIMER_EXPIRED_BIT,
+              "Watchdog IRQ have different indexes in different registers!");
 
 const size_t kAonTimerWakeupIrqIndex =
     AON_TIMER_INTR_STATE_WKUP_TIMER_EXPIRED_BIT;

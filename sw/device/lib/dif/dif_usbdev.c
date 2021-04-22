@@ -4,6 +4,8 @@
 
 #include "sw/device/lib/dif/dif_usbdev.h"
 
+#include <assert.h>
+
 #include "sw/device/lib/base/bitfield.h"
 
 #include "usbdev_regs.h"  // Generated.
@@ -12,8 +14,8 @@
  * Definition in the header file (and probably other places) must be updated if
  * there is a hardware change.
  */
-_Static_assert(USBDEV_NUM_ENDPOINTS == USBDEV_PARAM_NENDPOINTS,
-               "Mismatch in number of endpoints");
+static_assert(USBDEV_NUM_ENDPOINTS == USBDEV_PARAM_NENDPOINTS,
+              "Mismatch in number of endpoints");
 
 /**
  * Max packet size is equal to the size of device buffers.

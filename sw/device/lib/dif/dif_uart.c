@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/dif/dif_uart.h"
 
+#include <assert.h>
 #include <stddef.h>
 
 #include "sw/device/lib/base/bitfield.h"
@@ -159,8 +160,8 @@ dif_uart_config_result_t dif_uart_configure(const dif_uart_t *uart,
     nco_width += (UART_CTRL_NCO_MASK >> i) & 1;
   }
 
-  _Static_assert((UART_CTRL_NCO_MASK >> 28) == 0,
-                 "NCO bit width exceeds 28 bits.");
+  static_assert((UART_CTRL_NCO_MASK >> 28) == 0,
+                "NCO bit width exceeds 28 bits.");
 
   // NCO creates 16x of baudrate. So, in addition to the nco_width,
   // 2^4 should be multiplied.

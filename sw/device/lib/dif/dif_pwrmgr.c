@@ -4,6 +4,8 @@
 
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 
+#include <assert.h>
+
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 
@@ -21,30 +23,30 @@
  * `PWRMGR_CONTROL_CORE_CLK_EN_BIT` and be in the same order as
  * `dif_pwrmgr_domain_option_t` constants.
  */
-_Static_assert(kDifPwrmgrDomainOptionCoreClockInLowPower ==
-                   (1u << (PWRMGR_CONTROL_CORE_CLK_EN_BIT -
-                           PWRMGR_CONTROL_CORE_CLK_EN_BIT)),
-               "Layout of control register changed.");
+static_assert(kDifPwrmgrDomainOptionCoreClockInLowPower ==
+                  (1u << (PWRMGR_CONTROL_CORE_CLK_EN_BIT -
+                          PWRMGR_CONTROL_CORE_CLK_EN_BIT)),
+              "Layout of control register changed.");
 
-_Static_assert(kDifPwrmgrDomainOptionIoClockInLowPower ==
-                   (1u << (PWRMGR_CONTROL_IO_CLK_EN_BIT -
-                           PWRMGR_CONTROL_CORE_CLK_EN_BIT)),
-               "Layout of control register changed.");
+static_assert(kDifPwrmgrDomainOptionIoClockInLowPower ==
+                  (1u << (PWRMGR_CONTROL_IO_CLK_EN_BIT -
+                          PWRMGR_CONTROL_CORE_CLK_EN_BIT)),
+              "Layout of control register changed.");
 
-_Static_assert(kDifPwrmgrDomainOptionUsbClockInLowPower ==
-                   (1u << (PWRMGR_CONTROL_USB_CLK_EN_LP_BIT -
-                           PWRMGR_CONTROL_CORE_CLK_EN_BIT)),
-               "Layout of control register changed.");
+static_assert(kDifPwrmgrDomainOptionUsbClockInLowPower ==
+                  (1u << (PWRMGR_CONTROL_USB_CLK_EN_LP_BIT -
+                          PWRMGR_CONTROL_CORE_CLK_EN_BIT)),
+              "Layout of control register changed.");
 
-_Static_assert(kDifPwrmgrDomainOptionUsbClockInActivePower ==
-                   (1u << (PWRMGR_CONTROL_USB_CLK_EN_ACTIVE_BIT -
-                           PWRMGR_CONTROL_CORE_CLK_EN_BIT)),
-               "Layout of control register changed.");
+static_assert(kDifPwrmgrDomainOptionUsbClockInActivePower ==
+                  (1u << (PWRMGR_CONTROL_USB_CLK_EN_ACTIVE_BIT -
+                          PWRMGR_CONTROL_CORE_CLK_EN_BIT)),
+              "Layout of control register changed.");
 
-_Static_assert(kDifPwrmgrDomainOptionMainPowerInLowPower ==
-                   (1u << (PWRMGR_CONTROL_MAIN_PD_N_BIT -
-                           PWRMGR_CONTROL_CORE_CLK_EN_BIT)),
-               "Layout of control register changed.");
+static_assert(kDifPwrmgrDomainOptionMainPowerInLowPower ==
+                  (1u << (PWRMGR_CONTROL_MAIN_PD_N_BIT -
+                          PWRMGR_CONTROL_CORE_CLK_EN_BIT)),
+              "Layout of control register changed.");
 
 /**
  * Bitfield for interpreting the configuration options in the control
@@ -63,35 +65,35 @@ static const bitfield_field32_t kDomainConfigBitfield = {
  * Relevant bits of the WAKEUP_EN and WAKE_INFO registers must start at `0` and
  * be in the same order as `dif_pwrmgr_wakeup_request_source_t` constants.
  */
-_Static_assert(kDifPwrmgrWakeupRequestSourceOne ==
-                   (1u << PWRMGR_WAKEUP_EN_EN_0_BIT),
-               "Layout of WAKEUP_EN register changed.");
-_Static_assert(kDifPwrmgrWakeupRequestSourceOne ==
-                   (1u << PWRMGR_PARAM_DEBUG_CABLE_WAKEUP_IDX),
-               "Layout of WAKE_INFO register changed.");
-_Static_assert(kDifPwrmgrWakeupRequestSourceTwo ==
-                   (1u << PWRMGR_PARAM_AON_WKUP_REQ_IDX),
-               "Layout of WAKE_INFO register changed.");
-_Static_assert(kDifPwrmgrWakeupRequestSourceThree ==
-                   (1u << PWRMGR_PARAM_USB_WKUP_REQ_IDX),
-               "Layout of WAKE_INFO register changed.");
-_Static_assert(kDifPwrmgrWakeupRequestSourceFour ==
-                   (1u << PWRMGR_PARAM_AON_TIMER_WKUP_REQ_IDX),
-               "Layout of WAKE_INFO register changed.");
+static_assert(kDifPwrmgrWakeupRequestSourceOne ==
+                  (1u << PWRMGR_WAKEUP_EN_EN_0_BIT),
+              "Layout of WAKEUP_EN register changed.");
+static_assert(kDifPwrmgrWakeupRequestSourceOne ==
+                  (1u << PWRMGR_PARAM_DEBUG_CABLE_WAKEUP_IDX),
+              "Layout of WAKE_INFO register changed.");
+static_assert(kDifPwrmgrWakeupRequestSourceTwo ==
+                  (1u << PWRMGR_PARAM_AON_WKUP_REQ_IDX),
+              "Layout of WAKE_INFO register changed.");
+static_assert(kDifPwrmgrWakeupRequestSourceThree ==
+                  (1u << PWRMGR_PARAM_USB_WKUP_REQ_IDX),
+              "Layout of WAKE_INFO register changed.");
+static_assert(kDifPwrmgrWakeupRequestSourceFour ==
+                  (1u << PWRMGR_PARAM_AON_TIMER_WKUP_REQ_IDX),
+              "Layout of WAKE_INFO register changed.");
 
 /**
  * Relevant bits of the RESET_EN register must start at `0` and be in the same
  * order as `dif_pwrmgr_reset_request_source_t` constants.
  */
-_Static_assert(kDifPwrmgrResetRequestSourceOne ==
-                   (1u << PWRMGR_RESET_EN_EN_0_BIT),
-               "Layout of RESET_EN register changed.");
+static_assert(kDifPwrmgrResetRequestSourceOne ==
+                  (1u << PWRMGR_RESET_EN_EN_0_BIT),
+              "Layout of RESET_EN register changed.");
 
 /**
  * `dif_pwrmgr_irq_t` constants must match the corresponding generated values.
  */
-_Static_assert(kDifPwrmgrIrqWakeup == PWRMGR_INTR_COMMON_WAKEUP_BIT,
-               "Layout of interrupt registers changed.");
+static_assert(kDifPwrmgrIrqWakeup == PWRMGR_INTR_COMMON_WAKEUP_BIT,
+              "Layout of interrupt registers changed.");
 
 /**
  * Register information for a request type.

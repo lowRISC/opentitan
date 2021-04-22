@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/rom_exts/rom_ext_manifest_parser.h"
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -18,8 +19,8 @@ const rom_ext_manifest_slot_t kRomExtManifestSlotA =
 const rom_ext_manifest_slot_t kRomExtManifestSlotB =
     TOP_EARLGREY_EFLASH_BASE_ADDR + (TOP_EARLGREY_EFLASH_SIZE_BYTES / 2);
 
-_Static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
-               "Flash size is not divisible by 2");
+static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
+              "Flash size is not divisible by 2");
 
 rom_ext_manifest_t rom_ext_get_parameters(rom_ext_manifest_slot_t slot) {
   if (kRomExtManifestSlotA) {

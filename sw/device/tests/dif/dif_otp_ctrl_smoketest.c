@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 
+#include <assert.h>
 #include <stdbool.h>
 
 #include "sw/device/lib/base/bitfield.h"
@@ -16,8 +17,8 @@
 static dif_otp_ctrl_t otp;
 
 static const char kTestData[] = "abcdefghijklmno";
-_Static_assert(ARRAYSIZE(kTestData) % sizeof(uint32_t) == 0,
-               "kTestData must be a word array");
+static_assert(ARRAYSIZE(kTestData) % sizeof(uint32_t) == 0,
+              "kTestData must be a word array");
 
 const test_config_t kTestConfig;
 

@@ -4,6 +4,8 @@
 
 #include "sw/device/lib/dif/dif_keymgr.h"
 
+#include <assert.h>
+
 #include "keymgr_regs.h"  // Generated.
 
 /**
@@ -11,110 +13,110 @@
  * SW_SHARE1_OUTPUT_N registers must be contiguous to be able to use
  * `mmio_region_memcpy_to/from_mmio32()`.
  */
-_Static_assert(KEYMGR_SW_BINDING_1_REG_OFFSET ==
-                   KEYMGR_SW_BINDING_0_REG_OFFSET + 4,
-               "SW_BINDING_N registers must be contiguous.");
-_Static_assert(KEYMGR_SW_BINDING_2_REG_OFFSET ==
-                   KEYMGR_SW_BINDING_0_REG_OFFSET + 8,
-               "SW_BINDING_N registers must be contiguous.");
-_Static_assert(KEYMGR_SW_BINDING_3_REG_OFFSET ==
-                   KEYMGR_SW_BINDING_0_REG_OFFSET + 12,
-               "SW_BINDING_N registers must be contiguous.");
+static_assert(KEYMGR_SW_BINDING_1_REG_OFFSET ==
+                  KEYMGR_SW_BINDING_0_REG_OFFSET + 4,
+              "SW_BINDING_N registers must be contiguous.");
+static_assert(KEYMGR_SW_BINDING_2_REG_OFFSET ==
+                  KEYMGR_SW_BINDING_0_REG_OFFSET + 8,
+              "SW_BINDING_N registers must be contiguous.");
+static_assert(KEYMGR_SW_BINDING_3_REG_OFFSET ==
+                  KEYMGR_SW_BINDING_0_REG_OFFSET + 12,
+              "SW_BINDING_N registers must be contiguous.");
 // TODO: Uncomment when lowRISC/opentitan#5194 is completed.
 // TODO: Consider defining a macro once all assertions are enabled.
-//_Static_assert(KEYMGR_SW_BINDING_4_REG_OFFSET ==
+// static_assert(KEYMGR_SW_BINDING_4_REG_OFFSET ==
 //                   KEYMGR_SW_BINDING_0_REG_OFFSET + 16,
 //               "SW_BINDING_N registers must be contiguous.");
-//_Static_assert(KEYMGR_SW_BINDING_5_REG_OFFSET ==
+// static_assert(KEYMGR_SW_BINDING_5_REG_OFFSET ==
 //                   KEYMGR_SW_BINDING_0_REG_OFFSET + 20,
 //               "SW_BINDING_N registers must be contiguous.");
-//_Static_assert(KEYMGR_SW_BINDING_6_REG_OFFSET ==
+// static_assert(KEYMGR_SW_BINDING_6_REG_OFFSET ==
 //                   KEYMGR_SW_BINDING_0_REG_OFFSET + 24,
 //               "SW_BINDING_N registers must be contiguous.");
-//_Static_assert(KEYMGR_SW_BINDING_7_REG_OFFSET ==
+// static_assert(KEYMGR_SW_BINDING_7_REG_OFFSET ==
 //                   KEYMGR_SW_BINDING_0_REG_OFFSET + 28,
 //               "SW_BINDING_N registers must be contiguous.");
 
-_Static_assert(KEYMGR_SALT_1_REG_OFFSET == KEYMGR_SALT_0_REG_OFFSET + 4,
-               "SALT_N registers must be contiguous.");
-_Static_assert(KEYMGR_SALT_2_REG_OFFSET == KEYMGR_SALT_0_REG_OFFSET + 8,
-               "SALT_N registers must be contiguous.");
-_Static_assert(KEYMGR_SALT_3_REG_OFFSET == KEYMGR_SALT_0_REG_OFFSET + 12,
-               "SALT_N registers must be contiguous.");
+static_assert(KEYMGR_SALT_1_REG_OFFSET == KEYMGR_SALT_0_REG_OFFSET + 4,
+              "SALT_N registers must be contiguous.");
+static_assert(KEYMGR_SALT_2_REG_OFFSET == KEYMGR_SALT_0_REG_OFFSET + 8,
+              "SALT_N registers must be contiguous.");
+static_assert(KEYMGR_SALT_3_REG_OFFSET == KEYMGR_SALT_0_REG_OFFSET + 12,
+              "SALT_N registers must be contiguous.");
 // TODO: Uncomment when lowRISC/opentitan#5194 is completed.
-//_Static_assert(KEYMGR_SALT_4_REG_OFFSET ==
+// static_assert(KEYMGR_SALT_4_REG_OFFSET ==
 //                   KEYMGR_SALT_0_REG_OFFSET + 16,
 //               "SALT_N registers must be contiguous.");
-//_Static_assert(KEYMGR_SALT_5_REG_OFFSET ==
+// static_assert(KEYMGR_SALT_5_REG_OFFSET ==
 //                   KEYMGR_SALT_0_REG_OFFSET + 20,
 //               "SALT_N registers must be contiguous.");
-//_Static_assert(KEYMGR_SALT_6_REG_OFFSET ==
+// static_assert(KEYMGR_SALT_6_REG_OFFSET ==
 //                   KEYMGR_SALT_0_REG_OFFSET + 24,
 //               "SALT_N registers must be contiguous.");
-//_Static_assert(KEYMGR_SALT_7_REG_OFFSET ==
+// static_assert(KEYMGR_SALT_7_REG_OFFSET ==
 //                   KEYMGR_SALT_0_REG_OFFSET + 28,
 //               "SALT_N registers must be contiguous.");
 
-_Static_assert(KEYMGR_SW_SHARE0_OUTPUT_1_REG_OFFSET ==
-                   KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + 4,
-               "SW_SHARE0_OUTPUT_N registers must be contiguous.");
-_Static_assert(KEYMGR_SW_SHARE0_OUTPUT_2_REG_OFFSET ==
-                   KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + 8,
-               "SW_SHARE0_OUTPUT_N registers must be contiguous.");
-_Static_assert(KEYMGR_SW_SHARE0_OUTPUT_3_REG_OFFSET ==
-                   KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + 12,
-               "SW_SHARE0_OUTPUT_N registers must be contiguous.");
-_Static_assert(KEYMGR_SW_SHARE0_OUTPUT_4_REG_OFFSET ==
-                   KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + 16,
-               "SW_SHARE0_OUTPUT_N registers must be contiguous.");
-_Static_assert(KEYMGR_SW_SHARE0_OUTPUT_5_REG_OFFSET ==
-                   KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + 20,
-               "SW_SHARE0_OUTPUT_N registers must be contiguous.");
-_Static_assert(KEYMGR_SW_SHARE0_OUTPUT_6_REG_OFFSET ==
-                   KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + 24,
-               "SW_SHARE0_OUTPUT_N registers must be contiguous.");
-_Static_assert(KEYMGR_SW_SHARE0_OUTPUT_7_REG_OFFSET ==
-                   KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + 28,
-               "SW_SHARE0_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_SW_SHARE0_OUTPUT_1_REG_OFFSET ==
+                  KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + 4,
+              "SW_SHARE0_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_SW_SHARE0_OUTPUT_2_REG_OFFSET ==
+                  KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + 8,
+              "SW_SHARE0_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_SW_SHARE0_OUTPUT_3_REG_OFFSET ==
+                  KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + 12,
+              "SW_SHARE0_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_SW_SHARE0_OUTPUT_4_REG_OFFSET ==
+                  KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + 16,
+              "SW_SHARE0_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_SW_SHARE0_OUTPUT_5_REG_OFFSET ==
+                  KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + 20,
+              "SW_SHARE0_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_SW_SHARE0_OUTPUT_6_REG_OFFSET ==
+                  KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + 24,
+              "SW_SHARE0_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_SW_SHARE0_OUTPUT_7_REG_OFFSET ==
+                  KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + 28,
+              "SW_SHARE0_OUTPUT_N registers must be contiguous.");
 
-_Static_assert(KEYMGR_SW_SHARE1_OUTPUT_1_REG_OFFSET ==
-                   KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET + 4,
-               "SW_SHARE1_OUTPUT_N registers must be contiguous.");
-_Static_assert(KEYMGR_SW_SHARE1_OUTPUT_2_REG_OFFSET ==
-                   KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET + 8,
-               "SW_SHARE1_OUTPUT_N registers must be contiguous.");
-_Static_assert(KEYMGR_SW_SHARE1_OUTPUT_3_REG_OFFSET ==
-                   KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET + 12,
-               "SW_SHARE1_OUTPUT_N registers must be contiguous.");
-_Static_assert(KEYMGR_SW_SHARE1_OUTPUT_4_REG_OFFSET ==
-                   KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET + 16,
-               "SW_SHARE1_OUTPUT_N registers must be contiguous.");
-_Static_assert(KEYMGR_SW_SHARE1_OUTPUT_5_REG_OFFSET ==
-                   KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET + 20,
-               "SW_SHARE1_OUTPUT_N registers must be contiguous.");
-_Static_assert(KEYMGR_SW_SHARE1_OUTPUT_6_REG_OFFSET ==
-                   KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET + 24,
-               "SW_SHARE1_OUTPUT_N registers must be contiguous.");
-_Static_assert(KEYMGR_SW_SHARE1_OUTPUT_7_REG_OFFSET ==
-                   KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET + 28,
-               "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_SW_SHARE1_OUTPUT_1_REG_OFFSET ==
+                  KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET + 4,
+              "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_SW_SHARE1_OUTPUT_2_REG_OFFSET ==
+                  KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET + 8,
+              "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_SW_SHARE1_OUTPUT_3_REG_OFFSET ==
+                  KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET + 12,
+              "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_SW_SHARE1_OUTPUT_4_REG_OFFSET ==
+                  KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET + 16,
+              "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_SW_SHARE1_OUTPUT_5_REG_OFFSET ==
+                  KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET + 20,
+              "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_SW_SHARE1_OUTPUT_6_REG_OFFSET ==
+                  KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET + 24,
+              "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_SW_SHARE1_OUTPUT_7_REG_OFFSET ==
+                  KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET + 28,
+              "SW_SHARE1_OUTPUT_N registers must be contiguous.");
 
 /**
  * Error code constants of `dif_keymgr_status_code_t` are masks for the bits of
  * ERR_CODE register shifted left by 1.
  */
-_Static_assert(kDifKeymgrStatusCodeInvalidOperation >> 1 ==
-                   1 << KEYMGR_ERR_CODE_INVALID_OP_BIT,
-               "Layout of ERR_CODE register changed.");
-_Static_assert(kDifKeymgrStatusCodeInvalidKmacCommand >> 1 ==
-                   1 << KEYMGR_ERR_CODE_INVALID_CMD_BIT,
-               "Layout of ERR_CODE register changed.");
-_Static_assert(kDifKeymgrStatusCodeInvalidKmacInput >> 1 ==
-                   1 << KEYMGR_ERR_CODE_INVALID_KMAC_INPUT_BIT,
-               "Layout of ERR_CODE register changed.");
-_Static_assert(kDifKeymgrStatusCodeInvalidKmacOutput >> 1 ==
-                   1 << KEYMGR_ERR_CODE_INVALID_KMAC_DATA_BIT,
-               "Layout of ERR_CODE register changed.");
+static_assert(kDifKeymgrStatusCodeInvalidOperation >> 1 ==
+                  1 << KEYMGR_ERR_CODE_INVALID_OP_BIT,
+              "Layout of ERR_CODE register changed.");
+static_assert(kDifKeymgrStatusCodeInvalidKmacCommand >> 1 ==
+                  1 << KEYMGR_ERR_CODE_INVALID_CMD_BIT,
+              "Layout of ERR_CODE register changed.");
+static_assert(kDifKeymgrStatusCodeInvalidKmacInput >> 1 ==
+                  1 << KEYMGR_ERR_CODE_INVALID_KMAC_INPUT_BIT,
+              "Layout of ERR_CODE register changed.");
+static_assert(kDifKeymgrStatusCodeInvalidKmacOutput >> 1 ==
+                  1 << KEYMGR_ERR_CODE_INVALID_KMAC_DATA_BIT,
+              "Layout of ERR_CODE register changed.");
 
 /**
  * Checks if the key manager is ready for a new operation, i.e. it is idle and
