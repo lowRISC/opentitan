@@ -73,14 +73,14 @@ module rom_ctrl
   logic                     kmac_done;
   logic [255:0]             kmac_digest;
 
-  assign kmac_data_o = '{valid: kmac_rom_vld,
+  assign kmac_data_o = '{valid: kmac_rom_vld & ~SkipCheck,
                          data: kmac_rom_data,
                          strb: '1,
                          last: kmac_rom_last};
 
-  assign kmac_rom_rdy = kmac_data_i.ready;
-  assign kmac_done = kmac_data_i.done;
-  assign kmac_digest = kmac_data_i.digest_share0 ^ kmac_data_i.digest_share1;
+  assign kmac_rom_rdy = kmac_data_i.ready | SkipCheck;
+  assign kmac_done = kmac_data_i.done | SkipCheck;
+  assign kmac_digest = SkipCheck ? '1 : kmac_data_i.digest_share0 ^ kmac_data_i.digest_share1;
 
   logic unused_kmac_error;
   assign unused_kmac_error = &{1'b0, kmac_data_i.error};
@@ -220,54 +220,32 @@ module rom_ctrl
 
   logic         checker_alert;
 
-  if (SkipCheck) begin : gen_no_check
-
-    logic unused_bits_no_check;
-    assign unused_bits_no_check = &{1'b0, digest_q, exp_digest_q,
-                                    kmac_rom_rdy, kmac_done, kmac_digest};
-    assign digest_d = '0;
-    assign digest_de = 1'b0;
-    assign exp_digest_word_d = '0;
-    assign exp_digest_de = 1'b0;
-    assign exp_digest_idx = '0;
-    assign pwrmgr_data_o = '{done: 1'b1, good: 1'b1};
-    assign keymgr_data_o = '{data: '0, valid: 1'b0};
-    assign kmac_rom_vld = 1'b0;
-    assign kmac_rom_last = 1'b0;
-    // Setting this to 0 ensures the mux will give access to the TL bus
-    assign rom_select = 1'b0;
-    assign checker_rom_index = '0;
-    assign checker_alert = 1'b0;
-
-  end else begin : gen_with_check
-
-    rom_ctrl_fsm #(
-      .RomDepth (RomSizeWords),
-      .TopCount (8)
-    ) u_checker_fsm (
-      .clk_i                (clk_i),
-      .rst_ni               (rst_ni),
-      .digest_i             (digest_q),
-      .exp_digest_i         (exp_digest_q),
-      .digest_o             (digest_d),
-      .digest_vld_o         (digest_de),
-      .exp_digest_o         (exp_digest_word_d),
-      .exp_digest_vld_o     (exp_digest_de),
-      .exp_digest_idx_o     (exp_digest_idx),
-      .pwrmgr_data_o        (pwrmgr_data_o),
-      .keymgr_data_o        (keymgr_data_o),
-      .kmac_rom_rdy_i       (kmac_rom_rdy),
-      .kmac_rom_vld_o       (kmac_rom_vld),
-      .kmac_rom_last_o      (kmac_rom_last),
-      .kmac_done_i          (kmac_done),
-      .kmac_digest_i        (kmac_digest),
-      .rom_select_o         (rom_select),
-      .rom_addr_o           (checker_rom_index),
-      .rom_data_i           (checker_rom_rdata[31:0]),
-      .alert_o              (checker_alert)
-    );
-
-  end
+  rom_ctrl_fsm #(
+    .RomDepth (RomSizeWords),
+    .TopCount (8),
+    .SkipCheck (SkipCheck)
+  ) u_checker_fsm (
+    .clk_i                (clk_i),
+    .rst_ni               (rst_ni),
+    .digest_i             (digest_q),
+    .exp_digest_i         (exp_digest_q),
+    .digest_o             (digest_d),
+    .digest_vld_o         (digest_de),
+    .exp_digest_o         (exp_digest_word_d),
+    .exp_digest_vld_o     (exp_digest_de),
+    .exp_digest_idx_o     (exp_digest_idx),
+    .pwrmgr_data_o        (pwrmgr_data_o),
+    .keymgr_data_o        (keymgr_data_o),
+    .kmac_rom_rdy_i       (kmac_rom_rdy),
+    .kmac_rom_vld_o       (kmac_rom_vld),
+    .kmac_rom_last_o      (kmac_rom_last),
+    .kmac_done_i          (kmac_done),
+    .kmac_digest_i        (kmac_digest),
+    .rom_select_o         (rom_select),
+    .rom_addr_o           (checker_rom_index),
+    .rom_data_i           (checker_rom_rdata[31:0]),
+    .alert_o              (checker_alert)
+  );
 
   // Register data =============================================================
 
