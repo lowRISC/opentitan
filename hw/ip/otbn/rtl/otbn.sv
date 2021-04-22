@@ -243,8 +243,8 @@ module otbn
 
   // imem_rerror_bus is passed to a TLUL adapter to report read errors back to the TL interface.
   // We've squashed together the 2 bits from ECC into a single (uncorrectable) error, but the TLUL
-  // adapter expects the original ECC format. Send imem_rerror as bit 1, signalling an uncorrectable
-  // error.
+  // adapter expects the original ECC format. Send imem_rerror as bit 1, signalling an
+  // uncorrectable error.
   //
   // The mux ensures that imem_rerror doesn't appear on the bus (possibly leaking information) when
   // the core is operating. Since rerror depends on rvalid, we could avoid this mux. However that
