@@ -1264,7 +1264,8 @@ typedef enum top_earlgrey_pinmux_peripheral_in {
   kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In = 52, /**< Peripheral Input 52 */
   kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In = 53, /**< Peripheral Input 53 */
   kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn = 54, /**< Peripheral Input 54 */
-  kTopEarlgreyPinmuxPeripheralInLast = 54, /**< \internal Last valid peripheral input */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonLidOpen = 55, /**< Peripheral Input 55 */
+  kTopEarlgreyPinmuxPeripheralInLast = 55, /**< \internal Last valid peripheral input */
 } top_earlgrey_pinmux_peripheral_in_t;
 
 /**
@@ -1456,7 +1457,8 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselSysrstCtrlAonKey0Out = 72, /**< Peripheral Output 69 */
   kTopEarlgreyPinmuxOutselSysrstCtrlAonKey1Out = 73, /**< Peripheral Output 70 */
   kTopEarlgreyPinmuxOutselSysrstCtrlAonKey2Out = 74, /**< Peripheral Output 71 */
-  kTopEarlgreyPinmuxOutselLast = 74, /**< \internal Last valid outsel value */
+  kTopEarlgreyPinmuxOutselSysrstCtrlAonZ3Wakeup = 75, /**< Peripheral Output 72 */
+  kTopEarlgreyPinmuxOutselLast = 75, /**< \internal Last valid outsel value */
 } top_earlgrey_pinmux_outsel_t;
 
 /**

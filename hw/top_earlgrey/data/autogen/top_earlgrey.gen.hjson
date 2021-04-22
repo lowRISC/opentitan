@@ -8964,6 +8964,22 @@
         desc: ""
         attr: BidirOd
       }
+      {
+        instance: sysrst_ctrl_aon
+        port: lid_open
+        connection: muxed
+        pad: ""
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: sysrst_ctrl_aon
+        port: z3_wakeup
+        connection: muxed
+        pad: ""
+        desc: ""
+        attr: ""
+      }
     ]
     num_wkup_detect: 8
     wkup_cnt_width: 8
@@ -9660,6 +9676,16 @@
         glob_idx: 54
       }
       {
+        name: sysrst_ctrl_aon_lid_open
+        width: 1
+        type: input
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        glob_idx: 55
+      }
+      {
         name: spi_host0_sck
         width: 1
         type: output
@@ -10059,6 +10085,16 @@
         connection: direct
         glob_idx: 23
       }
+      {
+        name: sysrst_ctrl_aon_z3_wakeup
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        glob_idx: 72
+      }
     ]
     io_counts:
     {
@@ -10072,8 +10108,8 @@
       muxed:
       {
         inouts: 42
-        inputs: 13
-        outputs: 30
+        inputs: 14
+        outputs: 31
         pads: 47
       }
     }

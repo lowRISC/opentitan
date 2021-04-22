@@ -1237,6 +1237,8 @@
       { instance: "sysrst_ctrl_aon", port: 'key1_out',     connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sysrst_ctrl_aon", port: 'key2_out',     connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sysrst_ctrl_aon", port: 'pwrb_out',     connection: 'direct', pad: 'IOR9'         , desc: ''},
+      { instance: "sysrst_ctrl_aon", port: 'lid_open',     connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "sysrst_ctrl_aon", port: 'z3_wakeup',    connection: 'muxed' , pad: ''             , desc: ''},
     ],
 
     num_wkup_detect: 8

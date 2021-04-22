@@ -34,18 +34,21 @@ module sysrst_ctrl
   input  cio_key1_in_i,//VolDown button in tablet; row input from keyboard matrix in a laptop
   input  cio_key2_in_i,//TBD button in tablet; row input from keyboard matrix in a laptop
   input  cio_pwrb_in_i,//Power button in both tablet and laptop
+  input  cio_lid_open_i,//lid is open from GMR
   output logic cio_bat_disable_o,//Battery is disconnected
   output logic cio_ec_rst_out_l_o,//EC reset is asserted by sysrst_ctrl
   output logic cio_key0_out_o,//Passthrough from key0_in, can be configured to invert
   output logic cio_key1_out_o,//Passthrough from key1_in, can be configured to invert
   output logic cio_key2_out_o,//Passthrough from key2_in, can be configured to invert
   output logic cio_pwrb_out_o,//Passthrough from pwrb_in, can be configured to invert
+  output logic cio_z3_wakeup_o,//Exit from Z4 sleep mode and enter Z3 mode
   output logic cio_bat_disable_en_o,
   output logic cio_ec_rst_out_l_en_o,
   output logic cio_key0_out_en_o,
   output logic cio_key1_out_en_o,
   output logic cio_key2_out_en_o,
-  output logic cio_pwrb_out_en_o
+  output logic cio_pwrb_out_en_o,
+  output logic cio_z3_wakeup_en_o
 );
 
   import sysrst_ctrl_reg_pkg::* ;
@@ -53,10 +56,12 @@ module sysrst_ctrl
   sysrst_ctrl_reg2hw_t reg2hw;
   sysrst_ctrl_hw2reg_t hw2reg;
 
-  logic pwrb_int, key0_int, key1_int, key2_int, ac_present_int;
+  logic pwrb_int, key0_int, key1_int, key2_int, ac_present_int, lid_open_int;
   logic pwrb_out_hw, key0_out_hw, key1_out_hw, key2_out_hw, ec_rst_l_hw, bat_disable_hw;
-  logic pwrb_out_int, key0_out_int, key1_out_int, key2_out_int, bat_disable_int;
+  logic z3_wakeup_hw;
+  logic pwrb_out_int, key0_out_int, key1_out_int, key2_out_int, bat_disable_int, z3_wakeup_int;
   logic sysrst_ctrl_combo_intr, sysrst_ctrl_key_intr;
+  logic ulp_wakeup_int;
 
   //Always-on pins
   assign cio_ec_rst_out_l_en_o = 1'b1;
@@ -65,6 +70,7 @@ module sysrst_ctrl
   assign cio_key1_out_en_o = 1'b1;
   assign cio_key2_out_en_o = 1'b1;
   assign cio_bat_disable_en_o = 1'b1;
+  assign cio_z3_wakeup_en_o = 1'b1;
 
   // Alerts
   logic [NumAlerts-1:0] alert_test, alerts;
@@ -119,6 +125,24 @@ module sysrst_ctrl
     .key2_out_hw(key2_out_hw)
   );
 
+  //Instantiate the ULP module
+  sysrst_ctrl_ulp u_ulp (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .clk_aon_i(clk_aon_i),
+    .rst_aon_ni(rst_aon_ni),
+    .pwrb_int(pwrb_int),
+    .lid_open_int(lid_open_int),
+    .ac_present_int(ac_present_int),
+    .ulp_ac_debounce_ctl_i(reg2hw.ulp_ac_debounce_ctl),
+    .ulp_lid_debounce_ctl_i(reg2hw.ulp_lid_debounce_ctl),
+    .ulp_pwrb_debounce_ctl_i(reg2hw.ulp_pwrb_debounce_ctl),
+    .ulp_ctl_i(reg2hw.ulp_ctl),
+    .ulp_status_o(hw2reg.ulp_status),
+    .ulp_wakeup_o(ulp_wakeup_int),
+    .z3_wakeup_hw(z3_wakeup_hw)
+  );
+
   //Instantiate the pin inversion module
   sysrst_ctrl_inv u_inversion (
     .clk_aon_i(clk_aon_i),
@@ -128,22 +152,26 @@ module sysrst_ctrl
     .cio_key1_in_i(cio_key1_in_i),
     .cio_key2_in_i(cio_key2_in_i),
     .cio_ac_present_i(cio_ac_present_i),
+    .cio_lid_open_i(cio_lid_open_i),
     .pwrb_out_int(pwrb_out_int),
     .key0_out_int(key0_out_int),
     .key1_out_int(key1_out_int),
     .key2_out_int(key2_out_int),
     .bat_disable_int(bat_disable_int),
+    .z3_wakeup_int(z3_wakeup_int),
     .key_invert_ctl_i(reg2hw.key_invert_ctl),
     .pwrb_int(pwrb_int),
     .key0_int(key0_int),
     .key1_int(key1_int),
     .key2_int(key2_int),
     .ac_present_int(ac_present_int),
+    .lid_open_int(lid_open_int),
     .cio_bat_disable_o(cio_bat_disable_o),
     .cio_pwrb_out_o(cio_pwrb_out_o),
     .cio_key0_out_o(cio_key0_out_o),
     .cio_key1_out_o(cio_key1_out_o),
-    .cio_key2_out_o(cio_key2_out_o)
+    .cio_key2_out_o(cio_key2_out_o),
+    .cio_z3_wakeup_o(cio_z3_wakeup_o)
   );
 
   //Instantiate the pin visibility and override module
@@ -158,12 +186,14 @@ module sysrst_ctrl
     .cio_key2_in_i(cio_key2_in_i),
     .cio_ac_present_i(cio_ac_present_i),
     .cio_ec_rst_in_l_i(cio_ec_rst_in_l_i),
+    .cio_lid_open_i(cio_lid_open_i),
     .pwrb_out_hw(pwrb_out_hw),
     .key0_out_hw(key0_out_hw),
     .key1_out_hw(key1_out_hw),
     .key2_out_hw(key2_out_hw),
     .bat_disable_hw(bat_disable_hw),
     .ec_rst_l_hw(ec_rst_l_hw),
+    .z3_wakeup_hw(z3_wakeup_hw),
     .pin_allowed_ctl_i(reg2hw.pin_allowed_ctl),
     .pin_out_ctl_i(reg2hw.pin_out_ctl),
     .pin_out_value_i(reg2hw.pin_out_value),
@@ -173,6 +203,7 @@ module sysrst_ctrl
     .key1_out_int(key1_out_int),
     .key2_out_int(key2_out_int),
     .bat_disable_int(bat_disable_int),
+    .z3_wakeup_int(z3_wakeup_int),
     .cio_ec_rst_out_l_o(cio_ec_rst_out_l_o)
   );
 
@@ -218,9 +249,12 @@ module sysrst_ctrl
     .ec_rst_l_hw(ec_rst_l_hw)
   );
 
-  // hardwire for now until logic is ready
+  // GSC wakeup signal to pwrmgr
   // see #6323
-  assign gsc_wk_o = '0;
+  assign gsc_wk_o = reg2hw.wk_status.q;
+  assign hw2reg.wk_status.de = ulp_wakeup_int ||
+           sysrst_ctrl_combo_intr || sysrst_ctrl_key_intr;
+  assign hw2reg.wk_status.d = 1'b1;
 
   //Instantiate the interrupt module
   sysrst_ctrl_intr u_intr (
@@ -247,11 +281,13 @@ module sysrst_ctrl
   `ASSERT_KNOWN(Key0OKnown, cio_key0_out_o)
   `ASSERT_KNOWN(Key1OKnown, cio_key1_out_o)
   `ASSERT_KNOWN(Key2OKnown, cio_key2_out_o)
+  `ASSERT_KNOWN(Z3WwakupOKnown, cio_z3_wakeup_o)
   `ASSERT_KNOWN(BatOEnKnown, cio_bat_disable_en_o)
   `ASSERT_KNOWN(ECRSTOEnKnown, cio_ec_rst_out_l_en_o)
   `ASSERT_KNOWN(PwrbOEnKnown, cio_pwrb_out_en_o)
   `ASSERT_KNOWN(Key0OEnKnown, cio_key0_out_en_o)
   `ASSERT_KNOWN(Key1OEnKnown, cio_key1_out_en_o)
   `ASSERT_KNOWN(Key2OEnKnown, cio_key2_out_en_o)
+  `ASSERT_KNOWN(Z3WakeupOEnKnown, cio_z3_wakeup_en_o)
 
 endmodule
