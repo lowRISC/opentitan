@@ -263,12 +263,12 @@ parameter logic [31:0] INSN_CLMULR = {7'b0000101, 10'h?, 3'b010, 5'h?, {OPCODE_O
 parameter logic [31:0] INSN_CLMULH = {7'b0000101, 10'h?, 3'b011, 5'h?, {OPCODE_OP} };
 
 // ZBR
-parameter logic [31:0] INSN_CRC32_B  = {7'b0110000, 5'b10000, 5'h?, 3'b001, 5'h?,  {OPCODE_OP_IMM} };
-parameter logic [31:0] INSN_CRC32_H  = {7'b0110000, 5'b10001, 5'h?, 3'b001, 5'h?,  {OPCODE_OP_IMM} };
-parameter logic [31:0] INSN_CRC32_W  = {7'b0110000, 5'b10010, 5'h?, 3'b001, 5'h?,  {OPCODE_OP_IMM} };
-parameter logic [31:0] INSN_CRC32C_B = {7'b0110000, 5'b11000, 5'h?, 3'b001, 5'h?,  {OPCODE_OP_IMM} };
-parameter logic [31:0] INSN_CRC32C_H = {7'b0110000, 5'b11001, 5'h?, 3'b001, 5'h?,  {OPCODE_OP_IMM} };
-parameter logic [31:0] INSN_CRC32C_W = {7'b0110000, 5'b11010, 5'h?, 3'b001, 5'h?,  {OPCODE_OP_IMM} };
+parameter logic [31:0] INSN_CRC32_B  = {7'b0110000, 5'b10000, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+parameter logic [31:0] INSN_CRC32_H  = {7'b0110000, 5'b10001, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+parameter logic [31:0] INSN_CRC32_W  = {7'b0110000, 5'b10010, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+parameter logic [31:0] INSN_CRC32C_B = {7'b0110000, 5'b11000, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+parameter logic [31:0] INSN_CRC32C_H = {7'b0110000, 5'b11001, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+parameter logic [31:0] INSN_CRC32C_W = {7'b0110000, 5'b11010, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
 
 // LOAD & STORE
 parameter logic [31:0] INSN_LOAD    = {25'h?,                            {OPCODE_LOAD } };

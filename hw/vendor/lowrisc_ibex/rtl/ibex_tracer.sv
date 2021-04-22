@@ -117,7 +117,8 @@ module ibex_tracer (
 
       $display("%m: Writing execution trace to %s", file_name);
       file_handle = $fopen(file_name, "w");
-      $fwrite(file_handle, "Time\tCycle\tPC\tInsn\tDecoded instruction\tRegister and memory contents\n");
+      $fwrite(file_handle,
+              "Time\tCycle\tPC\tInsn\tDecoded instruction\tRegister and memory contents\n");
     end
 
     // Write compressed instructions as four hex digits (16 bit word), and
@@ -128,7 +129,8 @@ module ibex_tracer (
       rvfi_insn_str = $sformatf("%h", rvfi_insn);
     end
 
-    $fwrite(file_handle, "%15t\t%d\t%h\t%s\t%s\t", $time, cycle, rvfi_pc_rdata, rvfi_insn_str, decoded_str);
+    $fwrite(file_handle, "%15t\t%d\t%h\t%s\t%s\t",
+            $time, cycle, rvfi_pc_rdata, rvfi_insn_str, decoded_str);
 
     if ((data_accessed & RS1) != 0) begin
       $fwrite(file_handle, " %s:0x%08x", reg_addr_to_str(rvfi_rs1_addr), rvfi_rs1_rdata);
@@ -489,7 +491,8 @@ module ibex_tracer (
     branch_target = rvfi_pc_rdata + imm;
 
     data_accessed = RS1 | RS2 | RD;
-    decoded_str = $sformatf("%s\tx%0d,x%0d,%0x", mnemonic, rvfi_rs1_addr, rvfi_rs2_addr, branch_target);
+    decoded_str = $sformatf("%s\tx%0d,x%0d,%0x",
+                            mnemonic, rvfi_rs1_addr, rvfi_rs2_addr, branch_target);
   endfunction
 
   function automatic void decode_csr_insn(input string mnemonic);
@@ -502,9 +505,11 @@ module ibex_tracer (
 
     if (!rvfi_insn[14]) begin
       data_accessed |= RS1;
-      decoded_str = $sformatf("%s\tx%0d,%s,x%0d", mnemonic, rvfi_rd_addr, csr_name, rvfi_rs1_addr);
+      decoded_str = $sformatf("%s\tx%0d,%s,x%0d",
+                              mnemonic, rvfi_rd_addr, csr_name, rvfi_rs1_addr);
     end else begin
-      decoded_str = $sformatf("%s\tx%0d,%s,%0d", mnemonic, rvfi_rd_addr, csr_name, { 27'b0, rvfi_insn[19:15]});
+      decoded_str = $sformatf("%s\tx%0d,%s,%0d",
+                              mnemonic, rvfi_rd_addr, csr_name, {27'b0, rvfi_insn[19:15]});
     end
   endfunction
 
@@ -695,8 +700,11 @@ module ibex_tracer (
     if (!rvfi_insn[14]) begin
       // regular store
       data_accessed = RS1 | RS2 | MEM;
-      decoded_str = $sformatf("%s\tx%0d,%0d(x%0d)", mnemonic, rvfi_rs2_addr,
-                      $signed({ {20 {rvfi_insn[31]}}, rvfi_insn[31:25], rvfi_insn[11:7] }), rvfi_rs1_addr);
+      decoded_str = $sformatf("%s\tx%0d,%0d(x%0d)",
+                              mnemonic,
+                              rvfi_rs2_addr,
+                              $signed({{20{rvfi_insn[31]}}, rvfi_insn[31:25], rvfi_insn[11:7]}),
+                              rvfi_rs1_addr);
     end else begin
       decode_mnemonic("INVALID");
     end
