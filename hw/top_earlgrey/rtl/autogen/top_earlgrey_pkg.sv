@@ -538,7 +538,8 @@ package top_earlgrey_pkg;
     MioInSysrstCtrlAonKey1In = 52,
     MioInSysrstCtrlAonKey2In = 53,
     MioInSysrstCtrlAonPwrbIn = 54,
-    MioInCount = 55
+    MioInSysrstCtrlAonLidOpen = 55,
+    MioInCount = 56
   } mio_in_e;
 
   typedef enum {
@@ -614,7 +615,8 @@ package top_earlgrey_pkg;
     MioOutSysrstCtrlAonKey0Out = 69,
     MioOutSysrstCtrlAonKey1Out = 70,
     MioOutSysrstCtrlAonKey2Out = 71,
-    MioOutCount = 72
+    MioOutSysrstCtrlAonZ3Wakeup = 72,
+    MioOutCount = 73
   } mio_out_e;
 
   // Enumeration for DIO signals, used on both the top and chip-levels.

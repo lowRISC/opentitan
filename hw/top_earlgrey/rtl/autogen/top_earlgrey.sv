@@ -125,9 +125,9 @@ module top_earlgrey #(
   import top_earlgrey_rnd_cnst_pkg::*;
 
   // Signals
-  logic [54:0] mio_p2d;
-  logic [71:0] mio_d2p;
-  logic [71:0] mio_en_d2p;
+  logic [55:0] mio_p2d;
+  logic [72:0] mio_d2p;
+  logic [72:0] mio_en_d2p;
   logic [23:0] dio_p2d;
   logic [23:0] dio_d2p;
   logic [23:0] dio_en_d2p;
@@ -240,6 +240,7 @@ module top_earlgrey #(
   logic        cio_sysrst_ctrl_aon_key1_in_p2d;
   logic        cio_sysrst_ctrl_aon_key2_in_p2d;
   logic        cio_sysrst_ctrl_aon_pwrb_in_p2d;
+  logic        cio_sysrst_ctrl_aon_lid_open_p2d;
   logic        cio_sysrst_ctrl_aon_bat_disable_d2p;
   logic        cio_sysrst_ctrl_aon_bat_disable_en_d2p;
   logic        cio_sysrst_ctrl_aon_ec_rst_out_l_d2p;
@@ -252,6 +253,8 @@ module top_earlgrey #(
   logic        cio_sysrst_ctrl_aon_key2_out_en_d2p;
   logic        cio_sysrst_ctrl_aon_pwrb_out_d2p;
   logic        cio_sysrst_ctrl_aon_pwrb_out_en_d2p;
+  logic        cio_sysrst_ctrl_aon_z3_wakeup_d2p;
+  logic        cio_sysrst_ctrl_aon_z3_wakeup_en_d2p;
   // adc_ctrl_aon
   // pwm_aon
   logic [5:0]  cio_pwm_aon_pwm_d2p;
@@ -1820,6 +1823,7 @@ module top_earlgrey #(
       .cio_key1_in_i         (cio_sysrst_ctrl_aon_key1_in_p2d),
       .cio_key2_in_i         (cio_sysrst_ctrl_aon_key2_in_p2d),
       .cio_pwrb_in_i         (cio_sysrst_ctrl_aon_pwrb_in_p2d),
+      .cio_lid_open_i        (cio_sysrst_ctrl_aon_lid_open_p2d),
 
       // Output
       .cio_bat_disable_o     (cio_sysrst_ctrl_aon_bat_disable_d2p),
@@ -1834,6 +1838,8 @@ module top_earlgrey #(
       .cio_key2_out_en_o     (cio_sysrst_ctrl_aon_key2_out_en_d2p),
       .cio_pwrb_out_o        (cio_sysrst_ctrl_aon_pwrb_out_d2p),
       .cio_pwrb_out_en_o     (cio_sysrst_ctrl_aon_pwrb_out_en_d2p),
+      .cio_z3_wakeup_o       (cio_sysrst_ctrl_aon_z3_wakeup_d2p),
+      .cio_z3_wakeup_en_o    (cio_sysrst_ctrl_aon_z3_wakeup_en_d2p),
 
       // Interrupt
       .intr_sysrst_ctrl_o (intr_sysrst_ctrl_aon_sysrst_ctrl),
@@ -2898,6 +2904,7 @@ module top_earlgrey #(
   assign cio_sysrst_ctrl_aon_key1_in_p2d = mio_p2d[MioInSysrstCtrlAonKey1In];
   assign cio_sysrst_ctrl_aon_key2_in_p2d = mio_p2d[MioInSysrstCtrlAonKey2In];
   assign cio_sysrst_ctrl_aon_pwrb_in_p2d = mio_p2d[MioInSysrstCtrlAonPwrbIn];
+  assign cio_sysrst_ctrl_aon_lid_open_p2d = mio_p2d[MioInSysrstCtrlAonLidOpen];
 
   // All muxed outputs
   assign mio_d2p[MioOutGpioGpio0] = cio_gpio_gpio_d2p[0];
@@ -2972,6 +2979,7 @@ module top_earlgrey #(
   assign mio_d2p[MioOutSysrstCtrlAonKey0Out] = cio_sysrst_ctrl_aon_key0_out_d2p;
   assign mio_d2p[MioOutSysrstCtrlAonKey1Out] = cio_sysrst_ctrl_aon_key1_out_d2p;
   assign mio_d2p[MioOutSysrstCtrlAonKey2Out] = cio_sysrst_ctrl_aon_key2_out_d2p;
+  assign mio_d2p[MioOutSysrstCtrlAonZ3Wakeup] = cio_sysrst_ctrl_aon_z3_wakeup_d2p;
 
   // All muxed output enables
   assign mio_en_d2p[MioOutGpioGpio0] = cio_gpio_gpio_en_d2p[0];
@@ -3046,6 +3054,7 @@ module top_earlgrey #(
   assign mio_en_d2p[MioOutSysrstCtrlAonKey0Out] = cio_sysrst_ctrl_aon_key0_out_en_d2p;
   assign mio_en_d2p[MioOutSysrstCtrlAonKey1Out] = cio_sysrst_ctrl_aon_key1_out_en_d2p;
   assign mio_en_d2p[MioOutSysrstCtrlAonKey2Out] = cio_sysrst_ctrl_aon_key2_out_en_d2p;
+  assign mio_en_d2p[MioOutSysrstCtrlAonZ3Wakeup] = cio_sysrst_ctrl_aon_z3_wakeup_en_d2p;
 
   // All dedicated inputs
   logic [23:0] unused_dio_p2d;

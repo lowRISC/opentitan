@@ -17,6 +17,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   input  cio_key2_in_i,
   input  cio_ac_present_i,
   input  cio_ec_rst_in_l_i,
+  input  cio_lid_open_i,
 
   input  pwrb_out_hw,
   input  key0_out_hw,
@@ -24,6 +25,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   input  key2_out_hw,
   input  bat_disable_hw,
   input  ec_rst_l_hw,
+  input  z3_wakeup_hw,
 
   input  sysrst_ctrl_reg2hw_pin_allowed_ctl_reg_t pin_allowed_ctl_i,
   input  sysrst_ctrl_reg2hw_pin_out_ctl_reg_t pin_out_ctl_i,
@@ -36,6 +38,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   output key1_out_int,
   output key2_out_int,
   output bat_disable_int,
+  output z3_wakeup_int,
   output cio_ec_rst_out_l_o
 
 );
@@ -46,6 +49,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   logic cfg_key0_in_i_pin;
   logic cfg_key1_in_i_pin;
   logic cfg_key2_in_i_pin;
+  logic cfg_lid_open_i_pin;
 
   logic cfg_bat_disable_0_allow;
   logic cfg_ec_rst_l_0_allow;
@@ -53,12 +57,14 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   logic cfg_key0_out_0_allow;
   logic cfg_key1_out_0_allow;
   logic cfg_key2_out_0_allow;
+  logic cfg_z3_wakeup_0_allow;
   logic cfg_bat_disable_1_allow;
   logic cfg_ec_rst_l_1_allow;
   logic cfg_pwrb_out_1_allow;
   logic cfg_key0_out_1_allow;
   logic cfg_key1_out_1_allow;
   logic cfg_key2_out_1_allow;
+  logic cfg_z3_wakeup_1_allow;
 
   logic cfg_bat_disable_ov;
   logic cfg_ec_rst_l_ov;
@@ -66,6 +72,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   logic cfg_key0_out_ov;
   logic cfg_key1_out_ov;
   logic cfg_key2_out_ov;
+  logic cfg_z3_wakeup_ov;
 
   logic cfg_bat_disable_q;
   logic cfg_ec_rst_l_q;
@@ -73,6 +80,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   logic cfg_key0_out_q;
   logic cfg_key1_out_q;
   logic cfg_key2_out_q;
+  logic cfg_z3_wakeup_q;
 
   //Synchronize between GPIO and cfg(24MHz)
   prim_flop_2sync # (
@@ -129,6 +137,15 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .q_o(cfg_key2_in_i_pin)
   );
 
+  prim_flop_2sync # (
+    .Width(1)
+  ) i_cfg_lid_open_i_pin (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(cio_lid_open_i),
+    .q_o(cfg_lid_open_i_pin)
+  );
+
   //Use the raw input(not inverted)
   assign pin_in_value_o.ac_present.d = cfg_ac_present_i_pin;
   assign pin_in_value_o.ec_rst_l.d = cfg_ec_rst_l_i_pin;
@@ -136,6 +153,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   assign pin_in_value_o.key0_in.d = cfg_key0_in_i_pin;
   assign pin_in_value_o.key1_in.d = cfg_key1_in_i_pin;
   assign pin_in_value_o.key2_in.d = cfg_key2_in_i_pin;
+  assign pin_in_value_o.lid_open.d = cfg_lid_open_i_pin;
 
   assign pin_in_value_o.ac_present.de = 1'b1;
   assign pin_in_value_o.ec_rst_l.de = 1'b1;
@@ -143,6 +161,7 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   assign pin_in_value_o.key0_in.de = 1'b1;
   assign pin_in_value_o.key1_in.de = 1'b1;
   assign pin_in_value_o.key2_in.de = 1'b1;
+  assign pin_in_value_o.lid_open.de = 1'b1;
 
   //synchronize between cfg(24MHz) and always-on(200KHz)
   prim_flop_2sync # (
@@ -208,6 +227,16 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
+  ) i_cfg_z3_wakeup_0_allow (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_aon_ni),
+    .d_i(pin_allowed_ctl_i.z3_wakeup_0.q),
+    .q_o(cfg_z3_wakeup_0_allow)
+  );
+
+  prim_flop_2sync # (
+    .Width(1),
+    .ResetValue('0)
   ) i_cfg_bat_disable_1_allow (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
@@ -263,6 +292,16 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .rst_ni(rst_aon_ni),
     .d_i(pin_allowed_ctl_i.key2_out_1.q),
     .q_o(cfg_key2_out_1_allow)
+  );
+
+  prim_flop_2sync # (
+    .Width(1),
+    .ResetValue('0)
+  ) i_cfg_z3_wakeup_1_allow (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_aon_ni),
+    .d_i(pin_allowed_ctl_i.z3_wakeup_1.q),
+    .q_o(cfg_z3_wakeup_1_allow)
   );
 
   prim_flop_2sync # (
@@ -328,6 +367,16 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
   prim_flop_2sync # (
     .Width(1),
     .ResetValue('0)
+  ) i_cfg_z3_wakeup_ov (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_aon_ni),
+    .d_i(pin_out_ctl_i.z3_wakeup.q),
+    .q_o(cfg_z3_wakeup_ov)
+  );
+
+  prim_flop_2sync # (
+    .Width(1),
+    .ResetValue('0)
   ) i_cfg_bat_disable_q (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
@@ -385,17 +434,30 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
     .q_o(cfg_key2_out_q)
   );
 
+  prim_flop_2sync # (
+    .Width(1),
+    .ResetValue('0)
+  ) i_cfg_z3_wakeup_q (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_aon_ni),
+    .d_i(pin_out_value_i.z3_wakeup.q),
+    .q_o(cfg_z3_wakeup_q)
+  );
+
   assign pwrb_out_int = (cfg_pwrb_out_ov && cfg_pwrb_out_0_allow && !cfg_pwrb_out_q) ? 1'b0 :
-               ((cfg_pwrb_out_ov && cfg_pwrb_out_1_allow && cfg_pwrb_out_q) ? 1'b1 : pwrb_out_hw);
+          ((cfg_pwrb_out_ov && cfg_pwrb_out_1_allow && cfg_pwrb_out_q) ? 1'b1 : pwrb_out_hw);
 
   assign key0_out_int = (cfg_key0_out_ov && cfg_key0_out_0_allow && !cfg_key0_out_q) ? 1'b0 :
-               ((cfg_key0_out_ov && cfg_key0_out_1_allow && cfg_key0_out_q) ? 1'b1 : key0_out_hw);
+          ((cfg_key0_out_ov && cfg_key0_out_1_allow && cfg_key0_out_q) ? 1'b1 : key0_out_hw);
 
   assign key1_out_int = (cfg_key1_out_ov && cfg_key1_out_0_allow && !cfg_key1_out_q) ? 1'b0 :
-               ((cfg_key1_out_ov && cfg_key1_out_1_allow && cfg_key1_out_q) ? 1'b1 : key1_out_hw);
+          ((cfg_key1_out_ov && cfg_key1_out_1_allow && cfg_key1_out_q) ? 1'b1 : key1_out_hw);
 
   assign key2_out_int = (cfg_key2_out_ov && cfg_key2_out_0_allow && !cfg_key2_out_q) ? 1'b0 :
-               ((cfg_key2_out_ov && cfg_key2_out_1_allow && cfg_key2_out_q) ? 1'b1 : key2_out_hw);
+          ((cfg_key2_out_ov && cfg_key2_out_1_allow && cfg_key2_out_q) ? 1'b1 : key2_out_hw);
+
+  assign z3_wakeup_int = (cfg_z3_wakeup_ov && cfg_z3_wakeup_0_allow && !cfg_z3_wakeup_q) ? 1'b0 :
+          ((cfg_z3_wakeup_ov && cfg_z3_wakeup_1_allow && cfg_z3_wakeup_q) ? 1'b1 : z3_wakeup_hw);
 
   assign bat_disable_int =
           (cfg_bat_disable_ov && cfg_bat_disable_0_allow && !cfg_bat_disable_q) ? 1'b0 :
@@ -403,6 +465,6 @@ module sysrst_ctrl_pin import sysrst_ctrl_reg_pkg::*; (
           bat_disable_hw);
 
   assign cio_ec_rst_out_l_o = (cfg_ec_rst_l_ov && cfg_ec_rst_l_0_allow && !cfg_ec_rst_l_q) ? 1'b0 :
-               ((cfg_ec_rst_l_ov && cfg_ec_rst_l_1_allow && cfg_ec_rst_l_q) ? 1'b1 : ec_rst_l_hw);
+          ((cfg_ec_rst_l_ov && cfg_ec_rst_l_1_allow && cfg_ec_rst_l_q) ? 1'b1 : ec_rst_l_hw);
 
 endmodule

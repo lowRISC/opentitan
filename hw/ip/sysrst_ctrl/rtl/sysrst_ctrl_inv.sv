@@ -14,12 +14,14 @@ module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
   input  cio_key1_in_i,
   input  cio_key2_in_i,
   input  cio_ac_present_i,
+  input  cio_lid_open_i,
 
   input  pwrb_out_int,
   input  key0_out_int,
   input  key1_out_int,
   input  key2_out_int,
   input  bat_disable_int,
+  input  z3_wakeup_int,
 
   input  sysrst_ctrl_reg2hw_key_invert_ctl_reg_t key_invert_ctl_i,
 
@@ -28,12 +30,14 @@ module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
   output key1_int,
   output key2_int,
   output ac_present_int,
+  output lid_open_int,
 
   output cio_bat_disable_o,
   output cio_pwrb_out_o,
   output cio_key0_out_o,
   output cio_key1_out_o,
-  output cio_key2_out_o
+  output cio_key2_out_o,
+  output cio_z3_wakeup_o
 
 );
 
@@ -42,11 +46,13 @@ module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
   logic  cfg_key1_i_inv;
   logic  cfg_key2_i_inv;
   logic  cfg_ac_present_i_inv;
+  logic  cfg_lid_open_i_inv;
   logic  cfg_pwrb_o_inv;
   logic  cfg_key0_o_inv;
   logic  cfg_key1_o_inv;
   logic  cfg_key2_o_inv;
   logic  cfg_bat_disable_o_inv;
+  logic  cfg_z3_wakeup_o_inv;
 
   //synchronize between cfg(24MHz) and always-on(200KHz)
   prim_flop_2sync # (
@@ -96,6 +102,15 @@ module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
 
   prim_flop_2sync # (
     .Width(1)
+  ) i_cfg_lid_open_i_inv (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_aon_ni),
+    .d_i(key_invert_ctl_i.lid_open.q),
+    .q_o(cfg_lid_open_i_inv)
+  );
+
+  prim_flop_2sync # (
+    .Width(1)
   ) i_cfg_pwrb_o_inv (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
@@ -139,16 +154,27 @@ module sysrst_ctrl_inv import sysrst_ctrl_reg_pkg::*; (
     .q_o(cfg_bat_disable_o_inv)
   );
 
+  prim_flop_2sync # (
+    .Width(1)
+  ) i_cfg_z3_wakeup_o_inv (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_aon_ni),
+    .d_i(key_invert_ctl_i.z3_wakeup.q),
+    .q_o(cfg_z3_wakeup_o_inv)
+  );
+
   assign cio_pwrb_out_o = cfg_pwrb_o_inv ? ~pwrb_out_int : pwrb_out_int;
   assign cio_key0_out_o = cfg_key0_o_inv ? ~key0_out_int : key0_out_int;
   assign cio_key1_out_o = cfg_key1_o_inv ? ~key1_out_int : key1_out_int;
   assign cio_key2_out_o = cfg_key2_o_inv ? ~key2_out_int : key2_out_int;
   assign cio_bat_disable_o = cfg_bat_disable_o_inv ? ~bat_disable_int : bat_disable_int;
+  assign cio_z3_wakeup_o = cfg_z3_wakeup_o_inv ? ~z3_wakeup_int : z3_wakeup_int;
 
   assign pwrb_int = cfg_pwrb_i_inv ? ~cio_pwrb_in_i : cio_pwrb_in_i;
   assign key0_int = cfg_key0_i_inv ? ~cio_key0_in_i : cio_key0_in_i;
   assign key1_int = cfg_key1_i_inv ? ~cio_key1_in_i : cio_key1_in_i;
   assign key2_int = cfg_key2_i_inv ? ~cio_key2_in_i : cio_key2_in_i;
   assign ac_present_int = cfg_ac_present_i_inv ? ~cio_ac_present_i : cio_ac_present_i;
+  assign lid_open_int = cfg_lid_open_i_inv ? ~cio_lid_open_i : cio_lid_open_i;
 
 endmodule
