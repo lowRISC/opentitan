@@ -347,6 +347,11 @@ typedef enum my_wonderful_option {
 } my_wonderful_option_t;
 ```
 
+### C-specific Keywords
+
+C11 introduces a number of undescore-prefixed keywords, such as `_Static_assert`, `_Bool`, and `_Noreturn`, which do not have a C++ counterpart.
+These should be avoided in preference for macros that wrap them, such as `static_assert`, `bool`, and `noreturn`.
+
 ### Preprocessor Macros
 
 Macros are often necessary and reasonable coding practice C (as opposed to C++) projects.
