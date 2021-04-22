@@ -67,16 +67,42 @@ module kmac_entropy
   localparam int unsigned StorageEntries = EntropyStorageW / EntropyLfsrW ;
   localparam int unsigned StorageIndexW = $clog2(StorageEntries);
 
+
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 10 \
+  //      -s 507672272 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||| (14.29%)
+  //  4: |||||||||| (14.29%)
+  //  5: |||||||||||||||||||| (28.57%)
+  //  6: |||||||||||| (17.86%)
+  //  7: ||||||| (10.71%)
+  //  8: ||||||| (10.71%)
+  //  9: || (3.57%)
+  // 10: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 9
+  // Minimum Hamming weight: 2
+  // Maximum Hamming weight: 7
+  //
+  localparam int StateWidth = 10;
+
   // States
-  typedef enum logic [3:0] {
+  typedef enum logic [StateWidth-1:0] {
     // Reset: Reset state. The entropy is not ready. The state machine should
     // get new entropy from EDN or the seed should be feeded by the software.
-    StRandReset,
+    StRandReset = 10'b 1101110011,
 
     // The seed is fed into LFSR and the entropy is ready. It means the
     // rand_valid is asserted with valid data. It takes a few steps to reach
     // this state from StRandIdle.
-    StRandReady,
+    StRandReady = 10'b 1001111000,
 
     // EDN interface: Send request and receive
     // RandEdnReq state can be transit from StRandReset or from StRandReady
@@ -94,28 +120,28 @@ module kmac_entropy
     //        EdnReq to refresh seed
     //     3. If a KMAC operation is completed, the FSM also refreshes the LFSR
     //        seed to prepare next KMAC op or wipe out operation.
-    StRandEdn,
+    StRandEdn = 10'b 0110000100,
 
     // Sw Seed: If mode is set to manual mode, This entropy module needs initial
     // seed from the software. It waits the seed update signal to expand initial
     // entropy
-    StSwSeedWait,
+    StSwSeedWait = 10'b 1100100111,
 
     // Expand: The SW or EDN provides 64-bit entropy (seed). In this state, this
     // entropy generator expands the 64-bit entropy into 320-bit entropy using
     // LFSR. Then it expands 320-bit pseudo random entropy into 1600-bit by
     // replicating the PR entropy five times w/ compile-time shuffling scheme.
-    StRandExpand,
+    StRandExpand = 10'b 1011110110,
 
     // ErrWaitExpired: If Edn timer expires, FSM moves to this state and wait
     // the software response. Software should switch to manual mode then disable
     // the timer (to 0) and update the seed via register interface.
-    StRandErrWaitExpired,
+    StRandErrWaitExpired = 10'b 0000001100,
 
     // ErrNoValidMode: If SW sets entropy ready but the mode is not either
     // Manual Mode nor EdnMode, this logic reports to SW with
     // NoValidEntropyMode.
-    StRandErrIncorrectMode,
+    StRandErrIncorrectMode = 10'b 0001100011,
 
     // Err: After the error is reported, FSM sits in Err state ignoring all the
     // requests. It does not generate new entropy and drops the entropy valid
@@ -125,7 +151,7 @@ module kmac_entropy
     // clear the entropy ready signal before clear the error interrupt so that
     // the FSM sits in StRandReset state not moving forward with incorrect
     // configurations.
-    StRandErr
+    StRandErr = 10'b 1110010000
   } rand_st_e;
 
   /////////////
@@ -324,15 +350,19 @@ module kmac_entropy
   ///////////////////
 
   rand_st_e st, st_d;
+  logic [StateWidth-1:0] st_raw_q;
+  assign st = rand_st_e'(st_raw_q);
 
   // State FF
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      st <= StRandReset;
-    end else begin
-      st <= st_d;
-    end
-  end
+  prim_flop #(
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(StRandReset))
+  ) u_state_regs (
+    .clk_i,
+    .rst_ni,
+    .d_i ( st_d     ),
+    .q_o ( st_raw_q )
+  );
 
   // State: Next State and Output Logic
   always_comb begin
