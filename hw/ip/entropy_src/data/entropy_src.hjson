@@ -53,6 +53,15 @@
       package: ""
     }
   ],
+  param_list: [
+    { name:    "Stub",
+      type:    "bit",
+      default: "0",
+      desc:    "Stub out the core of entropy_src logic"
+      local:   "false",
+      expose:  "true"
+    },
+  ]
   alert_list: [
     { name: "recov_alert",
       desc: "This alert is triggered upon the alert health test threshold criteria not met."

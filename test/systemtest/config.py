@@ -72,6 +72,7 @@ TEST_APPS_SELFCHECKING = [
     },
     {
         "name": "dif_entropy_smoketest",
+        "targets": ["sim_verilator"],
     },
     {
         "name": "flash_ctrl_test",

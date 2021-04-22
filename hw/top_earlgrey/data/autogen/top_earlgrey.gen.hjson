@@ -4498,7 +4498,17 @@
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
       domain: "0"
-      param_list: []
+      param_list:
+      [
+        {
+          name: Stub
+          desc: Stub out the core of entropy_src logic
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: EntropySrcStub
+        }
+      ]
       inter_signal_list:
       [
         {

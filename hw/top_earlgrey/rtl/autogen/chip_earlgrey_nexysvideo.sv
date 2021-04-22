@@ -715,6 +715,7 @@ module chip_earlgrey_nexysvideo #(
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b0),
     .SecAesSkipPRNGReseeding(1'b0),
+    .EntropySrcStub(1'b1),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .OtbnStub(1'b1),
