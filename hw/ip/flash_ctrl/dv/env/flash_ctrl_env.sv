@@ -33,7 +33,7 @@ class flash_ctrl_env #(type CFG_T = flash_ctrl_env_cfg,
 
     // get the vifs from config db
     if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin // If using open-source flash
-      flash_dv_part_e part = part.first(); 
+      flash_dv_part_e part = part.first();
       for (int i = 0; i < part.num(); i++, part = part.next()) begin
         foreach (cfg.mem_bkdr_vifs[, bank]) begin
           string vif_name = $sformatf("mem_bkdr_vifs[%0s][%0d]", part.name(), bank);
