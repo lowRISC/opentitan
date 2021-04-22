@@ -27,7 +27,7 @@ set_ideal_network [get_pins -hier u_clkgate/Q]
 #####################
 # main clock        #
 #####################
-set MAIN_CLK_PIN u_ast/u_sys_clk/u_sys_osc/sys_clk_o
+set MAIN_CLK_PIN u_ast/u_sys_clk/u_sys_osc/u_buf/out_o
 set MAIN_RST_PIN IO_RST_N
 # target is 100MHz, overconstrain by factor
 set MAIN_TCK_TARGET_PERIOD  10
@@ -42,7 +42,7 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks MAIN_CLK]
 #####################
 # USB clock         #
 #####################
-set USB_CLK_PIN u_ast/u_usb_clk/u_usb_osc/usb_clk_o
+set USB_CLK_PIN u_ast/u_usb_clk/u_usb_osc/u_buf/out_o
 # target is 48MHz, overconstrain by 5%
 set USB_TCK_TARGET_PERIOD 20.8
 set USB_TCK_PERIOD [expr $USB_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
@@ -59,7 +59,7 @@ set_max_delay 3 -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe
 #####################
 # IO clk            #
 #####################
-set IO_CLK_PIN u_ast/u_io_clk/u_io_osc/io_clk_o
+set IO_CLK_PIN u_ast/u_io_clk/u_io_osc/u_buf/out_o
 # target is 96MHz, overconstrain by factor
 set IO_TCK_TARGET_PERIOD 10.416
 set IO_TCK_PERIOD [expr $IO_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
@@ -115,7 +115,7 @@ set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey
 #####################
 # AON clk           #
 #####################
-set AON_CLK_PIN u_ast/u_aon_clk/u_aon_osc/aon_clk_o
+set AON_CLK_PIN u_ast/u_aon_clk/u_aon_osc/u_buf/out_o
 # target is 200KHz, overconstrain by factor
 set AON_TCK_TARGET_PERIOD 5000.0
 set AON_TCK_PERIOD [expr $AON_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
