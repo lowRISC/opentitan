@@ -15,10 +15,9 @@ filesets:
       - lowrisc:prim:subreg
       - lowrisc:prim:util
       - lowrisc:ip:kmac_pkg
+      - lowrisc:ip:rom_ctrl_pkg
       - lowrisc:ip:tlul
     files:
-      - rtl/rom_ctrl_pkg.sv
-      - rtl/rom_ctrl_reg_pkg.sv
       - rtl/rom_ctrl_regs_reg_top.sv
       - rtl/rom_ctrl_rom_reg_top.sv
       - rtl/rom_ctrl.sv
