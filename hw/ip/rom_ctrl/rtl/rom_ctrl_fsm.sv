@@ -10,7 +10,8 @@ module rom_ctrl_fsm
   import prim_util_pkg::vbits;
 #(
   parameter int RomDepth = 16,
-  parameter int TopCount = 8
+  parameter int TopCount = 8,
+  parameter bit SkipCheck = 1'b0
 ) (
   input logic                        clk_i,
   input logic                        rst_ni,
@@ -80,16 +81,17 @@ module rom_ctrl_fsm
   logic start_checker_q;
   logic checker_done, checker_good, checker_alert;
   rom_ctrl_compare #(
-    .NumWords (TopCount)
+    .NumWords  (TopCount),
+    .SkipCheck (SkipCheck)
   ) u_compare (
-    .clk_i         (clk_i),
-    .rst_ni        (rst_ni),
-    .start_i       (start_checker_q),
-    .done_o        (checker_done),
-    .good_o        (checker_good),
-    .digest_i      (digest_i),
-    .exp_digest_i  (exp_digest_i),
-    .alert_o       (checker_alert)
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .start_i      (start_checker_q),
+    .done_o       (checker_done),
+    .good_o       (checker_good),
+    .digest_i     (digest_i),
+    .exp_digest_i (exp_digest_i),
+    .alert_o      (checker_alert)
   );
 
   // Main FSM
