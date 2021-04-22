@@ -17,3 +17,6 @@ waive -rules RESET_USE -location {pinmux_strap_sampling.sv} -regexp {'rst_ni' is
 ', and used as an asynchronous reset or set at pinmux_strap_sampling} \
       -comment "This is a clock mux for DFT."
 
+waive -rules RESET_MUX -location {pinmux_strap_sampling.sv} -regexp {Asynchronous reset 'rst_ni' reaches a multiplexer here, used as a reset at pinmux_strap_sampling} \
+      -comment "This is a clock mux for DFT."
+
