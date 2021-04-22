@@ -16,10 +16,7 @@ import re
 import subprocess
 from typing import Any, Dict, List, Tuple
 
-
-_OTBN_DIR = os.path.join(os.path.dirname(__file__), '../../..')
-_UTIL_DIR = os.path.join(_OTBN_DIR, 'util')
-_SIM_DIR = os.path.join(os.path.dirname(__file__), '..')
+from testutil import asm_and_link_one_file, SIM_DIR
 
 _REG_RE = re.compile(r'\s*([xw][0-9]+)\s*=\s*((:?0x[0-9a-f]+)|([0-9]+))$')
 
@@ -78,22 +75,6 @@ def find_simple_tests() -> List[Tuple[str, str]]:
         assert len(exp_files) == len(asm_files)
 
     return ret
-
-
-def asm_and_link_one_file(asm_path: str, work_dir: str) -> str:
-    '''Assemble and link file at asm_path in work_dir.
-
-    Returns the path to the resulting ELF
-
-    '''
-    otbn_as = os.path.join(_UTIL_DIR, 'otbn-as')
-    otbn_ld = os.path.join(_UTIL_DIR, 'otbn-ld')
-    obj_path = os.path.join(work_dir, 'tst.o')
-    elf_path = os.path.join(work_dir, 'tst')
-
-    subprocess.run([otbn_as, '-o', obj_path, asm_path], check=True)
-    subprocess.run([otbn_ld, '-o', elf_path, obj_path], check=True)
-    return elf_path
 
 
 def get_reg_dump(stdout: str) -> Dict[str, int]:
@@ -165,7 +146,7 @@ def test_count(tmpdir: py.path.local,
 
     # Run the simulation. We can just pass a list of commands to stdin, and
     # don't need to do anything clever to track what's going on.
-    stepped_py = os.path.join(_SIM_DIR, 'stepped.py')
+    stepped_py = os.path.join(SIM_DIR, 'stepped.py')
     commands = 'load_elf {}\nstart 0\nrun\nprint_regs\n'.format(elf_file)
     sim_proc = subprocess.run([stepped_py], check=True, input=commands,
                               stdout=subprocess.PIPE, universal_newlines=True)
