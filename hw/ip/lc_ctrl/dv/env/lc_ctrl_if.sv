@@ -11,7 +11,6 @@ interface lc_ctrl_if(input clk, input rst_n);
   import otp_ctrl_part_pkg::*;
 
   logic tdo_oe; // TODO: add assertions
-  logic prog_err; // TODO: remove once push-pull can constrain data
   otp_lc_data_t otp_i;
   otp_hw_cfg_t  otp_hw_cfg_i;
   lc_token_t    hashed_token;
@@ -55,7 +54,6 @@ interface lc_ctrl_if(input clk, input rst_n);
 
     clk_byp_ack_i = clk_byp_ack;
     flash_rma_ack_i = flash_rma_ack;
-    prog_err = 0;
     hashed_token = '0;
   endtask
 

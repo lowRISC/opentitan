@@ -76,7 +76,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       push_pull_item#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
                       .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)) item_rcv;
       otp_prog_fifo.get(item_rcv);
-      if (cfg.lc_ctrl_vif.prog_err == 1) begin
+      if (item_rcv.d_data == 1) begin
         set_exp_alert(.alert_name("fatal_prog_error"), .is_fatal(1));
       end
     end

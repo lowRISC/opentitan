@@ -31,8 +31,7 @@ package lc_ctrl_env_pkg;
 
   // lc_otp_program host data width: lc_state_e width + lc_cnt_e width
   parameter uint OTP_PROG_HDATA_WIDTH = LcStateWidth + LcCountWidth;
-  // TODO: temp set to 0, once push-pull agent can constraint data, it will set to 1 for error bit
-  parameter uint OTP_PROG_DDATA_WIDTH = 0;
+  parameter uint OTP_PROG_DDATA_WIDTH = 1;
 
   typedef struct packed {
     lc_ctrl_pkg::lc_tx_e lc_dft_en_o;
