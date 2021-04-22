@@ -159,4 +159,6 @@ def test_count(tmpdir: py.path.local,
 
 def pytest_generate_tests(metafunc: Any) -> None:
     if metafunc.function is test_count:
-        metafunc.parametrize("asm_file,expected_file", find_simple_tests())
+        tests = find_simple_tests()
+        test_ids = [os.path.basename(e[0]) for e in tests]
+        metafunc.parametrize("asm_file,expected_file", tests, ids=test_ids)
