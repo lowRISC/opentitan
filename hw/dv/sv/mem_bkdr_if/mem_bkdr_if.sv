@@ -295,9 +295,10 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
     return rdata;
   endfunction
 
-  function automatic logic [15:0] sram_encrypt_read16(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                                                      input logic [SRAM_KEY_WIDTH-1:0]         key,
-                                                      input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+  function automatic logic [15:0]
+  sram_encrypt_read16(input logic [bus_params_pkg::BUS_AW-1:0] addr,
+                      input logic [SRAM_KEY_WIDTH-1:0]         key,
+                      input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
     logic [15:0] rdata;
     logic [bus_params_pkg::BUS_AW-1:0] bus_addr;
 
@@ -336,9 +337,10 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
     return rdata;
   endfunction
 
-  function automatic logic [31:0] sram_encrypt_read32(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                                                      input logic [SRAM_KEY_WIDTH-1:0]         key,
-                                                      input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+  function automatic logic [31:0]
+  sram_encrypt_read32(input logic [bus_params_pkg::BUS_AW-1:0] addr,
+                      input logic [SRAM_KEY_WIDTH-1:0]         key,
+                      input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
     logic [31:0] rdata = '0;
     logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
 
@@ -380,9 +382,10 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
 
   endfunction
 
-  function automatic logic [63:0] sram_encrypt_read64(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                                                      input logic [SRAM_KEY_WIDTH-1:0]         key,
-                                                      input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+  function automatic logic [63:0]
+  sram_encrypt_read64(input logic [bus_params_pkg::BUS_AW-1:0] addr,
+                      input logic [SRAM_KEY_WIDTH-1:0]         key,
+                      input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
     logic [63:0] rdata;
     logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
 
