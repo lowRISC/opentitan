@@ -13,8 +13,7 @@ filesets:
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
       - lowrisc:top_earlgrey:rv_plic
-      - lowrisc:top_earlgrey:pinmux_reg
-      - lowrisc:ip:pinmux_component
+      - lowrisc:ip:pinmux
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device
