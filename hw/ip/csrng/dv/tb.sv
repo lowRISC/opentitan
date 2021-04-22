@@ -79,8 +79,8 @@ module tb;
     uvm_config_db#(virtual pins_if)::set(null, "*.env", "efuse_sw_app_enable_vif",
                                          efuse_sw_app_enable_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))::set
-                                        (null, "*.env.m_entropy_src_agent*", "vif", entropy_src_if);
+    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))::
+      set(null, "*.env.m_entropy_src_agent*", "vif", entropy_src_if);
     uvm_config_db#(virtual csrng_if)::set(null, "*.env.m_edn_agent*", "vif", csrng_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
