@@ -151,6 +151,7 @@ module otbn_controller
   logic                                ispr_wr_base_insn;
   logic                                ispr_wr_bignum_insn;
 
+  logic call_stack_push, call_stack_pop;
   logic lsu_load_req_raw;
   logic lsu_store_req_raw;
 
@@ -180,6 +181,7 @@ module otbn_controller
   logic csr_illegal_addr, wsr_illegal_addr, ispr_illegal_addr;
   logic imem_addr_err, loop_err, ispr_err;
   logic dmem_addr_err, dmem_addr_unaligned_base, dmem_addr_unaligned_bignum, dmem_addr_overflow;
+  err_bits_t err_bits_raw;
 
   logic rf_a_indirect_err, rf_b_indirect_err, rf_d_indirect_err, rf_indirect_err;
 
@@ -297,16 +299,69 @@ module otbn_controller
   end
 
   // No RF integrity checks implemented yet
-  assign err_bits_o.fatal_reg     = 1'b0;
-  assign err_bits_o.fatal_imem    = insn_fetch_err_i;
-  assign err_bits_o.fatal_dmem    = lsu_rdata_err_i;
-  assign err_bits_o.illegal_insn  = insn_illegal_i | ispr_err | rf_indirect_err;
-  assign err_bits_o.bad_data_addr = dmem_addr_err;
-  assign err_bits_o.loop          = loop_err;
-  assign err_bits_o.call_stack    = rf_base_call_stack_err_i;
-  assign err_bits_o.bad_insn_addr = imem_addr_err;
+  assign err_bits_raw.fatal_reg     = 1'b0;
+  assign err_bits_raw.fatal_imem    = insn_fetch_err_i;
+  assign err_bits_raw.fatal_dmem    = lsu_rdata_err_i;
+  assign err_bits_raw.illegal_insn  = insn_illegal_i | ispr_err | rf_indirect_err;
+  assign err_bits_raw.bad_data_addr = dmem_addr_err;
+  assign err_bits_raw.loop          = loop_err;
+  assign err_bits_raw.call_stack    = rf_base_call_stack_err_i;
+  assign err_bits_raw.bad_insn_addr = imem_addr_err;
 
-  assign err = |err_bits_o;
+  // Error suppressions and `fatal_bad_err` that are determined below need to know if a call stack
+  // error occured during a call stack push or pop.
+  assign call_stack_pop = (rf_base_rd_en_a_o & rf_base_rd_addr_a_o == CallStackGprIndex[4:0]) |
+      (rf_base_rd_en_b_o & rf_base_rd_addr_b_o == CallStackGprIndex[4:0]);
+
+  assign call_stack_push = rf_base_wr_en_o & rf_base_wr_addr_o == CallStackGprIndex[4:0];
+
+  // Some combinations of raw error bits cannot occur unless there is a bug or an induced fault.
+  // `fatal_bad_err` is signalled if these combinations are seen.
+  always_comb begin
+    err_bits_raw.fatal_bad_err = 1'b0;
+
+    if (err_bits_raw.loop && err_bits_raw.bad_data_addr) begin
+      err_bits_raw.fatal_bad_err = 1'b1;
+    end
+
+    if (err_bits_raw.call_stack && call_stack_push && err_bits_raw.bad_data_addr) begin
+      err_bits_raw.fatal_bad_err = 1'b1;
+    end
+  end
+
+  assign err = |err_bits_raw;
+
+  // Error suppressions. `err_bits_raw` can have some errors suppressed before becoming the software
+  // visible `err_bits_o`. Errors are suppressed where there are multiple errors and the presence of
+  // one or more is dependent upon some undefined data (e.g. the contents of an empty call stack) or
+  // where it is due to a complex condition (e.g. whether an underflowing call stack pop is
+  // producing data or a base address for a store that would result in a valid bad data address in
+  // the former case).
+  always_comb begin
+    err_bits_o = err_bits_raw;
+
+    if (err_bits_raw.fatal_reg || err_bits_raw.fatal_imem || err_bits_raw.fatal_dmem ||
+        err_bits_raw.fatal_bad_err) begin
+      err_bits_o.loop          = 1'b0;
+      err_bits_o.illegal_insn  = 1'b0;
+      err_bits_o.call_stack    = 1'b0;
+      err_bits_o.bad_insn_addr = 1'b0;
+      err_bits_o.bad_data_addr = 1'b0;
+    end
+
+    if (err_bits_raw.call_stack && call_stack_pop) begin
+      err_bits_o.bad_data_addr = 1'b0;
+      err_bits_o.bad_insn_addr = 1'b0;
+      err_bits_o.loop          = 1'b0;
+    end
+
+    if (err_bits_raw.illegal_insn) begin
+      err_bits_o.bad_data_addr = 1'b0;
+      err_bits_o.bad_insn_addr = 1'b0;
+      err_bits_o.call_stack    = 1'b0;
+      err_bits_o.loop          = 1'b0;
+    end
+  end
 
   // Instructions must not execute if there is an error
   assign insn_executing = insn_valid_i & ~err;

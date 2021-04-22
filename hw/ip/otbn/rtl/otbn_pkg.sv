@@ -35,6 +35,9 @@ package otbn_pkg;
   // Width of entropy input
   parameter int EdnDataWidth = 256;
 
+  // Index of base register that accesses the call stack
+  parameter int unsigned CallStackGprIndex = 1;
+
 
   // Toplevel constants ============================================================================
 
@@ -50,8 +53,10 @@ package otbn_pkg;
   // Error bits
   //
   // Note: These errors are duplicated in the register HJSON (../data/otbn.hjson), the ISS
-  // (../dv/otbnsim/sim/alert.py), and the DIF. If updating them here, update those too.
+  // (../dv/otbnsim/sim/err_bits.py), the DIF and the OTBN IP top level (otbn.sv). If updating them
+  // here, update those too.
   typedef struct packed {
+    logic fatal_bad_err;
     logic fatal_reg;
     logic fatal_dmem;
     logic fatal_imem;

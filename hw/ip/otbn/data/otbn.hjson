@@ -201,6 +201,10 @@
           name: "fatal_reg"
           desc: "A fatal failure was seen on a GPR or WDR read."
         }
+        { bits: "8",
+          name: "fatal_bad_err"
+          desc: "A combination of error bits that cannot occur was seen."
+        }
       ]
     } // register : err_bits
     { name: "START_ADDR",

@@ -91,6 +91,10 @@ package otbn_reg_pkg;
       logic        d;
       logic        de;
     } fatal_reg;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fatal_bad_err;
   } otbn_hw2reg_err_bits_reg_t;
 
   typedef struct packed {
@@ -124,9 +128,9 @@ package otbn_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [26:25]
-    otbn_hw2reg_status_reg_t status; // [24:24]
-    otbn_hw2reg_err_bits_reg_t err_bits; // [23:8]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [28:27]
+    otbn_hw2reg_status_reg_t status; // [26:26]
+    otbn_hw2reg_err_bits_reg_t err_bits; // [25:8]
     otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [7:0]
   } otbn_hw2reg_t;
 
@@ -177,7 +181,7 @@ package otbn_reg_pkg;
     4'b 0001, // index[3] OTBN_ALERT_TEST
     4'b 0001, // index[4] OTBN_CMD
     4'b 0001, // index[5] OTBN_STATUS
-    4'b 0001, // index[6] OTBN_ERR_BITS
+    4'b 0011, // index[6] OTBN_ERR_BITS
     4'b 1111, // index[7] OTBN_START_ADDR
     4'b 0001  // index[8] OTBN_FATAL_ALERT_CAUSE
   };

@@ -436,6 +436,9 @@ module otbn
   assign hw2reg.err_bits.fatal_reg.de = done;
   assign hw2reg.err_bits.fatal_reg.d = err_bits.fatal_reg;
 
+  assign hw2reg.err_bits.fatal_bad_err.de = done;
+  assign hw2reg.err_bits.fatal_bad_err.d = err_bits.fatal_bad_err;
+
   // START_ADDR register
   assign start_addr = reg2hw.start_addr.q[ImemAddrWidth-1:0];
   logic [top_pkg::TL_DW-ImemAddrWidth-1:0] unused_start_addr_bits;

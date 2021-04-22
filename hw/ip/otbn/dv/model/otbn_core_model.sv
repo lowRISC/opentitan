@@ -126,8 +126,8 @@ module otbn_core_model
     end
   end
 
-  assign err_bits_o = raw_err_bits_q[7:0];
-  assign unused_raw_err_bits = ^raw_err_bits_q[31:8];
+  assign err_bits_o = raw_err_bits_q[8:0];
+  assign unused_raw_err_bits = ^raw_err_bits_q[31:9];
 
   // Track negedges of running_q and expose that as a "done" output.
   bit running_r = 1'b0;
