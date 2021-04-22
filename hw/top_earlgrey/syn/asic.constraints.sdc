@@ -278,10 +278,6 @@ set_false_path -from [get_ports IOC7] -to [get_ports IOR*]
 set_driving_cell -no_design_rule -lib_cell ${DRIVING_PAD} -pin ${DRIVING_PAD_PIN} [all_inputs]
 set_load [load_of ${LOAD_PAD_LIB}/${LOAD_PAD}/${LOAD_PAD_PIN}] [all_outputs]
 
-# set a nonzero critical range to be able to spot the violating paths better
-# in the report
-set_critical_range 0.5 ${DUT}
-
 ###################################
 # Size Only and Don't touch Cells #
 ###################################
