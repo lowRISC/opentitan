@@ -14,7 +14,7 @@ $(build-dir):
 	mkdir -p $@
 
 py-scripts := standalone.py stepped.py
-py-files   := $(wildcard *.py sim/*.py)
+py-files   := $(wildcard *.py sim/*.py test/*.py)
 py-libs    := $(filter-out $(py-scripts),$(py-files))
 
 lint-stamps := $(foreach scr,$(py-scripts),$(build-dir)/$(scr).stamp)
