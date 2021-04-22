@@ -111,9 +111,9 @@ module spi_p2s
     data_sent_o = 1'b 0;
 
     unique case (io_mode)
-      SingleIO: data_sent_o = (cnt == BitWidth'(6));
-      DualIO:   data_sent_o = (cnt == BitWidth'(2));
-      QuadIO:   data_sent_o = (cnt == BitWidth'(0));
+      SingleIO: data_sent_o = (cnt == 6);
+      DualIO:   data_sent_o = (cnt == 2);
+      QuadIO:   data_sent_o = (cnt == 0);
       default:  data_sent_o = '0;
     endcase
   end
