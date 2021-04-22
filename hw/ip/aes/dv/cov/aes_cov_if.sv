@@ -147,7 +147,10 @@ interface aes_cov_if
                                             bit aes_dataout_clear,
                                             bit aes_prng_reseed
                                            );
-    aes_trigger_cg_inst.sample(aes_start, aes_key_iv_datain_clear, aes_dataout_clear, aes_prng_reseed);
+    aes_trigger_cg_inst.sample(aes_start,
+                               aes_key_iv_datain_clear,
+                               aes_dataout_clear,
+                               aes_prng_reseed);
   endfunction
 
   function automatic void cg_alert_test_sample(bit [31:0] val);

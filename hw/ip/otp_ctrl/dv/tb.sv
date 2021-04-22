@@ -36,11 +36,12 @@ module tb;
 
   // lc_otp interfaces
   push_pull_if #(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
-                 lc_prog_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if #(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) lc_token_if(.clk(clk), .rst_n(rst_n));
+               lc_prog_if(.clk(clk), .rst_n(rst_n));
+  push_pull_if #(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth))
+               lc_token_if(.clk(clk), .rst_n(rst_n));
 
   push_pull_if #(.DeviceDataWidth(SRAM_DATA_SIZE))
-                 sram_if[NumSramKeyReqSlots](.clk(clk), .rst_n(rst_n));
+               sram_if[NumSramKeyReqSlots](.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(OTBN_DATA_SIZE)) otbn_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_if(.clk(clk), .rst_n(rst_n));
