@@ -260,13 +260,15 @@ module lc_ctrl_signal_decode
 
   assign lc_keymgr_div_o = lc_keymgr_div_q;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-    if (!rst_ni) begin
-      lc_keymgr_div_q <= RndCnstLcKeymgrDivInvalid;
-    end else begin
-      lc_keymgr_div_q <= lc_keymgr_div_d;
-    end
-  end
+  prim_flop #(
+    .Width(LcKeymgrDivWidth),
+    .ResetValue(RndCnstLcKeymgrDivInvalid)
+  ) u_prim_flo_keymgr_div (
+    .clk_i  ( clk_i           ),
+    .rst_ni ( rst_ni          ),
+    .d_i    ( lc_keymgr_div_d ),
+    .q_o    ( lc_keymgr_div_q )
+  );
 
   ////////////////
   // Assertions //
