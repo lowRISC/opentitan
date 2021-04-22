@@ -89,8 +89,11 @@ ${make_ral_pkg_window_class(dv_base_prefix, esc_if_name, window)}
       reg_offset = "{}'h{:x}".format(reg_width, r.offset)
       reg_tags = r.tags
       reg_shadowed = r.shadowed
+
+      type_id_indent = ' ' * (len(reg_name) + 4)
 %>\
-      ${reg_name} = ${gen_dv.rcname(esc_if_name, r)}::type_id::create("${reg_name}");
+      ${reg_name} = (${gen_dv.rcname(esc_if_name, r)}::
+      ${type_id_indent}type_id::create("${reg_name}"));
       ${reg_name}.configure(.blk_parent(this));
       ${reg_name}.build(csr_excl);
       default_map.add_reg(.rg(${reg_name}),
@@ -265,8 +268,10 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
 %>\
       add_update_err_alert("${reg.update_err_alert}");
       add_storage_err_alert("${reg.storage_err_alert}");
-      add_hdl_path_slice("${shadowed_reg_path}.committed_reg.q", 0, ${bit_idx}, 0, "BkdrRegPathRtlCommitted");
-      add_hdl_path_slice("${shadowed_reg_path}.shadow_reg.q", 0, ${bit_idx}, 0, "BkdrRegPathRtlShadow");
+      add_hdl_path_slice("${shadowed_reg_path}.committed_reg.q",
+                         0, ${bit_idx}, 0, "BkdrRegPathRtlCommitted");
+      add_hdl_path_slice("${shadowed_reg_path}.shadow_reg.q",
+                         0, ${bit_idx}, 0, "BkdrRegPathRtlShadow");
 % endif
 % if is_ext:
       set_is_ext_reg(1);
@@ -310,8 +315,10 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
   field_tags = field.tags
 
   fname = field.name.lower()
+  type_id_indent = ' ' * (len(fname) + 4)
 %>\
-      ${fname} = ${dv_base_prefix}_reg_field::type_id::create("${fname}");
+      ${fname} = (${dv_base_prefix}_reg_field::
+      ${type_id_indent}type_id::create("${fname}"));
       ${fname}.configure(
         .parent(this),
         .size(${field_size}),
@@ -327,13 +334,17 @@ ${_create_reg_field(dv_base_prefix, reg_width, reg_block_path, reg.shadowed, reg
        field.swaccess.swrd() == SwRdAccess.RD and\
        not field.swaccess.allows_write())):
       // constant reg
-      add_hdl_path_slice("${reg_block_path}.${reg_field_name}_qs", ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
+      add_hdl_path_slice("${reg_block_path}.${reg_field_name}_qs",
+                         ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
 % else:
-      add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.q${"s" if hwext else ""}", ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
+      add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.q${"s" if hwext else ""}",
+                         ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtl");
 % endif
 % if shadowed and not hwext:
-      add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.committed_reg.q", ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlCommitted");
-      add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.shadow_reg.q", ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlShadow");
+      add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.committed_reg.q",
+                         ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlCommitted");
+      add_hdl_path_slice("${reg_block_path}.u_${reg_field_name}.shadow_reg.q",
+                         ${field.bits.lsb}, ${field_size}, 0, "BkdrRegPathRtlShadow");
 % endif
 % if field_tags:
       // create field tags
