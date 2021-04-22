@@ -207,11 +207,19 @@ class Testplan():
     def map_regr_results(self, regr_results, map_full_testplan=True):
         '''map regression results to testplan entries
         '''
+        # Maintain a list of tests we already counted.
+        test_seen = set()
+
         def sum_results(totals, entry):
             '''function to generate milestone and grand totals
             '''
             ms = entry.milestone
             for test in entry.tests:
+                if test["name"] in test_seen:
+                    continue
+
+                test_seen.add(test["name"])
+
                 # Create dummy tests entry for milestone total
                 if totals[ms].tests == []:
                     totals[ms].tests = [{
