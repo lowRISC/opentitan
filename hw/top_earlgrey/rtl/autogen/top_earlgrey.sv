@@ -22,6 +22,7 @@ module top_earlgrey #(
   parameter bit KmacEnMasking = 0,
   parameter int KmacReuseShare = 0,
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
+  parameter bit EntropySrcStub = 0,
   parameter bit SramCtrlMainInstrExec = 1,
   parameter bit OtbnStub = 0,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
@@ -2140,7 +2141,8 @@ module top_earlgrey #(
   );
 
   entropy_src #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[23:22])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[23:22]),
+    .Stub(EntropySrcStub)
   ) u_entropy_src (
 
       // Interrupt
