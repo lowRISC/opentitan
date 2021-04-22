@@ -343,11 +343,11 @@ def _extract_power(full_file, results, key, args):
     """
 
     # extract first 3 columns on that line
-    patterns = [("net", r"^" + results["top"] + r".*\s*(" + FP_NUMBER + r")\s*" +
+    patterns = [("net", r"^" + results["top"] + r"[a-zA-Z0-9_]*\s*(" + FP_NUMBER + r")\s*" +
                  FP_NUMBER + r"\s*" + FP_NUMBER),
-                ("int", r"^" + results["top"] + r".*\s*" + FP_NUMBER + r"\s*(" +
+                ("int", r"^" + results["top"] + r"[a-zA-Z0-9_]*\s*" + FP_NUMBER + r"\s*(" +
                  FP_NUMBER + r")\s*" + FP_NUMBER),
-                ("leak", r"^" + results["top"] + r".*\s*" + FP_NUMBER + r" \s*" +
+                ("leak", r"^" + results["top"] + r"[a-zA-Z0-9_]*\s*" + FP_NUMBER + r" \s*" +
                  FP_NUMBER + r"\s*(" + FP_NUMBER + r")")]
 
     nums, errs = _match_fp_number(full_file, patterns)
