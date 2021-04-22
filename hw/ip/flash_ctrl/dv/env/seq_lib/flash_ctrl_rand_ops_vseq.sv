@@ -34,7 +34,7 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
     if (cfg.seq_cfg.flash_only_op != flash_ctrl_pkg::FlashOpInvalid) {
       flash_op.op == cfg.seq_cfg.flash_only_op;
     }
-    
+
     (flash_op.op == flash_ctrl_pkg::FlashOpErase) ->
         flash_op.erase_type dist {
           flash_ctrl_pkg::FlashErasePage :/ (100 - cfg.seq_cfg.op_erase_type_bank_pc),
@@ -217,20 +217,21 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
       1 :/ cfg.seq_cfg.poll_fifo_status_pc
     };
   }
-  
-  // When 0, the post-transaction back-door checks
-  //  will be disabled.
-  // Added to enable other post-transaction checks
-  //  and actions.
-  bit check_mem_post_tran = 1'b1;
 
   `uvm_object_new
 
   task body();
+
     for (int i = 1; i <= num_trans; i++) begin
       `uvm_info(`gfn, $sformatf("Configuring flash_ctrl %0d/%0d", i, num_trans),
                 UVM_MEDIUM)
-      `DV_CHECK_RANDOMIZE_FATAL(this)
+
+      // If external_cfg=1 it means this sequence is being randomized by another sequence and this
+      //  randomization will possibly override the upper randomization (Added specifically for
+      //  partner sequences using this one).
+      if (!cfg.seq_cfg.external_cfg) begin
+        `DV_CHECK_RANDOMIZE_FATAL(this)
+      end
 
       // Configure the flash based on the randomized settings.
       foreach (mp_regions[i]) begin
@@ -257,22 +258,25 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_base_vseq;
         flash_ctrl_prep_mem(flash_op);
 
         flash_ctrl_start_op(flash_op);
+        `uvm_info(`gfn, $sformatf("Wait for operation to be done, then %s (check_mem_post_tran=%0d)",
+                                  (cfg.seq_cfg.check_mem_post_tran ? "backdoor check the flash" :
+                                  "skip to next transaction"), cfg.seq_cfg.check_mem_post_tran), UVM_HIGH)
         case (flash_op.op)
           flash_ctrl_pkg::FlashOpRead: begin
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(poll_fifo_status)
             flash_ctrl_read(flash_op.num_words, flash_op_data, poll_fifo_status);
             wait_flash_op_done();
-            if (check_mem_post_tran) cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
+            if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
           end
           flash_ctrl_pkg::FlashOpProgram: begin
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(poll_fifo_status)
             flash_ctrl_write(flash_op_data, poll_fifo_status);
-            wait_flash_op_done();
-            if (check_mem_post_tran) cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
+            wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+            if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
           end
           flash_ctrl_pkg::FlashOpErase: begin
-            wait_flash_op_done(.timeout_ns(120_000_000));// Added because mass(bank) erase can be longer then default timeout.
-            if (check_mem_post_tran) cfg.flash_mem_bkdr_erase_check(flash_op);
+            wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
+            if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_erase_check(flash_op);
           end
           default: begin
             // TODO: V2 test item.

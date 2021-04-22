@@ -74,16 +74,31 @@ module tb;
   );
 
   // -----------------------------------
-  // Create edge in flash_power_down_h_i
-  //   eshapira - 30-Dec-20
+  // Create edge in flash_power_down_h_i, whenever reset is asserted
   logic init;
   assign flash_power_down_h = (init ? 1'b1 : 1'b0);
   initial begin
-    init = 1'b1;
-    // Wait for reset, then 5 cycles more.
-    wait(rst_n);
-    clk_rst_if.wait_clks(5);
-    init = 1'b0;
+    forever begin
+      fork
+        begin : isolation_fork
+          if (rst_n === 1'b1) begin
+            // Fork off a thread to deassert init after 5 clocks.
+            fork
+              begin : deassert_init
+                clk_rst_if.wait_clks(5);
+                init = 1'b0;
+              end : deassert_init
+            join_none
+          end else begin
+            init = (rst_n === 1'b0) ? 1'b1 : 1'bx;
+          end
+
+          // Wait for the rst_n to change.
+          @(rst_n);
+          disable fork;
+        end : isolation_fork
+      join
+    end
   end
 
 
