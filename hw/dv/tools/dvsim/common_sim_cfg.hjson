@@ -28,7 +28,8 @@
                         "^UVM_WARNING\\s[^:].*$",
                         "^Assert failed: ",
                         "^\\s*Offending '.*'",
-                        "^TEST FAILED (UVM_)?CHECKS$"]
+                        "^TEST FAILED (UVM_)?CHECKS$",
+                        "^Error:.*$"]  // ISS errors
 
   // Default TileLink widths
   tl_aw: 32
