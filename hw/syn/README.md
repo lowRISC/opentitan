@@ -16,6 +16,18 @@ The synthesis results are placed in the scratch area under `$SCRATCH_ROOT/{branc
 
 The main script that powers synthesis is `hw/syn/tools/dc/run-syn.tcl`.
 
+To follow the progress of the different synthesis flow stages (analysis, elaboration, etc.), it is recommended to use the `tail -f` command on the report file of interest.
+
+For example, overall status can be observed with
+```
+tail -f `$SCRATCH_ROOT/{branch_name}/chip_earlgrey_asic-syn-dc/default/synthesis.log`
+```
+
+Another example would be the elaboration status
+```
+tail -f `$SCRATCH_ROOT/{branch_name}/chip_earlgrey_asic-syn-dc/default/REPORTS/elab.rpt`
+```
+
 ## Re-run Interactive Synthesis
 
 Assuming the above synthesis steps produces an error or creates a situation where we must run synthesis interactively for debug, it can be done as follows.
