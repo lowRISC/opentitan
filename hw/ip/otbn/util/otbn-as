@@ -660,9 +660,9 @@ class Transformer:
         # came from.
         out_handle.write('.file "{}"\n.line 1\n'.format(in_path))
 
-    def gen_raw_line(self,
-                     insn: Insn,
-                     op_to_expr: Dict[str, Optional[str]]) -> None:
+    def mk_raw_line(self,
+                    insn: Insn,
+                    op_to_expr: Dict[str, Optional[str]]) -> str:
         '''Generate a .word-style raw line
 
         insn must have an encoding and op_to_expr should map the operand names
@@ -715,13 +715,12 @@ class Transformer:
                                .format(self.in_path,
                                        self.line_number, err)) from None
 
-        self.out_handle.write('.word {:#010x}  # {}{}'
-                              .format(word_val, self.key_sym, ''.join(self.acc)))
+        return '.word {:#010x}'.format(word_val)
 
-    def gen_rve_line(self,
-                     insn: Insn,
-                     rve: RVEncoding,
-                     op_to_expr: Dict[str, Optional[str]]) -> None:
+    def mk_rve_line(self,
+                    insn: Insn,
+                    rve: RVEncoding,
+                    op_to_expr: Dict[str, Optional[str]]) -> str:
 
         # Take a copy of the fixed fields
         rv_nums = rve.rv_masks.copy()
@@ -781,11 +780,7 @@ class Transformer:
         for rv_name in rve.rvfmt.operands:
             rv_str_list.append(rv_strings[rv_name])
 
-        self.out_handle.write('.insn {} {} # {}{}'
-                              .format(rve.rvfmt.name,
-                                      ', '.join(rv_str_list),
-                                      self.key_sym,
-                                      ''.join(self.acc)))
+        return '.insn {} {}'.format(rve.rvfmt.name, ', '.join(rv_str_list))
 
     def gen_line(self,
                  insn: Insn,
@@ -808,18 +803,22 @@ class Transformer:
             po_assembler = _PSEUDO_OP_ASSEMBLERS[insn.mnemonic]
             expansion = po_assembler(where, op_to_expr)
 
+        reconstructed = self.key_sym + ''.join(self.acc).rstrip()
+        assert '\n' not in reconstructed
+
         if expansion is not None:
-            self.out_handle.write('# pseudo-expansion for: {} {}'
-                                  .format(self.key_sym, ''.join(self.acc)))
+            self.out_handle.write('# pseudo-expansion for: {}\n'
+                                  .format(reconstructed))
             for entry in expansion:
                 self.out_handle.write('.line {}\n{}\n'
-                                      .format(self.line_number, entry))
+                                      .format(self.line_number - 1, entry))
             return
 
         # If this instruction comes from the rv32i instruction set, we can just
         # pass it straight through.
         if insn.rv32i:
-            self.out_handle.write(self.key_sym + ''.join(self.acc))
+            self.out_handle.write('.line {}\n{}\n'
+                                  .format(self.line_number - 1, reconstructed))
             return
 
         # If we don't know an encoding for this instruction, we're not going to
@@ -847,9 +846,14 @@ class Transformer:
         # it fails.
         rve = self.mnem_to_rve.get(self.key_sym.lower())
         if rve is not None:
-            self.gen_rve_line(insn, rve, op_to_expr)
+            line = self.mk_rve_line(insn, rve, op_to_expr)
         else:
-            self.gen_raw_line(insn, op_to_expr)
+            line = self.mk_raw_line(insn, op_to_expr)
+
+        self.out_handle.write('# {}\n.line {}\n{}\n'
+                              .format(reconstructed,
+                                      self.line_number - 1,
+                                      line))
 
     def _continue_block_comment(self, line: str, pos: int) -> int:
         '''Continue whitespace matching in a block comment
