@@ -143,7 +143,7 @@ module sensor_ctrl
     );
 
     assign alerts_clr[i] = no_ack_mode[i] ? '0 :
-                           sw_ack_mode[i] ? ~reg2hw.alert_state[i].q & reg2hw.alert_state[i].qe :
+                           sw_ack_mode[i] ? reg2hw.alert_state[i].q & reg2hw.alert_state[i].qe :
                                             alert_req & alert_ack;
   end
 
