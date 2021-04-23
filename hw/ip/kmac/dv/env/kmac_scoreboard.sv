@@ -509,9 +509,12 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       if (kmac_en) begin
         @(posedge prefix_and_keys_done);
 
-        // KDF mode will instantly start transmitting data to the msgfifo without a delay
+        // Though KDF mode will instantly start transmitting data to the msgfifo without a delay,
+        // we still need to wait for a cycle to start incrementing the fifo pointers and
+        // num_blocks_filled
+        cfg.clk_rst_vif.wait_clks(1);
+
         if (!in_kdf) begin
-          cfg.clk_rst_vif.wait_clks(1);
 
           // There is a particularly tricky edge case where addr_phase_write of a CmdProcess command
           // is detected one cycle after KMAC finishes processing the prefix and secret keys.
@@ -845,6 +848,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                     end : keccak_process_blocks
                   join
 
+                  // zero delay to wait for fifo pointers and kdf status to settle
+                  #0;
+
+                  // handle edge case where kdf_last is detected on the same cycle
+                  // that we finish waiting for the keccak rounds
+                  if (in_kdf && !kdf_last_in_keccak) begin
+                    if (kdf_last) kdf_last_in_keccak = 1;
+                  end
+
                   if (sw_process_seen_in_keccak) begin
                      `uvm_info(`gfn, "detected sw_cmd_process during keccak operation", UVM_HIGH)
                     if (fifo_empty) begin
@@ -937,6 +949,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     // being issued and still more message remains in the FIFO
     bit cmd_process_write = 0;
     bit do_increment = 0;
+    bit seen_kdf_trans_during_incr = 0;
     forever begin
       wait (!cfg.under_reset);
       `DV_SPINWAIT_EXIT(
@@ -945,9 +958,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           wait(in_kdf == 1);
       )
       `DV_SPINWAIT_EXIT(
+          // This is a counter to keep track of data blocks that have been sent/completed
+          // while the fifo is still full
+          int num_blocks_seen_while_full = 0;
+
           forever begin
             // increment the write pointer by default
             do_increment = 1;
+
+            seen_kdf_trans_during_incr = 0;
 
             if (in_kdf) begin
               // If executing a KDF op, the FIFO write pointer should increment every time
@@ -1025,22 +1044,73 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               end
             end
 
+            num_blocks_seen_while_full = 0;
+
             if (do_increment) begin
               // If fifo is full, wait until it isn't
               if (fifo_wr_ptr - fifo_rd_ptr == KMAC_FIFO_DEPTH) begin
-                wait (fifo_wr_ptr - fifo_rd_ptr < KMAC_FIFO_DEPTH);
+                `uvm_info(`gfn, "waiting for fifo to not be full", UVM_HIGH)
+
+                // Track how many data blocks are sent after the fifo has filled up
+                // and before it clears up some entries
+                `DV_SPINWAIT_EXIT(
+                    if (in_kdf) begin
+                      forever begin
+                        wait(got_data_from_kdf == 1);
+                        num_blocks_seen_while_full++;
+                        `uvm_info(`gfn, "incrementing num_blocks_seen_while_full", UVM_HIGH)
+                        cfg.clk_rst_vif.wait_clks(1);
+                      end
+                    end else begin
+                      cfg.clk_rst_vif.wait_clks(1);
+                    end
+                    ,
+                    // wait for the fifo to not be full
+                    wait(fifo_wr_ptr - fifo_rd_ptr < KMAC_FIFO_DEPTH);
+                )
+
+                `uvm_info(`gfn, $sformatf("num_blocks_seen_while_full: %0d", num_blocks_seen_while_full), UVM_HIGH)
               end
 
-              // update the fifo_wr_ptr
-              cfg.clk_rst_vif.wait_clks(1);
-              fifo_wr_ptr++;
-              `uvm_info(`gfn, $sformatf("incremented fifo_wr_ptr: %0d", fifo_wr_ptr), UVM_HIGH)
+              // it's necessary to spawn a forked process to detect a KDF transaction
+              // that is sent on the same cycle the fifo_wr_ptr is incremented so the
+              // scb can safely handle this edge case
+              fork
+                begin : detect_kdf_data_during_incr
+                  @(posedge got_data_from_kdf);
+                  seen_kdf_trans_during_incr = 1;
+                end : detect_kdf_data_during_incr
 
-              incr_fifo_wr_in_process = req_cmd_process_dly;
-              `uvm_info(`gfn,
-                        $sformatf("seen fifo_wr_ptr increment during CmdProcess: %0d",
-                                  incr_fifo_wr_in_process),
-                        UVM_HIGH)
+                begin : update_fifo_wr_ptr
+                  // update the fifo_wr_ptr
+                  //
+                  // need to update multiple consecutive cycles if the fifo becomes full
+                  // but data is still being transmitted
+                  repeat ((num_blocks_seen_while_full > 0) ? num_blocks_seen_while_full : 1) begin
+                    cfg.clk_rst_vif.wait_clks(1);
+                    fifo_wr_ptr++;
+                    `uvm_info(`gfn, $sformatf("incremented fifo_wr_ptr: %0d", fifo_wr_ptr), UVM_HIGH)
+                  end
+
+                  incr_fifo_wr_in_process = req_cmd_process_dly;
+                  `uvm_info(`gfn,
+                            $sformatf("seen fifo_wr_ptr increment during CmdProcess: %0d",
+                                      incr_fifo_wr_in_process),
+                            UVM_HIGH)
+                  #0;
+                  disable detect_kdf_data_during_incr;
+                end : update_fifo_wr_ptr
+              join
+
+              if (seen_kdf_trans_during_incr) begin
+                cfg.clk_rst_vif.wait_clks(1);
+                fifo_wr_ptr++;
+                `uvm_info(`gfn,
+                          $sformatf("incremented fifo_wr_ptr due to a racing KDF transaction: %0d",
+                                    fifo_wr_ptr),
+                          UVM_HIGH)
+                continue;
+              end
 
             end
             cfg.clk_rst_vif.wait_clks(1);
@@ -1048,6 +1118,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           ,
           wait(cfg.under_reset || msg_digest_done);
       )
+      `uvm_info(`gfn, "msg is done, stopping processing fifo_wr_ptr", UVM_HIGH)
       wait(sha3_idle == 1);
     end
   endtask
