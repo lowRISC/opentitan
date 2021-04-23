@@ -259,7 +259,7 @@ dif_hmac_result_t dif_hmac_mode_hmac_start(
   // Set the HMAC key.
   // TODO Static assert register layout.
   mmio_region_memcpy_to_mmio32(hmac->base_addr, HMAC_KEY_0_REG_OFFSET, key,
-                               HMAC_PARAM_NUMWORDS * sizeof(uint32_t));
+                               HMAC_PARAM_NUM_WORDS * sizeof(uint32_t));
 
   // Read current CFG register value.
   uint32_t device_config =
@@ -420,7 +420,7 @@ dif_hmac_digest_result_t dif_hmac_finish(const dif_hmac_t *hmac,
   // TODO Static assert register layout.
   mmio_region_memcpy_from_mmio32(hmac->base_addr, HMAC_DIGEST_0_REG_OFFSET,
                                  digest->digest,
-                                 HMAC_PARAM_NUMWORDS * sizeof(uint32_t));
+                                 HMAC_PARAM_NUM_WORDS * sizeof(uint32_t));
 
   // Disable HMAC and SHA256 until the next transaction, clearing the current
   // digest.

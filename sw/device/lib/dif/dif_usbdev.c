@@ -14,7 +14,7 @@
  * Definition in the header file (and probably other places) must be updated if
  * there is a hardware change.
  */
-static_assert(USBDEV_NUM_ENDPOINTS == USBDEV_PARAM_NENDPOINTS,
+static_assert(USBDEV_NUM_ENDPOINTS == USBDEV_PARAM_N_ENDPOINTS,
               "Mismatch in number of endpoints");
 
 /**

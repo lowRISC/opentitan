@@ -141,13 +141,13 @@ static void plic_reset(const dif_plic_t *plic) {
   }
 
   // Clear all of the priority registers.
-  for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
+  for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     ptrdiff_t offset = plic_priority_reg_offset(i);
     mmio_region_write32(plic->params.base_addr, offset, 0);
   }
 
   // Clear all of the target related registers.
-  for (dif_plic_target_t target = 0; target < RV_PLIC_PARAM_NUMTARGET;
+  for (dif_plic_target_t target = 0; target < RV_PLIC_PARAM_NUM_TARGET;
        ++target) {
     // Clear interrupt enable registers.
     ptrdiff_t offset = plic_irq_enable_base_for_target(target);
@@ -183,8 +183,8 @@ dif_plic_result_t dif_plic_irq_get_enabled(const dif_plic_t *plic,
                                            dif_plic_irq_id_t irq,
                                            dif_plic_target_t target,
                                            dif_plic_toggle_t *state) {
-  if (plic == NULL || irq >= RV_PLIC_PARAM_NUMSRC ||
-      target >= RV_PLIC_PARAM_NUMTARGET) {
+  if (plic == NULL || irq >= RV_PLIC_PARAM_NUM_SRC ||
+      target >= RV_PLIC_PARAM_NUM_TARGET) {
     return kDifPlicBadArg;
   }
 
@@ -201,8 +201,8 @@ dif_plic_result_t dif_plic_irq_set_enabled(const dif_plic_t *plic,
                                            dif_plic_irq_id_t irq,
                                            dif_plic_target_t target,
                                            dif_plic_toggle_t state) {
-  if (plic == NULL || irq >= RV_PLIC_PARAM_NUMSRC ||
-      target >= RV_PLIC_PARAM_NUMTARGET) {
+  if (plic == NULL || irq >= RV_PLIC_PARAM_NUM_SRC ||
+      target >= RV_PLIC_PARAM_NUM_TARGET) {
     return kDifPlicBadArg;
   }
 
@@ -230,7 +230,7 @@ dif_plic_result_t dif_plic_irq_set_enabled(const dif_plic_t *plic,
 dif_plic_result_t dif_plic_irq_set_trigger(const dif_plic_t *plic,
                                            dif_plic_irq_id_t irq,
                                            dif_plic_irq_trigger_t trigger) {
-  if (plic == NULL || irq >= RV_PLIC_PARAM_NUMSRC) {
+  if (plic == NULL || irq >= RV_PLIC_PARAM_NUM_SRC) {
     return kDifPlicBadArg;
   }
 
@@ -258,7 +258,7 @@ dif_plic_result_t dif_plic_irq_set_trigger(const dif_plic_t *plic,
 dif_plic_result_t dif_plic_irq_set_priority(const dif_plic_t *plic,
                                             dif_plic_irq_id_t irq,
                                             uint32_t priority) {
-  if (plic == NULL || irq >= RV_PLIC_PARAM_NUMSRC ||
+  if (plic == NULL || irq >= RV_PLIC_PARAM_NUM_SRC ||
       priority > kDifPlicMaxPriority) {
     return kDifPlicBadArg;
   }
@@ -272,7 +272,7 @@ dif_plic_result_t dif_plic_irq_set_priority(const dif_plic_t *plic,
 dif_plic_result_t dif_plic_target_set_threshold(const dif_plic_t *plic,
                                                 dif_plic_target_t target,
                                                 uint32_t threshold) {
-  if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET ||
+  if (plic == NULL || target >= RV_PLIC_PARAM_NUM_TARGET ||
       threshold > kDifPlicMaxPriority) {
     return kDifPlicBadArg;
   }
@@ -286,7 +286,7 @@ dif_plic_result_t dif_plic_target_set_threshold(const dif_plic_t *plic,
 dif_plic_result_t dif_plic_irq_is_pending(const dif_plic_t *plic,
                                           dif_plic_irq_id_t irq,
                                           bool *is_pending) {
-  if (plic == NULL || irq >= RV_PLIC_PARAM_NUMSRC || is_pending == NULL) {
+  if (plic == NULL || irq >= RV_PLIC_PARAM_NUM_SRC || is_pending == NULL) {
     return kDifPlicBadArg;
   }
 
@@ -300,7 +300,8 @@ dif_plic_result_t dif_plic_irq_is_pending(const dif_plic_t *plic,
 dif_plic_result_t dif_plic_irq_claim(const dif_plic_t *plic,
                                      dif_plic_target_t target,
                                      dif_plic_irq_id_t *claim_data) {
-  if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET || claim_data == NULL) {
+  if (plic == NULL || target >= RV_PLIC_PARAM_NUM_TARGET ||
+      claim_data == NULL) {
     return kDifPlicBadArg;
   }
 
@@ -313,7 +314,7 @@ dif_plic_result_t dif_plic_irq_claim(const dif_plic_t *plic,
 dif_plic_result_t dif_plic_irq_complete(
     const dif_plic_t *plic, dif_plic_target_t target,
     const dif_plic_irq_id_t *complete_data) {
-  if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET ||
+  if (plic == NULL || target >= RV_PLIC_PARAM_NUM_TARGET ||
       complete_data == NULL) {
     return kDifPlicBadArg;
   }
@@ -329,7 +330,7 @@ dif_plic_result_t dif_plic_irq_complete(
 
 dif_plic_result_t dif_plic_software_irq_force(const dif_plic_t *plic,
                                               dif_plic_target_t target) {
-  if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET) {
+  if (plic == NULL || target >= RV_PLIC_PARAM_NUM_TARGET) {
     return kDifPlicBadArg;
   }
 
@@ -341,7 +342,7 @@ dif_plic_result_t dif_plic_software_irq_force(const dif_plic_t *plic,
 
 dif_plic_result_t dif_plic_software_irq_acknowledge(const dif_plic_t *plic,
                                                     dif_plic_target_t target) {
-  if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET) {
+  if (plic == NULL || target >= RV_PLIC_PARAM_NUM_TARGET) {
     return kDifPlicBadArg;
   }
 
@@ -354,7 +355,8 @@ dif_plic_result_t dif_plic_software_irq_acknowledge(const dif_plic_t *plic,
 dif_plic_result_t dif_plic_software_irq_is_pending(const dif_plic_t *plic,
                                                    dif_plic_target_t target,
                                                    bool *is_pending) {
-  if (plic == NULL || target >= RV_PLIC_PARAM_NUMTARGET || is_pending == NULL) {
+  if (plic == NULL || target >= RV_PLIC_PARAM_NUM_TARGET ||
+      is_pending == NULL) {
     return kDifPlicBadArg;
   }
 
