@@ -32,7 +32,7 @@ module tb;
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
   // The clkmgr interface.
-  clkmgr_if clkmgr_if(.clk(clk), .rst_n(rst_n));
+  clkmgr_if clkmgr_if(.clk(clk), .rst_n(rst_n), .rst_main_n(rst_main_n));
 
   initial begin
     // Clocks must be set to active at time 0. The rest of the clock configuration happens

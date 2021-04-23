@@ -10,6 +10,9 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   );
   `uvm_object_utils(clkmgr_base_vseq)
 
+  rand bit ip_clk_en;
+  rand bit [NUM_TRANS-1:0] idle;
+
   // various knobs to enable certain routines
   bit do_clkmgr_init = 1'b1;
 
@@ -18,7 +21,12 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   task pre_start();
     // These are independent: do them in parallel since pre_start consumes time.
     fork
-      cfg.clkmgr_vif.init();
+      // The clk_enables and clk_hints are initialized with their reset values.
+      cfg.clkmgr_vif.init(
+          .ip_clk_en(ip_clk_en),
+          .clk_enables(ral.clk_enables.get_reset()),
+          .idle(idle),
+          .clk_hints(ral.clk_hints.get_reset()));
       if (do_clkmgr_init) clkmgr_init();
       super.pre_start();
     join

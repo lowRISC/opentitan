@@ -56,7 +56,14 @@
       name: clkmgr_smoke
       uvm_test_seq: clkmgr_smoke_vseq
     }
-
+    {
+      name: clkmgr_peri
+      uvm_test_seq: clkmgr_peri_vseq
+    }
+    {
+      name: clkmgr_trans
+      uvm_test_seq: clkmgr_trans_vseq
+    }
     // TODO: add more tests here
   ]
 

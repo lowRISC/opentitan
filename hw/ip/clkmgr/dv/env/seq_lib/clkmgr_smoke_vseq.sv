@@ -8,15 +8,10 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
 
   `uvm_object_new
 
-  bit ip_clk_en = 1'b1;
-  bit [NUM_TRANS - 1: 0] idle = '0;
+  constraint enable_ip_clk_en { ip_clk_en == 1'b1; }
+  constraint all_busy { idle == '0; }
 
   task body();
-    // Set the io clk input from pwrmgr.
-    `uvm_info(`gfn, $sformatf("Setting ip_clk_en to %b", ip_clk_en), UVM_LOW)
-    cfg.clkmgr_vif.update_clk_en(ip_clk_en);
-    cfg.clkmgr_vif.update_idle(idle);
-
     cfg.clk_rst_vif.wait_clks(10);
     test_peri_clocks();
     test_trans_clocks();
@@ -26,8 +21,8 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
   // checked via assertions in clkmgr_if.sv.
   task test_peri_clocks();
     // Flip all bits of clk_enables.
-    logic [TL_DW-1:0] value = ral.clk_enables.get();
-    logic [TL_DW-1:0] flipped_value;
+    logic [NUM_PERI-1:0] value = ral.clk_enables.get();
+    logic [NUM_PERI-1:0] flipped_value;
     csr_rd(.ptr(ral.clk_enables), .value(value));
     flipped_value = value ^ ((1 << ral.clk_enables.get_n_bits()) - 1);
     csr_wr(.ptr(ral.clk_enables), .value(flipped_value));

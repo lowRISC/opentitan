@@ -56,7 +56,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
 
     // If incoming access is a write to a valid csr, update prediction right away.
     if (addr_phase_write) begin
-      `uvm_info(`gfn, $sformatf("Writing 0x%0x to %s", item.a_data, csr.get_name()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("Writing 0x%0x to %s", item.a_data, csr.get_name()), UVM_MEDIUM)
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
     end
 
