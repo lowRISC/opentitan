@@ -41,7 +41,6 @@ static uint32_t subtract_modulus(const sigverify_rsa_key_t *key,
  */
 static bool greater_equal_modulus(const sigverify_rsa_key_t *key,
                                   const sigverify_rsa_buffer_t *a) {
-  // TODO(#33): Hardening?
   // Note: Loop terminates when `i` wraps around.
   for (size_t i = ARRAYSIZE(a->data) - 1; i < ARRAYSIZE(a->data); --i) {
     if (a->data[i] != key->n.data[i]) {

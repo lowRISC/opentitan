@@ -41,8 +41,6 @@ typedef struct sigverify_rsa_buffer {
  *
  * Note: Defined here to be able to use in tests.
  */
-// TODO(#22): Additional field(s) for key types/domains (or can store along with
-// exponent).
 typedef struct sigverify_rsa_key {
   /**
    * Modulus, a `kSigVerifyRsaNumWords` base 2^32 digit integer, little-endian.
