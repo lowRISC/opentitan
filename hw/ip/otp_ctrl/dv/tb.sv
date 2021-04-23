@@ -146,11 +146,18 @@ module tb;
   bind `OTP_CTRL_MEM_HIER mem_bkdr_if #(.MEM_ECC(1)) mem_bkdr_if();
 
   initial begin
-    // these SVA checks the lc_escalate_en is either Off or On, we will use more than these 2 values.
-    // If it's not Off, it should be On
+    // These SVA checks the lc_escalate_en is either Off or On, we will use more than these 2 values.
+    // If it's not Off, it should be On.
     $assertoff(0, tb.dut.u_prim_lc_sync_escalate_en.CheckTransients_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_escalate_en.CheckTransients0_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_escalate_en.CheckTransients1_A);
+
+    // These SVA checks the lc_sync_seed_hw_rd_en is either Off or On, we will use more than these
+    // 2 values.
+    // If it's not On, it should be Off.
+    $assertoff(0, tb.dut.u_prim_lc_sync_seed_hw_rd_en.CheckTransients_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync_seed_hw_rd_en.CheckTransients0_A);
+    $assertoff(0, tb.dut.u_prim_lc_sync_seed_hw_rd_en.CheckTransients1_A);
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();

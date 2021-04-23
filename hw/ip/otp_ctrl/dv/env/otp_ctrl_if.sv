@@ -67,10 +67,9 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
   // TODO: for lc_tx, except esc_en signal, all value different from On is treated as Off,
   // technically we can randomize values here once scb supports
-  task automatic init();
+  task automatic init(lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_val = lc_ctrl_pkg::On);
     lc_creator_seed_sw_rw_en_i = lc_ctrl_pkg::On;
-    // TODO: check with designer if we will remove this
-    lc_seed_hw_rd_en_i         = lc_ctrl_pkg::Off;
+    lc_seed_hw_rd_en_i         = lc_seed_hw_rd_en_val;
     lc_dft_en_i                = lc_ctrl_pkg::Off;
     lc_escalate_en_i           = lc_ctrl_pkg::Off;
     lc_check_byp_en_i          = lc_ctrl_pkg::Off;
