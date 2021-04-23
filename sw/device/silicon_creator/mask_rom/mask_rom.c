@@ -64,7 +64,7 @@ void mask_rom_boot(void) {
   pinmux_init();
 
   // Configure UART0 as stdout.
-  // TODO(lowrisc/opentitan-embargoed#39): Move to constant driver handles.
+  // TODO(lowrisc/opentitan#6283): Move to constant driver handles.
   uart.base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR);
   uart.baudrate = kUartBaudrate;
   uart.clk_freq_hz = kClockFreqPeripheralHz;
@@ -75,7 +75,7 @@ void mask_rom_boot(void) {
   });
 
   // Map HMAC registers.
-  // TODO(lowrisc/opentitan-embargoed#39): Move to constant driver handles.
+  // TODO(lowrisc/opentitan#6283): Move to constant driver handles.
   hmac.base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
 
   // FIXME: what (if anything) should we print at startup?

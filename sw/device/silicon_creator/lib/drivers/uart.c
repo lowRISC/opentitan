@@ -50,7 +50,6 @@ rom_error_t uart_init(const uart_t *uart) {
   uint32_t nco_masked = nco & UART_CTRL_NCO_MASK;
 
   // Requested baudrate is too high for the given clock frequency.
-  // TODO(#34): Change to use unified error space.
   if (nco != nco_masked) {
     return kErrorUartBadBaudRate;
   }
