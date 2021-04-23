@@ -562,12 +562,12 @@ end
 assign usb_io_pu_cal_o  = {UsbCalibWidth{1'b0}};
 //
 assign ast2padmux_o   = {Ast2PadOutWidth{1'b0}};
-`ifndef ANALOGSIM
+`ifdef ANALOGSIM
+assign ast2pad_t0_ao  = 0.0;
+assign ast2pad_t1_ao  = 0.1;
+`else
 assign ast2pad_t0_ao  = 1'bz;
 assign ast2pad_t1_ao  = 1'bz;
-`else
-assign ast2pad_t0_ao  = 0.0;
-assign ast2pad_t1_ao  = 0.0;
 `endif
 //
 assign lc_clk_byp_ack_o = lc_ctrl_pkg::Off;
@@ -622,8 +622,8 @@ assign scan_reset_no    = 1'b1;
 `ASSERT_KNOWN(LsAlertPKnownO_A, ls_alert_o, clk_ast_alert_i, rst_ast_alert_ni)
 `ASSERT_KNOWN(OtAlertPKnownO_A, ot_alert_o, clk_ast_alert_i, rst_ast_alert_ni)
 `ASSERT_KNOWN(Ast2PadmuxKnownO_A, ast2padmux_o, clk_ast_tlul_i, rst_ast_tlul_ni)
-`ASSERT_KNOWN(Ast2PadT0KnownO_A, ast2pad_t0_ao, clk_ast_tlul_i, rst_ast_tlul_ni)       // ANALOG
-`ASSERT_KNOWN(Ast2PadT1KnownO_A, ast2pad_t1_ao, clk_ast_tlul_i, rst_ast_tlul_ni)       // ANALOG
+// `ASSERT_KNOWN(Ast2PadT0KnownO_A, ast2pad_t0_ao, clk_ast_tlul_i, rst_ast_tlul_ni)       // ANALOG
+// `ASSERT_KNOWN(Ast2PadT1KnownO_A, ast2pad_t1_ao, clk_ast_tlul_i, rst_ast_tlul_ni)       // ANALOG
 `ASSERT_KNOWN(LcClkBypAckEnKnownO_A, lc_clk_byp_ack_o, clk_ast_tlul_i, rst_ast_tlul_ni)  //TODO
 `ASSERT_KNOWN(FlashBistEnKnownO_A, flash_bist_en_o, clk_ast_tlul_i, rst_ast_tlul_ni)     //TODO
 `ASSERT_KNOWN(DpramRmfKnownO_A, dpram_rmf_o, clk_ast_tlul_i, vcaon_pok_o)
