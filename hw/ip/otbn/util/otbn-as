@@ -805,14 +805,15 @@ class Transformer:
         # instruction claims to have a special-case assembler, it really does.
         if insn.python_pseudo_op:
             where = '{}:{}'.format(self.in_path, self.line_number)
-            expansion = _PSEUDO_OP_ASSEMBLERS[insn.mnemonic](where, op_to_expr)
+            po_assembler = _PSEUDO_OP_ASSEMBLERS[insn.mnemonic]
+            expansion = po_assembler(where, op_to_expr)
 
         if expansion is not None:
-            for idx, entry in enumerate(expansion):
-                self.out_handle.write('{} # {}{}'
-                                      .format(entry,
-                                              self.key_sym,
-                                              ''.join(self.acc)))
+            self.out_handle.write('# pseudo-expansion for: {} {}'
+                                  .format(self.key_sym, ''.join(self.acc)))
+            for entry in expansion:
+                self.out_handle.write('.line {}\n{}\n'
+                                      .format(self.line_number, entry))
             return
 
         # If this instruction comes from the rv32i instruction set, we can just
@@ -865,14 +866,12 @@ class Transformer:
         # set). Don't eat the \n at the end of the line: that will be added by
         # take_line.
         if idx == -1:
-            self.acc.append(line[pos:-1])
             return len(line) - 1
 
         # Otherwise, update pos to just after it and then eat any trailing
         # whitespace.
         assert 0 <= idx <= len(line) - 2
 
-        self.acc.append(line[pos:idx + 2])
         self.in_comment = False
         return self._eat_ws(line, idx + 2)
 
@@ -907,13 +906,11 @@ class Transformer:
     def _eat_ws(self, line: str, pos: int) -> int:
         '''Consume whitespace, updating FSM state if necessary'''
         # Eat any blanks
-        match = re.match(r'[\t ]*', line[pos:])
+        match = re.match(r'[\t ]+', line[pos:])
         if match:
             end = match.end()
-
-            if end > 0:
-                self.acc.append(line[pos:pos + end])
-                pos += end
+            self.acc.append(' ')
+            pos += end
 
         # Return if at EOL
         if pos == len(line):
@@ -921,7 +918,6 @@ class Transformer:
 
         # Spot a line comment ('#'). In that case, eat to EOL and return.
         if line[pos] == '#':
-            self.acc.append(line[pos:])
             return len(line) - 1
 
         # The other possibility is a block comment ('/*'). If we're not looking
@@ -929,9 +925,12 @@ class Transformer:
         if line[pos:pos + 2] != '/*':
             return pos
 
-        # Otherwise, eat the /* and switch to reading block comments
+        # Otherwise, eat the /* and switch to reading block comments. Add a
+        # single space to acc to make sure we tokenize properly in examples
+        # like "foo/* xxx */bar"
         self.in_comment = True
-        self.acc.append('/*')
+        self.acc.append(' ')
+
         return self._continue_block_comment(line, pos + 2)
 
     def _eat_optional_label(self, line: str, pos: int) -> Tuple[int, bool]:
