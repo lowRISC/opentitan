@@ -14,6 +14,15 @@
 extern "C" {
 #endif  // __cplusplus
 
+/**
+ * Calculates R^2 mod n, where R = 2^kSigVerifyRsaNumBits.
+ *
+ * @param key An RSA public key.
+ * @param[out] result Buffer to write the result to, little-endian.
+ */
+void calc_r_square(const sigverify_rsa_key_t *key,
+                   sigverify_rsa_buffer_t *result);
+
 // FIXME: Make static and move this comment to the source file. This is here
 // just to be able to add a simple test.
 /**
