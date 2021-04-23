@@ -562,8 +562,13 @@ end
 assign usb_io_pu_cal_o  = {UsbCalibWidth{1'b0}};
 //
 assign ast2padmux_o   = {Ast2PadOutWidth{1'b0}};
-assign ast2pad_t0_ao  = 0;
-assign ast2pad_t1_ao  = 0;
+`ifndes ANALOGSIM
+assign ast2pad_t0_ao  = 1'bz;
+assign ast2pad_t1_ao  = 1'bz;
+`else
+assign ast2pad_t0_ao  = 0.0;
+assign ast2pad_t1_ao  = 0.0;
+`endif
 //
 assign lc_clk_byp_ack_o = lc_ctrl_pkg::Off;
 assign flash_bist_en_o  = lc_ctrl_pkg::Off;
