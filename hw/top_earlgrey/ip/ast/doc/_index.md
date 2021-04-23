@@ -1,3 +1,7 @@
+---
+title: "Analog Sensor Top Technical Specification"
+---
+
 # Overview
 
 AST, also known as the analog sensor top, is the OpenTitan analog and
