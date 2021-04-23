@@ -20,6 +20,9 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
     cfg.otp_ctrl_vif.drive_lc_dft_en(lc_ctrl_pkg::On);
     if ($urandom_range(0, 1)) cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
 
+    // Some sequence will disable scb, here we re-enable scb after reset.
+    cfg.en_scb = 1;
+
     // Once turn on lc_dft_en regiser, will need some time to update the state register
     // Two clock cycles for lc_async mode, one clock cycle for driving dft_en
     cfg.clk_rst_vif.wait_clks(3);
