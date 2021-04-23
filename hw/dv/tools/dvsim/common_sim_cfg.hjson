@@ -29,7 +29,8 @@
                         "^Assert failed: ",
                         "^\\s*Offending '.*'",
                         "^TEST FAILED (UVM_)?CHECKS$",
-                        "^Error:.*$"]  // ISS errors
+                        "^ERROR:.*$",          // ISS errors from CC files
+                        "^[a-zA-Z]*Error:.*$"] // ISS errors from py files
 
   // Default TileLink widths
   tl_aw: 32
