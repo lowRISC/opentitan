@@ -122,6 +122,11 @@
               desc: "32 bits of the digest"
             }
           ]
+          // TODO: We're disabling CSR checks for this register for now, since
+          //       its value will change under the feet of the CSR package as
+          //       the ROM checker computes a digest. Re-enable this (and add
+          //       RAL reflection) once we have a working testbench.
+          tags: ["excl:CsrNonInitTests:CsrExclCheck"]
         }
       }
       {
@@ -139,6 +144,8 @@
               desc: "32 bits of the digest"
             }
           ]
+          // TODO: As with DIGEST, re-enable this when we have a working testbench
+          tags: ["excl:CsrNonInitTests:CsrExclCheck"]
         }
       }
     ],
