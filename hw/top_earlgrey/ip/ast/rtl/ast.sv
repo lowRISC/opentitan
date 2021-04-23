@@ -562,7 +562,7 @@ end
 assign usb_io_pu_cal_o  = {UsbCalibWidth{1'b0}};
 //
 assign ast2padmux_o   = {Ast2PadOutWidth{1'b0}};
-`ifndes ANALOGSIM
+`ifndef ANALOGSIM
 assign ast2pad_t0_ao  = 1'bz;
 assign ast2pad_t1_ao  = 1'bz;
 `else
