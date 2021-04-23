@@ -7,14 +7,15 @@ load("@bazel_embedded//toolchains/upstream:toolchain_upstream_deps.bzl", "toolch
 def bazel_embedded_deps():
     """ bazel_embedded_deps downloads and setups up the required thirdy party dependencies """
 
-    #if not native.existing_rule("platforms"):
-    # TODO: add the above if statement back when cortex-m constraint values are added to mainline bazel
-    git_repository(
-        name = "platforms",
-        remote = "https://github.com/curtin-space/platforms.git",
-        commit = "a9fb73e46ab4a7558d53d65ed8e608724f07d4cc",
-        shallow_since = "1585009972 +0800",
-    )
+    if not native.existing_rule("platforms"):
+        http_archive(
+            name = "platforms",
+            urls = [
+                "https://mirror.bazel.build/github.com/bazelbuild/platforms/releases/download/0.0.4/platforms-0.0.4.tar.gz",
+                "https://github.com/bazelbuild/platforms/releases/download/0.0.4/platforms-0.0.4.tar.gz",
+            ],
+            sha256 = "079945598e4b6cc075846f7fd6a9d0857c33a7afc0de868c2ccb96405225135d",
+        )
 
     if not native.existing_rule("bazel_embedded_upstream_toolchain"):
         toolchain_upstream_deps()
