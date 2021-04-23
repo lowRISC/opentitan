@@ -74,8 +74,8 @@ static uint32_t shift_left(sigverify_rsa_buffer_t *a) {
  * @param key An RSA public key.
  * @param[out] result Buffer to write the result to, little-endian.
  */
-static void calc_r_square(const sigverify_rsa_key_t *key,
-                          sigverify_rsa_buffer_t *result) {
+void calc_r_square(const sigverify_rsa_key_t *key,
+                   sigverify_rsa_buffer_t *result) {
   memset(result->data, 0, sizeof(result->data));
   // Since R/2 < n < R, this subtraction ensures that result = R mod n and
   // fits in `kSigVerifyRsaNumWords` going into the loop.
