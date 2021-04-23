@@ -208,7 +208,7 @@ module rom_ctrl_fsm
   logic [AW-1:0] rel_addr_wide;
   logic [TAW-1:0] rel_addr;
 
-  assign reading_top = (state_q == ReadingHigh || state_q == KmacAhead);
+  assign reading_top = (state_q == ReadingHigh || state_q == KmacAhead) & ~counter_done;
   assign rel_addr_wide = counter_addr - TopStartAddr;
   assign rel_addr = rel_addr_wide[TAW-1:0];
 
