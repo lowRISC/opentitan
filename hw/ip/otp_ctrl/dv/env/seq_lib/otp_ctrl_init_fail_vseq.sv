@@ -107,7 +107,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
           addr = $urandom_range(PartInfo[i].offset, PartInfo[i].offset + PartInfo[i].size - 1);
         end
 
-        backdoor_inject_ecc_err(addr, ecc_err_mask, ecc_err);
+        void'(backdoor_inject_ecc_err(addr, ecc_err_mask, ecc_err));
         if (ecc_err == OtpEccUncorrErr && !is_fatal) is_fatal = 1;
         if (ecc_err != OtpNoEccErr) exp_status[i] = 1;
       end
@@ -185,7 +185,8 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
         end
       end
     end
-    `DV_CHECK_EQ(error_cnt, 1)
+    // More than one fatal alert causes could be triggered at the same time
+    `DV_CHECK_GT(error_cnt, 0)
     csr_rd_check(.ptr(ral.status), .compare_value(exp_status | FATAL_EXP_STATUS));
 
     `DV_CHECK_EQ(cfg.otp_ctrl_vif.pwr_otp_done_o, 1)
