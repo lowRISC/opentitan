@@ -29,7 +29,7 @@ static_assert(kDifRstmgrResetInfoHwReq == (RSTMGR_RESET_INFO_HW_REQ_MASK
               "kDifRstmgrResetInfoHwReq must match the register definition!");
 
 static_assert(
-    RSTMGR_PARAM_NUMSWRESETS == 7,
+    RSTMGR_PARAM_NUM_SW_RESETS == 7,
     "Number of software resets has changed, please update this file!");
 
 // The Reset Manager implementation will have to be updated if the number
@@ -38,7 +38,7 @@ static_assert(
 // appropriate offset from the peripheral base would then have to be
 // calculated.
 static_assert(
-    RSTMGR_PARAM_NUMSWRESETS <= 32,
+    RSTMGR_PARAM_NUM_SW_RESETS <= 32,
     "Reset Enable and Control registers span across multiple registers!");
 
 // Make sure that the public alert info crash dump size matches the HW.
@@ -115,7 +115,7 @@ dif_rstmgr_result_t dif_rstmgr_reset(const dif_rstmgr_t *handle) {
 
 dif_rstmgr_result_t dif_rstmgr_reset_lock(const dif_rstmgr_t *handle,
                                           dif_rstmgr_peripheral_t peripheral) {
-  if (handle == NULL || peripheral >= RSTMGR_PARAM_NUMSWRESETS) {
+  if (handle == NULL || peripheral >= RSTMGR_PARAM_NUM_SW_RESETS) {
     return kDifRstmgrBadArg;
   }
 
@@ -133,7 +133,7 @@ dif_rstmgr_result_t dif_rstmgr_reset_is_locked(
     const dif_rstmgr_t *handle, dif_rstmgr_peripheral_t peripheral,
     bool *is_locked) {
   if (handle == NULL || is_locked == NULL ||
-      peripheral >= RSTMGR_PARAM_NUMSWRESETS) {
+      peripheral >= RSTMGR_PARAM_NUM_SW_RESETS) {
     return kDifRstmgrBadArg;
   }
 
@@ -244,7 +244,7 @@ dif_rstmgr_result_t dif_rstmgr_alert_info_dump_read(
 dif_rstmgr_software_reset_result_t dif_rstmgr_software_reset(
     const dif_rstmgr_t *handle, dif_rstmgr_peripheral_t peripheral,
     dif_rstmgr_software_reset_t reset) {
-  if (handle == NULL || peripheral >= RSTMGR_PARAM_NUMSWRESETS) {
+  if (handle == NULL || peripheral >= RSTMGR_PARAM_NUM_SW_RESETS) {
     return kDifRstmgrSoftwareResetBadArg;
   }
 
@@ -275,7 +275,7 @@ dif_rstmgr_result_t dif_rstmgr_software_reset_is_held(
     const dif_rstmgr_t *handle, dif_rstmgr_peripheral_t peripheral,
     bool *asserted) {
   if (handle == NULL || asserted == NULL ||
-      peripheral >= RSTMGR_PARAM_NUMSWRESETS) {
+      peripheral >= RSTMGR_PARAM_NUM_SW_RESETS) {
     return kDifRstmgrBadArg;
   }
 

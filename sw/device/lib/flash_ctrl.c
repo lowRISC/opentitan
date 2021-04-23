@@ -10,7 +10,7 @@
 
 #define FLASH_CTRL0_BASE_ADDR TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR
 #define PROGRAM_RESOLUTION_WORDS \
-  (FLASH_CTRL_PARAM_REGBUSPGMRESBYTES / sizeof(uint32_t))
+  (FLASH_CTRL_PARAM_REG_BUS_PGM_RES_BYTES / sizeof(uint32_t))
 
 #define REG32(add) *((volatile uint32_t *)(add))
 #define SETBIT(val, bit) (val | 1 << bit)
@@ -224,21 +224,21 @@ void flash_cfg_region(const mp_region_t *region_cfg) {
   }
 }
 
-uint32_t flash_get_banks(void) { return FLASH_CTRL_PARAM_REGNUMBANKS; }
+uint32_t flash_get_banks(void) { return FLASH_CTRL_PARAM_REG_NUM_BANKS; }
 
 uint32_t flash_get_pages_per_bank(void) {
-  return FLASH_CTRL_PARAM_REGPAGESPERBANK;
+  return FLASH_CTRL_PARAM_REG_PAGES_PER_BANK;
 }
 
 uint32_t flash_get_words_per_page(void) {
-  return FLASH_CTRL_PARAM_WORDSPERPAGE;
+  return FLASH_CTRL_PARAM_WORDS_PER_PAGE;
 }
 
-uint32_t flash_get_bank_size(void) { return FLASH_CTRL_PARAM_BYTESPERBANK; }
+uint32_t flash_get_bank_size(void) { return FLASH_CTRL_PARAM_BYTES_PER_BANK; }
 
-uint32_t flash_get_page_size(void) { return FLASH_CTRL_PARAM_BYTESPERPAGE; }
+uint32_t flash_get_page_size(void) { return FLASH_CTRL_PARAM_BYTES_PER_PAGE; }
 
-uint32_t flash_get_word_size(void) { return FLASH_CTRL_PARAM_BYTESPERWORD; }
+uint32_t flash_get_word_size(void) { return FLASH_CTRL_PARAM_BYTES_PER_WORD; }
 
 void flash_write_scratch_reg(uint32_t value) {
   REG32(FLASH_CTRL0_BASE_ADDR + FLASH_CTRL_SCRATCH_REG_OFFSET) = value;

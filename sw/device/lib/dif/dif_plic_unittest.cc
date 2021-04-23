@@ -20,9 +20,9 @@ using testing::Test;
 
 // If either of these static assertions fail, then the unit-tests for related
 // API should be revisited.
-static_assert(RV_PLIC_PARAM_NUMSRC == 179,
+static_assert(RV_PLIC_PARAM_NUM_SRC == 179,
               "PLIC instantiation parameters have changed.");
-static_assert(RV_PLIC_PARAM_NUMTARGET == 1,
+static_assert(RV_PLIC_PARAM_NUM_TARGET == 1,
               "PLIC instantiation parameters have changed.");
 
 constexpr uint32_t kTarget0 = 0;
@@ -47,7 +47,7 @@ class InitTest : public PlicTest {
     EXPECT_WRITE32(RV_PLIC_LE_5_REG_OFFSET, 0);
 
     // Priority registers.
-    for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
+    for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
       ptrdiff_t offset = RV_PLIC_PRIO0_REG_OFFSET + (sizeof(uint32_t) * i);
       EXPECT_WRITE32(offset, 0);
     }
@@ -82,7 +82,7 @@ TEST_F(InitTest, Success) {
 class IrqTest : public PlicTest {
  protected:
   IrqTest() {
-    // Make sure to change the `last_bit` when `RV_PLIC_PARAM_NUMSRC` changes.
+    // Make sure to change the `last_bit` when `RV_PLIC_PARAM_NUM_SRC` changes.
     // As `last_bit` represents the bit index in a register, we need to count
     // all of the last bits of a multireg to get the total number of bits.
     // The bit count in IE, LE and IP registers is expected to be the same.
@@ -95,10 +95,10 @@ class IrqTest : public PlicTest {
     for (const auto &reg : kEnableRegisters) {
       number_of_sources += (reg.last_bit + 1);
     }
-    EXPECT_EQ(RV_PLIC_PARAM_NUMSRC, number_of_sources)
+    EXPECT_EQ(RV_PLIC_PARAM_NUM_SRC, number_of_sources)
         << "make sure to update the IrqTest register arrays!";
 
-    EXPECT_EQ(RV_PLIC_PARAM_NUMTARGET, 1);
+    EXPECT_EQ(RV_PLIC_PARAM_NUM_TARGET, 1);
   }
 
   struct Register {
@@ -178,7 +178,7 @@ TEST_F(IrqEnableSetTest, Target0Enable) {
   ExpectIrqSetTests(kEnableRegisters, true);
 
   // Enable every IRQ, one at a time.
-  for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
+  for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     EXPECT_EQ(
         dif_plic_irq_set_enabled(&plic_, i, kTarget0, kDifPlicToggleEnabled),
         kDifPlicOk);
@@ -189,7 +189,7 @@ TEST_F(IrqEnableSetTest, Target0Disable) {
   ExpectIrqSetTests(kEnableRegisters, false);
 
   // Disable every bit, one at a time.
-  for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
+  for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     EXPECT_EQ(
         dif_plic_irq_set_enabled(&plic_, i, kTarget0, kDifPlicToggleDisabled),
         kDifPlicOk);
@@ -208,7 +208,7 @@ TEST_F(IrqTriggerTypeSetTest, Enable) {
   ExpectIrqSetTests(kTriggerRegisters, true);
 
   // Enable every IRQ, one at a time.
-  for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
+  for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     EXPECT_EQ(dif_plic_irq_set_trigger(&plic_, i, kDifPlicIrqTriggerEdge),
               kDifPlicOk);
   }
@@ -218,7 +218,7 @@ TEST_F(IrqTriggerTypeSetTest, Disable) {
   ExpectIrqSetTests(kTriggerRegisters, false);
 
   // Enable every IRQ, one at a time.
-  for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
+  for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     EXPECT_EQ(dif_plic_irq_set_trigger(&plic_, i, kDifPlicIrqTriggerLevel),
               kDifPlicOk);
   }
@@ -238,7 +238,7 @@ TEST_F(IrqPrioritySetTest, PriorityInvalid) {
 }
 
 TEST_F(IrqPrioritySetTest, Success) {
-  for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
+  for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     // Set expectations for every priority set call.
     ptrdiff_t offset = RV_PLIC_PRIO0_REG_OFFSET + (sizeof(uint32_t) * i);
     EXPECT_WRITE32(offset, kDifPlicMaxPriority);
@@ -289,7 +289,7 @@ TEST_F(IrqPendingStatusGetTest, Enabled) {
   ExpectIrqGetTests(kPendingRegisters, true);
 
   // Get status of every IRQ, one at a time.
-  for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
+  for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     bool status;
     dif_plic_result_t result = dif_plic_irq_is_pending(&plic_, i, &status);
     EXPECT_EQ(result, kDifPlicOk);
@@ -301,7 +301,7 @@ TEST_F(IrqPendingStatusGetTest, Disabled) {
   ExpectIrqGetTests(kPendingRegisters, false);
 
   // Get status of every IRQ, one at a time.
-  for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
+  for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     bool status;
     dif_plic_result_t result = dif_plic_irq_is_pending(&plic_, i, &status);
     EXPECT_EQ(result, kDifPlicOk);
@@ -310,7 +310,7 @@ TEST_F(IrqPendingStatusGetTest, Disabled) {
 }
 
 class IrqClaimTest : public PlicTest {
-  static_assert(RV_PLIC_PARAM_NUMTARGET == 1, "");
+  static_assert(RV_PLIC_PARAM_NUM_TARGET == 1, "");
 };
 
 TEST_F(IrqClaimTest, NullArgs) {
@@ -324,12 +324,12 @@ TEST_F(IrqClaimTest, NullArgs) {
 
 TEST_F(IrqClaimTest, Target0Success) {
   // Set expectations for every claim call.
-  for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
+  for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     EXPECT_READ32(RV_PLIC_CC0_REG_OFFSET, i);
   }
 
   // Claim every IRQ, one per a call.
-  for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
+  for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     dif_plic_irq_id_t data;
     EXPECT_EQ(dif_plic_irq_claim(&plic_, kTarget0, &data), kDifPlicOk);
     EXPECT_EQ(data, i);
@@ -337,7 +337,7 @@ TEST_F(IrqClaimTest, Target0Success) {
 }
 
 class IrqCompleteTest : public PlicTest {
-  static_assert(RV_PLIC_PARAM_NUMTARGET == 1, "");
+  static_assert(RV_PLIC_PARAM_NUM_TARGET == 1, "");
 };
 
 TEST_F(IrqCompleteTest, NullArgs) {
@@ -351,19 +351,19 @@ TEST_F(IrqCompleteTest, NullArgs) {
 
 TEST_F(IrqCompleteTest, Target0Success) {
   // Set expectations for every complete call.
-  for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
+  for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     EXPECT_WRITE32(RV_PLIC_CC0_REG_OFFSET, i);
   }
 
   // Complete all of the IRQs.
-  for (int i = 0; i < RV_PLIC_PARAM_NUMSRC; ++i) {
+  for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     dif_plic_irq_id_t data = i;
     EXPECT_EQ(dif_plic_irq_complete(&plic_, kTarget0, &data), kDifPlicOk);
   }
 }
 
 class SoftwareIrqForceTest : public PlicTest {
-  static_assert(RV_PLIC_PARAM_NUMTARGET == 1, "");
+  static_assert(RV_PLIC_PARAM_NUM_TARGET == 1, "");
 };
 
 TEST_F(SoftwareIrqForceTest, NullArgs) {
@@ -371,7 +371,7 @@ TEST_F(SoftwareIrqForceTest, NullArgs) {
 }
 
 TEST_F(SoftwareIrqForceTest, BadTarget) {
-  EXPECT_EQ(dif_plic_software_irq_force(&plic_, RV_PLIC_PARAM_NUMTARGET),
+  EXPECT_EQ(dif_plic_software_irq_force(&plic_, RV_PLIC_PARAM_NUM_TARGET),
             kDifPlicBadArg);
 }
 
@@ -381,7 +381,7 @@ TEST_F(SoftwareIrqForceTest, Target0Success) {
 }
 
 class SoftwareIrqAcknowledgeTest : public PlicTest {
-  static_assert(RV_PLIC_PARAM_NUMTARGET == 1, "");
+  static_assert(RV_PLIC_PARAM_NUM_TARGET == 1, "");
 };
 
 TEST_F(SoftwareIrqAcknowledgeTest, NullArgs) {
@@ -390,7 +390,7 @@ TEST_F(SoftwareIrqAcknowledgeTest, NullArgs) {
 }
 
 TEST_F(SoftwareIrqAcknowledgeTest, BadTarget) {
-  EXPECT_EQ(dif_plic_software_irq_acknowledge(&plic_, RV_PLIC_PARAM_NUMTARGET),
+  EXPECT_EQ(dif_plic_software_irq_acknowledge(&plic_, RV_PLIC_PARAM_NUM_TARGET),
             kDifPlicBadArg);
 }
 
@@ -400,7 +400,7 @@ TEST_F(SoftwareIrqAcknowledgeTest, Target0Success) {
 }
 
 class SoftwareIrqIsPendingTest : public PlicTest {
-  static_assert(RV_PLIC_PARAM_NUMTARGET == 1, "");
+  static_assert(RV_PLIC_PARAM_NUM_TARGET == 1, "");
 };
 
 TEST_F(SoftwareIrqIsPendingTest, NullArgs) {
@@ -417,7 +417,7 @@ TEST_F(SoftwareIrqIsPendingTest, NullArgs) {
 
 TEST_F(SoftwareIrqIsPendingTest, BadTarget) {
   bool is_pending;
-  EXPECT_EQ(dif_plic_software_irq_is_pending(&plic_, RV_PLIC_PARAM_NUMTARGET,
+  EXPECT_EQ(dif_plic_software_irq_is_pending(&plic_, RV_PLIC_PARAM_NUM_TARGET,
                                              &is_pending),
             kDifPlicBadArg);
 }
