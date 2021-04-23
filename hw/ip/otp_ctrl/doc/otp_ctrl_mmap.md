@@ -5,9 +5,17 @@ It has been generated with ./util/design/gen-otp-mmap.py
 
 |  Index  |   Partition    |  Size [B]  |  Access Granule  |                         Item                          |  Byte Address  |  Size [B]  |
 |:-------:|:--------------:|:----------:|:----------------:|:-----------------------------------------------------:|:--------------:|:----------:|
-|    0    | CREATOR_SW_CFG |    768     |      32bit       |                CREATOR_SW_CFG_CONTENT                 |     0x000      |    760     |
+|    0    | CREATOR_SW_CFG |    768     |      32bit       |                CREATOR_SW_CFG_AST_CFG                 |     0x000      |    256     |
+|         |                |            |      32bit       |              CREATOR_SW_CFG_ROM_EXT_SKU               |     0x100      |     4      |
+|         |                |            |      32bit       |           CREATOR_SW_CFG_USE_SW_RSA_VERIFY            |     0x104      |     4      |
+|         |                |            |      32bit       |              CREATOR_SW_CFG_KEY_IS_VALID              |     0x108      |     8      |
 |         |                |            |      64bit       | [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0) |     0x2F8      |     8      |
-|    1    |  OWNER_SW_CFG  |    768     |      32bit       |                 OWNER_SW_CFG_CONTENT                  |     0x300      |    760     |
+|    1    |  OWNER_SW_CFG  |    768     |      32bit       |                  ROM_ERROR_REPORTING                  |     0x300      |     4      |
+|         |                |            |      32bit       |                   ROM_BOOTSTRAP_EN                    |     0x304      |     4      |
+|         |                |            |      32bit       |                  ROM_FAULT_RESPONSE                   |     0x308      |     4      |
+|         |                |            |      32bit       |                  ROM_ALERT_CLASS_EN                   |     0x30C      |     4      |
+|         |                |            |      32bit       |                 ROM_ALERT_ESCALATION                  |     0x310      |     4      |
+|         |                |            |      32bit       |               ROM_ALERT_CLASSIFICATION                |     0x314      |    128     |
 |         |                |            |      64bit       |   [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)   |     0x5F8      |     8      |
 |    2    |     HW_CFG     |    240     |      32bit       |                       DEVICE_ID                       |     0x600      |     32     |
 |         |                |            |      32bit       |                    EN_SRAM_IFETCH                     |     0x620      |     1      |

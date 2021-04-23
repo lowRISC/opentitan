@@ -91,8 +91,20 @@
             bkout_type: "False", // Do not generate a breakout type for this partition.
             items: [
                 {
-                    name: "CREATOR_SW_CFG_CONTENT",
-                    size: "760"
+                    name: "CREATOR_SW_CFG_AST_CFG",
+                    size: "256"
+                }
+                {
+                    name: "CREATOR_SW_CFG_ROM_EXT_SKU",
+                    size: "4"
+                }
+                {
+                    name: "CREATOR_SW_CFG_USE_SW_RSA_VERIFY",
+                    size: "4"
+                }
+                {
+                    name: "CREATOR_SW_CFG_KEY_IS_VALID",
+                    size: "8"
                 }
             ],
             desc: '''Software configuration partition for
@@ -113,8 +125,28 @@
             bkout_type: "False",
             items: [
                 {
-                    name: "OWNER_SW_CFG_CONTENT",
-                    size: "760"
+                    name: "ROM_ERROR_REPORTING",
+                    size: "4"
+                }
+                {
+                    name: "ROM_BOOTSTRAP_EN",
+                    size: "4"
+                }
+                {
+                    name: "ROM_FAULT_RESPONSE",
+                    size: "4"
+                }
+                {
+                    name: "ROM_ALERT_CLASS_EN",
+                    size: "4"
+                }
+                {
+                    name: "ROM_ALERT_ESCALATION",
+                    size: "4"
+                }
+                {
+                    name: "ROM_ALERT_CLASSIFICATION",
+                    size: "128"
                 }
             ],
             desc: '''Software configuration partition for

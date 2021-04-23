@@ -17,10 +17,6 @@
             name:  "CREATOR_SW_CFG",
             items: [
                 {
-                    name:  "CREATOR_SW_CFG_CONTENT",
-                    value: "0x0",
-                }
-                {
                     name:  "CREATOR_SW_CFG_DIGEST",
                     value: "0x0",
                 }
@@ -29,10 +25,6 @@
         {
             name:  "OWNER_SW_CFG",
             items: [
-                {
-                    name:  "OWNER_SW_CFG_CONTENT",
-                    value: "0x0"
-                }
                 {
                     name:  "OWNER_SW_CFG_DIGEST",
                     value: "0x0",
