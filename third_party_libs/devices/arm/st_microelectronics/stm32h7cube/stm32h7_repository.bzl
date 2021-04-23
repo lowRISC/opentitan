@@ -1,6 +1,10 @@
 load(":stm32h7_defs.bzl", "STM32_DEFINES")
 
 VERSIONS = {
+    "v1.8.0": {
+        "commit": "beced99ac090fece04d1e0eb6648b8075e156c6c",
+        "sha256": "d8741230335f8800988daf39f4a8e4dea765bf64df856f52f7559bb264c30723",
+    },
     "v1.7.0": {
         "commit": "79196b09acfb720589f58e93ccf956401b18a191",
         "sha256": "51ce7f158d9acbd28b59bef8a48b5b1921b10a63a054fdcb9776a83d876f1dad",
