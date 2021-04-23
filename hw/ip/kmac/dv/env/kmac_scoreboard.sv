@@ -1187,6 +1187,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
           void'(ral.intr_state.predict(.value(intr_exp), .kind(UVM_PREDICT_DIRECT)));
 
+          // update internal interrupt tracking variables
+          if (intr_exp[KmacDone]) intr_kmac_done = 1;
+          if (intr_exp[KmacFifoEmpty]) intr_fifo_empty = 1;
+          if (intr_exp[KmacErr]) intr_kmac_err = 1;
+
           // sample coverage
           if (cfg.en_cov) begin
             foreach (intr_exp[i]) begin
