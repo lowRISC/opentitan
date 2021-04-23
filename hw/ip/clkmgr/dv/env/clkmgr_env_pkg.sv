@@ -22,6 +22,7 @@ package clkmgr_env_pkg;
   typedef virtual clk_rst_if clk_rst_vif;
 
   // parameters
+  localparam int  NUM_PERI = 3;
   localparam int  NUM_TRANS = 4;
 
   // types
