@@ -58,8 +58,8 @@ module spi_host_shift_register (
                       (speed_i == Quad)     ? {sr_q[3:0], next_bits[3:0]} :
                       8'h00;
 
-  assign sd_o       = (speed_i == Standard) ? {2'b00, sr_q[7], 1'b0} :
-                      (speed_i == Dual)     ? {2'b00, sr_q[7:6]} :
+  assign sd_o       = (speed_i == Standard) ? {3'b000, sr_q[7]}   :
+                      (speed_i == Dual)     ? {2'b00,  sr_q[7:6]} :
                       (speed_i == Quad)     ? {sr_q[7:4]} :
                       4'h00;
 
