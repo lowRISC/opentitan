@@ -16,10 +16,9 @@ filesets:
       - lowrisc:prim:ram_2p_adv
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:prim:lc_sync
+      - lowrisc:ip:spi_device_pkg
     files:
-      - rtl/spi_device_reg_pkg.sv
       - rtl/spi_device_reg_top.sv
-      - rtl/spi_device_pkg.sv
       - rtl/spi_fwm_rxf_ctrl.sv
       - rtl/spi_fwm_txf_ctrl.sv
       - rtl/spi_fwmode.sv

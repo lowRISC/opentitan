@@ -35,7 +35,7 @@ package spi_device_pkg;
     logic [3:0] s;
   } passthrough_rsp_t;
 
-  parameter passthrough_req_t PASSTHROUGH_RSQ_DEFAULT = '{
+  parameter passthrough_req_t PASSTHROUGH_REQ_DEFAULT = '{
     passthrough_en: 1'b 0,
     sck:            1'b 0,
     sck_gate_en:    1'b 0,

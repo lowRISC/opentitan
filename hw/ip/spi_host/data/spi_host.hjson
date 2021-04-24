@@ -9,6 +9,15 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
+  inter_signal_list: [
+    { struct:  "passthrough",
+      package: "spi_device_pkg",
+      type:    "req_rsp",
+      name:    "passthrough",
+      act:     "rsp",
+      width:   "1"
+    }
+  ]
   regwidth: "32",
   scan: "true",
   param_list: [

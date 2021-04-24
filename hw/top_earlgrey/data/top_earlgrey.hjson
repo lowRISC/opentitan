@@ -951,7 +951,7 @@
       'lc_ctrl.lc_seed_hw_rd_en'           : ['otp_ctrl.lc_seed_hw_rd_en',
                                               'flash_ctrl.lc_seed_hw_rd_en'],
 
-      //'spi_device.passthrough': ['spi_host0.passthrough']
+      'spi_device.passthrough'     : ['spi_host0.passthrough']
     }
 
     // top is to connect to top net/struct.

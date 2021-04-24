@@ -743,6 +743,9 @@
           act: req
           width: 1
           inst_name: spi_device
+          default: ""
+          end_idx: -1
+          top_signame: spi_device_passthrough
           index: -1
         }
         {
@@ -788,6 +791,18 @@
       inter_signal_list:
       [
         {
+          name: passthrough
+          struct: passthrough
+          package: spi_device_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: spi_host0
+          default: ""
+          top_signame: spi_device_passthrough
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -829,6 +844,16 @@
       param_list: []
       inter_signal_list:
       [
+        {
+          name: passthrough
+          struct: passthrough
+          package: spi_device_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: spi_host1
+          index: -1
+        }
         {
           name: tl
           struct: tl
@@ -5972,6 +5997,10 @@
       [
         otp_ctrl.lc_seed_hw_rd_en
         flash_ctrl.lc_seed_hw_rd_en
+      ]
+      spi_device.passthrough:
+      [
+        spi_host0.passthrough
       ]
       pwrmgr_aon.wakeups:
       [
@@ -11603,6 +11632,9 @@
         act: req
         width: 1
         inst_name: spi_device
+        default: ""
+        end_idx: -1
+        top_signame: spi_device_passthrough
         index: -1
       }
       {
@@ -11619,6 +11651,18 @@
         index: -1
       }
       {
+        name: passthrough
+        struct: passthrough
+        package: spi_device_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: spi_host0
+        default: ""
+        top_signame: spi_device_passthrough
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -11629,6 +11673,16 @@
         default: ""
         end_idx: -1
         top_signame: spi_host0_tl
+        index: -1
+      }
+      {
+        name: passthrough
+        struct: passthrough
+        package: spi_device_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: spi_host1
         index: -1
       }
       {
@@ -16894,6 +16948,28 @@
         act: req
         suffix: ""
         default: lc_ctrl_pkg::Off
+      }
+      {
+        package: spi_device_pkg
+        struct: passthrough_req
+        signame: spi_device_passthrough_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
+        default: ""
+      }
+      {
+        package: spi_device_pkg
+        struct: passthrough_rsp
+        signame: spi_device_passthrough_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
+        default: spi_device_pkg::PASSTHROUGH_RSP_DEFAULT
       }
       {
         package: ""
