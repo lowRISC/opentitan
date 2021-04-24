@@ -241,6 +241,21 @@ def autoconnect(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):
         autoconnect_xbar(topcfg, name_to_block, xbar)
 
 
+def _get_default_name(sig, suffix):
+    """Generate default for a net if one does not already exist.
+    """
+
+    # The else case covers the scenario where neither package nor default is provided.
+    # Specifically, the interface is 'logic' and has no default value.
+    # In this situation, just return 0's
+    if sig['default']:
+        return sig['default']
+    elif sig['package']:
+        return "{}::{}_DEFAULT".format(sig['package'], (sig["struct"] + suffix).upper())
+    else:
+        return "'0"
+
+
 def elab_intermodule(topcfg: OrderedDict):
     """Check the connection of inter-module and categorize them
 
@@ -339,6 +354,16 @@ def elab_intermodule(topcfg: OrderedDict):
         # Add to definition
         if req_struct["type"] == "req_rsp":
             req_suffix, rsp_suffix = get_suffixes(req_struct)
+            req_default = _get_default_name(req_struct, req_suffix)
+            rsp_default = _get_default_name(req_struct, rsp_suffix)
+
+            # based on the active direction of the req_struct, one of the directions does not
+            # need a default since it will be an output
+            if (req_struct["act"] == 'req'):
+                req_default = ''
+            else:
+                rsp_default = ''
+
             # Add two definitions
             definitions.append(
                 OrderedDict([('package', package),
@@ -349,7 +374,7 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('end_idx', req_struct["end_idx"]),
                              ('act', req_struct["act"]),
                              ('suffix', "req"),
-                             ('default', req_struct["default"])]))
+                             ('default', req_default)]))
             definitions.append(
                 OrderedDict([('package', package),
                              ('struct', req_struct["struct"] + rsp_suffix),
@@ -359,9 +384,10 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('end_idx', req_struct["end_idx"]),
                              ('act', req_struct["act"]),
                              ('suffix', "rsp"),
-                             ('default', req_struct["default"])]))
+                             ('default', rsp_default)]))
         else:
             # unidirection
+            default = _get_default_name(req_struct, "")
             definitions.append(
                 OrderedDict([('package', package),
                              ('struct', req_struct["struct"]),
@@ -371,7 +397,7 @@ def elab_intermodule(topcfg: OrderedDict):
                              ('end_idx', req_struct["end_idx"]),
                              ('act', req_struct["act"]),
                              ('suffix', ""),
-                             ('default', req_struct["default"])]))
+                             ('default', default)]))
 
         req_struct["index"] = -1
 
@@ -617,6 +643,9 @@ def check_intermodule_field(sig: OrderedDict,
     if "default" not in sig:
         sig["default"] = ""
 
+    if "package" not in sig:
+        sig["package"] = ""
+
     return error, sig
 
 
@@ -738,7 +767,8 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
             widths.append(rsp_struct["width"])
 
             # Type check
-            if "package" not in rsp_struct:
+            # If no package was declared, it is declared with an empty string
+            if not rsp_struct["package"]:
                 rsp_struct["package"] = req_struct.get("package", "")
             elif req_struct["package"] != rsp_struct["package"]:
                 log.error(
@@ -882,7 +912,7 @@ def im_netname(sig: OrderedDict,
                     package=obj["package"], struct=obj["struct"].upper())
             # default is used for dangling ports in definitions.
             # the struct name already has `_req` suffix
-            return "{package}::{struct}_DEFAULT".format(
+            return "{package}::{struct}_REQ_DEFAULT".format(
                 package=obj.get("package", ''), struct=obj["struct"].upper())
         if obj["act"] == "rcv" and suffix == "" and obj["struct"] == "logic":
             # custom default has been specified

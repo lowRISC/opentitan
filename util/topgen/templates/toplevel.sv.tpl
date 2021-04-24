@@ -237,7 +237,7 @@ module top_${top["name"]} #(
 % endfor
 % for sig in undriven_im_defs:
   % for idx in range(sig['end_idx'], sig['width']):
-  assign ${sig["signame"]}[${idx}] = ${lib.im_netname(sig, sig['suffix'], True)};
+  assign ${sig["signame"]}[${idx}] = ${sig["default"]};
   % endfor
 % endfor
 
