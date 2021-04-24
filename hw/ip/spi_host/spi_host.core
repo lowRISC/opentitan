@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:tlul
+      - lowrisc:ip:spi_device_pkg
     files:
       - rtl/spi_host_reg_pkg.sv
       - rtl/spi_host_cmd_pkg.sv

@@ -532,6 +532,8 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_rd_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_wr_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_seed_hw_rd_en;
+  spi_device_pkg::passthrough_req_t       spi_device_passthrough_req;
+  spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   logic [4:0] pwrmgr_aon_wakeups;
   logic [1:0] pwrmgr_aon_rstreqs;
   tlul_pkg::tl_h2d_t       rom_ctrl_rom_tl_req;
@@ -1174,8 +1176,8 @@ module top_earlgrey #(
 
       // Inter-module signals
       .ram_cfg_i(ast_ram_2p_cfg),
-      .passthrough_o(),
-      .passthrough_i(spi_device_pkg::PASSTHROUGH_RSP_DEFAULT),
+      .passthrough_o(spi_device_passthrough_req),
+      .passthrough_i(spi_device_passthrough_rsp),
       .tl_i(spi_device_tl_req),
       .tl_o(spi_device_tl_rsp),
       .scanmode_i,
@@ -1205,6 +1207,8 @@ module top_earlgrey #(
       .intr_spi_event_o (intr_spi_host0_spi_event),
 
       // Inter-module signals
+      .passthrough_i(spi_device_passthrough_req),
+      .passthrough_o(spi_device_passthrough_rsp),
       .tl_i(spi_host0_tl_req),
       .tl_o(spi_host0_tl_rsp),
       .scanmode_i,
@@ -1234,6 +1238,8 @@ module top_earlgrey #(
       .intr_spi_event_o (intr_spi_host1_spi_event),
 
       // Inter-module signals
+      .passthrough_i(spi_device_pkg::PASSTHROUGH_REQ_DEFAULT),
+      .passthrough_o(),
       .tl_i(spi_host1_tl_req),
       .tl_o(spi_host1_tl_rsp),
       .scanmode_i,

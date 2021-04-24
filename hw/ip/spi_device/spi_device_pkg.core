@@ -1,0 +1,18 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:spi_device_pkg:0.1"
+description: "spi_device_pkg"
+
+filesets:
+  files_rtl:
+    files:
+      - rtl/spi_device_reg_pkg.sv
+      - rtl/spi_device_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl

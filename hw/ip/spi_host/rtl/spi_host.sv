@@ -31,6 +31,10 @@ module spi_host
   output logic [3:0]       cio_sd_en_o,
   input        [3:0]       cio_sd_i,
 
+  // Passthrough interface
+  input  spi_device_pkg::passthrough_req_t passthrough_i,
+  output spi_device_pkg::passthrough_rsp_t passthrough_o,
+
   output logic             intr_error_o,
   output logic             intr_spi_event_o
 );
@@ -57,52 +61,79 @@ module spi_host
     .devmode_i  (1'b1)
   );
 
-  logic  passthru;
-  assign passthru = reg2hw.control.passthru.q;
-
-  assign cio_sck_en_o = 1'b1;
-  assign cio_csb_en_o = {NumCS{1'b1}};
 
   logic             sck;
   logic [NumCS-1:0] csb;
-  logic [3:0]       sd_o;
+  logic [3:0]       sd_out;
   logic [3:0]       sd_en;
   logic [3:0]       sd_i;
 
-  logic             pt_sck;
-  logic [NumCS-1:0] pt_csb;
-  logic [3:0]       pt_sd_o;
-  logic [3:0]       pt_sd_en;
-  logic [3:0]       pt_sd_i;
+  if (NumCS == 1) begin : gen_passthrough_implementation
+    logic passthrough_en;
+    assign passthrough_en  = passthrough_i.passthrough_en;
 
-  // TODO: Route passthru outputs to ports once structure is defined
-  assign pt_sck   = 1'b0;
-  assign pt_csb   = {NumCS{1'b1}};
-  assign pt_sd_en = 4'h0;
-  assign pt_sd_o  = 4'h0;
+    logic        pt_sck;
+    logic        pt_sck_en;
+    logic [0:0]  pt_csb;
+    logic [0:0]  pt_csb_en;
+    logic [3:0]  pt_sd_out;
+    logic [3:0]  pt_sd_en;
 
-  assign cio_sck_o    = passthru ? pt_sck : sck;
-  assign cio_csb_o    = passthru ? pt_csb : csb;
-  assign cio_sd_o     = passthru ? pt_sd_o : sd_o;
-  assign cio_sd_en_o  = passthru ? pt_sd_en : sd_en;
-  assign pt_sd_i      = cio_sd_i;
-  assign sd_i         = cio_sd_i;
+    assign pt_sck       = passthrough_i.sck;
+    assign pt_sck_en    = passthrough_i.sck_en;
+    assign pt_csb[0]    = passthrough_i.csb;
+    assign pt_csb_en[0] = passthrough_i.csb_en;
+    assign pt_sd_out    = passthrough_i.s;
+    assign pt_sd_en     = passthrough_i.s_en;
+
+    assign cio_sck_o    = passthrough_en ? pt_sck    : sck;
+    assign cio_sck_en_o = passthrough_en ? pt_sck_en : 1'b1;
+    assign cio_csb_o    = passthrough_en ? pt_csb    : csb;
+    assign cio_csb_en_o = passthrough_en ? pt_csb_en : 1'b1;
+    assign cio_sd_o     = passthrough_en ? pt_sd_out : sd_out;
+    assign cio_sd_en_o  = passthrough_en ? pt_sd_en  : sd_en;
+
+  end                   : gen_passthrough_implementation
+  else begin            : gen_passthrough_ignore
+     // Passthrough only supported for instances with one CSb line
+    `ASSERT(PassthroughNumCSCompat_A, !passthrough_en, clk_i, rst_ni)
+
+    assign cio_sck_o    = sck;
+    assign cio_sck_en_o = 1'b1;
+    assign cio_csb_o    = csb;
+    assign cio_csb_en_o = {NumCS{1'b1}};
+    assign cio_sd_o     = sd_out;
+    assign cio_sd_en_o  = sd_en;
+
+    logic       unused_pt_en;
+    logic       unused_pt_sck;
+    logic       unused_pt_sck_en;
+    logic       unused_pt_csb;
+    logic       unused_pt_csb_en;
+    logic [3:0] unused_pt_sd_out;
+    logic [3:0] unused_pt_sd_en;
+
+    assign unused_pt_en     = passthrough_i.passthrough_en;
+    assign unused_pt_sck    = passthrough_i.sck;
+    assign unused_pt_sck_en = passthrough_i.sck_en;
+    assign unused_pt_csb    = passthrough_i.csb;
+    assign unused_pt_csb_en = passthrough_i.csb_en;
+    assign unused_pt_sd_out = passthrough_i.s;
+    assign unused_pt_sd_en  = passthrough_i.s_en;
+
+  end                   : gen_passthrough_ignore
+
+  logic unused_pt_sck_gate_en;
+  assign unused_pt_sck_gate_en = passthrough_i.sck_gate_en;
+
+  assign passthrough_o.s = cio_sd_i;
+  assign sd_i            = cio_sd_i;
 
   // TODO: REMOVE THIS CODE
   // Temp tie-offs to silence lint warnings
   logic unused_scan;
-  logic unused_flop;
 
   assign unused_scan = ^scanmode_i;
-
-  always_ff @(posedge clk_core_i or negedge rst_core_ni) begin
-    if (!rst_core_ni) begin
-      unused_flop <= 1'b0;
-    end else begin
-      unused_flop <= ^pt_sd_i;
-    end
-  end
-
 
   assign hw2reg.status.byteorder.d  = ByteOrder;
   assign hw2reg.status.byteorder.de = 1'b1;
@@ -392,7 +423,7 @@ module spi_host
     .rx_ready_i      (core_rx_ready),
     .sck_o           (sck),
     .csb_o           (csb),
-    .sd_o,
+    .sd_o            (sd_out),
     .sd_en_o         (sd_en),
     .sd_i,
     .rx_stall_o      (core_rx_stall),
