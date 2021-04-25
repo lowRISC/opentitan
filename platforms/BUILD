@@ -3,7 +3,6 @@ package(default_visibility = ["//visibility:public"])
 platform(
     name = "cortex_m",
     constraint_values = [
-        "@platforms//os:none",
         "@bazel_embedded//constraints/fpu:none",
         "@platforms//cpu:armv6-m",
     ],

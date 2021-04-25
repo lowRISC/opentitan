@@ -315,7 +315,6 @@ def gcc_arm_none_toolchain(name, compiler_components, architecture, float_abi, e
         target_compatible_with = [
             "@platforms//cpu:" + architecture,
             "//constraints/fpu:" + fpu,
-            "@platforms//os:none",
         ],
         toolchain = ":" + name,
         toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
