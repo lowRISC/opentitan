@@ -165,13 +165,12 @@ module prim_packer_fifo #(
   //////////////////////////////////////////////
 
   // If not acked, valid_o should keep asserting
-  `ASSERT(ValidOPairedWidthReadyI_A,
-          rvalid_o && !rready_i |=> rvalid_o)
+  `ASSERT(ValidOPairedWithReadyI_A,
+          rvalid_o && !rready_i && !clr_i |=> rvalid_o)
 
   // If output port doesn't accept the data, the data should be stable
   `ASSERT(DataOStableWhenPending_A,
           ##1 rvalid_o && $past(rvalid_o)
-          && !$past(rready_i) |-> $stable(rdata_o))
-
+          && !$past(rready_i) && !$past(clr_i) |-> $stable(rdata_o))
 
 endmodule
