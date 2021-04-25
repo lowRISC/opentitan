@@ -75,5 +75,5 @@ stm32h7_repository_simple = repository_rule(
     },
 )
 
-def stm32h7_repository(project_configs, version = "v1.7.0"):
+def stm32h7_repository(project_configs, version = "v1.9.0"):
     stm32h7_repository_simple(name = "stm32h7cube", project_configs = project_configs, version = version)
