@@ -6,7 +6,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/testing/mock_mmio.h"
+#include "sw/device/lib/base/testing/mock_mmio.h"
 
 #include "entropy_src_regs.h"  // Generated
 

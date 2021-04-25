@@ -12,7 +12,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/testing/mock_mmio.h"
+#include "sw/device/lib/base/testing/mock_mmio.h"
 
 // We define global namespace == and << to make `dif_i2c_timing_params_t` work
 // nicely with EXPECT_EQ.
