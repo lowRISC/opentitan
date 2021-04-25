@@ -52,18 +52,21 @@ class sram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(sram_ctrl_reg_block));
 
   // utility function to zero protocol delays for the TLUL agent
   // that is bound to the SRAM memory interface
-  virtual function void set_sram_zero_delays();
-    m_sram_cfg.a_valid_delay_min = 0;
-    m_sram_cfg.a_valid_delay_max = 0;
+  virtual function void cfg_sram_zero_delays(bit enable);
+    int min = enable ? 0 : 1;
+    int max = enable ? 0 : 10;
 
-    m_sram_cfg.a_ready_delay_min = 0;
-    m_sram_cfg.a_ready_delay_max = 0;
+    m_sram_cfg.a_valid_delay_min = min;
+    m_sram_cfg.a_valid_delay_max = max;
 
-    m_sram_cfg.d_valid_delay_min = 0;
-    m_sram_cfg.d_valid_delay_max = 0;
+    m_sram_cfg.a_ready_delay_min = min;
+    m_sram_cfg.a_ready_delay_max = max;
 
-    m_sram_cfg.d_ready_delay_min = 0;
-    m_sram_cfg.d_ready_delay_max = 0;
+    m_sram_cfg.d_valid_delay_min = min;
+    m_sram_cfg.d_valid_delay_max = max;
+
+    m_sram_cfg.d_ready_delay_min = min;
+    m_sram_cfg.d_ready_delay_max = max;
   endfunction
 
 endclass

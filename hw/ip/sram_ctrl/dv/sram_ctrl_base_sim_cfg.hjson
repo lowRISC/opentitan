@@ -94,7 +94,6 @@
     {
       name: "{variant}_mem_tl_errors"
       uvm_test_seq: sram_ctrl_mem_tl_errors_vseq
-      run_opts: ["+run_tl_errors"]
     }
     {
       name: "{variant}_access_during_key_req"
@@ -103,6 +102,10 @@
     {
       name: "{variant}_executable"
       uvm_test_seq: sram_ctrl_executable_vseq
+    }
+    {
+      name: "{variant}_stress_all"
+      uvm_test_seq: sram_ctrl_stress_all_vseq
     }
   ]
 

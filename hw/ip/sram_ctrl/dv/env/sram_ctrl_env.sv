@@ -55,9 +55,7 @@ class sram_ctrl_env extends cip_base_env #(
       this, "m_kdi_agent", "cfg", cfg.m_kdi_cfg);
     cfg.m_kdi_cfg.en_cov = cfg.en_cov;
 
-    if (cfg.zero_delays) begin
-      cfg.set_sram_zero_delays();
-    end
+    cfg.cfg_sram_zero_delays(cfg.zero_delays);
   endfunction
 
   function void connect_phase(uvm_phase phase);
