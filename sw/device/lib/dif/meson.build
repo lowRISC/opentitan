@@ -16,6 +16,24 @@ sw_lib_dif_clkmgr = declare_dependency(
   )
 )
 
+test('dif_clkmgr_unittest', executable(
+    'dif_clkmgr_unittest',
+    sources: [
+      hw_ip_clkmgr_reg_h,
+      meson.source_root() / 'sw/device/lib/dif/dif_clkmgr.c',
+      'dif_clkmgr_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)
+
 # CSRNG DIF Library (dif_csrng)
 sw_lib_dif_csrng = declare_dependency(
   link_with: static_library(
@@ -28,6 +46,24 @@ sw_lib_dif_csrng = declare_dependency(
       sw_lib_mmio,
     ],
   )
+)
+
+test('dif_csrng_unittest', executable(
+    'dif_csrng_unittest',
+    sources: [
+      hw_ip_csrng_reg_h,
+      meson.source_root() / 'sw/device/lib/dif/dif_csrng.c',
+      'dif_csrng_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
 )
 
 # EDN DIF Library (dif_csrng)
@@ -58,6 +94,24 @@ sw_lib_dif_uart = declare_dependency(
   )
 )
 
+test('dif_uart_unittest', executable(
+    'dif_uart_unittest',
+    sources: [
+      'dif_uart_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_uart.c',
+      hw_ip_uart_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)
+
 # PLIC DIF library (dif_plic)
 sw_lib_dif_plic = declare_dependency(
   link_with: static_library(
@@ -71,6 +125,24 @@ sw_lib_dif_plic = declare_dependency(
       sw_lib_bitfield,
     ],
   )
+)
+
+test('dif_plic_unittest', executable(
+    'dif_plic_unittest',
+    sources: [
+      hw_top_earlgrey_rv_plic_reg_h,
+      meson.source_root() / 'sw/device/lib/dif/dif_plic.c',
+      'dif_plic_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
 )
 
 # GPIO DIF library
@@ -87,6 +159,24 @@ sw_lib_dif_gpio = declare_dependency(
   )
 )
 
+test('dif_gpio_unittest', executable(
+    'dif_gpio_unittest',
+    sources: [
+      hw_ip_gpio_reg_h,
+      meson.source_root() / 'sw/device/lib/dif/dif_gpio.c',
+      'dif_gpio_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)
+
 # SPI DIF library
 sw_lib_dif_spi_device = declare_dependency(
   link_with: static_library(
@@ -97,6 +187,24 @@ sw_lib_dif_spi_device = declare_dependency(
     ],
     dependencies: [sw_lib_mmio],
   )
+)
+
+test('dif_spi_device_unittest', executable(
+    'dif_spi_device_unittest',
+    sources: [
+      hw_ip_spi_device_reg_h,
+      meson.source_root() / 'sw/device/lib/dif/dif_spi_device.c',
+      'dif_spi_device_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
 )
 
 # RISC-V Timer DIF library (dif_rv_timer)
@@ -113,6 +221,24 @@ sw_lib_dif_rv_timer = declare_dependency(
   )
 )
 
+test('dif_rv_timer_unittest', executable(
+    'dif_rv_timer_unittest',
+    sources: [
+      hw_ip_rv_timer_reg_h,
+      meson.source_root() / 'sw/device/lib/dif/dif_rv_timer.c',
+      'dif_rv_timer_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)
+
 # I2C DIF library
 sw_lib_dif_i2c = declare_dependency(
   link_with: static_library(
@@ -125,6 +251,24 @@ sw_lib_dif_i2c = declare_dependency(
       sw_lib_mmio,
     ],
   )
+)
+
+test('dif_i2c_unittest', executable(
+    'dif_i2c_unittest',
+    sources: [
+      hw_ip_i2c_reg_h,
+      meson.source_root() / 'sw/device/lib/dif/dif_i2c.c',
+      'dif_i2c_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
 )
 
 # USBDEV DIF library (dif_usbdev)
@@ -186,6 +330,24 @@ sw_lib_dif_otbn = declare_dependency(
   )
 )
 
+test('dif_otbn_unittest', executable(
+    'dif_otbn_unittest',
+    sources: [
+      'dif_otbn_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_otbn.c',
+      hw_ip_otbn_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',  
+)
+
 # Reset Manager DIF library (dif_rstmgr)
 sw_lib_dif_rstmgr = declare_dependency(
   link_with: static_library(
@@ -199,6 +361,24 @@ sw_lib_dif_rstmgr = declare_dependency(
       sw_lib_mmio,
     ],
   )
+)
+
+test('dif_rstmgr_unittest', executable(
+    'dif_rstmgr_unittest',
+    sources: [
+      'dif_rstmgr_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_rstmgr.c',
+      hw_ip_rstmgr_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
 )
 
 # Alert handler library
@@ -216,6 +396,24 @@ sw_lib_dif_alert_handler = declare_dependency(
   )
 )
 
+test('dif_alert_handler_unittest', executable(
+    'dif_alert_handler_unittest',
+    sources: [
+      'dif_alert_handler_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_alert_handler.c',
+      hw_ip_alert_handler_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)
+
 # Power Manager DIF library
 sw_lib_dif_pwrmgr = declare_dependency(
   link_with: static_library(
@@ -229,6 +427,24 @@ sw_lib_dif_pwrmgr = declare_dependency(
       sw_lib_bitfield,
     ],
   )
+)
+
+test('dif_pwrmgr_unittest', executable(
+    'dif_pwrmgr_unittest',
+    sources: [
+      hw_ip_pwrmgr_reg_h,
+      meson.source_root() / 'sw/device/lib/dif/dif_pwrmgr.c',
+      'dif_pwrmgr_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
 )
 
 # Key Manager DIF library
@@ -246,6 +462,24 @@ sw_lib_dif_keymgr = declare_dependency(
   )
 )
 
+test('dif_keymgr_unittest', executable(
+    'dif_keymgr_unittest',
+    sources: [
+      hw_ip_keymgr_reg_h,
+      meson.source_root() / 'sw/device/lib/dif/dif_keymgr.c',
+      'dif_keymgr_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)
+
 # OTP controller library
 sw_lib_dif_otp_ctrl = declare_dependency(
   link_with: static_library(
@@ -259,6 +493,24 @@ sw_lib_dif_otp_ctrl = declare_dependency(
       sw_lib_bitfield,
     ],
   )
+)
+
+test('dif_otp_ctrl_unittest', executable(
+    'dif_otp_ctrl_unittest',
+    sources: [
+      hw_ip_otp_ctrl_reg_h,
+      meson.source_root() / 'sw/device/lib/dif/dif_otp_ctrl.c',
+      'dif_otp_ctrl_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
 )
 
 # Lifecycle controller library
@@ -276,6 +528,24 @@ sw_lib_dif_lc_ctrl = declare_dependency(
   )
 )
 
+test('dif_lc_ctrl_unittest', executable(
+    'dif_lc_ctrl_unittest',
+    sources: [
+      hw_ip_lc_ctrl_reg_h,
+      meson.source_root() / 'sw/device/lib/dif/dif_lc_ctrl.c',
+      'dif_lc_ctrl_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)
+
 # Always-On Timer library
 sw_lib_dif_aon_timer = declare_dependency(
   link_with: static_library(
@@ -289,6 +559,24 @@ sw_lib_dif_aon_timer = declare_dependency(
       sw_lib_bitfield,
     ],
   )
+)
+
+test('dif_aon_timer_unittest', executable(
+    'dif_aon_timer_unittest',
+    sources: [
+      hw_ip_aon_timer_reg_h,
+      meson.source_root() / 'sw/device/lib/dif/dif_aon_timer.c',
+      'dif_aon_timer_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',  
 )
 
 # Entropy Source
@@ -306,6 +594,24 @@ sw_lib_dif_entropy = declare_dependency(
   )
 )
 
+test('dif_entropy_unittest', executable(
+    'dif_entropy_unittest',
+    sources: [
+      hw_ip_entropy_reg_h,
+      meson.source_root() / 'sw/device/lib/dif/dif_entropy.c',
+      'dif_entropy_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)
+
 # AES DIF library
 sw_lib_dif_aes = declare_dependency(
   link_with: static_library(
@@ -316,6 +622,24 @@ sw_lib_dif_aes = declare_dependency(
     ],
     dependencies: [sw_lib_mmio],
   )
+)
+
+test('dif_aes_unittest', executable(
+    'dif_aes_unittest',
+    sources: [
+      hw_ip_aes_reg_h,
+      meson.source_root() / 'sw/device/lib/dif/dif_aes.c',
+      'dif_aes_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
 )
 
 # Pinmux DIF library

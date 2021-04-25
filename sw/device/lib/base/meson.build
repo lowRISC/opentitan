@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 subdir('freestanding')
+subdir('testing')
 
 # Non volatile bit manipulation helper library (sw_lib_bitfield).
 sw_lib_bitfield = declare_dependency(
