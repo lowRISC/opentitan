@@ -37,20 +37,6 @@ sw_lib_pinmux = declare_dependency(
   )
 )
 
-# AES library (sw_lib_aes)
-sw_lib_aes = declare_dependency(
-  link_with: static_library(
-    'aes_ot',
-    sources: [
-      hw_ip_aes_reg_h,
-      'aes.c',
-    ],
-    dependencies: [
-      top_earlgrey,
-    ]
-  )
-)
-
 # IRQ library (sw_lib_irq)
 sw_lib_irq = declare_dependency(
   link_with: static_library(
