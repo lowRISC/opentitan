@@ -140,9 +140,6 @@ module edn_reg_top (
   logic sum_sts_boot_inst_ack_qs;
   logic sum_sts_boot_inst_ack_wd;
   logic sum_sts_boot_inst_ack_we;
-  logic sum_sts_internal_use_qs;
-  logic sum_sts_internal_use_wd;
-  logic sum_sts_internal_use_we;
   logic [31:0] sw_cmd_req_wd;
   logic sw_cmd_req_we;
   logic sw_cmd_sts_cmd_rdy_qs;
@@ -480,32 +477,6 @@ module edn_reg_top (
 
     // to register interface (read)
     .qs     (sum_sts_boot_inst_ack_qs)
-  );
-
-
-  //   F[internal_use]: 31:31
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_sum_sts_internal_use (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (sum_sts_internal_use_we),
-    .wd     (sum_sts_internal_use_wd),
-
-    // from internal hardware
-    .de     (hw2reg.sum_sts.internal_use.de),
-    .d      (hw2reg.sum_sts.internal_use.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-
-    // to register interface (read)
-    .qs     (sum_sts_internal_use_qs)
   );
 
 
@@ -924,9 +895,6 @@ module edn_reg_top (
   assign sum_sts_boot_inst_ack_we = addr_hit[6] & reg_we & !reg_error;
   assign sum_sts_boot_inst_ack_wd = reg_wdata[1];
 
-  assign sum_sts_internal_use_we = addr_hit[6] & reg_we & !reg_error;
-  assign sum_sts_internal_use_wd = reg_wdata[31];
-
   assign sw_cmd_req_we = addr_hit[7] & reg_we & !reg_error;
   assign sw_cmd_req_wd = reg_wdata[31:0];
 
@@ -978,7 +946,6 @@ module edn_reg_top (
       addr_hit[6]: begin
         reg_rdata_next[0] = sum_sts_req_mode_sm_sts_qs;
         reg_rdata_next[1] = sum_sts_boot_inst_ack_qs;
-        reg_rdata_next[31] = sum_sts_internal_use_qs;
       end
 
       addr_hit[7]: begin

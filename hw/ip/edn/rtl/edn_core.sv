@@ -130,6 +130,8 @@ module edn_core import edn_pkg::*;
   logic                               fifo_write_err_sum;
   logic                               fifo_read_err_sum;
   logic                               fifo_status_err_sum;
+  logic                               unused_err_code_test_bit;
+  logic                               unused_reg2hw_regwen;
 
   // flops
   logic [31:0]                        cs_cmd_req_q, cs_cmd_req_d;
@@ -612,14 +614,11 @@ module edn_core import edn_pkg::*;
 
 
   //--------------------------------------------
-  // report edn request summary
+  // unused signals
   //--------------------------------------------
 
-  assign     hw2reg.sum_sts.internal_use.de = !edn_enable;
-  assign     hw2reg.sum_sts.internal_use.d =
-             (|err_code_test_bit[19:2]) ||
-             (|err_code_test_bit[27:22]) ||
-             reg2hw.regwen.q;
+  assign unused_err_code_test_bit = (|err_code_test_bit[19:2]) || (|err_code_test_bit[27:22]);
+  assign unused_reg2hw_regwen = reg2hw.regwen.q;
 
 
 endmodule

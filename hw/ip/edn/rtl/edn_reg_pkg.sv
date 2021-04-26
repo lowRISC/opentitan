@@ -111,10 +111,6 @@ package edn_reg_pkg;
       logic        d;
       logic        de;
     } boot_inst_ack;
-    struct packed {
-      logic        d;
-      logic        de;
-    } internal_use;
   } edn_hw2reg_sum_sts_reg_t;
 
   typedef struct packed {
@@ -176,8 +172,8 @@ package edn_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    edn_hw2reg_intr_state_reg_t intr_state; // [27:24]
-    edn_hw2reg_sum_sts_reg_t sum_sts; // [23:18]
+    edn_hw2reg_intr_state_reg_t intr_state; // [25:22]
+    edn_hw2reg_sum_sts_reg_t sum_sts; // [21:18]
     edn_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [17:14]
     edn_hw2reg_err_code_reg_t err_code; // [13:0]
   } edn_hw2reg_t;
@@ -234,7 +230,7 @@ package edn_reg_pkg;
     4'b 0001, // index[ 3] EDN_ALERT_TEST
     4'b 0001, // index[ 4] EDN_REGWEN
     4'b 0001, // index[ 5] EDN_CTRL
-    4'b 1111, // index[ 6] EDN_SUM_STS
+    4'b 0001, // index[ 6] EDN_SUM_STS
     4'b 1111, // index[ 7] EDN_SW_CMD_REQ
     4'b 0001, // index[ 8] EDN_SW_CMD_STS
     4'b 1111, // index[ 9] EDN_RESEED_CMD

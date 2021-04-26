@@ -145,10 +145,6 @@
                 EDN will be the next application to receive a seed from the entropy_src IP.
                 '''
         }
-        { bits: "31",
-          name: "INTERNAL_USE",
-          desc: "This bit is for internal use only."
-        }
       ]
     },
     { name: "SW_CMD_REQ",
