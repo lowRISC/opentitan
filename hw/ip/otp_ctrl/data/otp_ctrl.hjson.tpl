@@ -656,6 +656,9 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "CHECK_REGWEN",
+      tags: [ // Do not write to this automatically, as it may trigger fatal alert, and cause
+              // escalation. TODO: check with designer if the trigger escalation part is intended.
+              "excl:CsrAllTests:CsrExclWrite"],
       fields: [
         { bits: "31:0",
           desc: '''
