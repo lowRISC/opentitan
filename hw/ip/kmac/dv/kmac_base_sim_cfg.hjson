@@ -137,8 +137,8 @@
       run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
     }
     {
-      name: "{variant}_kdf"
-      uvm_test_seq: kmac_kdf_vseq
+      name: "{variant}_app"
+      uvm_test_seq: kmac_app_vseq
     }
   ]
 

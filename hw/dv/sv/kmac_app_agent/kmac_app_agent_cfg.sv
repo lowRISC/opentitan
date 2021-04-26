@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class keymgr_kmac_agent_cfg extends dv_base_agent_cfg;
+class kmac_app_agent_cfg extends dv_base_agent_cfg;
 
   // interface handle used by driver, monitor & the sequencer, via cfg handle
-  virtual keymgr_kmac_intf vif;
+  virtual kmac_app_intf vif;
 
   int unsigned req_delay_min = 0;
   int unsigned req_delay_max = 1000;
@@ -31,7 +31,7 @@ class keymgr_kmac_agent_cfg extends dv_base_agent_cfg;
 
   push_pull_agent_cfg#(`CONNECT_DATA_WIDTH) m_data_push_agent_cfg;
 
-  `uvm_object_utils_begin(keymgr_kmac_agent_cfg)
+  `uvm_object_utils_begin(kmac_app_agent_cfg)
     `uvm_field_int(rsp_delay_min,            UVM_DEFAULT)
     `uvm_field_int(rsp_delay_max,            UVM_DEFAULT)
     `uvm_field_int(zero_delays,              UVM_DEFAULT)

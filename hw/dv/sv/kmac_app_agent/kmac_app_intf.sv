@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // verilog_lint: waive interface-name-style
-interface keymgr_kmac_intf (input clk, input rst_n);
+interface kmac_app_intf (input clk, input rst_n);
 
   import keymgr_pkg::*;
 
@@ -14,7 +14,7 @@ interface keymgr_kmac_intf (input clk, input rst_n);
   wire kmac_pkg::app_rsp_t kmac_data_rsp;
 
   // interface pins used in driver/monitor
-  push_pull_if #(.HostDataWidth(keymgr_kmac_agent_pkg::KMAC_REQ_DATA_WIDTH))
+  push_pull_if #(.HostDataWidth(kmac_app_agent_pkg::KMAC_REQ_DATA_WIDTH))
       req_data_if(.clk(clk), .rst_n(rst_n));
   wire rsp_done;
   wire [KeyWidth-1:0] rsp_digest_share0;

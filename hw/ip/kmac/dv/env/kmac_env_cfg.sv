@@ -8,7 +8,7 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
   idle_vif        idle_vif;
   sideload_vif    sideload_vif;
 
-  keymgr_kmac_agent_cfg m_kdf_agent_cfg;
+  kmac_app_agent_cfg m_kmac_app_agent_cfg;
 
   // Masked KMAC is the default configuration
   bit enable_masking = 1;
@@ -27,8 +27,8 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
     has_edn = 1;
     super.initialize(csr_base_addr);
 
-    m_kdf_agent_cfg = keymgr_kmac_agent_cfg::type_id::create("m_kdf_agent_cfg");
-    m_kdf_agent_cfg.if_mode = dv_utils_pkg::Host;
+    m_kmac_app_agent_cfg = kmac_app_agent_cfg::type_id::create("m_kmac_app_agent_cfg");
+    m_kmac_app_agent_cfg.if_mode = dv_utils_pkg::Host;
 
     void'($value$plusargs("enable_masking=%0d", enable_masking));
     void'($value$plusargs("test_vectors_sha3_variant=%0d", sha3_variant));

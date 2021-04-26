@@ -11,7 +11,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
   // Set this bit if we want to burst write the message into the msgfifo
   bit burst_write = 0;
 
-  bit en_kdf = 0;
+  bit en_app = 0;
 
   // TODO: 200 is chosen as upper bound due to large configuration space for KMAC.
   //       If this large range causes noticeable simulation slowdown, reduce it.
@@ -109,7 +109,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
           cfg.sideload_vif.drive_sideload_key(1, sideload_share0, sideload_share1);
         end
         // write the SW key to the CSRs
-        if (!en_kdf) begin
+        if (!en_app) begin
           write_key_shares();
         end
       end
@@ -119,13 +119,13 @@ class kmac_smoke_vseq extends kmac_base_vseq;
         provide_sw_entropy();
       end
 
-      // Only send a KDF request when in KMAC mode
-      if (kmac_en && en_kdf) begin
-        send_kdf_req();
+      // Only send a KMAC_APP request when in KMAC mode
+      if (kmac_en && en_app) begin
+        send_kmac_app_req();
         // Wait until the KMAC engine has completely finished
-        wait (cfg.m_kdf_agent_cfg.vif.rsp_done == 1);
+        wait (cfg.m_kmac_app_agent_cfg.vif.rsp_done == 1);
       end else begin
-        // normal hashing operation - en_kdf doesn't matter when not in KMAC mode
+        // normal hashing operation - en_app doesn't matter when not in KMAC mode
 
         // issue Start cmd
         issue_cmd(CmdStart);
@@ -156,12 +156,12 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
       // Read the output digest, scb will check digest
       //
-      // If performing a KDF operation, digest will be sent directly to the m_kdf_agent,
+      // If performing a KMAC_APP operation, digest will be sent directly to the m_kmac_app_agent,
       // so scoreboard will handle everything
       //
       read_digest_shares(output_len, cfg.enable_masking, share0, share1);
 
-      if (!(kmac_en && en_kdf)) begin
+      if (!(kmac_en && en_app)) begin
         // issue the Done cmd to tell KMAC to clear internal state
         issue_cmd(CmdDone);
         `uvm_info(`gfn, "done", UVM_HIGH)

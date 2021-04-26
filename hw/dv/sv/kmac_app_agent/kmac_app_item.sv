@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class keymgr_kmac_item extends uvm_sequence_item;
+class kmac_app_item extends uvm_sequence_item;
 
   // below 3 cases will trigger KMAC invalid output error
   `define CALC_KMAC_DATA_INVALID \
@@ -27,7 +27,7 @@ class keymgr_kmac_item extends uvm_sequence_item;
     (`CALC_KMAC_DATA_INVALID || rsp_error) == is_kmac_rsp_err;
   }
 
-  `uvm_object_utils_begin(keymgr_kmac_item)
+  `uvm_object_utils_begin(kmac_app_item)
     `uvm_field_queue_int(byte_data_q, UVM_DEFAULT)
     `uvm_field_int(rsp_digest_share0, UVM_DEFAULT)
     `uvm_field_int(rsp_digest_share1, UVM_DEFAULT)

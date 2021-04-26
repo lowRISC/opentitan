@@ -64,8 +64,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   bit                                addr_phase_is_sw_share_corrupted;
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(keymgr_kmac_item) req_fifo;
-  uvm_tlm_analysis_fifo #(keymgr_kmac_item) rsp_fifo;
+  uvm_tlm_analysis_fifo #(kmac_app_item) req_fifo;
+  uvm_tlm_analysis_fifo #(kmac_app_item) rsp_fifo;
 
   // local queues to hold incoming packets pending comparison
   // store meaningful data, in non-working state, should not match to these data
@@ -90,13 +90,13 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     super.run_phase(phase);
     fork
       forever begin
-        keymgr_kmac_item item;
+        kmac_app_item item;
         req_fifo.get(item);
         if (!cfg.en_scb) continue;
         process_kmac_data_req(item);
       end
       forever begin
-        keymgr_kmac_item item;
+        kmac_app_item item;
         rsp_fifo.get(item);
         if (!cfg.en_scb) continue;
         process_kmac_data_rsp(item);
@@ -113,7 +113,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     join_none
   endtask
 
-  virtual function void process_kmac_data_req(keymgr_kmac_item item);
+  virtual function void process_kmac_data_req(kmac_app_item item);
     keymgr_pkg::keymgr_ops_e op = get_operation();
 
     // there must be a OP which causes the KMAC data req
@@ -165,7 +165,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     endcase
   endfunction
 
-  virtual function void process_kmac_data_rsp(keymgr_kmac_item item);
+  virtual function void process_kmac_data_rsp(kmac_app_item item);
     update_result_e update_result;
 
     is_kmac_rsp_err = item.rsp_error;
@@ -911,8 +911,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
     // post test checks - ensure that all local fifos and queues are empty
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(keymgr_kmac_item, req_fifo)
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(keymgr_kmac_item, rsp_fifo)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(kmac_app_item, req_fifo)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(kmac_app_item, rsp_fifo)
   endfunction
 
   `undef CREATE_CMP_STR

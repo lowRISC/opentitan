@@ -4,7 +4,7 @@
 
 class keymgr_env_cfg extends cip_base_env_cfg #(.RAL_T(keymgr_reg_block));
 
-  rand keymgr_kmac_agent_cfg m_keymgr_kmac_agent_cfg;
+  rand kmac_app_agent_cfg m_keymgr_kmac_agent_cfg;
 
   // interface for input data from LC, OTP and flash
   keymgr_vif keymgr_vif;
@@ -19,7 +19,7 @@ class keymgr_env_cfg extends cip_base_env_cfg #(.RAL_T(keymgr_reg_block));
     has_edn = 1;
     super.initialize(csr_base_addr);
 
-    m_keymgr_kmac_agent_cfg = keymgr_kmac_agent_cfg::type_id::create("m_keymgr_kmac_agent_cfg");
+    m_keymgr_kmac_agent_cfg = kmac_app_agent_cfg::type_id::create("m_keymgr_kmac_agent_cfg");
     m_keymgr_kmac_agent_cfg.if_mode = dv_utils_pkg::Device;
 
     // keymgr requests entropy periodically, if seq is done, don't need to add any delay due to

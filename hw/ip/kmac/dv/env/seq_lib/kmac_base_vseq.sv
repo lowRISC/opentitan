@@ -422,13 +422,13 @@ class kmac_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.entropy_seed_upper), .value($urandom()));
   endtask
 
-  // Call this task to initiate a KDF hashing operation
-  virtual task send_kdf_req();
-    keymgr_kmac_host_seq kdf_seq;
-    `uvm_create_on(kdf_seq, p_sequencer.kdf_sequencer_h);
-    `DV_CHECK_RANDOMIZE_FATAL(kdf_seq)
-    kdf_seq.msg_size_bytes = msg.size();
-    `uvm_send(kdf_seq)
+  // Call this task to initiate a KMAC_APP hashing operation
+  virtual task send_kmac_app_req();
+    kmac_app_host_seq kmac_app_seq;
+    `uvm_create_on(kmac_app_seq, p_sequencer.kmac_app_sequencer_h);
+    `DV_CHECK_RANDOMIZE_FATAL(kmac_app_seq)
+    kmac_app_seq.msg_size_bytes = msg.size();
+    `uvm_send(kmac_app_seq)
   endtask
 
   // This task writes a generic byte array into the msg_fifo

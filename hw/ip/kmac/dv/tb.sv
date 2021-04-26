@@ -35,7 +35,7 @@ module tb;
 
   kmac_sideload_if sideload_if();
 
-  keymgr_kmac_intf keymgr_kmac_if(.clk(clk), .rst_n(rst_n));
+  kmac_app_intf kmac_app_if(.clk(clk), .rst_n(rst_n));
 
   // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
   `DV_EDN_IF_CONNECT
@@ -45,11 +45,11 @@ module tb;
   kmac_pkg::app_req_t [kmac_pkg::NumAppIntf-1:0] app_req;
   kmac_pkg::app_rsp_t [kmac_pkg::NumAppIntf-1:0] app_rsp;
 
-  assign app_req[0] = keymgr_kmac_if.kmac_data_req;
+  assign app_req[0] = kmac_app_if.kmac_data_req;
   assign app_req[1] = kmac_pkg::APP_REQ_DEFAULT;
   assign app_req[2] = kmac_pkg::APP_REQ_DEFAULT;
 
-  assign keymgr_kmac_if.kmac_data_rsp = app_rsp[0];
+  assign kmac_app_if.kmac_data_rsp = app_rsp[0];
 
   kmac #(.EnMasking(`EN_MASKING), .ReuseShare(`REUSE_SHARE)) dut (
     .clk_i              (clk                          ),
@@ -93,8 +93,8 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual pins_if#(1))::set(null, "*.env", "idle_vif", idle_if);
     uvm_config_db#(virtual kmac_sideload_if)::set(null, "*.env", "sideload_vif", sideload_if);
-    uvm_config_db#(virtual keymgr_kmac_intf)::
-      set(null, "*.env.m_kdf_agent*", "vif", keymgr_kmac_if);
+    uvm_config_db#(virtual kmac_app_intf)::
+      set(null, "*.env.m_kmac_app_agent*", "vif", kmac_app_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

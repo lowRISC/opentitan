@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-package keymgr_kmac_agent_pkg;
+package kmac_app_agent_pkg;
   // dep packages
   import uvm_pkg::*;
   import dv_utils_pkg::*;
@@ -19,18 +19,18 @@ package keymgr_kmac_agent_pkg;
                                       + keymgr_pkg::KmacDataIfWidth / 8 // data mask width
                                       + 1;                              // bit last
 
-  `define CONNECT_DATA_WIDTH .HostDataWidth(keymgr_kmac_agent_pkg::KMAC_REQ_DATA_WIDTH)
+  `define CONNECT_DATA_WIDTH .HostDataWidth(kmac_app_agent_pkg::KMAC_REQ_DATA_WIDTH)
 
   // package sources
-  `include "keymgr_kmac_item.sv"
-  `include "keymgr_kmac_agent_cfg.sv"
-  `include "keymgr_kmac_sequencer.sv"
-  `include "keymgr_kmac_agent_cov.sv"
-  `include "keymgr_kmac_driver.sv"
-  `include "keymgr_kmac_host_driver.sv"
-  `include "keymgr_kmac_device_driver.sv"
-  `include "keymgr_kmac_monitor.sv"
-  `include "keymgr_kmac_seq_list.sv"
-  `include "keymgr_kmac_agent.sv"
+  `include "kmac_app_item.sv"
+  `include "kmac_app_agent_cfg.sv"
+  `include "kmac_app_sequencer.sv"
+  `include "kmac_app_agent_cov.sv"
+  `include "kmac_app_driver.sv"
+  `include "kmac_app_host_driver.sv"
+  `include "kmac_app_device_driver.sv"
+  `include "kmac_app_monitor.sv"
+  `include "kmac_app_seq_list.sv"
+  `include "kmac_app_agent.sv"
 
-endpackage: keymgr_kmac_agent_pkg
+endpackage: kmac_app_agent_pkg

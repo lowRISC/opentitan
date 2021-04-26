@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class keymgr_kmac_device_seq extends keymgr_kmac_base_seq;
-  `uvm_object_utils(keymgr_kmac_device_seq)
+class kmac_app_device_seq extends kmac_app_base_seq;
+  `uvm_object_utils(kmac_app_device_seq)
   `uvm_object_new
 
   virtual task body();

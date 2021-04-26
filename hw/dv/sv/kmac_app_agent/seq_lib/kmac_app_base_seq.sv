@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class keymgr_kmac_base_seq extends dv_base_seq #(
-    .REQ         (keymgr_kmac_item),
-    .CFG_T       (keymgr_kmac_agent_cfg),
-    .SEQUENCER_T (keymgr_kmac_sequencer)
+class kmac_app_base_seq extends dv_base_seq #(
+    .REQ         (kmac_app_item),
+    .CFG_T       (kmac_app_agent_cfg),
+    .SEQUENCER_T (kmac_app_sequencer)
   );
-  `uvm_object_utils(keymgr_kmac_base_seq)
+  `uvm_object_utils(kmac_app_base_seq)
 
   `uvm_object_new
 

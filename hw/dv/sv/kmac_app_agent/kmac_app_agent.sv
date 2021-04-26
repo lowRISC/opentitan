@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class keymgr_kmac_agent extends dv_base_agent #(
-  .CFG_T          (keymgr_kmac_agent_cfg),
-  .DRIVER_T       (keymgr_kmac_driver),
-  .HOST_DRIVER_T  (keymgr_kmac_host_driver),
-  .DEVICE_DRIVER_T(keymgr_kmac_device_driver),
-  .SEQUENCER_T    (keymgr_kmac_sequencer),
-  .MONITOR_T      (keymgr_kmac_monitor),
-  .COV_T          (keymgr_kmac_agent_cov)
+class kmac_app_agent extends dv_base_agent #(
+  .CFG_T          (kmac_app_agent_cfg),
+  .DRIVER_T       (kmac_app_driver),
+  .HOST_DRIVER_T  (kmac_app_host_driver),
+  .DEVICE_DRIVER_T(kmac_app_device_driver),
+  .SEQUENCER_T    (kmac_app_sequencer),
+  .MONITOR_T      (kmac_app_monitor),
+  .COV_T          (kmac_app_agent_cov)
 );
 
-  `uvm_component_utils(keymgr_kmac_agent)
+  `uvm_component_utils(kmac_app_agent)
 
   `uvm_component_new
   push_pull_agent#(`CONNECT_DATA_WIDTH) m_data_push_agent;
@@ -23,9 +23,9 @@ class keymgr_kmac_agent extends dv_base_agent #(
     // use for mon-seq connection
     cfg.has_req_fifo = 1;
 
-    // get keymgr_kmac_intf handle
-    if (!uvm_config_db#(virtual keymgr_kmac_intf)::get(this, "", "vif", cfg.vif)) begin
-      `uvm_fatal(`gfn, "failed to get keymgr_kmac_intf handle from uvm_config_db")
+    // get kmac_app_intf handle
+    if (!uvm_config_db#(virtual kmac_app_intf)::get(this, "", "vif", cfg.vif)) begin
+      `uvm_fatal(`gfn, "failed to get kmac_app_intf handle from uvm_config_db")
     end
 
     // create push_agent, agent_cfg
@@ -61,7 +61,7 @@ class keymgr_kmac_agent extends dv_base_agent #(
 
   virtual task run_phase(uvm_phase phase);
     if (cfg.is_active) begin
-      keymgr_kmac_device_seq m_seq = keymgr_kmac_device_seq::type_id::create("m_seq", this);
+      kmac_app_device_seq m_seq = kmac_app_device_seq::type_id::create("m_seq", this);
       if (cfg.if_mode == dv_utils_pkg::Device && cfg.start_default_device_seq) begin
         uvm_config_db#(uvm_object_wrapper)::set(null,
                                                {sequencer.get_full_name(), ".run_phase"},
