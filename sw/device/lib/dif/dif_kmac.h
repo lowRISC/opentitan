@@ -201,6 +201,19 @@ typedef enum dif_kmac_result {
    * When this value is returned, no hardware operations occurred.
    */
   kDifKmacBadArg,
+
+  /**
+   * The operation failed because writes to a required register are
+   * disabled.
+   */
+  kDifKmacLocked,
+
+  /**
+   * The operation did not fully complete. Input and/or output parameters may
+   * have only been partially processed. See the function description for more
+   * information about how to retry or continue the operation.
+   */
+  kDifKmacIncomplete,
 } dif_kmac_result_t;
 
 /**
@@ -439,18 +452,6 @@ typedef uint32_t dif_kmac_irq_snapshot_t;
 DIF_WARN_UNUSED_RESULT
 dif_kmac_result_t dif_kmac_init(dif_kmac_params_t params, dif_kmac_t *kmac);
 
-typedef enum dif_kmac_configure_result {
-  kDifKmacConfigureOk = kDifKmacOk,
-  kDifKmacConfigureBadArg = kDifKmacBadArg,
-  kDifKmacConfigureError = kDifKmacError,
-
-  /**
-   * The operation failed because writes to the configuration register are
-   * disabled. This means that an operation is already in progress.
-   */
-  kDifKmacConfigureLocked,
-} dif_kmac_configure_result_t;
-
 /**
  * Configures KMAC with runtime information.
  *
@@ -458,23 +459,8 @@ typedef enum dif_kmac_configure_result {
  * @param config Runtime configuration parameters.
  * @return The result of the operation.
  */
-DIF_WARN_UNUSED_RESULT dif_kmac_configure_result_t
+DIF_WARN_UNUSED_RESULT dif_kmac_result_t
 dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config);
-
-/**
- * The result of a string encoding operation.
- */
-typedef enum dif_kmac_string_encode_result {
-  kDifKmacStringEncodeOk = kDifKmacOk,
-  kDifKmacStringEncodeBadArg = kDifKmacBadArg,
-  kDifKmacStringEncodeError = kDifKmacError,
-
-  /**
-   * Encoding failed because the provided string exceeded the maximum
-   * supported length.
-   */
-  kDifKmacStringEncodeTooLong,
-} dif_kmac_string_encode_result_t;
 
 /**
  * Encode a customization string (S).
@@ -493,7 +479,7 @@ typedef enum dif_kmac_string_encode_result {
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_kmac_string_encode_result_t dif_kmac_customization_string_init(
+dif_kmac_result_t dif_kmac_customization_string_init(
     const char *data, size_t len, dif_kmac_customization_string_t *out);
 
 /**
@@ -513,8 +499,8 @@ dif_kmac_string_encode_result_t dif_kmac_customization_string_init(
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_kmac_string_encode_result_t dif_kmac_function_name_init(
-    const char *data, size_t len, dif_kmac_function_name_t *out);
+dif_kmac_result_t dif_kmac_function_name_init(const char *data, size_t len,
+                                              dif_kmac_function_name_t *out);
 
 /**
  * Start a SHA-3 operation.
@@ -528,8 +514,8 @@ dif_kmac_string_encode_result_t dif_kmac_function_name_init(
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_kmac_configure_result_t dif_kmac_mode_sha3_start(dif_kmac_t *kmac,
-                                                     dif_kmac_mode_sha3_t mode);
+dif_kmac_result_t dif_kmac_mode_sha3_start(dif_kmac_t *kmac,
+                                           dif_kmac_mode_sha3_t mode);
 
 /**
  * Start a SHAKE operation.
@@ -543,8 +529,8 @@ dif_kmac_configure_result_t dif_kmac_mode_sha3_start(dif_kmac_t *kmac,
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_kmac_configure_result_t dif_kmac_mode_shake_start(
-    dif_kmac_t *kmac, dif_kmac_mode_shake_t mode);
+dif_kmac_result_t dif_kmac_mode_shake_start(dif_kmac_t *kmac,
+                                            dif_kmac_mode_shake_t mode);
 
 /**
  * Start a cSHAKE operation.
@@ -560,26 +546,10 @@ dif_kmac_configure_result_t dif_kmac_mode_shake_start(
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_kmac_configure_result_t dif_kmac_mode_cshake_start(
+dif_kmac_result_t dif_kmac_mode_cshake_start(
     dif_kmac_t *kmac, dif_kmac_mode_cshake_t mode,
     const dif_kmac_customization_string_t *s,
     const dif_kmac_function_name_t *n);
-
-/**
- * The result of starting a KMAC operation.
- */
-typedef enum dif_kmac_mode_kmac_start_result {
-  kDifKmacModeKmacStartOk = kDifKmacConfigureOk,
-  kDifKmacModeKmacStartBadArg = kDifKmacConfigureBadArg,
-  kDifKmacModeKmacStartError = kDifKmacConfigureError,
-  kDifKmacModeKmacStartLocked = kDifKmacConfigureLocked,
-
-  /**
-   * The key did not meet the security requirements for the selected mode.
-   * Please try either selecting a different mode or using a longer key.
-   */
-  kDifKmacModeKmacStartShortKey,
-} dif_kmac_mode_kmac_start_result_t;
 
 /**
  * Start a KMAC operation.
@@ -600,45 +570,17 @@ typedef enum dif_kmac_mode_kmac_start_result {
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
-dif_kmac_mode_kmac_start_result_t dif_kmac_mode_kmac_start(
+dif_kmac_result_t dif_kmac_mode_kmac_start(
     dif_kmac_t *kmac, dif_kmac_mode_kmac_t mode, size_t l, dif_kmac_key_t *k,
     const dif_kmac_customization_string_t *s);
 
 /**
- * The result of an absorb operation.
- */
-typedef enum dif_kmac_absorb_result {
-  kDifKmacAbsorbOk = kDifKmacOk,
-  kDifKmacAbsorbBadArg = kDifKmacBadArg,
-  kDifKmacAbsorbError = kDifKmacError,
-
-  /**
-   * The KMAC unit is not in the correct state to absorb data because an
-   * operation has not yet been started.
-   */
-  kDifKmacAbsorbNotStarted,
-
-  /**
-   * The KMAC unit is not in the correct state to absorb data because the
-   * squeeze operation has been started.
-   */
-  kDifKmacAbsorbSqueezing,
-
-  /**
-   * The message FIFO is full. This is a temporary error and the operation may
-   * be retried. The message may have been partially absorbed or not absorbed
-   * at all. See `dif_kmac_absorb` for further information.
-   */
-  kDifKmacAbsorbFifoFull,
-} dif_kmac_absorb_result_t;
-
-/**
  * Absorb bytes from the message provided.
  *
- * If `kDifKmacAbsorbFifoFull` is returned then the hardware is currently busy
- * and the message was only partially absorbed. The message pointer and length
- * should be updated according to the number of bytes processed and the absorb
- * operation continued at a later time.
+ * If `kDifKmacIncomplete` is returned then the message FIFO is full and the
+ * message was only partially absorbed. The message pointer and length should be
+ * updated according to the number of bytes processed and the absorb operation
+ * continued at a later time.
  *
  * If `processed` is not provided then this function will block until the entire
  * message has been processed or an error occurs.
@@ -654,47 +596,15 @@ dif_kmac_result_t dif_kmac_absorb(dif_kmac_t *kmac, const void *msg, size_t len,
                                   size_t *processed);
 
 /**
- * The result of an squeeze operation.
- */
-typedef enum dif_kmac_squeeze_result {
-  kDifKmacSqueezeOk = kDifKmacOk,
-  kDifKmacSqueezeBadArg = kDifKmacBadArg,
-  kDifKmacSqueezeError = kDifKmacError,
-
-  /**
-   * The KMAC unit is not in the correct state to squeeze data because an
-   * operation has not yet been started.
-   */
-  kDifKmacSqueezeNotStarted,
-
-  /**
-   * There are not enough bytes remaining to satisfy the request. This occurs
-   * when an attempt is made to squeeze more bytes from the sponge than an
-   * operation with a fixed length output allows.
-   *
-   * No bytes will be written out even if there are bytes remaining.
-   */
-  kDifKmacSqueezeFixedLengthExceeded,
-
-  /**
-   * The output state is still being generated and is not yet ready. This is a
-   * temporary error and the operation may be retried. The output state may
-   * have been partially generated or not generated at all. See
-   * `dif_kmac_squeeze` for further information.
-   */
-  kDifKmacSqueezeStateNotReady,
-} dif_kmac_squeeze_result_t;
-
-/**
  * Squeeze bytes into the output buffer provided.
  *
  * Requesting a squeeze operation will prevent any further absorbtion operations
  * from taking place.
  *
- * If `kDifKmacSqueezeStateNotReady` is returned then the hardware is currently
- * busy and the output was only partially written. The output pointer and length
- * should be updated according to the number of bytes processed and the squeeze
- * operation continued at a later time.
+ * If `kDifKmacIncomplete` is returned then the hardware is currently
+ * recomputing the state and the output was only partially written. The output
+ * pointer and length should be updated according to the number of bytes
+ * processed and the squeeze operation continued at a later time.
  *
  * If `processed` is not provided then this function will block until `len`
  * bytes have been written to `out` or an error occurs.
