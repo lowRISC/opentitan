@@ -69,6 +69,9 @@ module otbn_lsu
     return mask;
   endfunction
 
+  logic [BaseWordAddrW-1:2] lsu_word_select;
+  logic                     lsu_word_select_en;
+
   assign dmem_req_o   = lsu_load_req_i | lsu_store_req_i;
   assign dmem_write_o = lsu_store_req_i;
   assign dmem_addr_o  = lsu_addr_i;
@@ -81,21 +84,28 @@ module otbn_lsu
   assign dmem_wmask_o = lsu_req_subset_i == InsnSubsetBase ?
     mask_from_word_addr(lsu_addr_i[BaseWordAddrW-1:2]) : {WLEN{1'b1}};
 
+  // Store a portion of the address to select a 32-bit word from the WLEN load data when it returns
+  // the cycle following the request.
+  assign lsu_word_select_en = lsu_load_req_i & (lsu_req_subset_i == InsnSubsetBase);
+
+  always @(posedge clk_i) begin
+    if (lsu_word_select_en) begin
+      lsu_word_select <= lsu_addr_i[BaseWordAddrW-1:2];
+    end
+  end
+
   // From the WLEN word read from DMem select out a 32-bit word for base instructions.
   for (genvar i_bit = 0; i_bit < 32; i_bit++) begin : g_base_rdata
     logic [BaseWordsPerWLen-1:0] bit_mux;
 
     for (genvar j_word = 0; j_word < BaseWordsPerWLen; j_word++) begin : g_bit_mux
       assign bit_mux[j_word] =
-        (lsu_addr_i[BaseWordAddrW-1:2] == j_word) & dmem_rdata_i[i_bit + j_word * 32];
+        (lsu_word_select == j_word) & dmem_rdata_i[i_bit + j_word * 32];
     end
 
     assign lsu_base_rdata_o[i_bit] = |bit_mux;
   end
 
-  // Data appears the cycle following the request, LSU assume lsu_addr_i is kept stable by the
-  // controller to mux out the required 32-bit word.
-  `ASSERT(LsuLoadAddrStable, lsu_load_req_i |=> $stable(lsu_addr_i))
   `ASSERT_KNOWN_IF(LsuAddrKnown, lsu_addr_i, lsu_load_req_i | lsu_store_req_i)
 
   // TODO: Produce an error/alert if this doesn't hold?
