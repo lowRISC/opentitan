@@ -4,3 +4,5 @@
 #
 # waiver file for entropy_src
 
+waive -rules RESET_MUX    -location {entropy_src.sv} -regexp {Asynchronous reset .*_rst_n' is driven by a multiplexer.*} \
+      -comment "The MUX is needed to control stub mode or not"
