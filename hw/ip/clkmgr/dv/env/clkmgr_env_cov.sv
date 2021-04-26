@@ -8,19 +8,84 @@
  * Covergroups may also be wrapped inside helper classes if needed.
  */
 
+// Wrapper class for peripheral clock covergroup.
+class clkmgr_peri_cg_wrap;
+  // This covergroup collects signals affecting peripheral clock.
+  covergroup peri_cg(string name) with function sample(bit enable, bit ip_clk_en, bit scanmode);
+    option.name = name;
+
+    csr_enable_cp: coverpoint enable;
+    ip_clk_en_cp: coverpoint ip_clk_en;
+    scanmode_cp: coverpoint scanmode;
+  endgroup
+
+  function new(string name);
+    peri_cg = new(name);
+  endfunction
+
+  function void sample(bit enable, bit ip_clk_en, bit scanmode);
+    peri_cg.sample(enable, ip_clk_en, scanmode);
+  endfunction
+endclass
+
+// Wrapper class for transactional unit clock covergroup.
+class clkmgr_trans_cg_wrap;
+  // This covergroup collects signals affecting transactional clock.
+  covergroup trans_cg(string name) with function
+      sample(bit hint, bit ip_clk_en, bit scanmode, bit idle);
+    option.name = name;
+
+    csr_hint_cp: coverpoint hint;
+    ip_clk_en_cp: coverpoint ip_clk_en;
+    scanmode_cp: coverpoint scanmode;
+    idle_cp: coverpoint idle;
+  endgroup
+
+  function new(string name);
+    trans_cg = new(name);
+  endfunction
+
+  function sample(bit hint, bit ip_clk_en, bit scanmode, bit idle);
+    trans_cg.sample(hint, ip_clk_en, scanmode, idle);
+  endfunction
+endclass
+
 class clkmgr_env_cov extends cip_base_env_cov #(.CFG_T(clkmgr_env_cfg));
+  import clkmgr_env_pkg::*;
+
   `uvm_component_utils(clkmgr_env_cov)
 
   // the base class provides the following handles for use:
   // clkmgr_env_cfg: cfg
 
-  // covergroups
-  // [add covergroups here]
+  // These covergroups collect signals affecting peripheral clocks.
+  clkmgr_peri_cg_wrap peri_cg_wrap[NUM_PERI];
+
+  // These covergroups collect signals affecting transactional clocks.
+  clkmgr_trans_cg_wrap trans_cg_wrap[NUM_TRANS];
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
-    // [instantiate covergroups here]
+    // The peripheral covergoups.
+    foreach (peri_cg_wrap[i]) begin
+      peri_e peri = peri_e'(i);
+      peri_cg_wrap[i] = new(peri.name);
+    end
+    // The transactional covergroups.
+    foreach (trans_cg_wrap[i]) begin
+      trans_e trans = trans_e'(i);
+      trans_cg_wrap[i] = new(trans.name);
+    end
   endfunction : new
+
+  function void update_peri_cgs(logic [NUM_PERI-1:0] enables, logic ip_clk_en, logic scanmode);
+    foreach (peri_cg_wrap[i]) peri_cg_wrap[i].sample(enables[i], ip_clk_en, scanmode);
+  endfunction
+
+  function void update_trans_cgs(logic [NUM_TRANS-1:0] hints, logic ip_clk_en, logic scanmode,
+                                 logic [NUM_TRANS-1:0] idle);
+    foreach (trans_cg_wrap[i]) trans_cg_wrap[i].sample(hints[i], ip_clk_en, scanmode, idle[i]);
+  endfunction
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);

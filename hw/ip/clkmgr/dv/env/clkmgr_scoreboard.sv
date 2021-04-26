@@ -28,7 +28,16 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+      monitor_idle();
     join_none
+  endtask
+
+  task monitor_idle();
+    forever @cfg.clkmgr_vif.idle_i
+      if (cfg.en_cov) begin
+        cov.update_trans_cgs(ral.clk_hints.get(), cfg.clkmgr_vif.pwr_i.ip_clk_en,
+                             cfg.clkmgr_vif.scanmode_i, cfg.clkmgr_vif.idle_i);
+      end
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -90,11 +99,19 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "clk_enables":
         if (addr_phase_write) begin
           cfg.clkmgr_vif.update_clk_enables(item.a_data);
+          if (cfg.en_cov) begin
+            cov.update_peri_cgs(item.a_data, cfg.clkmgr_vif.pwr_i.ip_clk_en,
+                                cfg.clkmgr_vif.scanmode_i);
+          end
         end
       "clk_hints":
         // Clearing a hint sets an expectation for the status to transition to zero.
         if (addr_phase_write) begin
           cfg.clkmgr_vif.update_hints(item.a_data);
+          if (cfg.en_cov) begin
+            cov.update_trans_cgs(item.a_data, cfg.clkmgr_vif.pwr_i.ip_clk_en,
+                                 cfg.clkmgr_vif.scanmode_i, cfg.clkmgr_vif.idle_i);
+          end
         end
       "clk_hints_status": begin
         // The status will respond to the hint once the target unit is idle. We check it in
