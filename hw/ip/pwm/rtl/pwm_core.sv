@@ -15,11 +15,6 @@ module pwm_core #(
   output logic [NOutputs-1:0]     pwm_o
 );
 
-  logic                           regen;
-
-  // TODO: implement register locking
-  assign regen = reg2hw.regen.q;
-
   pwm_reg_pkg::pwm_reg2hw_t       reg2hw_sync;
   logic                           clr_phase_cntr;
   logic [NOutputs-1:0]            clr_blink_cntr;
@@ -53,6 +48,11 @@ module pwm_core #(
   logic        phase_ctr_overflow;
   logic        phase_ctr_en;
   logic        cycle_end;
+
+  logic        unused_regen;
+
+  // TODO: implement register locking
+  assign unused_regen = reg2hw_sync.regen.q;
 
   assign cntr_en_sync = reg2hw_sync.cfg.cntr_en.q;
   assign dc_resn_sync = reg2hw_sync.cfg.dc_resn.q;
