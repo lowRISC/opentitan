@@ -437,7 +437,8 @@ static bool check_regs(OtbnModel &model, ISSWrapper &iss) {
       model.design_scope_ +
       ".u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.u_snooper";
   std::string wide_scope =
-      model.design_scope_ + ".gen_rf_bignum_ff.u_otbn_rf_bignum.u_snooper";
+      model.design_scope_ +
+      ".u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.u_snooper";
 
   auto rtl_gprs = get_rtl_regs<uint32_t>(base_scope);
   auto rtl_wdrs = get_rtl_regs<ISSWrapper::u256_t>(wide_scope);

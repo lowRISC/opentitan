@@ -11,4 +11,5 @@ lint_off -rule UNDRIVEN -file "*/otbn_trace_if.sv" -match "*Bits of signal are n
 
 lint_off -rule UNUSED -file "*/otbn_trace_if.sv" -match "*Bits of signal are not used: 'dmem_addr_o'*"
 lint_off -rule UNUSED -file "*/otbn_trace_if.sv" -match "*Bits of signal are not used: 'insn_dec_shared'*"
+lint_off -rule UNUSED -file "*/otbn_trace_if.sv" -match "*Bits of signal are not used: 'insn_dec_bignum'*"
 lint_off -rule UNUSED -file "*/otbn_trace_if.sv" -match "*Bits of signal are not used: 'alu_bignum_operation'*"

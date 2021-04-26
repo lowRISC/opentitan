@@ -72,6 +72,7 @@ module otbn_alu_bignum
 
   input  alu_bignum_operation_t operation_i,
   output logic [WLEN-1:0]       operation_result_o,
+  output logic                  selection_flag_o,
 
   input  ispr_e                       ispr_addr_i,
   input  logic [31:0]                 ispr_base_wdata_i,
@@ -410,28 +411,19 @@ module otbn_alu_bignum
   assign logic_update_flags.L = logical_res[0];
   assign logic_update_flags.Z = ~|logical_res;
 
-  ////////////////////////
-  // Conditional Select //
-  ////////////////////////
-
-  logic [WLEN-1:0] sel_res;
-  logic            sel_flag;
+  /////////////////////////////////
+  // Conditional Select Flag Mux //
+  /////////////////////////////////
 
   always_comb begin
     unique case (operation_i.sel_flag)
-      FlagC:   sel_flag = selected_flags.C;
-      FlagL:   sel_flag = selected_flags.L;
-      FlagM:   sel_flag = selected_flags.M;
-      FlagZ:   sel_flag = selected_flags.Z;
-      default: sel_flag = selected_flags.C;
+      FlagC:   selection_flag_o = selected_flags.C;
+      FlagL:   selection_flag_o = selected_flags.L;
+      FlagM:   selection_flag_o = selected_flags.M;
+      FlagZ:   selection_flag_o = selected_flags.Z;
+      default: selection_flag_o = selected_flags.C;
     endcase
   end
-
-  `ASSERT(SelFlagValid,
-      operation_i.op == AluOpBignumSel |-> operation_i.sel_flag inside {FlagC, FlagL, FlagM, FlagZ})
-
-  assign sel_res = (sel_flag || operation_i.op == AluOpBignumMov) ? operation_i.operand_a :
-                                                                    operation_i.operand_b;
 
   ////////////////////////
   // Output multiplexer //
@@ -486,11 +478,6 @@ module otbn_alu_bignum
       AluOpBignumAnd,
       AluOpBignumNot: begin
         operation_result_o = logical_res;
-      end
-
-      AluOpBignumSel,
-      AluOpBignumMov: begin
-        operation_result_o = sel_res;
       end
       default: ;
     endcase

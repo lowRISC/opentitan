@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * WLEN (256b) Wide Register File (WDRs)
+ * ExtWLEN (312b) Wide Register File (WDRs)
+ *
+ * ExtWLEN allows bits to provide integrity checking to WLEN words on a 32-bit granule. Integrity
+ * generation/checking implemented in wrapping otbn_rf_bignum module
  *
  * Features:
  * - 2 read ports
@@ -19,17 +22,17 @@ module otbn_rf_bignum_fpga
   input  logic             clk_i,
   input  logic             rst_ni,
 
-  input  logic [WdrAw-1:0] wr_addr_i,
-  input  logic [1:0]       wr_en_i,
-  input  logic [WLEN-1:0]  wr_data_i,
+  input  logic [WdrAw-1:0]   wr_addr_i,
+  input  logic [1:0]         wr_en_i,
+  input  logic [ExtWLEN-1:0] wr_data_i,
 
-  input  logic [WdrAw-1:0] rd_addr_a_i,
-  output logic [WLEN-1:0]  rd_data_a_o,
+  input  logic [WdrAw-1:0]   rd_addr_a_i,
+  output logic [ExtWLEN-1:0] rd_data_a_o,
 
-  input  logic [WdrAw-1:0] rd_addr_b_i,
-  output logic [WLEN-1:0]  rd_data_b_o
+  input  logic [WdrAw-1:0]   rd_addr_b_i,
+  output logic [ExtWLEN-1:0] rd_data_b_o
 );
-  logic [WLEN-1:0] rf [NWdr];
+  logic [ExtWLEN-1:0] rf [NWdr];
 
   // The reset is not used in this register file version.
   logic unused_rst_ni;
@@ -40,7 +43,7 @@ module otbn_rf_bignum_fpga
     // Split registers into halves for clear separation for the enable terms.
     always_ff @(posedge clk_i) begin
       if (wr_en_i[i] == 1'b1) begin
-        rf[wr_addr_i][i*WLEN/2+:WLEN/2] <= wr_data_i[i*WLEN/2+:WLEN/2];
+        rf[wr_addr_i][i*ExtWLEN/2+:ExtWLEN/2] <= wr_data_i[i*ExtWLEN/2+:ExtWLEN/2];
       end
     end
   end

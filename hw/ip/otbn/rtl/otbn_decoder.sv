@@ -165,6 +165,8 @@ module otbn_decoder
   logic a_wlen_word_inc_bignum;
   logic b_inc_bignum;
 
+  logic sel_insn_bignum;
+
   logic ecall_insn;
   logic ld_insn;
   logic st_insn;
@@ -250,7 +252,8 @@ module otbn_decoder
     rf_we:               rf_we_bignum,
     rf_wdata_sel:        rf_wdata_sel_bignum,
     rf_ren_a:            rf_ren_a_bignum,
-    rf_ren_b:            rf_ren_b_bignum
+    rf_ren_b:            rf_ren_b_bignum,
+    sel_insn:            sel_insn_bignum
   };
 
   assign insn_dec_shared_o = '{
@@ -304,6 +307,8 @@ module otbn_decoder
     ispr_rd_insn           = 1'b0;
     ispr_wr_insn           = 1'b0;
     ispr_rs_insn           = 1'b0;
+
+    sel_insn_bignum        = 1'b0;
 
     opcode                 = insn_opcode_e'(insn[6:0]);
 
@@ -531,9 +536,11 @@ module otbn_decoder
 
         unique case (insn[14:12])
           3'b000: begin // BN.SEL
-            rf_we_bignum    = 1'b1;
-            rf_ren_a_bignum = 1'b1;
-            rf_ren_b_bignum = 1'b1;
+            rf_we_bignum        = 1'b1;
+            rf_ren_a_bignum     = 1'b1;
+            rf_ren_b_bignum     = 1'b1;
+            rf_wdata_sel_bignum = RfWdSelMovSel;
+            sel_insn_bignum     = 1'b1;
           end
           3'b011, 3'b001: begin // BN.CMP[B]
             rf_ren_a_bignum = 1'b1;
@@ -589,9 +596,10 @@ module otbn_decoder
             end
           end
           3'b110: begin // BN.MOV/BN.MOVR
-            insn_subset     = InsnSubsetBignum;
-            rf_we_bignum    = 1'b1;
-            rf_ren_a_bignum = 1'b1;
+            insn_subset         = InsnSubsetBignum;
+            rf_we_bignum        = 1'b1;
+            rf_ren_a_bignum     = 1'b1;
+            rf_wdata_sel_bignum = RfWdSelMovSel;
 
             if (insn[31]) begin // BN.MOVR
               rf_a_indirect_bignum = 1'b1;
@@ -885,10 +893,6 @@ module otbn_decoder
 
       InsnOpcodeBignumMisc: begin
         unique case (insn[14:12])
-          3'b000: begin // BN.SEL
-            alu_operator_bignum      = AluOpBignumSel;
-            alu_op_b_mux_sel_bignum  = OpBSelRegister;
-          end
           3'b001: begin // BN.CMP
             alu_operator_bignum      = AluOpBignumSub;
             alu_op_b_mux_sel_bignum  = OpBSelRegister;
@@ -908,9 +912,6 @@ module otbn_decoder
             alu_op_b_mux_sel_base = OpBSelImmediate;
             alu_operator_base     = AluOpBaseAdd;
             imm_b_mux_sel_base    = ImmBaseBX;
-          end
-          3'b110: begin // BN.MOV/BN.MOVR
-            alu_operator_bignum     = AluOpBignumMov;
           end
           default: ;
         endcase
