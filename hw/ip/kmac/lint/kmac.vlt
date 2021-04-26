@@ -11,3 +11,6 @@
 // warnings.
 lint_off -rule UNUSED -file "*/rtl/kmac.sv" -match "Signal is not used: 'clk_edn_i'"
 lint_off -rule UNUSED -file "*/rtl/kmac.sv" -match "Signal is not used: 'rst_edn_ni'"
+
+// Waive warning about width mismatch when comparing "i" and "app_id".
+lint_off -rule WIDTH -file "*/rtl/kmac_app.sv" -match "Operator EQ expects 32 bits*'app_id' generates 2 bits."
