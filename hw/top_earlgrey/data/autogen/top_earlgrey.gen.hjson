@@ -2181,7 +2181,7 @@
           struct: logic
           type: uni
           act: rcv
-          width: 4
+          width: 5
           inst_name: pwrmgr_aon
           default: ""
           package: ""
@@ -2195,12 +2195,12 @@
           struct: logic
           type: uni
           act: rcv
-          width: 1
+          width: 2
           inst_name: pwrmgr_aon
           default: ""
           package: ""
           end_idx: -1
-          top_type: broadcast
+          top_type: one-to-N
           top_signame: pwrmgr_aon_rstreqs
           index: -1
         }
@@ -2645,13 +2645,28 @@
       inter_signal_list:
       [
         {
+          name: gsc_wk
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: sysrst_ctrl_aon
+          default: ""
+          package: ""
+          top_signame: pwrmgr_aon_wakeups
+          index: 0
+        }
+        {
           name: gsc_rst
           struct: logic
           type: uni
           act: req
           width: 1
           inst_name: sysrst_ctrl_aon
-          index: -1
+          default: ""
+          package: ""
+          top_signame: pwrmgr_aon_rstreqs
+          index: 0
         }
         {
           name: tl
@@ -2722,7 +2737,7 @@
           default: ""
           package: ""
           top_signame: pwrmgr_aon_wakeups
-          index: 0
+          index: 1
         }
         {
           name: tl
@@ -2926,7 +2941,7 @@
           inst_name: pinmux_aon
           package: ""
           top_signame: pwrmgr_aon_wakeups
-          index: 1
+          index: 2
         }
         {
           name: usb_wkup_req
@@ -2938,7 +2953,7 @@
           inst_name: pinmux_aon
           package: ""
           top_signame: pwrmgr_aon_wakeups
-          index: 2
+          index: 3
         }
         {
           name: usb_out_of_rst
@@ -3055,7 +3070,7 @@
           inst_name: aon_timer_aon
           package: ""
           top_signame: pwrmgr_aon_wakeups
-          index: 3
+          index: 4
         }
         {
           name: aon_timer_rst_req
@@ -3067,7 +3082,7 @@
           inst_name: aon_timer_aon
           package: ""
           top_signame: pwrmgr_aon_rstreqs
-          index: -1
+          index: 1
         }
         {
           name: lc_cpu_en
@@ -5950,6 +5965,7 @@
       ]
       pwrmgr_aon.wakeups:
       [
+        sysrst_ctrl_aon.gsc_wk
         adc_ctrl_aon.debug_cable_wakeup
         pinmux_aon.aon_wkup_req
         pinmux_aon.usb_wkup_req
@@ -5957,6 +5973,7 @@
       ]
       pwrmgr_aon.rstreqs:
       [
+        sysrst_ctrl_aon.gsc_rst
         aon_timer_aon.aon_timer_rst_req
       ]
       rom_ctrl.rom_tl:
@@ -10240,6 +10257,11 @@
   wakeups:
   [
     {
+      name: gsc_wk
+      width: "1"
+      module: sysrst_ctrl_aon
+    }
+    {
       name: debug_cable_wakeup
       width: "1"
       module: adc_ctrl_aon
@@ -10262,6 +10284,11 @@
   ]
   reset_requests:
   [
+    {
+      name: gsc_rst
+      width: "1"
+      module: sysrst_ctrl_aon
+    }
     {
       name: aon_timer_rst_req
       width: "1"
@@ -12575,7 +12602,7 @@
         struct: logic
         type: uni
         act: rcv
-        width: 4
+        width: 5
         inst_name: pwrmgr_aon
         default: ""
         package: ""
@@ -12589,12 +12616,12 @@
         struct: logic
         type: uni
         act: rcv
-        width: 1
+        width: 2
         inst_name: pwrmgr_aon
         default: ""
         package: ""
         end_idx: -1
-        top_type: broadcast
+        top_type: one-to-N
         top_signame: pwrmgr_aon_rstreqs
         index: -1
       }
@@ -12939,13 +12966,28 @@
         index: -1
       }
       {
+        name: gsc_wk
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: sysrst_ctrl_aon
+        default: ""
+        package: ""
+        top_signame: pwrmgr_aon_wakeups
+        index: 0
+      }
+      {
         name: gsc_rst
         struct: logic
         type: uni
         act: req
         width: 1
         inst_name: sysrst_ctrl_aon
-        index: -1
+        default: ""
+        package: ""
+        top_signame: pwrmgr_aon_rstreqs
+        index: 0
       }
       {
         name: tl
@@ -12983,7 +13025,7 @@
         default: ""
         package: ""
         top_signame: pwrmgr_aon_wakeups
-        index: 0
+        index: 1
       }
       {
         name: tl
@@ -13118,7 +13160,7 @@
         inst_name: pinmux_aon
         package: ""
         top_signame: pwrmgr_aon_wakeups
-        index: 1
+        index: 2
       }
       {
         name: usb_wkup_req
@@ -13130,7 +13172,7 @@
         inst_name: pinmux_aon
         package: ""
         top_signame: pwrmgr_aon_wakeups
-        index: 2
+        index: 3
       }
       {
         name: usb_out_of_rst
@@ -13217,7 +13259,7 @@
         inst_name: aon_timer_aon
         package: ""
         top_signame: pwrmgr_aon_wakeups
-        index: 3
+        index: 4
       }
       {
         name: aon_timer_rst_req
@@ -13229,7 +13271,7 @@
         inst_name: aon_timer_aon
         package: ""
         top_signame: pwrmgr_aon_rstreqs
-        index: -1
+        index: 1
       }
       {
         name: lc_cpu_en
@@ -16837,7 +16879,7 @@
         package: ""
         struct: logic
         signame: pwrmgr_aon_wakeups
-        width: 4
+        width: 5
         type: uni
         end_idx: -1
         act: rcv
@@ -16848,7 +16890,7 @@
         package: ""
         struct: logic
         signame: pwrmgr_aon_rstreqs
-        width: 1
+        width: 2
         type: uni
         end_idx: -1
         act: rcv

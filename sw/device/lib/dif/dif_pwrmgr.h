@@ -130,6 +130,7 @@ typedef enum dif_pwrmgr_wakeup_request_source {
   kDifPwrmgrWakeupRequestSourceTwo = (1u << 1),
   kDifPwrmgrWakeupRequestSourceThree = (1u << 2),
   kDifPwrmgrWakeupRequestSourceFour = (1u << 3),
+  kDifPwrmgrWakeupRequestSourceFive = (1u << 4),
 } dif_pwrmgr_wakeup_request_source_t;
 
 /**

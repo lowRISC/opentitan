@@ -7,12 +7,13 @@
 package pwrmgr_reg_pkg;
 
   // Param list
-  parameter int NumWkups = 4;
-  parameter int DEBUG_CABLE_WAKEUP_IDX = 0;
-  parameter int AON_WKUP_REQ_IDX = 1;
-  parameter int USB_WKUP_REQ_IDX = 2;
-  parameter int AON_TIMER_WKUP_REQ_IDX = 3;
-  parameter int NumRstReqs = 1;
+  parameter int NumWkups = 5;
+  parameter int GSC_WK_IDX = 0;
+  parameter int DEBUG_CABLE_WAKEUP_IDX = 1;
+  parameter int AON_WKUP_REQ_IDX = 2;
+  parameter int USB_WKUP_REQ_IDX = 3;
+  parameter int AON_TIMER_WKUP_REQ_IDX = 4;
+  parameter int NumRstReqs = 2;
 
   // Address widths within the block
   parameter int BlockAw = 6;
@@ -74,7 +75,7 @@ package pwrmgr_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [3:0]  q;
+      logic [4:0]  q;
       logic        qe;
     } reasons;
     struct packed {
@@ -125,7 +126,7 @@ package pwrmgr_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [3:0]  d;
+      logic [4:0]  d;
     } reasons;
     struct packed {
       logic        d;
@@ -137,27 +138,27 @@ package pwrmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    pwrmgr_reg2hw_intr_state_reg_t intr_state; // [26:26]
-    pwrmgr_reg2hw_intr_enable_reg_t intr_enable; // [25:25]
-    pwrmgr_reg2hw_intr_test_reg_t intr_test; // [24:23]
-    pwrmgr_reg2hw_control_reg_t control; // [22:17]
-    pwrmgr_reg2hw_cfg_cdc_sync_reg_t cfg_cdc_sync; // [16:15]
-    pwrmgr_reg2hw_wakeup_en_mreg_t [3:0] wakeup_en; // [14:11]
-    pwrmgr_reg2hw_reset_en_mreg_t [0:0] reset_en; // [10:10]
-    pwrmgr_reg2hw_wake_info_capture_dis_reg_t wake_info_capture_dis; // [9:9]
-    pwrmgr_reg2hw_wake_info_reg_t wake_info; // [8:0]
+    pwrmgr_reg2hw_intr_state_reg_t intr_state; // [29:29]
+    pwrmgr_reg2hw_intr_enable_reg_t intr_enable; // [28:28]
+    pwrmgr_reg2hw_intr_test_reg_t intr_test; // [27:26]
+    pwrmgr_reg2hw_control_reg_t control; // [25:20]
+    pwrmgr_reg2hw_cfg_cdc_sync_reg_t cfg_cdc_sync; // [19:18]
+    pwrmgr_reg2hw_wakeup_en_mreg_t [4:0] wakeup_en; // [17:13]
+    pwrmgr_reg2hw_reset_en_mreg_t [1:0] reset_en; // [12:11]
+    pwrmgr_reg2hw_wake_info_capture_dis_reg_t wake_info_capture_dis; // [10:10]
+    pwrmgr_reg2hw_wake_info_reg_t wake_info; // [9:0]
   } pwrmgr_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    pwrmgr_hw2reg_intr_state_reg_t intr_state; // [24:23]
-    pwrmgr_hw2reg_ctrl_cfg_regwen_reg_t ctrl_cfg_regwen; // [22:22]
-    pwrmgr_hw2reg_control_reg_t control; // [21:20]
-    pwrmgr_hw2reg_cfg_cdc_sync_reg_t cfg_cdc_sync; // [19:18]
-    pwrmgr_hw2reg_wake_status_mreg_t [3:0] wake_status; // [17:10]
-    pwrmgr_hw2reg_reset_status_mreg_t [0:0] reset_status; // [9:8]
-    pwrmgr_hw2reg_escalate_reset_status_reg_t escalate_reset_status; // [7:6]
-    pwrmgr_hw2reg_wake_info_reg_t wake_info; // [5:0]
+    pwrmgr_hw2reg_intr_state_reg_t intr_state; // [29:28]
+    pwrmgr_hw2reg_ctrl_cfg_regwen_reg_t ctrl_cfg_regwen; // [27:27]
+    pwrmgr_hw2reg_control_reg_t control; // [26:25]
+    pwrmgr_hw2reg_cfg_cdc_sync_reg_t cfg_cdc_sync; // [24:23]
+    pwrmgr_hw2reg_wake_status_mreg_t [4:0] wake_status; // [22:13]
+    pwrmgr_hw2reg_reset_status_mreg_t [1:0] reset_status; // [12:9]
+    pwrmgr_hw2reg_escalate_reset_status_reg_t escalate_reset_status; // [8:7]
+    pwrmgr_hw2reg_wake_info_reg_t wake_info; // [6:0]
   } pwrmgr_hw2reg_t;
 
   // Register offsets
@@ -182,8 +183,8 @@ package pwrmgr_reg_pkg;
   parameter logic [0:0] PWRMGR_INTR_TEST_WAKEUP_RESVAL = 1'h 0;
   parameter logic [0:0] PWRMGR_CTRL_CFG_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] PWRMGR_CTRL_CFG_REGWEN_EN_RESVAL = 1'h 1;
-  parameter logic [5:0] PWRMGR_WAKE_INFO_RESVAL = 6'h 0;
-  parameter logic [3:0] PWRMGR_WAKE_INFO_REASONS_RESVAL = 4'h 0;
+  parameter logic [6:0] PWRMGR_WAKE_INFO_RESVAL = 7'h 0;
+  parameter logic [4:0] PWRMGR_WAKE_INFO_REASONS_RESVAL = 5'h 0;
   parameter logic [0:0] PWRMGR_WAKE_INFO_FALL_THROUGH_RESVAL = 1'h 0;
   parameter logic [0:0] PWRMGR_WAKE_INFO_ABORT_RESVAL = 1'h 0;
 

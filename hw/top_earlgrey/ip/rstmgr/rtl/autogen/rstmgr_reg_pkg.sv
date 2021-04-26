@@ -9,7 +9,7 @@ package rstmgr_reg_pkg;
   // Param list
   parameter int RdWidth = 32;
   parameter int IdxWidth = 4;
-  parameter int NumHwResets = 2;
+  parameter int NumHwResets = 3;
   parameter int NumSwResets = 7;
 
   // Address widths within the block
@@ -21,7 +21,7 @@ package rstmgr_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [1:0]  q;
+      logic [2:0]  q;
     } hw_req;
   } rstmgr_reg2hw_reset_info_reg_t;
 
@@ -62,7 +62,7 @@ package rstmgr_reg_pkg;
       logic        de;
     } ndm_reset;
     struct packed {
-      logic [1:0]  d;
+      logic [2:0]  d;
       logic        de;
     } hw_req;
   } rstmgr_hw2reg_reset_info_reg_t;
@@ -103,7 +103,7 @@ package rstmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    rstmgr_reg2hw_reset_info_reg_t reset_info; // [32:31]
+    rstmgr_reg2hw_reset_info_reg_t reset_info; // [33:31]
     rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [30:26]
     rstmgr_reg2hw_cpu_info_ctrl_reg_t cpu_info_ctrl; // [25:21]
     rstmgr_reg2hw_sw_rst_regen_mreg_t [6:0] sw_rst_regen; // [20:14]
@@ -112,7 +112,7 @@ package rstmgr_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    rstmgr_hw2reg_reset_info_reg_t reset_info; // [89:83]
+    rstmgr_hw2reg_reset_info_reg_t reset_info; // [90:83]
     rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [82:81]
     rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [80:77]
     rstmgr_hw2reg_alert_info_reg_t alert_info; // [76:45]
