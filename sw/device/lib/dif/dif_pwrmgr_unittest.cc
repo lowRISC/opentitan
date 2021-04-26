@@ -636,8 +636,8 @@ TEST_F(WakeupRecording, GetReason) {
                   .types = kDifPwrmgrWakeupTypeAbort |
                            kDifPwrmgrWakeupTypeFallThrough |
                            kDifPwrmgrWakeupTypeRequest,
-                  .request_sources = kDifPwrmgrWakeupRequestSourceOne |
-                                     kDifPwrmgrWakeupRequestSourceTwo,
+                  .request_sources = kDifPwrmgrWakeupRequestSourceTwo |
+                                     kDifPwrmgrWakeupRequestSourceThree,
               },
       },
       // Only abort.
@@ -673,7 +673,7 @@ TEST_F(WakeupRecording, GetReason) {
           .exp_output =
               {
                   .types = kDifPwrmgrWakeupTypeRequest,
-                  .request_sources = kDifPwrmgrWakeupRequestSourceOne,
+                  .request_sources = kDifPwrmgrWakeupRequestSourceTwo,
               },
       },
   }};

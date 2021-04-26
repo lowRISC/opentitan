@@ -47,7 +47,7 @@
     { name: "NumHwResets",
       desc: "Number of hardware reset requests, inclusive of escalation",
       type: "int",
-      default: "2",
+      default: "3",
       local: "true"
     },
 
@@ -141,7 +141,7 @@
         },
 
         // reset requests include escalation reset + peripheral requests
-        { bits: "4:3",
+        { bits: "5:3",
           hwaccess: "hrw",
           name: "HW_REQ",
           desc: '''

@@ -18,6 +18,16 @@
       desc: "common interrupt triggered by combo or keyboard actions",
     }
   ],
+  wakeup_list: [
+    { name: "gsc_wk",
+      desc: "user directed wakeup",
+    }
+  ],
+  reset_request_list: [
+    { name: "gsc_rst",
+      desc: "user directed reset"
+    },
+  ],
   param_list: [
     { name:    "NumCombo",
       type:    "int",
@@ -43,6 +53,13 @@
     { name: "pwrb_out", desc: "Passthrough from pwrb_in, can be configured to invert" }
   ],
   inter_signal_list: [
+    { name:    "gsc_wk",
+      package: "",
+      struct:  "logic",
+      act:     "req"
+      type:    "uni",
+      width:   "1"
+    }
     { name:    "gsc_rst",
       package: "",
       struct:  "logic",

@@ -86,7 +86,7 @@ typedef enum dif_rstmgr_reset_info {
    * Device has reset due to a peripheral request. This can be an alert
    * escalation, watchdog or anything else.
    */
-  kDifRstmgrResetInfoHwReq = (0x3 << 3),
+  kDifRstmgrResetInfoHwReq = (0x7 << 3),
 } dif_rstmgr_reset_info_t;
 
 /**

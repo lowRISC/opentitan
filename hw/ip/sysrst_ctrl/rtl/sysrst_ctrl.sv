@@ -11,6 +11,7 @@ module sysrst_ctrl (
   input clk_aon_i,//Always-on 200KHz clock(logic)
   input rst_ni,//power-on reset for the 24MHz clock(config)
   input rst_aon_ni,//power-on reset for the 200KHz clock(logic)
+  output gsc_wk_o, //GSC wake to pwrmgr
   output gsc_rst_o,//GSC reset to rstmgr
   output intr_sysrst_ctrl_o,//sysrst_ctrl interrupt to PLIC
 
@@ -186,6 +187,10 @@ module sysrst_ctrl (
     .gsc_rst_o(gsc_rst_o),
     .ec_rst_l_hw(ec_rst_l_hw)
   );
+
+  // hardwire for now until logic is ready
+  // see #6323
+  assign gsc_wk_o = '0;
 
   //Instantiate the interrupt module
   sysrst_ctrl_intr u_intr (

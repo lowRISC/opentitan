@@ -17,7 +17,7 @@ static dif_aon_timer_t aon_timer;
 const test_config_t kTestConfig;
 const dif_pwrmgr_wakeup_reason_t test_wakeup_reason = {
     .types = kDifPwrmgrWakeupTypeRequest,
-    .request_sources = kDifPwrmgrWakeupRequestSourceFour,
+    .request_sources = kDifPwrmgrWakeupRequestSourceFive,
 };
 
 const dif_pwrmgr_wakeup_reason_t por_wakeup_reason = {
@@ -90,7 +90,7 @@ bool test_main(void) {
     config = 0;
 
     CHECK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeWakeup,
-                                         kDifPwrmgrWakeupRequestSourceFour) ==
+                                         kDifPwrmgrWakeupRequestSourceFive) ==
           kDifPwrmgrConfigOk);
     CHECK(dif_pwrmgr_set_domain_config(&pwrmgr, config) == kDifPwrmgrConfigOk);
     CHECK(dif_pwrmgr_low_power_set_enabled(&pwrmgr, kDifPwrmgrToggleEnabled) ==

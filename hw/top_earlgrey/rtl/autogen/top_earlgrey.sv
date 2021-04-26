@@ -532,8 +532,8 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_rd_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_wr_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_seed_hw_rd_en;
-  logic [3:0] pwrmgr_aon_wakeups;
-  logic       pwrmgr_aon_rstreqs;
+  logic [4:0] pwrmgr_aon_wakeups;
+  logic [1:0] pwrmgr_aon_rstreqs;
   tlul_pkg::tl_h2d_t       rom_ctrl_rom_tl_req;
   tlul_pkg::tl_d2h_t       rom_ctrl_rom_tl_rsp;
   tlul_pkg::tl_h2d_t       rom_ctrl_regs_tl_req;
@@ -1726,7 +1726,8 @@ module top_earlgrey #(
       .intr_sysrst_ctrl_o (intr_sysrst_ctrl_aon_sysrst_ctrl),
 
       // Inter-module signals
-      .gsc_rst_o(),
+      .gsc_wk_o(pwrmgr_aon_wakeups[0]),
+      .gsc_rst_o(pwrmgr_aon_rstreqs[0]),
       .tl_i(sysrst_ctrl_aon_tl_req),
       .tl_o(sysrst_ctrl_aon_tl_rsp),
 
@@ -1745,7 +1746,7 @@ module top_earlgrey #(
       // Inter-module signals
       .adc_o(adc_req_o),
       .adc_i(adc_rsp_i),
-      .debug_cable_wakeup_o(pwrmgr_aon_wakeups[0]),
+      .debug_cable_wakeup_o(pwrmgr_aon_wakeups[1]),
       .tl_i(adc_ctrl_aon_tl_req),
       .tl_o(adc_ctrl_aon_tl_rsp),
 
@@ -1789,8 +1790,8 @@ module top_earlgrey #(
       .dft_strap_test_o(dft_strap_test_o),
       .sleep_en_i(pwrmgr_aon_low_power),
       .strap_en_i(pwrmgr_aon_strap),
-      .aon_wkup_req_o(pwrmgr_aon_wakeups[1]),
-      .usb_wkup_req_o(pwrmgr_aon_wakeups[2]),
+      .aon_wkup_req_o(pwrmgr_aon_wakeups[2]),
+      .usb_wkup_req_o(pwrmgr_aon_wakeups[3]),
       .usb_out_of_rst_i(usbdev_usb_out_of_rst),
       .usb_aon_wake_en_i(usbdev_usb_aon_wake_en),
       .usb_aon_wake_ack_i(usbdev_usb_aon_wake_ack),
@@ -1833,8 +1834,8 @@ module top_earlgrey #(
       .intr_wdog_timer_bark_o    (intr_aon_timer_aon_wdog_timer_bark),
 
       // Inter-module signals
-      .aon_timer_wkup_req_o(pwrmgr_aon_wakeups[3]),
-      .aon_timer_rst_req_o(pwrmgr_aon_rstreqs),
+      .aon_timer_wkup_req_o(pwrmgr_aon_wakeups[4]),
+      .aon_timer_rst_req_o(pwrmgr_aon_rstreqs[1]),
       .lc_cpu_en_i(lc_ctrl_lc_cpu_en),
       .sleep_mode_i(pwrmgr_aon_low_power),
       .tl_i(aon_timer_aon_tl_req),
