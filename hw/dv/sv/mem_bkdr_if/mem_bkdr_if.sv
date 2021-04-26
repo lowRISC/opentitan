@@ -672,9 +672,8 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
         `DV_CHECK_STD_RANDOMIZE_FATAL(rand_val, "Randomization failed!", path)
         write8(i, rand_val);
       end
-    end
-    // TODO - temporary workaround until ECC encoding is implemented
-    if (MEM_ECC) begin
+    end else begin
+      // TODO - temporary workaround until ECC encoding is implemented
       foreach (`MEM_ARR_PATH_SLICE[i]) begin
         // Workaround to avoid Xcelium compile error:
         // `DV_CHECK_STD_RANDOMIZE_FATAL(`MEM_ARR_PATH_SLICE[i], , path)
