@@ -255,7 +255,10 @@ module spi_readcmd
   // sram address is sent.
   logic addr_in_mailbox;
 
-  logic [31:0] mailbox_masked_addr, buffer_masked_addr;
+  logic [31:0] mailbox_masked_addr;
+
+  // TODO: implement
+  // logic [31:0] buffer_masked_addr;
 
   // Double buffering signals
   logic readbuf_idx; // 0 or 1
