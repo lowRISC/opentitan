@@ -60,6 +60,10 @@ gcc_arm_none_compiler()
 load("@bazel_embedded//toolchains/gcc_arm_none_eabi:gcc_arm_none_toolchain.bzl", "register_gcc_arm_none_toolchain")
 
 register_gcc_arm_none_toolchain()
+
+load("@bazel_embedded//tools/openocd:openocd_repository.bzl", "openocd_deps")
+
+openocd_deps()
 ```
 
 Add the following to your .bazelrc file
