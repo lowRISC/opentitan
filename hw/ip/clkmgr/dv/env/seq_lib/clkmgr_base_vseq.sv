@@ -73,4 +73,14 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.aon_clk_rst_vif.set_freq_mhz(7);
   endtask
 
+  virtual function void update_idle(logic [NUM_TRANS-1:0] value);
+    idle = value;
+    cfg.clkmgr_vif.update_idle(idle);
+  endfunction
+
+  virtual function void update_trans_idle(logic value, trans_e trans);
+    idle[trans] = value;
+    update_idle(idle);
+  endfunction
+
 endclass : clkmgr_base_vseq

@@ -17,7 +17,6 @@ class clkmgr_peri_vseq extends clkmgr_base_vseq;
     logic [NUM_PERI-1:0] flipped_enables;
     `uvm_info(`gfn, $sformatf("Initializing clk_enables with 0x%0x", initial_enables), UVM_LOW)
     csr_wr(.ptr(ral.clk_enables), .value(initial_enables));
-
     cfg.clk_rst_vif.wait_clks(10);
     // Flip all bits of clk_enables.
     flipped_enables = initial_enables ^ ((1 << ral.clk_enables.get_n_bits()) - 1);
