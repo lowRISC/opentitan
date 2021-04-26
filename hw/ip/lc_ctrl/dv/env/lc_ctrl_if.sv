@@ -44,9 +44,9 @@ interface lc_ctrl_if(input clk, input rst_n);
     otp_i.error = 0;
     otp_i.state = lc_state;
     otp_i.count = lc_cnt;
-    otp_i.test_unlock_token = 0;
-    otp_i.test_exit_token = 0;
-    otp_i.rma_token = 0;
+    otp_i.test_unlock_token = $urandom();
+    otp_i.test_exit_token = $urandom();
+    otp_i.rma_token = $urandom();
     otp_i.id_state = LcIdBlank;
 
     otp_hw_cfg_i.valid = Off;
@@ -54,7 +54,6 @@ interface lc_ctrl_if(input clk, input rst_n);
 
     clk_byp_ack_i = clk_byp_ack;
     flash_rma_ack_i = flash_rma_ack;
-    hashed_token = '0;
   endtask
 
   task automatic set_clk_byp_ack(lc_tx_t val);
@@ -65,7 +64,4 @@ interface lc_ctrl_if(input clk, input rst_n);
     flash_rma_ack_i = val;
   endtask
 
-  task automatic set_hashed_token(lc_token_t val);
-    hashed_token = val;
-  endtask
 endinterface

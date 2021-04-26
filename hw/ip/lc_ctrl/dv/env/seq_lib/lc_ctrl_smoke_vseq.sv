@@ -47,10 +47,8 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
         randomize_next_lc_state(dec_lc_state(lc_state));
         `uvm_info(`gfn, $sformatf("next_LC_state is %0s, input token is %0h", next_lc_state.name,
                                   token_val), UVM_DEBUG)
-        if (lc_state == LcStRaw && next_lc_state inside {DecLcStTestUnlocked0,
-            DecLcStTestUnlocked1, DecLcStTestUnlocked2, DecLcStTestUnlocked3}) begin
-          cfg.lc_ctrl_vif.set_hashed_token(lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed);
-        end
+
+        set_hashed_token();
         sw_transition_req(next_lc_state, token_val);
       end else begin
         // wait at least two clks for scb to finish checking lc outputs
@@ -76,4 +74,30 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
     end
   endfunction
 
+  virtual function void set_hashed_token();
+    // Raw Token
+    if (lc_state == LcStRaw && next_lc_state inside {DecLcStTestUnlocked0,
+        DecLcStTestUnlocked1, DecLcStTestUnlocked2, DecLcStTestUnlocked3}) begin
+      cfg.m_otp_token_pull_agent_cfg.add_d_user_data(
+          lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed);
+    // RMA Token
+    end else if (lc_state inside {LcStProd, LcStDev} && next_lc_state == DecLcStRma) begin
+      cfg.m_otp_token_pull_agent_cfg.add_d_user_data(cfg.lc_ctrl_vif.otp_i.rma_token);
+    // Test Exit Token
+    end else if (lc_state inside {LcStTestUnlocked3, LcStTestLocked2, LcStTestUnlocked2,
+                 LcStTestLocked1, LcStTestUnlocked1, LcStTestLocked0, LcStTestUnlocked0} &&
+                 next_lc_state inside {DecLcStDev, DecLcStProd, DecLcStProdEnd}) begin
+      cfg.m_otp_token_pull_agent_cfg.add_d_user_data(cfg.lc_ctrl_vif.otp_i.test_exit_token);
+    // Test Unlock Token
+    end else if ((lc_state == LcStTestLocked2 && next_lc_state == DecLcStTestUnlocked3) ||
+                 (lc_state == LcStTestLocked1 && next_lc_state inside
+                  {DecLcStTestUnlocked3, DecLcStTestUnlocked2}) ||
+                 (lc_state == LcStTestLocked0 && next_lc_state inside
+                  {DecLcStTestUnlocked3, DecLcStTestUnlocked2, DecLcStTestUnlocked1})) begin
+      cfg.m_otp_token_pull_agent_cfg.add_d_user_data(cfg.lc_ctrl_vif.otp_i.test_unlock_token);
+    // Test Zero Token
+    end else begin
+      cfg.m_otp_token_pull_agent_cfg.add_d_user_data(0);
+    end
+  endfunction
 endclass : lc_ctrl_smoke_vseq

@@ -18,8 +18,6 @@ module tb;
   wire clk, rst_n;
   wire devmode;
   wire [LcPwrIfWidth-1:0] pwr_lc;
-  // TODO: can delete once push-pull agent support constraint data
-  wire otp_ctrl_pkg::lc_otp_token_rsp_t   otp_token_rsp;
 
   // interfaces
   clk_rst_if   clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -36,10 +34,6 @@ module tb;
                otp_token_if(.clk(clk), .rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT
-
-  assign otp_token_rsp.ack = otp_token_if.ack;
-  // TODO: temp constraint to 0 because it has to equal to otp_lc_data_i tokens
-  assign otp_token_rsp.hashed_token = lc_ctrl_if.hashed_token;
 
   // dut
   lc_ctrl dut (
@@ -67,7 +61,7 @@ module tb;
     .lc_otp_program_i           ({otp_prog_if.d_data, otp_prog_if.ack}),
 
     .lc_otp_token_o             ({otp_token_if.req, otp_token_if.h_data}),
-    .lc_otp_token_i             (otp_token_rsp),
+    .lc_otp_token_i             ({ otp_token_if.ack, otp_token_if.d_data}),
 
     .otp_lc_data_i              (lc_ctrl_if.otp_i),
 
