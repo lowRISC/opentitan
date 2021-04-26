@@ -648,6 +648,10 @@ module spi_readcmd
     .depth_o  (unused_depth)
   );
 
+  // TODO: Handle SRAM integrity errors
+  sram_err_t unused_sram_rerror;
+  assign unused_sram_rerror = sram_rerror_i;
+
   // Assertions //
   // FIFO should not overflow. The Main state machine shall send request only
   // when it needs the data within 2 cycles
