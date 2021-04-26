@@ -126,7 +126,7 @@
           //       its value will change under the feet of the CSR package as
           //       the ROM checker computes a digest. Re-enable this (and add
           //       RAL reflection) once we have a working testbench.
-          tags: ["excl:CsrNonInitTests:CsrExclCheck"]
+          tags: ["excl:CsrAllTests:CsrExclCheck"]
         }
       }
       {
@@ -145,7 +145,7 @@
             }
           ]
           // TODO: As with DIGEST, re-enable this when we have a working testbench
-          tags: ["excl:CsrNonInitTests:CsrExclCheck"]
+          tags: ["excl:CsrAllTests:CsrExclCheck"]
         }
       }
     ],
