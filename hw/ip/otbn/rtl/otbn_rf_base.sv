@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * 32b General Purpose Register File (GPRs)
+ * 32b General Purpose Register File (GPRs) with integrity code detecting triple bit errors.
  *
  * This wraps two implementations, one for FPGA (otbn_rf_base_fpga)
  * implementation the other for ASIC (otbn_rf_base_ff).
@@ -14,11 +14,18 @@
  *
  * This is used to prevent combinational loops in the error handling logic in the controller.
  *
+ * Integrity protection uses an inverted (39, 32) Hsaio code providing a Hamming distance of 4.
+ *
+ * `wr_data_no_intg_i` supplies data that requires integrity calulation and `wr_data_intg_i`
+ * supplies data that comes with integrity. `wr_data_intg_sel_i` is asserted to select the data with
+ * integrity for the write, otherwise integrity is calculated seperately from `wr_data_i`.
+ *
  * Features:
  * - 2 read ports
  * - 1 write port
  * - special purpose stack on a single register (localparam `CallStackRegIndex`)
  *   for use as a call stack
+ * - triple error detection
  */
 module otbn_rf_base
   import otbn_pkg::*;
@@ -26,28 +33,36 @@ module otbn_rf_base
   // Register file implementation selection, see otbn_pkg.sv.
   parameter regfile_e RegFile = RegFileFF
 )(
-  input logic          clk_i,
-  input logic          rst_ni,
+  input  logic                     clk_i,
+  input  logic                     rst_ni,
 
-  input logic [4:0]    wr_addr_i,
-  input logic          wr_en_i,
-  input logic [31:0]   wr_data_i,
-  input logic          wr_commit_i,
+  input  logic [4:0]               wr_addr_i,
+  input  logic                     wr_en_i,
+  input  logic [31:0]              wr_data_no_intg_i,
+  input  logic [BaseIntgWidth-1:0] wr_data_intg_i,
+  input  logic                     wr_data_intg_sel_i,
+  input  logic                     wr_commit_i,
 
-  input  logic [4:0]   rd_addr_a_i,
-  input  logic         rd_en_a_i,
-  output logic [31:0]  rd_data_a_o,
+  input  logic [4:0]               rd_addr_a_i,
+  input  logic                     rd_en_a_i,
+  output logic [BaseIntgWidth-1:0] rd_data_a_intg_o,
 
-  input  logic [4:0]   rd_addr_b_i,
-  input  logic         rd_en_b_i,
-  output logic [31:0]  rd_data_b_o,
+  input  logic [4:0]               rd_addr_b_i,
+  input  logic                     rd_en_b_i,
+  output logic [BaseIntgWidth-1:0] rd_data_b_intg_o,
 
-  input  logic         rd_commit_i,
+  input  logic                     rd_commit_i,
 
-  output logic         call_stack_err_o
+  output logic                     call_stack_err_o,
+  output logic                     rd_data_err_o
 );
   localparam int unsigned CallStackRegIndex = 1;
   localparam int unsigned CallStackDepth = 8;
+
+  logic [BaseIntgWidth-1:0] wr_data_intg_mux_out, wr_data_intg_calc;
+
+  logic [BaseIntgWidth-1:0] rd_data_a_raw_intg, rd_data_b_raw_intg;
+  logic [1:0]               rd_data_a_err, rd_data_b_err;
 
   // The stack implementation is shared between FF and FPGA implementations,
   // actual register register file differs between FF and FPGA implementations.
@@ -55,8 +70,6 @@ module otbn_rf_base
   // register CallStatckRegIndex to the stack.
 
   logic        wr_en_masked;
-  logic [31:0] rd_data_a_raw;
-  logic [31:0] rd_data_b_raw;
 
   logic pop_stack_a;
   logic pop_stack_b;
@@ -65,9 +78,10 @@ module otbn_rf_base
   logic push_stack_reqd;
   logic push_stack;
 
-  logic        stack_full;
-  logic [31:0] stack_data;
-  logic        stack_data_valid;
+  logic                     stack_full;
+  logic [BaseIntgWidth-1:0] stack_data_intg;
+  logic                     stack_data_valid;
+
 
   assign pop_stack_a    = rd_en_a_i & (rd_addr_a_i == CallStackRegIndex[4:0]);
   assign pop_stack_b    = rd_en_b_i & (rd_addr_b_i == CallStackRegIndex[4:0]);
@@ -88,24 +102,32 @@ module otbn_rf_base
 
   // Ignore read data from the register file if reading from the stack register,
   // otherwise pass data through from register file.
-  assign rd_data_a_o = pop_stack_a ? stack_data : rd_data_a_raw;
-  assign rd_data_b_o = pop_stack_b ? stack_data : rd_data_b_raw;
+  assign rd_data_a_intg_o = pop_stack_a ? stack_data_intg : rd_data_a_raw_intg;
+  assign rd_data_b_intg_o = pop_stack_b ? stack_data_intg : rd_data_b_raw_intg;
+
+  prim_secded_39_32_enc u_wr_data_intg_enc (
+    .data_i(wr_data_no_intg_i),
+    .data_o(wr_data_intg_calc)
+  );
+
+  // New data can have its integrity from an external source or the integrity can be calculated here
+  assign wr_data_intg_mux_out = wr_data_intg_sel_i ? wr_data_intg_i : wr_data_intg_calc;
 
   otbn_stack #(
-    .StackWidth (32),
-    .StackDepth (CallStackDepth)
+    .StackWidth(39),
+    .StackDepth(CallStackDepth)
   ) u_call_stack (
     .clk_i,
     .rst_ni,
 
-    .full_o       (stack_full),
+    .full_o        (stack_full),
 
-    .push_i       (push_stack),
-    .push_data_i  (wr_data_i),
+    .push_i        (push_stack),
+    .push_data_i   (wr_data_intg_mux_out),
 
-    .pop_i        (pop_stack),
-    .top_data_o   (stack_data),
-    .top_valid_o  (stack_data_valid)
+    .pop_i         (pop_stack),
+    .top_data_o    (stack_data_intg),
+    .top_valid_o   (stack_data_valid)
   );
 
   if (RegFile == RegFileFF) begin : gen_rf_base_ff
@@ -114,13 +136,13 @@ module otbn_rf_base
       .rst_ni,
 
       .wr_addr_i,
-      .wr_en_i   (wr_en_masked),
-      .wr_data_i,
+      .wr_en_i  (wr_en_masked),
+      .wr_data_i(wr_data_intg_mux_out),
 
       .rd_addr_a_i,
-      .rd_data_a_o (rd_data_a_raw),
+      .rd_data_a_o(rd_data_a_raw_intg),
       .rd_addr_b_i,
-      .rd_data_b_o (rd_data_b_raw)
+      .rd_data_b_o(rd_data_b_raw_intg)
     );
   end else if (RegFile == RegFileFPGA) begin : gen_rf_base_fpga
     otbn_rf_base_fpga u_otbn_rf_base_inner (
@@ -128,13 +150,30 @@ module otbn_rf_base
       .rst_ni,
 
       .wr_addr_i,
-      .wr_en_i   (wr_en_masked),
-      .wr_data_i,
+      .wr_en_i  (wr_en_masked),
+      .wr_data_i(wr_data_intg_mux_out),
 
       .rd_addr_a_i,
-      .rd_data_a_o (rd_data_a_raw),
+      .rd_data_a_o(rd_data_a_raw_intg),
       .rd_addr_b_i,
-      .rd_data_b_o (rd_data_b_raw)
+      .rd_data_b_o(rd_data_b_raw_intg)
     );
   end
+
+  // Integrity decoders used to detect errors only, corrections (`syndrome_o`/`d_o`) are ignored
+  prim_secded_39_32_dec u_rd_data_a_intg_dec (
+    .data_i    (rd_data_a_intg_o),
+    .data_o    (),
+    .syndrome_o(),
+    .err_o     (rd_data_a_err)
+  );
+
+  prim_secded_39_32_dec u_rd_data_b_intg_dec (
+    .data_i    (rd_data_b_intg_o),
+    .data_o    (),
+    .syndrome_o(),
+    .err_o     (rd_data_b_err)
+  );
+
+  assign rd_data_err_o = (|rd_data_a_err & rd_en_a_i) | (|rd_data_b_err & rd_en_b_i);
 endmodule

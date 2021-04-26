@@ -11,8 +11,11 @@ package otbn_pkg;
   // Data path width for BN (wide) instructions, in bits.
   parameter int WLEN = 256;
 
-  // "Extended" WLEN: the size of the datapath with added parity bits
+  // "Extended" WLEN: the size of the datapath with added integrity bits
   parameter int ExtWLEN = WLEN * 39 / 32;
+
+  // Width of base (32b) data path with added integrity bits
+  parameter int BaseIntgWidth = 39;
 
   // Number of 32-bit words per WLEN
   parameter int BaseWordsPerWLEN = WLEN / 32;
@@ -118,10 +121,7 @@ package otbn_pkg;
     AluOpBignumXor,
     AluOpBignumOr,
     AluOpBignumAnd,
-    AluOpBignumNot,
-
-    AluOpBignumSel,
-    AluOpBignumMov
+    AluOpBignumNot
   } alu_op_bignum_e;
 
   typedef enum logic {
@@ -167,7 +167,8 @@ package otbn_pkg;
     RfWdSelLsu,
     RfWdSelIspr,
     RfWdSelIncr,
-    RfWdSelMac
+    RfWdSelMac,
+    RfWdSelMovSel
   } rf_wd_sel_e;
 
   // Control and Status Registers (CSRs)
@@ -316,6 +317,8 @@ package otbn_pkg;
     rf_wd_sel_e              rf_wdata_sel;
     logic                    rf_ren_a;
     logic                    rf_ren_b;
+
+    logic                    sel_insn;
   } insn_dec_bignum_t;
 
   typedef struct packed {

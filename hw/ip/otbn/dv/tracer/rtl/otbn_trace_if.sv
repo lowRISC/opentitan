@@ -42,16 +42,12 @@ interface otbn_trace_if
   input logic rf_base_wr_en,
   input logic rf_base_wr_commit,
 
-  input logic [31:0] rf_base_rd_data_a,
-  input logic [31:0] rf_base_rd_data_b,
-  input logic [31:0] rf_base_wr_data,
-
   input logic [otbn_pkg::WdrAw-1:0] rf_bignum_rd_addr_a,
   input logic [otbn_pkg::WdrAw-1:0] rf_bignum_rd_addr_b,
   input logic [otbn_pkg::WdrAw-1:0] rf_bignum_wr_addr,
 
-  input logic [otbn_pkg::WLEN-1:0] rf_bignum_rd_data_a,
-  input logic [otbn_pkg::WLEN-1:0] rf_bignum_rd_data_b,
+  input logic                      rf_bignum_rd_en_a,
+  input logic                      rf_bignum_rd_en_b,
 
   input logic [31:0]              insn_fetch_resp_data,
   input logic [ImemAddrWidth-1:0] insn_fetch_resp_addr,
@@ -67,6 +63,7 @@ interface otbn_trace_if
   input otbn_pkg::ispr_e                 ispr_addr,
   input logic                            ispr_init,
   input otbn_pkg::insn_dec_shared_t      insn_dec_shared,
+  input otbn_pkg::insn_dec_bignum_t      insn_dec_bignum,
   input otbn_pkg::alu_bignum_operation_t alu_bignum_operation,
   input logic                            mac_bignum_en,
 
@@ -94,13 +91,20 @@ interface otbn_trace_if
   assign insn_data  = insn_fetch_resp_data;
   assign insn_stall = u_otbn_core.u_otbn_controller.state_d == OtbnStateStall;
 
-  logic rf_ren_a_bignum;
-  logic rf_ren_b_bignum;
+  logic [31:0] rf_base_rd_data_a;
+  logic [31:0] rf_base_rd_data_b;
+  logic [31:0] rf_base_wr_data;
 
-  // Read enables for bignum are only inside the decoder with the current design, so bring them out
-  // here for access by the tracer.
-  assign rf_ren_a_bignum = u_otbn_decoder.rf_ren_a_bignum & insn_valid;
-  assign rf_ren_b_bignum = u_otbn_decoder.rf_ren_b_bignum & insn_valid;
+  logic [WLEN-1:0] rf_bignum_rd_data_a;
+  logic [WLEN-1:0] rf_bignum_rd_data_b;
+  logic [WLEN-1:0] rf_bignum_wr_data_no_intg;
+
+  assign rf_base_rd_data_a = u_otbn_controller.rf_base_rd_data_a_no_intg;
+  assign rf_base_rd_data_b = u_otbn_controller.rf_base_rd_data_b_no_intg;
+  assign rf_base_wr_data = u_otbn_rf_base.wr_data_intg_mux_out[31:0];
+
+  assign rf_bignum_rd_data_a = u_otbn_controller.rf_bignum_rd_data_a_no_intg;
+  assign rf_bignum_rd_data_b = u_otbn_controller.rf_bignum_rd_data_b_no_intg;
 
   // The bignum register file is capable of half register writes. To avoid the tracer having to deal
   // with this, slightly modified rf_bignum_wr_en and rf_bignum_wr_data signals are provided here.
@@ -114,15 +118,30 @@ interface otbn_trace_if
 
   logic [WLEN-1:0] rf_bignum_wr_old_data;
 
-  if (RegFile == RegFileFF) begin : g_rf_ff_bignum_wr_old_data
-    assign rf_bignum_wr_old_data = gen_rf_bignum_ff.u_otbn_rf_bignum.rf[rf_bignum_wr_addr];
-  end else if (RegFile == RegFileFPGA) begin : g_rf_fpga_bignum_wr_old_data
-    assign rf_bignum_wr_old_data = gen_rf_bignum_fpga.u_otbn_rf_bignum.rf[rf_bignum_wr_addr];
+  logic [ExtWLEN-1:0] bignum_rf [NWdr];
+
+  for (genvar i = 0; i < NWdr; ++i) begin : g_probe_bignum_rf
+    if (RegFile == RegFileFF) begin : g_rf_ff_probe
+      assign bignum_rf[i] = u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i];
+    end else if (RegFile == RegFileFPGA) begin : g_rf_fpga_probe
+      assign bignum_rf[i] = u_otbn_rf_bignum.gen_rf_bignum_fpga.u_otbn_rf_bignum_inner.rf[i];
+    end
+  end
+
+  for (genvar i = 0; i < BaseWordsPerWLEN; ++i) begin : g_strip_intg
+    // u_otbn_rf_bignum.wr_data_no_intg is final write data heading to the register file, which
+    // includes the integrity, this needs to be stripped off for tracing.
+    assign rf_bignum_wr_data_no_intg[i*32 +: 32] =
+        u_otbn_rf_bignum.wr_data_intg_mux_out[i * 39 +: 32];
+    // Extract data currently in the register file for the current write address, stripping off
+    // integrity. This is used to determine the final value for the whole register when doing half
+    // register writes.
+    assign rf_bignum_wr_old_data[i*32 +: 32] = bignum_rf[rf_bignum_wr_addr][i * 39 +: 32];
   end
 
   for (genvar i = 0; i < 2; i++) begin : g_rf_bignum_wr_data
     assign rf_bignum_wr_data[(WLEN/2)*i +: WLEN/2] = u_otbn_controller.rf_bignum_wr_en_o[i] ?
-      u_otbn_controller.rf_bignum_wr_data_o[(WLEN/2)*i +: WLEN/2] :
+      rf_bignum_wr_data_no_intg[(WLEN/2)*i +: WLEN/2] :
       rf_bignum_wr_old_data[(WLEN/2)*i +: WLEN/2];
   end
 
@@ -220,9 +239,9 @@ interface otbn_trace_if
   // Determine if current instruction reads a flag group specified in the instruction.
   assign flag_group_read_op =
       alu_bignum_operation.mac_flag_en                                                  |
-      (alu_bignum_operation.op inside {AluOpBignumAddc, AluOpBignumSubb, AluOpBignumSel,
-                                       AluOpBignumXor, AluOpBignumOr, AluOpBignumAnd,
-                                       AluOpBignumNot});
+      insn_dec_bignum.sel_insn                                                          |
+      (alu_bignum_operation.op inside {AluOpBignumAddc, AluOpBignumSubb, AluOpBignumXor,
+                                       AluOpBignumOr, AluOpBignumAnd, AluOpBignumNot});
 
   for (genvar i_fg = 0; i_fg < NFlagGroups; i_fg++) begin : g_flag_group_acceses
     assign flags_write[i_fg] = u_otbn_alu_bignum.flags_en[i_fg] & ~ispr_init;

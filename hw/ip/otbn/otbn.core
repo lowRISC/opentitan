@@ -19,6 +19,7 @@ filesets:
       - rtl/otbn_decoder.sv
       - rtl/otbn_instruction_fetch.sv
       - rtl/otbn_rf_base.sv
+      - rtl/otbn_rf_bignum.sv
       - rtl/otbn_rf_base_ff.sv
       - rtl/otbn_rf_bignum_ff.sv
       - rtl/otbn_rf_base_fpga.sv

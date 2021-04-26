@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * 32b General Purpose Register File (GPRs)
+ * 39b General Purpose Register File (GPRs)
+ *
+ * 39b to support 32b register with 7b integrity. Integrity generation/checking implemented in
+ * wrapping otbn_rf_base module
  *
  * Features:
  * - 2 read ports
@@ -17,21 +20,21 @@
 module otbn_rf_base_fpga
   import otbn_pkg::*;
 (
-  input logic          clk_i,
-  input logic          rst_ni,
+  input logic                     clk_i,
+  input logic                     rst_ni,
 
-  input logic [4:0]    wr_addr_i,
-  input logic          wr_en_i,
-  input logic [31:0]   wr_data_i,
+  input logic  [4:0]               wr_addr_i,
+  input logic                      wr_en_i,
+  input logic  [BaseIntgWidth-1:0] wr_data_i,
 
-  input  logic [4:0]   rd_addr_a_i,
-  output logic [31:0]  rd_data_a_o,
+  input  logic [4:0]               rd_addr_a_i,
+  output logic [BaseIntgWidth-1:0] rd_data_a_o,
 
-  input  logic [4:0]   rd_addr_b_i,
-  output logic [31:0]  rd_data_b_o
+  input  logic [4:0]               rd_addr_b_i,
+  output logic [BaseIntgWidth-1:0] rd_data_b_o
 );
-  logic [31:0] rf_reg [NGpr];
-  logic        wr_en;
+  logic [BaseIntgWidth-1:0] rf_reg [NGpr];
+  logic                    wr_en;
 
   // The reset is not used in this register file version.
   logic unused_rst_ni;

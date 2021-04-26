@@ -7,11 +7,12 @@
 
 `ifndef SYNTHESIS
 interface otbn_stack_snooper_if #(
+  parameter int StackIntgWidth = 39,
   parameter int StackWidth = 32,
   parameter int StackDepth = 4,
   localparam int StackDepthW = prim_util_pkg::vbits(StackDepth)
 ) (
-  input logic [StackWidth-1:0] stack_storage [StackDepth],
+  input logic [StackIntgWidth-1:0] stack_storage [StackDepth],
   input logic [StackDepthW:0] stack_wr_ptr_q
 );
 
@@ -30,7 +31,7 @@ interface otbn_stack_snooper_if #(
     end
 
     val = '0;
-    val[StackWidth-1:0] = stack_storage[index];
+    val[StackWidth-1:0] = stack_storage[index][StackWidth-1:0];
 
     // Return 0 to indicate a valid stack element
     return 0;

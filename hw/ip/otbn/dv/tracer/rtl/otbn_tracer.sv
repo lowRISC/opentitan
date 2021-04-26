@@ -123,12 +123,12 @@ module otbn_tracer
   endfunction
 
   function automatic void trace_bignum_rf();
-    if (otbn_trace.rf_ren_a_bignum) begin
+    if (otbn_trace.rf_bignum_rd_en_a) begin
       output_trace(RegReadPrefix, $sformatf("w%02d: %s", otbn_trace.rf_bignum_rd_addr_a,
                                             otbn_wlen_data_str(otbn_trace.rf_bignum_rd_data_a)));
     end
 
-    if (otbn_trace.rf_ren_b_bignum) begin
+    if (otbn_trace.rf_bignum_rd_en_b) begin
       output_trace(RegReadPrefix, $sformatf("w%02d: %s", otbn_trace.rf_bignum_rd_addr_b,
                                             otbn_wlen_data_str(otbn_trace.rf_bignum_rd_data_b)));
     end

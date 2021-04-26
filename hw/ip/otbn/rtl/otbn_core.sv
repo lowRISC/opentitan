@@ -83,18 +83,19 @@ module otbn_core
   insn_dec_bignum_t         insn_dec_bignum;
   insn_dec_shared_t         insn_dec_shared;
 
-  logic [4:0]   rf_base_wr_addr;
-  logic         rf_base_wr_en;
-  logic         rf_base_wr_commit;
-  logic [31:0]  rf_base_wr_data;
-  logic [4:0]   rf_base_rd_addr_a;
-  logic         rf_base_rd_en_a;
-  logic [31:0]  rf_base_rd_data_a;
-  logic [4:0]   rf_base_rd_addr_b;
-  logic         rf_base_rd_en_b;
-  logic [31:0]  rf_base_rd_data_b;
-  logic         rf_base_rd_commit;
-  logic         rf_base_call_stack_err;
+  logic [4:0]               rf_base_wr_addr;
+  logic                     rf_base_wr_en;
+  logic                     rf_base_wr_commit;
+  logic [31:0]              rf_base_wr_data_no_intg;
+  logic [4:0]               rf_base_rd_addr_a;
+  logic                     rf_base_rd_en_a;
+  logic [BaseIntgWidth-1:0] rf_base_rd_data_a_intg;
+  logic [4:0]               rf_base_rd_addr_b;
+  logic                     rf_base_rd_en_b;
+  logic [BaseIntgWidth-1:0] rf_base_rd_data_b_intg;
+  logic                     rf_base_rd_commit;
+  logic                     rf_base_call_stack_err;
+  logic                     rf_base_rd_data_err;
 
   alu_base_operation_t  alu_base_operation;
   alu_base_comparison_t alu_base_comparison;
@@ -113,16 +114,22 @@ module otbn_core
   logic [WLEN-1:0]          lsu_bignum_rdata;
   logic                     lsu_rdata_err;
 
-  logic [WdrAw-1:0] rf_bignum_wr_addr;
-  logic [1:0]       rf_bignum_wr_en;
-  logic [WLEN-1:0]  rf_bignum_wr_data;
-  logic [WdrAw-1:0] rf_bignum_rd_addr_a;
-  logic [WLEN-1:0]  rf_bignum_rd_data_a;
-  logic [WdrAw-1:0] rf_bignum_rd_addr_b;
-  logic [WLEN-1:0]  rf_bignum_rd_data_b;
+  logic [WdrAw-1:0]   rf_bignum_wr_addr;
+  logic [1:0]         rf_bignum_wr_en;
+  logic [WLEN-1:0]    rf_bignum_wr_data_no_intg;
+  logic [ExtWLEN-1:0] rf_bignum_wr_data_intg;
+  logic               rf_bignum_wr_data_intg_sel;
+  logic [WdrAw-1:0]   rf_bignum_rd_addr_a;
+  logic               rf_bignum_rd_en_a;
+  logic [ExtWLEN-1:0] rf_bignum_rd_data_a_intg;
+  logic [WdrAw-1:0]   rf_bignum_rd_addr_b;
+  logic               rf_bignum_rd_en_b;
+  logic [ExtWLEN-1:0] rf_bignum_rd_data_b_intg;
+  logic               rf_bignum_rd_data_err;
 
   alu_bignum_operation_t alu_bignum_operation;
   logic [WLEN-1:0]       alu_bignum_operation_result;
+  logic                  alu_bignum_selection_flag;
 
   mac_bignum_operation_t mac_bignum_operation;
   logic [WLEN-1:0]       mac_bignum_operation_result;
@@ -260,27 +267,33 @@ module otbn_core
     .insn_dec_shared_i (insn_dec_shared),
 
     // To/from base register file
-    .rf_base_wr_addr_o        (rf_base_wr_addr),
-    .rf_base_wr_en_o          (rf_base_wr_en),
-    .rf_base_wr_commit_o      (rf_base_wr_commit),
-    .rf_base_wr_data_o        (rf_base_wr_data),
-    .rf_base_rd_addr_a_o      (rf_base_rd_addr_a),
-    .rf_base_rd_en_a_o        (rf_base_rd_en_a),
-    .rf_base_rd_data_a_i      (rf_base_rd_data_a),
-    .rf_base_rd_addr_b_o      (rf_base_rd_addr_b),
-    .rf_base_rd_en_b_o        (rf_base_rd_en_b),
-    .rf_base_rd_data_b_i      (rf_base_rd_data_b),
-    .rf_base_rd_commit_o      (rf_base_rd_commit),
-    .rf_base_call_stack_err_i (rf_base_call_stack_err),
+    .rf_base_wr_addr_o         (rf_base_wr_addr),
+    .rf_base_wr_en_o           (rf_base_wr_en),
+    .rf_base_wr_commit_o       (rf_base_wr_commit),
+    .rf_base_wr_data_no_intg_o (rf_base_wr_data_no_intg),
+    .rf_base_rd_addr_a_o       (rf_base_rd_addr_a),
+    .rf_base_rd_en_a_o         (rf_base_rd_en_a),
+    .rf_base_rd_data_a_intg_i  (rf_base_rd_data_a_intg),
+    .rf_base_rd_addr_b_o       (rf_base_rd_addr_b),
+    .rf_base_rd_en_b_o         (rf_base_rd_en_b),
+    .rf_base_rd_data_b_intg_i  (rf_base_rd_data_b_intg),
+    .rf_base_rd_commit_o       (rf_base_rd_commit),
+    .rf_base_call_stack_err_i  (rf_base_call_stack_err),
+    .rf_base_rd_data_err_i     (rf_base_rd_data_err),
 
     // To/from bignunm register file
-    .rf_bignum_wr_addr_o   (rf_bignum_wr_addr),
-    .rf_bignum_wr_en_o     (rf_bignum_wr_en),
-    .rf_bignum_wr_data_o   (rf_bignum_wr_data),
-    .rf_bignum_rd_addr_a_o (rf_bignum_rd_addr_a),
-    .rf_bignum_rd_data_a_i (rf_bignum_rd_data_a),
-    .rf_bignum_rd_addr_b_o (rf_bignum_rd_addr_b),
-    .rf_bignum_rd_data_b_i (rf_bignum_rd_data_b),
+    .rf_bignum_wr_addr_o          (rf_bignum_wr_addr),
+    .rf_bignum_wr_en_o            (rf_bignum_wr_en),
+    .rf_bignum_wr_data_no_intg_o  (rf_bignum_wr_data_no_intg),
+    .rf_bignum_wr_data_intg_o     (rf_bignum_wr_data_intg),
+    .rf_bignum_wr_data_intg_sel_o (rf_bignum_wr_data_intg_sel),
+    .rf_bignum_rd_addr_a_o        (rf_bignum_rd_addr_a),
+    .rf_bignum_rd_en_a_o          (rf_bignum_rd_en_a),
+    .rf_bignum_rd_data_a_intg_i   (rf_bignum_rd_data_a_intg),
+    .rf_bignum_rd_addr_b_o        (rf_bignum_rd_addr_b),
+    .rf_bignum_rd_en_b_o          (rf_bignum_rd_en_b),
+    .rf_bignum_rd_data_b_intg_i   (rf_bignum_rd_data_b_intg),
+    .rf_bignum_rd_data_err_i      (rf_bignum_rd_data_err),
 
     // To/from base ALU
     .alu_base_operation_o         (alu_base_operation),
@@ -291,6 +304,7 @@ module otbn_core
     // To/from bignum ALU
     .alu_bignum_operation_o         (alu_bignum_operation),
     .alu_bignum_operation_result_i  (alu_bignum_operation_result),
+    .alu_bignum_selection_flag_i    (alu_bignum_selection_flag),
 
     // To/from bignum MAC
     .mac_bignum_operation_o        (mac_bignum_operation),
@@ -359,20 +373,23 @@ module otbn_core
     .clk_i,
     .rst_ni,
 
-    .wr_addr_i   (rf_base_wr_addr),
-    .wr_en_i     (rf_base_wr_en),
-    .wr_commit_i (rf_base_wr_commit),
-    .wr_data_i   (rf_base_wr_data),
+    .wr_addr_i          (rf_base_wr_addr),
+    .wr_en_i            (rf_base_wr_en),
+    .wr_data_no_intg_i  (rf_base_wr_data_no_intg),
+    .wr_data_intg_i     ('0),
+    .wr_data_intg_sel_i (1'b0),
+    .wr_commit_i        (rf_base_wr_commit),
 
-    .rd_addr_a_i (rf_base_rd_addr_a),
-    .rd_en_a_i   (rf_base_rd_en_a),
-    .rd_data_a_o (rf_base_rd_data_a),
-    .rd_addr_b_i (rf_base_rd_addr_b),
-    .rd_en_b_i   (rf_base_rd_en_b),
-    .rd_data_b_o (rf_base_rd_data_b),
-    .rd_commit_i (rf_base_rd_commit),
+    .rd_addr_a_i      (rf_base_rd_addr_a),
+    .rd_en_a_i        (rf_base_rd_en_a),
+    .rd_data_a_intg_o (rf_base_rd_data_a_intg),
+    .rd_addr_b_i      (rf_base_rd_addr_b),
+    .rd_en_b_i        (rf_base_rd_en_b),
+    .rd_data_b_intg_o (rf_base_rd_data_b_intg),
+    .rd_commit_i      (rf_base_rd_commit),
 
-    .call_stack_err_o (rf_base_call_stack_err)
+    .call_stack_err_o (rf_base_call_stack_err),
+    .rd_data_err_o    (rf_base_rd_data_err)
   );
 
   otbn_alu_base u_otbn_alu_base (
@@ -385,35 +402,27 @@ module otbn_core
     .comparison_result_o (alu_base_comparison_result)
   );
 
-  if (RegFile == RegFileFF) begin : gen_rf_bignum_ff
-    otbn_rf_bignum_ff u_otbn_rf_bignum (
-      .clk_i,
-      .rst_ni,
+  otbn_rf_bignum #(
+    .RegFile (RegFile)
+  ) u_otbn_rf_bignum (
+    .clk_i,
+    .rst_ni,
 
-      .wr_addr_i (rf_bignum_wr_addr),
-      .wr_en_i   (rf_bignum_wr_en),
-      .wr_data_i (rf_bignum_wr_data),
+    .wr_addr_i          (rf_bignum_wr_addr),
+    .wr_en_i            (rf_bignum_wr_en),
+    .wr_data_no_intg_i  (rf_bignum_wr_data_no_intg),
+    .wr_data_intg_i     (rf_bignum_wr_data_intg),
+    .wr_data_intg_sel_i (rf_bignum_wr_data_intg_sel),
 
-      .rd_addr_a_i (rf_bignum_rd_addr_a),
-      .rd_data_a_o (rf_bignum_rd_data_a),
-      .rd_addr_b_i (rf_bignum_rd_addr_b),
-      .rd_data_b_o (rf_bignum_rd_data_b)
-    );
-  end else if (RegFile == RegFileFPGA) begin : gen_rf_bignum_fpga
-    otbn_rf_bignum_fpga u_otbn_rf_bignum (
-      .clk_i,
-      .rst_ni,
+    .rd_addr_a_i      (rf_bignum_rd_addr_a),
+    .rd_en_a_i        (rf_bignum_rd_en_a),
+    .rd_data_a_intg_o (rf_bignum_rd_data_a_intg),
+    .rd_addr_b_i      (rf_bignum_rd_addr_b),
+    .rd_en_b_i        (rf_bignum_rd_en_b),
+    .rd_data_b_intg_o (rf_bignum_rd_data_b_intg),
 
-      .wr_addr_i (rf_bignum_wr_addr),
-      .wr_en_i   (rf_bignum_wr_en),
-      .wr_data_i (rf_bignum_wr_data),
-
-      .rd_addr_a_i (rf_bignum_rd_addr_a),
-      .rd_data_a_o (rf_bignum_rd_data_a),
-      .rd_addr_b_i (rf_bignum_rd_addr_b),
-      .rd_data_b_o (rf_bignum_rd_data_b)
-    );
-  end
+    .rd_data_err_o (rf_bignum_rd_data_err)
+  );
 
   otbn_alu_bignum u_otbn_alu_bignum (
     .clk_i,
@@ -421,6 +430,7 @@ module otbn_core
 
     .operation_i              (alu_bignum_operation),
     .operation_result_o       (alu_bignum_operation_result),
+    .selection_flag_o         (alu_bignum_selection_flag),
 
     .ispr_addr_i              (ispr_addr),
     .ispr_base_wdata_i        (ispr_base_wdata),

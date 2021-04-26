@@ -311,19 +311,19 @@ module otbn_top_sim (
   export "DPI-C" function otbn_base_call_stack_get_element;
 
   function automatic int unsigned otbn_base_call_stack_get_element(int index);
-    return u_otbn_core.u_otbn_rf_base.u_call_stack.stack_storage[index];
+    return u_otbn_core.u_otbn_rf_base.u_call_stack.stack_storage[index][31:0];
   endfunction
 
   export "DPI-C" function otbn_base_reg_get;
 
   function automatic int unsigned otbn_base_reg_get(int index);
-    return u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.rf_reg[index];
+    return u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.rf_reg[index][31:0];
   endfunction
 
   export "DPI-C" function otbn_bignum_reg_get;
 
   function automatic int unsigned otbn_bignum_reg_get(int index, int word);
-    return u_otbn_core.gen_rf_bignum_ff.u_otbn_rf_bignum.rf[index][word*32+:32];
+    return u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[index][word*39+:32];
   endfunction
 
   export "DPI-C" function otbn_err_get;
