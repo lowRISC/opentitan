@@ -313,6 +313,10 @@ module csrng_core import csrng_pkg::*; #(
   logic [7:0]              track_sm[16];
   logic [1:0]              sel_track_sm_grp;
 
+  logic                    unused_err_code_test_bit;
+  logic                    unused_reg2hw_genbits;
+  logic                    unused_int_state_val;
+
   // flops
   logic [2:0]  acmd_q, acmd_d;
   logic [3:0]  shid_q, shid_d;
@@ -645,6 +649,7 @@ module csrng_core import csrng_pkg::*; #(
   // master module enable
   assign cs_enable = reg2hw.ctrl.enable.q;
   assign aes_cipher_enable = !reg2hw.ctrl.aes_cipher_disable.q;
+  assign hw2reg.regwen.d = !cs_enable; // hw reg lock implementation
   // fifo selection for debug
   assign fifo_sel = reg2hw.ctrl.fifo_depth_sts_sel.q;
 
@@ -1461,19 +1466,15 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.hw_exc_sts.de = cs_enable;
   assign hw2reg.hw_exc_sts.d  = hw_exception_sts;
 
-  assign hw2reg.sum_sts.fifo_depth_sts.de = cs_enable;
-  assign hw2reg.sum_sts.fifo_depth_sts.d  =
+  assign hw2reg.sum_sts.de = cs_enable;
+  assign hw2reg.sum_sts.d  =
          (fifo_sel == 4'h0) ? {21'b0,pfifo_sw_genbits_depth} :
          24'b0;
 
-  assign hw2reg.sum_sts.diag.de = !cs_enable;
-  assign hw2reg.sum_sts.diag.d  =
-         (|err_code_test_bit[19:16]) && // not used
-         (|err_code_test_bit[27:26]) && // not used
-         (reg2hw.regwen.q)        && // not used
-         (|reg2hw.genbits.q)      && // not used
-         (|reg2hw.int_state_val.q); // not used
-
+  // unused signals
+  assign unused_err_code_test_bit = (|err_code_test_bit[19:16]) || (|err_code_test_bit[27:26]);
+  assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
+  assign unused_int_state_val = (|reg2hw.int_state_val.q);
 
 
 endmodule // csrng_core
