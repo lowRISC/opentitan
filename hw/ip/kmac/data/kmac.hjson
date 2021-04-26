@@ -192,20 +192,28 @@
           name: "msg_endianness"
           desc: '''Message Endianness.
 
-                If 1, Convert TL-UL write data[31:0] to {d[7:0], d[15:8], ...}
-
-                0: Little-endian. Keep input value as it is
-                1: Big-endian. Convert incoming value
+                If 1 then each individual multi-byte value, regardless of its
+                alignment, written to !!MSG_FIFO will be added to the message
+                in big-endian byte order.
+                If 0, each value will be added to the message in little-endian
+                byte order.
+                A message written to !!MSG_FIFO one byte at a time will not be
+                affected by this setting.
+                From a hardware perspective byte swaps are performed on a TL-UL
+                word granularity.
                 '''
           resval: "0"
         } // f: msg_endianness
         { bits: "9"
           name: "state_endianness"
-          desc: '''Output state (Digest) Endianness.
+          desc: '''State Endianness.
 
-                Convert read-out state register to big-endian style.
-                If 0, keep the internal value as it is when SW reads.
-                If 1, convert the internal state value.
+                If 1 then each individual word in the !!STATE output register
+                is converted to big-endian byte order.
+                The order of the words in relation to one another is not
+                changed.
+                This setting does not affect how the state is interpreted
+                during computation.
                 '''
         } // f: state_endianness
         { bits: "12"

@@ -67,12 +67,30 @@
         }
         { bits: "2",
           name: "endian_swap",
-          desc: "Convert TL-UL wdata[31:0] to big-endian style {w[7:0], w[15:8], .. }",
+          desc: '''Endian swap.
+
+                If 0 then each individual multi-byte value, regardless of its
+                alignment, written to !!MSG_FIFO will be added to the message
+                in big-endian byte order.
+                If 1, each value will be added to the message in little-endian
+                byte order.
+                A message written to !!MSG_FIFO one byte at a time will not be
+                affected by this setting.
+                From a hardware perspective byte swaps are performed on a TL-UL
+                word granularity.
+                ''',
           resval: "1",
         }
         { bits: "3",
           name: "digest_swap",
-          desc: "DIGEST register byte-order. If 1, it swaps each DIGEST registers' byte-order.",
+          desc: '''Digest register byte swap.
+
+                If 1 the value contained in each digest output register is
+                converted to big-endian byte order.
+                This setting does not affect the order of the digest output
+                registers, !!DIGEST_0 still contains the first 4 bytes of
+                the digest.
+                ''',
           resval: "0",
         }
       ]
