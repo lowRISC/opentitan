@@ -14,11 +14,12 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
   `uvm_object_new
 
   virtual task dut_init(string reset_kind = "HARD");
+    if ($urandom_range(0, 1)) cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
     super.dut_init(reset_kind);
+
     // Drive dft_en pins to access the test_access memory, this is used for tl_error sequence in
     // stress_all_with_rand_reset test
     cfg.otp_ctrl_vif.drive_lc_dft_en(lc_ctrl_pkg::On);
-    if ($urandom_range(0, 1)) cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
 
     // Some sequence will disable scb, here we re-enable scb after reset.
     cfg.en_scb = 1;
