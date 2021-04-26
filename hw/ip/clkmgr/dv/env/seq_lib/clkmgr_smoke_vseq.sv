@@ -47,22 +47,22 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
         '{TransAes, ral.clk_hints.clk_main_otbn_hint, ral.clk_hints_status.clk_main_otbn_val}
     };
 
-    cfg.clkmgr_vif.update_idle(0);
+    update_idle(0);
     trans = trans.first;
     csr_rd(.ptr(ral.clk_hints), .value(value));
     `uvm_info(`gfn, $sformatf("Updating hints to 0x%0x", value), UVM_MEDIUM)
-    cfg.clkmgr_vif.update_hints(value);
     do begin
       trans_descriptor_t descriptor = trans_descriptors[int'(trans)];
       `uvm_info(`gfn, $sformatf("Clearing %s hint bit", descriptor.unit.name), UVM_MEDIUM)
       csr_wr(.ptr(descriptor.hint_bit), .value(1'b0));
+      update_hints(ral.clk_hints.get());
       csr_rd(.ptr(descriptor.value_bit), .value(bit_value));
       `DV_CHECK_EQ(bit_value, 1'b1,
                    $sformatf("%s hint value cannot drop while busy", descriptor.unit.name()))
 
       `uvm_info(`gfn, $sformatf("Setting %s idle bit", descriptor.unit.name), UVM_MEDIUM)
       cfg.clkmgr_vif.wait_clks(1);
-      cfg.clkmgr_vif.update_trans_idle(1'b1, trans);
+      update_trans_idle(1'b1, trans);
       // Some cycles for the logic to settle.
       cfg.clk_rst_vif.wait_clks(3);
       csr_rd(.ptr(descriptor.value_bit), .value(bit_value));

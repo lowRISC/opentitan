@@ -87,15 +87,11 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         // The functionality of jitter is not well specified. Assumming the
         // values just stick.
       end
-      "clk_enables":
-        if (addr_phase_write) begin
-          cfg.clkmgr_vif.update_clk_enables(item.a_data);
-        end
-      "clk_hints":
+      "clk_enables": begin
+      end
+      "clk_hints": begin
         // Clearing a hint sets an expectation for the status to transition to zero.
-        if (addr_phase_write) begin
-          cfg.clkmgr_vif.update_hints(item.a_data);
-        end
+      end
       "clk_hints_status": begin
         // The status will respond to the hint once the target unit is idle. We check it in
         // the sequence.

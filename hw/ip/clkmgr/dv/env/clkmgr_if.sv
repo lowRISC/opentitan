@@ -74,16 +74,12 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
     clk_enables = ens;
   endfunction
 
-  function automatic void update_hints(logic [$bits(clk_hints)-1:0] hints);
+  function automatic void update_hints(clk_hints_t hints);
     clk_hints = hints;
   endfunction
 
   function automatic void update_idle(bit [NUM_TRANS-1:0] value);
     idle_i = value;
-  endfunction
-
-  function automatic void update_trans_idle(logic value, trans_e trans);
-    idle_i[trans] = value;
   endfunction
 
   task automatic go_idle(trans_e trans, int cycles);

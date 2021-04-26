@@ -73,4 +73,37 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.aon_clk_rst_vif.set_freq_mhz(7);
   endtask
 
+  virtual function void update_clk_enables(logic [NUM_PERI-1:0] enables);
+    cfg.clkmgr_vif.update_clk_enables(enables);
+    if (cfg.en_cov) begin
+      cov.update_peri_cgs(enables, cfg.clkmgr_vif.pwr_i.ip_clk_en,
+                          cfg.clkmgr_vif.scanmode_i);
+    end
+  endfunction
+
+  virtual function void update_hints(logic [NUM_TRANS-1:0] hints);
+    cfg.clkmgr_vif.update_hints(hints);
+    if (cfg.en_cov) begin
+      cov.update_trans_cgs(hints, cfg.clkmgr_vif.pwr_i.ip_clk_en,
+                           cfg.clkmgr_vif.scanmode_i, cfg.clkmgr_vif.idle_i);
+    end
+  endfunction
+
+  virtual function logic [NUM_TRANS-1:0] get_hints();
+    return cfg.clkmgr_vif.clk_hints;
+  endfunction
+
+  virtual function void update_idle(logic [NUM_TRANS-1:0] value);
+    idle = value;
+    cfg.clkmgr_vif.update_idle(idle);
+    if (cfg.en_cov) begin
+      cov.update_trans_cgs(get_hints(), ip_clk_en, cfg.clkmgr_vif.scanmode_i, idle);
+    end
+  endfunction
+
+  virtual function void update_trans_idle(logic value, trans_e trans);
+    idle[trans] = value;
+    update_idle(idle);
+  endfunction
+
 endclass : clkmgr_base_vseq

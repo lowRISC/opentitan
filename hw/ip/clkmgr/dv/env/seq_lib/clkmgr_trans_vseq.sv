@@ -23,18 +23,18 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
     trans = trans.first;
     `uvm_info(`gfn, $sformatf("Updating hints to 0x%0x", initial_hints), UVM_MEDIUM)
     csr_wr(.ptr(ral.clk_hints), .value(initial_hints));
-    cfg.clkmgr_vif.update_hints(initial_hints);
+    update_hints(initial_hints);
     cfg.clkmgr_vif.wait_clks(5);
     csr_rd(.ptr(ral.clk_hints_status), .value(value));
     // We expect the status to be determined by hints and idle.
     `DV_CHECK_EQ(value, initial_hints | ~idle, "Busy units have status high")
-    idle = '1;
-    cfg.clkmgr_vif.update_idle(idle);
+    update_idle('1);
     cfg.clkmgr_vif.wait_clks(5);
     csr_rd(.ptr(ral.clk_hints_status), .value(value));
     `DV_CHECK_EQ(value, initial_hints, "All idle: units status matches hints")
     // Now enable them all.
     csr_wr(.ptr(ral.clk_hints), .value('1));
+    update_hints('1);
     cfg.clkmgr_vif.wait_clks(5);
     csr_rd(.ptr(ral.clk_hints_status), .value(value));
     // We expect all units to be on.
