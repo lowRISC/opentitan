@@ -26,34 +26,42 @@ class otp_ctrl_background_chks_vseq extends otp_ctrl_dai_errs_vseq;
     int check_wait_cycles;
     super.body();
 
-    // Write background check
-    if (trigger_chks[0]) csr_wr(ral.integrity_check_period,   check_period);
-    if (trigger_chks[1]) csr_wr(ral.consistency_check_period, check_period);
+    // For stress_all_with_rand_reset test, if previous lc_esc_en is not cleared, then skip the
+    // background check.
+    if (cfg.otp_ctrl_vif.lc_esc_on == 0) begin
 
-    cfg.en_scb = 0;
-    // According to spec, check period will append an 'hFF from the LSF. Add 10 cycle buffers for
-    // register updates.
-    check_wait_cycles = (check_period + 1) << 8 + 10;
+      // Write background check
+      if (trigger_chks[0]) csr_wr(ral.integrity_check_period,   check_period);
+      if (trigger_chks[1]) csr_wr(ral.consistency_check_period, check_period);
+      `uvm_info(`gfn, $sformatf("trigger background check %0h", trigger_chks), UVM_LOW)
 
-    // Wait for first check done
-    repeat($countones(trigger_chks)) begin
-      csr_spinwait(.ptr(ral.status.check_pending), .exp_data(1),
-                   .timeout_ns(cfg.clk_rst_vif.clk_period_ps / 1000 * check_wait_cycles));
+      cfg.en_scb = 0;
+      // According to spec, check period will append an 'hFF from the LSF. Add 10 cycle buffers for
+      // register updates.
+      check_wait_cycles = (check_period + 1) << 8 + 10;
 
-      csr_spinwait(.ptr(ral.status.check_pending), .exp_data(0));
+      // Wait for first check done
+      repeat($countones(trigger_chks)) begin
+        csr_spinwait(.ptr(ral.status.check_pending), .exp_data(1),
+                     .timeout_ns(cfg.clk_rst_vif.clk_period_ps / 1000 * check_wait_cycles));
+
+        csr_spinwait(.ptr(ral.status.check_pending), .exp_data(0));
+      end
+
+      // Configure timeout settings to trigger check error
+      csr_wr(ral.check_timeout, $urandom_range(1, 5));
+      `uvm_info(`gfn, "trigger check timeout error", UVM_LOW)
+
+      // Wait for fatal alert
+      `DV_SPINWAIT_EXIT(
+         wait(cfg.m_alert_agent_cfg["fatal_check_error"].vif.alert_tx_final.alert_p);,
+         cfg.clk_rst_vif.wait_clks(check_wait_cycles);,
+         $sformatf("Timeout waiting for alert %0s", "fatal_check_error"))
+      check_fatal_alert_nonblocking("fatal_check_error");
+
+      cfg.clk_rst_vif.wait_clks($urandom_range(50, 1000));
+      csr_rd_check(.ptr(ral.status.timeout_error), .compare_value(1));
     end
-
-    // Configure timeout settings to trigger check error
-    csr_wr(ral.check_timeout, $urandom_range(1, 5));
-
-    // Wait for fatal alert
-    `DV_SPINWAIT_EXIT(wait(cfg.m_alert_agent_cfg["fatal_check_error"].vif.alert_tx_final.alert_p);,
-                      cfg.clk_rst_vif.wait_clks(check_wait_cycles);,
-                      $sformatf("Timeout waiting for alert %0s", "fatal_check_error"))
-    check_fatal_alert_nonblocking("fatal_check_error");
-
-    cfg.clk_rst_vif.wait_clks($urandom_range(50, 1000));
-    csr_rd_check(.ptr(ral.status.timeout_error), .compare_value(1));
   endtask
 
   virtual task post_start();

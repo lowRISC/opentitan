@@ -139,6 +139,8 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
         csr_rd_check(.ptr(ral.intr_state.otp_error), .compare_value(1));
 
         // Create LC check failure.
+        `uvm_info(`gfn, "OTP_init LC failure", UVM_LOW)
+        exp_status[OtpDaiIdleIdx] = 0;
         cfg.otp_ctrl_vif.lc_check_byp_en = 0;
         req_lc_transition(1);
         trigger_checks(.val('1), .wait_done(0));
