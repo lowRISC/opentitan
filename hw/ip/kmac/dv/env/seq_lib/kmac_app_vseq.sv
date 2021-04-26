@@ -2,26 +2,26 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class kmac_kdf_vseq extends kmac_sideload_vseq;
+class kmac_app_vseq extends kmac_sideload_vseq;
 
-  `uvm_object_utils(kmac_kdf_vseq)
+  `uvm_object_utils(kmac_app_vseq)
   `uvm_object_new
 
-  constraint kdf_c {
+  constraint app_c {
     if (kmac_en) {
-      // KDF outputs 256-bit digest (32 bytes)
+      // KMAC_APP outputs 256-bit digest (32 bytes)
       output_len == 32;
 
       // application interface locked at 256-bit strength
       strength == sha3_pkg::L256;
     }
 
-    // KDF will never use XOF mode
+    // KMAC_APP will never use XOF mode
     xof_en == 0;
   }
 
   // Bias kmac_en to be set more often,
-  // KDF only applies to KMAC mode
+  // KMAC_APP only applies to KMAC mode
   constraint kmac_en_c {
     kmac_en dist {
       0 :/ 3,
@@ -30,7 +30,7 @@ class kmac_kdf_vseq extends kmac_sideload_vseq;
   }
 
   virtual task pre_start();
-    en_kdf = 1;
+    en_app = 1;
     super.pre_start();
   endtask
 

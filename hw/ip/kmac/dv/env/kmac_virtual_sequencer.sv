@@ -10,6 +10,6 @@ class kmac_virtual_sequencer extends cip_base_virtual_sequencer #(
 
   `uvm_component_new
 
-  keymgr_kmac_sequencer kdf_sequencer_h;
+  kmac_app_sequencer kmac_app_sequencer_h;
 
 endclass

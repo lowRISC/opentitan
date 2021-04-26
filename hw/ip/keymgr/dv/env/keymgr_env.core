@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:dv:keymgr_kmac_agent
+      - lowrisc:dv:kmac_app_agent
       - lowrisc:ip:keymgr
     files:
       - keymgr_env_pkg.sv

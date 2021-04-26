@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class keymgr_kmac_host_seq extends keymgr_kmac_base_seq;
-  `uvm_object_utils(keymgr_kmac_host_seq)
+class kmac_app_host_seq extends kmac_app_base_seq;
+  `uvm_object_utils(kmac_app_host_seq)
 
   `uvm_object_new
 
@@ -21,7 +21,7 @@ class keymgr_kmac_host_seq extends keymgr_kmac_base_seq;
     cfg.m_data_push_agent_cfg.host_delay_min = 1;
     cfg.m_data_push_agent_cfg.host_delay_max = 100;
 
-    req = keymgr_kmac_item::type_id::create("req");
+    req = kmac_app_item::type_id::create("req");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req, byte_data_q.size() == msg_size_bytes;)
     `uvm_info(`gfn, $sformatf("Randomized req: %0s", req.sprint()), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("byte_data_q: %0p", req.byte_data_q), UVM_HIGH)

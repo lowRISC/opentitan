@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class keymgr_kmac_monitor extends dv_base_monitor #(
-    .ITEM_T (keymgr_kmac_item),
-    .CFG_T  (keymgr_kmac_agent_cfg),
-    .COV_T  (keymgr_kmac_agent_cov)
+class kmac_app_monitor extends dv_base_monitor #(
+    .ITEM_T (kmac_app_item),
+    .CFG_T  (kmac_app_agent_cfg),
+    .COV_T  (kmac_app_agent_cov)
   );
-  `uvm_component_utils(keymgr_kmac_monitor)
+  `uvm_component_utils(kmac_app_monitor)
 
   // the base class provides the following handles for use:
-  // keymgr_kmac_agent_cfg: cfg
-  // keymgr_kmac_agent_cov: cov
-  // uvm_analysis_port #(keymgr_kmac_item): analysis_port
+  // kmac_app_agent_cfg: cfg
+  // kmac_app_agent_cov: cov
+  // uvm_analysis_port #(kmac_app_item): analysis_port
 
   uvm_tlm_analysis_fifo#(push_pull_item#(`CONNECT_DATA_WIDTH)) data_fifo;
 
@@ -39,8 +39,8 @@ class keymgr_kmac_monitor extends dv_base_monitor #(
   // collect transactions forever - already forked in dv_base_moditor::run_phase
   virtual protected task process_trans();
     forever begin
-      keymgr_kmac_item req = keymgr_kmac_item::type_id::create("req");
-      keymgr_kmac_item rsp;
+      kmac_app_item req = kmac_app_item::type_id::create("req");
+      kmac_app_item rsp;
 
       while (1) begin
         bit [KmacDataIfWidth-1:0] data;

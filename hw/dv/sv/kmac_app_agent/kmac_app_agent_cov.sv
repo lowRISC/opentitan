@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class keymgr_kmac_agent_cov extends dv_base_agent_cov #(keymgr_kmac_agent_cfg);
-  `uvm_component_utils(keymgr_kmac_agent_cov)
+class kmac_app_agent_cov extends dv_base_agent_cov #(kmac_app_agent_cfg);
+  `uvm_component_utils(kmac_app_agent_cov)
 
   // covergroups
 

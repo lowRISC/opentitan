@@ -16,7 +16,7 @@ package kmac_env_pkg;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
   import push_pull_agent_pkg::*;
-  import keymgr_kmac_agent_pkg::*;
+  import kmac_app_agent_pkg::*;
   import kmac_ral_pkg::*;
   import kmac_pkg::*;
   import keymgr_pkg::*;

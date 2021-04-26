@@ -23,7 +23,7 @@ module tb;
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   keymgr_if keymgr_if(.clk(clk), .rst_n(rst_n));
-  keymgr_kmac_intf keymgr_kmac_intf(.clk(clk), .rst_n(rst_n));
+  kmac_app_intf keymgr_kmac_intf(.clk(clk), .rst_n(rst_n));
 
   // connect KDF interface for assertion check
   assign keymgr_if.kmac_data_req = keymgr_kmac_intf.kmac_data_req;
@@ -79,7 +79,7 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual keymgr_if)::set(null, "*.env", "keymgr_vif", keymgr_if);
-    uvm_config_db#(virtual keymgr_kmac_intf)::set(null,
+    uvm_config_db#(virtual kmac_app_intf)::set(null,
                    "*env.m_keymgr_kmac_agent*", "vif", keymgr_kmac_intf);
     $timeformat(-12, 0, " ps", 12);
     run_test();

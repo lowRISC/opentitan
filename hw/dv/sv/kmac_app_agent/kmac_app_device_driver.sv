@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class keymgr_kmac_device_driver extends keymgr_kmac_driver;
-  `uvm_component_utils(keymgr_kmac_device_driver)
+class kmac_app_device_driver extends kmac_app_driver;
+  `uvm_component_utils(kmac_app_device_driver)
   `uvm_component_new
 
 
