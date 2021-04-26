@@ -281,7 +281,7 @@ class IpBlock:
     def from_path(path: str,
                   param_defaults: List[Tuple[str, str]]) -> 'IpBlock':
         '''Load an IpBlock from an hjson description in a file at path'''
-        with open(path, 'r') as handle:
+        with open(path, 'r', encoding='utf-8') as handle:
             return IpBlock.from_text(handle.read(), param_defaults,
                                      'file at {!r}'.format(path))
 
