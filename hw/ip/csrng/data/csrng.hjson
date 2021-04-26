@@ -69,25 +69,23 @@
   registers: [
     { name: "REGWEN",
       desc: "Register write enable for all control registers",
-      swaccess: "rw0c",
-      hwaccess: "hro",
+      swaccess: "ro", // lock is managed by HW
+      hwaccess: "hwo",
+      hwext: "true",
       fields: [
         {
-            bits:   "0",
-            desc: '''
-                  When true, the writeable registers can be modified.
-                  When false, they become read-only. Defaults true, write one to clear. Note that this needs to be
-                  cleared after initial configuration at boot in order to lock in the listed register settings.
-                  '''
+            bits: "0",
+            desc: ''' When true, all writeable registers can be modified.
+            When false, they become read-only.
+            '''
             resval: 1
-        },
+        }
       ]
     },
     { name: "CTRL",
       desc: "Control register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen: "REGWEN",
       fields: [
         {
             bits: "0",
@@ -127,10 +125,6 @@
           name: "FIFO_DEPTH_STS",
           desc: "These bits show the current status of the CRSNG FIFO depths."
         }
-        { bits: "31",
-          name: "DIAG",
-          desc: "This this an internal generic diagnostic bit."
-        }
       ]
     },
     {
@@ -139,7 +133,6 @@
       swaccess: "wo",
       hwaccess: "hro",
       hwqe: "true",
-      regwen: "REGWEN",
       fields: [
         { bits: "31:0",
           name: "CMD_REQ",
@@ -217,7 +210,6 @@
       desc: "Halt the CSRNG main state machine register",
       swaccess: "wo",
       hwaccess: "hro",
-      regwen: "REGWEN",
       fields: [
         {
             bits: "0",
@@ -258,7 +250,6 @@
       swaccess: "rw",
       hwaccess: "hro",
       hwqe: "true",
-      regwen: "REGWEN",
       fields: [
         {
             bits: "3:0",

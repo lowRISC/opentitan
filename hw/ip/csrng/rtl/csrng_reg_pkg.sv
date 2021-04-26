@@ -71,10 +71,6 @@ package csrng_reg_pkg;
   } csrng_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
-    logic        q;
-  } csrng_reg2hw_regwen_reg_t;
-
-  typedef struct packed {
     struct packed {
       logic        q;
     } enable;
@@ -139,14 +135,12 @@ package csrng_reg_pkg;
   } csrng_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [23:0] d;
-      logic        de;
-    } fifo_depth_sts;
-    struct packed {
-      logic        d;
-      logic        de;
-    } diag;
+    logic        d;
+  } csrng_hw2reg_regwen_reg_t;
+
+  typedef struct packed {
+    logic [23:0] d;
+    logic        de;
   } csrng_hw2reg_sum_sts_reg_t;
 
   typedef struct packed {
@@ -297,11 +291,10 @@ package csrng_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    csrng_reg2hw_intr_state_reg_t intr_state; // [137:134]
-    csrng_reg2hw_intr_enable_reg_t intr_enable; // [133:130]
-    csrng_reg2hw_intr_test_reg_t intr_test; // [129:122]
-    csrng_reg2hw_alert_test_reg_t alert_test; // [121:120]
-    csrng_reg2hw_regwen_reg_t regwen; // [119:119]
+    csrng_reg2hw_intr_state_reg_t intr_state; // [136:133]
+    csrng_reg2hw_intr_enable_reg_t intr_enable; // [132:129]
+    csrng_reg2hw_intr_test_reg_t intr_test; // [128:121]
+    csrng_reg2hw_alert_test_reg_t alert_test; // [120:119]
     csrng_reg2hw_ctrl_reg_t ctrl; // [118:113]
     csrng_reg2hw_cmd_req_reg_t cmd_req; // [112:80]
     csrng_reg2hw_genbits_reg_t genbits; // [79:47]
@@ -314,8 +307,9 @@ package csrng_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    csrng_hw2reg_intr_state_reg_t intr_state; // [205:198]
-    csrng_hw2reg_sum_sts_reg_t sum_sts; // [197:171]
+    csrng_hw2reg_intr_state_reg_t intr_state; // [204:197]
+    csrng_hw2reg_regwen_reg_t regwen; // [196:196]
+    csrng_hw2reg_sum_sts_reg_t sum_sts; // [195:171]
     csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [170:167]
     csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [166:165]
     csrng_hw2reg_genbits_reg_t genbits; // [164:133]
@@ -356,6 +350,8 @@ package csrng_reg_pkg;
   parameter logic [0:0] CSRNG_INTR_TEST_CS_FATAL_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] CSRNG_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] CSRNG_ALERT_TEST_FATAL_ALERT_RESVAL = 1'h 0;
+  parameter logic [0:0] CSRNG_REGWEN_RESVAL = 1'h 1;
+  parameter logic [0:0] CSRNG_REGWEN_REGWEN_RESVAL = 1'h 1;
   parameter logic [1:0] CSRNG_GENBITS_VLD_RESVAL = 2'h 0;
   parameter logic [31:0] CSRNG_GENBITS_RESVAL = 32'h 0;
   parameter logic [31:0] CSRNG_INT_STATE_VAL_RESVAL = 32'h 0;
@@ -392,7 +388,7 @@ package csrng_reg_pkg;
     4'b 0001, // index[ 3] CSRNG_ALERT_TEST
     4'b 0001, // index[ 4] CSRNG_REGWEN
     4'b 0111, // index[ 5] CSRNG_CTRL
-    4'b 1111, // index[ 6] CSRNG_SUM_STS
+    4'b 0111, // index[ 6] CSRNG_SUM_STS
     4'b 1111, // index[ 7] CSRNG_CMD_REQ
     4'b 0001, // index[ 8] CSRNG_SW_CMD_STS
     4'b 0001, // index[ 9] CSRNG_GENBITS_VLD
