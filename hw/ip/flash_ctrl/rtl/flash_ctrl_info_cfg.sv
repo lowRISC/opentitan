@@ -45,6 +45,11 @@ module flash_ctrl_info_cfg import flash_ctrl_pkg::*; # (
     if (i > InfoTypeSize[InfoSel]) begin : gen_invalid_region
       assign cfgs_o[i] = '0;
 
+      // For info types that have fewer pages than the maximum, not the full config (cfgs_i[i] for i
+      // greater than InfoTypeSize[InfoSel]) is used.
+      logic unused_cfgs;
+      assign unused_cfgs = &{1'b0, cfgs_i[i]};
+
     // if match creator, only allow access when creator privilege is set
     end else if (CurAddr == SeedInfoPageSel[CreatorSeedIdx]) begin : gen_creator
       assign cfgs_o[i] = cfgs_i[i] & {CfgBitWidth{creator_seed_priv_i}};
