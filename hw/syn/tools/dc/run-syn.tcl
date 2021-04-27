@@ -92,6 +92,7 @@ set fp [open "${BUILD_DIR}/env_variables.tcl" w+]
 puts $fp "set ::env(INTERACTIVE) 1"
 puts $fp "set ::env(syn_root) $syn_root"
 puts $fp "set ::env(foundry_root) $foundry_root"
+puts $fp "set ::env(PARAMS) $PARAMS"
 puts $fp "set ::env(SV_FLIST) $SV_FLIST"
 puts $fp "set ::env(BUILD_DIR) $BUILD_DIR"
 puts $fp "set ::env(DUT) $DUT"
