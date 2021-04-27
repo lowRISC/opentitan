@@ -52,8 +52,9 @@ module spi_host_fsm
   logic [1:0]       cmd_speed_q;
   logic             cmd_wr_en, cmd_wr_en_q;
   logic             cmd_rd_en, cmd_rd_en_q;
+  // cmd_len needs no data latching as it is only used at the very start of a command.
+  // The corresponding register, cmd_len_q, would create a warning at synthesis
   logic [8:0]       cmd_len;
-  logic [8:0]       cmd_len_q;
   logic             csaat;
   logic             csaat_q;
 
@@ -118,7 +119,8 @@ module spi_host_fsm
     csntrail  = new_command ? command_i.configopts.csntrail : csntrail_q;
     clkdiv    = new_command ? command_i.configopts.clkdiv : clkdiv_q;
     csaat     = new_command ? command_i.segment.csaat : csaat_q;
-    cmd_len   = new_command ? command_i.segment.len : cmd_len_q;
+    // cmd_len needs no data latching as it is only used at the very start of a command.
+    cmd_len   = command_i.segment.len;
     cmd_rd_en = new_command ? command_i.segment.cmd_rd_en : cmd_rd_en_q;
     cmd_wr_en = new_command ? command_i.segment.cmd_wr_en : cmd_wr_en_q;
     cmd_speed = new_command ? command_i.segment.speed : cmd_speed_q;
@@ -135,7 +137,6 @@ module spi_host_fsm
       csntrail_q  <= 4'h0;
       clkdiv_q    <= 16'h0;
       csaat_q     <= 1'b0;
-      cmd_len_q   <= 9'h0;
       cmd_rd_en_q <= 1'b0;
       cmd_wr_en_q <= 1'b0;
       cmd_speed_q <= 2'b00;
@@ -149,7 +150,6 @@ module spi_host_fsm
       csntrail_q  <= new_command ? csntrail : csntrail_q;
       clkdiv_q    <= new_command ? clkdiv : clkdiv_q;
       csaat_q     <= new_command ? csaat : csaat_q;
-      cmd_len_q   <= new_command ? cmd_len : cmd_len_q;
       cmd_rd_en_q <= new_command ? cmd_rd_en : cmd_rd_en_q;
       cmd_wr_en_q <= new_command ? cmd_wr_en : cmd_wr_en_q;
       cmd_speed_q <= new_command ? cmd_speed : cmd_speed_q;
@@ -160,11 +160,11 @@ module spi_host_fsm
 
   assign active_o   = ~isIdle;
 
-  assign clk_cntr_d = sw_rst_i                             ? 16'h0 :
-                      !clk_cntr_en                         ? clk_cntr_q :
-                      isIdle                               ? 16'h0 :
-                      (command_ready_o && command_valid_i) ? clkdiv :
-                      (clk_cntr_q == 16'h0)                ? clkdiv :
+  assign clk_cntr_d = sw_rst_i              ? 16'h0 :
+                      !clk_cntr_en          ? clk_cntr_q :
+                      isIdle                ? 16'h0 :
+                      new_command           ? clkdiv :
+                      (clk_cntr_q == 16'h0) ? clkdiv :
                       clk_cntr_q - 1;
 
   assign tx_stall_o = wr_en_internal & ~sr_wr_ready_i;
@@ -370,10 +370,10 @@ module spi_host_fsm
   assign last_bit  = (bit_cntr_q == 3'h0);
   assign last_byte = (byte_cntr_q == 9'h0);
 
-  assign byte_cntr_d = sw_rst_i                           ? 9'h0 :
-                       !fsm_en                            ? byte_cntr_q :
-                       command_valid_i && command_ready_o ? cmd_len :
-                       byte_ending                        ? byte_cntr_q - 1 :
+  assign byte_cntr_d = sw_rst_i    ? 9'h0 :
+                       !fsm_en     ? byte_cntr_q :
+                       new_command ? cmd_len :
+                       byte_ending ? byte_cntr_q - 1 :
                        byte_cntr_q;
 
   assign lead_starting = state_changing && spi_host_st_d == WaitLead;
