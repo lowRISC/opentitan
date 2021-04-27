@@ -477,17 +477,24 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
-        if (data_phase_read && do_read_check) begin
-          bit [TL_DW-1:0] intr_en           = `gmv(ral.intr_enable);
-          bit [NumOtpCtrlIntr-1:0] intr_exp = `gmv(ral.intr_state);
+        if (data_phase_read) begin
+          // Disable intr_state checking when lc_program is in progress, because scb cannot
+          // accurately predict when program_error will be triggered.
+          // We will check the intr_state after lc_program request is done, and the error bit will
+          // be checked in the `process_lc_prog_req` task.
+          if (cfg.otp_ctrl_vif.lc_prog_no_sta_check) do_read_check = 0;
+            if (do_read_check) begin
+              bit [TL_DW-1:0] intr_en           = `gmv(ral.intr_enable);
+              bit [NumOtpCtrlIntr-1:0] intr_exp = `gmv(ral.intr_state);
 
-          foreach (intr_exp[i]) begin
-            otp_intr_e intr = otp_intr_e'(i);
-            `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[i], (intr_en[i] & intr_exp[i]),
-                              $sformatf("Interrupt_pin: %0s", intr.name));
-            if (cfg.en_cov) begin
-              cov.intr_cg.sample(i, intr_en[i], item.d_data[i]);
-              cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
+              foreach (intr_exp[i]) begin
+              otp_intr_e intr = otp_intr_e'(i);
+              `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[i], (intr_en[i] & intr_exp[i]),
+                                $sformatf("Interrupt_pin: %0s", intr.name));
+              if (cfg.en_cov) begin
+                cov.intr_cg.sample(i, intr_en[i], item.d_data[i]);
+                cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
+              end
             end
           end
         end
