@@ -447,6 +447,8 @@
             ''',
           },
         ]
+        tags: [// Self resets should never be triggered by automated tests
+        "excl:CsrAllTests:CsrExclWrite"]
       },
     },
 
