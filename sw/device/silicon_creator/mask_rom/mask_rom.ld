@@ -20,7 +20,7 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 
 /**
  * The boot address, which indicates the location of the initial interrupt
- * vector.
+ * vector. Must be aligned to 256 bytes.
  */
 _mask_rom_boot_address = ORIGIN(rom);
 
@@ -46,31 +46,41 @@ ENTRY(_mask_rom_start_boot);
  */
 SECTIONS {
   /**
-   * Ibex interrupt vector. See mask_rom_init.S for more information.
+   * Text section (executable code).
    *
-   * This has to be set up at the boot address, so that execution jumps to the
-   * reset handler correctly.
+   * This section starts at the boot address and is therefore aligned to 256
+   * bytes.
    */
-  .vectors _mask_rom_boot_address : ALIGN(256) {
+  .text _mask_rom_boot_address : {
+    _text_start = .;
+
+    /**
+     * Ibex interrupt vector. See mask_rom_start.S for more information.
+     *
+     * This has to be set up at the boot address, so that execution jumps to the
+     * reset handler correctly.
+     */
     KEEP(*(.vectors))
-  } > rom
 
-  /**
-   * C runtime (CRT) section, containing program initialization code.
-   *
-   * This is a separate section to `.text` so that the jumps inside `.vectors`
-   * will fit into the instruction encoding.
-   */
-  .crt : ALIGN(4) {
+    /**
+     * C runtime (CRT) section containing program initialization code.
+     *
+     * This immediately follows `.vectors` so that the jumps inside `.vectors`
+     * will fit into the instruction encoding.
+     */
     KEEP(*(.crt))
-  } > rom
 
-  /**
-   * Standard text section, containing program code.
-   */
-  .text : ALIGN(4) {
+    /**
+     * General purpose `.text` sections.
+     */
     *(.text)
     *(.text.*)
+
+    /**
+     * Ensure that `_text_end` is aligned to a word boundary.
+     */
+    . = ALIGN(4);
+    _text_end = .;
   } > rom
 
   /**
