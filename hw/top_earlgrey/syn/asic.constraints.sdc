@@ -137,9 +137,9 @@ create_clock -name JTAG_TCK -period $JTAG_TCK_PERIOD [get_ports $JTAG_CLK_PIN]
 #set_ideal_network [get_ports $JTAG_CLK_PIN]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks JTAG_TCK]
 
-#####################
-# SPI DEV clock     #
-#####################
+#####################################
+# SPI DEV clock Normal Operation    #
+#####################################
 # strawman constraints. Device target freq is 48MHz. Using 62.5MHz to over-constraint
 set SPI_DEV_CLK_PIN SPI_DEV_CLK
 # 62.5MHz
@@ -180,7 +180,7 @@ set_output_delay ${SPI_DEV_OUT_DEL} [get_ports SPI_DEV_D3]   -clock SPI_DEV_CLK
 set_false_path -through [get_pins top_earlgrey/u_spi_device/cio_csb_i] \
                -through [get_pins top_earlgrey/u_spi_device/cio_sd_en_o*]
 set_false_path -through [get_pins top_earlgrey/u_spi_device/cio_csb_i] \
-               -through [get_pins top_earlgrey/u_spi_device/cio_sd_o*]
+    -through [get_pins top_earlgrey/u_spi_device/cio_sd_o*]
 
 #####################
 # SPI HOST clock   #
@@ -191,7 +191,7 @@ set SPI_HOST_CLK_PIN SPI_HOST_CLK
 set SPI_HOST_TCK 16.0
 set_ideal_network ${SPI_HOST_CLK_PIN}
 
-create_clock -name SPI_HOST_CLK  -period ${SPI_HOST_TCK} [get_ports ${SPI_HOST_CLK_PIN}]
+create_clock -name SPI_HOST_CLK  -period ${SPI_HOST_TCK} [get_ports ${SPI_HOST_CLK_PIN}] -add
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_HOST_CLK]
 
 ## TODO: Create generated clock for negedge SPI_HOST_CLK. Then make them clock group
@@ -215,30 +215,112 @@ set_output_delay ${SPI_HOST_OUT_DEL} [get_ports SPI_HOST_D1]   -clock SPI_HOST_C
 set_output_delay ${SPI_HOST_OUT_DEL} [get_ports SPI_HOST_D2]   -clock SPI_HOST_CLK
 set_output_delay ${SPI_HOST_OUT_DEL} [get_ports SPI_HOST_D3]   -clock SPI_HOST_CLK
 
+#####################################
+# SPI DEV clock Passthru Operation  #
+#####################################
+# Passthrough target freq is 33MHz. Using 40MHz to over-constrain
+#
+# The constraints below take the following approach:
+# Define incoming passthrough clock on the SPI_DEV_CLK pin and relate all the inputs to it.
+# Deinfe also output delays since all pins are bidirectiona.
+# Define outgoing passthrough clock on the SPI_HOST_CLK pin but make sure it is a generated versio
+# of the incoming passthrough clock, relate the host side pins to this clock in both input/output
+# directions.
+#
+# For details on SPI passthrough timing, please see
+# https://docs.google.com/presentation/d/1GEPxKaOsr9ZcJwI_MBEL74P7jQvBFzOdzSbgru_yVLQ/edit?usp=sharing
+
+set SPI_DEV_PASSTHRU_CK 25.0
+create_clock -name SPI_DEV_PASSTHRU_CLK -period ${SPI_DEV_PASSTHRU_CK} [get_ports ${SPI_DEV_CLK_PIN}] -add
+set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_DEV_PASSTHRU_CLK]
+
+# clocks used by spi device internally
+# Unlike spi-dev above, here the "incoming" clock is treated lie the "launch", while the inverted
+# is treated like "capture".  The other way would work fine as well, but several other adjustments
+# would need to be made the rest of the constraints.
+create_generated_clock -name SPI_DEV_PASSTHRU_IN_CLK -source SPI_DEV_CLK -divide_by 1 \
+    -invert [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/clk_o] -add -master_clock SPI_DEV_PASSTHRU_CLK
+create_generated_clock -name SPI_DEV_PASSTHRU_OUT_CLK -source SPI_DEV_CLK -divide_by 1 \
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/clk_o] -add -master_clock SPI_DEV_PASSTHRU_CLK
+
+# clocks accounting for propagation delay to the other side
+create_generated_clock -name SPI_HOST_PASSTHRU_CLK -source SPI_DEV_CLK -master_clock SPI_DEV_PASSTHRU_CLK -divide_by 1 \
+    [get_ports SPI_HOST_CLK] -add
+
+# The propagated properties are needed to ensure the passthrough clocks assume the passthrough delay.
+set_propagated_clock [get_clock SPI_DEV_PASSTHRU_CLK]
+set_propagated_clock [get_clock SPI_HOST_PASSTHRU_CLK]
+
+# delays below are nominal since target frequency is already over constrained
+set PCB_DEL 1
+set HOST_SETUP_DEL 4
+set HOST_OUT_DELY 3
+set STORAGE_SETUP_DEL 3
+set STORAGE_OUT_DEL 7
+set HALF_CYCLE [expr ${SPI_DEV_PASSTHRU_CK} / 2]
+
+# These are delays facing the host
+set SPI_DEV_PASSTHRU_HOST_IN_DEL [expr 2*${PCB_DEL} + ${HOST_OUT_DELY}]
+set SPI_DEV_PASSTHRU_HOST_OUT_DEL [expr {${PCB_DEL} + ${HOST_SETUP_DEL}}]
+
+# for transactions passing from storage into the device, they are going to be sampled
+# by the host at "full cycle" boundaries
+set SPI_DEV_PASSTHRU_STORAGE_IN_DEL [expr {2*${PCB_DEL} + ${STORAGE_OUT_DEL}}]
+
+# for transactions passing through the device to the storage device, the commands
+# are captured on half cycle boundaries
+set SPI_DEV_PASSTHRU_STORAGE_OUT_DEL [expr ${PCB_DEL} + ${STORAGE_SETUP_DEL} + ${HALF_CYCLE}]
+
+# bidir ports facing host
+set_input_delay ${SPI_DEV_PASSTHRU_HOST_IN_DEL} [get_ports SPI_DEV_D0] -clock SPI_DEV_PASSTHRU_CLK -add_delay
+set_input_delay ${SPI_DEV_PASSTHRU_HOST_IN_DEL} [get_ports SPI_DEV_D1] -clock SPI_DEV_PASSTHRU_CLK -add_delay
+set_input_delay ${SPI_DEV_PASSTHRU_HOST_IN_DEL} [get_ports SPI_DEV_D2] -clock SPI_DEV_PASSTHRU_CLK -add_delay
+set_input_delay ${SPI_DEV_PASSTHRU_HOST_IN_DEL} [get_ports SPI_DEV_D3] -clock SPI_DEV_PASSTHRU_CLK -add_delay
+set_input_delay ${SPI_DEV_PASSTHRU_HOST_IN_DEL} [get_ports SPI_DEV_CS_L] -clock SPI_DEV_PASSTHRU_CLK -add_delay
+set_output_delay ${SPI_DEV_PASSTHRU_HOST_OUT_DEL} [get_ports SPI_DEV_D0] -clock SPI_DEV_PASSTHRU_CLK -add_delay
+set_output_delay ${SPI_DEV_PASSTHRU_HOST_OUT_DEL} [get_ports SPI_DEV_D1] -clock SPI_DEV_PASSTHRU_CLK -add_delay
+set_output_delay ${SPI_DEV_PASSTHRU_HOST_OUT_DEL} [get_ports SPI_DEV_D2] -clock SPI_DEV_PASSTHRU_CLK -add_delay
+set_output_delay ${SPI_DEV_PASSTHRU_HOST_OUT_DEL} [get_ports SPI_DEV_D3] -clock SPI_DEV_PASSTHRU_CLK -add_delay
+
+# bidir ports facing storage device
+set_input_delay ${SPI_DEV_PASSTHRU_STORAGE_IN_DEL} [get_ports SPI_HOST_D0] -clock SPI_HOST_PASSTHRU_CLK -add_delay
+set_input_delay ${SPI_DEV_PASSTHRU_STORAGE_IN_DEL} [get_ports SPI_HOST_D1] -clock SPI_HOST_PASSTHRU_CLK -add_delay
+set_input_delay ${SPI_DEV_PASSTHRU_STORAGE_IN_DEL} [get_ports SPI_HOST_D2] -clock SPI_HOST_PASSTHRU_CLK -add_delay
+set_input_delay ${SPI_DEV_PASSTHRU_STORAGE_IN_DEL} [get_ports SPI_HOST_D3] -clock SPI_HOST_PASSTHRU_CLK -add_delay
+set_output_delay ${SPI_DEV_PASSTHRU_STORAGE_OUT_DEL} [get_ports SPI_HOST_D0] -clock SPI_HOST_PASSTHRU_CLK -add_delay
+set_output_delay ${SPI_DEV_PASSTHRU_STORAGE_OUT_DEL} [get_ports SPI_HOST_D1] -clock SPI_HOST_PASSTHRU_CLK -add_delay
+set_output_delay ${SPI_DEV_PASSTHRU_STORAGE_OUT_DEL} [get_ports SPI_HOST_D2] -clock SPI_HOST_PASSTHRU_CLK -add_delay
+set_output_delay ${SPI_DEV_PASSTHRU_STORAGE_OUT_DEL} [get_ports SPI_HOST_D3] -clock SPI_HOST_PASSTHRU_CLK -add_delay
+set_output_delay ${SPI_DEV_PASSTHRU_STORAGE_OUT_DEL} [get_ports SPI_HOST_CS_L] -clock SPI_HOST_PASSTHRU_CLK -add_delay
+
+
 #####################
 # SPI passthrough   #
 #####################
 # Bronze: Over-constraining. Actual values will be set once design is ready
 # input pad + internal + output pad
-set TPAD_I 1.2
-set THODI  2.0
-set TPAD_O 3.3
-set SPI_HODI_PASS_MAX_DELAY [expr ${TPAD_I} + ${THODI} + ${TPAD_O}]
-set SPI_HIDO_PASS_MAX_DELAY ${SPI_HODI_PASS_MAX_DELAY}
+#
+# The commented out code below was the bronze approach. We may still return to it later
+# for its simplicity. If we stick with the approach below, it will be necessary to add
+# set_data_checks to ensure the signals are relatively balanced.
 
-# TODO: These are strawman constraints and need to be refined.
-set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D0]   -to [get_ports SPI_HOST_D0]
-set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D1]   -to [get_ports SPI_HOST_D1]
-set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D2]   -to [get_ports SPI_HOST_D2]
-set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D3]   -to [get_ports SPI_HOST_D3]
-set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_CS_L] -to [get_ports SPI_HOST_CS_L]
-
-set_max_delay ${SPI_HIDO_PASS_MAX_DELAY} -from [get_ports SPI_HOST_D0] -to [get_ports SPI_DEV_D0]
-set_max_delay ${SPI_HIDO_PASS_MAX_DELAY} -from [get_ports SPI_HOST_D1] -to [get_ports SPI_DEV_D1]
-set_max_delay ${SPI_HIDO_PASS_MAX_DELAY} -from [get_ports SPI_HOST_D2] -to [get_ports SPI_DEV_D2]
-set_max_delay ${SPI_HIDO_PASS_MAX_DELAY} -from [get_ports SPI_HOST_D3] -to [get_ports SPI_DEV_D3]
-
-
+#set TPAD_I 1.2
+#set THODI  2.0
+#set TPAD_O 3.3
+#set SPI_HODI_PASS_MAX_DELAY [expr ${TPAD_I} + ${THODI} + ${TPAD_O}]
+#set SPI_HIDO_PASS_MAX_DELAY ${SPI_HODI_PASS_MAX_DELAY}
+#
+## TODO: These are strawman constraints and need to be refined.
+#set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D0]   -to [get_ports SPI_HOST_D0]
+#set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D1]   -to [get_ports SPI_HOST_D1]
+#set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D2]   -to [get_ports SPI_HOST_D2]
+#set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_D3]   -to [get_ports SPI_HOST_D3]
+#set_max_delay ${SPI_HODI_PASS_MAX_DELAY} -from [get_ports SPI_DEV_CS_L] -to [get_ports SPI_HOST_CS_L]
+#
+#set_max_delay ${SPI_HIDO_PASS_MAX_DELAY} -from [get_ports SPI_HOST_D0] -to [get_ports SPI_DEV_D0]
+#set_max_delay ${SPI_HIDO_PASS_MAX_DELAY} -from [get_ports SPI_HOST_D1] -to [get_ports SPI_DEV_D1]
+#set_max_delay ${SPI_HIDO_PASS_MAX_DELAY} -from [get_ports SPI_HOST_D2] -to [get_ports SPI_DEV_D2]
+#set_max_delay ${SPI_HIDO_PASS_MAX_DELAY} -from [get_ports SPI_HOST_D3] -to [get_ports SPI_DEV_D3]
 
 #####################
 # CDC               #
@@ -249,6 +331,7 @@ set_clock_groups -name group1 -async                                  \
     -group [get_clocks MAIN_CLK                                     ] \
     -group [get_clocks USB_CLK                                      ] \
     -group [get_clocks {SPI_DEV_CLK SPI_DEV_IN_CLK SPI_DEV_OUT_CLK} ] \
+    -group [get_clocks {SPI_DEV_PASSTHRU_CLK SPI_HOST_PASSTHRU_CLK SPI_DEV_PASSTHRU_IN_CLK SPI_DEV_PASSTHRU_OUT_CLK} ] \
     -group [get_clocks SPI_HOST_CLK                                 ] \
     -group [get_clocks IO_CLK                                       ] \
     -group [get_clocks IO_DIV2_CLK                                  ] \
