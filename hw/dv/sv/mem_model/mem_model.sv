@@ -74,8 +74,8 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
       if (mask[0]) begin
         compare_byte(addr + i, byte_data);
       end else begin
-        `DV_CHECK_EQ(byte_data, 0,
-                     $sformatf("addr 0x%0h masked data aren't 0, mask 0x%0h", addr, mask))
+        // Nothing to do here: since this byte wasn't selected by the mask, there are no
+        // requirements about what data came back.
       end
       act_data = act_data>> 8;
       mask = mask >> 1;
