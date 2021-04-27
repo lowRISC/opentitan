@@ -9,7 +9,7 @@
 # encouraged to do so
 
 # Default Reviewers
-# *     @asb @sjgitty
+# *     @asb
 
 # Order: last matching pattern takes the most precedence.
 #   Please refer the link for the detail
@@ -19,7 +19,7 @@
 *.h                 @moidx
 
 # Utils: reggen, topgen, tlgen
-/util/              @sjgitty
+/util/              @imphil
 util/*.py           @imphil @asb
 util/*gen/          @eunchan @msfschaffner @tjaychen
 util/uvmdvgen*      @sriyerg
@@ -39,11 +39,11 @@ util/build_docs.py  @moidx
 /hw/ip/kmac/            @eunchan
 /hw/ip/padctrl/         @msfschaffner @tjaychen
 /hw/ip/pinmux/          @msfschaffner @tjaychen
-/hw/ip/prim*            @sjgitty @eunchan @tjaychen
+/hw/ip/prim*            @eunchan @tjaychen
 /hw/ip/rv_core_ibex/    @imphil @tjaychen
 /hw/ip/rv_dm/           @imphil @vogelpi
 /hw/ip/spi_device/      @eunchan
-/hw/ip/tlul/            @sjgitty @eunchan @tjaychen
+/hw/ip/tlul/            @eunchan @tjaychen
 # /hw/ip/usb*           # TBD
 /hw/top_*/rtl           @eunchan @tjaychen
 /hw/top_*/doc/top_*     @eunchan @msfschaffner @tjaychen
@@ -59,7 +59,7 @@ formal/             @cindychip
 /sw/                @mcy @moidx @sriyerg
 
 # Common docs
-/doc/               @sjgitty @asb
+/doc/               @asb
 
 # License related files
 LICENSE*            @asb
