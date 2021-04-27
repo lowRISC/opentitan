@@ -173,6 +173,9 @@ module spi_readcmd
   // TODO: Implement
   assign mailbox_assumed_o = 1'b 0;
 
+  sram_err_t unused_sram_rerr;
+  assign unused_sram_rerr = sram_rerror_i;
+
   /////////////////
   // Definitions //
   /////////////////

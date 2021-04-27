@@ -711,6 +711,9 @@ module spi_passthrough
 
   logic [7:0] opcode, opcode_d;
 
+  logic unused_opcode_7;
+  assign unused_opcode_7 = opcode[7];
+
   // If the filter becomes 1 on the 8th beat, it lowers SCK enable signal to CG
   // cell then, at the 8th posedge of SCK, csb_deassert becomes 1.
   //                      ____      ____      ____
@@ -734,9 +737,9 @@ module spi_passthrough
 
   // == BEGIN: Counters  ======================================================
   // bitcnt to count up to dummy
-  localparam int unsigned MaxBeat = 8+32+8; // Cmd + Addr + Dummy
-  localparam int unsigned BitCntW = $clog2(MaxBeat);
-  logic [BitCntW-1:0] bitcnt;
+  localparam int unsigned MetaMaxBeat = 8+32+8; // Cmd + Addr + Dummy
+  localparam int unsigned MetaBitCntW = $clog2(MetaMaxBeat);
+  logic [MetaBitCntW-1:0] bitcnt;
 
   // Address or anything host driving after opcode counter
   logic [AddrCntW-1:0] addrcnt, addrcnt_outclk;
@@ -766,7 +769,7 @@ module spi_passthrough
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       opcode <= 8'h 00;
-    end else if (bitcnt < BitCntW'(8)) begin
+    end else if (bitcnt < MetaBitCntW'(8)) begin
       opcode <= opcode_d;
     end
   end
@@ -786,7 +789,7 @@ module spi_passthrough
     if (!rst_ni) begin
       bitcnt <= '0;
     end else if (bitcnt != '1) begin
-      bitcnt <= bitcnt + BitCntW'(1);
+      bitcnt <= bitcnt + MetaBitCntW'(1);
     end
   end
 
@@ -795,8 +798,8 @@ module spi_passthrough
   logic cmd_8th; // in 8th beat of transaction
   logic [1:0] cmd_filter;
 
-  assign cmd_7th = (bitcnt == BitCntW'(6));
-  assign cmd_8th = (bitcnt == BitCntW'(7));
+  assign cmd_7th = (bitcnt == MetaBitCntW'(6));
+  assign cmd_8th = (bitcnt == MetaBitCntW'(7));
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -1038,7 +1041,7 @@ module spi_passthrough
       StAddress: begin
         // based on state, addr_phase is set. So just check if counter reaches 0
         if (addrcnt == '0) begin
-          if (mailbox_hit_i) begin
+          if (mailbox_hit) begin
             // In Address phase, mailbox region hits. Then Passthrough filteres
             // the command and deligates the control to ReadCmd submodule.
             st_d = StFilter;

@@ -4,3 +4,5 @@
 //
 // waiver file for spi_device
 
+`verilator_config
+

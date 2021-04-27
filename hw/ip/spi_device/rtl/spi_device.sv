@@ -121,6 +121,7 @@ module spi_device (
   spi_mode_e spi_mode;
   //spi_byte_t fw_dummy_byte;
   logic [255:0] cfg_upload_mask;
+  logic cfg_addr_4b_en;
 
   logic intr_sram_rxf_full, intr_fwm_rxerr;
   logic intr_fwm_rxlvl, rxlvl, rxlvl_d, intr_fwm_txlvl, txlvl, txlvl_d;
@@ -170,6 +171,12 @@ module spi_device (
   // Mailbox in Passthrough needs to take SPI if readcmd hits mailbox address
   logic mailbox_assumed, passthrough_assumed_by_internal;
 
+  // Passthrouth config signals
+  logic [255:0] cmd_filter;
+
+  logic [31:0] addr_swap_mask;
+  logic [31:0] addr_swap_data;
+
   //////////////////////////////////////////////////////////////////////
   // Connect phase (between control signals above and register module //
   //////////////////////////////////////////////////////////////////////
@@ -185,6 +192,8 @@ module spi_device (
   assign sram_clk_en = reg2hw.control.sram_clk_en.q;
 
   assign timer_v = reg2hw.cfg.timer_v.q;
+
+  assign cfg_addr_4b_en = reg2hw.cfg.addr_4b_en.q;
 
   assign sram_rxf_bindex = reg2hw.rxf_addr.base.q[SDW+:SramAw];
   assign sram_rxf_lindex = reg2hw.rxf_addr.limit.q[SDW+:SramAw];
@@ -337,6 +346,18 @@ module spi_device (
   assign hw2reg.intr_state.txunderflow.d  = 1'b1;
   assign hw2reg.intr_state.txunderflow.de = intr_fwm_txunderflow |
       (reg2hw.intr_test.txunderflow.qe & reg2hw.intr_test.txunderflow.q);
+
+
+  // Passthrough config: value shall be stable while SPI transaction is active
+  //assign cmd_filter = reg2hw.cmd_filter.q;
+  always_comb begin
+    for (int unsigned i = 0 ; i < 256 ; i++) begin
+      cmd_filter[i] = reg2hw.cmd_filter[i].q;
+    end
+  end
+
+  assign addr_swap_mask = reg2hw.addr_swap_mask.q;
+  assign addr_swap_data = reg2hw.addr_swap_data.q;
 
   //////////////////////////////
   // // Clock & reset control //
@@ -673,8 +694,6 @@ module spi_device (
     .clk_spi_out_i (clk_spi_out_buf),
     .rst_txfifo_ni (rst_txfifo_n),
 
-    .mode_i        (spi_mode),
-
     .rxf_overflow_o  (rxf_overflow),
     .txf_underflow_o (txf_underflow),
 
@@ -789,7 +808,7 @@ module spi_device (
 
     .readbuf_threshold_i ('0), //$clog2(ReadBufferDepth)-1
 
-    .addr_4b_en_i (1'b 0),
+    .addr_4b_en_i (cfg_addr_4b_en),
 
     .mailbox_en_i      (1'b 0),
     .mailbox_addr_i    ('0), // 32
@@ -809,12 +828,12 @@ module spi_device (
     .clk_out_i (clk_spi_out_buf),
 
     // Configurations
-    .cfg_cmd_filter_i ('0), //TODO
+    .cfg_cmd_filter_i (cmd_filter), //TODO
 
-    .cfg_addr_mask_i  ('0), // TODO
-    .cfg_addr_value_i ('0), // TODO
+    .cfg_addr_mask_i  (addr_swap_mask), // TODO
+    .cfg_addr_value_i (addr_swap_data), // TODO
 
-    .cfg_addr_4b_en_i (1'b 0),
+    .cfg_addr_4b_en_i (cfg_addr_4b_en),
 
     .spi_mode_i       (spi_mode),
 

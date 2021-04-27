@@ -165,6 +165,17 @@
             '''
           resval: "0x7F",
         },
+        { bits: "16"
+          name: "addr_4b_en"
+          desc: '''4B Address Mode enable.
+
+            This field configures the internal module to receive 32 bits of the SPI commands. The affected commands are the SPI read commands except QPI, and program commands.
+
+            Even though Read SFDP command has address fields, the SFDP command
+            is not affected by this field. The command always parse 24 bits on
+            the SPI line 0 following the SPI command as the address field.
+            '''
+        }
       ]
     },
     { name: "FIFO_LEVEL",
@@ -321,6 +332,61 @@
         }
       ],
     },
+    { multireg: {
+        cname: "SPI_DEVICE"
+        name:  "CMD_FILTER"
+        desc:  '''Command Filter
+
+          If a bit in this CSR is 1, then corresponding SPI command w.r.t the
+          bit position among 256 bit is dropped in SPI Passthrough mode.
+          '''
+        count: "256"
+        swaccess: "rw"
+        hwaccess: "hro"
+        compact: true
+        fields: [
+          { bits: "0"
+            name: "filter"
+            resval: "0"
+            desc: "If 1, command will be filtered"
+          }
+        ]
+      }
+    }
+    { name: "ADDR_SWAP_MASK"
+      desc: '''Address Swap Mask register.
+
+        This register is used in the SPI passthrough mode. If any of bits in
+        this register is set, the corresponding address bit in the SPI Read
+        commands is replaced with the data from !!ADDR_SWAP_DATA.
+
+        If 3B address mode is active, upper 8bit [31:24] is ignored.
+        '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits:   "31:0"
+          resval: "0",
+          name:   "mask"
+          desc: '''When a bit is 1, the SPI read address to the downstream SPI
+            Flash device is swapped to !!ADDR_SWAP_DATA.
+            '''
+        }
+      ]
+    }
+    { name: "ADDR_SWAP_DATA"
+      desc: '''The address value for the address swap feature.
+        '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits:   "31:0"
+          resval: "0"
+          name:   "data"
+          desc:   "Desired value to be swapped for the SPI read commands."
+        }
+      ]
+    }
     { skipto: "0x1000" }
     { window: {
         name: "buffer",

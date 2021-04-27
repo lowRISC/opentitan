@@ -26,7 +26,6 @@ module spi_fwmode
 
   // Configurations
   // No sync logic. Configuration should be static when SPI operating
-  input  spi_mode_e mode_i, // Only works at mode_i == FwMode
 
   output logic      rxf_overflow_o,
   output logic      txf_underflow_o,
