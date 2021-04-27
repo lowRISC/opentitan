@@ -1,6 +1,9 @@
 load("//toolchains/compilers/llvm/impl:llvm_versions.bzl", "TOOLCHAIN_VERSIONS", "get_platform_specific_config")
 load("//toolchains/tools/include_tools:include_tools.bzl", "include_tools")
 
+def _get_resource_directory(repository_ctx):
+    return repository_ctx.execute(["bin/clang++", "-print-resource-dir"]).stdout.strip()
+
 def _llvm_repository_impl(repository_ctx):
     version = repository_ctx.attr.version
     if "windows" not in repository_ctx.os.name:
@@ -29,6 +32,9 @@ def _llvm_repository_impl(repository_ctx):
         sysroot_args,
     ))
     include_paths = include_tools.ProccessResponse(response.stderr)
+    include_paths.append(
+        _get_resource_directory(repository_ctx),
+    )
     include_flags = ["-isystem" + path for path in include_paths]
     include_bazel_template_input = include_tools.CommandLineToTemplateString(include_flags)
     include_paths_template_input = include_tools.CommandLineToTemplateString(include_paths)

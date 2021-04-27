@@ -26,7 +26,10 @@ cc_injected_toolchain_header_library = rule(
 )
 
 def _normalise_include(ctx, inc):
-    return ctx.label.workspace_root + "/" + ctx.label.package + "/" + inc
+    root_str = ""
+    if ctx.label.workspace_root:
+        root_str = ctx.label.workspace_root + "/"
+    return root_str + ctx.label.package + "/" + inc
 
 def _cc_toolchain_header_polyfill_library_impl(ctx):
     hdrs = ctx.files.hdrs
