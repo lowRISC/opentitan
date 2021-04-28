@@ -2,3 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# In rom_ctrl_counter, the "output valid" signal must be true from one
+# cycle after reset. We do this by setting vld_q <= 1'b1 in an
+# always_ff block.
+waive -rules {CONST_FF} -location {rom_ctrl_counter.sv} \
+      -regexp {Flip-flop 'vld_q' is driven by constant one} \
+      -comment "This is intentional: the signal should be true from one cycle after reset."

@@ -14,8 +14,8 @@ package rom_ctrl_pkg;
   } pwrmgr_data_t;
 
   parameter pwrmgr_data_t PWRMGR_DATA_DEFAULT = '{
-    done: '1,
-    good: '1
+    done: 1'b1,
+    good: 1'b1
   };
 
   typedef struct packed {

@@ -56,8 +56,8 @@ module rom_ctrl_counter
 
   localparam int AW = vbits(RomDepth);
 
-  localparam int TopAddrInt = RomDepth - 1;
-  localparam int TNTAddrInt = RomNonTopCount - 2;
+  localparam int unsigned TopAddrInt = RomDepth - 1;
+  localparam int unsigned TNTAddrInt = RomNonTopCount - 2;
 
   localparam bit [AW-1:0] TopAddr = TopAddrInt[AW-1:0];
   localparam bit [AW-1:0] TNTAddr = TNTAddrInt[AW-1:0];
@@ -68,7 +68,7 @@ module rom_ctrl_counter
   logic          done_q, done_d;
   logic          last_nontop_q, last_nontop_d;
 
-  always @(posedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       vld_q         <= 1'b0;
       addr_q        <= '0;

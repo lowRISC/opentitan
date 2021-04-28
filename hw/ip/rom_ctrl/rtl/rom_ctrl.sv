@@ -254,7 +254,7 @@ module rom_ctrl
   // Repack signals to convert between the view expected by rom_ctrl_reg_pkg for CSRs and the view
   // expected by rom_ctrl_fsm. Register 0 of a multi-reg appears as the low bits of the packed data.
   for (genvar i = 0; i < 8; i++) begin: gen_csr_digest
-    localparam int TopBitInt = 32 * i + 31;
+    localparam int unsigned TopBitInt = 32 * i + 31;
     localparam bit [7:0] TopBit = TopBitInt[7:0];
 
     assign hw2reg.digest[i].d = digest_d[TopBit -: 32];

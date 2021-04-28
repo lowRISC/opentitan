@@ -41,8 +41,8 @@ module rom_ctrl_compare #(
 
   localparam int AW = vbits(NumWords);
 
-  localparam int          EndAddrInt  = NumWords;
-  localparam int          LastAddrInt = NumWords - 1;
+  localparam int unsigned EndAddrInt  = NumWords;
+  localparam int unsigned LastAddrInt = NumWords - 1;
 
   // Note that if NumWords is a power of 2 then EndAddr will be zero. That's ok: we're just using a
   // comparison with EndAddr to check that the address counter hasn't started wandering around when
@@ -89,7 +89,7 @@ module rom_ctrl_compare #(
   logic        matches_q, matches_d;
   logic        fsm_alert;
 
-  prim_flop #(.Width(5), .ResetValue(Waiting))
+  prim_flop #(.Width(5), .ResetValue({Waiting}))
   u_state_regs (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
@@ -127,7 +127,7 @@ module rom_ctrl_compare #(
   assign done_addr_alert = (state_q == Done) && (addr_q != EndAddr);
 
   // Increment addr_q on each cycle when in Checking
-  always @(posedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       addr_q    <= '0;
       matches_q <= 1'b1;
