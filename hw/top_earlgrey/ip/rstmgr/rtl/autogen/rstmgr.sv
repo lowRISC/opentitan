@@ -522,7 +522,7 @@ module rstmgr import rstmgr_pkg::*; (
     .Width(1),
     .ResetValue('0)
   ) u_0_spi_host0 (
-    .clk_i(clk_io_div2_i),
+    .clk_i(clk_io_i),
     .rst_ni(rst_sys_src_n[Domain0Sel]),
     .d_i(sw_rst_ctrl_n[SPI_HOST0]),
     .q_o(rst_spi_host0_n[Domain0Sel])

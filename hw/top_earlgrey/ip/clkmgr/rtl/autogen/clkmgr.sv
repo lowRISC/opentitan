@@ -214,6 +214,8 @@
   logic [1:0] en_status_q;
   logic [1:0] dis_status_q;
   logic clk_status;
+  logic clk_io_root;
+  logic clk_io_en;
   logic clk_io_div2_root;
   logic clk_io_div2_en;
   logic clk_io_div4_root;
@@ -222,6 +224,26 @@
   logic clk_main_en;
   logic clk_usb_root;
   logic clk_usb_en;
+
+  lc_tx_t io_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_io_scanmode_sync  (
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
+    .lc_en_i(scanmode_i),
+    .lc_en_o(io_scanmode)
+  );
+
+  prim_clock_gating_sync u_io_cg (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_io_ni),
+    .test_en_i(io_scanmode == lc_ctrl_pkg::On),
+    .async_en_i(pwr_i.ip_clk_en),
+    .en_o(clk_io_en),
+    .clk_o(clk_io_root)
+  );
 
   lc_tx_t io_div2_scanmode;
   prim_lc_sync #(
@@ -306,6 +328,7 @@
   // an async AND of all the synchronized enables
   // return feedback to pwrmgr only when all clocks are enabled
   assign wait_enable =
+    clk_io_en &
     clk_io_div2_en &
     clk_io_div4_en &
     clk_main_en &
@@ -314,6 +337,7 @@
   // an async OR of all the synchronized enables
   // return feedback to pwrmgr only when all clocks are disabled
   assign wait_disable =
+    clk_io_en |
     clk_io_div2_en |
     clk_io_div4_en |
     clk_main_en |
@@ -376,6 +400,7 @@
 
   logic clk_io_div4_peri_sw_en;
   logic clk_io_div2_peri_sw_en;
+  logic clk_io_peri_sw_en;
   logic clk_usb_peri_sw_en;
 
   prim_flop_2sync #(
@@ -434,6 +459,35 @@
     .en_i(clk_io_div2_peri_sw_en & clk_io_div2_en),
     .test_en_i(clk_io_div2_peri_scanmode == lc_ctrl_pkg::On),
     .clk_o(clocks_o.clk_io_div2_peri)
+  );
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_clk_io_peri_sw_en_sync (
+    .clk_i(clk_io_i),
+    .rst_ni(rst_io_ni),
+    .d_i(reg2hw.clk_enables.clk_io_peri_en.q),
+    .q_o(clk_io_peri_sw_en)
+  );
+
+  lc_tx_t clk_io_peri_scanmode;
+  prim_lc_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_clk_io_peri_scanmode_sync  (
+    .clk_i(1'b0),  //unused
+    .rst_ni(1'b1), //unused
+    .lc_en_i(scanmode_i),
+    .lc_en_o(clk_io_peri_scanmode)
+  );
+
+  prim_clock_gating #(
+    .NoFpgaGate(1'b1)
+  ) u_clk_io_peri_cg (
+    .clk_i(clk_io_root),
+    .en_i(clk_io_peri_sw_en & clk_io_en),
+    .test_en_i(clk_io_peri_scanmode == lc_ctrl_pkg::On),
+    .clk_o(clocks_o.clk_io_peri)
   );
 
   prim_flop_2sync #(

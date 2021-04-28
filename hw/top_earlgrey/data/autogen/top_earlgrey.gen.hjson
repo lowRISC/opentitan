@@ -140,6 +140,7 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
+          clk_io_peri: io
           clk_aon_peri: aon
           clk_usb_peri: usb
         }
@@ -347,7 +348,7 @@
           "0"
         ]
         parent: sys_src
-        clk: io_div2
+        clk: io
         sw: 1
       }
       {
@@ -773,7 +774,7 @@
       clock_srcs:
       {
         clk_i: io_div4
-        clk_core_i: io_div2
+        clk_core_i: io
       }
       clock_group: peri
       reset_connections:
@@ -784,7 +785,7 @@
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
-        clk_core_i: clkmgr_aon_clocks.clk_io_div2_peri
+        clk_core_i: clkmgr_aon_clocks.clk_io_peri
       }
       domain: "0"
       param_list: []
