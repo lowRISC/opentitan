@@ -601,13 +601,13 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   // HW invalid input checks as following
   // When an advance operation is invoked:
-  //   The working state key is checked for all 0’s and all 1’s.
+  //   The working state key is checked for all 0's and all 1's.
   //   During Initialized state, creator seed, device ID and health state data is checked for all
-  //   0’s and all 1’s.
-  //   During CreatorRootKey state, the owner seed is checked for all 0’s and all 1’s.
+  //   0's and all 1's.
+  //   During CreatorRootKey state, the owner seed is checked for all 0's and all 1's.
   //   During all other states, nothing is explicitly checked.
   // When a generate output key operation is invoked:
-  //   The working state key is checked for all 0’s and all 1’s.
+  //   The working state key is checked for all 0's and all 1's.
   virtual function bit get_hw_invalid_input();
     bit is_err;
 

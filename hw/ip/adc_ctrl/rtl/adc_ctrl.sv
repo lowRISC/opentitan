@@ -27,7 +27,7 @@ module adc_ctrl (
   //output logic adc_pd,//Power down ADC(used in deep sleep mode to save power)
   //output logic [1:0] adc_chnsel,
   //channel select for ADC;
-  //2’b0 means stop, 2’b01 means first channel, 2’b10 means second channel, 2’b11 ilegal
+  //2'b0 means stop, 2'b01 means first channel, 2'b10 means second channel, 2'b11 ilegal
 
   //interrupt interface
   output logic intr_debug_cable_o,
@@ -36,7 +36,7 @@ module adc_ctrl (
   //pwrmgr interface
   output logic debug_cable_wakeup_o
   //Debug cable is detected; wake up the GSC(CPU) in normal sleep and deep sleep mode
-  //input  [2:0] pwr_sts,//3’b001: deep sleep, 3’b010: normal sleep, 3’b100: fully active
+  //input  [2:0] pwr_sts,//3'b001: deep sleep, 3'b010: normal sleep, 3'b100: fully active
 );
 
   import adc_ctrl_reg_pkg::*;

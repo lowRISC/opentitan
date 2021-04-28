@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Test below HW invalid input, also combine with SW invalid input
-// 1. During Initialized state, creator seed, device ID and health state data is checked for all 0’s
-// and all 1’s.
-// 2. During CreatorRootKey state, the owner seed is checked for all 0’s and all 1’s.
+// 1. During Initialized state, creator seed, device ID and health state data is checked for all 0's
+// and all 1's.
+// 2. During CreatorRootKey state, the owner seed is checked for all 0's and all 1's.
 class keymgr_hwsw_invalid_input_vseq extends keymgr_sw_invalid_input_vseq;
   `uvm_object_utils(keymgr_hwsw_invalid_input_vseq)
   `uvm_object_new
