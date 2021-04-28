@@ -718,8 +718,8 @@ module spi_passthrough
   // cell then, at the 8th posedge of SCK, csb_deassert becomes 1.
   //                      ____      ____      ____
   // SCK             ____/ 7  \____/ 8  \____/
-  //                             _________
-  // filter       ______________/         \________
+  //                             ___
+  // filter       _______/XXXXXX/   \______________
   //              ______________
   // sck_gate_en                \__________________
   //                                 ______________
@@ -733,7 +733,20 @@ module spi_passthrough
   // is glitch sensitive. This value is changed at SCK posedge. This does not
   // drive CSb output directly. CSb to downstream is OR-ed with this and CSb
   // from host system.
+  //
+  // `cdb_deassert` should be latched at the posedge of SCK. `filter` signal is
+  // computed in between the 7th posedge of SCK and the 8th posedge. As the
+  // command bit does not arrive until the 7th negedge of SCK, the filter signal
+  // is not valid in the first half of the period. By latching the filter signal
+  // at the posedge of the SCK, csb_deassert always shows correct value if the
+  // command needs to be filtered or not.
+  //
+  // However, the CSb output to the downstream flash device is better to be in
+  // the out clock domain. It helps the design constraints to be simpler. So,
+  // the `csb_deassert` is again latched at the outclk (which is the negedge of
+  // SCK).
   logic csb_deassert;
+  logic csb_deassert_outclk;
 
   // == BEGIN: Counters  ======================================================
   // bitcnt to count up to dummy
@@ -779,6 +792,11 @@ module spi_passthrough
     if (!rst_ni)     csb_deassert <= 1'b 0;
     else if (filter) csb_deassert <= 1'b 1;
   end
+  always_ff @(posedge clk_out_i or negedge rst_ni) begin
+    if (!rst_ni) csb_deassert_outclk <= 1'b 0;
+    else         csb_deassert_outclk <= csb_deassert;
+  end
+
   // Look at the waveform above to see why sck_gate_en is inversion of fliter OR
   // csb_deassert
   assign sck_gate_en = ~(filter | csb_deassert);
@@ -927,7 +945,7 @@ module spi_passthrough
   // CSb propagation:  csb_deassert signal should be an output of FF or latch to
   // make CSb glitch-free.
   assign passthrough_o.csb_en = 1'b 1;
-  assign passthrough_o.csb    = host_csb_i | csb_deassert ;
+  assign passthrough_o.csb    = host_csb_i | csb_deassert_outclk ;
 
   // passthrough_en
   assign passthrough_o.passthrough_en = is_active ;
