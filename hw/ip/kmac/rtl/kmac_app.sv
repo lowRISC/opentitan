@@ -571,7 +571,7 @@ module kmac_app
     sha3_prefix_o = '0;
 
     unique case (st)
-      StAppMsg: begin
+      StAppCfg, StAppMsg, StAppOutLen, StAppProcess, StAppWait: begin
         // Check app intf cfg
         for (int unsigned i = 0 ; i < NumAppIntf ; i++) begin
           if (app_id == i) begin
