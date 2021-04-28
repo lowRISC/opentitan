@@ -316,6 +316,24 @@ sw_lib_dif_kmac = declare_dependency(
   )
 )
 
+test('dif_kmac_unittest', executable(
+    'dif_kmac_unittest',
+    sources: [
+      'dif_kmac_unittest.cc',
+      meson.source_root() / 'sw/device/lib/dif/dif_kmac.c',
+      hw_ip_kmac_reg_h,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'dif',
+)
+
 # OTBN DIF library
 sw_lib_dif_otbn = declare_dependency(
   link_with: static_library(
