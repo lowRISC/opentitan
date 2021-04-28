@@ -780,9 +780,10 @@ module chip_earlgrey_nexysvideo #(
     .rom_cfg_i       ( '0 ),
 
     // DFT signals
-    .scan_rst_ni     ( 1'b1          ),
-    .scan_en_i       ( 1'b0          ),
-    .scanmode_i      ( lc_ctrl_pkg::Off )
+    .dft_hold_tap_sel_i ( '0               ),
+    .scan_rst_ni        ( 1'b1             ),
+    .scan_en_i          ( 1'b0             ),
+    .scanmode_i         ( lc_ctrl_pkg::Off )
   );
 
 

@@ -987,6 +987,7 @@
         'entropy_src.rng_fips'         : 'es_rng_fips',
         'peri.tl_ast'                  : 'ast_tl',
         'pinmux_aon.dft_strap_test'    : 'dft_strap_test'
+        'pinmux_aon.dft_hold_tap_sel'  : 'dft_hold_tap_sel',
         'pwrmgr_aon.pwr_ast'           : 'pwrmgr_ast',
         'otp_ctrl.otp_ast_pwr_seq'     : '',
         'otp_ctrl.otp_ast_pwr_seq_h'   : '',

@@ -1161,6 +1161,7 @@ assign otp_alert_in_i = '{p: 1'b0, n: 1'b1};
     // DFT signals
     .ast_lc_dft_en_o              ( dft_en                     ),
     .dft_strap_test_o             ( dft_strap_test             ),
+    .dft_hold_tap_sel_i           ( '0                         ),
     .scan_rst_ni                  ( scan_rst_n                 ),
     .scan_en_i                    ( scan_en                    ),
     .scanmode_i                   ( scanmode                   )

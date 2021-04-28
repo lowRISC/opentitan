@@ -35,6 +35,8 @@ module pinmux
   input  lc_ctrl_pkg::lc_tx_t      lc_hw_debug_en_i,
   // Sampled values for DFT straps
   output dft_strap_test_req_t      dft_strap_test_o,
+  // DFT indication to stop tap strap sampling
+  input                            dft_hold_tap_sel_i,
   // Qualified JTAG signals for TAPs
   output jtag_pkg::jtag_req_t      lc_jtag_o,
   input  jtag_pkg::jtag_rsp_t      lc_jtag_i,
@@ -179,6 +181,7 @@ module pinmux
     .lc_dft_en_i,
     .lc_hw_debug_en_i,
     .dft_strap_test_o,
+    .dft_hold_tap_sel_i,
     .lc_jtag_o,
     .lc_jtag_i,
     .rv_jtag_o,
