@@ -8,3 +8,7 @@
 
 // The mode_i input is not currently used: we only support FwMode at the moment.
 lint_off -rule UNUSED -file "*/rtl/spi_fwmode.sv" -match "Signal is not used: 'mode_i'"
+
+// SRAM error protection is not yet implemented
+lint_off -rule UNUSED -file "*/rtl/spi_fwm_rxf_ctrl.sv" -match "Signal is not used: 'sram_error'"
+lint_off -rule UNUSED -file "*/rtl/spi_fwm_txf_ctrl.sv" -match "Signal is not used: 'sram_error'"
