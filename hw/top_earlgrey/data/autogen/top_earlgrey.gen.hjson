@@ -2943,6 +2943,19 @@
           index: -1
         }
         {
+          name: dft_hold_tap_sel
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          default: "'0"
+          inst_name: pinmux_aon
+          package: ""
+          external: true
+          top_signame: dft_hold_tap_sel
+          index: -1
+        }
+        {
           name: sleep_en
           struct: logic
           type: uni
@@ -6234,6 +6247,7 @@
       entropy_src.rng_fips: es_rng_fips
       peri.tl_ast: ast_tl
       pinmux_aon.dft_strap_test: dft_strap_test
+      pinmux_aon.dft_hold_tap_sel: dft_hold_tap_sel
       pwrmgr_aon.pwr_ast: pwrmgr_ast
       otp_ctrl.otp_ast_pwr_seq: ""
       otp_ctrl.otp_ast_pwr_seq_h: ""
@@ -13201,6 +13215,19 @@
         index: -1
       }
       {
+        name: dft_hold_tap_sel
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        default: "'0"
+        inst_name: pinmux_aon
+        package: ""
+        external: true
+        top_signame: dft_hold_tap_sel
+        index: -1
+      }
+      {
         name: sleep_en
         struct: logic
         type: uni
@@ -15844,6 +15871,18 @@
         conn_type: false
         index: -1
         netname: dft_strap_test
+      }
+      {
+        package: ""
+        struct: logic
+        signame: dft_hold_tap_sel_i
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: dft_hold_tap_sel
       }
       {
         package: pwrmgr_pkg

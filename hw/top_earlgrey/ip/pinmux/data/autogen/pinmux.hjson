@@ -79,6 +79,14 @@
       package: "pinmux_pkg",
       default: "'0"
     }
+    // DFT indication to stop tap strap sampling
+    { struct:  "logic",
+      type:    "uni",
+      name:    "dft_hold_tap_sel",
+      act:     "rcv",
+      package: "",
+      default: "'0"
+    }
     // Define pwr mgr <-> pinmux signals
     { struct:  "logic",
       type:    "uni",

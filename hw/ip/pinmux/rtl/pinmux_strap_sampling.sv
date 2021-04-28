@@ -27,6 +27,8 @@ module pinmux_strap_sampling
   input  lc_ctrl_pkg::lc_tx_t      lc_hw_debug_en_i,
   // Sampled values for DFT straps
   output dft_strap_test_req_t      dft_strap_test_o,
+  // Hold tap strap select
+  input                            dft_hold_tap_sel_i,
   // Qualified JTAG signals for TAPs
   output jtag_pkg::jtag_req_t      lc_jtag_o,
   input  jtag_pkg::jtag_rsp_t      lc_jtag_i,
@@ -98,6 +100,19 @@ module pinmux_strap_sampling
   assign dft_strap_test_o.straps = dft_strap_q;
 
 
+  // During dft enabled states, we continously sample all straps unless
+  // told not to do so by external dft logic
+  logic dft_sampling_en;
+  logic dft_hold_tap_sel;
+
+  prim_buf #(
+    .Width(1)
+  ) u_buf_hold_tap (
+    .in_i(dft_hold_tap_sel_i),
+    .out_o(dft_hold_tap_sel)
+  );
+  assign dft_sampling_en = lc_dft_en[0] == lc_ctrl_pkg::On & ~dft_hold_tap_sel;
+
   always_comb begin : p_strap_sampling
     lc_strap_sample_en = 1'b0;
     rv_strap_sample_en = 1'b0;
@@ -107,7 +122,7 @@ module pinmux_strap_sampling
     // qualified by life cycle signals.
     // In DFT-enabled life cycle states we continously
     // sample all straps.
-    if (strap_en_i || lc_dft_en[0] == lc_ctrl_pkg::On) begin
+    if (strap_en_i || dft_sampling_en) begin
       lc_strap_sample_en = 1'b1;
       if (lc_hw_debug_en[0] == lc_ctrl_pkg::On) begin
         rv_strap_sample_en = 1'b1;
