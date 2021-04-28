@@ -107,43 +107,43 @@
       fields: [
         { bits: "0",
 	  name: "key0_in",
-	  desc: "0: don’t invert; 1: invert",
+	  desc: "0: don't invert; 1: invert",
 	}
         { bits: "1",
 	  name: "key0_out",
-	  desc: "0: don’t invert; 1: invert",
+	  desc: "0: don't invert; 1: invert",
 	}
         { bits: "2",
 	  name: "key1_in",
-	  desc: "0: don’t invert; 1: invert",
+	  desc: "0: don't invert; 1: invert",
 	}
         { bits: "3",
 	  name: "key1_out",
-	  desc: "0: don’t invert; 1: invert",
+	  desc: "0: don't invert; 1: invert",
 	}
         { bits: "4",
 	  name: "key2_in",
-	  desc: "0: don’t invert; 1: invert",
+	  desc: "0: don't invert; 1: invert",
 	}
         { bits: "5",
 	  name: "key2_out",
-	  desc: "0: don’t invert; 1: invert",
+	  desc: "0: don't invert; 1: invert",
 	}
         { bits: "6",
 	  name: "pwrb_in",
-	  desc: "0: don’t invert; 1: invert",
+	  desc: "0: don't invert; 1: invert",
 	}
         { bits: "7",
 	  name: "pwrb_out",
-	  desc: "0: don’t invert; 1: invert",
+	  desc: "0: don't invert; 1: invert",
 	}
         { bits: "8",
 	  name: "ac_present",
-	  desc: "0: don’t invert; 1: invert",
+	  desc: "0: don't invert; 1: invert",
 	}
         { bits: "9",
 	  name: "bat_disable",
-	  desc: "0: don’t invert; 1: invert",
+	  desc: "0: don't invert; 1: invert",
 	}
       ]
     }
@@ -413,15 +413,15 @@
 	}
         { bits: "4",
 	  name: "key0_out_value",
-	  desc: "0: override to 1’b0; 1: override to 1’b1",
+	  desc: "0: override to 1'b0; 1: override to 1'b1",
 	}
         { bits: "5",
 	  name: "key1_out_value",
-	  desc: "0: override to 1’b0; 1: override to 1’b1",
+	  desc: "0: override to 1'b0; 1: override to 1'b1",
 	}
         { bits: "6",
 	  name: "key2_out_value",
-	  desc: "0: override to 1’b0; 1: override to 1’b1",
+	  desc: "0: override to 1'b0; 1: override to 1'b1",
 	}
       ]
     }
