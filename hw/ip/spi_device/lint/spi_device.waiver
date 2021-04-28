@@ -122,8 +122,3 @@ waive -rules {TERMINAL_STATE} -location {spi_passthrough.sv} \
 
 waive -rules {NOT_READ} -location {spi_passthrough.sv} \
       -regexp {Signal 'opcode.*}
-
-waive -rules {NOT_READ} -location {spi_passthrouth.sv} \
-      -regexp {Signal 'cmd_info.addr.*} \
-      -comment "cmd_info is valid after moving to Address state. So cmd_info_d was used"
-
