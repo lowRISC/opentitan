@@ -6,3 +6,8 @@
 
 waive -rules {MULTI_DRIVEN} -location {chip_earlgrey_asic.sv} -regexp {'(IOA2|IOA3)' has 2 drivers, also driven at} \
       -comment "These two pads are shorted to AST, hence this multiple driver warning is OK."
+
+# COMBO_LOOP waiver on the Passthrough port
+waive -rules {COMBO_LOOP} -location {chip_earlgrey_asic.sv} \
+      -regexp {port 'u_passthrough.host_s_i.*' driven in module 'spi_device'} \
+      -comment "In the passthrough mode, SPI 4 lines are connected from pads to pads."
