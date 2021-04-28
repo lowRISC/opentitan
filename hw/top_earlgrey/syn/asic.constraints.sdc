@@ -63,7 +63,6 @@ set IO_CLK_PIN u_ast/u_io_clk/u_io_osc/u_buf/out_o
 # target is 96MHz, overconstrain by factor
 set IO_TCK_TARGET_PERIOD 10.416
 set IO_TCK_PERIOD [expr $IO_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
-#set_ideal_network [get_pins ${IO_CLK_PIN}]
 
 create_clock -name IO_CLK -period ${IO_TCK_PERIOD} [get_pins ${IO_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
@@ -137,9 +136,33 @@ create_clock -name JTAG_TCK -period $JTAG_TCK_PERIOD [get_ports $JTAG_CLK_PIN]
 #set_ideal_network [get_ports $JTAG_CLK_PIN]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks JTAG_TCK]
 
+
 #####################################
-# SPI DEV clock Normal Operation    #
+# SPI System Parameters             #
 #####################################
+
+# routing delay from external component to device
+set PCB_DEL 1
+
+# external spi host setup
+set HOST_SETUP_DEL 4
+
+# external spi host clk-to-q
+set HOST_OUT_DELY 3
+
+# external spi dev setup
+set STORAGE_SETUP_DEL 3
+
+# external spi dev clk-to-q
+set STORAGE_OUT_DEL 7
+
+#################
+# SPI DEV clock #
+#################
+# TODO
+# Add source delays for generated clocks
+# Construct realistic input / output delays using system parameters
+
 # strawman constraints. Device target freq is 48MHz. Using 62.5MHz to over-constraint
 set SPI_DEV_CLK_PIN SPI_DEV_CLK
 # 62.5MHz
@@ -182,38 +205,53 @@ set_false_path -through [get_pins top_earlgrey/u_spi_device/cio_csb_i] \
 set_false_path -through [get_pins top_earlgrey/u_spi_device/cio_csb_i] \
     -through [get_pins top_earlgrey/u_spi_device/cio_sd_o*]
 
-#####################
-# SPI HOST clock   #
-#####################
-# In Bronze the SPI host desing is a duplication of DEV design. For now, over-constraining with 62.5MHz
-set SPI_HOST_CLK_PIN SPI_HOST_CLK
-# 62.5MHz
-set SPI_HOST_TCK 16.0
-set_ideal_network ${SPI_HOST_CLK_PIN}
+##################
+# SPI HOST clock #
+##################
+# SPI host core logic operates on the IO_CLK
+#
+# See https://docs.google.com/drawings/d/1qkUnXaRafIPyBnVpreqfbF_zSy0xlpHqXMZp6F-j8Cc/edit?usp=sharing
+# During pre-layout, the SPI_HOST_CLK source latencies are estimanted to account for
+# pad and logic latencies.  After CTS, source latency must be removed as all clocks are propagated
 
-create_clock -name SPI_HOST_CLK  -period ${SPI_HOST_TCK} [get_ports ${SPI_HOST_CLK_PIN}] -add
-set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_HOST_CLK]
+# TODO, this flop should be hand instantiated
+set CLK_DIV_PIN top_earlgrey/u_spi_host0/u_spi_core/u_fsm/sck_q_reg/Q
 
-## TODO: Create generated clock for negedge SPI_HOST_CLK. Then make them clock group
+# internal divided by 2 clock (fastest spi host configuration)
+create_generated_clock -name SPI_HOST_INT_CLK -source [get_pins ${IO_CLK_PIN}] \
+    -divide_by 2 [get_pins ${CLK_DIV_PIN}] -add
 
-## TODO: these are dummy constraints and likely incorrect, need to properly constrain min/max
-set SPI_HOST_IN_DEL_FRACTION 0.7
-set SPI_HOST_OUT_DEL_FRACTION 0.7
-set SPI_HOST_IN_DEL    [expr ${SPI_HOST_IN_DEL_FRACTION} * ${SPI_HOST_TCK}]
-set SPI_HOST_OUT_DEL   [expr ${SPI_HOST_OUT_DEL_FRACTION} * ${SPI_HOST_TCK}]
+# cascaded generated clock on the port
+create_generated_clock -name SPI_HOST_CLK -source [get_pins ${CLK_DIV_PIN}] \
+    -divide_by 1 [get_ports SPI_HOST_CLK] -add
+
+# Approximate source latency
+# The following must be removed after CTS when clocks actually propagate
+set SPI_HOST_SRC_LATENCY 5
+set_clock_latency ${SPI_HOST_SRC_LATENCY} -source [get_clock SPI_HOST_CLK]
+
+# set multicycle path for data going from SPI_HOST_CLK to logic
+# the SPI host logic will read these paths at "full cycle"
+set_multicycle_path -setup 2 -end -from [get_clocks SPI_HOST_CLK] -to [get_clocks IO_CLK]
+set_multicycle_path -hold 1  -end -from [get_clocks SPI_HOST_CLK] -to [get_clocks IO_CLK]
+
+# computed delays from connected device
+# host in has 2x the pcb delay to account for delays on both outgoing clocks and incoming data
+set SPI_HOST_IN_DEL    [expr 2*${PCB_DEL} + ${STORAGE_OUT_DEL}]
+set SPI_HOST_OUT_DEL   [expr ${PCB_DEL} + ${STORAGE_SETUP_DEL}]
 
 # bidir ports
-set_input_delay ${SPI_HOST_IN_DEL} [get_ports SPI_HOST_CS_L] -clock SPI_HOST_CLK
-set_input_delay ${SPI_HOST_IN_DEL} [get_ports SPI_HOST_D0]   -clock SPI_HOST_CLK
-set_input_delay ${SPI_HOST_IN_DEL} [get_ports SPI_HOST_D1]   -clock SPI_HOST_CLK
-set_input_delay ${SPI_HOST_IN_DEL} [get_ports SPI_HOST_D2]   -clock SPI_HOST_CLK
-set_input_delay ${SPI_HOST_IN_DEL} [get_ports SPI_HOST_D3]   -clock SPI_HOST_CLK
+set_input_delay ${SPI_HOST_IN_DEL} [get_ports SPI_HOST_CS_L] -clock SPI_HOST_CLK -add_delay
+set_input_delay ${SPI_HOST_IN_DEL} [get_ports SPI_HOST_D0]   -clock SPI_HOST_CLK -add_delay
+set_input_delay ${SPI_HOST_IN_DEL} [get_ports SPI_HOST_D1]   -clock SPI_HOST_CLK -add_delay
+set_input_delay ${SPI_HOST_IN_DEL} [get_ports SPI_HOST_D2]   -clock SPI_HOST_CLK -add_delay
+set_input_delay ${SPI_HOST_IN_DEL} [get_ports SPI_HOST_D3]   -clock SPI_HOST_CLK -add_delay
 
-set_output_delay ${SPI_HOST_OUT_DEL} [get_ports SPI_HOST_CS_L] -clock SPI_HOST_CLK
-set_output_delay ${SPI_HOST_OUT_DEL} [get_ports SPI_HOST_D0]   -clock SPI_HOST_CLK
-set_output_delay ${SPI_HOST_OUT_DEL} [get_ports SPI_HOST_D1]   -clock SPI_HOST_CLK
-set_output_delay ${SPI_HOST_OUT_DEL} [get_ports SPI_HOST_D2]   -clock SPI_HOST_CLK
-set_output_delay ${SPI_HOST_OUT_DEL} [get_ports SPI_HOST_D3]   -clock SPI_HOST_CLK
+set_output_delay ${SPI_HOST_OUT_DEL} [get_ports SPI_HOST_CS_L] -clock SPI_HOST_CLK -add_delay
+set_output_delay ${SPI_HOST_OUT_DEL} [get_ports SPI_HOST_D0]   -clock SPI_HOST_CLK -add_delay
+set_output_delay ${SPI_HOST_OUT_DEL} [get_ports SPI_HOST_D1]   -clock SPI_HOST_CLK -add_delay
+set_output_delay ${SPI_HOST_OUT_DEL} [get_ports SPI_HOST_D2]   -clock SPI_HOST_CLK -add_delay
+set_output_delay ${SPI_HOST_OUT_DEL} [get_ports SPI_HOST_D3]   -clock SPI_HOST_CLK -add_delay
 
 #####################################
 # SPI DEV clock Passthru Operation  #
@@ -222,8 +260,8 @@ set_output_delay ${SPI_HOST_OUT_DEL} [get_ports SPI_HOST_D3]   -clock SPI_HOST_C
 #
 # The constraints below take the following approach:
 # Define incoming passthrough clock on the SPI_DEV_CLK pin and relate all the inputs to it.
-# Deinfe also output delays since all pins are bidirectiona.
-# Define outgoing passthrough clock on the SPI_HOST_CLK pin but make sure it is a generated versio
+# Define also output delays since all pins are bidirectional.
+# Define outgoing passthrough clock on the SPI_HOST_CLK pin but make sure it is a generated version
 # of the incoming passthrough clock, relate the host side pins to this clock in both input/output
 # directions.
 #
@@ -235,7 +273,7 @@ create_clock -name SPI_DEV_PASSTHRU_CLK -period ${SPI_DEV_PASSTHRU_CK} [get_port
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_DEV_PASSTHRU_CLK]
 
 # clocks used by spi device internally
-# Unlike spi-dev above, here the "incoming" clock is treated lie the "launch", while the inverted
+# Unlike spi-dev above, here the "incoming" clock is treated like the "launch", while the inverted
 # is treated like "capture".  The other way would work fine as well, but several other adjustments
 # would need to be made the rest of the constraints.
 create_generated_clock -name SPI_DEV_PASSTHRU_IN_CLK -source SPI_DEV_CLK -divide_by 1 \
@@ -244,19 +282,17 @@ create_generated_clock -name SPI_DEV_PASSTHRU_OUT_CLK -source SPI_DEV_CLK -divid
     [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/clk_o] -add -master_clock SPI_DEV_PASSTHRU_CLK
 
 # clocks accounting for propagation delay to the other side
-create_generated_clock -name SPI_HOST_PASSTHRU_CLK -source SPI_DEV_CLK -master_clock SPI_DEV_PASSTHRU_CLK -divide_by 1 \
+create_generated_clock -name SPI_HOST_PASSTHRU_CLK -source SPI_DEV_CLK \
+    -master_clock SPI_DEV_PASSTHRU_CLK -divide_by 1 \
     [get_ports SPI_HOST_CLK] -add
 
-# The propagated properties are needed to ensure the passthrough clocks assume the passthrough delay.
+# The propagated properties are needed to ensure the passthrough clocks assume all passthrough delay.
+# This is done specifically for the passthrough interface to get realistic timing even during
+# pre-layout.
 set_propagated_clock [get_clock SPI_DEV_PASSTHRU_CLK]
 set_propagated_clock [get_clock SPI_HOST_PASSTHRU_CLK]
 
 # delays below are nominal since target frequency is already over constrained
-set PCB_DEL 1
-set HOST_SETUP_DEL 4
-set HOST_OUT_DELY 3
-set STORAGE_SETUP_DEL 3
-set STORAGE_OUT_DEL 7
 set HALF_CYCLE [expr ${SPI_DEV_PASSTHRU_CK} / 2]
 
 # These are delays facing the host
@@ -332,8 +368,7 @@ set_clock_groups -name group1 -async                                  \
     -group [get_clocks USB_CLK                                      ] \
     -group [get_clocks {SPI_DEV_CLK SPI_DEV_IN_CLK SPI_DEV_OUT_CLK} ] \
     -group [get_clocks {SPI_DEV_PASSTHRU_CLK SPI_HOST_PASSTHRU_CLK SPI_DEV_PASSTHRU_IN_CLK SPI_DEV_PASSTHRU_OUT_CLK} ] \
-    -group [get_clocks SPI_HOST_CLK                                 ] \
-    -group [get_clocks IO_CLK                                       ] \
+    -group [get_clocks {IO_CLK SPI_HOST_INT_CLK SPI_HOST_CLK}       ] \
     -group [get_clocks IO_DIV2_CLK                                  ] \
     -group [get_clocks IO_DIV4_CLK                                  ] \
     -group [get_clocks JTAG_TCK                                     ] \
