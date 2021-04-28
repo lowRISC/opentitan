@@ -11,7 +11,9 @@ class kmac_smoke_vseq extends kmac_base_vseq;
   // Set this bit if we want to burst write the message into the msgfifo
   bit burst_write = 0;
 
-  bit en_app = 0;
+  rand bit en_app;
+
+  rand kmac_app_e app_mode;
 
   // TODO: 200 is chosen as upper bound due to large configuration space for KMAC.
   //       If this large range causes noticeable simulation slowdown, reduce it.
@@ -30,6 +32,10 @@ class kmac_smoke_vseq extends kmac_base_vseq;
     } else {
       fname_len == 0;
     }
+  }
+
+  constraint en_app_c {
+    en_app == 0;
   }
 
   constraint custom_str_len_c {
@@ -69,6 +75,12 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       [1:32] :/ 9
     };
   }
+
+  virtual function string convert2string();
+    return {$sformatf("en_app: %0b\n", en_app),
+            $sformatf("app_mode:%0s\n", app_mode.name()),
+            super.convert2string()};
+  endfunction
 
   // We want to disable do_kmac_init here because we wil re-initialize the KMAC each time we do
   // a message hash.
@@ -120,12 +132,12 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       end
 
       // Only send a KMAC_APP request when in KMAC mode
-      if (kmac_en && en_app) begin
-        send_kmac_app_req();
+      if (en_app) begin
+        send_kmac_app_req(app_mode);
         // Wait until the KMAC engine has completely finished
-        wait (cfg.m_kmac_app_agent_cfg.vif.rsp_done == 1);
+        wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.rsp_done == 1);
       end else begin
-        // normal hashing operation - en_app doesn't matter when not in KMAC mode
+        // normal hashing operation
 
         // issue Start cmd
         issue_cmd(CmdStart);
@@ -161,7 +173,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       //
       read_digest_shares(output_len, cfg.enable_masking, share0, share1);
 
-      if (!(kmac_en && en_app)) begin
+      if (!en_app) begin
         // issue the Done cmd to tell KMAC to clear internal state
         issue_cmd(CmdDone);
         `uvm_info(`gfn, "done", UVM_HIGH)

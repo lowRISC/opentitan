@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`define KMAC_APP_VALID_TRANS(mode) \
+    (cfg.m_kmac_app_agent_cfg[``mode``].vif.req_data_if.valid && \
+     cfg.m_kmac_app_agent_cfg[``mode``].vif.req_data_if.ready)
+
 class kmac_scoreboard extends cip_base_scoreboard #(
     .CFG_T(kmac_env_cfg),
     .RAL_T(kmac_reg_block),
@@ -18,6 +22,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // this bit tracks the beginning and end of a KMAC_APP operation
   bit in_kmac_app;
 
+  // Indicates what application is using the app interface
+  kmac_app_e app_mode;
+
   // this bit goes high for a cycle when a manual squeezing is requested
   bit req_manual_squeeze = 0;
 
@@ -32,6 +39,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // This bit indicates that a CmdProcess has been seen while the KMAC is still processing
   // the prefix and secret keys (only used in KMAC mode)
   bit cmd_process_in_header = 0;
+
+  // This bit indicates that the last block of a KMAC_APP request transaction has been sent
+  // while the KMAC is still running keccak on a previous full set of blocks
+  bit kmac_app_last_in_keccak;
 
   // This bit indicates that the last block of a KMAC_APP request transaction has been sent
   // while the KMAC is still processing the prefix and secret keys
@@ -119,16 +130,19 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   bit [TL_DBW-1:0] state_mask;
 
   // TLM fifos
-  uvm_tlm_analysis_fifo #(kmac_app_item) kmac_app_rsp_fifo;
+  uvm_tlm_analysis_fifo #(kmac_app_item) kmac_app_rsp_fifo[kmac_pkg::NumAppIntf];
   uvm_tlm_analysis_fifo #(push_pull_agent_pkg::push_pull_item #(
-    .HostDataWidth(kmac_app_agent_pkg::KMAC_REQ_DATA_WIDTH))) kmac_app_req_fifo;
+    .HostDataWidth(kmac_app_agent_pkg::KMAC_REQ_DATA_WIDTH)))
+    kmac_app_req_fifo[kmac_pkg::NumAppIntf];
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    kmac_app_req_fifo = new("kmac_app_req_fifo", this);
-    kmac_app_rsp_fifo = new("kmac_app_rsp_fifo", this);
+    for (int i = 0; i < kmac_pkg::NumAppIntf; i++) begin
+      kmac_app_req_fifo[i] = new($sformatf("kmac_app_req_fifo[%0d]", i), this);
+      kmac_app_rsp_fifo[i] = new($sformatf("kmac_app_rsp_fifo[%0d]", i), this);
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -184,14 +198,30 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // a kmac_app_req item once the full request has been completed, which can consist of many
   // different request transactions.
   virtual task detect_kmac_app_start();
+    @(negedge cfg.under_reset);
     forever begin
       // If we are not in KMAC_APP mode, the next time we see valid is the start
-      // of a KMAC_APP operation
+      // of a KMAC_APP operation.
+      //
+      // Assume that application interface requests do not collide.
+      `uvm_info(`gfn, "waiting for new kmac_app request", UVM_HIGH)
       wait(!in_kmac_app &&
-           cfg.m_kmac_app_agent_cfg.vif.req_data_if.valid &&
-           cfg.m_kmac_app_agent_cfg.vif.req_data_if.ready);
+           (`KMAC_APP_VALID_TRANS(AppKeymgr) ||
+            `KMAC_APP_VALID_TRANS(AppOtp) ||
+            `KMAC_APP_VALID_TRANS(AppRom)));
       in_kmac_app = 1;
       `uvm_info(`gfn, "raised in_kmac_app", UVM_HIGH)
+
+      // we need to choose the correct application interface
+      if (`KMAC_APP_VALID_TRANS(AppKeymgr)) begin
+        app_mode = AppKeymgr;
+      end else if (`KMAC_APP_VALID_TRANS(AppOtp)) begin
+        app_mode = AppOtp;
+      end else if (`KMAC_APP_VALID_TRANS(AppRom)) begin
+        app_mode = AppRom;
+      end
+
+      @(posedge sha3_idle);
     end
   endtask
 
@@ -204,9 +234,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     forever begin
         wait(!cfg.under_reset);
         @(posedge in_kmac_app);
+        `uvm_info(`gfn, $sformatf("req app_mode: %0s", app_mode.name()), UVM_HIGH)
         `DV_SPINWAIT_EXIT(
             forever begin
-              kmac_app_req_fifo.get(kmac_app_block_item);
+              kmac_app_req_fifo[app_mode].get(kmac_app_block_item);
               `uvm_info(`gfn,
                         $sformatf("Detected KMAC_APP data transfer:\n%0s",
                                   kmac_app_block_item.sprint()),
@@ -246,24 +277,31 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   virtual task process_kmac_app_rsp_fifo();
     kmac_app_item kmac_app_rsp;
     forever begin
-      kmac_app_rsp_fifo.get(kmac_app_rsp);
-      `uvm_info(`gfn, $sformatf("Detected a KMAC_APP response:\n%0s", kmac_app_rsp.sprint()), UVM_HIGH)
+      wait(!cfg.under_reset);
+      @(posedge in_kmac_app);
+      `uvm_info(`gfn, $sformatf("rsp app_mode: %0s", app_mode.name()), UVM_HIGH)
+      `DV_SPINWAIT_EXIT(
+          kmac_app_rsp_fifo[app_mode].get(kmac_app_rsp);
+          `uvm_info(`gfn, $sformatf("Detected a KMAC_APP response:\n%0s", kmac_app_rsp.sprint()), UVM_HIGH)
 
-      // safety check that things are working properly and no random KMAC_APP operations are seen
-      `DV_CHECK_FATAL(in_kmac_app == 1, "in_kmac_app is not set, scoreboard has not picked up KMAC_APP request")
+          // safety check that things are working properly and no random KMAC_APP operations are seen
+          `DV_CHECK_FATAL(in_kmac_app == 1, "in_kmac_app is not set, scoreboard has not picked up KMAC_APP request")
 
-      // TODO error checks
+          // TODO error checks
 
-      // assign digest values
-      kmac_app_digest_share0 = kmac_app_rsp.rsp_digest_share0;
-      kmac_app_digest_share1 = kmac_app_rsp.rsp_digest_share1;
+          // assign digest values
+          kmac_app_digest_share0 = kmac_app_rsp.rsp_digest_share0;
+          kmac_app_digest_share1 = kmac_app_rsp.rsp_digest_share1;
 
-      check_digest();
+          check_digest();
 
-      in_kmac_app = 0;
-      `uvm_info(`gfn, "dropped in_kmac_app", UVM_HIGH)
+          in_kmac_app = 0;
+          `uvm_info(`gfn, "dropped in_kmac_app", UVM_HIGH)
 
-      clear_state();
+          clear_state();
+          ,
+          wait(cfg.under_reset || !in_kmac_app);
+      )
     end
   endtask
 
@@ -376,8 +414,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       )
       `uvm_info(`gfn, $sformatf("detected in_kmac_app: %0d", in_kmac_app), UVM_HIGH)
 
-      // Disregard prefix/key processing if not using KMAC mode
-      if (kmac_en) begin
+      // Only process prefix/key if using KMAC, or if using the application interface
+      if (kmac_en || in_kmac_app) begin
         fork
           if (!in_kmac_app) begin : wait_cmd_process_header
             // We need to be able to detect if a CmdProcess is asserted in the middle of
@@ -395,6 +433,14 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             `uvm_info(`gfn, "seen kmac_app_last during prefix and key processing", UVM_HIGH)
           end
           begin : wait_process_header
+            // Denotes the number of keccak rounds we have to wait for to finish
+            // processing the header (prefix + secret keys).
+            //
+            // This is treated as a separate int variable because it is possible for us
+            // to have to wait only for 1 keccak round - this happens when the ROM or OTP
+            // sends data through the application interface.
+            int num_keccak_rounds_in_header;
+
             // If KMAC mode enabled, wait for the prefix and keys to be absorbed by keccak.
             //
             // Note that both absorptions will take the same number of cycles
@@ -405,9 +451,18 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             // to avoid having it be caught when we're waiting for sha3pad to process everything
             if (in_kmac_app) begin
               cfg.clk_rst_vif.wait_clks(1);
+
+              // wait for prefix and keys if Keymgr is using KMAC hash, since it sends in secret
+              // keys, but only wait for the prefix if ROM/OTP is using KMAC hash, since they only
+              // run CShake hash
+              num_keccak_rounds_in_header = (app_mode == AppKeymgr) ? 2 : 1;
+            end else begin
+              // If not using application interface, always will be running KMAC hash,
+              // so wait for both prefix and keys to be processed
+              num_keccak_rounds_in_header = 2;
             end
 
-            repeat (2) begin
+            repeat (num_keccak_rounds_in_header) begin
               // wait either 21 or 17 cycles for sha3pad logic to send the prefix/key
               // to the keccak_round logic (this is the keccak rate)
               cfg.clk_rst_vif.wait_clks(sha3_pkg::KeccakRate[strength]);
@@ -481,10 +536,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   // This task implements a timing model to correctly assert the `msg_digest_done`signal,
   // and also tracks the read interface to the msgfifo, as both are linked.
+  //
+  // An important thing to note is that out of all current application interfaces, only AppKeymgr
+  // uses the full KMAC cipher, involving prefix, keys, encoded output length, etc...
+  // Both the ROM and OTP application interfaces use the explicit CShake cipher,
+  // which (from a timing perspective) behaves almost identially to that of Shake cipher,
+  // with the exception that CShake needs to wait for the prefix to be processed.
   virtual task process_initial_digest();
     bit do_increment;
     bit cmd_process_in_keccak_and_blocks_left;
-    bit kmac_app_last_in_keccak;
     bit run_final_keccak;
 
     int num_blocks_filled = 0;
@@ -507,7 +567,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       //
       // This is guaranteed to happen after sha3_idle goes low, as the prefix and keys only start
       // being processed once the DUT receives CmdStart command.
-      if (kmac_en) begin
+      if (kmac_en || in_kmac_app) begin
         @(posedge prefix_and_keys_done);
 
         // Though KMAC_APP mode will instantly start transmitting data to the msgfifo without a delay,
@@ -590,15 +650,19 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                       // during the 2 cycle flushing process, timing needs to change accordingly
                       bit incr_fifo_wr_in_flush = 0;
 
-                      // Never enter this condition in KMAC_APP mode unless
-                      // one of the following edge cases are seen:
-                      // - kmac_app_last is seen during keccak hashing of full dadta block
+                      // Always enter this condition if not using the KMAC_APP interface.
+                      //
+                      // If using the KMAC_APP interface only enter this condition if:
+                      // - ROM/OTP application interface is being used
+                      // - there are still pending data blocks that need to be processed
+                      // - kmac_app_last is seen during keccak hashing of full data block
                       // - kmac_app_last is seen during processing of the prefix and secret key
-                      if (!in_kmac_app || kmac_app_last_in_keccak || kmac_app_last_in_header) begin
+                      if (!in_kmac_app || app_mode != AppKeymgr || !fifo_empty ||
+                          kmac_app_last_in_keccak || kmac_app_last_in_header) begin
                         // This bit represents whether the fifo depthis 0 at this point in time
                         bit cmd_process_fifo_depth = (fifo_depth == 0);
 
-                        // If all of the following two conditions are NOT true:
+                        // If all of the following conditions are NOT true:
                         //  - we are in KMAC_APP mode
                         //  - we've seen CmdProcess during an earlier keccak run and still have
                         //    some data left in msgfifo/sha3pad
@@ -651,7 +715,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                         end
 
                         // Wait for all remaining blocks in msgfifo to flush out to sha3pad
-                        while (!fifo_empty) begin
+                        while (fifo_wr_ptr != fifo_rd_ptr) begin
                           do_increment = 1;
                           num_blocks_filled++;
 
@@ -681,7 +745,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                               if (incr_fifo_wr_in_process) begin
                                 cfg.clk_rst_vif.wait_clks(1);
                               end
-                              num_blocks_filled++;
+                              if (!in_kmac_app) begin // TODO
+                                num_blocks_filled++;
+                              end
                             end
                             break;
                           end else begin
@@ -693,14 +759,16 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                           // run full keccak rounds on these blocks
                           if (num_blocks_filled == sha3_pkg::KeccakRate[strength]) begin
                             `uvm_info(`gfn, "all blocks full while flushing fifo, running keccak rounds", UVM_HIGH)
-                            cfg.clk_rst_vif.wait_clks(1);
+                            cfg.clk_rst_vif.wait_clks(2);
                             wait_keccak_rounds();
+                            num_blocks_filled = 0;
                             continue;
                           end
                           cfg.clk_rst_vif.wait_clks(1);
                         end
-                      end else begin
-                        // if we get here it is guaranteed that kmac_app_last has been set
+                      end else if (app_mode == AppKeymgr) begin
+                        // if we get here, we are dealing with a KeyMgr application request,
+                        // and `kmac_app_last` has been set.
                         //
                         // usually we will wait 4 cycles for a KMAC_APP op to finish flushing out the
                         // fifo and start runnning the rest of sha3pad process, with exception of
@@ -979,6 +1047,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               // either a reset is detected or until after the current transaction finishes.
               wait(got_data_from_kmac_app == 1);
               `uvm_info(`gfn, "got data from kmac_app", UVM_HIGH)
+
               // Note that when using the app interface, 0x2_0001 is appended to the last msgfifo
               // block to be filled (the encoded output length - output fixed at 256b), so we need
               // to account for this when incrementing the fifo_wr_ptr.
@@ -1007,7 +1076,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               if (kmac_app_last) begin
                 `uvm_info(`gfn, $sformatf("kmac_app_block_strb_size: %0d", kmac_app_block_strb_size), UVM_HIGH)
                 `uvm_info(`gfn, "kmac_app_last detected", UVM_HIGH)
-                if (kmac_app_block_strb_size == keymgr_pkg::KmacDataIfWidth/8) begin
+                if (app_mode != AppKeymgr) begin
+                  if (kmac_app_last_in_header || kmac_app_last_in_keccak) begin
+                    cfg.clk_rst_vif.wait_clks(1);
+                  end
+                end else if (kmac_app_block_strb_size == keymgr_pkg::KmacDataIfWidth/8) begin
                   cfg.clk_rst_vif.wait_clks(1);
                   wait(fifo_wr_ptr - fifo_rd_ptr < KMAC_FIFO_DEPTH);
                   fifo_wr_ptr++;
@@ -1732,10 +1805,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       // CSHAKE //
       ////////////
       sha3_pkg::CShake: begin
-        if (kmac_en) begin
-          // Get the fname and custom_str string values from the writes to PREFIX csrs
-          get_fname_and_custom_str(fname, custom_str);
+        // Get the fname and custom_str string values from the writes to PREFIX csrs
+        get_fname_and_custom_str(in_kmac_app, fname, custom_str);
 
+        if (kmac_en) begin
           // Calculate the unmasked key
           exp_keys = `gmv(ral.cfg.sideload) ? keymgr_keys : keys;
           for (int i = 0; i < key_word_len; i++) begin
@@ -1782,19 +1855,22 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               end
             end
             default: begin
-              `uvm_fatal(`gfn, $sformatf("strength[%0s] is now allowed for kmac", strength.name()))
+              `uvm_fatal(`gfn, $sformatf("strength[%0s] is not allowed for kmac", strength.name()))
             end
           endcase
         end else begin
-          // regular cshake
-          // TODO - leave this section empty for now, we don't use plain cshake functionality
+          // regular cshake - used for otp_ctrl/rom_ctrl application interfaces
           case (strength)
             sha3_pkg::L128: begin
+              digestpp_dpi_pkg::c_dpi_cshake128(msg_arr, fname, custom_str, msg_arr.size(),
+                                                output_len_bytes, dpi_digest);
             end
             sha3_pkg::L256: begin
+              digestpp_dpi_pkg::c_dpi_cshake256(msg_arr, fname, custom_str, msg_arr.size(),
+                                                output_len_bytes, dpi_digest);
             end
             default: begin
-              `uvm_fatal(`gfn, $sformatf("strength[%0s] is now allowed for cshake", strength.name()))
+              `uvm_fatal(`gfn, $sformatf("strength[%0s] is not allowed for cshake", strength.name()))
             end
           endcase
         end
@@ -1874,7 +1950,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   //
   // Strings are encoded as:
   //  `encode_string(S) = left_encode(len(S)) || S`
-  virtual function void get_fname_and_custom_str(ref string fname, ref string custom_str);
+  virtual function void get_fname_and_custom_str(bit en_kmac_app,
+                                                 ref string fname,
+                                                 ref string custom_str);
     bit [7:0] prefix_bytes[$];
     // The very first byte of each encoded string represents the number of bytes
     // that make up the encoded string's length.
@@ -1885,8 +1963,12 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     byte fname_arr[];
     byte custom_str_arr[];
 
-    prefix_bytes = {<< 32 {prefix}};
-    prefix_bytes = {<< byte {prefix_bytes}};
+    if (en_kmac_app && kmac_pkg::AppCfg[app_mode].PrefixMode) begin
+      prefix_bytes = {<< byte {kmac_pkg::AppCfg[app_mode].Prefix}};
+    end else begin
+      prefix_bytes = {<< 32 {prefix}};
+      prefix_bytes = {<< byte {prefix_bytes}};
+    end
 
     `uvm_info(`gfn, $sformatf("prefix: %0p", prefix), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("prefix_bytes: %0p", prefix_bytes), UVM_HIGH)
@@ -1935,3 +2017,5 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   endfunction
 
 endclass
+
+`undef KMAC_APP_VALID_TRANS

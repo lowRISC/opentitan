@@ -130,6 +130,12 @@ package kmac_env_pkg;
     KmacStatusFifoFull = 15
   } kmac_status_e;
 
+  typedef enum int {
+    AppKeymgr,
+    AppOtp,
+    AppRom
+  } kmac_app_e;
+
   typedef virtual pins_if#(1)       idle_vif;
   typedef virtual kmac_sideload_if  sideload_vif;
 
