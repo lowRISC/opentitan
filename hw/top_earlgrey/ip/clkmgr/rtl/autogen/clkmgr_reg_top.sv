@@ -119,6 +119,9 @@ module clkmgr_reg_top (
   logic clk_enables_clk_io_div2_peri_en_qs;
   logic clk_enables_clk_io_div2_peri_en_wd;
   logic clk_enables_clk_io_div2_peri_en_we;
+  logic clk_enables_clk_io_peri_en_qs;
+  logic clk_enables_clk_io_peri_en_wd;
+  logic clk_enables_clk_io_peri_en_we;
   logic clk_enables_clk_usb_peri_en_qs;
   logic clk_enables_clk_usb_peri_en_wd;
   logic clk_enables_clk_usb_peri_en_we;
@@ -275,7 +278,33 @@ module clkmgr_reg_top (
   );
 
 
-  //   F[clk_usb_peri_en]: 2:2
+  //   F[clk_io_peri_en]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_clk_enables_clk_io_peri_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (clk_enables_clk_io_peri_en_we),
+    .wd     (clk_enables_clk_io_peri_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_enables.clk_io_peri_en.q ),
+
+    // to register interface (read)
+    .qs     (clk_enables_clk_io_peri_en_qs)
+  );
+
+
+  //   F[clk_usb_peri_en]: 3:3
   prim_subreg #(
     .DW      (1),
     .SWACCESS("RW"),
@@ -550,8 +579,11 @@ module clkmgr_reg_top (
   assign clk_enables_clk_io_div2_peri_en_we = addr_hit[3] & reg_we & !reg_error;
   assign clk_enables_clk_io_div2_peri_en_wd = reg_wdata[1];
 
+  assign clk_enables_clk_io_peri_en_we = addr_hit[3] & reg_we & !reg_error;
+  assign clk_enables_clk_io_peri_en_wd = reg_wdata[2];
+
   assign clk_enables_clk_usb_peri_en_we = addr_hit[3] & reg_we & !reg_error;
-  assign clk_enables_clk_usb_peri_en_wd = reg_wdata[2];
+  assign clk_enables_clk_usb_peri_en_wd = reg_wdata[3];
 
   assign clk_hints_clk_main_aes_hint_we = addr_hit[4] & reg_we & !reg_error;
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
@@ -584,7 +616,8 @@ module clkmgr_reg_top (
       addr_hit[3]: begin
         reg_rdata_next[0] = clk_enables_clk_io_div4_peri_en_qs;
         reg_rdata_next[1] = clk_enables_clk_io_div2_peri_en_qs;
-        reg_rdata_next[2] = clk_enables_clk_usb_peri_en_qs;
+        reg_rdata_next[2] = clk_enables_clk_io_peri_en_qs;
+        reg_rdata_next[3] = clk_enables_clk_usb_peri_en_qs;
       end
 
       addr_hit[4]: begin

@@ -1464,8 +1464,9 @@ typedef enum top_earlgrey_power_manager_reset_requests {
 typedef enum top_earlgrey_gateable_clocks {
   kTopEarlgreyGateableClocksIoDiv4Peri = 0, /**< Clock clk_io_div4_peri in group peri */
   kTopEarlgreyGateableClocksIoDiv2Peri = 1, /**< Clock clk_io_div2_peri in group peri */
-  kTopEarlgreyGateableClocksUsbPeri = 2, /**< Clock clk_usb_peri in group peri */
-  kTopEarlgreyGateableClocksLast = 2, /**< \internal Last Valid Gateable Clock */
+  kTopEarlgreyGateableClocksIoPeri = 2, /**< Clock clk_io_peri in group peri */
+  kTopEarlgreyGateableClocksUsbPeri = 3, /**< Clock clk_usb_peri in group peri */
+  kTopEarlgreyGateableClocksLast = 3, /**< \internal Last Valid Gateable Clock */
 } top_earlgrey_gateable_clocks_t;
 
 /**

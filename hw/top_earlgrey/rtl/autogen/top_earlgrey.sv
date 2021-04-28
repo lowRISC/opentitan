@@ -1220,7 +1220,7 @@ module top_earlgrey #(
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
-      .clk_core_i (clkmgr_aon_clocks.clk_io_div2_peri),
+      .clk_core_i (clkmgr_aon_clocks.clk_io_peri),
       .rst_ni (rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel]),
       .rst_core_ni (rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel])
   );
