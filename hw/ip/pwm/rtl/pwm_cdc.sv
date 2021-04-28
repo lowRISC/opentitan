@@ -104,4 +104,9 @@ module pwm_cdc #(
 
   end : gen_chan_cdc
 
+  // All fields in reg2hw are synced across the CDC except REGEN (the register write enable).
+  // Explicitly waive that here.
+  logic unused_regen;
+  assign unused_regen = reg2hw.regen;
+
 endmodule : pwm_cdc
