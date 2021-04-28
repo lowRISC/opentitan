@@ -88,7 +88,7 @@ module otbn_lsu
   // the cycle following the request.
   assign lsu_word_select_en = lsu_load_req_i & (lsu_req_subset_i == InsnSubsetBase);
 
-  always @(posedge clk_i) begin
+  always_ff @(posedge clk_i) begin
     if (lsu_word_select_en) begin
       lsu_word_select <= lsu_addr_i[BaseWordAddrW-1:2];
     end
