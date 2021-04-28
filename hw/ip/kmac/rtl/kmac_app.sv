@@ -329,7 +329,7 @@ module kmac_app
 
     unique case (st)
       StIdle: begin
-        if (arb_valid && keymgr_key_i.valid) begin
+        if (arb_valid) begin
           st_d = StAppCfg;
 
           // choose app_id
