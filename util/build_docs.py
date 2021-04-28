@@ -354,7 +354,7 @@ def hugo_match_version(hugo_bin_path, version):
     logging.info("Checking for correct Hugo version: %s", version)
     # Hugo version string example:
     # "Hugo Static Site Generator v0.59.0-1DD0C69C/extended linux/amd64 BuildDate: 2019-10-21T09:45:38Z"  # noqa: E501
-    return bool(re.search("v" + version + ".*/extended", process.stdout))
+    return bool(re.search("v" + version + ".*[/+]extended", process.stdout))
 
 
 def install_hugo(install_dir):
