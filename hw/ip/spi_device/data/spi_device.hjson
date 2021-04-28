@@ -82,6 +82,9 @@
                 '''
             },
           ]
+          tags: [// Changing modes randomly can result in unknown values being
+                 // passed between spi_dev/host due to passthrough
+                 "excl:CsrNonInitTests:CsrExclWrite"]
         },
         { bits: "16",
           name: "rst_txfifo",
