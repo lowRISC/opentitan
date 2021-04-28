@@ -549,6 +549,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     int num_blocks_filled = 0;
 
+    bit block_ready_after_flush_keccak = 0;
+
     forever begin
       wait(!cfg.under_reset);
       `DV_SPINWAIT_EXIT(
@@ -619,6 +621,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               forever begin
                 do_increment = 0;
                 run_final_keccak = 0;
+                block_ready_after_flush_keccak = 0;
                 if (num_blocks_filled < sha3_pkg::KeccakRate[strength]) begin
                   `uvm_info(`gfn,
                       $sformatf("not enough blocks filled yet %0d/%0d",
@@ -758,10 +761,41 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                           // If all blocks get filled up while we're flushing the fifo,
                           // run full keccak rounds on these blocks
                           if (num_blocks_filled == sha3_pkg::KeccakRate[strength]) begin
+
+                            // Indicates whether the full message is an 8-byte multiple
+                            bit partial_msg = (!in_kmac_app && msg.size() % 8 > 0) ||
+                                              (in_kmac_app && kmac_app_msg.size() % 8 > 0);
+
                             `uvm_info(`gfn, "all blocks full while flushing fifo, running keccak rounds", UVM_HIGH)
-                            cfg.clk_rst_vif.wait_clks(2);
+                            `uvm_info(`gfn, $sformatf("partial_msg: %0d", partial_msg), UVM_HIGH)
+
+                            // fifo_rd_ptr can keep incrementing as the keccak rounds start
+                            // if there are still more blocks to be flushed.
+                            //
+                            // keep track of them and increment num_blocks_filled accordingly
+                            // after keccak round has finished
+                            block_ready_after_flush_keccak = (fifo_wr_ptr > fifo_rd_ptr);
+
+                            // TODO: same condition for app interface?
+                            if (block_ready_after_flush_keccak && partial_msg) begin
+                              cfg.clk_rst_vif.wait_clks(1);
+                              do_increment = 1;
+                              cfg.clk_rst_vif.wait_n_clks(1);
+                              do_increment = 0;
+                            end
+
+                            // wait for 'run' signal to be latched
+                            cfg.clk_rst_vif.wait_clks(1);
+
                             wait_keccak_rounds();
                             num_blocks_filled = 0;
+                            cfg.clk_rst_vif.wait_clks(1);
+
+                            if (block_ready_after_flush_keccak && partial_msg) begin
+                              cfg.clk_rst_vif.wait_clks(1);
+                              num_blocks_filled++;
+                            end
+
                             continue;
                           end
                           cfg.clk_rst_vif.wait_clks(1);
@@ -1136,11 +1170,12 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                         cfg.clk_rst_vif.wait_clks(1);
                       end
                     end else begin
-                      cfg.clk_rst_vif.wait_clks(1);
+                      forever cfg.clk_rst_vif.wait_clks(1);
                     end
                     ,
                     // wait for the fifo to not be full
                     wait(fifo_wr_ptr - fifo_rd_ptr < KMAC_FIFO_DEPTH);
+                    `uvm_info(`gfn, "fifo no longer full", UVM_HIGH)
                 )
 
                 `uvm_info(`gfn, $sformatf("num_blocks_seen_while_full: %0d", num_blocks_seen_while_full), UVM_HIGH)
@@ -1229,9 +1264,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   #1;
                 end
                 `uvm_info(`gfn, "fifo pointers are now equal", UVM_HIGH)
-                cfg.clk_rst_vif.wait_clks(2);
-                if (!intr_fifo_empty) intr_fifo_empty = 1;
-                `uvm_info(`gfn, "raised intr_fifo_empty", UVM_HIGH)
+                fork
+                  begin
+                    cfg.clk_rst_vif.wait_clks(2);
+                    if (!intr_fifo_empty) intr_fifo_empty = 1;
+                    `uvm_info(`gfn, "raised intr_fifo_empty", UVM_HIGH)
+                  end
+                join_none;
               end else begin
                 continue;
               end
