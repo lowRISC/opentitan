@@ -56,7 +56,7 @@ module rom_ctrl_fsm
   localparam int AW = vbits(RomDepth);
   localparam int TAW = vbits(TopCount);
 
-  localparam int          TopStartAddrInt = RomDepth - TopCount;
+  localparam int unsigned TopStartAddrInt = RomDepth - TopCount;
   localparam bit [AW-1:0] TopStartAddr    = TopStartAddrInt[AW-1:0];
 
   // The counter / address generator
@@ -148,7 +148,7 @@ module rom_ctrl_fsm
   logic [5:0]  state_q, state_d;
   logic        fsm_alert;
 
-  prim_flop #(.Width(6), .ResetValue(ReadingLow))
+  prim_flop #(.Width(6), .ResetValue({ReadingLow}))
   u_state_regs (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
@@ -240,7 +240,7 @@ module rom_ctrl_fsm
   assign kmac_rom_last_o = counter_lnt;
 
   // Start the checker when transitioning into the "Checking" state
-  always @(posedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       start_checker_q <= 1'b0;
     end else begin
