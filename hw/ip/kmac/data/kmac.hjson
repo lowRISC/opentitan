@@ -106,7 +106,7 @@
           name: "en"
           desc: "Configuration enable."
           resval: "1"
-        } // f : en 
+        } // f : en
       ]
       tags: [// This regwen is completely under HW management and thus cannot be manipulated
              // by software.
@@ -387,6 +387,9 @@
           desc: "Message FIFO Full indicator"
         }
       ]
+      tags: [// KMAC activity can be triggered by rom_ctrl right after reset and thus
+             // the init values here may not hold.
+             "excl:CsrAllTests:CsrExclCheck"]
     } // R: STATUS
     { name: "ENTROPY_PERIOD"
       desc: '''Entropy Timer Periods.

@@ -94,12 +94,12 @@ module rom_ctrl_counter
     go = (data_rdy_i && data_vld_o) && !done_q;
 
     addr_d        = addr_q + {{AW-1{1'b0}}, 1'b1};
-    done_d        = addr_q == TopAddr;
-    last_nontop_d = addr_q == TNTAddr;
+    done_d        = rom_addr_o == TopAddr;
+    last_nontop_d = rom_addr_o == TNTAddr;
   end
 
   assign done_o             = done_q;
-  assign rom_addr_o         = addr_q;
+  assign rom_addr_o         = go ? addr_d : addr_q;
   assign data_vld_o         = vld_q;
   assign data_last_nontop_o = last_nontop_q;
 
