@@ -98,6 +98,7 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state,
                                  bit [TL_DW*4-1:0] token_val);
+    bit lc_err;
     csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
     csr_wr(ral.transition_target, next_lc_state);
     csr_wr(ral.transition_token_0, token_val[TL_DW-1:0]);
@@ -117,14 +118,15 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
           csr_spinwait(.ptr(ral.status.otp_error),
                        .exp_data(1),
                        .spinwait_delay_ns($urandom_range(1, 5)));
-          // always on alert, set time delay to make sure alert triggered for at least for one
-          // handshake cycle
-          cfg.clk_rst_vif.wait_clks($urandom_range(20, 50));
+          lc_err = 1;
         end
         join_any
         wait_no_outstanding_access();
-        disable fork;
-      end join
+      disable fork;
+    end join
+    // always on alert, set time delay to make sure alert triggered for at least for one
+    // handshake cycle
+    if (lc_err) cfg.clk_rst_vif.wait_clks($urandom_range(20, 50));
   endtask
 
   // checking of these two CSRs are done in scb
