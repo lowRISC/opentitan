@@ -86,30 +86,19 @@
       tests: ["{name}_sideload"]
     }
     {
-      name: kdf
+      name: app
       desc: '''
-            Test KeyMgr can initiate the KMAC operation through the KDF interface.
-            Use the keymgr_kmac_agent to send message data to the KMAC and to control the hashing
-            logic, and set cfg.sideload.
-            The result digest sent to the keymgr_kmac_agent will be compared against the result from
-            the C++ reference model.
-            In addition, try to read from the STATE window, confirm that this access is blocked
-            (return 0).
+            Test that the Keymgr/ROM/OTP  can all initiate a KMAC operation through
+            the application interface - Keymgr uses KMAC hash, while ROM/OTP use CShake.
+            Use an array of kmac_app_agents to send message data to the KMAC and to control
+            the hashing logic, and set cfg.sideload if the Keymgr is enabled.
+            The result digest sent to the kmac_app_agent will be compared against the result from
+            the DPI reference model.
+            In addition, read from the STATE window afterwards and confirm that this access is
+            blocked and will return 0.
             '''
       milestone: V2
-      tests: ["{name}_kdf"]
-    }
-    {
-      name: kdf_with_sw_access
-      desc: '''
-            Initiate a KDF operation as before, but this time also provide a "SW" message and key,
-            and try to also initiate the KMAC with the CMD register.
-            KMAC should raise an error and discard the SW inputs.
-            After KDF is done, trigger a software-initiated KMAC process using the previously
-            available message/key.
-            '''
-      milestone: V2
-      tests: ["{name}_kdf_with_sw_key"]
+      tests: ["{name}_app"]
     }
     {
       name: error
@@ -125,6 +114,7 @@
               - Issue Start after issuing Process
               - If squeezing data, issue Start/Process after issuing Run
             - Incorrect KMAC configurations (e.g. set KMAC strength as 512).
+            - Provide software inputs during operation of the application interface
 
             // TODO: Not all of these errors have been supported yet, and more errors might be
             //       added later.
