@@ -114,6 +114,7 @@
     }
     {
       name: stub_cpu_mode
+      sw_images: ["sw/device/boot_rom/boot_rom:0"]
       en_run_modes: ["base_otp_lc_dev_mode"]
       run_opts: ["+stub_cpu=1"]
     }
