@@ -50,10 +50,6 @@ class kmac_smoke_vseq extends kmac_base_vseq;
     entropy_mode == EntropyModeSw;
   }
 
-  constraint entropy_fast_process_c {
-    entropy_fast_process == 0;
-  }
-
   constraint entropy_ready_c {
     entropy_ready == 1;
   }

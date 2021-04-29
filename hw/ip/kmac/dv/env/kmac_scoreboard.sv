@@ -462,7 +462,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               num_keccak_rounds_in_header = 2;
             end
 
-            repeat (num_keccak_rounds_in_header) begin
+            for (int i = 0; i < num_keccak_rounds_in_header; i++) begin
               // wait either 21 or 17 cycles for sha3pad logic to send the prefix/key
               // to the keccak_round logic (this is the keccak rate)
               cfg.clk_rst_vif.wait_clks(sha3_pkg::KeccakRate[strength]);
@@ -473,7 +473,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               cfg.clk_rst_vif.wait_clks(1);
 
               // wait for the keccak logic to perform KECCAK_NUM_ROUNDS rounds
-              wait_keccak_rounds();
+              wait_keccak_rounds((kmac_en && entropy_fast_process) ? (i == 1) : 0);
 
             end
             prefix_and_keys_done = 1;
@@ -494,7 +494,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   //
   // This task must only be called after sha3pad logic has transmitted all KeccakRate
   // blocks to keccak logic
-  virtual task wait_keccak_rounds();
+  virtual task wait_keccak_rounds(bit is_key_process = 1'b0);
     int unsigned total_cycles = 0;
     if (cfg.enable_masking) begin
       // If masking is enabled then entropy is used,
@@ -514,7 +514,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         //
         // So, latency of first round will be 3 cycles, one for the entropy FSM to transition and
         // start entropy expansion and 2 for keccak logic to latch this entropy.
-        total_cycles = 3 + (SW_ENTROPY_ROUND_CYCLES_NO_FAST * (KECCAK_NUM_ROUNDS - 1));
+        //
+        // However, if fast entropy is used, the keccak rounds processing the key will utilize the
+        // 5 cycle latency as entropy is refilled for each key round, but all other keccak rounds
+        // (processing prefix/msg_data) will take 3 cycles each as entropy will not be refilled.
+        if (entropy_fast_process && !is_key_process) begin
+          total_cycles = 3 * KECCAK_NUM_ROUNDS;
+        end else begin
+          total_cycles = 3 + (SW_ENTROPY_ROUND_CYCLES_NO_FAST * (KECCAK_NUM_ROUNDS - 1));
+        end
       end else if (entropy_mode == EntropyModeEdn) begin
         // TODO: EDN entropy isn't supported in sequences yet
       end else begin
