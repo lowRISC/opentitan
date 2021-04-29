@@ -697,6 +697,9 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
     // for read, update predication at address phase and compare at data phase
     case (csr.get_name())
       // add individual case item for each csr
+      "alert_test": begin
+        // do nothing
+      end
       "exec_regwen": begin
         // do nothing
       end
