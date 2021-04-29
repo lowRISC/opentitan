@@ -87,6 +87,18 @@ class push_pull_agent_cfg #(parameter int HostDataWidth = 32,
     d_user_data_q.push_back(data);
   endfunction
 
+  // Clear method for the user data queues - must be called externally to clear user-data queue
+  // which was being set by add_h_user_data method.
+  function void clear_h_user_data();
+    h_user_data_q.delete();
+  endfunction
+
+  // Clear method for the user data queues - must be called externally to clear user-data queue
+  // which was being set by add_d_user_data method.
+  function void clear_d_user_data();
+    d_user_data_q.delete();
+  endfunction
+
   // Getter method for the user data queues - returns the first data entry.
   function bit [HostDataWidth-1:0] get_h_user_data();
     `DV_CHECK_NE_FATAL(has_h_user_data(), 0, "h_user_data_q is empty!")

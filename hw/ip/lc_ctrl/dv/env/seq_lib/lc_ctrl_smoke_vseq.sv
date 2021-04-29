@@ -46,7 +46,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
         bit [TL_DW*4-1:0] token_val = {$urandom(), $urandom(), $urandom(), $urandom()};
         randomize_next_lc_state(dec_lc_state(lc_state));
         `uvm_info(`gfn, $sformatf("next_LC_state is %0s, input token is %0h", next_lc_state.name,
-                                  token_val), UVM_DEBUG)
+                                  token_val), UVM_HIGH)
 
         set_hashed_token();
         sw_transition_req(next_lc_state, token_val);
@@ -75,6 +75,10 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
   endfunction
 
   virtual function void set_hashed_token();
+    // Clear the user_data_q here cause previous data might not be used due to some other lc_ctrl
+    // error: for example: lc_program error
+    cfg.m_otp_token_pull_agent_cfg.clear_d_user_data();
+
     // Raw Token
     if (lc_state == LcStRaw && next_lc_state inside {DecLcStTestUnlocked0,
         DecLcStTestUnlocked1, DecLcStTestUnlocked2, DecLcStTestUnlocked3}) begin
