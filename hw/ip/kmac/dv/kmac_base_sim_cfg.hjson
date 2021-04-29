@@ -40,7 +40,7 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
-  run_opts: ["+test_timeout_ns=4000000000"]
+  run_opts: ["+test_timeout_ns=8000000000"]
 
   // Need to override the default output directory
   overrides: [
