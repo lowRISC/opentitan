@@ -5,6 +5,7 @@ r"""
 Class describing simulation configuration object
 """
 
+import collections
 import logging as log
 import os
 import shutil
@@ -21,7 +22,10 @@ from testplanner.class_defs import Testplan
 from testplanner.testplan_utils import parse_testplan
 from utils import VERBOSE, rm_path
 
-_MAX_TESTS_PER_BUCKET = 10
+
+# This affects the bucketizer failure report.
+_MAX_UNIQUE_TESTS = 5
+_MAX_TEST_RESEEDS = 2
 
 
 def pick_wave_format(fmts):
@@ -539,19 +543,66 @@ class SimCfg(FlowCfg):
         is enabled, then the summary coverage report is also generated. The final
         result is in markdown format.
         '''
+        def indent_by(level):
+            return " " * (4 * level)
+
         def create_failure_message(test, line, context):
-            spaces = " " * 12
-            message = [f"    * {test.qual_name}", ""]
+            message = [f"{indent_by(2)}* {test.qual_name}\\"]
             if line:
                 message.append(
-                    f"{spaces}Line {line}, in log {test.get_log_path()}")
+                    f"{indent_by(2)}  Line {line}, in log " +
+                    test.get_log_path())
             else:
-                message.append(f"{spaces}Log {test.get_log_path()}")
+                message.append(f"{indent_by(2)} Log {test.get_log_path()}")
             if context:
-                lines = [f"{spaces}{c.rstrip()}" for c in context]
+                message.append("")
+                lines = [f"{indent_by(4)}{c.rstrip()}" for c in context]
                 message.extend(lines)
             message.append("")
             return message
+
+        def create_bucket_report(buckets):
+            """Creates a report based on the given buckets.
+
+            The buckets are sorted by descending number of failures. Within
+            buckets this also group tests by unqualified name, and just a few
+            failures are shown per unqualified name.
+
+            Args:
+              buckets: A dictionary by bucket containing triples
+                (test, line, context).
+
+            Returns:
+              A list of text lines for the report.
+            """
+            by_tests = sorted(buckets.items(),
+                              key=lambda i: len(i[1]),
+                              reverse=True)
+            fail_msgs = ["\n## Failure Buckets", ""]
+            for bucket, tests in by_tests:
+                fail_msgs.append(f"* `{bucket}` has {len(tests)} failures:")
+                unique_tests = collections.defaultdict(list)
+                for (test, line, context) in tests:
+                    unique_tests[test.name].append((test, line, context))
+                for name, test_reseeds in list(unique_tests.items())[
+                        :_MAX_UNIQUE_TESTS]:
+                    fail_msgs.append(f"{indent_by(1)}* Test {name} has "
+                                     f"{len(test_reseeds)} failures.")
+                    for test, line, context in test_reseeds[:_MAX_TEST_RESEEDS]:
+                        fail_msgs.extend(
+                            create_failure_message(test, line, context))
+                    if len(test_reseeds) > _MAX_TEST_RESEEDS:
+                        fail_msgs.append(
+                            f"{indent_by(2)}* ... and "
+                            f"{len(test_reseeds) - _MAX_TEST_RESEEDS} "
+                            "more failures.")
+                if len(unique_tests) > _MAX_UNIQUE_TESTS:
+                    fail_msgs.append(
+                        f"{indent_by(1)}* ... and "
+                        f"{len(unique_tests) - _MAX_UNIQUE_TESTS} more tests.")
+
+            fail_msgs.append("")
+            return fail_msgs
 
         deployed_items = self.deploy
         results = SimResults(deployed_items, run_results)
@@ -612,26 +663,9 @@ class SimCfg(FlowCfg):
             self.results_summary["Name"] = self._get_results_page_link(
                 self.results_summary["Name"])
 
-        # Append bucketized failures for triage, sorted by descending number
-        # of failures.
         if results.buckets:
             self.errors_seen = True
-            by_tests = sorted(results.buckets.items(),
-                              key=lambda i: len(i[1]),
-                              reverse=True)
-            fail_msgs = ["\n## Failure Buckets", ""]
-            for bucket, tests in by_tests:
-                fail_msgs.append(f"* ```{bucket}```:")
-                # The tests could be sorted by ascending wall clock time.
-                for count, (test, line, context) in enumerate(tests):
-                    if count == _MAX_TESTS_PER_BUCKET:
-                        fail_msgs.append(
-                            f"    * ... {len(tests) - count} more tests.")
-                        break
-                    fail_msgs.extend(
-                        create_failure_message(test, line, context))
-            fail_msgs.append("")
-            results_str += "\n".join(fail_msgs)
+            results_str += "\n".join(create_bucket_report(results.buckets))
 
         self.results_md = results_str
 
