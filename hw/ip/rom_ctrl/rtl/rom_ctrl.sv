@@ -74,14 +74,14 @@ module rom_ctrl
   logic                     kmac_done;
   logic [255:0]             kmac_digest;
 
-  assign kmac_data_o = '{valid: kmac_rom_vld & ~SkipCheck,
+  assign kmac_data_o = '{valid: kmac_rom_vld,
                          data: kmac_rom_data,
                          strb: '1,
                          last: kmac_rom_last};
 
-  assign kmac_rom_rdy = kmac_data_i.ready | SkipCheck;
-  assign kmac_done = kmac_data_i.done | SkipCheck;
-  assign kmac_digest = SkipCheck ? '1 : kmac_data_i.digest_share0 ^ kmac_data_i.digest_share1;
+  assign kmac_rom_rdy = kmac_data_i.ready;
+  assign kmac_done = kmac_data_i.done;
+  assign kmac_digest = kmac_data_i.digest_share0 ^ kmac_data_i.digest_share1;
 
   logic unused_kmac_error;
   assign unused_kmac_error = &{1'b0, kmac_data_i.error};
