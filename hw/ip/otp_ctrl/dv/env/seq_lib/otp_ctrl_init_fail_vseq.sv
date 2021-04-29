@@ -30,7 +30,8 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
 
   // If num_to_lock_digests is larger than num_dai_op, that means there won't be OTP init check
   // error, so this sequence will trigger ECC error instead.
-  constraint lock_digest_c {num_to_lock_digests < num_dai_op * 2;}
+  // We set 25% possibility that OTP init check fails due to writing OTP after digest is locked.
+  constraint lock_digest_c {num_to_lock_digests < num_dai_op * 4;}
   constraint num_iterations_c {num_dai_op inside {[20:100]};}
   constraint ecc_err_c {
     $countones(ecc_err_mask) dist {1 :/ 1,  // ECC correctable error

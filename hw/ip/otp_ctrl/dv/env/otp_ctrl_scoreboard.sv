@@ -200,7 +200,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
       // Update digest values and direct_access_regwen.
       predict_rdata(1, 0, 0);
-      void'(ral.direct_access_regwen.predict(0));
+      void'(ral.direct_access_regwen.predict(.value(0), .kind(UVM_PREDICT_READ)));
 
       // Unlike reset, OTP write won't exit immediately when lc_escalate_en is On.
       // So here wait until otp program done, then backdoor read.
