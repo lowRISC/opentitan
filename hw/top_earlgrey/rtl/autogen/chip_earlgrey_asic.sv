@@ -961,6 +961,11 @@ module chip_earlgrey_asic #(
   assign unused_entropy_sys_rst = rsts_ast.rst_ast_entropy_src_sys_n[DomainAonSel];
   assign unused_edn_sys_rst = rsts_ast.rst_ast_edn0_sys_n[DomainAonSel];
 
+// TODO Connet to FLASH & OTP
+ast_pkg::ast_dif_t fla_alert_in_i;
+ast_pkg::ast_dif_t otp_alert_in_i;
+assign fla_alert_in_i = '{p: 1'b0, n: 1'b1};
+assign otp_alert_in_i = '{p: 1'b0, n: 1'b1};
 
   ast #(
     .EntropyStreams(top_pkg::ENTROPY_STREAM),
@@ -973,6 +978,7 @@ module chip_earlgrey_asic #(
     // tlul
     .tl_i                  ( base_ast_bus ),
     .tl_o                  ( ast_base_bus ),
+    .ast_init_done_o       (  ),  // TODO Connect to?
     // buffered clocks & resets
     // Reset domain connection is manual at the moment
     .clk_ast_adc_i         ( clks_ast.clk_ast_adc_ctrl_aon_io_div4_peri ),
@@ -1045,27 +1051,10 @@ module chip_earlgrey_asic #(
     .entropy_rsp_i         ( ast_edn_edn_rsp ),
     .entropy_req_o         ( ast_edn_edn_req ),
     // alerts
-    .as_alert_trig_i       ( ast_alert_rsp.alerts_trig[AsSel]    ),
-    .as_alert_ack_i        ( ast_alert_rsp.alerts_ack[AsSel]     ),
-    .as_alert_o            ( ast_alert_req.alerts[AsSel]         ),
-    .cg_alert_trig_i       ( ast_alert_rsp.alerts_trig[CgSel]    ),
-    .cg_alert_ack_i        ( ast_alert_rsp.alerts_ack[CgSel]     ),
-    .cg_alert_o            ( ast_alert_req.alerts[CgSel]         ),
-    .gd_alert_trig_i       ( ast_alert_rsp.alerts_trig[GdSel]    ),
-    .gd_alert_ack_i        ( ast_alert_rsp.alerts_ack[GdSel]     ),
-    .gd_alert_o            ( ast_alert_req.alerts[GdSel]         ),
-    .ts_alert_hi_trig_i    ( ast_alert_rsp.alerts_trig[TsHiSel]  ),
-    .ts_alert_hi_ack_i     ( ast_alert_rsp.alerts_ack[TsHiSel]   ),
-    .ts_alert_hi_o         ( ast_alert_req.alerts[TsHiSel]       ),
-    .ts_alert_lo_trig_i    ( ast_alert_rsp.alerts_trig[TsLoSel]  ),
-    .ts_alert_lo_ack_i     ( ast_alert_rsp.alerts_ack[TsLoSel]   ),
-    .ts_alert_lo_o         ( ast_alert_req.alerts[TsLoSel]       ),
-    .ls_alert_trig_i       ( ast_alert_rsp.alerts_trig[LsSel]    ),
-    .ls_alert_ack_i        ( ast_alert_rsp.alerts_ack[LsSel]     ),
-    .ls_alert_o            ( ast_alert_req.alerts[LsSel]         ),
-    .ot_alert_trig_i       ( ast_alert_rsp.alerts_trig[OtSel]    ),
-    .ot_alert_ack_i        ( ast_alert_rsp.alerts_ack[OtSel]     ),
-    .ot_alert_o            ( ast_alert_req.alerts[OtSel]         ),
+    .fla_alert_in_i ( fla_alert_in_i ),
+    .otp_alert_in_i ( otp_alert_in_i ),
+    .alert_rsp_i ( ast_alert_rsp ),
+    .alert_req_o ( ast_alert_req ),
     // dft
     .dft_strap_test_i      ( dft_strap_test   ),
     .lc_dft_en_i           ( dft_en           ),

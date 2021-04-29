@@ -58,6 +58,7 @@ always begin
   #((SysClkPeriod+jitter)/2000) clk = ~clk && en_osc;
 end
 
+assign sys_clk_o = clk;
 `else  // of SYNTHESIS
 localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
 
@@ -83,16 +84,11 @@ if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
   // FPGA Specific (place holder)
   ///////////////////////////////////////
   assign clk = (/*TODO*/ 1'b1) && en_osc;
+  assign sys_clk_o = clk;
 end else begin : gen_generic
   assign clk = (/*TODO*/ 1'b1) && en_osc;
-
+  assign sys_clk_o = clk;
 end
 `endif
-
-prim_buf u_buf (
-  .in_i(clk),
-  .out_o(sys_clk_o)
-);
-
 
 endmodule : sys_osc
