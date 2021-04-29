@@ -347,3 +347,17 @@ test('sw_silicon_creator_lib_driver_otbn_unittest', executable(
   ),
   suite: 'mask_rom',
 )
+
+# Mask ROM flash_ctrl driver
+sw_silicon_creator_lib_driver_flash_ctrl = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_flash_ctrl',
+    sources: [
+      hw_ip_flash_ctrl_reg_h,
+      'flash_ctrl.c',
+    ],
+    dependencies: [
+      sw_lib_mmio,
+    ],
+  ),
+)
