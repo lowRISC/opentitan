@@ -582,6 +582,7 @@ mem_name = lib.Name(mem_name[1:])
     .flash_power_ready_h_i,
     .flash_test_mode_a_io,
     .flash_test_voltage_h_io,
+    .flash_alert_o,
     .scanmode_i,
     .scan_en_i,
     .scan_rst_ni

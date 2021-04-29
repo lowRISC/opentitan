@@ -1303,6 +1303,19 @@
           index: -1
         }
         {
+          name: otp_alert
+          struct: ast_dif
+          package: ast_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: otp_ctrl
+          default: ""
+          external: true
+          top_signame: otp_alert
+          index: -1
+        }
+        {
           name: edn
           struct: edn
           package: edn_pkg
@@ -3252,6 +3265,19 @@
           default: ""
           external: true
           top_signame: sensor_ctrl_ast_status
+          index: -1
+        }
+        {
+          name: ast_init_done
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: sensor_ctrl_aon
+          default: ""
+          package: ""
+          external: true
+          top_signame: ast_init_done
           index: -1
         }
         {
@@ -5593,6 +5619,19 @@
           inst_name: eflash
           index: -1
         }
+        {
+          struct: ast_dif
+          package: ast_pkg
+          type: uni
+          act: req
+          name: flash_alert
+          inst_name: eflash
+          width: 1
+          default: ""
+          external: true
+          top_signame: flash_alert
+          index: -1
+        }
       ]
       clock_connections:
       {
@@ -6227,6 +6266,7 @@
       clkmgr_aon.jitter_en: clk_main_jitter_en
       clkmgr_aon.ast_clk_byp_req: ast_clk_byp_req
       clkmgr_aon.ast_clk_byp_ack: ast_clk_byp_ack
+      eflash.flash_alert: flash_alert
       eflash.flash_bist_enable: flash_bist_enable
       eflash.flash_power_down_h: flash_power_down_h
       eflash.flash_power_ready_h: flash_power_ready_h
@@ -6237,9 +6277,11 @@
       pwrmgr_aon.pwr_ast: pwrmgr_ast
       otp_ctrl.otp_ast_pwr_seq: ""
       otp_ctrl.otp_ast_pwr_seq_h: ""
+      otp_ctrl.otp_alert: otp_alert
       sensor_ctrl_aon.ast_alert: sensor_ctrl_ast_alert
       sensor_ctrl_aon.ast_status: sensor_ctrl_ast_status
       sensor_ctrl_aon.ast2pinmux: ast2pinmux
+      sensor_ctrl_aon.ast_init_done: ast_init_done
       usbdev.usb_ref_val: ""
       usbdev.usb_ref_pulse: ""
       clkmgr_aon.clocks_ast: clks_ast
@@ -11334,14 +11376,42 @@
       module_name: sensor_ctrl_aon
     }
     {
-      name: sensor_ctrl_aon_recov_ls
+      name: sensor_ctrl_aon_recov_fla
       width: 1
       type: alert
       async: "0"
       module_name: sensor_ctrl_aon
     }
     {
-      name: sensor_ctrl_aon_recov_ot
+      name: sensor_ctrl_aon_recov_otp
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sensor_ctrl_aon
+    }
+    {
+      name: sensor_ctrl_aon_recov_ot0
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sensor_ctrl_aon
+    }
+    {
+      name: sensor_ctrl_aon_recov_ot1
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sensor_ctrl_aon
+    }
+    {
+      name: sensor_ctrl_aon_recov_ot2
+      width: 1
+      type: alert
+      async: "0"
+      module_name: sensor_ctrl_aon
+    }
+    {
+      name: sensor_ctrl_aon_recov_ot3
       width: 1
       type: alert
       async: "0"
@@ -11906,6 +11976,19 @@
         inst_name: otp_ctrl
         external: true
         top_signame: otp_ctrl_otp_ast_pwr_seq_h
+        index: -1
+      }
+      {
+        name: otp_alert
+        struct: ast_dif
+        package: ast_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: otp_ctrl
+        default: ""
+        external: true
+        top_signame: otp_alert
         index: -1
       }
       {
@@ -13421,6 +13504,19 @@
         index: -1
       }
       {
+        name: ast_init_done
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: sensor_ctrl_aon
+        default: ""
+        package: ""
+        external: true
+        top_signame: ast_init_done
+        index: -1
+      }
+      {
         name: ast2pinmux
         struct: logic
         type: uni
@@ -14784,6 +14880,19 @@
         index: -1
       }
       {
+        struct: ast_dif
+        package: ast_pkg
+        type: uni
+        act: req
+        name: flash_alert
+        inst_name: eflash
+        width: 1
+        default: ""
+        external: true
+        top_signame: flash_alert
+        index: -1
+      }
+      {
         name: tl_corei
         struct: tl
         package: tlul_pkg
@@ -15738,6 +15847,18 @@
         netname: ast_clk_byp_ack
       }
       {
+        package: ast_pkg
+        struct: ast_dif
+        signame: flash_alert_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: flash_alert
+      }
+      {
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: flash_bist_enable_i
@@ -15895,6 +16016,18 @@
       }
       {
         package: ast_pkg
+        struct: ast_dif
+        signame: otp_alert_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: otp_alert
+      }
+      {
+        package: ast_pkg
         struct: ast_alert_req
         signame: sensor_ctrl_ast_alert_req_i
         width: 1
@@ -15940,6 +16073,18 @@
         conn_type: false
         index: -1
         netname: ast2pinmux
+      }
+      {
+        package: ""
+        struct: logic
+        signame: ast_init_done_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: ast_init_done
       }
       {
         package: ""

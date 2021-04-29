@@ -64,7 +64,7 @@ module prim_generic_otp
   logic unused_alert;
   assign unused_alert = otp_alert_ack_i ^ otp_alert_trig_i;
   assign otp_alert_po = 1'b0;
-  assign otp_alert_no = 1'b0;
+  assign otp_alert_no = 1'b1;
 
   ////////////////////////////////////
   // TL-UL Test Interface Emulation //

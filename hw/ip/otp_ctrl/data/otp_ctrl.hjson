@@ -478,6 +478,13 @@
       default: "'0"
       package: "otp_ctrl_pkg"
     }
+    // AST alert handling
+    { struct:  "ast_dif"
+      type:    "uni"
+      name:    "otp_alert"
+      act:     "req"
+      package: "ast_pkg"
+    }
     // EDN interface
     { struct:  "edn"
       type:    "req_rsp"

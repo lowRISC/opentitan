@@ -20,6 +20,7 @@ filesets:
       - lowrisc:prim:edn_req
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:edn_pkg
+      - lowrisc:systems:ast_pkg
     files:
       - rtl/otp_ctrl_reg_top.sv
       - rtl/otp_ctrl_ecc_reg.sv

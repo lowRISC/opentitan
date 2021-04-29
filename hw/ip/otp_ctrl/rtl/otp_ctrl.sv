@@ -41,6 +41,8 @@ module otp_ctrl
   // Macro-specific power sequencing signals to/from AST.
   output otp_ast_req_t                               otp_ast_pwr_seq_o,
   input  otp_ast_rsp_t                               otp_ast_pwr_seq_h_i,
+  // AST alerts
+  output ast_pkg::ast_dif_t                          otp_alert_o,
   // Power manager interface (inputs are synced to OTP clock domain)
   input  pwrmgr_pkg::pwr_otp_req_t                   pwr_otp_i,
   output pwrmgr_pkg::pwr_otp_rsp_t                   pwr_otp_o,
@@ -635,11 +637,9 @@ module otp_ctrl
                                          tl_win_d2h_gated : '0;
 
   // TODO: correctly wire these alerts up
-  logic unused_otp_alert;
   logic otp_alert_p, otp_alert_n;
   logic otp_alert_ack, otp_alert_trig;
-  assign unused_otp_alert = otp_alert_p ^
-                            otp_alert_n;
+  assign otp_alert_o = '{p: otp_alert_p, n: otp_alert_n};
   assign otp_alert_ack  = 1'b0;
   assign otp_alert_trig = 1'b0;
 

@@ -755,6 +755,7 @@ module chip_earlgrey_nexysvideo #(
     .ast_tl_rsp_i                 ( '0               ),
     .otp_ctrl_otp_ast_pwr_seq_o   (                  ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( '0               ),
+    .otp_alert_o                  (                  ),
     .es_rng_req_o                 (                  ),
     .es_rng_rsp_i                 ( '0               ),
     .es_rng_fips_o                (                  ),
