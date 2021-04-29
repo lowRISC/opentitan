@@ -35,7 +35,17 @@ module flash_phy_scramble import flash_phy_pkg::*; (
 
   // unused portion of addr_key
   logic [KeySize-1:0] muxed_addr_key;
-  assign muxed_addr_key = intg_err_i ? rand_addr_key_i : addr_key_i;
+
+  logic addr_key_sel;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      addr_key_sel <= '0;
+    end else if (!calc_req_i || calc_req_i && calc_ack_o) begin
+      addr_key_sel <= intg_err_i;
+    end
+  end
+
+  assign muxed_addr_key = addr_key_sel ? rand_addr_key_i : addr_key_i;
 
   logic [UnusedWidth-1:0] unused_key;
   assign unused_key = muxed_addr_key[KeySize-1 -: UnusedWidth];
@@ -57,8 +67,19 @@ module flash_phy_scramble import flash_phy_pkg::*; (
   // Cipher portion
   logic dec;
   logic [DataWidth-1:0] data;
-
   assign dec = op_type_i == DeScrambleOp;
+
+  // Do not allow the key to change during a transaction.
+  // While this may be desirable for security reasons, it creates
+  // timing issues for physical design
+  logic data_key_sel;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      data_key_sel <= '0;
+    end else if (!op_req_i || op_req_i && op_ack_o) begin
+      data_key_sel <= intg_err_i;
+    end
+  end
 
   prim_prince # (
     .DataWidth(DataWidth),
@@ -74,7 +95,7 @@ module flash_phy_scramble import flash_phy_pkg::*; (
     .rst_ni,
     .valid_i(op_req_i),
     .data_i(dec ? scrambled_data_i : plain_data_i),
-    .key_i(intg_err_i ? rand_data_key_i : data_key_i),
+    .key_i(data_key_sel ? rand_data_key_i : data_key_i),
     .dec_i(dec),
     .data_o(data),
     .valid_o(op_ack_o)
