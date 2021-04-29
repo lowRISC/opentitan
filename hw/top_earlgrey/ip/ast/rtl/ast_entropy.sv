@@ -15,6 +15,7 @@ module ast_entropy #(
   input rst_ast_es_ni,                             // Entropy Reset
   input clk_src_sys_en_i,                          // System Source Clock Enable
   input clk_src_sys_jen_i,                         // System Source Clock Jitter Enable
+  input clk_src_sys_val_i,                         // System Source Clock Valid
   input scan_mode_i,                               // Scan Mode
   input scan_reset_ni,                             // Scan Reset
   output edn_pkg::edn_req_t entropy_req_o          // Entropy Request
@@ -81,12 +82,27 @@ always_ff @( posedge clk_ast_es_i, negedge rst_es_n ) begin
     erate_cnt <= '0;
   end else if ( read_entropy ) begin
     erate_cnt <= entropy_rate[(1<<EntropyRateWidth)-1:0];
-  end else begin
+  end else if ( erate_cnt != '0 ) begin
     erate_cnt <= erate_cnt - 1'b1;
   end
 end
 
-assign read_entropy = (erate_cnt == '0);
+// Sync to ES S clock
+logic lfsr_en, lfsr_en_es;
+
+assign lfsr_en = clk_src_sys_val_i && clk_src_sys_jen_i;
+
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_lfsr_en_es_sync (
+  .clk_i ( clk_ast_es_i ),
+  .rst_ni ( rst_ast_es_ni ),
+  .d_i ( lfsr_en ),    // LFSR Enable
+  .q_o ( lfsr_en_es )  // LFSR Enable @ es clock
+);
+
+assign read_entropy = (erate_cnt == '0) && lfsr_en_es;
 
 
 ///////////////////////////////////////
@@ -134,15 +150,7 @@ logic entropy_clr, entropy_bit, entropy_bit_valid;
 logic [6-1:0] entropy_depth_o;
 logic fifo_full;
 
-prim_flop_2sync #(
-  .Width ( 1 ),
-  .ResetValue ( 1'b0 )
-) u_entropy_clr_sync (
-  .clk_i ( clk_ast_es_i ),
-  .rst_ni ( 1'b1 ),
-  .d_i ( !(clk_src_sys_en_i && clk_src_sys_jen_i) ),
-  .q_o ( entropy_clr )
-);
+assign entropy_clr = !lfsr_en_es;
 
 prim_packer_fifo #(
   .InW ( 32 ),
@@ -202,7 +210,9 @@ always_ff @( posedge clk_ast_es_i, negedge rst_es_n ) begin
 end
 
 // FIFO Read Out
-wire fifo_entropy_out = fifo_data[fifo_rdp];
+logic fifo_entropy_out;
+
+assign fifo_entropy_out = fifo_empty ? 1'b0 : fifo_data[fifo_rdp];
 
 
 endmodule : ast_entropy

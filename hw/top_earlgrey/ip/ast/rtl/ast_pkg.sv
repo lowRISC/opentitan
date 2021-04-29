@@ -11,11 +11,24 @@
 
 package ast_pkg;
 
-  parameter int NumAlerts       = top_pkg::NUM_AST_ALERTS;
-  parameter int NumIoRails      = top_pkg::NUM_IO_RAILS;
-  parameter int EntropyStreams  = top_pkg::ENTROPY_STREAM;
-  parameter int AdcChannels     = top_pkg::ADC_CHANNELS;
-  parameter int AdcDataWidth    = top_pkg::ADC_DATAW;
+  // Alerts
+  parameter int NumAlerts  = 11;
+  parameter int NumIoRails = 2;
+  parameter int AsSel      = 0;
+  parameter int CgSel      = 1;
+  parameter int GdSel      = 2;
+  parameter int TsHiSel    = 3;
+  parameter int TsLoSel    = 4;
+  parameter int FlaSel     = 5;
+  parameter int OtpSel     = 6;
+  parameter int Ot0Sel     = 7;
+  parameter int Ot1Sel     = 8;
+  parameter int Ot2Sel     = 9;
+  parameter int Ot3Sel     = 10;
+  //
+  parameter int EntropyStreams  = 4;
+  parameter int AdcChannels     = 2;
+  parameter int AdcDataWidth    = 10;
   parameter int UsbCalibWidth   = 16;
   parameter int Ast2PadOutWidth = 9;
   parameter int Pad2AstInWidth  = 6;

@@ -19,6 +19,7 @@ module ast #(
   // tlul if
   input tlul_pkg::tl_h2d_t tl_i,              // TLUL H2D
   output tlul_pkg::tl_d2h_t tl_o,             // TLUL D2H
+  output logic ast_init_done_o,               // AST (registers) Init Done
 
   // clocks / resets
   input clk_ast_adc_i,                        // Buffered AST ADC Clock
@@ -101,40 +102,11 @@ module ast #(
   input edn_pkg::edn_rsp_t entropy_rsp_i,     // Entropy Response
   output edn_pkg::edn_req_t entropy_req_o,    // Entropy Request
 
-  // active shild alert
-  input ast_pkg::ast_dif_t as_alert_trig_i,   // Active Shield Alert Trigger
-  input ast_pkg::ast_dif_t as_alert_ack_i,    // Active Shield Alert Acknowledge
-  output ast_pkg::ast_dif_t as_alert_o,       // Active Shield Alert
-
-  // clock glitch alert
-  input ast_pkg::ast_dif_t cg_alert_trig_i,   // Clock Glitch Alert Trigger
-  input ast_pkg::ast_dif_t cg_alert_ack_i,    // Clock Glitch Alert Acknowledge
-  output ast_pkg::ast_dif_t cg_alert_o,       // Clock Glitch Alert
-
-  // glitch detect alert
-  input ast_pkg::ast_dif_t gd_alert_trig_i,   // Glitch Detect Alert Trigger
-  input ast_pkg::ast_dif_t gd_alert_ack_i,    // Glitch Detect Alert Acknowledge
-  output ast_pkg::ast_dif_t gd_alert_o,       // Glitch Detect Alert
-
-  // temp sense high alert
-  input ast_pkg::ast_dif_t ts_alert_hi_trig_i,  // Temp Sense High Alert Trigger
-  input ast_pkg::ast_dif_t ts_alert_hi_ack_i,   // Temp Sense High Alert Acknowledge
-  output ast_pkg::ast_dif_t ts_alert_hi_o,      // Temp Sense High Alert Positive
-
-  // temp sense low alert
-  input ast_pkg::ast_dif_t ts_alert_lo_trig_i,  // Temp Sense Low Alert Trigger
-  input ast_pkg::ast_dif_t ts_alert_lo_ack_i,   // Temp Sense Low Alert Acknowledge
-  output ast_pkg::ast_dif_t ts_alert_lo_o,      // Temp Sense Low Alert
-
-  // light sense alert
-  input ast_pkg::ast_dif_t ls_alert_trig_i,   // Light Sense Alert Trigger
-  input ast_pkg::ast_dif_t ls_alert_ack_i,    // Light Sense Alert Acknowledge
-  output ast_pkg::ast_dif_t ls_alert_o,       // Light Sense Alert
-
-  // other alert
-  input ast_pkg::ast_dif_t ot_alert_trig_i,   // OTher Alert Trigger
-  input ast_pkg::ast_dif_t ot_alert_ack_i,    // OTher Alert Acknowledge
-  output ast_pkg::ast_dif_t ot_alert_o,       // OTher Alert
+  // alerts
+  input ast_pkg::ast_dif_t fla_alert_in_i,     // Flash Alert Input
+  input ast_pkg::ast_dif_t otp_alert_in_i,     // OTP Alert Input
+  input ast_pkg::ast_alert_rsp_t alert_rsp_i,  // Alerts Trigger & Acknowledge Inputs
+  output ast_pkg::ast_alert_req_t alert_req_o, // Alerts Output
 
   // dft interface
   input pinmux_pkg::dft_strap_test_req_t dft_strap_test_i,  // DFT Straps
@@ -276,11 +248,13 @@ assign viob_pok_o = vcaon_pok && viob_pok;
 // Regulators & PDM Logic (VCC)
 ///////////////////////////////////////
 
+logic clk_aon;
+
 rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .vcc_pok_h_i ( vcc_pok_h ),
   .vcmain_pok_h_i ( vcmain_pok_h ),
   .vcmain_pok_o_h_i ( vcmain_pok_por ),
-  .clk_src_aon_h_i ( clk_src_aon_o ),
+  .clk_src_aon_h_i ( clk_aon ),
   .main_pd_h_ni ( main_pd_ni ),
   .main_env_iso_en_h_i ( main_env_iso_en_i ),
   .otp_power_seq_h_i ( otp_power_seq_i[1:0] ),
@@ -309,6 +283,11 @@ sys_clk u_sys_clk (
   .clk_src_sys_o ( clk_src_sys_o ),
   .clk_src_sys_val_o ( clk_src_sys_val_o )
 );  // of u_sys_clk
+
+
+///////////////////////////////////////
+// Bandgap Reference ADC10/USCG (Always ON)
+///////////////////////////////////////
 
 
 ///////////////////////////////////////
@@ -347,6 +326,24 @@ aon_clk  u_aon_clk (
   .clk_src_aon_o ( clk_src_aon_o ),
   .clk_src_aon_val_o ( clk_src_aon_val_o )
 );  // of u_aon_clk
+
+assign clk_aon = clk_src_aon_o;
+
+// Reset De-Assert Sync
+logic rst_aon_syn_n;
+
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_rst_aon_dasrt (
+  .clk_i ( clk_aon ),
+  .rst_ni ( rst_aon_clk_n ),
+  .d_i ( 1'b1 ),
+  .q_o ( rst_aon_syn_n )
+);
+
+logic rst_aon_n;
+assign rst_aon_n = scan_mode ? scan_reset_n : rst_aon_syn_n;
 
 
 ///////////////////////////////////////
@@ -403,6 +400,7 @@ ast_entropy #(
   .rst_ast_es_ni ( rst_ast_es_ni ),
   .clk_src_sys_en_i ( clk_src_sys_en_i ),
   .clk_src_sys_jen_i ( clk_src_sys_jen_i ),
+  .clk_src_sys_val_i ( clk_src_sys_val_o ),
   .scan_mode_i ( scan_mode ),
   .scan_reset_ni ( scan_reset_n ),
   .entropy_req_o ( entropy_req_o )
@@ -441,9 +439,9 @@ ast_alert u_alert_as (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_in_i ( as_alert_in ),
-  .alert_trig_i ( as_alert_trig_i ),
-  .alert_ack_i ( as_alert_ack_i ),
-  .alert_req_o ( as_alert_o )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[AsSel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[AsSel] ),
+  .alert_req_o ( alert_req_o.alerts[AsSel] )
 );  // u_alert_as
 
 // Clock Glitch (CG)
@@ -455,9 +453,9 @@ ast_alert u_alert_cg (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_in_i ( cg_alert_in ),
-  .alert_trig_i ( cg_alert_trig_i ),
-  .alert_ack_i ( cg_alert_ack_i ),
-  .alert_req_o ( cg_alert_o )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[CgSel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[CgSel] ),
+  .alert_req_o ( alert_req_o.alerts[CgSel] )
 );  // of u_alert_cg
 
 // Glitch Detector (GD)
@@ -469,9 +467,9 @@ ast_alert u_alert_gd (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_in_i ( gd_alert_in ),
-  .alert_trig_i ( gd_alert_trig_i ),
-  .alert_ack_i ( gd_alert_ack_i ),
-  .alert_req_o ( gd_alert_o )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[GdSel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[GdSel] ),
+  .alert_req_o ( alert_req_o.alerts[GdSel] )
 );  // of u_alert_gd
 
 // Temprature Sensor High (TS Hi)
@@ -483,9 +481,9 @@ ast_alert u_alert_ts_hi (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_in_i ( ts_alert_hi_in ),
-  .alert_trig_i ( ts_alert_hi_trig_i ),
-  .alert_ack_i ( ts_alert_hi_ack_i ),
-  .alert_req_o ( ts_alert_hi_o )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[TsHiSel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[TsHiSel] ),
+  .alert_req_o ( alert_req_o.alerts[TsHiSel] )
 );  // of u_alert_ts_hi
 
 // Temprature Sensor Low (TS Lo)
@@ -497,38 +495,88 @@ ast_alert u_alert_ts_lo (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
   .alert_in_i ( ts_alert_lo_in ),
-  .alert_trig_i ( ts_alert_lo_trig_i ),
-  .alert_ack_i ( ts_alert_lo_ack_i ),
-  .alert_req_o ( ts_alert_lo_o )
+  .alert_trig_i ( alert_rsp_i.alerts_trig[TsLoSel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[TsLoSel] ),
+  .alert_req_o ( alert_req_o.alerts[TsLoSel] )
 );  // of u_alert_ts_lo
 
-// Light Sensor (LS)
+// Flash Alert (FLA)
 ///////////////////////////////////////
-ast_pkg::ast_dif_t ls_alert_in;
-assign ls_alert_in = '{p: 1'b0, n: 1'b1};
-
-ast_alert u_alert_ls (
+ast_alert u_alert_fla (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
-  .alert_in_i ( ls_alert_in ),
-  .alert_trig_i ( ls_alert_trig_i ),
-  .alert_ack_i ( ls_alert_ack_i ),
-  .alert_req_o ( ls_alert_o )
-);  // of u_alert_ls
+  .alert_in_i ( fla_alert_in_i ),
+  .alert_trig_i ( alert_rsp_i.alerts_trig[FlaSel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[FlaSel] ),
+  .alert_req_o ( alert_req_o.alerts[FlaSel] )
+);  // of u_alert_fla
 
-// Other Alert (OT)
+// OTP Alert (OTP)
 ///////////////////////////////////////
-ast_pkg::ast_dif_t ot_alert_in;
-assign ot_alert_in = '{p: 1'b0, n: 1'b1};
-
-ast_alert u_alert_ot (
+ast_alert u_alert_otp (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
-  .alert_in_i ( ot_alert_in ),
-  .alert_trig_i ( ot_alert_trig_i ),
-  .alert_ack_i ( ot_alert_ack_i ),
-  .alert_req_o ( ot_alert_o )
-); // of u_alert_ot
+  .alert_in_i ( otp_alert_in_i ),
+  .alert_trig_i ( alert_rsp_i.alerts_trig[OtpSel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[OtpSel] ),
+  .alert_req_o ( alert_req_o.alerts[OtpSel] )
+);  // of u_alert_otp
+
+// Other-0 Alert (OT0)
+///////////////////////////////////////
+ast_pkg::ast_dif_t ot0_alert_in;
+assign ot0_alert_in = '{p: 1'b0, n: 1'b1};
+
+ast_alert u_alert_ot0 (
+  .clk_i ( clk_ast_alert_i ),
+  .rst_ni ( rst_ast_alert_ni ),
+  .alert_in_i ( ot0_alert_in ),
+  .alert_trig_i ( alert_rsp_i.alerts_trig[Ot0Sel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[Ot0Sel] ),
+  .alert_req_o ( alert_req_o.alerts[Ot0Sel] )
+); // of u_alert_ot0
+
+// Other-1 Alert (OT1)
+///////////////////////////////////////
+ast_pkg::ast_dif_t ot1_alert_in;
+assign ot1_alert_in = '{p: 1'b0, n: 1'b1};
+
+ast_alert u_alert_ot1 (
+  .clk_i ( clk_ast_alert_i ),
+  .rst_ni ( rst_ast_alert_ni ),
+  .alert_in_i ( ot1_alert_in ),
+  .alert_trig_i ( alert_rsp_i.alerts_trig[Ot1Sel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[Ot1Sel] ),
+  .alert_req_o ( alert_req_o.alerts[Ot1Sel] )
+); // of u_alert_ot1
+
+// Other-2 Alert (OT2)
+///////////////////////////////////////
+ast_pkg::ast_dif_t ot2_alert_in;
+assign ot2_alert_in = '{p: 1'b0, n: 1'b1};
+
+ast_alert u_alert_ot2 (
+  .clk_i ( clk_ast_alert_i ),
+  .rst_ni ( rst_ast_alert_ni ),
+  .alert_in_i ( ot2_alert_in ),
+  .alert_trig_i ( alert_rsp_i.alerts_trig[Ot2Sel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[Ot2Sel] ),
+  .alert_req_o ( alert_req_o.alerts[Ot2Sel] )
+); // of u_alert_ot2
+
+// Other-3 Alert (OT3)
+///////////////////////////////////////
+ast_pkg::ast_dif_t ot3_alert_in;
+assign ot3_alert_in = '{p: 1'b0, n: 1'b1};
+
+ast_alert u_alert_ot3 (
+  .clk_i ( clk_ast_alert_i ),
+  .rst_ni ( rst_ast_alert_ni ),
+  .alert_in_i ( ot3_alert_in ),
+  .alert_trig_i ( alert_rsp_i.alerts_trig[Ot3Sel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[Ot3Sel] ),
+  .alert_req_o ( alert_req_o.alerts[Ot3Sel] )
+); // of u_alert_ot2
 
 
 ///////////////////////////////////////
@@ -553,6 +601,8 @@ for (genvar i=0; i<10; i++ ) begin : gen_regb
   assign hw2reg.regb[i].d  = 32'h0000_0000;
   assign hw2reg.regb[i].de = 1'b0;
 end
+//
+assign ast_init_done_o  = 1'b0;   // TODO
 
 
 ///////////////////////////////////////
@@ -562,7 +612,8 @@ end
 assign usb_io_pu_cal_o  = {UsbCalibWidth{1'b0}};
 //
 assign ast2padmux_o   = {Ast2PadOutWidth{1'b0}};
-`ifdef ANALOGSIM
+//
+`ifndef ANALOGSIM
 assign ast2pad_t0_ao  = 0.0;
 assign ast2pad_t1_ao  = 0.1;
 `else
@@ -614,16 +665,8 @@ assign scan_reset_no    = 1'b1;
 `ASSERT_KNOWN(RngBKnownO_A, rng_b_o, clk_ast_rng_i, rst_ast_rng_ni)
 `ASSERT_KNOWN(EntropyRateKnownO_A, entropy_rate_o, clk_ast_es_i, rst_ast_es_ni)
 `ASSERT_KNOWN(EntropyReeqKnownO_A, entropy_req_o, clk_ast_es_i, rst_ast_es_ni)
-`ASSERT_KNOWN(AsAlertPKnownO_A, as_alert_o, clk_ast_alert_i, rst_ast_alert_ni)
-`ASSERT_KNOWN(CgAlertPKnownO_A, cg_alert_o, clk_ast_alert_i, rst_ast_alert_ni)
-`ASSERT_KNOWN(GdAlertPKnownO_A, gd_alert_o, clk_ast_alert_i, rst_ast_alert_ni)
-`ASSERT_KNOWN(TsAlertHiPKnownO_A, ts_alert_hi_o, clk_ast_alert_i, rst_ast_alert_ni)
-`ASSERT_KNOWN(TsAlertLoPKnownO_A, ts_alert_lo_o, clk_ast_alert_i, rst_ast_alert_ni)
-`ASSERT_KNOWN(LsAlertPKnownO_A, ls_alert_o, clk_ast_alert_i, rst_ast_alert_ni)
-`ASSERT_KNOWN(OtAlertPKnownO_A, ot_alert_o, clk_ast_alert_i, rst_ast_alert_ni)
+`ASSERT_KNOWN(AlertReqKnownO_A, alert_req_o, clk_ast_alert_i, rst_ast_alert_ni)
 `ASSERT_KNOWN(Ast2PadmuxKnownO_A, ast2padmux_o, clk_ast_tlul_i, rst_ast_tlul_ni)
-// `ASSERT_KNOWN(Ast2PadT0KnownO_A, ast2pad_t0_ao, clk_ast_tlul_i, rst_ast_tlul_ni)       // ANALOG
-// `ASSERT_KNOWN(Ast2PadT1KnownO_A, ast2pad_t1_ao, clk_ast_tlul_i, rst_ast_tlul_ni)       // ANALOG
 `ASSERT_KNOWN(LcClkBypAckEnKnownO_A, lc_clk_byp_ack_o, clk_ast_tlul_i, rst_ast_tlul_ni)  //TODO
 `ASSERT_KNOWN(FlashBistEnKnownO_A, flash_bist_en_o, clk_ast_tlul_i, rst_ast_tlul_ni)     //TODO
 `ASSERT_KNOWN(DpramRmfKnownO_A, dpram_rmf_o, clk_ast_tlul_i, vcaon_pok_o)
