@@ -90,8 +90,6 @@ package kmac_env_pkg;
   // ENTROPY_LFSR_WIDTH bits per cycles
   parameter int CYCLES_TO_FILL_ENTROPY = ENTROPY_STORAGE_WIDTH / ENTROPY_LFSR_WIDTH;
 
-  // TODO - this assumes entropy_fast_process is disabled, need to support this
-  //
   // 7 cycles total:                                     5 cycles        + 2 cycles (latch/consume entropy)
   parameter int SW_ENTROPY_ROUND_CYCLES_NO_FAST = CYCLES_TO_FILL_ENTROPY + 2;
 
