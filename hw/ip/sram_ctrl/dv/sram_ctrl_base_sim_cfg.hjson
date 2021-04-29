@@ -103,10 +103,6 @@
       name: "{variant}_executable"
       uvm_test_seq: sram_ctrl_executable_vseq
     }
-    {
-      name: "{variant}_stress_all"
-      uvm_test_seq: sram_ctrl_stress_all_vseq
-    }
   ]
 
   // List of regressions.
