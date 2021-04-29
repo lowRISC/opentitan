@@ -53,3 +53,26 @@ $ source $REPO_TOP/hw/syn/tools/dc/run-syn.tcl
 
 Now, synthesis will begin again but will not exit dc_shell upon completion.
 If you do not wish for synthesis to run that far, `run_syn.tcl` can be directly modified to add or skip steps.
+
+
+## Loading DDC After Synth Completion
+If a synthesis job has completed and you would like to reload the session for more details, follow the steps below
+
+```
+$ cd $SCRATCH_ROOT/{branch_name}/chip_earlgrey_asic-syn-dc/default/syn-icarus
+$ dc_shell
+
+```
+
+The above command opens dc_shell in the scratch area.
+Once dc_shell is open, do the following:
+
+```
+$ source ../env_variables.tcl
+$ set foundry_root "$::env(foundry_root)"
+$ source "${foundry_root}/syn/dc/setup.tcl"
+$ read_ddc DDC/mapped.ddc
+
+```
+
+This will begin reading in the libraries and load up the database for further analysis / experiments.
