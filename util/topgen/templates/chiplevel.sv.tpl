@@ -723,15 +723,6 @@ module chip_${top["name"]}_${target["name"]} #(
   // Jitter enable
   logic jen;
 
-  // Alert connections
-  import sensor_ctrl_reg_pkg::AsSel;
-  import sensor_ctrl_reg_pkg::CgSel;
-  import sensor_ctrl_reg_pkg::GdSel;
-  import sensor_ctrl_reg_pkg::TsHiSel;
-  import sensor_ctrl_reg_pkg::TsLoSel;
-  import sensor_ctrl_reg_pkg::LsSel;
-  import sensor_ctrl_reg_pkg::OtSel;
-
   // reset domain connections
   import rstmgr_pkg::PowerDomains;
   import rstmgr_pkg::DomainAonSel;
@@ -817,16 +808,14 @@ module chip_${top["name"]}_${target["name"]} #(
   assign unused_entropy_sys_rst = rsts_ast.rst_ast_entropy_src_sys_n[DomainAonSel];
   assign unused_edn_sys_rst = rsts_ast.rst_ast_edn0_sys_n[DomainAonSel];
 
-// TODO Connet to FLASH & OTP
-ast_pkg::ast_dif_t fla_alert_in_i;
-ast_pkg::ast_dif_t otp_alert_in_i;
-assign fla_alert_in_i = '{p: 1'b0, n: 1'b1};
-assign otp_alert_in_i = '{p: 1'b0, n: 1'b1};
+  ast_pkg::ast_dif_t flash_alert;
+  ast_pkg::ast_dif_t otp_alert;
+  logic ast_init_done;
 
   ast #(
-    .EntropyStreams(top_pkg::ENTROPY_STREAM),
-    .AdcChannels(top_pkg::ADC_CHANNELS),
-    .AdcDataWidth(top_pkg::ADC_DATAW),
+    .EntropyStreams(ast_pkg::EntropyStreams),
+    .AdcChannels(ast_pkg::AdcChannels),
+    .AdcDataWidth(ast_pkg::AdcDataWidth),
     .UsbCalibWidth(ast_pkg::UsbCalibWidth),
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
@@ -834,7 +823,8 @@ assign otp_alert_in_i = '{p: 1'b0, n: 1'b1};
     // tlul
     .tl_i                  ( base_ast_bus ),
     .tl_o                  ( ast_base_bus ),
-    .ast_init_done_o       (  ),  // TODO Connect to?
+    // init done indication
+    .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
     // Reset domain connection is manual at the moment
     .clk_ast_adc_i         ( clks_ast.clk_ast_adc_ctrl_aon_io_div4_peri ),
@@ -907,10 +897,10 @@ assign otp_alert_in_i = '{p: 1'b0, n: 1'b1};
     .entropy_rsp_i         ( ast_edn_edn_rsp ),
     .entropy_req_o         ( ast_edn_edn_req ),
     // alerts
-    .fla_alert_in_i ( fla_alert_in_i ),
-    .otp_alert_in_i ( otp_alert_in_i ),
-    .alert_rsp_i ( ast_alert_rsp ),
-    .alert_req_o ( ast_alert_req ),
+    .fla_alert_in_i        ( flash_alert    ),
+    .otp_alert_in_i        ( otp_alert      ),
+    .alert_rsp_i           ( ast_alert_rsp  ),
+    .alert_req_o           ( ast_alert_req  ),
     // dft
     .dft_strap_test_i      ( dft_strap_test   ),
     .lc_dft_en_i           ( dft_en           ),
@@ -977,15 +967,18 @@ assign otp_alert_in_i = '{p: 1'b0, n: 1'b1};
     .ast_edn_rsp_o                ( ast_edn_edn_rsp            ),
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
+    .otp_alert_o                  ( otp_alert                  ),
     .flash_bist_enable_i          ( flash_bist_enable          ),
     .flash_power_down_h_i         ( flash_power_down_h         ),
     .flash_power_ready_h_i        ( flash_power_ready_h        ),
+    .flash_alert_o                ( flash_alert                ),
     .es_rng_req_o                 ( es_rng_req                 ),
     .es_rng_rsp_i                 ( es_rng_rsp                 ),
     .es_rng_fips_o                ( es_rng_fips                ),
     .ast_clk_byp_req_o            ( ast_clk_byp_req            ),
     .ast_clk_byp_ack_i            ( ast_clk_byp_ack            ),
     .ast2pinmux_i                 ( ast2pinmux                 ),
+    .ast_init_done_i              ( ast_init_done              ),
 
     // Flash test mode voltages
     .flash_test_mode_a_io         ( {FLASH_TEST_MODE1,
@@ -1143,6 +1136,7 @@ assign otp_alert_in_i = '{p: 1'b0, n: 1'b1};
     .ast_tl_rsp_i                 ( '0               ),
     .otp_ctrl_otp_ast_pwr_seq_o   (                  ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( '0               ),
+    .otp_alert_o                  (                  ),
     .es_rng_req_o                 (                  ),
     .es_rng_rsp_i                 ( '0               ),
     .es_rng_fips_o                (                  ),

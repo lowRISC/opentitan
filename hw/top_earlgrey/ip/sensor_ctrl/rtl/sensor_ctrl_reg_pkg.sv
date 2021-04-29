@@ -7,15 +7,8 @@
 package sensor_ctrl_reg_pkg;
 
   // Param list
-  parameter int NumAlerts = 7;
+  parameter int NumAlerts = 11;
   parameter int NumIoRails = 2;
-  parameter int AsSel = 0;
-  parameter int CgSel = 1;
-  parameter int GdSel = 2;
-  parameter int TsHiSel = 3;
-  parameter int TsLoSel = 4;
-  parameter int LsSel = 5;
-  parameter int OtSel = 6;
 
   // Address widths within the block
   parameter int BlockAw = 5;
@@ -48,11 +41,27 @@ package sensor_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } recov_ls;
+    } recov_fla;
     struct packed {
       logic        q;
       logic        qe;
-    } recov_ot;
+    } recov_otp;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } recov_ot0;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } recov_ot1;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } recov_ot2;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } recov_ot3;
   } sensor_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -74,22 +83,28 @@ package sensor_ctrl_reg_pkg;
   } sensor_ctrl_hw2reg_alert_state_mreg_t;
 
   typedef struct packed {
-    logic [1:0]  d;
-    logic        de;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ast_init_done;
+    struct packed {
+      logic [1:0]  d;
+      logic        de;
+    } io_pok;
   } sensor_ctrl_hw2reg_status_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    sensor_ctrl_reg2hw_alert_test_reg_t alert_test; // [48:35]
-    sensor_ctrl_reg2hw_ack_mode_mreg_t [6:0] ack_mode; // [34:21]
-    sensor_ctrl_reg2hw_alert_trig_mreg_t [6:0] alert_trig; // [20:14]
-    sensor_ctrl_reg2hw_alert_state_mreg_t [6:0] alert_state; // [13:0]
+    sensor_ctrl_reg2hw_alert_test_reg_t alert_test; // [76:55]
+    sensor_ctrl_reg2hw_ack_mode_mreg_t [10:0] ack_mode; // [54:33]
+    sensor_ctrl_reg2hw_alert_trig_mreg_t [10:0] alert_trig; // [32:22]
+    sensor_ctrl_reg2hw_alert_state_mreg_t [10:0] alert_state; // [21:0]
   } sensor_ctrl_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    sensor_ctrl_hw2reg_alert_state_mreg_t [6:0] alert_state; // [16:3]
-    sensor_ctrl_hw2reg_status_reg_t status; // [2:0]
+    sensor_ctrl_hw2reg_alert_state_mreg_t [10:0] alert_state; // [26:5]
+    sensor_ctrl_hw2reg_status_reg_t status; // [4:0]
   } sensor_ctrl_hw2reg_t;
 
   // Register offsets
@@ -101,14 +116,18 @@ package sensor_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] SENSOR_CTRL_STATUS_OFFSET = 5'h 14;
 
   // Reset values for hwext registers and their fields
-  parameter logic [6:0] SENSOR_CTRL_ALERT_TEST_RESVAL = 7'h 0;
+  parameter logic [10:0] SENSOR_CTRL_ALERT_TEST_RESVAL = 11'h 0;
   parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_AS_RESVAL = 1'h 0;
   parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_CG_RESVAL = 1'h 0;
   parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_GD_RESVAL = 1'h 0;
   parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_TS_HI_RESVAL = 1'h 0;
   parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_TS_LO_RESVAL = 1'h 0;
-  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_LS_RESVAL = 1'h 0;
-  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_OT_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_FLA_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_OTP_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_OT0_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_OT1_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_OT2_RESVAL = 1'h 0;
+  parameter logic [0:0] SENSOR_CTRL_ALERT_TEST_RECOV_OT3_RESVAL = 1'h 0;
 
   // Register index
   typedef enum int {
@@ -122,11 +141,11 @@ package sensor_ctrl_reg_pkg;
 
   // Register width information to check illegal writes
   parameter logic [3:0] SENSOR_CTRL_PERMIT [6] = '{
-    4'b 0001, // index[0] SENSOR_CTRL_ALERT_TEST
+    4'b 0011, // index[0] SENSOR_CTRL_ALERT_TEST
     4'b 0001, // index[1] SENSOR_CTRL_CFG_REGWEN
-    4'b 0011, // index[2] SENSOR_CTRL_ACK_MODE
-    4'b 0001, // index[3] SENSOR_CTRL_ALERT_TRIG
-    4'b 0001, // index[4] SENSOR_CTRL_ALERT_STATE
+    4'b 0111, // index[2] SENSOR_CTRL_ACK_MODE
+    4'b 0011, // index[3] SENSOR_CTRL_ALERT_TRIG
+    4'b 0011, // index[4] SENSOR_CTRL_ALERT_STATE
     4'b 0001  // index[5] SENSOR_CTRL_STATUS
   };
 

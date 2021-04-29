@@ -201,7 +201,7 @@ const top_earlgrey_plic_peripheral_t
  * `top_earlgrey_alert_peripheral_t`.
  */
 const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[31] = {
+    top_earlgrey_alert_for_peripheral[35] = {
   [kTopEarlgreyAlertIdOtpCtrlFatalMacroError] = kTopEarlgreyAlertPeripheralOtpCtrl,
   [kTopEarlgreyAlertIdOtpCtrlFatalCheckError] = kTopEarlgreyAlertPeripheralOtpCtrl,
   [kTopEarlgreyAlertIdLcCtrlFatalProgError] = kTopEarlgreyAlertPeripheralLcCtrl,
@@ -211,8 +211,12 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdSensorCtrlAonRecovGd] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
   [kTopEarlgreyAlertIdSensorCtrlAonRecovTsHi] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
   [kTopEarlgreyAlertIdSensorCtrlAonRecovTsLo] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
-  [kTopEarlgreyAlertIdSensorCtrlAonRecovLs] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
-  [kTopEarlgreyAlertIdSensorCtrlAonRecovOt] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
+  [kTopEarlgreyAlertIdSensorCtrlAonRecovFla] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
+  [kTopEarlgreyAlertIdSensorCtrlAonRecovOtp] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
+  [kTopEarlgreyAlertIdSensorCtrlAonRecovOt0] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
+  [kTopEarlgreyAlertIdSensorCtrlAonRecovOt1] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
+  [kTopEarlgreyAlertIdSensorCtrlAonRecovOt2] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
+  [kTopEarlgreyAlertIdSensorCtrlAonRecovOt3] = kTopEarlgreyAlertPeripheralSensorCtrlAon,
   [kTopEarlgreyAlertIdSramCtrlRetAonFatalIntgError] = kTopEarlgreyAlertPeripheralSramCtrlRetAon,
   [kTopEarlgreyAlertIdSramCtrlRetAonFatalParityError] = kTopEarlgreyAlertPeripheralSramCtrlRetAon,
   [kTopEarlgreyAlertIdFlashCtrlRecovErr] = kTopEarlgreyAlertPeripheralFlashCtrl,

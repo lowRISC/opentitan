@@ -14,8 +14,12 @@ parameter string LIST_OF_ALERTS[] = {
   "sensor_ctrl_aon_recov_gd",
   "sensor_ctrl_aon_recov_ts_hi",
   "sensor_ctrl_aon_recov_ts_lo",
-  "sensor_ctrl_aon_recov_ls",
-  "sensor_ctrl_aon_recov_ot",
+  "sensor_ctrl_aon_recov_fla",
+  "sensor_ctrl_aon_recov_otp",
+  "sensor_ctrl_aon_recov_ot0",
+  "sensor_ctrl_aon_recov_ot1",
+  "sensor_ctrl_aon_recov_ot2",
+  "sensor_ctrl_aon_recov_ot3",
   "sram_ctrl_ret_aon_fatal_intg_error",
   "sram_ctrl_ret_aon_fatal_parity_error",
   "flash_ctrl_recov_err",
@@ -38,4 +42,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rom_ctrl_fatal"
 };
 
-parameter uint NUM_ALERTS = 31;
+parameter uint NUM_ALERTS = 35;

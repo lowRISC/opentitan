@@ -25,6 +25,7 @@ module sensor_ctrl
   output ast_pkg::ast_alert_rsp_t ast_alert_o,
   input ast_pkg::ast_status_t ast_status_i,
   input [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux_i,
+  input ast_init_done_i,
 
   // Interface to pinmux
   output logic [ast_pkg::Ast2PadOutWidth-1:0] cio_ast_debug_out_o,
@@ -36,6 +37,8 @@ module sensor_ctrl
 
 );
 
+  // The reg_pkg number of alerts and ast alerts must always match
+  `ASSERT_INIT(NumAlertsMatch_A, ast_pkg::NumAlerts == NumAlerts)
 
   ///////////////////////////
   // Register interface
@@ -54,8 +57,10 @@ module sensor_ctrl
     .devmode_i(1'b1)
   );
 
-  assign hw2reg.status.d = ast_status_i.io_pok;
-  assign hw2reg.status.de = 1'b1;
+  assign hw2reg.status.io_pok.d = ast_status_i.io_pok;
+  assign hw2reg.status.io_pok.de = 1'b1;
+  assign hw2reg.status.ast_init_done.d = ast_init_done_i;
+  assign hw2reg.status.ast_init_done.de = 1'b1;
 
 
   ///////////////////////////
@@ -76,13 +81,28 @@ module sensor_ctrl
   end
 
   // alert test connection
-  assign alert_test[AsSel]   = reg2hw.alert_test.recov_as.qe    & reg2hw.alert_test.recov_as.q;
-  assign alert_test[CgSel]   = reg2hw.alert_test.recov_cg.qe    & reg2hw.alert_test.recov_cg.q;
-  assign alert_test[GdSel]   = reg2hw.alert_test.recov_gd.qe    & reg2hw.alert_test.recov_gd.q;
-  assign alert_test[TsHiSel] = reg2hw.alert_test.recov_ts_hi.qe & reg2hw.alert_test.recov_ts_hi.q;
-  assign alert_test[TsLoSel] = reg2hw.alert_test.recov_ts_lo.qe & reg2hw.alert_test.recov_ts_lo.q;
-  assign alert_test[LsSel]   = reg2hw.alert_test.recov_ls.qe    & reg2hw.alert_test.recov_ls.q;
-  assign alert_test[OtSel]   = reg2hw.alert_test.recov_ot.qe    & reg2hw.alert_test.recov_ot.q;
+  assign alert_test[ast_pkg::AsSel]   = reg2hw.alert_test.recov_as.qe    &
+                                        reg2hw.alert_test.recov_as.q;
+  assign alert_test[ast_pkg::CgSel]   = reg2hw.alert_test.recov_cg.qe    &
+                                        reg2hw.alert_test.recov_cg.q;
+  assign alert_test[ast_pkg::GdSel]   = reg2hw.alert_test.recov_gd.qe    &
+                                        reg2hw.alert_test.recov_gd.q;
+  assign alert_test[ast_pkg::TsHiSel] = reg2hw.alert_test.recov_ts_hi.qe &
+                                        reg2hw.alert_test.recov_ts_hi.q;
+  assign alert_test[ast_pkg::TsLoSel] = reg2hw.alert_test.recov_ts_lo.qe &
+                                        reg2hw.alert_test.recov_ts_lo.q;
+  assign alert_test[ast_pkg::FlaSel]  = reg2hw.alert_test.recov_fla.qe   &
+                                        reg2hw.alert_test.recov_fla.q;
+  assign alert_test[ast_pkg::OtpSel]  = reg2hw.alert_test.recov_otp.qe   &
+                                        reg2hw.alert_test.recov_otp.q;
+  assign alert_test[ast_pkg::Ot0Sel]  = reg2hw.alert_test.recov_ot0.qe   &
+                                        reg2hw.alert_test.recov_ot0.q;
+  assign alert_test[ast_pkg::Ot1Sel]  = reg2hw.alert_test.recov_ot1.qe   &
+                                        reg2hw.alert_test.recov_ot1.q;
+  assign alert_test[ast_pkg::Ot2Sel]  = reg2hw.alert_test.recov_ot2.qe   &
+                                        reg2hw.alert_test.recov_ot2.q;
+  assign alert_test[ast_pkg::Ot3Sel]  = reg2hw.alert_test.recov_ot3.qe   &
+                                        reg2hw.alert_test.recov_ot3.q;
 
 
   // fire an alert whenever indicated

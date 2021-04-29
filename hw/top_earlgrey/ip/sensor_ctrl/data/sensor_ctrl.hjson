@@ -23,7 +23,7 @@
   param_list: [
     { name:    "NumAlerts",
       type:    "int",
-      default: "7",
+      default: "11",
       desc:    "Number of alerts",
       local:   "true"
     },
@@ -33,48 +33,6 @@
       desc:    "Number of IO rails",
       local:   "true"
     },
-    { name:    "AsSel",
-      type:    "int",
-      default: "0",
-      desc:    "Active shield alert bit position",
-      local:   "true"
-    }
-    { name:    "CgSel",
-      type:    "int",
-      default: "1",
-      desc:    "Clock glitch alert bit position",
-      local:   "true"
-    }
-    { name:    "GdSel",
-      type:    "int",
-      default: "2",
-      desc:    "Glitch detector alert bit position",
-      local:   "true"
-    }
-    { name:    "TsHiSel",
-      type:    "int",
-      default: "3",
-      desc:    "Temperature high alert bit position",
-      local:   "true"
-    }
-    { name:    "TsLoSel",
-      type:    "int",
-      default: "4",
-      desc:    "Temperature low alert bit position",
-      local:   "true"
-    }
-    { name:    "LsSel",
-      type:    "int",
-      default: "5",
-      desc:    "Laser alert bit position",
-      local:   "true"
-    }
-    { name:    "OtSel",
-      type:    "int",
-      default: "6",
-      desc:    "Other alert bit position",
-      local:   "true"
-    }
   ],
 
   alert_list: [
@@ -93,10 +51,22 @@
     { name: "recov_ts_lo",
       desc: "Triggered through AST",
     },
-    { name: "recov_ls",
+    { name: "recov_fla",
       desc: "Triggered through AST",
     },
-    { name: "recov_ot",
+    { name: "recov_otp",
+      desc: "Triggered through AST",
+    },
+    { name: "recov_ot0",
+      desc: "Triggered through AST",
+    },
+    { name: "recov_ot1",
+      desc: "Triggered through AST",
+    },
+    { name: "recov_ot2",
+      desc: "Triggered through AST",
+    },
+    { name: "recov_ot3",
       desc: "Triggered through AST",
     },
   ]
@@ -116,6 +86,13 @@
       name:    "ast_status",
       act:     "rcv",
       package: "ast_pkg",
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "ast_init_done",
+      act:     "rcv",
+      package: "",
     },
 
     { struct:  "logic",
@@ -229,7 +206,14 @@ registers: [
       ''',
 
       fields: [
-        { bits: "NumIoRails-1:0",
+        { bits: "0",
+          name: "ast_init_done",
+          desc: '''
+            AST has finished initializing
+          ''',
+          resval: "0",
+        },
+        { bits: "NumIoRails:1",
           name: "io_pok",
           desc: '''
             IO power is ready

@@ -14,6 +14,7 @@ filesets:
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:jtag_pkg
       - lowrisc:ip:edn_pkg
+      - lowrisc:systems:ast_pkg
       - "fileset_top    ? (lowrisc:systems:flash_ctrl_pkg)"
       - "fileset_topgen ? (lowrisc:systems:topgen)"
     files:
