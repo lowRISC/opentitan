@@ -54,7 +54,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
       lc_prog_err_dly1 <= lc_prog_err;
       lc_esc_dly1      <= lc_escalate_en_i;
       lc_esc_dly2      <= lc_esc_dly1;
-      if (lc_prog_req && lc_check_byp_en_i == lc_ctrl_pkg::Off && lc_check_byp_en) begin
+      if (lc_prog_req && lc_check_byp_en_i != lc_ctrl_pkg::On && lc_check_byp_en) begin
         lc_check_byp_en_i <= lc_ctrl_pkg::On;
       end
       if (lc_esc_dly2 == lc_ctrl_pkg::On && !lc_esc_on) begin
@@ -65,14 +65,13 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
   assign lc_prog_no_sta_check = lc_prog_err | lc_prog_err_dly1 | lc_prog_req | lc_esc_on;
 
-  // TODO: for lc_tx, except esc_en signal, all value different from On is treated as Off,
-  // technically we can randomize values here once scb supports
-  task automatic init(lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_val = lc_ctrl_pkg::On);
-    lc_creator_seed_sw_rw_en_i = lc_ctrl_pkg::On;
+  task automatic init(lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_val = lc_ctrl_pkg::On,
+                      lc_ctrl_pkg::lc_tx_t lc_check_byp_en_val  = lc_ctrl_pkg::Off);
+    lc_creator_seed_sw_rw_en_i = lc_ctrl_pkg::On;     // drive it in specific task
     lc_seed_hw_rd_en_i         = lc_seed_hw_rd_en_val;
-    lc_dft_en_i                = lc_ctrl_pkg::Off;
-    lc_escalate_en_i           = lc_ctrl_pkg::Off;
-    lc_check_byp_en_i          = lc_ctrl_pkg::Off;
+    lc_dft_en_i                = lc_ctrl_pkg::Off;    // drive it in specific task
+    lc_escalate_en_i           = lc_ctrl_pkg::Off;    // drive it in specific task
+    lc_check_byp_en_i          = lc_check_byp_en_val;
     pwr_otp_init_i             = 0;
     // ast_pwr_seq is dummy in open sourced OTP memory
     otp_ast_pwr_seq_h_i        = $urandom();
