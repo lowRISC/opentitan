@@ -118,20 +118,22 @@ package kmac_pkg;
     AppKMAC   = 2
   } app_mode_e;
 
-  typedef struct packed {
-    app_mode_e                         Mode;
+  parameter int unsigned NSPrefixW = sha3_pkg::NSRegisterSize*8;
 
-    sha3_pkg::keccak_strength_e        Strength;
+  typedef struct packed {
+    app_mode_e Mode;
+
+    sha3_pkg::keccak_strength_e Strength;
 
     // PrefixMode determines the origin value of Prefix that is used in KMAC
     // and cSHAKE operations.
     // Choose **0** for CSRs (!!PREFIX), or **1** to use `Prefix` parameter
     // below.
-    bit                                PrefixMode;
+    bit PrefixMode;
 
     // If `PrefixMode` is 1'b 1, then this `Prefix` value will be used in
     // cSHAKE or KMAC operation.
-    logic [sha3_pkg::NSRegisterSize*8-1:0] Prefix;
+    logic [NSPrefixW-1:0] Prefix;
   } app_config_t;
 
   parameter app_config_t AppCfg [NumAppIntf] = '{
@@ -148,7 +150,8 @@ package kmac_pkg;
       Mode:       AppCShake,
       Strength:   sha3_pkg::L256,
       PrefixMode: 1'b 1,     // Use prefix parameter
-      Prefix:     'h 0       // TODO: Determine the prefix value
+      // {fname: encode_string(""), custom_str: encode_string("OTP_CTRL")}
+      Prefix: NSPrefixW'(96'h 4c52_5443_5f50_544f_4001_0001)
     },
 
     // ROM_CTRL
@@ -156,7 +159,8 @@ package kmac_pkg;
       Mode:       AppCShake,
       Strength:   sha3_pkg::L256,
       PrefixMode: 1'b 1,     // Use prefix parameter
-      Prefix:     'h 0       // TODO: Determine the prefix value
+      // {fname: encode_string(""), custom_str: encode_string("ROM_CTRL")}
+      Prefix: NSPrefixW'(96'h 4c52_5443_5f4d_4f52_4001_0001)
     }
   };
 
