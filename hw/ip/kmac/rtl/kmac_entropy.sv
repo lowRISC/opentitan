@@ -501,6 +501,15 @@ module kmac_entropy
 
           storage_idx_clear = 1'b 1;
           // TODO: check fips?
+        end else if (rand_consumed_i) begin
+          // Somehow, while waiting the EDN entropy, the KMAC or SHA3 logic
+          // consumed the remained entropy. This can happen when the previous
+          // SHA3/ KMAC op completed and this Entropy FSM has moved to this
+          // state to refresh the entropy and the SW initiates another hash
+          // operation while waiting for the EDN response.
+          st_d = StRandEdn;
+
+          rand_valid_clear = 1'b 1;
         end else begin
           st_d = StRandEdn;
         end
