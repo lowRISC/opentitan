@@ -59,7 +59,8 @@ OPTIONAL_FIELDS = {
     'reset_primary': ['s', "primary reset used by the module"],
     'reset_request_list': ['l', 'list of signals requesting reset'],
     'scan': ['pb', 'Indicates the module have `scanmode_i`'],
-    'scan_reset': ['pb', 'Indicates the module have `test_rst_ni`'],
+    'scan_reset': ['pb', 'Indicates the module have `scan_rst_ni`'],
+    'scan_en': ['pb', 'Indicates the module has `scan_en_i`'],
     'SPDX-License-Identifier': [
         's', "License ientifier (if using pure json) "
         "Only use this if unable to put this "
@@ -91,7 +92,8 @@ class IpBlock:
                               Sequence[Signal]],
                  wakeups: Sequence[Signal],
                  reset_requests: Sequence[Signal],
-                 scan_reset: bool):
+                 scan_reset: bool,
+                 scan_en: bool):
         assert reg_blocks
         assert clock_signals
         assert reset_signals
@@ -122,6 +124,7 @@ class IpBlock:
         self.wakeups = wakeups
         self.reset_requests = reset_requests
         self.scan_reset = scan_reset
+        self.scan_en = scan_en
 
     @staticmethod
     def from_raw(param_defaults: List[Tuple[str, str]],
@@ -249,6 +252,9 @@ class IpBlock:
         scan_reset = check_bool(rd.get('scan_reset', False),
                                 'scan_reset field of ' + what)
 
+        scan_en = check_bool(rd.get('scan_en', False),
+                                'scan_en field of ' + what)
+
         # Check that register blocks are in bijection with device interfaces
         reg_block_names = reg_blocks.keys()
         dev_if_names = []  # type: List[Optional[str]]
@@ -266,7 +272,7 @@ class IpBlock:
                        interrupts, no_auto_intr, alerts, no_auto_alert,
                        scan, inter_signals, bus_interfaces,
                        hier_path, clock_signals, reset_signals, xputs,
-                       wakeups, rst_reqs, scan_reset)
+                       wakeups, rst_reqs, scan_reset, scan_en)
 
     @staticmethod
     def from_text(txt: str,
@@ -330,6 +336,7 @@ class IpBlock:
             ret['reset_request_list'] = self.reset_requests
 
         ret['scan_reset'] = self.scan_reset
+        ret['scan_en'] = self.scan_en
 
         return ret
 

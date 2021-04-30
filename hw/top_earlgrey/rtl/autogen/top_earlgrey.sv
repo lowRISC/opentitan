@@ -1186,7 +1186,7 @@ module top_earlgrey #(
       .tl_i(spi_device_tl_req),
       .tl_o(spi_device_tl_rsp),
       .scanmode_i,
-      .scan_rst_ni  (scan_rst_ni),
+      .scan_rst_ni,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
@@ -1524,6 +1524,9 @@ module top_earlgrey #(
       .tl_i(otp_ctrl_tl_req),
       .tl_o(otp_ctrl_tl_rsp),
       .otp_ext_voltage_h_io,
+      .scanmode_i,
+      .scan_rst_ni,
+      .scan_en_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_timers),
@@ -1579,7 +1582,7 @@ module top_earlgrey #(
       .tl_i(lc_ctrl_tl_req),
       .tl_o(lc_ctrl_tl_rsp),
       .scanmode_i,
-      .scan_rst_ni  (scan_rst_ni),
+      .scan_rst_ni,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_timers),
@@ -1665,7 +1668,7 @@ module top_earlgrey #(
       .tl_i(rstmgr_aon_tl_req),
       .tl_o(rstmgr_aon_tl_rsp),
       .scanmode_i,
-      .scan_rst_ni  (scan_rst_ni),
+      .scan_rst_ni,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),
