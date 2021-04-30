@@ -91,7 +91,7 @@ module tb;
   // to grab the decoded signal from TL transactions on the cycle it happens. We have an explicit
   // check in the scoreboard to ensure that this gets asserted at the time we expect (to spot any
   // decoding errors).
-  assign model_if.start = dut.start;
+  assign model_if.start = dut.start_q;
 
   // Internally otbn_core uses a 256-bit width interface for EDN data. This maps to muliple EDN
   // requests at this level (via a packing FIFO internal to otbn). The model works with the internal
