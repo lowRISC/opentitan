@@ -84,11 +84,17 @@ if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
   // FPGA Specific (place holder)
   ///////////////////////////////////////
   assign clk = (/*TODO*/ 1'b1) && en_osc;
-  assign sys_clk_o = clk;
 end else begin : gen_generic
   assign clk = (/*TODO*/ 1'b1) && en_osc;
-  assign sys_clk_o = clk;
 end
+
+prim_buf u_buf (
+  .in_i(clk),
+  .out_o(sys_clk_o)
+);
+
 `endif
+
+
 
 endmodule : sys_osc
