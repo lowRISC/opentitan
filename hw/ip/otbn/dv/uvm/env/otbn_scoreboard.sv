@@ -11,10 +11,14 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
   uvm_tlm_analysis_fifo #(otbn_model_item) model_fifo;
 
-  // This is incremented on a TL transaction that should start the model and decremented on a model
-  // transaction that shows we saw the start signal. In check_start(), we check on every clock edge
-  // that it's zero (showing that the TL transaction and model transaction came in on the same
-  // cycle, so the two signals are in sync)
+  // pending_start_counter is incremented on a TL transaction that should start the model.
+  // expect_start_counter is decremented on a model transaction that shows we saw the start signal.
+  // The model start signal should be asserted the cycle following the TL transaction.  In
+  // check_start(), if pending_start_counter is non zero we decrement it and increment
+  // expect_start_counter. We check on every clock edge that expect_start_counter is zero (showing
+  // that the TL transaction results in a model transaction the following cycle, so the two
+  // signals are in sync)
+  int pending_start_counter = 0;
   int expect_start_counter = 0;
 
   `uvm_component_new
@@ -83,7 +87,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       // We start when we see a write that sets the "start" field of the register. We can read most
       // register fields from the RAL, but this register is W1C, so that doesn't really work here.
       if (csr_utils_pkg::get_field_val(cfg.ral.cmd.start, item.a_data)) begin
-        this.expect_start_counter++;
+        this.pending_start_counter++;
       end
     end
   endtask
@@ -110,12 +114,19 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  // After each clock edge (we wait until the next negedge), check that the interface's value of
-  // start (which we grabbed out of the design) equals that we'd expect from TL transactions.
+  // After each clock edge (we wait until the next negedge) any TL start transactions become
+  // expected starts. Check that the expected starts are actioned (indicated by
+  // `expect_start_counter` always being 0, greater than 0 indicates a TL start transaction was
+  // missed, less than 0 indicates a model start was seen without a TL start transaction).
   task check_start();
     forever begin
       @(cfg.clk_rst_vif.cbn);
       `DV_CHECK_EQ(this.expect_start_counter, 0)
+
+      if (this.pending_start_counter > 0) begin
+        pending_start_counter--;
+        expect_start_counter++;
+      end
     end
   endtask
 

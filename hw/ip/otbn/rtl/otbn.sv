@@ -71,7 +71,7 @@ module otbn
   `ASSERT_INIT(ImemSizePowerOfTwo, 2**ImemAddrWidth == ImemSizeByte)
   `ASSERT_INIT(DmemSizePowerOfTwo, 2**DmemAddrWidth == DmemSizeByte)
 
-  logic start;
+  logic start_d, start_q;
   logic busy_d, busy_q;
   logic done;
 
@@ -213,7 +213,7 @@ module otbn
   );
 
   // Mux core and bus access into IMEM
-  assign imem_access_core = busy_q | start;
+  assign imem_access_core = busy_q | start_q;
 
   assign imem_req   = imem_access_core ? imem_req_core        : imem_req_bus;
   assign imem_write = imem_access_core ? imem_write_core      : imem_write_bus;
@@ -402,8 +402,17 @@ module otbn
                                 reg_bus_integrity_error);
 
   // CMD register
-  // CMD.start ("start" is omitted by reggen since it is the only field)
-  assign start = reg2hw.cmd.qe & reg2hw.cmd.q;
+  // CMD.start ("start" is omitted by reggen since it is the only field).
+  // start is flopped to avoid long timing paths from the TL fabric into OTBN internals.
+  assign start_d = reg2hw.cmd.qe & reg2hw.cmd.q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      start_q <= 1'b0;
+    end else begin
+      start_q <= start_d;
+    end
+  end
 
   // STATUS register
   // STATUS.busy ("busy" is omitted by reggen since since it is the only field)
@@ -532,7 +541,7 @@ module otbn
       busy_q <= busy_d;
     end
   end
-  assign busy_d = (busy_q | start) & ~done;
+  assign busy_d = (busy_q | start_d) & ~done;
 
   `ifdef OTBN_BUILD_MODEL
     // Build both model and RTL implementation into the design, and switch at runtime through a
@@ -554,8 +563,8 @@ module otbn
 
     assign done = otbn_use_model ? done_model : done_rtl;
     assign err_bits = otbn_use_model ? err_bits_model : err_bits_rtl;
-    assign start_model = start & otbn_use_model;
-    assign start_rtl = start & ~otbn_use_model;
+    assign start_model = start_q & otbn_use_model;
+    assign start_rtl = start_q & ~otbn_use_model;
 
     // Model (Instruction Set Simulator)
     // In model only runs, leave valid signals high and supply constant RND data for EDN which will
@@ -643,7 +652,7 @@ module otbn
       .clk_i,
       .rst_ni          (rst_n),
 
-      .start_i         (start),
+      .start_i         (start_q),
       .done_o          (done),
 
       .err_bits_o      (err_bits),
