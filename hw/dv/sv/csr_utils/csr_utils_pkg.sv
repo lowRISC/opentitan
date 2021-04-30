@@ -14,7 +14,7 @@ package csr_utils_pkg;
 
   // local types and variables
   uint        outstanding_accesses        = 0;
-  uint        default_timeout_ns          = 1_000_000; // 1ms
+  uint        default_timeout_ns          = 2_000_000; // 2ms
   uint        default_spinwait_timeout_ns = 10_000_000; // 10ms
   string      msg_id                      = "csr_utils";
   bit         default_csr_blocking        = 1;
