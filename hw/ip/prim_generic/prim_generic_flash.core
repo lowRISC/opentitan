@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:ram_1p
+      - lowrisc:systems:ast_pkg
       - lowrisc:ip:flash_ctrl_pkg
     files:
       - rtl/prim_generic_flash_bank.sv

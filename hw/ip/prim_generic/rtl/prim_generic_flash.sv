@@ -35,10 +35,7 @@ module prim_generic_flash #(
   inout [TestModeWidth-1:0] flash_test_mode_a_io,
   inout flash_test_voltage_h_io,
   output logic flash_err_o,
-  output logic flash_alert_po,
-  output logic flash_alert_no,
-  input flash_alert_ack_i,
-  input flash_alert_trig_i,
+  output ast_pkg::ast_dif_t fl_alert_src_o,
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   input  devmode_i
@@ -180,21 +177,9 @@ module prim_generic_flash #(
   // open source model has no error response at the moment
   assign flash_err_o = 1'b0;
 
-  logic alerts_active;
-  assign alerts_active = flash_alert_po | ~flash_alert_no;
+  // default alert assignments
+  assign fl_alert_src_o = '{p: '0, n: '1};
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      flash_alert_po <= 1'b0;
-      flash_alert_no <= 1'b1;
-    end else if (flash_alert_trig_i) begin
-      flash_alert_po <= 1'b1;
-      flash_alert_no <= 1'b0;
-    end else if (alerts_active && flash_alert_ack_i) begin
-      flash_alert_po <= 1'b0;
-      flash_alert_no <= 1'b1;
-    end
-  end
 
 
 

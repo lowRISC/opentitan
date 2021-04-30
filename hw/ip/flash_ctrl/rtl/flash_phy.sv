@@ -254,8 +254,6 @@ module flash_phy import flash_ctrl_pkg::*; (
   assign bist_enable_qual = lc_ctrl_pkg::lc_tx_t'(flash_bist_enable_i &
                             lc_nvm_debug_en[FlashBistSel]);
 
-  logic flash_alert_p;
-  logic flash_alert_n;
   prim_flash #(
     .NumBanks(NumBanks),
     .InfosPerBank(InfosPerBank),
@@ -289,15 +287,12 @@ module flash_phy import flash_ctrl_pkg::*; (
     .flash_test_voltage_h_io,
     .flash_err_o(flash_ctrl_o.flash_err),
     // There alert signals are forwarded to both flash controller and ast
-    .flash_alert_po(flash_alert_p),
-    .flash_alert_no(flash_alert_n),
-    .flash_alert_ack_i(flash_ctrl_i.alert_ack),
-    .flash_alert_trig_i(flash_ctrl_i.alert_trig)
+    .fl_alert_src_o(flash_alert_o)
   );
-
-  assign flash_alert_o = '{p: flash_alert_p, n: flash_alert_n};
-  assign flash_ctrl_o.flash_alert_p = flash_alert_p;
-  assign flash_ctrl_o.flash_alert_n = flash_alert_n;
+  logic unused_alert;
+  assign unused_alert = flash_ctrl_i.alert_trig & flash_ctrl_i.alert_ack;
+  assign flash_ctrl_o.flash_alert_p = flash_alert_o.p;
+  assign flash_ctrl_o.flash_alert_n = flash_alert_o.n;
 
   logic unused_trst_n;
   assign unused_trst_n = flash_ctrl_i.jtag_req.trst_n;
