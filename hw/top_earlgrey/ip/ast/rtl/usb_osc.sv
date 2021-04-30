@@ -62,8 +62,6 @@ assign drift = ref_val ? 0 : rand32;
 always begin
   #((UsbClkPeriod + drift)/2000) clk = ~clk && en_osc;
 end
-
-assign usb_clk_o = clk;
 `else  // of SYNTHESIS
 localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
 
@@ -88,11 +86,14 @@ if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
   // FPGA Specific (place holder)
   ///////////////////////////////////////
   assign clk = (/*TODO*/ 1'b1) && en_osc;
-  assign usb_clk_o = clk;
 end else begin : gen_generic
   assign clk = (/*TODO*/ 1'b1) && en_osc;
-  assign usb_clk_o = clk;
 end
 `endif
+
+prim_clock_buf u_buf (
+  .clk_i ( clk ),
+  .clk_o ( usb_clk_o )
+);
 
 endmodule : usb_osc

@@ -52,8 +52,6 @@ assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
 always begin
    #(IoClkPeriod/2000) clk = ~clk && en_osc;
 end
-
-assign io_clk_o = clk;
 `else  // of SYNTHESIS
 localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
 
@@ -78,11 +76,14 @@ if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
   // FPGA Specific (place holder)
   ///////////////////////////////////////
   assign clk = (/*TODO*/ 1'b1) && en_osc;
-  assign io_clk_o = clk;
 end else begin : gen_generic
   assign clk = (/*TODO*/ 1'b1) && en_osc;
-  assign io_clk_o = clk;
 end
 `endif
+
+prim_clock_buf u_buf (
+  .clk_i ( clk ),
+  .clk_o ( io_clk_o )
+);
 
 endmodule : io_osc
