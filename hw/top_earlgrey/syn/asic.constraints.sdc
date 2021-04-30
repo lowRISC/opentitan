@@ -31,7 +31,8 @@ set MAIN_CLK_PIN u_ast/u_sys_clk/u_sys_osc/u_buf/out_o
 set MAIN_RST_PIN IO_RST_N
 # target is 100MHz, overconstrain by factor
 set MAIN_TCK_TARGET_PERIOD  10
-set MAIN_TCK_PERIOD [expr $MAIN_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR] ;# over constraining
+set MAIN_TCK_FACTOR 0.85
+set MAIN_TCK_PERIOD [expr $MAIN_TCK_TARGET_PERIOD*$MAIN_TCK_FACTOR] ;# over constraining
 # For now we remove this as clock is, by default, ideal. Reset, we'll try w/o ideal_network.
 #set_ideal_network [get_pins ${MAIN_CLK_PIN}]
 #set_ideal_network [get_ports ${MAIN_RST_PIN}]
@@ -148,7 +149,7 @@ set PCB_DEL 1
 set HOST_SETUP_DEL 4
 
 # external spi host clk-to-q
-set HOST_OUT_DELY 3
+set HOST_OUT_DEL 3
 
 # external spi dev setup
 set STORAGE_SETUP_DEL 3
@@ -296,7 +297,7 @@ set_propagated_clock [get_clock SPI_HOST_PASSTHRU_CLK]
 set HALF_CYCLE [expr ${SPI_DEV_PASSTHRU_CK} / 2]
 
 # These are delays facing the host
-set SPI_DEV_PASSTHRU_HOST_IN_DEL [expr 2*${PCB_DEL} + ${HOST_OUT_DELY}]
+set SPI_DEV_PASSTHRU_HOST_IN_DEL [expr 2*${PCB_DEL} + ${HOST_OUT_DEL}]
 set SPI_DEV_PASSTHRU_HOST_OUT_DEL [expr {${PCB_DEL} + ${HOST_SETUP_DEL}}]
 
 # for transactions passing from storage into the device, they are going to be sampled
