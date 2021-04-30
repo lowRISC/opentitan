@@ -1,6 +1,7 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+subdir('base')
 subdir('drivers')
 
 # Mask ROM fake dependencies.  These are temporary dependencies until we
