@@ -370,7 +370,7 @@ module ibex_top #(
 
   if (ICache) begin : gen_rams
 
-    for (genvar way = 0; way < IC_NUM_WAYS; way++) begin : gen_rams
+    for (genvar way = 0; way < IC_NUM_WAYS; way++) begin : gen_rams_inner
       // Tag RAM instantiation
       prim_ram_1p #(
         .Width           (TagSizeECC),
@@ -409,9 +409,8 @@ module ibex_top #(
     logic unused_ram_inputs;
 
     assign unused_ram_cfg    = ram_cfg_i;
-    assign unused_ram_inputs = 1'b0 & (|ic_tag_req) & ic_tag_write & (|ic_tag_addr) &
-                               (|ic_tag_wdata) & (|ic_data_req) & ic_data_write & (|ic_data_addr) &
-                               (|ic_data_wdata);
+    assign unused_ram_inputs = (|ic_tag_req) & ic_tag_write & (|ic_tag_addr) & (|ic_tag_wdata) &
+                               (|ic_data_req) & ic_data_write & (|ic_data_addr) & (|ic_data_wdata);
     assign ic_tag_rdata      = '{default:'b0};
     assign ic_data_rdata     = '{default:'b0};
 
