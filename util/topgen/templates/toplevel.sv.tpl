@@ -709,7 +709,10 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .scanmode_i,
     % endif
     % if block.scan_reset:
-      .scan_rst_ni  (scan_rst_ni),
+      .scan_rst_ni,
+    % endif
+    % if block.scan_en:
+      .scan_en_i,
     % endif
 
       // Clock and reset connections

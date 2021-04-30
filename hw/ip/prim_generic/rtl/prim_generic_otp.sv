@@ -45,10 +45,12 @@ module prim_generic_otp
   input ext_voltage_en_i, // TODO
   //// alert indication
   //////////////////////////
-  output otp_alert_po,  // TODO otp positive detector alert
-  output otp_alert_no,  // TODO otp negative detector alert
-  input  otp_alert_ack_i,  // TODO otp pulse ack
-  input  otp_alert_trig_i  // TODO alert force trig by SW
+  output ast_pkg::ast_dif_t otp_alert_src_o,
+
+  // Scan
+  input lc_ctrl_pkg::lc_tx_t scanmode_i,  // Scan Mode input
+  input scan_en_i,  // Scan Shift
+  input scan_rst_ni  // Scan Reset
 );
 
   // Not supported in open-source emulation model.
@@ -61,10 +63,10 @@ module prim_generic_otp
   logic unused_ext_voltage_en;
   assign unused_ext_voltage_en = ext_voltage_en_i;
 
-  logic unused_alert;
-  assign unused_alert = otp_alert_ack_i ^ otp_alert_trig_i;
-  assign otp_alert_po = 1'b0;
-  assign otp_alert_no = 1'b1;
+  logic unused_scan;
+  assign unused_scan = ^{scanmode_i, scan_en_i, scan_rst_ni};
+
+  assign otp_alert_src_o = '{p: '0, n: '1};
 
   ////////////////////////////////////
   // TL-UL Test Interface Emulation //

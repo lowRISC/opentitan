@@ -71,7 +71,11 @@ module otp_ctrl
   // Hardware config bits
   output otp_hw_cfg_t                                otp_hw_cfg_o,
   // External voltage for OTP
-  inout wire                                         otp_ext_voltage_h_io
+  inout wire                                         otp_ext_voltage_h_io,
+  // Scan
+  input                                              scan_en_i,
+  input                                              scan_rst_ni,
+  input lc_ctrl_pkg::lc_tx_t                         scanmode_i
 );
 
   import prim_util_pkg::vbits;
@@ -635,14 +639,6 @@ module otp_ctrl
                                          tl_win_h2d[$high(tl_win_h2d)] : '0;
   assign tl_win_d2h[$high(tl_win_h2d)] = (lc_dft_en[1] == lc_ctrl_pkg::On) ?
                                          tl_win_d2h_gated : '0;
-
-  // TODO: correctly wire these alerts up
-  logic otp_alert_p, otp_alert_n;
-  logic otp_alert_ack, otp_alert_trig;
-  assign otp_alert_o = '{p: otp_alert_p, n: otp_alert_n};
-  assign otp_alert_ack  = 1'b0;
-  assign otp_alert_trig = 1'b0;
-
   wire unused_ext_voltage_io;
 
   // TODO: correctly connect this to life cycle
@@ -676,12 +672,12 @@ module otp_ctrl
     .valid_o     ( otp_rvalid                    ),
     .rdata_o     ( part_otp_rdata                ),
     .err_o       ( part_otp_err                  ),
-    .ext_voltage_io   ( otp_ext_voltage_h_io  ),
-    .ext_voltage_en_i ( ext_voltage_en        ),
-    .otp_alert_po     ( otp_alert_p           ),
-    .otp_alert_no     ( otp_alert_n           ),
-    .otp_alert_ack_i  ( otp_alert_ack         ),
-    .otp_alert_trig_i ( otp_alert_trig        )
+    .ext_voltage_io   ( otp_ext_voltage_h_io     ),
+    .ext_voltage_en_i ( ext_voltage_en           ),
+    .otp_alert_src_o  ( otp_alert_o              ),
+    .scan_en_i,
+    .scan_rst_ni,
+    .scanmode_i
   );
 
   logic otp_fifo_valid;
