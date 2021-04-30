@@ -96,7 +96,7 @@ module spi_host
   end                   : gen_passthrough_implementation
   else begin            : gen_passthrough_ignore
      // Passthrough only supported for instances with one CSb line
-    `ASSERT(PassthroughNumCSCompat_A, !passthrough_en, clk_i, rst_ni)
+    `ASSERT(PassthroughNumCSCompat_A, !passthrough_i.passthrough_en, clk_i, rst_ni)
 
     assign cio_sck_o    = sck;
     assign cio_sck_en_o = 1'b1;
