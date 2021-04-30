@@ -44,9 +44,9 @@ interface lc_ctrl_if(input clk, input rst_n);
     otp_i.error = 0;
     otp_i.state = lc_state;
     otp_i.count = lc_cnt;
-    otp_i.test_unlock_token = get_random_token();
-    otp_i.test_exit_token   = get_random_token();
-    otp_i.rma_token         = get_random_token();
+    otp_i.test_unlock_token = lc_ctrl_env_pkg::get_random_token();
+    otp_i.test_exit_token   = lc_ctrl_env_pkg::get_random_token();
+    otp_i.rma_token         = lc_ctrl_env_pkg::get_random_token();
     otp_i.id_state          = LcIdBlank;
 
     otp_hw_cfg_i.valid = Off;
@@ -64,7 +64,4 @@ interface lc_ctrl_if(input clk, input rst_n);
     flash_rma_ack_i = val;
   endtask
 
-  function automatic lc_ctrl_state_pkg::lc_token_t get_random_token();
-    get_random_token = {$urandom(), $urandom(), $urandom(), $urandom()};
-  endfunction
 endinterface

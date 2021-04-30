@@ -41,6 +41,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     fork
       check_lc_output();
       process_otp_prog_rsp();
+      process_otp_token_rsp();
     join_none
   endtask
 
@@ -76,8 +77,19 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
       push_pull_item#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
                       .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)) item_rcv;
       otp_prog_fifo.get(item_rcv);
-      if (item_rcv.d_data == 1) begin
+      if (item_rcv.d_data == 1 && cfg.en_scb) begin
         set_exp_alert(.alert_name("fatal_prog_error"), .is_fatal(1));
+      end
+    end
+  endtask
+
+  virtual task process_otp_token_rsp();
+    forever begin
+      push_pull_item#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) item_rcv;
+      otp_token_fifo.get(item_rcv);
+      if (cfg.en_scb) begin
+        `DV_CHECK_EQ(item_rcv.h_data, {`gmv(ral.transition_token_3), `gmv(ral.transition_token_2),
+                                       `gmv(ral.transition_token_1), `gmv(ral.transition_token_0)})
       end
     end
   endtask

@@ -170,6 +170,48 @@ package lc_ctrl_env_pkg;
     endcase
   endfunction
 
+  function automatic lc_ctrl_pkg::token_idx_e get_exp_token(dec_lc_state_e curr_state,
+                                                            dec_lc_state_e next_state);
+    // Raw Token
+    if (curr_state == DecLcStRaw && next_state inside {DecLcStTestUnlocked0,
+        DecLcStTestUnlocked1, DecLcStTestUnlocked2, DecLcStTestUnlocked3}) begin
+      get_exp_token = lc_ctrl_pkg::RawUnlockTokenIdx;
+    // RMA Token
+    end else if (curr_state inside {DecLcStProd, DecLcStDev} && next_state == DecLcStRma) begin
+      get_exp_token = lc_ctrl_pkg::RmaTokenIdx;
+    // Test Exit Token
+    end else if (curr_state inside {DecLcStTestUnlocked3, DecLcStTestLocked2, DecLcStTestUnlocked2,
+                 DecLcStTestLocked1, DecLcStTestUnlocked1, DecLcStTestLocked0,
+                 DecLcStTestUnlocked0} &&
+                 next_state inside {DecLcStDev, DecLcStProd, DecLcStProdEnd}) begin
+      get_exp_token = lc_ctrl_pkg::TestExitTokenIdx;
+    // Test Unlock Token
+    end else if ((curr_state == DecLcStTestLocked2 && next_state == DecLcStTestUnlocked3) ||
+                 (curr_state == DecLcStTestLocked1 && next_state inside
+                     {DecLcStTestUnlocked3, DecLcStTestUnlocked2}) ||
+                 (curr_state == DecLcStTestLocked0 && next_state inside
+                     {DecLcStTestUnlocked3, DecLcStTestUnlocked2, DecLcStTestUnlocked1})) begin
+      get_exp_token = lc_ctrl_pkg::TestUnlockTokenIdx;
+    // Test Zero Token
+    end else if (next_state == DecLcStScrap ||
+                 (curr_state inside {DecLcStTestUnlocked3, DecLcStTestUnlocked2,
+                     DecLcStTestUnlocked1, DecLcStTestUnlocked0} && next_state == DecLcStRma) ||
+                 (curr_state == DecLcStTestUnlocked2 && next_state == DecLcStTestLocked2) ||
+                 (curr_state ==  DecLcStTestUnlocked1 && next_state inside {DecLcStTestLocked2,
+                     DecLcStTestLocked1}) ||
+                 (curr_state ==  DecLcStTestUnlocked0 && next_state inside {DecLcStTestLocked2,
+                     DecLcStTestLocked1, DecLcStTestLocked0})) begin
+      get_exp_token = lc_ctrl_pkg::ZeroTokenIdx;
+    // Test Invalid Token
+    end else begin
+      get_exp_token = lc_ctrl_pkg::InvalidTokenIdx;
+    end
+  endfunction
+
+  function automatic lc_ctrl_state_pkg::lc_token_t get_random_token();
+    `DV_CHECK_STD_RANDOMIZE_FATAL(get_random_token, , "lc_ctrl_env_pkg");
+  endfunction
+
   // package sources
   `include "lc_ctrl_env_cfg.sv"
   `include "lc_ctrl_env_cov.sv"

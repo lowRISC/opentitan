@@ -8,9 +8,8 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
   `uvm_object_new
 
-  rand bit clk_byp_error_rsp;
-  rand bit flash_rma_error_rsp;
-  rand bit otp_prog_err;
+  rand bit clk_byp_error_rsp, flash_rma_error_rsp;
+  rand bit otp_prog_err, token_mismatch_err;
   dec_lc_state_e next_lc_state;
 
   constraint no_err_rsps_c {
@@ -20,6 +19,10 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
   constraint otp_prog_err_c {
     otp_prog_err == 0;
+  }
+
+  constraint token_mismatch_err_c {
+    token_mismatch_err == 0;
   }
 
   virtual task pre_start();
@@ -43,7 +46,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
       // SW transition request
       if (valid_state_for_trans(lc_state) && lc_cnt != LcCnt16) begin
-        bit [TL_DW*4-1:0] token_val = {$urandom(), $urandom(), $urandom(), $urandom()};
+        lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
         randomize_next_lc_state(dec_lc_state(lc_state));
         `uvm_info(`gfn, $sformatf("next_LC_state is %0s, input token is %0h", next_lc_state.name,
                                   token_val), UVM_HIGH)
@@ -75,33 +78,31 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
   endfunction
 
   virtual function void set_hashed_token();
+    lc_ctrl_pkg::token_idx_e token_idx = get_exp_token(dec_lc_state(lc_state), next_lc_state);
+
+    // No token for InvalidTokenIdx
+    lc_ctrl_state_pkg::lc_token_t tokens_a [NumTokens-1];
+    tokens_a[ZeroTokenIdx]       = 0;
+    tokens_a[RawUnlockTokenIdx]  = lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed;
+    tokens_a[TestUnlockTokenIdx] = cfg.lc_ctrl_vif.otp_i.test_unlock_token;
+    tokens_a[TestExitTokenIdx]   = cfg.lc_ctrl_vif.otp_i.test_exit_token;
+    tokens_a[RmaTokenIdx]        = cfg.lc_ctrl_vif.otp_i.rma_token;
+
+    `DV_CHECK_NE(token_idx, InvalidTokenIdx,
+                 $sformatf("curr_state: %0s, next_state %0s, does not expect InvalidToken",
+                           lc_state.name, next_lc_state.name))
+
     // Clear the user_data_q here cause previous data might not be used due to some other lc_ctrl
     // error: for example: lc_program error
     cfg.m_otp_token_pull_agent_cfg.clear_d_user_data();
-
-    // Raw Token
-    if (lc_state == LcStRaw && next_lc_state inside {DecLcStTestUnlocked0,
-        DecLcStTestUnlocked1, DecLcStTestUnlocked2, DecLcStTestUnlocked3}) begin
-      cfg.m_otp_token_pull_agent_cfg.add_d_user_data(
-          lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed);
-    // RMA Token
-    end else if (lc_state inside {LcStProd, LcStDev} && next_lc_state == DecLcStRma) begin
-      cfg.m_otp_token_pull_agent_cfg.add_d_user_data(cfg.lc_ctrl_vif.otp_i.rma_token);
-    // Test Exit Token
-    end else if (lc_state inside {LcStTestUnlocked3, LcStTestLocked2, LcStTestUnlocked2,
-                 LcStTestLocked1, LcStTestUnlocked1, LcStTestLocked0, LcStTestUnlocked0} &&
-                 next_lc_state inside {DecLcStDev, DecLcStProd, DecLcStProdEnd}) begin
-      cfg.m_otp_token_pull_agent_cfg.add_d_user_data(cfg.lc_ctrl_vif.otp_i.test_exit_token);
-    // Test Unlock Token
-    end else if ((lc_state == LcStTestLocked2 && next_lc_state == DecLcStTestUnlocked3) ||
-                 (lc_state == LcStTestLocked1 && next_lc_state inside
-                  {DecLcStTestUnlocked3, DecLcStTestUnlocked2}) ||
-                 (lc_state == LcStTestLocked0 && next_lc_state inside
-                  {DecLcStTestUnlocked3, DecLcStTestUnlocked2, DecLcStTestUnlocked1})) begin
-      cfg.m_otp_token_pull_agent_cfg.add_d_user_data(cfg.lc_ctrl_vif.otp_i.test_unlock_token);
-    // Test Zero Token
+    if (!token_mismatch_err) begin
+      cfg.m_otp_token_pull_agent_cfg.add_d_user_data(tokens_a[token_idx]);
     end else begin
-      cfg.m_otp_token_pull_agent_cfg.add_d_user_data(0);
+      // 50% chance to input other token data, 50% chance let push-pull agent drive random data
+      if ($urandom_range(0, 1)) begin
+        token_idx = $urandom_range(0, TokenIdxWidth-2);
+        cfg.m_otp_token_pull_agent_cfg.add_d_user_data(tokens_a[token_idx]);
+      end
     end
   endfunction
 endclass : lc_ctrl_smoke_vseq
