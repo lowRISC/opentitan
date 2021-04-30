@@ -105,7 +105,7 @@ $ git checkout -b <temp_branch> FETCH_HEAD
 
 3. This is the command that CI runs for the smoke regression.
 ```console
-$ util/dvsim/dvsim.py hw/top_earlgrey/dv/top_earlgrey_sim_cfgs.hjson -i smoke --fixed-seed=1
+$ util/dvsim/dvsim.py hw/top_earlgrey/dv/chip_sim_cfg.hjson -i smoke --fixed-seed=1
 ```
 We can only run the failed test with `--fixed-seed=1` to reproduce the failure.
 Assume there is a failure in the `uart_smoke` test. Here is the run command to reproduce it.
