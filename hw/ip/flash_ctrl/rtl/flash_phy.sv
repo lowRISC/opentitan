@@ -41,15 +41,21 @@ module flash_phy import flash_ctrl_pkg::*; (
   localparam int FlashMacroOustanding = 1;
   localparam int SeqFifoDepth = FlashMacroOustanding * NumBanks;
 
-  // flash_phy forwards incoming host transactions to the appropriate bank but is not aware of
-  // any controller / host arbitration within the bank.  This means it is possible for
-  // flash_phy to forward one transaction to bank N and another to bank N+1 only for bank N+1
-  // to finish its transaction first (if for example a controller operation were ongoing in bank
-  // N).
-  // This implies that even though transactions are received in-order, they can complete out of
+  // flash_phy forwards incoming host transactions to the appropriate bank.  However, depending
+  // on the transaction type, the completion times may differ (for example, a transaction
+  // requiring de-scramble will take significantly longer than one that hits in the read buffers).
+  // This implies that it is possible for flash_phy to forward one transaction to bank N and another
+  // to bank N+1 only for bank N+1 to finish its transaction first.
+  //
+  // This suggests that even though transactions are received in-order, they can complete out of
   // order.  Thus it is the responsibility of the flash_phy to sequence the responses correctly.
-  // For banks that have finished ahead of time, it is also important to hold its output until
-  // consumed.
+  // For banks that have finished ahead of time, it is also important to hold their output until
+  // consumption by the host.
+  //
+  // The sequence fifo below holds the correct response order, while each flash_phy_core is
+  // paired with a small passthrough response FIFO to hold the data if necessary.
+  // If one bank finishes "ahead" of schedule, the response FIFO will hold the response, and no new
+  // transactions will be issued to that bank until the response is consumed by the host.
 
   // host to flash_phy interface
   logic [BankW-1:0]     host_bank_sel;
