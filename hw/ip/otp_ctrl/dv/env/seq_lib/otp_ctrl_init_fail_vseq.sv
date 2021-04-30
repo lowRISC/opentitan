@@ -97,14 +97,14 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       bit             is_fatal;
       bit [TL_DW-1:0] addr;
 
-      for (int i = 0; i < NumPart-1; i++) begin
+      for (int i = 0; i < NumPart; i++) begin
         `DV_CHECK_RANDOMIZE_FATAL(this);
 
         if (i inside {CreatorSwCfgIdx, OwnerSwCfgIdx}) begin
-          // During OTP init, SW partition only reads digest value
+          // During OTP init, SW partitions only read digest value
           addr = PART_OTP_DIGEST_ADDRS[i] << 2;
         end else begin
-          // During OTP init, non SW partition only read all value
+          // During OTP init, non SW partitions read all value
           addr = $urandom_range(PartInfo[i].offset, PartInfo[i].offset + PartInfo[i].size - 1);
         end
 

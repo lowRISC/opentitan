@@ -228,7 +228,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] val, backdoor_val;
     addr = {addr[TL_DW-1:2], 2'b00};
     val = cfg.mem_bkdr_vif.read32(addr);
-    if (err_mask == 0 || addr >= LifeCycleOffset) begin
+    if (err_mask == 0 || addr >= (LifeCycleOffset + LifeCycleSize)) begin
       ecc_err_type = OtpNoEccErr;
       return val;
     end
