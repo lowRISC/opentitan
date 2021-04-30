@@ -88,11 +88,17 @@ if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
   // FPGA Specific (place holder)
   ///////////////////////////////////////
   assign clk = (/*TODO*/ 1'b1) && en_osc;
-  assign usb_clk_o = clk;
 end else begin : gen_generic
   assign clk = (/*TODO*/ 1'b1) && en_osc;
-  assign usb_clk_o = clk;
 end
+
+prim_buf u_buf (
+  .in_i(clk),
+  .out_o(usb_clk_o)
+);
+
 `endif
+
+
 
 endmodule : usb_osc
