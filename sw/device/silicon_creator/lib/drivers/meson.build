@@ -11,7 +11,7 @@ sw_silicon_creator_lib_driver_hmac = declare_dependency(
       'hmac.c',
     ],
     dependencies: [
-      sw_lib_mmio,
+      sw_silicon_creator_lib_base_rom_mmio,
     ],
   ),
 )

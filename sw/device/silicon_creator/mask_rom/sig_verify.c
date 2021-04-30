@@ -92,15 +92,10 @@ static rom_error_t sigverify_padding_and_digest_check(
 rom_error_t sigverify_rom_ext_signature_verify(
     const uint8_t *signed_region, size_t signed_region_len,
     const sigverify_rsa_buffer_t *signature, uint32_t key_id) {
-  // TODO(#39): Make this a global const.
-  hmac_t hmac = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR),
-  };
-
   hmac_digest_t act_digest;
-  RETURN_IF_ERROR(hmac_sha256_init(&hmac));
-  RETURN_IF_ERROR(hmac_sha256_update(&hmac, signed_region, signed_region_len));
-  RETURN_IF_ERROR(hmac_sha256_final(&hmac, &act_digest));
+  hmac_sha256_init();
+  RETURN_IF_ERROR(hmac_sha256_update(signed_region, signed_region_len));
+  RETURN_IF_ERROR(hmac_sha256_final(&act_digest));
 
   // TODO(#21): Key validity check using OTP.
   const sigverify_rsa_key_t *key;
