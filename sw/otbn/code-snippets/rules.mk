@@ -160,3 +160,9 @@ $(otbn-code-snippets-bin-dir)/p384_scalar_mult_test.elf: \
   $(otbn-code-snippets-obj-dir)/p384.o
 $(otbn-code-snippets-bin-dir)/p384_scalar_mult_test.elf: \
   otbn-libs += $(otbn-code-snippets-obj-dir)/p384.o
+
+# p384_ecdsa_sign_test depends on p384_sign defined in p384.s
+$(otbn-code-snippets-bin-dir)/p384_ecdsa_sign_test.elf: \
+  $(otbn-code-snippets-obj-dir)/p384.o
+$(otbn-code-snippets-bin-dir)/p384_ecdsa_sign_test.elf: \
+  otbn-libs += $(otbn-code-snippets-obj-dir)/p384.o
