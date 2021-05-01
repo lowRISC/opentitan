@@ -30,8 +30,7 @@
  *     are not implemented here and the full register width is used. This
  *     allows to omit computation of r1 (since r1=x) and step 3 of HAC 14.42
  *
- * Flags: Flags when leaving this subroutine depend on a potentially discarded
- *        value and therefore are not usable after return.
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in] [w11, w10]: a, first operand, max. length 384 bit, a < m.
  * @param[in] [w17, w16]: b, second operand, max. length 384 bit, b < m.
@@ -256,9 +255,7 @@ barrett384_p384:
  * @param[out]  [w28, w27]: y_r, y-coordinate of resulting point R
  * @param[out]  [w30, w29]: z_r, z-coordinate of resulting point R
  *
- * Flags: When leaving this subroutine, flags of FG0 depend on an
- *        intermediate result and are not usable after return.
- *        FG1 is not modified in this subroutine.
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * clobbered registers: w0 to w30
  * clobbered flag groups: FG0
@@ -733,8 +730,7 @@ proj_add_p384:
  * Source of the addition chain is the addchain project:
  * https://github.com/mmcloughlin/addchain/
  *
- * Flags: Flags when leaving this subroutine depend on a potentially discarded
- *        value and therefore are not usable after return.
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  [w26,w25]: x, x-coordinate of curve point (projective).
  * @param[in]  [w26,w25]: y, y-coordinate of curve point (projective).
@@ -1096,8 +1092,8 @@ store_proj_randomize:
  *
  * Scratchpad memory layout:
  * The routine expects at least 704 bytes of scratchpad memory at dmem
- * location dptr_sp. Internally the scratchpad is used as follows:
- * dptr_sp     .. dptr_sp+192: point P, projective
+ * location 'scratchpad' (sp). Internally the scratchpad is used as follows:
+ * dptr_sp     .. dptr_sp+191: point P, projective
  * dptr_sp+192 .. dptr_sp+255: s0, 1st share of scalar
  * dptr_sp+256 .. dptr_sp+447: point 2P, projective
  * dptr_sp+448 .. dptr_sp+511: s1, 2nd share of scalar
@@ -1372,52 +1368,298 @@ scalar_mult_int_p384:
 scalar_mult_p384:
 
   /* set dmem pointer to point x-coordinate */
-  la       x20, dptr_x
-  lw       x20, 0(x20)
+  la        x20, dptr_x
+  lw        x20, 0(x20)
 
   /* set dmem pointer to point y-coordinate */
-  la       x21, dptr_y
-  lw       x21, 0(x21)
+  la        x21, dptr_y
+  lw        x21, 0(x21)
 
   /* set dmem pointer to scalar k */
-  la       x19, dptr_k
-  lw       x19, 0(x19)
+  la        x19, dptr_k
+  lw        x19, 0(x19)
 
   /* set pointer to blinding parameter */
-  la       x9, dptr_rnd
-  lw       x9, 0(x9)
+  la        x9, dptr_rnd
+  lw        x9, 0(x9)
 
   /* set dmem pointer to domain parameter b */
-  la       x28, p384_b
+  la        x28, p384_b
 
   /* set dmem pointer to scratchpad */
-  la       x30, scratchpad
+  la        x30, scratchpad
 
   /* load domain parameter p (modulus)
-     [w13, w12] = p = dmem[dptr_p] */
-  li       x2, 12
-  la       x3, p384_p
-  bn.lid   x2++, 0(x3)
-  bn.lid   x2++, 32(x3)
+     [w13, w12] = p = dmem[p384_p] */
+  li        x2, 12
+  la        x3, p384_p
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
 
   /* load Barrett constant u for modulus p
-     [w15, w14] = u_p = dmem[dptr_u_p] */
-  li       x2, 14
-  la       x3, p384_u_p
-  bn.lid   x2++, 0(x3)
-  bn.lid   x2++, 32(x3)
+     [w15, w14] = u_p = dmem[p384_u_p] */
+  li        x2, 14
+  la        x3, p384_u_p
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
 
   /* load domain parameter n (order of base point)
-     [w11, w10] = p = dmem[dptr_n] */
-  li       x2, 10
-  la       x3, p384_n
-  bn.lid   x2++, 0(x3)
-  bn.lid   x2++, 32(x3)
+     [w11, w10] = n = dmem[p384_n] */
+  li        x2, 10
+  la        x3, p384_n
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
 
   /* init all-zero reg */
-  bn.xor   w31, w31, w31
+  bn.xor    w31, w31, w31
 
-  jal      x1, scalar_mult_int_p384
+  jal       x1, scalar_mult_int_p384
+
+  ret
+
+
+/**
+ * Variable-time modular multiplicative inverse computation
+ *
+ * returns x_inv = x^-1 mod m
+ *
+ * This routine computes the modular multiplicative inverse for any x < m in
+ * the finite field GF(m) where m is prime.
+ *
+ * For inverse computation, Fermat's little theorem is used, i.e.
+ * we compute x^-1 = x^(m-2) mod m.
+ * For exponentiation we use a standard, variable-time (!) square and multiply
+ * algorithm.
+ *
+ * This routine is mainly intended to be used for inversion of scalars in
+ * context of the P-384 curve. In theory, it can be used with any 384-bit
+ * modulus m with a corresponding 385-bit Barrett constant u,
+ * where u[383:192] = 0.
+ *
+ * Note: When used for P-384 scalar inversion, the routine will need 672 calls
+ * to the multiplication routine. By using an adder chain this could be reduced
+ * to ~433 multiplications, however, at the cost of a significant codes size
+ * increase.
+ *
+ * Note: This routine runs in variable-time w.r.t. the modulus. It should only
+ * be used with a non-secret modulus.
+ *
+ * @param[in]  [w13, w12]: m, 384 bit modulus
+ * @param[in]  [w15, w14]: u[383:0], lower 384 bit of pre-computed Barrett
+ *                          constant corresponding to modulus m
+ * @param[in]  [w30, w29]: x, 384 bit operand
+ * @param[in]  w31, all-zero
+ * @param[out] [w17, w16]: x_inv, modular multiplicative inverse
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * clobbered registers: x2, w2, w3, w10, w11, w16 to w24
+ * clobbered flag groups: FG0
+ */
+mod_inv_n_p384:
+
+  /* subtract 2 from modulus for Fermat's little theorem
+     [w13,w12] <= m - 2 = [w11,w10]-2 (left aligned) */
+  bn.subi   w2, w12, 2
+  bn.subb   w3, w13, w31
+  bn.rshi   w3, w3, w2 >> 128
+  bn.rshi   w2, w2, w31 >> 128
+
+  /* init square and multiply: [w17,w16] = 1 */
+  bn.addi   w16, w31, 1
+  bn.mov    w17, w31
+
+  /* square and multiply loop */
+  loopi     384, 12
+
+    /* square: [w17,w16] <= [w17, w16]*[w11,w10] mod [w13, w12] */
+    bn.mov    w10, w16
+    bn.mov    w11, w17
+    jal       x1, barrett384_p384
+
+    /* shift MSB into carry flag
+       [w3,w2] = 2*[w3,w2] = [w3,w2] << 1 */
+    bn.add    w2, w2, w2
+    bn.addc   w3, w3, w3
+
+    /* skip multiplication if C flag not set */
+    csrrs     x2, 1984, x0
+    andi      x2, x2, 1
+    beq       x2, x0, nomul
+
+    /* multiply: [w17,w16] <= [w17, w16]*[w30,w29] mod [w13, w12] */
+    bn.mov    w10, w29
+    bn.mov    w11, w30
+    jal       x1, barrett384_p384
+
+    nomul:
+    nop
+
+  ret
+
+
+/**
+ * P-384 ECDSA signature generation
+ *
+ * returns the signature as the pair r, s with
+ *         r = x_1  mod n
+ *     and s = k^(-1)(msg + r*d)  mod n
+ *         where x_1 is the affine x-coordinate of the curve point k*G,
+ *               G is the curve's base point,
+ *               k is a supplied secret random number,
+ *               n is the order of the base point G of P-256,
+ *               msg is the message to be signed, and
+ *               d is the private key.
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]  dmem[0]: dptr_k, pointer to a 384 bit random secret in dmem
+ * @param[in]  dmem[4]: dptr_rnd, pointer to location in dmem containing
+ *                       a 384-bit random number for blinding
+ * @param[in]  dmem[8]: dptr_msg, pointer to the message to be signed in dmem
+ * @param[in]  dmem[12]: dptr_r, pointer to dmem location where s component
+ *                               of signature will be placed
+ * @param[in]  dmem[16]: dptr_s, pointer to dmem location where r component
+ *                               of signature will be placed
+ * @param[in]  dmem[28]: dptr_d, pointer to private key d in dmem
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * clobbered registers: x2, x3, x9 to x13, x18 to x28, x30
+ *                      w0 to w31
+ * clobbered flag groups: FG0
+ */
+.globl p384_sign
+p384_sign:
+  /* init all-zero reg */
+  bn.xor    w31, w31, w31
+
+  /* set dmem pointer to domain parameter b */
+  la        x28, p384_b
+
+  /* set dmem pointer to basepoint x-coordinate */
+  la        x20, p384_gx
+
+  /* set dmem pointer to basepoint y-coordinate */
+  la        x21, p384_gy
+
+  /* set dmem pointer to secret random scalar k */
+  la        x19, dptr_k
+  lw        x19, 0(x19)
+
+  /* set pointer to blinding parameter */
+  la        x9, dptr_rnd
+  lw        x9, 0(x9)
+
+  /* set dmem pointer to scratchpad */
+  la        x30, scratchpad
+
+  /* load domain parameter p (modulus)
+     [w13, w12] <= p = dmem[dptr_p] */
+  li        x2, 12
+  la        x3, p384_p
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
+
+  /* load Barrett constant u for modulus p
+     [w15, w14] = u_p = dmem[p384_u_p] */
+  li        x2, 14
+  la        x3, p384_u_p
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
+
+  /* load domain parameter n (order of base point)
+     [w11, w10] = n = dmem[p384_n] */
+  li        x2, 10
+  la        x3, p384_n
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
+
+  /* scalar multiplication with base point
+     [w28:w25] <= (x_1, y_1) = k*G */
+  jal       x1, scalar_mult_int_p384
+
+  /* store r of signature in dmem: dmem[dptr_r] <= r = [w26,w25] */
+  li        x2, 25
+  la        x3, dptr_r
+  lw        x3, 0(x3)
+  bn.sid    x2++, 0(x3)
+  bn.sid    x2++, 32(x3)
+
+  /* load secret random number k from dmem
+     [w30,w29] <= k = dmem[dptr_k] */
+  li        x2, 29
+  bn.lid    x2++, 0(x19)
+  bn.lid    x2++, 32(x19)
+
+  /* load domain parameter n (order of base point)
+     [w13, w12] <= p = dmem[p384_n] */
+  li        x2, 12
+  la        x3, p384_n
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
+
+  /* load Barrett constant u_n for modulus n for scalar operations
+     [w15, w14] <= u_m = dmem[p384_u_n] */
+  li        x2, 14
+  la        x3, p384_u_n
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
+
+  /* modular multiplicative inverse of k
+     [w3, w2] <= [w17, w16] <= k^(-1) mod n */
+  jal       x1, mod_inv_n_p384
+  bn.mov    w2, w16
+  bn.mov    w3, w17
+
+  /* load private key d from dmem
+     [w11,w10] <= d = dmem[dptr_d] */
+  li        x2, 10
+  la        x3, dptr_d
+  lw        x3, 0(x3)
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
+
+  /* [w17, w16] <= k^(-1)*d mod n = [w17, w16] * [w11, w10] mod [w13, w12] */
+  jal       x1, barrett384_p384
+
+  /*  [w5, w4] <= [w17, w16]
+        <= r * (k^(-1)*d) mod n = [w26, w25] * [w17, w16] mod [w13, w12] */
+  bn.mov    w10, w25
+  bn.mov    w11, w26
+  jal       x1, barrett384_p384
+  bn.mov    w4, w16
+  bn.mov    w5, w17
+
+  /* load message from dmem
+     [w11, w10] <= msg = dmem[dptr_msg] */
+  li        x2, 10
+  la        x3, dptr_msg
+  lw        x3, 0(x3)
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
+
+  /* [w17, w16] <= k^(-1) * msg = [w3, w2]*[w17, w16] mod n */
+  bn.mov    w16, w2
+  bn.mov    w17, w3
+  jal       x1, barrett384_p384
+
+  /* [w28, w27] <= s' = k^(-1)*msg + k^(-1)*r*d  = [w17, w16] + [w5, w4]*/
+  bn.add    w27, w16, w4
+  bn.addc   w28, w17, w5
+
+  /* reduce s: [w28, w27] <= s <= s' mod n = [w28, w27] mod [w13, w12] */
+  bn.sub    w10, w27, w12
+  bn.subb   w11, w28, w13
+  bn.sel    w27, w27, w10, C
+  bn.sel    w28, w28, w11, C
+
+  /* store s of signature in dmem: dmem[dptr_s] <= s = [w28, w27] */
+  li        x2, 27
+  la        x3, dptr_s
+  lw        x3, 0(x3)
+  bn.sid    x2++, 0(x3)
+  bn.sid    x2++, 32(x3)
 
   ret
 
