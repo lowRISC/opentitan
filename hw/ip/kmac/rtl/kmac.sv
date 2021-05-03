@@ -519,7 +519,12 @@ module kmac
       KmacMsgFeed: begin
         entropy_in_progress = 1'b 1;
         // If absorbed, move to Digest
-        if (sha3_absorbed) begin
+        if (sha3_absorbed && sha3_done) begin
+          // absorbed and done can be asserted at a cycle if Applications have
+          // requested the hash operation. kmac_app FSM issues CmdDone command
+          // if it receives absorbed signal.
+          kmac_st_d = KmacIdle;
+        end else if (sha3_absorbed && !sha3_done) begin
           kmac_st_d = KmacDigest;
         end else begin
           kmac_st_d = KmacMsgFeed;
