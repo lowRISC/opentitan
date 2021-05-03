@@ -1,0 +1,13 @@
+[package]
+name = "opentitanlib"
+version = "0.1.0"
+authors = ["cfrantz <cfrantz@google.com>"]
+edition = "2018"
+
+[dependencies]
+anyhow = "1.0"
+lazy_static = "1.4.0"
+regex = "1"
+nix = "0.17.0"
+bitflags = "1.0"
+log = "0.4"

@@ -1,0 +1,90 @@
+use anyhow::anyhow;
+use anyhow::Result;
+
+use crate::io::gpio::Gpio;
+use crate::io::spi::Target;
+use crate::io::uart::Uart;
+
+pub mod verilator;
+
+bitflags! {
+    /// A bitmap of capabilities which may be provided by a transport.
+    pub struct Capability: u32 {
+        const NONE = 0x00000000;
+        const UART = 0x00000001;
+        const SPI = 0x00000002;
+        const GPIO = 0x00000004;
+    }
+}
+
+/// A struct which can check that needed capability requirements are met.
+pub struct Capabilities {
+    capabilities: Capability,
+    needed: Capability,
+}
+
+impl Capabilities {
+    /// Create a new Capabilities object representing a provider of
+    /// capabilities specified by `cap`.
+    pub fn new(cap: Capability) -> Self {
+        Self {
+            capabilities: cap,
+            needed: Capability::NONE,
+        }
+    }
+
+    /// Request the capabilities specified by `cap`.
+    pub fn request(&mut self, cap: Capability) -> &mut Self {
+        self.needed |= cap;
+        self
+    }
+
+    /// Checks that the requested capabilities are provided.
+    pub fn ok(&self) -> Result<()> {
+        if self.capabilities & self.needed != self.needed {
+            Err(anyhow!(
+                "Requested capabilities {:?}, but capabilities {:?} are supplied",
+                self.needed,
+                self.capabilities
+            ))
+        } else {
+            Ok(())
+        }
+    }
+}
+
+/// A transport object is a factory for the low-level interfaces provided
+/// by a given communications backend.
+pub trait Transport {
+    /// Returns a `Capabilities` object to check the capabilities of this
+    /// transport object.
+    fn capabilities(&self) -> Capabilities;
+
+    /// Returns a SPI [`Target`] implementation.
+    fn spi(&self) -> Result<Box<dyn Target>> {
+        unimplemented!();
+    }
+    /// Returns a [`Uart`] implementation.
+    fn uart(&self) -> Result<Box<dyn Uart>> {
+        unimplemented!();
+    }
+    /// Returns a [`Gpio`] implementation.
+    fn gpio(&self) -> Result<Box<dyn Gpio>> {
+        unimplemented!();
+    }
+}
+
+/// An `EmptyTransport` provides no communications backend.
+pub struct EmptyTransport;
+
+impl EmptyTransport {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl Transport for EmptyTransport {
+    fn capabilities(&self) -> Capabilities {
+        Capabilities::new(Capability::NONE)
+    }
+}
