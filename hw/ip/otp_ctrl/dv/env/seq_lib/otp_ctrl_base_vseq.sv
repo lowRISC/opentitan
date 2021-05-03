@@ -307,7 +307,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] val;
     if (cfg.otp_ctrl_vif.lc_prog_no_sta_check == 0) begin
       csr_rd(ral.intr_state, val);
-      csr_wr(ral.intr_state, val);
+      // In case lc_program request is issued after intr_state read
+      if (cfg.otp_ctrl_vif.lc_prog_no_sta_check == 0) csr_wr(ral.intr_state, val);
     end
   endtask
 
