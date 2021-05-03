@@ -15,6 +15,14 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   // local variables
 
+  // Whenever the keccak rounds are running, the `complete` signal is raised at the end
+  // for a single cycle to signal to sha3 control logic that the keccak engine is completed.
+  //
+  // There are some edge cases that may occur if a CmdProcess or a `kmac_app_last`is seen on this
+  // "complete" cycle that need to be handled - this bit will be raised and lowered in conjunction
+  // with the internal `complete` signal to allow the scb easier handling of these scenarios.
+  bit keccak_complete_cycle = 0;
+
   // this bit goes high when KMAC has finished processing the
   // prefix and the secret keys (only in KMAC mode)
   bit prefix_and_keys_done = 0;
@@ -500,9 +508,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       // If masking is enabled then entropy is used,
       // timing is more complex because of the various entropy features
       //
-      // TODO: entropy_fast_process is currently disabled,
-      //       need to support when enabled in sequence
-
       if (entropy_mode == EntropyModeSw) begin
         // All rounds will take SW_ENTROPY_ROUND_CYCLES_NO_FAST cycles each, except the first one.
         //
@@ -538,7 +543,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     `uvm_info(`gfn, "starting to wait for keccak", UVM_HIGH)
     cfg.clk_rst_vif.wait_clks(total_cycles);
     // need to wait for one final cycle for sha3 wrapper logic to latch Keccak `complete` signal
+    keccak_complete_cycle = 1;
     cfg.clk_rst_vif.wait_clks(1);
+    keccak_complete_cycle = 0;
     `uvm_info(`gfn, "finished waiting for keccak", UVM_HIGH)
   endtask
 
@@ -771,8 +778,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                           if (num_blocks_filled == sha3_pkg::KeccakRate[strength]) begin
 
                             // Indicates whether the full message is an 8-byte multiple
-                            bit partial_msg = (!in_kmac_app && msg.size() % 8 > 0) ||
-                                              (in_kmac_app && kmac_app_msg.size() % 8 > 0);
+                            //
+                            // If AppKeymgr is being used, we need to add 3 to the full message
+                            // size, as KMAC will append the 3-byte encoded output length before
+                            // pushing into the msgfifo
+                            bit partial_msg =
+                                (!in_kmac_app && msg.size() % 8 > 0) ||
+                                  (in_kmac_app &&
+                                    (app_mode == AppKeymgr && (kmac_app_msg.size() + 3) % 8 > 0) ||
+                                    (app_mode != AppKeymgr && kmac_app_msg.size() % 8 > 0));
 
                             `uvm_info(`gfn, "all blocks full while flushing fifo, running keccak rounds", UVM_HIGH)
                             `uvm_info(`gfn, $sformatf("partial_msg: %0d", partial_msg), UVM_HIGH)
@@ -784,7 +798,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                             // after keccak round has finished
                             block_ready_after_flush_keccak = (fifo_wr_ptr > fifo_rd_ptr);
 
-                            // TODO: same condition for app interface?
                             if (block_ready_after_flush_keccak && partial_msg) begin
                               cfg.clk_rst_vif.wait_clks(1);
                               do_increment = 1;
@@ -936,12 +949,19 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                   bit sw_process_seen_in_keccak = 0;
 
+                  bit sw_process_and_keccak_complete = 0;
+
                   `uvm_info(`gfn, "filled up keccak input blocks, sending to keccak to process", UVM_HIGH)
 
                   fork
                     begin : wait_for_cmd_process
                       wait(kmac_cmd == CmdProcess);
                       sw_process_seen_in_keccak = 1;
+                      `uvm_info(`gfn, "raised sw_process_seen_in_keccak", UVM_HIGH)
+                      if (keccak_complete_cycle) begin
+                        sw_process_and_keccak_complete = 1;
+                        `uvm_info(`gfn, "raised sw_process_and_keccak_complete", UVM_HIGH)
+                      end
                     end : wait_for_cmd_process
 
                     begin : wait_for_kmac_app_last
@@ -950,8 +970,26 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                     end : wait_for_kmac_app_last
 
                     begin : keccak_process_blocks
+                      // The logic to determine whether we have a message only partially filling up
+                      // the final block is the exact same as earlier in the scb.
+                      //
+                      // Again, note that we add 3 to the message size when using AppKeymgr app
+                      // interface to account for the KMAC internally appending the 24-bit encoded
+                      // output length before pushing into msgfifo.
+                      bit partial_msg =
+                          (!in_kmac_app && msg.size() % 8 > 0) ||
+                            (in_kmac_app &&
+                              (app_mode == AppKeymgr && (kmac_app_msg.size() + 3) % 8 > 0) ||
+                              (app_mode != AppKeymgr && kmac_app_msg.size() % 8 > 0));
                       do_increment = 0;
                       num_blocks_filled = 0;
+                      #0;
+                      if (kmac_cmd == CmdProcess && partial_msg) begin
+                        do_increment = 1;
+                        cfg.clk_rst_vif.wait_n_clks(1);
+                        do_increment = 0;
+                        cfg.clk_rst_vif.wait_clks(1);
+                      end
                       wait_keccak_rounds();
 
                       disable wait_for_cmd_process;
@@ -980,6 +1018,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                       //
                       // Wait 1 cycle for flushing
                       cfg.clk_rst_vif.wait_clks(1);
+                      // If the SW CmdProcess is seen on the same cycle as the keccak complete
+                      // signal asserting, need to wait an extra cycle before starting the
+                      // final keccak rounds
+                      if (sw_process_and_keccak_complete) begin
+                        cfg.clk_rst_vif.wait_clks(1);
+                        sw_process_and_keccak_complete = 0;
+                      end
                       // Wait for sha3pad to transmit all blocks to the keccak logic
                       cfg.clk_rst_vif.wait_clks(sha3_pkg::KeccakRate[strength]);
                       // Wait 1 more cycle for sha3pad control signal to be latched by keccak

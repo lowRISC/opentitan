@@ -14,6 +14,11 @@ class kmac_app_vseq extends kmac_sideload_vseq;
     };
   }
 
+  // msg size when using app interface must be non-zero
+  constraint app_msg_size_c {
+    msg.size() > 0;
+  }
+
   constraint kmac_app_c {
     if (en_app) {
       // application interface outputs 256-bit digest (32 bytes)
