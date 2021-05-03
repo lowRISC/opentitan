@@ -31,23 +31,17 @@ class push_pull_host_driver #(parameter int HostDataWidth = 32,
     @(posedge cfg.vif.rst_n);
     cfg.vif.wait_clks(1);
     forever begin
-      seq_item_port.try_next_item(req);
-      if (req != null) begin
-        `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.convert2string()), UVM_HIGH)
-        if (!in_reset) begin
-          if (cfg.agent_type == PushAgent) begin
-            @(`PUSH_DRIVER); // TODO: Workaround for Xcelium issue #5713
-            drive_push();
-          end else if (cfg.agent_type == PullAgent) begin
-            @(`PULL_DRIVER); // TODO: Workaround for Xcelium issue #5713
-            drive_pull();
-          end else begin
-            `uvm_fatal(`gfn, $sformatf("%0s is an invalid driver protocol!", cfg.agent_type))
-          end
+      seq_item_port.get_next_item(req);
+      `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.convert2string()), UVM_HIGH)
+      if (!in_reset) begin
+        if (cfg.agent_type == PushAgent) begin
+          drive_push();
+        end else if (cfg.agent_type == PullAgent) begin
+          drive_pull();
+        end else begin
+          `uvm_fatal(`gfn, $sformatf("%0s is an invalid driver protocol!", cfg.agent_type))
         end
         seq_item_port.item_done(req);
-      end else begin
-        cfg.vif.wait_clks(1);
       end
     end
   endtask
