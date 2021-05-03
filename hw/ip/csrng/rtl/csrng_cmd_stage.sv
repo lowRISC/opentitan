@@ -132,7 +132,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
 
   assign sfifo_cmd_wdata = cmd_stage_bus_i;
 
-  assign sfifo_cmd_push = cs_enable_i && cmd_stage_vld_i;
+  assign sfifo_cmd_push = cs_enable_i && cmd_stage_rdy_o && cmd_stage_vld_i;
 
   assign sfifo_cmd_pop = cs_enable_i && cmd_fifo_pop;
 
