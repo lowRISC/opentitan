@@ -47,7 +47,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
   }
 
   constraint entropy_mode_c {
-    entropy_mode == EntropyModeSw;
+    entropy_mode inside {EntropyModeSw, EntropyModeEdn};
   }
 
   constraint entropy_ready_c {

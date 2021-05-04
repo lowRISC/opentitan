@@ -21,6 +21,7 @@
               - Randomly set endianness of input msg and internal keccak state.
               - Randomly provide a sideloaded key, do not set cfg.sideload.
               - Set output length between 1-`keccak_rate` bytes if applicable.
+              - Randomly select either SW or EDN as the source of entropy
               - Trigger KMAC to start absorbing input message.
                 - During absorption stage randomly read from STATE window, expect 0.
               - Write message to MSG_FIFO window, maximum length of 32 bytes.

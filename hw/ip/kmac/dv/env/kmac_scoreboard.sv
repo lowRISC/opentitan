@@ -60,6 +60,14 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // is transmitted via kmac_app interface and received
   bit got_data_from_kmac_app = 0;
 
+  // The CFG.entropy_ready field is only used to transition the entropy FSM into fetching entropy
+  // from the reset state, so we can only rely on writes to CFG.entropy_ready to update internal
+  // scoreboard state after a reset is seen.
+  //
+  // To that effect, we set this bit to 1 any time the scoreboard is reset, and will unset it
+  // the first time that CFG.entropy_ready is updated.
+  bit first_op_after_rst = 0;
+
   // CFG fields
   bit kmac_en;
   sha3_pkg::sha3_mode_e hash_mode;
@@ -67,6 +75,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   entropy_mode_e entropy_mode = EntropyModeNone;
   bit entropy_fast_process;
   bit entropy_ready;
+
+  // Set this bit when entropy_ready is 1 and entropy_mode is EntropyModeEdn,
+  // to indicate that we are now waiting on the EDN to return valid entropy
+  bit in_edn_fetch = 0;
+
+  // This bit indicates that the KMAC is performing an entropy refresh
+  bit refresh_entropy = 0;
 
   // CMD fields
   kmac_cmd_e kmac_cmd = CmdNone;
@@ -161,6 +176,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     super.run_phase(phase);
     fork
       detect_kmac_app_start();
+      process_edn();
       process_prefix_and_keys();
       process_msgfifo_write();
       process_msgfifo_status();
@@ -174,6 +190,36 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       process_kmac_app_rsp_fifo();
       process_sideload_key();
     join_none
+  endtask
+
+  // This task waits until an entropy request is sent,
+  // then waits for valid entropy to be returned from EDN
+  virtual task process_edn();
+    push_pull_agent_pkg::push_pull_item #(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)) edn_item;
+    @(negedge cfg.under_reset);
+    forever begin
+      wait(!cfg.under_reset);
+      @(posedge in_edn_fetch);
+      // Entropy interface is native 32 bits - prim_edn_req component internally
+      // does as many EDN fetches as necessary to fill up the required data bus size
+      // of the "host", in this case KMAC needs 64 bits of entropy so prim_edn_req
+      // performs 2 fetches from the EDN network.
+      repeat (kmac_pkg::MsgWidth / cip_base_pkg::EDN_BUS_WIDTH) begin
+        edn_fifo.get(edn_item);
+      end
+      `uvm_info(`gfn, "got all edn transactions", UVM_HIGH)
+      // Receiving the last EDN sequence item is synchronized on the EDN clock,
+      // so we need to synchronize into the KMAC clock domain.
+      // This takes 4 clock cycles total, on the last cycle the entropy is marked as valid
+      // to the keccak logic and any pending keccak rounds can begin.
+      cfg.clk_rst_vif.wait_clks(4);
+      in_edn_fetch = 0;
+      `uvm_info(`gfn, "dropped in_edn_fetch", UVM_HIGH)
+      if (refresh_entropy) begin
+        refresh_entropy = 0;
+        `uvm_info(`gfn, "dropped refresh_entropy", UVM_HIGH)
+      end
+    end
   endtask
 
   // This task will check for any sideload keys that have been provided
@@ -284,33 +330,50 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // the KMAC_APP digest and clearing internal state for the next hash operation.
   virtual task process_kmac_app_rsp_fifo();
     kmac_app_item kmac_app_rsp;
-    forever begin
-      wait(!cfg.under_reset);
-      @(posedge in_kmac_app);
-      `uvm_info(`gfn, $sformatf("rsp app_mode: %0s", app_mode.name()), UVM_HIGH)
-      `DV_SPINWAIT_EXIT(
-          kmac_app_rsp_fifo[app_mode].get(kmac_app_rsp);
-          `uvm_info(`gfn, $sformatf("Detected a KMAC_APP response:\n%0s", kmac_app_rsp.sprint()), UVM_HIGH)
+    fork
+      begin
+        forever begin
+          wait(!cfg.under_reset);
+          @(posedge in_kmac_app);
+          `uvm_info(`gfn, $sformatf("rsp app_mode: %0s", app_mode.name()), UVM_HIGH)
+          `DV_SPINWAIT_EXIT(
+              kmac_app_rsp_fifo[app_mode].get(kmac_app_rsp);
+              `uvm_info(`gfn, $sformatf("Detected a KMAC_APP response:\n%0s", kmac_app_rsp.sprint()), UVM_HIGH)
 
-          // safety check that things are working properly and no random KMAC_APP operations are seen
-          `DV_CHECK_FATAL(in_kmac_app == 1, "in_kmac_app is not set, scoreboard has not picked up KMAC_APP request")
+              // safety check that things are working properly and no random KMAC_APP operations are seen
+              `DV_CHECK_FATAL(in_kmac_app == 1, "in_kmac_app is not set, scoreboard has not picked up KMAC_APP request")
 
-          // TODO error checks
+              // TODO error checks
 
-          // assign digest values
-          kmac_app_digest_share0 = kmac_app_rsp.rsp_digest_share0;
-          kmac_app_digest_share1 = kmac_app_rsp.rsp_digest_share1;
+              // assign digest values
+              kmac_app_digest_share0 = kmac_app_rsp.rsp_digest_share0;
+              kmac_app_digest_share1 = kmac_app_rsp.rsp_digest_share1;
 
-          check_digest();
+              check_digest();
 
-          in_kmac_app = 0;
-          `uvm_info(`gfn, "dropped in_kmac_app", UVM_HIGH)
+              in_kmac_app = 0;
+              `uvm_info(`gfn, "dropped in_kmac_app", UVM_HIGH)
 
-          clear_state();
-          ,
-          wait(cfg.under_reset || !in_kmac_app);
-      )
-    end
+              clear_state();
+              ,
+              wait(cfg.under_reset || !in_kmac_app);
+          )
+        end
+      end
+      begin
+        forever begin
+          wait(!cfg.under_reset);
+          @(posedge in_kmac_app);
+          @(negedge in_kmac_app);
+          if (entropy_mode == EntropyModeEdn) begin
+            cfg.clk_rst_vif.wait_clks(3);
+            in_edn_fetch = cfg.enable_masking;
+            refresh_entropy = cfg.enable_masking;
+            `uvm_info(`gfn, "raised refresh_entropy", UVM_HIGH)
+          end
+        end
+      end
+    join
   endtask
 
   // This task updates the internal sha3_idle status field
@@ -501,51 +564,117 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // This task waits for the keccak logic to complete a full KECCAK_NUM_ROUNDS rounds
   //
   // This task must only be called after sha3pad logic has transmitted all KeccakRate
-  // blocks to keccak logic
+  // blocks to keccak logic.
+  //
+  // If unmasked configuration, each round of the keccak will take only a single cycle.
+  //
+  // If masked configuration, each round of the keccak can take a variable number of cycles.
+  //
+  // Disabling fast entropy means that the internal 320-bit entropy state needs to be "refilled" for
+  // each round, adding a 5 cycle latency as 64-bits are "filled" at a time from the internal LFSR.
+  // So, each round will take ENTROPY_FULL_EXPANSION_CYCLES (7) cycles.
+  //
+  // Enabling fast entropy means that entropy will only be fully expanded during processing
+  // of the secret key block (only applicable for KMAC hashing), each of these rounds will be the
+  // same length as before.
+  // During non-key-processing keccak rounds, entropy will be reused rather than fully expanded to
+  // improve performance, so each round will take ENTROPY_FAST_PROCESSING_CYCLES cycles.
+  //
+  // If SW entropy is used, the length of each cycle depends mostly on whether fast entropy
+  // processing is enabled/disabled.
+  // If new SW entropy is written in the middle of a keccak round, keccak will block until the
+  // updates are complete and the fresh entropy is expanded.
+  //
+  // If entropy from the EDN is used, KMAC will automatically send a request to EDN after reset
+  // for some fresh entropy.
+  //
+  // The very first keccak round (round 0) will block until EDN responds with fresh entropy and KMAC
+  // internally expands it - the length of the remaining keccak rounds will depend on whether fast
+  // entropy is enabled/disabled.
+  //
+  // After finishing a full hash operation, KMAC sends another request to EDN to refresh its
+  // entropy.
+  // Next time keccak rounds start round 0 will take the usual amount of cycles, but round 1
+  // will block until the EDN request is fulfilled and fresh entropy is provided to the KMAC.
+  //
+  // The logic in this task is relatively straightforward and implements the described behavior
+  // in the timing model.
   virtual task wait_keccak_rounds(bit is_key_process = 1'b0);
-    int unsigned total_cycles = 0;
+    int unsigned cycles_first_round = 0;
+    int unsigned cycles_per_round = 0;
+    bit full_entropy_expansion = 0;
+
+    `uvm_info(`gfn, "entered wait_keccak_rounds", UVM_HIGH)
+
     if (cfg.enable_masking) begin
       // If masking is enabled then entropy is used,
       // timing is more complex because of the various entropy features
-      //
-      if (entropy_mode == EntropyModeSw) begin
-        // All rounds will take SW_ENTROPY_ROUND_CYCLES_NO_FAST cycles each, except the first one.
+
+      if (entropy_mode inside {EntropyModeSw, EntropyModeEdn}) begin
+
+        // If using entropy from EDN, need to check whether the request is due to a normal
+        // entropy refresh after completed hash or whether the request is being sent immediately out
+        // of reset once KMAC starts operation.
         //
-        // Without fast entropy, the internal 320-bit entropy state needs to be "refilled" for
-        // each round, adding a 5-cycle latency per round (64 bits "filled" at a time).
-        //
-        // However, by the time `run_i` is asserted to keccak logic, the entropy state will
-        // already be "filled up" in the time it takes for sha3pad to transmit data.
-        //
-        // So, latency of first round will be 3 cycles, one for the entropy FSM to transition and
-        // start entropy expansion and 2 for keccak logic to latch this entropy.
-        //
-        // However, if fast entropy is used, the keccak rounds processing the key will utilize the
-        // 5 cycle latency as entropy is refilled for each key round, but all other keccak rounds
-        // (processing prefix/msg_data) will take 3 cycles each as entropy will not be refilled.
-        if (entropy_fast_process && !is_key_process) begin
-          total_cycles = 3 * KECCAK_NUM_ROUNDS;
-        end else begin
-          total_cycles = 3 + (SW_ENTROPY_ROUND_CYCLES_NO_FAST * (KECCAK_NUM_ROUNDS - 1));
+        // In this case, full expansion is necessary
+        if (entropy_mode == EntropyModeEdn) begin
+          // zero delay to ensure all updates have settled
+          #0;
+          if (in_edn_fetch && first_op_after_rst) begin
+            full_entropy_expansion = 1;
+          end
         end
-      end else if (entropy_mode == EntropyModeEdn) begin
-        // TODO: EDN entropy isn't supported in sequences yet
+
+        if (entropy_fast_process && !is_key_process) begin
+          // fast entropy enabled and we are not processing the secret keys
+          cycles_per_round = ENTROPY_FAST_PROCESSING_CYCLES;
+        end else if (full_entropy_expansion) begin
+          cycles_per_round = ENTROPY_FULL_EXPANSION_CYCLES;
+        end else begin
+          // in the normal case, first round will take 3 cycles as expansion is handled during
+          // sha3pad operation, and each following round takes 7 cycles for full entropy expansion
+          cycles_first_round = ENTROPY_FAST_PROCESSING_CYCLES;
+          cycles_per_round = ENTROPY_FULL_EXPANSION_CYCLES;
+        end
       end else begin
-        // TODO: to uvm_fatal or not to uvm_fatal?
+        // TODO : this is an error case
       end
 
     end else begin
       // If masking is disabled then no entropy is used,
       // so just wait KECCAK_NUM_ROUNDS cycles
-      total_cycles = KECCAK_NUM_ROUNDS;
+      cycles_per_round = 1;
     end
 
     `uvm_info(`gfn, "starting to wait for keccak", UVM_HIGH)
-    cfg.clk_rst_vif.wait_clks(total_cycles);
+
+    for (int i = 0; i < KECCAK_NUM_ROUNDS; i++) begin
+      if (i == 0) begin
+        if (full_entropy_expansion) begin
+          wait(in_edn_fetch == 0);
+          cfg.clk_rst_vif.wait_clks(1 + ENTROPY_FULL_EXPANSION_CYCLES);
+        end else if (cycles_first_round != 0) begin
+          cfg.clk_rst_vif.wait_clks(cycles_first_round);
+        end else begin
+          cfg.clk_rst_vif.wait_clks(cycles_per_round);
+        end
+      end else if (i == 1 && refresh_entropy) begin
+        // If entropy is simply refreshed after the end of previous hashing operation,
+        // keccak round 0 will run as normal, but round 1 will block until entropy is refreshed
+        wait(refresh_entropy == 0);
+        cfg.clk_rst_vif.wait_clks(1 + ENTROPY_FULL_EXPANSION_CYCLES);
+      end else begin
+        cfg.clk_rst_vif.wait_clks(cycles_per_round);
+      end
+    end
+
     // need to wait for one final cycle for sha3 wrapper logic to latch Keccak `complete` signal
+    //
+    // pulse `keccak_complete_cycle` to allow other parts of the scb to handle some edge cases
     keccak_complete_cycle = 1;
     cfg.clk_rst_vif.wait_clks(1);
     keccak_complete_cycle = 0;
+
     `uvm_info(`gfn, "finished waiting for keccak", UVM_HIGH)
   endtask
 
@@ -1459,6 +1588,19 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
           entropy_mode = entropy_mode_e'(item.a_data[KmacEntropyModeMSB:KmacEntropyModeLSB]);
 
+          if (entropy_mode == EntropyModeEdn &&
+              item.a_data[KmacEntropyReady] &&
+              first_op_after_rst) begin
+            in_edn_fetch = cfg.enable_masking;
+          end
+
+          if (cfg.enable_masking &&
+              entropy_mode == EntropyModeEdn &&
+              item.a_data[KmacEntropyReady]) begin
+            in_edn_fetch = 1;
+            `uvm_info(`gfn, "raised in_edn_fetch after reset", UVM_HIGH)
+          end
+
           // TODO - sample coverage
         end
       end
@@ -1500,6 +1642,14 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               // IDLE should go high one cycle after issuing Done cmd
               cfg.clk_rst_vif.wait_clks(1);
               sha3_idle = 1;
+
+              // if using EDN, KMAC will refresh entropy after finishing a hash operation
+              if (entropy_mode == EntropyModeEdn) begin
+                cfg.clk_rst_vif.wait_clks(1);
+                in_edn_fetch = cfg.enable_masking;
+                refresh_entropy = cfg.enable_masking;
+                `uvm_info(`gfn, "refreshing entropy from EDN", UVM_HIGH)
+              end
             end
             CmdNone: begin
               // RTL internal value, doesn't actually do anything
@@ -1703,7 +1853,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
+
     clear_state();
+
+    first_op_after_rst = 1;
 
     // status tracking bits
     sha3_idle     = ral.status.sha3_idle.get_reset();
@@ -1717,6 +1870,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // This function should be called to reset internal state to prepare for a new hash operation
   virtual function void clear_state();
     `uvm_info(`gfn, "clearing scoreboard state", UVM_HIGH)
+
+    if (first_op_after_rst) first_op_after_rst = 0;
 
     msg.delete();
     kmac_app_msg.delete();
@@ -1735,12 +1890,16 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     fifo_rd_ptr             = 0;
     fifo_wr_ptr             = 0;
 
-    keys              = '0;
-    keymgr_keys       = '0;
-    sideload_key      = '0;
-    prefix            = '{default:0};
-    digest_share0     = {};
-    digest_share1     = {};
+    in_edn_fetch    = 0;
+    refresh_entropy = 0;
+
+    keys          = '0;
+    keymgr_keys   = '0;
+    sideload_key  = '0;
+    prefix        = '{default:0};
+    digest_share0 = {};
+    digest_share1 = {};
+
     kmac_app_digest_share0 = '0;
     kmac_app_digest_share1 = '0;
   endfunction
