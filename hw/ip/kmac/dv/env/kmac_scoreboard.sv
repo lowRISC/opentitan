@@ -6,6 +6,12 @@
     (cfg.m_kmac_app_agent_cfg[``mode``].vif.req_data_if.valid && \
      cfg.m_kmac_app_agent_cfg[``mode``].vif.req_data_if.ready)
 
+`define CALC_PARTIAL_MSG \
+    (!in_kmac_app && msg.size() % 8 > 0) || \
+      (in_kmac_app && \
+        (app_mode == AppKeymgr && (kmac_app_msg.size() + 3) % 8 > 0) || \
+        (app_mode != AppKeymgr && kmac_app_msg.size() % 8 > 0))
+
 class kmac_scoreboard extends cip_base_scoreboard #(
     .CFG_T(kmac_env_cfg),
     .RAL_T(kmac_reg_block),
@@ -691,9 +697,18 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     bit cmd_process_in_keccak_and_blocks_left;
     bit run_final_keccak;
 
+    // Indicates whether the full message is an 8-byte multiple
+    //
+    // If AppKeymgr is being used, we need to add 3 to the full message
+    // size, as KMAC will append the 3-byte encoded output length before
+    // pushing into the msgfifo
+    bit partial_msg;
+
     int num_blocks_filled = 0;
 
     bit block_ready_after_flush_keccak = 0;
+
+    bit cmd_process_after_prefix_and_small_msg;
 
     forever begin
       wait(!cfg.under_reset);
@@ -707,6 +722,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       do_increment = 0;
       cmd_process_in_keccak_and_blocks_left = 0;
       kmac_app_last_in_keccak = 0;
+      cmd_process_after_prefix_and_small_msg = 0;
 
       // If KMAC mode enabled, the msgfifo will only be read from once
       // the prefix and keys have been processed.
@@ -740,6 +756,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               cmd_process_in_header = 1;
               fifo_rd_ptr++;
               num_blocks_filled++;
+            end else if (`CALC_PARTIAL_MSG) begin
+              cmd_process_after_prefix_and_small_msg = 1;
             end
             cfg.clk_rst_vif.wait_clks(1);
           end
@@ -766,6 +784,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 do_increment = 0;
                 run_final_keccak = 0;
                 block_ready_after_flush_keccak = 0;
+                partial_msg = 0;
                 if (num_blocks_filled < sha3_pkg::KeccakRate[strength]) begin
                   `uvm_info(`gfn,
                       $sformatf("not enough blocks filled yet %0d/%0d",
@@ -864,7 +883,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                         // Wait for all remaining blocks in msgfifo to flush out to sha3pad
                         while (fifo_wr_ptr != fifo_rd_ptr) begin
                           do_increment = 1;
-                          num_blocks_filled++;
+
+                          if (!(cmd_process_after_prefix_and_small_msg &&
+                                incr_fifo_wr_in_process)) begin
+                            num_blocks_filled++;
+                          end
 
                           `uvm_info(`gfn, $sformatf("increment num_blocks_filled: %0d", num_blocks_filled), UVM_HIGH)
                           `uvm_info(`gfn, $sformatf("fifo_rd_ptr: %0d", fifo_rd_ptr), UVM_HIGH)
@@ -911,11 +934,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                             // If AppKeymgr is being used, we need to add 3 to the full message
                             // size, as KMAC will append the 3-byte encoded output length before
                             // pushing into the msgfifo
-                            bit partial_msg =
-                                (!in_kmac_app && msg.size() % 8 > 0) ||
-                                  (in_kmac_app &&
-                                    (app_mode == AppKeymgr && (kmac_app_msg.size() + 3) % 8 > 0) ||
-                                    (app_mode != AppKeymgr && kmac_app_msg.size() % 8 > 0));
+                            partial_msg = `CALC_PARTIAL_MSG;
 
                             `uvm_info(`gfn, "all blocks full while flushing fifo, running keccak rounds", UVM_HIGH)
                             `uvm_info(`gfn, $sformatf("partial_msg: %0d", partial_msg), UVM_HIGH)
@@ -1105,11 +1124,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                       // Again, note that we add 3 to the message size when using AppKeymgr app
                       // interface to account for the KMAC internally appending the 24-bit encoded
                       // output length before pushing into msgfifo.
-                      bit partial_msg =
-                          (!in_kmac_app && msg.size() % 8 > 0) ||
-                            (in_kmac_app &&
-                              (app_mode == AppKeymgr && (kmac_app_msg.size() + 3) % 8 > 0) ||
-                              (app_mode != AppKeymgr && kmac_app_msg.size() % 8 > 0));
+                      partial_msg = `CALC_PARTIAL_MSG;
                       do_increment = 0;
                       num_blocks_filled = 0;
                       #0;
@@ -2268,5 +2283,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   endfunction
 
 endclass
+
+`undef CALC_PARTIAL_MSG
 
 `undef KMAC_APP_VALID_TRANS
