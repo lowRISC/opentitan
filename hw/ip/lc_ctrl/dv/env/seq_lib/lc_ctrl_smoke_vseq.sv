@@ -36,6 +36,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
     for (int i = 1; i <= num_trans; i++) begin
       if (i != 1) dut_init();
+      `DV_CHECK_RANDOMIZE_FATAL(this)
       `uvm_info(`gfn, $sformatf("starting seq %0d/%0d, init LC_state is %0s, LC_cnt is %0s",
                                 i, num_trans, lc_state.name, lc_cnt.name), UVM_MEDIUM)
 

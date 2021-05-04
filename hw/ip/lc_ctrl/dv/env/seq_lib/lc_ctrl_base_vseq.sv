@@ -13,12 +13,8 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   // various knobs to enable certain routines
   bit do_lc_ctrl_init = 1'b1;
 
-  rand lc_ctrl_state_pkg::lc_state_e lc_state;
-  rand lc_ctrl_state_pkg::lc_cnt_e   lc_cnt;
-
-  constraint lc_cnt_c {
-    (lc_state != LcStRaw) -> (lc_cnt != LcCnt0);
-  }
+  lc_ctrl_state_pkg::lc_state_e lc_state;
+  lc_ctrl_state_pkg::lc_cnt_e   lc_cnt;
 
   `uvm_object_new
 
@@ -42,7 +38,8 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   virtual task lc_ctrl_init(bit rand_otp_i = 1);
     cfg.pwr_lc_vif.drive_pin(LcPwrInitReq, 1);
     if (rand_otp_i) begin
-      `DV_CHECK_RANDOMIZE_FATAL(this)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(lc_state)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_cnt, (lc_state != LcStRaw) -> (lc_cnt != LcCnt0);)
     end else begin
       lc_state = LcStRaw;
       lc_cnt = LcCnt0;
@@ -98,7 +95,8 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state,
                                  bit [TL_DW*4-1:0] token_val);
-    bit lc_err;
+    bit trigger_alert;
+    bit [TL_DW-1:0] status_val;
     csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
     csr_wr(ral.transition_target, next_lc_state);
     csr_wr(ral.transition_token_0, token_val[TL_DW-1:0]);
@@ -106,27 +104,22 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     csr_wr(ral.transition_token_2, token_val[TL_DW*3-1-:TL_DW]);
     csr_wr(ral.transition_token_3, token_val[TL_DW*4-1-:TL_DW]);
     csr_wr(ral.transition_cmd, 'h01);
-    fork begin : isolation_fork
-      fork
-        begin
-          csr_spinwait(.ptr(ral.status.transition_successful),
-                       .exp_data(1),
-                       .spinwait_delay_ns($urandom_range(1, 5)));
-        end
-        begin
-          // TODO: temp support only for otp_error
-          csr_spinwait(.ptr(ral.status.otp_error),
-                       .exp_data(1),
-                       .spinwait_delay_ns($urandom_range(1, 5)));
-          lc_err = 1;
-        end
-        join_any
-        wait_no_outstanding_access();
-      disable fork;
-    end join
+
+    // Wait for status done or terminal errors
+    `DV_SPINWAIT(
+        while (1) begin
+          csr_rd(ral.status, status_val);
+          if (get_field_val(ral.status.transition_successful, status_val)) break;
+          if (get_field_val(ral.status.token_error, status_val)) break;
+          if (get_field_val(ral.status.otp_error, status_val)) begin
+            trigger_alert = 1;
+            break;
+          end
+        end)
+
     // always on alert, set time delay to make sure alert triggered for at least for one
     // handshake cycle
-    if (lc_err) cfg.clk_rst_vif.wait_clks($urandom_range(20, 50));
+    if (trigger_alert) cfg.clk_rst_vif.wait_clks($urandom_range(20, 50));
   endtask
 
   // checking of these two CSRs are done in scb
