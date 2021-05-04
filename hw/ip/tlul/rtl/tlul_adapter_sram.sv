@@ -187,7 +187,7 @@ module tlul_adapter_sram import tlul_pkg::*; #(
   //    In this case, it is assumed the request is granted (may cause ordering issue later?)
   assign req_o      = tl_i.a_valid & reqfifo_wready & ~error_internal;
   assign req_type_o = tl_i.a_user.tl_type;
-  assign we_o       = tl_i.a_valid & logic'(tl_i.a_opcode inside {PutFullData, PutPartialData});
+  assign we_o       = tl_i.a_valid & (tl_i.a_opcode inside {PutFullData, PutPartialData});
   assign addr_o     = (tl_i.a_valid) ? tl_i.a_address[DataBitWidth+:SramAw] : '0;
 
   // Support SRAMs wider than the TL-UL word width by mapping the parts of the
