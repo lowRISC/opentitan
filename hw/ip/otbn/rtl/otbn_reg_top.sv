@@ -181,6 +181,7 @@ module otbn_reg_top (
   logic err_bits_fatal_imem_qs;
   logic err_bits_fatal_dmem_qs;
   logic err_bits_fatal_reg_qs;
+  logic err_bits_fatal_bad_err_qs;
   logic [31:0] start_addr_wd;
   logic start_addr_we;
   logic fatal_alert_cause_bus_integrity_error_qs;
@@ -525,6 +526,31 @@ module otbn_reg_top (
   );
 
 
+  //   F[fatal_bad_err]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_err_bits_fatal_bad_err (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.err_bits.fatal_bad_err.de),
+    .d      (hw2reg.err_bits.fatal_bad_err.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (err_bits_fatal_bad_err_qs)
+  );
+
+
   // R[start_addr]: V(False)
 
   prim_subreg #(
@@ -746,6 +772,7 @@ module otbn_reg_top (
         reg_rdata_next[5] = err_bits_fatal_imem_qs;
         reg_rdata_next[6] = err_bits_fatal_dmem_qs;
         reg_rdata_next[7] = err_bits_fatal_reg_qs;
+        reg_rdata_next[8] = err_bits_fatal_bad_err_qs;
       end
 
       addr_hit[7]: begin

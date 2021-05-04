@@ -13,3 +13,4 @@ LOOP = 1 << 4
 FATAL_IMEM = 1 << 5
 FATAL_DMEM = 1 << 6
 FATAL_REG = 1 << 7
+FATAL_BAD_ERR = 1 << 8

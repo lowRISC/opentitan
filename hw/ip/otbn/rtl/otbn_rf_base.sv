@@ -17,7 +17,7 @@
  * Features:
  * - 2 read ports
  * - 1 write port
- * - special purpose stack on a single register (localparam `CallStackRegIndex`)
+ * - special purpose stack on a single register (otbn_pkg.sv parameter `CallStackGprIndex`)
  *   for use as a call stack
  */
 module otbn_rf_base
@@ -46,7 +46,6 @@ module otbn_rf_base
 
   output logic         call_stack_err_o
 );
-  localparam int unsigned CallStackRegIndex = 1;
   localparam int unsigned CallStackDepth = 8;
 
   // The stack implementation is shared between FF and FPGA implementations,
@@ -69,14 +68,14 @@ module otbn_rf_base
   logic [31:0] stack_data;
   logic        stack_data_valid;
 
-  assign pop_stack_a    = rd_en_a_i & (rd_addr_a_i == CallStackRegIndex[4:0]);
-  assign pop_stack_b    = rd_en_b_i & (rd_addr_b_i == CallStackRegIndex[4:0]);
+  assign pop_stack_a    = rd_en_a_i & (rd_addr_a_i == CallStackGprIndex[4:0]);
+  assign pop_stack_b    = rd_en_b_i & (rd_addr_b_i == CallStackGprIndex[4:0]);
   // pop_stack_reqd indicates a call stack pop is requested and pop_stack commands it to happen.
   assign pop_stack_reqd = (pop_stack_a | pop_stack_b);
   assign pop_stack      = rd_commit_i & pop_stack_reqd;
 
   // push_stack_reqd indicates a call stack push is requested and push_stack commands it to happen.
-  assign push_stack_reqd = wr_en_i & (wr_addr_i == CallStackRegIndex[4:0]);
+  assign push_stack_reqd = wr_en_i & (wr_addr_i == CallStackGprIndex[4:0]);
   assign push_stack      = wr_commit_i & push_stack_reqd;
 
   assign call_stack_err_o =

@@ -490,6 +490,35 @@ The error that caused the alert can be determined by reading the {{< regref "FAT
 If OTBN was running, this value will also be reflected in the {{< regref "ERR_BITS" >}} register.
 A fatal alert can only be cleared by resetting OTBN through the `rst_ni` line.
 
+
+### Error Prioritization
+
+OTBN can signal multiple errors at once, by setting multiple bits of {{< regref "ERR_BITS" >}}.
+There are some scenarios where one error takes priority over another.
+In these scenarios the higher priority error will suppress some other errors.
+
+* Any error that produces a fatal alert will suppress all non fatal errors.
+* Any `call_stack` error that occurs due to a pop will suppress:
+  - `bad_data_addr`
+  - `bad_insn_addr`
+  - `loop`
+* Any `illegal_insn` error will suppress:
+  - `bad_data_addr`
+  - `bad_insn_addr`
+  - `call_stack`
+  - `loop`
+
+(See {{< regref "ERR_BITS" >}} for the error meanings).
+
+Some combinations of error bits **cannot occur** in a correctly functioning OTBN implementation.
+Should these combinations be observed the `fatal_bad_err` bit in {{< regref "ERR_BITS" >}} will be set, producing a fatal alert.
+The check for invalid combinations occurs internally, before error suppression.
+When `fatal_bad_err` is set the non-fatal error bits that produced the invalid combinations will be suppressed.
+
+{{< regref "ERR_BITS" >}} combinations that **cannot occur** are any that include the following set bits:
+* `loop` and `bad_data_addr`
+* `call_stack` (on push) and `bad_data_addr`
+
 ### Idle
 
 OTBN exposes a single-bit `idle_o` signal, intended to be used by the clock manager to clock-gate the block when it is not in use.

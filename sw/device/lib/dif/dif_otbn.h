@@ -88,7 +88,9 @@ typedef enum dif_otbn_err_bits {
   /** Error seen in Dmem read */
   kDifOtbnErrBitsFatalDmem = (1 << 6),
   /** Error seen in RF read */
-  kDifOtbnErrBitsFatalReg = (1 << 7)
+  kDifOtbnErrBitsFatalReg = (1 << 7),
+  /** Combination of error bits that cannot occur was seen */
+  kDifOtbnErrBitsFatalBadErr = (1 << 8)
 } dif_otbn_err_bits_t;
 
 /**
