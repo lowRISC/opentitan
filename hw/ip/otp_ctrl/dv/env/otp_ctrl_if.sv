@@ -115,13 +115,13 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     end
   endtask
 
-  task automatic release_sw_check_fail(bit[1:0] fail_idx);
+  task automatic release_sw_check_fail();
     @(posedge clk_i);
-    if (fail_idx[0]) begin
+    if (force_sw_parts_ecc_reg[0]) begin
       release tb.dut.gen_partitions[0].gen_unbuffered.u_part_unbuf.`ECC_REG_PATH.syndrome_o[0];
       force_sw_parts_ecc_reg[0] = 0;
     end
-    if (fail_idx[1]) begin
+    if (force_sw_parts_ecc_reg[1]) begin
       release tb.dut.gen_partitions[1].gen_unbuffered.u_part_unbuf.`ECC_REG_PATH.syndrome_o[0];
       force_sw_parts_ecc_reg[0] = 0;
     end
