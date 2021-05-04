@@ -71,6 +71,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       check_otbn_rsp();
       check_flash_rsps();
       check_sram_rsps();
+      recover_lc_prog_req();
     join_none
   endtask
 
@@ -202,12 +203,26 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       predict_rdata(1, 0, 0);
       void'(ral.direct_access_regwen.predict(.value(0), .kind(UVM_PREDICT_READ)));
 
-      // Unlike reset, OTP write won't exit immediately when lc_escalate_en is On.
-      // So here wait until otp program done, then backdoor read.
-      cfg.clk_rst_vif.wait_clks(12);
-      recover_interrupted_op();
+      // DAI access is locked until reset, so no need to backdoor read otp write value until reset.
 
       wait(cfg.otp_ctrl_vif.alert_reqs == 0);
+    end
+  endtask
+
+  // This task monitors if lc_program req is interrupted by reset.
+  // If it happens, scb cannot predict how many bits have been written to OTP_CTRL.
+  // So here we will backdoor read back OTP lc partitions bits.
+  virtual task recover_lc_prog_req();
+    forever begin
+      wait (cfg.otp_ctrl_vif.lc_prog_req == 1);
+      wait (cfg.otp_ctrl_vif.lc_prog_req == 0);
+      // Wait one 1ps to avoid race condition.
+      #1ps;
+      if (cfg.otp_ctrl_vif.rst_ni == 0) begin
+        for (int i = 0; i < LC_PROG_DATA_SIZE/32; i++) begin
+          otp_lc_data[i*32+:32] = cfg.mem_bkdr_vif.read32(LifeCycleOffset+i*4);
+        end
+      end
     end
   endtask
 

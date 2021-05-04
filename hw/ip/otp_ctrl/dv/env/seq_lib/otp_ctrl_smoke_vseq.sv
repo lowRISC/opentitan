@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // smoke test vseq to walk through DAI states and request keys
-`define PART_ADDR_RANGE(i) \
+`define PART_CONTENT_RANGE(i) \
     {[PartInfo[``i``].offset : (PartInfo[``i``].offset + PartInfo[``i``].size - DIGEST_SIZE - 1)]}
 
 class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
@@ -30,13 +30,14 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   constraint partition_index_c {part_idx inside {[CreatorSwCfgIdx:Secret2Idx]};}
 
   constraint dai_wr_legal_addr_c {
-    if (part_idx == CreatorSwCfgIdx) dai_addr inside `PART_ADDR_RANGE(CreatorSwCfgIdx);
-    if (part_idx == OwnerSwCfgIdx)   dai_addr inside `PART_ADDR_RANGE(OwnerSwCfgIdx);
-    if (part_idx == HwCfgIdx)        dai_addr inside `PART_ADDR_RANGE(HwCfgIdx);
-    if (part_idx == Secret0Idx)      dai_addr inside `PART_ADDR_RANGE(Secret0Idx);
-    if (part_idx == Secret1Idx)      dai_addr inside `PART_ADDR_RANGE(Secret1Idx);
-    if (part_idx == Secret2Idx)      dai_addr inside `PART_ADDR_RANGE(Secret2Idx);
-    if (part_idx == LifeCycleIdx)    dai_addr inside `PART_ADDR_RANGE(LifeCycleIdx);
+    if (part_idx == CreatorSwCfgIdx) dai_addr inside `PART_CONTENT_RANGE(CreatorSwCfgIdx);
+    if (part_idx == OwnerSwCfgIdx)   dai_addr inside `PART_CONTENT_RANGE(OwnerSwCfgIdx);
+    if (part_idx == HwCfgIdx)        dai_addr inside `PART_CONTENT_RANGE(HwCfgIdx);
+    if (part_idx == Secret0Idx)      dai_addr inside `PART_CONTENT_RANGE(Secret0Idx);
+    if (part_idx == Secret1Idx)      dai_addr inside `PART_CONTENT_RANGE(Secret1Idx);
+    if (part_idx == Secret2Idx)      dai_addr inside `PART_CONTENT_RANGE(Secret2Idx);
+    if (part_idx == LifeCycleIdx)    dai_addr inside `PART_CONTENT_RANGE(LifeCycleIdx);
+    solve part_idx before dai_addr;
   }
 
   constraint dai_wr_blank_addr_c {
@@ -201,4 +202,4 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
 endclass : otp_ctrl_smoke_vseq
 
-`undef PART_ADDR_RANGE
+`undef PART_CONTENT_RANGE

@@ -17,6 +17,14 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
     collect_used_addr -> num_trans * num_dai_op <= DAI_ADDR_SIZE;
   }
 
+  constraint dai_wr_legal_addr_c {
+    {dai_addr[TL_AW-1:2], 2'b0} dist {
+      {CreatorSwCfgDigestOffset, OwnerSwCfgDigestOffset,HwCfgDigestOffset, Secret0DigestOffset,
+       Secret1DigestOffset, Secret2DigestOffset} :/ 1,
+      [CreatorSwCfgOffset : (LifeCycleOffset + LifeCycleSize)] :/ 9
+    };
+  }
+
   virtual task pre_start();
     super.pre_start();
     is_valid_dai_op = 0;
