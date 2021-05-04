@@ -15,12 +15,13 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   otp_hw_cfg_t         otp_hw_cfg_o;
   otp_keymgr_key_t     keymgr_key_o;
   otp_lc_data_t        lc_data_o;
+  ast_pkg::ast_dif_t   otp_alert_o;
   logic                pwr_otp_done_o, pwr_otp_idle_o;
 
   // inputs to DUT
-  logic                pwr_otp_init_i;
-  lc_ctrl_pkg::lc_tx_e lc_dft_en_i, lc_escalate_en_i, lc_check_byp_en_i,
-                       lc_creator_seed_sw_rw_en_i, lc_seed_hw_rd_en_i;
+  logic                pwr_otp_init_i, scan_en_i, scan_rst_ni;
+  lc_ctrl_pkg::lc_tx_t lc_dft_en_i, lc_escalate_en_i, lc_check_byp_en_i,
+                       lc_creator_seed_sw_rw_en_i, lc_seed_hw_rd_en_i, scanmode_i;
   otp_ast_rsp_t        otp_ast_pwr_seq_h_i;
 
   // probe design signal for alert request
@@ -31,7 +32,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   logic                lc_prog_err_dly1, lc_prog_no_sta_check;
 
   // LC_escalate_en is async, take two clock cycles to sync.
-  lc_ctrl_pkg::lc_tx_e lc_esc_dly1, lc_esc_dly2;
+  lc_ctrl_pkg::lc_tx_t lc_esc_dly1, lc_esc_dly2;
   // For lc_escalate_en, every value that is not Off is a On.
   bit                  lc_esc_on;
   // Usually the lc_check_byp will be automatically set to On when lc_prog_req is issued but reset
@@ -73,23 +74,26 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     lc_escalate_en_i           = lc_ctrl_pkg::Off;    // drive it in specific task
     lc_check_byp_en_i          = lc_check_byp_en_val;
     pwr_otp_init_i             = 0;
-    // ast_pwr_seq is dummy in open sourced OTP memory
+    // Unused signals in open sourced OTP memory
     otp_ast_pwr_seq_h_i        = $urandom();
+    scan_en_i                  = $urandom();
+    scan_rst_ni                = $urandom();
+    scanmode_i                 = $urandom();
   endtask
 
   task automatic drive_pwr_otp_init(logic val);
     pwr_otp_init_i = val;
   endtask
 
-  task automatic drive_lc_creator_seed_sw_rw_en_i(lc_ctrl_pkg::lc_tx_e val);
+  task automatic drive_lc_creator_seed_sw_rw_en_i(lc_ctrl_pkg::lc_tx_t val);
     lc_creator_seed_sw_rw_en_i = val;
   endtask
 
-  task automatic drive_lc_dft_en(lc_ctrl_pkg::lc_tx_e val);
+  task automatic drive_lc_dft_en(lc_ctrl_pkg::lc_tx_t val);
     lc_dft_en_i = val;
   endtask
 
-  task automatic drive_lc_escalate_en(lc_ctrl_pkg::lc_tx_e val);
+  task automatic drive_lc_escalate_en(lc_ctrl_pkg::lc_tx_t val);
     lc_escalate_en_i = val;
   endtask
 
