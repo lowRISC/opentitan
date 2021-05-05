@@ -33,7 +33,10 @@ mask_rom_lib = declare_dependency(
     ],
     link_with: static_library(
       'mask_rom_lib',
-      sources: ['mask_rom.c'],
+      sources: [
+        rom_exts_manifest_offsets_header,
+        'mask_rom.c'
+      ],
       link_depends: [rom_linkfile],
   )
 )
