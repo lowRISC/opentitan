@@ -86,6 +86,21 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   )
 endforeach
 
+test('sw_silicon_creator_mask_rom_rsa_verify_unittest', executable(
+    'sw_silicon_creator_mask_rom_rsa_verify_unittest',
+    sources: [
+      'rsa_verify.c',
+      'sig_verify_keys.c',
+      'rsa_verify_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+    ],
+    native: true,
+  ),
+  suite: 'mask_rom',
+)
+
 test('sw_silicon_creator_mask_rom_sig_verify_unittest', executable(
     'sw_silicon_creator_mask_rom_sig_verify_unittest',
     sources: [
@@ -97,6 +112,6 @@ test('sw_silicon_creator_mask_rom_sig_verify_unittest', executable(
       sw_vendor_gtest,
     ],
     native: true,
-  ), 
+  ),
   suite: 'mask_rom',
 )

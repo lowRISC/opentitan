@@ -26,10 +26,8 @@ sw_rom_ext_tests = {
 }
 
 subdir('dif')
-subdir('rom_ext')
 subdir('runtime')
 subdir('sca')
-subdir('silicon_creator')
 subdir('sim_dv')
 subdir('otbn')
 

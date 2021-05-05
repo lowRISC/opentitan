@@ -203,7 +203,8 @@ TEST_F(ExtensionGetTest, Success) {
 
   rom_ext_extension_t ext0;
   rom_ext_extension_t ext0_expected = {
-      .address = (void *)(kRomExtManifestSlotA + 0x10), .checksum = 0xbbbbbbbb,
+      .address = (void *)(kRomExtManifestSlotA + 0x10),
+      .checksum = 0xbbbbbbbb,
   };
   EXPECT_TRUE(rom_ext_get_extension(params_, kRomExtExtensionId0, &ext0));
   EXPECT_THAT(ext0, Eq(ext0_expected));
@@ -213,7 +214,8 @@ TEST_F(ExtensionGetTest, Success) {
 
   rom_ext_extension_t ext1;
   rom_ext_extension_t ext1_expected = {
-      .address = (void *)(kRomExtManifestSlotA + 0x20), .checksum = 0xdddddddd,
+      .address = (void *)(kRomExtManifestSlotA + 0x20),
+      .checksum = 0xdddddddd,
   };
   EXPECT_TRUE(rom_ext_get_extension(params_, kRomExtExtensionId1, &ext1));
   EXPECT_THAT(ext1, Eq(ext1_expected));
@@ -223,7 +225,8 @@ TEST_F(ExtensionGetTest, Success) {
 
   rom_ext_extension_t ext2;
   rom_ext_extension_t ext2_expected = {
-      .address = (void *)(kRomExtManifestSlotA + 0x30), .checksum = 0xffffffff,
+      .address = (void *)(kRomExtManifestSlotA + 0x30),
+      .checksum = 0xffffffff,
   };
   EXPECT_TRUE(rom_ext_get_extension(params_, kRomExtExtensionId2, &ext2));
   EXPECT_THAT(ext2, Eq(ext2_expected));
@@ -233,7 +236,8 @@ TEST_F(ExtensionGetTest, Success) {
 
   rom_ext_extension_t ext3;
   rom_ext_extension_t ext3_expected = {
-      .address = (void *)(kRomExtManifestSlotA + 0x40), .checksum = 0x66666666,
+      .address = (void *)(kRomExtManifestSlotA + 0x40),
+      .checksum = 0x66666666,
   };
   EXPECT_TRUE(rom_ext_get_extension(params_, kRomExtExtensionId3, &ext3));
   EXPECT_THAT(ext3, Eq(ext3_expected));
