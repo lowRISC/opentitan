@@ -102,7 +102,7 @@
             - Check if lc_trans_cnt is incremented
             '''
       milestone: V2
-      tests: []
+      tests: ["lc_ctrl_errors"]
     }
     {
       name: security_escalation
