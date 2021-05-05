@@ -151,18 +151,26 @@ $(otbn-code-snippets-bin-dir)/rsa.elf: \
 
 # p384_proj_add_test depends on p384_proj_add defined in p384.s
 $(otbn-code-snippets-bin-dir)/p384_proj_add_test.elf: \
-  $(otbn-code-snippets-obj-dir)/p384.o
+  $(otbn-code-snippets-obj-dir)/p384_base.o
 $(otbn-code-snippets-bin-dir)/p384_proj_add_test.elf: \
-  otbn-libs += $(otbn-code-snippets-obj-dir)/p384.o
+  otbn-libs += $(otbn-code-snippets-obj-dir)/p384_base.o
 
-# p384_scalar_mult_test depends on p384_scalar_mult_int defined in p384.s
-$(otbn-code-snippets-bin-dir)/p384_scalar_mult_test.elf: \
-  $(otbn-code-snippets-obj-dir)/p384.o
-$(otbn-code-snippets-bin-dir)/p384_scalar_mult_test.elf: \
-  otbn-libs += $(otbn-code-snippets-obj-dir)/p384.o
+# code in p384_sign depends on code defined in p384_base.s
+$(otbn-code-snippets-bin-dir)/p384_sign.elf: \
+  $(otbn-code-snippets-obj-dir)/p384_base.o
+$(otbn-code-snippets-bin-dir)/p384_sign.elf: \
+  otbn-libs += $(otbn-code-snippets-obj-dir)/p384_base.o
 
-# p384_ecdsa_sign_test depends on p384_sign defined in p384.s
+# p384_scalar_mult_test depends on scalar_mult_p384 defined in p384_sign.s
+$(otbn-code-snippets-bin-dir)/p384_scalar_mult_test.elf: \
+  $(otbn-code-snippets-obj-dir)/p384_sign.o
+$(otbn-code-snippets-bin-dir)/p384_scalar_mult_test.elf: \
+  otbn-libs += $(otbn-code-snippets-obj-dir)/p384_sign.o \
+  $(otbn-code-snippets-obj-dir)/p384_base.o
+
+# p384_ecdsa_sign_test depends on p384_sign defined in p384_sign.s
 $(otbn-code-snippets-bin-dir)/p384_ecdsa_sign_test.elf: \
-  $(otbn-code-snippets-obj-dir)/p384.o
+  $(otbn-code-snippets-obj-dir)/p384_sign.o
 $(otbn-code-snippets-bin-dir)/p384_ecdsa_sign_test.elf: \
-  otbn-libs += $(otbn-code-snippets-obj-dir)/p384.o
+  otbn-libs += $(otbn-code-snippets-obj-dir)/p384_sign.o \
+  $(otbn-code-snippets-obj-dir)/p384_base.o
