@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/sca/lib/prng.h"
+
 #include <algorithm>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "sw/device/sca/lib/prng.h"
 
 namespace sca_prng_unittest {
 namespace {
