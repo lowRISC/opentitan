@@ -26,6 +26,20 @@ sw_sca_lib_prng = declare_dependency(
   ),
 )
 
+test('sca_lib_prng_unittest', executable(
+    'sca_lib_prng_unittest',
+    sources: [
+      'prng.c',
+      'prng_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+    ],
+    native: true,
+  ),
+  suite: 'sca',
+)
+
 sw_sca_lib_simple_serial = declare_dependency(
   link_with: static_library(
     'lib_simple_serial',

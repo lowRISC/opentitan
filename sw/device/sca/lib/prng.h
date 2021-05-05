@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_DEVICE_SCA_LIB_PRNG_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
