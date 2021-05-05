@@ -16,6 +16,25 @@ package jtag_agent_pkg;
   parameter uint JTAG_IRW = 32; // max IR width
   parameter uint JTAG_DRW = 64; // max DR width
 
+  typedef enum bit [3:0] {
+    JtagResetState,
+    JtagIdleState,
+    JtagSelectDrState,
+    JtagCaptureDrState,
+    JtagShiftDrState,
+    JtagExit1DrState,
+    JtagPauseDrState,
+    JtagExit2DrState,
+    JtagUpdateDrState,
+    JtagSelectIrState,
+    JtagCaptureIrState,
+    JtagShiftIrState,
+    JtagExit1IrState,
+    JtagPauseIrState,
+    JtagExit2IrState,
+    JtagUpdateIrState
+  } jtag_fsm_state_e;
+
   // forward declare classes to allow typedefs below
   typedef class jtag_item;
   typedef class jtag_agent_cfg;
