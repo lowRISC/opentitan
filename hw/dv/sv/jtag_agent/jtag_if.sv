@@ -30,13 +30,12 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
   endclocking
   modport device_mp(clocking device_cb, input trst_n);
 
-  modport mon_mp (
-    input tck,
-    input trst_n,
-    input tms,
-    input tdi,
-    input tdo
-  );
+  clocking mon_cb @(posedge tck);
+    input tms;
+    input tdi;
+    input tdo;
+  endclocking
+  modport mon_mp (clocking mon_cb, input trst_n);
 
   // debug signals
 

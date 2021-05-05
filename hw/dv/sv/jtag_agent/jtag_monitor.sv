@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`define MON_CB cfg.vif.mon_mp.mon_cb
 class jtag_monitor extends dv_base_monitor #(
     .ITEM_T (jtag_item),
     .CFG_T  (jtag_agent_cfg),
@@ -26,17 +27,115 @@ class jtag_monitor extends dv_base_monitor #(
 
   // collect transactions forever - already forked in dv_base_moditor::run_phase
   virtual protected task collect_trans(uvm_phase phase);
-    forever begin
-      // TODO: detect event
+    jtag_fsm_state_e jtag_state;
+    jtag_item        item;
+    int              counter;
+    bit [JTAG_IRW-1:0] ir;
+    bit [JTAG_DRW-1:0] dr, dout;
 
-      // TODO: sample the interface
+    forever begin
+      @(`MON_CB);
+      `uvm_info(`gfn, $sformatf("jtag state: %0s", jtag_state.name), UVM_HIGH)
+
+      if (cfg.vif.trst_n == 0) begin
+        jtag_state = JtagResetState;
+        wait(cfg.vif.trst_n == 1);
+      end else begin
+        case(jtag_state)
+          JtagResetState: begin
+            if (!`MON_CB.tms) jtag_state = JtagIdleState;
+          end
+          JtagIdleState: begin
+            if (`MON_CB.tms) jtag_state = JtagSelectDrState;
+          end
+          JtagSelectDrState: begin
+            jtag_state = `MON_CB.tms ? JtagSelectIrState : JtagCaptureDrState;
+          end
+
+          // Select_DR
+          JtagCaptureDrState: begin
+            jtag_state = `MON_CB.tms ? JtagExit1DrState : JtagShiftDrState;
+            if (jtag_state == JtagShiftDrState) begin
+              dr      = 0;
+              dout    = 0;
+              counter = 1;
+              // For ShiftDr, data comes out at negedge, we will sample start from the second cycle
+              // after enter JtagShiftDr state.
+              dr[0] = `MON_CB.tdi;
+            end
+          end
+          JtagShiftDrState: begin
+            jtag_state = `MON_CB.tms ? JtagExit1DrState : JtagShiftDrState;
+            dout[counter-1] = `MON_CB.tdo;
+            if (jtag_state == JtagShiftDrState) dr[counter] = `MON_CB.tdi;
+            counter++;
+          end
+          JtagExit1DrState: begin
+            jtag_state = `MON_CB.tms ? JtagUpdateDrState : JtagPauseDrState;
+          end
+          JtagPauseDrState: begin
+            jtag_state = `MON_CB.tms ? JtagExit2DrState : JtagPauseDrState;
+          end
+          JtagExit2DrState: begin
+            jtag_state = `MON_CB.tms ? JtagUpdateDrState : JtagShiftDrState;
+          end
+          JtagUpdateDrState: begin
+            jtag_state = `MON_CB.tms ? JtagSelectDrState : JtagIdleState;
+
+            // Send DR packet to analysis port
+            if (cfg.vif.trst_n) begin
+              item = jtag_item::type_id::create("item");
+              item.select_ir = 0;
+              item.dr        = dr;
+              item.dout      = dout;
+              analysis_port.write(item);
+              `uvm_info(`gfn, item.sprint(), UVM_MEDIUM)
+            end
+          end
+
+          // Select_IR
+          JtagSelectIrState: begin
+            jtag_state = `MON_CB.tms ? JtagResetState : JtagCaptureIrState;
+          end
+          JtagCaptureIrState: begin
+            jtag_state = `MON_CB.tms ? JtagExit1IrState : JtagShiftIrState;
+            if (jtag_state == JtagShiftIrState) begin
+              ir      = 0;
+              counter = 1;
+              ir[0] = `MON_CB.tdi;
+            end
+          end
+          JtagShiftIrState: begin
+            jtag_state = `MON_CB.tms ? JtagExit1IrState : JtagShiftIrState;
+            if (jtag_state == JtagShiftIrState) ir[counter] = `MON_CB.tdi;
+            counter++;
+          end
+          JtagExit1IrState: begin
+            jtag_state = `MON_CB.tms ? JtagUpdateIrState : JtagPauseIrState;
+          end
+          JtagPauseIrState: begin
+            jtag_state = `MON_CB.tms ? JtagExit2IrState : JtagPauseIrState;
+          end
+          JtagExit2IrState: begin
+            jtag_state = `MON_CB.tms ? JtagUpdateIrState : JtagShiftIrState;
+          end
+          JtagUpdateIrState: begin
+            jtag_state = `MON_CB.tms ? JtagSelectIrState : JtagIdleState;
+
+            // Send IR packet to analysis port
+            if (cfg.vif.trst_n) begin
+              item = jtag_item::type_id::create("item");
+              item.select_ir = 1;
+              item.ir        = ir;
+              analysis_port.write(item);
+              `uvm_info(`gfn, item.sprint(), UVM_MEDIUM)
+            end
+          end
+          default: `uvm_fatal(`gfn, $sformatf("Does not support jtag state: %0s", jtag_state.name))
+        endcase
+      end
 
       // TODO: sample the covergroups
-
-      // TODO: write trans to analysis_port
-
-      // TODO: remove the line below: it is added to prevent zero delay loop in template code
-      #1us;
     end
   endtask
 
