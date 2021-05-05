@@ -25,6 +25,8 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
+    // OTP inputs `lc_state` and `lc_cnt` need to be stable before lc_ctrl's reset is deasserted
+    if (do_lc_ctrl_init) drive_otp_i();
     super.dut_init();
     if (do_lc_ctrl_init) lc_ctrl_init();
   endtask
@@ -34,9 +36,8 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     // TODO
   endtask
 
-  // setup basic lc_ctrl features
-  virtual task lc_ctrl_init(bit rand_otp_i = 1);
-    cfg.pwr_lc_vif.drive_pin(LcPwrInitReq, 1);
+  // Drive OTP input `lc_state` and `lc_cnt`.
+  virtual task drive_otp_i(bit rand_otp_i = 1);
     if (rand_otp_i) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(lc_state)
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_cnt, (lc_state != LcStRaw) -> (lc_cnt != LcCnt0);)
@@ -45,13 +46,18 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
       lc_cnt = LcCnt0;
     end
     cfg.lc_ctrl_vif.init(lc_state, lc_cnt);
+  endtask
+
+  // Drive LC init pin.
+  virtual task lc_ctrl_init();
+    cfg.pwr_lc_vif.drive_pin(LcPwrInitReq, 1);
     wait(cfg.pwr_lc_vif.pins[LcPwrDoneRsp] == 1);
     cfg.pwr_lc_vif.drive_pin(LcPwrInitReq, 0);
   endtask
 
   // some registers won't set to default value until otp_init is done
   virtual task read_and_check_all_csrs_after_reset();
-    lc_ctrl_init(0);
+    lc_ctrl_init();
     super.read_and_check_all_csrs_after_reset();
   endtask
 
