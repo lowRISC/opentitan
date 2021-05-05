@@ -9,7 +9,6 @@ extern "C" {
 }  // extern "C"
 
 #include <stdint.h>
-
 #include <string>
 
 #include "gmock/gmock.h"
