@@ -104,6 +104,25 @@ rom_ext_manifest_parser = declare_dependency(
   ],
 )
 
+test('sw_silicon_creator_rom_exts_rom_ext_parser_unittest', executable(
+    'sw_silicon_creator_rom_exts_rom_ext_parser_unittest',
+    sources: [
+      'rom_ext_parser_unittest.cc',
+      'rom_ext_manifest_parser.c',
+      rom_exts_manifest_offsets_header,
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_lib_base_testing_mock_mmio,
+      sw_lib_testing_bitfield,
+    ],
+    native: true,
+    c_args: ['-DMOCK_MMIO'],
+    cpp_args: ['-DMOCK_MMIO'],
+  ),
+  suite: 'mask_rom',
+)
+
 foreach device_name, device_lib : sw_lib_arch_core_devices
   foreach slot, slot_lib : rom_ext_slot_libs
     rom_ext_elf = executable(
@@ -141,4 +160,3 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     )
   endforeach
 endforeach
-
