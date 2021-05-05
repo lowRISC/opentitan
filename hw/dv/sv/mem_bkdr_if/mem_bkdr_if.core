@@ -12,6 +12,7 @@ filesets:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:crypto_dpi_prince:0.1
       - lowrisc:prim:cipher_pkg:0.1
+      - lowrisc:prim:secded:0.1
     files:
       - sram_scrambler_pkg.sv
       - mem_bkdr_if.sv

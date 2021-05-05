@@ -7,6 +7,47 @@
 
 package prim_secded_pkg;
 
+  typedef enum int {
+    SecdedNone,
+    Secded_22_16,
+    Secded_28_22,
+    Secded_39_32,
+    Secded_64_57,
+    Secded_72_64,
+    SecdedHamming_22_16,
+    SecdedHamming_39_32,
+    SecdedHamming_72_64
+  } prim_secded_e;
+
+  function automatic int get_ecc_data_width(prim_secded_e ecc_type);
+    case (ecc_type)
+      Secded_22_16: return 16;
+      Secded_28_22: return 22;
+      Secded_39_32: return 32;
+      Secded_64_57: return 57;
+      Secded_72_64: return 64;
+      SecdedHamming_22_16: return 16;
+      SecdedHamming_39_32: return 32;
+      SecdedHamming_72_64: return 64;
+      // Return a non-zero width to avoid VCS compile issues
+      default: return 32;
+    endcase
+  endfunction
+
+  function automatic int get_ecc_parity_width(prim_secded_e ecc_type);
+    case (ecc_type)
+      Secded_22_16: return 6;
+      Secded_28_22: return 6;
+      Secded_39_32: return 7;
+      Secded_64_57: return 7;
+      Secded_72_64: return 8;
+      SecdedHamming_22_16: return 6;
+      SecdedHamming_39_32: return 7;
+      SecdedHamming_72_64: return 8;
+      default: return 0;
+    endcase
+  endfunction
+
   typedef struct packed {
     logic [15:0] data;
     logic [5:0] syndrome;
@@ -481,12 +522,12 @@ package prim_secded_pkg;
     return data_o;
   endfunction
 
-  function automatic secded_hamming_22_16_t prim_secded_hamming_22_16_dec (logic [21:0] data_i);
+  function automatic secded_22_16_t prim_secded_hamming_22_16_dec (logic [21:0] data_i);
     logic [15:0] data_o;
     logic [5:0] syndrome_o;
     logic [1:0]  err_o;
 
-    secded_hamming_22_16_t dec;
+    secded_22_16_t dec;
 
 
     // Syndrome calculation
@@ -539,12 +580,12 @@ package prim_secded_pkg;
     return data_o;
   endfunction
 
-  function automatic secded_hamming_39_32_t prim_secded_hamming_39_32_dec (logic [38:0] data_i);
+  function automatic secded_39_32_t prim_secded_hamming_39_32_dec (logic [38:0] data_i);
     logic [31:0] data_o;
     logic [6:0] syndrome_o;
     logic [1:0]  err_o;
 
-    secded_hamming_39_32_t dec;
+    secded_39_32_t dec;
 
 
     // Syndrome calculation
@@ -615,12 +656,12 @@ package prim_secded_pkg;
     return data_o;
   endfunction
 
-  function automatic secded_hamming_72_64_t prim_secded_hamming_72_64_dec (logic [71:0] data_i);
+  function automatic secded_72_64_t prim_secded_hamming_72_64_dec (logic [71:0] data_i);
     logic [63:0] data_o;
     logic [7:0] syndrome_o;
     logic [1:0]  err_o;
 
-    secded_hamming_72_64_t dec;
+    secded_72_64_t dec;
 
 
     // Syndrome calculation

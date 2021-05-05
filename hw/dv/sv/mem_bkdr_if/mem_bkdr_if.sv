@@ -16,30 +16,51 @@
 // any parameter set and can be set into the uvm_config_db to allow us to manipulate the mem
 // contents from the testbench without having us to add heirarchy information, making the chip
 // testbench portable.
+
+
+// The `MEM_PARITY` parameter.
 //
 // The `MEM_PARITY` parameter is used to indicate whether the target memory uses parity checks.
 // If so, we need to take care to modify the read/write indices, as the total memory width will be
 // `mem_bytes_per_word * 8 + mem_bytes_per_word` as we have one parity bit per data byte.
 // Enabling this parameter also allows access to parity error injection functionality - to use this
-// all that needs to be done is to set the `inject_parity_err` argument in any of the backdoor write
+// all that needs to be done is to set the `inject_err` argument in any of the backdoor write
 // functions.
+
+
+// The `MEM_ECC` parameter.
 //
 // The `MEM_ECC` parameter is used to indicate whether the target memory uses an ECC implementation,
-// so we can ensure to usethe proper data encoding scheme.
-// TODO: ECC implementation has not been completed yet, only basic stub functionality is added for
-//       now.
+// so we can ensure to use the proper data encoding scheme.
+// The value of this parameter must be a `prim_secded_e` enumerated value, which can be found in
+// `hw/ip/prim/rtl/prim_secded_pkg.sv`.
+// Setting this parameter to `SecdedNone` disables ECC functionality, and setting it to any other
+// enum value configures this interface to use the correct ECC bit-widths.
+// Enabling ECC also allows access to ECC error injection functionality - to use this
+// all that needs to be done is to set the `inject_err` argument in any of the backdoor write
+// functions.
 //
-// The `MEM_PARITY` and `MEM_ECC` parameters must not be set concurrently,
+// One important note when using this parameter is that the normal `read##()` functions cannot be
+// used if it is desired to access ECC-related syndrome and error information.
+// In this case, it is required to use the `ecc_read##()` functions, which will return a struct
+// containing read data, syndrome, and error data fields.
+
+
+// The `MEM_PARITY` and `MEM_ECC` parameters must not be enabled concurrently,
 // all resultant behavior is undefined.
 //
 // Note: The maximum data width currently supported by this interface is 64-bits (8 bytes).
 //       If support for wider memories is desired, it will need to be implemented.
 
-interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
-                        parameter bit MEM_ECC = 0) ();
+interface mem_bkdr_if #(
+    parameter bit MEM_PARITY = 0,
+    parameter prim_secded_pkg::prim_secded_e MEM_ECC = prim_secded_pkg::SecdedNone
+) ();
+
   import uvm_pkg::*;
   import bus_params_pkg::BUS_AW;
   import sram_scrambler_pkg::*;
+  import prim_secded_pkg::*;
 
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -54,12 +75,15 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
 
   // Represents the highest bit position of a data byte.
   // If parity is enabled, it is 9 because we add a parity tag bit.
-  // If no parity, then no extra bits are added.
-  //
-  // TODO - need to update to hanies
+  // If parity is disabled, then no extra bits are added to this parameter.
   localparam int MEM_BYTE_MSB = (MEM_PARITY) ? 9 : 8;
 
-  localparam int MAX_MEM_WIDTH = MEM_BYTE_MSB * 8;
+  localparam int ECC_PARITY_BITS = prim_secded_pkg::get_ecc_parity_width(MEM_ECC);
+
+  localparam int ECC_DATA_WIDTH = prim_secded_pkg::get_ecc_data_width(MEM_ECC);
+
+  localparam int MAX_MEM_WIDTH = (MEM_ECC == SecdedNone) ?
+      (MEM_BYTE_MSB * 8) : ECC_DATA_WIDTH + ECC_PARITY_BITS;
 
   // derive memory specifics such as depth, width, addr_msb mem size etc.
   bit initialized;
@@ -74,13 +98,17 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
 
   function automatic void init();
     // Check that both MEM_PARITY and MEM_ECC are not concurrently enabled
-    `DV_CHECK_FATAL((MEM_PARITY && MEM_ECC) == 0,
+    `DV_CHECK_FATAL(!(MEM_PARITY && MEM_ECC != SecdedNone),
         "Cannot enable both parity checks and ECC",
+        path)
+    `DV_CHECK_FATAL(MAX_MEM_WIDTH != 0,
+        $sformatf("MEM_ECC %0s is incorrect!", MEM_ECC),
         path)
     if (!initialized) begin
       mem_depth = $size(`MEM_ARR_PATH_SLICE);
       mem_width = $bits(`MEM_ARR_PATH_SLICE) / mem_depth;
-      mem_bytes_per_word = mem_width / MEM_BYTE_MSB;
+      // Need to account for any extra ecc parity bits when doing this calculation
+      mem_bytes_per_word = (mem_width - ECC_PARITY_BITS) / MEM_BYTE_MSB;
       mem_size_bytes = mem_depth * mem_bytes_per_word;
       mem_addr_lsb = $clog2(mem_bytes_per_word);
       mem_addr_width = $clog2(mem_depth);
@@ -158,15 +186,27 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
 
   function automatic void write8(input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                  input bit [7:0] data,
-                                 input bit inject_parity_err = 0);
+                                 input bit inject_err = 0);
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
       bit [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[mem_index];
 
-      // Prepare corrupted data if a parity error injection is requested
-      bit [2:0] idx_to_corrupt = $urandom_range(0, 7);
-      bit [7:0] corrupted_data = data;
-      corrupted_data[idx_to_corrupt] = !corrupted_data[idx_to_corrupt];
+      // Prepare corrupted data if an error injection is requested.
+      //
+      // If using parity, we want to randomly inject errors into the parity bits
+      // themselves for better error coverage.
+      //
+      // If using ECC, we also want to test double bit errors as well as single bit errors,
+      // so prepare a second index to randomly flip - note that this index can be anywhere
+      // within the valid data word, not just within the "active" byte we are writing.
+      int idx_to_corrupt = $urandom_range(0, MEM_BYTE_MSB - 1);
+
+      // for ECC we want to be able to to corrupt a random second bit.
+      // this bit can be anywhere within the entire memory line, even within
+      // the ECC parity bits themselves.
+      int second_idx_to_corrupt = $urandom_range(0, MAX_MEM_WIDTH - 1);
+
+      bit [MEM_BYTE_MSB-1:0] corrupted_data;
 
       // Note that if memory parity checks are enabled,
       // we have to write the correct parity bit as well.
@@ -174,12 +214,15 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
       //
       // TODO: odd/even parity checks could be made configurable.
       case (mem_bytes_per_word)
+        // ECC is unavailable if only 1 byte in each memory word
         1: begin
           rw_data[0 +: 8] = data;
           if (MEM_PARITY) begin
             rw_data[0 + 8] = ~(^data);
-            if (inject_parity_err) begin
-              rw_data[0 +: 8] = corrupted_data;
+            if (inject_err) begin
+              corrupted_data = rw_data[0 +: MEM_BYTE_MSB];
+              corrupted_data[idx_to_corrupt] = !corrupted_data[idx_to_corrupt];
+              rw_data[0 +: MEM_BYTE_MSB] = corrupted_data;
             end
           end
         end
@@ -187,8 +230,30 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
           rw_data[addr[0] * MEM_BYTE_MSB +: 8] = data;
           if (MEM_PARITY) begin
             rw_data[addr[0] * MEM_BYTE_MSB + 8] = ~(^data);
-            if (inject_parity_err) begin
+            if (inject_err) begin
+              corrupted_data = rw_data[addr[0] * MEM_BYTE_MSB +: MEM_BYTE_MSB];
+              corrupted_data[idx_to_corrupt] = !corrupted_data[idx_to_corrupt];
+              rw_data[addr[0] * MEM_BYTE_MSB +: MEM_BYTE_MSB] = corrupted_data;
+            end
+          end else if (MEM_ECC != SecdedNone) begin
+            case (MEM_ECC)
+              Secded_22_16: begin
+                rw_data = prim_secded_22_16_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+              end
+              SecdedHamming_22_16: begin
+                rw_data = prim_secded_hamming_22_16_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+              end
+              default: begin
+                `uvm_error(path,
+                    $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
+              end
+            endcase
+            if (inject_err) begin
               rw_data[addr[0] * MEM_BYTE_MSB +: 8] = corrupted_data;
+              // 50% of the time randomly enable a second error bit
+              if ($urandom_range(0, 1)) begin
+                rw_data[second_idx_to_corrupt] = !rw_data[second_idx_to_corrupt];
+              end
             end
           end
         end
@@ -196,8 +261,30 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
           rw_data[addr[1:0] * MEM_BYTE_MSB +: 8] = data;
           if (MEM_PARITY) begin
             rw_data[addr[1:0] * MEM_BYTE_MSB + 8] = ~(^data);
-            if (inject_parity_err) begin
+            if (inject_err) begin
+              corrupted_data = rw_data[addr[1:0] * MEM_BYTE_MSB +: MEM_BYTE_MSB];
+              corrupted_data[idx_to_corrupt] = !corrupted_data[idx_to_corrupt];
+              rw_data[addr[1:0] * MEM_BYTE_MSB +: MEM_BYTE_MSB] = corrupted_data;
+            end
+          end else if (MEM_ECC != SecdedNone) begin
+            case (MEM_ECC)
+              Secded_39_32: begin
+                rw_data = prim_secded_39_32_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+              end
+              SecdedHamming_39_32: begin
+                rw_data = prim_secded_hamming_39_32_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+              end
+              default: begin
+                `uvm_error(path,
+                    $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
+              end
+            endcase
+            if (inject_err) begin
               rw_data[addr[1:0] * MEM_BYTE_MSB +: 8] = corrupted_data;
+              // 50% of the time randomly enable a second error bit
+              if ($urandom_range(0, 1)) begin
+                rw_data[second_idx_to_corrupt] = !rw_data[second_idx_to_corrupt];
+              end
             end
           end
         end
@@ -205,8 +292,30 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
           rw_data[addr[2:0] * MEM_BYTE_MSB +: 8] = data;
           if (MEM_PARITY) begin
             rw_data[addr[2:0] * MEM_BYTE_MSB + 8] = ~(^data);
-            if (inject_parity_err) begin
+            if (inject_err) begin
+              corrupted_data = rw_data[addr[2:0] * MEM_BYTE_MSB +: MEM_BYTE_MSB];
+              corrupted_data[idx_to_corrupt] = !corrupted_data[idx_to_corrupt];
+              rw_data[addr[2:0] * MEM_BYTE_MSB +: MEM_BYTE_MSB] = corrupted_data;
+            end
+          end else if (MEM_ECC != SecdedNone) begin
+            case (MEM_ECC)
+              Secded_72_64: begin
+                rw_data = prim_secded_72_64_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+              end
+              SecdedHamming_72_64: begin
+                rw_data = prim_secded_hamming_72_64_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+              end
+              default: begin
+                `uvm_error(path,
+                    $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
+              end
+            endcase
+            if (inject_err) begin
               rw_data[addr[2:0] * MEM_BYTE_MSB +: 8] = corrupted_data;
+              // 50% of the time randomly enable a second error bit
+              if ($urandom_range(0, 1)) begin
+                rw_data[second_idx_to_corrupt] = !rw_data[second_idx_to_corrupt];
+              end
             end
           end
         end
@@ -218,36 +327,76 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
 
   function automatic void write16(input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                   input bit [15:0] data,
-                                  input bit inject_parity_err = 0);
-    // ensure that parity errors are only injected into one sub-byte write
-    bit inject_parity_err_in_first_sub_write = $urandom_range(0, 1);
+                                  input bit inject_err = 0);
+    // inject errors into only sub-byte write
+    bit inject_err_in_first_sub_write = $urandom_range(0, 1);
     `DV_CHECK_EQ_FATAL(addr[0], '0, $sformatf("addr 0x%0h not 16-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
-      write8(addr, data[7:0], inject_parity_err_in_first_sub_write && inject_parity_err);
-      write8(addr + 1, data[15:8], !inject_parity_err_in_first_sub_write && inject_parity_err);
+      write8(addr, data[7:0], inject_err_in_first_sub_write && inject_err);
+      write8(addr + 1, data[15:8], !inject_err_in_first_sub_write && inject_err);
     end
   endfunction
 
   function automatic void write32(input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                   input bit [31:0] data,
-                                  input bit inject_parity_err = 0);
+                                  input bit inject_err = 0);
     // ensure that parity errors are only injected into one sub-byte write
-    bit inject_parity_err_in_first_sub_write = $urandom_range(0, 1);
+    bit inject_err_in_first_sub_write = $urandom_range(0, 1);
     `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
-      write16(addr, data[15:0], inject_parity_err_in_first_sub_write && inject_parity_err);
-      write16(addr + 2, data[31:16], !inject_parity_err_in_first_sub_write && inject_parity_err);
+      write16(addr, data[15:0], inject_err_in_first_sub_write && inject_err);
+      write16(addr + 2, data[31:16], !inject_err_in_first_sub_write && inject_err);
     end
   endfunction
 
   function automatic void write64(input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                   input bit [63:0] data,
-                                  input bit inject_parity_err = 0);
+                                  input bit inject_err = 0);
     // ensure that parity errors are only injected into one sub-byte write
-    bit inject_parity_err_in_first_sub_write = $urandom_range(0, 1);
+    bit inject_err_in_first_sub_write = $urandom_range(0, 1);
     `DV_CHECK_EQ_FATAL(addr[2:0], '0, $sformatf("addr 0x%0h not 64-bit aligned", addr), path)
-    write32(addr, data[31:0], inject_parity_err_in_first_sub_write && inject_parity_err);
-    write32(addr + 4, data[63:32], !inject_parity_err_in_first_sub_write && inject_parity_err);
+    write32(addr, data[31:0], inject_err_in_first_sub_write && inject_err);
+    write32(addr + 4, data[63:32], !inject_err_in_first_sub_write && inject_err);
+  endfunction
+
+  /////////////////////////////////////////////////////////
+  // Wrapper functions for memory reads with ECC enabled //
+  /////////////////////////////////////////////////////////
+  // Some notes:
+  // - ECC isn't supported for 8-bit wide memories
+  // - (28, 22) and (64, 57) ECC configurations aren't supported
+
+  // Intended for use with memories which have data width of 16 bits and 6 ECC bits.
+  function automatic secded_22_16_t ecc_read16(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+    if (is_addr_valid(addr)) begin
+      int mem_index = addr >> mem_addr_lsb;
+      // 22-bit wide memory word includes 16-bit data, 6-bit ECC bits
+      bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
+      return prim_secded_22_16_dec(mem_data);
+    end
+    return 'x;
+  endfunction
+
+  // Intended for use with memories which have data width of 32 bits and 7 ECC bits.
+  function automatic secded_39_32_t ecc_read32(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+    if (is_addr_valid(addr)) begin
+      int mem_index = addr >> mem_addr_lsb;
+      // 39-bit wide memory word includes 32-bit data, 7-bit ECC bits
+      bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
+      return prim_secded_39_32_dec(mem_data);
+    end
+    return 'x;
+  endfunction
+
+  // Intended for use with memories which have data width of 64 bits and 8 ECC bits.
+  function automatic secded_72_64_t ecc_read64(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+    if (is_addr_valid(addr)) begin
+      int mem_index = addr >> mem_addr_lsb;
+      // 72-bit wide memory word includes 64-bit data, 8-bit ECC bits
+      bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
+      return prim_secded_72_64_dec(mem_data);
+    end
+    return 'x;
   endfunction
 
   ///////////////////////////////////////////////////////////
@@ -630,14 +779,11 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
   function automatic void clear_mem();
     init();
     `uvm_info(path, "Clear memory", UVM_LOW)
-    if (MEM_PARITY) begin
+    if (MEM_PARITY || MEM_ECC != SecdedNone) begin
       // Have to manually loop over memory and clear to avoid overwriting any parity bits.
       for (int i = 0; i < mem_size_bytes; i++) begin
         write8(i, '0);
       end
-    end else if (MEM_ECC) begin
-    // TODO - temporary workaround until ECC encoding is implemented
-      `MEM_ARR_PATH_SLICE = '{default:'0};
     end else begin
       `MEM_ARR_PATH_SLICE = '{default:'0};
     end
@@ -647,18 +793,14 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
   function automatic void set_mem();
     init();
     `uvm_info(path, "Set memory", UVM_LOW)
-    if (MEM_PARITY) begin
+    if (MEM_PARITY || MEM_ECC != SecdedNone) begin
       // Have to manually loop over memory and set to avoid overwriting any parity bits.
       for (int i = 0; i < mem_size_bytes; i++) begin
         write8(i, '1);
       end
-    end else if (MEM_ECC) begin
-    // TODO - temporary workaround until ECC encoding is implemented
-      `MEM_ARR_PATH_SLICE = '{default:'1};
     end else begin
       `MEM_ARR_PATH_SLICE = '{default:'1};
     end
-
   endfunction
 
   // randomize the memory
@@ -666,21 +808,9 @@ interface mem_bkdr_if #(parameter bit MEM_PARITY = 0,
     logic [7:0] rand_val;
     init();
     `uvm_info(path, "Randomizing mem contents", UVM_LOW)
-    if (MEM_PARITY) begin
-      // Have to manually loop over memory and randomize to avoid overwriting any parity bits.
-      for (int i = 0; i < mem_size_bytes; i++) begin
-        `DV_CHECK_STD_RANDOMIZE_FATAL(rand_val, "Randomization failed!", path)
-        write8(i, rand_val);
-      end
-    end else begin
-      // TODO - temporary workaround until ECC encoding is implemented
-      foreach (`MEM_ARR_PATH_SLICE[i]) begin
-        // Workaround to avoid Xcelium compile error:
-        // `DV_CHECK_STD_RANDOMIZE_FATAL(`MEM_ARR_PATH_SLICE[i], , path)
-        bit [MAX_MEM_WIDTH-1:0] val = `MEM_ARR_PATH_SLICE[i];
-        `DV_CHECK_STD_RANDOMIZE_FATAL(val, , path)
-        for (int j = 0; j < mem_width; j++)  `MEM_ARR_PATH_SLICE[i][j] = val[j];
-      end
+    for (int i = 0; i < mem_size_bytes; i++) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(rand_val, "Randomization failed!", path)
+      write8(i, rand_val);
     end
   endfunction
 

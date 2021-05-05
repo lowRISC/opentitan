@@ -84,6 +84,54 @@ def calc_bitmasks(k, m, codes, dec):
     return fanin_masks
 
 
+def print_secded_enum_and_util_fns(cfgs):
+    enum_vals = ["    SecdedNone"]
+    parity_width_vals = []
+    data_width_vals = []
+    for cfg in cfgs:
+        k = cfg['k']
+        m = cfg['m']
+        n = k + m
+        suffix = CODE_OPTIONS[cfg['code_type']]
+        formatted_suffix = suffix.replace('_', '').capitalize()
+
+        enum_name = "    Secded%s_%s_%s" % (formatted_suffix, n, k)
+        enum_vals.append(enum_name)
+
+        parity_width = "  %s: return %s;" % (enum_name, m)
+        parity_width_vals.append(parity_width)
+
+        data_width = "  %s: return %s;" % (enum_name, k)
+        data_width_vals.append(data_width)
+
+    enum_str = ",\n".join(enum_vals)
+    parity_width_fn_str = "\n".join(parity_width_vals)
+    data_width_fn_str = "\n".join(data_width_vals)
+
+    enum_str = '''
+  typedef enum int {{
+{}
+  }} prim_secded_e;
+
+  function automatic int get_ecc_data_width(prim_secded_e ecc_type);
+    case (ecc_type)
+{}
+      // Return a non-zero width to avoid VCS compile issues
+      default: return 32;
+    endcase
+  endfunction
+
+  function automatic int get_ecc_parity_width(prim_secded_e ecc_type);
+    case (ecc_type)
+{}
+      default: return 0;
+    endcase
+  endfunction
+'''.format(enum_str, data_width_fn_str, parity_width_fn_str)
+
+    return enum_str
+
+
 def print_pkg_types(n, k, m, codes, suffix, codetype):
     typename = "secded%s_%d_%d_t" % (suffix, n, k)
 
@@ -102,7 +150,7 @@ def print_fn(n, k, m, codes, suffix, codetype):
     enc_out = print_enc(n, k, m, codes)
     dec_out = print_dec(n, k, m, codes, codetype, "function")
 
-    typename = "secded%s_%d_%d_t" % (suffix, n, k)
+    typename = "secded_%d_%d_t" % (n, k)
     module_name = "prim_secded%s_%d_%d" % (suffix, n, k)
 
     outstr = '''
@@ -168,7 +216,8 @@ def print_dec(n, k, m, codes, codetype, print_type="logic"):
     outstr += "  {}// Corrected output calculation\n".format(
         preamble if print_type == "function" else "")
     for i in range(k):
-        outstr += "  {}".format(preamble) + "data_o[%d] = (syndrome_o == %d'h%x) ^ data_i[%d];\n" % (
+        outstr += "  {}".format(preamble)
+        outstr += "data_o[%d] = (syndrome_o == %d'h%x) ^ data_i[%d];\n" % (
             i, m, calc_syndrome(codes[i]), i)
     outstr += "\n"
     outstr += "  {}// err_o calc. bit0: single error, bit1: double error\n".format(
@@ -256,8 +305,10 @@ def generate(cfgs, args):
         if not args.no_fpv:
             write_fpv_files(n, k, m, codes, codetype, args.fpv_outdir)
 
+    # create enum of various ECC types - useful for DV purposes in mem_bkdr_if
+    enum_str = print_secded_enum_and_util_fns(cfgs['cfgs'])
     # write out package file
-    full_pkg_str = pkg_type_str + pkg_out_str
+    full_pkg_str = enum_str + pkg_type_str + pkg_out_str
     write_pkg_file(args.outdir, full_pkg_str)
 
 
