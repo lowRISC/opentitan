@@ -290,6 +290,59 @@ dif_kmac_result_t dif_kmac_mode_sha3_start(dif_kmac_t *kmac,
   return kDifKmacOk;
 }
 
+dif_kmac_result_t dif_kmac_mode_shake_start(dif_kmac_t *kmac,
+                                            dif_kmac_mode_shake_t mode) {
+  if (kmac == NULL) {
+    return kDifKmacBadArg;
+  }
+
+  // Set key strength and calculate rate (r).
+  uint32_t kstrength;
+  switch (mode) {
+    case kDifKmacModeShakeLen128:
+      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L128;
+      kmac->r = calculate_rate_bits(128) / 32;
+      break;
+    case kDifKmacModeShakeLen256:
+      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L256;
+      kmac->r = calculate_rate_bits(256) / 32;
+      break;
+    default:
+      return kDifKmacBadArg;
+  }
+  kmac->d = 0;  // Zero indicates variable digest length.
+  kmac->offset = 0;
+
+  // Hardware must be idle to start an operation.
+  if (!is_state_idle(kmac->params)) {
+    return kDifKmacError;
+  }
+
+  // Configure SHAKE mode with the given strength.
+  uint32_t cfg_reg =
+      mmio_region_read32(kmac->params.base_addr, KMAC_CFG_REG_OFFSET);
+  cfg_reg =
+      bitfield_field32_write(cfg_reg, KMAC_CFG_KSTRENGTH_FIELD, kstrength);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_MODE_FIELD,
+                                   KMAC_CFG_MODE_VALUE_SHAKE);
+  mmio_region_write32(kmac->params.base_addr, KMAC_CFG_REG_OFFSET, cfg_reg);
+
+  // Issue start command.
+  uint32_t cmd_reg =
+      bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_START);
+  mmio_region_write32(kmac->params.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+
+  // Poll until the status register is in the 'absorb' state.
+  while (true) {
+    if (is_state_absorb(kmac->params)) {
+      break;
+    }
+    // TODO(#6248): check for error.
+  }
+
+  return kDifKmacOk;
+}
+
 dif_kmac_result_t dif_kmac_absorb(dif_kmac_t *kmac, const void *msg, size_t len,
                                   size_t *processed) {
   // Set the number of bytes processed to 0.
@@ -358,14 +411,6 @@ dif_kmac_result_t dif_kmac_squeeze(dif_kmac_t *kmac, uint32_t *out, size_t len,
     return kDifKmacOk;
   }
 
-  // Poll the status register until in the 'squeeze' state.
-  while (true) {
-    if (is_state_squeeze(kmac->params)) {
-      break;
-    }
-    // TODO(#6248): check for error.
-  }
-
   while (len > 0) {
     size_t n = len;
     size_t remaining = (kmac->d == 0 ? kmac->r : kmac->d) - kmac->offset;
@@ -373,8 +418,23 @@ dif_kmac_result_t dif_kmac_squeeze(dif_kmac_t *kmac, uint32_t *out, size_t len,
       n = remaining;
     }
     if (n == 0) {
-      // TODO(XOF): request more state.
-      return kDifKmacError;
+      if (kmac->d != 0) {
+        return kDifKmacError;
+      }
+      // Issue run command to generate more state.
+      uint32_t cmd_reg =
+          bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_RUN);
+      mmio_region_write32(kmac->params.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+      kmac->offset = 0;
+      continue;
+    }
+
+    // Poll the status register until in the 'squeeze' state.
+    while (true) {
+      if (is_state_squeeze(kmac->params)) {
+        break;
+      }
+      // TODO(#6248): check for error.
     }
 
     uint32_t offset = KMAC_STATE_REG_OFFSET + kmac->offset * sizeof(uint32_t);
