@@ -2,9 +2,14 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Command-line tool to autogenerate boilerplate DV testbench code extended from dv_lib / cip_lib
+r"""Command-line tool to generate boilerplate DV testbench.
+
+The generated objects are extended from dv_lib / cip_lib.
 """
 import argparse
+import logging as log
+import re
+import sys
 
 import gen_agent
 import gen_env
@@ -19,8 +24,8 @@ def main():
     parser.add_argument(
         "name",
         metavar="[ip/block name]",
-        help="Name of the ip/block for which the UVM TB is being auto-generated"
-    )
+        help="""Name of the ip/block for which the UVM TB is being generated.
+                This should just name the block, not the path to it.""")
 
     parser.add_argument(
         "-a",
@@ -34,7 +39,7 @@ def main():
         action='store_true',
         help=
         """IP / block agent creates a separate driver for host and device modes.
-                              (ignored if -a switch is not passed)""")
+        (Ignored if -a switch is not passed.)""")
 
     parser.add_argument("-e",
                         "--gen-env",
@@ -47,9 +52,8 @@ def main():
         action='store_true',
         help=
         """Is comportable IP - this will result in code being extended from CIP
-                              library. If switch is not passed, then the code will be extended from
-                              DV library instead. (ignored if -e switch is not passed)"""
-    )
+        library. If switch is not passed, the code will be extended from DV
+        library instead. (Ignored if -e switch is not passed.)""")
 
     parser.add_argument(
         "-hr",
@@ -57,8 +61,8 @@ def main():
         default=False,
         action='store_true',
         help="""Specify whether the DUT has CSRs and thus needs a UVM RAL model.
-                This option is required if either --is_cip or --has_interrupts are
-                enabled.""")
+                This option is required if either --is_cip or --has_interrupts
+                are enabled.""")
 
     parser.add_argument(
         "-hi",
@@ -87,8 +91,8 @@ def main():
         nargs="+",
         metavar="agt1 agt2",
         help="""Env creates an interface agent specified here. They are
-                              assumed to already exist. Note that the list is space-separated,
-                              and not comma-separated. (ignored if -e switch is not passed)"""
+                assumed to already exist. Note that the list is space-separated,
+                and not comma-separated. (ignored if -e switch is not passed)"""
     )
 
     parser.add_argument(
@@ -96,30 +100,36 @@ def main():
         "--agent-outdir",
         metavar="[hw/dv/sv]",
         help="""Path to place the agent code. A directory called <name>_agent is
-                              created at this location. (default set to './<name>')"""
-    )
+                created at this location. (default set to './<name>')""")
 
     parser.add_argument(
         "-eo",
         "--env-outdir",
         metavar="[hw/ip/<ip>]",
-        help=
-        """Path to place the full tetsbench code. It creates 3 directories - dv, data and doc.
-                The DV plan and the testplan Hjson files are placed in the doc and data directories
-                respectively. These are to be merged into the IP's root directory (with the existing
-                data and doc directories). Under dv, it creates 3 sub-directories - env,
-                tb and tests to place all of the testbench sources. (default set to './<name>')"""
-    )
+        help="""Path to place the full testbench code. It creates 3 directories
+        - dv, data, and doc. The DV plan and the testplan Hjson files are placed
+        in the doc and data directories respectively. These are to be merged
+        into the IP's root directory (with the existing data and doc
+        directories). Under dv, it creates 3 sub-directories - env, tb, and
+        tests - to place all of the testbench sources. (default set to
+        './<name>'.)""")
 
     parser.add_argument(
         "-v",
         "--vendor",
         default=VENDOR_DEFAULT,
         help=
-        """Name of the vendor / entity developing the testbench. This is used to set the VLNV
-        of the FuesSoC core files.""")
+        """Name of the vendor / entity developing the testbench. This is used
+        to set the VLNV of the FuseSoC core files.""")
 
     args = parser.parse_args()
+
+    # The name should be alphanumeric.
+    if re.search(r"\W", args.name):
+        log.error("The block name '%s' contains non-alphanumeric characters.",
+                  args.name)
+        sys.exit(1)
+
     if not args.agent_outdir:
         args.agent_outdir = args.name
     if not args.env_outdir:
