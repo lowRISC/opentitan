@@ -169,6 +169,14 @@ $(otbn-code-snippets-bin-dir)/p384_scalar_mult_test.elf: \
   otbn-libs += $(otbn-code-snippets-obj-dir)/p384_sign.o \
                $(otbn-code-snippets-obj-dir)/p384_base.o
 
+# p384_base_mult_test depends on p384_base_mult defined in p384_sign.s
+$(otbn-code-snippets-bin-dir)/p384_base_mult_test.elf: \
+  $(otbn-code-snippets-obj-dir)/p384_sign.o \
+  $(otbn-code-snippets-obj-dir)/p384_base.o
+$(otbn-code-snippets-bin-dir)/p384_base_mult_test.elf: \
+  otbn-libs += $(otbn-code-snippets-obj-dir)/p384_sign.o \
+               $(otbn-code-snippets-obj-dir)/p384_base.o
+
 # p384_ecdsa_sign_test depends on p384_sign defined in p384_sign.s
 $(otbn-code-snippets-bin-dir)/p384_ecdsa_sign_test.elf: \
   $(otbn-code-snippets-obj-dir)/p384_sign.o \

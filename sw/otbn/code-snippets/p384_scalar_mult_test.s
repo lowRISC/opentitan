@@ -2,10 +2,11 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 /*
- *   Standalone test for P-384 point addition in projective space
+ *   Standalone test for P-384 scalar multiplication
  *
- *   Performs addition of two valid P-384 points in projective space.
- *   Constant coordinates for the two points contained in the .data section.
+ *   Performs multiplication of a P-384 curve point by a scalar. Both, the
+ *   scalar and the affine coordinates of the point are contained in the
+ *   .data section below.
  *
  *   See comment at the end of the file for expected values of coordinates
  *   of resulting point.
