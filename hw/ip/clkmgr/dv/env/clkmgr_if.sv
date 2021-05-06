@@ -39,6 +39,7 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
   // Types for CSR values.
   typedef struct packed {
     logic usb_peri_en;
+    logic io_peri_en;
     logic io_div2_peri_en;
     logic io_div4_peri_en;
   } clk_enables_t;
@@ -137,6 +138,15 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
           $fell(clk_enables.io_div2_peri_en && pwr_i.ip_clk_en) |=>
             ##[2:3] !clocks_o.clk_io_div2_peri,
           !clocks_o.clk_io_div2_powerup, !rst_n)
+
+  `ASSERT(ClkmgrPeriIoEnabled_A,
+          $rose(clk_enables.io_peri_en && pwr_i.ip_clk_en) |=>
+            ##[2:3] clocks_o.clk_io_peri,
+          !clocks_o.clk_io_powerup, !rst_n)
+  `ASSERT(ClkmgrPeriIoDisabled_A,
+          $fell(clk_enables.io_peri_en && pwr_i.ip_clk_en) |=>
+            ##[2:3] !clocks_o.clk_io_peri,
+          !clocks_o.clk_io_powerup, !rst_n)
 
   `ASSERT(ClkmgrPeriUsbEnabled_A,
           $rose(clk_enables.usb_peri_en && pwr_i.ip_clk_en) |=>
