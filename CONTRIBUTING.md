@@ -39,8 +39,11 @@ involved.
   discuss multiple implementation options, discuss on the mailing list.
 * Create pull requests from a fork rather than making new branches in 
   `github.com/lowrisc/opentitan`.
-* Do not force push.
 * Do not attempt to commit code with a non-Apache license without discussing
   first.
 * If a relevant bug or tracking issue exists, reference it in the pull request
   and commits.
+
+Please see [Contributing to
+OpenTitan](https://docs.opentitan.org/doc/project/contributing/) for more
+general guidance.
