@@ -22,12 +22,12 @@ package clkmgr_env_pkg;
   typedef virtual clk_rst_if clk_rst_vif;
 
   // parameters
-  localparam int  NUM_PERI = 3;
+  localparam int  NUM_PERI = 4;
   localparam int  NUM_TRANS = 4;
 
   // types
   // The enum values for these match the bit order in the CSRs.
-  typedef enum int {PeriDiv4, PeriDiv2, PeriUsb} peri_e;
+  typedef enum int {PeriDiv4, PeriDiv2, PeriIo, PeriUsb} peri_e;
   typedef enum int {TransAes, TransHmac, TransKmac, TransOtbn} trans_e;
 
   // functions
