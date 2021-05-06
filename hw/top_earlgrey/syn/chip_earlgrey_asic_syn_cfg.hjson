@@ -27,7 +27,7 @@
 
     {
       name: params
-      value: "RomCtrlSkipCheck=>0"
+      value: "RomCtrlSkipCheck=0"
     }
 
   ]
