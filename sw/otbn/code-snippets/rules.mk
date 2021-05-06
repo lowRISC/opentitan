@@ -198,3 +198,11 @@ $(otbn-code-snippets-bin-dir)/p384_ecdsa_verify_test.elf: \
 $(otbn-code-snippets-bin-dir)/p384_ecdsa_verify_test.elf: \
   otbn-libs += $(otbn-code-snippets-obj-dir)/p384_verify.o \
                $(otbn-code-snippets-obj-dir)/p384_base.o
+
+# p384_isoncurve_test depends on p384_isoncurve defined in p384_verify.s
+$(otbn-code-snippets-bin-dir)/p384_isoncurve_test.elf: \
+  $(otbn-code-snippets-obj-dir)/p384_verify.o \
+  $(otbn-code-snippets-obj-dir)/p384_base.o
+$(otbn-code-snippets-bin-dir)/p384_isoncurve_test.elf: \
+  otbn-libs += $(otbn-code-snippets-obj-dir)/p384_verify.o \
+               $(otbn-code-snippets-obj-dir)/p384_base.o
