@@ -384,7 +384,7 @@ store_proj_randomize:
  *                                  corresponding to modulus p
  * @param[in]  [w13, w12]: p, modulus of P-384 underlying finite field
  * @param[in]  [w11, w10]: n, domain parameter of P-384 curve
- *                            (order of basepoint G)
+ *                            (order of base point G)
  * @param[in]  w31: all-zero
  * @param[out] [w26, w25]: x_a, affine x-coordinate of resulting point R.
  * @param[out] [w28, w26]: y_a, affine y-coordinate of resulting point R.
@@ -644,7 +644,7 @@ scalar_mult_int_p384:
  *         where R, P are valid P-384 curve points in affine coordinates,
  *               k is a 384-bit scalar..
  *
- * Sets up context and calls internal scalar multiplication routine.
+ * Sets up context and calls the internal scalar multiplication routine.
  * This routine runs in constant time.
  *
  * @param[in]  dmem[0]: dK, pointer to location in dmem containing scalar k
@@ -676,6 +676,84 @@ scalar_mult_p384:
 
   /* set dmem pointer to scalar k */
   la        x19, dptr_k
+  lw        x19, 0(x19)
+
+  /* set pointer to blinding parameter */
+  la        x9, dptr_rnd
+  lw        x9, 0(x9)
+
+  /* set dmem pointer to domain parameter b */
+  la        x28, p384_b
+
+  /* set dmem pointer to scratchpad */
+  la        x30, scratchpad
+
+  /* load domain parameter p (modulus)
+     [w13, w12] = p = dmem[p384_p] */
+  li        x2, 12
+  la        x3, p384_p
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
+
+  /* load Barrett constant u for modulus p
+     [w15, w14] = u_p = dmem[p384_u_p] */
+  li        x2, 14
+  la        x3, p384_u_p
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
+
+  /* load domain parameter n (order of base point)
+     [w11, w10] = n = dmem[p384_n] */
+  li        x2, 10
+  la        x3, p384_n
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
+
+  /* init all-zero reg */
+  bn.xor    w31, w31, w31
+
+  jal       x1, scalar_mult_int_p384
+
+  ret
+
+/**
+ * Externally callable routine for P-384 base point multiplication
+ *
+ * returns Q = d (*) G
+ *         where Q is a resulting valid P-384 curve point in affine
+ *                   coordinates,
+ *               G is the base point of curve P-384, and
+ *               d is a 384-bit scalar.
+ *
+ * Sets up context and calls the internal scalar multiplication routine.
+ * This routine runs in constant time.
+ *
+ * @param[in]  dmem[0]: dptr_d, pointer to location in dmem containing
+ *                      scalar d.
+ * @param[in]  dmem[28]: dptr_rnd, pointer to location in dmem containing
+ *                       random number for blinding.
+ *
+ * 384-bit quantities have to be provided in dmem in little-endian format,
+ * 512 bit aligned, with the highest 128 bit set to zero.
+ *
+ * Flags: When leaving this subroutine, the M, L and Z flags of FG0 correspond
+ *        to the computed affine y-coordinate.
+ *
+ * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30
+ *                      w0 to w30
+ * clobbered flag groups: FG0
+ */
+.globl p384_base_mult
+p384_base_mult:
+
+  /* set dmem pointer to x-coordinate of base point*/
+  la        x20, p384_gx
+
+  /* set dmem pointer to y-coordinate of base point */
+  la        x21, p384_gy
+
+  /* set dmem pointer to scalar d */
+  la        x19, dptr_d
   lw        x19, 0(x19)
 
   /* set pointer to blinding parameter */
@@ -836,10 +914,10 @@ p384_sign:
   /* set dmem pointer to domain parameter b */
   la        x28, p384_b
 
-  /* set dmem pointer to basepoint x-coordinate */
+  /* set dmem pointer to base point x-coordinate */
   la        x20, p384_gx
 
-  /* set dmem pointer to basepoint y-coordinate */
+  /* set dmem pointer to base point y-coordinate */
   la        x21, p384_gy
 
   /* set dmem pointer to secret random scalar k */
