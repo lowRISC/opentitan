@@ -21,6 +21,7 @@ package jtag_riscv_agent_pkg;
   parameter uint DMI_ADDRW = 7;
   parameter uint DMI_IRW   = 5;
   parameter uint DMI_DRW   = DMI_OPW + DMI_DATAW + DMI_ADDRW;
+  parameter uint DTMCS_DRW = 32;
 
   // local types
   typedef enum bit [DMI_IRW-1:0] {
@@ -42,6 +43,11 @@ package jtag_riscv_agent_pkg;
     DmiRead   = 'h1,
     DmiWrite  = 'h2
   } jtag_op_e;
+
+  typedef enum bit [4:0] {
+    DmiReset     = 16,
+    DmiHardReset = 17
+  } jtag_dtmcs_e;
 
   // forward declare classes to allow typedefs below
   typedef class jtag_riscv_item;
