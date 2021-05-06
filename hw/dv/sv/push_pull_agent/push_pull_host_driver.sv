@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-`define PUSH_DRIVER cfg.vif.host_push_cb
-`define PULL_DRIVER cfg.vif.host_pull_cb
+`define PUSH_DRIVER_CB cfg.vif.host_push_cb
+`define PULL_DRIVER_CB cfg.vif.host_pull_cb
 
 class push_pull_host_driver #(parameter int HostDataWidth = 32,
                               parameter int DeviceDataWidth = HostDataWidth)
@@ -29,17 +29,16 @@ class push_pull_host_driver #(parameter int HostDataWidth = 32,
   virtual task get_and_drive();
     // wait for the initial reset to pass
     @(posedge cfg.vif.rst_n);
+    // TODO: Is this really needed?
     cfg.vif.wait_clks(1);
     forever begin
       seq_item_port.try_next_item(req);
       if (req != null) begin
-        `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.convert2string()), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("Driver rcvd item:\n%0s", req.convert2string()), UVM_HIGH)
         if (!in_reset) begin
           if (cfg.agent_type == PushAgent) begin
-            @(`PUSH_DRIVER); // TODO: Workaround for Xcelium issue #5713
             drive_push();
           end else if (cfg.agent_type == PullAgent) begin
-            @(`PULL_DRIVER); // TODO: Workaround for Xcelium issue #5713
             drive_pull();
           end else begin
             `uvm_fatal(`gfn, $sformatf("%0s is an invalid driver protocol!", cfg.agent_type))
@@ -55,32 +54,32 @@ class push_pull_host_driver #(parameter int HostDataWidth = 32,
   // Drives host side of ready/valid protocol
   virtual task drive_push();
     `DV_SPINWAIT_EXIT(
-        repeat (req.host_delay) @(`PUSH_DRIVER);
-        `PUSH_DRIVER.valid_int  <= 1'b1;
-        `PUSH_DRIVER.h_data_int <= req.h_data;
+        repeat (req.host_delay) @(`PUSH_DRIVER_CB);
+        `PUSH_DRIVER_CB.valid_int  <= 1'b1;
+        `PUSH_DRIVER_CB.h_data_int <= req.h_data;
         do begin
-          @(`PUSH_DRIVER);
-        end while (!`PUSH_DRIVER.ready);
-        `PUSH_DRIVER.valid_int <= 1'b0;
-        if (!cfg.hold_h_data_until_next_req) `PUSH_DRIVER.h_data_int <= 'x;,
+          @(`PUSH_DRIVER_CB);
+        end while (!`PUSH_DRIVER_CB.ready);
+        `PUSH_DRIVER_CB.valid_int <= 1'b0;
+        if (!cfg.hold_h_data_until_next_req) `PUSH_DRIVER_CB.h_data_int <= 'x;,
         wait(in_reset);)
   endtask
 
   // Drives host side of req/ack protocol
   virtual task drive_pull();
     `DV_SPINWAIT_EXIT(
-        repeat (req.host_delay) @(`PULL_DRIVER);
-        `PULL_DRIVER.req_int    <= 1'b1;
-        `PULL_DRIVER.h_data_int <= req.h_data;
+        repeat (req.host_delay) @(`PULL_DRIVER_CB);
+        `PULL_DRIVER_CB.req_int    <= 1'b1;
+        `PULL_DRIVER_CB.h_data_int <= req.h_data;
         do begin
-          @(`PULL_DRIVER);
-        end while (!`PULL_DRIVER.ack);
-        `PULL_DRIVER.req_int <= 1'b0;
-        if (!cfg.hold_h_data_until_next_req) `PULL_DRIVER.h_data_int <= 'x;,
+          @(`PULL_DRIVER_CB);
+        end while (!`PULL_DRIVER_CB.ack);
+        `PULL_DRIVER_CB.req_int <= 1'b0;
+        if (!cfg.hold_h_data_until_next_req) `PULL_DRIVER_CB.h_data_int <= 'x;,
         wait(in_reset);)
   endtask
 
 endclass
 
-`undef PULL_DRIVER
-`undef PUSH_DRIVER
+`undef PULL_DRIVER_CB
+`undef PUSH_DRIVER_CB
