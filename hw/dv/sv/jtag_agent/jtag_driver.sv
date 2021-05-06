@@ -121,15 +121,15 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       `HOST_CB.tms <= 1'b0;
       `HOST_CB.tdi <= dr[i];
       // tdo is updated at negedge clock
-      if (i > 0) dout[i - 1] =`HOST_CB.tdo;
+      if (i > 0) dout[i - 1] = `HOST_CB.tdo;
     end
     @(`HOST_CB);
     // go to Exit1DR
     `HOST_CB.tms <= 1'b1;
     `HOST_CB.tdi <= dr[len - 1];
-    dout[len - 2] =`HOST_CB.tdo;
+    dout[len - 2] = `HOST_CB.tdo;
     @(`HOST_CB);
-    dout[len - 1] =`HOST_CB.tdo;
+    dout[len - 1] = `HOST_CB.tdo;
     // go to UpdateIR
     `HOST_CB.tms <= 1'b1;
     `HOST_CB.tdi <= 1'b0;
@@ -138,10 +138,6 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     `HOST_CB.tms <= 1'b0;
     `HOST_CB.tdi <= 1'b0;
     @(`HOST_CB);
-
-    // TODO: currently wait 10 cycles until operation is done
-    // Should be able to keep polling status
-    repeat(10) @(`HOST_CB);
   endtask
 
 endclass
