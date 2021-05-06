@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-`define PUSH_DRIVER cfg.vif.device_push_cb
-`define PULL_DRIVER cfg.vif.device_pull_cb
+`define PUSH_DRIVER_CB cfg.vif.device_push_cb
+`define PULL_DRIVER_CB cfg.vif.device_pull_cb
 
 class push_pull_device_driver #(parameter int HostDataWidth = 32,
                                 parameter int DeviceDataWidth = HostDataWidth)
@@ -30,7 +30,7 @@ class push_pull_device_driver #(parameter int HostDataWidth = 32,
       // wait for reset to be completed and avoid deadloop
       wait(cfg.vif.rst_n === 1);
       seq_item_port.get_next_item(req);
-      `uvm_info(`gfn, $sformatf("driver rcvd item:\n%0s", req.convert2string()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("Driver rcvd item:\n%0s", req.convert2string()), UVM_HIGH)
       if (!in_reset) begin
         if (cfg.agent_type == PushAgent) begin
           drive_push();
@@ -47,28 +47,28 @@ class push_pull_device_driver #(parameter int HostDataWidth = 32,
   // Drives device side of ready/valid protocol.
   virtual task drive_push();
     `DV_SPINWAIT_EXIT(
-        repeat (req.device_delay) @(`PUSH_DRIVER);
-        `PUSH_DRIVER.ready_int  <= 1'b1;
-        `PUSH_DRIVER.d_data_int <= req.d_data;
-        @(`PUSH_DRIVER);
-        `PUSH_DRIVER.ready_int  <= 1'b0;
-        if (!cfg.hold_d_data_until_next_req) `PUSH_DRIVER.d_data_int <= 'x;,
+        repeat (req.device_delay) @(`PUSH_DRIVER_CB);
+        `PUSH_DRIVER_CB.ready_int  <= 1'b1;
+        `PUSH_DRIVER_CB.d_data_int <= req.d_data;
+        @(`PUSH_DRIVER_CB);
+        `PUSH_DRIVER_CB.ready_int  <= 1'b0;
+        if (!cfg.hold_d_data_until_next_req) `PUSH_DRIVER_CB.d_data_int <= 'x;,
         wait(in_reset);)
   endtask
 
   virtual task drive_pull();
     `DV_SPINWAIT_EXIT(
-        while (!`PULL_DRIVER.req) @(`PULL_DRIVER);
-        repeat (req.device_delay) @(`PULL_DRIVER);
-        `PULL_DRIVER.ack_int    <= 1'b1;
-        `PULL_DRIVER.d_data_int <= req.d_data;
-        @(`PULL_DRIVER);
-        `PULL_DRIVER.ack_int    <= 1'b0;
-        if (!cfg.hold_d_data_until_next_req) `PULL_DRIVER.d_data_int <= 'x;,
+        while (!`PULL_DRIVER_CB.req) @(`PULL_DRIVER_CB);
+        repeat (req.device_delay) @(`PULL_DRIVER_CB);
+        `PULL_DRIVER_CB.ack_int    <= 1'b1;
+        `PULL_DRIVER_CB.d_data_int <= req.d_data;
+        @(`PULL_DRIVER_CB);
+        `PULL_DRIVER_CB.ack_int    <= 1'b0;
+        if (!cfg.hold_d_data_until_next_req) `PULL_DRIVER_CB.d_data_int <= 'x;,
         wait(in_reset);)
   endtask
 
 endclass
 
-`undef PULL_DRIVER
-`undef PUSH_DRIVER
+`undef PULL_DRIVER_CB
+`undef PUSH_DRIVER_CB
