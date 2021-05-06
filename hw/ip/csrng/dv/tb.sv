@@ -20,6 +20,7 @@ module tb;
   wire intr_entropy_req;
   wire intr_hw_inst_exc;
   wire intr_cs_fatal_err;
+  otp_ctrl_part_pkg::otp_hw_cfg_data_t otp_hw_cfg;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -29,6 +30,12 @@ module tb;
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))  entropy_src_if();
   csrng_if  csrng_if(.clk(clk), .rst_n(rst_n));
+
+  // TODO: Hack to enable otp values
+  always_comb begin
+    otp_hw_cfg = otp_ctrl_part_pkg::OTP_HW_CFG_DATA_DEFAULT;
+    otp_hw_cfg.en_csrng_sw_app_read = efuse_sw_app_enable ? 8'hA5 : '0;
+  end
 
   `DV_ALERT_IF_CONNECT
 
@@ -40,7 +47,7 @@ module tb;
     .tl_i                    (tl_if.h2d),
     .tl_o                    (tl_if.d2h),
 
-    .efuse_sw_app_enable_i   (efuse_sw_app_enable),
+    .otp_hw_cfg_i   (otp_hw_cfg),
 
     // TODO: Use parameter?
     .lc_hw_debug_en_i        (4'b1010),

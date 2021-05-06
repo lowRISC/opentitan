@@ -50,12 +50,12 @@
       act:     "rsp"
       package: "entropy_src_pkg"
     }
-    { struct:  "logic"
+    { struct:  "otp_hw_cfg"
       type:    "uni"
-      name:    "efuse_sw_app_enable"
+      name:    "otp_hw_cfg"
       act:     "rcv"
       width:   1
-      package: ""
+      package: "otp_ctrl_part_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"

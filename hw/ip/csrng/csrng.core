@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:lc_sync
       - lowrisc:ip:tlul
       - lowrisc:ip:aes
+      - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:csrng_pkg
     files:
       - rtl/csrng_reg_top.sv

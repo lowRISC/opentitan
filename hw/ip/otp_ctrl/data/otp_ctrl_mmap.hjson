@@ -180,6 +180,10 @@
                     size:    "1",
                 },
                 {
+                    name:    "EN_CSRNG_SW_APP_READ",
+                    size:    "1",
+                },
+                {
                     name:    "EN_ENTROPY_SRC_FW_READ",
                     size:    "1",
                 },

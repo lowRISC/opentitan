@@ -4546,12 +4546,15 @@
           index: -1
         }
         {
-          name: efuse_sw_app_enable
-          struct: logic
+          name: otp_hw_cfg
+          struct: otp_hw_cfg
+          package: otp_ctrl_part_pkg
           type: uni
           act: rcv
           width: 1
           inst_name: csrng
+          default: ""
+          top_signame: otp_ctrl_otp_hw_cfg
           index: -1
         }
         {
@@ -5975,6 +5978,7 @@
       ]
       otp_ctrl.otp_hw_cfg:
       [
+        csrng.otp_hw_cfg
         entropy_src.otp_hw_cfg
         lc_ctrl.otp_hw_cfg
         keymgr.otp_hw_cfg
@@ -14197,12 +14201,15 @@
         index: -1
       }
       {
-        name: efuse_sw_app_enable
-        struct: logic
+        name: otp_hw_cfg
+        struct: otp_hw_cfg
+        package: otp_ctrl_part_pkg
         type: uni
         act: rcv
         width: 1
         inst_name: csrng
+        default: ""
+        top_signame: otp_ctrl_otp_hw_cfg
         index: -1
       }
       {
