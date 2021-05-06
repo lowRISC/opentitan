@@ -2154,7 +2154,7 @@ module top_earlgrey #(
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_rsp),
       .cs_aes_halt_i(csrng_cs_aes_halt_req),
       .cs_aes_halt_o(csrng_cs_aes_halt_rsp),
-      .efuse_sw_app_enable_i('0),
+      .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
       .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
       .tl_i(csrng_tl_req),
       .tl_o(csrng_tl_rsp),

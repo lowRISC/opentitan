@@ -21,8 +21,8 @@ module csrng
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
-  // Efuse Interface
-  input logic efuse_sw_app_enable_i,
+   // OTP Interface
+  input otp_ctrl_part_pkg::otp_hw_cfg_t otp_hw_cfg_i,
 
   // Lifecycle broadcast inputs
   input  lc_ctrl_pkg::lc_tx_t  lc_hw_debug_en_i,
@@ -53,6 +53,11 @@ module csrng
 
   import csrng_reg_pkg::*;
 
+  logic efuse_sw_app_enable;
+  otp_ctrl_part_pkg::otp_hw_cfg_t unused_hw_cfg;
+  assign unused_hw_cfg = otp_hw_cfg_i;
+  assign efuse_sw_app_enable = (otp_hw_cfg_i.data.en_csrng_sw_app_read == 8'hA5);
+
   csrng_reg2hw_t reg2hw;
   csrng_hw2reg_t hw2reg;
 
@@ -80,7 +85,7 @@ module csrng
     .hw2reg,
 
     // misc inputs
-    .efuse_sw_app_enable_i,
+    .efuse_sw_app_enable_i(efuse_sw_app_enable),
     .lc_hw_debug_en_i,
 
     // Entropy Interface

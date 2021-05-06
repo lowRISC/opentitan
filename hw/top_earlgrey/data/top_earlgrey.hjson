@@ -922,7 +922,7 @@
       'lc_ctrl.lc_otp_token'   : ['otp_ctrl.lc_otp_token'],
 
       // HW_CFG broadcast
-      'otp_ctrl.otp_hw_cfg'    : ['entropy_src.otp_hw_cfg',
+      'otp_ctrl.otp_hw_cfg'    : ['csrng.otp_hw_cfg', 'entropy_src.otp_hw_cfg',
                                   'lc_ctrl.otp_hw_cfg', 'keymgr.otp_hw_cfg',
                                   'sram_ctrl_main.otp_hw_cfg', 'sram_ctrl_ret_aon.otp_hw_cfg'],
 

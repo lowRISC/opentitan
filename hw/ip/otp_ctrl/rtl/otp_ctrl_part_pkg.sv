@@ -217,8 +217,9 @@ package otp_ctrl_part_pkg;
   // Breakout types for easier access of individual items.
   typedef struct packed {
       logic [63:0] hw_cfg_digest;
-      logic [1583:0] unallocated;
+      logic [1575:0] unallocated;
       logic [7:0] en_entropy_src_fw_read;
+      logic [7:0] en_csrng_sw_app_read;
       logic [7:0] en_sram_ifetch;
       logic [255:0] device_id;
   } otp_hw_cfg_data_t;
@@ -226,8 +227,9 @@ package otp_ctrl_part_pkg;
   // default value used for intermodule
   parameter otp_hw_cfg_data_t OTP_HW_CFG_DATA_DEFAULT = '{
     hw_cfg_digest: 64'hABFF25A58087D34A,
-    unallocated: 1584'h0,
+    unallocated: 1576'h0,
     en_entropy_src_fw_read: 8'h0,
+    en_csrng_sw_app_read: 8'h0,
     en_sram_ifetch: 8'h0,
     device_id: 256'h37E5AE39A58FACEE41389646B3968A3B128F4AF0AFFC1AAC77ADEFF42376E09D
   };
@@ -269,7 +271,8 @@ package otp_ctrl_part_pkg;
     }),
     1920'({
       64'hABFF25A58087D34A,
-      1584'h0, // unallocated space
+      1576'h0, // unallocated space
+      8'h0,
       8'h0,
       8'h0,
       256'h37E5AE39A58FACEE41389646B3968A3B128F4AF0AFFC1AAC77ADEFF42376E09D
