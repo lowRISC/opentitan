@@ -393,6 +393,30 @@ Both use the same state for tracking control flow.
 This is a stack of tuples containing a loop count, start address and end address.
 The stack has a maximum depth of eight and the top of the stack is the current loop.
 
+# Security Features
+
+<div class="bd-callout bd-callout-warning">
+  <h5>Work in progress</h5>
+
+  Work on OTBN is ongoing, including work on the specification and implementation of its security features.
+  Do not treat the following description (or anything in this documentation) as final, fully implemented, or verified.
+</div>
+
+OTBN is a security co-processor.
+It contains various security features and is hardened against side-channel analysis and fault injection attacks.
+The following sections describe the high-level security features of OTBN.
+Refer to the [Design Details]({{< relref "#design-details" >}}) section for a more in-depth description.
+
+## Data Integrity Protection
+
+OTBN's data integrity protection is designed to protect the data stored and processed within OTBN from modifications through physical attacks.
+
+Data in OTBN travels along a data path which includes the data memory (DMEM), the load-store-unit (LSU), the register files (GPR and WDR), and the execution units.
+Whenever possible, data transmitted or stored within OTBN is protected with an integrity protection code which guarantees the detection of at least three modified bits per 32 bit word.
+Additionally, instructions and data stored in the instruction and data memory, respectively, are scrambled with a lightweight, non-cryptographically-secure cipher.
+
+Refer to the [Data Integrity Protection]({{<relref "#design-details-data-integrity-protection">}}) section for details of how the data integrity protections are implemented.
+
 # Theory of Operations
 
 ## Block Diagram
@@ -403,7 +427,7 @@ The stack has a maximum depth of eight and the top of the stack is the current l
 
 {{< incGenFromIpDesc "../data/otbn.hjson" "hwcfg" >}}
 
-## Design Details
+## Design Details {#design-details}
 
 ### Memories
 
@@ -447,7 +471,7 @@ The `URND` LFSR is seeded once from the EDN when OTBN starts execution.
 Each new execution of OTBN will reseed the `URND` LFSR.
 The LFSR state is advanced every cycle when OTBN is running.
 
-### Error Handling and Reporting
+### Error Handling and Reporting {#design-details-error-handling-and-reporting}
 
 By design, OTBN is a simple processor and provides no error handling support to code that runs on it.
 
@@ -498,6 +522,72 @@ OTBN exposes a single-bit `idle_o` signal, intended to be used by the clock mana
 This signal is high when OTBN is not running.
 The cycle after a write to {{< regref "CMD.start" >}}, the signal goes low.
 This remains low until the end of the operation (either from an [`ECALL`]({{< relref "isa#ecall" >}}) or an error, at which point it goes high again.
+
+### Data Integrity Protection {#design-details-data-integrity-protection}
+
+OTBN stores and operates on data (state) in its dedicated memories, register files, and internal registers.
+OTBN's data integrity protection is designed to protected all data stored and transmitted within OTBN from modifications through physical attacks.
+
+During transmission, the integrity of data is protected with an integrity protection code.
+Data at rest in the instruction and data memories is additionally scrambled.
+
+In the following, the Integrity Protection Code and the scrambling algorithm are discussed, followed by their application to individual storage elements.
+
+#### Integrity Protection Code {#design-details-integrity-protection-code}
+
+OTBN uses the same integrity protection code everywhere to provide overarching data protection without regular re-encoding.
+The code is applied to 32b data words, and produces 39b of encoded data.
+
+The code used is an (39,32) Hsiao "single error correction, double error detection" (SECDED) error correction code (ECC) [[CHEN08]({{< relref "#ref-chen08">}})].
+It has a minimum Hamming distance of four, resulting in the ability to detect at least three errors in a 32 bit word.
+The code is used for error detection only; no error correction is performed.
+
+#### Memory Scrambling {#design-details-memory-scrambling}
+
+Contents of OTBN's instruction and data memories are scrambled while at rest.
+Both the data word itself and the address are scrambled.
+
+Note that data stored in other temporary memories within OTBN, including the register files, is not scrambled.
+
+Scrambling is used to obfuscate the memory contents and to diffuse the data.
+Obfuscation makes passive probing more difficult, while diffusion makes active fault injection attacks more difficult.
+
+The scrambling mechanism is described in detail in the [section "Scrambling Primitive" of the SRAM Controller Technical Specification](/hw/ip/sram_ctrl/doc/#scrambling-primitive).
+
+#### Actions on Integrity Errors
+
+A fatal error is raised whenever a data integrity violation is detected, which results in an immediate stop of all processing and the issuing of a fatal alert.
+The section [Error Handling and Reporting]({{< relref "#design-details-error-handling-and-reporting" >}}) describes the error handling in more detail.
+
+#### Register File Integrity Protection
+
+OTBN contains two register files: the 32b GPRs and the 256b WDRs.
+The data stored in both register files is protected with the [Integrity Protection Code]({{< relref "#design-details-integrity-protection-code">}}).
+Neither the register file contents nor register addresses are scrambled.
+
+The GPRs `x2` to `x31` store a 32b data word together with the Integrity Protection Code, resulting in 39b of stored data.
+(`x0`, the zero register, and `x1`, the call stack, require special treatment.)
+
+Each 256b Wide Data Register (WDR) stores a 256b data word together with the Integrity Protection Code, resulting in 312b of stored data.
+The integrity protection is done separately for each of the eight 32b sub-words within a 256b word.
+
+The register files can consume data protected with the Integrity Protection Code, or add it on demand.
+Whenever possible the Integrity Protection Code is preserved from its source and written directly to the register files without recalculation, in particular in the following cases:
+
+* Data coming from the data memory (DMEM) through the load-store unit to a GPR or WDR.
+  (TODO: Not yet implemented.)
+* Data copied between WDRs using the `BN.MOV` or `BN.MOVR` instructions.
+* Data conditionally copied between WDRs using the `BN.SEL` instruction.
+* Data copied between the `ACC` and `MOD` WSRs and a WDR.
+  (TODO: Not yet implemented.)
+* Data copied between any of the `MOD0` to `MOD7` CSRs and a GPR.
+  (TODO: Not yet implemented.)
+
+In all other cases the register files add the Integrity Protection Code to the incoming data before storing the data word.
+
+The integrity protection bits are checked on every read from the register files, even if the integrity protection is not removed from the data.
+
+Detected integrity violations in a register file raise a fatal `reg_error`.
 
 # Running applications on OTBN
 
@@ -859,3 +949,7 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
 </table>
 
 Code snippets giving examples of 256x256 and 384x384 multiplies can be found in `sw/otbn/code-snippets/mul256.s` and `sw/otbn/code-snippets/mul384.s`.
+
+# References
+
+<a name="ref-chen08">[CHEN08]</a> L. Chen, "Hsiao-Code Check Matrices and Recursively Balanced Matrices," arXiv:0803.1217 [cs], Mar. 2008 [Online]. Available: http://arxiv.org/abs/0803.1217
