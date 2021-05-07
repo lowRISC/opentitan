@@ -315,3 +315,35 @@ test('sw_silicon_creator_lib_driver_pinmux_unittest', executable(
   ),
   suite: 'mask_rom',
 )
+
+# Mask ROM otbn driver
+sw_silicon_creator_lib_driver_otbn = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_otbn',
+    sources: [
+      hw_ip_otbn_reg_h,
+      'otbn.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_base_abs_mmio,
+    ],
+  ),
+)
+
+test('sw_silicon_creator_lib_driver_otbn_unittest', executable(
+    'sw_silicon_creator_lib_driver_otbn_unittest',
+    sources: [
+      'otbn_unittest.cc',
+      hw_ip_otbn_reg_h,
+      'otbn.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_silicon_creator_lib_base_mock_abs_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_ABS_MMIO'],
+    cpp_args: ['-DMOCK_ABS_MMIO'],
+  ),
+  suite: 'mask_rom',
+)
