@@ -97,21 +97,6 @@ interface push_pull_if #(parameter int HostDataWidth = 32,
   assign h_data = (if_mode == dv_utils_pkg::Host) ? h_data_int : 'z;
   assign d_data = (if_mode == dv_utils_pkg::Device) ? d_data_int : 'z;
 
-  // utility tasks
-  task automatic wait_clks(input int num);
-    case ({if_mode, is_push_agent})
-      {dv_utils_pkg::Host, 1'b1}    : repeat (num) @(host_push_cb);
-      {dv_utils_pkg::Host, 1'b0}    : repeat (num) @(host_pull_cb);
-      {dv_utils_pkg::Device, 1'b1}  : repeat (num) @(device_push_cb);
-      {dv_utils_pkg::Device, 1'b0}  : repeat (num) @(device_pull_cb);
-      default:;
-    endcase
-  endtask : wait_clks
-
-  task automatic wait_n_clks(input int num);
-    repeat (num) @(negedge clk);
-  endtask : wait_n_clks
-
   /////////////////////////////////////////
   // Assertions for ready/valid protocol //
   /////////////////////////////////////////

@@ -18,12 +18,11 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
   // uvm_analysis_port #(ITEM_T): req_analysis_port;
 
   `uvm_component_new
-  bit in_reset;
 
   task run_phase(uvm_phase phase);
     @(posedge cfg.vif.rst_n);
     fork
-      handle_reset();
+      monitor_reset();
       collect_valid_trans();
       // We only need to monitor incoming requests if the agent is configured
       // in device mode and is using Pull protocol.
@@ -33,13 +32,13 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
     join_none
   endtask
 
-  virtual protected task handle_reset();
+  virtual protected task monitor_reset();
     forever begin
       @(negedge cfg.vif.rst_n);
-      in_reset = 1;
+      cfg.in_reset = 1;
       // TODO: sample any reset-related covergroups
       @(posedge cfg.vif.rst_n);
-      in_reset = 0;
+      cfg.in_reset = 0;
     end
   endtask
 
@@ -95,7 +94,7 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
         // After picking up a request, wait until a response is sent before
         // detecting another request, as this is not a pipelined protocol.
         `DV_SPINWAIT_EXIT(while (!cfg.vif.mon_cb.ack) @(cfg.vif.mon_cb);,
-                          wait(in_reset))
+                          wait(cfg.in_reset))
        end
     end
   endtask

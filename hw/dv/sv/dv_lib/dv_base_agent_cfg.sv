@@ -20,6 +20,9 @@ class dv_base_agent_cfg extends uvm_object;
   // use for phase_ready_to_end to add additional delay after ok_to_end is set
   int ok_to_end_delay_ns = 1000;
 
+  // Indicates that the interface is under reset. The derived monitor detects and maintains it.
+  bit in_reset;
+
   `uvm_object_utils_begin(dv_base_agent_cfg)
     `uvm_field_int (is_active,            UVM_DEFAULT)
     `uvm_field_int (en_cov,               UVM_DEFAULT)

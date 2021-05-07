@@ -24,6 +24,11 @@ class push_pull_device_seq #(parameter int HostDataWidth = 32,
       // to the device driver (which just needs to assert ready).
       // If the agent is in bidirectional mode, send the corresponding data.
       forever begin
+        // Pause if we are in reset.
+        if (cfg.in_reset) begin
+          wait(!cfg.in_reset);
+        end
+
         req = push_pull_item#(HostDataWidth, DeviceDataWidth)::type_id::create("req");
         start_item(req);
         `DV_CHECK_RANDOMIZE_WITH_FATAL(req,

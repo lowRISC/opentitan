@@ -21,12 +21,10 @@ package push_pull_agent_pkg;
   `include "push_pull_item.sv"
   `include "push_pull_agent_cfg.sv"
   `include "push_pull_agent_cov.sv"
-  `include "push_pull_driver.sv"
-  `include "push_pull_host_driver.sv"
-  `include "push_pull_device_driver.sv"
+  `include "push_pull_driver_lib.sv"
   `include "push_pull_monitor.sv"
   `include "push_pull_sequencer.sv"
   `include "push_pull_seq_list.sv"
   `include "push_pull_agent.sv"
 
-endpackage: push_pull_agent_pkg
+endpackage : push_pull_agent_pkg
