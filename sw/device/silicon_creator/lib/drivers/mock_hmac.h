@@ -16,10 +16,9 @@ namespace internal {
  */
 class MockHmac {
  public:
-  MOCK_METHOD(rom_error_t, sha256_init, (const hmac_t *));
-  MOCK_METHOD(rom_error_t, sha256_update,
-              (const hmac_t *, const void *, size_t));
-  MOCK_METHOD(rom_error_t, sha256_final, (const hmac_t *, hmac_digest_t *));
+  MOCK_METHOD(void, sha256_init, ());
+  MOCK_METHOD(rom_error_t, sha256_update, (const void *, size_t));
+  MOCK_METHOD(rom_error_t, sha256_final, (hmac_digest_t *));
   virtual ~MockHmac() {}
 };
 
@@ -29,17 +28,14 @@ using MockHmac = GlobalMock<testing::StrictMock<internal::MockHmac>>;
 
 extern "C" {
 
-rom_error_t hmac_sha256_init(const hmac_t *hmac) {
-  return MockHmac::Instance().sha256_init(hmac);
+void hmac_sha256_init(void) { MockHmac::Instance().sha256_init(); }
+
+rom_error_t hmac_sha256_update(const void *data, size_t len) {
+  return MockHmac::Instance().sha256_update(data, len);
 }
 
-rom_error_t hmac_sha256_update(const hmac_t *hmac, const void *data,
-                               size_t len) {
-  return MockHmac::Instance().sha256_update(hmac, data, len);
-}
-
-rom_error_t hmac_sha256_final(const hmac_t *hmac, hmac_digest_t *digest) {
-  return MockHmac::Instance().sha256_final(hmac, digest);
+rom_error_t hmac_sha256_final(hmac_digest_t *digest) {
+  return MockHmac::Instance().sha256_final(digest);
 }
 
 }  // extern "C"
