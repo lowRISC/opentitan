@@ -15,9 +15,7 @@ filesets:
       - push_pull_item.sv: {is_include_file: true}
       - push_pull_agent_cfg.sv: {is_include_file: true}
       - push_pull_agent_cov.sv: {is_include_file: true}
-      - push_pull_driver.sv: {is_include_file: true}
-      - push_pull_host_driver.sv: {is_include_file: true}
-      - push_pull_device_driver.sv: {is_include_file: true}
+      - push_pull_driver_lib.sv: {is_include_file: true}
       - push_pull_monitor.sv: {is_include_file: true}
       - push_pull_sequencer.sv: {is_include_file: true}
       - push_pull_agent.sv: {is_include_file: true}
