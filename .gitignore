@@ -65,3 +65,7 @@ hw/top_englishbreakfast/ip/alert_handler/dv/alert_handler_env_pkg__params.sv
 hw/top_englishbreakfast/ip/sensor_ctrl/rtl/*
 hw/top_englishbreakfast/ip/xbar_main/xbar_main.core
 hw/top_englishbreakfast/ip/xbar_peri/xbar_peri.core
+
+# Rust Cargo build system files.
+Cargo.lock
+sw/host/**/target
