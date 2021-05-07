@@ -169,7 +169,9 @@ The control bit `ES_TYPE` sets whether the entropy will come from the conditioni
 A status bit will be set that can either be polled or generate an interrupt when the entropy bits are available to be read from the {{< regref "ENTROPY_DATA" >}} register.
 The firmware needs to read the {{< regref "ENTROPY_DATA" >}} register twelve times in order to cleanly evacuate the 384-bit seed from the hardware path (12*32bits=384bits total).
 The firmware will directly read out of the main entropy FIFO, and when the control bit `ES_ROUTE` is set, no entropy is being passed to the block hardware interface.
-If the main entropy FIFO fills up, additional entropy that has been health checked and conditioned will be dropped at that point.
+
+If the `esfinal` FIFO fills up, additional entropy that has been health checked will be dropped before entering the conditioner.
+This drop point will save on conditioner power, and still preserve `esfinal` FIFO entropy that has already been collected.
 
 The above process will be repeated for as long as entropy bits are to be collected and processed.
 

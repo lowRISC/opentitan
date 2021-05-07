@@ -15,6 +15,7 @@ module entropy_src_main_sm #(
   input logic                   enable_i,
   input logic                   ht_done_pulse_i,
   input logic                   ht_fail_pulse_i,
+  input logic                   sfifo_esfinal_full_i,
   output logic                  rst_alert_cntr_o,
   input logic                   bypass_mode_i,
   output logic                  rst_bypass_mode_o,
@@ -137,7 +138,7 @@ module entropy_src_main_sm #(
         end
       end
       NormHTStart: begin
-        if (!enable_i) begin
+        if (!enable_i || sfifo_esfinal_full_i) begin
           state_d = Idle;
         end else begin
           sha3_start_o = 1'b1;
