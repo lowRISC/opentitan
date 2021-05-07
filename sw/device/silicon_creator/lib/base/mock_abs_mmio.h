@@ -16,8 +16,8 @@ namespace internal {
  */
 class MockAbsMmio {
  public:
-  MOCK_METHOD(uint32_t, Read8, (uint32_t addr));
-  MOCK_METHOD(void, Write8, (uint32_t addr, uint32_t value));
+  MOCK_METHOD(uint8_t, Read8, (uint32_t addr));
+  MOCK_METHOD(void, Write8, (uint32_t addr, uint8_t value));
   MOCK_METHOD(uint32_t, Read32, (uint32_t addr));
   MOCK_METHOD(void, Write32, (uint32_t addr, uint32_t value));
 
@@ -87,11 +87,11 @@ using MockAbsMmio = GlobalMock<testing::StrictMock<internal::MockAbsMmio>>;
 
 extern "C" {
 
-uint32_t abs_mmio_read8(uint32_t addr) {
+uint8_t abs_mmio_read8(uint32_t addr) {
   return MockAbsMmio::Instance().Read8(addr);
 }
 
-void abs_mmio_write8(uint32_t addr, uint32_t value) {
+void abs_mmio_write8(uint32_t addr, uint8_t value) {
   return MockAbsMmio::Instance().Write8(addr, value);
 }
 

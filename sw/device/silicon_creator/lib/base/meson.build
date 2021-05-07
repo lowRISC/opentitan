@@ -17,7 +17,6 @@ sw_silicon_creator_lib_base_mock_abs_mmio = declare_dependency(
   link_with: static_library(
     'mock_abs_mmio',
     sources: [
-      'abs_mmio.c',
       'mock_abs_mmio.h',
     ],
     dependencies: [

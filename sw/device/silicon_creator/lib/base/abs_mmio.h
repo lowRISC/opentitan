@@ -44,7 +44,7 @@ extern "C" {
  * @return the read value.
  */
 ABS_MMIO_WARN_UNUSED_RESULT
-inline uint32_t abs_mmio_read8(uint32_t addr) {
+inline uint8_t abs_mmio_read8(uint32_t addr) {
   return *((volatile uint8_t *)addr);
 }
 
@@ -81,7 +81,7 @@ inline void abs_mmio_write32(uint32_t addr, uint32_t value) {
 
 #else  // MOCK_ABS_MMIO
 
-extern uint32_t abs_mmio_read8(uint32_t addr);
+extern uint8_t abs_mmio_read8(uint32_t addr);
 extern void abs_mmio_write8(uint32_t addr, uint8_t value);
 extern uint32_t abs_mmio_read32(uint32_t addr);
 extern void abs_mmio_write32(uint32_t addr, uint32_t value);
