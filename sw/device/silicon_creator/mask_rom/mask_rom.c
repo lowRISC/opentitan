@@ -35,7 +35,6 @@ typedef void(boot_fn)(void);
 void mask_rom_exception_handler(void) { wait_for_interrupt(); }
 void mask_rom_nmi_handler(void) { wait_for_interrupt(); }
 
-hmac_t hmac;
 uart_t uart;
 
 // FIXME: Temporary workaround to run functional test of SHA256.
@@ -46,12 +45,11 @@ static int verify_rom_ext_identifier(rom_ext_manifest_t rom_ext) {
     return kErrorUnknown;
   }
 
-  RETURN_IF_ERROR(hmac_sha256_init(&hmac));
-  RETURN_IF_ERROR(
-      hmac_sha256_update(&hmac, &rom_ext_identifier, sizeof(uint32_t)));
+  hmac_sha256_init();
+  RETURN_IF_ERROR(hmac_sha256_update(&rom_ext_identifier, sizeof(uint32_t)));
 
   hmac_digest_t digest;
-  RETURN_IF_ERROR(hmac_sha256_final(&hmac, &digest));
+  RETURN_IF_ERROR(hmac_sha256_final(&digest));
 
   return memcmp(digest.digest, kROMExtIdentifierExpectedDigest,
                 sizeof(digest.digest)) == 0
@@ -73,10 +71,6 @@ void mask_rom_boot(void) {
       .data = &uart,
       .sink = uart_sink,
   });
-
-  // Map HMAC registers.
-  // TODO(lowrisc/opentitan#6283): Move to constant driver handles.
-  hmac.base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
 
   // FIXME: what (if anything) should we print at startup?
   base_printf("MaskROM\r\n");
