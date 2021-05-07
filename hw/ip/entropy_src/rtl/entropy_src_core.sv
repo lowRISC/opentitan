@@ -1906,7 +1906,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
 
   assign pfifo_cond_push = pfifo_precon_pop && sha3_msgfifo_ready &&
-  !cs_aes_halt_req && !es_bypass_mode;
+  !cs_aes_halt_req && !es_bypass_mode && !sfifo_esfinal_full;
 
   assign pfifo_cond_wdata = pfifo_precon_rdata;
 
@@ -2001,27 +2001,28 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   entropy_src_main_sm
     u_entropy_src_main_sm (
-    .clk_i              (clk_i),
-    .rst_ni             (rst_ni),
-    .enable_i           (es_enable),
-    .ht_done_pulse_i    (health_test_done_pulse),
-    .ht_fail_pulse_i    (any_fail_pulse),
-    .rst_alert_cntr_o   (rst_alert_cntr),
-    .bypass_mode_i      (es_bypass_mode),
-    .rst_bypass_mode_o  (rst_bypass_mode),
-    .main_stage_rdy_i   (pfifo_cond_not_empty),
-    .bypass_stage_rdy_i (pfifo_bypass_not_empty),
-    .sha3_state_vld_i   (sha3_state_vld),
-    .main_stage_pop_o   (main_stage_pop),
-    .bypass_stage_pop_o (bypass_stage_pop),
-    .sha3_start_o       (sha3_start),
-    .sha3_process_o     (sha3_process),
-    .sha3_done_o        (sha3_done),
-    .cs_aes_halt_req_o  (cs_aes_halt_req),
-    .cs_aes_halt_ack_i  (cs_aes_halt_i.cs_aes_halt_ack),
-    .main_sm_idle_o     (es_main_sm_idle),
-    .main_sm_state_o    (es_main_sm_state),
-    .main_sm_err_o      (es_main_sm_err)
+    .clk_i                (clk_i),
+    .rst_ni               (rst_ni),
+    .enable_i             (es_enable),
+    .ht_done_pulse_i      (health_test_done_pulse),
+    .ht_fail_pulse_i      (any_fail_pulse),
+    .sfifo_esfinal_full_i (sfifo_esfinal_full),
+    .rst_alert_cntr_o     (rst_alert_cntr),
+    .bypass_mode_i        (es_bypass_mode),
+    .rst_bypass_mode_o    (rst_bypass_mode),
+    .main_stage_rdy_i     (pfifo_cond_not_empty),
+    .bypass_stage_rdy_i   (pfifo_bypass_not_empty),
+    .sha3_state_vld_i     (sha3_state_vld),
+    .main_stage_pop_o     (main_stage_pop),
+    .bypass_stage_pop_o   (bypass_stage_pop),
+    .sha3_start_o         (sha3_start),
+    .sha3_process_o       (sha3_process),
+    .sha3_done_o          (sha3_done),
+    .cs_aes_halt_req_o    (cs_aes_halt_req),
+    .cs_aes_halt_ack_i    (cs_aes_halt_i.cs_aes_halt_ack),
+    .main_sm_idle_o       (es_main_sm_idle),
+    .main_sm_state_o      (es_main_sm_state),
+    .main_sm_err_o        (es_main_sm_err)
   );
 
   // es to cs halt request to reduce power spikes
