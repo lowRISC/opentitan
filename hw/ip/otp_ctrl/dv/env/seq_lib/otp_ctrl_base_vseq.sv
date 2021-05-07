@@ -120,8 +120,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     bit backdoor_wr;
     addr = randomize_dai_addr(addr);
     if (cfg.ecc_err != OtpEccUncorrErr && addr < LifeCycleOffset) begin
-      backdoor_rd_val = backdoor_inject_ecc_err(addr, ecc_err_mask, cfg.ecc_err);
-      backdoor_wr = 1;
+      if (ecc_err_mask == 0) begin
+        cfg.ecc_err = OtpNoEccErr;
+      end else begin
+        backdoor_rd_val = backdoor_inject_ecc_err(addr, ecc_err_mask, cfg.ecc_err);
+        backdoor_wr = 1;
+      end
     end
 
     csr_wr(ral.direct_access_address, addr);
