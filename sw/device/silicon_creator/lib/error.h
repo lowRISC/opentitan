@@ -34,6 +34,7 @@ enum module_ {
   kModuleInterrupt = 0x5249,     // ASCII "IR".
   kModuleEpmp = 0x5045,          // ASCII "EP",
   kModuleOtp = 0x504f,           // ASCII "OP".
+  kModuleOtbn = 0x4e42,          // ASCII "BN".
 };
 
 /**
@@ -81,6 +82,9 @@ enum module_ {
   X(kErrorInterrupt,                  ERROR_(0, kModuleInterrupt, kUnknown)), \
   X(kErrorEpmpBadCheck,               ERROR_(1, kModuleEpmp, kInternal)), \
   X(kErrorOtpBadAlignment,            ERROR_(1, kModuleOtp, kInvalidArgument)), \
+  X(kErrorOtbnInvalidArgument,        ERROR_(1, kModuleOtbn, kInvalidArgument)), \
+  X(kErrorOtbnBadOffsetLen,           ERROR_(2, kModuleOtbn, kInvalidArgument)), \
+  X(kErrorOtbnBadOffset,              ERROR_(3, kModuleOtbn, kInvalidArgument)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 
