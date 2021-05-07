@@ -274,12 +274,6 @@
                  "+initialize_ram=1",
                  "+sw_test_timeout_ns=50000000"]
     }
-    {
-      name: chip_shadow_reg_errors
-      uvm_test_seq: chip_shadow_reg_errors_vseq
-      en_run_modes: ["stub_cpu_mode"]
-      run_opts: ["+en_scb=0"]
-    }
     // The test below is added in the included tl_access_tests.hjson.
     // We just need to append the stub_cpu_mode run mode to it.
     {
