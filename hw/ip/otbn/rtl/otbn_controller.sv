@@ -39,7 +39,7 @@ module otbn_controller
   input  logic                     insn_illegal_i,
   input  logic [ImemAddrWidth-1:0] insn_addr_i,
 
-  // Decoded instruction data, matching the "Decoding" section of the specification.
+  // Decoded instruction data
   input insn_dec_base_t       insn_dec_base_i,
   input insn_dec_bignum_t     insn_dec_bignum_i,
   input insn_dec_shared_t     insn_dec_shared_i,
