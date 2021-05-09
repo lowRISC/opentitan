@@ -8063,7 +8063,7 @@
       }
       {
         name: OTP_EXT_VOLT
-        type: AnalogIn0
+        type: AnalogIn1
         bank: VCC
         connection: manual
         desc: OTP external voltage input

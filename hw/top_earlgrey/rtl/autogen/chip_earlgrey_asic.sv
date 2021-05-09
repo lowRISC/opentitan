@@ -417,7 +417,7 @@ module chip_earlgrey_asic #(
       BidirStd, // SPI_HOST_D2
       BidirStd, // SPI_HOST_D1
       BidirStd, // SPI_HOST_D0
-      AnalogIn0, // OTP_EXT_VOLT
+      AnalogIn1, // OTP_EXT_VOLT
       InputStd, // FLASH_TEST_MODE1
       InputStd, // FLASH_TEST_MODE0
       AnalogIn0, // FLASH_TEST_VOLT

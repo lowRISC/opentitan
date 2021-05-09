@@ -81,7 +81,7 @@ module prim_xilinx_pad_wrapper
       .O  ( in       ),
       .IO ( inout_io )
     );
-  end else if (PadType == AnalogIn0) begin : gen_analog0
+  end else if (PadType == AnalogIn0 || PadType == AnalogIn1) begin : gen_analog
 
     logic unused_sigs;
     assign unused_sigs = ^{out_i,
