@@ -1065,7 +1065,7 @@
       { name: 'FLASH_TEST_VOLT' , type: 'AnalogIn0',bank: 'VCC' , connection: 'manual', desc: 'Flash test voltage input'},
       { name: 'FLASH_TEST_MODE0', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
       { name: 'FLASH_TEST_MODE1', type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
-      { name: 'OTP_EXT_VOLT'    , type: 'AnalogIn0',bank: 'VCC' , connection: 'manual', desc: 'OTP external voltage input'},
+      { name: 'OTP_EXT_VOLT'    , type: 'AnalogIn1',bank: 'VCC' , connection: 'manual', desc: 'OTP external voltage input'},
       // Dedicated IOs
       { name: 'SPI_HOST_D0'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
       { name: 'SPI_HOST_D1'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},

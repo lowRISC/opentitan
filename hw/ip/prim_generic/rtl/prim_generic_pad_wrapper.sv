@@ -82,7 +82,7 @@ module prim_generic_pad_wrapper
     // fake trireg emulation
     assign (weak0, weak1)     inout_io = (attr_i.keep_en) ? inout_io : 1'bz;
   `endif
-  end else if (PadType == AnalogIn0) begin : gen_analog0
+  end else if (PadType == AnalogIn0 || PadType == AnalogIn1) begin : gen_analog
 
     logic unused_ana_sigs;
     assign unused_ana_sigs = ^{attr_i, out_i, oe_i, ie_i};
