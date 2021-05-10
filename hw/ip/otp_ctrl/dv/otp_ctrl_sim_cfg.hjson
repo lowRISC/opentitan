@@ -70,7 +70,7 @@
     {
       name: otp_ctrl_init_fail
       uvm_test_seq: otp_ctrl_init_fail_vseq
-      reseed: 100
+      reseed: 300
     }
     {
       name: otp_ctrl_background_chks
