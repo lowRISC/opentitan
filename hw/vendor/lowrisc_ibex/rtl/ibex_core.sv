@@ -791,20 +791,20 @@ module ibex_core import ibex_pkg::*; #(
 
     // ECC checkbit generation for regiter file wdata
     prim_secded_39_32_enc regfile_ecc_enc (
-      .in  (rf_wdata_wb),
-      .out (rf_wdata_wb_ecc_o)
+      .data_i (rf_wdata_wb),
+      .data_o (rf_wdata_wb_ecc_o)
     );
 
     // ECC checking on register file rdata
     prim_secded_39_32_dec regfile_ecc_dec_a (
-      .in         (rf_rdata_a_ecc_i),
-      .d_o        (),
+      .data_i     (rf_rdata_a_ecc_i),
+      .data_o     (),
       .syndrome_o (),
       .err_o      (rf_ecc_err_a)
     );
     prim_secded_39_32_dec regfile_ecc_dec_b (
-      .in         (rf_rdata_b_ecc_i),
-      .d_o        (),
+      .data_i     (rf_rdata_b_ecc_i),
+      .data_o     (),
       .syndrome_o (),
       .err_o      (rf_ecc_err_b)
     );

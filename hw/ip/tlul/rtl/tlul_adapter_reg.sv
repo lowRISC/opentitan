@@ -101,8 +101,8 @@ module tlul_adapter_reg import tlul_pkg::*; #(
     logic [DataMaxWidth-1:0] unused_data;
 
     prim_secded_64_57_enc u_data_gen (
-      .in(DataMaxWidth'(rdata)),
-      .out({data_intg, unused_data})
+      .data_i(DataMaxWidth'(rdata)),
+      .data_o({data_intg, unused_data})
     );
   end else begin : gen_tieoff_data_intg
     assign data_intg = '0;

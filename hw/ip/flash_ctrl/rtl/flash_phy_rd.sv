@@ -353,8 +353,8 @@ module flash_phy_rd import flash_phy_pkg::*; (
   assign data_erased = rd_done & (data_i == {FullDataWidth{1'b1}});
 
   prim_secded_hamming_72_64_dec u_dec (
-    .in(data_i[ScrDataWidth-1:0]),
-    .d_o(data_ecc_chk),
+    .data_i(data_i[ScrDataWidth-1:0]),
+    .data_o(data_ecc_chk),
     .syndrome_o(),
     .err_o({ecc_multi_err, ecc_single_err})
   );

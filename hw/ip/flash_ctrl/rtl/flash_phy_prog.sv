@@ -239,8 +239,8 @@ module flash_phy_prog import flash_phy_pkg::*; (
   logic [ScrDataWidth-1:0] ecc_data;
 
   prim_secded_hamming_72_64_enc u_enc (
-    .in(packed_data),
-    .out(ecc_data)
+    .data_i(packed_data),
+    .data_o(ecc_data)
   );
 
   // pad the remaining bits to '0', this effectively "programs" them.

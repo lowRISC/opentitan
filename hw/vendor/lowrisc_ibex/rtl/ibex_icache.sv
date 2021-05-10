@@ -307,8 +307,8 @@ module ibex_icache import ibex_pkg::*; #(
     assign tag_ecc_output_unused = tag_ecc_output_padded[21:IC_TAG_SIZE-1];
 
     prim_secded_28_22_enc tag_ecc_enc (
-      .in  (tag_ecc_input_padded),
-      .out (tag_ecc_output_padded)
+      .data_i (tag_ecc_input_padded),
+      .data_o (tag_ecc_output_padded)
     );
 
     assign tag_wdata_ic0 = {tag_ecc_output_padded[27:22],tag_ecc_output_padded[IC_TAG_SIZE-1:0]};
@@ -316,8 +316,8 @@ module ibex_icache import ibex_pkg::*; #(
     // Dataram ECC
     for (genvar bank = 0; bank < IC_LINE_BEATS; bank++) begin : gen_ecc_banks
       prim_secded_39_32_enc data_ecc_enc (
-        .in  (fill_wdata_ic0[bank*BUS_SIZE+:BUS_SIZE]),
-        .out (data_wdata_ic0[bank*BusSizeECC+:BusSizeECC])
+        .data_i (fill_wdata_ic0[bank*BUS_SIZE+:BUS_SIZE]),
+        .data_o (data_wdata_ic0[bank*BusSizeECC+:BusSizeECC])
       );
     end
 
@@ -426,8 +426,8 @@ module ibex_icache import ibex_pkg::*; #(
                                      tag_rdata_ic1[way][IC_TAG_SIZE-1:0]};
 
       prim_secded_28_22_dec data_ecc_dec (
-        .in         (tag_rdata_padded_ic1),
-        .d_o        (),
+        .data_i     (tag_rdata_padded_ic1),
+        .data_o     (),
         .syndrome_o (),
         .err_o      (tag_err_bank_ic1)
       );
@@ -438,8 +438,8 @@ module ibex_icache import ibex_pkg::*; #(
     // Note - could generate for all ways and mux after
     for (genvar bank = 0; bank < IC_LINE_BEATS; bank++) begin : gen_ecc_banks
       prim_secded_39_32_dec data_ecc_dec (
-        .in         (hit_data_ecc_ic1[bank*BusSizeECC+:BusSizeECC]),
-        .d_o        (),
+        .data_i     (hit_data_ecc_ic1[bank*BusSizeECC+:BusSizeECC]),
+        .data_o     (),
         .syndrome_o (),
         .err_o      (data_err_ic1[bank*2+:2])
       );

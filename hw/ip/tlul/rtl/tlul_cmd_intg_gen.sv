@@ -20,8 +20,8 @@ module tlul_cmd_intg_gen import tlul_pkg::*; (
 
   logic [H2DCmdIntgWidth-1:0] cmd_intg;
   prim_secded_64_57_enc u_cmd_gen (
-    .in(H2DCmdMaxWidth'(cmd)),
-    .out({cmd_intg, unused_cmd_payload})
+    .data_i(H2DCmdMaxWidth'(cmd)),
+    .data_o({cmd_intg, unused_cmd_payload})
   );
 
   always_comb begin

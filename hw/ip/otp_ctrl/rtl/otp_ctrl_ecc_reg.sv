@@ -38,8 +38,8 @@ module otp_ctrl_ecc_reg #(
 
   // Only one encoder is needed.
   prim_secded_72_64_enc u_prim_secded_72_64_enc (
-    .in(wdata_i),
-    .out(ecc_enc)
+    .data_i(wdata_i),
+    .data_o(ecc_enc)
   );
 
   if (Depth == 1) begin : gen_one_word_only
@@ -68,10 +68,10 @@ module otp_ctrl_ecc_reg #(
   logic [Depth-1:0][1:0] err;
   for (genvar k = 0; k < Depth; k++) begin : gen_ecc_dec
     prim_secded_72_64_dec u_prim_secded_72_64_dec (
-      .in({ecc_q[k], data_q[k]}),
+      .data_i({ecc_q[k], data_q[k]}),
       // We only rely on the error detection mechanism,
       // and not on error correction.
-      .d_o(),
+      .data_o(),
       .syndrome_o(),
       .err_o(err[k])
     );
