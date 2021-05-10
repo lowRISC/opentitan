@@ -80,7 +80,7 @@ module otbn_rf_base
   assign push_stack      = wr_commit_i & push_stack_reqd;
 
   assign call_stack_err_o =
-      (push_stack_reqd & stack_full & ~pop_stack_reqd) | (pop_stack_reqd & ~stack_data_valid);
+      (push_stack_reqd & stack_full & ~pop_stack_reqd) | (pop_stack & ~stack_data_valid);
 
   // Prevent any write to the stack register from going to the register file,
   // all other committed writes are passed straight through
