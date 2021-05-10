@@ -4,7 +4,7 @@
 {
   name: "rv_plic"
   import_testplans: ["hw/dv/tools/dvsim/testplans/fpv_csr_testplan.hjson"]
-  entries: [
+  testpoints: [
     {
       name: LevelTriggeredIp_A
       desc: '''If interrupt pending (`ip`) is triggered, and the level indicator is set to

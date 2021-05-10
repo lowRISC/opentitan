@@ -8,7 +8,7 @@
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
-  entries: [
+  testpoints: [
     {
       name: smoke
       desc: '''**Goal**: Smoke test accessing a major datapath in USBDEV.
@@ -17,7 +17,7 @@
 
             **Checks**": Describe the self-check procedure.
             - add bullets as needed
-            - second bullet<br>
+            - second bullet\
               describe second bullet
 
             Start a new paragraph.'''

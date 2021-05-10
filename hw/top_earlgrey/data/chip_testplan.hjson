@@ -13,7 +13,7 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
                      "hw/ip/tlul/data/tlul_testplan.hjson"]
 
-  entries: [
+  testpoints: [
     ///////////////////////////////////////////////////////////////////////////
     // IO Peripherals                                                        //
     // UART, GPIO, I2C, SPIDEV, SPIHOST, USB, PINMUX & PADCTRL, PATTGEN, PWM //

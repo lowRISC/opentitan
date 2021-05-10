@@ -9,7 +9,7 @@
                      // TODO: enable for V2
                      //"hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"],
-  entries: [
+  testpoints: [
     {
       name: smoke
       desc: '''

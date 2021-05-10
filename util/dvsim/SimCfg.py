@@ -18,8 +18,7 @@ from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes, Regressions, RunModes, Tests
 from SimResults import SimResults
 from tabulate import tabulate
-from testplanner.class_defs import Testplan
-from testplanner.testplan_utils import parse_testplan
+from Testplan import Testplan
 from utils import VERBOSE, rm_path
 
 
@@ -292,12 +291,12 @@ class SimCfg(FlowCfg):
         # Regressions
         # Parse testplan if provided.
         if self.testplan != "":
-            self.testplan = parse_testplan(self.testplan)
+            self.testplan = Testplan(self.testplan, repo_top=self.proj_root)
             # Extract tests in each milestone and add them as regression target.
             self.regressions.extend(self.testplan.get_milestone_regressions())
         else:
             # Create a dummy testplan with no entries.
-            self.testplan = Testplan(name=self.name)
+            self.testplan = Testplan(None, name=self.name)
 
         # Create regressions
         self.regressions = Regressions.create_regressions(
@@ -615,7 +614,7 @@ class SimCfg(FlowCfg):
         results_str += "### Branch: " + self.branch + "\n"
 
         # Add path to testplan, only if it has entries (i.e., its not dummy).
-        if self.testplan.entries:
+        if self.testplan.testpoints:
             if hasattr(self, "testplan_doc_path"):
                 testplan = "https://{}/{}".format(self.doc_server,
                                                   self.testplan_doc_path)
@@ -624,20 +623,24 @@ class SimCfg(FlowCfg):
                                                   self.rel_path)
                 testplan = testplan.replace("/dv", "/doc/dv_plan/#testplan")
 
-            results_str += "### [Testplan](" + testplan + ")\n"
+            results_str += f"### [Testplan]({testplan})\n"
 
-        results_str += "### Simulator: " + self.tool.upper() + "\n\n"
+        results_str += f"### Simulator: {self.tool.upper()}\n"
 
         if not results.table:
             results_str += "No results to display.\n"
 
         else:
             # Map regr results to the testplan entries.
-            results_str += self.testplan.results_table(
-                test_results=results.table,
+            self.testplan.map_test_results(test_results=results.table)
+
+            results_str += self.testplan.get_test_results_table(
                 map_full_testplan=self.map_full_testplan)
-            results_str += "\n"
-            self.results_summary = self.testplan.results_summary
+
+            if self.map_full_testplan:
+                results_str += self.testplan.get_progress_table()
+
+            self.results_summary = self.testplan.get_test_results_summary()
 
             # Append coverage results if coverage was enabled.
             if self.cov_report_deploy is not None:

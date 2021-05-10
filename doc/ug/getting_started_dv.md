@@ -31,12 +31,12 @@ One of these for example, is to create appropriate interfaces for the DUT-specif
 
 ## Documentation and Initial Review
 
-The skeleton [DV document]({{< relref "dv_methodology/index.md#dv-document" >}}) and the [Hjson DV plan]({{< relref "dv_methodology/index.md#dv-plan" >}}) should be addressed first.
+The skeleton [DV document]({{< relref "dv_methodology/index.md#dv-document" >}}) and the [Hjson testplan]({{< relref "dv_methodology/index.md#testplan" >}}) should be addressed first.
 The DV documentation is not expected to be completed in full detail at this point.
 However, it is expected to list all the verification components needed and depict the planned testbench as a block diagram.
 Under the 'design verification' directory in the OpenTitan team drive, some sample testbench block diagrams are available in the `.svg` format, which can be used as a template.
-The Hjson DV plan on the other hand, is required to be completed.
-Please refer to the [testplanner tool]({{< relref "util/dvsim/testplanner/README.md" >}}) documentation for additional details on how to write the Hjson DV plan.
+The Hjson testplan on the other hand, is required to be completed.
+Please refer to the [testplanner tool]({{< relref "util/dvsim/doc/testplanner.md" >}}) documentation for additional details on how to write the Hjson testplan.
 Once done, these documents are to be reviewed with the designer(s) and other project members for completeness and clarity.
 
 ## UVM RAL Model
@@ -83,7 +83,7 @@ Please refer to [CSR utilities]({{< relref "hw/dv/sv/csr_utils/README" >}}) for 
 
 ## Full DV
 
-Running the sanity and CSR suite of tests while making progress toward reaching the [V1 stage]({{< relref "doc/project/development_stages#hardware-verification-stages" >}}) should provide a good reference in terms of how to develop tests as outlined in the DV plan and running and debugging them.
+Running the sanity and CSR suite of tests while making progress toward reaching the [V1 stage]({{< relref "doc/project/development_stages#hardware-verification-stages" >}}) should provide a good reference in terms of how to develop tests as outlined in the testplan and running and debugging them.
 Please refer to the [checklist]({{< relref "doc/project/checklist" >}}) to understand the key requirements for progressing through the subsequent verification stages and final signoff.
 
 The [UART DV](https://github.com/lowRISC/opentitan/tree/master/hw/ip/uart/dv) area can be used as a canonical example for making progress.

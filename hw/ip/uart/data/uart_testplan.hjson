@@ -6,7 +6,7 @@
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
-  entries: [
+  testpoints: [
     {
       name: smoke
       desc: '''
@@ -190,6 +190,14 @@
       desc: '''Have random reset in parallel with stress_all and tl_errors sequences'''
       milestone: V2
       tests: ["uart_stress_all_with_rand_reset"]
+    }
+  ]
+
+  covergroups: [
+    {
+      name: foo_cg
+      desc: '''
+            '''
     }
   ]
 }

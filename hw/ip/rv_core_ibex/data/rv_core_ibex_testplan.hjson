@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "rv_core_ibex"
-  entries: [
+  testpoints: [
     {
       name: riscv_arithmetic_basic_test
       desc: '''
