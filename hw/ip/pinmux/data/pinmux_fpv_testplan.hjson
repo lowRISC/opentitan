@@ -4,7 +4,7 @@
 {
   name: "pinmux"
   import_testplans: ["hw/dv/tools/dvsim/testplans/fpv_csr_testplan.hjson"]
-  entries: [
+  testpoints: [
     {
       name: InSel0_A
       desc: "When register periph_insel is set to 0, the corresponding mio_to_periph_o must be 0."

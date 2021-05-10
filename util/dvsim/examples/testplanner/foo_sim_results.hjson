@@ -70,6 +70,7 @@
       total: 10
     }
   ]
+  covergroups: ["foo_cg", "bar_cg"]
   cov_results: [
     {
       name: line

@@ -7,8 +7,8 @@ Class describing simulation results
 
 import collections
 import re
-from testplanner.class_defs import TestResult
 
+from Testplan import Result
 
 _REGEX_REMOVE = [
     # Remove UVM time.
@@ -68,13 +68,12 @@ _REGEX_STAR = [
 class SimResults:
     '''An object wrapping up a table of results for some tests
 
-    self.table is a list of TestResult objects, each of which
+    self.table is a list of Result objects, each of which
     corresponds to one or more runs of the test with a given name.
 
     self.buckets contains a dictionary accessed by the failure signature,
     holding all failing tests with the same signature.
     '''
-
     def __init__(self, items, results):
         self.table = []
         self.buckets = collections.defaultdict(list)
@@ -99,7 +98,7 @@ class SimResults:
         '''Add an entry to table for item'''
         row = self._name_to_row.get(item.name)
         if row is None:
-            row = TestResult(item.name)
+            row = Result(item.name)
             self.table.append(row)
             self._name_to_row[item.name] = row
 

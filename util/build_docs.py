@@ -23,10 +23,10 @@ from pathlib import Path
 import check_tool_requirements
 import dashboard.gen_dashboard_entry as gen_dashboard_entry
 import difgen.gen_dif_listing as gen_dif_listing
+import dvsim.Testplan as Testplan
 import reggen.gen_cfg_html as gen_cfg_html
 import reggen.gen_html as gen_html
 import reggen.gen_selfdoc as reggen_selfdoc
-import dvsim.testplanner.testplan_utils as testplan_utils
 import tlgen
 from reggen.ip_block import IpBlock
 
@@ -126,7 +126,7 @@ config = {
         "hw/ip/tlul/data/tlul_testplan.hjson",
         "hw/top_earlgrey/data/chip_testplan.hjson",
         "hw/top_earlgrey/data/standalone_sw_testplan.hjson",
-        "util/dvsim/testplanner/examples/foo_testplan.hjson",
+        "util/dvsim/examples/testplanner/foo_testplan.hjson",
     ],
 
     # Pre-generated utility selfdoc
@@ -181,13 +181,13 @@ def generate_hardware_blocks():
 
 def generate_testplans():
     for testplan in config["testplan_definitions"]:
-        plan = testplan_utils.parse_testplan(SRCTREE_TOP.joinpath(testplan))
-
+        plan = Testplan.Testplan(SRCTREE_TOP.joinpath(testplan),
+                                 repo_top=SRCTREE_TOP)
         plan_path = config["outdir-generated"].joinpath(testplan + '.testplan')
         plan_path.parent.mkdir(parents=True, exist_ok=True)
 
         testplan_html = open(str(plan_path), mode='w')
-        testplan_utils.gen_html_testplan_table(plan, testplan_html)
+        testplan_html.write(plan.get_testplan_table("html"))
         testplan_html.close()
 
 

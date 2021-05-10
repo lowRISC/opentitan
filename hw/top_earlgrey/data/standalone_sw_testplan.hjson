@@ -4,7 +4,7 @@
 {
   name: "self-contained-tests"
 
-  entries: [
+  testpoints: [
     {
       name: flash_ctrl
       desc: '''This test checks for correct sanity behavior of the flash.

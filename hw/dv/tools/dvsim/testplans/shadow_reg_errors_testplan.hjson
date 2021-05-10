@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  entries: [
+  testpoints: [
     {
       // this testplan should be imported by all IPs containing shadowed CSRs
       name: shadow_reg_errors

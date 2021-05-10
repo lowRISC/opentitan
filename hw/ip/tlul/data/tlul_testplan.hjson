@@ -5,7 +5,7 @@
   // Use the name 'main' for this generic testplan. The actual testplan that imports
   // this file can override the name if needed.
   name: main
-  entries: [
+  testpoints: [
     {
       name: xbar_smoke
       desc: '''Sequentially test each host to access any device'''

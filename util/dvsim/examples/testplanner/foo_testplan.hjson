@@ -4,14 +4,14 @@
 {
   // 'name' is mandatory field
   name: "foo"
-  intf: ["", "_jtag"]
+  intf: ["tl", "jtag"]
 
   // 'import_testplans' is a list of imported common testplans
   // paths are relative to repository top
   // all key_value pairs in this file other than 'import_testplans' and 'entries'
   // can be used for wildcard substitutions in imported testplans
-  import_testplans: ["util/dvsim/testplanner/examples/common_testplan.hjson"]
-  entries: [
+  import_testplans: ["util/dvsim/examples/testplanner/common_testplan.hjson"]
+  testpoints: [
     {
       // name of the testplan entry - should be unique
       name: smoke
@@ -22,14 +22,14 @@
       // milestone for which this test is targeted for - V1, V2 or V3
       milestone: V1
       // tests of actual written tests that maps to this entry
-      tests: ["foo_smoke"]
+      tests: ["{name}_smoke"]
     }
     {
       name: feature1
       desc: "A single line description with single double-inverted commas."
       milestone: V2
       // testplan entry with no tests added
-      tests: []
+      tests: ["{name}_feature1_{intf}"]
     }
     {
       name: feature2
@@ -43,16 +43,24 @@
             the description supports Markdown formatting. Add things:
             - like bullets
             - something in **bold** and in *italic*
-              - A sub-bullet item<br>
-                Continue describing above bullet on a new line with a HTML line break.
+              - A sub-bullet item\
+                Continue describing above bullet on a new line.
 
-            Start a new paragraph with with two newlines.
+            Start a new paragraph with two newlines.
             '''
       milestone: V2
       // testplan entry with multiple tests added
       tests: ["foo_feature2_type1",
               "foo_feature2_type2",
               "foo_feature2_type3"]
+    }
+  ]
+
+  covergroups: [
+    {
+      name: foo_cg
+      desc: '''
+            '''
     }
   ]
 }
