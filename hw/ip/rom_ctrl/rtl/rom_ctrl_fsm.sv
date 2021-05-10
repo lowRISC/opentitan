@@ -61,7 +61,7 @@ module rom_ctrl_fsm
 
   // The counter / address generator
   logic          counter_done;
-  logic [AW-1:0] counter_addr;
+  logic [AW-1:0] counter_read_addr, counter_data_addr;
   logic          counter_data_rdy, counter_data_vld;
   logic          counter_lnt;
   rom_ctrl_counter #(
@@ -71,7 +71,8 @@ module rom_ctrl_fsm
     .clk_i              (clk_i),
     .rst_ni             (rst_ni),
     .done_o             (counter_done),
-    .rom_addr_o         (counter_addr),
+    .read_addr_o        (counter_read_addr),
+    .data_addr_o        (counter_data_addr),
     .data_rdy_i         (counter_data_rdy),
     .data_vld_o         (counter_data_vld),
     .data_last_nontop_o (counter_lnt)
@@ -211,11 +212,11 @@ module rom_ctrl_fsm
   logic [TAW-1:0] rel_addr;
 
   assign reading_top = (state_q == ReadingHigh || state_q == KmacAhead) & ~counter_done;
-  assign rel_addr_wide = counter_addr - TopStartAddr;
+  assign rel_addr_wide = counter_data_addr - TopStartAddr;
   assign rel_addr = rel_addr_wide[TAW-1:0];
 
   // The top bits of rel_addr_wide should always be zero if we're reading the top bits (because TAW
-  // bits should be enough to encode the difference between counter_addr and TopStartAddr)
+  // bits should be enough to encode the difference between counter_data_addr and TopStartAddr)
   `ASSERT(RelAddrWide_A, exp_digest_vld_o |-> ~|rel_addr_wide[AW-1:TAW])
   logic unused_top_rel_addr_wide;
   assign unused_top_rel_addr_wide = |rel_addr_wide[AW-1:TAW];
@@ -250,7 +251,7 @@ module rom_ctrl_fsm
 
   // We keep control of the ROM mux from reset until we're done
   assign rom_select_o = (state_q != Done);
-  assign rom_addr_o = counter_addr;
+  assign rom_addr_o = counter_read_addr;
 
   // TODO: There are lots more checks that we could do here (things like spotting vld signals that
   //       occur when we're in an FSM state that doesn't expect them)
