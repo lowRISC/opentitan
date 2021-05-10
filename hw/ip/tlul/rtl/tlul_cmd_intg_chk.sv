@@ -21,8 +21,8 @@ module tlul_cmd_intg_chk import tlul_pkg::*; (
   assign cmd = extract_h2d_cmd_intg(tl_i);
 
   prim_secded_64_57_dec u_chk (
-    .in({tl_i.a_user.cmd_intg, H2DCmdMaxWidth'(cmd)}),
-    .d_o(),
+    .data_i({tl_i.a_user.cmd_intg, H2DCmdMaxWidth'(cmd)}),
+    .data_o(),
     .syndrome_o(),
     .err_o(err)
   );

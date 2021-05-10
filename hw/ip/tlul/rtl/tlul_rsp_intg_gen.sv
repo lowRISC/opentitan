@@ -25,8 +25,8 @@ module tlul_rsp_intg_gen import tlul_pkg::*; #(
     assign rsp = extract_d2h_rsp_intg(tl_i);
 
     prim_secded_64_57_enc u_rsp_gen (
-      .in(D2HRspMaxWidth'(rsp)),
-      .out({rsp_intg, unused_payload})
+      .data_i(D2HRspMaxWidth'(rsp)),
+      .data_o({rsp_intg, unused_payload})
     );
   end else begin : gen_passthrough_rsp_intg
     assign rsp_intg = tl_i.d_user.rsp_intg;
@@ -37,8 +37,8 @@ module tlul_rsp_intg_gen import tlul_pkg::*; #(
     logic [DataMaxWidth-1:0] unused_data;
 
     prim_secded_64_57_enc u_data_gen (
-      .in(DataMaxWidth'(tl_i.d_data)),
-      .out({data_intg, unused_data})
+      .data_i(DataMaxWidth'(tl_i.d_data)),
+      .data_o({data_intg, unused_data})
     );
   end else begin : gen_passthrough_data_intg
     assign data_intg = tl_i.d_user.data_intg;
