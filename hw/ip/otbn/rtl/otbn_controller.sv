@@ -397,18 +397,26 @@ module otbn_controller
 
   always_comb begin
     rf_base_rd_addr_a_o = insn_dec_base_i.a;
-    rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & insn_valid_i;
     rf_base_rd_addr_b_o = insn_dec_base_i.b;
-    rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & insn_valid_i;
     rf_base_wr_addr_o   = insn_dec_base_i.d;
 
-    if (insn_dec_shared_i.ld_insn || insn_dec_shared_i.st_insn) begin
-      // For loads and stores the read commit happens in the same cycle as the request because the
-      // read is used to form the request (the address and data if executing a store).
-      rf_base_rd_commit_o = (lsu_load_req_o | lsu_store_req_o) & ~err;
-    end else begin
-      // For all other instructions the read commit happens when the instruction commits.
-      rf_base_rd_commit_o = ~err & ~stall;
+    // Errors prevent reads from committing (in particular from popping the call stack)
+    rf_base_rd_commit_o = ~err;
+
+    rf_base_rd_en_a_o   = 1'b0;
+    rf_base_rd_en_b_o   = 1'b0;
+
+    if (insn_valid_i) begin
+      if (insn_dec_shared_i.ld_insn || insn_dec_shared_i.st_insn) begin
+        // For loads and stores the read happens in the same cycle as the request because the read
+        // is used to form the request (the address and data if executing a store).
+        rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & (lsu_load_req_raw | lsu_store_req_raw);
+        rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & (lsu_load_req_raw | lsu_store_req_raw);
+      end else begin
+        // For all other instructions the read happens when the instruction is unstalled.
+        rf_base_rd_en_a_o   = insn_dec_base_i.rf_ren_a & ~stall;
+        rf_base_rd_en_b_o   = insn_dec_base_i.rf_ren_b & ~stall;
+      end
     end
 
     if (insn_dec_shared_i.subset == InsnSubsetBignum) begin
