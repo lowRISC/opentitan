@@ -17,8 +17,9 @@
 // done, it will signal done_o. The surrounding (hardened) design should check that done_o never has
 // a high -> low transition.
 //
-// The rom_addr_o signal should be connected to the stateful mux that controls access to ROM. This
-// mux gives access to the rom_ctrl_counter until done_o is asserted.
+// The read_addr_o signal should be connected to the stateful mux that controls access to ROM. This
+// mux gives access to the rom_ctrl_counter until done_o is asserted. The data_addr_o signal gives
+// the address of the ROM word that was just read.
 //
 // The data_* signals are used to handshake with KMAC, although the surrounding FSM will step in
 // once we've got to the top of memory. The counter uses the output buffer on the ROM instance to
@@ -40,7 +41,8 @@ module rom_ctrl_counter
 
   output                       done_o,
 
-  output [vbits(RomDepth)-1:0] rom_addr_o,
+  output [vbits(RomDepth)-1:0] read_addr_o,
+  output [vbits(RomDepth)-1:0] data_addr_o,
 
   input                        data_rdy_i,
   output                       data_vld_o,
@@ -99,7 +101,8 @@ module rom_ctrl_counter
   end
 
   assign done_o             = done_q;
-  assign rom_addr_o         = addr_q;
+  assign read_addr_o        = go ? addr_d : addr_q;
+  assign data_addr_o        = addr_q;
   assign data_vld_o         = vld_q;
   assign data_last_nontop_o = last_nontop_q;
 
