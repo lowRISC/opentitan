@@ -225,6 +225,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         refresh_entropy = 0;
         `uvm_info(`gfn, "dropped refresh_entropy", UVM_HIGH)
       end
+      // after EDN request returns fresh entropy, it only becomes valid after 6 cycles:
+      // - 5 to expand the entropy
+      // - 1 to latch the entropy
+      cfg.clk_rst_vif.wait_clks(CYCLES_TO_FILL_ENTROPY + 1);
     end
   endtask
 
@@ -545,12 +549,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               cfg.clk_rst_vif.wait_clks(sha3_pkg::KeccakRate[strength]);
               `uvm_info(`gfn, "finished waiting for sha3pad process", UVM_HIGH)
 
-              // Keccak logic needs 1 cycle to latch internal control signal
-              // after sha3pad finishes transmitting prefix/key data blocks
-              cfg.clk_rst_vif.wait_clks(1);
-
               // wait for the keccak logic to perform KECCAK_NUM_ROUNDS rounds
-              wait_keccak_rounds((kmac_en && entropy_fast_process) ? (i == 1) : 0);
+              wait_keccak_rounds(.is_key_process((kmac_en && entropy_fast_process) ? (i == 1) : 0));
 
             end
             prefix_and_keys_done = 1;
@@ -605,12 +605,28 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   //
   // The logic in this task is relatively straightforward and implements the described behavior
   // in the timing model.
-  virtual task wait_keccak_rounds(bit is_key_process = 1'b0);
+  virtual task wait_keccak_rounds(bit is_key_process = 1'b0,
+                                  bit wait_for_run_latch = 1'b1);
     int unsigned cycles_first_round = 0;
     int unsigned cycles_per_round = 0;
+
+    // This bit is used to indicate that a full entropy expansion is necessary.
+    // A full entropy expansion will occur on the very first time that keccak rounds run after the
+    // design comes out of a reset, requiring that every round take the full 7 cycles (unless fast
+    // processing is enabled).
     bit full_entropy_expansion = 0;
 
+    // insert zero delay to ensure all entropy-related updates have settled
+    //
+    // this also helps catch an edge case where EDN returns valid entropy
+    // on the same timestep that this task starts on
+    #0;
+
     `uvm_info(`gfn, "entered wait_keccak_rounds", UVM_HIGH)
+
+    // Keccak logic needs 1 cycle to latch internal control signal
+    // after sha3pad finishes transmitting prefix/key data blocks
+    if (wait_for_run_latch) cfg.clk_rst_vif.wait_clks(1);
 
     if (cfg.enable_masking) begin
       // If masking is enabled then entropy is used,
@@ -618,14 +634,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
       if (entropy_mode inside {EntropyModeSw, EntropyModeEdn}) begin
 
-        // If using entropy from EDN, need to check whether the request is due to a normal
-        // entropy refresh after completed hash or whether the request is being sent immediately out
-        // of reset once KMAC starts operation.
-        //
-        // In this case, full expansion is necessary
+        // If using entropy from EDN, need to check whether the request is due to the request
+        // being sent immediately out of reset once KMAC starts operation.
         if (entropy_mode == EntropyModeEdn) begin
-          // zero delay to ensure all updates have settled
-          #0;
           if (in_edn_fetch && first_op_after_rst) begin
             full_entropy_expansion = 1;
           end
@@ -654,15 +665,43 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     `uvm_info(`gfn, "starting to wait for keccak", UVM_HIGH)
 
+    `uvm_info(`gfn, $sformatf("cycles_first_round: %0d", cycles_first_round), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("cycles_per_round: %0d", cycles_per_round), UVM_HIGH)
+
+    `uvm_info(`gfn, $sformatf("full_entropy_expansion: %0d", full_entropy_expansion), UVM_HIGH)
+
     for (int i = 0; i < KECCAK_NUM_ROUNDS; i++) begin
       if (i == 0) begin
         if (full_entropy_expansion) begin
           wait(in_edn_fetch == 0);
           cfg.clk_rst_vif.wait_clks(1 + ENTROPY_FULL_EXPANSION_CYCLES);
-        end else if (cycles_first_round != 0) begin
-          cfg.clk_rst_vif.wait_clks(cycles_first_round);
         end else begin
-          cfg.clk_rst_vif.wait_clks(cycles_per_round);
+          bit fresh_entropy_ready = 0;
+          // We need to be able to detect cases where fresh entropy is provided during the first
+          // keccak round, so we spawn a subprocess `wait_fresh_entropy` to raise a signal bit if
+          // this scenario is detected.
+          //
+          // If it is detected, we must wait for some extra cycles to allow the entropy to be
+          // readied internally.
+          fork
+            begin : wait_fresh_entropy
+              @(negedge in_edn_fetch);
+              fresh_entropy_ready = 1;
+              `uvm_info(`gfn, "raised fresh_entropy_ready", UVM_HIGH)
+            end : wait_fresh_entropy
+            begin : wait_first_keccak_round
+              if (cycles_first_round != 0) begin
+                cfg.clk_rst_vif.wait_clks(cycles_first_round);
+              end else begin
+                cfg.clk_rst_vif.wait_clks(cycles_per_round);
+              end
+              disable wait_fresh_entropy;
+            end : wait_first_keccak_round
+          join
+          if (fresh_entropy_ready) begin
+            // 2 cycles total
+            cfg.clk_rst_vif.wait_clks(2);
+          end
         end
       end else if (i == 1 && refresh_entropy) begin
         // If entropy is simply refreshed after the end of previous hashing operation,
@@ -953,9 +992,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                               do_increment = 0;
                             end
 
-                            // wait for 'run' signal to be latched
-                            cfg.clk_rst_vif.wait_clks(1);
-
                             wait_keccak_rounds();
                             num_blocks_filled = 0;
                             cfg.clk_rst_vif.wait_clks(1);
@@ -987,7 +1023,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                           do_increment = 0;
                           if (num_blocks_filled == sha3_pkg::KeccakRate[strength]) begin
                             `uvm_info(`gfn, "filled up blocks while processing full kmac_app_last block", UVM_HIGH)
-                            cfg.clk_rst_vif.wait_clks(1);
                             wait_keccak_rounds();
                             num_blocks_filled = 0;
                             // if need to run keccak rounds, fifo_rd_ptr increments one cycle later
@@ -1022,7 +1057,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                           if (num_blocks_filled == sha3_pkg::KeccakRate[strength]) begin
                             wait_kmac_app_flush = 0;
                             `uvm_info(`gfn, "filled up blocks while processing overflow kmac_app_last block", UVM_HIGH)
-                            cfg.clk_rst_vif.wait_clks(1);
                             wait_keccak_rounds();
                             num_blocks_filled = 0;
                             cfg.clk_rst_vif.wait_clks(2);
@@ -1045,9 +1079,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                                     sha3_pkg::KeccakRate[strength] - num_blocks_filled),
                           UVM_HIGH)
                       cfg.clk_rst_vif.wait_clks(sha3_pkg::KeccakRate[strength] - num_blocks_filled);
-
-                      // wait one more cycle for keccak to latch sha3pad control signal
-                      cfg.clk_rst_vif.wait_clks(1);
 
                       wait_keccak_rounds();
 
@@ -1085,6 +1116,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                     // Unset do_increment to avoid infinitely incrementing it
                     cfg.clk_rst_vif.wait_n_clks(1);
                     do_increment = 0;
+
+                    // If we now have a full set of blocks, do not wait a cycle to start running
+                    // keccak, go straight to the next iteration of the loop and start running
+                    // immediately.
+                    if (num_blocks_filled == sha3_pkg::KeccakRate[strength]) begin
+                      continue;
+                    end
                   end
                 end else if (num_blocks_filled == sha3_pkg::KeccakRate[strength]) begin
                   // If we have filled up an entire set of blocks, we must immediately send it off
@@ -1132,7 +1170,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                         do_increment = 1;
                         cfg.clk_rst_vif.wait_n_clks(1);
                         do_increment = 0;
-                        cfg.clk_rst_vif.wait_clks(1);
+                        // TODO - this still might be required.
+                        //cfg.clk_rst_vif.wait_clks(1);
                       end
                       wait_keccak_rounds();
 
@@ -1171,8 +1210,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                       end
                       // Wait for sha3pad to transmit all blocks to the keccak logic
                       cfg.clk_rst_vif.wait_clks(sha3_pkg::KeccakRate[strength]);
-                      // Wait 1 more cycle for sha3pad control signal to be latched by keccak
-                      cfg.clk_rst_vif.wait_clks(1);
                       wait_keccak_rounds();
                       // signal that the initial hash round has been completed
                       `uvm_info(`gfn, "raising msg_digest_done", UVM_HIGH)
@@ -1233,7 +1270,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             msg_digest_done = 0;
             `uvm_info(`gfn, "dropping msg_digest_done", UVM_HIGH)
 
-            wait_keccak_rounds();
+            wait_keccak_rounds(.wait_for_run_latch(1'b0));
             msg_digest_done = 1;
             `uvm_info(`gfn, "raising msg_digest_done", UVM_HIGH)
           end
