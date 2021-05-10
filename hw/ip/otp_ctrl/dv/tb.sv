@@ -149,7 +149,8 @@ module tb;
   assign interrupts[OtpOperationDone] = intr_otp_operation_done;
   assign interrupts[OtpErr]           = intr_otp_error;
 
-  bind `OTP_CTRL_MEM_HIER mem_bkdr_if #(.MEM_ECC(1)) mem_bkdr_if();
+  bind `OTP_CTRL_MEM_HIER mem_bkdr_if #(.MEM_ECC(prim_secded_pkg::SecdedHamming_22_16))
+      mem_bkdr_if();
 
   initial begin
     // These SVA checks the lc_escalate_en is either Off or On, we will use more than these

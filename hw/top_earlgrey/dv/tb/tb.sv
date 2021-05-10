@@ -84,7 +84,7 @@ module tb;
   bind `FLASH1_MEM_HIER mem_bkdr_if flash1_mem_bkdr_if();
   bind `FLASH0_INFO_HIER mem_bkdr_if flash0_info_bkdr_if();
   bind `FLASH1_INFO_HIER mem_bkdr_if flash1_info_bkdr_if();
-  bind `OTP_MEM_HIER mem_bkdr_if #(.MEM_ECC(1)) otp_bkdr_if();
+  bind `OTP_MEM_HIER mem_bkdr_if #(.MEM_ECC(prim_secded_pkg::SecdedHamming_22_16)) otp_bkdr_if();
 
   // TODO: the external clk is currently not connected.
   // We will need to feed this in via a muxed pin, once that function implemented.
