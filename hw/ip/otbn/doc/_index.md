@@ -57,7 +57,7 @@ The instruction set is split into two groups:
 OTBN has 32 General Purpose Registers (GPRs), each of which is 32b wide.
 The GPRs are defined in line with RV32I and are mainly used for control flow.
 They are accessed through the base instruction subset.
-GPRs aren't used by the main data path; this operates on the [wide data registers](#wide-data-registers-wdrs), a separate register file, controlled by the big number instructions.
+GPRs aren't used by the main data path; this operates on the [Wide Data Registers](#wide-data-registers-wdrs), a separate register file, controlled by the big number instructions.
 
 <table>
   <tr>
