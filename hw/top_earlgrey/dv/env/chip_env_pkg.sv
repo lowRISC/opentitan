@@ -48,7 +48,7 @@ package chip_env_pkg;
   // backdoors
   typedef virtual mem_bkdr_if mem_bkdr_vif;
   typedef virtual mem_bkdr_if #(.MEM_PARITY(1)) parity_mem_bkdr_vif;
-  typedef virtual mem_bkdr_if #(.MEM_ECC(1)) ecc_mem_bkdr_vif;
+  typedef virtual mem_bkdr_if #(.MEM_ECC(prim_secded_pkg::SecdedHamming_22_16)) ecc_mem_bkdr_vif;
 
   // Types of memories in the chip.
   typedef enum {
