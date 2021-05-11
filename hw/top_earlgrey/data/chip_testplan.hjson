@@ -4,22 +4,20 @@
 {
   name: "chip"
 
-  // Replicate CSR and mem tests over TL and JTAG interfaces.
-  intf: ["_tl", "_jtag"]
-
   // TODO: remove the common testplans if not applicable
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/enable_reg_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
+                     // TODO #5484, comment these 2 lines out because spi host memory is dummy
+                     // "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
                      "hw/ip/tlul/data/tlul_testplan.hjson"]
 
   entries: [
-    //////////////////////////////////////////////////////////////////////////////////
-    // IO Peripherals                                                               //
-    // UART, GPIO, I2C, SPIDEV, SPIHOST, USB, PINMUX & PADCTRL, RV_DM, PATTGEN, PWM //
-    //////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    // IO Peripherals                                                        //
+    // UART, GPIO, I2C, SPIDEV, SPIHOST, USB, PINMUX & PADCTRL, PATTGEN, PWM //
+    ///////////////////////////////////////////////////////////////////////////
 
     // UART (pre-verified IP) integration tests:
     {
@@ -56,7 +54,7 @@
             pins. The testbench checks the value for correctness.
             '''
       milestone: V1
-      tests: []
+      tests: ["chip_gpio"]
     }
     {
       name: chip_gpio_in
@@ -67,7 +65,7 @@
             interrupt corresponding to the right pin is seen.
             '''
       milestone: V1
-      tests: []
+      tests: ["chip_gpio"]
     }
 
     // SPI_DEVICE (pre-verified IP) integration tests:
@@ -84,7 +82,7 @@
             csb is high.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_spi_device_tx_rx"]
     }
     {
       name: chip_spi_device_eeprom
@@ -249,7 +247,52 @@
       tests: []
     }
 
+    // PATTGEN (pre-verified IP) integration tests:
+    {
+      name: chip_pattgen_ios
+      desc: '''Verify pattern generation to chip output pads.
+
+            SW programs pattgen to generate distinct patterns on both groups. SW programs pinmux to
+            select pattgen outputs to be routed. SW validates the reception of patt_done interrupts.
+            Testbench verifies the correctness of the pattern seen on the IO pins.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // PWM (pre-verified IP) integration tests:
+    {
+      name: chip_sleep_pwm_ios_val
+      desc: '''Verify PWM signaling to chip output pads during deep sleep
+
+            PWM is in the AON domain. During deep sleep, we should be able to signal the 3 external
+            LEDs that are connected to the PWM signals. Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    // System Peripherals                                                       //
+    // RV_DM, RV_TIMER, AON_TIMER, PLIC, CLK/RST/PWR MGR, ALERT_HANDLER, LC_MGR //
+    //////////////////////////////////////////////////////////////////////////////
+
+
     // RV_DM (JTAG) tests:
+    {
+      name: chip_jtag_csr_rw
+      desc: '''
+            Verify accessibility of CSRs as indicated in the RAL specification.
+
+            - Shuffle the list of CSRs first to remove the effect of ordering.
+            - Write all CSRs via JTAG interface with a random value.
+            - Shuffle the list of CSRs yet again.
+            - Read all CSRs back and check their values for correctness while adhering to the CSR's
+              access policies.
+            '''
+      milestone: V1
+      tests: []
+    }
     {
       name: chip_rv_dm_cpu_debug_mem
       desc: '''Verify access to the debug mem from the CPU.
@@ -316,36 +359,6 @@
       tests: []
     }
 
-    // PATTGEN (pre-verified IP) integration tests:
-    {
-      name: chip_pattgen_ios
-      desc: '''Verify pattern generation to chip output pads.
-
-            SW programs pattgen to generate distinct patterns on both groups. SW programs pinmux to
-            select pattgen outputs to be routed. SW validates the reception of patt_done interrupts.
-            Testbench verifies the correctness of the pattern seen on the IO pins.
-            '''
-      milestone: V2
-      tests: []
-    }
-
-    // PWM (pre-verified IP) integration tests:
-    {
-      name: chip_sleep_pwm_ios_val
-      desc: '''Verify PWM signaling to chip output pads during deep sleep
-
-            PWM is in the AON domain. During deep sleep, we should be able to signal the 3 external
-            LEDs that are connected to the PWM signals. Details TBD.
-            '''
-      milestone: V2
-      tests: []
-    }
-
-    ///////////////////////////////////////////////////////////////
-    // System Peripherals                                        //
-    // TIMER, WDOG, PLIC, CLK/RST/PWR MGR, ALERT_HANDLER, LC_MGR //
-    ///////////////////////////////////////////////////////////////
-
     // RV_TIMER (pre-verified IP) integration tests:
     {
       name: chip_timer
@@ -354,10 +367,9 @@
             The SW test configures the RV_TIMER to generate interrupt after a set timeout. The SW
             test validates the received interrupt. The testbench verifies that the interrupt was
             fired only after the timeout elapsed.
-            Verify all instances of the RV_Timer.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_rv_timer_irq"]
     }
     {
       name: chip_sleep_aon_timer_wake
@@ -504,7 +516,7 @@
             working correctly as expected. X-ref'ed with all individual IP tests.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_pwrmgr_usbdev_smoketest"]
     }
     {
       name: chip_pwrmgr_deep_sleep_all_reset_reqs
@@ -1021,7 +1033,7 @@
             Verify that the CPU can read the flash mem contents.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_flash_ctrl_access"]
     }
     {
       name: chip_flash_ctrl_ops
@@ -1270,13 +1282,44 @@
     ////////////////////////////
 
     {
+      name: chip_sw_dif_smoketest
+      desc: '''Run smoke tests developed for each DIF.
+
+            The DIF smoke tests are developed by the SW team to test each block's DIF
+            implementation. We need to ensure that they work in DV as well.
+            '''
+      milestone: V2
+      tests: ["chip_dif_aes_smoketest",
+              "chip_dif_aon_timer_smoketest",
+              "chip_dif_clkmgr_smoketest",
+              "chip_dif_csrng_smoketest",
+              "chip_dif_entropy_smoketest",
+              "chip_dif_gpio_smoketest",
+              "chip_dif_hmac_smoketest",
+              "chip_dif_kmac_smoketest",
+              "chip_dif_otbn_smoketest",
+              "chip_dif_otp_ctrl_smoketest",
+              "chip_dif_plic_smoketest",
+              "chip_dif_pwrmgr_smoketest",
+              "chip_dif_rv_timer_smoketest",
+              "chip_dif_rstmgr_smoketest",
+              "chip_dif_uart_smoketest",
+            ]
+    }
+    {
+      name: chip_coremark
+      desc: '''Run the coremark benchmark on the full chip.'''
+      milestone: V2
+      tests: ["chip_coremark"]
+    }
+    {
       name: chip_sw_boot
       desc: '''Verify the full flash image download with bootstrap signal set.
 
              Details TBD.
              '''
       milestone: V2
-      tests: []
+      tests: ["chip_uart_tx_rx_bootstrap"]
     }
     {
       name: chip_secure_boot
