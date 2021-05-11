@@ -129,5 +129,47 @@ bool test_main() {
     }
   }
 
+  // Run a SHA-3 test case with varying alignments.
+  for (size_t i = 0; i < 4; ++i) {
+    static const char kMsg[] = {'A', 'B', 'C', 'D', '1', '2',
+                                '3', '4', 'W', 'X', 'Y', 'Z'};
+    char buffer[ARRAYSIZE(kMsg) + 3] = {0};
+    memcpy(&buffer[i], kMsg, ARRAYSIZE(kMsg));
+
+    CHECK(dif_kmac_mode_sha3_start(&kmac, kDifKmacModeSha3Len224) ==
+          kDifKmacOk);
+    CHECK(dif_kmac_absorb(&kmac, &buffer[i], ARRAYSIZE(kMsg), NULL) ==
+          kDifKmacOk);
+
+    // Checking the first 32-bits of the digest is sufficient.
+    uint32_t out;
+    CHECK(dif_kmac_squeeze(&kmac, &out, sizeof(uint32_t), NULL) == kDifKmacOk);
+    CHECK(dif_kmac_end(&kmac) == kDifKmacOk);
+
+    uint32_t expect = 0x13357cdc;
+    CHECK(out == expect, "mismatch at alignment %u got 0x%u want 0x%x", i, out,
+          expect);
+  }
+
+  // Run a SHA-3 test case using multiple absorb calls.
+  {
+    static const char kMsg[] = {'A', 'B', 'C', 'D', '1', '2',
+                                '3', '4', 'W', 'X', 'Y', 'Z'};
+    CHECK(dif_kmac_mode_sha3_start(&kmac, kDifKmacModeSha3Len224) ==
+          kDifKmacOk);
+    CHECK(dif_kmac_absorb(&kmac, &kMsg[0], 1, NULL) == kDifKmacOk);
+    CHECK(dif_kmac_absorb(&kmac, &kMsg[1], 2, NULL) == kDifKmacOk);
+    CHECK(dif_kmac_absorb(&kmac, &kMsg[3], 5, NULL) == kDifKmacOk);
+    CHECK(dif_kmac_absorb(&kmac, &kMsg[8], 4, NULL) == kDifKmacOk);
+
+    // Checking the first 32-bits of the digest is sufficient.
+    uint32_t out;
+    CHECK(dif_kmac_squeeze(&kmac, &out, sizeof(uint32_t), NULL) == kDifKmacOk);
+    CHECK(dif_kmac_end(&kmac) == kDifKmacOk);
+
+    uint32_t expect = 0x13357cdc;
+    CHECK(out == expect, "mismatch got 0x%u want 0x%x", out, expect);
+  }
+
   return true;
 }
