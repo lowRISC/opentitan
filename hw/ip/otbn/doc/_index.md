@@ -526,7 +526,7 @@ This remains low until the end of the operation (either from an [`ECALL`]({{< re
 ### Data Integrity Protection {#design-details-data-integrity-protection}
 
 OTBN stores and operates on data (state) in its dedicated memories, register files, and internal registers.
-OTBN's data integrity protection is designed to protected all data stored and transmitted within OTBN from modifications through physical attacks.
+OTBN's data integrity protection is designed to protect all data stored and transmitted within OTBN from modifications through physical attacks.
 
 During transmission, the integrity of data is protected with an integrity protection code.
 Data at rest in the instruction and data memories is additionally scrambled.
@@ -545,7 +545,8 @@ The code is used for error detection only; no error correction is performed.
 #### Memory Scrambling {#design-details-memory-scrambling}
 
 Contents of OTBN's instruction and data memories are scrambled while at rest.
-Both the data word itself and the address are scrambled.
+The data is bound to the address and scrambled before being stored in memory.
+The addresses are randomly remapped.
 
 Note that data stored in other temporary memories within OTBN, including the register files, is not scrambled.
 
@@ -553,6 +554,8 @@ Scrambling is used to obfuscate the memory contents and to diffuse the data.
 Obfuscation makes passive probing more difficult, while diffusion makes active fault injection attacks more difficult.
 
 The scrambling mechanism is described in detail in the [section "Scrambling Primitive" of the SRAM Controller Technical Specification](/hw/ip/sram_ctrl/doc/#scrambling-primitive).
+
+The scrambling keys are rotated regularly, refer to the sections below for more details.
 
 #### Actions on Integrity Errors
 
@@ -575,7 +578,6 @@ The register files can consume data protected with the Integrity Protection Code
 Whenever possible the Integrity Protection Code is preserved from its source and written directly to the register files without recalculation, in particular in the following cases:
 
 * Data coming from the data memory (DMEM) through the load-store unit to a GPR or WDR.
-  (TODO: Not yet implemented.)
 * Data copied between WDRs using the `BN.MOV` or `BN.MOVR` instructions.
 * Data conditionally copied between WDRs using the `BN.SEL` instruction.
 * Data copied between the `ACC` and `MOD` WSRs and a WDR.
@@ -588,6 +590,41 @@ In all other cases the register files add the Integrity Protection Code to the i
 The integrity protection bits are checked on every read from the register files, even if the integrity protection is not removed from the data.
 
 Detected integrity violations in a register file raise a fatal `reg_error`.
+
+#### Data Memory (DMEM) Integrity Protection
+
+OTBN's data memory is 256b wide, but allows for 32b word accesses.
+To facilitate such accesses, all integrity protection in the data memory is done on a 32b word granularity.
+
+All data entering or leaving the data memory block is protected with the [Integrity Protection Code]({{< relref "#design-details-integrity-protection-code">}});
+this code is not re-computed within the memory block.
+
+Before being stored in SRAM, the data word with the attached Integrity Protection Code, as well as the address are scrambled according to the [memory scrambling algorithm]({{< relref "#design-details-memory-scrambling">}}).
+The scrambling is reversed on a read.
+
+The ephemeral memory scrambling key and the nonce are provided by the [OTP block]({{<relref "/hw/ip/otp_ctrl/doc" >}}).
+They are set once when OTBN block is reset, and changed whenever a secure wipe of the data memory is performed.
+(TODO: Link to it once we have specified secure wipe.)
+
+The Integrity Protection Code is checked on every memory read, even though the code remains attached to the data.
+A further check must be performed when the data is consumed.
+Detected integrity violations in the data memory raise a fatal `dmem_error`.
+
+#### Instruction Memory (IMEM) Integrity Protection
+
+All data entering or leaving the instruction memory block is protected with the [Integrity Protection Code]({{< relref "#design-details-integrity-protection-code">}});
+this code is not re-computed within the memory block.
+
+Before being stored in SRAM, the instruction word with the attached Integrity Protection Code, as well as the address are scrambled according to the [memory scrambling algorithm]({{< relref "#design-details-memory-scrambling">}}).
+The scrambling is reversed on a read.
+
+The ephemeral memory scrambling key and the nonce are provided by the [OTP block]({{<relref "/hw/ip/otp_ctrl/doc" >}}).
+They are set once when OTBN block is reset, and changed whenever a secure wipe of the instruction memory is performed.
+(TODO: Link to it once we have specified secure wipe.)
+
+The Integrity Protection Code is checked on every memory read, even though the code remains attached to the data.
+A further check must be performed when the data is consumed.
+Detected integrity violations in the data memory raise a fatal `imem_error`.
 
 # Running applications on OTBN
 
