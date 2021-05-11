@@ -40,6 +40,7 @@
                 // Config files to get the correct flags for otbn_memutil and otbn_tracer
                 "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
+                "{proj_root}/hw/top_earlgrey/dv/chip_dif_tests.hjson",
                 ]
 
   // Override existing project defaults to supply chip-specific values.
@@ -169,33 +170,9 @@
       run_opts: ["+use_spi_load_bootstrap=1"]
     }
     {
-      name: chip_spi_tx_rx
+      name: chip_spi_device_tx_rx
       uvm_test_seq: chip_sw_spi_tx_rx_vseq
       sw_images: ["sw/device/tests/spi_tx_rx_test:1"]
-      en_run_modes: ["sw_test_mode"]
-    }
-    {
-      name: chip_dif_aes_smoketest
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif/dif_aes_smoketest:1"]
-      en_run_modes: ["sw_test_mode"]
-    }
-    {
-      name: chip_dif_csrng_smoketest
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_csrng_smoketest:1"]
-      en_run_modes: ["sw_test_mode"]
-    }
-    {
-      name: chip_dif_entropy_smoketest
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_entropy_smoketest:1"]
-      en_run_modes: ["sw_test_mode"]
-    }
-    {
-      name: chip_dif_gpio_smoketest
-      uvm_test_seq: chip_sw_gpio_smoke_vseq
-      sw_images: ["sw/device/tests/dif_gpio_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
@@ -205,40 +182,9 @@
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_dif_plic_smoketest
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_plic_smoketest:1"]
-      en_run_modes: ["sw_test_mode"]
-    }
-    {
-      name: chip_dif_pwrmgr_smoketest
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_pwrmgr_smoketest:1"]
-      en_run_modes: ["sw_test_mode"]
-      run_opts: ["+sw_test_timeout_ns=2000000"]
-    }
-    {
-      name: chip_dif_otbn_smoketest
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_otbn_smoketest:1"]
-      en_run_modes: ["sw_test_mode"]
-    }
-    {
       name: chip_flash_ctrl_access
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/flash_ctrl_test:1"]
-      en_run_modes: ["sw_test_mode"]
-    }
-    {
-      name: chip_dif_hmac_smoketest
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_hmac_smoketest:1"]
-      en_run_modes: ["sw_test_mode"]
-    }
-    {
-      name: chip_dif_kmac_smoketest
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["sw/device/tests/dif_kmac_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {

@@ -1,0 +1,123 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  # This auxiliary chip sim cfg specification focuses on chip level DIF smoke tests.
+  # Please see chip_sim_cfg.hjson for full setup details.
+
+  # Note: Please maintain alphabetical order.
+  tests: [
+    {
+      name: chip_dif_aes_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/dif_aes_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_dif_aon_timer_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/dif_aon_timer_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_dif_clkmgr_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/dif_clkmgr_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_dif_csrng_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/dif_csrng_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_dif_entropy_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/dif_entropy_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_dif_gpio_smoketest
+      uvm_test_seq: chip_sw_gpio_smoke_vseq
+      sw_images: ["sw/device/tests/dif_gpio_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_dif_hmac_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/dif_hmac_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_dif_kmac_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/dif_kmac_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_dif_otbn_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/dif_otbn_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_dif_otp_ctrl_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/dif_otbn_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_dif_plic_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/dif_plic_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_dif_pwrmgr_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/dif_pwrmgr_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+      run_opts: ["+sw_test_timeout_ns=2000000"]
+    }
+    {
+      name: chip_dif_rv_timer_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/dif_rv_timer_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_dif_rstmgr_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/dif_rstmgr_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+    {
+      name: chip_dif_uart_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["sw/device/tests/dif_uart_smoketest:1"]
+      en_run_modes: ["sw_test_mode"]
+    }
+  ]
+  regressions: [
+    {
+      name: dif
+      tests: ["chip_dif_aes_smoketest",
+              "chip_dif_aon_timer_smoketest",
+              "chip_dif_clkmgr_smoketest",
+              "chip_dif_csrng_smoketest",
+              "chip_dif_entropy_smoketest",
+              "chip_dif_gpio_smoketest",
+              "chip_dif_hmac_smoketest",
+              "chip_dif_kmac_smoketest",
+              "chip_dif_otbn_smoketest",
+              "chip_dif_otp_ctrl_smoketest",
+              "chip_dif_plic_smoketest",
+              "chip_dif_pwrmgr_smoketest",
+              "chip_dif_rv_timer_smoketest",
+              "chip_dif_rstmgr_smoketest",
+              "chip_dif_uart_smoketest",
+            ]
+    }
+  ]
+}
