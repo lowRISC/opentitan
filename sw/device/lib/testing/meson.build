@@ -15,6 +15,17 @@ sw_lib_testing_test_status = declare_dependency(
   )
 )
 
+# Random number generator.
+sw_lib_testing_random = declare_dependency(
+  link_with: static_library(
+    'random_ot',
+    sources: ['random.c'],
+    dependencies: [
+      sw_lib_testing_test_status,
+    ],
+  )
+)
+
 # NOP coverage dependencies when coverage is not enabled.
 sw_lib_testing_test_coverage = declare_dependency(
   link_with: static_library(
