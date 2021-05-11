@@ -169,6 +169,12 @@ module tb;
     $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.CheckTransients0_A);
     $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.CheckTransients1_A);
 
+    // DV forced otp_cmd_i to reach invalid state, thus violate the assertions
+    $assertoff(0, tb.dut.gen_partitions[2].gen_buffered.u_part_buf.OtpErrorState_A);
+    $assertoff(0, tb.dut.gen_partitions[3].gen_buffered.u_part_buf.OtpErrorState_A);
+    $assertoff(0, tb.dut.gen_partitions[4].gen_buffered.u_part_buf.OtpErrorState_A);
+    $assertoff(0, tb.dut.gen_partitions[5].gen_buffered.u_part_buf.OtpErrorState_A);
+
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);

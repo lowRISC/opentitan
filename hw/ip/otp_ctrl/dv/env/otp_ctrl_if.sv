@@ -6,6 +6,16 @@
 // and drive input requests coming into OTP.
 `define ECC_REG_PATH u_otp_ctrl_ecc_reg.gen_ecc_dec[0].u_prim_secded_72_64_dec
 
+// This only supports buffered partitions.
+`define BUF_PART_OTP_CMD_PATH(i) \
+    tb.dut.gen_partitions[``i``].gen_buffered.u_part_buf.otp_cmd_o
+
+`define LC_PART_OTP_CMD_PATH \
+    tb.dut.gen_partitions[6].gen_lifecycle.u_part_buf.otp_cmd_o
+
+`define PRIM_GENERIC_OTP_CMD_I_PATH \
+    tb.dut.u_otp.gen_generic.u_impl_generic.cmd_i
+
 interface otp_ctrl_if(input clk_i, input rst_ni);
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
@@ -127,6 +137,49 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     end
   endtask
 
+  // Force prim_generic_otp input cmd_i to a invalid value.
+  task automatic force_invalid_otp_cmd_i();
+    @(posedge clk_i);
+    force `PRIM_GENERIC_OTP_CMD_I_PATH = prim_otp_pkg::cmd_e'(2'b10);
+  endtask
+
+  task automatic release_invalid_otp_cmd_i();
+    @(posedge clk_i);
+    release `PRIM_GENERIC_OTP_CMD_I_PATH;
+  endtask
+
+  // Force part_buf partitions output otp_cmd_o to a invalid value.
+  task automatic force_invalid_part_cmd_o(int part_idx);
+    @(posedge clk_i);
+    case (part_idx)
+      HwCfgIdx:     force `BUF_PART_OTP_CMD_PATH(2) = prim_otp_pkg::cmd_e'(2'b10);
+      Secret0Idx:   force `BUF_PART_OTP_CMD_PATH(3) = prim_otp_pkg::cmd_e'(2'b10);
+      Secret1Idx:   force `BUF_PART_OTP_CMD_PATH(4) = prim_otp_pkg::cmd_e'(2'b10);
+      Secret2Idx:   force `BUF_PART_OTP_CMD_PATH(5) = prim_otp_pkg::cmd_e'(2'b10);
+      LifeCycleIdx: force `LC_PART_OTP_CMD_PATH     = prim_otp_pkg::cmd_e'(2'b10);
+      default: begin
+        `uvm_fatal("otp_ctrl_if",
+            $sformatf("force invalid otp_cmd_o only supports buffered partitions: %0d", part_idx))
+      end
+    endcase
+  endtask
+
+  task automatic release_invalid_part_cmd_o(int part_idx);
+    @(posedge clk_i);
+    case (part_idx)
+      HwCfgIdx:     release `BUF_PART_OTP_CMD_PATH(2);
+      Secret0Idx:   release `BUF_PART_OTP_CMD_PATH(3);
+      Secret1Idx:   release `BUF_PART_OTP_CMD_PATH(4);
+      Secret2Idx:   release `BUF_PART_OTP_CMD_PATH(5);
+      LifeCycleIdx: release `LC_PART_OTP_CMD_PATH;
+      default: begin
+        `uvm_fatal("otp_ctrl_if",
+            $sformatf("release invalid otp_cmd_o only supports buffered partitions: %0d",
+            part_idx))
+      end
+    endcase
+  endtask
+
   `define OTP_ASSERT_WO_LC_ESC(NAME, SEQ) \
     `ASSERT(NAME, SEQ, clk_i, !rst_ni || lc_esc_on || alert_reqs)
 
@@ -153,4 +206,6 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   // TODO: add assertions when esc_en is On
   `undef OTP_ASSERT_WO_LC_ESC
   `undef ECC_REG_PATH
+  `undef BUF_PART_OTP_CMD_PATH
+  `undef LC_PART_OTP_CMD_PATH
 endinterface
