@@ -20,12 +20,35 @@ set dut_instance [string trim $::env(dut_instance)]
 # Load the merged coverage database.
 load -run $cov_merge_db_dir
 
-# Generate the text reports (summary is sufficient).
-report -out $cov_report_dir/cov_report.txt -summary -inst uvm_pkg $dut \
-  -metrics all -cumulative on -local off -grading covered
+# Generate the text report (summary is sufficient).
+report -summary \
+  -inst uvm_pkg $dut \
+  -metrics all \
+  -all \
+  -cumulative on \
+  -local off \
+  -grading covered \
+  -out $cov_report_dir/cov_report.txt
+
+# Generate the functional coverage report for tracking.
+report -summary \
+  -type \
+  -all \
+  -metrics covergroup \
+  -kind abstract \
+  -source off \
+  -out $cov_report_dir/cov_report_cg.txt
 
 # Generate the HTML reports.
-report_metrics -out $cov_report_dir -title $dut_uc -overwrite \
-  -detail -kind aggregate -metrics all -source on \
-  -exclComments -assertionStatus -allAssertionCounters \
-  -all -inst -extended true
+report_metrics \
+  -out $cov_report_dir \
+  -overwrite \
+  -title $dut_uc \
+  -detail \
+  -metrics all \
+  -kind aggregate \
+  -source on \
+  -exclComments \
+  -assertionStatus \
+  -allAssertionCounters \
+  -all
