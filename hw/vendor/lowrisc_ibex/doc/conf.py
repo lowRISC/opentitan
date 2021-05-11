@@ -42,7 +42,9 @@ extensions = [
     'sphinx.ext.todo',
 ]
 
+# Wavedrom
 wavedrom_html_jsinline = False
+render_using_wavedrompy = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
