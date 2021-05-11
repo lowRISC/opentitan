@@ -124,6 +124,11 @@ All four of these events should be crossed with the three states of the call sta
 The [loop stack]({{< relref ".#loop-stack" >}}) is accessed by executing `LOOP` and `LOOPI` instructions.
 Important events for it are tracked at those instructions, rather than separately.
 
+#### Flags
+
+Each flag in each flag group should be set to one from zero by some instruction.
+Similarly, each flag in each flag group should be cleared to zero from one by some instruction.
+
 ### Instruction-based coverage
 
 As a processor, much of OTBN's coverage points are described in terms of instructions being executed.
@@ -136,11 +141,17 @@ That is, we expect to see execution with each bit of each immediate field being 
 We also expect to see each field with values `'0` and `'1` (all zeros and all ones).
 If the field is treated as a signed number, we also expect to see it with the extremal values for its range (just the MSB set, for the most negative value; all but the MSB set, for the most positive value).
 
-For any instruction that reads from or writes to a GPR register, we expect to see that operand equal to `x0`, `x1` and an arbitrary register in the range `x2 .. x31`.
+For any instruction that reads from or writes to a GPR, we expect to see that operand equal to `x0`, `x1` and an arbitrary register in the range `x2 .. x31`.
+We don't have any particular coverage requirements for WDRs (since all of them work essentially the same).
 
 For any source GPR, we require "toggle coverage" for its value.
 For example, `ADD` reads from its `<grs1>` operand.
 We want to see each of the 32 bits of that operand set and unset (giving 64 coverage points).
+
+If an instruction can generate flag changes, we expect to see each flag that the instruction can change being both set and cleared by the instruction.
+This needn't be crossed with the two flag groups (that's tracked separately in the "Flags" block above).
+For example, `BN.ADD` can write to each of the flags `C`, `M`, `L` and `Z`.
+This paragraph implies eight coverage points (four flags times two values) for that instruction.
 
 #### ADD
 
@@ -325,6 +336,145 @@ No special coverage points for this instruction.
 
 As for `LOOP`, but without the count of `'1` (not achievable with an immediate).
 
+#### BN.ADD
+
+- Extremal values of shift for both directions where the shifted value is nonzero
+- A nonzero right shift with a value in `wrs2` whose top bit is set
+
+#### BN.ADDC
+
+- Extremal values of shift for both directions where the shifted value is nonzero
+- A nonzero right shift with a value in `wrs2` whose top bit is set
+- Execute with both values of the carry flag for both flag groups (to make sure things are wired through properly)
+
+#### BN.ADDI
+
+As for `BN.ADD`.
+
+#### BN.ADDM
+
+- Execute with the two extreme values of `MOD` (zero and all ones)
+- Perform a subtraction (because the sum is at least `MOD`) when `MOD` is nonzero.
+- Don't perform a subtraction (because the sum is less than `MOD`) when `MOD` is nonzero.
+- Perform a subtraction where the sum is at least twice a nonzero value of `MOD`.
+- A calculation where the sum exactly equals a nonzero `MOD`
+
+#### BN.MULQACC
+
+- Cross `wrs1_qwsel` with `wrs2_qwsel` to make sure they are applied to the right inputs
+- See the accumulator overflow
+
+#### BN.MULQACC.WO
+
+As for `BN.MULQACC`, plus the generic flag group cover points.
+
+#### BN.MULQACC.SO
+
+As for `BN.MULQACC` plus the following:
+
+- See bits being cleared in the destination register as part of shifting out the result (makes sure that we're masking things properly when assembling the new value)
+- Cross the generic flag updates with `wrd_hwsel`, since the flag changes are different in the two modes.
+
+#### BN.SUB
+
+As for `BN.ADD`.
+
+#### BN.SUBB
+
+As for `BN.ADDC`.
+
+#### BN.SUBI
+
+As for `BN.SUB`.
+
+#### BN.SUBM
+
+- Execute with the two extreme values of `MOD` (zero and all ones)
+- A non-negative intermediate result with a nonzero `MOD` (so `MOD` is not added).
+- A negative intermediate result with a nonzero `MOD` (so `MOD` is added).
+- A very negative intermediate result with a nonzero `MOD` (so `MOD` is added, but the top bit is still set)
+- An intermediate result that exactly equals a nonzero `-MOD`.
+
+#### BN.AND
+
+- Extremal values of shift for both directions where the shifted value is nonzero
+- Toggle coverage of the output result (to ensure we're not just AND'ing things with zero)
+
+#### BN.OR
+
+- Extremal values of shift for both directions where the shifted value is nonzero
+- Toggle coverage of the output result (to ensure we're not just OR'ing things with zero)
+
+#### BN.NOT
+
+- Extremal values of shift for both directions where the shifted value is nonzero
+- Toggle coverage of the output result (to ensure nothing gets clamped)
+
+#### BN.XOR
+
+- Extremal values of shift for both directions where the shifted value is nonzero
+- Toggle coverage of the output result (to ensure we're not just XOR'ing things with zero)
+
+#### BN.RSHI
+
+No special coverage.
+
+#### BN.SEL
+
+- Cross flag group, flag and flag value (2 times 4 times 2 points)
+
+#### BN.CMP
+
+As for `BN.SUB`.
+
+#### BN.CMPB
+
+As for `BN.SUBB`.
+
+#### BN.LID
+
+- Load from a valid address, where `grs1` is above the top of memory and a negative `offset` brings the load address in range.
+- Load from a valid address, where `grs1` is negative and a positive `offset` brings the load address in range.
+- Load from address zero
+- Load from the top word of memory
+- Load from an invalid address (aligned but above the top of memory)
+- Load from a misaligned address
+- See an invalid instruction with both increments specified
+- See `grd` greater than 31, giving an illegal instruction error
+- Cross the three types of GPR for `grd` with `grd_inc`
+- Cross the three types of GPR for `grs1` with `grd_inc`
+
+#### BN.SID
+
+- Store to a valid address, where `grs1` is above the top of memory and a negative `offset` brings the load address in range.
+- Store to a valid address, where `grs1` is negative and a positive `offset` brings the load address in range.
+- Store to address zero
+- Store to the top word of memory
+- Store to an invalid address (aligned but above the top of memory)
+- Store to a misaligned address
+- See an invalid instruction with both increments specified
+- See `grd` greater than 31, giving an illegal instruction error
+- Cross the three types of GPR for `grs2` with `grs2_inc`
+- Cross the three types of GPR for `grs1` with `grd_inc`
+
+#### BN.MOV
+
+No special coverage.
+
+#### BN.MOVR
+
+- See an invalid instruction with both increments specified
+- Since MOVR signals an error if either of its source registers has a value greater than 31, cross whether the input register value at `grd` is greater than 31 with whether the register value at `grs` is greater than 31
+
+#### BN.WSRR
+
+- Read from each valid WSR
+- Read from an invalid WSR
+
+#### BN.WSRW
+
+- Write to each valid WSR, including read-only WSRs.
+- Write to an invalid WSR
 
 ## Self-checking strategy
 ### Scoreboard
