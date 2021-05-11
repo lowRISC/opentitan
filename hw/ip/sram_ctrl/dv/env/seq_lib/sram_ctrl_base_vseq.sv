@@ -37,15 +37,13 @@ class sram_ctrl_base_vseq extends cip_base_vseq #(
   // setup basic sram_ctrl features
   virtual task sram_ctrl_init();
     cfg.mem_bkdr_vif.init();
-    req_scr_key();
     req_mem_init();
   endtask
 
   // Request a memory init.
   //
   virtual task req_mem_init();
-    ral.ctrl.init.set(1'b1);
-    csr_update(.csr(ral.ctrl));
+    csr_wr(.ptr(ral.ctrl), .value(3));
     csr_spinwait(.ptr(ral.ctrl.init), .exp_data(0));
   endtask
 
