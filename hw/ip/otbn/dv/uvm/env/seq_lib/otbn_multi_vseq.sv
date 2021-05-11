@@ -30,8 +30,8 @@ class otbn_multi_vseq extends otbn_base_vseq;
       if (rerun) begin
         `uvm_info(`gfn, $sformatf("Re-using OTBN binary at `%0s'", elf_path), UVM_LOW)
       end else begin
-        `uvm_info(`gfn, $sformatf("Loading OTBN binary from `%0s'", elf_path), UVM_LOW)
         elf_path = pick_elf_path();
+        `uvm_info(`gfn, $sformatf("Loading OTBN binary from `%0s'", elf_path), UVM_LOW)
         load_elf(elf_path, 1'b0);
       end
 
