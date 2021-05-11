@@ -52,6 +52,9 @@ class chip_base_vseq extends cip_base_vseq #(
     cfg.flash_info1_bkdr_vif.set_mem();
     // Backdoor load the OTP image.
     cfg.otp_bkdr_vif.load_mem_from_file({cfg.sw_images[SwTypeOtp], ".vmem"});
+    // Randomize the ROM image. Subclasses that have an actual ROM image will load it later.
+    cfg.rom_bkdr_vif.randomize_mem();
+
     // Bring the chip out of reset.
     super.dut_init(reset_kind);
   endtask
