@@ -162,9 +162,10 @@ package otp_ctrl_env_pkg;
   typedef virtual mem_bkdr_if #(.MEM_ECC(prim_secded_pkg::SecdedHamming_22_16)) mem_bkdr_vif;
   typedef virtual otp_ctrl_if otp_ctrl_vif;
 
-  parameter otp_err_code_e OTP_TERMINAL_ERRS[3] = {OtpMacroEccUncorrError,
+  parameter otp_err_code_e OTP_TERMINAL_ERRS[4] = {OtpMacroEccUncorrError,
                                                    OtpCheckFailError,
-                                                   OtpFsmStateError};
+                                                   OtpFsmStateError,
+                                                   OtpMacroError};
 
   // functions
   function automatic int get_part_index(bit [TL_DW-1:0] addr);
