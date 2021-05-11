@@ -109,7 +109,6 @@ hw/ip/pwrmgr/rtl/pwrmgr_cdc_pulse.sv
 hw/ip/pwrmgr/rtl/pwrmgr_slow_fsm.sv
 hw/ip/pwrmgr/rtl/pwrmgr_fsm.sv
 hw/ip/otp_ctrl/rtl/otp_ctrl_lfsr_timer.sv
-hw/ip/otp_ctrl/rtl/otp_ctrl_part_pkg.sv
 hw/ip/otp_ctrl/rtl/otp_ctrl_ecc_reg.sv
 hw/ip/otp_ctrl/rtl/otp_ctrl_token_const.sv
 hw/ip/otp_ctrl/dv/tests/otp_ctrl_base_test.sv

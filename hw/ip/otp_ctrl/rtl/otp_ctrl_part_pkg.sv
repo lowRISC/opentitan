@@ -94,9 +94,9 @@ package otp_ctrl_part_pkg;
     // Key index to use for scrambling.
     key_sel_e key_sel;
     // Attributes
-    logic secret;  // Whether the partition is secret (and hence scrambled)
+    logic secret;     // Whether the partition is secret (and hence scrambled)
     logic hw_digest;  // Whether the partition has a hardware digest
-    logic write_lock;  // Whether the partition is write lockable (via digest)
+    logic write_lock; // Whether the partition is write lockable (via digest)
     logic read_lock;  // Whether the partition is read lockable (via digest)
   } part_info_t;
 
@@ -115,9 +115,9 @@ package otp_ctrl_part_pkg;
   // Partition Metadata //
   ////////////////////////
 
-  localparam part_info_t PartInfo[NumPart] = '{
-  // CREATOR_SW_CFG
-  '{
+  localparam part_info_t PartInfo [NumPart] = '{
+    // CREATOR_SW_CFG
+    '{
       variant:    Unbuffered,
       offset:     11'd0,
       size:       768,
@@ -127,8 +127,8 @@ package otp_ctrl_part_pkg;
       write_lock: 1'b1,
       read_lock:  1'b0
     },
-  // OWNER_SW_CFG
-  '{
+    // OWNER_SW_CFG
+    '{
       variant:    Unbuffered,
       offset:     11'd768,
       size:       768,
@@ -138,8 +138,8 @@ package otp_ctrl_part_pkg;
       write_lock: 1'b1,
       read_lock:  1'b0
     },
-  // HW_CFG
-  '{
+    // HW_CFG
+    '{
       variant:    Buffered,
       offset:     11'd1536,
       size:       240,
@@ -149,8 +149,8 @@ package otp_ctrl_part_pkg;
       write_lock: 1'b1,
       read_lock:  1'b0
     },
-  // SECRET0
-  '{
+    // SECRET0
+    '{
       variant:    Buffered,
       offset:     11'd1776,
       size:       40,
@@ -160,8 +160,8 @@ package otp_ctrl_part_pkg;
       write_lock: 1'b1,
       read_lock:  1'b1
     },
-  // SECRET1
-  '{
+    // SECRET1
+    '{
       variant:    Buffered,
       offset:     11'd1816,
       size:       88,
@@ -171,8 +171,8 @@ package otp_ctrl_part_pkg;
       write_lock: 1'b1,
       read_lock:  1'b1
     },
-  // SECRET2
-  '{
+    // SECRET2
+    '{
       variant:    Buffered,
       offset:     11'd1904,
       size:       88,
@@ -182,8 +182,8 @@ package otp_ctrl_part_pkg;
       write_lock: 1'b1,
       read_lock:  1'b1
     },
-  // LIFE_CYCLE
-  '{
+    // LIFE_CYCLE
+    '{
       variant:    LifeCycle,
       offset:     11'd1992,
       size:       56,
@@ -216,12 +216,12 @@ package otp_ctrl_part_pkg;
 
   // Breakout types for easier access of individual items.
   typedef struct packed {
-    logic [63:0] hw_cfg_digest;
-    logic [1575:0] unallocated;
-    logic [7:0] en_entropy_src_fw_read;
-    logic [7:0] en_csrng_sw_app_read;
-    logic [7:0] en_sram_ifetch;
-    logic [255:0] device_id;
+      logic [63:0] hw_cfg_digest;
+      logic [1575:0] unallocated;
+      logic [7:0] en_entropy_src_fw_read;
+      logic [7:0] en_csrng_sw_app_read;
+      logic [7:0] en_sram_ifetch;
+      logic [255:0] device_id;
   } otp_hw_cfg_data_t;
 
   // default value used for intermodule
@@ -271,7 +271,7 @@ package otp_ctrl_part_pkg;
     }),
     1920'({
       64'hABFF25A58087D34A,
-      1576'h0,  // unallocated space
+      1576'h0, // unallocated space
       8'h0,
       8'h0,
       8'h0,
@@ -279,7 +279,7 @@ package otp_ctrl_part_pkg;
     }),
     6144'({
       64'h523D5C06786AAC34,
-      4896'h0,  // unallocated space
+      4896'h0, // unallocated space
       1024'h0,
       32'h0,
       32'h0,
@@ -289,12 +289,11 @@ package otp_ctrl_part_pkg;
     }),
     6144'({
       64'hFA53B8058E157CB6,
-      3904'h0,  // unallocated space
+      3904'h0, // unallocated space
       64'h0,
       32'h0,
       32'h0,
       2048'h0
-    })
-  });
+    })});
 
 endpackage : otp_ctrl_part_pkg
