@@ -1,0 +1,66 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "rom_ctrl"
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+  entries: [
+    {
+      name: smoke
+      desc: '''
+            Smoke test exercising the main features of rom_ctrl.
+
+            **Stimulus**:
+            - Create a random valid ROM image and load into memory model
+            - Allow the rom check to complete
+            - Perform some random memory accesses
+
+            **Checks**:
+            - Check that all data supplied to kmac is correct
+            - Check that the rom checking sequence gives the expected result
+            - Check that the memory accesses return expected data
+            '''
+      milestone: V1
+      tests: ["rom_ctrl_smoke"]
+    }
+    {
+      name: multiple_reset
+      desc: '''
+            Test where the design is reset many times and the rom is re-checked
+
+            **Stimulus**:
+            - Periodically reset the device to restart the rom check
+
+            **Checks**:
+            - Check that the digest csrs are not corrupted
+            '''
+      milestone: V2
+      tests: ["rom_ctrl_reset"]
+    }
+    {
+      name: mem_tl_errors
+      desc: '''
+            This test will reuse the common tl_access_tests to run TLUL error sequences on the
+            ROM TLUL interface to verify that erroneous TLUL transactions are handled correctly.
+            '''
+      milestone: V2
+      tests: ["rom_ctrl_mem_tl_errors"]
+    }
+    {
+      name: ecc_mem_fault
+      desc: '''
+            Inject runtime errors into the rom
+
+            **Stimulus**:
+            - Insert 1, 2 and 3 bit errors into rom reads to trigger ECC checking
+
+            **Checks**:
+            - TODO - should this generate an alert with xmission integrity?
+            '''
+      milestone: V3
+      tests: ["rom_ctrl_ecc"]
+    }
+  ]
+}

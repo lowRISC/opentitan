@@ -33,7 +33,8 @@ ${'###'} Block diagram
 ![Block diagram](tb.svg)
 
 ${'###'} Top level testbench
-Top level testbench is located at `hw/ip/${name}/dv/tb.sv`. It instantiates the ${name.upper()} DUT module `hw/ip/${name}/rtl/${name}.sv`.
+The top level testbench is located at `hw/ip/${name}/dv/tb.sv`.
+It instantiates the ${name.upper()} DUT module `hw/ip/${name}/rtl/${name}.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
@@ -58,9 +59,8 @@ All common types and methods defined at the package level can be found in
 ```
 % if is_cip:
 ${'###'} TL_agent
-${name.upper()} testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
-which provides the ability to drive and independently monitor random traffic via
-TL host interface into ${name.upper()} device.
+The ${name.upper()} testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}}).
+This provides the ability to drive and independently monitor random traffic via the TL host interface into the ${name.upper()} device.
 
 % endif
 % if has_alerts:
@@ -94,9 +94,8 @@ ${'###'} Reference models
 
 ${'###'} Stimulus strategy
 ${'####'} Test sequences
-All test sequences reside in `hw/ip/${name}/dv/env/seq_lib`.
-The `${name}_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
-All test sequences are extended from `${name}_base_vseq`.
+The test sequences reside in `hw/ip/${name}/dv/env/seq_lib`.
+All test sequences are extended from `${name}_base_vseq`, which is extended from `cip_base_vseq` and serves as a starting point.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
 * task 1:
@@ -117,7 +116,7 @@ It creates the following analysis ports to retrieve the data monitored by corres
 <!-- explain inputs monitored, flow of data and outputs checked -->
 
 ${'####'} Assertions
-* TLUL assertions: The `tb/${name}_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/${name}_bind.sv` file binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 * assert prop 1:
 * assert prop 2:
