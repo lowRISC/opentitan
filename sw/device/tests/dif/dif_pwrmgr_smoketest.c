@@ -11,47 +11,45 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
-static dif_pwrmgr_t pwrmgr;
-static dif_aon_timer_t aon_timer;
-
-const test_config_t kTestConfig;
-const dif_pwrmgr_wakeup_reason_t test_wakeup_reason = {
+static const dif_pwrmgr_wakeup_reason_t kWakeUpReasonTest = {
     .types = kDifPwrmgrWakeupTypeRequest,
     .request_sources = kDifPwrmgrWakeupRequestSourceFive,
 };
 
-const dif_pwrmgr_wakeup_reason_t por_wakeup_reason = {
+static const dif_pwrmgr_wakeup_reason_t kWakeUpReasonPor = {
     .types = 0,
     .request_sources = 0,
 };
 
-static bool compare_wakeup_reasons(const dif_pwrmgr_wakeup_reason_t *lhs,
-                                   const dif_pwrmgr_wakeup_reason_t *rhs) {
+const test_config_t kTestConfig;
+
+bool compare_wakeup_reasons(const dif_pwrmgr_wakeup_reason_t *lhs,
+                            const dif_pwrmgr_wakeup_reason_t *rhs) {
   return lhs->types == rhs->types &&
          lhs->request_sources == rhs->request_sources;
 }
 
-static void aon_timer_setup(dif_aon_timer_t *aon) {
+void aon_timer_wakeup_config(dif_aon_timer_t *aon_timer,
+                             uint32_t wakeup_threshold) {
   // Make sure that wake-up timer is stopped.
-  CHECK(dif_aon_timer_wakeup_stop(aon) == kDifAonTimerOk);
+  CHECK(dif_aon_timer_wakeup_stop(aon_timer) == kDifAonTimerOk);
 
   // Make sure the wake-up IRQ is cleared to avoid false positive.
-  CHECK(dif_aon_timer_irq_acknowledge(aon, kDifAonTimerIrqWakeupThreshold) ==
-        kDifAonTimerOk);
+  CHECK(dif_aon_timer_irq_acknowledge(
+            aon_timer, kDifAonTimerIrqWakeupThreshold) == kDifAonTimerOk);
+
   bool is_pending;
-  CHECK(dif_aon_timer_irq_is_pending(aon, kDifAonTimerIrqWakeupThreshold,
+  CHECK(dif_aon_timer_irq_is_pending(aon_timer, kDifAonTimerIrqWakeupThreshold,
                                      &is_pending) == kDifAonTimerOk);
   CHECK(!is_pending);
 
-  // Test the wake-up timer functionality by setting a small counter.
-  // Delay to compensate for AON Timer 200kHz clock (less should suffice, but
-  // to be on a cautious side - lets keep it at 100 for now).
-  CHECK(dif_aon_timer_wakeup_start(aon, 5, 0) == kDifAonTimerOk);
-  usleep(100);
+  CHECK(dif_aon_timer_wakeup_start(aon_timer, wakeup_threshold, 0) ==
+        kDifAonTimerOk);
 }
 
 bool test_main(void) {
-  bool test_passed = false;
+  dif_pwrmgr_t pwrmgr;
+  dif_aon_timer_t aon_timer;
 
   // Initialize pwrmgr
   CHECK(dif_pwrmgr_init(
@@ -61,33 +59,33 @@ bool test_main(void) {
             },
             &pwrmgr) == kDifPwrmgrOk);
 
-  // Initialize aon_timer
-  dif_aon_timer_params_t params = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR),
-  };
-  CHECK(dif_aon_timer_init(params, &aon_timer) == kDifAonTimerOk);
-
   // Assuming the chip hasn't slept yet, wakeup reason should be empty.
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
   CHECK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason) == kDifPwrmgrOk);
 
-  if (compare_wakeup_reasons(&wakeup_reason, &por_wakeup_reason)) {
+  if (compare_wakeup_reasons(&wakeup_reason, &kWakeUpReasonPor)) {
     LOG_INFO("Powered up for the first time, begin test");
-  } else if (compare_wakeup_reasons(&wakeup_reason, &test_wakeup_reason)) {
-    test_passed = true;
-    LOG_INFO("Aon timer wakeup detected");
-  } else {
-    CHECK(false);
-  }
 
-  if (!test_passed) {
-    // setup aon timer wakeup
-    aon_timer_setup(&aon_timer);
+    // Initialize aon_timer
+    dif_aon_timer_params_t params = {
+        .base_addr =
+            mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR),
+    };
+    CHECK(dif_aon_timer_init(params, &aon_timer) == kDifAonTimerOk);
+
+    // Issue a wakeup singal in ~150us through the AON timer.
+    //
+    // At 200kHz, threshold of 30 is equal to 150us. There is an additional
+    // ~4 cycle overhead for the CSR value to synchronize with the AON clock.
+    // We should expect the wake up to trigger in ~170us. This is sufficient
+    // time to allow pwrmgr config and the low power entry on WFI to complete.
+    aon_timer_wakeup_config(&aon_timer, 30);
 
     // Enable low power on the next WFI with default settings.
     // All clocks and power domains are turned off during low power.
     dif_pwrmgr_domain_config_t config;
-    config = 0;
+    // Issue #6504: USB clock in active power must be left enabled.
+    config = kDifPwrmgrDomainOptionUsbClockInActivePower;
 
     CHECK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeWakeup,
                                          kDifPwrmgrWakeupRequestSourceFive) ==
@@ -98,7 +96,16 @@ bool test_main(void) {
 
     // Enter low power mode.
     wait_for_interrupt();
+
+  } else if (compare_wakeup_reasons(&wakeup_reason, &kWakeUpReasonTest)) {
+    LOG_INFO("Aon timer wakeup detected");
+    return true;
+
+  } else {
+    LOG_ERROR("Unexpected wakeup detected: type = %d, request_source = %d",
+              wakeup_reason.types, wakeup_reason.request_sources);
+    return false;
   }
 
-  return test_passed;
+  return false;
 }
