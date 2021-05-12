@@ -1852,7 +1852,7 @@ module top_earlgrey #(
       // Inter-module signals
       .aon_timer_wkup_req_o(pwrmgr_aon_wakeups[4]),
       .aon_timer_rst_req_o(pwrmgr_aon_rstreqs[1]),
-      .lc_cpu_en_i(lc_ctrl_lc_cpu_en),
+      .lc_escalate_en_i(lc_ctrl_pkg::Off),
       .sleep_mode_i(pwrmgr_aon_low_power),
       .tl_i(aon_timer_aon_tl_req),
       .tl_o(aon_timer_aon_tl_rsp),

@@ -18,8 +18,8 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   // that it starts first.
   rand bit reset_aon_first;
 
-  // Should the CPU be considered enabled at the start of time?
-  rand bit initial_cpu_enable;
+  // Should the escalation signal be enabled at the start of time?
+  rand bit initial_lc_escalate_en;
 
   // Is the chip in sleep at the start of time? In the real chip, the answer is (obviously) no, but
   // the design should work either way so we may as well test it.
@@ -43,7 +43,7 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
-    cfg.cpu_en_vif.drive(initial_cpu_enable);
+    cfg.lc_escalate_en_vif.drive(initial_lc_escalate_en);
     cfg.sleep_vif.drive(initial_sleep_mode);
 
     // Bring up the clocks in either order. We can't just race them by running them in parallel,

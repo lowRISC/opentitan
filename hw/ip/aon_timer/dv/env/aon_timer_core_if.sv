@@ -9,7 +9,7 @@ interface aon_timer_core_if (
   input logic                      clk_aon_i,
   input logic                      rst_aon_ni,
 
-  input lc_ctrl_pkg::lc_tx_t [2:0] lc_cpu_en_i,
+  input lc_ctrl_pkg::lc_tx_t [2:0] lc_escalate_en_i,
   input logic                      sleep_mode_i,
 
   // Register read outputs

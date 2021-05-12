@@ -16,7 +16,7 @@ module aon_timer (
   output tlul_pkg::tl_d2h_t   tl_o,
 
   // clk_i domain
-  input  lc_ctrl_pkg::lc_tx_t lc_cpu_en_i,
+  input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
   output logic                intr_wkup_timer_expired_o,
   output logic                intr_wdog_timer_bark_o,
 
@@ -63,7 +63,7 @@ module aon_timer (
   logic                      wdog_count_reg_wr;
   logic [31:0]               wdog_count_wr_data;
   // Other sync signals
-  lc_ctrl_pkg::lc_tx_t [2:0] lc_cpu_en;
+  lc_ctrl_pkg::lc_tx_t [2:0] lc_escalate_en;
   // Wakeup signals
   logic                      aon_wkup_req_d, aon_wkup_req_q;
   logic                      wkup_ack, aon_wkup_ack;
@@ -254,11 +254,11 @@ module aon_timer (
   // Lifecycle sync
   prim_lc_sync #(
     .NumCopies(3)
-  ) u_lc_sync_cpu_en (
+  ) u_lc_sync_escalate_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
-    .lc_en_i (lc_cpu_en_i),
-    .lc_en_o (lc_cpu_en)
+    .lc_en_i (lc_escalate_en_i),
+    .lc_en_o (lc_escalate_en)
   );
 
   ////////////////
@@ -279,7 +279,7 @@ module aon_timer (
     .clk_aon_i,
     .rst_aon_ni,
     .sleep_mode_i              (sleep_mode),
-    .lc_cpu_en_i               (lc_cpu_en),
+    .lc_escalate_en_i          (lc_escalate_en),
     .wkup_enable_o             (wkup_enable),
     .wkup_prescaler_o          (wkup_prescaler),
     .wkup_thold_o              (wkup_thold),

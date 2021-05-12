@@ -21,8 +21,8 @@ class aon_timer_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get aon_clk_rst_vif from uvm_config_db")
     end
     if (!uvm_config_db#(virtual pins_if #(1))::
-        get(this, "", "cpu_en_vif", cfg.cpu_en_vif)) begin
-      `uvm_fatal(`gfn, "failed to get cpu_en_vif from uvm_config_db")
+        get(this, "", "lc_escalate_en_vif", cfg.lc_escalate_en_vif)) begin
+      `uvm_fatal(`gfn, "failed to get lc_escalate_en_vif from uvm_config_db")
     end
     if (!uvm_config_db#(virtual pins_if #(2))::
         get(this, "", "aon_intr_vif", cfg.aon_intr_vif)) begin
