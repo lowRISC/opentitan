@@ -41,7 +41,7 @@ extern "C" {
  * - `dif_csrng_init()`
  * - `dif_csrng_configure()`
  * - `dif_csrng_instantiate()`
- * - `dif_csrng_generate()`
+ * - `dif_csrng_generate_start()`
  * - `dif_csrng_uninstantiate()`
  *
  * The following functions can be used for reseed and update operations:
@@ -228,7 +228,7 @@ typedef struct dif_csrng_seed_material {
 typedef struct dif_csrng_output_status {
   /**
    * Set to true when there is cryptographic entropy data available to
-   * read using `dif_csrng_read_output()`.
+   * read using `dif_csrng_generate_end()`.
    */
   bool valid_data;
   /**
@@ -364,7 +364,27 @@ dif_csrng_result_t dif_csrng_update(
  *
  */
 DIF_WARN_UNUSED_RESULT
-dif_csrng_result_t dif_csrng_generate(const dif_csrng_t *csrng, size_t len);
+dif_csrng_result_t dif_csrng_generate_start(const dif_csrng_t *csrng,
+                                            size_t len);
+
+/**
+ * Reads the output of the last CSRNG generate call.
+ *
+ * This function blocks until all data is read from the CSRNG. The caller is
+ * responsible for making sure that the `len` parameter matches the length set
+ * in the `dif_csrng_generate_start()` call.
+ *
+ * `dif_csrng_get_output_status()` can be called before this function to ensure
+ * there is data availble in the CSRNG output buffer.
+ *
+ * @param csrng A CSRNG handle.
+ * @param[out] buf A buffer to fill with words from the pipeline.
+ * @param len The number of words to read into `buf`.
+ * @return The result of the operation.
+ */
+DIF_WARN_UNUSED_RESULT
+dif_csrng_result_t dif_csrng_generate_end(const dif_csrng_t *csrng,
+                                          uint32_t *buf, size_t len);
 
 /**
  * Uninstantiates CSRNG
@@ -387,7 +407,7 @@ dif_csrng_result_t dif_csrng_uninstantiate(const dif_csrng_t *csrng);
  * - `dif_csrng_instantiate()`
  * - `dif_csrng_reseed()`
  * - `dif_csrng_update()`
- * - `dif_csrng_generate()`
+ * - `dif_csrng_generate_start()`
  * - `dif_csrng_uninstantiate()`
  *
  * @param csrng An CSRNG handle
@@ -401,7 +421,7 @@ dif_csrng_result_t dif_csrng_get_cmd_interface_status(
 /**
  * Gets the current cryptographic entropy output data status.
  *
- * This function can be used before calling `dif_csrng_read_output()` to
+ * This function can be used before calling `dif_csrng_generate_end()` to
  * check if there is data available to read.
  *
  * @param csrng A CSRNG handle
@@ -411,18 +431,6 @@ dif_csrng_result_t dif_csrng_get_cmd_interface_status(
 DIF_WARN_UNUSED_RESULT
 dif_csrng_result_t dif_csrng_get_output_status(
     const dif_csrng_t *csrng, dif_csrng_output_status_t *status);
-
-/**
- * Reads the output of the last CSRNG operation
- *
- * @param csrng A CSRNG handle.
- * @param[out] buf A buffer to fill with words from the pipeline.
- * @param len The number of words to read into `buf`.
- * @return The result of the operation.
- */
-DIF_WARN_UNUSED_RESULT
-dif_csrng_result_t dif_csrng_read_output(const dif_csrng_t *csrng,
-                                         uint32_t *buf, size_t len);
 
 /**
  * Locks out CSRNG functionality.

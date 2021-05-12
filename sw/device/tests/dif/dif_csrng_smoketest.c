@@ -77,7 +77,7 @@ void test_ctr_drbg_ctr0(const dif_csrng_t *csrng) {
   CHECK(dif_csrng_reseed(csrng, &seed_material) == kDifCsrngOk);
 
   wait_for_csrng_cmd_ready(csrng);
-  CHECK(dif_csrng_generate(csrng, kExpectedOutputLen) == kDifCsrngOk);
+  CHECK(dif_csrng_generate_start(csrng, kExpectedOutputLen) == kDifCsrngOk);
 
   dif_csrng_output_status_t output_status = {0};
   while (!output_status.valid_data) {
@@ -85,11 +85,12 @@ void test_ctr_drbg_ctr0(const dif_csrng_t *csrng) {
   }
 
   uint32_t output[16];
-  CHECK(dif_csrng_read_output(csrng, output, kExpectedOutputLen) ==
+  CHECK(dif_csrng_generate_end(csrng, output, kExpectedOutputLen) ==
         kDifCsrngOk);
 
   // TODO(#5982): Enable CSRNG SW path without entropy source.
   for (uint32_t i = 0; i < 16; ++i) {
+    CHECK(output[i] != 0u);
     LOG_INFO("[%d] got = 0x%x; expected = 0x%x", i, output[i],
              kExpectedOutput[i]);
   }
