@@ -115,6 +115,7 @@ config = {
         "hw/ip/pattgen/data/pattgen_testplan.hjson",
         "hw/ip/pwm/data/pwm_testplan.hjson",
         "hw/ip/pinmux/data/pinmux_fpv_testplan.hjson",
+        "hw/ip/rom_ctrl/data/rom_ctrl_testplan.hjson",
         "hw/ip/rv_plic/data/rv_plic_fpv_testplan.hjson",
         "hw/ip/rv_timer/data/rv_timer_testplan.hjson",
         "hw/ip/spi_host/data/spi_host_testplan.hjson",

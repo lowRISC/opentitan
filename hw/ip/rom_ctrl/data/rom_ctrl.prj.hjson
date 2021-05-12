@@ -5,6 +5,7 @@
 {
     name:               "rom_ctrl",
     design_spec:        "../doc",
+    dv_doc:             "../doc/dv",
     hw_checklist:       "../doc/checklist",
     revisions: [
         {
