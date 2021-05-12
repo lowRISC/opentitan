@@ -16,8 +16,8 @@ module tb;
   wire                          clk, rst_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire                          clk_aon, rst_aon_n;
-  wire                          lc_cpu_en_bit;
-  lc_ctrl_pkg::lc_tx_e          lc_cpu_en;
+  wire                          lc_escalate_en_bit;
+  lc_ctrl_pkg::lc_tx_e          lc_escalate_en;
   wire                          wkup_expired, wdog_bark;
   wire                          wkup_req, rst_req;
   wire                          sleep;
@@ -28,10 +28,10 @@ module tb;
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
   // An input to the DUT that shows whether the CPU is enabled. Rather than wire up an interface
-  // with an lc_tx_e member, we expose lc_cpu_en_i as a single bit and translate it to the right
+  // with an lc_tx_e member, we expose lc_escalate_en as a single bit and translate it to the right
   // type here.
-  pins_if #(1) cpu_en_if (lc_cpu_en_bit);
-  assign lc_cpu_en = lc_cpu_en_bit ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
+  pins_if #(1) lc_escalate_en_if (lc_escalate_en_bit);
+  assign lc_escalate_en = lc_escalate_en_bit ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
 
   // The interrupts that are in the fast clock domain
   pins_if #(NUM_MAX_INTERRUPTS) fast_intr_if(interrupts);
@@ -51,7 +51,7 @@ module tb;
     .rst_aon_ni                (rst_aon_n),
     .tl_i                      (tl_if.h2d),
     .tl_o                      (tl_if.d2h),
-    .lc_cpu_en_i               (lc_cpu_en),
+    .lc_escalate_en_i          (lc_escalate_en),
     .intr_wkup_timer_expired_o (wkup_expired),
     .intr_wdog_timer_bark_o    (wdog_bark),
     .aon_timer_wkup_req_o      (wkup_req),
@@ -67,14 +67,15 @@ module tb;
     aon_clk_rst_if.set_active();
     aon_clk_rst_if.set_freq_khz(200);
 
-    cpu_en_if.drive_en('1);
+    lc_escalate_en_if.drive_en('1);
     sleep_if.drive_en('1);
 
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", fast_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "aon_clk_rst_vif", aon_clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
 
-    uvm_config_db#(virtual pins_if #(1))::set(null, "*.env", "cpu_en_vif", cpu_en_if);
+    uvm_config_db#(virtual pins_if #(1))::set(null, "*.env", "lc_escalate_en_vif",
+                                              lc_escalate_en_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", fast_intr_if);
     uvm_config_db#(virtual pins_if #(2))::set(null, "*.env", "aon_intr_vif", aon_intr_if);
     uvm_config_db#(virtual pins_if #(1))::set(null, "*.env", "sleep_vif", sleep_if);
