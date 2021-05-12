@@ -206,8 +206,11 @@ def app_selfchecking(request, bin_dir):
     else:
         verilator_extra_args = []
 
+    # Allow tests to optionally specify their subdir within the project.
+    test_dir = app_config.get('test_dir', 'sw/device/tests')
+
     test_filename = binary_name + '_sim_verilator.elf'
-    bin_path = bin_dir / 'sw/device/tests' / test_filename
+    bin_path = bin_dir / test_dir / test_filename
     assert bin_path.is_file()
 
     return (bin_path, verilator_extra_args)
