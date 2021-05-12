@@ -38,7 +38,8 @@ package entropy_src_env_pkg;
   typedef enum int {
     EntropyValid     = 0,
     HealthTestFailed = 1,
-    FifoErr          = 2
+    ObserveFifoReady = 2,
+    FifoErr          = 3
   } entropy_src_intr_e;
 
   typedef enum int {

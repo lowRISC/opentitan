@@ -11,6 +11,8 @@
       desc: "Asserted when entropy source bits are available."}
     { name: "es_health_test_failed"
       desc: "Asserted when the alert count has been met."}
+    { name: "es_observe_fifo_ready"
+      desc: "Asserted when the observe FIFO has filled to the threshold level."}
     { name: "es_fatal_err"
       desc: "Asserted when a FIFO error occurs, or if an illegal state machine state is reached."}
   ],
@@ -986,86 +988,60 @@
         { bits: "0",
           name: "FW_OV_MODE",
           desc: '''Setting this bit will put the entropy flow in firmware override mode.
-                In this mode, firmware can explicitly control the flow in and out of the
-                pre-conditioner FIFO. Once data has been written or read out of the FIFO to the extent that
-                the override function has been completed, this bit can be
-                cleared and normal entropy flow will resume.
+                In this mode, firmware can monitor the post-health test entropy by reading
+                the observe FIFO.
                 '''
         }
         { bits: "1",
-          name: "FW_OV_FIFO_REG_RD",
-          desc: '''Setting this bit will prevent entropy flow out of the pre-conditioner
-                FIFO and into the normal downstream stages, either the conditioner stage or
-                the bypass path. Register reads of the FIFO output will be done in this mode.
-                '''
-        }
-        { bits: "2",
-          name: "FW_OV_FIFO_REG_WR",
-          desc: '''Setting this bit will switch the input into the pre-conditioner FIFO.
-                Firmware can directly write into the FIFO, up to the full size of the FIFO.
+          name: "FW_OV_ENTROPY_INSERT",
+          desc: '''Setting this bit will switch the input into the pre-conditioner packer FIFO.
+                Firmware can directly write into the packer FIFO, enabling the ability to insert
+                entropy bits back into the hardware flow. Firmware can read data from the health
+                check packer FIFO, then do optional health checks or optional conditioning, then
+                insert the results back into the flow. Also, the !!FW_OV_MODE bit must be set.
                 '''
         }
       ]
     },
     { name: "FW_OV_RD_DATA",
-      desc: "Firwware override FIFO read register",
+      desc: "Firmware override Observe FIFO read register",
       swaccess: "ro",
       hwaccess: "hrw",
       hwext: "true",
       hwre: "true",
       fields: [
         { bits: "31:0",
-          desc: '''A read of this register pops the top entry off of the pre-conditioner
-                 FIFO. The result is transfered to this register for firmware operations.
+          desc: '''A read of this register pops and returns the top of the Observe FIFO.
                 '''
         }
       ]
     },
     { name: "FW_OV_WR_DATA",
-      desc: "Firwware override FIFO write register",
+      desc: "Firmware override FIFO write register",
       swaccess: "wo",
       hwaccess: "hro",
       hwext: "true",
       hwqe: "true",
       fields: [
         { bits: "31:0",
-          desc: '''A read of this register pops the top entry off of the pre-conditioner
-                 FIFO. The result is transfered to this register for firmware operations.
+          desc: '''A write to  this register will insert entropy back into the entropy source
+                module flow. Both !!FW_OV_MODE and !!FW_OV_ENTROPY_INSERT bits need to be set
+                to enable the insertion.
                 '''
         }
       ]
     },
-    { name: "FW_OV_FIFO_STS",
-      desc: "Firwware override FIFO status register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      fields: [
-        { bits: "6:0",
-          desc: '''A read of this register will show what the current depth of the
-                pre-conditioner FIFO. Firmware can use this value when updated the
-                contents of the FIFO. The physical maximum depth is 64 entries, the
-                maximum value of this register is also 64, or 0x40. This depth can
-                be logically lowered by the `PRE_COND_FIFO_DEPTH` register.
-                '''
-        }
-      ]
-    },
-    { name: "PRE_COND_FIFO_DEPTH",
-      desc: "Pre-conditioner FIFO depth control register",
+    { name: "OBSERVE_FIFO_THRESH",
+      desc: "Observe FIFO threshold register",
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "REGWEN",
       fields: [
         { bits: "6:0",
-          desc: '''This field to set the logical depth of the
-                pre-conditioner FIFO. Firmware can set this value to be less
-                (a logical depth) than the actual physical size of the FIFO.
-                This field with be compared with the actual size of the FIFO
-                and indicate full to the upstream entropy flow.
-                The default value of this register is 64, or 0x40.
+          desc: '''This field will set the threshold that the depth of the Observe FIFO
+                will be compared with when setting the interrupt status bit.
                 '''
-          resval: "0x40"
+          resval: "0x20"
         }
       ]
     },
@@ -1139,10 +1115,10 @@
                 '''
         }
         { bits: "1",
-          name: "SFIFO_PRECON_ERR",
+          name: "SFIFO_OBSERVE_ERR",
           desc: '''
                 This bit will be set to one when an error has been detected for the
-                precon FIFO. The type of error is reflected in the type status
+                observe FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
                 This bit will stay set until firmware clears it.
                 '''
