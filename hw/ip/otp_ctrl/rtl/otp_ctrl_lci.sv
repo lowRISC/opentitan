@@ -205,7 +205,7 @@ module otp_ctrl_lci
     // Unconditionally jump into the terminal error state in case of escalation.
     if (escalate_en_i != lc_ctrl_pkg::Off) begin
       state_d = ErrorSt;
-      if (state_q != ErrorSt) begin
+      if (error_q == NoError) begin
         error_d = FsmStateError;
       end
     end
