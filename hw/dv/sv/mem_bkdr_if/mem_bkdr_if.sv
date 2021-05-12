@@ -96,15 +96,36 @@ interface mem_bkdr_if #(
   int mem_byte_addr_width;
   string path = $sformatf("%m");
 
+  // A pair of integers.
+  typedef struct {
+    int x;
+    int y;
+  } int_pair_t;
+
+  // A helper function tto split a given number randomly into 2 pairs.
+  function automatic int_pair_t rand_split(int num);
+    rand_split.x = $urandom_range(0, num);
+    rand_split.y = num - rand_split.x;
+  endfunction
+
+  function automatic bit [MAX_MEM_WIDTH-1:0] inject_errors(bit [MAX_MEM_WIDTH-1:0] data,
+                                                           int inject_num_errors);
+    bit [MAX_MEM_WIDTH-1:0] err_mask;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(err_mask, $countones(err_mask) == inject_num_errors;,
+                                       , path)
+    inject_errors = data ^ err_mask;
+  endfunction
+
   function automatic void init();
-    // Check that both MEM_PARITY and MEM_ECC are not concurrently enabled
-    `DV_CHECK_FATAL(!(MEM_PARITY && MEM_ECC != SecdedNone),
-        "Cannot enable both parity checks and ECC",
-        path)
-    `DV_CHECK_FATAL(MAX_MEM_WIDTH != 0,
-        $sformatf("MEM_ECC %0s is incorrect!", MEM_ECC),
-        path)
     if (!initialized) begin
+      // Check that both MEM_PARITY and MEM_ECC are not concurrently enabled
+      `DV_CHECK_FATAL(!(MEM_PARITY && MEM_ECC != SecdedNone),
+          "Cannot enable both parity checks and ECC",
+          path)
+      `DV_CHECK_FATAL(MAX_MEM_WIDTH != 0,
+          $sformatf("MEM_ECC %0s is incorrect!", MEM_ECC),
+          path)
+
       mem_depth = $size(`MEM_ARR_PATH_SLICE);
       mem_width = $bits(`MEM_ARR_PATH_SLICE) / mem_depth;
       // Need to account for any extra ecc parity bits when doing this calculation
@@ -186,27 +207,29 @@ interface mem_bkdr_if #(
 
   function automatic void write8(input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                  input bit [7:0] data,
-                                 input bit inject_err = 0);
+                                 input int inject_num_errors = 0);
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
       bit [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[mem_index];
 
-      // Prepare corrupted data if an error injection is requested.
+      // Prepare corrupted data if an parity error injection is requested.
       //
-      // If using parity, we want to randomly inject errors into the parity bits
-      // themselves for better error coverage.
-      //
-      // If using ECC, we also want to test double bit errors as well as single bit errors,
-      // so prepare a second index to randomly flip - note that this index can be anywhere
-      // within the valid data word, not just within the "active" byte we are writing.
+      // We want to randomly inject errors into the parity bits themselves for better error
+      // coverage.
       int idx_to_corrupt = $urandom_range(0, MEM_BYTE_MSB - 1);
 
-      // for ECC we want to be able to to corrupt a random second bit.
-      // this bit can be anywhere within the entire memory line, even within
-      // the ECC parity bits themselves.
-      int second_idx_to_corrupt = $urandom_range(0, MAX_MEM_WIDTH - 1);
-
       bit [MEM_BYTE_MSB-1:0] corrupted_data;
+
+      // If inject ECC error, check the number of injected ecc_err is available.
+      if (MEM_ECC != SecdedNone) begin
+        `DV_CHECK_LE(inject_num_errors, MAX_MEM_WIDTH,
+                     $sformatf("Max %0d bits to inject ECC error", MAX_MEM_WIDTH), , path)
+      end
+
+      // TODO: check with designer, current testbench only support 1 bit parity error.
+      if (MEM_PARITY) begin
+        `DV_CHECK_LE(inject_num_errors, 1, "Parity only support 1 bit error", , path)
+      end
 
       // Note that if memory parity checks are enabled,
       // we have to write the correct parity bit as well.
@@ -219,7 +242,7 @@ interface mem_bkdr_if #(
           rw_data[0 +: 8] = data;
           if (MEM_PARITY) begin
             rw_data[0 + 8] = ~(^data);
-            if (inject_err) begin
+            if (inject_num_errors) begin
               corrupted_data = rw_data[0 +: MEM_BYTE_MSB];
               corrupted_data[idx_to_corrupt] = !corrupted_data[idx_to_corrupt];
               rw_data[0 +: MEM_BYTE_MSB] = corrupted_data;
@@ -230,7 +253,7 @@ interface mem_bkdr_if #(
           rw_data[addr[0] * MEM_BYTE_MSB +: 8] = data;
           if (MEM_PARITY) begin
             rw_data[addr[0] * MEM_BYTE_MSB + 8] = ~(^data);
-            if (inject_err) begin
+            if (inject_num_errors) begin
               corrupted_data = rw_data[addr[0] * MEM_BYTE_MSB +: MEM_BYTE_MSB];
               corrupted_data[idx_to_corrupt] = !corrupted_data[idx_to_corrupt];
               rw_data[addr[0] * MEM_BYTE_MSB +: MEM_BYTE_MSB] = corrupted_data;
@@ -248,20 +271,14 @@ interface mem_bkdr_if #(
                     $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
               end
             endcase
-            if (inject_err) begin
-              rw_data[addr[0] * MEM_BYTE_MSB +: 8] = corrupted_data;
-              // 50% of the time randomly enable a second error bit
-              if ($urandom_range(0, 1)) begin
-                rw_data[second_idx_to_corrupt] = !rw_data[second_idx_to_corrupt];
-              end
-            end
+            if (inject_num_errors) rw_data = inject_errors(rw_data, inject_num_errors);
           end
         end
         4: begin
           rw_data[addr[1:0] * MEM_BYTE_MSB +: 8] = data;
           if (MEM_PARITY) begin
             rw_data[addr[1:0] * MEM_BYTE_MSB + 8] = ~(^data);
-            if (inject_err) begin
+            if (inject_num_errors) begin
               corrupted_data = rw_data[addr[1:0] * MEM_BYTE_MSB +: MEM_BYTE_MSB];
               corrupted_data[idx_to_corrupt] = !corrupted_data[idx_to_corrupt];
               rw_data[addr[1:0] * MEM_BYTE_MSB +: MEM_BYTE_MSB] = corrupted_data;
@@ -279,20 +296,14 @@ interface mem_bkdr_if #(
                     $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
               end
             endcase
-            if (inject_err) begin
-              rw_data[addr[1:0] * MEM_BYTE_MSB +: 8] = corrupted_data;
-              // 50% of the time randomly enable a second error bit
-              if ($urandom_range(0, 1)) begin
-                rw_data[second_idx_to_corrupt] = !rw_data[second_idx_to_corrupt];
-              end
-            end
+            if (inject_num_errors) rw_data = inject_errors(rw_data, inject_num_errors);
           end
         end
         8: begin
           rw_data[addr[2:0] * MEM_BYTE_MSB +: 8] = data;
           if (MEM_PARITY) begin
             rw_data[addr[2:0] * MEM_BYTE_MSB + 8] = ~(^data);
-            if (inject_err) begin
+            if (inject_num_errors) begin
               corrupted_data = rw_data[addr[2:0] * MEM_BYTE_MSB +: MEM_BYTE_MSB];
               corrupted_data[idx_to_corrupt] = !corrupted_data[idx_to_corrupt];
               rw_data[addr[2:0] * MEM_BYTE_MSB +: MEM_BYTE_MSB] = corrupted_data;
@@ -310,13 +321,7 @@ interface mem_bkdr_if #(
                     $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
               end
             endcase
-            if (inject_err) begin
-              rw_data[addr[2:0] * MEM_BYTE_MSB +: 8] = corrupted_data;
-              // 50% of the time randomly enable a second error bit
-              if ($urandom_range(0, 1)) begin
-                rw_data[second_idx_to_corrupt] = !rw_data[second_idx_to_corrupt];
-              end
-            end
+            if (inject_num_errors) rw_data = inject_errors(rw_data, inject_num_errors);
           end
         end
         default: ;
@@ -327,36 +332,36 @@ interface mem_bkdr_if #(
 
   function automatic void write16(input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                   input bit [15:0] data,
-                                  input bit inject_err = 0);
-    // inject errors into only sub-byte write
-    bit inject_err_in_first_sub_write = $urandom_range(0, 1);
+                                  input int inject_num_errors = 0);
     `DV_CHECK_EQ_FATAL(addr[0], '0, $sformatf("addr 0x%0h not 16-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
-      write8(addr, data[7:0], inject_err_in_first_sub_write && inject_err);
-      write8(addr + 1, data[15:8], !inject_err_in_first_sub_write && inject_err);
+      // Split the number of errors into different sub-byte write.
+      int_pair_t inject_num_errors_split = rand_split(inject_num_errors);
+      write8(addr, data[7:0], inject_num_errors_split.x);
+      write8(addr + 1, data[15:8], inject_num_errors_split.y);
     end
   endfunction
 
   function automatic void write32(input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                   input bit [31:0] data,
-                                  input bit inject_err = 0);
-    // ensure that parity errors are only injected into one sub-byte write
-    bit inject_err_in_first_sub_write = $urandom_range(0, 1);
+                                  input int inject_num_errors = 0);
     `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
-      write16(addr, data[15:0], inject_err_in_first_sub_write && inject_err);
-      write16(addr + 2, data[31:16], !inject_err_in_first_sub_write && inject_err);
+      // Split the number of errors into different sub-byte write.
+      int_pair_t inject_num_errors_split = rand_split(inject_num_errors);
+      write16(addr, data[15:0], inject_num_errors_split.x);
+      write16(addr + 2, data[31:16], inject_num_errors_split.y);
     end
   endfunction
 
   function automatic void write64(input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                   input bit [63:0] data,
-                                  input bit inject_err = 0);
-    // ensure that parity errors are only injected into one sub-byte write
-    bit inject_err_in_first_sub_write = $urandom_range(0, 1);
+                                  input int inject_num_errors = 0);
+    // Split the number of errors into different sub-byte write.
+    int_pair_t inject_num_errors_split = rand_split(inject_num_errors);
     `DV_CHECK_EQ_FATAL(addr[2:0], '0, $sformatf("addr 0x%0h not 64-bit aligned", addr), path)
-    write32(addr, data[31:0], inject_err_in_first_sub_write && inject_err);
-    write32(addr + 4, data[63:32], !inject_err_in_first_sub_write && inject_err);
+    write32(addr, data[31:0], inject_num_errors_split.x);
+    write32(addr + 4, data[63:32], inject_num_errors_split.y);
   endfunction
 
   /////////////////////////////////////////////////////////

@@ -22,7 +22,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   rand bit                           check_regwen_val, check_trigger_regwen_val;
   rand bit [TL_DW-1:0]               check_timeout_val;
   rand bit [1:0]                     check_trigger_val;
-  rand bit [TL_DW-1:0]               ecc_err_mask, ecc_chk_err_mask;
+  rand otp_ecc_err_e                 ecc_otp_err, ecc_chk_err;
 
   constraint no_access_err_c {access_locked_parts == 0;}
 
@@ -60,9 +60,9 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
     check_timeout_val inside {0, [100_000:'1]};
   }
 
-  constraint ecc_err_c {ecc_err_mask == 0;}
+  constraint ecc_otp_err_c {ecc_otp_err == OtpNoEccErr;}
 
-  constraint ecc_chk_err_c {ecc_chk_err_mask == 0;}
+  constraint ecc_chk_err_c {ecc_chk_err == OtpNoEccErr;}
 
   virtual task dut_init(string reset_kind = "HARD");
     if (do_reset_in_seq && do_apply_reset) begin
@@ -112,7 +112,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       if (check_trigger_val && `gmv(ral.check_trigger_regwen)) begin
         csr_wr(ral.check_timeout, check_timeout_val);
       end
-      trigger_checks(.val(check_trigger_val), .wait_done(1), .ecc_err_mask(ecc_chk_err_mask));
+      trigger_checks(.val(check_trigger_val), .wait_done(1), .ecc_err(ecc_chk_err));
 
       if (do_req_keys && !cfg.otp_ctrl_vif.alert_reqs) begin
         req_otbn_key();
@@ -145,7 +145,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
         if ($urandom_range(0, 1)) begin
           // OTP read via DAI, check data in scb
-          dai_rd(dai_addr, ecc_err_mask, rdata0, rdata1);
+          dai_rd(dai_addr, ecc_otp_err, rdata0, rdata1);
         end
 
         // if write sw partitions, check tlul window
