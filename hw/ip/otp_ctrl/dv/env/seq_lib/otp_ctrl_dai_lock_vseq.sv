@@ -17,6 +17,11 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
     collect_used_addr -> num_trans * num_dai_op <= DAI_ADDR_SIZE;
   }
 
+  constraint num_trans_c {
+    num_trans  inside {[1:10]};
+    num_dai_op inside {[1:50]};
+  }
+
   constraint dai_wr_legal_addr_c {
     {dai_addr[TL_AW-1:2], 2'b0} dist {
       {CreatorSwCfgDigestOffset, OwnerSwCfgDigestOffset,HwCfgDigestOffset, Secret0DigestOffset,
