@@ -193,6 +193,14 @@
       name: usbdev_test
       sw_images: ["sw/device/tests/usbdev_test:1"]
     }
+    {
+      name: sw_silicon_creator_lib_driver_hmac_functest
+      sw_images: ["sw/device/silicon_creator/testing/sw_silicon_creator_lib_driver_hmac_functest:1"]
+    }
+    {
+      name: sw_silicon_creator_lib_driver_uart_functest
+      sw_images: ["sw/device/silicon_creator/testing/sw_silicon_creator_lib_driver_uart_functest:1"]
+    }
   ]
 
   // List of regressions.

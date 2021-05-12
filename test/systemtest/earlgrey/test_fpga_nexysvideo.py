@@ -69,8 +69,11 @@ def app_selfchecking_bin(request, bin_dir):
     else:
         binary_name = app_config['name']
 
+    # Allow tests to optionally specify their subdir within the project.
+    test_dir = app_config.get('test_dir', 'sw/device/tests')
+
     test_filename = binary_name + '_fpga_nexysvideo.bin'
-    bin_path = bin_dir / 'sw/device/tests' / test_filename
+    bin_path = bin_dir / test_dir / test_filename
     assert bin_path.is_file()
     return bin_path
 

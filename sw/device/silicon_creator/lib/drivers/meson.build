@@ -34,6 +34,21 @@ test('sw_silicon_creator_lib_driver_hmac_unittest', executable(
   suite: 'mask_rom',
 )
 
+sw_silicon_creator_lib_driver_hmac_functest = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_hmac_functest',
+    sources: ['hmac_functest.c'],
+    dependencies: [
+      sw_silicon_creator_lib_driver_hmac,
+    ],
+  ),
+)
+mask_rom_tests += {
+  'sw_silicon_creator_lib_driver_hmac_functest': {
+    'library': sw_silicon_creator_lib_driver_hmac_functest,
+  }
+}
+
 # Mask ROM keymgr driver
 sw_silicon_creator_lib_driver_keymgr = declare_dependency(
   link_with: static_library(
@@ -97,6 +112,22 @@ test('sw_silicon_creator_lib_driver_uart_unittest', executable(
   ),
   suite: 'mask_rom',
 )
+
+sw_silicon_creator_lib_driver_uart_functest = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_uart_functest',
+    sources: ['uart_functest.c'],
+    dependencies: [
+      sw_silicon_creator_lib_driver_uart,
+    ],
+  ),
+)
+mask_rom_tests += {
+  'sw_silicon_creator_lib_driver_uart_functest': {
+    'library': sw_silicon_creator_lib_driver_uart_functest,
+  }
+}
+
 
 # Mask OTP uart driver
 sw_silicon_creator_lib_driver_otp = declare_dependency(

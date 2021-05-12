@@ -118,4 +118,12 @@ TEST_APPS_SELFCHECKING = [
         "name": "dif_gpio_smoketest",
         "targets": ["fpga_cw310", "fpga_nexysvideo"],
     },
+    {
+        "name": "sw_silicon_creator_lib_driver_hmac_functest",
+        "test_dir": "sw/device/silicon_creator/testing",
+    },
+    {
+        "name": "sw_silicon_creator_lib_driver_uart_functest",
+        "test_dir": "sw/device/silicon_creator/testing",
+    },
 ]
