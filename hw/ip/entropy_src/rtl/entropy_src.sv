@@ -51,6 +51,8 @@ module entropy_src
   // Interrupts
   output logic    intr_es_entropy_valid_o,
   output logic    intr_es_health_test_failed_o,
+// TODO: add intrp
+//  output logic    intr_es_observe_fifo_ready_o,
   output logic    intr_es_fatal_err_o
 );
 
@@ -71,6 +73,8 @@ module entropy_src
   entropy_src_xht_req_t core_xht;
   logic core_intr_es_entropy_valid;
   logic core_intr_es_health_test_failed;
+// TODO: add intrp
+//  logic core_intr_es_observe_fifo_ready;
   logic core_intr_es_fatal_err;
   logic [NumAlerts-1:0] core_alert_test;
   logic [NumAlerts-1:0] core_alert;
@@ -97,6 +101,8 @@ module entropy_src
   assign entropy_src_xht_o            = Stub ? '0                 : core_xht;
   assign intr_es_entropy_valid_o      = Stub ? stub_es_valid      : core_intr_es_entropy_valid;
   assign intr_es_health_test_failed_o = Stub ? '0                 : core_intr_es_health_test_failed;
+// TODO: add intrp
+//  assign intr_es_observe_fifo_ready_o = Stub ? '0            : core_intr_es_observe_fifo_ready;
   assign intr_es_fatal_err_o          = Stub ? '0                 : core_intr_es_fatal_err;
   assign alert_test                   = Stub ? stub_alert_test    : core_alert_test;
   assign alert                        = Stub ? stub_alert         : core_alert;
@@ -117,9 +123,12 @@ module entropy_src
   );
 
   logic efuse_es_sw_reg_en;
+  logic efuse_es_sw_ov_en;
   otp_ctrl_part_pkg::otp_hw_cfg_t unused_hw_cfg;
   assign unused_hw_cfg = otp_hw_cfg_i;
   assign efuse_es_sw_reg_en = (otp_hw_cfg_i.data.en_entropy_src_fw_read == 8'hA5);
+  // TODO: replace fw_read below with a unique name
+  assign efuse_es_sw_ov_en = (otp_hw_cfg_i.data.en_entropy_src_fw_read == 8'hA5);
 
   entropy_src_core #(
     .EsFifoDepth(EsFifoDepth)
@@ -130,6 +139,7 @@ module entropy_src
     .hw2reg(core_hw2reg),
 
     .efuse_es_sw_reg_en_i(efuse_es_sw_reg_en),
+    .efuse_es_sw_ov_en_i(efuse_es_sw_ov_en),
     .rng_fips_o,
 
     .entropy_src_hw_if_o(core_entropy_hw_if),
@@ -152,6 +162,8 @@ module entropy_src
 
     .intr_es_entropy_valid_o(core_intr_es_entropy_valid),
     .intr_es_health_test_failed_o(core_intr_es_health_test_failed),
+// TODO: add intrp
+//    .intr_es_observe_fifo_ready_o(core_intr_es_observe_fifo_ready),
     .intr_es_fatal_err_o(core_intr_es_fatal_err)
   );
 
