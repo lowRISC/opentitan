@@ -33,10 +33,10 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
   // We set 25% possibility that OTP init check fails due to writing OTP after digest is locked.
   constraint lock_digest_c {num_to_lock_digests < num_dai_op * 4;}
   constraint num_iterations_c {num_dai_op inside {[20:100]};}
-  constraint ecc_err_c {
-    $countones(ecc_err_mask) dist {0 :/ 1,  // No ECC error
-                                   1 :/ 1,  // ECC correctable error
-                                   2 :/ 1}; // ECC uncorrectable error
+  constraint ecc_otp_err_c {
+    $countones(ecc_otp_err) dist {OtpNoEccErr     :/ 2,
+                                  OtpEccCorrErr   :/ 2,
+                                  OtpEccUncorrErr :/ 1};
   }
 
   virtual task pre_start();
@@ -94,7 +94,6 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
 
     // If not check error, force ECC correctable and uncorrectable error
     end else begin
-      otp_ecc_err_e   ecc_err;
       bit             is_fatal, is_correctable;
       bit [TL_DW-1:0] addr;
 
@@ -109,10 +108,10 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
           addr = $urandom_range(PartInfo[i].offset, PartInfo[i].offset + PartInfo[i].size - 1);
         end
 
-        void'(backdoor_inject_ecc_err(addr, ecc_err_mask, ecc_err));
-        if (ecc_err == OtpEccUncorrErr && !is_fatal) is_fatal = 1;
-        if (ecc_err == OtpEccCorrErr && !is_correctable) is_correctable = 1;
-        if (ecc_err != OtpNoEccErr) exp_status[i] = 1;
+        void'(backdoor_inject_ecc_err(addr, ecc_otp_err));
+        if (ecc_otp_err == OtpEccUncorrErr && !is_fatal) is_fatal = 1;
+        if (ecc_otp_err == OtpEccCorrErr && !is_correctable) is_correctable = 1;
+        if (ecc_otp_err != OtpNoEccErr) exp_status[i] = 1;
       end
 
       if (is_fatal) begin

@@ -111,21 +111,26 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask : dai_wr
 
   // This task triggers an OTP readout sequence via the DAI interface
-  // If ecc_err_mask is not 0, will backdoor write to OTP and trigger an ECC error
+  // If ecc_err is not OtpNoEccErr, will backdoor write to OTP and trigger an ECC error
   virtual task dai_rd(input  bit [TL_DW-1:0] addr,
-                      input  bit [TL_DW-1:0] ecc_err_mask,
+                      input  otp_ecc_err_e   ecc_err,
                       output bit [TL_DW-1:0] rdata0,
                       output bit [TL_DW-1:0] rdata1);
     bit [TL_DW-1:0] val, backdoor_rd_val;
     bit backdoor_wr;
     addr = randomize_dai_addr(addr);
+
+    // Here we won't backdoor write to corrupt ECC bits if:
+    // 1. Current ECC error is uncorrectable already. Then the DAI access is locked and cannot read
+    // any more.
+    // 2. If dai read address is not valid (lc address or larger). Then DAI access will return
+    // access error before reading the OTP bits.
     if (cfg.ecc_err != OtpEccUncorrErr && addr < LifeCycleOffset) begin
-      if (ecc_err_mask == 0) begin
-        cfg.ecc_err = OtpNoEccErr;
-      end else begin
-        backdoor_rd_val = backdoor_inject_ecc_err(addr, ecc_err_mask, cfg.ecc_err);
+      if (ecc_err != OtpNoEccErr) begin
+        backdoor_rd_val = backdoor_inject_ecc_err(addr, ecc_err);
         backdoor_wr = 1;
       end
+      cfg.ecc_err = ecc_err;
     end
 
     csr_wr(ral.direct_access_address, addr);
@@ -153,7 +158,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
                             bit [TL_DW-1:0] exp_data0,
                             bit [TL_DW-1:0] exp_data1 = 0);
     bit [TL_DW-1:0] rdata0, rdata1;
-    dai_rd(addr, 0, rdata0, rdata1);
+    dai_rd(addr, OtpNoEccErr, rdata0, rdata1);
     `DV_CHECK_EQ(rdata0, exp_data0, $sformatf("dai addr %0h rdata0 readout mismatch", addr))
     if (is_secret(addr) || is_digest(addr)) begin
       `DV_CHECK_EQ(rdata1, exp_data1, $sformatf("dai addr %0h rdata1 readout mismatch", addr))
@@ -222,44 +227,31 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.secret2_digest_1),        .value(val));
   endtask
 
-  // This function backdoor inject error according to err_mask.
+  // This function backdoor inject error according to ecc_err.
   // For example, if err_mask is set to 'b01, bit 1 in OTP macro will be flipped.
   // This function will output original backdoor read data for the given address.
-  // TODO: move it to mem_bkdr_if once #4794 landed
   virtual function bit [TL_DW-1:0] backdoor_inject_ecc_err(bit [TL_DW-1:0] addr,
-                                                           bit [TL_DW-1:0] err_mask,
-                                                           ref otp_ecc_err_e ecc_err_type);
-    bit [TL_DW-1:0] val, backdoor_val;
+                                                           otp_ecc_err_e   ecc_err);
+    bit [TL_DW-1:0] val;
+    prim_secded_pkg::secded_22_16_t out;
     addr = {addr[TL_DW-1:2], 2'b00};
     val = cfg.mem_bkdr_vif.read32(addr);
-    if (err_mask == 0 || addr >= (LifeCycleOffset + LifeCycleSize)) begin
-      ecc_err_type = OtpNoEccErr;
-      return val;
-    end
-
-    // If every byte at most has one ECC error bit, it is a correctable error
-    // If any byte at more than one ECC error bit, it is a uncorrectable error
-    ecc_err_type = OtpEccCorrErr;
-    for (int i = 0; i < 2; i++) begin
-      if (!$onehot(err_mask[i*16+:16]) && err_mask[i*16+:16]) begin
-        ecc_err_type = OtpEccUncorrErr;
-        break;
-      end
-    end
+    if (ecc_err == OtpNoEccErr || addr >= (LifeCycleOffset + LifeCycleSize)) return val;
 
     // Backdoor read and write back with error bits
-    foreach (err_mask[i]) backdoor_val[i] = err_mask[i] ? ~val[i] : val[i];
-    cfg.mem_bkdr_vif.write32(addr, backdoor_val);
-    `uvm_info(`gfn, $sformatf("original val %0h, backdoor val %0h, err_mask %0h err_type %0s",
-                              val, backdoor_val, err_mask, ecc_err_type.name), UVM_HIGH)
-
+    // TODO: debug why write16 and write32 won't work.
+    cfg.mem_bkdr_vif.write8(addr, val, (ecc_err == OtpEccUncorrErr) ? 2 : 1);
+    `uvm_info(`gfn, $sformatf("original val %0h, addr %0h, err_type %0s",
+                              val, addr, ecc_err.name), UVM_HIGH)
     return val;
   endfunction
 
-  virtual task trigger_checks(bit [1:0] val, bit wait_done = 1, bit [TL_DW-1:0] ecc_err_mask = 0);
+  virtual task trigger_checks(bit [1:0]     val,
+                              bit           wait_done = 1,
+                              otp_ecc_err_e ecc_err = OtpNoEccErr);
     bit [TL_DW-1:0] backdoor_rd_val, addr;
     // Backdoor write ECC errors
-    if (ecc_err_mask) begin
+    if (ecc_err != OtpNoEccErr) begin
       int part_idx = $urandom_range(HwCfgIdx, LifeCycleIdx);
 
       // Only HW cfgs check digest correctness
@@ -270,13 +262,14 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
         addr = $urandom_range(LifeCycleOffset, LifeCycleOffset + LifeCycleSize - 1);
         addr = {addr[TL_DW-1:2], 2'b00};
       end
-      backdoor_rd_val = backdoor_inject_ecc_err(addr, ecc_err_mask, cfg.ecc_chk_err[part_idx]);
+      backdoor_rd_val = backdoor_inject_ecc_err(addr, ecc_err);
+      cfg.ecc_chk_err[part_idx] = ecc_err;
     end
 
     csr_wr(ral.check_trigger, val);
     if (wait_done && val) csr_spinwait(ral.status.check_pending, 0);
 
-    if (ecc_err_mask) begin
+    if (ecc_err != OtpNoEccErr) begin
       cfg.mem_bkdr_vif.write32(addr, backdoor_rd_val);
       cfg.ecc_chk_err = '{default: OtpNoEccErr};
     end
