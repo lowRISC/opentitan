@@ -16,7 +16,7 @@ module tb;
   wire clk, rst_n;
   wire devmode, efuse_es_sw_reg_en;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
-  wire intr_entropy_valid, intr_health_test_failed, intr_fatal_err;
+  wire intr_entropy_valid, intr_health_test_failed, intr_observe_fifo_ready, intr_fatal_err;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -64,11 +64,13 @@ module tb;
 
     .intr_es_entropy_valid_o      (intr_entropy_valid),
     .intr_es_health_test_failed_o (intr_health_test_failed),
-    .intr_es_fatal_err_o           (intr_fatal_err)
+    .intr_es_observe_fifo_ready_o (intr_observe_fifo_ready),
+    .intr_es_fatal_err_o          (intr_fatal_err)
   );
 
   assign interrupts[EntropyValid]     = intr_entropy_valid;
   assign interrupts[HealthTestFailed] = intr_health_test_failed;
+  assign interrupts[ObserveFifoReady] = intr_observe_fifo_ready;
   assign interrupts[FifoErr]          = intr_fatal_err;
 
   initial begin

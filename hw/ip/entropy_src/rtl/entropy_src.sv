@@ -51,6 +51,7 @@ module entropy_src
   // Interrupts
   output logic    intr_es_entropy_valid_o,
   output logic    intr_es_health_test_failed_o,
+  output logic    intr_es_observe_fifo_ready_o,
   output logic    intr_es_fatal_err_o
 );
 
@@ -71,6 +72,7 @@ module entropy_src
   entropy_src_xht_req_t core_xht;
   logic core_intr_es_entropy_valid;
   logic core_intr_es_health_test_failed;
+  logic core_intr_es_observe_fifo_ready;
   logic core_intr_es_fatal_err;
   logic [NumAlerts-1:0] core_alert_test;
   logic [NumAlerts-1:0] core_alert;
@@ -97,6 +99,7 @@ module entropy_src
   assign entropy_src_xht_o            = Stub ? '0                 : core_xht;
   assign intr_es_entropy_valid_o      = Stub ? stub_es_valid      : core_intr_es_entropy_valid;
   assign intr_es_health_test_failed_o = Stub ? '0                 : core_intr_es_health_test_failed;
+  assign intr_es_observe_fifo_ready_o = Stub ? '0                 : core_intr_es_observe_fifo_ready;
   assign intr_es_fatal_err_o          = Stub ? '0                 : core_intr_es_fatal_err;
   assign alert_test                   = Stub ? stub_alert_test    : core_alert_test;
   assign alert                        = Stub ? stub_alert         : core_alert;
@@ -117,7 +120,10 @@ module entropy_src
   );
 
   logic efuse_es_sw_reg_en;
+  logic efuse_es_sw_ov_en;
   assign efuse_es_sw_reg_en = (otp_en_entropy_src_fw_read_i == otp_ctrl_pkg::Enabled);
+  // TODO: replace fw_read below with a unique name
+  assign efuse_es_sw_ov_en = (otp_en_entropy_src_fw_read_i == otp_ctrl_pkg::Enabled);
 
   entropy_src_core #(
     .EsFifoDepth(EsFifoDepth)
@@ -128,6 +134,7 @@ module entropy_src
     .hw2reg(core_hw2reg),
 
     .efuse_es_sw_reg_en_i(efuse_es_sw_reg_en),
+    .efuse_es_sw_ov_en_i(efuse_es_sw_ov_en),
     .rng_fips_o,
 
     .entropy_src_hw_if_o(core_entropy_hw_if),
@@ -150,6 +157,7 @@ module entropy_src
 
     .intr_es_entropy_valid_o(core_intr_es_entropy_valid),
     .intr_es_health_test_failed_o(core_intr_es_health_test_failed),
+    .intr_es_observe_fifo_ready_o(core_intr_es_observe_fifo_ready),
     .intr_es_fatal_err_o(core_intr_es_fatal_err)
   );
 
@@ -199,7 +207,6 @@ module entropy_src
       // as long as enable is 1, do not allow registers to be written
       stub_hw2reg.regwen.d = ~|reg2hw.conf.enable.q;
       stub_hw2reg.fw_ov_rd_data.d = stub_lfsr_value[31:0];
-      stub_hw2reg.fw_ov_fifo_sts.d = '1;
       stub_hw2reg.entropy_data.d = stub_lfsr_value[31:0];
       stub_hw2reg.debug_status.main_sm_idle.d = 1'b1;
       // need to move this to package so that it can be referenced

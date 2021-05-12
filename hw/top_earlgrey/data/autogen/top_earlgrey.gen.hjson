@@ -11469,6 +11469,12 @@
       module_name: entropy_src
     }
     {
+      name: entropy_src_es_observe_fifo_ready
+      width: 1
+      type: interrupt
+      module_name: entropy_src
+    }
+    {
       name: entropy_src_es_fatal_err
       width: 1
       type: interrupt

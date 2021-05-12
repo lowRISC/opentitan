@@ -283,7 +283,7 @@ module top_earlgrey #(
   // rom_ctrl
 
 
-  logic [178:0]  intr_vector;
+  logic [179:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -426,6 +426,7 @@ module top_earlgrey #(
   logic intr_csrng_cs_fatal_err;
   logic intr_entropy_src_es_entropy_valid;
   logic intr_entropy_src_es_health_test_failed;
+  logic intr_entropy_src_es_observe_fifo_ready;
   logic intr_entropy_src_es_fatal_err;
   logic intr_edn0_edn_cmd_req_done;
   logic intr_edn0_edn_fatal_err;
@@ -2205,6 +2206,7 @@ module top_earlgrey #(
       // Interrupt
       .intr_es_entropy_valid_o      (intr_entropy_src_es_entropy_valid),
       .intr_es_health_test_failed_o (intr_entropy_src_es_health_test_failed),
+      .intr_es_observe_fifo_ready_o (intr_entropy_src_es_observe_fifo_ready),
       .intr_es_fatal_err_o          (intr_entropy_src_es_fatal_err),
       // [26]: recov_alert
       // [27]: fatal_alert
@@ -2373,12 +2375,13 @@ module top_earlgrey #(
 
   // interrupt assignments
   assign intr_vector = {
-      intr_otbn_done, // IDs [178 +: 1]
-      intr_edn1_edn_fatal_err, // IDs [177 +: 1]
-      intr_edn1_edn_cmd_req_done, // IDs [176 +: 1]
-      intr_edn0_edn_fatal_err, // IDs [175 +: 1]
-      intr_edn0_edn_cmd_req_done, // IDs [174 +: 1]
-      intr_entropy_src_es_fatal_err, // IDs [173 +: 1]
+      intr_otbn_done, // IDs [179 +: 1]
+      intr_edn1_edn_fatal_err, // IDs [178 +: 1]
+      intr_edn1_edn_cmd_req_done, // IDs [177 +: 1]
+      intr_edn0_edn_fatal_err, // IDs [176 +: 1]
+      intr_edn0_edn_cmd_req_done, // IDs [175 +: 1]
+      intr_entropy_src_es_fatal_err, // IDs [174 +: 1]
+      intr_entropy_src_es_observe_fifo_ready, // IDs [173 +: 1]
       intr_entropy_src_es_health_test_failed, // IDs [172 +: 1]
       intr_entropy_src_es_entropy_valid, // IDs [171 +: 1]
       intr_csrng_cs_fatal_err, // IDs [170 +: 1]
