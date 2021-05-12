@@ -216,16 +216,16 @@ TEST_F(CommandTest, UpdateBadArgs) {
 TEST_F(CommandTest, GenerateOk) {
   // 512bits = 16 x 32bit = 4 x 128bit blocks
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00004003);
-  EXPECT_EQ(dif_csrng_generate(&csrng_, /*len=*/16), kDifCsrngOk);
+  EXPECT_EQ(dif_csrng_generate_start(&csrng_, /*len=*/16), kDifCsrngOk);
 
   // 576bits = 18 x 32bit = 5 x 128bit blocks (rounded up)
   EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00005003);
-  EXPECT_EQ(dif_csrng_generate(&csrng_, /*len=*/18), kDifCsrngOk);
+  EXPECT_EQ(dif_csrng_generate_start(&csrng_, /*len=*/18), kDifCsrngOk);
 }
 
 TEST_F(CommandTest, GenerateBadArgs) {
-  EXPECT_EQ(dif_csrng_generate(nullptr, /*len=*/1), kDifCsrngBadArg);
-  EXPECT_EQ(dif_csrng_generate(&csrng_, /*len=*/0), kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_generate_start(nullptr, /*len=*/1), kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_generate_start(&csrng_, /*len=*/0), kDifCsrngBadArg);
 }
 
 TEST_F(CommandTest, UninstantiateOk) {
@@ -233,9 +233,9 @@ TEST_F(CommandTest, UninstantiateOk) {
   EXPECT_EQ(dif_csrng_uninstantiate(&csrng_), kDifCsrngOk);
 }
 
-class ReadOutputTest : public DifCsrngTest {};
+class GenerateEndTest : public DifCsrngTest {};
 
-TEST_F(ReadOutputTest, ReadOk) {
+TEST_F(GenerateEndTest, ReadOk) {
   constexpr std::array<uint32_t, 4> kExpected = {
       0x00000000,
       0x11111111,
@@ -243,22 +243,26 @@ TEST_F(ReadOutputTest, ReadOk) {
       0x33333333,
   };
 
+  EXPECT_READ32(CSRNG_GENBITS_VLD_REG_OFFSET,
+                {
+                    {CSRNG_GENBITS_VLD_GENBITS_VLD_BIT, true},
+                });
   for (const uint32_t val : kExpected) {
     EXPECT_READ32(CSRNG_GENBITS_REG_OFFSET, val);
   }
 
   std::vector<uint32_t> got(kExpected.size());
-  EXPECT_EQ(dif_csrng_read_output(&csrng_, got.data(), got.size()),
+  EXPECT_EQ(dif_csrng_generate_end(&csrng_, got.data(), got.size()),
             kDifCsrngOk);
   EXPECT_THAT(got, testing::ElementsAreArray(kExpected));
 }
 
-TEST_F(ReadOutputTest, ReadBadArgs) {
-  EXPECT_EQ(dif_csrng_read_output(&csrng_, nullptr, /*len=*/0),
+TEST_F(GenerateEndTest, ReadBadArgs) {
+  EXPECT_EQ(dif_csrng_generate_end(&csrng_, nullptr, /*len=*/0),
             kDifCsrngBadArg);
 
   uint32_t data;
-  EXPECT_EQ(dif_csrng_read_output(nullptr, &data, /*len=*/1), kDifCsrngBadArg);
+  EXPECT_EQ(dif_csrng_generate_end(nullptr, &data, /*len=*/1), kDifCsrngBadArg);
 }
 
 }  // namespace

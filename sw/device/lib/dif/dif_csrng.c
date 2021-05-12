@@ -9,6 +9,13 @@
 
 #include "csrng_regs.h"  // Generated
 
+enum {
+  /**
+   * CSRNG genbits buffer size in uint32_t words.
+   */
+  kCsrngGenBitsBufferSize = 4,
+};
+
 /**
  * Supported CSRNG application commands.
  * See https://docs.opentitan.org/hw/ip/csrng/doc/#command-header for
@@ -79,11 +86,33 @@ static dif_csrng_result_t write_application_command(
   reg = bitfield_field32_write(reg, kAppCmdFieldGlen, cmd->generate_len);
   mmio_region_write32(csrng->params.base_addr, CSRNG_CMD_REQ_REG_OFFSET, reg);
 
-  for (uint32_t i = 0; i < cmd_len; ++i) {
+  for (size_t i = 0; i < cmd_len; ++i) {
     mmio_region_write32(csrng->params.base_addr, CSRNG_CMD_REQ_REG_OFFSET,
                         cmd->seed_material->seed_material[i]);
   }
   return kDifCsrngOk;
+}
+
+/**
+ * Reads the output data register status.
+ */
+static void get_output_status(const dif_csrng_t *csrng,
+                              dif_csrng_output_status_t *status) {
+  uint32_t reg =
+      mmio_region_read32(csrng->params.base_addr, CSRNG_GENBITS_VLD_REG_OFFSET);
+  status->valid_data =
+      bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_VLD_BIT);
+  status->fips_mode =
+      bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_FIPS_BIT);
+}
+
+/**
+ * Returns true if the data register has valid data.
+ */
+static bool is_output_ready(const dif_csrng_t *csrng) {
+  dif_csrng_output_status_t status;
+  get_output_status(csrng, &status);
+  return status.valid_data;
 }
 
 dif_csrng_result_t dif_csrng_init(dif_csrng_params_t params,
@@ -147,7 +176,8 @@ dif_csrng_result_t dif_csrng_update(
   return write_application_command(csrng, &app_cmd);
 }
 
-dif_csrng_result_t dif_csrng_generate(const dif_csrng_t *csrng, size_t len) {
+dif_csrng_result_t dif_csrng_generate_start(const dif_csrng_t *csrng,
+                                            size_t len) {
   if (len == 0) {
     return kDifCsrngBadArg;
   }
@@ -163,6 +193,29 @@ dif_csrng_result_t dif_csrng_generate(const dif_csrng_t *csrng, size_t len) {
       .generate_len = num_128bit_blocks,
   };
   return write_application_command(csrng, &app_cmd);
+}
+
+dif_csrng_result_t dif_csrng_generate_end(const dif_csrng_t *csrng,
+                                          uint32_t *buf, size_t len) {
+  if (csrng == NULL || buf == NULL) {
+    return kDifCsrngBadArg;
+  }
+
+  // Wait until there is data ready.
+  while (!is_output_ready(csrng)) {
+  }
+
+  for (size_t i = 0, rd_cnt = 0; i < len; ++i, ++rd_cnt) {
+    // Block until there is more data available in the genbits buffer.
+    if (rd_cnt == kCsrngGenBitsBufferSize) {
+      while (!is_output_ready(csrng)) {
+      }
+      rd_cnt = 0;
+    }
+    buf[i] =
+        mmio_region_read32(csrng->params.base_addr, CSRNG_GENBITS_REG_OFFSET);
+  }
+  return kDifCsrngOk;
 }
 
 dif_csrng_result_t dif_csrng_uninstantiate(const dif_csrng_t *csrng) {
@@ -207,24 +260,6 @@ dif_csrng_result_t dif_csrng_get_output_status(
   if (csrng == NULL || status == NULL) {
     return kDifCsrngBadArg;
   }
-  uint32_t reg =
-      mmio_region_read32(csrng->params.base_addr, CSRNG_GENBITS_VLD_REG_OFFSET);
-  status->valid_data =
-      bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_VLD_BIT);
-  status->fips_mode =
-      bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_FIPS_BIT);
-  return kDifCsrngOk;
-}
-
-dif_csrng_result_t dif_csrng_read_output(const dif_csrng_t *csrng,
-                                         uint32_t *buf, size_t len) {
-  if (csrng == NULL || buf == NULL) {
-    return kDifCsrngBadArg;
-  }
-
-  for (uint32_t i = 0; i < len; ++i) {
-    buf[i] =
-        mmio_region_read32(csrng->params.base_addr, CSRNG_GENBITS_REG_OFFSET);
-  }
+  get_output_status(csrng, status);
   return kDifCsrngOk;
 }
