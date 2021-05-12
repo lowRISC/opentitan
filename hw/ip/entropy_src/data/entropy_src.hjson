@@ -11,6 +11,7 @@
       desc: "Asserted when entropy source bits are available."}
     { name: "es_health_test_failed"
       desc: "Asserted when the alert count has been met."}
+// TODO: remove this comment
     { name: "es_fatal_err"
       desc: "Asserted when a FIFO error occurs, or if an illegal state machine state is reached."}
   ],
