@@ -372,7 +372,11 @@ interface mem_bkdr_if #(
       int mem_index = addr >> mem_addr_lsb;
       // 22-bit wide memory word includes 16-bit data, 6-bit ECC bits
       bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
-      return prim_secded_22_16_dec(mem_data);
+      case (MEM_ECC)
+        Secded_22_16:        return prim_secded_22_16_dec(mem_data);
+        SecdedHamming_22_16: return prim_secded_hamming_22_16_dec(mem_data);
+        default:             return 'x;
+      endcase
     end
     return 'x;
   endfunction
@@ -383,7 +387,11 @@ interface mem_bkdr_if #(
       int mem_index = addr >> mem_addr_lsb;
       // 39-bit wide memory word includes 32-bit data, 7-bit ECC bits
       bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
-      return prim_secded_39_32_dec(mem_data);
+      case (MEM_ECC)
+        Secded_39_32:        return prim_secded_39_32_dec(mem_data);
+        SecdedHamming_39_32: return prim_secded_hamming_39_32_dec(mem_data);
+        default:             return 'x;
+      endcase
     end
     return 'x;
   endfunction
@@ -394,7 +402,11 @@ interface mem_bkdr_if #(
       int mem_index = addr >> mem_addr_lsb;
       // 72-bit wide memory word includes 64-bit data, 8-bit ECC bits
       bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
-      return prim_secded_72_64_dec(mem_data);
+      case (MEM_ECC)
+        Secded_72_64:        return prim_secded_72_64_dec(mem_data);
+        SecdedHamming_72_64: return prim_secded_hamming_72_64_dec(mem_data);
+        default:             return 'x;
+      endcase
     end
     return 'x;
   endfunction
