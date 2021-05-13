@@ -51,8 +51,8 @@ module rom_ctrl_mux #(
   // Spot if the select signal becomes one again after it went to zero
   assign alert_o = sel_i & ~sel_q;
 
-  // The bus can have access every cycle, once the select signal has gone to zero
-  assign bus_gnt_o    = ~sel_q;
+  // The bus can have access every cycle, once the select signal is zero.
+  assign bus_gnt_o    = ~sel_i;
   assign bus_rdata_o  = rom_clr_rdata_i;
   // A high rom_rvalid_i is a response to a bus request if sel_i was zero on the previous cycle.
   assign bus_rvalid_o = ~sel_q & rom_rvalid_i;
