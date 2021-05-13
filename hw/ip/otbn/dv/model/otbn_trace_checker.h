@@ -39,6 +39,7 @@
 #include <string>
 #include <vector>
 
+#include "otbn_trace_entry.h"
 #include "otbn_trace_listener.h"
 
 class OtbnTraceChecker : public OtbnTraceListener {
@@ -73,27 +74,13 @@ class OtbnTraceChecker : public OtbnTraceListener {
   // message to stderr and return false.
   bool MatchPair();
 
-  class TraceEntry {
-   public:
-    static TraceEntry from_rtl_trace(const std::string &trace);
-    static TraceEntry from_iss_trace(const std::vector<std::string> &lines);
-
-    bool operator==(const TraceEntry &other) const;
-    void print(const std::string &indent, std::ostream &os) const;
-
-    void take_writes(const TraceEntry &other);
-
-    std::string hdr_;
-    std::vector<std::string> writes_;
-  };
-
   bool rtl_pending_;
   bool rtl_stall_;
-  TraceEntry rtl_entry_;
-  TraceEntry rtl_stalled_entry_;
+  OtbnTraceEntry rtl_entry_;
+  OtbnTraceEntry rtl_stalled_entry_;
 
   bool iss_pending_;
-  TraceEntry iss_entry_;
+  OtbnTraceEntry iss_entry_;
 
   bool done_;
   bool seen_err_;

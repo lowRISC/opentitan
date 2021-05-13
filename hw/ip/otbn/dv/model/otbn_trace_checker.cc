@@ -4,7 +4,6 @@
 
 #include "otbn_trace_checker.h"
 
-#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <memory>
@@ -45,8 +44,9 @@ void OtbnTraceChecker::AcceptTraceString(const std::string &trace,
     return;
 
   done_ = false;
-  TraceEntry trace_entry = TraceEntry::from_rtl_trace(trace);
-  if (trace_entry.hdr_.empty()) {
+  OtbnTraceEntry trace_entry;
+  trace_entry.from_rtl_trace(trace);
+  if (trace_entry.empty()) {
     std::cerr << "ERROR: Invalid RTL trace entry with empty header:\n";
     trace_entry.print("  ", std::cerr);
     seen_err_ = true;
@@ -66,11 +66,10 @@ void OtbnTraceChecker::AcceptTraceString(const std::string &trace,
   // When an execution entry comes up, we check it matches the pending stall
   // entry and then merge all the fields together, finally setting
   // rtl_pending_.
-  bool is_stall = trace_entry.hdr_[0] == 'S';
-  if (is_stall) {
+  if (trace_entry.is_stall()) {
     if (rtl_stall_) {
       // We already have a stall line. Make sure the headers match.
-      if (rtl_stalled_entry_.hdr_ != trace_entry.hdr_) {
+      if (!trace_entry.is_compatible(rtl_stalled_entry_)) {
         std::cerr
             << ("ERROR: Stall trace entry followed by "
                 "mis-matching stall.\n"
@@ -91,7 +90,7 @@ void OtbnTraceChecker::AcceptTraceString(const std::string &trace,
   }
 
   // This wasn't a stall entry. Check it's an execution.
-  if (trace_entry.hdr_[0] != 'E') {
+  if (!trace_entry.is_exec()) {
     std::cerr << "ERROR: Invalid RTL trace entry (neither S nor E):\n";
     trace_entry.print("  ", std::cerr);
     seen_err_ = true;
@@ -101,8 +100,7 @@ void OtbnTraceChecker::AcceptTraceString(const std::string &trace,
   // If had a stall before, merge in any writes from it, making sure the lines
   // match.
   if (rtl_stall_) {
-    if (trace_entry.hdr_.compare(1, std::string::npos, rtl_stalled_entry_.hdr_,
-                                 1, std::string::npos) != 0) {
+    if (!trace_entry.is_compatible(rtl_stalled_entry_)) {
       std::cerr
           << ("ERROR: Execution trace entry doesn't match stall:\n"
               "  Stall entry was:\n");
@@ -150,7 +148,8 @@ bool OtbnTraceChecker::OnIssTrace(const std::vector<std::string> &lines) {
     return true;
   }
 
-  TraceEntry trace_entry = TraceEntry::from_iss_trace(lines);
+  OtbnTraceEntry trace_entry;
+  trace_entry.from_iss_trace(lines);
 
   done_ = false;
   if (iss_pending_) {
@@ -212,70 +211,4 @@ bool OtbnTraceChecker::MatchPair() {
     return false;
   }
   return true;
-}
-
-OtbnTraceChecker::TraceEntry OtbnTraceChecker::TraceEntry::from_rtl_trace(
-    const std::string &trace) {
-  TraceEntry entry;
-
-  size_t eol = trace.find('\n');
-  entry.hdr_ = trace.substr(0, eol);
-
-  while (eol != std::string::npos) {
-    size_t bol = eol + 1;
-    eol = trace.find('\n', bol);
-    size_t line_len =
-        (eol == std::string::npos) ? std::string::npos : eol - bol;
-    std::string line = trace.substr(bol, line_len);
-    if (line.size() > 0 && line[0] == '>')
-      entry.writes_.push_back(line);
-  }
-  std::sort(entry.writes_.begin(), entry.writes_.end());
-
-  return entry;
-}
-
-OtbnTraceChecker::TraceEntry OtbnTraceChecker::TraceEntry::from_iss_trace(
-    const std::vector<std::string> &lines) {
-  TraceEntry entry;
-  if (!lines.empty()) {
-    entry.hdr_ = lines[0];
-  }
-  bool first = true;
-  for (const std::string &line : lines) {
-    if (first) {
-      entry.hdr_ = line;
-    } else {
-      // Ignore '!' lines (which are used to tell the simulation about external
-      // register changes, not tracked by the RTL core simulation)
-      bool is_bang = (line.size() > 0 && line[0] == '!');
-      if (!is_bang) {
-        entry.writes_.push_back(line);
-      }
-    }
-    first = false;
-  }
-  std::sort(entry.writes_.begin(), entry.writes_.end());
-  return entry;
-}
-
-bool OtbnTraceChecker::TraceEntry::operator==(const TraceEntry &other) const {
-  return hdr_ == other.hdr_ && writes_ == other.writes_;
-}
-
-void OtbnTraceChecker::TraceEntry::print(const std::string &indent,
-                                         std::ostream &os) const {
-  os << indent << hdr_ << "\n";
-  for (const std::string &write : writes_) {
-    os << indent << write << "\n";
-  }
-}
-
-void OtbnTraceChecker::TraceEntry::take_writes(const TraceEntry &other) {
-  if (!other.writes_.empty()) {
-    for (const std::string &write : other.writes_) {
-      writes_.push_back(write);
-    }
-    std::sort(writes_.begin(), writes_.end());
-  }
 }
