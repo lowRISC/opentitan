@@ -56,9 +56,11 @@ dif_kmac_result_t dif_kmac_customization_string_init(
   uint16_t bits = ((uint16_t)len) * 8;
   char *buffer = out->buffer;
   if (bits <= UINT8_MAX) {
+    out->length = len + 2;
     *buffer++ = 1;
     *buffer++ = (char)bits;
   } else {
+    out->length = len + 3;
     *buffer++ = 2;
     // Most significant byte is first (i.e. big-endian).
     *buffer++ = (char)(bits >> 8);
@@ -84,6 +86,9 @@ dif_kmac_result_t dif_kmac_function_name_init(const char *data, size_t len,
                 "length requires more than 2 bytes to left encode");
   static_assert(ARRAYSIZE(out->buffer) >= kDifKmacMaxFunctionNameLen + 2,
                 "buffer is not large enough");
+
+  // Length of the data to be stored into buffer.
+  out->length = len + 2;
 
   // Left encode length in bits.
   out->buffer[0] = 1;
@@ -326,6 +331,109 @@ dif_kmac_result_t dif_kmac_mode_shake_start(dif_kmac_t *kmac,
   cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_MODE_FIELD,
                                    KMAC_CFG_MODE_VALUE_SHAKE);
   mmio_region_write32(kmac->params.base_addr, KMAC_CFG_REG_OFFSET, cfg_reg);
+
+  // Issue start command.
+  uint32_t cmd_reg =
+      bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_START);
+  mmio_region_write32(kmac->params.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+
+  // Poll until the status register is in the 'absorb' state.
+  while (true) {
+    if (is_state_absorb(kmac->params)) {
+      break;
+    }
+    // TODO(#6248): check for error.
+  }
+
+  return kDifKmacOk;
+}
+
+dif_kmac_result_t dif_kmac_mode_cshake_start(
+    dif_kmac_t *kmac, dif_kmac_mode_cshake_t mode,
+    const dif_kmac_function_name_t *n,
+    const dif_kmac_customization_string_t *s) {
+  if (kmac == NULL) {
+    return kDifKmacBadArg;
+  }
+
+  // Use SHAKE if both N and S are empty strings.
+  bool n_is_empty = n == NULL || (n->buffer[0] == 1 && n->buffer[1] == 0);
+  bool s_is_empty = s == NULL || (s->buffer[0] == 1 && s->buffer[1] == 0);
+  if (n_is_empty && s_is_empty) {
+    switch (mode) {
+      case kDifKmacModeCshakeLen128:
+        return dif_kmac_mode_shake_start(kmac, kDifKmacModeShakeLen128);
+      case kDifKmacModeCshakeLen256:
+        return dif_kmac_mode_shake_start(kmac, kDifKmacModeShakeLen256);
+      default:
+        return kDifKmacBadArg;
+    }
+  }
+
+  // Set key strength and calculate rate (r).
+  uint32_t kstrength;
+  switch (mode) {
+    case kDifKmacModeCshakeLen128:
+      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L128;
+      kmac->r = calculate_rate_bits(128) / 32;
+      break;
+    case kDifKmacModeCshakeLen256:
+      kstrength = KMAC_CFG_KSTRENGTH_VALUE_L256;
+      kmac->r = calculate_rate_bits(256) / 32;
+      break;
+    default:
+      return kDifKmacBadArg;
+  }
+  kmac->d = 0;  // Zero indicates variable digest length.
+  kmac->offset = 0;
+
+  // Hardware must be idle to start an operation.
+  if (!is_state_idle(kmac->params)) {
+    return kDifKmacError;
+  }
+
+  // Configure cSHAKE mode with the given strength.
+  uint32_t cfg_reg =
+      mmio_region_read32(kmac->params.base_addr, KMAC_CFG_REG_OFFSET);
+  cfg_reg =
+      bitfield_field32_write(cfg_reg, KMAC_CFG_KSTRENGTH_FIELD, kstrength);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_MODE_FIELD,
+                                   KMAC_CFG_MODE_VALUE_CSHAKE);
+  mmio_region_write32(kmac->params.base_addr, KMAC_CFG_REG_OFFSET, cfg_reg);
+
+  // Calculate PREFIX register values.
+  uint32_t prefix_regs[11] = {0};
+  uint8_t *prefix_data = (void *)prefix_regs;
+  if (n == NULL) {
+    // Append left encoded empty string.
+    prefix_data[0] = 1;
+    prefix_data[1] = 0;
+    prefix_data += 2;
+  } else {
+    memcpy(prefix_data, n->buffer, n->length);
+    prefix_data += n->length;
+  }
+  if (s == NULL) {
+    // Append left encoded empty string.
+    prefix_data[0] = 1;
+    prefix_data[1] = 0;
+  } else {
+    memcpy(prefix_data, s->buffer, s->length);
+  }
+
+  // Write PREFIX register values.
+  const mmio_region_t base = kmac->params.base_addr;
+  mmio_region_write32(base, KMAC_PREFIX_0_REG_OFFSET, prefix_regs[0]);
+  mmio_region_write32(base, KMAC_PREFIX_1_REG_OFFSET, prefix_regs[1]);
+  mmio_region_write32(base, KMAC_PREFIX_2_REG_OFFSET, prefix_regs[2]);
+  mmio_region_write32(base, KMAC_PREFIX_3_REG_OFFSET, prefix_regs[3]);
+  mmio_region_write32(base, KMAC_PREFIX_4_REG_OFFSET, prefix_regs[4]);
+  mmio_region_write32(base, KMAC_PREFIX_5_REG_OFFSET, prefix_regs[5]);
+  mmio_region_write32(base, KMAC_PREFIX_6_REG_OFFSET, prefix_regs[6]);
+  mmio_region_write32(base, KMAC_PREFIX_7_REG_OFFSET, prefix_regs[7]);
+  mmio_region_write32(base, KMAC_PREFIX_8_REG_OFFSET, prefix_regs[8]);
+  mmio_region_write32(base, KMAC_PREFIX_9_REG_OFFSET, prefix_regs[9]);
+  mmio_region_write32(base, KMAC_PREFIX_10_REG_OFFSET, prefix_regs[10]);
 
   // Issue start command.
   uint32_t cmd_reg =
