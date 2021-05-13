@@ -51,8 +51,8 @@ module rom_ctrl_scrambled_rom
   input rom_cfg_t          cfg_i
 );
 
-  localparam bit [63-Aw:0] DataScrNonce = ScrNonce[Aw +: (64 - Aw)];
-  localparam bit [Aw-1:0]  AddrScrNonce = ScrNonce[Aw-1:0];
+  localparam bit [63-Aw:0] DataScrNonce = ScrNonce[63-Aw:0];
+  localparam bit [Aw-1:0]  AddrScrNonce = ScrNonce[63-:Aw];
 
   // Parameter Checks ==========================================================
 

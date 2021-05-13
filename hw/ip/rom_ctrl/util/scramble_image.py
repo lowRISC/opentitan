@@ -395,8 +395,10 @@ class Scrambler:
         assert word_width <= 64
         word_mask = (1 << word_width) - 1
 
-        data_scr_nonce = self.nonce >> self._addr_width
-        addr_scr_nonce = self.nonce & ((1 << self._addr_width) - 1)
+        data_nonce_width = 64 - self._addr_width
+
+        data_scr_nonce = self.nonce & ((1 << data_nonce_width) - 1)
+        addr_scr_nonce = self.nonce >> data_nonce_width
 
         scrambled = []
         for phy_addr in range(self.rom_size_words):
