@@ -135,8 +135,8 @@
 			<v:textBlock v:margins="rect(4,4,4,4)"/>
 			<v:textRect cx="30.3325" cy="586.244" width="60.67" height="51.5114"/>
 			<rect x="0" y="560.489" width="60.665" height="51.5114" class="st1"/>
-			<text x="7.55" y="577.24" class="st2" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>EDN Main <tspan
-						x="22.83" dy="1.2em" class="st3">SM</tspan><v:newlineChar/></text>		</g>
+			<text x="19.78" y="577.24" class="st2" v:langID="1033"><v:paragraph v:horizAlign="1"/><v:tabList/>EDN <v:newlineChar/><tspan
+						x="10.61" dy="1.2em" class="st3">Main SM</tspan><v:newlineChar/></text>		</g>
 		<g id="shape1027-48" v:mID="1027" v:groupContext="shape" transform="translate(370.287,-533.623)">
 			<title>Sheet.1027</title>
 			<desc>Reseed Cmd FIFO</desc>
@@ -386,9 +386,9 @@
 			<title>Sheet.1165</title>
 			<path d="M0 612 L50.59 612" class="st8"/>
 		</g>
-		<g id="shape1169-229" v:mID="1169" v:groupContext="shape" transform="translate(335.356,-317.489)">
+		<g id="shape1169-229" v:mID="1169" v:groupContext="shape" transform="translate(335.356,-309.375)">
 			<title>Sheet.1169</title>
-			<path d="M0 560.49 L146.14 560.49 L145.95 606.28" class="st10"/>
+			<path d="M0 552.38 L150.64 552.38 L150.44 606.28" class="st10"/>
 		</g>
 		<g id="shape1170-234" v:mID="1170" v:groupContext="shape" transform="translate(335.356,-220.5)">
 			<title>Sheet.1170</title>
