@@ -373,6 +373,8 @@ typedef struct dif_kmac_customization_string {
   /** Encoded S: left_encode(len(S)) || S */
   char buffer[kDifKmacMaxCustomizationStringLen +
               kDifKmacMaxCustomizationStringOverhead];
+  /** Length of data in buffer in bytes. */
+  uint32_t length;
 } dif_kmac_customization_string_t;
 
 /**
@@ -383,6 +385,8 @@ typedef struct dif_kmac_customization_string {
 typedef struct dif_kmac_function_name {
   /** Encoded N: left_encode(len(N)) || N */
   char buffer[kDifKmacMaxFunctionNameLen + kDifKmacMaxFunctionNameOverhead];
+  /** Length of data in buffer in bytes. */
+  uint32_t length;
 } dif_kmac_function_name_t;
 
 /**
@@ -550,15 +554,15 @@ dif_kmac_result_t dif_kmac_mode_shake_start(dif_kmac_t *kmac,
  *
  * @param kmac A KMAC handle.
  * @param mode The mode of operation.
- * @param s Customization string (optional).
  * @param n Function name (optional).
+ * @param s Customization string (optional).
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
 dif_kmac_result_t dif_kmac_mode_cshake_start(
     dif_kmac_t *kmac, dif_kmac_mode_cshake_t mode,
-    const dif_kmac_customization_string_t *s,
-    const dif_kmac_function_name_t *n);
+    const dif_kmac_function_name_t *n,
+    const dif_kmac_customization_string_t *s);
 
 /**
  * Start a KMAC operation.
