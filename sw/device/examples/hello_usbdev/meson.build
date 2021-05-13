@@ -27,21 +27,44 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     ],
   )
 
-  hello_usbdev_embedded = custom_target(
-    'hello_usbdev_' + device_name,
-    command: make_embedded_target_command,
-    depend_files: [make_embedded_target_depend_files,],
+  target_name = 'hello_usbdev_@0@_' + device_name
+
+  hello_usbdev_dis = custom_target(
+    target_name.format('dis'),
     input: hello_usbdev_elf,
-    output: make_embedded_target_outputs,
-    build_by_default: true,
+    kwargs: elf_to_dis_custom_target_args,
+  )
+
+  hello_usbdev_bin = custom_target(
+    target_name.format('bin'),
+    input: hello_usbdev_elf,
+    kwargs: elf_to_bin_custom_target_args,
+  )
+
+  hello_usbdev_vmem32 = custom_target(
+    target_name.format('vmem32'),
+    input: hello_usbdev_bin,
+    kwargs: bin_to_vmem32_custom_target_args,
+  )
+
+  hello_usbdev_vmem64 = custom_target(
+    target_name.format('vmem64'),
+    input: hello_usbdev_bin,
+    kwargs: bin_to_vmem64_custom_target_args,
   )
 
   custom_target(
-    'hello_usbdev_export_' + device_name,
+    target_name.format('export'),
     command: export_target_command,
     depend_files: [export_target_depend_files,],
-    input: [hello_usbdev_elf, hello_usbdev_embedded],
-    output: 'hello_usbdev_export_' + device_name,
+    input: [
+      hello_usbdev_elf,
+      hello_usbdev_dis,
+      hello_usbdev_bin,
+      hello_usbdev_vmem32,
+      hello_usbdev_vmem64,
+    ],
+    output: target_name.format('export'),
     build_always_stale: true,
     build_by_default: true,
   )

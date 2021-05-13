@@ -5,24 +5,74 @@
 subdir('lib')
 subdir('exts')
 
-# Arguments for custom_target, for converting a linked .elf file into .bin and .vmem
-# files (plus a disassembled .dis file).
-#
-# These definitions should only be available to directories which define executables.
-make_embedded_target_outputs = ['@BASENAME@.bin', '@BASENAME@.dis', '@BASENAME@.32.vmem', '@BASENAME@.64.vmem']
-make_embedded_target_command = [
-  prog_python,
-  meson.source_root() / 'util/embedded_target.py',
-  '--objcopy', prog_objcopy,
-  '--srec_cat', prog_srec_cat,
-  '--objdump', prog_objdump,
-  '--input', '@INPUT@',
-  '--basename', '@BASENAME@',
-  '--outdir', '@OUTDIR@',
-]
-make_embedded_target_depend_files = [
-  meson.source_root() / 'util/embedded_target.py',
-]
+# Dictionaries that can be used as `custom_target` arguments for common
+# operations on `.elf` and `.bin` files. To create a custom target using
+# `my_custom_target_args`:
+#    my_var = custom_target(
+#      my_target_name,
+#      input: my_target_input,
+#      kwargs: my_custom_target_args,
+#    )
+
+# `custom_target` arguments for creating a `.dis` file from an `.elf` file.
+elf_to_dis_custom_target_args = {
+  'output': '@BASENAME@.dis',
+  'command': [
+    prog_objdump,
+    '--disassemble',
+    '--headers',
+    '--line-numbers',
+    '--source',
+    '@INPUT@',
+  ],
+  # Write the stdout of objdump to the output file.
+  'capture': true,
+  'build_by_default': true,
+}
+
+# `custom_target` arguments for creating a `.bin` file from an `.elf` file.
+elf_to_bin_custom_target_args = {
+  'output': '@BASENAME@.bin',
+  'command': [
+    prog_objcopy,
+    '--output-target', 'binary',
+    '@INPUT@',
+    '@OUTPUT@',
+  ],
+  'build_by_default': true,
+}
+
+# Argument template for creating `.*.vmem` files from a `.elf` file.
+# The arguments array for a particular word size can be built using:
+# bin_to_vmem_args_template.format(num_words, num_bits).split(' ')
+# Note: Joining an array to be able to comment individual arguments.
+# TODO: Replace command for objcopy if endianess issues can be solved
+# https://github.com/lowRISC/opentitan/issues/1107
+bin_to_vmem_args_template = ' '.join([
+    '@INPUT@',
+    # Interpret input as binary.
+    '--binary',
+    # Reverse the endianness of every word.
+    '--offset', '0x0', '--byte-swap', '@0@',
+    # Pad to word alignment.
+    '--fill', '0xff', '-within', '@INPUT@', '-binary', '-range-pad', '@0@',
+    # Output a vmem file with specified word size
+    '--output', '@OUTPUT@', '--vmem', '@1@',
+])
+
+# `custom_target` arguments for creating a `.32.vmem` file from a `.elf` file.
+bin_to_vmem32_custom_target_args = {
+  'output': '@BASENAME@.32.vmem',
+  'command': [prog_srec_cat] + bin_to_vmem_args_template.format(4, 32).split(' '),
+  'build_by_default': true,
+}
+
+# `custom_target` arguments for creating a `.64.vmem` file from a `.elf` file.
+bin_to_vmem64_custom_target_args = {
+  'output': '@BASENAME@.64.vmem',
+  'command': [prog_srec_cat] + bin_to_vmem_args_template.format(8, 64).split(' '),
+  'build_by_default': true,
+}
 
 embedded_target_extra_link_args = [
   '-Wl,--build-id=none',

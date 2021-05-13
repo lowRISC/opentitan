@@ -22,21 +22,44 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     ],
   )
 
-  aes_serial_embedded = custom_target(
-    'aes_serial_' + device_name,
-    command: make_embedded_target_command,
-    depend_files: [make_embedded_target_depend_files,],
+  target_name = 'aes_serial_@0@_' + device_name
+
+  aes_serial_dis = custom_target(
+    target_name.format('dis'),
     input: aes_serial_elf,
-    output: make_embedded_target_outputs,
-    build_by_default: true,
+    kwargs: elf_to_dis_custom_target_args,
+  )
+
+  aes_serial_bin = custom_target(
+    target_name.format('bin'),
+    input: aes_serial_elf,
+    kwargs: elf_to_bin_custom_target_args,
+  )
+
+  aes_serial_vmem32 = custom_target(
+    target_name.format('vmem32'),
+    input: aes_serial_bin,
+    kwargs: bin_to_vmem32_custom_target_args,
+  )
+
+  aes_serial_vmem64 = custom_target(
+    target_name.format('vmem64'),
+    input: aes_serial_bin,
+    kwargs: bin_to_vmem64_custom_target_args,
   )
 
   custom_target(
-    'aes_serial_export_' + device_name,
+    target_name.format('export'),
     command: export_target_command,
     depend_files: [export_target_depend_files,],
-    input: [aes_serial_elf, aes_serial_embedded],
-    output: 'aes_serial_export_' + device_name,
+    input: [
+      aes_serial_elf,
+      aes_serial_dis,
+      aes_serial_bin,
+      aes_serial_vmem32,
+      aes_serial_vmem64,
+    ],
+    output: target_name.format('export'),
     build_always_stale: true,
     build_by_default: true,
   )

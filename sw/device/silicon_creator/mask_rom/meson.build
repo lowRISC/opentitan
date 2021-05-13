@@ -10,9 +10,7 @@ rom_linkfile = files(['mask_rom.ld'])
 rom_link_args = [
   '-Wl,-L,@0@'.format(meson.source_root()),
   '-Wl,-T,@0@/@1@'.format(meson.source_root(), rom_linkfile[0]),
-  # Flatten the array, otherwise `mask_rom_lib` generation fails.
-  ''.join(embedded_target_extra_link_args),
-]
+] + embedded_target_extra_link_args
 rom_link_deps = [rom_linkfile]
 
 # MaskROM library.
@@ -56,17 +54,34 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     ],
   )
 
-  mask_rom_embedded = custom_target(
-    'mask_rom_' + device_name,
-    command: make_embedded_target_command,
-    depend_files: [make_embedded_target_depend_files,],
+  target_name = 'mask_rom_@0@_' + device_name
+
+  mask_rom_dis = custom_target(
+    target_name.format('dis'),
     input: mask_rom_elf,
-    output: make_embedded_target_outputs,
-    build_by_default: true,
+    kwargs: elf_to_dis_custom_target_args,
+  )
+
+  mask_rom_bin = custom_target(
+    target_name.format('bin'),
+    input: mask_rom_elf,
+    kwargs: elf_to_bin_custom_target_args,
+  )
+
+  mask_rom_vmem32 = custom_target(
+    target_name.format('vmem32'),
+    input: mask_rom_bin,
+    kwargs: bin_to_vmem32_custom_target_args,
+  )
+
+  mask_rom_vmem64 = custom_target(
+    target_name.format('vmem64'),
+    input: mask_rom_bin,
+    kwargs: bin_to_vmem64_custom_target_args,
   )
 
   mask_rom_scrambled = custom_target(
-    'mask_rom_scrambled_' + device_name,
+    target_name.format('scrambled'),
     command: scramble_image_command,
     depend_files: scramble_image_depend_files,
     input: mask_rom_elf,
@@ -75,15 +90,18 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   )
 
   custom_target(
-    'mask_rom_export_' + device_name,
+    target_name.format('export'),
     command: export_target_command,
     depend_files: [export_target_depend_files,],
     input: [
       mask_rom_elf,
-      mask_rom_embedded,
+      mask_rom_dis,
+      mask_rom_bin,
+      mask_rom_vmem32,
+      mask_rom_vmem64,
       mask_rom_scrambled,
     ],
-    output: 'mask_rom_export_' + device_name,
+    output: target_name.format('export'),
     build_always_stale: true,
     build_by_default: true,
   )
