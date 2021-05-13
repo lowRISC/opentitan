@@ -66,17 +66,34 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     ],
   )
 
-  boot_rom_embedded = custom_target(
-    'boot_rom_' + device_name,
-    command: make_embedded_target_command,
-    depend_files: [make_embedded_target_depend_files,],
+  target_name = 'boot_rom_@0@_' + device_name
+
+  boot_rom_dis = custom_target(
+    target_name.format('dis'),
     input: boot_rom_elf,
-    output: make_embedded_target_outputs,
-    build_by_default: true,
+    kwargs: elf_to_dis_custom_target_args,
+  )
+
+  boot_rom_bin = custom_target(
+    target_name.format('bin'),
+    input: boot_rom_elf,
+    kwargs: elf_to_bin_custom_target_args,
+  )
+
+  boot_rom_vmem32 = custom_target(
+    target_name.format('vmem32'),
+    input: boot_rom_bin,
+    kwargs: bin_to_vmem32_custom_target_args,
+  )
+
+  boot_rom_vmem64 = custom_target(
+    target_name.format('vmem64'),
+    input: boot_rom_bin,
+    kwargs: bin_to_vmem64_custom_target_args,
   )
 
   boot_rom_scrambled = custom_target(
-    'boot_rom_scrambled_' + device_name,
+    target_name.format('scrambled'),
     command: scramble_image_command,
     depend_files: scramble_image_depend_files,
     input: boot_rom_elf,
@@ -100,16 +117,19 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
   endif
 
   custom_target(
-    'boot_rom_export_' + device_name,
+    target_name.format('export'),
     command: export_target_command,
     depend_files: [export_target_depend_files,],
     input: [
       boot_rom_elf,
-      boot_rom_embedded,
+      boot_rom_dis,
+      boot_rom_bin,
+      boot_rom_vmem32,
+      boot_rom_vmem64,
       boot_rom_scrambled,
       boot_rom_sim_dv_logs,
     ],
-    output: 'boot_rom_export_' + device_name,
+    output: target_name.format('export'),
     build_always_stale: true,
     build_by_default: true,
   )

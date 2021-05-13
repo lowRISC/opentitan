@@ -36,24 +36,44 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     ],
   )
 
-  coremark_top_earlgrey_embedded = custom_target(
-    'coremark_top_earlgrey_' + device_name,
-    command: make_embedded_target_command,
-    depend_files: [make_embedded_target_depend_files,],
+  target_name = 'coremark_top_earlgrey_@0@_' + device_name
+
+  coremark_top_earlgrey_dis = custom_target(
+    target_name.format('dis'),
     input: coremark_top_earlgrey_elf,
-    output: make_embedded_target_outputs,
-    build_by_default: true,
+    kwargs: elf_to_dis_custom_target_args,
+  )
+
+  coremark_top_earlgrey_bin = custom_target(
+    target_name.format('bin'),
+    input: coremark_top_earlgrey_elf,
+    kwargs: elf_to_bin_custom_target_args,
+  )
+
+  coremark_top_earlgrey_vmem32 = custom_target(
+    target_name.format('vmem32'),
+    input: coremark_top_earlgrey_bin,
+    kwargs: bin_to_vmem32_custom_target_args,
+  )
+
+  coremark_top_earlgrey_vmem64 = custom_target(
+    target_name.format('vmem64'),
+    input: coremark_top_earlgrey_bin,
+    kwargs: bin_to_vmem64_custom_target_args,
   )
 
   custom_target(
-    'coremark_top_earlgrey_export_' + device_name,
+    target_name.format('export'),
     command: export_target_command,
     input: [
       coremark_top_earlgrey_elf,
-      coremark_top_earlgrey_embedded,
+      coremark_top_earlgrey_dis,
+      coremark_top_earlgrey_bin,
+      coremark_top_earlgrey_vmem32,
+      coremark_top_earlgrey_vmem64,
     ],
     depend_files: [export_target_depend_files,],
-    output: 'coremark_top_earlgrey_export_' + device_name,
+    output: target_name.format('export'),
     build_always_stale: true,
     build_by_default: true,
   )

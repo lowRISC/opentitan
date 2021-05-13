@@ -130,13 +130,30 @@ foreach sw_test_name, sw_test_info : sw_tests
       ],
     )
 
-    sw_test_embedded = custom_target(
-      sw_test_name + '_' + device_name,
-      command: make_embedded_target_command,
-      depend_files: [make_embedded_target_depend_files,],
+    target_name = sw_test_name + '_@0@_' + device_name
+
+    sw_test_dis = custom_target(
+      target_name.format('dis'),
       input: sw_test_elf,
-      output: make_embedded_target_outputs,
-      build_by_default: true,
+      kwargs: elf_to_dis_custom_target_args,
+    )
+
+    sw_test_bin = custom_target(
+      target_name.format('bin'),
+      input: sw_test_elf,
+      kwargs: elf_to_bin_custom_target_args,
+    )
+
+    sw_test_vmem32 = custom_target(
+      target_name.format('vmem32'),
+      input: sw_test_bin,
+      kwargs: bin_to_vmem32_custom_target_args,
+    )
+
+    sw_test_vmem64 = custom_target(
+      target_name.format('vmem64'),
+      input: sw_test_bin,
+      kwargs: bin_to_vmem64_custom_target_args,
     )
 
     sw_test_sim_dv_frames = []
@@ -149,7 +166,7 @@ foreach sw_test_name, sw_test_info : sw_tests
           '--input=@INPUT@',
           '--dump-frames=@OUTPUT@',
         ],
-        input: sw_test_embedded[0],
+        input: sw_test_bin,
         output: '@BASENAME@.frames.bin',
       )
 
@@ -189,21 +206,25 @@ foreach sw_test_name, sw_test_info : sw_tests
     endif
 
     custom_target(
-      sw_test_name + '_export_' + device_name,
+      target_name.format('export'),
       command: export_target_command,
       depend_files: [export_target_depend_files,],
       input: [
         sw_test_elf,
-        sw_test_embedded,
+        sw_test_dis,
+        sw_test_bin,
+        sw_test_vmem32,
+        sw_test_vmem64,
         sw_test_sim_dv_frames,
         sw_test_sim_dv_logs,
       ],
-      output: sw_test_name + '_export_' + device_name,
+      output: target_name.format('export'),
       build_always_stale: true,
       build_by_default: true,
     )
   endforeach
 endforeach
+
 
 foreach sw_test_name, sw_test_info : sw_rom_ext_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
@@ -220,14 +241,44 @@ foreach sw_test_name, sw_test_info : sw_rom_ext_tests
       ],
     )
 
+    target_name = sw_test_name + '_rom_ext_@0@_' + device_name
+
+    sw_test_dis = custom_target(
+      target_name.format('dis'),
+      input: sw_test_elf,
+      kwargs: elf_to_dis_custom_target_args,
+    )
+
+    sw_test_bin = custom_target(
+      target_name.format('bin'),
+      input: sw_test_elf,
+      kwargs: elf_to_bin_custom_target_args,
+    )
+
+    sw_test_vmem32 = custom_target(
+      target_name.format('vmem32'),
+      input: sw_test_bin,
+      kwargs: bin_to_vmem32_custom_target_args,
+    )
+
+    sw_test_vmem64 = custom_target(
+      target_name.format('vmem64'),
+      input: sw_test_bin,
+      kwargs: bin_to_vmem64_custom_target_args,
+    )
+
     custom_target(
-      sw_test_name + '_rom_ext_export_' + device_name,
+      target_name.format('export'),
       command: export_target_command,
       depend_files: [export_target_depend_files,],
       input: [
         sw_test_elf,
+        sw_test_dis,
+        sw_test_bin,
+        sw_test_vmem32,
+        sw_test_vmem64,
       ],
-      output: sw_test_name + '_rom_ext_export_' + device_name,
+      output: target_name.format('export'),
       build_always_stale: true,
       build_by_default: true,
     )
@@ -254,21 +305,44 @@ foreach device_name, device_lib : sw_lib_arch_core_devices
     ],
   )
 
-  crt_test_embedded = custom_target(
-    'crt_test_' + device_name,
-    command: make_embedded_target_command,
-    depend_files: [make_embedded_target_depend_files,],
+  target_name = 'crt_test_@0@_' + device_name
+
+  crt_test_dis = custom_target(
+    target_name.format('dis'),
     input: crt_test_elf,
-    output: make_embedded_target_outputs,
-    build_by_default: true,
+    kwargs: elf_to_dis_custom_target_args,
+  )
+
+  crt_test_bin = custom_target(
+    target_name.format('bin'),
+    input: crt_test_elf,
+    kwargs: elf_to_bin_custom_target_args,
+  )
+
+  crt_test_vmem32 = custom_target(
+    target_name.format('vmem32'),
+    input: crt_test_bin,
+    kwargs: bin_to_vmem32_custom_target_args,
+  )
+
+  crt_test_vmem64 = custom_target(
+    target_name.format('vmem64'),
+    input: crt_test_bin,
+    kwargs: bin_to_vmem64_custom_target_args,
   )
 
   custom_target(
-    'crt_test_export_' + device_name,
+    target_name.format('export'),
     command: export_target_command,
     depend_files: [export_target_depend_files,],
-    input: [crt_test_elf, crt_test_embedded],
-    output: 'crt_test_export_' + device_name,
+    input: [
+      crt_test_elf,
+      crt_test_dis,
+      crt_test_bin,
+      crt_test_vmem32,
+      crt_test_vmem64,
+    ],
+    output: target_name.format('export'),
     build_always_stale: true,
     build_by_default: true,
   )
