@@ -17,9 +17,14 @@
 #
 __TOOL_REQUIREMENTS__ = {
     'edalize': '0.2.0',
-    'ninja': '1.8.2',
-    'verilator': '4.104',
-
+    'ninja': {
+        'min_version': '1.8.2',
+        'as_needed': True
+    },
+    'verilator': {
+        'min_version': '4.104',
+        'as_needed': True
+    },
     'hugo_extended': {
         'min_version': '0.82.0',
         'as_needed': True
