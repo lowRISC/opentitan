@@ -55,6 +55,10 @@ For packages listed below without a version number we have not determined a mini
 * libusb 1.0 (called libusbx in older distributions)
 * OpenOCD 0.11.0
 * [Verible](https://github.com/google/verible) {{< tool_version "verible" >}}
+* Cmake 2.8.11
+* Perl 5.6.1
+* [Go](https://golang.org/) 1.10
+* [Rust](https://www.rust-lang.org/) 1.52.1
 
 To synthesize and simulate the hardware components of OpenTitan multiple EDA tools are supported.
 Depending on how you interact with the OpenTitan hardware code, one of more of the following tools need to be available.
