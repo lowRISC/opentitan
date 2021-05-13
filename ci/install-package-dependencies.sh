@@ -10,6 +10,7 @@ usage()
     echo "Usage: install-package-dependencies.sh --verilator-version V"
     echo "                                       --openocd-version V"
     echo "                                       --verible-version V"
+    echo "                                       --rust-version V"
     exit 1
 }
 
@@ -19,7 +20,7 @@ error()
     exit 1
 }
 
-long="verilator-version:,openocd-version:,verible-version:"
+long="verilator-version:,openocd-version:,verible-version:,rust-version:"
 ARGS="$(getopt -o "" -l "$long" -- "$@")" || usage
 
 VERILATOR_VERSION=
@@ -33,6 +34,7 @@ do
         --verilator-version) VERILATOR_VERSION="$2"; shift 2 ;;
         --openocd-version)   OPENOCD_VERSION="$2";   shift 2 ;;
         --verible-version)   VERIBLE_VERSION="$2";   shift 2 ;;
+        --rust-version)      RUST_VERSION="$2";      shift 2 ;;
         --) shift; break ;;
         *)  error "getopt / case statement mismatch"
     esac
@@ -42,6 +44,7 @@ done
 test -n "$VERILATOR_VERSION" || error "Missing --verilator-version"
 test -n "$OPENOCD_VERSION"   || error "Missing --openocd-version"
 test -n "$VERIBLE_VERSION"   || error "Missing --verible-version"
+test -n "$RUST_VERSION"      || error "Missing --rust-version"
 
 # Check that there aren't any positional arguments
 test $# = 0 || error "Unexpected positional arguments"
@@ -134,3 +137,8 @@ tar -C /tools/verible -xf "$verible_tar" --strip-components=1
 
 # Propagate PATH changes to all subsequent steps of the job
 echo "##vso[task.setvariable variable=PATH]/tools/verible/bin:$PATH"
+
+# Install Rust
+sw/vendor/rustup/rustup-init.sh -y \
+    --default-toolchain "${RUST_VERSION}"
+export PATH="$HOME/.cargo/bin:$PATH"

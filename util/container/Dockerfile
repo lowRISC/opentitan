@@ -8,15 +8,16 @@
 # Global configuration options.
 ARG VERILATOR_VERSION=4.104
 ARG OPENOCD_VERSION=0.11.0
-
 # The RISCV toolchain version should match the release tag used in GitHub.
 ARG RISCV_TOOLCHAIN_TAR_VERSION=20210412-1
+ARG RUST_VERSION=1.52.1
 
 # Main container image.
 FROM ubuntu:18.04 AS opentitan
 ARG VERILATOR_VERSION
 ARG OPENOCD_VERSION
 ARG RISCV_TOOLCHAIN_TAR_VERSION
+ARG RUST_VERSION
 
 LABEL version="1.0"
 LABEL description="OpenTitan container for hardware development."
@@ -77,11 +78,22 @@ COPY util/get-toolchain.py /tmp/get-toolchain.py
 RUN /tmp/get-toolchain.py -r ${RISCV_TOOLCHAIN_TAR_VERSION}
 RUN rm /tmp/python-requirements.txt /tmp/get-toolchain.py
 
+COPY sw/vendor/rustup/rustup-init.sh /tmp/rustup-init.sh
+# This file does not create a user, so we install rustup and cargo under
+# /tools.
+ENV RUSTUP_HOME /tools/.rustup 
+ENV CARGO_HOME /tools/.cargo 
+# Permissions are relaxed so that the container user can also download
+# dependencies during build.
+RUN /tmp/rustup-init.sh -y \
+    --default-toolchain ${RUST_VERSION} && \
+    chmod -R o=u ${RUSTUP_HOME} ${CARGO_HOME}
+
 # Use bash as default shell
 RUN ln -sf /bin/bash /bin/sh
 
 # Include tools in PATH.
-ENV PATH "/tools/verilator/${VERILATOR_VERSION}/bin:${PATH}"
+ENV PATH "/tools/verilator/${VERILATOR_VERSION}/bin:${CARGO_HOME}/bin:${PATH}"
 
 # Configures default container user.
 ENV USER ot

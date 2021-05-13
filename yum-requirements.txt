@@ -13,11 +13,13 @@ autoconf
 bison
 build-essential
 clang-format
+cmake
 curl
 doxygen
 flex
 g++
 git
+golang
 libelf1
 libelf-dev
 libftdi1-2
@@ -31,6 +33,7 @@ ncurses
 ninja-build
 openssl11-libs
 openssl11-devel
+perl
 pkgconf
 python3
 python3-pip
