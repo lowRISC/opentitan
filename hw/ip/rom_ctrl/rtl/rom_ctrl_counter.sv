@@ -70,33 +70,31 @@ module rom_ctrl_counter
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      vld_q         <= 1'b0;
       addr_q        <= '0;
       done_q        <= 1'b0;
       last_nontop_q <= 1'b0;
-    end else begin
-      // ROM data is valid from one cycle after reset onwards (once we reach the top of ROM, we
-      // signal done_o, after which data_vld_o is unused).
-      vld_q  <= 1'b1;
-
-      // Step the FSM if go is true. This factors in stalls from the data_rdy_i signal and also
-      // waits one cycle after reset (to avoid missing the first word if data_rdy_i is true
-      // immediately after reset).
-      if (go) begin
-        addr_q        <= addr_d;
-        done_q        <= done_d;
-        last_nontop_q <= last_nontop_d;
-      end
+    end else if (go) begin
+      addr_q        <= addr_d;
+      done_q        <= done_d;
+      last_nontop_q <= last_nontop_d;
     end
   end
 
-  always_comb begin
-    go = (data_rdy_i && data_vld_o) && !done_q;
-
-    addr_d        = addr_q + {{AW-1{1'b0}}, 1'b1};
-    done_d        = addr_q == TopAddr;
-    last_nontop_d = addr_q == TNTAddr;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      vld_q <= 1'b0;
+    end else begin
+      // ROM data is valid from one cycle after reset onwards (once we reach the top of ROM, we
+      // signal done_o, after which data_vld_o is unused).
+      vld_q <= 1'b1;
+    end
   end
+
+  assign go = data_rdy_i & data_vld_o & ~done_q;
+
+  assign addr_d        = addr_q + {{AW-1{1'b0}}, 1'b1};
+  assign done_d        = addr_q == TopAddr;
+  assign last_nontop_d = addr_q == TNTAddr;
 
   assign done_o             = done_q;
   assign rom_addr_o         = addr_q;
