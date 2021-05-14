@@ -284,7 +284,7 @@ jobs:
         - "/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator"
 
 - job: execute_verilated_tests
-  displayName: Execute tests on the Verilated system
+  displayName: Execute tests on the Verilated system (excl. slow tests)
   pool:
     vmImage: ubuntu-18.04
   dependsOn:
@@ -304,10 +304,39 @@ jobs:
       . util/build_consts.sh
       pytest --version
       pytest test/systemtest/earlgrey/test_sim_verilator.py \
+        -m "not slow" \
         --log-cli-level=DEBUG \
-        --test-run-title="Run system tests with Verilator simulation" \
+        --test-run-title="Run system tests with Verilator simulation (excl. slow tests)" \
         --napoleon-docstrings
     displayName: Execute tests
+
+# This test is in a separate job becuase it takes longer to complete.
+- job: execute_silicon_creator_verilated_test
+  displayName: Execute silicon_creator test on the Verilated system
+  pool:
+    vmImage: ubuntu-18.04
+  dependsOn:
+    - chip_earlgrey_verilator
+    - sw_build
+  steps:
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - chip_earlgrey_verilator
+        - sw_build
+  - bash: |
+      # Install an additional pytest dependency for result upload.
+      pip3 install pytest-azurepipelines
+
+      . util/build_consts.sh
+      pytest --version
+      pytest test/systemtest/earlgrey/test_sim_verilator.py \
+        -k test_apps_selfchecking_silicon_creator[dif_uart_smoketest] \
+        --log-cli-level=DEBUG \
+        --test-run-title="Run silicon_creator system test with Verilator simulation" \
+        --napoleon-docstrings
+    displayName: Execute silicon_creator test
 
 - template: ci/run-riscv-compliance.yml
   parameters:

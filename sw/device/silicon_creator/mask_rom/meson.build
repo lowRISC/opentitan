@@ -13,6 +13,21 @@ rom_link_args = [
 ] + embedded_target_extra_link_args
 rom_link_deps = [rom_linkfile]
 
+# Signature verification.
+sw_silicon_creator_mask_rom_sigverify = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_mask_rom_sigverify',
+    sources: [
+      'rsa_verify.c',
+      'sig_verify_keys.c',
+      'sig_verify.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_driver_hmac,
+    ],
+  ),
+)
+
 # MaskROM library.
 mask_rom_lib = declare_dependency(
   sources: [
@@ -24,6 +39,7 @@ mask_rom_lib = declare_dependency(
       sw_silicon_creator_lib_driver_hmac,
       sw_silicon_creator_lib_driver_uart,
       sw_silicon_creator_lib_fake_deps,
+      sw_silicon_creator_mask_rom_sigverify,
       rom_ext_manifest_parser,
       sw_lib_crt,
       sw_lib_pinmux,

@@ -14,46 +14,16 @@
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
+#include "sw/device/silicon_creator/mask_rom/sig_verify.h"
 #include "sw/device/silicon_creator/rom_exts/rom_ext_manifest_parser.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-// This is the expected ROM_EXT Manifest Identifier
-static const uint32_t kRomExtIdentifierExpected = 0x4552544F;
-
-// TODO: Remove once we have sig_verify integrated.
-// Can be obtained by running `echo -n "OTRE" | openssl dgst -sha256`.
-static const uint32_t kROMExtIdentifierExpectedDigest[8] = {
-    0x1daa6d65, 0xfb01590b, 0xee565047, 0xa1708a29,
-    0xfe239fa4, 0x91d0dfc9, 0xcf0d3e7a, 0x8b1cffcb,
-};
 
 typedef void(boot_fn)(void);
 
 void mask_rom_exception_handler(void) { wait_for_interrupt(); }
 void mask_rom_nmi_handler(void) { wait_for_interrupt(); }
-
-// FIXME: Temporary workaround to run functional test of SHA256.
-static int verify_rom_ext_identifier(rom_ext_manifest_t rom_ext) {
-  uint32_t rom_ext_identifier = rom_ext_get_identifier(rom_ext);
-
-  if (rom_ext_identifier != kRomExtIdentifierExpected) {
-    return kErrorUnknown;
-  }
-
-  hmac_sha256_init();
-  RETURN_IF_ERROR(hmac_sha256_update(&rom_ext_identifier, sizeof(uint32_t)));
-
-  hmac_digest_t digest;
-  RETURN_IF_ERROR(hmac_sha256_final(&digest));
-
-  return memcmp(digest.digest, kROMExtIdentifierExpectedDigest,
-                sizeof(digest.digest)) == 0
-             ? kErrorOk
-             : kErrorUnknown;
-}
 
 void mask_rom_boot(void) {
   // Initialize pinmux configuration so we can use the UART.
@@ -105,8 +75,6 @@ void mask_rom_boot(void) {
     // Check ROM_EXT Manifest (2.c.ii)
     // **Open Q:** Integration with Secure Boot Hardware
     // - Header Format (ROM_EXT Manifest Module)
-    // - Plausible Key (??)
-    // - Initial Digest Checks (Keys + Signature Module)
     // - **Open Q**: ROM_EXT Anti-rollback (??)
     // if (!check_rom_ext_manifest(current_rom_ext_manifest)) {
     //  // Manifest Failure (check Boot Policy)
@@ -115,28 +83,29 @@ void mask_rom_boot(void) {
     //  else
     //    break
     //}
-    // Temporary implementation for the above `if` block.
+
+    // TODO: Range checks for manifest fields used before signature
+    // verification.
     rom_ext_manifest_t rom_ext = rom_ext_get_parameters(kRomExtManifestSlotA);
+    rom_ext_signature_key_modulus_t key_modulus;
+    if (!rom_ext_get_signature_key_modulus(rom_ext, &key_modulus)) {
+      break;
+    }
+    rom_ext_signature_t rom_ext_signature;
+    if (!rom_ext_get_signature(rom_ext, &rom_ext_signature)) {
+      break;
+    }
+    sigverify_rsa_buffer_t signature;
+    memcpy(signature.data, rom_ext_signature.data, sizeof(signature.data));
+    rom_ext_ranges_t ranges = rom_ext_get_ranges(rom_ext);
 
-    // Find Public Key for ROM_EXT Image Signature (2.c.iii)
-    // **Open Q:** Key Selection method/mechanism.
-    // rom_ext_pub_key = read_pub_key(current_rom_ext_manifest); // ROM_EXT
-    // Manifest Module:
-    // rom_ext_pub_key_id = calculate_key_id(rom_ext_pub_key);
-    // // Keys + Signature Module:
-    // if (!check_pub_key_id_valid(rom_ext_pub_key_id)) {
-    //  // Manifest failure (Check Boot Policy)
-    //  if (try_next_on_manifest_failed(boot_policy))  // Boot Policy Module
-    //    continue
-    //  else
-    //    break
-    //}
+    if (sigverify_rom_ext_signature_verify(
+            (void *)ranges.signed_area_start,
+            ranges.image_end - ranges.signed_area_start, &signature,
+            key_modulus.data[0]) != kErrorOk) {
+      break;
+    }
 
-    // Verify ROM_EXT Image Signature (2.c.iii)
-    // **Open Q:** Integration with Secure Boot Hardware, OTBN
-    // if (!verify_rom_ext_signature(rom_ext_pub_key,
-    //                              current_rom_ext_manifest)) { // Hardened
-    //                              Jump Module
     //  // Manifest Failure (check Boot Policy)
     //  // **Open Q:** Does this need different logic to the check after
     //  //   `check_rom_ext_manifest`?
@@ -145,10 +114,6 @@ void mask_rom_boot(void) {
     //  else
     //    break
     //}
-    // Temporary implementation for the two above `if` blocks.
-    if (verify_rom_ext_identifier(rom_ext) != kErrorOk) {
-      break;
-    }
 
     // Update Boot Policy on Successful Signature
     // **Open Q:** Does this ensure ROM_EXT Anti-rollback is updated?

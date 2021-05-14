@@ -85,3 +85,8 @@ def openocd():
     log.info("Using OpenOCD at {}: '{}'".format(openocd_bin,
                                                 proc.stdout.splitlines()[0]))
     return Path(openocd_bin)
+
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "slow: mark test as slow, will be excluded from the main "
+                                       "verilator job in CI")

@@ -17,8 +17,13 @@ log = logging.getLogger(__name__)
 class VerilatorSimEarlgrey:
     UART0_SPEED = 7200  # see device/lib/arch/device_sim_verilator.c
 
-    def __init__(self, sim_path: Path, rom_vmem_path: Path, otp_img_path: Path,
-                 work_dir: Path):
+    def __init__(self,
+                 sim_path: Path,
+                 rom_vmem_path: Path,
+                 otp_img_path: Path,
+                 work_dir: Path,
+                 boot_timeout: int = 120,
+                 test_timeout: int = 600):
         """ A verilator simulation of the Earl Grey toplevel """
         assert sim_path.is_file()
         self._sim_path = sim_path
@@ -32,6 +37,9 @@ class VerilatorSimEarlgrey:
 
         assert work_dir.is_dir()
         self._work_dir = work_dir
+
+        self.boot_timeout = boot_timeout
+        self.test_timeout = test_timeout
 
         self._log = logging.getLogger(__name__)
 
@@ -231,8 +239,7 @@ def app_silicon_creator_selfchecking(request, bin_dir):
         verilator_extra_args = []
 
     test_filename = 'rom_ext_{}_sim_verilator.{}.signed.64.vmem'.format(
-        app_config['name'],
-        app_config['signing_key'])
+        app_config['name'], app_config['signing_key'])
     bin_path = bin_dir / 'sw/device/tests' / test_filename
     assert bin_path.is_file()
 
@@ -250,7 +257,7 @@ def app_silicon_creator_selfchecking(request, bin_dir):
 def assert_selfchecking_test_passes(sim):
     assert sim.find_in_output(
         re.compile(r"SW test transitioned to SwTestStatusInTest.$"),
-        timeout=120,
+        timeout=sim.boot_timeout,
         filter_func=utils.filter_remove_sw_test_status_log_prefix
     ) is not None, "Start of test indication not found."
 
@@ -258,7 +265,7 @@ def assert_selfchecking_test_passes(sim):
 
     result_match = sim.find_in_output(
         re.compile(r'^==== SW TEST (PASSED|FAILED) ====$'),
-        timeout=600,
+        timeout=sim.test_timeout,
         filter_func=utils.filter_remove_sw_test_status_log_prefix)
     assert result_match is not None, "PASSED/FAILED indication not found in test output."
 
@@ -290,6 +297,7 @@ def test_apps_selfchecking(tmp_path, bin_dir, app_selfchecking):
     sim.terminate()
 
 
+@pytest.mark.slow
 def test_apps_selfchecking_silicon_creator(tmp_path, bin_dir,
                                            app_silicon_creator_selfchecking):
     """
@@ -306,7 +314,12 @@ def test_apps_selfchecking_silicon_creator(tmp_path, bin_dir,
                                "mask_rom_sim_verilator.scr.40.vmem")
     otp_img_path = bin_dir / "sw/device/otp_img/otp_img_sim_verilator.vmem"
 
-    sim = VerilatorSimEarlgrey(sim_path, rom_vmem_path, otp_img_path, tmp_path)
+    # Use a longer timeout for boot due to the overhead of signature verification.
+    sim = VerilatorSimEarlgrey(sim_path,
+                               rom_vmem_path,
+                               otp_img_path,
+                               tmp_path,
+                               boot_timeout=2500)
 
     sim.run(app_silicon_creator_selfchecking[0],
             extra_sim_args=app_silicon_creator_selfchecking[1])
