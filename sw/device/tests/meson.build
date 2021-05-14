@@ -225,11 +225,20 @@ foreach sw_test_name, sw_test_info : sw_tests
   endforeach
 endforeach
 
+# Signing keys for ROM_EXT images.
+signing_keys = {
+  'fpga_key_0': {
+    'path': meson.source_root() / 'sw/device/silicon_creator/keys/fpga_key_0.private.der',
+  },
+  'fpga_key_1': {
+    'path': meson.source_root() / 'sw/device/silicon_creator/keys/fpga_key_1.private.der',
+  },
+}
 
 foreach sw_test_name, sw_test_info : sw_rom_ext_tests
   foreach device_name, device_lib : sw_lib_arch_core_devices
     sw_test_elf = executable(
-      sw_test_name + '_rom_ext_' + device_name,
+      '_'.join(['rom_ext', sw_test_name, device_name]),
       name_suffix: 'elf',
       dependencies: [
         # Only use ROM_EXT slot A for now.
@@ -241,7 +250,7 @@ foreach sw_test_name, sw_test_info : sw_rom_ext_tests
       ],
     )
 
-    target_name = sw_test_name + '_rom_ext_@0@_' + device_name
+    target_name = '_'.join(['rom_ext', sw_test_name, '@0@', device_name])
 
     sw_test_dis = custom_target(
       target_name.format('dis'),
@@ -255,29 +264,53 @@ foreach sw_test_name, sw_test_info : sw_rom_ext_tests
       kwargs: elf_to_bin_custom_target_args,
     )
 
-    sw_test_vmem32 = custom_target(
-      target_name.format('vmem32'),
-      input: sw_test_bin,
-      kwargs: bin_to_vmem32_custom_target_args,
-    )
+    targets_to_export = [
+      sw_test_elf,
+      sw_test_dis,
+      sw_test_bin,
+    ]
 
-    sw_test_vmem64 = custom_target(
-      target_name.format('vmem64'),
-      input: sw_test_bin,
-      kwargs: bin_to_vmem64_custom_target_args,
-    )
+    foreach key_name, key_info : signing_keys
+      signed_target_name = '_'.join(['rom_ext', sw_test_name, key_name, 'signed', '@0@', device_name])
+
+      sw_test_signed_bin = custom_target(
+        signed_target_name.format('bin'),
+        input: sw_test_bin,
+        output: '@BASENAME@.@0@.signed.bin'.format(key_name),
+        command: [
+          rom_ext_signer_export.full_path(),
+          '@INPUT@',
+          key_info['path'],
+          '@OUTPUT@',
+        ],
+        depends: rom_ext_signer_export,
+        build_by_default: true,
+      )
+
+      sw_test_signed_vmem32 = custom_target(
+        signed_target_name.format('vmem32'),
+        input: sw_test_signed_bin,
+        kwargs: bin_to_vmem32_custom_target_args,
+      )
+
+      sw_test_signed_vmem64 = custom_target(
+        signed_target_name.format('vmem64'),
+        input: sw_test_signed_bin,
+        kwargs: bin_to_vmem64_custom_target_args,
+      )
+
+      targets_to_export += [
+        sw_test_signed_bin,
+        sw_test_signed_vmem32,
+        sw_test_signed_vmem64,
+      ]
+    endforeach
 
     custom_target(
       target_name.format('export'),
       command: export_target_command,
       depend_files: [export_target_depend_files,],
-      input: [
-        sw_test_elf,
-        sw_test_dis,
-        sw_test_bin,
-        sw_test_vmem32,
-        sw_test_vmem64,
-      ],
+      input: targets_to_export,
       output: target_name.format('export'),
       build_always_stale: true,
       build_by_default: true,

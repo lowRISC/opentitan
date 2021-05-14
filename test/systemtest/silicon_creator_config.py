@@ -9,8 +9,8 @@
 #
 # name:
 #   Name of the test (required)
-# binary_name:
-#   Basename of the test binary. Default: name (optional)
+# signing_key:
+#   Name of the key used to sign the binary (required)
 # verilator_extra_args:
 #   A list of additional command-line arguments passed to the Verilator
 #   simulation (optional).
@@ -20,5 +20,6 @@
 TEST_SILICON_CREATOR_APPS_SELFCHECKING = [
     {
         "name": "dif_uart_smoketest",
+        "signing_key": "fpga_key_1",
     },
 ]
