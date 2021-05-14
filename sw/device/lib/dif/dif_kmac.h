@@ -173,6 +173,13 @@ typedef struct dif_kmac {
   bool squeezing;
 
   /**
+   * Flag indicating whether the output length (d) should be right encoded in
+   * software and appended to the end of the message. The output length is
+   * required to be appended to the message as part of a KMAC operation.
+   */
+  bool append_d;
+
+  /**
    * Offset into the output state.
    */
   size_t offset;
@@ -186,9 +193,11 @@ typedef struct dif_kmac {
    * The output length (d) in 32-bit words.
    *
    * If the output length is not fixed then this field will be set to 0.
+   *
+   * Note: if the output length is fixed length will be modified to ensure that
+   * `d - offset` always accurately reflects the number of words remaining.
    */
   size_t d;
-
 } dif_kmac_t;
 
 /**
@@ -299,7 +308,6 @@ typedef enum dif_kmac_mode_kmac {
  * Maximum lengths supported by the KMAC unit.
  */
 enum {
-  kDifKmacMaxKeyBytes = 512 / 8,
 
   /**
    * The maximum length in bytes of a customization string (S) before it has
@@ -328,6 +336,22 @@ enum {
    * Assumes maximum function name length of 4 bytes (32 bits).
    */
   kDifKmacMaxFunctionNameOverhead = 2,
+
+  /**
+   * The maximum output length (L) that can be set when starting a KMAC
+   * operation.
+   *
+   * The length is in 32-bit words and is designed to be low enough that the
+   * length in bits can still be represented by an unsigned 32-bit integer.
+   */
+  kDifKmacMaxOutputLenWords = (UINT32_MAX - 32) / 32,
+
+  /**
+   * The maximum key length supported by the KMAC operation.
+   *
+   * The length is in 32-bit words.
+   */
+  kDifKmacMaxKeyLenWords = 512 / 32,
 };
 
 /**
@@ -337,15 +361,15 @@ enum {
  */
 typedef enum dif_kmac_key_length {
   /** Software provided 128 bit key. */
-  kDifKmacKeyLen128,
+  kDifKmacKeyLen128 = 0,
   /** Software provided 192 bit key. */
-  kDifKmacKeyLen192,
+  kDifKmacKeyLen192 = 1,
   /** Software provided 256 bit key. */
-  kDifKmacKeyLen256,
+  kDifKmacKeyLen256 = 2,
   /** Software provided 384 bit key. */
-  kDifKmacKeyLen384,
+  kDifKmacKeyLen384 = 3,
   /** Software provided 512 bit key. */
-  kDifKmacKeyLen512,
+  kDifKmacKeyLen512 = 4,
 } dif_kmac_key_length_t;
 
 /**
@@ -357,10 +381,12 @@ typedef enum dif_kmac_key_length {
  *
  * The key shares are encoded in little endian byte order. This is fixed and
  * cannot be changed (unlike the byte order used for the message and state).
+ *
+ * Unused words in the key shares must be set to 0.
  */
 typedef struct dif_kmac_key {
-  uint32_t share0[kDifKmacMaxKeyBytes / sizeof(uint32_t)];
-  uint32_t share1[kDifKmacMaxKeyBytes / sizeof(uint32_t)];
+  uint32_t share0[kDifKmacMaxKeyLenWords];
+  uint32_t share1[kDifKmacMaxKeyLenWords];
   dif_kmac_key_length_t length;
 } dif_kmac_key_t;
 
@@ -568,7 +594,8 @@ dif_kmac_result_t dif_kmac_mode_cshake_start(
  * Start a KMAC operation.
  *
  * To use KMAC in eXtendable-Output Function (XOF) mode set the output length
- * (`l`) to 0.
+ * (`l`) to 0. The output length must not be greater than
+ * `kDifKmacMaxOutputLenWords`.
  *
  * The key provided must have at least as many bits as the security strength
  * of the `mode`.
@@ -577,15 +604,15 @@ dif_kmac_result_t dif_kmac_mode_cshake_start(
  *
  * @param kmac A KMAC handle.
  * @param mode The mode of operation.
- * @param l Output length (number of bytes that will be 'squeezed').
+ * @param l Output length (number of 32-bit words that will be 'squeezed').
  * @param k Pointer to secret key.
  * @param s Customization string (optional).
  * @return The result of the operation.
  */
 DIF_WARN_UNUSED_RESULT
 dif_kmac_result_t dif_kmac_mode_kmac_start(
-    dif_kmac_t *kmac, dif_kmac_mode_kmac_t mode, size_t l, dif_kmac_key_t *k,
-    const dif_kmac_customization_string_t *s);
+    dif_kmac_t *kmac, dif_kmac_mode_kmac_t mode, size_t l,
+    const dif_kmac_key_t *k, const dif_kmac_customization_string_t *s);
 
 /**
  * Absorb bytes from the message provided.
