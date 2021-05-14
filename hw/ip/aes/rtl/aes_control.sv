@@ -188,6 +188,22 @@ module aes_control
   sp2v_e                    cipher_dec_key_gen;
   logic                     sp_enc_err;
 
+  logic                     start_we;
+  logic                     key_iv_data_in_clear_we;
+  logic                     data_out_clear_we;
+  logic                     prng_reseed_we;
+
+  logic                     idle;
+  logic                     idle_we;
+  logic                     stall;
+  logic                     stall_we;
+  logic                     output_lost;
+  logic                     output_lost_we;
+  logic                     output_valid;
+  logic                     output_valid_we;
+  logic                     input_ready;
+  logic                     input_ready_we;
+
   if (SecStartTriggerDelay > 0) begin : gen_start_delay
     // Delay the manual start trigger input for SCA measurements.
     localparam int unsigned WidthCounter = $clog2(SecStartTriggerDelay+1);
@@ -315,16 +331,16 @@ module aes_control
     prng_reseed_req_o = 1'b0;
 
     // Trigger register control
-    start_we_o                = 1'b0;
-    key_iv_data_in_clear_we_o = 1'b0;
-    data_out_clear_we_o       = 1'b0;
-    prng_reseed_we_o          = 1'b0;
+    start_we                = 1'b0;
+    key_iv_data_in_clear_we = 1'b0;
+    data_out_clear_we       = 1'b0;
+    prng_reseed_we          = 1'b0;
 
     // Status register
-    idle_o     = 1'b0;
-    idle_we_o  = 1'b0;
-    stall_o    = 1'b0;
-    stall_we_o = 1'b0;
+    idle     = 1'b0;
+    idle_we  = 1'b0;
+    stall    = 1'b0;
+    stall_we = 1'b0;
 
     // Key, data I/O register control
     data_in_load  = 1'b0;
@@ -345,11 +361,11 @@ module aes_control
     unique case (aes_ctrl_cs)
 
       IDLE: begin
-        idle_o    = (start_chk == SP2V_HIGH || key_iv_data_in_clear_i || data_out_clear_i ||
-                    prng_reseed_i) ? 1'b0 : 1'b1;
-        idle_we_o = 1'b1;
+        idle    = (start_chk == SP2V_HIGH || key_iv_data_in_clear_i || data_out_clear_i ||
+                  prng_reseed_i) ? 1'b0 : 1'b1;
+        idle_we = 1'b1;
 
-        if (idle_o) begin
+        if (idle) begin
           // Initial key and IV updates are ignored if we are not idle.
           for (int s = 0; s < NumSharesKey; s++) begin
             for (int i = 0; i < NumRegsKey; i++) begin
@@ -415,7 +431,7 @@ module aes_control
           if (cipher_in_ready == SP2V_HIGH) begin
             // Do not yet clear a possible start trigger if we are just starting the generation of
             // the start key for decryption.
-            start_we_o  = (cipher_dec_key_gen_o == SP2V_LOW);
+            start_we    = (cipher_dec_key_gen_o == SP2V_LOW);
             aes_ctrl_ns = LOAD;
           end
         end
@@ -480,8 +496,8 @@ module aes_control
         prng_reseed_req_o = 1'b1;
         if (prng_reseed_ack_i) begin
           // Clear the trigger and return.
-          prng_reseed_we_o = 1'b1;
-          aes_ctrl_ns      = IDLE;
+          prng_reseed_we = 1'b1;
+          aes_ctrl_ns    = IDLE;
         end
       end
 
@@ -503,8 +519,8 @@ module aes_control
               !mux_sel_err_i && !sp_enc_err) ? SP2V_HIGH : SP2V_LOW;
 
           // Signal if the cipher core is stalled (because previous output has not yet been read).
-          stall_o    = (finish_chk == SP2V_LOW) & (cipher_out_valid == SP2V_HIGH);
-          stall_we_o = 1'b1;
+          stall    = (finish_chk == SP2V_LOW) & (cipher_out_valid == SP2V_HIGH);
+          stall_we = 1'b1;
 
           // State out addition mux control
           add_state_out_sel_o = (doing_cbc_dec_chk == SP2V_HIGH) ? ADD_SO_IV  :
@@ -575,7 +591,7 @@ module aes_control
           // key_iv_data_in_clear_i is acknowledged by the cipher core with cipher_key_clear_i.
           if (cipher_key_clear_i) begin
             // Clear the trigger bit.
-            key_iv_data_in_clear_we_o = 1'b1;
+            key_iv_data_in_clear_we = 1'b1;
           end
 
           // To clear the output data registers, we re-use the muxing resources of the cipher core.
@@ -583,8 +599,8 @@ module aes_control
           if (cipher_data_out_clear_i) begin
             // Clear output data and the trigger bit. Don't release data from cipher core in case
             // of mux selector or sparsely encoded signals taking on invalid values.
-            data_out_we_o       = (!mux_sel_err_i && !sp_enc_err) ? SP2V_HIGH : SP2V_LOW;
-            data_out_clear_we_o = 1'b1;
+            data_out_we_o     = (!mux_sel_err_i && !sp_enc_err) ? SP2V_HIGH : SP2V_LOW;
+            data_out_clear_we = 1'b1;
           end
 
           aes_ctrl_ns = IDLE;
@@ -717,20 +733,20 @@ module aes_control
   // - data is loaded into cipher core,
   // - clearing data input registers with random data,
   // - clearing the status tracking.
-  assign input_ready_o    = (data_in_new == SP2V_LOW);
-  assign input_ready_we_o = (data_in_new == SP2V_HIGH) | data_in_load | data_in_we_o |
+  assign input_ready    = (data_in_new == SP2V_LOW);
+  assign input_ready_we = (data_in_new == SP2V_HIGH) | data_in_load | data_in_we_o |
       clear_in_out_status;
 
   // Cleared if:
   // - all data output registers have been read (unless new output is written in the same cycle),
   // - clearing data ouput registers with random data,
   // - clearing the status tracking.
-  assign output_valid_o    = (data_out_we_o == SP2V_HIGH) & ~data_out_clear_we_o;
-  assign output_valid_we_o = (data_out_we_o == SP2V_HIGH) | (data_out_read_chk == SP2V_HIGH) |
-      data_out_clear_we_o | clear_in_out_status;
+  assign output_valid    = (data_out_we_o == SP2V_HIGH) & ~data_out_clear_we;
+  assign output_valid_we = (data_out_we_o == SP2V_HIGH) | (data_out_read_chk == SP2V_HIGH) |
+      data_out_clear_we | clear_in_out_status;
 
-  assign output_valid_d    = !output_valid_we_o ? output_valid_q :
-                                 output_valid_o ? SP2V_HIGH      : SP2V_LOW;
+  assign output_valid_d  = !output_valid_we ? output_valid_q :
+                             output_valid_o ? SP2V_HIGH      : SP2V_LOW;
 
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent optimizations on this status signal.
@@ -748,16 +764,39 @@ module aes_control
   // Output lost status register bit
   // Cleared when updating the Control Register. Set when overwriting previous output data that has
   // not yet been read.
-  assign output_lost_o    = ctrl_we_o     ? 1'b0 :
-                            output_lost_i ? 1'b1 :
-                                (output_valid_q == SP2V_HIGH) & (data_out_read_chk == SP2V_LOW);
-  assign output_lost_we_o = ctrl_we_o | (data_out_we_o == SP2V_HIGH);
+  assign output_lost    = ctrl_we_o     ? 1'b0 :
+                          output_lost_i ? 1'b1 :
+                              (output_valid_q == SP2V_HIGH) & (data_out_read_chk == SP2V_LOW);
+  assign output_lost_we = ctrl_we_o | (data_out_we_o == SP2V_HIGH);
 
-  // Trigger register, the control only ever clears these
-  assign start_o                = 1'b0;
-  assign key_iv_data_in_clear_o = 1'b0;
-  assign data_out_clear_o       = 1'b0;
-  assign prng_reseed_o          = 1'b0;
+  /////////////////////
+  // Status Register //
+  /////////////////////
+  // Fatal alerts clear all other bits in the status register.
+  assign idle_o            = alert_fatal_i ? 1'b0 : idle;
+  assign idle_we_o         = alert_fatal_i ? 1'b1 : idle_we;
+  assign stall_o           = alert_fatal_i ? 1'b0 : stall;
+  assign stall_we_o        = alert_fatal_i ? 1'b1 : stall_we;
+  assign output_lost_o     = alert_fatal_i ? 1'b0 : output_lost;
+  assign output_lost_we_o  = alert_fatal_i ? 1'b1 : output_lost_we;
+  assign output_valid_o    = alert_fatal_i ? 1'b0 : output_valid;
+  assign output_valid_we_o = alert_fatal_i ? 1'b1 : output_valid_we;
+  assign input_ready_o     = alert_fatal_i ? 1'b0 : input_ready;
+  assign input_ready_we_o  = alert_fatal_i ? 1'b1 : input_ready_we;
+
+  //////////////////////
+  // Trigger Register //
+  //////////////////////
+  // Triggers are only ever cleared by control. Fatal alerts clear all bits in the trigger
+  // register.
+  assign start_o                   = 1'b0;
+  assign start_we_o                = alert_fatal_i ? 1'b1 : start_we;
+  assign key_iv_data_in_clear_o    = 1'b0;
+  assign key_iv_data_in_clear_we_o = alert_fatal_i ? 1'b1 : key_iv_data_in_clear_we;
+  assign data_out_clear_o          = 1'b0;
+  assign data_out_clear_we_o       = alert_fatal_i ? 1'b1 : data_out_clear_we;
+  assign prng_reseed_o             = 1'b0;
+  assign prng_reseed_we_o          = alert_fatal_i ? 1'b1 : prng_reseed_we;
 
   //////////////////////////////
   // Sparsely Encoded Signals //

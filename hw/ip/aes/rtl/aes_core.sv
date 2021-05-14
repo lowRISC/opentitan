@@ -834,9 +834,9 @@ module aes_core
   assign alert_recov_o = ctrl_err_update;
 
   // The recoverable alert is observable via status register until the AES operation is restarted
-  // by re-writing the Control Register.
-  assign hw2reg.status.alert_recov_ctrl_update_err.d  = ctrl_err_update;
-  assign hw2reg.status.alert_recov_ctrl_update_err.de = ctrl_err_update | ctrl_we;
+  // by re-writing the Control Register. Fatal alerts clear all other bits in the status register.
+  assign hw2reg.status.alert_recov_ctrl_update_err.d  = ctrl_err_update & ~alert_fatal_o;
+  assign hw2reg.status.alert_recov_ctrl_update_err.de = ctrl_err_update | ctrl_we | alert_fatal_o;
 
   // Fatal alert conditions need to remain asserted until reset.
   always_ff @(posedge clk_i or negedge rst_ni) begin : ctrl_err_storage_reg
