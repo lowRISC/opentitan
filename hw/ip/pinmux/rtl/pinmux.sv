@@ -10,6 +10,7 @@
 module pinmux
   import pinmux_pkg::*;
   import pinmux_reg_pkg::*;
+  import prim_pad_wrapper_pkg::*;
 #(
   // Taget-specific pinmux configuration passed down from the
   // target-specific top-level.
@@ -123,8 +124,9 @@ module pinmux
   // Connect attributes //
   ////////////////////////
 
+  pad_attr_t [NDioPads-1:0] dio_attr;
   for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_attr
-    prim_pad_wrapper_pkg::pad_attr_t warl_mask;
+    pad_attr_t warl_mask;
 
     prim_pad_attr #(
       .PadType(TargetCfg.dio_pad_type[k])
@@ -132,12 +134,13 @@ module pinmux
       .attr_warl_o(warl_mask)
     );
 
-    assign dio_attr_o[k]            = dio_pad_attr_q[k] & warl_mask;
+    assign dio_attr[k]              = dio_pad_attr_q[k] & warl_mask;
     assign hw2reg.dio_pad_attr[k].d = dio_pad_attr_q[k] & warl_mask;
   end
 
+  pad_attr_t [NMioPads-1:0] mio_attr;
   for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_attr
-    prim_pad_wrapper_pkg::pad_attr_t warl_mask;
+    pad_attr_t warl_mask;
 
     prim_pad_attr #(
       .PadType(TargetCfg.mio_pad_type[k])
@@ -145,7 +148,7 @@ module pinmux
       .attr_warl_o(warl_mask)
     );
 
-    assign mio_attr_o[k]            = mio_pad_attr_q[k] & warl_mask;
+    assign mio_attr[k]              = mio_pad_attr_q[k] & warl_mask;
     assign hw2reg.mio_pad_attr[k].d = mio_pad_attr_q[k] & warl_mask;
   end
 
@@ -169,13 +172,15 @@ module pinmux
     .rst_ni,
     .scanmode_i,
     // To padring side
-    .out_padring_o ( {dio_out_o, mio_out_o} ),
-    .oe_padring_o  ( {dio_oe_o , mio_oe_o } ),
-    .in_padring_i  ( {dio_in_i , mio_in_i } ),
+    .out_padring_o  ( {dio_out_o,  mio_out_o}  ),
+    .oe_padring_o   ( {dio_oe_o ,  mio_oe_o }  ),
+    .in_padring_i   ( {dio_in_i ,  mio_in_i }  ),
+    .attr_padring_o ( {dio_attr_o, mio_attr_o} ),
     // To core side
-    .out_core_i    ( {dio_out, mio_out} ),
-    .oe_core_i     ( {dio_oe,  mio_oe}  ),
-    .in_core_o     ( {dio_in,  mio_in}  ),
+    .out_core_i     ( {dio_out,  mio_out}  ),
+    .oe_core_i      ( {dio_oe,   mio_oe}   ),
+    .in_core_o      ( {dio_in,   mio_in}   ),
+    .attr_core_i    ( {dio_attr, mio_attr} ),
     // Strap and JTAG signals
     .strap_en_i,
     .lc_dft_en_i,
