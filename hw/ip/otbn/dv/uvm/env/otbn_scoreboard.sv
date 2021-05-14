@@ -98,6 +98,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
   task process_model_fifo();
     otbn_model_item item;
+
     forever begin
       model_fifo.get(item);
       `uvm_info(`gfn, $sformatf("received model transaction:\n%0s", item.sprint()), UVM_HIGH)
@@ -106,9 +107,18 @@ class otbn_scoreboard extends cip_base_scoreboard #(
         OtbnModelStart: begin
           this.expect_start_counter--;
         end
+
         OtbnModelDone: begin
           // TODO: Handle this signal
         end
+
+        OtbnModelInsn: begin
+          if (cfg.en_cov) begin
+            `DV_CHECK_FATAL(item.mnemonic.len() <= MNEM_STR_LEN)
+            cov.insn_cg.sample(mnem_str_t'(item.mnemonic));
+          end
+        end
+
         default: `uvm_fatal(`gfn, $sformatf("Bad item type %0d", item.item_type))
       endcase
     end

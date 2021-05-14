@@ -5,6 +5,7 @@
 #include "otbn_trace_checker.h"
 
 #include <cassert>
+#include <cstring>
 #include <iostream>
 #include <memory>
 
@@ -17,7 +18,8 @@ OtbnTraceChecker::OtbnTraceChecker()
       rtl_stall_(false),
       iss_pending_(false),
       done_(true),
-      seen_err_(false) {
+      seen_err_(false),
+      last_data_vld_(false) {
   OtbnTraceSource::get().AddListener(this);
 }
 
@@ -148,8 +150,12 @@ bool OtbnTraceChecker::OnIssTrace(const std::vector<std::string> &lines) {
     return true;
   }
 
-  OtbnTraceEntry trace_entry;
-  trace_entry.from_iss_trace(lines);
+  OtbnIssTraceEntry trace_entry;
+  if (!trace_entry.from_iss_trace(lines)) {
+    // Error parsing ISS trace. This has already printed a message to stderr.
+    // Just return false to pass the error code along.
+    return false;
+  }
 
   done_ = false;
   if (iss_pending_) {
@@ -194,6 +200,14 @@ bool OtbnTraceChecker::Finish() {
   return true;
 }
 
+const OtbnIssTraceEntry::IssData *OtbnTraceChecker::PopIssData() {
+  if (!last_data_vld_)
+    return nullptr;
+
+  last_data_vld_ = false;
+  return &last_data_;
+}
+
 bool OtbnTraceChecker::MatchPair() {
   if (!(rtl_pending_ && iss_pending_)) {
     return true;
@@ -210,5 +224,36 @@ bool OtbnTraceChecker::MatchPair() {
     seen_err_ = true;
     return false;
   }
+
+  // We've got a matching pair. Move the ISS data out of the (now defunct)
+  // iss_entry_ and into last_data_.
+  last_data_ = std::move(iss_entry_.data_);
+  last_data_vld_ = true;
+
   return true;
+}
+
+// Exposed over DPI as:
+//
+//  import "DPI-C" function bit
+//    otbn_trace_checker_pop_iss_insn(output string mnemonic);
+//
+// Any string output argument will stay valid until the next call to this
+// function.
+
+extern "C" unsigned char otbn_trace_checker_pop_iss_insn(
+    const char **mnemonic) {
+  static char mnemonic_buf[16];
+
+  const OtbnIssTraceEntry::IssData *iss_data =
+      OtbnTraceChecker::get().PopIssData();
+  if (!iss_data)
+    return 0;
+
+  assert(iss_data->mnemonic.size() + 1 <= sizeof mnemonic_buf);
+  memcpy(mnemonic_buf, iss_data->mnemonic.c_str(),
+         iss_data->mnemonic.size() + 1);
+
+  *mnemonic = mnemonic_buf;
+  return 1;
 }

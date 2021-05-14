@@ -9,8 +9,9 @@
 
 class OtbnTraceEntry {
  public:
+  virtual ~OtbnTraceEntry(){};
+
   void from_rtl_trace(const std::string &trace);
-  void from_iss_trace(const std::vector<std::string> &lines);
 
   bool operator==(const OtbnTraceEntry &other) const;
   void print(const std::string &indent, std::ostream &os) const;
@@ -30,9 +31,21 @@ class OtbnTraceEntry {
   // have been a stall)
   bool is_compatible(const OtbnTraceEntry &other) const;
 
- private:
+ protected:
   std::string hdr_;
   std::vector<std::string> writes_;
+};
+
+class OtbnIssTraceEntry : public OtbnTraceEntry {
+ public:
+  bool from_iss_trace(const std::vector<std::string> &lines);
+
+  // Fields that are populated from the "special" line for ISS entries
+  struct IssData {
+    std::string mnemonic;
+  };
+
+  IssData data_;
 };
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_TRACE_ENTRY_H_

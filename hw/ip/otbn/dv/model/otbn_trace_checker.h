@@ -67,6 +67,10 @@ class OtbnTraceChecker : public OtbnTraceListener {
   // mismatch.
   bool Finish();
 
+  // Return and clear the ISS data for the last pair of trace entries that went
+  // through MatchPair if there is any.
+  const OtbnIssTraceEntry::IssData *PopIssData();
+
  private:
   // If rtl_pending_ and iss_pending_ are not both true, return true
   // immediately with no other change. Otherwise, compare the two pending trace
@@ -80,10 +84,15 @@ class OtbnTraceChecker : public OtbnTraceListener {
   OtbnTraceEntry rtl_stalled_entry_;
 
   bool iss_pending_;
-  OtbnTraceEntry iss_entry_;
+  OtbnIssTraceEntry iss_entry_;
 
   bool done_;
   bool seen_err_;
+
+  // The ISS entry for the last pair of trace entries that went through
+  // MatchPair.
+  bool last_data_vld_;
+  OtbnIssTraceEntry::IssData last_data_;
 };
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_TRACE_CHECKER_H_

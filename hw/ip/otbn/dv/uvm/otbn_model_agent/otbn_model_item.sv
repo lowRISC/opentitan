@@ -10,9 +10,13 @@ class otbn_model_item extends uvm_sequence_item;
   // Only valid when item_type == OtbnModelDone.
   bit                    err;
 
+  // Only valid when item_type == OtbnModelInsn
+  string                 mnemonic;
+
   `uvm_object_utils_begin(otbn_model_item)
-    `uvm_field_enum (otbn_model_item_type_e, item_type, UVM_DEFAULT)
-    `uvm_field_int  (err, UVM_DEFAULT)
+    `uvm_field_enum   (otbn_model_item_type_e, item_type, UVM_DEFAULT)
+    `uvm_field_int    (err, UVM_DEFAULT)
+    `uvm_field_string (mnemonic, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

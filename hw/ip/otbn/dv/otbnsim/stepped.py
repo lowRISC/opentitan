@@ -93,10 +93,11 @@ def on_step(sim: OTBNSim, args: List[str]) -> None:
     insn, changes = sim.step(verbose=False, collect_stats=False)
 
     if insn is None:
-        hdr = 'STALL'
+        print('STALL')
     else:
-        hdr = 'E PC: {:#010x}, insn: {:#010x}'.format(pc, insn.raw)
-    print(hdr)
+        print(f'E PC: {pc:#010x}, insn: {insn.raw:#010x}')
+        print(f'# {insn.insn.mnemonic}')
+
     for change in changes:
         entry = change.rtl_trace()
         if entry is not None:
