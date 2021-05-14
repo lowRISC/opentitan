@@ -598,17 +598,17 @@ module aes_core
     .prng_reseed_o             ( hw2reg.trigger.prng_reseed.d           ),
     .prng_reseed_we_o          ( hw2reg.trigger.prng_reseed.de          ),
 
-    .output_valid_o            ( hw2reg.status.output_valid.d           ),
-    .output_valid_we_o         ( hw2reg.status.output_valid.de          ),
-    .input_ready_o             ( hw2reg.status.input_ready.d            ),
-    .input_ready_we_o          ( hw2reg.status.input_ready.de           ),
     .idle_o                    ( hw2reg.status.idle.d                   ),
     .idle_we_o                 ( hw2reg.status.idle.de                  ),
     .stall_o                   ( hw2reg.status.stall.d                  ),
     .stall_we_o                ( hw2reg.status.stall.de                 ),
     .output_lost_i             ( reg2hw.status.output_lost.q            ),
     .output_lost_o             ( hw2reg.status.output_lost.d            ),
-    .output_lost_we_o          ( hw2reg.status.output_lost.de           )
+    .output_lost_we_o          ( hw2reg.status.output_lost.de           ),
+    .output_valid_o            ( hw2reg.status.output_valid.d           ),
+    .output_valid_we_o         ( hw2reg.status.output_valid.de          ),
+    .input_ready_o             ( hw2reg.status.input_ready.d            ),
+    .input_ready_we_o          ( hw2reg.status.input_ready.de           )
   );
 
   // Input data register clear
