@@ -26,7 +26,7 @@ extern "C" {
  * @return Result of the operation.
  */
 rom_error_t sigverify_rom_ext_signature_verify(
-    const uint8_t *signed_region, size_t signed_region_len,
+    const void *signed_region, size_t signed_region_len,
     const sigverify_rsa_buffer_t *signature, uint32_t key_id);
 
 #ifdef __cplusplus

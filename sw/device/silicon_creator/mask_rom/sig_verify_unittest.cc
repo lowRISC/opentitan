@@ -18,7 +18,6 @@ namespace sig_verify_unittest {
 namespace {
 using ::testing::DoAll;
 using ::testing::NotNull;
-using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 
