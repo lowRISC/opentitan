@@ -23,6 +23,8 @@ class otbn_model_monitor extends dv_base_monitor #(
     fork
       collect_start();
       collect_done();
+      // TODO: Only run when coverage is enabled.
+      collect_insns();
     join
   endtask
 
@@ -37,6 +39,7 @@ class otbn_model_monitor extends dv_base_monitor #(
           trans = otbn_model_item::type_id::create("trans");
           trans.item_type = OtbnModelStart;
           trans.err       = 0;
+          trans.mnemonic  = "";
           analysis_port.write(trans);
         end
       end
@@ -55,12 +58,34 @@ class otbn_model_monitor extends dv_base_monitor #(
         trans = otbn_model_item::type_id::create("trans");
         trans.item_type = OtbnModelDone;
         trans.err       = cfg.vif.err;
+        trans.mnemonic  = "";
         analysis_port.write(trans);
         cfg.vif.wait_not_done();
       end else begin
         // We are in reset. Wait until we aren't (we need to do this because wait_done() returns
         // immediately in reset)
         wait(cfg.vif.rst_ni);
+      end
+    end
+  endtask
+
+  protected task collect_insns();
+    otbn_model_item trans;
+
+    string insn_mnemonic;
+
+    // Collect transactions on each clock edge when we are not in reset
+    forever begin
+      @(posedge cfg.vif.clk_i);
+      if (cfg.vif.rst_ni === 1'b1) begin
+        // Ask the trace checker for any ISS instruction that has come in since last cycle.
+        if (otbn_trace_checker_pop_iss_insn(insn_mnemonic)) begin
+          trans = otbn_model_item::type_id::create("trans");
+          trans.item_type = OtbnModelInsn;
+          trans.err       = 0;
+          trans.mnemonic  = insn_mnemonic;
+          analysis_port.write(trans);
+        end
       end
     end
   endtask

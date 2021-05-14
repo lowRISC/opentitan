@@ -35,6 +35,9 @@ package otbn_env_pkg;
   // typedefs
   typedef virtual pins_if #(1) idle_vif;
 
+  parameter int unsigned MNEM_STR_LEN = 16;
+  typedef bit [MNEM_STR_LEN*8-1:0] mnem_str_t;
+
   // A very simple wrapper around a word that has been loaded from the input binary and needs
   // storing to OTBN's IMEM or DMEM.
   typedef struct packed {

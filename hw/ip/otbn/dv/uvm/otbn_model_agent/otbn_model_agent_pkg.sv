@@ -8,9 +8,12 @@ package otbn_model_agent_pkg;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
 
+  import "DPI-C" function bit otbn_trace_checker_pop_iss_insn(output string mnemonic);
+
   typedef enum {
     OtbnModelStart,
-    OtbnModelDone
+    OtbnModelDone,
+    OtbnModelInsn
   } otbn_model_item_type_e;
 
   // macro includes
