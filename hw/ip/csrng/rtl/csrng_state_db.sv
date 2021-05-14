@@ -180,6 +180,7 @@ module csrng_state_db import csrng_pkg::*; #(
   assign instance_status =
          (state_db_wr_ccmd_i == INS) ||
          (state_db_wr_ccmd_i == RES) ||
+         (state_db_wr_ccmd_i == GEN) ||
          (state_db_wr_ccmd_i == UPD);
 
 
