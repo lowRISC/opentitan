@@ -755,6 +755,72 @@ interface mem_bkdr_if #(
     write64(bus_addr, scrambled_data);
   endfunction
 
+  // Wrapper function for encrypted ROM reads
+  // The data decoding is different from SRAM, but most of the underlying SRAM functions are reused
+  // Also note that this function returns the raw data rather than data + syndrome + error because
+  // the rom_ctrl testbench needs this for checking
+  function automatic bit [39:0] rom_encrypt_read32(
+      input bit [bus_params_pkg::BUS_AW-1:0] addr,
+      input logic [SRAM_KEY_WIDTH-1:0]       key,
+      input logic [SRAM_BLOCK_WIDTH-1:0]     nonce,
+      input bit                              unscramble_data);
+
+    logic [bus_params_pkg::BUS_AW-1:0] mem_addr = '0;
+    logic [39:0]                       rdata    = '0;
+
+    logic addr_arr[]       = new[mem_addr_width];
+    logic scrambled_addr[] = new[mem_addr_width];
+    logic rdata_arr[]      = new[40];
+    logic key_arr[]        = new[SRAM_KEY_WIDTH];
+    logic nonce_arr[]      = new[SRAM_BLOCK_WIDTH];
+    logic keystream[]      = new[SRAM_BLOCK_WIDTH];
+    logic zero_key[]       = new[40];
+
+    key_arr   = {<< {key}};
+    nonce_arr = {<< {nonce}};
+
+    for (int i = 0; i < mem_addr_width; i++) begin
+      addr_arr[i] = addr[i+mem_addr_lsb];
+    end
+
+    // Calculate the scrambled address
+    scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(addr_arr, mem_addr_width, nonce_arr);
+
+    for (int i = 0; i < mem_addr_width; i++) begin
+      mem_addr[i] = scrambled_addr[i];
+    end
+
+    // Read memory and get the encrypted data
+    if (!is_addr_valid(mem_addr << mem_addr_lsb)) begin
+      return 'x;
+    end
+
+    // 39-bit memory word includes 32-bit data + 7-bit ECC
+    rdata = `MEM_ARR_PATH_SLICE[mem_addr];
+
+    if (!unscramble_data) begin
+      return rdata;
+    end
+
+    rdata_arr = {<< {rdata}};
+
+    // Generate the keystream
+    keystream = sram_scrambler_pkg::gen_keystream(addr_arr, mem_addr_width, key_arr, nonce_arr);
+
+    for (int i = 0; i < 40; i++) begin
+      zero_key[i] = '0;
+    end
+
+    rdata_arr = sram_scrambler_pkg::sp_decrypt(rdata_arr, 40, zero_key);
+
+    for (int i = 0; i < 40; i++) begin
+      rdata[i] = rdata_arr[i] ^ keystream[i];
+    end
+
+    return rdata;
+
+  endfunction
+
   // check if input file is read/writable
   function automatic void check_file(string file, bit wr);
     string mode = wr ? "w": "r";
