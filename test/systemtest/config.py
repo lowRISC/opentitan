@@ -85,6 +85,9 @@ TEST_APPS_SELFCHECKING = [
         "name": "dif_kmac_cshake_smoketest",
     },
     {
+        "name": "dif_kmac_kmac_smoketest",
+    },
+    {
         "name": "flash_ctrl_test",
     },
     {
