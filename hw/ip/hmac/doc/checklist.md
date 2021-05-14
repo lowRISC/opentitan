@@ -119,7 +119,7 @@ Review        | Signoff date            | Done        | 2019-11-22
  Type         | Item                                  | Resolution     | Note/Collaterals
 --------------|---------------------------------------|----------------|------------------
 Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done           | [hmac_dv_doc]({{<relref "dv/index.md" >}})
-Documentation | [DV_PLAN_COMPLETED][]                 | Done           |
+Documentation | [TESTPLAN_COMPLETED][]                | Done           |
 Testbench     | [TB_TOP_CREATED][]                    | Done           |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done           |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done           |
@@ -137,12 +137,12 @@ Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done           |
 Code Quality  | [TB_LINT_SETUP][]                     | Done           |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A            | Except for IP module
 Review        | [DESIGN_SPEC_REVIEWED][]              | Done           |
-Review        | [DV_PLAN_REVIEWED][]                  | Done           |
+Review        | [TESTPLAN_REVIEWED][]                 | Done           |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done           | Exception (Security, Power, Debug)
 Review        | [V2_CHECKLIST_SCOPED][]               | Done           |
 
 [DV_DOC_DRAFT_COMPLETED]:             {{<relref "/doc/project/checklist.md#dv_doc_draft_completed" >}}
-[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_plan_completed" >}}
+[TESTPLAN_COMPLETED]:                 {{<relref "/doc/project/checklist.md#testplan_completed" >}}
 [TB_TOP_CREATED]:                     {{<relref "/doc/project/checklist.md#tb_top_created" >}}
 [PRELIMINARY_ASSERTION_CHECKS_ADDED]: {{<relref "/doc/project/checklist.md#preliminary_assertion_checks_added" >}}
 [SIM_TB_ENV_CREATED]:                 {{<relref "/doc/project/checklist.md#sim_tb_env_created" >}}
@@ -160,7 +160,7 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done           |
 [TB_LINT_SETUP]:                      {{<relref "/doc/project/checklist.md#tb_lint_setup" >}}
 [PRE_VERIFIED_SUB_MODULES_V1]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v1" >}}
 [DESIGN_SPEC_REVIEWED]:               {{<relref "/doc/project/checklist.md#design_spec_reviewed" >}}
-[DV_PLAN_REVIEWED]:                   {{<relref "/doc/project/checklist.md#dv_plan_reviewed" >}}
+[TESTPLAN_REVIEWED]:                  {{<relref "/doc/project/checklist.md#testplan_reviewed" >}}
 [STD_TEST_CATEGORIES_PLANNED]:        {{<relref "/doc/project/checklist.md#std_test_categories_planned" >}}
 [V2_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v2_checklist_scoped" >}}
 
@@ -168,8 +168,9 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done           |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Done        |
-Documentation | [DV_PLAN_COMPLETED][]                   | Done        | Add DV plan reflect D3 changes
+Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Done        | Updated testplan to reflect D3 changes
+Documentation | [DV_DOC_COMPLETED][]                    | Done        |
+Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Done        |
 Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
 Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        | No planned assertions for DV
 Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
@@ -183,15 +184,17 @@ Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        |
 Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
 Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
 Code Quality  | [TB_LINT_PASS][]                        | Done        |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         |
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
 Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         |
+Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Waived      |
 Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 
 [#820]: https://github.com/lowRISC/opentitan/pull/820
 
 [DESIGN_DELTAS_CAPTURED_V2]:          {{<relref "/doc/project/checklist.md#design_deltas_captured_v2" >}}
-[DV_PLAN_COMPLETED]:                  {{<relref "/doc/project/checklist.md#dv_doc_completed" >}}
+[DV_DOC_COMPLETED]:                   {{<relref "/doc/project/checklist.md#dv_doc_completed" >}}
+[FUNCTIONAL_COVERAGE_IMPLEMENTED]:    {{<relref "/doc/project/checklist.md#functional_coverage_implemented" >}}
 [ALL_INTERFACES_EXERCISED]:           {{<relref "/doc/project/checklist.md#all_interfaces_exercised" >}}
 [ALL_ASSERTION_CHECKS_ADDED]:         {{<relref "/doc/project/checklist.md#all_assertion_checks_added" >}}
 [SIM_TB_ENV_COMPLETED]:               {{<relref "/doc/project/checklist.md#sim_tb_env_completed" >}}
@@ -205,9 +208,10 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 [FPV_CODE_COVERAGE_V2]:               {{<relref "/doc/project/checklist.md#fpv_code_coverage_v2" >}}
 [FPV_COI_COVERAGE_V2]:                {{<relref "/doc/project/checklist.md#fpv_coi_coverage_v2" >}}
 [TB_LINT_PASS]:                       {{<relref "/doc/project/checklist.md#tb_lint_pass" >}}
+[PRE_VERIFIED_SUB_MODULES_V2]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v2" >}}
 [NO_HIGH_PRIORITY_ISSUES_PENDING]:    {{<relref "/doc/project/checklist.md#no_high_priority_issues_pending" >}}
 [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED]:{{<relref "/doc/project/checklist.md#all_low_priority_issues_root_caused" >}}
-[PRE_VERIFIED_SUB_MODULES_V2]:        {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v2" >}}
+[DV_DOC_TESTPLAN_REVIEWED]:           {{<relref "/doc/project/checklist.md#dv_doc_testplan_reviewed" >}}
 [V3_CHECKLIST_SCOPED]:                {{<relref "/doc/project/checklist.md#v3_checklist_scoped" >}}
 
 ### V3
@@ -215,7 +219,6 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
  Type         | Item                              | Resolution  | Note/Collaterals
 --------------|-----------------------------------|-------------|------------------
 Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | Done        |
-Testbench     | [ALL_TODOS_RESOLVED][]            | Done        | [issue #385][] item 3 not related / Resolved: [pr #749][]
 Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Waived      |
 Tests         | [FPV_ASSERTIONS_PROVEN_AT_V3][]   | N/A         |
 Regression    | [SIM_NIGHTLY_REGRESSION_AT_V3][]  | Done        |
@@ -223,10 +226,11 @@ Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Done        | [pr #1042][]. 
 Coverage      | [SIM_FUNCTIONAL_COVERAGE_AT_100][]| Done        |
 Coverage      | [FPV_CODE_COVERAGE_AT_100][]      | N/A         |
 Coverage      | [FPV_COI_COVERAGE_AT_100][]       | N/A         |
-Issues        | [NO_ISSUES_PENDING][]             | Done        | [issue #991][] [issue #860][] fixed
+Code Quality  | [ALL_TODOS_RESOLVED][]            | Done        | [issue #385][] item 3 not related / Resolved: [pr #749][]
 Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Done        |
 Code Quality  | [TB_LINT_COMPLETE][]              | Not Started |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | N/A         |
+Issues        | [NO_ISSUES_PENDING][]             | Done        | [issue #991][] [issue #860][] fixed
 Review        | Reviewer(s)                       | Done        | @eunchan @sjgitty @sriyerg
 Review        | Signoff date                      | Done        | 2019-11-22
 
@@ -238,7 +242,6 @@ Review        | Signoff date                      | Done        | 2019-11-22
 [issue #860]: https://github.com/loWRISC/opentitan/issues/860
 
 [DESIGN_DELTAS_CAPTURED_V3]:     {{<relref "/doc/project/checklist.md#design_deltas_captured_v3" >}}
-[ALL_TODOS_RESOLVED]:            {{<relref "/doc/project/checklist.md#all_todos_resolved" >}}
 [X_PROP_ANALYSIS_COMPLETED]:     {{<relref "/doc/project/checklist.md#x_prop_analysis_completed" >}}
 [FPV_ASSERTIONS_PROVEN_AT_V3]:   {{<relref "/doc/project/checklist.md#fpv_assertions_proven_at_v3" >}}
 [SIM_NIGHTLY_REGRESSION_AT_V3]:  {{<relref "/doc/project/checklist.md#sim_nightly_regression_at_v3" >}}
@@ -246,8 +249,9 @@ Review        | Signoff date                      | Done        | 2019-11-22
 [SIM_FUNCTIONAL_COVERAGE_AT_100]:{{<relref "/doc/project/checklist.md#sim_functional_coverage_at_100" >}}
 [FPV_CODE_COVERAGE_AT_100]:      {{<relref "/doc/project/checklist.md#fpv_code_coverage_at_100" >}}
 [FPV_COI_COVERAGE_AT_100]:       {{<relref "/doc/project/checklist.md#fpv_coi_coverage_at_100" >}}
-[NO_ISSUES_PENDING]:             {{<relref "/doc/project/checklist.md#no_issues_pending" >}}
+[ALL_TODOS_RESOLVED]:            {{<relref "/doc/project/checklist.md#all_todos_resolved" >}}
 [NO_TOOL_WARNINGS_THROWN]:       {{<relref "/doc/project/checklist.md#no_tool_warnings_thrown" >}}
 [TB_LINT_COMPLETE]:              {{<relref "/doc/project/checklist.md#tb_lint_complete" >}}
 [PRE_VERIFIED_SUB_MODULES_V3]:   {{<relref "/doc/project/checklist.md#pre_verified_sub_modules_v3" >}}
+[NO_ISSUES_PENDING]:             {{<relref "/doc/project/checklist.md#no_issues_pending" >}}
 
