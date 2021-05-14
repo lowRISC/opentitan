@@ -217,24 +217,22 @@ def app_silicon_creator_selfchecking(request, bin_dir):
 
     app_config = request.param
 
-    if 'name' not in app_config:
+    if not all(key in app_config for key in ('name', 'signing_key')):
         raise RuntimeError(
-            "Key 'name' not found in TEST_APPS_SILICON_CREATOR_SELFCHECKING")
+            "One or more required keys ('name', 'signing_key') not found in"
+            " TEST_APPS_SILICON_CREATOR_SELFCHECKING")
 
     if 'targets' in app_config and 'sim_verilator' not in app_config['targets']:
         pytest.skip("Test %s skipped on Verilator." % app_config['name'])
-
-    if 'binary_name' in app_config:
-        binary_name = app_config['binary_name']
-    else:
-        binary_name = app_config['name']
 
     if 'verilator_extra_args' in app_config:
         verilator_extra_args = app_config['verilator_extra_args']
     else:
         verilator_extra_args = []
 
-    test_filename = binary_name + '_rom_ext_sim_verilator.elf'
+    test_filename = 'rom_ext_{}_sim_verilator.{}.signed.64.vmem'.format(
+        app_config['name'],
+        app_config['signing_key'])
     bin_path = bin_dir / 'sw/device/tests' / test_filename
     assert bin_path.is_file()
 
