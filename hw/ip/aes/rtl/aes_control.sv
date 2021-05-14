@@ -14,66 +14,66 @@ module aes_control
 #(
   parameter int unsigned SecStartTriggerDelay = 0
 ) (
-  input  logic                     clk_i,
-  input  logic                     rst_ni,
+  input  logic                      clk_i,
+  input  logic                      rst_ni,
 
   // Main control signals
-  input  logic                     ctrl_qe_i,
-  output logic                     ctrl_we_o,
-  input  logic                     ctrl_err_storage_i,
-  input  aes_op_e                  op_i,
-  input  aes_mode_e                mode_i,
-  input  ciph_op_e                 cipher_op_i,
-  input  logic                     manual_operation_i,
-  input  logic                     start_i,
-  input  logic                     key_iv_data_in_clear_i,
-  input  logic                     data_out_clear_i,
-  input  logic                     prng_reseed_i,
-  input  logic                     mux_sel_err_i,
-  input  logic                     sp_enc_err_i,
-  input  lc_ctrl_pkg::lc_tx_t      lc_escalate_en_i,
-  input  logic                     alert_fatal_i,
-  output logic                     alert_o,
+  input  logic                      ctrl_qe_i,
+  output logic                      ctrl_we_o,
+  input  logic                      ctrl_err_storage_i,
+  input  aes_op_e                   op_i,
+  input  aes_mode_e                 mode_i,
+  input  ciph_op_e                  cipher_op_i,
+  input  logic                      manual_operation_i,
+  input  logic                      start_i,
+  input  logic                      key_iv_data_in_clear_i,
+  input  logic                      data_out_clear_i,
+  input  logic                      prng_reseed_i,
+  input  logic                      mux_sel_err_i,
+  input  logic                      sp_enc_err_i,
+  input  lc_ctrl_pkg::lc_tx_t       lc_escalate_en_i,
+  input  logic                      alert_fatal_i,
+  output logic                      alert_o,
 
   // I/O register read/write enables
-  input  logic    [NumRegsKey-1:0] key_init_qe_i [NumSharesKey],
-  input  logic     [NumRegsIv-1:0] iv_qe_i,
-  input  logic   [NumRegsData-1:0] data_in_qe_i,
-  input  logic   [NumRegsData-1:0] data_out_re_i,
-  output logic                     data_in_we_o,
-  output sp2v_e                    data_out_we_o,
+  input  logic     [NumRegsKey-1:0] key_init_qe_i [NumSharesKey],
+  input  logic      [NumRegsIv-1:0] iv_qe_i,
+  input  logic    [NumRegsData-1:0] data_in_qe_i,
+  input  logic    [NumRegsData-1:0] data_out_re_i,
+  output logic                      data_in_we_o,
+  output sp2v_e                     data_out_we_o,
 
   // Previous input data register
-  output dip_sel_e                 data_in_prev_sel_o,
-  output sp2v_e                    data_in_prev_we_o,
+  output dip_sel_e                  data_in_prev_sel_o,
+  output sp2v_e                     data_in_prev_we_o,
 
   // Cipher I/O muxes
-  output si_sel_e                  state_in_sel_o,
-  output add_si_sel_e              add_state_in_sel_o,
-  output add_so_sel_e              add_state_out_sel_o,
+  output si_sel_e                   state_in_sel_o,
+  output add_si_sel_e               add_state_in_sel_o,
+  output add_so_sel_e               add_state_out_sel_o,
 
   // Counter
-  output sp2v_e                    ctr_incr_o,
-  input  sp2v_e                    ctr_ready_i,
-  input  sp2v_e [NumSlicesCtr-1:0] ctr_we_i,
+  output sp2v_e                     ctr_incr_o,
+  input  sp2v_e                     ctr_ready_i,
+  input  sp2v_e  [NumSlicesCtr-1:0] ctr_we_i,
 
   // Cipher core control and sync
-  output sp2v_e                    cipher_in_valid_o,
-  input  sp2v_e                    cipher_in_ready_i,
-  input  sp2v_e                    cipher_out_valid_i,
-  output sp2v_e                    cipher_out_ready_o,
-  output sp2v_e                    cipher_crypt_o,
-  input  sp2v_e                    cipher_crypt_i,
-  output sp2v_e                    cipher_dec_key_gen_o,
-  input  sp2v_e                    cipher_dec_key_gen_i,
-  output logic                     cipher_key_clear_o,
-  input  logic                     cipher_key_clear_i,
-  output logic                     cipher_data_out_clear_o,
-  input  logic                     cipher_data_out_clear_i,
+  output sp2v_e                     cipher_in_valid_o,
+  input  sp2v_e                     cipher_in_ready_i,
+  input  sp2v_e                     cipher_out_valid_i,
+  output sp2v_e                     cipher_out_ready_o,
+  output sp2v_e                     cipher_crypt_o,
+  input  sp2v_e                     cipher_crypt_i,
+  output sp2v_e                     cipher_dec_key_gen_o,
+  input  sp2v_e                     cipher_dec_key_gen_i,
+  output logic                      cipher_key_clear_o,
+  input  logic                      cipher_key_clear_i,
+  output logic                      cipher_data_out_clear_o,
+  input  logic                      cipher_data_out_clear_i,
 
   // Initial key registers
-  output key_init_sel_e            key_init_sel_o,
-  output sp2v_e   [NumRegsKey-1:0] key_init_we_o [NumSharesKey],
+  output key_init_sel_e             key_init_sel_o,
+  output sp2v_e    [NumRegsKey-1:0] key_init_we_o [NumSharesKey],
 
   // IV registers
   output iv_sel_e                   iv_sel_o,
@@ -96,17 +96,17 @@ module aes_control
   output logic                      prng_reseed_we_o,
 
   // Status register
-  output logic                      output_valid_o,
-  output logic                      output_valid_we_o,
-  output logic                      input_ready_o,
-  output logic                      input_ready_we_o,
   output logic                      idle_o,
   output logic                      idle_we_o,
   output logic                      stall_o,
   output logic                      stall_we_o,
   input  logic                      output_lost_i,
   output logic                      output_lost_o,
-  output logic                      output_lost_we_o
+  output logic                      output_lost_we_o,
+  output logic                      output_valid_o,
+  output logic                      output_valid_we_o,
+  output logic                      input_ready_o,
+  output logic                      input_ready_we_o
 );
 
   import aes_pkg::*;
@@ -738,7 +738,7 @@ module aes_control
   prim_flop #(
     .Width      ( Sp2VWidth            ),
     .ResetValue ( Sp2VWidth'(SP2V_LOW) )
-  ) u_crypt_regs (
+  ) u_output_valid_regs (
     .clk_i  ( clk_i              ),
     .rst_ni ( rst_ni             ),
     .d_i    ( output_valid_d     ),
