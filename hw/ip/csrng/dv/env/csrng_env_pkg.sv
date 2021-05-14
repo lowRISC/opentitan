@@ -30,7 +30,7 @@ package csrng_env_pkg;
   parameter bit [TL_DW-1:0] [3:0] ZERO_SEED_GENBITS = {32'h0,
                                                        32'h0,
                                                        32'h0,
-                                                       32'h7};
+                                                       32'h4};
 
   // types
   typedef enum int {

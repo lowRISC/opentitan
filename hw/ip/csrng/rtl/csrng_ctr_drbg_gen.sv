@@ -224,7 +224,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     end else begin
       v_ctr_q            <= v_ctr_d;
       interate_ctr_q     <= interate_ctr_d;
-    end // else: !if(!rst_ni)
+    end
 
 
 
@@ -328,13 +328,13 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
           state_d = ESHalt;
         end else if (sfifo_genreq_not_empty && !sfifo_adstage_full) begin
           v_ctr_load = 1'b1;
-          sfifo_adstage_push = 1'b1;
           state_d = ReqSend;
         end
       end
       ReqSend: begin
         if (!interate_ctr_done) begin
           block_encrypt_req_o = 1'b1;
+          sfifo_adstage_push = 1'b1;
           if (block_encrypt_rdy_i) begin
             v_ctr_inc  = 1'b1;
             interate_ctr_inc  = 1'b1;
@@ -381,7 +381,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     .depth_o        ()
   );
 
-  assign sfifo_adstage_wdata = {genreq_key,genreq_v,genreq_rc,genreq_fips,genreq_adata};
+  assign sfifo_adstage_wdata = {genreq_key,v_sized,genreq_rc,genreq_fips,genreq_adata};
   assign sfifo_adstage_pop = sfifo_adstage_not_empty && sfifo_bencack_pop;
   assign {adstage_key,adstage_v,adstage_rc,adstage_fips,adstage_adata} = sfifo_adstage_rdata;
 
