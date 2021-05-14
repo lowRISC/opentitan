@@ -50,6 +50,131 @@ package spi_device_pkg;
     s: 4'h 0
   };
 
+  // Command Type
+  //
+  // Passthrough module does not strictly follow every bit on the SPI line but
+  // loosely tracks the phase of the commands.
+  //
+  // The command in SPI Flash can be categorized as follow:
+  //
+  // - {Address, PayloadOut}:        examples are ReadData
+  // - {Address, Dummy, PayloadOut}: FastRead / Dual/ Quad commands have dummy
+  // - {Dummy, PayloadOut}:          Release Power-down / Manufacturer ID
+  // - {PayloadOut}:                 Right after opcode, the device sends data
+  //                                 to host
+  // - {Address, PayloadIn}:         Host sends address and payload back-to-back
+  // - {PayloadIn}:                  Host sends payload without any address hint
+  // - None:                         The commands complete without any address /
+  //                                 payload(in/out)
+  //
+  // If a received command has more than one state, the counter value will be
+  // set to help the state machine to move to the next state with the exact
+  // timing.
+  //
+  // A `cmd_type_t` struct has information for a command. The actual value for
+  // commands are compile-time parameters. When the logic receives 8 bits of
+  // opcode, it latches the parameter into this struct and references this
+  // through the transaction.
+
+  // Address or anything host driving after opcode counter
+  localparam int unsigned MaxAddrBit = 32;
+  localparam int unsigned AddrCntW = $clog2(MaxAddrBit);
+
+  // Dummy
+  localparam int unsigned MaxDummyBit = 8;
+  localparam int unsigned DummyCntW = $clog2(MaxDummyBit);
+
+  typedef enum logic {
+    PayloadIn  = 1'b 0,
+    PayloadOut = 1'b 1
+  } payload_dir_e;
+  // cmd_info_t defines the command relevant information. SPI Device IP has
+  // #NumCmdInfo cmd registers (default 16). A few of them are assigned to a
+  // specific commands such as Read Status, Read SFDP.
+  //
+  // These fields are SW programmable via CSR interface.
+  typedef struct packed {
+    // opcode: Each cmd_info type has 8bit opcode. SPI_DEVICE has 16 command
+    // slots. The logic compares the opcode and uses the command info when
+    // opcode is matched. If same opcode exists, SPI_DEVICE uses the command
+    // info slot having the lowest index among the matched ones.
+    logic [7:0] opcode;
+
+    // set to 1 if the command has an address field following the opcode.
+    logic addr_en;
+
+    // swap_en is used in the passthrough logic. If this field is set to 1, the
+    // address in the passthrough command is replaced to the preconfigured
+    // value.
+    logic addr_swap_en;
+
+    // If 1, the address size is affected by `cfg_addr_4b_en_i` configuration
+    // field.
+    logic addr_4b_affected;
+
+    // set to 1 if the command has a dummy cycle following the address field.
+    logic                 dummy_en;
+    logic [DummyCntW-1:0] dummy_size;
+
+    // set to non-zero if the command has payload at the end of the protocol. If
+    // dummy_en is 1, then the payload follows the dummy cycle. payload_en has
+    // four bits. Each bit represents the SPI line. If a command is single IO
+    // command and returns data to the host system, the data is returned on the
+    // MISO line (IO[1]). In this case, SW sets payload_en to 4'b0010 and
+    // payload_dir to PayloadOut.
+    logic [3:0]   payload_en;
+    payload_dir_e payload_dir;
+
+  } cmd_info_t;
+
+  // CmdInfoInput parameter is the default value if no opcode in the cmd info
+  // slot is matched to the received command opcode.
+  parameter cmd_info_t CmdInfoInput = '{
+    opcode:           8'h 00,
+    addr_en:          1'b 0,
+    addr_swap_en:     1'b 0,
+    addr_4b_affected: 1'b 0,
+    dummy_en:         1'b 0,
+    dummy_size:       3'h 0,
+    payload_en:       4'b 0001, // MOSI active
+    payload_dir:      PayloadIn
+  };
+
+  // SPI_DEVICE HWIP has 16 command info slots. A few of them are pre-assigned.
+  // (defined in the spi_device_pkg)
+  //
+  //parameter int unsigned NumCmdInfo = 16;
+
+  // cmd_info_index_e assigns some cmd_info slots to specific commands. The
+  // reason why command slots cannot be fully flexible (unlike NumCmdInfo-way $)
+  // is that the slots are used in the Flash mode also. The Read Status/ SFDP/
+  // etc submodules only see the pre-assigned slot and use it.
+  typedef enum int unsigned {
+    // Read Status subblock in Flash mode only uses opcode of cmd_info
+    CmdInfoReadStatus1 = 0,
+    CmdInfoReadStatus2 = 1,
+    CmdInfoReadStatus3 = 2,
+
+    CmdInfoReadJedecId = 3,
+
+    CmdInfoReadSfdp = 4,
+
+    // 6 slots are assigned to Read commands in Flash mode.
+    //
+    // Read Data / Fast Read / Fast Read Dual / Fast Read Quad
+    // Fast Read Dual IO / Fast Read Quad IO (IO commands are TBD)
+    CmdInfoReadCmdStart = 5,
+    CmdInfoReadCmdEnd   = 10,
+
+    // other 5 slots are used in the Passthrough mode only. These free slots may
+    // be used for the commands that are not processed in the flash mode.
+    // Examples are "Release Power-down / ID", "Manufacture/Device ID", etc.
+    // They are not always Input mode. Some has a dummy cycle followed by the
+    // output field.
+    CmdInfoPassthroughStart = 11,
+    CmdInfoPassthroughEnd   = 15
+  } cmd_info_index_e;
+
   // SPI Operation mode
   typedef enum logic [1:0] {
     FwMode      = 'h0,

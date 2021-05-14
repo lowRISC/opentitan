@@ -38,6 +38,12 @@
       default: "1024"
       local:   "true"
     }
+    { name:    "NumCmdInfo"
+      desc:    "Define the number of Command Info slots."
+      type:    "int unsigned"
+      default: "16"
+      local:   "true"
+    }
   ],
   inter_signal_list: [
     { struct:  "ram_2p_cfg",
@@ -389,6 +395,68 @@
           desc:   "Desired value to be swapped for the SPI read commands."
         }
       ]
+    }
+    { multireg: {
+        cname: "SPI_DEVICE"
+        name:  "CMD_INFO"
+        desc: '''Command Info register.
+
+          '''
+        count: "NumCmdInfo"
+        swaccess: "rw"
+        hwaccess: "hro"
+        fields: [
+          { bits:   "7:0"
+            resval: "0"
+            name:   "opcode"
+            desc: '''Command Opcode
+              '''
+          }
+          { bits:   "8"
+            resval: "0"
+            name:   "addr_en"
+            desc:   "If 1, the command has an address field following the opcode"
+          }
+          { bits:   "9"
+            resval: "0"
+            name:   "addr_swap_en"
+            desc:   '''This field is used in the passthrough logic.
+              If this field is set to 1, the address in the passthrough command
+              is replaced to the preconfigured value.
+              '''
+          }
+          { bits:   "10"
+            name:   "addr_4b_affected"
+            desc:   '''If 1, the address size is affected by `cfg_addr_4b_en`.
+              If not, the address size of the command is always 3B.
+              '''
+          }
+          { bits:   "14:12"
+            resval: "7"
+            name:   "dummy_size"
+            desc:   "The number of dummy cycles -1 for the command"
+          }
+          { bits:   "15"
+            name:   "dummy_en"
+            desc:   "Set to 1 if the command has a dummy cycle following the address field."
+          }
+          { bits:   "19:16"
+            name:   "payload_en"
+            desc:   '''Payload Enable per SPI lane.
+
+              Set to non-zero if the command has payload at the end of the
+              protocol. This field has four bits. Each bit represents the SPI
+              line. If a command is a Single IO command and returns data to the
+              host system, the data is returned on the MISO line (IO[1]). In
+              this case, SW sets payload_en to 4'b 0010.
+              '''
+          }
+          { bits:   "20"
+            name:   "payload_dir"
+            desc:   "Set to 1 if the command returns data. If 0, the payload sends to the downstream Flash device."
+          }
+        ]
+      }
     }
     { skipto: "0x1000" }
     { window: {

@@ -177,6 +177,9 @@ module spi_device (
   logic [31:0] addr_swap_mask;
   logic [31:0] addr_swap_data;
 
+  // Command Info structure
+  cmd_info_t [spi_device_reg_pkg::NumCmdInfo-1:0] cmd_info;
+
   //////////////////////////////////////////////////////////////////////
   // Connect phase (between control signals above and register module //
   //////////////////////////////////////////////////////////////////////
@@ -358,6 +361,22 @@ module spi_device (
 
   assign addr_swap_mask = reg2hw.addr_swap_mask.q;
   assign addr_swap_data = reg2hw.addr_swap_data.q;
+
+  // Connect command info
+  always_comb begin
+    for (int unsigned i = 0 ; i < spi_device_reg_pkg::NumCmdInfo ; i++) begin
+      cmd_info[i] = '{
+        opcode:           reg2hw.cmd_info[i].opcode.q,
+        addr_en:          reg2hw.cmd_info[i].addr_en.q,
+        addr_swap_en:     reg2hw.cmd_info[i].addr_swap_en.q,
+        addr_4b_affected: reg2hw.cmd_info[i].addr_4b_affected.q,
+        dummy_en:         reg2hw.cmd_info[i].dummy_en.q,
+        dummy_size:       reg2hw.cmd_info[i].dummy_size.q,
+        payload_en:       reg2hw.cmd_info[i].payload_en.q,
+        payload_dir:      payload_dir_e'(reg2hw.cmd_info[i].payload_dir.q)
+      };
+    end
+  end
 
   //////////////////////////////
   // // Clock & reset control //
@@ -822,7 +841,9 @@ module spi_device (
   /////////////////////
   // SPI Passthrough //
   /////////////////////
-  spi_passthrough u_passthrough (
+  spi_passthrough #(
+    .NumCmdInfo(spi_device_reg_pkg::NumCmdInfo)
+  ) u_passthrough (
     .clk_i     (clk_spi_in_buf),
     .rst_ni    (rst_spi_n),
     .clk_out_i (clk_spi_out_buf),
@@ -834,6 +855,8 @@ module spi_device (
     .cfg_addr_value_i (addr_swap_data), // TODO
 
     .cfg_addr_4b_en_i (cfg_addr_4b_en),
+
+    .cmd_info_i (cmd_info),
 
     .spi_mode_i       (spi_mode),
 

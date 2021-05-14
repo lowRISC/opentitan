@@ -72,7 +72,9 @@
  */
 module spi_passthrough
   import spi_device_pkg::*;
-(
+#(
+  parameter int unsigned NumCmdInfo = 16
+) (
   input clk_i,   // SPI input clk
   input rst_ni,  // SPI reset
 
@@ -93,6 +95,9 @@ module spi_passthrough
   input cfg_addr_4b_en_i,
 
   input spi_mode_e spi_mode_i,
+
+  // Command Info structure
+  input cmd_info_t [NumCmdInfo-1:0] cmd_info_i,
 
   // SPI in
   //
@@ -174,71 +179,7 @@ module spi_passthrough
   } passthrough_st_e;
   passthrough_st_e st, st_d;
 
-  // Command Type
-  //
-  // Passthrough module does not strictly follow every bit on the SPI line but
-  // loosely tracks the phase of the commands.
-  //
-  // The command in SPI Flash can be categorized as follow:
-  //
-  // - {Address, PayloadOut}:        examples are ReadData
-  // - {Address, Dummy, PayloadOut}: FastRead / Dual/ Quad commands have dummy
-  // - {Dummy, PayloadOut}:          Release Power-down / Manufacturer ID
-  // - {PayloadOut}:                 Right after opcode, the device sends data
-  //                                 to host
-  // - {Address, PayloadIn}:         Host sends address and payload back-to-back
-  // - {PayloadIn}:                  Host sends payload without any address hint
-  // - None:                         The commands complete without any address /
-  //                                 payload(in/out)
-  //
-  // If a received command has more than one state, the counter value will be
-  // set to help the state machine to move to the next state with the exact
-  // timing.
-  //
-  // A `cmd_type_t` struct has information for a command. The actual value for
-  // commands are compile-time parameters. When the logic receives 8 bits of
-  // opcode, it latches the parameter into this struct and references this
-  // through the transaction.
-
-  // Address or anything host driving after opcode counter
-  localparam int unsigned MaxAddrBit = 32;
-  localparam int unsigned AddrCntW = $clog2(MaxAddrBit);
-
-  // Dummy
-  localparam int unsigned MaxDummyBit = 8;
-  localparam int unsigned DummyCntW = $clog2(MaxDummyBit);
-
-  typedef enum logic {
-    PayloadIn  = 1'b 0,
-    PayloadOut = 1'b 1
-  } payload_dir_e;
-
-  typedef struct packed {
-    // Address Exist
-    logic addr_en;
-
-    // If swap_en is 1, the logic replaces incomind addr to preconfigured value
-    // for certain bits.
-    logic addr_swap_en;
-
-    // If 1, the addr_size is affected by `cfg_addr_4b_en_i`
-    logic addr_4b_affected;
-
-    // Dummy Exists
-    logic dummy_en;
-    // Payload Direction: If payload_en is set, the command has payload in
-    // either direction. The `payload_dir` determines the input (0) or
-    // output(1).
-    logic [3:0]   payload_en;
-    payload_dir_e payload_dir;
-
-    // addr_size is determined based on the `addr_4b_affected`. If 1 and
-    // `cfg_addr_4b_en_i` ir 1, `addr_size` is 31. Other cases, it is set to 23.
-    logic [AddrCntW-1:0] addr_size;
-
-    logic [DummyCntW-1:0] dummy_size;
-  } cmd_type_t;
-
+  /*
   localparam cmd_type_t CmdInfoNone = '{
     addr_en:          1'b 0,
     addr_swap_en:     1'b 0,
@@ -360,265 +301,7 @@ module spi_passthrough
     addr_size:           '0, // Logic decide
     dummy_size:        'h 0
   };
-
-  localparam cmd_type_t PassThroughCmdInfo [256] = '{
-    CmdInfoNone,                    // 8'h 00
-    CmdInfoPayloadIn,               // 8'h 01 Write Status 1
-    CmdInfoAddrPayloadIn,           // 8'h 02 Page Program
-    CmdInfoAddrPayloadOut,          // 8'h 03 Read Data
-    CmdInfoNone,                    // 8'h 04 Write Disable
-    CmdInfoPayloadOut,              // 8'h 05 Read Status 1
-    CmdInfoNone,                    // 8'h 06 Write Enable
-    CmdInfoNone,                    // 8'h 07
-    CmdInfoNone,                    // 8'h 08
-    CmdInfoNone,                    // 8'h 09
-    CmdInfoNone,                    // 8'h 0A
-    CmdInfoAddrDummyPayloadOut,     // 8'h 0B Fast Read
-    CmdInfoNone,                    // 8'h 0C
-    CmdInfoNone,                    // 8'h 0D
-    CmdInfoNone,                    // 8'h 0E
-    CmdInfoNone,                    // 8'h 0F
-    CmdInfoNone,                    // 8'h 10
-    CmdInfoPayloadIn,               // 8'h 11 Write Status 3
-    CmdInfoNone,                    // 8'h 12
-    CmdInfoNone,                    // 8'h 13
-    CmdInfoNone,                    // 8'h 14
-    CmdInfoPayloadOut,              // 8'h 15 Read Status 3
-    CmdInfoNone,                    // 8'h 16
-    CmdInfoNone,                    // 8'h 17
-    CmdInfoNone,                    // 8'h 18
-    CmdInfoNone,                    // 8'h 19
-    CmdInfoNone,                    // 8'h 1A
-    CmdInfoNone,                    // 8'h 1B
-    CmdInfoNone,                    // 8'h 1C
-    CmdInfoNone,                    // 8'h 1D
-    CmdInfoNone,                    // 8'h 1E
-    CmdInfoNone,                    // 8'h 1F
-    CmdInfoAddr,                    // 8'h 20 Sector Erase (4kB)
-    CmdInfoNone,                    // 8'h 21
-    CmdInfoNone,                    // 8'h 22
-    CmdInfoNone,                    // 8'h 23
-    CmdInfoNone,                    // 8'h 24
-    CmdInfoNone,                    // 8'h 25
-    CmdInfoNone,                    // 8'h 26
-    CmdInfoNone,                    // 8'h 27
-    CmdInfoNone,                    // 8'h 28
-    CmdInfoNone,                    // 8'h 29
-    CmdInfoNone,                    // 8'h 2A
-    CmdInfoNone,                    // 8'h 2B
-    CmdInfoNone,                    // 8'h 2C
-    CmdInfoNone,                    // 8'h 2D
-    CmdInfoNone,                    // 8'h 2E
-    CmdInfoNone,                    // 8'h 2F
-    CmdInfoNone,                    // 8'h 30
-    CmdInfoPayloadIn,               // 8'h 31 Write Status 2
-    CmdInfoAddrPayloadInQuad,       // 8'h 32 Quad Input Page Program
-    CmdInfoNone,                    // 8'h 33
-    CmdInfoNone,                    // 8'h 34
-    CmdInfoPayloadOut,              // 8'h 35 Read Status 2
-    CmdInfoAddr,                    // 8'h 36 Individual Block Lock
-    CmdInfoNone,                    // 8'h 37
-    CmdInfoNone,                    // 8'h 38 Enter QPI (filtered)
-    CmdInfoAddr,                    // 8'h 39 Individual Blck Unlock
-    CmdInfoNone,                    // 8'h 3A
-    CmdInfoAddrDummyPayloadOutDual, // 8'h 3B Fast Read Dual Out
-    CmdInfoNone,                    // 8'h 3C
-    CmdInfoAddrPayloadOut,          // 8'h 3D Read Block Lock
-    CmdInfoNone,                    // 8'h 3E
-    CmdInfoNone,                    // 8'h 3F
-    CmdInfoNone,                    // 8'h 40
-    CmdInfoNone,                    // 8'h 41
-    CmdInfoNone,                    // 8'h 42 TODO
-    CmdInfoNone,                    // 8'h 43
-    CmdInfoNone,                    // 8'h 44 TODO
-    CmdInfoNone,                    // 8'h 45
-    CmdInfoNone,                    // 8'h 46
-    CmdInfoNone,                    // 8'h 47
-    CmdInfoNone,                    // 8'h 48 TODO
-    CmdInfoNone,                    // 8'h 49
-    CmdInfoNone,                    // 8'h 4A
-    CmdInfoNone,                    // 8'h 4B Read Unique ID (TODO)
-    CmdInfoNone,                    // 8'h 4C
-    CmdInfoNone,                    // 8'h 4D
-    CmdInfoNone,                    // 8'h 4E
-    CmdInfoNone,                    // 8'h 4F
-    CmdInfoNone,                    // 8'h 50
-    CmdInfoNone,                    // 8'h 51
-    CmdInfoAddr,                    // 8'h 52 Block Erase (32kB)
-    CmdInfoNone,                    // 8'h 53
-    CmdInfoNone,                    // 8'h 54
-    CmdInfoNone,                    // 8'h 55
-    CmdInfoNone,                    // 8'h 56
-    CmdInfoNone,                    // 8'h 57
-    CmdInfoNone,                    // 8'h 58
-    CmdInfoNone,                    // 8'h 59
-    CmdInfoAddr3BDummyPayloadOut,   // 8'h 5A Read SFDP
-    CmdInfoNone,                    // 8'h 5B
-    CmdInfoNone,                    // 8'h 5C
-    CmdInfoNone,                    // 8'h 5D
-    CmdInfoNone,                    // 8'h 5E
-    CmdInfoNone,                    // 8'h 5F
-    CmdInfoNone,                    // 8'h 60
-    CmdInfoNone,                    // 8'h 61
-    CmdInfoNone,                    // 8'h 62
-    CmdInfoNone,                    // 8'h 63
-    CmdInfoNone,                    // 8'h 64
-    CmdInfoNone,                    // 8'h 65
-    CmdInfoNone,                    // 8'h 66
-    CmdInfoNone,                    // 8'h 67
-    CmdInfoNone,                    // 8'h 68
-    CmdInfoNone,                    // 8'h 69
-    CmdInfoNone,                    // 8'h 6A
-    CmdInfoAddrDummyPayloadOutQuad, // 8'h 6B Fast Read Quad Out
-    CmdInfoNone,                    // 8'h 6C
-    CmdInfoNone,                    // 8'h 6D
-    CmdInfoNone,                    // 8'h 6E
-    CmdInfoNone,                    // 8'h 6F
-    CmdInfoNone,                    // 8'h 70
-    CmdInfoNone,                    // 8'h 71
-    CmdInfoNone,                    // 8'h 72
-    CmdInfoNone,                    // 8'h 73
-    CmdInfoNone,                    // 8'h 74
-    CmdInfoNone,                    // 8'h 75
-    CmdInfoNone,                    // 8'h 76
-    CmdInfoNone,                    // 8'h 77
-    CmdInfoNone,                    // 8'h 78
-    CmdInfoNone,                    // 8'h 79
-    CmdInfoNone,                    // 8'h 7A
-    CmdInfoNone,                    // 8'h 7B
-    CmdInfoNone,                    // 8'h 7C
-    CmdInfoNone,                    // 8'h 7D
-    CmdInfoNone,                    // 8'h 7E
-    CmdInfoNone,                    // 8'h 7F
-    CmdInfoNone,                    // 8'h 80
-    CmdInfoNone,                    // 8'h 81
-    CmdInfoNone,                    // 8'h 82
-    CmdInfoNone,                    // 8'h 83
-    CmdInfoNone,                    // 8'h 84
-    CmdInfoNone,                    // 8'h 85
-    CmdInfoNone,                    // 8'h 86
-    CmdInfoNone,                    // 8'h 87
-    CmdInfoNone,                    // 8'h 88
-    CmdInfoNone,                    // 8'h 89
-    CmdInfoNone,                    // 8'h 8A
-    CmdInfoNone,                    // 8'h 8B
-    CmdInfoNone,                    // 8'h 8C
-    CmdInfoNone,                    // 8'h 8D
-    CmdInfoNone,                    // 8'h 8E
-    CmdInfoNone,                    // 8'h 8F
-    CmdInfoNone,                    // 8'h 90
-    CmdInfoNone,                    // 8'h 91
-    CmdInfoNone,                    // 8'h 92
-    CmdInfoNone,                    // 8'h 93
-    CmdInfoNone,                    // 8'h 94
-    CmdInfoNone,                    // 8'h 95
-    CmdInfoNone,                    // 8'h 96
-    CmdInfoNone,                    // 8'h 97
-    CmdInfoNone,                    // 8'h 98
-    CmdInfoNone,                    // 8'h 99
-    CmdInfoNone,                    // 8'h 9A
-    CmdInfoNone,                    // 8'h 9B
-    CmdInfoNone,                    // 8'h 9C
-    CmdInfoNone,                    // 8'h 9D
-    CmdInfoNone,                    // 8'h 9E
-    CmdInfoPayloadOut,              // 8'h 9F JEDEC ID
-    CmdInfoNone,                    // 8'h A0
-    CmdInfoNone,                    // 8'h A1
-    CmdInfoNone,                    // 8'h A2
-    CmdInfoNone,                    // 8'h A3
-    CmdInfoNone,                    // 8'h A4
-    CmdInfoNone,                    // 8'h A5
-    CmdInfoNone,                    // 8'h A6
-    CmdInfoNone,                    // 8'h A7
-    CmdInfoNone,                    // 8'h A8
-    CmdInfoNone,                    // 8'h A9
-    CmdInfoNone,                    // 8'h AA
-    CmdInfoNone,                    // 8'h AB
-    CmdInfoNone,                    // 8'h AC
-    CmdInfoNone,                    // 8'h AD
-    CmdInfoNone,                    // 8'h AE
-    CmdInfoNone,                    // 8'h AF
-    CmdInfoNone,                    // 8'h B0
-    CmdInfoNone,                    // 8'h B1
-    CmdInfoNone,                    // 8'h B2
-    CmdInfoNone,                    // 8'h B3
-    CmdInfoNone,                    // 8'h B4
-    CmdInfoNone,                    // 8'h B5
-    CmdInfoNone,                    // 8'h B6
-    CmdInfoNone,                    // 8'h B7
-    CmdInfoNone,                    // 8'h B8
-    CmdInfoNone,                    // 8'h B9
-    CmdInfoNone,                    // 8'h BA
-    CmdInfoNone,                    // 8'h BB
-    CmdInfoNone,                    // 8'h BC
-    CmdInfoNone,                    // 8'h BD
-    CmdInfoNone,                    // 8'h BE
-    CmdInfoNone,                    // 8'h BF
-    CmdInfoNone,                    // 8'h C0
-    CmdInfoNone,                    // 8'h C1
-    CmdInfoNone,                    // 8'h C2
-    CmdInfoNone,                    // 8'h C3
-    CmdInfoNone,                    // 8'h C4
-    CmdInfoNone,                    // 8'h C5
-    CmdInfoNone,                    // 8'h C6
-    CmdInfoNone,                    // 8'h C7
-    CmdInfoNone,                    // 8'h C8
-    CmdInfoNone,                    // 8'h C9
-    CmdInfoNone,                    // 8'h CA
-    CmdInfoNone,                    // 8'h CB
-    CmdInfoNone,                    // 8'h CC
-    CmdInfoNone,                    // 8'h CD
-    CmdInfoNone,                    // 8'h CE
-    CmdInfoNone,                    // 8'h CF
-    CmdInfoNone,                    // 8'h D0
-    CmdInfoNone,                    // 8'h D1
-    CmdInfoNone,                    // 8'h D2
-    CmdInfoNone,                    // 8'h D3
-    CmdInfoNone,                    // 8'h D4
-    CmdInfoNone,                    // 8'h D5
-    CmdInfoNone,                    // 8'h D6
-    CmdInfoNone,                    // 8'h D7
-    CmdInfoAddr,                    // 8'h D8 Block Erase (64kB)
-    CmdInfoNone,                    // 8'h D9
-    CmdInfoNone,                    // 8'h DA
-    CmdInfoNone,                    // 8'h DB
-    CmdInfoNone,                    // 8'h DC
-    CmdInfoNone,                    // 8'h DD
-    CmdInfoNone,                    // 8'h DE
-    CmdInfoNone,                    // 8'h DF
-    CmdInfoNone,                    // 8'h E0
-    CmdInfoNone,                    // 8'h E1
-    CmdInfoNone,                    // 8'h E2
-    CmdInfoNone,                    // 8'h E3
-    CmdInfoNone,                    // 8'h E4
-    CmdInfoNone,                    // 8'h E5
-    CmdInfoNone,                    // 8'h E6
-    CmdInfoNone,                    // 8'h E7
-    CmdInfoNone,                    // 8'h E8
-    CmdInfoNone,                    // 8'h E9
-    CmdInfoNone,                    // 8'h EA
-    CmdInfoNone,                    // 8'h EB
-    CmdInfoNone,                    // 8'h EC
-    CmdInfoNone,                    // 8'h ED
-    CmdInfoNone,                    // 8'h EE
-    CmdInfoNone,                    // 8'h EF
-    CmdInfoNone,                    // 8'h F0
-    CmdInfoNone,                    // 8'h F1
-    CmdInfoNone,                    // 8'h F2
-    CmdInfoNone,                    // 8'h F3
-    CmdInfoNone,                    // 8'h F4
-    CmdInfoNone,                    // 8'h F5
-    CmdInfoNone,                    // 8'h F6
-    CmdInfoNone,                    // 8'h F7
-    CmdInfoNone,                    // 8'h F8
-    CmdInfoNone,                    // 8'h F9
-    CmdInfoNone,                    // 8'h FA
-    CmdInfoNone,                    // 8'h FB
-    CmdInfoNone,                    // 8'h FC
-    CmdInfoNone,                    // 8'h FD
-    CmdInfoNone,                    // 8'h FE
-    CmdInfoNone                     // 8'h FF
-  };
+  */
 
   /* Not synthesizable in DC
   localparam cmd_type_t PassThroughCmdInfoOld [256] = '{
@@ -835,15 +518,35 @@ module spi_passthrough
   end
 
   // Command Info Latch
-  cmd_type_t cmd_info, cmd_info_d;
-  cmd_type_t [1:0] cmd_info_7th;
+  cmd_info_t       cmd_info, cmd_info_d;
+  cmd_info_t [1:0] cmd_info_7th, cmd_info_7th_d;
+
+  logic [AddrCntW-1:0] addr_size, addr_size_d;
+
   logic cmd_info_latch;
+
+  // Search opcode @ 7th opcode
+  always_comb begin
+    cmd_info_7th_d = {CmdInfoInput, CmdInfoInput};
+    if (cmd_7th) begin
+      for(int unsigned i = 0 ; i < NumCmdInfo ; i++) begin
+        if (cmd_info_i[i].opcode == {opcode_d[6:0], 1'b1}) begin
+          cmd_info_7th_d[1] = cmd_info_i[i];
+        end else if (cmd_info_i[i].opcode == {opcode_d[6:0], 1'b0}) begin
+          cmd_info_7th_d[0] = cmd_info_i[i];
+        end
+      end
+    end
+  end
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       cmd_info_7th <= '0;
     end else if (cmd_7th) begin
-      cmd_info_7th <= {PassThroughCmdInfo[{opcode_d[6:0],1'b1}],
-                       PassThroughCmdInfo[{opcode_d[6:0],1'b0}]};
+      // Search two candidate among NumCmdInfo. If only one matched, other
+      // cmd_info is Always Input command.
+      cmd_info_7th <= cmd_info_7th_d;
+      //cmd_info_7th <= {PassThroughCmdInfo[{opcode_d[6:0],1'b1}],
+      //                 PassThroughCmdInfo[{opcode_d[6:0],1'b0}]};
     end
   end
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -864,11 +567,11 @@ module spi_passthrough
   assign unused_cmd_info_fields = &{1'b0,
                                     cmd_info.addr_en,
                                     cmd_info.addr_swap_en,
-                                    cmd_info.addr_4b_affected,
-                                    cmd_info.addr_size};
+                                    cmd_info.addr_4b_affected};
 
   always_comb begin
     cmd_info_d = '0;
+    addr_size_d = AddrCntW'(23);
 
     if (cmd_8th) begin
       // Latch only two cmd_info when the 7th bit arrives. Then select among two
@@ -876,9 +579,10 @@ module spi_passthrough
       cmd_info_d = cmd_info_7th[host_s_i[0]];
       // TODO: Addr size
       if (cmd_info_7th[host_s_i[0]].addr_4b_affected) begin
-        cmd_info_d.addr_size = (cfg_addr_4b_en_i)
-                             ? AddrCntW'(31) : AddrCntW'(23);
+        addr_size_d = (cfg_addr_4b_en_i)
+                    ? AddrCntW'(31) : AddrCntW'(23);
       end
+      cmd_info_d.opcode = opcode_d;
 
       // dummy_size is set inside State Machine
     end
@@ -893,8 +597,9 @@ module spi_passthrough
     if (!rst_ni) begin
       addrcnt <= '0;
     end else if (addr_set) begin
-        // When addr_set is 1, cmd_info is not yet latched.
-        addrcnt <= cmd_info_d.addr_size;
+      // When addr_set is 1, cmd_info is not yet latched.
+      `ASSERT_I(AddrSetInStIdle_A, st == StIdle)
+      addrcnt <= addr_size_d;
     end else if (addrcnt != '0) begin
       addrcnt <= addrcnt - AddrCntW'(1);
     end
