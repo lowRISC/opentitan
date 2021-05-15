@@ -12,8 +12,6 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_reg_block));
   rand push_pull_agent_cfg#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_addr_pull_agent_cfg;
   rand push_pull_agent_cfg#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE))
       m_lc_prog_pull_agent_cfg;
-  rand push_pull_agent_cfg#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth))
-      m_lc_token_pull_agent_cfg;
 
   // ext interfaces
   mem_bkdr_vif mem_bkdr_vif;
@@ -59,12 +57,6 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_reg_block));
     m_lc_prog_pull_agent_cfg = push_pull_agent_cfg#(.HostDataWidth(LC_PROG_DATA_SIZE),
                                .DeviceDataWidth(1))::type_id::create("m_lc_prog_pull_agent_cfg");
     m_lc_prog_pull_agent_cfg.agent_type = PullAgent;
-
-    m_lc_token_pull_agent_cfg = push_pull_agent_cfg#(
-                                .HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth))::type_id
-                                ::create("m_lc_token_pull_agent_cfg");
-    m_lc_token_pull_agent_cfg.agent_type = PullAgent;
-    m_lc_token_pull_agent_cfg.in_bidirectional_mode = 1;
 
     // set num_interrupts & num_alerts
     begin

@@ -123,7 +123,6 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
       if (do_lc_trans && !cfg.otp_ctrl_vif.alert_reqs) begin
         req_lc_transition(do_lc_trans, lc_prog_blocking);
-        req_lc_token();
         if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
       end
 
@@ -182,7 +181,6 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       // send request to the interfaces again after partitions are locked
       if (do_lc_trans && !cfg.otp_ctrl_vif.alert_reqs) begin
         req_lc_transition(do_lc_trans, lc_prog_blocking);
-        req_lc_token();
         if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code), .value(tlul_val));
       end
 

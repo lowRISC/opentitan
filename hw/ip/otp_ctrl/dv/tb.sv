@@ -37,9 +37,6 @@ module tb;
   // lc_otp interfaces
   push_pull_if #(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
                lc_prog_if(.clk(clk), .rst_n(rst_n));
-  push_pull_if #(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth))
-               lc_token_if(.clk(clk), .rst_n(rst_n));
-
   push_pull_if #(.DeviceDataWidth(SRAM_DATA_SIZE))
                sram_if[NumSramKeyReqSlots](.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(OTBN_DATA_SIZE)) otbn_if(.clk(clk), .rst_n(rst_n));
@@ -94,8 +91,6 @@ module tb;
     // lc
     .lc_otp_program_i           ({lc_prog_if.req, lc_prog_if.h_data}),
     .lc_otp_program_o           ({lc_prog_if.d_data, lc_prog_if.ack}),
-    .lc_otp_token_i             ({lc_token_if.req, lc_token_if.h_data}),
-    .lc_otp_token_o             ({lc_token_if.ack, lc_token_if.d_data}),
     .lc_creator_seed_sw_rw_en_i (otp_ctrl_if.lc_creator_seed_sw_rw_en_i),
     .lc_seed_hw_rd_en_i         (otp_ctrl_if.lc_seed_hw_rd_en_i),
     .lc_dft_en_i                (otp_ctrl_if.lc_dft_en_i),
@@ -186,8 +181,6 @@ module tb;
                    "*env.m_flash_addr_pull_agent*", "vif", flash_addr_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1)))::
                    set(null, "*env.m_lc_prog_pull_agent*", "vif", lc_prog_if);
-    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)))::
-                   set(null, "*env.m_lc_token_pull_agent*", "vif", lc_token_if);
 
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);

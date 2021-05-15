@@ -34,13 +34,6 @@ class otp_ctrl_parallel_lc_req_vseq extends otp_ctrl_parallel_base_vseq;
             do_reset_in_seq = 1;
           end
         end
-      end
-      begin
-        // req lc token request
-        if ($urandom_range(0, 1)) begin
-          wait_clk_or_reset($urandom_range(0, 500));
-          if (!base_vseq_done && !cfg.under_reset) req_lc_token(0);
-        end
       end join
     end
   endtask

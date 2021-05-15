@@ -49,9 +49,6 @@ module otp_ctrl
   // Lifecycle transition command interface
   input  lc_otp_program_req_t                        lc_otp_program_i,
   output lc_otp_program_rsp_t                        lc_otp_program_o,
-  // Lifecycle hashing interface for raw unlock
-  input  lc_otp_token_req_t                          lc_otp_token_i,
-  output lc_otp_token_rsp_t                          lc_otp_token_o,
   // Lifecycle broadcast inputs
   input  lc_ctrl_pkg::lc_tx_t                        lc_creator_seed_sw_rw_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_seed_hw_rd_en_i,
@@ -928,8 +925,6 @@ module otp_ctrl
     .edn_req_o               ( key_edn_req             ),
     .edn_ack_i               ( key_edn_ack             ),
     .edn_data_i              ( edn_data                ),
-    .lc_otp_token_i ,
-    .lc_otp_token_o ,
     .flash_otp_key_i,
     .flash_otp_key_o,
     .sram_otp_key_i,
