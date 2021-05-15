@@ -46,14 +46,15 @@ module otbn_core
   input  logic                     imem_rerror_i,
 
   // Data memory (DMEM)
-  output logic                     dmem_req_o,
-  output logic                     dmem_write_o,
-  output logic [DmemAddrWidth-1:0] dmem_addr_o,
-  output logic [WLEN-1:0]          dmem_wdata_o,
-  output logic [WLEN-1:0]          dmem_wmask_o,
-  input  logic [WLEN-1:0]          dmem_rdata_i,
-  input  logic                     dmem_rvalid_i,
-  input  logic                     dmem_rerror_i,
+  output logic                        dmem_req_o,
+  output logic                        dmem_write_o,
+  output logic [DmemAddrWidth-1:0]    dmem_addr_o,
+  output logic [ExtWLEN-1:0]          dmem_wdata_o,
+  output logic [ExtWLEN-1:0]          dmem_wmask_o,
+  output logic [BaseWordsPerWLEN-1:0] dmem_rmask_o,
+  input  logic [ExtWLEN-1:0]          dmem_rdata_i,
+  input  logic                        dmem_rvalid_i,
+  input  logic                        dmem_rerror_i,
 
   // Entropy distribution network (EDN) connections
   // One for RND, the other for URND
@@ -87,6 +88,8 @@ module otbn_core
   logic                     rf_base_wr_en;
   logic                     rf_base_wr_commit;
   logic [31:0]              rf_base_wr_data_no_intg;
+  logic [BaseIntgWidth-1:0] rf_base_wr_data_intg;
+  logic                     rf_base_wr_data_intg_sel;
   logic [4:0]               rf_base_rd_addr_a;
   logic                     rf_base_rd_en_a;
   logic [BaseIntgWidth-1:0] rf_base_rd_data_a_intg;
@@ -107,11 +110,11 @@ module otbn_core
   insn_subset_e             lsu_req_subset;
   logic [DmemAddrWidth-1:0] lsu_addr;
 
-  logic [31:0]              lsu_base_wdata;
-  logic [WLEN-1:0]          lsu_bignum_wdata;
+  logic [BaseIntgWidth-1:0] lsu_base_wdata;
+  logic [ExtWLEN-1:0]       lsu_bignum_wdata;
 
-  logic [31:0]              lsu_base_rdata;
-  logic [WLEN-1:0]          lsu_bignum_rdata;
+  logic [BaseIntgWidth-1:0] lsu_base_rdata;
+  logic [ExtWLEN-1:0]       lsu_bignum_rdata;
   logic                     lsu_rdata_err;
 
   logic [WdrAw-1:0]   rf_bignum_wr_addr;
@@ -267,19 +270,21 @@ module otbn_core
     .insn_dec_shared_i (insn_dec_shared),
 
     // To/from base register file
-    .rf_base_wr_addr_o         (rf_base_wr_addr),
-    .rf_base_wr_en_o           (rf_base_wr_en),
-    .rf_base_wr_commit_o       (rf_base_wr_commit),
-    .rf_base_wr_data_no_intg_o (rf_base_wr_data_no_intg),
-    .rf_base_rd_addr_a_o       (rf_base_rd_addr_a),
-    .rf_base_rd_en_a_o         (rf_base_rd_en_a),
-    .rf_base_rd_data_a_intg_i  (rf_base_rd_data_a_intg),
-    .rf_base_rd_addr_b_o       (rf_base_rd_addr_b),
-    .rf_base_rd_en_b_o         (rf_base_rd_en_b),
-    .rf_base_rd_data_b_intg_i  (rf_base_rd_data_b_intg),
-    .rf_base_rd_commit_o       (rf_base_rd_commit),
-    .rf_base_call_stack_err_i  (rf_base_call_stack_err),
-    .rf_base_rd_data_err_i     (rf_base_rd_data_err),
+    .rf_base_wr_addr_o          (rf_base_wr_addr),
+    .rf_base_wr_en_o            (rf_base_wr_en),
+    .rf_base_wr_commit_o        (rf_base_wr_commit),
+    .rf_base_wr_data_no_intg_o  (rf_base_wr_data_no_intg),
+    .rf_base_wr_data_intg_o     (rf_base_wr_data_intg),
+    .rf_base_wr_data_intg_sel_o (rf_base_wr_data_intg_sel),
+    .rf_base_rd_addr_a_o        (rf_base_rd_addr_a),
+    .rf_base_rd_en_a_o          (rf_base_rd_en_a),
+    .rf_base_rd_data_a_intg_i   (rf_base_rd_data_a_intg),
+    .rf_base_rd_addr_b_o        (rf_base_rd_addr_b),
+    .rf_base_rd_en_b_o          (rf_base_rd_en_b),
+    .rf_base_rd_data_b_intg_i   (rf_base_rd_data_b_intg),
+    .rf_base_rd_commit_o        (rf_base_rd_commit),
+    .rf_base_call_stack_err_i   (rf_base_call_stack_err),
+    .rf_base_rd_data_err_i      (rf_base_rd_data_err),
 
     // To/from bignunm register file
     .rf_bignum_wr_addr_o          (rf_bignum_wr_addr),
@@ -348,6 +353,7 @@ module otbn_core
     .dmem_addr_o,
     .dmem_wdata_o,
     .dmem_wmask_o,
+    .dmem_rmask_o,
     .dmem_rdata_i,
     .dmem_rvalid_i,
     .dmem_rerror_i,
@@ -376,8 +382,8 @@ module otbn_core
     .wr_addr_i          (rf_base_wr_addr),
     .wr_en_i            (rf_base_wr_en),
     .wr_data_no_intg_i  (rf_base_wr_data_no_intg),
-    .wr_data_intg_i     ('0),
-    .wr_data_intg_sel_i (1'b0),
+    .wr_data_intg_i     (rf_base_wr_data_intg),
+    .wr_data_intg_sel_i (rf_base_wr_data_intg_sel),
     .wr_commit_i        (rf_base_wr_commit),
 
     .rd_addr_a_i      (rf_base_rd_addr_a),

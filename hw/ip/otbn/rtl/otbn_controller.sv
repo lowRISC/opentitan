@@ -45,10 +45,12 @@ module otbn_controller
   input insn_dec_shared_t     insn_dec_shared_i,
 
   // Base register file
-  output logic [4:0]   rf_base_wr_addr_o,
-  output logic         rf_base_wr_en_o,
-  output logic         rf_base_wr_commit_o,
-  output logic [31:0]  rf_base_wr_data_no_intg_o,
+  output logic [4:0]               rf_base_wr_addr_o,
+  output logic                     rf_base_wr_en_o,
+  output logic                     rf_base_wr_commit_o,
+  output logic [31:0]              rf_base_wr_data_no_intg_o,
+  output logic [BaseIntgWidth-1:0] rf_base_wr_data_intg_o,
+  output logic                     rf_base_wr_data_intg_sel_o,
 
   output logic [4:0]               rf_base_rd_addr_a_o,
   output logic                     rf_base_rd_en_a_o,
@@ -102,11 +104,11 @@ module otbn_controller
   output insn_subset_e             lsu_req_subset_o,
   output logic [DmemAddrWidth-1:0] lsu_addr_o,
 
-  output logic [31:0]              lsu_base_wdata_o,
-  output logic [WLEN-1:0]          lsu_bignum_wdata_o,
+  output logic [BaseIntgWidth-1:0] lsu_base_wdata_o,
+  output logic [ExtWLEN-1:0]       lsu_bignum_wdata_o,
 
-  input  logic [31:0]              lsu_base_rdata_i,
-  input  logic [WLEN-1:0]          lsu_bignum_rdata_i,
+  input  logic [BaseIntgWidth-1:0] lsu_base_rdata_i,
+  input  logic [ExtWLEN-1:0]       lsu_bignum_rdata_i,
   input  logic                     lsu_rdata_err_i,
 
   // Internal Special-Purpose Registers (ISPRs)
@@ -492,17 +494,28 @@ module otbn_controller
   assign rf_base_wr_commit_o = insn_executing & ~err;
 
   always_comb begin
+    // Write data mux for anything that needs integrity computing during register write
     unique case (insn_dec_base_i.rf_wdata_sel)
       RfWdSelEx:     rf_base_wr_data_no_intg_o = alu_base_operation_result_i;
-      RfWdSelLsu:    rf_base_wr_data_no_intg_o = lsu_base_rdata_i;
       RfWdSelNextPc: rf_base_wr_data_no_intg_o = {{(32-(ImemAddrWidth+1)){1'b0}},
                                                   next_insn_addr_wide};
       RfWdSelIspr:   rf_base_wr_data_no_intg_o = csr_rdata;
       RfWdSelIncr:   rf_base_wr_data_no_intg_o = increment_out;
       default:       rf_base_wr_data_no_intg_o = alu_base_operation_result_i;
     endcase
-  end
 
+    // Write data mux for anything that provides its own integrity
+    unique case (insn_dec_base_i.rf_wdata_sel)
+      RfWdSelLsu: begin
+        rf_base_wr_data_intg_sel_o = 1'b1;
+        rf_base_wr_data_intg_o     = lsu_base_rdata_i;
+      end
+      default: begin
+        rf_base_wr_data_intg_sel_o = 1'b0;
+        rf_base_wr_data_intg_o     = '0;
+      end
+    endcase
+  end
 
   for (genvar i = 0; i < BaseWordsPerWLEN; ++i) begin : g_rf_bignum_rd_data
     assign rf_bignum_rd_data_a_no_intg[i * 32 +: 32] = rf_bignum_rd_data_a_intg_i[i * 39 +: 32];
@@ -596,11 +609,10 @@ module otbn_controller
 
   always_comb begin
     // Write data mux for anything that needs integrity computing during register write
-    // TODO: ISPR/LSU data will go via direct mux below once integrity has been implemented for
+    // TODO: ISPR data will go via direct mux below once integrity has been implemented for
     // them.
     unique case (insn_dec_bignum_i.rf_wdata_sel)
       RfWdSelEx:   rf_bignum_wr_data_no_intg_o = alu_bignum_operation_result_i;
-      RfWdSelLsu:  rf_bignum_wr_data_no_intg_o = lsu_bignum_rdata_i;
       RfWdSelIspr: rf_bignum_wr_data_no_intg_o = ispr_rdata_i;
       RfWdSelMac:  rf_bignum_wr_data_no_intg_o = mac_bignum_rf_wr_data;
       default:     rf_bignum_wr_data_no_intg_o = alu_bignum_operation_result_i;
@@ -611,6 +623,10 @@ module otbn_controller
       RfWdSelMovSel: begin
         rf_bignum_wr_data_intg_sel_o = 1'b1;
         rf_bignum_wr_data_intg_o     = selection_result;
+      end
+      RfWdSelLsu: begin
+        rf_bignum_wr_data_intg_sel_o = 1'b1;
+        rf_bignum_wr_data_intg_o     = lsu_bignum_rdata_i;
       end
       default: begin
         rf_bignum_wr_data_intg_sel_o = 1'b0;
@@ -766,8 +782,8 @@ module otbn_controller
   assign lsu_req_subset_o = insn_dec_shared_i.subset;
 
   assign lsu_addr_o         = alu_base_operation_result_i[DmemAddrWidth-1:0];
-  assign lsu_base_wdata_o   = rf_base_rd_data_b_no_intg;
-  assign lsu_bignum_wdata_o = rf_bignum_rd_data_b_no_intg;
+  assign lsu_base_wdata_o   = rf_base_rd_data_b_intg_i;
+  assign lsu_bignum_wdata_o = rf_bignum_rd_data_b_intg_i;
 
   assign dmem_addr_unaligned_bignum =
       (lsu_req_subset_o == InsnSubsetBignum) & (|lsu_addr_o[$clog2(WLEN/8)-1:0]);

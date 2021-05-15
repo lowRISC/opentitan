@@ -25,25 +25,26 @@ module otbn_lsu
   input logic rst_ni,
 
   // Data memory (DMEM) interface
-  output logic                     dmem_req_o,
-  output logic                     dmem_write_o,
-  output logic [DmemAddrWidth-1:0] dmem_addr_o,
-  output logic [WLEN-1:0]          dmem_wdata_o,
-  output logic [WLEN-1:0]          dmem_wmask_o,
-  input  logic [WLEN-1:0]          dmem_rdata_i,
-  input  logic                     dmem_rvalid_i,
-  input  logic                     dmem_rerror_i,
+  output logic                        dmem_req_o,
+  output logic                        dmem_write_o,
+  output logic [DmemAddrWidth-1:0]    dmem_addr_o,
+  output logic [ExtWLEN-1:0]          dmem_wdata_o,
+  output logic [ExtWLEN-1:0]          dmem_wmask_o,
+  output logic [BaseWordsPerWLEN-1:0] dmem_rmask_o,
+  input  logic [ExtWLEN-1:0]          dmem_rdata_i,
+  input  logic                        dmem_rvalid_i,
+  input  logic                        dmem_rerror_i,
 
   input  logic                     lsu_load_req_i,
   input  logic                     lsu_store_req_i,
   input  insn_subset_e             lsu_req_subset_i,
   input  logic [DmemAddrWidth-1:0] lsu_addr_i,
 
-  input  logic [31:0]              lsu_base_wdata_i,
-  input  logic [WLEN-1:0]          lsu_bignum_wdata_i,
+  input  logic [BaseIntgWidth-1:0] lsu_base_wdata_i,
+  input  logic [ExtWLEN-1:0]       lsu_bignum_wdata_i,
 
-  output logic [31:0]              lsu_base_rdata_o,
-  output logic [WLEN-1:0]          lsu_bignum_rdata_o,
+  output logic [BaseIntgWidth-1:0] lsu_base_rdata_o,
+  output logic [ExtWLEN-1:0]       lsu_bignum_rdata_o,
   output logic                     lsu_rdata_err_o
 );
   localparam int BaseWordsPerWLen = WLEN / 32;
@@ -52,8 +53,8 @@ module otbn_lsu
   // Produce a WLEN bit mask for 32-bit writes given the 32-bit word write address. This doesn't
   // propagate X so a seperate assertion must be used to check the input isn't X when a valid output
   // is desired.
-  function automatic logic [WLEN-1:0] mask_from_word_addr(logic [BaseWordAddrW-1:2] addr);
-    logic [WLEN-1:0] mask;
+  function automatic logic [ExtWLEN-1:0] wmask_from_word_addr(logic [BaseWordAddrW-1:2] addr);
+    logic [ExtWLEN-1:0] mask;
 
     mask = '0;
 
@@ -62,7 +63,23 @@ module otbn_lsu
     // for the comparison (so mask will remain 0).
     for (int i = 0; i < BaseWordsPerWLen; i++) begin
       if (addr == i) begin
-        mask[i*32+:32] = 32'hFFFFFFFF;
+        mask[i*BaseIntgWidth+:BaseIntgWidth] = '1;
+      end
+    end
+
+    return mask;
+  endfunction
+
+  function automatic logic [BaseWordsPerWLEN-1:0]
+      rmask_from_word_addr(logic [BaseWordAddrW-1:2] addr);
+
+    logic [BaseWordsPerWLEN-1:0] mask;
+
+    mask = '0;
+
+    for (int i = 0; i < BaseWordsPerWLen; i++) begin
+      if (addr == i) begin
+        mask[i] = 1'b1;
       end
     end
 
@@ -82,7 +99,10 @@ module otbn_lsu
     {BaseWordsPerWLen{lsu_base_wdata_i}} : lsu_bignum_wdata_i;
 
   assign dmem_wmask_o = lsu_req_subset_i == InsnSubsetBase ?
-    mask_from_word_addr(lsu_addr_i[BaseWordAddrW-1:2]) : {WLEN{1'b1}};
+    wmask_from_word_addr(lsu_addr_i[BaseWordAddrW-1:2]) : {ExtWLEN{1'b1}};
+
+  assign dmem_rmask_o = lsu_req_subset_i == InsnSubsetBase ?
+    rmask_from_word_addr(lsu_addr_i[BaseWordAddrW-1:2]) : {BaseWordsPerWLEN{1'b1}};
 
   // Store a portion of the address to select a 32-bit word from the WLEN load data when it returns
   // the cycle following the request.
@@ -95,12 +115,12 @@ module otbn_lsu
   end
 
   // From the WLEN word read from DMem select out a 32-bit word for base instructions.
-  for (genvar i_bit = 0; i_bit < 32; i_bit++) begin : g_base_rdata
+  for (genvar i_bit = 0; i_bit < BaseIntgWidth; i_bit++) begin : g_base_rdata
     logic [BaseWordsPerWLen-1:0] bit_mux;
 
     for (genvar j_word = 0; j_word < BaseWordsPerWLen; j_word++) begin : g_bit_mux
       assign bit_mux[j_word] =
-        (lsu_word_select == j_word) & dmem_rdata_i[i_bit + j_word * 32];
+        (lsu_word_select == j_word) & dmem_rdata_i[i_bit + j_word * BaseIntgWidth];
     end
 
     assign lsu_base_rdata_o[i_bit] = |bit_mux;

@@ -173,14 +173,25 @@ module otbn
     .wmask_i  (imem_wmask),
     .rdata_o  (imem_rdata),
     .rvalid_o (imem_rvalid),
-    .rerror_o (imem_rerror_vec),
+    .rerror_o (),
     .cfg_i    (ram_cfg_i)
   );
 
+  // Seperate check for imem read data integrity outside of `u_imem` as `prim_ram_1p_adv` doesn't
+  // have functionality for only integrity checking, just fully integrated ECC.
+  prim_secded_39_32_dec u_imem_intg_check (
+    .data_i     (imem_rdata),
+    .data_o     (),
+    .syndrome_o (),
+    .err_o      (imem_rerror_vec)
+  );
+
+  // imem_rerror is only reported for reads from OTBN. For Ibex reads integrity checking on TL
+  // responses will serve the same purpose.
   // imem_rerror_vec is 2 bits wide and is used to report ECC errors. Bit 1 is set if there's an
   // uncorrectable error and bit 0 is set if there's a correctable error. However, we're treating
   // all errors as fatal, so OR the two signals together.
-  assign imem_rerror = |imem_rerror_vec;
+  assign imem_rerror = |imem_rerror_vec & imem_rvalid & imem_access_core;
 
   // IMEM access from main TL-UL bus
   logic imem_gnt_bus;
@@ -267,17 +278,15 @@ module otbn
   logic [ExtWLEN-1:0] dmem_wmask;
   logic [ExtWLEN-1:0] dmem_rdata;
   logic dmem_rvalid;
-  logic [1:0] dmem_rerror_vec;
+  logic [BaseWordsPerWLEN*2-1:0] dmem_rerror_vec;
   logic dmem_rerror;
 
   logic dmem_req_core;
   logic dmem_write_core;
   logic [DmemIndexWidth-1:0] dmem_index_core;
-  logic [WLEN-1:0] dmem_wdata_core_nointeg;
-  logic [WLEN-1:0] dmem_wmask_core_nointeg;
-  logic [WLEN-1:0] dmem_rdata_core_nointeg;
   logic [ExtWLEN-1:0] dmem_wdata_core;
   logic [ExtWLEN-1:0] dmem_wmask_core;
+  logic [BaseWordsPerWLEN-1:0] dmem_rmask_core_q, dmem_rmask_core_d;
   logic [ExtWLEN-1:0] dmem_rdata_core;
   logic dmem_rvalid_core;
   logic dmem_rerror_core;
@@ -313,9 +322,39 @@ module otbn
     .wmask_i  (dmem_wmask),
     .rdata_o  (dmem_rdata),
     .rvalid_o (dmem_rvalid),
-    .rerror_o (dmem_rerror_vec),
+    .rerror_o (),
     .cfg_i    (ram_cfg_i)
   );
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      dmem_rmask_core_q <= '0;
+    end else begin
+      if (dmem_req_core) begin
+        dmem_rmask_core_q <= dmem_rmask_core_d;
+      end
+    end
+  end
+
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; ++i_word) begin : g_dmem_intg_check
+    logic [1:0] dmem_rerror_raw;
+
+    // Seperate check for dmem read data integrity outside of `u_dmem` as `prim_ram_1p_adv` doesn't
+    // have functionality for only integrity checking, just fully integrated ECC. Integrity bits are
+    // implemented on a 32-bit granule so seperate checks are required for each.
+    prim_secded_39_32_dec u_dmem_intg_check (
+      .data_i     (dmem_rdata),
+      .data_o     (),
+      .syndrome_o (),
+      .err_o      (dmem_rerror_raw)
+    );
+
+    // Only report an error where the word was actually accessed. Otherwise uninitialised memory
+    // that OTBN isn't using will cause false errors. dmem_rerror is only reported for reads from
+    // OTBN. For Ibex reads integrity checking on TL responses will serve the same purpose.
+    assign dmem_rerror_vec[i_word*2 +: 2] = dmem_rerror_raw &
+        {2{dmem_rmask_core_q[i_word] & dmem_rvalid & dmem_access_core}};
+  end
 
   // Combine uncorrectable / correctable errors. See note above definition of imem_rerror for
   // details.
@@ -378,6 +417,25 @@ module otbn
   logic unused_dmem_top_rdata;
   assign unused_dmem_top_rdata = &{1'b0, dmem_rdata[ExtWLEN-1:WLEN]};
 
+  // TODO: Integrity for dmem/imem calculated here, remove this once end to end integrity from Ibex
+  // writes has been enabled
+  //
+
+  tlul_pkg::tl_h2d_t tl_h2d_intg;
+  logic [38:0] tl_h2d_data_intg;
+  logic        unused_tl_h2d_data_intg;
+
+  prim_secded_39_32_enc u_otbn_mem_intg_gen (
+    .data_i(tl_i.a_data),
+    .data_o(tl_h2d_data_intg)
+  );
+
+  always_comb begin
+    tl_h2d_intg = tl_i;
+    tl_h2d_intg.a_user.data_intg = tl_h2d_data_intg[38:32];
+    unused_tl_h2d_data_intg = ^tl_h2d_data_intg[31:0];
+  end
+
   // Registers =================================================================
 
   logic reg_bus_integrity_error;
@@ -385,7 +443,7 @@ module otbn
   otbn_reg_top u_reg (
     .clk_i,
     .rst_ni (rst_n),
-    .tl_i,
+    .tl_i(tl_h2d_intg),
     .tl_o,
     .tl_win_o (tl_win_h2d),
     .tl_win_i (tl_win_d2h),
@@ -627,9 +685,10 @@ module otbn
       .dmem_req_o    (dmem_req_core),
       .dmem_write_o  (dmem_write_core),
       .dmem_addr_o   (dmem_addr_core),
-      .dmem_wdata_o  (dmem_wdata_core_nointeg),
-      .dmem_wmask_o  (dmem_wmask_core_nointeg),
-      .dmem_rdata_i  (dmem_rdata_core_nointeg),
+      .dmem_wdata_o  (dmem_wdata_core),
+      .dmem_wmask_o  (dmem_wmask_core),
+      .dmem_rmask_o  (dmem_rmask_core_d),
+      .dmem_rdata_i  (dmem_rdata_core),
       .dmem_rvalid_i (dmem_rvalid_core),
       .dmem_rerror_i (dmem_rerror_core),
 
@@ -669,9 +728,10 @@ module otbn
       .dmem_req_o      (dmem_req_core),
       .dmem_write_o    (dmem_write_core),
       .dmem_addr_o     (dmem_addr_core),
-      .dmem_wdata_o    (dmem_wdata_core_nointeg),
-      .dmem_wmask_o    (dmem_wmask_core_nointeg),
-      .dmem_rdata_i    (dmem_rdata_core_nointeg),
+      .dmem_wdata_o    (dmem_wdata_core),
+      .dmem_wmask_o    (dmem_wmask_core),
+      .dmem_rmask_o    (dmem_rmask_core_d),
+      .dmem_rdata_i    (dmem_rdata_core),
       .dmem_rvalid_i   (dmem_rvalid_core),
       .dmem_rerror_i   (dmem_rerror_core),
 
@@ -687,18 +747,6 @@ module otbn
 
   // The core can never signal a write to IMEM
   assign imem_write_core = 1'b0;
-
-  // The core doesn't currently handle the integrity bits that we will insert into the memory.
-  // Convert between its view and that of the actual SRAM macro here.
-  logic [BaseWordsPerWLEN-1:0] unused_rdata_core_integrity;
-  for (genvar i = 0; i < BaseWordsPerWLEN; i++) begin: gen_core_dmem_adapter
-    assign dmem_wdata_core[i*39 +: 39] = {7'd0, dmem_wdata_core_nointeg[i*32 +: 32]};
-    assign dmem_wmask_core[i*39 +: 39] = {{7{dmem_wmask_core_nointeg[i*32]}},
-                                          dmem_wmask_core_nointeg[i*32 +: 32]};
-    assign dmem_rdata_core_nointeg[i*32 +: 32] = dmem_rdata_core[i*39 +: 32];
-    assign unused_rdata_core_integrity[i] = &{dmem_rdata_core[i*39 + 32 +: 7]};
-  end
-
 
   // LFSR ======================================================================
 
