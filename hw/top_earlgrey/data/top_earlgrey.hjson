@@ -934,7 +934,8 @@
       // LC function control signal broadcast
       'lc_ctrl.lc_dft_en'          : ['otp_ctrl.lc_dft_en',
                                       'pinmux_aon.lc_dft_en',
-                                      'ast.lc_dft_en'
+                                      'ast.lc_dft_en',
+                                      'clkmgr_aon.lc_dft_en'
                                      ],
       'lc_ctrl.lc_nvm_debug_en'    : ['eflash.lc_nvm_debug_en'],
       'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',

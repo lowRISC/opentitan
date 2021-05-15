@@ -2481,6 +2481,8 @@
           act: rcv
           width: 1
           inst_name: clkmgr_aon
+          default: ""
+          top_signame: lc_ctrl_lc_dft_en
           index: -1
         }
         {
@@ -5975,6 +5977,7 @@
         otp_ctrl.lc_dft_en
         pinmux_aon.lc_dft_en
         ast.lc_dft_en
+        clkmgr_aon.lc_dft_en
       ]
       lc_ctrl.lc_nvm_debug_en:
       [
@@ -12938,6 +12941,8 @@
         act: rcv
         width: 1
         inst_name: clkmgr_aon
+        default: ""
+        top_signame: lc_ctrl_lc_dft_en
         index: -1
       }
       {
