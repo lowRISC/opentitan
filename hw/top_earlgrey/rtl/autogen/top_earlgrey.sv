@@ -1685,7 +1685,7 @@ module top_earlgrey #(
 
       // Inter-module signals
       .clocks_o(clkmgr_aon_clocks),
-      .lc_dft_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
+      .lc_dft_en_i(lc_ctrl_lc_dft_en),
       .ast_clk_byp_req_o(ast_clk_byp_req_o),
       .ast_clk_byp_ack_i(ast_clk_byp_ack_i),
       .lc_clk_byp_req_i(lc_ctrl_lc_clk_byp_req),
