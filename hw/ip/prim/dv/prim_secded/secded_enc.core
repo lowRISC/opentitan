@@ -1,0 +1,18 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+name: "lowrisc:dv:secded_enc"
+description: "Hsiao SECDED encode reference C implementation"
+filesets:
+  files_dv:
+    files:
+      - secded_enc.h: {is_include_file: true}
+      - secded_enc.c
+    file_type: cSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
