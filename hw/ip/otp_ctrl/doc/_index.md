@@ -319,8 +319,6 @@ Signal                       | Direction        | Type                        | 
 `pwr_otp_o`                  | `output`         | `pwrmgr::pwr_otp_rsp_t`     | Initialization response and programming idle state going to power manager.
 `lc_otp_program_i`           | `input`          | `lc_otp_program_req_t`      | Life cycle state transition request.
 `lc_otp_program_o`           | `output`         | `lc_otp_program_rsp_t`      | Life cycle state transition response.
-`lc_otp_token_i`             | `input`          | `lc_otp_token_req_t`        | Life cycle RAW unlock token hashing request.
-`lc_otp_token_o`             | `output`         | `lc_otp_token_rsp_t`        | Life cycle RAW unlock token hashing response.
 `lc_escalate_en_i`           | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Life cycle escalation enable coming from life cycle controller. This signal moves all FSMs within OTP into the error state and triggers secret wiping mechanisms in the secret partitions.
 `lc_check_byp_en_i`          | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Life cycle partition check bypass signal. This signal causes the life cycle partition to bypass consistency checks during life cycle state transitions in order to prevent spurious consistency check failures.
 `lc_creator_seed_sw_rw_en_i` | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Provision enable qualifier coming from life cycle controller. This signal enables SW read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
@@ -360,7 +358,7 @@ See also [power manager documentation]({{< relref "hw/ip/pwrmgr/doc" >}}).
 
 #### Life Cycle Interfaces
 
-The interface to the life cycle controller can be split into three functional sub-interfaces (state output, state transitions, token hashing), and these are explained in more detail below.
+The interface to the life cycle controller can be split into three functional sub-interfaces (state output, state transitions), and these are explained in more detail below.
 Note that the OTP and life cycle controllers are supposed to be in the same clock domain, hence no additional signal synchronization is required.
 See also [life cycle controller documentation]({{< relref "hw/ip/lc_ctrl/doc" >}}) for more details.
 
@@ -414,22 +412,6 @@ An error is fatal and indicates that the OTP programming operation has failed.
 
 Note that the new state must not clear any bits that have already been programmed to OTP - i.e., the new state must be incrementally programmable on top of the previous state.
 There are hence some implications on the life cycle encoding due to the ECC employed, see [life cycle state encoding]({{< relref "hw/ip/lc_ctrl/doc/_index.md#life-cycle-manufacturing-state-encodings" >}}) for details.
-
-##### Token Hashing
-
-The OTP controller implements a [PRESENT-based one-way function]({{< relref "#scrambling-datapath" >}}) on 128bit to compute the partition digests.
-This function is reused for the RAW unlock process (see [life cycle docs]({{< relref "hw/ip/lc_ctrl/doc" >}}) for more info), and can be accessed via `lc_otp_token_i`, `lc_otp_token_o`.
-The expected timining is illustrated below:
-
-{{< wavejson >}}
-{signal: [
-  {name: 'clk_i',                          wave: 'p.......'},
-  {name: 'lc_otp_token_i.req',             wave: '01.|..0.'},
-  {name: 'lc_otp_token_i.token_input',     wave: '03.|..0.'},
-  {name: 'lc_otp_token_o.ack',             wave: '0..|.10.'},
-  {name: 'lc_otp_token_o.hashed_token',    wave: '0..|.40.'},
-]}
-{{< /wavejson >}}
 
 #### Interface to Key Manager
 
@@ -616,7 +598,7 @@ In case of unrecoverable OTP errors, the FSM signals an error to the life cycle 
 ![Key Derivation Interface FSM](otp_ctrl_kdi_fsm.svg)
 
 Upon reset release the KDI FSM waits until the OTP controller has initialized and the KDI gets enabled.
-Once it is in the idle state, key derivation and token hashing can be requested via the [token hashing]({{< relref "#token-hashing" >}}), [flash]({{< relref "#interface-to-flash-scrambler" >}}) and [sram]({{< relref "#interface-to-sram-and-otbn-scramblers" >}}) interfaces.
+Once it is in the idle state, key derivation can be requested via the [flash]({{< relref "#interface-to-flash-scrambler" >}}) and [sram]({{< relref "#interface-to-sram-and-otbn-scramblers" >}}) interfaces.
 Based on which interface makes the request, the KDI controller will evaluate a variant of the PRESENT digest mechanism as described in more detail below.
 
 ### Scrambling Datapath
@@ -644,20 +626,10 @@ Then, the data to be digested is split into 128bit chunks, each of which is used
 Chunks that are not aligned with 128bit are padded with zero, and the finalization operation consists of another 31-round encryption pass with a finalization constant.
 Note that both the IV as well as the finalization constant are global netlist constants chosen by the silicon creator.
 
-#### Unlock Token Hashing
-
-The unlock hashing function is used by the life cycle controller to pass the RAW unlock token through a one-way function before performing the actual token comparison with the netlist constant.
-This makes it harder to reverse engineer and break the RAW unlock process since in addition to extracting the hashed RAW unlock token, an attacker would have to invert the one-way function (or find a collision).
-The hash process is similar to the digest calculation, and uses the PRESENT primitive in a Merkle-Damgard construction to reduce the 128bit token into two 64bit hash-halves as illustrated in subfigure c).
-
-
-Due the PRESENT primitive being a 64bit cipher, the hash produced in this manner is essentially 64bit in strength, which would make the two 64bit halves susceptible to brute-force collision attacks if they where computed completely independently.
-To that end, the second 64bit halve is computed in a chained way by using the first 64bit halve as IV input.
-
 #### Scrambling Key Derivation
 
-The key derivation functions for ephemeral SRAM and static FLASH scrambling keys employ a similar construction as the digest calculation and token hashing functions.
-In particular, the keys are derived by repeatedly reducing a (partially random) block of data into a 64bit block, as illustrated in subfigures d) and e).
+The key derivation functions for ephemeral SRAM and static FLASH scrambling keys employ a similar construction as the digest calculation function.
+In particular, the keys are derived by repeatedly reducing a (partially random) block of data into a 64bit block, as illustrated in subfigures c) and d).
 
 For ephemeral SRAM scrambling keys, the data block is composed of the 128bit SRAM_DATA_KEY_SEED stored in OTP, as well as 128bit of fresh entropy fetched from the CSRNG.
 This process is repeated twice in order to produce a 128bit key.
