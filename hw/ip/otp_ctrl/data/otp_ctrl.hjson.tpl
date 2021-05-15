@@ -216,14 +216,6 @@
       default: "'0"
       package: "otp_ctrl_pkg"
     }
-    // LC token hashing command
-    { struct:  "lc_otp_token"
-      type:    "req_rsp"
-      name:    "lc_otp_token"
-      act:     "rsp"
-      default: "'0"
-      package: "otp_ctrl_pkg"
-    }
     // Broadcast to LC
     { struct:  "otp_lc_data"
       type:    "uni"

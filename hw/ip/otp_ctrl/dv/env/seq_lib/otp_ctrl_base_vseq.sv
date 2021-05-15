@@ -470,30 +470,6 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     if (check_intr) rd_and_clear_intrs();
   endtask
 
-  virtual task req_lc_token(bit blocking = default_req_blocking);
-    if (cfg.m_lc_token_pull_agent_cfg.vif.req === 1'b1) return;
-
-    if (blocking) begin
-      req_lc_token_sub();
-    end else begin
-      fork
-        begin
-          req_lc_token_sub();
-        end
-      join_none;
-      // Add #0 to ensure that this thread starts executing before any subsequent call
-      #0;
-    end
-  endtask
-
-  virtual task req_lc_token_sub();
-    push_pull_host_seq#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) lc_token_pull_seq;
-    wait(cfg.under_reset == 0);
-    `uvm_create_on(lc_token_pull_seq, p_sequencer.lc_token_pull_sequencer_h);
-    `DV_CHECK_RANDOMIZE_FATAL(lc_token_pull_seq)
-    `uvm_send(lc_token_pull_seq)
-  endtask
-
   // This test access OTP_CTRL's test_access memory. The open-sourced code only test if the access
   // is valid. Please override this task in proprietary OTP.
   virtual task otp_test_access();

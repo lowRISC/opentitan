@@ -919,7 +919,9 @@
       // OTP LC interface
       'otp_ctrl.otp_lc_data'   : ['lc_ctrl.otp_lc_data'],
       'lc_ctrl.lc_otp_program' : ['otp_ctrl.lc_otp_program'],
-      'lc_ctrl.lc_otp_token'   : ['otp_ctrl.lc_otp_token'],
+      // TODO: wire this up again once this has been reworked to
+      // use KMAC interface.
+      //'lc_ctrl.lc_otp_token'   : [],
 
       // HW_CFG broadcast
       'otp_ctrl.otp_hw_cfg'    : ['csrng.otp_hw_cfg', 'entropy_src.otp_hw_cfg',

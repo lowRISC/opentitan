@@ -52,11 +52,6 @@
             // The other digest configurations below are used for
             // key derivation and token hashing.
             {
-                name:       "LcRawDigest",
-                iv_value:   "<random>",
-                cnst_value: "<random>",
-            }
-            {
                 name:       "FlashDataKey",
                 iv_value:   "<random>",
                 cnst_value: "<random>",

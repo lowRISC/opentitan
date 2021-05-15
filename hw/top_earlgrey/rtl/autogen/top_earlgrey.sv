@@ -518,8 +518,6 @@ module top_earlgrey #(
   otp_ctrl_pkg::otp_lc_data_t       otp_ctrl_otp_lc_data;
   otp_ctrl_pkg::lc_otp_program_req_t       lc_ctrl_lc_otp_program_req;
   otp_ctrl_pkg::lc_otp_program_rsp_t       lc_ctrl_lc_otp_program_rsp;
-  otp_ctrl_pkg::lc_otp_token_req_t       lc_ctrl_lc_otp_token_req;
-  otp_ctrl_pkg::lc_otp_token_rsp_t       lc_ctrl_lc_otp_token_rsp;
   otp_ctrl_part_pkg::otp_hw_cfg_t       otp_ctrl_otp_hw_cfg;
   lc_ctrl_pkg::lc_keymgr_div_t       lc_ctrl_lc_keymgr_div;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
@@ -1505,8 +1503,6 @@ module top_earlgrey #(
       .pwr_otp_o(pwrmgr_aon_pwr_otp_rsp),
       .lc_otp_program_i(lc_ctrl_lc_otp_program_req),
       .lc_otp_program_o(lc_ctrl_lc_otp_program_rsp),
-      .lc_otp_token_i(lc_ctrl_lc_otp_token_req),
-      .lc_otp_token_o(lc_ctrl_lc_otp_token_rsp),
       .otp_lc_data_o(otp_ctrl_otp_lc_data),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_creator_seed_sw_rw_en_i(lc_ctrl_lc_creator_seed_sw_rw_en),
@@ -1558,8 +1554,8 @@ module top_earlgrey #(
       .otp_lc_data_i(otp_ctrl_otp_lc_data),
       .lc_otp_program_o(lc_ctrl_lc_otp_program_req),
       .lc_otp_program_i(lc_ctrl_lc_otp_program_rsp),
-      .lc_otp_token_o(lc_ctrl_lc_otp_token_req),
-      .lc_otp_token_i(lc_ctrl_lc_otp_token_rsp),
+      .lc_otp_token_o(),
+      .lc_otp_token_i('0),
       .lc_dft_en_o(lc_ctrl_lc_dft_en),
       .lc_nvm_debug_en_o(lc_ctrl_lc_nvm_debug_en),
       .lc_hw_debug_en_o(lc_ctrl_lc_hw_debug_en),

@@ -37,8 +37,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE))) flash_data_fifo;
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE)))
                         lc_prog_fifo;
-  uvm_tlm_analysis_fifo #(push_pull_item#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)))
-                        lc_token_fifo;
 
   // local queues to hold incoming packets pending comparison
 
@@ -53,7 +51,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     flash_addr_fifo = new("flash_addr_fifo", this);
     flash_data_fifo = new("flash_data_fifo", this);
     lc_prog_fifo    = new("lc_prog_fifo", this);
-    lc_token_fifo   = new("lc_token_fifo", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -65,7 +62,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     fork
       process_otp_power_up();
       process_lc_esc();
-      process_lc_token_req();
       process_lc_prog_req();
       process_edn_req();
       check_otbn_rsp();
@@ -249,23 +245,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_EQ(rcv_item.d_data, exp_err_bit)
 
       if (cfg.en_cov) cov.lc_prog_cg.sample(exp_err_bit);
-    end
-  endtask
-
-  virtual task process_lc_token_req();
-    forever begin
-      push_pull_item#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) rcv_item;
-      bit [SCRAMBLE_DATA_SIZE-1:0] exp_data_0, exp_data_1;
-      lc_token_fifo.get(rcv_item);
-      exp_data_0 = present_encode_with_final_const(
-                   .data(RndCnstDigestIV[LcRawDigest]),
-                   .key(rcv_item.h_data),
-                   .final_const(RndCnstDigestConst[LcRawDigest]));
-      exp_data_1 = present_encode_with_final_const(
-                   .data(exp_data_0),
-                   .key(rcv_item.h_data),
-                   .final_const(RndCnstDigestConst[LcRawDigest]));
-      `DV_CHECK_EQ(rcv_item.d_data, {exp_data_1, exp_data_0}, "lc_token_encode_mismatch")
     end
   endtask
 
@@ -785,7 +764,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
     flash_addr_fifo.flush();
     flash_data_fifo.flush();
     lc_prog_fifo.flush();
-    lc_token_fifo.flush();
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin
       sram_fifos[i].flush();
     end
@@ -824,7 +802,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                  cfg.m_sram_pull_agent_cfg[0].vif.req ||
                  cfg.m_sram_pull_agent_cfg[1].vif.req ||
                  cfg.m_lc_prog_pull_agent_cfg.vif.req ||
-                 cfg.m_lc_token_pull_agent_cfg.vif.req ||
                  // When lc_escalation is on, the DAI interface goes to ErrorSt, so ignore
                  // otp_idle checking.
                  cfg.otp_ctrl_vif.alert_reqs ||

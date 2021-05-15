@@ -1353,18 +1353,6 @@
           index: -1
         }
         {
-          name: lc_otp_token
-          struct: lc_otp_token
-          package: otp_ctrl_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          default: "'0"
-          inst_name: otp_ctrl
-          top_signame: lc_ctrl_lc_otp_token
-          index: -1
-        }
-        {
           name: otp_lc_data
           struct: otp_lc_data
           package: otp_ctrl_pkg
@@ -1680,8 +1668,6 @@
           width: 1
           default: "'0"
           inst_name: lc_ctrl
-          end_idx: -1
-          top_signame: lc_ctrl_lc_otp_token
           index: -1
         }
         {
@@ -5970,10 +5956,6 @@
       lc_ctrl.lc_otp_program:
       [
         otp_ctrl.lc_otp_program
-      ]
-      lc_ctrl.lc_otp_token:
-      [
-        otp_ctrl.lc_otp_token
       ]
       otp_ctrl.otp_hw_cfg:
       [
@@ -12045,18 +12027,6 @@
         index: -1
       }
       {
-        name: lc_otp_token
-        struct: lc_otp_token
-        package: otp_ctrl_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        default: "'0"
-        inst_name: otp_ctrl
-        top_signame: lc_ctrl_lc_otp_token
-        index: -1
-      }
-      {
         name: otp_lc_data
         struct: otp_lc_data
         package: otp_ctrl_pkg
@@ -12314,8 +12284,6 @@
         width: 1
         default: "'0"
         inst_name: lc_ctrl
-        end_idx: -1
-        top_signame: lc_ctrl_lc_otp_token
         index: -1
       }
       {
@@ -16933,28 +16901,6 @@
         package: otp_ctrl_pkg
         struct: lc_otp_program_rsp
         signame: lc_ctrl_lc_otp_program_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: rsp
-        default: "'0"
-      }
-      {
-        package: otp_ctrl_pkg
-        struct: lc_otp_token_req
-        signame: lc_ctrl_lc_otp_token_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: req
-        default: ""
-      }
-      {
-        package: otp_ctrl_pkg
-        struct: lc_otp_token_rsp
-        signame: lc_ctrl_lc_otp_token_rsp
         width: 1
         type: req_rsp
         end_idx: -1
