@@ -40,7 +40,6 @@
   // dw_8 is only used for "smoke" sims, so coverage collection is not needed.
   prim_lfsr_dw_8_vcs_cov_cfg_file: ""
   prim_lfsr_dw_24_vcs_cov_cfg_file: "-cm_hier {proj_root}/hw/ip/prim/dv/prim_lfsr/data/prim_lfsr_cover.cfg"
-  vcs_cov_assert_cfg_file: "-cm_assert_hier {proj_root}/hw/ip/prim/dv/prim_lfsr/data/prim_lfsr_cover_assert.cfg"
 
   prim_lfsr_dw_8_xcelium_cov_cfg_file: ""
   prim_lfsr_dw_24_xcelium_cov_cfg_file: ""
