@@ -206,12 +206,9 @@
   cov_metrics: "line+cond+fsm+tgl+branch+assert"
 
   // Supply the cov configuration file.
-  // Note that this needs to be set as -cm_hier <file>.
+  // Note that this needs to be set as `-cm_hier <file>`.
+  // Include hierarchies for both code coverage and assertions.
   vcs_cov_cfg_file: ""
-
-  // Supply the cov configuration file for assertions.
-  // Note that this needs to be set as -cm_assert_hier <file>.
-  vcs_cov_assert_cfg_file: ""
 
   // Supply the cov exclusion files.
   vcs_cov_excl_files: []
@@ -239,8 +236,7 @@
                    "-cm {cov_metrics}",
                    // Set the coverage hierarchy
                    "{vcs_cov_cfg_file}",
-                   // Set the assert coverage hierarchy
-                   "{vcs_cov_assert_cfg_file}",
+                   "-cm_common_hier",
                    // Cover all continuous assignments
                    "-cm_line contassign",
                    // Dump toggle coverage on mdas, array of structs and on ports only

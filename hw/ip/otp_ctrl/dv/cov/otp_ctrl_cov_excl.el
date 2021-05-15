@@ -88,6 +88,3 @@ INSTANCE: tb.dut.u_otp_ctrl_dai
 Fsm error_q "2961818352"
 ANNOTATION: "[UNR]: this error state is a terminal state"
 Transition FsmStateError->AccessError "7->5"
-CHECKSUM: "3767637819"
-ANNOTATION: "[EXTERNAL] alert_sender is fully verified by FPV testbench."
-MODULE:prim_diff_decode

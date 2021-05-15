@@ -74,10 +74,6 @@
     }
   ]
 
-  // Set the vcs_cov_assert_hier to supply the chip specific assertion coverage
-  // hierarchies.
-  vcs_cov_assert_hier: "-cm_assert_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_assert_cover.cfg"
-
   // Default iterations for all tests - each test entry can override this.
   reseed: 1
 
