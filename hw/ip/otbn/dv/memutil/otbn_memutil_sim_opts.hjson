@@ -8,6 +8,9 @@
   memutil_dpi_core: "lowrisc:dv_verilator:memutil_dpi:0"
   memutil_dpi_src_dir: "{eval_cmd} echo \"{memutil_dpi_core}\" | tr ':' '_'"
 
+  secded_enc_core: "lowrisc:dv:secded_enc:0"
+  secded_enc_src_dir: "{eval_cmd} echo \"{secded_enc_core}\" | tr ':' '_'"
+
   otbn_memutil_core: "lowrisc:dv:otbn_memutil:0"
   otbn_memutil_src_dir: "{eval_cmd} echo \"{otbn_memutil_core}\" | tr ':' '_'"
 
@@ -16,6 +19,7 @@
       name: vcs_otbn_memutil_build_opts
       build_opts: ["-CFLAGS -I{build_dir}/src/{memutil_dpi_src_dir}/cpp",
                    "-CFLAGS -I{build_dir}/src/{otbn_memutil_src_dir}",
+                   "-CFLAGS -I{build_dir}/src/{secded_enc_src_dir}",
                    "-lelf"]
     }
 
@@ -23,6 +27,7 @@
       name: xcelium_otbn_memutil_build_opts
       build_opts: ["-I{build_dir}/src/{memutil_dpi_src_dir}/cpp",
                    "-I{build_dir}/src/{otbn_memutil_src_dir}",
+                   "-I{build_dir}/src/{secded_enc_src_dir}",
                    "-lelf"]
     }
   ]
