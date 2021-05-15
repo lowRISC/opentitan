@@ -105,12 +105,12 @@ To ensure the security of token limits cannot be bypassed, each request for a co
 
 ### Token Hashing Mechanism
 
+**TODO: revise this and switch to KMAC**
+
 All 128bit lock and unlock tokens are passed through a cryptographic one way function in hardware before the life cycle controller compares them to the provisioned values in OTP or to the netlist constant in case of RAW_UNLOCK.
 
 This mechanism is used to guard against reverse engineering and brute-forcing attempts.
 An attacker able to extract the hashed token values from the scrambled OTP partitions or from the netlist would first have to find a hash collision in order to perform a life cycle transition, since the values supplied to the life cycle controller must be valid hash pre-images.
-
-The token hashing mechanism leverages the PRESENT cipher primitive in order to construct a 128bit -> 128bit hashing function via a Merkle-Damgard construction, as described in the [OTP specification]({{< relref "hw/ip/otp_ctrl/doc/_index.md#unlock-token-hashing" >}}).
 
 ### Post Transition Handling
 
