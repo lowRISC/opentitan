@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "ecc32_mem_area.h"
+#include "secded_enc.h"
 
 #include <cassert>
 #include <cstring>
@@ -51,7 +52,7 @@ void Ecc32MemArea::WriteBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
     // the check bits go in byte 4. Bytes 5 to 7 are zero.
     expanded_t next;
     memcpy(next.bytes, &data[start_idx + 4 * i], 4);
-    next.bytes[4] = 0;
+    next.bytes[4] = enc_secded_39_32(next.bytes);
     expanded[i] = next;
   }
 
