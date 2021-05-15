@@ -53,12 +53,12 @@ interface otbn_trace_if
   input logic [ImemAddrWidth-1:0] insn_fetch_resp_addr,
   input logic                     insn_fetch_resp_valid,
 
-  input logic                      dmem_req_o,
-  input logic                      dmem_write_o,
-  input logic [DmemAddrWidth-1:0]  dmem_addr_o,
-  input logic [otbn_pkg::WLEN-1:0] dmem_wdata_o,
-  input logic [otbn_pkg::WLEN-1:0] dmem_wmask_o,
-  input logic [otbn_pkg::WLEN-1:0] dmem_rdata_i,
+  input logic                         dmem_req_o,
+  input logic                         dmem_write_o,
+  input logic [DmemAddrWidth-1:0]     dmem_addr_o,
+  input logic [otbn_pkg::ExtWLEN-1:0] dmem_wdata_o,
+  input logic [otbn_pkg::ExtWLEN-1:0] dmem_wmask_o,
+  input logic [otbn_pkg::ExtWLEN-1:0] dmem_rdata_i,
 
   input otbn_pkg::ispr_e                 ispr_addr,
   input logic                            ispr_init,
@@ -128,15 +128,16 @@ interface otbn_trace_if
     end
   end
 
-  for (genvar i = 0; i < BaseWordsPerWLEN; ++i) begin : g_strip_intg
+  for (genvar i = 0; i < BaseWordsPerWLEN; ++i) begin : g_bignum_rf_strip_intg
     // u_otbn_rf_bignum.wr_data_no_intg is final write data heading to the register file, which
     // includes the integrity, this needs to be stripped off for tracing.
     assign rf_bignum_wr_data_no_intg[i*32 +: 32] =
-        u_otbn_rf_bignum.wr_data_intg_mux_out[i * 39 +: 32];
+        u_otbn_rf_bignum.wr_data_intg_mux_out[i * BaseIntgWidth +: 32];
     // Extract data currently in the register file for the current write address, stripping off
     // integrity. This is used to determine the final value for the whole register when doing half
     // register writes.
-    assign rf_bignum_wr_old_data[i*32 +: 32] = bignum_rf[rf_bignum_wr_addr][i * 39 +: 32];
+    assign rf_bignum_wr_old_data[i*32 +: 32] =
+        bignum_rf[rf_bignum_wr_addr][i * BaseIntgWidth +: 32];
   end
 
   for (genvar i = 0; i < 2; i++) begin : g_rf_bignum_wr_data
@@ -165,11 +166,20 @@ interface otbn_trace_if
   assign dmem_write      = dmem_req_o & dmem_write_o;
   assign dmem_write_addr = dmem_wlen_aligned_addr;
 
-  assign dmem_write_data = dmem_wdata_o;
-  assign dmem_write_mask = dmem_wmask_o;
+  // Remove interleaved integrity bits from memory read and write data
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_mem_strip_intg
+    logic unused_intg;
+
+    assign dmem_write_data[i_word*32 +: 32] = dmem_wdata_o[i_word*BaseIntgWidth +: 32];
+    assign dmem_write_mask[i_word*32 +: 32] = dmem_wmask_o[i_word*BaseIntgWidth +: 32];
+    assign dmem_read_data [i_word*32 +: 32] = dmem_rdata_i[i_word*BaseIntgWidth +: 32];
+
+    assign unused_intg = (|dmem_wdata_o[i_word*BaseIntgWidth+32 +: BaseIntgWidth-32]) |
+      (|dmem_wmask_o[i_word* BaseIntgWidth+32 +: BaseIntgWidth-32]) |
+      (|dmem_rdata_i[i_word* BaseIntgWidth+32 +: BaseIntgWidth-32]);
+  end
 
   // TODO: Tracing for read errors
-  assign dmem_read_data  = dmem_rdata_i;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

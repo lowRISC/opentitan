@@ -38,9 +38,6 @@ module otbn_top_sim (
   logic                     dmem_req;
   logic                     dmem_write;
   logic [DmemAddrWidth-1:0] dmem_addr;
-  logic [WLEN-1:0]          dmem_wdata_nointeg;
-  logic [WLEN-1:0]          dmem_wmask_nointeg;
-  logic [WLEN-1:0]          dmem_rdata_nointeg;
   logic [ExtWLEN-1:0]       dmem_wdata;
   logic [ExtWLEN-1:0]       dmem_wmask;
   logic [ExtWLEN-1:0]       dmem_rdata;
@@ -59,50 +56,41 @@ module otbn_top_sim (
     .ImemSizeByte ( ImemSizeByte ),
     .DmemSizeByte ( DmemSizeByte )
   ) u_otbn_core (
-    .clk_i           ( IO_CLK             ),
-    .rst_ni          ( IO_RST_N           ),
+    .clk_i           ( IO_CLK           ),
+    .rst_ni          ( IO_RST_N         ),
 
-    .start_i         ( otbn_start         ),
-    .done_o          ( otbn_done_d        ),
+    .start_i         ( otbn_start       ),
+    .done_o          ( otbn_done_d      ),
 
-    .err_bits_o      ( otbn_err_bits_d    ),
+    .err_bits_o      ( otbn_err_bits_d  ),
 
-    .start_addr_i    ( ImemStartAddr      ),
+    .start_addr_i    ( ImemStartAddr    ),
 
-    .imem_req_o      ( imem_req           ),
-    .imem_addr_o     ( imem_addr          ),
-    .imem_wdata_o    (                    ),
-    .imem_rdata_i    ( imem_rdata[31:0]   ),
-    .imem_rvalid_i   ( imem_rvalid        ),
-    .imem_rerror_i   ( imem_rerror        ),
+    .imem_req_o      ( imem_req         ),
+    .imem_addr_o     ( imem_addr        ),
+    .imem_wdata_o    (                  ),
+    .imem_rdata_i    ( imem_rdata[31:0] ),
+    .imem_rvalid_i   ( imem_rvalid      ),
+    .imem_rerror_i   ( imem_rerror      ),
 
-    .dmem_req_o      ( dmem_req           ),
-    .dmem_write_o    ( dmem_write         ),
-    .dmem_addr_o     ( dmem_addr          ),
-    .dmem_wdata_o    ( dmem_wdata_nointeg ),
-    .dmem_wmask_o    ( dmem_wmask_nointeg ),
-    .dmem_rdata_i    ( dmem_rdata_nointeg ),
-    .dmem_rvalid_i   ( dmem_rvalid        ),
-    .dmem_rerror_i   ( dmem_rerror        ),
+    .dmem_req_o      ( dmem_req         ),
+    .dmem_write_o    ( dmem_write       ),
+    .dmem_addr_o     ( dmem_addr        ),
+    .dmem_wdata_o    ( dmem_wdata       ),
+    .dmem_wmask_o    ( dmem_wmask       ),
+    .dmem_rmask_o    ( ),
+    .dmem_rdata_i    ( dmem_rdata       ),
+    .dmem_rvalid_i   ( dmem_rvalid      ),
+    .dmem_rerror_i   ( dmem_rerror      ),
 
-    .edn_rnd_req_o   ( edn_rnd_req        ),
-    .edn_rnd_ack_i   ( edn_rnd_ack        ),
-    .edn_rnd_data_i  ( edn_rnd_data       ),
+    .edn_rnd_req_o   ( edn_rnd_req      ),
+    .edn_rnd_ack_i   ( edn_rnd_ack      ),
+    .edn_rnd_data_i  ( edn_rnd_data     ),
 
-    .edn_urnd_req_o  ( edn_urnd_req       ),
-    .edn_urnd_ack_i  ( edn_urnd_ack       ),
-    .edn_urnd_data_i ( edn_urnd_data      )
+    .edn_urnd_req_o  ( edn_urnd_req     ),
+    .edn_urnd_ack_i  ( edn_urnd_ack     ),
+    .edn_urnd_data_i ( edn_urnd_data    )
   );
-
-  // The core doesn't currently handle the integrity bits that we will insert into the memory.
-  // Convert between its view and that of the actual SRAM macro here.
-  logic [BaseWordsPerWLEN-1:0] unused_rdata_integrity;
-  for (genvar i = 0; i < BaseWordsPerWLEN; i++) begin: gen_dmem_adapter
-    assign dmem_wdata[i*39 +: 39] = {7'd0, dmem_wdata_nointeg[i*32 +: 32]};
-    assign dmem_wmask[i*39 +: 39] = {{7{dmem_wmask_nointeg[i*32]}}, dmem_wmask_nointeg[i*32 +: 32]};
-    assign dmem_rdata_nointeg[i*32 +: 32] = dmem_rdata[i*39 +: 32];
-    assign unused_rdata_integrity[i] = &{dmem_rdata[i*39 + 32 +: 7]};
-  end
 
   // The top bits of IMEM rdata aren't currently used (they will eventually be used for integrity
   // checks both on the bus and within the core)
