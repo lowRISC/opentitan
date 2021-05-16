@@ -32,41 +32,21 @@
  * clobbered flag groups: none
  */
 setup_barrett_p:
-  /* load field modulus p =
-     w29 = p = 2^256 - 2^224 + 2^192 + 2^96 - 1
-     0xFFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF */
-  sw        x0, 524(x0)
-  sw        x0, 528(x0)
-  sw        x0, 532(x0)
-  addi      x2, x0, 1
-  sw        x2, 536(x0)
-  addi      x2, x0, -1
-  sw        x2, 512(x0)
-  sw        x2, 516(x0)
-  sw        x2, 520(x0)
-  sw        x2, 540(x0)
-  addi      x2, x0, 29
-  bn.lid    x2, 512(x0)
+
+  /* load field modulus p from dmem
+     w29 <= p = dmem[p256_p] */
+  li        x2, 29
+  la        x3, p256_p
+  bn.lid    x2, 0(x3)
 
   /* store modulus to MOD WSR */
   bn.wsrw   0, w29
 
-  /* load Barrett constant u (lower 256 bit only)
-     w28 = u = floor(2^512/p)[255:0] =
-     0X00000000FFFFFFFFFFFFFFFEFFFFFFFEFFFFFFFEFFFFFFFF0000000000000003*/
-  sw        x0, 548(x0)
-  sw        x0, 572(x0)
-  addi      x2, x0, -1
-  sw        x2, 552(x0)
-  sw        x2, 568(x0)
-  addi      x2, x0, 3
-  sw        x2, 544(x0)
-  addi      x2, x0, -2
-  sw        x2, 556(x0)
-  sw        x2, 560(x0)
-  sw        x2, 564(x0)
-  addi      x2, x0, 28
-  bn.lid    x2, 544(x0)
+  /* load lower 256 bit of Barrett constant u for modulus p from dmem
+     w28 <= u = dmem[p256_u_p] */
+  li        x2, 28
+  la        x3, p256_u_p
+  bn.lid    x2, 0(x3)
 
   ret
 
@@ -96,8 +76,6 @@ setup_barrett_p:
  * clobbered flag groups: none
  */
 p256_init:
-  addi      x3, x0, 31
-  bn.lid    x3, 0(x0)
 
   /* init all-zero register */
   bn.xor    w31, w31, w31
@@ -108,35 +86,11 @@ p256_init:
   /* setup modulus and corresponding Barrett constant */
   jal       x1, setup_barrett_p
 
-  /* load domain parameter b via dmem
-     w27 = b
-     b = 0X5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B */
-  lui       x2, 163110
-  addi      x2, x2, 75
-  sw        x2, 576(x0)
-  lui       x2, 244964
-  addi      x2, x2, -962
-  sw        x2, 580(x0)
-  lui       x2, 836923
-  addi      x2, x2, 246
-  sw        x2, 584(x0)
-  lui       x2, 414160
-  addi      x2, x2, 1712
-  sw        x2, 588(x0)
-  lui       x2, 485768
-  addi      x2, x2, 1724
-  sw        x2, 592(x0)
-  lui       x2, 736956
-  addi      x2, x2, -683
-  sw        x2, 596(x0)
-  lui       x2, 697257
-  addi      x2, x2, 999
-  sw        x2, 600(x0)
-  lui       x2, 371811
-  addi      x2, x2, 1496
-  sw        x2, 604(x0)
-  addi      x2, x0, 27
-  bn.lid    x2, 576(x0)
+  /* load domain parameter b from dmem
+     w27 <= b = dmem[p256_b] */
+  li        x2, 27
+  la        x3, p256_b
+  bn.lid    x2, 0(x3)
 
   ret
 
@@ -1079,57 +1033,21 @@ proj_double:
  * clobbered flag groups: none
  */
 setup_barrett_n:
+
   /* load order of base point G of P-256
-     w29 = n =
-     0XFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551 */
-  addi      x2, x0, 0
-  sw        x2, 632(x0)
-  addi      x2, x2, -1
-  sw        x2, 624(x0)
-  sw        x2, 628(x0)
-  sw        x2, 636(x0)
-  lui       x2, 1033778
-  addi      x2, x2, 1361
-  sw        x2, 608(x0)
-  lui       x2, 998301
-  addi      x2, x2, -1342
-  sw        x2, 612(x0)
-  lui       x2, 684410
-  addi      x2, x2, -380
-  sw        x2, 616(x0)
-  lui       x2, 773744
-  addi      x2, x2, -1363
-  sw        x2, 620(x0)
-  addi      x2, x0, 29
-  bn.lid    x2, 608(x0)
+     w29 <= n = dmem[p256_n] */
+  li        x2, 29
+  la        x3, p256_n
+  bn.lid    x2, 0(x3)
 
   /* store n to MOD WSR */
   bn.wsrw   0, w29
 
-  /* load Barrett constant u (lower 256 bit only)
-     w28 = u_n = floor(2^512/n)[255:0] =
-     0X00000000FFFFFFFFFFFFFFFEFFFFFFFF43190552DF1A6C21012FFD85EEDF9BFE */
-  addi      x2, x0, 0
-  sw        x2, 668(x0)
-  addi      x2, x0, -1
-  sw        x2, 656(x0)
-  sw        x2, 664(x0)
-  addi      x2, x0, -2
-  sw        x2, 660(x0)
-  lui       x2, 978426
-  addi      x2, x2, -1026
-  sw        x2, 640(x0)
-  lui       x2, 4864
-  addi      x2, x2, -635
-  sw        x2, 644(x0)
-  lui       x2, 913831
-  addi      x2, x2, -991
-  sw        x2, 648(x0)
-  lui       x2, 274832
-  addi      x2, x2, 1362
-  sw        x2, 652(x0)
-  addi      x2, x0, 28
-  bn.lid    x2, 640(x0)
+  /* load lower 256 bit of Barrett constant u for n from dmem
+     w28 <= u = dmem[p256_u_n] */
+  li        x2, 28
+  la        x3, p256_u_n
+  bn.lid    x2, 0(x3)
 
   ret
 
@@ -1309,69 +1227,22 @@ scalar_mult_int:
  * @param[out]  w8: x_g, base point affine x-coordinate
  * @param[out]  w9: y_g, base point affine y-coordinate
  *
- * clobbered registers: x2, w8, w9
+ * clobbered registers: x2, x3, w8, w9
  * clobbered flag groups: none
  */
 load_basepoint:
+
   /* load base point x-coordinate
-     w8 = x_g =
-     0X6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296 */
-  lui       x2, 887180
-  addi      x2, x2, 662
-  sw        x2, 672(x0)
-  lui       x2, 1002004
-  addi      x2, x2, -1723
-  sw        x2, 676(x0)
-  lui       x2, 188083
-  addi      x2, x2, 928
-  sw        x2, 680(x0)
-  lui       x2, 487480
-  addi      x2, x2, -639
-  sw        x2, 684(x0)
-  lui       x2, 408132
-  addi      x2, x2, 242
-  sw        x2, 688(x0)
-  lui       x2, 1018830
-  addi      x2, x2, 1765
-  sw        x2, 692(x0)
-  lui       x2, 922308
-  addi      x2, x2, 583
-  sw        x2, 696(x0)
-  lui       x2, 438653
-  addi      x2, x2, 498
-  sw        x2, 700(x0)
-  addi      x2, x0, 8
-  bn.lid    x2, 672(x0)
+     w8 <= g_x = dmem [p256_gx] */
+  li        x2, 8
+  la        x3, p256_gx
+  bn.lid    x2, 0(x3)
 
   /* load base point y-coordinate
-     w9 = y_g =
-     0X4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5 */
-  lui       x2, 228341
-  addi      x2, x2, 501
-  sw        x2, 704(x0)
-  lui       x2, 834404
-  addi      x2, x2, 104
-  sw        x2, 708(x0)
-  lui       x2, 439062
-  addi      x2, x2, -306
-  sw        x2, 712(x0)
-  lui       x2, 179427
-  addi      x2, x2, 855
-  sw        x2, 716(x0)
-  lui       x2, 508154
-  addi      x2, x2, -490
-  sw        x2, 720(x0)
-  lui       x2, 585343
-  addi      x2, x2, -1206
-  sw        x2, 724(x0)
-  lui       x2, 1040808
-  addi      x2, x2, -101
-  sw        x2, 728(x0)
-  lui       x2, 327220
-  addi      x2, x2, 738
-  sw        x2, 732(x0)
-  addi      x2, x0, 9
-  bn.lid    x2, 704(x0)
+     w9 <= g_y = dmem [p256_gy] */
+  li        x2, 9
+  la        x3, p256_gy
+  bn.lid    x2, 0(x3)
 
   ret
 
@@ -1393,7 +1264,7 @@ load_basepoint:
  *
  * @param[in]  dmem[0]: dptr_k, pointer to a 256 bit random secret in dmem
  * @param[in]  dmem[4]: dptr_rnd, pointer to location in dmem containing random
- *                        number for blinding
+ *                                number for blinding
  * @param[in]  dmem[8]: dptr_msg, pointer to the message to be signed in dmem
  * @param[in]  dmem[12]: dptr_r, pointer to dmem location where s component
  *                               of signature will be placed
@@ -2052,3 +1923,90 @@ p256_scalarmult:
   bn.sid    x11++, 0(x22)
 
   ret
+
+.section .data
+
+
+/* P-256 domain parameter b */
+.globl p256_b
+p256_b:
+  .word 0x27d2604b
+  .word 0x3bce3c3e
+  .word 0xcc53b0f6
+  .word 0x651d06b0
+  .word 0x769886bc
+  .word 0xb3ebbd55
+  .word 0xaa3a93e7
+  .word 0x5ac635d8
+
+/* P-256 domain parameter p (modulus) */
+.globl p256_p
+p256_p:
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000001
+  .word 0xffffffff
+
+/* Barrett constant u for modulus p */
+.globl p256_u_p
+p256_u_p:
+  .word 0x00000003
+  .word 0x00000000
+  .word 0xffffffff
+  .word 0xfffffffe
+  .word 0xfffffffe
+  .word 0xfffffffe
+  .word 0xffffffff
+  .word 0x00000000
+
+/* P-256 domain parameter n (order of base point) */
+.globl p256_n
+p256_n:
+  .word 0xfc632551
+  .word 0xf3b9cac2
+  .word 0xa7179e84
+  .word 0xbce6faad
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0x00000000
+  .word 0xffffffff
+
+/* Barrett constant u for n */
+.globl p256_u_n
+p256_u_n:
+  .word 0xeedf9bfe
+  .word 0x012ffd85
+  .word 0xdf1a6c21
+  .word 0x43190552
+  .word 0xffffffff
+  .word 0xfffffffe
+  .word 0xffffffff
+  .word 0x00000000
+
+/* P-256 basepoint G affine x-coordinate */
+.globl p256_gx
+p256_gx:
+  .word 0xd898c296
+  .word 0xf4a13945
+  .word 0x2deb33a0
+  .word 0x77037d81
+  .word 0x63a440f2
+  .word 0xf8bce6e5
+  .word 0xe12c4247
+  .word 0x6b17d1f2
+
+/* P-256 basepoint G affine y-coordinate */
+.globl p256_gy
+p256_gy:
+  .word 0x37bf51f5
+  .word 0xcbb64068
+  .word 0x6b315ece
+  .word 0x2bce3357
+  .word 0x7c0f9e16
+  .word 0x8ee7eb4a
+  .word 0xfe1a7f9b
+  .word 0x4fe342e2
