@@ -96,7 +96,7 @@ def on_step(sim: OTBNSim, args: List[str]) -> None:
         print('STALL')
     else:
         print(f'E PC: {pc:#010x}, insn: {insn.raw:#010x}')
-        print(f'# {insn.insn.mnemonic}')
+        print(f'# @{pc:#010x}: {insn.insn.mnemonic}')
 
     for change in changes:
         entry = change.rtl_trace()

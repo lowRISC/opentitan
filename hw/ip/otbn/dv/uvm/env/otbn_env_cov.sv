@@ -80,4 +80,23 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     insn_cg = new;
   endfunction
 
+  // Handle coverage for an instruction that was executed
+  //
+  // Almost all the tracking is done based on rtl_item, which comes from the DUT. Our only use for
+  // iss_item is to extract the instruction mnemonic (to avoid needing it, we'd have to implement a
+  // decoder in the coverage code, which doesn't seem like the right thing to do).
+  //
+  function void on_insn(otbn_model_item iss_item, otbn_trace_item rtl_item);
+    // Since iss_item and rtl_item have come in separately, we do a quick check here to make sure
+    // they actually match the same instruction.
+    `DV_CHECK_EQ(iss_item.insn_addr, rtl_item.insn_addr)
+
+    // iss_item.mnemonic is a "string". We have to cast this to an integral type (mnem_str_t) to use
+    // it for bins in a coverpoint. This type is chosen to be long enough to hold each valid
+    // mnemonic, but it can't hurt to make absolutely sure that nothing overflows.
+    `DV_CHECK_FATAL(iss_item.mnemonic.len() <= MNEM_STR_LEN)
+
+    insn_cg.sample(mnem_str_t'(iss_item.mnemonic));
+  endfunction
+
 endclass

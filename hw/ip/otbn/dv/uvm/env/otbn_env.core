@@ -16,6 +16,8 @@ filesets:
       - lowrisc:dv:otbn_model_agent
     files:
       - otbn_env_pkg.sv
+      - otbn_trace_item.sv: {is_include_file: true}
+      - otbn_trace_monitor.sv: {is_include_file: true}
       - otbn_env_cfg.sv: {is_include_file: true}
       - otbn_env_cov.sv: {is_include_file: true}
       - otbn_virtual_sequencer.sv: {is_include_file: true}

@@ -72,17 +72,19 @@ class otbn_model_monitor extends dv_base_monitor #(
   protected task collect_insns();
     otbn_model_item trans;
 
-    string insn_mnemonic;
+    bit [31:0] insn_addr;
+    string     insn_mnemonic;
 
     // Collect transactions on each clock edge when we are not in reset
     forever begin
       @(posedge cfg.vif.clk_i);
       if (cfg.vif.rst_ni === 1'b1) begin
         // Ask the trace checker for any ISS instruction that has come in since last cycle.
-        if (otbn_trace_checker_pop_iss_insn(insn_mnemonic)) begin
+        if (otbn_trace_checker_pop_iss_insn(insn_addr, insn_mnemonic)) begin
           trans = otbn_model_item::type_id::create("trans");
           trans.item_type = OtbnModelInsn;
           trans.err       = 0;
+          trans.insn_addr = insn_addr;
           trans.mnemonic  = insn_mnemonic;
           analysis_port.write(trans);
         end

@@ -42,6 +42,7 @@ class OtbnIssTraceEntry : public OtbnTraceEntry {
 
   // Fields that are populated from the "special" line for ISS entries
   struct IssData {
+    uint32_t insn_addr;
     std::string mnemonic;
   };
 

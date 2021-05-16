@@ -8,7 +8,8 @@ package otbn_model_agent_pkg;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
 
-  import "DPI-C" function bit otbn_trace_checker_pop_iss_insn(output string mnemonic);
+  import "DPI-C" function bit
+    otbn_trace_checker_pop_iss_insn(output bit [31:0] insn_addr, output string mnemonic);
 
   typedef enum {
     OtbnModelStart,

@@ -10,6 +10,14 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(otbn_scoreboard)
 
   uvm_tlm_analysis_fifo #(otbn_model_item) model_fifo;
+  uvm_tlm_analysis_fifo #(otbn_trace_item) trace_fifo;
+
+  // Queues of trace items copied from the model_fifo and trace_fifo, respectively. These get paired
+  // up in pop_trace_queues(). process_model_fifo and process_trace_fifo copy items from the
+  // (blocking) FIFOs to the queues and then call pop_trace_queues(), which avoids having to poll
+  // the (non-blocking) queues directly.
+  otbn_model_item iss_trace_queue[$];
+  otbn_trace_item rtl_trace_queue[$];
 
   // pending_start_counter is incremented on a TL transaction that should start the model.
   // expect_start_counter is decremented on a model transaction that shows we saw the start signal.
@@ -26,6 +34,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     model_fifo = new("model_fifo", this);
+    trace_fifo = new("trace_fifo", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -36,6 +45,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     super.run_phase(phase);
     fork
       process_model_fifo();
+      process_trace_fifo();
       check_start();
     join_none
   endtask
@@ -114,13 +124,24 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
         OtbnModelInsn: begin
           if (cfg.en_cov) begin
-            `DV_CHECK_FATAL(item.mnemonic.len() <= MNEM_STR_LEN)
-            cov.insn_cg.sample(mnem_str_t'(item.mnemonic));
+            iss_trace_queue.push_back(item);
+            pop_trace_queues();
           end
         end
 
         default: `uvm_fatal(`gfn, $sformatf("Bad item type %0d", item.item_type))
       endcase
+    end
+  endtask
+
+  task process_trace_fifo();
+    otbn_trace_item item;
+    forever begin
+      trace_fifo.get(item);
+      if (cfg.en_cov) begin
+        rtl_trace_queue.push_back(item);
+        pop_trace_queues();
+      end
     end
   endtask
 
@@ -139,5 +160,14 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       end
     end
   endtask
+
+  // Pop from iss_trace_queue and rtl_trace_queue while they both contain an entry
+  function void pop_trace_queues();
+    while ((iss_trace_queue.size() > 0) && (rtl_trace_queue.size() > 0)) begin
+      otbn_model_item iss_item = iss_trace_queue.pop_front();
+      otbn_trace_item rtl_item = rtl_trace_queue.pop_front();
+      cov.on_insn(iss_item, rtl_item);
+    end
+  endfunction
 
 endclass
