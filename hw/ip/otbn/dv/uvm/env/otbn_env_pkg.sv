@@ -53,7 +53,9 @@ package otbn_env_pkg;
 
   // package sources
   `include "otbn_env_cfg.sv"
+  `include "otbn_trace_item.sv"
   `include "otbn_env_cov.sv"
+  `include "otbn_trace_monitor.sv"
   `include "otbn_virtual_sequencer.sv"
   `include "otbn_scoreboard.sv"
   `include "otbn_env.sv"

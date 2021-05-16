@@ -84,6 +84,7 @@ module tb;
 
   bind otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
+  bind otbn_core otbn_trace_uvm_injector u_trace_injector (.otbn_trace(i_otbn_trace_if));
 
   // OTBN model, wrapping an ISS.
   //

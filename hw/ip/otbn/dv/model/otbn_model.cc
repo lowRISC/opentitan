@@ -16,6 +16,7 @@
 #include "otbn_memutil.h"
 #include "otbn_trace_checker.h"
 #include "sv_scoped.h"
+#include "sv_utils.h"
 
 // Read (the start of) the contents of a file at path as a vector of bytes.
 // Expects num_bytes bytes of data. On failure, throws a std::runtime_error.
@@ -226,15 +227,6 @@ static void set_rnd_data(uint32_t dst[8], const svLogicVecVal src[8]) {
   }
 }
 
-// Pack uint32_t-based error bitfield into a SystemVerilog bit vector that
-// represents a "bit [31:0]" (as in the SV prototype of otbn_model_step)
-static void set_err_bits(svBitVecVal *dst, uint32_t src) {
-  for (int i = 0; i < 32; ++i) {
-    svBit bit = (src >> i) & 1;
-    svPutBitselBit(dst, i, bit);
-  }
-}
-
 static bool is_xz(svLogic l) { return l == sv_x || l == sv_z; }
 
 // Step once in the model. Returns 1 if the model has finished, 0 if not and -1
@@ -272,8 +264,8 @@ static int step_model(OtbnModel &model, svLogic edn_rnd_data_valid,
         return -1;
 
       case 1:
-        // The simulation has stopped. Extract err_bits
-        set_err_bits(err_bits, ret.second);
+        // The simulation has stopped. Fill in err_bits
+        set_sv_u32(err_bits, ret.second);
         return 1;
 
       case 0:

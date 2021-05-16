@@ -12,6 +12,9 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
 
   `uvm_object_new
 
+  // Handle used by otbn_trace_monitor
+  virtual otbn_trace_if trace_vif;
+
   // The directory in which to look for ELF files (set by the test in build_phase; controlled by the
   // +otbn_elf_dir plusarg).
   string otbn_elf_dir;
@@ -28,6 +31,9 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   // memories. The default value matches the block-level testbench, but it can be overridden in a
   // test class for e.g. system level tests.
   string dut_instance_hier = "tb.dut";
+
+  // Copied from dv_base_agent_cfg so that we can use a monitor without defining a separate agent.
+  int ok_to_end_delay_ns = 1000;
 
   function void initialize(bit [31:0] csr_base_addr = '1);
     // Tell the CIP base code not to look for a "devmode" interface. OTBN doesn't have one.

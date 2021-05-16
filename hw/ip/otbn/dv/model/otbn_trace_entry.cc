@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <regex>
 #include <sstream>
 
 void OtbnTraceEntry::from_rtl_trace(const std::string &trace) {
@@ -61,6 +62,9 @@ bool OtbnIssTraceEntry::from_iss_trace(const std::vector<std::string> &lines) {
   // lines); state 2 = read writes
   int state = 0;
 
+  std::regex re("# @0x([0-9a-f]{8}): (.*)");
+  std::smatch match;
+
   for (const std::string &line : lines) {
     switch (state) {
       case 0:
@@ -72,15 +76,19 @@ bool OtbnIssTraceEntry::from_iss_trace(const std::vector<std::string> &lines) {
         // This some "special" extra data from the ISS that we use for
         // functional coverage calculations. The line should be of the form
         //
-        //  # MNEMONIC
+        //  # @ADDR: MNEMONIC
         //
-        if (line.size() <= 2 || line[0] != '#' || line[1] != ' ') {
+        // where ADDR is an 8-digit instruction address (in hex) and mnemonic
+        // is the string mnemonic.
+        if (!std::regex_match(line, match, re)) {
           std::cerr << "Bad 'special' line for ISS trace with header `" << hdr_
                     << "': `" << line << "'.\n";
           return false;
         }
-        data_.mnemonic = line.substr(2);
-
+        assert(match.size() == 3);
+        data_.insn_addr =
+            (uint32_t)strtoul(match[1].str().c_str(), nullptr, 16);
+        data_.mnemonic = match[2].str();
         state = 2;
         break;
 

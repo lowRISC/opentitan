@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "otbn_trace_source.h"
+#include "sv_utils.h"
 
 static std::unique_ptr<OtbnTraceChecker> trace_checker;
 
@@ -236,13 +237,14 @@ bool OtbnTraceChecker::MatchPair() {
 // Exposed over DPI as:
 //
 //  import "DPI-C" function bit
-//    otbn_trace_checker_pop_iss_insn(output string mnemonic);
+//    otbn_trace_checker_pop_iss_insn(output bit [31:0] insn_addr,
+//                                    output string     mnemonic);
 //
-// Any string output argument will stay valid until the next call to this
+// Any string output argument will stay unchanged until the next call to this
 // function.
 
 extern "C" unsigned char otbn_trace_checker_pop_iss_insn(
-    const char **mnemonic) {
+    svBitVecVal *insn_addr, const char **mnemonic) {
   static char mnemonic_buf[16];
 
   const OtbnIssTraceEntry::IssData *iss_data =
@@ -253,7 +255,9 @@ extern "C" unsigned char otbn_trace_checker_pop_iss_insn(
   assert(iss_data->mnemonic.size() + 1 <= sizeof mnemonic_buf);
   memcpy(mnemonic_buf, iss_data->mnemonic.c_str(),
          iss_data->mnemonic.size() + 1);
-
   *mnemonic = mnemonic_buf;
+
+  set_sv_u32(insn_addr, iss_data->insn_addr);
+
   return 1;
 }
