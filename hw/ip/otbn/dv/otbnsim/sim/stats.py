@@ -275,7 +275,7 @@ class ExecutionStatAnalyzer:
                 f"(no function prologue/epilogue needed)\n")
         out += (f"Overall, {total_calls_req_call} of {total_func_calls} "
                 f"({(total_calls_req_call / total_func_calls * 100):.02f} "
-                f"percent) need full function call semantics.\n")
+                f"percent) calls need full function call semantics.\n")
 
         return out
 
