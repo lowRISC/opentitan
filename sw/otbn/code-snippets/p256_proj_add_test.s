@@ -1,14 +1,15 @@
 /* Copyright lowRISC contributors. */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
-/*
- *   Standalone test for P-256 point addition in projective space
+
+/**
+ * Standalone test for P-256 point addition in projective space
  *
- *   Performs addition of two valid P-256 points in projective space.
- *   Constant coordinates for the two points contained in the .data section.
+ * Performs addition of two valid P-256 points in projective space.
+ * Constant coordinates for the two points contained in the .data section.
  *
- *   See comment at the end of the file for expected values of coordinates
- *   of resulting point.
+ * See comment at the end of the file for expected values of coordinates
+ * of resulting point.
  */
 
 .section .text
