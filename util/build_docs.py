@@ -18,6 +18,7 @@ import re
 import subprocess
 import sys
 import textwrap
+import socket
 from pathlib import Path
 
 import check_tool_requirements
@@ -404,7 +405,7 @@ def install_hugo(install_dir):
     return hugo_bin_path
 
 
-def invoke_hugo(preview, hugo_bin_path):
+def invoke_hugo(preview, bind_wan, hugo_opts, hugo_bin_path):
     site_docs = SRCTREE_TOP.joinpath('site', 'docs')
     config_file = str(site_docs.joinpath('config.toml'))
     layout_dir = str(site_docs.joinpath('layouts'))
@@ -421,6 +422,12 @@ def invoke_hugo(preview, hugo_bin_path):
     ]
     if preview:
         args += ["server"]
+        # --bind-wan only applies when previewing.
+        if bind_wan:
+            args += ["--bind", "0.0.0.0", "--baseURL", "http://"+socket.getfqdn()]
+    if hugo_opts != None:
+        args += hugo_opts
+
     subprocess.run(args, check=True, cwd=str(SRCTREE_TOP))
 
 
@@ -440,10 +447,22 @@ def main():
              changes in the documentation files). This feature is intended
              to preview the documentation locally.""")
     parser.add_argument(
+        '--bind-wan',
+        action='store_true',
+        help="""When previewing, bind to all interfaces (instead of just
+            localhost).  This makes the documentation preview visible from
+            other hosts.""")
+    parser.add_argument(
         '--force-global',
         action='store_true',
         help="""Use a global installation of Hugo. This skips the version
             check and relies on Hugo to be available from the environment.""")
+    parser.add_argument(
+        '--hugo-opts',
+        nargs=argparse.REMAINDER,
+        help="""Indicates that all following arguments should be passed as
+            additional options to hugo.  This may be useful for controlling
+            server bindings and so forth.""")
     parser.add_argument('--hugo', help="""TODO""")
 
     args = parser.parse_args()
@@ -468,7 +487,7 @@ def main():
             pass
 
     try:
-        invoke_hugo(args.preview, hugo_bin_path)
+        invoke_hugo(args.preview, args.bind_wan, args.hugo_opts, hugo_bin_path)
     except subprocess.CalledProcessError:
         sys.exit("Error building site")
     except PermissionError:
