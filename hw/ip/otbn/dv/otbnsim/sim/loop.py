@@ -66,6 +66,7 @@ class LoopStack:
         self.stack = []  # type: List[LoopLevel]
         self.trace = []  # type: List[Trace]
         self.err_flag = False
+        self._pop_stack_on_commit = False
 
     def start_loop(self,
                    start_addr: int,
@@ -109,6 +110,8 @@ class LoopStack:
     def step(self, pc: int) -> Optional[int]:
         '''Update loop stack. If we should loop, return new PC'''
 
+        self._pop_stack_on_commit = False
+
         if self.is_last_insn_in_loop_body(pc):
             assert self.stack
             top = self.stack[-1]
@@ -119,7 +122,7 @@ class LoopStack:
             loop_idx = top.loop_count - top.restarts_left
 
             if not top.restarts_left:
-                self.stack.pop()
+                self._pop_stack_on_commit = True
                 ret_val = None
             else:
                 top.restarts_left -= 1
@@ -138,6 +141,10 @@ class LoopStack:
 
     def commit(self) -> None:
         assert not self.err_flag
+
+        if self._pop_stack_on_commit:
+            self.stack.pop()
+
         self.trace = []
 
     def abort(self) -> None:
