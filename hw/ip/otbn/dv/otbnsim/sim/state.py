@@ -69,7 +69,7 @@ class OTBNState:
         self.loop_stack.start_loop(next_pc, iterations, bodysize)
 
     def loop_step(self) -> None:
-        back_pc = self.loop_stack.step(self.pc + 4)
+        back_pc = self.loop_stack.step(self.pc)
         if back_pc is not None:
             self.pc_next = back_pc
 
