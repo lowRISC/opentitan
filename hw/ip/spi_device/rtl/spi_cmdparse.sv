@@ -38,14 +38,16 @@ module spi_cmdparse
   // pre-assigned index and search opcode. e.g) if cmdslot[0].opcode == 'h03,
   // then if received opcode matches to the cmdslot[0] opcode, then it activates
   // Read Status module as Index 0 is pre-assigned to Read Status.
-  input cmd_info_t [spi_device_reg_pkg::NumCmdInfo-1:0] cmd_info_i,
+  input cmd_info_t [NumCmdInfo-1:0] cmd_info_i,
 
   // control to spi_s2p
   output io_mode_e io_mode_o,
 
   // Activate downstream modules
-  output sel_datapath_e sel_dp_o,
-  output spi_byte_t     opcode_o,
+  // cmd_info_o is a registered output, latched at 8th posedge SCK
+  output sel_datapath_e          sel_dp_o,
+  output cmd_info_t              cmd_info_o,
+  output logic [CmdInfoIdxW-1:0] cmd_info_idx_o,
 
   // Command Config is not implemented yet.
   // Indicator of command config. The pulse is generated at 3rd bit position
@@ -111,7 +113,10 @@ module spi_cmdparse
     // Mailbox is processed in Read Command block.
     StReadCmd,
 
-    StUpload
+    StUpload,
+
+    // If opcode does not matched, FSM moves to here and wait the reset.
+    StWait
   } st_e;
   st_e st, st_d;
 
@@ -139,18 +144,14 @@ module spi_cmdparse
   sel_datapath_e sel_dp;
   assign sel_dp_o = sel_dp;
 
+  // FSM asserts latching enable signal for cmd_info in 8th opcode cycle.
+  logic                   latch_cmdinfo;
+  cmd_info_t              cmd_info_d;
+  logic [CmdInfoIdxW-1:0] cmd_info_idx_d;
+
   // the logic operates only when module_active condition is met
   logic module_active;
   logic in_flashmode, in_passthrough;
-
-  // Opcode out
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      opcode_o <= spi_byte_t'(0);
-    end else if (st == StIdle && data_valid_i) begin
-      opcode_o <=  data_i;
-    end
-  end
 
   // below signals are used in the FSM to determine to activate a certain
   // datapath based on the received input (opcode). The opcode is the SW
@@ -167,6 +168,30 @@ module spi_cmdparse
     opcode_readcmd = 1'b 0;
     for (int unsigned i = CmdInfoReadCmdStart ; i <= CmdInfoReadCmdEnd ; i++) begin
       if (data_i == cmd_info_i[i].opcode) opcode_readcmd = 1'b 1;
+    end
+  end
+
+  // cmd_info latch
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      cmd_info_o     <= '{default: '0};
+      cmd_info_idx_o <= '0;
+    end else if (latch_cmdinfo) begin
+      cmd_info_o     <= cmd_info_d;
+      cmd_info_idx_o <= cmd_info_idx_d;
+    end
+  end
+
+  always_comb begin
+    cmd_info_d     = '{default: '0};
+    cmd_info_idx_d = '0;
+    if ((st == StIdle) && module_active && data_valid_i) begin
+      for (int unsigned i = 0 ; i <= CmdInfoReadCmdEnd ; i++ ) begin
+        if (data_i == cmd_info_i[i].opcode) begin
+          cmd_info_d     = cmd_info_i[i];
+          cmd_info_idx_d = CmdInfoIdxW'(i);
+        end
+      end
     end
   end
 
@@ -192,12 +217,17 @@ module spi_cmdparse
 
     sel_dp = DpNone;
 
+    latch_cmdinfo = 1'b 0;
+
     unique case (st)
       StIdle: begin
         if (module_active && data_valid_i) begin
           // 8th bit is valid here
+          latch_cmdinfo = 1'b 1;
+
           priority case (1'b 1)
             opcode_readstatus: begin
+              // TODO: Check CFG config for passthrough
               st_d = StStatus;
             end
 
@@ -205,17 +235,19 @@ module spi_cmdparse
               if (in_flashmode) begin
                 st_d = StJedec;
               end else begin
-                // TODO: Passthrough ?
-                st_d = StIdle;
+                // TODO: Passthrough ? <= check cfg
+                st_d = StWait;
               end
             end
 
+            // Read SFDP may combine with Read command later
             opcode_readsfdp: begin
               if (in_flashmode) begin
                 st_d = StSfdp;
               end else begin
                 // TODO: Passthrough? Cannot stay in the Idle as it will compare at the next byte
-                st_d = StIdle;
+                // Check passthrough
+                st_d = StWait;
               end
             end
 
@@ -247,7 +279,7 @@ module spi_cmdparse
                 // 8th negedge of SCK.
                 sel_dp = DpUpload;
               end else begin
-                st_d = StIdle;
+                st_d = StWait;
 
                 // DpNone
               end
@@ -266,6 +298,12 @@ module spi_cmdparse
       StReadCmd: sel_dp = DpReadCmd;
 
       StUpload:  sel_dp = DpUpload;
+
+      StWait: begin
+        st_d = StWait;
+
+        sel_dp = DpNone;
+      end
 
       default: begin
         sel_dp = DpNone;

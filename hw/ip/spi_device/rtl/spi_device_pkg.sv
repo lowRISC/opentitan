@@ -112,6 +112,10 @@ package spi_device_pkg;
     // field.
     logic addr_4b_affected;
 
+    // Mbyte field exist. If set to 1, the command waits 1 byte before moving
+    // to dummy field. This field data is ignored.
+    logic mbyte_en;
+
     // set to 1 if the command has a dummy cycle following the address field.
     logic                 dummy_en;
     logic [DummyCntW-1:0] dummy_size;
@@ -134,6 +138,7 @@ package spi_device_pkg;
     addr_en:          1'b 0,
     addr_swap_en:     1'b 0,
     addr_4b_affected: 1'b 0,
+    mbyte_en:         1'b 0,
     dummy_en:         1'b 0,
     dummy_size:       3'h 0,
     payload_en:       4'b 0001, // MOSI active
@@ -174,6 +179,13 @@ package spi_device_pkg;
     CmdInfoPassthroughStart = 11,
     CmdInfoPassthroughEnd   = 15
   } cmd_info_index_e;
+
+  parameter int unsigned NumReadCmdInfo = CmdInfoReadCmdEnd - CmdInfoReadCmdStart + 1;
+
+  import spi_device_reg_pkg::NumCmdInfo;
+  export spi_device_reg_pkg::NumCmdInfo;
+
+  parameter int unsigned CmdInfoIdxW = $clog2(NumCmdInfo);
 
   // SPI Operation mode
   typedef enum logic [1:0] {
