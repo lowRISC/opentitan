@@ -714,6 +714,13 @@ scalar_mult_p384:
 
   jal       x1, scalar_mult_int_p384
 
+  /* store result in dmem */
+  li        x2, 25
+  bn.sid    x2++, 0(x20)
+  bn.sid    x2++, 32(x20)
+  bn.sid    x2++, 0(x21)
+  bn.sid    x2++, 32(x21)
+
   ret
 
 /**
@@ -730,6 +737,8 @@ scalar_mult_p384:
  *
  * @param[in]  dmem[0]: dptr_d, pointer to location in dmem containing
  *                      scalar d.
+ * @param[in]  dmem[20]: dptr_x, pointer to result buffer for x-coordinate
+ * @param[in]  dmem[24]: dptr_y, pointer to result buffer for y-coordinate
  * @param[in]  dmem[28]: dptr_rnd, pointer to location in dmem containing
  *                       random number for blinding.
  *
@@ -791,6 +800,21 @@ p384_base_mult:
   bn.xor    w31, w31, w31
 
   jal       x1, scalar_mult_int_p384
+
+  /* set dmem pointer to point x-coordinate */
+  la        x20, dptr_x
+  lw        x20, 0(x20)
+
+  /* set dmem pointer to point y-coordinate */
+  la        x21, dptr_y
+  lw        x21, 0(x21)
+
+  /* store result in dmem */
+  li        x2, 25
+  bn.sid    x2++, 0(x20)
+  bn.sid    x2++, 32(x20)
+  bn.sid    x2++, 0(x21)
+  bn.sid    x2++, 32(x21)
 
   ret
 

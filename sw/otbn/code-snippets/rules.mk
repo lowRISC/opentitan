@@ -107,31 +107,37 @@ $(otbn-code-snippets-bin-dir)/rsa_verify_test_exp3.elf: \
 $(otbn-code-snippets-bin-dir)/rsa_verify_test_exp3.elf: \
   otbn-libs += $(otbn-code-snippets-obj-dir)/rsa_verify.o
 
-# p256 curve point test depends on p256init, p256isoncurve, defined in p256.s
-$(otbn-code-snippets-bin-dir)/p256_curve_point_test.elf: \
+# p256 curve point test depends on p256isoncurve defined in p256.s
+$(otbn-code-snippets-bin-dir)/p256_isoncurve_test.elf: \
   $(otbn-code-snippets-obj-dir)/p256.o
-$(otbn-code-snippets-bin-dir)/p256_curve_point_test.elf: \
+$(otbn-code-snippets-bin-dir)/p256_isoncurve_test.elf: \
   otbn-libs += $(otbn-code-snippets-obj-dir)/p256.o
 
-# p256 scalar mult test depends on p256init, p256scalarmult, defined in p256.s
+# p256 scalar mult test depends on p256_scalar_mult defined in p256.s
 $(otbn-code-snippets-bin-dir)/p256_scalar_mult_test.elf: \
   $(otbn-code-snippets-obj-dir)/p256.o
 $(otbn-code-snippets-bin-dir)/p256_scalar_mult_test.elf: \
   otbn-libs += $(otbn-code-snippets-obj-dir)/p256.o
 
-# p256 ECDSA sign test depends on p256init, p256sign, defined in p256.s
+# p256 base mult test depends on p256_base_mult defined in p256.s
+$(otbn-code-snippets-bin-dir)/p256_base_mult_test.elf: \
+  $(otbn-code-snippets-obj-dir)/p256.o
+$(otbn-code-snippets-bin-dir)/p256_base_mult_test.elf: \
+  otbn-libs += $(otbn-code-snippets-obj-dir)/p256.o
+
+# p256 ECDSA sign test depends on p256_sign defined in p256.s
 $(otbn-code-snippets-bin-dir)/p256_ecdsa_sign_test.elf: \
   $(otbn-code-snippets-obj-dir)/p256.o
 $(otbn-code-snippets-bin-dir)/p256_ecdsa_sign_test.elf: \
   otbn-libs += $(otbn-code-snippets-obj-dir)/p256.o
 
-# p256 ECDSA verify test depends on p256init, p256verify, defined in p256.s
+# p256 ECDSA verify test depends on p256_verify defined in p256.s
 $(otbn-code-snippets-bin-dir)/p256_ecdsa_verify_test.elf: \
   $(otbn-code-snippets-obj-dir)/p256.o
 $(otbn-code-snippets-bin-dir)/p256_ecdsa_verify_test.elf: \
   otbn-libs += $(otbn-code-snippets-obj-dir)/p256.o
 
-# p256_ecdsa depends on p256init, p256verify, p256sign, defined in p256.s
+# p256_ecdsa depends on p256_verify, p256_sign, defined in p256.s
 $(otbn-code-snippets-bin-dir)/p256_ecdsa.elf: \
   $(otbn-code-snippets-obj-dir)/p256.o
 $(otbn-code-snippets-bin-dir)/p256_ecdsa.elf: \

@@ -1,15 +1,16 @@
 /* Copyright lowRISC contributors. */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
-/*
- *   Standalone test for P-384 scalar multiplication
+
+/**
+ * Standalone test for P-384 scalar multiplication
  *
- *   Performs multiplication of a P-384 curve point by a scalar. Both, the
- *   scalar and the affine coordinates of the point are contained in the
- *   .data section below.
+ * Performs multiplication of a P-384 curve point by a scalar. Both, the
+ * scalar and the affine coordinates of the point are contained in the
+ * .data section below.
  *
- *   See comment at the end of the file for expected values of coordinates
- *   of resulting point.
+ * See comment at the end of the file for expected values of coordinates
+ * of resulting point.
  */
 
 .section .text
@@ -36,7 +37,17 @@ p384_scalar_mult_test:
   la       x3, dptr_rnd
   sw       x2, 0(x3)
 
+  /* call scalar point multiplication routine in P-384 lib */
   jal      x1, scalar_mult_p384
+
+  /* load result to WDRs for comparison with reference */
+  li        x2, 0
+  la        x3, p1_x
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
+  la        x3, p1_y
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2, 32(x3)
 
   ecall
 
@@ -109,10 +120,10 @@ scalar:
 
 
 /* Expected values in wide register file (x- and y-coordinates of result):
-   [w26, w25] is affine x-coordinate of resulting point,
-   [w28, w27] is affine y-coordinate of resulting point.
- w25 = 0x6c5d59dbafa8ecbaf0b2d3c1e818325403634e3b86956e6ead6739217b702c4a
- w26 = 0x00000000000000000000000000000000d177aa22a7c535a28cae00d420c4cd27
- w27 = 0x607c6c698fc5c15cbfadf94e322fa2fa5ff6cf915fe9ad62f538701f1add78ec
- w28 = 0x000000000000000000000000000000009e18fa893348fb1d44f40dbedcb5e36c
+   [w1, w0] is affine x-coordinate of resulting point,
+   [w3, w2] is affine y-coordinate of resulting point.
+ w0  = 0x6c5d59dbafa8ecbaf0b2d3c1e818325403634e3b86956e6ead6739217b702c4a
+ w1  = 0x00000000000000000000000000000000d177aa22a7c535a28cae00d420c4cd27
+ w2  = 0x607c6c698fc5c15cbfadf94e322fa2fa5ff6cf915fe9ad62f538701f1add78ec
+ w3  = 0x000000000000000000000000000000009e18fa893348fb1d44f40dbedcb5e36c
 */

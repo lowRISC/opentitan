@@ -1,13 +1,14 @@
 /* Copyright lowRISC contributors. */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
-/*
- *   Standalone test for P-384 ECDSA signature generation
+
+/**
+ * Standalone test for P-384 ECDSA signature generation
  *
- *   Computes P-384 ECDSA signature for message, nonce and private key
- *   contained in the .data section.
+ * Computes P-384 ECDSA signature for message, nonce and private key
+ * contained in the .data section.
  *
- *   See comment at the end of the file for expected values of signature.
+ * See comment at the end of the file for expected values of signature.
  */
 
 .section .text
