@@ -141,6 +141,18 @@ That is, we expect to see execution with each bit of each immediate field being 
 We also expect to see each field with values `'0` and `'1` (all zeros and all ones).
 If the field is treated as a signed number, we also expect to see it with the extremal values for its range (just the MSB set, for the most negative value; all but the MSB set, for the most positive value).
 
+> The code to track this is split by encoding-schema in `otbn_env_cov`.
+> Each instruction listed below will specify its encoding schema.
+> Each encoding schema then has its own covergroup.
+> Rather than tracking toggle coverage as described above, we just track extremal values in a coverpoint.
+> This also implies toggle coverage for both signed and unsigned fields.
+> For unsigned fields of width `N`, the extremal values are `0` and `(1 << N) - 1`, represented by the bits `'0` and `'1` respectively.
+> For signed fields of width `N+1`, the extremal values are `-(1 << N)` and `(1 << N) - 1`.
+> These are represented by `{1'b1, {N{1'b0}}}` and `{1'b0, {N{1'b1}}}`: again, these toggle all the bits.
+> For example, `beq` uses the `B` schema, which then maps to the `enc_b_cg` covergroup.
+> This encoding schema's `OFF` field is tracked with the `off_cp` coverpoint.
+> Finally, the relevant cross is called `off_cross`.
+
 For any instruction that reads from or writes to a GPR, we expect to see that operand equal to `x0`, `x1` and an arbitrary register in the range `x2 .. x31`.
 We don't have any particular coverage requirements for WDRs (since all of them work essentially the same).
 
@@ -155,30 +167,42 @@ This paragraph implies eight coverage points (four flags times two values) for t
 
 #### ADD
 
+This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
+
 - Cross the three possible signs (negative, zero, positive) for each input operand (giving 9 points).
 
 #### ADDI
 
-As for `ADD`.
+This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
+
+Specific points as for `ADD`.
 
 #### LUI
 
-Nothing beyond immediate toggle coverage.
+This instruction uses the `U` encoding schema, with covergroup `enc_u_cg`.
 
 #### SUB
+
+This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
 
 - Cross the three possible signs (negative, zero, positive) for each input operand (giving 9 points).
 
 #### SLL
+
+This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
 
 - A shift of a nonzero value by zero.
 - A shift of a value by `0x1f` which leaves the top bit set.
 
 #### SLLI
 
-As for `SLL`.
+This instruction uses the `Is` encoding schema, with covergroup `enc_is_cg`.
+
+Specific points as for `SLL`.
 
 #### SRL
+
+This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
 
 - A shift of a nonzero value by zero.
 - A shift of a value by `0x1f` which leaves the bottom bit set.
@@ -186,9 +210,13 @@ As for `SLL`.
 
 #### SRLI
 
-As for `SRL`.
+This instruction uses the `Is` encoding schema, with covergroup `enc_is_cg`.
+
+Specific points as for `SRL`.
 
 #### SRA
+
+This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
 
 - A shift of a nonzero value by zero.
 - A shift of a value by `0x1f` which leaves the bottom bit set.
@@ -196,33 +224,49 @@ As for `SRL`.
 
 #### SRAI
 
-As for `SRA`.
+This instruction uses the `Is` encoding schema, with covergroup `enc_is_cg`.
+
+Specific points as for `SRA`.
 
 #### AND
+
+This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
 
 - Toggle coverage of the output result, not to `x0` (to ensure we're not just AND'ing things with zero)
 
 #### ANDI
 
-As for `AND`.
+This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
+
+Specific points as for `AND`.
 
 #### OR
+
+This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
 
 - Toggle coverage of the output result, not to `x0` (to ensure we're not just OR'ing things with `'1`)
 
 #### ORI
 
-As for `OR`.
+This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
+
+Specific points as for `OR`.
 
 #### XOR
+
+This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
 
 - Toggle coverage of the output result, not to `x0` (to ensure we're not just XOR'ing things with zero)
 
 #### XORI
 
-As for `XOR`.
+This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
+
+Specific points as for `XOR`.
 
 #### LW
+
+This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
 
 - Load from a valid address, where `<grs1>` is above the top of memory and a negative `<offset>` brings the load address in range.
 - Load from a valid address, where `<grs1>` is negative and a positive `<offset>` brings the load address in range.
@@ -233,6 +277,8 @@ As for `XOR`.
 
 #### SW
 
+This instruction uses the `I` encoding schema, with covergroup `enc_s_cg`.
+
 - Store to a valid address, where `<grs1>` is above the top of memory and a negative `<offset>` brings the load address in range.
 - Store to a valid address, where `<grs1>` is negative and a positive `<offset>` brings the load address in range.
 - Store to address zero
@@ -241,6 +287,8 @@ As for `XOR`.
 - Store to a misaligned address
 
 #### BEQ
+
+This instruction uses the `B` encoding schema, with covergroup `enc_b_cg`.
 
 All points should be crossed with branch taken / branch not taken.
 
@@ -257,9 +305,13 @@ Probably we need some tests with short timeouts to handle this properly.
 
 #### BNE
 
-As for `BEQ`.
+This instruction uses the `B` encoding schema, with covergroup `enc_b_cg`.
+
+Specific points as for `BEQ`.
 
 #### JAL
+
+This instruction uses the `J` encoding schema, with covergroup `enc_j_cg`.
 
 - Jump forwards
 - Jump backwards
@@ -273,6 +325,8 @@ As for `BEQ`.
 Note that the "jump to current address" item won't be a problem to test since it will quickly overflow the call stack.
 
 #### JALR
+
+This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
 
 - Jump with a positive offset
 - Jump with a negative offset
@@ -289,18 +343,27 @@ Note that the "jump to current address" item won't be a problem to test since it
 
 #### CSRRS
 
+This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
+
 - Write with a non-zero `bits_to_set` to each valid CSR.
 
 #### CSRRW
+
+This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
 
 - Write to every valid CSR with a `<grd>` other than `x0`.
 - Write to every valid CSR with `<grd>` equal to `x0`.
 
 #### ECALL
 
+This instruction uses the `I` encoding schema, but with every field set to a fixed value.
+Encoding-level coverpoints are tracked in covergroup `enc_fixed_cg`.
+
 No special coverage points for this instruction.
 
 #### LOOP
+
+This instruction uses the `loop` encoding schema, with covergroup `enc_loop_cg`.
 
 - Loop with a zero iteration count (causing an error)
 - Loop with a count of `'1` (the maximal value)
@@ -312,14 +375,20 @@ No special coverage points for this instruction.
 
 #### LOOPI
 
-As for `LOOP`, but without the count of `'1` (not achievable with an immediate).
+This instruction uses the `loopi` encoding schema, with covergroup `enc_loopi_cg`.
+
+Specific points as for `LOOP`, but without the count of `'1` (not achievable with an immediate).
 
 #### BN.ADD
+
+This instruction uses the `bnaf` encoding schema, with covergroup `enc_bna_cg`.
 
 - Extremal values of shift for both directions where the shifted value is nonzero
 - A nonzero right shift with a value in `wrs2` whose top bit is set
 
 #### BN.ADDC
+
+This instruction uses the `bnaf` encoding schema, with covergroup `enc_bna_cg`.
 
 - Extremal values of shift for both directions where the shifted value is nonzero
 - A nonzero right shift with a value in `wrs2` whose top bit is set
@@ -327,9 +396,13 @@ As for `LOOP`, but without the count of `'1` (not achievable with an immediate).
 
 #### BN.ADDI
 
-As for `BN.ADD`.
+This instruction uses the `bnai` encoding schema, with covergroup `enc_bnai_cg`.
+
+Specific points as for `BN.ADD`.
 
 #### BN.ADDM
+
+This instruction uses the `bnam` encoding schema, with covergroup `enc_bnam_cg`.
 
 - Execute with the two extreme values of `MOD` (zero and all ones)
 - Perform a subtraction (because the sum is at least `MOD`) when `MOD` is nonzero.
@@ -340,32 +413,48 @@ As for `BN.ADD`.
 
 #### BN.MULQACC
 
+This instruction uses the `bnaq` encoding schema, with covergroup `enc_bnaq_cg`.
+
 - Cross `wrs1_qwsel` with `wrs2_qwsel` to make sure they are applied to the right inputs
 - See the accumulator overflow
 
 #### BN.MULQACC.WO
 
-As for `BN.MULQACC`, plus the generic flag group cover points.
+This instruction uses the `bnaq` encoding schema, with an extra field not present in `bn.mulqacc`.
+Encoding-level coverpoints are tracked in covergroup `enc_bnaqw_cg`.
+
+Specific points as for `BN.MULQACC`, plus the generic flag group cover points.
 
 #### BN.MULQACC.SO
 
-As for `BN.MULQACC` plus the following:
+This instruction uses the `bnaq` encoding schema, with an extra field not present in `bn.mulqacc`.
+Encoding-level coverpoints are tracked in covergroup `enc_bnaqs_cg`.
+
+Specific points as for `BN.MULQACC` plus the following:
 
 - Cross the generic flag updates with `wrd_hwsel`, since the flag changes are different in the two modes.
 
 #### BN.SUB
 
-As for `BN.ADD`.
+This instruction uses the `bnaf` encoding schema, with covergroup `enc_bna_cg`.
+
+Specific points as for `BN.ADD`.
 
 #### BN.SUBB
 
-As for `BN.ADDC`.
+This instruction uses the `bnaf` encoding schema, with covergroup `enc_bna_cg`.
+
+Specific points as for `BN.ADDC`.
 
 #### BN.SUBI
 
-As for `BN.SUB`.
+This instruction uses the `bnai` encoding schema, with covergroup `enc_bnai_cg`.
+
+Specific points as for `BN.SUB`.
 
 #### BN.SUBM
+
+This instruction uses the `bnam` encoding schema, with covergroup `enc_bnam_cg`.
 
 - Execute with the two extreme values of `MOD` (zero and all ones)
 - A non-negative intermediate result with a nonzero `MOD` (so `MOD` is not added).
@@ -375,41 +464,59 @@ As for `BN.SUB`.
 
 #### BN.AND
 
+This instruction uses the `bna` encoding schema, with covergroup `enc_bna_cg`.
+
 - Extremal values of shift for both directions where the shifted value is nonzero
 - Toggle coverage of the output result (to ensure we're not just AND'ing things with zero)
 
 #### BN.OR
+
+This instruction uses the `bna` encoding schema, with covergroup `enc_bna_cg`.
 
 - Extremal values of shift for both directions where the shifted value is nonzero
 - Toggle coverage of the output result (to ensure we're not just OR'ing things with zero)
 
 #### BN.NOT
 
+This instruction uses the `bnan` encoding schema, with covergroup `enc_bnan_cg`.
+
 - Extremal values of shift for both directions where the shifted value is nonzero
 - Toggle coverage of the output result (to ensure nothing gets clamped)
 
 #### BN.XOR
+
+This instruction uses the `bna` encoding schema, with covergroup `enc_bna_cg`.
 
 - Extremal values of shift for both directions where the shifted value is nonzero
 - Toggle coverage of the output result (to ensure we're not just XOR'ing things with zero)
 
 #### BN.RSHI
 
+This instruction uses the `bnr` encoding schema, with covergroup `enc_bnr_cg`.
+
 No special coverage.
 
 #### BN.SEL
+
+This instruction uses the `bns` encoding schema, with covergroup `enc_bns_cg`.
 
 - Cross flag group, flag and flag value (2 times 4 times 2 points)
 
 #### BN.CMP
 
-As for `BN.SUB`.
+This instruction uses the `bnc` encoding schema, with covergroup `enc_bnc_cg`.
+
+Specific points as for `BN.SUB`.
 
 #### BN.CMPB
 
-As for `BN.SUBB`.
+This instruction uses the `bnc` encoding schema, with covergroup `enc_bnc_cg`.
+
+Specific points as for `BN.SUBB`.
 
 #### BN.LID
+
+This instruction uses the `bnxid` encoding schema, with covergroup `enc_bnxid_cg`.
 
 - Load from a valid address, where `grs1` is above the top of memory and a negative `offset` brings the load address in range.
 - Load from a valid address, where `grs1` is negative and a positive `offset` brings the load address in range.
@@ -424,6 +531,8 @@ As for `BN.SUBB`.
 
 #### BN.SID
 
+This instruction uses the `bnxid` encoding schema, with covergroup `enc_bnxid_cg`.
+
 - Store to a valid address, where `grs1` is above the top of memory and a negative `offset` brings the load address in range.
 - Store to a valid address, where `grs1` is negative and a positive `offset` brings the load address in range.
 - Store to address zero
@@ -437,19 +546,27 @@ As for `BN.SUBB`.
 
 #### BN.MOV
 
-No special coverage.
+This instruction uses the `bnmov` encoding schema, with covergroup `enc_bnmov_cg`.
+
+No special coverage otherwise.
 
 #### BN.MOVR
+
+This instruction uses the `bnmovr` encoding schema, with covergroup `enc_bnmovr_cg`.
 
 - See an invalid instruction with both increments specified
 - Since MOVR signals an error if either of its source registers has a value greater than 31, cross whether the input register value at `grd` is greater than 31 with whether the register value at `grs` is greater than 31
 
 #### BN.WSRR
 
+This instruction uses the `bnwcsr` encoding schema, with covergroup `enc_wcsr_cg`.
+
 - Read from each valid WSR
 - Read from an invalid WSR
 
 #### BN.WSRW
+
+This instruction uses the `bnwcsr` encoding schema, with covergroup `enc_wcsr_cg`.
 
 - Write to each valid WSR, including read-only WSRs.
 - Write to an invalid WSR

@@ -19,6 +19,7 @@ class otbn_trace_monitor extends dv_base_monitor #(
         if (cfg.trace_vif.insn_valid && !cfg.trace_vif.insn_stall) begin
           item = otbn_trace_item::type_id::create("item");
           item.insn_addr = cfg.trace_vif.insn_addr;
+          item.insn_data = cfg.trace_vif.insn_data;
           analysis_port.write(item);
         end
       end
