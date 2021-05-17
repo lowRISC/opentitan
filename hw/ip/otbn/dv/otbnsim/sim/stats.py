@@ -37,9 +37,16 @@ class ExecutionStats:
 
     def record_insn(self,
                     insn: OTBNInsn,
-                    state_before_commit: OTBNState) -> None:
-        ''' Record the execution of an instruction. '''
-        pc = state_before_commit.pc
+                    state_bc: OTBNState) -> None:
+        '''Record the execution of an instruction.
+
+        insn is the currently executed instruction. state_bc is the state of
+        OTBN before the instruction is committed.
+
+        '''
+        pc = state_bc.pc
+
+        is_jump = isinstance(insn, JAL) or isinstance(insn, JALR)
 
         # Instruction histogram
         self.insn_histo[insn.insn.mnemonic] += 1
@@ -47,23 +54,23 @@ class ExecutionStats:
         # Function calls
         # - Direct function calls: jal x1, <offset>
         # - Indirect function calls: jalr x1, <grs1>, 0
-        if (isinstance(insn, JAL) or isinstance(insn, JALR)) and insn.grd == 1:
-            call_stack = state_before_commit.peek_call_stack()
+        if is_jump and insn.grd == 1:  # type: ignore
+            call_stack = state_bc.peek_call_stack()
             if call_stack:
                 caller_func = call_stack[0]
             else:
-                assert state_before_commit.start_addr is not None
-                caller_func = state_before_commit.start_addr
+                caller_func = state_bc.get_start_addr()
 
             self.func_calls.append({
                 'call_site': pc,
                 'caller_func': caller_func,
-                'callee_func': state_before_commit.get_next_pc(),
+                'callee_func': state_bc.get_next_pc(),
             })
 
         # Loops
         if isinstance(insn, LOOP) or isinstance(insn, LOOPI):
-            iterations = state_before_commit.loop_stack.stack[-1].loop_count
+            assert state_bc.in_loop()
+            iterations = state_bc.loop_stack.stack[-1].loop_count
             self.loops.append({
                 'loop_addr': pc,
                 'loop_len': insn.bodysize,
