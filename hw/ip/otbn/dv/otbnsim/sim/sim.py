@@ -72,14 +72,14 @@ class OTBNSim:
 
         pc_before = self.state.pc
 
-        word_pc = int(self.state.pc) >> 2
+        word_pc = self.state.pc >> 2
         if word_pc >= len(self.program):
             raise RuntimeError('Trying to execute instruction at address '
                                '{:#x}, but the program is only {:#x} '
                                'bytes ({} instructions) long. Since there '
                                'are no architectural contents of the '
                                'memory here, we have to stop.'
-                               .format(int(self.state.pc),
+                               .format(self.state.pc,
                                        4 * len(self.program),
                                        len(self.program)))
         insn = self.program[word_pc]
