@@ -51,6 +51,16 @@ static void setup_edn(void) {
 OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, p256_ecdsa_sign);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, p256_ecdsa_verify);
+
+OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_k);
+OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_rnd);
+OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_msg);
+OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_r);
+OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_s);
+OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_x);
+OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_y);
+OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, dptr_d);
+
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, k);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, rnd);
 OTBN_DECLARE_PTR_SYMBOL(p256_ecdsa, msg);
@@ -65,6 +75,16 @@ static const otbn_ptr_t kOtbnAppP256EcdsaFuncSign =
     OTBN_PTR_T_INIT(p256_ecdsa, p256_ecdsa_sign);
 static const otbn_ptr_t kOtbnAppP256EcdsaFuncVerify =
     OTBN_PTR_T_INIT(p256_ecdsa, p256_ecdsa_verify);
+
+static const otbn_ptr_t kOtbnVarDptrK = OTBN_PTR_T_INIT(p256_ecdsa, dptr_k);
+static const otbn_ptr_t kOtbnVarDptrRnd = OTBN_PTR_T_INIT(p256_ecdsa, dptr_rnd);
+static const otbn_ptr_t kOtbnVarDptrMsg = OTBN_PTR_T_INIT(p256_ecdsa, dptr_msg);
+static const otbn_ptr_t kOtbnVarDptrR = OTBN_PTR_T_INIT(p256_ecdsa, dptr_r);
+static const otbn_ptr_t kOtbnVarDptrS = OTBN_PTR_T_INIT(p256_ecdsa, dptr_s);
+static const otbn_ptr_t kOtbnVarDptrX = OTBN_PTR_T_INIT(p256_ecdsa, dptr_x);
+static const otbn_ptr_t kOtbnVarDptrY = OTBN_PTR_T_INIT(p256_ecdsa, dptr_y);
+static const otbn_ptr_t kOtbnVarDptrD = OTBN_PTR_T_INIT(p256_ecdsa, dptr_d);
+
 static const otbn_ptr_t kOtbnVarK = OTBN_PTR_T_INIT(p256_ecdsa, k);
 static const otbn_ptr_t kOtbnVarRnd = OTBN_PTR_T_INIT(p256_ecdsa, rnd);
 static const otbn_ptr_t kOtbnVarMsg = OTBN_PTR_T_INIT(p256_ecdsa, msg);
@@ -118,6 +138,42 @@ static void profile_end(uint64_t t_start, const char *msg) {
 }
 
 /**
+ * Makes a single dptr in the P256 library point to where its value is stored.
+ */
+static void setup_data_pointer(otbn_t *otbn_ctx, const otbn_ptr_t dptr,
+                               const otbn_ptr_t value) {
+  uint32_t value_dmem_addr;
+  CHECK(otbn_data_ptr_to_dmem_addr(otbn_ctx, value, &value_dmem_addr) ==
+        kOtbnOk);
+  CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(value_dmem_addr),
+                               &value_dmem_addr, dptr) == kOtbnOk);
+}
+
+/**
+ * Sets up all data pointers used by the P256 library to point to DMEM.
+ *
+ * The ECDSA P256 OTBN library makes use of "named" data pointers as part of
+ * its calling convention, which are exposed as symbol starting with `dptr_`.
+ * The DMEM locations these pointers refer to is not mandated by the P256
+ * calling convention; the values can be placed anywhere in OTBN DMEM.
+ *
+ * As convenience, `ecdsa_p256.s` pre-allocates space for the data values.
+ *
+ * This function makes the data pointers refer to the pre-allocated DMEM
+ * regions to store the actual values.
+ */
+static void setup_data_pointers(otbn_t *otbn_ctx) {
+  setup_data_pointer(otbn_ctx, kOtbnVarDptrK, kOtbnVarK);
+  setup_data_pointer(otbn_ctx, kOtbnVarDptrRnd, kOtbnVarRnd);
+  setup_data_pointer(otbn_ctx, kOtbnVarDptrMsg, kOtbnVarMsg);
+  setup_data_pointer(otbn_ctx, kOtbnVarDptrR, kOtbnVarR);
+  setup_data_pointer(otbn_ctx, kOtbnVarDptrS, kOtbnVarS);
+  setup_data_pointer(otbn_ctx, kOtbnVarDptrX, kOtbnVarX);
+  setup_data_pointer(otbn_ctx, kOtbnVarDptrY, kOtbnVarY);
+  setup_data_pointer(otbn_ctx, kOtbnVarDptrD, kOtbnVarD);
+}
+
+/**
  * Signs a message with ECDSA using the P-256 curve.
  *
  * @param otbn_ctx            The OTBN context object.
@@ -134,6 +190,9 @@ static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
                             const uint8_t *private_key_d, uint8_t *signature_r,
                             uint8_t *signature_s) {
   CHECK(otbn_ctx != NULL);
+
+  // Set pointers to input arguments.
+  setup_data_pointers(otbn_ctx);
 
   // Write input arguments.
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, msg, kOtbnVarMsg) ==
@@ -173,6 +232,9 @@ static void p256_ecdsa_verify(otbn_t *otbn_ctx, const uint8_t *msg,
                               const uint8_t *public_key_y,
                               uint8_t *signature_r_out) {
   CHECK(otbn_ctx != NULL);
+
+  // Set pointers to input arguments.
+  setup_data_pointers(otbn_ctx);
 
   // Write input arguments.
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, msg, kOtbnVarMsg) ==

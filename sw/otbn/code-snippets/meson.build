@@ -35,8 +35,8 @@ sw_otbn_sources += {
   'err_test': files(
     'err_test.s',
   ),
-  'p256_curve_point_test': files(
-    'p256_curve_point_test.s',
+  'p256_isoncurve_test': files(
+    'p256_isoncurve_test.s',
     'p256.s',
   ),
   'p256_scalar_mult_test': files(
