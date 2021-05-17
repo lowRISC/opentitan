@@ -352,33 +352,40 @@ To get started faster we use the web installer in the following.
 
    ![Vivado installation step 3](img/install_vivado/step3.png)
 
-7. Choose "Vivado HL WebPACK" if you do not have a commercial Vivado license, or "Vivado HL Design Edition" if you have a valid license.
-   In this walk through we'll install the WebPACK edition.
+7. Choose "Vivado", and click on "Next" to continue.
 
    ![Vivado installation step 4](img/install_vivado/step4.png)
 
-8. Choose the features to install.
-    You can restrict the features to the ones shown in the screenshot below.
-    Click "Next" to continue.
+8. Choose "Vivado HL Design Edition".
+   This is required to enable support for the Xilinx Kintex 7 XC7K410T FPGA device found on the ChipWhisperer CW310 board.
+   You'll need a commercial Vivado license for this FPGA device.
+   Without a valid license, you are still able to install the Vivado HL Design Edition but you'll only be able to work with devices supported by the free WebPACK license.  
+   If you don't have a valid license and if you're only planning to work with devices supported by the free WebPACK license, you can also choose "Vivado HL WebPACK" instead.
 
    ![Vivado installation step 5](img/install_vivado/step5.png)
 
-9. Choose an installation location.
+9. Choose the features to install.
+   You can restrict the features to the ones shown in the screenshot below.
+   Click "Next" to continue.
+
+   ![Vivado installation step 6](img/install_vivado/step6.png)
+
+10. Choose an installation location.
     Any location which doesn't have a whitespace in its path and enough free space is fine.
     We use `/tools` in our example, but a path in `/opt` or within the home directory works equally well.
     Click "Next" to continue.
 
-   ![Vivado installation step 6](img/install_vivado/step6.png)
+    ![Vivado installation step 7](img/install_vivado/step7.png)
 
-10. Double-check the installation summary and click on "Install" to start the installation process.
+11. Double-check the installation summary and click on "Install" to start the installation process.
 
-   ![Vivado installation step 7](img/install_vivado/step7.png)
+    ![Vivado installation step 8](img/install_vivado/step8.png)
 
-11. Now Vivado is downloaded and installed, a process which can easily take multiple hours.
+12. Now Vivado is downloaded and installed, a process which can easily take multiple hours.
 
-   ![Vivado installation step 8](img/install_vivado/step8.png)
+    ![Vivado installation step 9](img/install_vivado/step9.png)
 
-12. As soon as the installation has completed close the installer and you're now ready to use Vivado!
+13. As soon as the installation has completed close the installer and you're now ready to use Vivado!
 
 ### Device permissions: udev rules
 
@@ -392,6 +399,9 @@ To do so, create a file named `/etc/udev/rules.d/90-lowrisc.rules` and add the f
 # Grant access to board peripherals connected over USB:
 # - The USB devices itself (used e.g. by Vivado to program the FPGA)
 # - Virtual UART at /dev/tty/XXX
+
+# NewAE Technology Inc. ChipWhisperer boards e.g. CW310, CW305, CW-Lite, CW-Husky
+ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="2b3e", ATTRS{idProduct}=="ace[0-9]|c[3-6][0-9][0-9]", MODE="0666"
 
 # Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
 # used on Digilent boards
