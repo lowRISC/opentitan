@@ -17,13 +17,22 @@ class OTBNSim:
     def __init__(self) -> None:
         self.state = OTBNState()
         self.program = []  # type: List[OTBNInsn]
-        self.stats = ExecutionStats()
+        self.stats = None  # type: Optional[ExecutionStats]
 
     def load_program(self, program: List[OTBNInsn]) -> None:
         self.program = program.copy()
 
     def load_data(self, data: bytes) -> None:
         self.state.dmem.load_le_words(data)
+
+    def start(self, addr: int) -> None:
+        '''Prepare to start the execution.
+
+        Use run() or step() to actually execute the program.
+
+        '''
+        self.stats = ExecutionStats(self.program)
+        self.state.start(addr)
 
     def run(self, verbose: bool, collect_stats: bool) -> int:
         '''Run until ECALL.
@@ -58,6 +67,8 @@ class OTBNSim:
         '''
         if not self.state.running:
             return (None, [])
+
+        assert self.stats is not None
 
         pc_before = self.state.pc
 

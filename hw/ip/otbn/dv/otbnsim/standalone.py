@@ -44,7 +44,7 @@ def main() -> int:
     sim = OTBNSim()
     load_elf(sim, args.elf)
 
-    sim.state.start(0)
+    sim.start(0)
     sim.run(verbose=args.verbose, collect_stats=collect_stats)
 
     if args.dump_dmem is not None:
@@ -57,6 +57,7 @@ def main() -> int:
             args.dump_regs.write(' w{:<2} = 0x{:064x}\n'.format(idx, value))
 
     if collect_stats:
+        assert sim.stats is not None
         stat_analyzer = ExecutionStatAnalyzer(sim.stats, args.elf)
         args.dump_stats.write(stat_analyzer.dump())
 

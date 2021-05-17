@@ -20,8 +20,9 @@ def _run_sim_for_stats(asm_file: str, tmpdir: str) -> ExecutionStats:
     sim = OTBNSim()
     load_elf(sim, elf_file)
 
-    sim.state.start(0)
+    sim.start(0)
     sim.run(verbose=False, collect_stats=True)
+    assert sim.stats
 
     return sim.stats
 
