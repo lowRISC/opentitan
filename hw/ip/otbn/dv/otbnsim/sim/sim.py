@@ -70,6 +70,7 @@ class OTBNSim:
 
         assert self.stats is not None
 
+        # Program counter before commit
         pc_before = self.state.pc
 
         word_pc = self.state.pc >> 2
@@ -102,7 +103,7 @@ class OTBNSim:
             self.state.post_insn()
 
             if collect_stats:
-                self.stats.record_insn(pc_before, insn, self.state)
+                self.stats.record_insn(insn, self.state)
 
             if self.state.pending_halt:
                 # Roll back any pending state changes, ensuring that a faulting
@@ -115,6 +116,10 @@ class OTBNSim:
                 changes = self.state.changes()
             else:
                 changes = self.state.changes()
+
+                # Only commit() may change the program counter.
+                assert pc_before == self.state.pc
+
                 self.state.commit(sim_stalled=False)
 
             disasm = insn.disassemble(pc_before)

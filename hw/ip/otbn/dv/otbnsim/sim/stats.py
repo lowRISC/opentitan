@@ -36,10 +36,10 @@ class ExecutionStats:
         self.stall_count += 1
 
     def record_insn(self,
-                    pc: int,
                     insn: OTBNInsn,
                     state_before_commit: OTBNState) -> None:
         ''' Record the execution of an instruction. '''
+        pc = state_before_commit.pc
 
         # Instruction histogram
         self.insn_histo[insn.insn.mnemonic] += 1
