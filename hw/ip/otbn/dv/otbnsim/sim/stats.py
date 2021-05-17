@@ -17,7 +17,10 @@ from .state import OTBNState
 
 
 class ExecutionStats:
-    def __init__(self) -> None:
+    def __init__(self, program: List[OTBNInsn]) -> None:
+        # Executed program (the contents of the instruction memory).
+        self.program = program
+
         self.stall_count = 0
         self.insn_histo = Counter()  # type: typing.Counter[str]
         self.func_calls = []  # type: List[Dict[str, int]]

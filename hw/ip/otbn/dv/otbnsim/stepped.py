@@ -77,7 +77,7 @@ def on_start(sim: OTBNSim, args: List[str]) -> None:
                          .format(addr))
 
     print('START {:#08x}'.format(addr))
-    sim.state.start(addr)
+    sim.start(addr)
 
 
 def on_step(sim: OTBNSim, args: List[str]) -> None:
