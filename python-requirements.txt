@@ -32,3 +32,11 @@ git+https://github.com/lowRISC/fusesoc.git@ot#egg=fusesoc >= 1.11.0
 
 # Development version with OT-specific changes
 git+https://github.com/lowRISC/edalize.git@ot#egg=edalize >= 0.2.0
+
+# Development version of ChipWhisperer toolchain
+# Use a development version until support for the CW310 board works in a
+# released version.
+# Prefer the archive download over a git clone to decrease installation time
+# (The chipwhisperer repository is rather large and uses additionally uses
+# submodules, which need to be fetched as well.)
+https://github.com/newaetech/chipwhisperer/archive/9b6825b495f14f85aae8b11007c63c59a1654584.tar.gz

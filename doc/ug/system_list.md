@@ -7,6 +7,6 @@ Click on the design name to get more information about the design.
 
 | Design | Internal Name | Simulation Targets | FPGA Targets | ASIC Targets | Description |
 |--------|---------------|--------------------|--------------|--------------|-------------|
-| [Earl Grey]({{< relref "hw/top_earlgrey/doc" >}}) | `top_earlgrey` | Verilator | Nexys Video\* | *None yet.* | 0.1 release |
+| [Earl Grey]({{< relref "hw/top_earlgrey/doc" >}}) | `top_earlgrey` | Verilator | ChipWhisperer CW310\* | *None yet.* | 0.1 release |
 
-A `*` behind an FPGA board indicates it can be used with a free EDA tool license.
+`*` There exists a modified version of the Earl Grey top-level design that can be implemented on the Nexys Video FPGA board usable with a free EDA tool license.

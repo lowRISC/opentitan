@@ -398,9 +398,9 @@ module chip_${top["name"]}_${target["name"]} #(
 % endif
 
 ###################################################################
-## USB for Nexysvideo                                            ##
+## USB for CW310 and Nexysvideo                                  ##
 ###################################################################
-% if target["name"] == "nexysvideo":
+% if target["name"] in ["cw310", "nexysvideo"]:
 
   /////////////////////
   // USB Overlay Mux //
@@ -1020,7 +1020,7 @@ module chip_${top["name"]}_${target["name"]} #(
 ###################################################################
 ## FPGA shared                                                   ##
 ###################################################################
-% if target["name"] in ["cw305", "nexysvideo"]:
+% if target["name"] in ["cw310", "cw305", "nexysvideo"]:
   //////////////////
   // PLL for FPGA //
   //////////////////
@@ -1080,7 +1080,14 @@ module chip_${top["name"]}_${target["name"]} #(
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
 // otherwise Verilator / FPGA will hang.
   top_${top["name"]} #(
-% if target["name"] == "cw305":
+% if target["name"] == "cw310":
+    .AesMasking(1'b1),
+    .AesSBoxImpl(aes_pkg::SBoxImplDom),
+    .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
+    .OtbnRegFile(otbn_pkg::RegFileFPGA),
+    .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
+    .RomCtrlBootRomInitFile(BootRomInitFile),
+% elif target["name"] == "cw305":
     .AesMasking(1'b1),
     .AesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(40),
@@ -1176,9 +1183,13 @@ module chip_${top["name"]}_${target["name"]} #(
 
 
 ###################################################################
-## CW305 capture trigger                                         ##
+## CW305 capture board interface                                 ##
 ###################################################################
-% if target["name"] == "cw305":
+## TODO: This needs to be adapted to enable captures on the CW310. In particular,
+## - a precise capture trigger and the target clock need to be output, and
+## - a separate UART should be used for the simpleserial communication with the capture board.
+## See also pins_cw310.xdc
+% if target["name"] in ["cw305"]:
 
   //////////////////////////////////////
   // Generate precise capture trigger //
@@ -1191,11 +1202,11 @@ module chip_${top["name"]}_${target["name"]} #(
   // To obtain a more precise capture trigger for side-channel analysis, we only forward the
   // software-controlled capture trigger when the AES module is actually busy (performing
   // either encryption/decryption or clearing internal registers).
-  // GPIO15 is used as capture trigger (mapped to IOB9 at the moment in pinmux.c).
+  // GPIO15 is used as capture trigger (mapped to IOB6 at the moment in pinmux.c).
   always_comb begin : p_trigger
     mio_out = mio_out_pre;
     mio_out[MioIdxTrigger] = mio_out_pre[MioIdxTrigger] &
-                             ~top_englishbreakfast.clkmgr_aon_idle[clkmgr_pkg::Aes];
+                             ~top_${top["name"]}.clkmgr_aon_idle[clkmgr_pkg::Aes];
   end
 
   //////////////////////
@@ -1205,9 +1216,13 @@ module chip_${top["name"]}_${target["name"]} #(
   logic unused_inputs;
   assign unused_inputs = manual_in_tio_clkout ^ manual_in_io_utx_debug;
 
-  // Clock ouput to capture board.
+  // Clock output to capture board.
   assign manual_out_tio_clkout = manual_in_io_clk;
   assign manual_oe_tio_clkout = 1'b1;
+
+% endif
+## This separate UART debugging output is needed for the CW305 only.
+% if target["name"] == "cw305":
 
   // UART Tx for debugging. The UART itself is connected to the capture board.
   assign manual_out_io_utx_debug = top_${top["name"]}.cio_uart0_tx_d2p;
