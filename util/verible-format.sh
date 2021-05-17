@@ -3,10 +3,20 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# this script runs the verible formatter on all system verilog
-# files under hw/{ip,vendor,top_earlgrey}
+# Helper script to invoke the Verible formatter with the proper
+# configuration for OpenTitan.
 #
-# make sure to invoke this tool from the project root.
+# Arguments:
+#
+# --files|-f <file1> <file2> ...:
+#   Run the formatter on individual files.
+#
+# --allowlist|-l:
+#   Run the formatter on the files defined in
+#   util/verible-format-allowlist.txt
+#
+# --all|-a:
+#   Run the formatter on all *.sv and *.svh files in the tree.
 #
 # NOTE: this operates in-place - so make sure to make a backup or
 # run this on an experimental branch
@@ -27,39 +37,37 @@ if [[ -z $VERIBLE_VERSION ]]; then
     exit 1
 fi
 
-# this is a precaution in order to prevent accidental
-# overwriting of uncomitted changes
-git add -u
+# --allowlist and --all are run in the repo root
+REPO_TOP=`git rev-parse --show-toplevel`
 
-# By default format only files in allow list
-MODE=${MODE:-allowlist}
-
-case $MODE in
-    allowlist)
-        FILES_TO_FORMAT=`grep -v '^#' util/verible-format-allowlist.txt`
-        ;;
-
-    all)
-        # get all system verilog files and pipe through style formatter
-        FILES_TO_FORMAT=`find . -type f -name "*.sv" -o -name "*.svh"`
-        ;;
-
-    *)
-        echo "verible-format.sh: Unknown mode $MODE"
-        exit 1
-        ;;
-esac
+# select files to format
+FILES_TO_FORMAT=""
+while [ "$1" != "" ]; do
+    case "$1" in
+        --files|-f)
+            shift 1
+            while [ "$1" != "" ]; do
+                FILES_TO_FORMAT="${FILES_TO_FORMAT}${1} "
+                shift 1
+            done
+            ;;
+        --allowlist|-l)
+            cd $REPO_TOP
+            FILES_TO_FORMAT=`grep -v '^#' util/verible-format-allowlist.txt`
+            break
+            ;;
+        --all|-a)
+            cd $REPO_TOP
+            FILES_TO_FORMAT=`find . -type f -name "*.sv" -o -name "*.svh"`
+            break
+            ;;
+        --*|-*)
+            echo "Error: unsupported flag $1" >&2
+            exit 1
+            ;;
+    esac
+done
 
 echo $FILES_TO_FORMAT | \
       xargs -n 1 -P $NUM_PROCS verible-verilog-format \
       $VERIBLE_ARGS
-
-
-echo "Using verible-verilog-format version $VERIBLE_VERSION" > $REPORT_FILE
-
-# report changed files
-git status                  | \
-    grep modified           | \
-    grep dv                 | \
-    awk -F ' ' '{print $2}' | \
-    tee -a $REPORT_FILE
