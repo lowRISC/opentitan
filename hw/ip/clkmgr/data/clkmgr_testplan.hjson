@@ -42,22 +42,27 @@
       name: peri_enables
       desc: '''
             Peripheral clocks are disabled if its `clk_enables` bit is off,
-            or `pwr_i.ip_clk_en` is off.
-            This test randomizes `ip_clk_en`, the initial setting of
-             `clk_enables`, and flips any bit in `clk_enables`.
+            or `pwr_i.ip_clk_en` is off, and `scanmode_i` is not
+            `lc_ctrl_pkg::On`.
+
+            This test runs multiple rounds, and on each one it randomizes
+             `ip_clk_en` and `scanmode_i`, and the initial setting of
+             `clk_enables`, it sends a CSR write to `csr_enables` with this
+             initial value followed by a write that flips all bits. 
 
             **Checks**:
-            - SVA assertions for peripheral clocks enable and disable
-              properties.
+            - The scoreboard checks the gated clock activities against its
+              model of the expected behavior.
             '''
       milestone: V2
-      tests: []
+      tests: ["clkmgr_peri"]
     }
     {
       name: trans_enables
       desc: '''
             Transactional unit clocks are disabled if they are not busy and
-            their`clk_hints` bit is off, or `pwr_i.ip_clk_en` is off.
+            their `clk_hints` bit is off, or `pwr_i.ip_clk_en` is off,
+            and `scanmode_i` is not `lc_ctrl_pkg::On`.
             This test randomize `ip_clk_en`, the initial setting of `idle_i`
             and `clk_hints`, and flips any bit in `clk_hints`. If the
             corresponding unit is not idle it waits some cycles and clears its
@@ -68,7 +73,7 @@
               clkmgr_smoke.
             '''
       milestone: V2
-      tests: []
+      tests: ["clkmgr_trans"]
     }
     {
       name: extclk
@@ -105,5 +110,10 @@
       milestone: V2
       tests: []
     }
+  ]
+  // The covergroups are arrays, which are yet to be supported by the tools.
+  covergroups: [
+    // peri_cg_wrap cover the dependencies of each peripheral clock.
+    // trans_cg_wrap  cover the dependencies of each transactional unit clock.
   ]
 }
