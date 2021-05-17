@@ -14,7 +14,7 @@ class TraceLoopStart(Trace):
         self.bodysize = bodysize
 
     def trace(self) -> str:
-        return "Start LOOP, {} iterations, bodysize: {}".format(
+        return "Starting loop, {} iterations, bodysize: {}".format(
             self.iterations, self.bodysize)
 
 
@@ -24,7 +24,7 @@ class TraceLoopIteration(Trace):
         self.total = total
 
     def trace(self) -> str:
-        return "LOOP iteration {}/{}".format(self.iteration, self.total)
+        return "Finished loop iteration {}/{}".format(self.iteration, self.total)
 
 
 class LoopLevel:
