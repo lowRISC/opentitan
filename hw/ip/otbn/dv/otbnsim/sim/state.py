@@ -27,7 +27,7 @@ class OTBNState:
         self.csrs = CSRFile()
 
         self.pc = 0
-        self.pc_next = None  # type: Optional[int]
+        self._pc_next_override = None  # type: Optional[int]
 
         self.start_addr = None  # type: Optional[int]
 
@@ -58,6 +58,15 @@ class OTBNState:
         self._new_rnd_data = None  # type: Optional[int]
         self._urnd_reseed_complete = False
 
+    def get_next_pc(self) -> int:
+        if self._pc_next_override is not None:
+            return self._pc_next_override
+        return self.pc + 4
+
+    def set_next_pc(self, next_pc: int) -> None:
+        '''Overwrite the next program counter, e.g. as result of a jump.'''
+        self._pc_next_override = next_pc
+
     def set_rnd_data(self, rnd_data: int) -> None:
         self._new_rnd_data = rnd_data
 
@@ -65,19 +74,19 @@ class OTBNState:
         self._urnd_reseed_complete = True
 
     def loop_start(self, iterations: int, bodysize: int) -> None:
-        next_pc = int(self.pc) + 4
-        self.loop_stack.start_loop(next_pc, iterations, bodysize)
+        self.loop_stack.start_loop(self.pc + 4, iterations, bodysize)
 
     def loop_step(self) -> None:
         back_pc = self.loop_stack.step(self.pc)
         if back_pc is not None:
-            self.pc_next = back_pc
+            self.set_next_pc(back_pc)
 
     def changes(self) -> List[Trace]:
         c = []  # type: List[Trace]
         c += self.gprs.changes()
-        if self.pc_next is not None:
-            c.append(TracePC(self.pc_next))
+        if self._pc_next_override is not None:
+            # Only append the next program counter to the trace if it is special
+            c.append(TracePC(self.get_next_pc()))
         c += self.dmem.changes()
         c += self.loop_stack.changes()
         c += self.ext_regs.changes()
@@ -118,8 +127,8 @@ class OTBNState:
             return
 
         self.gprs.commit()
-        self.pc = self.pc_next if self.pc_next is not None else self.pc + 4
-        self.pc_next = None
+        self.pc = self.get_next_pc()
+        self._pc_next_override = None
         self.loop_stack.commit()
         self.ext_regs.commit()
         self.wsrs.commit()
@@ -129,7 +138,7 @@ class OTBNState:
     def _abort(self) -> None:
         '''Abort any pending state changes'''
         self.gprs.abort()
-        self.pc_next = None
+        self._pc_next_override = None
         self.dmem.abort()
         self.loop_stack.abort()
         self.ext_regs.abort()
@@ -182,30 +191,29 @@ class OTBNState:
         '''Run before running an instruction'''
         self.loop_stack.check_insn(self.pc, insn_affects_control)
 
-    def check_jump_dest(self) -> None:
-        '''Check whether self.pc_next is a valid jump/branch target
+    def check_next_pc(self) -> None:
+        '''Check whether the next program counter is valid.
 
         If not, generates a BadAddrError.
 
         '''
-        if self.pc_next is None:
-            return
+        next_pc = self.get_next_pc()
 
         # The PC should always be non-negative (it's an error in the simulator
         # if that's come unstuck)
-        assert 0 <= self.pc_next
+        assert 0 <= next_pc
 
         # Check the new PC is word-aligned
-        if self.pc_next & 3:
+        if next_pc & 3:
             self._err_bits |= BAD_INSN_ADDR
 
         # Check the new PC lies in instruction memory
-        if self.pc_next >= self.imem_size:
+        if next_pc >= self.imem_size:
             self._err_bits |= BAD_INSN_ADDR
 
     def post_insn(self) -> None:
         '''Update state after running an instruction but before commit'''
-        self.check_jump_dest()
+        self.check_next_pc()
         self.loop_step()
         self.gprs.post_insn()
 

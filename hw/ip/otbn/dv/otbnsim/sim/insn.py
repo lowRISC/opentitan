@@ -218,7 +218,7 @@ class BEQ(OTBNInsn):
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
         val2 = state.gprs.get_reg(self.grs2).read_unsigned()
         if val1 == val2:
-            state.pc_next = self.offset
+            state.set_next_pc(self.offset)
 
 
 class BNE(OTBNInsn):
@@ -235,7 +235,7 @@ class BNE(OTBNInsn):
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
         val2 = state.gprs.get_reg(self.grs2).read_unsigned()
         if val1 != val2:
-            state.pc_next = self.offset
+            state.set_next_pc(self.offset)
 
 
 class JAL(OTBNInsn):
@@ -251,7 +251,7 @@ class JAL(OTBNInsn):
         mask32 = ((1 << 32) - 1)
         link_pc = (state.pc + 4) & mask32
         state.gprs.get_reg(self.grd).write_unsigned(link_pc)
-        state.pc_next = self.offset & mask32
+        state.set_next_pc(self.offset & mask32)
 
 
 class JALR(OTBNInsn):
@@ -269,7 +269,7 @@ class JALR(OTBNInsn):
         link_pc = (state.pc + 4) & ((1 << 32) - 1)
 
         state.gprs.get_reg(self.grd).write_unsigned(link_pc)
-        state.pc_next = (val1 + self.offset) & ((1 << 32) - 1)
+        state.set_next_pc((val1 + self.offset) & ((1 << 32) - 1))
 
 
 class CSRRS(OTBNInsn):
