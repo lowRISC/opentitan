@@ -11,7 +11,7 @@ from elftools.elf.elffile import ELFFile  # type: ignore
 from elftools.elf.sections import SymbolTableSection  # type: ignore
 from tabulate import tabulate
 
-from .insn import JAL, JALR, LOOP, LOOPI
+from .insn import BEQ, BNE, ECALL, JAL, JALR, LOOP, LOOPI
 from .isa import OTBNInsn
 from .state import OTBNState
 
@@ -26,14 +26,27 @@ class ExecutionStats:
         self.func_calls = []  # type: List[Dict[str, int]]
         self.loops = []  # type: List[Dict[str, int]]
 
-    @property
-    def insn_count(self) -> int:
+        # Histogram indexed by the length of the (extended) basic block.
+        self.basic_block_histo = Counter()  # type: typing.Counter[int]
+        self.ext_basic_block_histo = Counter()  # type: typing.Counter[int]
+
+        self._current_basic_block_len = 0
+        self._current_ext_basic_block_len = 0
+
+    def get_insn_count(self) -> int:
         '''Get the number of executed instructions.'''
         return sum(self.insn_histo.values())
 
     def record_stall(self) -> None:
         '''Record a single stall cycle.'''
         self.stall_count += 1
+
+    def _insn_at_addr(self, addr: int) -> Optional[OTBNInsn]:
+        '''Get the instruction at a given address.'''
+        assert addr % 4 == 0
+        assert addr >= 0
+        word_addr = addr >> 2
+        return self.program[word_addr]
 
     def record_insn(self,
                     insn: OTBNInsn,
@@ -47,6 +60,7 @@ class ExecutionStats:
         pc = state_bc.pc
 
         is_jump = isinstance(insn, JAL) or isinstance(insn, JALR)
+        is_branch = isinstance(insn, BEQ) or isinstance(insn, BNE)
 
         # Instruction histogram
         self.insn_histo[insn.insn.mnemonic] += 1
@@ -76,6 +90,39 @@ class ExecutionStats:
                 'loop_len': insn.bodysize,
                 'iterations': iterations,
             })
+
+        is_last_insn_in_loop_body = state_bc.loop_stack.is_last_insn_in_loop_body(pc)
+
+        # Basic blocks
+        # A basic block is a linear sequence of code ending with an instruction
+        # that can potentially change the control flow: a jump, a branch, the
+        # last instruction in a loop (LOOP or LOOPI) body, or an ECALL. The
+        # length of the basic block equals the number of instructions within the
+        # basic block.
+        self._current_basic_block_len += 1
+        if (is_jump or is_branch or is_last_insn_in_loop_body or
+                isinstance(insn, ECALL)):
+
+            self.basic_block_histo[self._current_basic_block_len] += 1
+            self._current_basic_block_len = 0
+
+        # Extended basic blocks
+        # An extended basic block is a sequence of one or more basic blocks
+        # which can be statically determined at compile time.
+        # Extended basic blocks end with a branch, the last instruction in a
+        # LOOP body, or an ECALL instruction.
+
+        # Determine if the current instruction is the last instruction in a LOOP
+        # body (only LOOP, not LOOPI!).
+        finishing_loop = False
+        if is_last_insn_in_loop_body:
+            loop_insn_addr = state_bc.loop_stack.stack[-1].get_loop_insn_addr()
+            finishing_loop = isinstance(self._insn_at_addr(loop_insn_addr), LOOP)
+
+        self._current_ext_basic_block_len += 1
+        if is_branch or finishing_loop or isinstance(insn, ECALL):
+            self.ext_basic_block_histo[self._current_ext_basic_block_len] += 1
+            self._current_ext_basic_block_len = 0
 
 
 def _dwarf_decode_file_line(dwarf_info: DWARFInfo,
@@ -162,6 +209,10 @@ class ExecutionStatAnalyzer:
         out += "-----------------------\n"
         out += self._dump_insn_histo()
         out += "\n\n"
+        out += "Basic block statistics\n"
+        out += "----------------------\n"
+        out += self._dump_basic_block_stats()
+        out += "\n\n"
         out += "Function call statistics\n"
         out += "------------------------\n"
         out += self._dump_function_call_stats()
@@ -174,7 +225,7 @@ class ExecutionStatAnalyzer:
         return out
 
     def _dump_execution_time(self) -> str:
-        insn_count = self._stats.insn_count
+        insn_count = self._stats.get_insn_count()
         stall_count = self._stats.stall_count
         stall_percent = stall_count / insn_count * 100
         cycles = insn_count + stall_count
@@ -192,6 +243,17 @@ class ExecutionStatAnalyzer:
     def _dump_insn_histo(self) -> str:
         return tabulate(self._stats.insn_histo.most_common(),
                         headers=['instruction', 'count']) + "\n"
+
+    def _dump_basic_block_stats(self) -> str:
+        out = []
+        out += ["", "Number of instructions within a basic block", ""]
+        out += [tabulate(sorted(self._stats.basic_block_histo.items()),
+                         headers=['# of instr.', 'frequency'])]
+        out += ['', '']
+        out += ["Number of instructions within an extended basic block", ""]
+        out.append(tabulate(sorted(self._stats.ext_basic_block_histo.items()),
+                   headers=['# of instr.', 'frequency']))
+        return '\n'.join(out)
 
     def _dump_function_call_stats(self) -> str:
         '''Dump function call statistics'''
