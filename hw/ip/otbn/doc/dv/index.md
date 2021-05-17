@@ -156,6 +156,13 @@ If the field is treated as a signed number, we also expect to see it with the ex
 For any instruction that reads from or writes to a GPR, we expect to see that operand equal to `x0`, `x1` and an arbitrary register in the range `x2 .. x31`.
 We don't have any particular coverage requirements for WDRs (since all of them work essentially the same).
 
+> As for immediates, the code to track this is split by encoding-schema in `otbn_env_cov`.
+> Each register field gets a coverpoint with the same name, defined with the `DEF_GPR_CP` helper macro.
+> If the encoding schema has more than one instruction, the coverpoint is then crossed with the mnemonic, using the `DEF_MNEM_CROSS` helper macro.
+> For example, `add` is in the `enc_bnr_cg` covergroup.
+> This encoding schema's `GRD` field is tracked with the `grd_cp` coverpoint.
+> Finally, the relevant cross is called `grd_cross`.
+
 For any source GPR, we require "toggle coverage" for its value.
 For example, `ADD` reads from its `<grs1>` operand.
 We want to see each of the 32 bits of that operand set and unset (giving 64 coverage points).
