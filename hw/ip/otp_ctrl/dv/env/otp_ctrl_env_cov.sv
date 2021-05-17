@@ -8,7 +8,9 @@
  * Covergroups may also be wrapped inside helper classes if needed.
  */
 
-class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
+class otp_ctrl_env_cov extends cip_base_env_cov #(
+  .CFG_T(otp_ctrl_env_cfg)
+);
   `uvm_component_utils(otp_ctrl_env_cov)
 
   // the base class provides the following handles for use:
@@ -19,14 +21,14 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
   // in scb:
   // - If lc_esc_en is On
   // - If each partition is locked (expect LC)
-  covergroup power_on_cg with function sample (bit lc_esc_en, bit[NumPart-2:0] parts_locked);
-    lc_esc:          coverpoint lc_esc_en;
+  covergroup power_on_cg with function sample (bit lc_esc_en, bit [NumPart-2:0] parts_locked);
+    lc_esc: coverpoint lc_esc_en;
     creator_sw_lock: coverpoint parts_locked[0];
-    owner_sw_lock:   coverpoint parts_locked[1];
-    hw_cfg_lock:     coverpoint parts_locked[2];
-    screct0_lock:    coverpoint parts_locked[3];
-    screct1_lock:    coverpoint parts_locked[4];
-    screct2_lock:    coverpoint parts_locked[5];
+    owner_sw_lock: coverpoint parts_locked[1];
+    hw_cfg_lock: coverpoint parts_locked[2];
+    screct0_lock: coverpoint parts_locked[3];
+    screct1_lock: coverpoint parts_locked[4];
+    screct2_lock: coverpoint parts_locked[5];
   endgroup
 
   bit_toggle_cg_wrap lc_prog_cg;
@@ -37,7 +39,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     flash_index: coverpoint index {
       bins flash_data_key = {FlashDataKey};
       bins flash_addr_key = {FlashAddrKey};
-      illegal_bins il     = default;
+      illegal_bins il = default;
     }
     secret1_lock: coverpoint locked;
     flash_req_lock_cross: cross flash_index, secret1_lock;
@@ -46,8 +48,8 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
   // This coverpoint is only collected if sram request passed scb check
   covergroup sram_req_cg with function sample (int index, bit locked);
     sram_index: coverpoint index {
-      bins sram_key0  = {0};
-      bins sram_key1  = {1};
+      bins sram_key0 = {0};
+      bins sram_key1 = {1};
       illegal_bins il = default;
     }
     secret1_lock: coverpoint locked;

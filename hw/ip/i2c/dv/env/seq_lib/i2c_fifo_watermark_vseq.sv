@@ -10,10 +10,10 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   `uvm_object_new
 
   // fast write data to fmt_fifo to quickly trigger fmt_watermark interrupt
-  constraint fmt_fifo_access_dly_c { fmt_fifo_access_dly == 0;}
+  constraint fmt_fifo_access_dly_c {fmt_fifo_access_dly == 0;}
 
   // fast read data from rd_fifo after crossing watermark level to quickly finish simulation
-  constraint rx_fifo_access_dly_c { rx_fifo_access_dly == 0;}
+  constraint rx_fifo_access_dly_c {rx_fifo_access_dly == 0;}
 
   // write transaction length is more than fmt_fifo depth to cross fmtilvl
   constraint num_wr_bytes_c {
@@ -21,7 +21,7 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
     num_wr_bytes == I2C_FMT_FIFO_DEPTH + num_data_ovf;
   }
   // read transaction length is equal to rx_fifo depth to cross rxilvl
-  constraint num_rd_bytes_c { num_rd_bytes == I2C_RX_FIFO_DEPTH; }
+  constraint num_rd_bytes_c {num_rd_bytes == I2C_RX_FIFO_DEPTH;}
 
   // counting the number of received watermark interrupts
   local uint cnt_fmt_watermark;
@@ -74,11 +74,11 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
             // watermark interrupt is assuredly triggered
             // until rx_fifo becomes full, en_rx_watermark is set to start reading rx_fifo
             host_send_trans(1, ReadOnly);
-            check_rx_watermark = 1'b0; // gracefully stop process_rx_watermark_intr
+            check_rx_watermark = 1'b0;  // gracefully stop process_rx_watermark_intr
             // for fmtilvl > 4, rx_watermark is disable (cnt_rx_watermark = 0)
             // otherwise, cnt_rx_watermark must be 1
             if (!cfg.under_reset) begin
-              if ( rxilvl <= 4) begin
+              if (rxilvl <= 4) begin
                 `DV_CHECK_EQ(cnt_rx_watermark, 1)
               end else begin
                 `DV_CHECK_EQ(cnt_rx_watermark, 0)
@@ -156,6 +156,6 @@ class i2c_fifo_watermark_vseq extends i2c_rx_tx_vseq;
       clear_interrupt(RxWatermark);
     end
   endtask : process_rx_watermark_intr
-  
+
 endclass : i2c_fifo_watermark_vseq
 

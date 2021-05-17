@@ -16,36 +16,43 @@ package i2c_agent_pkg;
 
   // Bus/Transaction types for the agent driver
   typedef enum logic [3:0] {
-    None, DevAck, RdData, WrData,
-    HostStart, HostRStart, HostData, HostNAck, HostStop
+    None,
+    DevAck,
+    RdData,
+    WrData,
+    HostStart,
+    HostRStart,
+    HostData,
+    HostNAck,
+    HostStop
   } drv_type_e;
 
   // register values
   typedef struct {
     // derived parameters
-    bit  [31:0]  tSetupStart;
-    bit  [31:0]  tHoldStart;
-    bit  [31:0]  tClockStart;
-    bit  [31:0]  tClockLow;
-    bit  [31:0]  tSetupBit;
-    bit  [31:0]  tClockPulse;
-    bit  [31:0]  tHoldBit;
-    bit  [31:0]  tClockStop;
-    bit  [31:0]  tSetupStop;
-    bit  [31:0]  tHoldStop;
-    bit          enbTimeOut;
-    bit  [30:0]  tTimeOut;
-    uint         tStretchHostClock;
+    bit [31:0] tSetupStart;
+    bit [31:0] tHoldStart;
+    bit [31:0] tClockStart;
+    bit [31:0] tClockLow;
+    bit [31:0] tSetupBit;
+    bit [31:0] tClockPulse;
+    bit [31:0] tHoldBit;
+    bit [31:0] tClockStop;
+    bit [31:0] tSetupStop;
+    bit [31:0] tHoldStop;
+    bit enbTimeOut;
+    bit [30:0] tTimeOut;
+    uint tStretchHostClock;
 
     // sda_unstable interrupt will be asserted if
     // tSdaUnstable is set to a non-zero value, otherwise
-    uint         tSdaUnstable;
+    uint tSdaUnstable;
     // scl_interference interrupt will be asserted if
     // tSclInterference is set to a zero value, otherwise
-    uint         tSclInterference;
+    uint tSclInterference;
     // sda_interference interrupt will be asserted if
     // tSdaInterference is set to a zero value, otherwise
-    uint         tSdaInterference;
+    uint tSdaInterference;
   } timing_cfg_t;
 
   typedef enum int {
@@ -67,4 +74,4 @@ package i2c_agent_pkg;
   `include "i2c_agent.sv"
   `include "seq_lib/i2c_seq_list.sv"
 
-endpackage: i2c_agent_pkg
+endpackage : i2c_agent_pkg

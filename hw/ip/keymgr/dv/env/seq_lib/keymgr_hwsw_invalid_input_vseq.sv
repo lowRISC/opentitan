@@ -12,14 +12,19 @@ class keymgr_hwsw_invalid_input_vseq extends keymgr_sw_invalid_input_vseq;
 
   // enable key_version error with 1/5 chance
   constraint is_key_version_err_c {
-    is_key_version_err dist {0 :/ 4, 1 :/ 1};
+    is_key_version_err dist {
+      0 :/ 4,
+      1 :/ 1
+    };
   }
 
   // enable HW invalid input
   constraint num_invalid_hw_input_c {
-    num_invalid_hw_input dist {0     :/ 1,
-                               1     :/ 1,
-                               [2:6] :/ 1};
+    num_invalid_hw_input dist {
+      0       :/ 1,
+      1       :/ 1,
+      [2 : 6] :/ 1
+    };
   }
 
   // disable checker in seq, only check in scb

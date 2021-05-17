@@ -17,7 +17,7 @@ module timer_core #(
   output logic        tick,
   output logic [63:0] mtime_d,
   input        [63:0] mtime,
-  input        [63:0] mtimecmp [N],
+  input        [63:0] mtimecmp[N],
 
   output logic [N-1:0] intr
 );
@@ -42,7 +42,7 @@ module timer_core #(
 
   // interrupt is generated if mtime is greater than or equal to mtimecmp
   // TODO: Check if it must consider overflow case
-  for (genvar t = 0 ; t < N ; t++) begin : gen_intr
+  for (genvar t = 0; t < N; t++) begin : gen_intr
     assign intr[t] = active & (mtime >= mtimecmp[t]);
   end
 

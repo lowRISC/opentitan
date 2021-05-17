@@ -20,14 +20,11 @@ package csrng_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint     NUM_HW_APPS = 1;
-  parameter string   LIST_OF_ALERTS[] = {"fatal_alert"};
-  parameter uint     NUM_ALERTS = 1;
+  parameter uint NUM_HW_APPS = 1;
+  parameter string LIST_OF_ALERTS[] = {"fatal_alert"};
+  parameter uint NUM_ALERTS = 1;
 
-  parameter bit [TL_DW-1:0] [3:0] ZERO_SEED_GENBITS = {32'h0,
-                                                       32'h0,
-                                                       32'h0,
-                                                       32'h7};
+  parameter bit [TL_DW-1:0][3:0] ZERO_SEED_GENBITS = {32'h0, 32'h0, 32'h0, 32'h7};
 
   // types
   typedef enum int {

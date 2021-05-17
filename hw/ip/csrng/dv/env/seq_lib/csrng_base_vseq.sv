@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class csrng_base_vseq extends cip_base_vseq #(
-    .RAL_T               (csrng_reg_block),
-    .CFG_T               (csrng_env_cfg),
-    .COV_T               (csrng_env_cov),
-    .VIRTUAL_SEQUENCER_T (csrng_virtual_sequencer)
-  );
+  .RAL_T              (csrng_reg_block),
+  .CFG_T              (csrng_env_cfg),
+  .COV_T              (csrng_env_cov),
+  .VIRTUAL_SEQUENCER_T(csrng_virtual_sequencer)
+);
   `uvm_object_utils(csrng_base_vseq)
 
   bit [3:0]    acmd, clen, flags;
@@ -35,7 +35,7 @@ class csrng_base_vseq extends cip_base_vseq #(
   endtask
 
   // write csrng command request register
-  virtual task wr_cmd_req(bit[3:0] acmd, bit[3:0] clen, bit[3:0] flags, bit[18:0] glen);
+  virtual task wr_cmd_req(bit [3:0] acmd, bit [3:0] clen, bit [3:0] flags, bit [18:0] glen);
     csr_wr(.ptr(ral.cmd_req), .value({1'b0, glen, flags, clen, acmd}));
   endtask
 

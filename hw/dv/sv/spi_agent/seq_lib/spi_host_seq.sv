@@ -10,9 +10,7 @@ class spi_host_seq extends spi_base_seq;
   rand bit [7:0] data[$];
 
   // constrain size of data sent / received to be at most 64kB
-  constraint data_size_c {
-    data.size() inside {[1:65536]};
-  }
+  constraint data_size_c {data.size() inside {[1 : 65536]};}
 
   virtual task body();
     req = spi_item::type_id::create("req");

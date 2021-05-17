@@ -8,9 +8,7 @@ class spi_device_fifo_underflow_overflow_vseq extends spi_device_txrx_vseq;
   `uvm_object_utils(spi_device_fifo_underflow_overflow_vseq)
   `uvm_object_new
 
-  constraint num_trans_c {
-    num_trans inside {[2:3]};
-  }
+  constraint num_trans_c {num_trans inside {[2 : 3]};}
 
   virtual task body();
     // overflow will occur in this test, disable overflow assertion in RTL
@@ -39,7 +37,7 @@ class spi_device_fifo_underflow_overflow_vseq extends spi_device_txrx_vseq;
     // there are some underflow data in fifo, clean them up
     // repeat twice in case some data in async_fifo when sram fifo is full
     for (uint i = 0; i < 2; i++) begin
-      cfg.clk_rst_vif.wait_clks(2); // 2 cycle for fifo ptr to be updated
+      cfg.clk_rst_vif.wait_clks(2);  // 2 cycle for fifo ptr to be updated
       read_rx_avail_bytes(SramDataAvail, rx_avail_bytes);
       if (rx_avail_bytes == 0) break;
       read_host_words_rcvd(rx_avail_bytes / SRAM_WORD_SIZE, device_words_q);

@@ -19,16 +19,17 @@ class keymgr_stress_all_vseq extends keymgr_base_vseq;
   endtask
 
   task body();
-    string seq_names[] = {"keymgr_smoke_vseq",
-                          "keymgr_common_vseq", // for intr_test
-                          "keymgr_sideload_vseq",
-                          "keymgr_random_vseq",
-                          "keymgr_direct_to_disabled_vseq",
-                          "keymgr_sw_invalid_input_vseq",
-                          // TODO, add this later
-                          // "keymgr_hwsw_invalid_input_vseq",
-                          "keymgr_lc_disable_vseq"
-                          };
+    string seq_names[] = {
+      "keymgr_smoke_vseq",
+      "keymgr_common_vseq",  // for intr_test
+      "keymgr_sideload_vseq",
+      "keymgr_random_vseq",
+      "keymgr_direct_to_disabled_vseq",
+      "keymgr_sw_invalid_input_vseq",
+      // TODO, add this later
+      // "keymgr_hwsw_invalid_input_vseq",
+      "keymgr_lc_disable_vseq"
+    };
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence     seq;
       keymgr_base_vseq keymgr_vseq;
@@ -41,7 +42,7 @@ class keymgr_stress_all_vseq extends keymgr_base_vseq;
       // if upper seq disables do_apply_reset for this seq, then can't issue reset
       // as upper seq may drive reset
       if (do_apply_reset) keymgr_vseq.do_apply_reset = 1;
-      else                keymgr_vseq.do_apply_reset = 0;
+      else keymgr_vseq.do_apply_reset = 0;
 
       keymgr_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(keymgr_vseq)

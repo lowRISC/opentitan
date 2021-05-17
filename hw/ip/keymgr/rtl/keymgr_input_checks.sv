@@ -8,7 +8,9 @@
 `include "prim_assert.sv"
 
 // We should also check for input validity
-module keymgr_input_checks import keymgr_pkg::*;(
+module keymgr_input_checks
+  import keymgr_pkg::*;
+(
   input [2**StageWidth-1:0][31:0] max_key_versions_i,
   input keymgr_stage_e stage_sel_i,
   input hw_key_req_t key_i,
@@ -29,40 +31,40 @@ module keymgr_input_checks import keymgr_pkg::*;(
   assign cur_max_key_version = max_key_versions_i[stage_sel_i];
 
   // key version must be smaller than or equal to max version
-  assign key_version_vld_o = key_version_i <= cur_max_key_version;
+  assign key_version_vld_o   = key_version_i <= cur_max_key_version;
 
   // general data check
   logic [MaxWidth-1:0] creator_seed_padded, owner_seed_padded, devid_padded, health_state_padded;
 
   prim_msb_extend #(
-    .InWidth(KeyWidth),
+    .InWidth (KeyWidth),
     .OutWidth(MaxWidth)
   ) u_creator_seed (
-    .in_i(creator_seed_i),
+    .in_i (creator_seed_i),
     .out_o(creator_seed_padded)
   );
 
   prim_msb_extend #(
-    .InWidth(KeyWidth),
+    .InWidth (KeyWidth),
     .OutWidth(MaxWidth)
   ) u_owner_seed (
-    .in_i(owner_seed_i),
+    .in_i (owner_seed_i),
     .out_o(owner_seed_padded)
   );
 
   prim_msb_extend #(
-    .InWidth(DevIdWidth),
+    .InWidth (DevIdWidth),
     .OutWidth(MaxWidth)
   ) u_devid (
-    .in_i(devid_i),
+    .in_i (devid_i),
     .out_o(devid_padded)
   );
 
   prim_msb_extend #(
-    .InWidth(HealthStateWidth),
+    .InWidth (HealthStateWidth),
     .OutWidth(MaxWidth)
   ) u_health_state (
-    .in_i(health_state_i),
+    .in_i (health_state_i),
     .out_o(health_state_padded)
   );
 
@@ -79,29 +81,29 @@ module keymgr_input_checks import keymgr_pkg::*;(
   logic [MaxWidth-1:0] key_share1_padded;
 
   prim_msb_extend #(
-    .InWidth(KeyWidth),
+    .InWidth (KeyWidth),
     .OutWidth(MaxWidth)
   ) u_key_share0 (
-    .in_i(key_i.key_share0),
+    .in_i (key_i.key_share0),
     .out_o(key_share0_padded)
   );
 
   prim_msb_extend #(
-    .InWidth(KeyWidth),
+    .InWidth (KeyWidth),
     .OutWidth(MaxWidth)
   ) u_key_share1 (
-    .in_i(key_i.key_share1),
+    .in_i (key_i.key_share1),
     .out_o(key_share1_padded)
   );
 
   assign key_vld_o = valid_chk(key_share0_padded) & valid_chk(key_share1_padded);
 
   // checks for all 0's or all 1's of value
-  function automatic logic valid_chk (logic [MaxWidth-1:0] value);
+  function automatic logic valid_chk(logic [MaxWidth-1:0] value);
 
     return |value & ~&value;
 
-  endfunction // valid_chk
+  endfunction  // valid_chk
 
 
-endmodule // keymgr_input_checks
+endmodule  // keymgr_input_checks

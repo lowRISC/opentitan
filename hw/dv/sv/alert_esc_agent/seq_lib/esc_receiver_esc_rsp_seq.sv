@@ -8,8 +8,6 @@ class esc_receiver_esc_rsp_seq extends esc_receiver_base_seq;
   `uvm_object_utils(esc_receiver_esc_rsp_seq)
   `uvm_object_new
 
-  constraint esc_receiver_esc_rsp_seq_c {
-    r_esc_rsp == 1;
-  }
+  constraint esc_receiver_esc_rsp_seq_c {r_esc_rsp == 1;}
 
 endclass : esc_receiver_esc_rsp_seq

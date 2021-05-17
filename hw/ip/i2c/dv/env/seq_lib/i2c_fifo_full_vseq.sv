@@ -8,19 +8,19 @@ class i2c_fifo_full_vseq extends i2c_rx_tx_vseq;
   `uvm_object_new
 
   // fast write data to fmt_fifo to quickly trigger fmt_watermark interrupt
-  constraint fmt_fifo_access_dly_c { fmt_fifo_access_dly == 0;}
+  constraint fmt_fifo_access_dly_c {fmt_fifo_access_dly == 0;}
   // fast read data from rd_fifo after it is full in order to quickly finish simulation
-  constraint rx_fifo_access_dly_c { rx_fifo_access_dly == 0;}
+  constraint rx_fifo_access_dly_c {rx_fifo_access_dly == 0;}
   // write transaction length is more than fmt_fifo depth to fill up fmt_fifo
   constraint num_data_ovf_c {
-    num_data_ovf inside {[I2C_FMT_FIFO_DEPTH/4 : I2C_FMT_FIFO_DEPTH/2]};
+    num_data_ovf inside {[I2C_FMT_FIFO_DEPTH / 4 : I2C_FMT_FIFO_DEPTH / 2]};
   }
   constraint num_wr_bytes_c {
     solve num_data_ovf before num_wr_bytes;
     num_wr_bytes == I2C_FMT_FIFO_DEPTH + num_data_ovf;
   }
   // read transaction length is equal to rx_fifo
-  constraint num_rd_bytes_c { num_rd_bytes == I2C_RX_FIFO_DEPTH; }
+  constraint num_rd_bytes_c {num_rd_bytes == I2C_RX_FIFO_DEPTH;}
 
   local bit check_fifo_full = 1'b1;
 
@@ -40,7 +40,7 @@ class i2c_fifo_full_vseq extends i2c_rx_tx_vseq;
       end
       begin
         host_send_trans(num_trans);
-        check_fifo_full = 1'b0; // gracefully stop process_fifo_full_status
+        check_fifo_full = 1'b0;  // gracefully stop process_fifo_full_status
       end
     join
     `uvm_info(`gfn, "\n--> end of i2c_fifo_full_vseq", UVM_DEBUG)
@@ -66,10 +66,10 @@ class i2c_fifo_full_vseq extends i2c_rx_tx_vseq;
     csr_rd(.ptr(ral.fifo_status.fmtlvl), .value(fmt_lvl), .backdoor(1'b1));
     csr_rd(.ptr(ral.fifo_status.rxlvl), .value(rx_lvl), .backdoor(1'b1));
     if (!cfg.under_reset) begin
-      if (fmt_full)  `DV_CHECK_EQ(fmt_lvl, I2C_FMT_FIFO_DEPTH);
+      if (fmt_full) `DV_CHECK_EQ(fmt_lvl, I2C_FMT_FIFO_DEPTH);
       if (fmt_empty) `DV_CHECK_EQ(fmt_lvl, 0);
-      if (rx_full)   `DV_CHECK_EQ(rx_lvl, I2C_RX_FIFO_DEPTH);
-      if (rx_empty)  `DV_CHECK_EQ(rx_lvl, 0);
+      if (rx_full) `DV_CHECK_EQ(rx_lvl, I2C_RX_FIFO_DEPTH);
+      if (rx_empty) `DV_CHECK_EQ(rx_lvl, 0);
     end
   endtask : process_fifo_full_status
 

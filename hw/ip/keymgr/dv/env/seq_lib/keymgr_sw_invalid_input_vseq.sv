@@ -9,7 +9,10 @@ class keymgr_sw_invalid_input_vseq extends keymgr_random_vseq;
 
   // enable key_version error with 1/3 chance
   constraint is_key_version_err_c {
-    is_key_version_err dist {0 :/ 2, 1 :/ 1};
+    is_key_version_err dist {
+      0 :/ 2,
+      1 :/ 1
+    };
   }
 
 endclass : keymgr_sw_invalid_input_vseq

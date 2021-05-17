@@ -35,7 +35,7 @@ module keymgr_cfg_en #(
   // configuration
   logic out_clr;
   assign out_clr = NonInitClr ? clr_i : vld_clr;
-  assign out_o = ~out_clr & out_q & en_i;
+  assign out_o   = ~out_clr & out_q & en_i;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -60,4 +60,4 @@ module keymgr_cfg_en #(
     end
   end
 
-endmodule // keymgr_cfg_en
+endmodule  // keymgr_cfg_en

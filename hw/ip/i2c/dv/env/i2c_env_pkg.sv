@@ -46,7 +46,7 @@ package i2c_env_pkg;
   } tran_type_e;
 
   parameter uint I2C_FMT_FIFO_DEPTH = 32;
-  parameter uint I2C_RX_FIFO_DEPTH  = 32;
+  parameter uint I2C_RX_FIFO_DEPTH = 32;
 
   // package sources
   `include "i2c_seq_cfg.sv"

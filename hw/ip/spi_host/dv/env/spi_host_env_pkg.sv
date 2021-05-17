@@ -23,9 +23,9 @@ package spi_host_env_pkg;
   // types
   // parameters
   typedef enum int {
-    SpiHostError     = 0,
-    SpiHostEvent     = 1,
-    NumSpiHostIntr   = 2
+    SpiHostError   = 0,
+    SpiHostEvent   = 1,
+    NumSpiHostIntr = 2
   } spi_host_intr_e;
 
   // functions

@@ -7,7 +7,9 @@
 
 `include "prim_assert.sv"
 
-module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
+module pwrmgr_cdc
+  import pwrmgr_pkg::*;
+  import pwrmgr_reg_pkg::*;
 (
   // Clocks and resets
   input clk_slow_i,
@@ -51,8 +53,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   output logic cdc_sync_done_o,
 
   // peripheral inputs, mixed domains
-  input pwr_peri_t peri_i,
-  input pwr_flash_t flash_i,
+  input  pwr_peri_t  peri_i,
+  input  pwr_flash_t flash_i,
   output pwr_flash_t flash_o,
 
   // otp interface
@@ -75,56 +77,56 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   logic slow_cdc_sync;
   pwr_ast_rsp_t slow_ast_q, slow_ast_q2;
 
-  prim_flop_2sync # (
+  prim_flop_2sync #(
     .Width(1)
   ) i_req_pwrdn_sync (
-    .clk_i(clk_slow_i),
+    .clk_i (clk_slow_i),
     .rst_ni(rst_slow_ni),
-    .d_i(req_pwrdn_i),
-    .q_o(slow_req_pwrdn_o)
+    .d_i   (req_pwrdn_i),
+    .q_o   (slow_req_pwrdn_o)
   );
 
-  prim_flop_2sync # (
+  prim_flop_2sync #(
     .Width(1)
   ) i_ack_pwrup_sync (
-    .clk_i(clk_slow_i),
+    .clk_i (clk_slow_i),
     .rst_ni(rst_slow_ni),
-    .d_i(ack_pwrup_i),
-    .q_o(slow_ack_pwrup_o)
+    .d_i   (ack_pwrup_i),
+    .q_o   (slow_ack_pwrup_o)
   );
 
   prim_pulse_sync i_slow_cdc_sync (
-    .clk_src_i(clk_i),
-    .rst_src_ni(rst_ni),
+    .clk_src_i  (clk_i),
+    .rst_src_ni (rst_ni),
     .src_pulse_i(cfg_cdc_sync_i),
-    .clk_dst_i(clk_slow_i),
-    .rst_dst_ni(rst_slow_ni),
+    .clk_dst_i  (clk_slow_i),
+    .rst_dst_ni (rst_slow_ni),
     .dst_pulse_o(slow_cdc_sync)
   );
 
   // Even though this is multi-bit, the bits are individual request lines.
   // So there is no general concern about recombining as there is
   // no intent to use them in a related manner.
-  prim_flop_2sync # (
+  prim_flop_2sync #(
     .Width($bits(pwr_peri_t))
   ) i_slow_ext_req_sync (
-    .clk_i  (clk_slow_i),
-    .rst_ni (rst_slow_ni),
-    .d_i    (peri_i),
-    .q_o    (slow_peri_reqs_o)
+    .clk_i (clk_slow_i),
+    .rst_ni(rst_slow_ni),
+    .d_i   (peri_i),
+    .q_o   (slow_peri_reqs_o)
   );
 
 
   // Some of the AST signals are multi-bits themselves (such as clk_val)
   // thus they need to be delayed one more stage to check for stability
-  prim_flop_2sync # (
+  prim_flop_2sync #(
     .Width($bits(pwr_ast_rsp_t)),
     .ResetValue(PWR_AST_RSP_SYNC_DEFAULT)
   ) i_ast_sync (
-    .clk_i  (clk_slow_i),
-    .rst_ni (rst_slow_ni),
-    .d_i    (ast_i),
-    .q_o    (slow_ast_q)
+    .clk_i (clk_slow_i),
+    .rst_ni(rst_slow_ni),
+    .d_i   (ast_i),
+    .q_o   (slow_ast_q)
   );
 
   always_ff @(posedge clk_slow_i or negedge rst_slow_ni) begin
@@ -176,7 +178,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   logic pwrup_cause_toggle_q, pwrup_cause_toggle_q2;
   logic pwrup_cause_chg;
 
-  prim_flop_2sync # (
+  prim_flop_2sync #(
     .Width(1)
   ) i_req_pwrup_sync (
     .clk_i,
@@ -185,7 +187,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(req_pwrup_o)
   );
 
-  prim_flop_2sync # (
+  prim_flop_2sync #(
     .Width(1)
   ) i_ack_pwrdn_sync (
     .clk_i,
@@ -194,7 +196,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(ack_pwrdn_o)
   );
 
-  prim_flop_2sync # (
+  prim_flop_2sync #(
     .Width(1)
   ) i_pwrup_chg_sync (
     .clk_i,
@@ -204,11 +206,11 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   );
 
   prim_pulse_sync i_scdc_sync (
-    .clk_src_i(clk_slow_i),
-    .rst_src_ni(rst_slow_ni),
+    .clk_src_i  (clk_slow_i),
+    .rst_src_ni (rst_slow_ni),
     .src_pulse_i(slow_cdc_sync),
-    .clk_dst_i(clk_i),
-    .rst_dst_ni(rst_ni),
+    .clk_dst_i  (clk_i),
+    .rst_dst_ni (rst_ni),
     .dst_pulse_o(cdc_sync_done_o)
   );
 

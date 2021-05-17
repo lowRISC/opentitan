@@ -11,12 +11,12 @@ module spi_p2s
   input rst_ni,
 
   // Input byte interface
-  input            data_valid_i,
-  input spi_byte_t data_i,
-  output logic     data_sent_o,
+  input             data_valid_i,
+  input  spi_byte_t data_i,
+  output logic      data_sent_o,
 
   // SPI interface
-  input  logic       csb_i, // for line floating
+  input  logic       csb_i,  // for line floating
   output logic [3:0] s_en_o,
   output logic [3:0] s_o,
 
@@ -37,7 +37,7 @@ module spi_p2s
   // Definition //
   ////////////////
 
-  localparam int unsigned Bits     = $bits(spi_byte_t);
+  localparam int unsigned Bits = $bits(spi_byte_t);
   localparam int unsigned BitWidth = $clog2(Bits);
 
   typedef logic [BitWidth-1:0] count_t;
@@ -46,12 +46,12 @@ module spi_p2s
     TxIdle,
     TxActive
   } tx_state_e;
-  tx_state_e tx_state;   // Only for handling CPHA
+  tx_state_e tx_state;  // Only for handling CPHA
 
   // Latching io_mode_i when last beat is set.
   // This guarantees cnt not abruptly changed during operation
   // which affects `last_beat` again.
-  io_mode_e io_mode;
+  io_mode_e  io_mode;
 
   // in Mode3, the logic skips first clock edge to move to next bit.
   // This is not necessary for Flash / Passthrough mode. But Generic mode
@@ -68,15 +68,15 @@ module spi_p2s
   // in Dual mode, line 0:1 are for output
   // in Quad mode, all lines 0:3 are for output.
   always_comb begin
-    out_enable = 4'b 0000; // default
+    out_enable = 4'b0000;  // default
 
     unique case (io_mode)
       SingleIO: begin
-        out_enable = {2'b 00, data_valid_i, 1'b 0};
+        out_enable = {2'b00, data_valid_i, 1'b0};
       end
 
       DualIO: begin
-        out_enable = {2'b 00, {2{data_valid_i}}};
+        out_enable = {2'b00, {2{data_valid_i}}};
       end
 
       QuadIO: begin
@@ -84,12 +84,12 @@ module spi_p2s
       end
 
       default: begin
-        out_enable = 4'b 0000;
+        out_enable = 4'b0000;
       end
     endcase
   end
 
-  assign s_en_o = (csb_i) ? 4'b 0000 : out_enable ;
+  assign s_en_o = (csb_i) ? 4'b0000 : out_enable;
 
   // `data_sent`
   // Popping signal is a little bit tricky if p2s supports Quad IO
@@ -108,7 +108,7 @@ module spi_p2s
   // asserts at 7th beat. Then the mode could be changed to Dual/ Quad.
 
   always_comb begin
-    data_sent_o = 1'b 0;
+    data_sent_o = 1'b0;
 
     unique case (io_mode)
       SingleIO: data_sent_o = (cnt == 6);
@@ -144,7 +144,7 @@ module spi_p2s
 
   // SPI out
   always_comb begin
-    s_o = 4'b 0000;
+    s_o = 4'b0000;
 
     unique case (io_mode)
       SingleIO: begin
@@ -163,7 +163,7 @@ module spi_p2s
       end
 
       default: begin
-        s_o = 4'b 0000;
+        s_o = 4'b0000;
       end
     endcase
   end
@@ -195,8 +195,8 @@ module spi_p2s
       cnt <= BitWidth'(0);
     end else if (last_beat) begin
       cnt <= BitWidth'(0);
-    end else if (tx_state != TxIdle || cpha_i == 1'b 0) begin
-      cnt <= cnt + 1'b 1;
+    end else if (tx_state != TxIdle || cpha_i == 1'b0) begin
+      cnt <= cnt + 1'b1;
     end
   end
 
@@ -204,7 +204,7 @@ module spi_p2s
 
   // Last beat depends on the mode
   always_comb begin
-    last_beat = 1'b 0;
+    last_beat = 1'b0;
 
     unique case (io_mode)
       SingleIO: last_beat = (cnt == BitWidth'('h7));

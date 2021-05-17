@@ -7,7 +7,9 @@
 
 `include "prim_assert.sv"
 
-module keymgr_reseed_ctrl import keymgr_pkg::*; (
+module keymgr_reseed_ctrl
+  import keymgr_pkg::*;
+(
   input clk_i,
   input rst_ni,
   input clk_edn_i,
@@ -22,7 +24,7 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
 
   // interface to edn
   output edn_pkg::edn_req_t edn_o,
-  input edn_pkg::edn_rsp_t edn_i,
+  input  edn_pkg::edn_rsp_t edn_i,
 
   // interface to lfsr
   output logic seed_en_o,
@@ -69,11 +71,11 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       reseed_cnt <= '{default: 1};
-    end else if(edn_done) begin
+    end else if (edn_done) begin
       reseed_cnt <= reseed_interval_i;
-    end else if(reseed_req_i) begin
+    end else if (reseed_req_i) begin
       reseed_cnt <= '0;
-    end else if(|reseed_cnt && !first_use) begin
+    end else if (|reseed_cnt && !first_use) begin
       reseed_cnt <= reseed_cnt - 1'b1;
     end
   end
@@ -86,13 +88,13 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
     assign seed_o = edn_data;
   end else begin : gen_mult_width
     // hold one less transaction in storage
-    localparam int DeltaWidth = LfsrWidth-EdnWidth;
+    localparam int DeltaWidth = LfsrWidth - EdnWidth;
     logic [DeltaWidth-1:0] seed_q;
 
     if (DeltaWidth > EdnWidth) begin : gen_greater_width
       always_ff @(posedge clk_i) begin
         if (edn_txn_done) begin
-          seed_q <= {seed_q[0 +: DeltaWidth-EdnWidth], edn_data};
+          seed_q <= {seed_q[0+:DeltaWidth-EdnWidth], edn_data};
         end
       end
     end else begin : gen_double_width
@@ -108,14 +110,14 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
 
   //req/ack interface to edn
   prim_sync_reqack u_reqack (
-    .clk_src_i(clk_i),
+    .clk_src_i (clk_i),
     .rst_src_ni(rst_ni),
-    .clk_dst_i(clk_edn_i),
+    .clk_dst_i (clk_edn_i),
     .rst_dst_ni(rst_edn_ni),
-    .src_req_i(edn_req),
-    .src_ack_o(edn_ack),
-    .dst_req_o(edn_o.edn_req),
-    .dst_ack_i(edn_i.edn_ack)
+    .src_req_i (edn_req),
+    .src_ack_o (edn_ack),
+    .dst_req_o (edn_o.edn_req),
+    .dst_ack_i (edn_i.edn_ack)
   );
 
   // capture the data on edn domain since the ack interface
@@ -130,4 +132,4 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
   logic unused_fips;
   assign unused_fips = edn_i.edn_fips;
 
-endmodule // keymgr_reseed_ctrl
+endmodule  // keymgr_reseed_ctrl

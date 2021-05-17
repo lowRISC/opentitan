@@ -19,6 +19,7 @@ VERIBLE_VERSION=`verible-verilog-format --version`
 VERIBLE_ARGS="--formal_parameters_indentation=indent \
               --named_parameter_indentation=indent   \
               --named_port_indentation=indent        \
+              --named_port_alignment=align           \
               --port_declarations_indentation=indent \
               --inplace"
 

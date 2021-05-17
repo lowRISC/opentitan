@@ -6,7 +6,9 @@
 
 `include "prim_assert.sv"
 
-module keymgr_sideload_key import keymgr_pkg::*;(
+module keymgr_sideload_key
+  import keymgr_pkg::*;
+(
   input clk_i,
   input rst_ni,
   input en_i,
@@ -49,4 +51,4 @@ module keymgr_sideload_key import keymgr_pkg::*;(
     end
   end
 
-endmodule // keymgr_sideload_key
+endmodule  // keymgr_sideload_key

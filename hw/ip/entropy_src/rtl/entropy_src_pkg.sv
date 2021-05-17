@@ -9,10 +9,10 @@ package entropy_src_pkg;
   // Entropy Interface
   //-------------------------
 
-  parameter int  RNG_BUS_WIDTH   = 4;
-  parameter int  CSRNG_BUS_WIDTH = 384;
-  parameter int  FIPS_BUS_WIDTH  = 1;
-  parameter int  FIPS_CSRNG_BUS_WIDTH = FIPS_BUS_WIDTH + CSRNG_BUS_WIDTH;
+  parameter int RNG_BUS_WIDTH = 4;
+  parameter int CSRNG_BUS_WIDTH = 384;
+  parameter int FIPS_BUS_WIDTH = 1;
+  parameter int FIPS_CSRNG_BUS_WIDTH = FIPS_BUS_WIDTH + CSRNG_BUS_WIDTH;
 
   // es entropy i/f
   typedef struct packed {
@@ -21,30 +21,22 @@ package entropy_src_pkg;
     logic [FIPS_BUS_WIDTH-1:0] es_fips;
   } entropy_src_hw_if_rsp_t;
 
-  typedef struct packed {
-    logic es_req;
-  } entropy_src_hw_if_req_t;
+  typedef struct packed {logic es_req;} entropy_src_hw_if_req_t;
 
   parameter entropy_src_hw_if_req_t ENTROPY_SRC_HW_IF_REQ_DEFAULT = '{default: '0};
   parameter entropy_src_hw_if_rsp_t ENTROPY_SRC_HW_IF_RSP_DEFAULT = '{default: '0};
 
 
   // csrng block encrypt request/ack i/f
-  typedef struct packed {
-    logic cs_aes_halt_req;
-  } cs_aes_halt_req_t;
+  typedef struct packed {logic cs_aes_halt_req;} cs_aes_halt_req_t;
 
-  typedef struct packed {
-    logic cs_aes_halt_ack;
-  } cs_aes_halt_rsp_t;
+  typedef struct packed {logic cs_aes_halt_ack;} cs_aes_halt_rsp_t;
 
   parameter cs_aes_halt_req_t CS_AES_HALT_REQ_DEFAULT = '{default: '0};
   parameter cs_aes_halt_rsp_t CS_AES_HALT_RSP_DEFAULT = '{default: '0};
 
   // ast rng i/f
-  typedef struct packed {
-    logic rng_enable;
-  } entropy_src_rng_req_t;
+  typedef struct packed {logic rng_enable;} entropy_src_rng_req_t;
 
   typedef struct packed {
     logic rng_valid;
@@ -66,7 +58,7 @@ package entropy_src_pkg;
   } entropy_src_xht_req_t;
 
   typedef struct packed {
-    logic[15:0] test_cnt;
+    logic [15:0] test_cnt;
     logic test_fail_hi_pulse;
     logic test_fail_lo_pulse;
   } entropy_src_xht_rsp_t;

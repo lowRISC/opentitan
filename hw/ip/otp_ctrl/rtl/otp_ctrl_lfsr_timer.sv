@@ -38,26 +38,26 @@ module otp_ctrl_lfsr_timer
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
 ) (
-  input                            clk_i,
-  input                            rst_ni,
-  output logic                     edn_req_o,          // request to EDN
-  input                            edn_ack_i,          // ack from EDN
-  input        [EdnDataWidth-1:0]  edn_data_i,         // from EDN
-  input                            timer_en_i,         // enable timer
-  input                            otp_prog_busy_i,    // indicates whether prog ops are in progress
-  input                            integ_chk_trig_i,   // one-off trigger for integrity check
-  input                            cnsty_chk_trig_i,   // one-off trigger for consistency check
-  output logic                     chk_pending_o,      // indicates whether there are pending checks
-  input        [31:0]              timeout_i,          // check timeout
-  input        [31:0]              integ_period_msk_i, // maximum integrity check mask
-  input        [31:0]              cnsty_period_msk_i, // maximum consistency check mask
-  output logic [NumPart-1:0]       integ_chk_req_o,    // request to all partitions
-  output logic [NumPart-1:0]       cnsty_chk_req_o,    // request to all partitions
-  input        [NumPart-1:0]       integ_chk_ack_i,    // response from partitions
-  input        [NumPart-1:0]       cnsty_chk_ack_i,    // response from partitions
-  input  lc_ctrl_pkg::lc_tx_t      escalate_en_i,      // escalation input, moves FSM into ErrorSt
-  output logic                     chk_timeout_o,      // a check has timed out
-  output logic                     fsm_err_o           // the FSM has reached an invalid state
+  input clk_i,
+  input rst_ni,
+  output logic edn_req_o,  // request to EDN
+  input edn_ack_i,  // ack from EDN
+  input [EdnDataWidth-1:0] edn_data_i,  // from EDN
+  input timer_en_i,  // enable timer
+  input otp_prog_busy_i,  // indicates whether prog ops are in progress
+  input integ_chk_trig_i,  // one-off trigger for integrity check
+  input cnsty_chk_trig_i,  // one-off trigger for consistency check
+  output logic chk_pending_o,  // indicates whether there are pending checks
+  input [31:0] timeout_i,  // check timeout
+  input [31:0] integ_period_msk_i,  // maximum integrity check mask
+  input [31:0] cnsty_period_msk_i,  // maximum consistency check mask
+  output logic [NumPart-1:0] integ_chk_req_o,  // request to all partitions
+  output logic [NumPart-1:0] cnsty_chk_req_o,  // request to all partitions
+  input [NumPart-1:0] integ_chk_ack_i,  // response from partitions
+  input [NumPart-1:0] cnsty_chk_ack_i,  // response from partitions
+  input lc_ctrl_pkg::lc_tx_t escalate_en_i,  // escalation input, moves FSM into ErrorSt
+  output logic chk_timeout_o,  // a check has timed out
+  output logic fsm_err_o  // the FSM has reached an invalid state
 );
 
   ////////////////////
@@ -80,21 +80,21 @@ module otp_ctrl_lfsr_timer
   logic [LfsrWidth-1:0] lfsr_state;
 
   prim_lfsr #(
-    .LfsrDw      ( LfsrWidth      ),
-    .EntropyDw   ( LfsrWidth      ),
-    .StateOutDw  ( LfsrWidth      ),
-    .DefaultSeed ( RndCnstLfsrSeed ),
-    .StatePermEn ( 1'b1            ),
-    .StatePerm   ( RndCnstLfsrPerm ),
-    .ExtSeedSVA  ( 1'b0            ) // ext seed is unused
+    .LfsrDw     (LfsrWidth),
+    .EntropyDw  (LfsrWidth),
+    .StateOutDw (LfsrWidth),
+    .DefaultSeed(RndCnstLfsrSeed),
+    .StatePermEn(1'b1),
+    .StatePerm  (RndCnstLfsrPerm),
+    .ExtSeedSVA (1'b0)  // ext seed is unused
   ) i_prim_lfsr (
     .clk_i,
     .rst_ni,
-    .seed_en_i  ( 1'b0       ),
-    .seed_i     ( '0         ),
-    .lfsr_en_i  ( lfsr_en | reseed_en                                ),
-    .entropy_i  ( edn_data_i[LfsrWidth-1:0] & {LfsrWidth{reseed_en}} ),
-    .state_o    ( lfsr_state )
+    .seed_en_i(1'b0),
+    .seed_i   ('0),
+    .lfsr_en_i(lfsr_en | reseed_en),
+    .entropy_i(edn_data_i[LfsrWidth-1:0] & {LfsrWidth{reseed_en}}),
+    .state_o  (lfsr_state)
   );
 
   // Not all entropy bits are used.
@@ -114,8 +114,8 @@ module otp_ctrl_lfsr_timer
   logic cnsty_load_period, cnsty_load_timeout, cnsty_cnt_zero;
   logic timeout_zero, integ_msk_zero, cnsty_msk_zero, cnsty_cnt_pause;
 
-  assign integ_mask  = {integ_period_msk_i, {LfsrWidth-32{1'b1}}};
-  assign cnsty_mask  = {cnsty_period_msk_i, {LfsrWidth-32{1'b1}}};
+  assign integ_mask = {integ_period_msk_i, {LfsrWidth - 32{1'b1}}};
+  assign cnsty_mask = {cnsty_period_msk_i, {LfsrWidth - 32{1'b1}}};
 
   assign integ_cnt_d = (integ_load_period)  ? lfsr_state & integ_mask :
                        (integ_load_timeout) ? LfsrWidth'(timeout_i)   :
@@ -129,7 +129,7 @@ module otp_ctrl_lfsr_timer
                        (cnsty_cnt_pause)    ? cnsty_cnt_q             :
                                               cnsty_cnt_q - 1'b1;
 
-  assign timeout_zero   = (timeout_i == '0);
+  assign timeout_zero = (timeout_i == '0);
   assign integ_msk_zero = (integ_period_msk_i == '0);
   assign cnsty_msk_zero = (cnsty_period_msk_i == '0);
   assign integ_cnt_zero = (integ_cnt_q == '0);
@@ -263,7 +263,7 @@ module otp_ctrl_lfsr_timer
       // If the timeout is enabled, bail out into terminal error state
       // if the timeout counter expires (this will raise an alert).
       CnstyWaitSt: begin
-        chk_pending_o = 1'b1;
+        chk_pending_o   = 1'b1;
         // Note that consistency checks go back and read from OTP. Hence,
         // life cycle transitions and DAI programming operations
         // may interfere with these checks and cause them to take longer
@@ -297,7 +297,7 @@ module otp_ctrl_lfsr_timer
         state_d = ErrorSt;
       end
       ///////////////////////////////////////////////////////////////////
-    endcase // state_q
+    endcase  // state_q
 
     // Unconditionally jump into the terminal error state in case of escalation.
     if (escalate_en_i != lc_ctrl_pkg::Off) begin
@@ -319,8 +319,8 @@ module otp_ctrl_lfsr_timer
   ) u_state_regs (
     .clk_i,
     .rst_ni,
-    .d_i ( state_d     ),
-    .q_o ( state_raw_q )
+    .d_i(state_d),
+    .q_o(state_raw_q)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
@@ -329,8 +329,8 @@ module otp_ctrl_lfsr_timer
       cnsty_cnt_q <= '0;
       integ_chk_req_q <= '0;
       cnsty_chk_req_q <= '0;
-      chk_timeout_q   <= 1'b0;
-      reseed_timer_q  <= {ReseedLfsrWidth{1'b1}};
+      chk_timeout_q <= 1'b0;
+      reseed_timer_q <= {ReseedLfsrWidth{1'b1}};
       integ_chk_trig_q <= 1'b0;
       cnsty_chk_trig_q <= 1'b0;
     end else begin
@@ -338,8 +338,8 @@ module otp_ctrl_lfsr_timer
       cnsty_cnt_q <= cnsty_cnt_d;
       integ_chk_req_q <= integ_chk_req_d;
       cnsty_chk_req_q <= cnsty_chk_req_d;
-      chk_timeout_q   <= chk_timeout_d;
-      reseed_timer_q  <= reseed_timer_d;
+      chk_timeout_q <= chk_timeout_d;
+      reseed_timer_q <= reseed_timer_d;
       integ_chk_trig_q <= integ_chk_trig_d;
       cnsty_chk_trig_q <= cnsty_chk_trig_d;
     end
@@ -349,10 +349,10 @@ module otp_ctrl_lfsr_timer
   // Assertions //
   ////////////////
 
-  `ASSERT_KNOWN(EdnReqKnown_A,      edn_req_o)
-  `ASSERT_KNOWN(ChkPendingKnown_A,  chk_pending_o)
+  `ASSERT_KNOWN(EdnReqKnown_A, edn_req_o)
+  `ASSERT_KNOWN(ChkPendingKnown_A, chk_pending_o)
   `ASSERT_KNOWN(IntegChkReqKnown_A, integ_chk_req_o)
   `ASSERT_KNOWN(CnstyChkReqKnown_A, cnsty_chk_req_o)
-  `ASSERT_KNOWN(ChkTimeoutKnown_A,  chk_timeout_o)
+  `ASSERT_KNOWN(ChkTimeoutKnown_A, chk_timeout_o)
 
 endmodule : otp_ctrl_lfsr_timer

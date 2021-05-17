@@ -6,9 +6,13 @@
 // ---------------------------------------------
 // Alert_esc_base driver
 // ---------------------------------------------
-class alert_esc_base_driver extends dv_base_driver#(alert_esc_seq_item, alert_esc_agent_cfg);
-  alert_esc_seq_item r_alert_ping_send_q[$], r_alert_rsp_q[$], r_esc_rsp_q[$],
-                     s_alert_send_q[$], s_alert_ping_rsp_q[$];
+class alert_esc_base_driver extends dv_base_driver #(alert_esc_seq_item, alert_esc_agent_cfg);
+  alert_esc_seq_item
+      r_alert_ping_send_q[$],
+      r_alert_rsp_q[$],
+      r_esc_rsp_q[$],
+      s_alert_send_q[$],
+      s_alert_ping_rsp_q[$];
 
   `uvm_component_utils(alert_esc_base_driver)
 
@@ -35,11 +39,11 @@ class alert_esc_base_driver extends dv_base_driver#(alert_esc_seq_item, alert_es
       req_clone.set_id_info(req);
       // TODO: if any of the queue size is larger than 2, need additional support
       if (req.r_alert_ping_send) r_alert_ping_send_q.push_back(req_clone);
-      if (req.r_alert_rsp)       r_alert_rsp_q.push_back(req_clone);
-      if (req.r_esc_rsp)         r_esc_rsp_q.push_back(req_clone);
+      if (req.r_alert_rsp) r_alert_rsp_q.push_back(req_clone);
+      if (req.r_esc_rsp) r_esc_rsp_q.push_back(req_clone);
       // sender mode
-      if (req.s_alert_send)      s_alert_send_q.push_back(req_clone);
-      if (req.s_alert_ping_rsp)  s_alert_ping_rsp_q.push_back(req_clone);
+      if (req.s_alert_send) s_alert_send_q.push_back(req_clone);
+      if (req.s_alert_ping_rsp) s_alert_ping_rsp_q.push_back(req_clone);
     end
   endtask : get_req
 

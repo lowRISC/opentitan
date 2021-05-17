@@ -16,8 +16,8 @@ module spi_cmdparse
   input rst_ni,
 
   // Data from spi_s2p
-  input                     data_valid_i,
-  input spi_byte_t          data_i,
+  input            data_valid_i,
+  input spi_byte_t data_i,
 
   // Configurations
   input spi_mode_e spi_mode_i,
@@ -51,7 +51,7 @@ module spi_cmdparse
   // Temporary //
   ///////////////
   assign io_mode_o = SingleIO;
-  assign cmd_config_req_o = 1'b 0;
+  assign cmd_config_req_o = 1'b0;
   assign cmd_config_idx_o = data_i[4:0];
 
   ////////////////
@@ -81,18 +81,18 @@ module spi_cmdparse
   // If received SPI Flash command falls into one of these commands, the module
   // processes the command without SW intervention.
   typedef enum logic [7:0] {
-    OpReadStatus1 = 'h 05,
-    OpReadStatus2 = 'h 35,
-    OpReadStatus3 = 'h 15,
-    OpReadJEDEC   = 'h 9F,
-    OpReadSfdp    = 'h 5A,
-    OpReadNormal  = 'h 03,
-    OpReadFast    = 'h 0B,
-    OpReadDual    = 'h 3B,
-    OpReadQuad    = 'h 6B,
+    OpReadStatus1 = 'h05,
+    OpReadStatus2 = 'h35,
+    OpReadStatus3 = 'h15,
+    OpReadJEDEC   = 'h9F,
+    OpReadSfdp    = 'h5A,
+    OpReadNormal  = 'h03,
+    OpReadFast    = 'h0B,
+    OpReadDual    = 'h3B,
+    OpReadQuad    = 'h6B,
     // Supporting DualIO/ QuadIO is TBD.
-    OpReadDualIO  = 'h BB,
-    OpReadQuadIO  = 'h EB
+    OpReadDualIO  = 'hBB,
+    OpReadQuadIO  = 'hEB
   } spi_flash_cmd_e;
 
   ////////////
@@ -110,7 +110,7 @@ module spi_cmdparse
     if (!rst_ni) begin
       opcode_o <= spi_byte_t'(0);
     end else if (st == StIdle && data_valid_i) begin
-      opcode_o <=  data_i;
+      opcode_o <= data_i;
     end
   end
 
@@ -118,9 +118,9 @@ module spi_cmdparse
   // State Machine //
   ///////////////////
 
-  assign in_flashmode   = spi_mode_i == FlashMode ;
-  assign in_passthrough = spi_mode_i == PassThrough ;
-  assign module_active  = in_flashmode || in_passthrough ;
+  assign in_flashmode   = spi_mode_i == FlashMode;
+  assign in_passthrough = spi_mode_i == PassThrough;
+  assign module_active  = in_flashmode || in_passthrough;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -132,7 +132,7 @@ module spi_cmdparse
   end
 
   always_comb begin
-    st_d = st;
+    st_d   = st;
 
     sel_dp = DpNone;
 
@@ -183,7 +183,7 @@ module spi_cmdparse
               // If Command Config in DPSRAM, need to change as below
               // if (upload_mask_i[data_i[2:0]]) begin
               if (upload_mask_i[data_i]) begin
-                st_d = StUpload;
+                st_d   = StUpload;
 
                 // Reason to select dp here is for Opcode-only commands such as
                 // ChipErase. As no further SCK is given after 8th bit, need to
@@ -210,20 +210,20 @@ module spi_cmdparse
       end
 
       // dead-end states below. Reset (CSb de-assertion) let SM back to Idle
-      StStatus:  sel_dp = DpReadStatus;
+      StStatus: sel_dp = DpReadStatus;
 
-      StJedec:   sel_dp = DpReadJEDEC;
+      StJedec: sel_dp = DpReadJEDEC;
 
-      StSfdp:    sel_dp = DpReadSFDP;
+      StSfdp: sel_dp = DpReadSFDP;
 
       StReadCmd: sel_dp = DpReadCmd;
 
-      StUpload:  sel_dp = DpUpload;
+      StUpload: sel_dp = DpUpload;
 
       default: begin
         sel_dp = DpNone;
 
-        st_d = StIdle;
+        st_d   = StIdle;
       end
     endcase
 

@@ -117,7 +117,7 @@ class spi_host_driver extends spi_driver;
       cfg.vif.sck <= ~cfg.vif.sck;
     end
     cfg.vif.sck <= cfg.sck_polarity;
-    #1ps; // make sure sck and csb (for next item) not change at the same time
+    #1ps;  // make sure sck and csb (for next item) not change at the same time
   endtask
 
   task drive_csb_no_sck_item();

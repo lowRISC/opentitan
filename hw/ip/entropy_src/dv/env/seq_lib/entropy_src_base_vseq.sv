@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class entropy_src_base_vseq extends cip_base_vseq #(
-    .RAL_T               (entropy_src_reg_block),
-    .CFG_T               (entropy_src_env_cfg),
-    .COV_T               (entropy_src_env_cov),
-    .VIRTUAL_SEQUENCER_T (entropy_src_virtual_sequencer)
-  );
+  .RAL_T              (entropy_src_reg_block),
+  .CFG_T              (entropy_src_env_cfg),
+  .COV_T              (entropy_src_env_cov),
+  .VIRTUAL_SEQUENCER_T(entropy_src_virtual_sequencer)
+);
   `uvm_object_utils(entropy_src_base_vseq)
 
   // various knobs to enable certain routines
-  bit  do_entropy_src_init = 1'b1;
+  bit do_entropy_src_init = 1'b1;
 
   `uvm_object_new
 

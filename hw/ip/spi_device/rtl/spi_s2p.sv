@@ -8,19 +8,19 @@ module spi_s2p
   import spi_device_pkg::*;
 (
   input clk_i,
-  input rst_ni, // inverted CSb input
+  input rst_ni,  // inverted CSb input
 
   // SPI data
   input [3:0] s_i,
 
   // to following logic
-  output logic               data_valid_o,
-  output spi_byte_t          data_o,
-  output logic [BitCntW-1:0] bitcnt_o, // up to 256B payload
+  output logic                    data_valid_o,
+  output spi_byte_t               data_o,
+  output logic      [BitCntW-1:0] bitcnt_o,  // up to 256B payload
 
   // Configuration
-  input                             order_i,
-  input spi_device_pkg::io_mode_e   io_mode_i
+  input                           order_i,
+  input spi_device_pkg::io_mode_e io_mode_i
 );
 
   /////////////////
@@ -30,7 +30,7 @@ module spi_s2p
   // 8 bit opcode + 24 or 32 bit address +
   // max 8 bit dummy cycle + 256B payload
   // Or in FwMode, half of DPSRAM
-  localparam int unsigned Bits     = $bits(spi_byte_t);
+  localparam int unsigned Bits = $bits(spi_byte_t);
   localparam int unsigned BitWidth = $clog2(Bits);
 
   typedef logic [BitWidth-1:0] count_t;
@@ -90,9 +90,9 @@ module spi_s2p
   // Bitcount in a byte
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      cnt <= count_t'(Bits-1);
+      cnt <= count_t'(Bits - 1);
     end else if (cnt == '0) begin
-      cnt <= count_t'(Bits-1);
+      cnt <= count_t'(Bits - 1);
     end else begin
       unique case (io_mode_i)
         SingleIO: cnt <= cnt - count_t'('h1);
@@ -109,7 +109,7 @@ module spi_s2p
       SingleIO: data_valid_o = (cnt == 'h0);
       DualIO:   data_valid_o = (cnt == 'h1);
       QuadIO:   data_valid_o = (cnt == 'h3);
-      default:  data_valid_o = 1'b 0;
+      default:  data_valid_o = 1'b0;
     endcase
   end
 

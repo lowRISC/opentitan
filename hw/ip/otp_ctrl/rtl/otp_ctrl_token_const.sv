@@ -6,7 +6,9 @@
 // This implementation relies on constant propagation to precompute these constants from the
 // random netlist constants at compile time, and hence does not contain any "real" logic.
 
-module otp_ctrl_token_const import otp_ctrl_pkg::*; #(
+module otp_ctrl_token_const
+  import otp_ctrl_pkg::*;
+#(
   // Compile time random constants, to be overriden by topgen.
   parameter digest_const_array_t    RndCnstDigestConst    = RndCnstDigestConstDefault,
   parameter digest_iv_array_t       RndCnstDigestIV       = RndCnstDigestIVDefault,
@@ -20,11 +22,11 @@ module otp_ctrl_token_const import otp_ctrl_pkg::*; #(
   localparam int AllZeroIdx = 0;
   localparam int RawUnlockIdx = 1;
 
-  logic [NumHashes-1:0][1:0][ScrmblKeyWidth-1:0]   data;
+  logic [NumHashes-1:0][1:0][  ScrmblKeyWidth-1:0] data;
   logic [NumHashes-1:0][4:0][ScrmblBlockWidth-1:0] state;
 
   // First digest is for the all zero token, the second is for the raw unlock token.
-  assign data[AllZeroIdx][0] = '0;
+  assign data[AllZeroIdx][0]   = '0;
   assign data[RawUnlockIdx][0] = RndCnstRawUnlockToken;
 
   // Repeat for all precomputed hashes.
@@ -42,15 +44,15 @@ module otp_ctrl_token_const import otp_ctrl_pkg::*; #(
       // This relies on constant propagation to
       // statically precompute the hashed token values.
       prim_present #(
-        .KeyWidth(128),
+        .KeyWidth (128),
         .NumRounds(NumPresentRounds)
       ) u_prim_present_enc_0 (
-        .data_i ( state[j][k]   ),
-        .key_i  ( data[j][k%2]  ),
-        .idx_i  ( 5'h1          ),
-        .data_o ( next_state    ),
-        .key_o  ( ),
-        .idx_o  ( )
+        .data_i(state[j][k]),
+        .key_i (data[j][k%2]),
+        .idx_i (5'h1),
+        .data_o(next_state),
+        .key_o (),
+        .idx_o ()
       );
 
       // XOR in last state according to the Davies-Meyer scheme.
@@ -59,7 +61,7 @@ module otp_ctrl_token_const import otp_ctrl_pkg::*; #(
   end
 
   // Concatenate the two 64bit hash results to form the final digests.
-  assign all_zero_token_hashed_o   = {state[AllZeroIdx][4],   state[AllZeroIdx][2]};
+  assign all_zero_token_hashed_o   = {state[AllZeroIdx][4], state[AllZeroIdx][2]};
   assign raw_unlock_token_hashed_o = {state[RawUnlockIdx][4], state[RawUnlockIdx][2]};
 
 endmodule : otp_ctrl_token_const

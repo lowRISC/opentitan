@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class spi_base_seq extends dv_base_seq #(
-    .REQ         (spi_item),
-    .CFG_T       (spi_agent_cfg),
-    .SEQUENCER_T (spi_sequencer)
-  );
+  .REQ        (spi_item),
+  .CFG_T      (spi_agent_cfg),
+  .SEQUENCER_T(spi_sequencer)
+);
   `uvm_object_utils(spi_base_seq)
   `uvm_object_new
 

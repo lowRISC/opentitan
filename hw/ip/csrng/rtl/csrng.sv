@@ -7,25 +7,25 @@
 `include "prim_assert.sv"
 
 module csrng
- import csrng_pkg::*;
- import csrng_reg_pkg::*;
+  import csrng_pkg::*;
+  import csrng_reg_pkg::*;
 #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplCanright,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter int NHwApps = 2
 ) (
-  input logic         clk_i,
-  input logic         rst_ni,
+  input logic clk_i,
+  input logic rst_ni,
 
   // Tilelink Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
-   // OTP Interface
+  // OTP Interface
   input otp_ctrl_part_pkg::otp_hw_cfg_t otp_hw_cfg_i,
 
   // Lifecycle broadcast inputs
-  input  lc_ctrl_pkg::lc_tx_t  lc_hw_debug_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
 
   // Entropy Interface
   output entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_o,
@@ -36,18 +36,18 @@ module csrng
   output entropy_src_pkg::cs_aes_halt_rsp_t cs_aes_halt_o,
 
   // Application Interfaces
-  input  csrng_req_t  [NHwApps-1:0] csrng_cmd_i,
-  output csrng_rsp_t  [NHwApps-1:0] csrng_cmd_o,
+  input  csrng_req_t [NHwApps-1:0] csrng_cmd_i,
+  output csrng_rsp_t [NHwApps-1:0] csrng_cmd_o,
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // Interrupts
-  output logic    intr_cs_cmd_req_done_o,
-  output logic    intr_cs_entropy_req_o,
-  output logic    intr_cs_hw_inst_exc_o,
-  output logic    intr_cs_fatal_err_o
+  output logic intr_cs_cmd_req_done_o,
+  output logic intr_cs_entropy_req_o,
+  output logic intr_cs_hw_inst_exc_o,
+  output logic intr_cs_fatal_err_o
 );
 
 
@@ -61,8 +61,8 @@ module csrng
   csrng_reg2hw_t reg2hw;
   csrng_hw2reg_t hw2reg;
 
-  logic  alert;
-  logic  alert_test;
+  logic alert;
+  logic alert_test;
 
   csrng_reg_top u_reg (
     .clk_i,
@@ -72,12 +72,12 @@ module csrng
     .reg2hw,
     .hw2reg,
     .intg_err_o(),
-    .devmode_i(1'b1)
+    .devmode_i (1'b1)
   );
 
   csrng_core #(
     .SBoxImpl(SBoxImpl),
-    .NHwApps(NHwApps)
+    .NHwApps (NHwApps)
   ) u_csrng_core (
     .clk_i,
     .rst_ni,
@@ -101,7 +101,7 @@ module csrng
     .csrng_cmd_o,
 
     // Alerts
-    .alert_test_o(alert_test),
+    .alert_test_o (alert_test),
     .fatal_alert_o(alert),
 
     .intr_cs_cmd_req_done_o,
@@ -117,12 +117,12 @@ module csrng
   ) u_prim_alert_sender (
     .clk_i,
     .rst_ni,
-    .alert_test_i  ( alert_test    ),
-    .alert_req_i   ( alert         ),
-    .alert_ack_o   (               ),
-    .alert_state_o (               ),
-    .alert_rx_i    ( alert_rx_i[0] ),
-    .alert_tx_o    ( alert_tx_o[0] )
+    .alert_test_i (alert_test),
+    .alert_req_i  (alert),
+    .alert_ack_o  (),
+    .alert_state_o(),
+    .alert_rx_i   (alert_rx_i[0]),
+    .alert_tx_o   (alert_tx_o[0])
   );
 
 
@@ -133,7 +133,7 @@ module csrng
   `ASSERT_KNOWN(EsReqKnownO_A, entropy_src_hw_if_o.es_req)
 
   // Application Interface Asserts
-  for (genvar i = 0; i < NHwApps; i = i+1) begin : gen_app_if_asserts
+  for (genvar i = 0; i < NHwApps; i = i + 1) begin : gen_app_if_asserts
     `ASSERT_KNOWN(CsrngReqReadyKnownO_A, csrng_cmd_o[i].csrng_req_ready)
     `ASSERT_KNOWN(CsrngRspAckKnownO_A, csrng_cmd_o[i].csrng_rsp_ack)
     `ASSERT_KNOWN(CsrngRspStsKnownO_A, csrng_cmd_o[i].csrng_rsp_sts)

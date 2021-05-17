@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class alert_handler_base_test extends cip_base_test #(
-    .ENV_T(alert_handler_env),
-    .CFG_T(alert_handler_env_cfg)
-  );
+  .ENV_T(alert_handler_env),
+  .CFG_T(alert_handler_env_cfg)
+);
 
   `uvm_component_utils(alert_handler_base_test)
   `uvm_component_new

@@ -9,7 +9,7 @@ class alert_sender_ping_rsp_seq extends alert_sender_base_seq;
   `uvm_object_new
 
   constraint alert_sender_ping_rsp_seq_c {
-    s_alert_send     == 0;
+    s_alert_send == 0;
     s_alert_ping_rsp == 1;
   }
 

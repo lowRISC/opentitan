@@ -14,49 +14,47 @@ class uart_tx_rx_vseq extends uart_base_vseq;
   rand uint dly_to_rx_read;
 
 
-  constraint num_trans_c {
-    num_trans inside {[1:20]};
-  }
+  constraint num_trans_c {num_trans inside {[1 : 20]};}
 
   constraint num_tx_bytes_c {
     num_tx_bytes dist {
-      1       :/ 2,
-      [2:10]  :/ 5,
-      [11:15] :/ 5,
-      [16:20] :/ 2
+      1         :/ 2,
+      [2 : 10]  :/ 5,
+      [11 : 15] :/ 5,
+      [16 : 20] :/ 2
     };
   }
 
   constraint num_rx_bytes_c {
     num_rx_bytes dist {
-      1       :/ 2,
-      [2:10]  :/ 5,
-      [11:15] :/ 5,
-      [16:20] :/ 2
+      1         :/ 2,
+      [2 : 10]  :/ 5,
+      [11 : 15] :/ 5,
+      [16 : 20] :/ 2
     };
   }
 
   constraint dly_to_next_trans_c {
     dly_to_next_trans dist {
-      0           :/ 5,  // more back2back transaction
-      [1:100]     :/ 5,
-      [100:10000] :/ 2
+      0             :/ 5,  // more back2back transaction
+      [1 : 100]     :/ 5,
+      [100 : 10000] :/ 2
     };
   }
 
   constraint dly_to_access_intr_c {
     dly_to_access_intr dist {
-      0                   :/ 1,
-      [1      :100]       :/ 5,
-      [101    :10_000]    :/ 3,
-      [10_001 :1_000_000] :/ 1
+      0                    :/ 1,
+      [1 : 100]            :/ 5,
+      [101 : 10_000]       :/ 3,
+      [10_001 : 1_000_000] :/ 1
     };
   }
 
   constraint wait_for_idle_c {
     wait_for_idle dist {
-      1       :/ 1,
-      0       :/ 10
+      1 :/ 1,
+      0 :/ 10
     };
   }
 
@@ -66,9 +64,11 @@ class uart_tx_rx_vseq extends uart_base_vseq;
   }
 
   constraint dly_to_rx_read_c {
-    dly_to_rx_read dist {0           :/ 1,
-                         [1:100]     :/ 1,
-                         [100:10000] :/ 2};
+    dly_to_rx_read dist {
+      0             :/ 1,
+      [1 : 100]     :/ 1,
+      [100 : 10000] :/ 2
+    };
   }
 
   `uvm_object_new
@@ -113,7 +113,7 @@ class uart_tx_rx_vseq extends uart_base_vseq;
           process_remaining_data();
           `uvm_info(`gfn, $sformatf("finished run %0d/%0d", i, num_trans), UVM_LOW)
         end
-        do_interrupt = 0; // to end thread process_interrupts gracefully
+        do_interrupt = 0;  // to end thread process_interrupts gracefully
       end
     join
   endtask : body
@@ -182,7 +182,7 @@ class uart_tx_rx_vseq extends uart_base_vseq;
   virtual task process_rx();
     bit send_rx_done = 0;
     fork
-      begin // drive from uart RX interface
+      begin  // drive from uart RX interface
         for (int j = 1; j <= num_rx_bytes; j++) begin
           byte rx_byte;
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_next_trans)
@@ -194,9 +194,9 @@ class uart_tx_rx_vseq extends uart_base_vseq;
           send_rx_byte(rx_byte);
           if (wait_for_idle) spinwait_rxidle();
         end
-        send_rx_done = 1; // to end reading RX thread
+        send_rx_done = 1;  // to end reading RX thread
       end
-      begin // read RX data through register
+      begin  // read RX data through register
         while (!send_rx_done && !cfg.under_reset) begin
           // csr read is much faster than uart transfer, use bigger delay
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_rx_read)
@@ -210,12 +210,12 @@ class uart_tx_rx_vseq extends uart_base_vseq;
   virtual task process_remaining_data();
 
     fork
-      begin // TX
+      begin  // TX
         wait_for_all_tx_bytes();
         // tx fifo is empty but still need to wait for last tx item to be flushed out
         cfg.m_uart_agent_cfg.vif.wait_for_tx_idle();
       end
-      begin // RX
+      begin  // RX
         // wait for last rx item to be completed before read all of them
         cfg.m_uart_agent_cfg.vif.wait_for_rx_idle();
         read_all_rx_bytes();

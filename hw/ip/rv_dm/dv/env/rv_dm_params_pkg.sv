@@ -5,7 +5,7 @@
 package rv_dm_params_pkg;
 
   // parameters
-  parameter int unsigned  NR_HARTS     = 1;
-  parameter bit [31:0]    JTAG_ID_CODE = 1;
+  parameter int unsigned NR_HARTS = 1;
+  parameter bit [31:0] JTAG_ID_CODE = 1;
 
 endpackage

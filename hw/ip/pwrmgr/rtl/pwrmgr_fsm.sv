@@ -7,7 +7,10 @@
 
 `include "prim_assert.sv"
 
-module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
+module pwrmgr_fsm
+  import pwrmgr_pkg::*;
+  import pwrmgr_reg_pkg::*;
+(
   input clk_i,
   input rst_ni,
   input clk_slow_i,
@@ -24,7 +27,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input [NumRstReqs:0] reset_reqs_i,
 
   // consumed in pwrmgr
-  output logic wkup_o,        // generate wake interrupt
+  output logic wkup_o,  // generate wake interrupt
   output logic fall_through_o,
   output logic abort_o,
   output logic clr_hint_o,
@@ -32,7 +35,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
   // rstmgr
   output pwr_rst_req_t pwr_rst_o,
-  input pwr_rst_rsp_t pwr_rst_i,
+  input  pwr_rst_rsp_t pwr_rst_i,
 
   // clkmgr
   output logic ips_clk_en_o,
@@ -105,8 +108,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   assign pd_n_rsts_asserted = pwr_rst_i.rst_lc_src_n[PowerDomains-1:1] == '0 &
                               pwr_rst_i.rst_sys_src_n[PowerDomains-1:1] == '0;
 
-  assign all_rsts_asserted = pwr_rst_i.rst_lc_src_n == '0 &
-                             pwr_rst_i.rst_sys_src_n == '0;
+  assign all_rsts_asserted = pwr_rst_i.rst_lc_src_n == '0 & pwr_rst_i.rst_sys_src_n == '0;
 
   assign reset_req = |reset_reqs_i;
 
@@ -167,10 +169,10 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   prim_flop_2sync #(
     .Width(1)
   ) u_slow_sync_lc_done (
-    .clk_i(clk_slow_i),
+    .clk_i (clk_slow_i),
     .rst_ni(rst_slow_ni),
-    .d_i(lc_done_i),
-    .q_o(slow_lc_done)
+    .d_i   (lc_done_i),
+    .q_o   (slow_lc_done)
   );
 
   prim_flop_2sync #(
@@ -203,7 +205,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
     low_power_d = low_power_q;
     fetch_en_d = fetch_en_q;
 
-    unique case(state_q)
+    unique case (state_q)
 
       FastPwrStateLowPower: begin
         if (req_pwrup_i || reset_ongoing_q) begin
@@ -222,7 +224,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
       FastPwrStateReleaseLcRst: begin
         rst_lc_req_d = '0;  // release rst_lc_n for all power domains
 
-        if (&pwr_rst_i.rst_lc_src_n) begin // once all resets are released
+        if (&pwr_rst_i.rst_lc_src_n) begin  // once all resets are released
           state_d = FastPwrStateOtpInit;
         end
       end
@@ -246,7 +248,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
       FastPwrStateStrap: begin
         strap_o = ~strap_sampled;
-        state_d =  FastPwrStateAckPwrUp;
+        state_d = FastPwrStateAckPwrUp;
       end
 
       FastPwrStateAckPwrUp: begin
@@ -264,7 +266,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
       FastPwrStateRomCheck: begin
         // zero outgoing low power indication
-        low_power_d = '0;
+        low_power_d   = '0;
         rst_sys_req_d = '0;
         reset_cause_d = ResetNone;
 
@@ -327,7 +329,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         // this includes the clock manager, which implies pwr/rst managers must
         // be fed directly from the source
         for (int i = OffDomainSelStart; i < PowerDomains; i++) begin
-          rst_lc_req_d[i] = ~main_pd_ni;
+          rst_lc_req_d[i]  = ~main_pd_ni;
           rst_sys_req_d[i] = ~main_pd_ni;
         end
 
@@ -355,7 +357,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
       FastPwrStateResetPrep: begin
         reset_cause_d = HwReq;
-        rst_lc_req_d = {PowerDomains{1'b1}};
+        rst_lc_req_d  = {PowerDomains{1'b1}};
         rst_sys_req_d = {PowerDomains{1'b1}};
 
         if (reset_valid) begin
@@ -365,13 +367,13 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
       // Terminal state, kill everything
       default: begin
-        rst_lc_req_d = {PowerDomains{1'b1}};
+        rst_lc_req_d  = {PowerDomains{1'b1}};
         rst_sys_req_d = {PowerDomains{1'b1}};
-        ip_clk_en_d = 1'b0;
+        ip_clk_en_d   = 1'b0;
       end
 
-    endcase // unique case (state_q)
-  end // always_comb
+    endcase  // unique case (state_q)
+  end  // always_comb
 
   assign ack_pwrup_o = ack_pwrup_q;
   assign req_pwrdn_o = req_pwrdn_q;
