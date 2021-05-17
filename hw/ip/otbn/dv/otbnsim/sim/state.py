@@ -81,6 +81,12 @@ class OTBNState:
         if back_pc is not None:
             self.set_next_pc(back_pc)
 
+    def in_loop(self) -> bool:
+        '''The processor is currently executing a loop.'''
+
+        # A loop is executed if the loop stack is not empty.
+        return bool(self.loop_stack.stack)
+
     def changes(self) -> List[Trace]:
         c = []  # type: List[Trace]
         c += self.gprs.changes()
