@@ -780,6 +780,8 @@ module spi_device (
 
     .upload_mask_i (cfg_upload_mask),
 
+    .cmd_info_i   (cmd_info),
+
     .io_mode_o    (sub_iomode[IoModeCmdParse]),
 
     .sel_dp_o     (cmd_dp_sel),

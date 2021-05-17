@@ -122,6 +122,15 @@ waive -rules CASE_INC -location {spi_fwm_*xf_ctrl.sv} -regexp {Case statement ta
 waive -rules {NOT_USED NOT_READ} -location {spi_device.sv} \
       -regexp {'sub_(sram|p2s)_.*\[1\]' is not (used|read)} \
       -comment "CmdParse does not have SRAM intf"
+waive -rules {INPUT_NOT_READ HIER_BRANCH_NOT_READ} -location {spi_cmdparse.sv} \
+      -regexp {'cmd_info_i\[0:15\].*' is not read} \
+      -comment "Cmdparse uses opcode only"
+waive -rules {INPUT_NOT_READ HIER_BRANCH_NOT_READ} -location {spi_cmdparse.sv} \
+      -regexp {'cmd_info_i\[11:15\]\.opcode' is not read} \
+      -comment "Upper 5 slots are for passthrough only"
+waive -rules {INPUT_NOT_READ} -location {spi_cmdparse.sv} \
+      -regexp {'cmd_info_i\[15:11\]' is not read} \
+      -comment "Upper 5 slots are for the passthrough logic"
 
 #### SRAM mux
 #### SRAM has unpacked array to mux/demux. Waive one bit unpacked array

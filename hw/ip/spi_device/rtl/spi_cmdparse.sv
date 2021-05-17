@@ -32,6 +32,14 @@ module spi_cmdparse
   // changed to 8bit width.
   input logic [255:0] upload_mask_i,
 
+  // Command info slot
+  //
+  // cmdparse uses the command info slot to activate sub-datapath. It uses
+  // pre-assigned index and search opcode. e.g) if cmdslot[0].opcode == 'h03,
+  // then if received opcode matches to the cmdslot[0] opcode, then it activates
+  // Read Status module as Index 0 is pre-assigned to Read Status.
+  input cmd_info_t [spi_device_reg_pkg::NumCmdInfo-1:0] cmd_info_i,
+
   // control to spi_s2p
   output io_mode_e io_mode_o,
 
@@ -53,6 +61,36 @@ module spi_cmdparse
   assign io_mode_o = SingleIO;
   assign cmd_config_req_o = 1'b 0;
   assign cmd_config_idx_o = data_i[4:0];
+
+  // among the command slots, Passthrough related slots are not used. So tie them down here.
+  logic unused_cmdinfo;
+  assign unused_cmdinfo = &{1'b0,
+    cmd_info_i[CmdInfoPassthroughEnd:CmdInfoPassthroughStart]};
+
+  // Only opcode in the cmd_info is used. Tie the rest of the members.
+  logic unused_cmdinfo_members;
+  always_comb begin
+    unused_cmdinfo_members = 1'b 0;
+    for (int unsigned i = 0 ; i <= CmdInfoPassthroughEnd ; i++) begin
+      unused_cmdinfo_members &= &{ cmd_info_i[i].addr_4b_affected,
+                                   cmd_info_i[i].addr_en,
+                                   cmd_info_i[i].addr_swap_en,
+                                   cmd_info_i[i].dummy_en,
+                                  &cmd_info_i[i].dummy_size,
+                                   cmd_info_i[i].payload_dir,
+                                  &cmd_info_i[i].payload_en};
+    end
+  end
+
+  // Unnecessary but for ascentlint error only
+  logic unused_cmdinfo_opcode;
+  always_comb begin
+    unused_cmdinfo_opcode = 1'b 0;
+    for (int unsigned i = CmdInfoPassthroughStart ; i <= CmdInfoPassthroughEnd ; i++) begin
+      unused_cmdinfo_opcode &= &cmd_info_i[i].opcode;
+    end
+  end
+
 
   ////////////////
   // Definition //
@@ -114,6 +152,24 @@ module spi_cmdparse
     end
   end
 
+  // below signals are used in the FSM to determine to activate a certain
+  // datapath based on the received input (opcode). The opcode is the SW
+  // configurable CSRs `cmd_info_i`.
+  logic opcode_readstatus, opcode_readjedec, opcode_readsfdp, opcode_readcmd;
+
+  assign opcode_readstatus = (data_i == cmd_info_i[CmdInfoReadStatus1].opcode)
+                           | (data_i == cmd_info_i[CmdInfoReadStatus2].opcode)
+                           | (data_i == cmd_info_i[CmdInfoReadStatus3].opcode);
+  assign opcode_readjedec = (data_i == cmd_info_i[CmdInfoReadJedecId].opcode);
+  assign opcode_readsfdp = (data_i == cmd_info_i[CmdInfoReadSfdp].opcode);
+
+  always_comb begin
+    opcode_readcmd = 1'b 0;
+    for (int unsigned i = CmdInfoReadCmdStart ; i <= CmdInfoReadCmdEnd ; i++) begin
+      if (data_i == cmd_info_i[i].opcode) opcode_readcmd = 1'b 1;
+    end
+  end
+
   ///////////////////
   // State Machine //
   ///////////////////
@@ -140,43 +196,34 @@ module spi_cmdparse
       StIdle: begin
         if (module_active && data_valid_i) begin
           // 8th bit is valid here
-          unique case (data_i) inside
-            OpReadStatus1, OpReadStatus2, OpReadStatus3: begin
-              // Always handled by internal Status
-              // regardless of FlashMode/ PassThrough
+          priority case (1'b 1)
+            opcode_readstatus: begin
               st_d = StStatus;
-
             end
 
-            OpReadJEDEC: begin
-              // Let it move to Jedec when FlashMode
+            opcode_readjedec: begin
               if (in_flashmode) begin
                 st_d = StJedec;
-
               end else begin
-                // PassThrough
+                // TODO: Passthrough ?
                 st_d = StIdle;
               end
             end
 
-            OpReadSfdp: begin
+            opcode_readsfdp: begin
               if (in_flashmode) begin
                 st_d = StSfdp;
               end else begin
-                // PassThrough
+                // TODO: Passthrough? Cannot stay in the Idle as it will compare at the next byte
                 st_d = StIdle;
               end
             end
 
-            OpReadNormal, OpReadFast, OpReadDual, OpReadQuad, OpReadDualIO, OpReadQuadIO: begin
+            opcode_readcmd: begin
               // Let it move to ReadCmd regardless of the modes
               // Then, ReadCmd will handle Mailbox command if received address
               // falls into Mailbox address range
               st_d = StReadCmd;
-
-              // Does not set Datapath to Read Command yet. As Read command
-              // processing block can be active after 8th edge of SCK.
-              //sel_dp = DpReadCmd;
             end
 
             default: begin
@@ -234,5 +281,10 @@ module spi_cmdparse
   ///////////////
   // Assertion //
   ///////////////
+
+  // at the first byte, only one datapath shall be active or stay silent.
+  `ASSERT(OnlyOneDatapath_A, module_active && data_valid_i && (st == StIdle)
+          |-> $onehot0({opcode_readstatus, opcode_readjedec, opcode_readsfdp,
+                        opcode_readcmd}))
 
 endmodule
