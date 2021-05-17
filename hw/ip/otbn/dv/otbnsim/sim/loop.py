@@ -33,7 +33,8 @@ class LoopLevel:
     start_addr is the first instruction inside the loop (the instruction
     following the loop instruction). insn_count is the number of instructions
     in the loop (and must be positive). restarts is one less than the number of
-    iterations, and must be non-negative.
+    iterations, and must be non-negative. last_addr is the address of the last
+    instruction in the loop body.
 
     '''
     def __init__(self, start_addr: int, insn_count: int, restarts: int):
@@ -44,7 +45,12 @@ class LoopLevel:
         self.loop_count = 1 + restarts
         self.restarts_left = restarts
         self.start_addr = start_addr
-        self.match_addr = start_addr + 4 * insn_count
+        self.last_addr = start_addr + 4 * insn_count - 4
+
+    def get_loop_insn_addr(self) -> int:
+        '''The address of the LOOP or LOOPI instruction.'''
+        assert self.start_addr >= 4
+        return self.start_addr - 4
 
 
 class LoopStack:
@@ -83,37 +89,44 @@ class LoopStack:
         self.trace.append(TraceLoopStart(loop_count, insn_count))
         self.stack.append(LoopLevel(start_addr, insn_count, loop_count - 1))
 
+    def is_last_insn_in_loop_body(self, pc: int) -> bool:
+        '''Is pc the last instruction address the current loop body?'''
+
+        if not self.stack:
+            return False
+
+        top = self.stack[-1]
+        return pc == top.last_addr
+
     def check_insn(self, pc: int, insn_affects_control: bool) -> None:
         '''Check for branch instructions at the end of a loop body'''
-        if self.stack:
-            top = self.stack[-1]
-            if pc + 4 == top.match_addr:
-                # We're about to execute the last instruction in the loop body.
-                # Make sure that it isn't a jump, branch or another loop
-                # instruction.
-                if insn_affects_control:
-                    self.err_flag = True
+        if self.is_last_insn_in_loop_body(pc) and insn_affects_control:
+            # We're about to execute the last instruction in the loop body.
+            # Make sure that it isn't a jump, branch or another loop
+            # instruction.
+            self.err_flag = True
 
-    def step(self, next_pc: int) -> Optional[int]:
+    def step(self, pc: int) -> Optional[int]:
         '''Update loop stack. If we should loop, return new PC'''
-        if self.stack:
+
+        if self.is_last_insn_in_loop_body(pc):
+            assert self.stack
             top = self.stack[-1]
 
-            if next_pc == top.match_addr:
-                assert top.restarts_left >= 0
+            assert top.restarts_left >= 0
 
-                # 1-based iteration number
-                loop_idx = top.loop_count - top.restarts_left
+            # 1-based iteration number
+            loop_idx = top.loop_count - top.restarts_left
 
-                if not top.restarts_left:
-                    self.stack.pop()
-                    ret_val = None
-                else:
-                    top.restarts_left -= 1
-                    ret_val = top.start_addr
+            if not top.restarts_left:
+                self.stack.pop()
+                ret_val = None
+            else:
+                top.restarts_left -= 1
+                ret_val = top.start_addr
 
-                self.trace.append(TraceLoopIteration(loop_idx, top.loop_count))
-                return ret_val
+            self.trace.append(TraceLoopIteration(loop_idx, top.loop_count))
+            return ret_val
 
         return None
 
