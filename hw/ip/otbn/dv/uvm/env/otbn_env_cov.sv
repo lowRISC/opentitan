@@ -75,8 +75,27 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   //    bins mnem_add = {mnem_add};
 `define DEF_MNEM_BIN(NAME) bins NAME = {NAME}
 
-  // Cross a coverpoint with mnemonic_cp
-`define DEF_MNEM_CROSS(BASENAME) BASENAME``_cross: cross BASENAME``_cp, mnemonic_cp;
+  // Cross one, two or three coverpoints with mnemonic_cp.
+  //
+  // This is intentended to be used inside covergroups that support multiple instructions. In each
+  // of these, we define a coverpoint called mnemonic_cp to track which instruction is being
+  // sampled.
+`define DEF_MNEM_CROSS(BASENAME)                                         \
+    BASENAME``_cross: cross BASENAME``_cp, mnemonic_cp;
+`define DEF_MNEM_CROSS2(BASE0, BASE1)                                    \
+    BASE0``_``BASE1``_cross: cross BASE0``_cp, BASE1``_cp, mnemonic_cp;
+`define DEF_MNEM_CROSS3(BASE0, BASE1, BASE2)                             \
+    BASE0``_``BASE1``_``BASE2``_cross:                                   \
+      cross BASE0``_cp, BASE1``_cp, BASE2``_cp, mnemonic_cp;
+
+  // A macro to define bins for GPR types. The point is that there are 3 interesting types of GPR:
+  // x0, x1 and everything else.
+`define GPR_BIN_TYPES \
+  { bins gpr_x0 = {5'd0}; bins gpr_x1 = {5'd1}; bins gpr_other = {[5'd2:$]}; }
+
+  // Declare a GPR coverpoint with the 3 types above
+`define DEF_GPR_CP(NAME, BITS) \
+  NAME: coverpoint insn_data[BITS] `GPR_BIN_TYPES
 
   // Per-encoding covergroups
   covergroup enc_bna_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
@@ -210,6 +229,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     grd_inc_cp: coverpoint insn_data[7];
     grs_inc_cp: coverpoint insn_data[9];
+
+    `DEF_GPR_CP(grs_cp, 19:15)
+    `DEF_GPR_CP(grd_cp, 24:20)
+    `DEF_MNEM_CROSS2(grs, grd)
   endgroup
 
   covergroup enc_bnr_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
@@ -242,9 +265,16 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     inc1_cp: coverpoint insn_data[8];
     off_cp: coverpoint {insn_data[31:25], insn_data[11:9]} { bins extremes[] = {'0, '1}; }
 
+    `DEF_GPR_CP(grs1_cp, 19:15)
+    // Note: Bits 24:20 are called grd for BN.LID or grs2 for BN.SID, but both are a GPR, so can be
+    //       tracked the same here.
+    `DEF_GPR_CP(grx_cp, 24:20)
+
     `DEF_MNEM_CROSS(incd)
     `DEF_MNEM_CROSS(inc1)
     `DEF_MNEM_CROSS(off)
+
+    `DEF_MNEM_CROSS2(grs1, grx)
   endgroup
 
   covergroup enc_b_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
@@ -254,8 +284,16 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       illegal_bins other = default;
     }
 
-    off_cp: coverpoint insn_data[31:20] { bins extremes[] = {12'h800, 12'h7ff}; }
+    off_cp: coverpoint {insn_data[31], insn_data[7], insn_data[30:25], insn_data[11:8]} {
+      bins extremes[] = {12'h800, 12'h7ff};
+    }
+
+    `DEF_GPR_CP(grs1_cp, 19:15)
+    `DEF_GPR_CP(grs2_cp, 24:20)
+
     `DEF_MNEM_CROSS(off)
+
+    `DEF_MNEM_CROSS2(grs1, grs2)
   endgroup
 
   covergroup enc_fixed_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
@@ -280,7 +318,13 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     }
 
     imm_cp: coverpoint insn_data[31:20] { bins extremes[] = {12'h800, 12'h7ff}; }
+
+    `DEF_GPR_CP(grd_cp, 11:7)
+    `DEF_GPR_CP(grs1_cp, 19:15)
+
     `DEF_MNEM_CROSS(imm)
+
+    `DEF_MNEM_CROSS2(grd, grs1)
   endgroup
 
   covergroup enc_is_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
@@ -293,7 +337,13 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     }
 
     shamt_cp: coverpoint insn_data[24:20] { bins extremes[] = {'0, '1}; }
+
+    `DEF_GPR_CP(grd_cp, 11:7)
+    `DEF_GPR_CP(grs1_cp, 19:15)
+
     `DEF_MNEM_CROSS(shamt)
+
+    `DEF_MNEM_CROSS2(grd, grs1)
   endgroup
 
   covergroup enc_j_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
@@ -303,6 +353,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     }
 
     off_cp: coverpoint insn_data[31:12] { bins extremes[] = {20'h80000, 20'h7ffff}; }
+
+    `DEF_GPR_CP(grd_cp, 11:7)
   endgroup
 
   covergroup enc_loop_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
@@ -313,6 +365,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     }
 
     sz_cp: coverpoint insn_data[31:20] { bins extremes[] = {'0, '1}; }
+
+    `DEF_GPR_CP(grs_cp, 19:15)
   endgroup
 
   covergroup enc_loopi_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
@@ -338,6 +392,12 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       `DEF_MNEM_BIN(mnem_xor);
       illegal_bins other = default;
     }
+
+    `DEF_GPR_CP(grd_cp, 11:7)
+    `DEF_GPR_CP(grs1_cp, 19:15)
+    `DEF_GPR_CP(grs2_cp, 24:20)
+
+    `DEF_MNEM_CROSS3(grd, grs1, grs2)
   endgroup
 
   covergroup enc_s_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
@@ -346,7 +406,13 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       illegal_bins other = default;
     }
 
-    off_cp: coverpoint insn_data[31:20] { bins extremes[] = {12'h800, 12'h7ff}; }
+    off_cp: coverpoint {insn_data[31:25], insn_data[11:7]} {
+      bins extremes[] = {12'h800, 12'h7ff};
+    }
+
+    `DEF_GPR_CP(grs1_cp, 19:15)
+    `DEF_GPR_CP(grs2_cp, 24:20)
+    `DEF_MNEM_CROSS2(grs1, grs2)
   endgroup
 
   covergroup enc_u_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
@@ -356,6 +422,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     }
 
     imm_cp: coverpoint insn_data[31:12] { bins extremes[] = {'0, '1}; }
+
+    `DEF_GPR_CP(grd_cp, 11:7)
   endgroup
 
   covergroup enc_wcsr_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_data);
@@ -512,5 +580,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
 `undef DEF_MNEM_BIN
 `undef DEF_MNEM_CROSS
+`undef DEF_MNEM_CROSS2
+`undef DEF_MNEM_CROSS3
+`undef GPR_BIN_TYPES
+`undef DEF_GPR_CP
 
 endclass
