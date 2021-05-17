@@ -62,6 +62,7 @@ module rom_ctrl
   logic                     bus_rom_rvalid;
 
   logic [RomIndexWidth-1:0] checker_rom_index;
+  logic                     checker_rom_req;
   logic [39:0]              checker_rom_rdata;
 
   // Pack / unpack kmac connection data ========================================
@@ -154,6 +155,7 @@ module rom_ctrl
     .bus_rdata_o     (bus_rom_rdata),
     .bus_rvalid_o    (bus_rom_rvalid),
     .chk_addr_i      (checker_rom_index),
+    .chk_req_i       (checker_rom_req),
     .chk_rdata_o     (checker_rom_rdata),
     .rom_addr_o      (rom_index),
     .rom_req_o       (rom_req),
@@ -243,6 +245,7 @@ module rom_ctrl
     .kmac_digest_i        (kmac_digest),
     .rom_select_o         (rom_select),
     .rom_addr_o           (checker_rom_index),
+    .rom_req_o            (checker_rom_req),
     .rom_data_i           (checker_rom_rdata[31:0]),
     .alert_o              (checker_alert)
   );

@@ -45,6 +45,7 @@ module rom_ctrl_fsm
   // To ROM mux
   output logic                       rom_select_o,
   output logic [vbits(RomDepth)-1:0] rom_addr_o,
+  output logic                       rom_req_o,
 
   // Raw bits from ROM
   input logic [31:0]                 rom_data_i,
@@ -61,7 +62,9 @@ module rom_ctrl_fsm
 
   // The counter / address generator
   logic          counter_done;
-  logic [AW-1:0] counter_read_addr, counter_data_addr;
+  logic [AW-1:0] counter_read_addr;
+  logic          counter_read_req;
+  logic [AW-1:0] counter_data_addr;
   logic          counter_data_rdy, counter_data_vld;
   logic          counter_lnt;
   rom_ctrl_counter #(
@@ -72,6 +75,7 @@ module rom_ctrl_fsm
     .rst_ni             (rst_ni),
     .done_o             (counter_done),
     .read_addr_o        (counter_read_addr),
+    .read_req_o         (counter_read_req),
     .data_addr_o        (counter_data_addr),
     .data_rdy_i         (counter_data_rdy),
     .data_vld_o         (counter_data_vld),
@@ -252,6 +256,7 @@ module rom_ctrl_fsm
   // We keep control of the ROM mux from reset until we're done
   assign rom_select_o = (state_q != Done);
   assign rom_addr_o = counter_read_addr;
+  assign rom_req_o = counter_read_req;
 
   // TODO: There are lots more checks that we could do here (things like spotting vld signals that
   //       occur when we're in an FSM state that doesn't expect them)
