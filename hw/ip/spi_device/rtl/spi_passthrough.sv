@@ -175,7 +175,10 @@ module spi_passthrough
     //
     // If the address hits the Mailbox region and the SW has enabled the
     // mailbox, then ST cancels current transaction and moves to StWait state.
-    StAddress
+    StAddress,
+
+    // MByte
+    StMByte
   } passthrough_st_e;
   passthrough_st_e st, st_d;
 
@@ -630,12 +633,32 @@ module spi_passthrough
 
   // Dummy Counter
   logic dummy_set;
+  logic dummycnt_zero;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) dummycnt <= '0;
     else if (dummy_set) begin
       dummycnt <= dummycnt_d;
+    end else if (st == StHighZ) begin
+      dummycnt <= dummycnt - 1'b 1;
     end
   end
+  assign dummycnt_zero = (dummycnt == '0);
+
+  // MByte counter
+  logic mbyte_set;
+  logic mbytecnt_zero;
+  logic [1:0] mbyte_cnt;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      mbyte_cnt <= '0;
+    end else if (mbyte_set) begin
+      // TODO: check addr enable and update mbyte_cnt to 3 or 1
+      mbyte_cnt <= 2'h 3;
+    end else if (st == StMByte) begin
+      mbyte_cnt <= mbyte_cnt - 1'b 1;
+    end
+  end
+  assign mbytecnt_zero = (mbyte_cnt == '0);
 
   // = BEGIN: Passthrough Mux (!important) ====================================
 
@@ -693,6 +716,9 @@ module spi_passthrough
     // addr_set
     addr_set = 1'b 0;
 
+    // mbyte counter udpate
+    mbyte_set = 1'b 0;
+
     // Dummy
     dummy_set = 1'b 0;
     dummycnt_d = '0;
@@ -720,6 +746,7 @@ module spi_passthrough
           // address swap in case of Read Commands.
           //
           // Order: addr_en , dummy_en, |payload_en
+          // Note that no direct transition to MByte state.
           if (cmd_info_d.addr_en) begin
             st_d = StAddress;
 
@@ -737,6 +764,17 @@ module spi_passthrough
               st_d = StDriving;
             end
           end
+        end
+      end
+
+      StMByte: begin
+        if (mbytecnt_zero) begin
+          st_d = StHighZ;
+
+          dummy_set = 1'b 1;
+          dummycnt_d = cmd_info_d.dummy_size;
+        end else begin
+          st_d = StMByte;
         end
       end
 
@@ -768,7 +806,7 @@ module spi_passthrough
       StHighZ: begin
         host_s_en_inclk   = 4'h 0; // explicit
         device_s_en_inclk = 4'h 0; // float
-        if (dummycnt == '0) begin
+        if (dummycnt_zero) begin
           // Assume payload_en not 0
           st_d = (cmd_info.payload_dir == PayloadOut) ? StWait : StDriving;
         end
@@ -783,6 +821,10 @@ module spi_passthrough
             st_d = StFilter;
 
             filter = 1'b 1;
+          end else if (cmd_info.mbyte_en) begin
+            st_d = StMByte;
+
+            mbyte_set = 1'b 1;
           end else if (cmd_info.dummy_en) begin
             st_d = StHighZ;
 

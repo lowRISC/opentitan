@@ -11,17 +11,15 @@
 
   # Process
 
-  Command Parser sends command at 7th bit. The data valids at the negedge of SCK
-  or later. But the data valid in the posedge of 8th SCK.
+  Command Parser sends a command in the 8th bit. The datapath is selected at
+  the same cycle.
 
-  Read command process block sees the opcode and transits to Output mode or IO
-  mode depends on the opcode. If Fast Dual I/O or Fast Quad I/O, it moves to
-  I/O states to receive address in dual or quad lines. In any of those two, the
-  protocol assumes M byte and dummy cycle in between.
-
-  When moves to the address states regardless of Output command or I/O command,
-  based on 3B/4B config, the address count register is reset to 23 (for 3B) or
-  31 (for 4B).
+  Read command process block uses the cmd_info data and determine how the
+  module should operate. The cmd_info has enough information the module to
+  operate such as the address mode (4B affected or not), the existence of the
+  dummy cycles, the number of dummy cycles, the number of output lanes the
+  command uses, and the number of address lines. Please refer
+  spi_device_pkg::cmd_info_t for the details of the data structure.
 
   ## Address handling
 
@@ -36,23 +34,25 @@
 
   ### Address for I/O commands
 
-  Address comes through IO0,1 in dual I/O command, or IO0:3 in quad I/O command.
-  The logic latches 2 or 4bit at a time and when it reaches valid 4B address, it
-  triggers DPSRAM state machine to fetch data from DPSRAM. It, then, moves to
-  M byte state. The value is not used in current design.
+  Address comes through IO0,1 for the  dual I/O command, or IO0:3 for the quad
+  I/O command.  The logic latches 2 or 4bit at a time. When it reaches valid
+  4B address, it triggers the Dual-Port SRAM(DPSRAM) state machine to fetch
+  data from the DPSRAM. Then, it moves to M byte state. The value is not used
+  in current design.
 
   ### Mailbox when the mode is enabled
 
-  If the address falls into mailbox address range while stacking address into a
-  register, the state turns on mailbox selection bit. Then all out-going
-  requests to DPSRAM for read point to Mailbox section not Read Buffer section.
+  If the address falls into mailbox address range while stacking address into
+  a register, the state turns on mailbox selection bit. Then all out-going
+  requests to DPSRAM for read point to the Mailbox section not to the Read
+  Buffer section.
 
   ## Normal command
 
-  Normal command sends read data right after the address phase. Right after
-  moved to the Normal command state, state machine push proper byte into
-  synchronous FIFO. The FIFO has pass parameter enabled to get the data within
-  a cycle.
+  Normal command sends the read data right after the address phase. Right
+  after moved to the Normal command state, the state machine pushes proper
+  byte into synchronous FIFO. The FIFO has the pass parameter enabled to get
+  the data within a cycle.
 
   ## Fast Read command
 
@@ -76,6 +76,13 @@
   Quad I/O commands state waits M byte then moves to Dual/ Quad output command
   states.
 
+  ## Read SFDP command
+
+  If the incoming datapath is not DpReadCmd but DpSfdp, then the request to
+  the DPSRAM goes to the SFDP data section. The `cmd_info` should have the
+  expected config for the SFDP command (e.g: 4B affected disabled,
+  non-existence of the dummy cycle).
+
 */
 
 `include "prim_assert.sv"
@@ -87,12 +94,18 @@ module spi_readcmd
   // Base address: Index of DPSRAM
   // Buffer size: # of indices assigned to Read Buffer.
   //    This is used to calculate double buffering and threshold.
-  // Mailbox Base Addr: Beginning Index of Mailbox in DPSRAM
-  // Mailbox Size: Mailbox buffer size (# of indices)
   parameter sram_addr_t  ReadBaseAddr    = spi_device_pkg::SramReadBufferIdx,
   parameter int unsigned ReadBufferDepth = spi_device_pkg::SramMsgDepth,
+
+  // Mailbox Base Addr: Beginning Index of Mailbox in DPSRAM
+  // Mailbox Size: Mailbox buffer size (# of indices)
   parameter sram_addr_t  MailboxBaseAddr = spi_device_pkg::SramMailboxIdx,
-  parameter int unsigned MailboxDepth    = spi_device_pkg::SramMailboxDepth
+  parameter int unsigned MailboxDepth    = spi_device_pkg::SramMailboxDepth,
+
+  // SFDP Base Addr: the beginning index of the SFDP region in DPSRAM
+  // SFDP Depth: The size of the SFDP buffer (64 fixed in the spi_device_pkg)
+  parameter sram_addr_t  SfdpBaseAddr    = spi_device_pkg::SramSfdpIdx,
+  parameter int unsigned SfdpDepth       = spi_device_pkg::SramSfdpDepth
 ) (
   input clk_i,
   input rst_ni,
@@ -105,7 +118,6 @@ module spi_readcmd
   // DpReadCmd activates readcmd module, and it sees opcode to determine its
   // mode inside (Normal/ Fast/ Dual/ Quad/ DualIO/ QuadIO)
   input sel_datapath_e sel_dp_i,
-  input spi_byte_t     opcode_i,
 
   // SRAM access
   output logic       sram_req_o,
@@ -131,9 +143,9 @@ module spi_readcmd
   //    All configs come from peripheral clock domain.
   //    No CDC exists in between.
   input spi_mode_e spi_mode_i,
-  input      [2:0] fastread_dummy_i,
-  input      [2:0] dualread_dummy_i, // Dual I/O
-  input      [2:0] quadread_dummy_i, // Quad I/O
+
+  input cmd_info_t              cmd_info_i,
+  input logic [CmdInfoIdxW-1:0] cmd_info_idx_i,
 
   // Double buffering
   input [$clog2(ReadBufferDepth)-2:0] readbuf_threshold_i,
@@ -176,11 +188,26 @@ module spi_readcmd
   sram_err_t unused_sram_rerr;
   assign unused_sram_rerr = sram_rerror_i;
 
+  // TODO: Implement cmd_info
+  logic unused_cmd_info;
+  assign unused_cmd_info = ^cmd_info_i;
+
+  logic unused_cmd_info_idx;
+  assign unused_cmd_info_idx = ^cmd_info_idx_i;
+
   /////////////////
   // Definitions //
   /////////////////
+
+  // The expected FSM sequence for each command:
+  //
+  //  - Read Data: Reset -> Address -> Output
+  //  - Fast Read (Single/ Dual/ Quad): Reset -> Address -> Dummy -> Output
+  //  - Fast Read Dual IO/ Quad IO: Reset -> Address -> MByte -> Dummy -> Output
+  //  - Read SFDP: Reset -> Address -> Output
   typedef enum logic [3:0] {
     // Reset: Wait until the datapath for Read command is activated by cmdparse
+    // The cmd_info is valid after the 8th posedge of SCK.
     MainReset,
 
     // Address
@@ -238,9 +265,12 @@ module spi_readcmd
   logic addr_shift_en;
   logic addr_latch_en;
   logic addr_inc; // increase address by 1 word
+  // Address size is latched when the state machine moves to the MainAddress
+  // state based on the cmd_info.addr_4b_affected and addr_4b_en_i
+  logic [4:0] addr_cnt_d, addr_cnt_q;
+  logic addr_cnt_set; // no need to clear the counter
 
   logic [31:0] addr_q, addr_d;
-  // Indicator of 3B or 4B mode: addr_4b_en_i
 
   // Dummy counter
   logic dummycnt_eq_zero;
@@ -318,29 +348,36 @@ module spi_readcmd
     end
   end
 
-  // Check bitcnt and assert addr_ready_in_word
-  always_comb begin
-    addr_ready_in_word = 1'b 0;
+  assign addr_ready_in_word = (addr_cnt_d == 5'd 2);
 
-    // TODO: handle the QuadIO case. `+6` should be `+8`.
-    // meaning the SRAM request only can be sent at the end of address beat
-    if (addr_4b_en_i) begin
-      /// 8bit for Opcode + 24 bit for upper 3Byte + 6bit for addr[7:2]
-      addr_ready_in_word = (s2p_bitcnt_i == BitCntW'(8+24+6)) ? 1'b 1 : 1'b 0;
+  // TODO: Check if addr_cnt_d or addr_cnt_q ?
+  assign addr_latched = (addr_cnt_d == 5'd 0);
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      addr_cnt_q <= '0;
     end else begin
-      // 3B
-      addr_ready_in_word = (s2p_bitcnt_i == BitCntW'(8+16+6)) ? 1'b 1 : 1'b 0;
+      addr_cnt_q <= addr_cnt_d;
     end
   end
 
-  always_comb begin
-    addr_latched = 1'b 0;
+  always_comb begin : addr_cnt
+    addr_cnt_d = addr_cnt_q;
+    if (addr_cnt_set) begin
+      // Set to the addr size based on cmd_info_i
+      // If addr_4b_affected && addr_4b_en, then 32, if not, 24
+      // addr_cnt_d starts from the max -1. As addr_cnt_set is asserted when
+      // FSM moves from Reset to Address. At that time of the transition, the
+      // datapath should latch the Address[31] or Address[23] too. So, it
+      // already counts one beat.
+      addr_cnt_d = (cmd_info_i.addr_4b_affected && addr_4b_en_i) ? 5'd 30 : 5'd 22;
 
-    // TODO: handle the QuadIO case.
-    if (addr_4b_en_i) begin
-      addr_latched = (s2p_bitcnt_i == BitCntW'(8+32)) ? 1'b 1 : 1'b 0;
-    end else begin
-      addr_latched = (s2p_bitcnt_i == BitCntW'(8+24)) ? 1'b 1 : 1'b 0;
+      // TODO: Dual IO/ Quad IO case
+    end else if (addr_cnt_q == '0) begin
+      addr_cnt_d = addr_cnt_q;
+    end else if (addr_shift_en) begin
+      // Stacking the address, decrease the address counter
+      addr_cnt_d = addr_cnt_q - 1'b 1;
     end
   end
 
@@ -350,14 +387,7 @@ module spi_readcmd
       dummycnt <= '0;
     end else if (load_dummycnt) begin
       // load quad_io
-      if (opcode_i == CmdReadQuadIO) begin
-        dummycnt <= quadread_dummy_i;
-      end else if (opcode_i == CmdReadDualIO) begin
-        dummycnt <= dualread_dummy_i;
-      end else begin
-        // Using normal fastread dummy cycle
-        dummycnt <= fastread_dummy_i;
-      end
+      dummycnt <= cmd_info_i.dummy_size;
     end else if (!dummycnt_eq_zero) begin
       dummycnt <= dummycnt - 1'b 1;
     end
@@ -496,6 +526,7 @@ module spi_readcmd
     load_dummycnt = 1'b 0;
 
     // address control
+    addr_cnt_set = 1'b 0;
     addr_inc = 1'b 0;
     sram_req = 1'b 0;
     addr_shift_en = 1'b 0;
@@ -512,10 +543,12 @@ module spi_readcmd
 
     unique case (main_st)
       MainReset: begin
-        if (sel_dp_i == DpReadCmd) begin
+        if (sel_dp_i inside {DpReadCmd, DpReadSFDP}) begin
           // Any readcommand goes to MainAddress state to latch address
           // 3B, 4B handles inside address
           main_st_d = MainAddress;
+
+          addr_cnt_set = 1'b 1;
         end
       end
 
@@ -534,32 +567,33 @@ module spi_readcmd
           // latch addr_d[1:0] to fifo_byteoffset;
           offset_update = 1'b 1;
 
-          // Move to next based on Commands
-          unique case (opcode_i) inside
-            // Move to Output command
-            // Assume FIFO entry is not empty in this case
-            CmdReadData: main_st_d = MainOutput;
+          // Next state:
+          //  MByte if mbyte enabled
+          //  Dummy if mbyte = 0 and dummy_en = 1
+          //  Output if mbyte = 0 and dummy_en = 0
+          unique casez ({cmd_info_i.mbyte_en, cmd_info_i.dummy_en})
+            2'b 00: begin
+              // Moves to Output directly
+              main_st_d = MainOutput;
+            end
 
-            // Dummy cycle for commands other than IO
-            CmdReadFast, CmdReadDual, CmdReadQuad: begin
+            2'b 01: begin
+              // Dummy Enabled
               main_st_d = MainDummy;
-              // TODO: Reset dummy counter
+
               load_dummycnt = 1'b 1;
             end
 
-            // MByte for IO commands
-            CmdReadDualIO, CmdReadQuadIO: begin
+            2'b 1?: begin
+              // Regardless of Dummy
               main_st_d = MainMByte;
+
+              // TODO: Set MByte latency (3 or 1)
             end
 
             default: begin
-              // Error if opcode does not match
               main_st_d = MainError;
-
-              // TODO: Error push?
-              // TODO: Define Error handling in Programmer's Guide
             end
-
           endcase
         end
       end
@@ -586,13 +620,13 @@ module spi_readcmd
         p2s_valid_inclk = 1'b 1;
 
         // DeadEnd until CSb deasserted
-        // Change Mode based on the input opcode
+        // Change Mode based on the payload_en[3:0]
         // Return data from FIFO
-        unique case (opcode_i) inside
-          CmdReadData, CmdReadFast:   io_mode_o = SingleIO;
-          CmdReadDual, CmdReadDualIO: io_mode_o = DualIO;
-          CmdReadQuad, CmdReadQuadIO: io_mode_o = QuadIO;
-          default: io_mode_o = SingleIO;
+        unique case (cmd_info_i.payload_en)
+          4'b 0010: io_mode_o = SingleIO;
+          4'b 0011: io_mode_o = DualIO;
+          4'b 1111: io_mode_o = QuadIO;
+          default:  io_mode_o = SingleIO;
         endcase
 
         // if 2 bits left, increase the address
@@ -669,11 +703,6 @@ module spi_readcmd
   // TODO: When main state machine returns data to SPI (via p2s), the FIFO shall
   // not be empty
   `ASSERT(NotEmpty_A, p2s_valid_inclk |-> (unused_depth != 0))
-
-  // There's chance to addr_latched and addr_Ready_in_word happens at the same cycle.
-  // That should be QuadIO command only.
-  `ASSUME(QuadIOLatchAndWordReady_M,
-          addr_latched && addr_ready_in_word |-> opcode_i == CmdReadQuadIO)
 
   // `addr_inc` should not be asserted in Address phase
   `ASSERT(AddrIncNotAssertInAddressState_A, addr_inc |-> main_st != MainAddress)

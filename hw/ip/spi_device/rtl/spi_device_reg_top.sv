@@ -779,6 +779,8 @@ module spi_device_reg_top (
   logic cmd_info_0_addr_swap_en_0_wd;
   logic cmd_info_0_addr_4b_affected_0_qs;
   logic cmd_info_0_addr_4b_affected_0_wd;
+  logic cmd_info_0_mbyte_en_0_qs;
+  logic cmd_info_0_mbyte_en_0_wd;
   logic [2:0] cmd_info_0_dummy_size_0_qs;
   logic [2:0] cmd_info_0_dummy_size_0_wd;
   logic cmd_info_0_dummy_en_0_qs;
@@ -796,6 +798,8 @@ module spi_device_reg_top (
   logic cmd_info_1_addr_swap_en_1_wd;
   logic cmd_info_1_addr_4b_affected_1_qs;
   logic cmd_info_1_addr_4b_affected_1_wd;
+  logic cmd_info_1_mbyte_en_1_qs;
+  logic cmd_info_1_mbyte_en_1_wd;
   logic [2:0] cmd_info_1_dummy_size_1_qs;
   logic [2:0] cmd_info_1_dummy_size_1_wd;
   logic cmd_info_1_dummy_en_1_qs;
@@ -813,6 +817,8 @@ module spi_device_reg_top (
   logic cmd_info_2_addr_swap_en_2_wd;
   logic cmd_info_2_addr_4b_affected_2_qs;
   logic cmd_info_2_addr_4b_affected_2_wd;
+  logic cmd_info_2_mbyte_en_2_qs;
+  logic cmd_info_2_mbyte_en_2_wd;
   logic [2:0] cmd_info_2_dummy_size_2_qs;
   logic [2:0] cmd_info_2_dummy_size_2_wd;
   logic cmd_info_2_dummy_en_2_qs;
@@ -830,6 +836,8 @@ module spi_device_reg_top (
   logic cmd_info_3_addr_swap_en_3_wd;
   logic cmd_info_3_addr_4b_affected_3_qs;
   logic cmd_info_3_addr_4b_affected_3_wd;
+  logic cmd_info_3_mbyte_en_3_qs;
+  logic cmd_info_3_mbyte_en_3_wd;
   logic [2:0] cmd_info_3_dummy_size_3_qs;
   logic [2:0] cmd_info_3_dummy_size_3_wd;
   logic cmd_info_3_dummy_en_3_qs;
@@ -847,6 +855,8 @@ module spi_device_reg_top (
   logic cmd_info_4_addr_swap_en_4_wd;
   logic cmd_info_4_addr_4b_affected_4_qs;
   logic cmd_info_4_addr_4b_affected_4_wd;
+  logic cmd_info_4_mbyte_en_4_qs;
+  logic cmd_info_4_mbyte_en_4_wd;
   logic [2:0] cmd_info_4_dummy_size_4_qs;
   logic [2:0] cmd_info_4_dummy_size_4_wd;
   logic cmd_info_4_dummy_en_4_qs;
@@ -864,6 +874,8 @@ module spi_device_reg_top (
   logic cmd_info_5_addr_swap_en_5_wd;
   logic cmd_info_5_addr_4b_affected_5_qs;
   logic cmd_info_5_addr_4b_affected_5_wd;
+  logic cmd_info_5_mbyte_en_5_qs;
+  logic cmd_info_5_mbyte_en_5_wd;
   logic [2:0] cmd_info_5_dummy_size_5_qs;
   logic [2:0] cmd_info_5_dummy_size_5_wd;
   logic cmd_info_5_dummy_en_5_qs;
@@ -881,6 +893,8 @@ module spi_device_reg_top (
   logic cmd_info_6_addr_swap_en_6_wd;
   logic cmd_info_6_addr_4b_affected_6_qs;
   logic cmd_info_6_addr_4b_affected_6_wd;
+  logic cmd_info_6_mbyte_en_6_qs;
+  logic cmd_info_6_mbyte_en_6_wd;
   logic [2:0] cmd_info_6_dummy_size_6_qs;
   logic [2:0] cmd_info_6_dummy_size_6_wd;
   logic cmd_info_6_dummy_en_6_qs;
@@ -898,6 +912,8 @@ module spi_device_reg_top (
   logic cmd_info_7_addr_swap_en_7_wd;
   logic cmd_info_7_addr_4b_affected_7_qs;
   logic cmd_info_7_addr_4b_affected_7_wd;
+  logic cmd_info_7_mbyte_en_7_qs;
+  logic cmd_info_7_mbyte_en_7_wd;
   logic [2:0] cmd_info_7_dummy_size_7_qs;
   logic [2:0] cmd_info_7_dummy_size_7_wd;
   logic cmd_info_7_dummy_en_7_qs;
@@ -915,6 +931,8 @@ module spi_device_reg_top (
   logic cmd_info_8_addr_swap_en_8_wd;
   logic cmd_info_8_addr_4b_affected_8_qs;
   logic cmd_info_8_addr_4b_affected_8_wd;
+  logic cmd_info_8_mbyte_en_8_qs;
+  logic cmd_info_8_mbyte_en_8_wd;
   logic [2:0] cmd_info_8_dummy_size_8_qs;
   logic [2:0] cmd_info_8_dummy_size_8_wd;
   logic cmd_info_8_dummy_en_8_qs;
@@ -932,6 +950,8 @@ module spi_device_reg_top (
   logic cmd_info_9_addr_swap_en_9_wd;
   logic cmd_info_9_addr_4b_affected_9_qs;
   logic cmd_info_9_addr_4b_affected_9_wd;
+  logic cmd_info_9_mbyte_en_9_qs;
+  logic cmd_info_9_mbyte_en_9_wd;
   logic [2:0] cmd_info_9_dummy_size_9_qs;
   logic [2:0] cmd_info_9_dummy_size_9_wd;
   logic cmd_info_9_dummy_en_9_qs;
@@ -949,6 +969,8 @@ module spi_device_reg_top (
   logic cmd_info_10_addr_swap_en_10_wd;
   logic cmd_info_10_addr_4b_affected_10_qs;
   logic cmd_info_10_addr_4b_affected_10_wd;
+  logic cmd_info_10_mbyte_en_10_qs;
+  logic cmd_info_10_mbyte_en_10_wd;
   logic [2:0] cmd_info_10_dummy_size_10_qs;
   logic [2:0] cmd_info_10_dummy_size_10_wd;
   logic cmd_info_10_dummy_en_10_qs;
@@ -966,6 +988,8 @@ module spi_device_reg_top (
   logic cmd_info_11_addr_swap_en_11_wd;
   logic cmd_info_11_addr_4b_affected_11_qs;
   logic cmd_info_11_addr_4b_affected_11_wd;
+  logic cmd_info_11_mbyte_en_11_qs;
+  logic cmd_info_11_mbyte_en_11_wd;
   logic [2:0] cmd_info_11_dummy_size_11_qs;
   logic [2:0] cmd_info_11_dummy_size_11_wd;
   logic cmd_info_11_dummy_en_11_qs;
@@ -983,6 +1007,8 @@ module spi_device_reg_top (
   logic cmd_info_12_addr_swap_en_12_wd;
   logic cmd_info_12_addr_4b_affected_12_qs;
   logic cmd_info_12_addr_4b_affected_12_wd;
+  logic cmd_info_12_mbyte_en_12_qs;
+  logic cmd_info_12_mbyte_en_12_wd;
   logic [2:0] cmd_info_12_dummy_size_12_qs;
   logic [2:0] cmd_info_12_dummy_size_12_wd;
   logic cmd_info_12_dummy_en_12_qs;
@@ -1000,6 +1026,8 @@ module spi_device_reg_top (
   logic cmd_info_13_addr_swap_en_13_wd;
   logic cmd_info_13_addr_4b_affected_13_qs;
   logic cmd_info_13_addr_4b_affected_13_wd;
+  logic cmd_info_13_mbyte_en_13_qs;
+  logic cmd_info_13_mbyte_en_13_wd;
   logic [2:0] cmd_info_13_dummy_size_13_qs;
   logic [2:0] cmd_info_13_dummy_size_13_wd;
   logic cmd_info_13_dummy_en_13_qs;
@@ -1017,6 +1045,8 @@ module spi_device_reg_top (
   logic cmd_info_14_addr_swap_en_14_wd;
   logic cmd_info_14_addr_4b_affected_14_qs;
   logic cmd_info_14_addr_4b_affected_14_wd;
+  logic cmd_info_14_mbyte_en_14_qs;
+  logic cmd_info_14_mbyte_en_14_wd;
   logic [2:0] cmd_info_14_dummy_size_14_qs;
   logic [2:0] cmd_info_14_dummy_size_14_wd;
   logic cmd_info_14_dummy_en_14_qs;
@@ -1034,6 +1064,8 @@ module spi_device_reg_top (
   logic cmd_info_15_addr_swap_en_15_wd;
   logic cmd_info_15_addr_4b_affected_15_qs;
   logic cmd_info_15_addr_4b_affected_15_wd;
+  logic cmd_info_15_mbyte_en_15_qs;
+  logic cmd_info_15_mbyte_en_15_wd;
   logic [2:0] cmd_info_15_dummy_size_15_qs;
   logic [2:0] cmd_info_15_dummy_size_15_wd;
   logic cmd_info_15_dummy_en_15_qs;
@@ -8996,6 +9028,32 @@ module spi_device_reg_top (
   );
 
 
+  // F[mbyte_en_0]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_0_mbyte_en_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_0_we),
+    .wd     (cmd_info_0_mbyte_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[0].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_0_mbyte_en_0_qs)
+  );
+
+
   // F[dummy_size_0]: 14:12
   prim_subreg #(
     .DW      (3),
@@ -9204,6 +9262,32 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_1_addr_4b_affected_1_qs)
+  );
+
+
+  // F[mbyte_en_1]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_1_mbyte_en_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_1_we),
+    .wd     (cmd_info_1_mbyte_en_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[1].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_1_mbyte_en_1_qs)
   );
 
 
@@ -9418,6 +9502,32 @@ module spi_device_reg_top (
   );
 
 
+  // F[mbyte_en_2]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_2_mbyte_en_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_2_we),
+    .wd     (cmd_info_2_mbyte_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[2].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_2_mbyte_en_2_qs)
+  );
+
+
   // F[dummy_size_2]: 14:12
   prim_subreg #(
     .DW      (3),
@@ -9626,6 +9736,32 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_3_addr_4b_affected_3_qs)
+  );
+
+
+  // F[mbyte_en_3]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_3_mbyte_en_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_3_we),
+    .wd     (cmd_info_3_mbyte_en_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[3].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_3_mbyte_en_3_qs)
   );
 
 
@@ -9840,6 +9976,32 @@ module spi_device_reg_top (
   );
 
 
+  // F[mbyte_en_4]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_4_mbyte_en_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_4_we),
+    .wd     (cmd_info_4_mbyte_en_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[4].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_4_mbyte_en_4_qs)
+  );
+
+
   // F[dummy_size_4]: 14:12
   prim_subreg #(
     .DW      (3),
@@ -10048,6 +10210,32 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_5_addr_4b_affected_5_qs)
+  );
+
+
+  // F[mbyte_en_5]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_5_mbyte_en_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_5_we),
+    .wd     (cmd_info_5_mbyte_en_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[5].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_5_mbyte_en_5_qs)
   );
 
 
@@ -10262,6 +10450,32 @@ module spi_device_reg_top (
   );
 
 
+  // F[mbyte_en_6]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_6_mbyte_en_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_6_we),
+    .wd     (cmd_info_6_mbyte_en_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[6].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_6_mbyte_en_6_qs)
+  );
+
+
   // F[dummy_size_6]: 14:12
   prim_subreg #(
     .DW      (3),
@@ -10470,6 +10684,32 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_7_addr_4b_affected_7_qs)
+  );
+
+
+  // F[mbyte_en_7]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_7_mbyte_en_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_7_we),
+    .wd     (cmd_info_7_mbyte_en_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[7].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_7_mbyte_en_7_qs)
   );
 
 
@@ -10684,6 +10924,32 @@ module spi_device_reg_top (
   );
 
 
+  // F[mbyte_en_8]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_8_mbyte_en_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_8_we),
+    .wd     (cmd_info_8_mbyte_en_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[8].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_8_mbyte_en_8_qs)
+  );
+
+
   // F[dummy_size_8]: 14:12
   prim_subreg #(
     .DW      (3),
@@ -10892,6 +11158,32 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_9_addr_4b_affected_9_qs)
+  );
+
+
+  // F[mbyte_en_9]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_9_mbyte_en_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_9_we),
+    .wd     (cmd_info_9_mbyte_en_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[9].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_9_mbyte_en_9_qs)
   );
 
 
@@ -11106,6 +11398,32 @@ module spi_device_reg_top (
   );
 
 
+  // F[mbyte_en_10]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_10_mbyte_en_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_10_we),
+    .wd     (cmd_info_10_mbyte_en_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[10].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_10_mbyte_en_10_qs)
+  );
+
+
   // F[dummy_size_10]: 14:12
   prim_subreg #(
     .DW      (3),
@@ -11314,6 +11632,32 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_11_addr_4b_affected_11_qs)
+  );
+
+
+  // F[mbyte_en_11]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_11_mbyte_en_11 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_11_we),
+    .wd     (cmd_info_11_mbyte_en_11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[11].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_11_mbyte_en_11_qs)
   );
 
 
@@ -11528,6 +11872,32 @@ module spi_device_reg_top (
   );
 
 
+  // F[mbyte_en_12]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_12_mbyte_en_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_12_we),
+    .wd     (cmd_info_12_mbyte_en_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[12].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_12_mbyte_en_12_qs)
+  );
+
+
   // F[dummy_size_12]: 14:12
   prim_subreg #(
     .DW      (3),
@@ -11736,6 +12106,32 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_13_addr_4b_affected_13_qs)
+  );
+
+
+  // F[mbyte_en_13]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_13_mbyte_en_13 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_13_we),
+    .wd     (cmd_info_13_mbyte_en_13_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[13].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_13_mbyte_en_13_qs)
   );
 
 
@@ -11950,6 +12346,32 @@ module spi_device_reg_top (
   );
 
 
+  // F[mbyte_en_14]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_14_mbyte_en_14 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_14_we),
+    .wd     (cmd_info_14_mbyte_en_14_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[14].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_14_mbyte_en_14_qs)
+  );
+
+
   // F[dummy_size_14]: 14:12
   prim_subreg #(
     .DW      (3),
@@ -12158,6 +12580,32 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_15_addr_4b_affected_15_qs)
+  );
+
+
+  // F[mbyte_en_15]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_cmd_info_15_mbyte_en_15 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_15_we),
+    .wd     (cmd_info_15_mbyte_en_15_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[15].mbyte_en.q),
+
+    // to register interface (read)
+    .qs     (cmd_info_15_mbyte_en_15_qs)
   );
 
 
@@ -12982,6 +13430,8 @@ module spi_device_reg_top (
 
   assign cmd_info_0_addr_4b_affected_0_wd = reg_wdata[10];
 
+  assign cmd_info_0_mbyte_en_0_wd = reg_wdata[11];
+
   assign cmd_info_0_dummy_size_0_wd = reg_wdata[14:12];
 
   assign cmd_info_0_dummy_en_0_wd = reg_wdata[15];
@@ -12998,6 +13448,8 @@ module spi_device_reg_top (
   assign cmd_info_1_addr_swap_en_1_wd = reg_wdata[9];
 
   assign cmd_info_1_addr_4b_affected_1_wd = reg_wdata[10];
+
+  assign cmd_info_1_mbyte_en_1_wd = reg_wdata[11];
 
   assign cmd_info_1_dummy_size_1_wd = reg_wdata[14:12];
 
@@ -13016,6 +13468,8 @@ module spi_device_reg_top (
 
   assign cmd_info_2_addr_4b_affected_2_wd = reg_wdata[10];
 
+  assign cmd_info_2_mbyte_en_2_wd = reg_wdata[11];
+
   assign cmd_info_2_dummy_size_2_wd = reg_wdata[14:12];
 
   assign cmd_info_2_dummy_en_2_wd = reg_wdata[15];
@@ -13032,6 +13486,8 @@ module spi_device_reg_top (
   assign cmd_info_3_addr_swap_en_3_wd = reg_wdata[9];
 
   assign cmd_info_3_addr_4b_affected_3_wd = reg_wdata[10];
+
+  assign cmd_info_3_mbyte_en_3_wd = reg_wdata[11];
 
   assign cmd_info_3_dummy_size_3_wd = reg_wdata[14:12];
 
@@ -13050,6 +13506,8 @@ module spi_device_reg_top (
 
   assign cmd_info_4_addr_4b_affected_4_wd = reg_wdata[10];
 
+  assign cmd_info_4_mbyte_en_4_wd = reg_wdata[11];
+
   assign cmd_info_4_dummy_size_4_wd = reg_wdata[14:12];
 
   assign cmd_info_4_dummy_en_4_wd = reg_wdata[15];
@@ -13066,6 +13524,8 @@ module spi_device_reg_top (
   assign cmd_info_5_addr_swap_en_5_wd = reg_wdata[9];
 
   assign cmd_info_5_addr_4b_affected_5_wd = reg_wdata[10];
+
+  assign cmd_info_5_mbyte_en_5_wd = reg_wdata[11];
 
   assign cmd_info_5_dummy_size_5_wd = reg_wdata[14:12];
 
@@ -13084,6 +13544,8 @@ module spi_device_reg_top (
 
   assign cmd_info_6_addr_4b_affected_6_wd = reg_wdata[10];
 
+  assign cmd_info_6_mbyte_en_6_wd = reg_wdata[11];
+
   assign cmd_info_6_dummy_size_6_wd = reg_wdata[14:12];
 
   assign cmd_info_6_dummy_en_6_wd = reg_wdata[15];
@@ -13100,6 +13562,8 @@ module spi_device_reg_top (
   assign cmd_info_7_addr_swap_en_7_wd = reg_wdata[9];
 
   assign cmd_info_7_addr_4b_affected_7_wd = reg_wdata[10];
+
+  assign cmd_info_7_mbyte_en_7_wd = reg_wdata[11];
 
   assign cmd_info_7_dummy_size_7_wd = reg_wdata[14:12];
 
@@ -13118,6 +13582,8 @@ module spi_device_reg_top (
 
   assign cmd_info_8_addr_4b_affected_8_wd = reg_wdata[10];
 
+  assign cmd_info_8_mbyte_en_8_wd = reg_wdata[11];
+
   assign cmd_info_8_dummy_size_8_wd = reg_wdata[14:12];
 
   assign cmd_info_8_dummy_en_8_wd = reg_wdata[15];
@@ -13134,6 +13600,8 @@ module spi_device_reg_top (
   assign cmd_info_9_addr_swap_en_9_wd = reg_wdata[9];
 
   assign cmd_info_9_addr_4b_affected_9_wd = reg_wdata[10];
+
+  assign cmd_info_9_mbyte_en_9_wd = reg_wdata[11];
 
   assign cmd_info_9_dummy_size_9_wd = reg_wdata[14:12];
 
@@ -13152,6 +13620,8 @@ module spi_device_reg_top (
 
   assign cmd_info_10_addr_4b_affected_10_wd = reg_wdata[10];
 
+  assign cmd_info_10_mbyte_en_10_wd = reg_wdata[11];
+
   assign cmd_info_10_dummy_size_10_wd = reg_wdata[14:12];
 
   assign cmd_info_10_dummy_en_10_wd = reg_wdata[15];
@@ -13168,6 +13638,8 @@ module spi_device_reg_top (
   assign cmd_info_11_addr_swap_en_11_wd = reg_wdata[9];
 
   assign cmd_info_11_addr_4b_affected_11_wd = reg_wdata[10];
+
+  assign cmd_info_11_mbyte_en_11_wd = reg_wdata[11];
 
   assign cmd_info_11_dummy_size_11_wd = reg_wdata[14:12];
 
@@ -13186,6 +13658,8 @@ module spi_device_reg_top (
 
   assign cmd_info_12_addr_4b_affected_12_wd = reg_wdata[10];
 
+  assign cmd_info_12_mbyte_en_12_wd = reg_wdata[11];
+
   assign cmd_info_12_dummy_size_12_wd = reg_wdata[14:12];
 
   assign cmd_info_12_dummy_en_12_wd = reg_wdata[15];
@@ -13202,6 +13676,8 @@ module spi_device_reg_top (
   assign cmd_info_13_addr_swap_en_13_wd = reg_wdata[9];
 
   assign cmd_info_13_addr_4b_affected_13_wd = reg_wdata[10];
+
+  assign cmd_info_13_mbyte_en_13_wd = reg_wdata[11];
 
   assign cmd_info_13_dummy_size_13_wd = reg_wdata[14:12];
 
@@ -13220,6 +13696,8 @@ module spi_device_reg_top (
 
   assign cmd_info_14_addr_4b_affected_14_wd = reg_wdata[10];
 
+  assign cmd_info_14_mbyte_en_14_wd = reg_wdata[11];
+
   assign cmd_info_14_dummy_size_14_wd = reg_wdata[14:12];
 
   assign cmd_info_14_dummy_en_14_wd = reg_wdata[15];
@@ -13236,6 +13714,8 @@ module spi_device_reg_top (
   assign cmd_info_15_addr_swap_en_15_wd = reg_wdata[9];
 
   assign cmd_info_15_addr_4b_affected_15_wd = reg_wdata[10];
+
+  assign cmd_info_15_mbyte_en_15_wd = reg_wdata[11];
 
   assign cmd_info_15_dummy_size_15_wd = reg_wdata[14:12];
 
@@ -13629,6 +14109,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_0_addr_en_0_qs;
         reg_rdata_next[9] = cmd_info_0_addr_swap_en_0_qs;
         reg_rdata_next[10] = cmd_info_0_addr_4b_affected_0_qs;
+        reg_rdata_next[11] = cmd_info_0_mbyte_en_0_qs;
         reg_rdata_next[14:12] = cmd_info_0_dummy_size_0_qs;
         reg_rdata_next[15] = cmd_info_0_dummy_en_0_qs;
         reg_rdata_next[19:16] = cmd_info_0_payload_en_0_qs;
@@ -13640,6 +14121,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_1_addr_en_1_qs;
         reg_rdata_next[9] = cmd_info_1_addr_swap_en_1_qs;
         reg_rdata_next[10] = cmd_info_1_addr_4b_affected_1_qs;
+        reg_rdata_next[11] = cmd_info_1_mbyte_en_1_qs;
         reg_rdata_next[14:12] = cmd_info_1_dummy_size_1_qs;
         reg_rdata_next[15] = cmd_info_1_dummy_en_1_qs;
         reg_rdata_next[19:16] = cmd_info_1_payload_en_1_qs;
@@ -13651,6 +14133,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_2_addr_en_2_qs;
         reg_rdata_next[9] = cmd_info_2_addr_swap_en_2_qs;
         reg_rdata_next[10] = cmd_info_2_addr_4b_affected_2_qs;
+        reg_rdata_next[11] = cmd_info_2_mbyte_en_2_qs;
         reg_rdata_next[14:12] = cmd_info_2_dummy_size_2_qs;
         reg_rdata_next[15] = cmd_info_2_dummy_en_2_qs;
         reg_rdata_next[19:16] = cmd_info_2_payload_en_2_qs;
@@ -13662,6 +14145,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_3_addr_en_3_qs;
         reg_rdata_next[9] = cmd_info_3_addr_swap_en_3_qs;
         reg_rdata_next[10] = cmd_info_3_addr_4b_affected_3_qs;
+        reg_rdata_next[11] = cmd_info_3_mbyte_en_3_qs;
         reg_rdata_next[14:12] = cmd_info_3_dummy_size_3_qs;
         reg_rdata_next[15] = cmd_info_3_dummy_en_3_qs;
         reg_rdata_next[19:16] = cmd_info_3_payload_en_3_qs;
@@ -13673,6 +14157,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_4_addr_en_4_qs;
         reg_rdata_next[9] = cmd_info_4_addr_swap_en_4_qs;
         reg_rdata_next[10] = cmd_info_4_addr_4b_affected_4_qs;
+        reg_rdata_next[11] = cmd_info_4_mbyte_en_4_qs;
         reg_rdata_next[14:12] = cmd_info_4_dummy_size_4_qs;
         reg_rdata_next[15] = cmd_info_4_dummy_en_4_qs;
         reg_rdata_next[19:16] = cmd_info_4_payload_en_4_qs;
@@ -13684,6 +14169,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_5_addr_en_5_qs;
         reg_rdata_next[9] = cmd_info_5_addr_swap_en_5_qs;
         reg_rdata_next[10] = cmd_info_5_addr_4b_affected_5_qs;
+        reg_rdata_next[11] = cmd_info_5_mbyte_en_5_qs;
         reg_rdata_next[14:12] = cmd_info_5_dummy_size_5_qs;
         reg_rdata_next[15] = cmd_info_5_dummy_en_5_qs;
         reg_rdata_next[19:16] = cmd_info_5_payload_en_5_qs;
@@ -13695,6 +14181,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_6_addr_en_6_qs;
         reg_rdata_next[9] = cmd_info_6_addr_swap_en_6_qs;
         reg_rdata_next[10] = cmd_info_6_addr_4b_affected_6_qs;
+        reg_rdata_next[11] = cmd_info_6_mbyte_en_6_qs;
         reg_rdata_next[14:12] = cmd_info_6_dummy_size_6_qs;
         reg_rdata_next[15] = cmd_info_6_dummy_en_6_qs;
         reg_rdata_next[19:16] = cmd_info_6_payload_en_6_qs;
@@ -13706,6 +14193,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_7_addr_en_7_qs;
         reg_rdata_next[9] = cmd_info_7_addr_swap_en_7_qs;
         reg_rdata_next[10] = cmd_info_7_addr_4b_affected_7_qs;
+        reg_rdata_next[11] = cmd_info_7_mbyte_en_7_qs;
         reg_rdata_next[14:12] = cmd_info_7_dummy_size_7_qs;
         reg_rdata_next[15] = cmd_info_7_dummy_en_7_qs;
         reg_rdata_next[19:16] = cmd_info_7_payload_en_7_qs;
@@ -13717,6 +14205,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_8_addr_en_8_qs;
         reg_rdata_next[9] = cmd_info_8_addr_swap_en_8_qs;
         reg_rdata_next[10] = cmd_info_8_addr_4b_affected_8_qs;
+        reg_rdata_next[11] = cmd_info_8_mbyte_en_8_qs;
         reg_rdata_next[14:12] = cmd_info_8_dummy_size_8_qs;
         reg_rdata_next[15] = cmd_info_8_dummy_en_8_qs;
         reg_rdata_next[19:16] = cmd_info_8_payload_en_8_qs;
@@ -13728,6 +14217,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_9_addr_en_9_qs;
         reg_rdata_next[9] = cmd_info_9_addr_swap_en_9_qs;
         reg_rdata_next[10] = cmd_info_9_addr_4b_affected_9_qs;
+        reg_rdata_next[11] = cmd_info_9_mbyte_en_9_qs;
         reg_rdata_next[14:12] = cmd_info_9_dummy_size_9_qs;
         reg_rdata_next[15] = cmd_info_9_dummy_en_9_qs;
         reg_rdata_next[19:16] = cmd_info_9_payload_en_9_qs;
@@ -13739,6 +14229,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_10_addr_en_10_qs;
         reg_rdata_next[9] = cmd_info_10_addr_swap_en_10_qs;
         reg_rdata_next[10] = cmd_info_10_addr_4b_affected_10_qs;
+        reg_rdata_next[11] = cmd_info_10_mbyte_en_10_qs;
         reg_rdata_next[14:12] = cmd_info_10_dummy_size_10_qs;
         reg_rdata_next[15] = cmd_info_10_dummy_en_10_qs;
         reg_rdata_next[19:16] = cmd_info_10_payload_en_10_qs;
@@ -13750,6 +14241,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_11_addr_en_11_qs;
         reg_rdata_next[9] = cmd_info_11_addr_swap_en_11_qs;
         reg_rdata_next[10] = cmd_info_11_addr_4b_affected_11_qs;
+        reg_rdata_next[11] = cmd_info_11_mbyte_en_11_qs;
         reg_rdata_next[14:12] = cmd_info_11_dummy_size_11_qs;
         reg_rdata_next[15] = cmd_info_11_dummy_en_11_qs;
         reg_rdata_next[19:16] = cmd_info_11_payload_en_11_qs;
@@ -13761,6 +14253,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_12_addr_en_12_qs;
         reg_rdata_next[9] = cmd_info_12_addr_swap_en_12_qs;
         reg_rdata_next[10] = cmd_info_12_addr_4b_affected_12_qs;
+        reg_rdata_next[11] = cmd_info_12_mbyte_en_12_qs;
         reg_rdata_next[14:12] = cmd_info_12_dummy_size_12_qs;
         reg_rdata_next[15] = cmd_info_12_dummy_en_12_qs;
         reg_rdata_next[19:16] = cmd_info_12_payload_en_12_qs;
@@ -13772,6 +14265,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_13_addr_en_13_qs;
         reg_rdata_next[9] = cmd_info_13_addr_swap_en_13_qs;
         reg_rdata_next[10] = cmd_info_13_addr_4b_affected_13_qs;
+        reg_rdata_next[11] = cmd_info_13_mbyte_en_13_qs;
         reg_rdata_next[14:12] = cmd_info_13_dummy_size_13_qs;
         reg_rdata_next[15] = cmd_info_13_dummy_en_13_qs;
         reg_rdata_next[19:16] = cmd_info_13_payload_en_13_qs;
@@ -13783,6 +14277,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_14_addr_en_14_qs;
         reg_rdata_next[9] = cmd_info_14_addr_swap_en_14_qs;
         reg_rdata_next[10] = cmd_info_14_addr_4b_affected_14_qs;
+        reg_rdata_next[11] = cmd_info_14_mbyte_en_14_qs;
         reg_rdata_next[14:12] = cmd_info_14_dummy_size_14_qs;
         reg_rdata_next[15] = cmd_info_14_dummy_en_14_qs;
         reg_rdata_next[19:16] = cmd_info_14_payload_en_14_qs;
@@ -13794,6 +14289,7 @@ module spi_device_reg_top (
         reg_rdata_next[8] = cmd_info_15_addr_en_15_qs;
         reg_rdata_next[9] = cmd_info_15_addr_swap_en_15_qs;
         reg_rdata_next[10] = cmd_info_15_addr_4b_affected_15_qs;
+        reg_rdata_next[11] = cmd_info_15_mbyte_en_15_qs;
         reg_rdata_next[14:12] = cmd_info_15_dummy_size_15_qs;
         reg_rdata_next[15] = cmd_info_15_dummy_en_15_qs;
         reg_rdata_next[19:16] = cmd_info_15_payload_en_15_qs;
