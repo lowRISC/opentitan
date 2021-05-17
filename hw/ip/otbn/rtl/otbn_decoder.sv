@@ -470,10 +470,16 @@ module otbn_decoder
           rf_ren_a_base     = 1'b1;
 
           if (insn[14:12] == 3'b001) begin
-            ispr_rd_insn = 1'b1;
+            // No read if destination is x0
+            ispr_rd_insn = insn_rd != 5'b0;
             ispr_wr_insn = 1'b1;
           end else if(insn[14:12] == 3'b010) begin
-            ispr_rs_insn = 1'b1;
+            // Read and set if source register isn't x0, otherwise read only
+            if (insn_rs1 != 5'b0) begin
+              ispr_rs_insn = 1'b1;
+            end else begin
+              ispr_rd_insn = 1'b1;
+            end
           end else begin
             illegal_insn = 1'b1;
           end

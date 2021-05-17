@@ -294,7 +294,8 @@ class CSRRS(OTBNInsn):
         new_val = old_val | bits_to_set
 
         state.gprs.get_reg(self.grd).write_unsigned(old_val)
-        state.write_csr(self.csr, new_val)
+        if self.grs1 != 0:
+            state.write_csr(self.csr, new_val)
 
 
 class CSRRW(OTBNInsn):
