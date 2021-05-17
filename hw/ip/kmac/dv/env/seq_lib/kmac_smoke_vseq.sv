@@ -46,10 +46,6 @@ class kmac_smoke_vseq extends kmac_base_vseq;
     en_sideload == 0;
   }
 
-  constraint entropy_mode_c {
-    entropy_mode inside {EntropyModeSw, EntropyModeEdn};
-  }
-
   constraint entropy_ready_c {
     entropy_ready == 1;
   }
@@ -82,6 +78,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
   // a message hash.
   virtual task pre_start();
     do_kmac_init = 0;
+    entropy_mode.rand_mode(0);
     super.pre_start();
   endtask
 
@@ -92,6 +89,9 @@ class kmac_smoke_vseq extends kmac_base_vseq;
     logic [keymgr_pkg::KeyWidth-1:0] sideload_share1;
 
     `uvm_info(`gfn, $sformatf("Starting %0d message hashes", num_trans), UVM_LOW)
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(entropy_mode, entropy_mode inside {EntropyModeSw, EntropyModeEdn};)
+
     for (int i = 0; i < num_trans; i++) begin
       bit [7:0] share0[];
       bit [7:0] share1[];
