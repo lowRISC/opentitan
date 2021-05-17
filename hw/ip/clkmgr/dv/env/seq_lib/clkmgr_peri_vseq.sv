@@ -14,12 +14,17 @@ class clkmgr_peri_vseq extends clkmgr_base_vseq;
   rand logic [NUM_PERI-1:0] initial_enables;
 
   task body();
-    logic [NUM_PERI-1:0] flipped_enables;
-    `uvm_info(`gfn, $sformatf("Initializing clk_enables with 0x%0x", initial_enables), UVM_LOW)
-    csr_wr(.ptr(ral.clk_enables), .value(initial_enables));
-    cfg.clk_rst_vif.wait_clks(10);
-    // Flip all bits of clk_enables.
-    flipped_enables = initial_enables ^ ((1 << ral.clk_enables.get_n_bits()) - 1);
-    csr_wr(.ptr(ral.clk_enables), .value(flipped_enables));
+    update_csrs_with_reset_values();
+    for (int i = 0; i < num_trans; ++i) begin
+      logic [NUM_PERI-1:0] flipped_enables;
+      `DV_CHECK_RANDOMIZE_FATAL(this)
+      cfg.clkmgr_vif.init(.idle(idle), .ip_clk_en(ip_clk_en), .scanmode(scanmode));      
+
+      csr_wr(.ptr(ral.clk_enables), .value(initial_enables));
+
+      // Flip all bits of clk_enables.
+      flipped_enables = initial_enables ^ ((1 << ral.clk_enables.get_n_bits()) - 1);
+      csr_wr(.ptr(ral.clk_enables), .value(flipped_enables));
+    end
   endtask : body
 endclass : clkmgr_peri_vseq

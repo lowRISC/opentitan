@@ -52,12 +52,12 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
   } clk_hints_t;
 
   // The CSR values from the testbench side.
-  logic         extclk_sel_regwen;
-  logic         extclk_sel;
-  logic         jitter_enable;
   clk_enables_t clk_enables;
   clk_hints_t   clk_hints;
   clk_hints_t   clk_hints_status;
+  logic         extclk_sel_regwen;
+  logic         extclk_sel;
+  logic         jitter_enable;
 
   task automatic wait_clks(int cycles);
     repeat (cycles) @(posedge clk);
@@ -75,7 +75,7 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
     clk_enables = ens;
   endfunction
 
-  function automatic void update_hints(clk_hints_t hints);
+  function automatic void update_clk_hints(clk_hints_t hints);
     clk_hints = hints;
   endfunction
 
@@ -83,123 +83,102 @@ interface clkmgr_if(input logic clk, input logic rst_n, input logic rst_main_n);
     idle_i = value;
   endfunction
 
-  task automatic go_idle(trans_e trans, int cycles);
-    if (!idle_i[trans]) begin
-      repeat(cycles) @(negedge clk);
-      idle_i[trans] = 1'b1;
-    end
-  endtask
-
   function automatic void update_ip_clk_en(bit value);
     pwr_i.ip_clk_en = value;
+  endfunction
+
+  function automatic void update_scanmode(lc_ctrl_pkg::lc_tx_t scm);
+    scanmode_i = scm;
   endfunction
 
   function automatic logic get_clk_status();
     return pwr_o.clk_status;
   endfunction
 
-  task automatic init(logic ip_clk_en, clk_enables_t clk_enables,
-                      logic [NUM_TRANS-1:0] idle, clk_hints_t clk_hints);
-    `uvm_info("clkmgr_if.init", "initializing inputs", UVM_LOW)
+  task automatic init(logic [NUM_TRANS-1:0] idle, logic ip_clk_en, lc_ctrl_pkg::lc_tx_t scanmode);
     lc_clk_byp_req = lc_ctrl_pkg::Off;
     ast_clk_byp_ack = lc_ctrl_pkg::Off;
-    scanmode_i = lc_ctrl_pkg::Off;
     lc_dft_en_i = lc_ctrl_pkg::Off;
-    update_ip_clk_en(ip_clk_en);
-    update_clk_enables(clk_enables);
     update_idle(idle);
-    update_hints(clk_hints);
+    update_ip_clk_en(ip_clk_en);
+    update_scanmode(scanmode);
   endtask
 
-  // Assertions for gated clocks need to use preponed values.
-  // We implement them on negedge of the reference clock.
-  // - A clock is enabled requires the gated clock to be high.
-  // - A clock is disabled requires the gated clock to be low.
+  // Pipeline signals that go through synchronizers with the target clock domain's clock.
+  // thus the PIPELINE_DEPTH is 2.
 
-  // Add assertions for peripheral clocks.
-  `ASSERT(ClkmgrPeriDiv4Enabled_A,
-          $rose(clk_enables.io_div4_peri_en && pwr_i.ip_clk_en) |=>
-            ##[2:3] clocks_o.clk_io_div4_peri,
-          !clocks_o.clk_io_div4_powerup, !rst_n)
-  `ASSERT(ClkmgrPeriDiv4Disabled_A,
-          $fell(clk_enables.io_div4_peri_en && pwr_i.ip_clk_en) |=>
-            ##[2:3] !clocks_o.clk_io_div4_peri,
-          !clocks_o.clk_io_div4_powerup, !rst_n)
+  // Use clocking blocks clocked by the target clock domain's clock to transfer relevant
+  // control signals back to the scoreboard.
+  localparam int PIPELINE_DEPTH = 2;
 
-  `ASSERT(ClkmgrPeriDiv2Enabled_A,
-          $rose(clk_enables.io_div2_peri_en && pwr_i.ip_clk_en) |=>
-            ##[2:3] clocks_o.clk_io_div2_peri,
-          !clocks_o.clk_io_div2_powerup, !rst_n)
-  `ASSERT(ClkmgrPeriDiv2Disabled_A,
-          $fell(clk_enables.io_div2_peri_en && pwr_i.ip_clk_en) |=>
-            ##[2:3] !clocks_o.clk_io_div2_peri,
-          !clocks_o.clk_io_div2_powerup, !rst_n)
+  // Pipelines and clocking blocks for peripheral clocks.
 
-  `ASSERT(ClkmgrPeriIoEnabled_A,
-          $rose(clk_enables.io_peri_en && pwr_i.ip_clk_en) |=>
-            ##[2:3] clocks_o.clk_io_peri,
-          !clocks_o.clk_io_powerup, !rst_n)
-  `ASSERT(ClkmgrPeriIoDisabled_A,
-          $fell(clk_enables.io_peri_en && pwr_i.ip_clk_en) |=>
-            ##[2:3] !clocks_o.clk_io_peri,
-          !clocks_o.clk_io_powerup, !rst_n)
+  logic [PIPELINE_DEPTH-1:0] clk_enable_div4_ffs;
+  logic [PIPELINE_DEPTH-1:0] ip_clk_en_div4_ffs;
+  always @(posedge clocks_o.clk_io_div4_powerup) begin
+    if (rst_n) begin
+      clk_enable_div4_ffs <= {clk_enable_div4_ffs[PIPELINE_DEPTH-2:0], clk_enables.io_div4_peri_en};
+      ip_clk_en_div4_ffs <= {ip_clk_en_div4_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+    end
+  end
+  clocking peri_div4_cb @(posedge clocks_o.clk_io_div4_powerup);
+    input ip_clk_en = ip_clk_en_div4_ffs[PIPELINE_DEPTH-1];
+    input clk_enable = clk_enable_div4_ffs[PIPELINE_DEPTH-1];
+  endclocking
 
-  `ASSERT(ClkmgrPeriUsbEnabled_A,
-          $rose(clk_enables.usb_peri_en && pwr_i.ip_clk_en) |=>
-            ##[2:3] clocks_o.clk_usb_peri,
-          !clocks_o.clk_usb_powerup, !rst_n)
-  `ASSERT(ClkmgrPeriUsbDisabled_A,
-          $fell(clk_enables.usb_peri_en && pwr_i.ip_clk_en) |=>
-            ##[2:3] !clocks_o.clk_usb_peri,
-          !clocks_o.clk_usb_powerup, !rst_n)
+  logic [PIPELINE_DEPTH-1:0] clk_enable_div2_ffs;
+  logic [PIPELINE_DEPTH-1:0] ip_clk_en_div2_ffs;
+  always @(posedge clocks_o.clk_io_div2_powerup) begin
+    if (rst_n) begin
+      clk_enable_div2_ffs <= {clk_enable_div2_ffs[PIPELINE_DEPTH-2:0], clk_enables.io_div2_peri_en};
+      ip_clk_en_div2_ffs <= {ip_clk_en_div2_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+    end
+  end
+  clocking peri_div2_cb @(posedge clocks_o.clk_io_div2_powerup);
+    input ip_clk_en = ip_clk_en_div2_ffs[PIPELINE_DEPTH-1];
+    input clk_enable = clk_enable_div2_ffs[PIPELINE_DEPTH-1];
+  endclocking
 
-  // Add assertions for trans unit clocks.
-  `ASSERT(ClkmgrTransAesClkEnabled_A,
-          $rose(clk_hints.aes && pwr_i.ip_clk_en) |=> ##[2:3] clocks_o.clk_main_aes,
-          !clocks_o.clk_main_powerup, !rst_main_n)
-  `ASSERT(ClkmgrTransAesClkKeepEnabled_A,
-          $rose(!clk_hints.aes && !idle_i[int'(TransAes)] && pwr_i.ip_clk_en) |=>
-            ##[2:3] clocks_o.clk_main_aes,
-          !clocks_o.clk_main_powerup, !rst_main_n)
-  `ASSERT(ClkmgrTransAesClkDisabled_A,
-          $rose(!clk_hints.aes && idle_i[int'(TransAes)] || !pwr_i.ip_clk_en) |=>
-            ##[2:3] !clocks_o.clk_main_aes,
-          !clocks_o.clk_main_powerup, !rst_main_n)
+  logic [PIPELINE_DEPTH-1:0] clk_enable_io_ffs;
+  logic [PIPELINE_DEPTH-1:0] ip_clk_en_io_ffs;
+  always @(posedge clocks_o.clk_io_powerup) begin
+    if (rst_n) begin
+      clk_enable_io_ffs <= {clk_enable_io_ffs[PIPELINE_DEPTH-2:0], clk_enables.io_peri_en};
+      ip_clk_en_io_ffs <= {ip_clk_en_io_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+    end
+  end
+  clocking peri_io_cb @(posedge clocks_o.clk_io_powerup);
+    input ip_clk_en = ip_clk_en_io_ffs[PIPELINE_DEPTH-1];
+    input clk_enable = clk_enable_io_ffs[PIPELINE_DEPTH-1];
+  endclocking
 
-  `ASSERT(ClkmgrTransHmacClkEnabled_A,
-          $rose(clk_hints.hmac && pwr_i.ip_clk_en) |=> ##[2:3] clocks_o.clk_main_hmac,
-          !clocks_o.clk_main_powerup, !rst_main_n)
-  `ASSERT(ClkmgrTransHmacClkKeepEnabled_A,
-          $rose(!clk_hints.hmac && !idle_i[int'(TransHmac)] && pwr_i.ip_clk_en) |=>
-            ##[2:3] clocks_o.clk_main_hmac,
-          !clocks_o.clk_main_powerup, !rst_main_n)
-  `ASSERT(ClkmgrTransHmacClkDisabled_A,
-          $rose(!clk_hints.hmac && idle_i[int'(TransHmac)] || !pwr_i.ip_clk_en) |=>
-            ##[2:3] !clocks_o.clk_main_hmac,
-          !clocks_o.clk_main_powerup, !rst_main_n)
+  logic [PIPELINE_DEPTH-1:0] clk_enable_usb_ffs;
+  logic [PIPELINE_DEPTH-1:0] ip_clk_en_usb_ffs;
+  always @(posedge clocks_o.clk_usb_powerup) begin
+    if (rst_n) begin
+      clk_enable_usb_ffs <= {clk_enable_usb_ffs[PIPELINE_DEPTH-2:0], clk_enables.usb_peri_en};
+      ip_clk_en_usb_ffs <= {ip_clk_en_usb_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+    end
+  end
+  clocking peri_usb_cb @(posedge clocks_o.clk_usb_powerup);
+    input ip_clk_en = ip_clk_en_usb_ffs[PIPELINE_DEPTH-1];
+    input clk_enable = clk_enable_usb_ffs[PIPELINE_DEPTH-1];
+  endclocking
 
-  `ASSERT(ClkmgrTransKmacClkEnabled_A,
-          $rose(clk_hints.kmac && pwr_i.ip_clk_en) |=> ##[2:3] clocks_o.clk_main_kmac,
-          !clocks_o.clk_main_powerup, !rst_main_n)
-  `ASSERT(ClkmgrTransKmacClkKeepEnabled_A,
-          $rose(!clk_hints.kmac && !idle_i[int'(TransKmac)] && pwr_i.ip_clk_en) |=>
-            ##[2:3] clocks_o.clk_main_kmac,
-          !clocks_o.clk_main_powerup, !rst_main_n)
-  `ASSERT(ClkmgrTransKmacClkDisabled_A,
-          $rose(!clk_hints.kmac && idle_i[int'(TransKmac)] || !pwr_i.ip_clk_en) |=>
-            ##[2:3] !clocks_o.clk_main_kmac,
-          !clocks_o.clk_main_powerup, !rst_main_n)
+  // Pipelining and clocking block for transactional unit clocks.
 
-  `ASSERT(ClkmgrTransOtbnClkEnabled_A,
-          $rose(clk_hints.otbn && pwr_i.ip_clk_en) |=> ##[2:3] clocks_o.clk_main_otbn,
-          !clocks_o.clk_main_powerup, !rst_main_n)
-  `ASSERT(ClkmgrTransOtbnClkKeepEnabled_A,
-          $rose(!clk_hints.otbn && !idle_i[int'(TransOtbn)] && pwr_i.ip_clk_en) |=>
-            ##[2:3] clocks_o.clk_main_otbn,
-          !clocks_o.clk_main_powerup, !rst_main_n)
-  `ASSERT(ClkmgrTransOtbnClkDisabled_A,
-          $rose(!clk_hints.otbn && idle_i[int'(TransOtbn)] || !pwr_i.ip_clk_en) |=>
-            ##[2:3] !clocks_o.clk_main_otbn,
-          !clocks_o.clk_main_powerup, !rst_main_n)
+  logic [PIPELINE_DEPTH-1:0][NUM_TRANS-1:0] clk_hints_ffs;
+  logic [PIPELINE_DEPTH-1:0]                trans_clk_en_ffs;
+  always @(posedge clocks_o.clk_main_powerup) begin
+    if (rst_n) begin
+      clk_hints_ffs <= {clk_hints_ffs[PIPELINE_DEPTH-2:0], clk_hints};
+      trans_clk_en_ffs <= {trans_clk_en_ffs[PIPELINE_DEPTH-2:0], pwr_i.ip_clk_en};
+    end
+  end
+  clocking trans_cb @(posedge clocks_o.clk_main_powerup);
+    input ip_clk_en = trans_clk_en_ffs[PIPELINE_DEPTH-1];
+    input clk_hints = clk_hints_ffs[PIPELINE_DEPTH-1];
+    input idle_i;
+  endclocking
 
 endinterface

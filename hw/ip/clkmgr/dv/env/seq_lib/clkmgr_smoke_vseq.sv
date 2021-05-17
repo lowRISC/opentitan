@@ -10,8 +10,10 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
 
   constraint enable_ip_clk_en { ip_clk_en == 1'b1; }
   constraint all_busy { idle == '0; }
+  constraint scanmode_off { scanmode_sel == SC_OFF; }
 
   task body();
+    update_csrs_with_reset_values();
     cfg.clk_rst_vif.wait_clks(10);
     test_peri_clocks();
     test_trans_clocks();
@@ -35,6 +37,7 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
     trans_e trans;
     logic bit_value;
     logic [TL_DW-1:0] value;
+    logic [NUM_TRANS-1:0] idle;
     typedef struct {
       trans_e       unit;
       uvm_reg_field hint_bit;
@@ -46,8 +49,8 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
         '{TransKmac, ral.clk_hints.clk_main_kmac_hint, ral.clk_hints_status.clk_main_kmac_val},
         '{TransAes, ral.clk_hints.clk_main_otbn_hint, ral.clk_hints_status.clk_main_otbn_val}
     };
-
-    update_idle(0);
+    idle = 0;
+    cfg.clkmgr_vif.update_idle(idle);
     trans = trans.first;
     csr_rd(.ptr(ral.clk_hints), .value(value));
     `uvm_info(`gfn, $sformatf("Updating hints to 0x%0x", value), UVM_MEDIUM)
@@ -61,7 +64,8 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
 
       `uvm_info(`gfn, $sformatf("Setting %s idle bit", descriptor.unit.name), UVM_MEDIUM)
       cfg.clkmgr_vif.wait_clks(1);
-      update_trans_idle(1'b1, trans);
+      idle[trans] = 1'b1;
+      cfg.clkmgr_vif.update_idle(idle);
       // Some cycles for the logic to settle.
       cfg.clk_rst_vif.wait_clks(3);
       csr_rd(.ptr(descriptor.value_bit), .value(bit_value));

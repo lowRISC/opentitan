@@ -51,39 +51,38 @@ class clkmgr_trans_cg_wrap;
 endclass
 
 class clkmgr_env_cov extends cip_base_env_cov #(.CFG_T(clkmgr_env_cfg));
-  import clkmgr_env_pkg::*;
-
   `uvm_component_utils(clkmgr_env_cov)
 
   // the base class provides the following handles for use:
   // clkmgr_env_cfg: cfg
 
   // These covergroups collect signals affecting peripheral clocks.
-  clkmgr_peri_cg_wrap peri_cg_wrap[NUM_PERI];
+  clkmgr_peri_cg_wrap peri_cg_wrap[clkmgr_env_pkg::NUM_PERI];
 
   // These covergroups collect signals affecting transactional clocks.
-  clkmgr_trans_cg_wrap trans_cg_wrap[NUM_TRANS];
+  clkmgr_trans_cg_wrap trans_cg_wrap[clkmgr_env_pkg::NUM_TRANS];
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
     // The peripheral covergoups.
     foreach (peri_cg_wrap[i]) begin
-      peri_e peri = peri_e'(i);
+      clkmgr_env_pkg::peri_e peri = clkmgr_env_pkg::peri_e'(i);
       peri_cg_wrap[i] = new(peri.name);
     end
     // The transactional covergroups.
     foreach (trans_cg_wrap[i]) begin
-      trans_e trans = trans_e'(i);
+      clkmgr_env_pkg::trans_e trans = clkmgr_env_pkg::trans_e'(i);
       trans_cg_wrap[i] = new(trans.name);
     end
   endfunction : new
 
-  function void update_peri_cgs(logic [NUM_PERI-1:0] enables, logic ip_clk_en, logic scanmode);
+  function void update_peri_cgs(logic [clkmgr_env_pkg::NUM_PERI-1:0] enables, logic ip_clk_en,
+                                logic scanmode);
     foreach (peri_cg_wrap[i]) peri_cg_wrap[i].sample(enables[i], ip_clk_en, scanmode);
   endfunction
 
-  function void update_trans_cgs(logic [NUM_TRANS-1:0] hints, logic ip_clk_en, logic scanmode,
-                                 logic [NUM_TRANS-1:0] idle);
+  function void update_trans_cgs(logic [clkmgr_env_pkg::NUM_TRANS-1:0] hints, logic ip_clk_en,
+                                 logic scanmode, logic [clkmgr_env_pkg::NUM_TRANS-1:0] idle);
     foreach (trans_cg_wrap[i]) trans_cg_wrap[i].sample(hints[i], ip_clk_en, scanmode, idle[i]);
   endfunction
 

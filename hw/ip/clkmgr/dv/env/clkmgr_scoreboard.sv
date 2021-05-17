@@ -29,12 +29,137 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     super.run_phase(phase);
     fork
       monitor_idle();
+      monitor_scanmode();
+      begin : post_reset
+        fork
+          monitor_div4_peri_clock();
+          monitor_div2_peri_clock();
+          monitor_io_peri_clock();
+          monitor_usb_peri_clock();
+
+          for (int i = 0; i < NUM_TRANS; ++i) begin
+            fork
+              automatic int trans_index = i;
+              monitor_trans_clock(trans_index);
+            join_none
+          end
+        join_none
+      end
     join_none
+  endtask
+
+  // Notice no check is done if the condition is 'X.
+  function void check_clock(string clock_name, logic gating_condition, logic gated_clock);
+    if (gating_condition === 1'b1) begin : check_clock_enabled
+      if (!gated_clock) begin
+        `uvm_error(`gfn, $sformatf("Peripheral %s clock should be enabled", clock_name))
+      end
+    end
+    if (gating_condition === 1'b0) begin : check_clock_disabled
+      if (gated_clock) begin
+        `uvm_error(`gfn, $sformatf("Peripheral %s clock should be disabled", clock_name))
+      end
+    end
+  endfunction
+
+  task monitor_div4_peri_clock();
+    forever @cfg.clkmgr_vif.peri_div4_cb begin
+      logic gated_clock;
+      logic gating_condition = cfg.clkmgr_vif.peri_div4_cb.clk_enable &&
+            cfg.clkmgr_vif.peri_div4_cb.ip_clk_en ||
+            (cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+      #0;
+      gated_clock = cfg.clkmgr_vif.clocks_o.clk_io_div4_peri;
+      check_clock("div4", gating_condition, gated_clock);
+    end
+  endtask
+
+  task monitor_div2_peri_clock();
+    forever @cfg.clkmgr_vif.peri_div2_cb begin
+      logic gated_clock;
+      logic gating_condition = cfg.clkmgr_vif.peri_div2_cb.clk_enable &&
+            cfg.clkmgr_vif.peri_div2_cb.ip_clk_en ||
+            (cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+      #0;
+      gated_clock = cfg.clkmgr_vif.clocks_o.clk_io_div2_peri;
+      check_clock("div2", gating_condition, gated_clock);
+    end
+  endtask
+
+  task monitor_io_peri_clock();
+    forever @cfg.clkmgr_vif.peri_io_cb begin
+      logic gated_clock;
+      logic gating_condition = cfg.clkmgr_vif.peri_io_cb.clk_enable &&
+            cfg.clkmgr_vif.peri_io_cb.ip_clk_en ||
+            (cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+      #0;
+      gated_clock = cfg.clkmgr_vif.clocks_o.clk_io_peri;
+      check_clock("io", gating_condition, gated_clock);
+    end
+  endtask
+
+  task monitor_usb_peri_clock();
+    forever @cfg.clkmgr_vif.peri_usb_cb begin
+      logic gated_clock;
+      logic gating_condition = cfg.clkmgr_vif.peri_usb_cb.clk_enable &&
+            cfg.clkmgr_vif.peri_usb_cb.ip_clk_en ||
+            (cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+      #0;
+      gated_clock = cfg.clkmgr_vif.clocks_o.clk_usb_peri;
+      check_clock("usb", gating_condition, gated_clock);
+    end
+  endtask
+
+  task monitor_trans_clock(int trans_index);
+    forever @cfg.clkmgr_vif.trans_cb begin
+      logic gated_clock;
+      logic gating_condition =
+            (cfg.clkmgr_vif.trans_cb.clk_hints[trans_index] ||
+             !cfg.clkmgr_vif.trans_cb.idle_i[trans_index]) &&
+            cfg.clkmgr_vif.trans_cb.ip_clk_en ||
+            (cfg.clkmgr_vif.scanmode_i == lc_ctrl_pkg::On);
+      trans_e trans = trans_e'(trans_index);
+      #0;
+      case (trans)
+        TransAes: begin
+          check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_aes);
+        end
+        TransHmac: begin
+          check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_hmac);
+        end
+        TransKmac: begin
+          check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_kmac);
+        end
+        TransOtbn: begin
+          check_clock(trans.name(), gating_condition, cfg.clkmgr_vif.clocks_o.clk_main_otbn);
+        end
+      endcase
+    end
   endtask
 
   task monitor_idle();
     forever @cfg.clkmgr_vif.idle_i
       if (cfg.en_cov) begin
+        cov.update_trans_cgs(ral.clk_hints.get(), cfg.clkmgr_vif.pwr_i.ip_clk_en,
+                             cfg.clkmgr_vif.scanmode_i, cfg.clkmgr_vif.idle_i);
+      end
+  endtask
+
+  task monitor_scanmode();
+    forever @cfg.clkmgr_vif.scanmode_i
+      if (cfg.en_cov) begin
+        cov.update_peri_cgs(ral.clk_enables.get(),cfg.clkmgr_vif.pwr_i.ip_clk_en,
+                            cfg.clkmgr_vif.scanmode_i);
+        cov.update_trans_cgs(ral.clk_hints.get(), cfg.clkmgr_vif.pwr_i.ip_clk_en,
+                             cfg.clkmgr_vif.scanmode_i, cfg.clkmgr_vif.idle_i);
+      end
+  endtask
+
+  task monitor_ip_clk_en();
+    forever @cfg.clkmgr_vif.pwr_i.ip_clk_en
+      if (cfg.en_cov) begin
+        cov.update_peri_cgs(ral.clk_enables.get(),cfg.clkmgr_vif.pwr_i.ip_clk_en,
+                            cfg.clkmgr_vif.scanmode_i);
         cov.update_trans_cgs(ral.clk_hints.get(), cfg.clkmgr_vif.pwr_i.ip_clk_en,
                              cfg.clkmgr_vif.scanmode_i, cfg.clkmgr_vif.idle_i);
       end
@@ -107,7 +232,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "clk_hints":
         // Clearing a hint sets an expectation for the status to transition to zero.
         if (addr_phase_write) begin
-          cfg.clkmgr_vif.update_hints(item.a_data);
+          cfg.clkmgr_vif.update_clk_hints(item.a_data);
           if (cfg.en_cov) begin
             cov.update_trans_cgs(item.a_data, cfg.clkmgr_vif.pwr_i.ip_clk_en,
                                  cfg.clkmgr_vif.scanmode_i, cfg.clkmgr_vif.idle_i);
