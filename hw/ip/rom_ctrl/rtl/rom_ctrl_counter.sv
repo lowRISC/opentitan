@@ -42,6 +42,8 @@ module rom_ctrl_counter
   output                       done_o,
 
   output [vbits(RomDepth)-1:0] read_addr_o,
+  output                       read_req_o,
+
   output [vbits(RomDepth)-1:0] data_addr_o,
 
   input                        data_rdy_i,
@@ -65,7 +67,7 @@ module rom_ctrl_counter
   localparam bit [AW-1:0] TNTAddr = TNTAddrInt[AW-1:0];
 
   logic          go;
-  logic          vld_q;
+  logic          req_q, vld_q;
   logic [AW-1:0] addr_q, addr_d;
   logic          done_q, done_d;
   logic          last_nontop_q, last_nontop_d;
@@ -84,11 +86,16 @@ module rom_ctrl_counter
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
+      req_q <= 1'b0;
       vld_q <= 1'b0;
     end else begin
-      // ROM data is valid from one cycle after reset onwards (once we reach the top of ROM, we
-      // signal done_o, after which data_vld_o is unused).
-      vld_q <= 1'b1;
+      // The first ROM request goes out immediately after reset (once we reach the top of ROM, we
+      // signal done_o, after which data_vld_o is unused). We could clear it again when we are done,
+      // but there's no need: the mux will switch away from us anyway.
+      req_q <= 1'b1;
+
+      // ROM data is valid from one cycle after the request goes out.
+      vld_q <= req_q;
     end
   end
 
@@ -100,6 +107,7 @@ module rom_ctrl_counter
 
   assign done_o             = done_q;
   assign read_addr_o        = go ? addr_d : addr_q;
+  assign read_req_o         = req_q;
   assign data_addr_o        = addr_q;
   assign data_vld_o         = vld_q;
   assign data_last_nontop_o = last_nontop_q;

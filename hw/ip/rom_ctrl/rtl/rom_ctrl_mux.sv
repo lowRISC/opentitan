@@ -24,6 +24,7 @@ module rom_ctrl_mux #(
 
   // Interface for ROM checker
   input logic [AW-1:0]  chk_addr_i,
+  input logic           chk_req_i,
   output logic [39:0]   chk_rdata_o,
 
   // Interface for ROM
@@ -60,6 +61,6 @@ module rom_ctrl_mux #(
   assign chk_rdata_o = rom_scr_rdata_i;
 
   assign rom_addr_o = sel_i ? chk_addr_i : bus_addr_i;
-  assign rom_req_o  = sel_i ? 1'b1       : bus_req_i;
+  assign rom_req_o  = sel_i ? chk_req_i  : bus_req_i;
 
 endmodule
