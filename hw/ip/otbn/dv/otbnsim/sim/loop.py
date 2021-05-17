@@ -62,18 +62,18 @@ class LoopStack:
         self.err_flag = False
 
     def start_loop(self,
-                   next_addr: int,
+                   start_addr: int,
                    loop_count: int,
                    insn_count: int) -> None:
         '''Start a loop.
 
-        next_addr is the address of the first instruction in the loop body.
+        start_addr is the address of the first instruction in the loop body.
         loop_count must be positive and is the number of times to execute the
         loop. insn_count must be positive and is the number of instructions in
         the loop body.
 
         '''
-        assert 0 <= next_addr
+        assert 0 <= start_addr
         assert 0 < insn_count
         assert 0 < loop_count
 
@@ -81,7 +81,7 @@ class LoopStack:
             self.err_flag = True
 
         self.trace.append(TraceLoopStart(loop_count, insn_count))
-        self.stack.append(LoopLevel(next_addr, insn_count, loop_count - 1))
+        self.stack.append(LoopLevel(start_addr, insn_count, loop_count - 1))
 
     def check_insn(self, pc: int, insn_affects_control: bool) -> None:
         '''Check for branch instructions at the end of a loop body'''
