@@ -55,11 +55,10 @@ class ExecutionStats:
                 assert state_before_commit.start_addr is not None
                 caller_func = state_before_commit.start_addr
 
-            assert state_before_commit.pc_next is not None
             self.func_calls.append({
                 'call_site': pc,
                 'caller_func': caller_func,
-                'callee_func': state_before_commit.pc_next,
+                'callee_func': state_before_commit.get_next_pc(),
             })
 
         # Loops

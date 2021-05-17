@@ -476,6 +476,32 @@ class ImplTransformer(cst.CSTTransformer):
 
         return NBAssign.make(make_aref('FLAGs', fg), flags)
 
+    @staticmethod
+    def _spot_set_next_pc(node: cst.Expr) -> Optional[NBAssign]:
+        # Spot
+        #
+        #   state.set_next_pc(next_pc)
+        #
+        # and turn it into
+        #
+        #   PC <= next_pc
+
+        if not isinstance(node.value, cst.Call):
+            return None
+
+        call = node.value
+        if len(call.args) != 1 or not isinstance(call.func, cst.Attribute):
+            return None
+
+        if not (isinstance(call.func.value, cst.Name) and
+                call.func.value.value == 'state' and
+                call.func.attr.value == 'set_next_pc'):
+            return None
+
+        next_pc = call.args[0].value
+
+        return NBAssign.make(cst.Name(value='PC'), next_pc)
+
     def leave_Expr(self,
                    orig: cst.Expr,
                    updated: cst.Expr) -> cst.BaseSmallStatement:
@@ -499,24 +525,9 @@ class ImplTransformer(cst.CSTTransformer):
         if flag_write is not None:
             return flag_write
 
-        return updated
-
-    def leave_Assign(self,
-                     orig: cst.Assign,
-                     updated: cst.Assign) -> cst.BaseSmallStatement:
-        # Handle assignments to state.pc_next and replace them with delayed
-        # assignments to PC.
-
-        # We don't handle things like "(foo, state.pc_next) = some_fun()"
-        if len(updated.targets) != 1:
-            return updated
-
-        tgt = updated.targets[0].target
-        if ((isinstance(tgt, cst.Attribute) and
-             isinstance(tgt.value, cst.Name) and
-             tgt.value.value == 'state' and
-             tgt.attr.value == 'pc_next')):
-            return NBAssign.make(cst.Name(value='PC'), updated.value)
+        set_pc_next = ImplTransformer._spot_set_next_pc(updated)
+        if set_pc_next is not None:
+            return set_pc_next
 
         return updated
 
