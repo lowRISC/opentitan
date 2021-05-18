@@ -264,9 +264,7 @@ module sha3
   //  - Sw set process_i, run_i, done_i without start_i
 
   always_comb begin
-    error_o.valid = 1'b 0;
-    error_o.code  = ErrNone;
-    error_o.info  = '0;
+    error_o = '{valid: 1'b0, code: ErrNone, info: '0};
 
     unique case (st)
       StIdle: begin
