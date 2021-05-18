@@ -33,7 +33,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      # - lint/sysrst_ctrl.vlt
+      - lint/sysrst_ctrl.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
