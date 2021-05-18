@@ -1181,6 +1181,7 @@ module top_earlgrey #(
       .ram_cfg_i(ast_ram_2p_cfg),
       .passthrough_o(spi_device_passthrough_req),
       .passthrough_i(spi_device_passthrough_rsp),
+      .mbist_en_i('0),
       .tl_i(spi_device_tl_req),
       .tl_o(spi_device_tl_rsp),
       .scanmode_i,

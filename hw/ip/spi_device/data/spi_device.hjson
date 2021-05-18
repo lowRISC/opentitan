@@ -58,6 +58,12 @@
       name:    "passthrough",
       act:     "req"
     }
+    { struct:  "logic"
+      package: ""
+      type:    "uni"
+      name:    "mbist_en"
+      act:     "rcv"
+    }
   ],
   regwidth: "32",
   registers: [

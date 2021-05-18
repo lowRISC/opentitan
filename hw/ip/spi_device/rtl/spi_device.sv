@@ -38,6 +38,7 @@ module spi_device (
   input prim_ram_2p_pkg::ram_2p_cfg_t ram_cfg_i,
 
   // DFT related controls
+  input mbist_en_i,
   input scan_clk_i,
   input scan_rst_ni,
   input lc_ctrl_pkg::lc_tx_t scanmode_i
@@ -495,14 +496,14 @@ module spi_device (
   ) u_sram_clk_scan (
     .clk0_i (sram_clk_ungated),
     .clk1_i (scan_clk_i),
-    .sel_i  (scanmode[ClkSramSel] == lc_ctrl_pkg::On),
+    .sel_i  ((scanmode[ClkSramSel] == lc_ctrl_pkg::On) | mbist_en_i),
     .clk_o  (sram_clk_muxed)
   );
 
   prim_clock_gating u_sram_clk_cg (
     .clk_i  (sram_clk_muxed),
     .en_i   (sram_clk_en),
-    .test_en_i (scanmode[ClkSramSel] == lc_ctrl_pkg::On),
+    .test_en_i ((scanmode[ClkSramSel] == lc_ctrl_pkg::On) | mbist_en_i),
     .clk_o  (sram_clk)
   );
 

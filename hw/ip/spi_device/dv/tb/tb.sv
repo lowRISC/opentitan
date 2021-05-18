@@ -58,6 +58,7 @@ module tb;
     .intr_rxerr_o   (intr_rxerr),
     .intr_rxoverflow_o (intr_rxoverflow),
     .intr_txunderflow_o(intr_txunderflow),
+    .mbist_en_i     (1'b0),
     .scanmode_i     (lc_ctrl_pkg::Off)
   );
 
