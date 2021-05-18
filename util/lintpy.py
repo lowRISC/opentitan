@@ -61,8 +61,6 @@ def run_linter(tool, dofix, verbose, files):
         return (True, True)
     except subprocess.CalledProcessError as exc:
         sys.stderr.write('Lint failed:\n  {}\n'.format(' '.join(check_cmd)))
-        if not dofix or fix is None:
-            return (True, True)
 
         if exc.output:
             output = exc.output.decode(sys.getfilesystemencoding())
@@ -70,6 +68,9 @@ def run_linter(tool, dofix, verbose, files):
                   '\n\t'.join(output.splitlines()),
                   sep='',
                   file=sys.stderr)
+
+        if not dofix or fix is None:
+            return (True, True)
 
     print("Fixing...", file=sys.stderr)
     subprocess.check_call(fix + files,
