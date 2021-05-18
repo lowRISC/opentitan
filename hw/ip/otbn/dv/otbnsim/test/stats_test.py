@@ -7,31 +7,34 @@ import os
 
 from sim.sim import OTBNSim
 from sim.stats import ExecutionStats
-from sim.elf import load_elf
 import testutil
 
 
-def _run_sim_for_stats(asm_file: str, tmpdir: str) -> ExecutionStats:
-    """ Run the OTBN simulator, collect statistics, and return them. """
-
-    assert os.path.exists(asm_file)
-    elf_file = testutil.asm_and_link_one_file(asm_file, tmpdir)
-
-    sim = OTBNSim()
-    load_elf(sim, elf_file)
-
-    sim.start(0)
+def _run_sim_for_stats(sim: OTBNSim) -> ExecutionStats:
     sim.run(verbose=False, collect_stats=True)
-    assert sim.stats
 
+    assert sim.stats
     return sim.stats
+
+
+def _simulate_asm_file(asm_file: str, tmpdir: py.path.local) -> ExecutionStats:
+    '''Run the OTBN simulator, collect statistics, and return them.'''
+
+    sim = testutil.prepare_sim_for_asm_file(asm_file, tmpdir, start_addr=0)
+    return _run_sim_for_stats(sim)
+
+
+def _simulate_asm_str(assembly: str, tmpdir: py.path.local) -> ExecutionStats:
+    sim = testutil.prepare_sim_for_asm_str(assembly, tmpdir, start_addr=0)
+    return _run_sim_for_stats(sim)
+
 
 def test_general_and_loop(tmpdir: py.path.local) -> None:
     '''Test the collection of general statistics as well as loop stats.'''
 
     asm_file = os.path.join(os.path.dirname(__file__),
                             'simple', 'loops', 'loops.s')
-    stats = _run_sim_for_stats(asm_file, str(tmpdir))
+    stats = _simulate_asm_file(asm_file, tmpdir)
 
     # General statistics
     assert stats.stall_count == 2
@@ -58,7 +61,7 @@ def test_func_call_direct(tmpdir: py.path.local) -> None:
 
     asm_file = os.path.join(os.path.dirname(__file__),
                             'simple', 'subroutines', 'direct-call.s')
-    stats = _run_sim_for_stats(asm_file, str(tmpdir))
+    stats = _simulate_asm_file(asm_file, tmpdir)
 
     exp = [{'call_site': 4, 'callee_func': 12, 'caller_func': 0}]
     assert stats.func_calls == exp
@@ -69,7 +72,7 @@ def test_func_call_indirect(tmpdir: py.path.local) -> None:
 
     asm_file = os.path.join(os.path.dirname(__file__),
                             'simple', 'subroutines', 'indirect-call.s')
-    stats = _run_sim_for_stats(asm_file, str(tmpdir))
+    stats = _simulate_asm_file(asm_file, tmpdir)
 
     exp = [{'call_site': 8, 'callee_func': 16, 'caller_func': 0}]
     assert stats.func_calls == exp

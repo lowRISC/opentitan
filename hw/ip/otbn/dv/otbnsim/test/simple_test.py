@@ -142,7 +142,7 @@ def test_count(tmpdir: py.path.local,
                asm_file: str,
                expected_file: str) -> None:
     # Start by assembling and linking the input file
-    elf_file = asm_and_link_one_file(asm_file, str(tmpdir))
+    elf_file = asm_and_link_one_file(asm_file, tmpdir)
 
     # Run the simulation. We can just pass a list of commands to stdin, and
     # don't need to do anything clever to track what's going on.
