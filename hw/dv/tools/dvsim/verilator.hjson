@@ -43,10 +43,7 @@
   ]
   // -- END --
 
-  // Remove {proj_root}/hw/foundry from FuseSoC cores search if it exists.
-  pre_build_cmds: ['''if [ -d {proj_root}/hw/foundry ]; then \
-                        touch {proj_root}/hw/foundry/FUSESOC_IGNORE; \
-                      fi''']
+  pre_build_cmds: []
 
   build_cmd:  "fusesoc {fusesoc_cores_root_dirs} run"
   ex_name:    "{eval_cmd} echo \"{fusesoc_core}\" | cut -d: -f3"
