@@ -75,9 +75,10 @@ def on_start(sim: OTBNSim, args: List[str]) -> None:
     if addr & 3:
         raise ValueError('start address must be word-aligned. Got {:#08x}.'
                          .format(addr))
-
     print('START {:#08x}'.format(addr))
-    sim.start(addr)
+    sim.state.ext_regs.write('START_ADDR', addr, False)
+    sim.state.ext_regs.commit()
+    sim.start()
 
 
 def on_step(sim: OTBNSim, args: List[str]) -> None:

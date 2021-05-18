@@ -13,6 +13,9 @@ import testutil
 def _run_sim_for_stats(sim: OTBNSim) -> ExecutionStats:
     sim.run(verbose=False, collect_stats=True)
 
+    # Ensure that the execution was successful.
+    assert sim.state.ext_regs.read('ERR_BITS', False) == 0
+
     assert sim.stats
     return sim.stats
 
