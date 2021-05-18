@@ -41,7 +41,16 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_errs_vseq;
   endtask
 
   virtual task set_lc_esc_and_check();
-    // TODO: random drive any values instead of just on and off
+    // Random issue key requests before lc_esc_en is issued.
+    randcase
+      1: req_otbn_key(0);
+      1: req_flash_addr_key(0);
+      1: req_flash_data_key(0);
+      1: req_all_sram_keys(0);
+      1: req_lc_transition(0, 0);
+    endcase
+    cfg.clk_rst_vif.wait_clks($urandom_range(0, 50));
+
     cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::On);
 
     // TODO: in alert_esc_monitor, makes it auto-response like push-pull agent
