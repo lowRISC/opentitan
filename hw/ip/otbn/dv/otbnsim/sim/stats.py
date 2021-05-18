@@ -25,11 +25,11 @@ class ExecutionStats:
 
     @property
     def insn_count(self) -> int:
-        ''' Get the number of executed instructions. '''
+        '''Get the number of executed instructions.'''
         return sum(self.insn_histo.values())
 
     def record_stall(self) -> None:
-        ''' Record a single stall cycle. '''
+        '''Record a single stall cycle.'''
         self.stall_count += 1
 
     def record_insn(self,
@@ -185,7 +185,7 @@ class ExecutionStatAnalyzer:
                         headers=['instruction', 'count']) + "\n"
 
     def _dump_function_call_stats(self) -> str:
-        """ Dump function call statistics """
+        '''Dump function call statistics'''
 
         if not self._stats.func_calls:
             return "No functions were called.\n"
