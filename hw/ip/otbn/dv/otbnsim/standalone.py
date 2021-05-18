@@ -44,7 +44,10 @@ def main() -> int:
     sim = OTBNSim()
     load_elf(sim, args.elf)
 
-    sim.start(0)
+    sim.state.ext_regs.write('START_ADDR', 0, False)
+    sim.state.ext_regs.commit()
+
+    sim.start()
     sim.run(verbose=args.verbose, collect_stats=collect_stats)
 
     if args.dump_dmem is not None:

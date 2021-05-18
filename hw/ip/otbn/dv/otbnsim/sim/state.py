@@ -29,8 +29,6 @@ class OTBNState:
         self.pc = 0
         self._pc_next_override = None  # type: Optional[int]
 
-        self.start_addr = None  # type: Optional[int]
-
         _, imem_size = get_memory_layout()['IMEM']
         self.imem_size = imem_size
 
@@ -102,9 +100,13 @@ class OTBNState:
         return c
 
     def commit(self, sim_stalled: bool) -> None:
-        # If the pending_halt flag is set or there are error bits (which should
-        # imply pending_halt is set), we shouldn't get as far as commit.
-        assert not self.pending_halt
+        # In case of a pending halt only commit the external registers, which
+        # contain e.g. the ERR_BITS field, but nothing else.
+        if self.pending_halt:
+            self.ext_regs.commit()
+            return
+
+        # If error bits are set, pending_halt should have been set as well.
         assert self._err_bits == 0
 
         if self._new_rnd_data:
@@ -152,7 +154,7 @@ class OTBNState:
         self.csrs.flags.abort()
         self.wdrs.abort()
 
-    def start(self, addr: int) -> None:
+    def start(self) -> None:
         '''Set the running flag and the ext_reg busy flag; perform state init'''
         self.ext_regs.set_bits('STATUS', 1 << 0)
         self.running = True
@@ -163,16 +165,26 @@ class OTBNState:
         self._err_bits = 0
         self._urnd_reseed_complete = False
 
-        self.pc = addr
-        self.start_addr = addr
+        self.pc = self.get_start_addr()
 
         # Reset CSRs, WSRs and loop stack
         self.csrs = CSRFile()
         self.wsrs = WSRFile()
         self.loop_stack = LoopStack()
 
+    def get_start_addr(self) -> int:
+        '''Get the start address of the processor.
+
+        Set the start address by writing the external register START_ADDR before
+        calling start(), and commiting the external register changes.
+
+        '''
+        return self.ext_regs.read('START_ADDR', True)
+
     def stop(self) -> None:
         '''Set flags to stop the processor and abort the instruction'''
+
+        # Abort all pending changes, including changes to external registers.
         self._abort()
 
         # INTR_STATE is the interrupt state register. Bit 0 (which is being

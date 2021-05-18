@@ -25,14 +25,14 @@ class OTBNSim:
     def load_data(self, data: bytes) -> None:
         self.state.dmem.load_le_words(data)
 
-    def start(self, addr: int) -> None:
+    def start(self) -> None:
         '''Prepare to start the execution.
 
         Use run() or step() to actually execute the program.
 
         '''
         self.stats = ExecutionStats(self.program)
-        self.state.start(addr)
+        self.state.start()
 
     def run(self, verbose: bool, collect_stats: bool) -> int:
         '''Run until ECALL.
@@ -113,14 +113,13 @@ class OTBNSim:
                 # sets an appropriate error bits in the external ERR_CODE
                 # register and clears the busy flag.
                 self.state.stop()
-                changes = self.state.changes()
-            else:
-                changes = self.state.changes()
 
-                # Only commit() may change the program counter.
-                assert pc_before == self.state.pc
+            changes = self.state.changes()
 
-                self.state.commit(sim_stalled=False)
+            # Only commit() may change the program counter.
+            assert pc_before == self.state.pc
+
+            self.state.commit(sim_stalled=False)
 
             disasm = insn.disassemble(pc_before)
 
