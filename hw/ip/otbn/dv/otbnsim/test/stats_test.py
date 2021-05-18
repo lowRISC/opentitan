@@ -25,9 +25,8 @@ def _run_sim_for_stats(asm_file: str, tmpdir: str) -> ExecutionStats:
 
     return sim.stats
 
-
 def test_general_and_loop(tmpdir: py.path.local) -> None:
-    """ Test the collection of general statistics as well as loop stats. """
+    '''Test the collection of general statistics as well as loop stats.'''
 
     asm_file = os.path.join(os.path.dirname(__file__),
                             'simple', 'loops', 'loops.s')
@@ -54,7 +53,7 @@ def test_general_and_loop(tmpdir: py.path.local) -> None:
 
 
 def test_func_call_direct(tmpdir: py.path.local) -> None:
-    """ Test the collection of statistics related to loops. """
+    '''Test the collection of statistics related to loops.'''
 
     asm_file = os.path.join(os.path.dirname(__file__),
                             'simple', 'subroutines', 'direct-call.s')
@@ -65,7 +64,7 @@ def test_func_call_direct(tmpdir: py.path.local) -> None:
 
 
 def test_func_call_indirect(tmpdir: py.path.local) -> None:
-    """ Test the collection of statistics related to loops. """
+    '''Test the collection of statistics related to loops.'''
 
     asm_file = os.path.join(os.path.dirname(__file__),
                             'simple', 'subroutines', 'indirect-call.s')
