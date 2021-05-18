@@ -31,7 +31,7 @@ interface push_pull_if #(parameter int HostDataWidth = 32,
   logic req_int;
   logic ack_int;
   logic [HostDataWidth-1:0]   h_data_int;
-  logic [DeviceDataWidth-1:0]   d_data_int;
+  logic [DeviceDataWidth-1:0] d_data_int;
 
   // Interface mode - Host or Device
   dv_utils_pkg::if_mode_e if_mode;
