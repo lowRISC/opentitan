@@ -248,9 +248,10 @@ class JAL(OTBNInsn):
         self.offset = op_vals['offset']
 
     def execute(self, state: OTBNState) -> None:
-        link_pc = (state.pc + 4) & ((1 << 32) - 1)
+        mask32 = ((1 << 32) - 1)
+        link_pc = (state.pc + 4) & mask32
         state.gprs.get_reg(self.grd).write_unsigned(link_pc)
-        state.pc_next = self.offset
+        state.pc_next = self.offset & mask32
 
 
 class JALR(OTBNInsn):
