@@ -198,6 +198,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
             exp_status[OtpLifeCycleErrIdx] = 0;
           end
         end
+        if (cfg.en_cov) cov.collect_err_code_field_cov(i, err_code);
       end
     end
 

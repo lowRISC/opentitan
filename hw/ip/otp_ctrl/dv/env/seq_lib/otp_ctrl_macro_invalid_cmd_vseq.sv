@@ -10,8 +10,13 @@ class otp_ctrl_macro_invalid_cmd_vseq extends otp_ctrl_smoke_vseq;
 
   rand otp_ctrl_part_pkg::part_idx_e exp_macro_err;
 
-  bit [NumPart+2:0] act_macro_err;
+  bit [NumPart+1:0] act_macro_err;
   bit               exp_buffer_err;
+
+  // This variable is declared for DAI err_code functional coverage.
+  // Default to DaiIdx that won't be sampled in dai_err_code.
+  // Only update this value if the err_code is DaiIdx.
+  int dai_macro_err_part_idx = DaiIdx;
 
   constraint macro_err_c {exp_macro_err inside {[CreatorSwCfgIdx:LciIdx]};}
 
@@ -55,7 +60,10 @@ class otp_ctrl_macro_invalid_cmd_vseq extends otp_ctrl_smoke_vseq;
               // Max delay for push-pull agent to send a request
               cfg.clk_rst_vif.wait_clks(1000);
             end
-            DaiIdx: dai_rd(dai_addr, 0, wdata0, wdata1);
+            DaiIdx: begin
+              dai_rd(dai_addr, 0, wdata0, wdata1);
+              dai_macro_err_part_idx = get_part_index(dai_addr);
+            end
             default: `uvm_fatal(`gfn, $sformatf("exp_macro_err %0h not supported", exp_macro_err))
           endcase
           act_macro_err[exp_macro_err] = 1;
@@ -77,7 +85,10 @@ class otp_ctrl_macro_invalid_cmd_vseq extends otp_ctrl_smoke_vseq;
     end
 
     foreach (act_macro_err[i]) begin
-      if (act_macro_err[i]) csr_rd_check(.ptr(err_code_flds[i]), .compare_value(OtpMacroError));
+      if (act_macro_err[i]) begin
+        csr_rd_check(.ptr(err_code_flds[i]), .compare_value(OtpMacroError));
+        if (cfg.en_cov) cov.collect_err_code_field_cov(i, OtpMacroError, dai_macro_err_part_idx);
+      end
     end
 
     // Issue reset to stop fatal alert
