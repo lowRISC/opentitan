@@ -19,6 +19,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
   // This flag is used when reset is issued during otp dai write access.
   bit dai_wr_ip;
   int dai_digest_ip = LifeCycleIdx; // Default to LC as it does not have digest.
+  bit ignore_digest_chk = 0;
 
   // This bit is used for DAI interface to mark if the read access is valid.
   bit dai_read_valid;
@@ -103,8 +104,9 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
             `uvm_info(`gfn, "clear internal memory and digest", UVM_HIGH)
           end
         end
-        @(posedge cfg.otp_ctrl_vif.pwr_otp_done_o || cfg.under_reset) begin
-          if (!cfg.under_reset) begin
+        @(posedge cfg.otp_ctrl_vif.pwr_otp_done_o || cfg.under_reset ||
+                  cfg.otp_ctrl_vif.alert_reqs) begin
+          if (!cfg.under_reset && !cfg.otp_ctrl_vif.alert_reqs) begin
             otp_ctrl_part_pkg::otp_hw_cfg_data_t exp_hwcfg_data;
             otp_ctrl_pkg::otp_keymgr_key_t       exp_keymgr_data;
             bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
@@ -161,6 +163,11 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
               foreach (parts_locked[i]) parts_locked[i] = (get_otp_digest_val(i) != 0);
               cov.power_on_cg.sample(cfg.otp_ctrl_vif.lc_esc_on, parts_locked);
             end
+          end else if (cfg.otp_ctrl_vif.alert_reqs) begin
+            // Ignore digest CSR check when otp_ctrl initialization is interrupted by fatal errors.
+            // SCB cannot predict how many partitions already finished initialization and updated
+            // the digest value to CSRs.
+            ignore_digest_chk = 1;
           end
         end
       end
@@ -701,11 +708,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
           end
         end
       end
-      "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1", "owner_sw_cfg_digest_0",
-      "owner_sw_cfg_digest_1": begin
-        // TODO: temp ignore checking until stress_all_with_rand_reset is supported
-        if (cfg.otp_ctrl_vif.under_error_states()) do_read_check = 0;
-      end
       "err_code": begin
         // If lc_prog in progress, err_code might update anytime in DUT. Ignore checking until req
         // is acknowledged.
@@ -714,12 +716,14 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
       "hw_cfg_digest_0", "hw_cfg_digest_1", "secret0_digest_0", "secret0_digest_1",
       "secret1_digest_0", "secret1_digest_1", "secret2_digest_0", "secret2_digest_1",
       "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1", "owner_sw_cfg_digest_0",
-      "owner_sw_cfg_digest_1", "direct_access_regwen", "direct_access_wdata_0",
-      "direct_access_wdata_1", "direct_access_address", "direct_access_rdata_0",
-      "direct_access_rdata_1", "check_regwen", "check_trigger_regwen", "check_trigger",
-      "check_timeout", "intr_enable", "creator_sw_cfg_read_lock",
-      "owner_sw_cfg_read_lock", "integrity_check_period", "consistency_check_period",
-      "alert_test": begin
+      "owner_sw_cfg_digest_1": begin
+        if (ignore_digest_chk) do_read_check = 0;
+      end
+      "direct_access_regwen", "direct_access_wdata_0", "direct_access_wdata_1",
+      "direct_access_address", "direct_access_rdata_0", "direct_access_rdata_1",
+      "check_regwen", "check_trigger_regwen", "check_trigger", "check_timeout", "intr_enable",
+      "creator_sw_cfg_read_lock", "owner_sw_cfg_read_lock", "integrity_check_period",
+      "consistency_check_period", "alert_test": begin
         // Do nothing
       end
       default: begin
@@ -770,6 +774,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
     under_chk             = 0;
     under_dai_access      = 0;
+    ignore_digest_chk     = 0;
     exp_status            = `gmv(ral.status);
     exp_alert             = OtpNoAlert;
 
