@@ -23,6 +23,9 @@ module pwm_chan (
   output logic pwm_o
 );
 
+  // TODO: This block is currently incomplete, so doesn't use several of its input signals. These
+  //       are waived in pwm.vlt. When implementing the block, delete the waivers there.
+
    logic [15:0] duty_cycle_actual;
    logic [15:0] on_phase;
    logic [15:0] off_phase;
