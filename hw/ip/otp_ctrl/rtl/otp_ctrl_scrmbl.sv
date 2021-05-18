@@ -95,23 +95,38 @@ module otp_ctrl_scrmbl
   // Decryption Key LUT //
   ////////////////////////
 
-  logic [NumScrmblKeys-1:0][ScrmblKeyWidth-1:0] otp_dec_key_lut;
-
-  localparam int unsigned LastScrmblKeyInt = NumScrmblKeys - 1;
-  localparam int unsigned LastDigestSetInt = NumDigestSets - 1;
-  localparam bit [ConstSelWidth-1:0] LastScrmblKey = LastScrmblKeyInt[ConstSelWidth-1:0];
-  localparam bit [ConstSelWidth-1:0] LastDigestSet = LastDigestSetInt[ConstSelWidth-1:0];
+  // Align these arrays to power of 2's to prevent X's in the muxing operations further below.
+  logic [2**$clog2(NumScrmblKeys)-1:0][ScrmblKeyWidth-1:0] otp_enc_key_lut;
+  logic [2**$clog2(NumScrmblKeys)-1:0][ScrmblKeyWidth-1:0] otp_dec_key_lut;
+  logic [2**$clog2(NumDigestSets)-1:0][ScrmblKeyWidth-1:0] digest_const_lut;
+  logic [2**$clog2(NumDigestSets)-1:0][ScrmblBlockWidth-1:0] digest_iv_lut;
 
   // This pre-calculates the inverse scrambling keys at elab time.
   `ASSERT_INIT(NumMaxPresentRounds_A, NumPresentRounds <= 31)
 
-  // Due to the PRESENT key schedule, we have to step the key schedule function by
-  // NumPresentRounds forwards to get the decryption key.
-  for (genvar k = 0; k < NumScrmblKeys; k++) begin : gen_dec_key_lut
-    assign otp_dec_key_lut[k] =
-        prim_cipher_pkg::present_get_dec_key128(RndCnstKey[k], 5'(NumPresentRounds));
+  always_comb begin : p_luts
+    otp_enc_key_lut = '0;
+    otp_dec_key_lut = '0;
+    digest_const_lut = '0;
+    digest_iv_lut = '0;
+
+    for (int k = 0; k < NumScrmblKeys; k++) begin
+      otp_enc_key_lut[k] = RndCnstKey[k];
+      // Due to the PRESENT key schedule, we have to step the key schedule function by
+      // NumPresentRounds forwards to get the decryption key.
+      otp_dec_key_lut[k] =
+          prim_cipher_pkg::present_get_dec_key128(RndCnstKey[k], 5'(NumPresentRounds));
+    end
+
+    for (int k = 0; k < NumDigestSets; k++) begin
+      digest_const_lut[k] = RndCnstDigestConst[k];
+      digest_iv_lut[k]    = RndCnstDigestIV[k];
+    end
   end
-  `ASSERT_KNOWN(DecKeyLutKnown_A, otp_dec_key_lut)
+  `ASSERT_KNOWN(EncKeyLutKnown_A,      otp_enc_key_lut)
+  `ASSERT_KNOWN(DecKeyLutKnown_A,      otp_dec_key_lut)
+  `ASSERT_KNOWN(DigestConstLutKnown_A, digest_const_lut)
+  `ASSERT_KNOWN(DigestIvLutKnown_A,    digest_iv_lut)
 
   //////////////
   // Datapath //
@@ -147,15 +162,10 @@ module otp_ctrl_scrmbl
   logic data_state_en, data_shadow_copy, data_shadow_load, digest_state_en, key_state_en;
   digest_mode_e digest_mode_d, digest_mode_q;
 
-  logic [ScrmblKeySelWidth-1:0] scrmbl_key_sel;
-  logic [DigestSetSelWidth-1:0] digest_set_sel;
-  assign scrmbl_key_sel = sel_i[ScrmblKeySelWidth-1:0];
-  assign digest_set_sel = sel_i[DigestSetSelWidth-1:0];
-
-  assign otp_enc_key_mux      = (sel_i <= LastScrmblKey) ? RndCnstKey[scrmbl_key_sel] : '0;
-  assign otp_dec_key_mux      = (sel_i <= LastScrmblKey) ? otp_dec_key_lut[scrmbl_key_sel] : '0;
-  assign otp_digest_const_mux = (sel_i <= LastDigestSet) ? RndCnstDigestConst[digest_set_sel] : '0;
-  assign otp_digest_iv_mux    = (sel_i <= LastDigestSet) ? RndCnstDigestIV[digest_set_sel] : '0;
+  assign otp_enc_key_mux      = otp_enc_key_lut[ScrmblKeySelWidth'(sel_i)];
+  assign otp_dec_key_mux      = otp_dec_key_lut[ScrmblKeySelWidth'(sel_i)];
+  assign otp_digest_const_mux = digest_const_lut[DigestSetSelWidth'(sel_i)];
+  assign otp_digest_iv_mux    = digest_iv_lut[DigestSetSelWidth'(sel_i)];
 
   // Make sure we always select a valid key / digest constant.
   `ASSERT(CheckNumEncKeys_A, key_state_sel == SelEncKeyInit  |-> sel_i < NumScrmblKeys)
