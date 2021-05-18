@@ -559,12 +559,13 @@ module spi_passthrough
     end
   end
 
-  // Some of the fields of cmd_info are used in the big FSM below. The addr_* fields are ignored
-  // because we pick them from cmd_info_d instead (in a different FSM state). We rely on the
-  // synthesis tool not to generate the unneeded flops but must explicitly waive lint warnings about
-  // unused fields.
+  // Some of the fields of cmd_info are used in the big FSM below. The opcode field and the addr_*
+  // fields are ignored because we pick them from cmd_info_d instead (in a different FSM state). We
+  // rely on the synthesis tool not to generate the unneeded flops but must explicitly waive lint
+  // warnings about unused fields.
   logic unused_cmd_info_fields;
   assign unused_cmd_info_fields = &{1'b0,
+                                    cmd_info.opcode,
                                     cmd_info.addr_en,
                                     cmd_info.addr_swap_en,
                                     cmd_info.addr_4b_affected,
