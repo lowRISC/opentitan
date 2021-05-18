@@ -86,6 +86,9 @@ package otp_ctrl_env_pkg;
   parameter uint NUM_SRAM_EDN_REQ = 12;
   parameter uint NUM_OTBN_EDN_REQ = 16;
 
+  parameter uint NUM_UNBUFF_PARTS = 2;
+  parameter uint NUM_BUFF_PARTS   = 5;
+
   parameter uint CHK_TIMEOUT_CYC = 40;
 
   // When fatal alert triggered, all partitions go to error state and status will be 1.
@@ -118,7 +121,7 @@ package otp_ctrl_env_pkg;
     NumOtpCtrlIntr
   } otp_intr_e;
 
-  typedef enum bit [4:0] {
+  typedef enum bit [5:0] {
     OtpCreatorSwCfgErrIdx,
     OtpOwnerSwCfgErrIdx,
     OtpHwCfgErrIdx,
@@ -133,7 +136,8 @@ package otp_ctrl_env_pkg;
     OtpScramblingFsmErrIdx,
     OtpDerivKeyFsmErrIdx,
     OtpDaiIdleIdx,
-    OtpCheckPendingIdx
+    OtpCheckPendingIdx,
+    OtpStatusFieldSize
   } otp_status_e;
 
   typedef enum bit [2:0] {

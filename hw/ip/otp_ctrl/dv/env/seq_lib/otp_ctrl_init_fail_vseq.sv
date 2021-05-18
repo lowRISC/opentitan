@@ -187,6 +187,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
         end else if (err_code != OtpFsmStateError) begin
           `uvm_error(`gfn, $sformatf("Unexpected error code_%0d: %0s", i, err_code.name));
         end
+        if (cfg.en_cov) cov.collect_err_code_field_cov(i, err_code);
       end
     end
     // More than one fatal alert causes could be triggered at the same time
