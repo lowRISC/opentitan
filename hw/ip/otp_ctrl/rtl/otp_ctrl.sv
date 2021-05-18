@@ -636,7 +636,6 @@ module otp_ctrl
                                          tl_win_h2d[$high(tl_win_h2d)] : '0;
   assign tl_win_d2h[$high(tl_win_h2d)] = (lc_dft_en[1] == lc_ctrl_pkg::On) ?
                                          tl_win_d2h_gated : '0;
-  wire unused_ext_voltage_io;
 
   // TODO: correctly connect this to life cycle
   logic ext_voltage_en;
