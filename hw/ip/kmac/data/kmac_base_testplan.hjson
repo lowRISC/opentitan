@@ -96,8 +96,8 @@
     {
       name: app
       desc: '''
-            Test that the Keymgr/ROM/OTP  can all initiate a KMAC operation through
-            the application interface - Keymgr uses KMAC hash, while ROM/OTP use CShake.
+            Test that the Keymgr/ROM/LC can all initiate a KMAC operation through
+            the application interface - Keymgr uses KMAC hash, while ROM/LC use CShake.
             Use an array of kmac_app_agents to send message data to the KMAC and to control
             the hashing logic, and set cfg.sideload if the Keymgr is enabled.
             The result digest sent to the kmac_app_agent will be compared against the result from

@@ -267,7 +267,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       `uvm_info(`gfn, "waiting for new kmac_app request", UVM_HIGH)
       wait(!in_kmac_app &&
            (`KMAC_APP_VALID_TRANS(AppKeymgr) ||
-            `KMAC_APP_VALID_TRANS(AppOtp) ||
+            `KMAC_APP_VALID_TRANS(AppLc) ||
             `KMAC_APP_VALID_TRANS(AppRom)));
       in_kmac_app = 1;
       `uvm_info(`gfn, "raised in_kmac_app", UVM_HIGH)
@@ -275,8 +275,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       // we need to choose the correct application interface
       if (`KMAC_APP_VALID_TRANS(AppKeymgr)) begin
         app_mode = AppKeymgr;
-      end else if (`KMAC_APP_VALID_TRANS(AppOtp)) begin
-        app_mode = AppOtp;
+      end else if (`KMAC_APP_VALID_TRANS(AppLc)) begin
+        app_mode = AppLc;
       end else if (`KMAC_APP_VALID_TRANS(AppRom)) begin
         app_mode = AppRom;
       end
@@ -514,7 +514,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             // processing the header (prefix + secret keys).
             //
             // This is treated as a separate int variable because it is possible for us
-            // to have to wait only for 1 keccak round - this happens when the ROM or OTP
+            // to have to wait only for 1 keccak round - this happens when the ROM or LC
             // sends data through the application interface.
             int num_keccak_rounds_in_header;
 
@@ -530,7 +530,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               cfg.clk_rst_vif.wait_clks(1);
 
               // wait for prefix and keys if Keymgr is using KMAC hash, since it sends in secret
-              // keys, but only wait for the prefix if ROM/OTP is using KMAC hash, since they only
+              // keys, but only wait for the prefix if ROM/LC is using KMAC hash, since they only
               // run CShake hash
               num_keccak_rounds_in_header = (app_mode == AppKeymgr) ? 2 : 1;
             end else begin
@@ -689,7 +689,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   //
   // An important thing to note is that out of all current application interfaces, only AppKeymgr
   // uses the full KMAC cipher, involving prefix, keys, encoded output length, etc...
-  // Both the ROM and OTP application interfaces use the explicit CShake cipher,
+  // Both the ROM and LC application interfaces use the explicit CShake cipher,
   // which (from a timing perspective) behaves almost identially to that of Shake cipher,
   // with the exception that CShake needs to wait for the prefix to be processed.
   virtual task process_initial_digest();
@@ -819,7 +819,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                       // Always enter this condition if not using the KMAC_APP interface.
                       //
                       // If using the KMAC_APP interface only enter this condition if:
-                      // - ROM/OTP application interface is being used
+                      // - ROM/LC application interface is being used
                       // - there are still pending data blocks that need to be processed
                       // - kmac_app_last is seen during keccak hashing of full data block
                       // - kmac_app_last is seen during processing of the prefix and secret key
