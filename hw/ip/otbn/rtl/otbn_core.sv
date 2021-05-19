@@ -499,5 +499,8 @@ module otbn_core
     .edn_urnd_data_i
   );
 
+  // Asserts =======================================================================================
+
   `ASSERT(edn_req_stable, edn_rnd_req_o & ~edn_rnd_ack_i |=> edn_rnd_req_o)
+  `ASSERT_KNOWN(DoneOKnown_A, done_o)
 endmodule
