@@ -14,6 +14,7 @@
 #include "sw/device/lib/pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/mask_rom/sig_verify.h"
 #include "sw/device/silicon_creator/rom_exts/rom_ext_manifest_parser.h"
@@ -72,6 +73,12 @@ void mask_rom_boot(void) {
   // for ( current_rom_ext_manifest in rom_ext_manifests_to_try(boot_policy) ) {
   // // Boot Policy Module
   while (true) {
+    // TODO: Should we load the entropy_reseed_interval from OTP?
+    const uint16_t reseed_interval = 0x100;
+    if (keymgr_init(reseed_interval) != kErrorOk) {
+      break;
+    }
+
     // Check ROM_EXT Manifest (2.c.ii)
     // **Open Q:** Integration with Secure Boot Hardware
     // - Header Format (ROM_EXT Manifest Module)
@@ -131,21 +138,17 @@ void mask_rom_boot(void) {
     // invalid state and should just reboot (because it may not be possible to
     // undo the changes, for instance to write-enable bits).
 
-    // System State Measurements (2.c.iv)
-    // measurements = perform_system_state_measurements(); // System State
-    // Module if (!boot_allowed_with_state(measurements)) { // System State
-    // Module
-    //  // Lifecycle failure (no policy check)
-    //  break
-    //}
-
     // CreatorRootKey (2.c.iv)
     // - This is only allowed to be done if we have verified the signature on
     //   the current ROM_EXT.
-    // **Open Q:** Does Mask ROM just lock down key manager inputs, and let the
-    //             ROM_EXT load the key?
-    // derive_and_lock_creator_root_key_inputs(measurements); // System State
-    // Module
+    // TODO(#5955): Switch to manifest in C struct format update this code to
+    // use the sw binding and max key version fields from the manifest.
+    uint32_t binding_value[8] = {0};
+    uint32_t max_key_version = 0x1;
+    if (keymgr_state_advance_to_creator(binding_value, max_key_version) !=
+        kErrorOk) {
+      break;
+    }
 
     // Lock down Peripherals based on descriptors in ROM_EXT manifest.
     // - This does not cover key-related lockdown, which is done in
@@ -156,6 +159,11 @@ void mask_rom_boot(void) {
     // **Open Q:** Integration with Secure Boot Hardware
     // **Open Q:** Do we need to prevent access to Mask ROM after final jump?
     // pmp_unlock_rom_ext(); // Hardened Jump Module.
+
+    if (keymgr_state_creator_check() != kErrorOk) {
+      // TODO(#6653): The keymgr lands in a disabled state with error code 0xe.
+      base_printf("ERROR keymgr: Failed to reach creator state.\n");
+    }
 
     // Transfer Execution to ROM_EXT (2.c.vi)
     // **Open Q:** Integration with Secure Boot Hardware
