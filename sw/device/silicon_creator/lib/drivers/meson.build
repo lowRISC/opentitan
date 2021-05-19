@@ -57,11 +57,11 @@ test('sw_silicon_creator_lib_driver_uart_unittest', executable(
     ],
     dependencies: [
       sw_vendor_gtest,
-      sw_lib_base_testing_mock_mmio,
+      sw_silicon_creator_lib_base_mock_abs_mmio,
     ],
     native: true,
-    c_args: ['-DMOCK_MMIO'],
-    cpp_args: ['-DMOCK_MMIO'],
+    c_args: ['-DMOCK_ABS_MMIO'],
+    cpp_args: ['-DMOCK_ABS_MMIO'],
   ),
   suite: 'mask_rom',
 )

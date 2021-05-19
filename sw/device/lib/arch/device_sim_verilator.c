@@ -22,6 +22,9 @@ const uint64_t kClockFreqUsbHz = 500 * 1000;  // 500kHz
 
 const uint64_t kUartBaudrate = 7200;
 
+const uint32_t kUartNCOValue =
+    CALCULATE_UART_NCO(kUartBaudrate, kClockFreqPeripheralHz);
+
 // Defined in `hw/top_earlgrey/chip_earlgrey_verilator.core`
 const uintptr_t kDeviceTestStatusAddress = 0x30000000;
 
