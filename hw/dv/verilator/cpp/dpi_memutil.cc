@@ -328,8 +328,8 @@ void DpiMemUtil::RegisterMemoryArea(const std::string &name, uint32_t base,
 
   size_t new_idx = mem_areas_.size();
   auto pr = name_to_mem_.emplace(name, new_idx);
-  const MemArea &stored = *mem_areas_[pr.first->second];
   if (!pr.second) {
+    const MemArea &stored = *mem_areas_[pr.first->second];
     std::ostringstream oss;
     oss << "Cannot register '" << name << "' at: '" << mem_area->GetScope()
         << "' (Previously defined at: '" << stored.GetScope() << "')"
