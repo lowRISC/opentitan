@@ -3,6 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 { name: "lc_ctrl",
   clock_primary: "clk_i",
+  other_clock_list: [
+    "clk_kmac_i"
+  ],
+  reset_primary: "rst_ni",
+  other_reset_list: [
+    "rst_kmac_ni"
+  ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
@@ -142,12 +149,12 @@
       package: "otp_ctrl_pkg"
     }
     // life cycle token hashing command to OTP
-    { struct:  "lc_otp_token"
+    { struct:  "app"
       type:    "req_rsp"
-      name:    "lc_otp_token"
+      name:    "kmac_data"
       act:     "req"
       default: "'0"
-      package: "otp_ctrl_pkg"
+      package: "kmac_pkg"
     }
     // Life cycle broadcast signals
     { struct:  "lc_tx"
