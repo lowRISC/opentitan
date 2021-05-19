@@ -70,10 +70,10 @@ module csrng_block_encrypt #(
 
   assign     prd_clearing[0] = '0;
 
-  assign     state_init[0] = block_encrypt_v_i;
+  assign     state_init[0] = aes_pkg::aes_transpose(block_encrypt_v_i);
 
   assign     key_init[0] = block_encrypt_key_i;
-  assign     state_out = state_done[0];
+  assign     state_out = aes_pkg::aes_transpose(state_done[0]);
   assign     cipher_data_out =  state_out;
 
 
