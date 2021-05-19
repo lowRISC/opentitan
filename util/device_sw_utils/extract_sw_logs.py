@@ -121,6 +121,10 @@ def get_addr_strings(ro_contents):
         base_addr, size, data = ro_content
         while (str_start < size):
             str_end = data.find(b'\0', str_start)
+            # Skip the remainder of this section since it can't contain any C-strings if
+            # there are no nul bytes.
+            if str_end == -1:
+                break
             # Skip if start and end is the same
             if str_start == str_end:
                 str_start += 1
