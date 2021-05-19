@@ -53,6 +53,7 @@ class _SpiFlashFrame:
     FRAME_NUMBER_SIZE: Size of the frame number field in bytes.
     FLASH_OFFSET_SIZE: Size of the flash offset field in bytes.
     PAYLOAD_SIZE: Size of the frame payload in bytes.
+    FRAME_SIZE: Size of the SPI Flash frame, depends on the Boot ROM, see spiflash_frame.h.
     is_second_frame: Indicates if this is the second frame.
     expected_ack: Expected acknowledgement value for a frame.
   """
@@ -60,7 +61,8 @@ class _SpiFlashFrame:
   DIGEST_SIZE = HASH_FUNCTION().digest_size
   FRAME_NUMBER_SIZE = 4
   FLASH_OFFSET_SIZE = 4
-  PAYLOAD_SIZE = 2048 - DIGEST_SIZE - FRAME_NUMBER_SIZE - FLASH_OFFSET_SIZE
+  FRAME_SIZE = 2048
+  PAYLOAD_SIZE = FRAME_SIZE - DIGEST_SIZE - FRAME_NUMBER_SIZE - FLASH_OFFSET_SIZE
 
   def __init__(self, frame_number, flash_offset, payload):
     """Inits a _SpiFlashFrame.
@@ -106,7 +108,7 @@ class _SpiFlashFrame:
     return self.HASH_FUNCTION(bytes(self)).digest()
 
 class _Bootstrap:
-  """Handles low-level details during programming OpenTitan using SAM3U on CW305.
+  """Handles low-level details during programming OpenTitan using SAM3X/U on CW310/305.
 
   Initializes pins, resets OpenTitan, transmits frames, and receives acknowledgements.
 
@@ -116,6 +118,7 @@ class _Bootstrap:
   >>>   ack = bootstrap.transfer(frame)
   >>>   ...
   """
+  # Default pin mapping for CW305 board.
   _PIN_SCK='USB_A13'
   _PIN_SDI='USB_A14'
   _PIN_SDO='USB_A15'
@@ -129,12 +132,25 @@ class _Bootstrap:
   _SECOND_FRAME_DELAY=0.2
   _INTER_FRAME_DELAY=0.02
 
-  def __init__(self, fpga):
-    """Inits a _Bootstrap with a CW305.
+  def __init__(self, fpga, board="CW305"):
+    """Inits a _Bootstrap with a CW310/305.
 
     Args:
-      fpga: CW305 to be programmed, a ``cw.capture.targets.CW305`` instance.
+      fpga: CW310/305 to be programmed, a ``cw.capture.targets.CW310/305`` instance.
+      board: can be ``CW310`` or ``CW305`` to distinguish the different board types.
     """
+
+    # Change pin mapping to CW310 board.
+    if board == "CW310":
+      self._PIN_SCK='USB_SPI_SCK'
+      self._PIN_SDI='USB_SPI_COPI'
+      self._PIN_SDO='USB_SPI_CIPO'
+      self._PIN_CS='USB_SPI_CS'
+      self._PIN_TRST='USB_A17'
+      self._PIN_SRST='USB_A18'
+      self._PIN_JTAG_SPI='USB_A19'
+      self._PIN_BOOTSTRAP='USB_A16'
+
     # Configure JTAG and bootstrap pins.
     self._fpga_io = fpga.gpio_mode()
     self._fpga_io.pin_set_output(self._PIN_TRST)
@@ -182,17 +198,18 @@ class _Bootstrap:
     return bytes(self._fpga_io.spi1_transfer(bytes(frame))[:_SpiFlashFrame.DIGEST_SIZE])
 
 
-class SAM3UProgrammer:
-  """Class for programming OpenTitan over the SPI interface of SAM3U on CW305."""
-  def __init__(self, firmware_path):
-    """Inits SAM3UProgrammer with the path of a firmware image."""
+class SPIProgrammer:
+  """Class for programming OpenTitan over the SPI interface of SAM3X/U on CW310/305."""
+  def __init__(self, firmware_path, board="CW305"):
+    """Inits SPIProgrammer with the path of a firmware image and board name."""
     self._firmware_path = firmware_path
+    self._board = board
 
   def run(self, fpga):
-    """Programs OpenTitan over the SPI interface of SAM3U on CW305.
+    """Programs OpenTitan over the SPI interface of SAM3X/U on CW310/305.
 
-    This implementation has two improvements over the `spiflash` tool in
-    lowRISC/opentitan:
+    This implementation has two improvements over the `spiflash` tool under
+    sw/host/spiflash:
     * Optimizes the happy path by checking the acknowledgement of frame N-1
       after transmitting frame N instead of transmitting an extra frame to check
       each frame's acknowledgement.
@@ -200,9 +217,9 @@ class SAM3UProgrammer:
       frame gets corrupted and halts the bootstrapping process.
 
     Args:
-      fpga: CW305 to be programmed, a ``cw.capture.targets.CW305`` instance.
+      fpga: CW310/305 to be programmed, a ``cw.capture.targets.CW310/305`` instance.
     """
-    with _Bootstrap(fpga) as bootstrap:
+    with _Bootstrap(fpga, self._board) as bootstrap:
       frame_number = 0
       flash_offset = 0
       prev_frame = None
