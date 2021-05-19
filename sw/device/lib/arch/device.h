@@ -76,6 +76,20 @@ extern const uint64_t kClockFreqUsbHz;
 extern const uint64_t kUartBaudrate;
 
 /**
+ * A helper macro to calculate NCO values.
+ * NOTE: the left shift value is dependent on the UART hardware.
+ * The NCO width is 16 bits and the NCO calculates a 16x oversampling clock.
+ */
+#define CALCULATE_UART_NCO(baudrate, peripheral_clock) \
+  (((baudrate) << (16 + 4)) / (peripheral_clock))
+
+/**
+ * The pre-calculated UART NCO value based on the Baudrate and Peripheral clock.
+ */
+extern const uint32_t kUartNCOValue;
+;
+
+/**
  * An address to write to to report test status.
  *
  * If this is zero, there is no address to write to to report test status.

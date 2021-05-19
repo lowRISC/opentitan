@@ -35,8 +35,6 @@ typedef void(boot_fn)(void);
 void mask_rom_exception_handler(void) { wait_for_interrupt(); }
 void mask_rom_nmi_handler(void) { wait_for_interrupt(); }
 
-uart_t uart;
-
 // FIXME: Temporary workaround to run functional test of SHA256.
 static int verify_rom_ext_identifier(rom_ext_manifest_t rom_ext) {
   uint32_t rom_ext_identifier = rom_ext_get_identifier(rom_ext);
@@ -62,13 +60,9 @@ void mask_rom_boot(void) {
   pinmux_init();
 
   // Configure UART0 as stdout.
-  // TODO(lowrisc/opentitan#6283): Move to constant driver handles.
-  uart.base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR);
-  uart.baudrate = kUartBaudrate;
-  uart.clk_freq_hz = kClockFreqPeripheralHz;
-  uart_init(&uart);
+  uart_init(kUartNCOValue);
   base_set_stdout((buffer_sink_t){
-      .data = &uart,
+      .data = NULL,
       .sink = uart_sink,
   });
 

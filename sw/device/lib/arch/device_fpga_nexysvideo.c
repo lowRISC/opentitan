@@ -19,6 +19,9 @@ const uint64_t kClockFreqUsbHz = 48 * 1000 * 1000;  // 48MHz
 
 const uint64_t kUartBaudrate = 115200;
 
+const uint32_t kUartNCOValue =
+    CALCULATE_UART_NCO(kUartBaudrate, kClockFreqPeripheralHz);
+
 const uintptr_t kDeviceTestStatusAddress = 0;
 
 const uintptr_t kDeviceLogBypassUartAddress = 0;
