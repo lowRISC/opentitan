@@ -172,8 +172,8 @@ insn-groups:
       It is used together with the 32b wide General Purpose Register file.
       The primary use of the base instruction set is the control flow in applications.
 
-      The base instruction set is an extended subset of [RISC-V's RV32I_Zcsr](https://riscv.org/specifications/isa-spec-pdf/).
-      Refer to the [RISC-V Unprivileged Specification](https://riscv.org/specifications/isa-spec-pdf/) for a detailed instruction specification.
+      The base instruction set is an extended subset of RISC-V's RV32I_Zcsr.
+      Refer to the [RISC-V Unprivileged Specification](https://github.com/riscv/riscv-isa-manual/releases/download/Ratified-IMAFDQC/riscv-spec-20191213.pdf) for a detailed instruction specification.
       Not all RV32 instructions are implemented.
       The implemented subset is shown below.
     insns: base-insns.yml
