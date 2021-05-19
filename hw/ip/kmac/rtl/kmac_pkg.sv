@@ -97,7 +97,7 @@ package kmac_pkg;
   // Number of the application interface
   // Currently KMAC has three interface.
   // 0: KeyMgr
-  // 1: OTP_CTRL
+  // 1: LC_CTRL
   // 2: ROM_CTRL
   // Make sure to change `width` of app inter-module signal definition
   // if this value is changed.

@@ -133,7 +133,7 @@ package kmac_env_pkg;
 
   typedef enum int {
     AppKeymgr,
-    AppOtp,
+    AppLc,
     AppRom
   } kmac_app_e;
 
