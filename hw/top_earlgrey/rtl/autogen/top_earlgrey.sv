@@ -659,7 +659,6 @@ module top_earlgrey #(
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp4;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp5;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp6;
-  kmac_pkg::app_rsp_t unused_kmac_app_rsp2;
 
   // assign partial inter-module tie-off
   assign unused_edn1_edn_rsp1 = edn1_edn_rsp[1];
@@ -668,14 +667,12 @@ module top_earlgrey #(
   assign unused_edn1_edn_rsp4 = edn1_edn_rsp[4];
   assign unused_edn1_edn_rsp5 = edn1_edn_rsp[5];
   assign unused_edn1_edn_rsp6 = edn1_edn_rsp[6];
-  assign unused_kmac_app_rsp2 = kmac_app_rsp[2];
   assign edn1_edn_req[1] = '0;
   assign edn1_edn_req[2] = '0;
   assign edn1_edn_req[3] = '0;
   assign edn1_edn_req[4] = '0;
   assign edn1_edn_req[5] = '0;
   assign edn1_edn_req[6] = '0;
-  assign kmac_app_req[2] = kmac_pkg::APP_REQ_DEFAULT;
 
 
   // Unused reset signals
@@ -1555,8 +1552,8 @@ module top_earlgrey #(
       .otp_lc_data_i(otp_ctrl_otp_lc_data),
       .lc_otp_program_o(lc_ctrl_lc_otp_program_req),
       .lc_otp_program_i(lc_ctrl_lc_otp_program_rsp),
-      .lc_otp_token_o(),
-      .lc_otp_token_i('0),
+      .kmac_data_o(kmac_app_req[1]),
+      .kmac_data_i(kmac_app_rsp[1]),
       .lc_dft_en_o(lc_ctrl_lc_dft_en),
       .lc_nvm_debug_en_o(lc_ctrl_lc_nvm_debug_en),
       .lc_hw_debug_en_o(lc_ctrl_lc_hw_debug_en),
@@ -1583,7 +1580,9 @@ module top_earlgrey #(
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_timers),
-      .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
+      .clk_kmac_i (clkmgr_aon_clocks.clk_main_timers),
+      .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+      .rst_kmac_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
 
   alert_handler #(
@@ -2323,8 +2322,8 @@ module top_earlgrey #(
       .rom_cfg_i(ast_rom_cfg),
       .pwrmgr_data_o(rom_ctrl_pwrmgr_data),
       .keymgr_data_o(rom_ctrl_keymgr_data),
-      .kmac_data_o(kmac_app_req[1]),
-      .kmac_data_i(kmac_app_rsp[1]),
+      .kmac_data_o(kmac_app_req[2]),
+      .kmac_data_i(kmac_app_rsp[2]),
       .regs_tl_i(rom_ctrl_regs_tl_req),
       .regs_tl_o(rom_ctrl_regs_tl_rsp),
       .rom_tl_i(rom_ctrl_rom_tl_req),

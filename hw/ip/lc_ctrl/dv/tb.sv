@@ -33,12 +33,48 @@ module tb;
   push_pull_if #(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth))
                otp_token_if(.clk(clk), .rst_n(rst_n));
 
+  // TODO: need to properly hook up KMAC agent.
+  logic req_q;
+  lc_ctrl_state_pkg::lc_token_t token_q;
+  kmac_pkg::app_rsp_t kmac_data_in;
+  kmac_pkg::app_req_t kmac_data_out;
+  assign kmac_data_in.ready = 1'b1;
+  assign kmac_data_in.done = otp_token_if.ack;
+  assign kmac_data_in.digest_share0 = kmac_pkg::AppDigestW'(otp_token_if.d_data);
+  assign kmac_data_in.digest_share1 = '0;
+  assign kmac_data_in.error = 1'b0;
+
+  assign otp_token_if.req = req_q;
+  assign otp_token_if.h_data = token_q;
+
+  always_ff @(posedge clk or negedge rst_n) begin : p_kmac_regs
+    if (!rst_n) begin
+      req_q <= 1'b0;
+      token_q <= '0;
+    end else begin
+      req_q <= req_q & ~otp_token_if.ack;
+      if (kmac_data_out.valid) begin
+        if (kmac_data_out.last) begin
+          req_q <= 1'b1;
+          token_q[64 +: 64] <= kmac_data_out.data;
+        end else begin
+          token_q[0 +: 64] <= kmac_data_out.data;
+        end
+      end
+    end
+  end
+
+
   `DV_ALERT_IF_CONNECT
 
   // dut
   lc_ctrl dut (
     .clk_i                      (clk      ),
     .rst_ni                     (rst_n    ),
+
+    // TODO: connect this to a different clock
+    .clk_kmac_i                 (clk      ),
+    .rst_kmac_ni                (rst_n    ),
 
     .tl_i                       (tl_if.h2d),
     .tl_o                       (tl_if.d2h),
@@ -60,8 +96,8 @@ module tb;
     .lc_otp_program_o           ({otp_prog_if.req, otp_prog_if.h_data}),
     .lc_otp_program_i           ({otp_prog_if.d_data, otp_prog_if.ack}),
 
-    .lc_otp_token_o             ({otp_token_if.req, otp_token_if.h_data}),
-    .lc_otp_token_i             ({ otp_token_if.ack, otp_token_if.d_data}),
+    .kmac_data_i                (kmac_data_in),
+    .kmac_data_o                (kmac_data_out),
 
     .otp_lc_data_i              (lc_ctrl_if.otp_i),
 

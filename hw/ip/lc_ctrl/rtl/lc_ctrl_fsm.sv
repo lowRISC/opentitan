@@ -42,6 +42,7 @@ module lc_ctrl_fsm
   // Token hashing interface
   output logic                  token_hash_req_o,
   input                         token_hash_ack_i,
+  input                         token_hash_err_i,
   input  lc_token_t             hashed_token_i,
   // OTP programming interface
   output logic                  otp_prog_req_o,
@@ -121,9 +122,6 @@ module lc_ctrl_fsm
   lc_cnt_e      lc_cnt_d, lc_cnt_q, next_lc_cnt;
   lc_id_state_e lc_id_state_d, lc_id_state_q;
 
-  // Working register for hashed token.
-  lc_token_t hashed_token_d, hashed_token_q;
-
   // Feed the next lc state reg back to the programming interface of OTP.
   assign otp_prog_lc_state_o = next_lc_state;
   assign otp_prog_lc_cnt_o   = next_lc_cnt;
@@ -148,7 +146,6 @@ module lc_ctrl_fsm
 
     // Token hashing.
     token_hash_req_o = 1'b0;
-    hashed_token_d   = hashed_token_q;
 
     // OTP Interface
     otp_prog_req_o = 1'b0;
@@ -279,10 +276,9 @@ module lc_ctrl_fsm
         token_hash_req_o = 1'b1;
         if (token_hash_ack_i) begin
           // This is the first comparison.
-          // The token is registered and then
-          // compared two more times further below.
-          hashed_token_d = hashed_token_i;
-          if (hashed_token_i == hashed_token_mux) begin
+          // The token is compared two more times further below.
+          if (hashed_token_i == hashed_token_mux &&
+              !token_hash_err_i) begin
             fsm_state_d = FlashRmaSt;
           end else begin
             fsm_state_d = PostTransSt;
@@ -320,7 +316,8 @@ module lc_ctrl_fsm
               (trans_target_i == DecLcStRma &&
                lc_flash_rma_req_o == On     &&
                lc_flash_rma_ack[1] == On)) begin
-            if (hashed_token_i == hashed_token_mux) begin
+            if (hashed_token_i == hashed_token_mux &&
+                !token_hash_err_i) begin
               if (fsm_state_q == TokenCheck1St) begin
                 // This is the only way we can get into the
                 // programming state.
@@ -437,10 +434,8 @@ module lc_ctrl_fsm
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
       lc_state_valid_q     <= 1'b0;
-      hashed_token_q       <= {LcTokenWidth{1'b1}};
     end else begin
       lc_state_valid_q     <= lc_state_valid_d;
-      hashed_token_q       <= hashed_token_d;
     end
   end
 

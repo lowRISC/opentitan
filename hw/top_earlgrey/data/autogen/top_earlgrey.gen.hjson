@@ -1525,15 +1525,18 @@
       clock_srcs:
       {
         clk_i: io_div4
+        clk_kmac_i: main
       }
       clock_group: timers
       reset_connections:
       {
         rst_ni: rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]
+        rst_kmac_ni: rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]
       }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
+        clk_kmac_i: clkmgr_aon_clocks.clk_main_timers
       }
       domain: "0"
       param_list:
@@ -1669,15 +1672,16 @@
           index: -1
         }
         {
-          name: lc_otp_token
-          struct: lc_otp_token
-          package: otp_ctrl_pkg
+          name: kmac_data
+          struct: app
+          package: kmac_pkg
           type: req_rsp
           act: req
           width: 1
           default: "'0"
           inst_name: lc_ctrl
-          index: -1
+          top_signame: kmac_app
+          index: 1
         }
         {
           name: lc_dft_en
@@ -4119,8 +4123,8 @@
           width: 3
           inst_name: kmac
           default: ""
-          end_idx: 2
-          top_type: partial-one-to-N
+          end_idx: -1
+          top_type: one-to-N
           top_signame: kmac_app
           index: -1
         }
@@ -5283,7 +5287,7 @@
           inst_name: rom_ctrl
           default: ""
           top_signame: kmac_app
-          index: 1
+          index: 2
         }
         {
           name: regs_tl
@@ -5943,6 +5947,7 @@
       kmac.app:
       [
         keymgr.kmac_data
+        lc_ctrl.kmac_data
         rom_ctrl.kmac_data
       ]
       clkmgr_aon.idle:
@@ -12297,15 +12302,16 @@
         index: -1
       }
       {
-        name: lc_otp_token
-        struct: lc_otp_token
-        package: otp_ctrl_pkg
+        name: kmac_data
+        struct: app
+        package: kmac_pkg
         type: req_rsp
         act: req
         width: 1
         default: "'0"
         inst_name: lc_ctrl
-        index: -1
+        top_signame: kmac_app
+        index: 1
       }
       {
         name: lc_dft_en
@@ -13963,8 +13969,8 @@
         width: 3
         inst_name: kmac
         default: ""
-        end_idx: 2
-        top_type: partial-one-to-N
+        end_idx: -1
+        top_type: one-to-N
         top_signame: kmac_app
         index: -1
       }
@@ -14629,7 +14635,7 @@
         inst_name: rom_ctrl
         default: ""
         top_signame: kmac_app
-        index: 1
+        index: 2
       }
       {
         name: regs_tl
@@ -16827,7 +16833,7 @@
         signame: kmac_app_req
         width: 3
         type: req_rsp
-        end_idx: 2
+        end_idx: -1
         act: rsp
         suffix: req
         default: kmac_pkg::APP_REQ_DEFAULT
@@ -16838,7 +16844,7 @@
         signame: kmac_app_rsp
         width: 3
         type: req_rsp
-        end_idx: 2
+        end_idx: -1
         act: rsp
         suffix: rsp
         default: ""

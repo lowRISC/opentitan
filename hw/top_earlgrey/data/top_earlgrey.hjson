@@ -375,9 +375,9 @@
     },
     { name: "lc_ctrl",
       type: "lc_ctrl",
-      clock_srcs: {clk_i: "io_div4"},
+      clock_srcs: {clk_i: "io_div4", clk_kmac_i: "main"},
       clock_group: "timers",
-      reset_connections: {rst_ni: "lc_io_div4"},
+      reset_connections: {rst_ni: "lc_io_div4", rst_kmac_ni: "sys"},
       base_addr: "0x40140000",
     },
     { name: "alert_handler",
@@ -902,7 +902,9 @@
       'keymgr.kmac_key'         : ['kmac.keymgr_key']
 
       // KMAC Application Interface
-      'kmac.app'                : ['keymgr.kmac_data', 'rom_ctrl.kmac_data']
+      'kmac.app'                : ['keymgr.kmac_data',    // Keymgr needs to be at index 0
+                                   'lc_ctrl.kmac_data',   // LC needs to be at index 1
+                                   'rom_ctrl.kmac_data'], // ROM needs to be at index 2
 
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
@@ -919,9 +921,6 @@
       // OTP LC interface
       'otp_ctrl.otp_lc_data'   : ['lc_ctrl.otp_lc_data'],
       'lc_ctrl.lc_otp_program' : ['otp_ctrl.lc_otp_program'],
-      // TODO: wire this up again once this has been reworked to
-      // use KMAC interface.
-      //'lc_ctrl.lc_otp_token'   : [],
 
       // HW_CFG broadcast
       'otp_ctrl.otp_hw_cfg'    : ['csrng.otp_hw_cfg', 'entropy_src.otp_hw_cfg',

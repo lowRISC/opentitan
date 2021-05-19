@@ -21,8 +21,12 @@ module lc_ctrl
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2)
 ) (
+  // Life cycle controller clock
   input                                              clk_i,
   input                                              rst_ni,
+  // Clock for KMAC interface
+  input                                              clk_kmac_i,
+  input                                              rst_kmac_ni,
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t                          tl_i,
   output tlul_pkg::tl_d2h_t                          tl_o,
@@ -50,9 +54,9 @@ module lc_ctrl
   output otp_ctrl_pkg::lc_otp_program_req_t          lc_otp_program_o,
   input  otp_ctrl_pkg::lc_otp_program_rsp_t          lc_otp_program_i,
   // Life cycle hashing interface for raw unlock
-  // No sync required since LC and OTP are in the same clock domain.
-  output otp_ctrl_pkg::lc_otp_token_req_t            lc_otp_token_o,
-  input  otp_ctrl_pkg::lc_otp_token_rsp_t            lc_otp_token_i,
+  // Synchronized in the life cycle controller.
+  input  kmac_pkg::app_rsp_t                         kmac_data_i,
+  output kmac_pkg::app_req_t                         kmac_data_o,
   // OTP broadcast outputs
   // No sync required since LC and OTP are in the same clock domain.
   input  otp_ctrl_pkg::otp_lc_data_t                 otp_lc_data_i,
@@ -372,6 +376,8 @@ module lc_ctrl
     end
   end
 
+  assign lc_flash_rma_seed_o = transition_token_q[RmaSeedWidth-1:0];
+
   //////////////////
   // Alert Sender //
   //////////////////
@@ -473,12 +479,29 @@ module lc_ctrl
   assign pwr_lc_o.lc_done = lc_done_q;
   assign pwr_lc_o.lc_idle = lc_idle_q;
 
+  ////////////////////
+  // KMAC Interface //
+  ////////////////////
+
+  logic token_hash_req, token_hash_ack, token_hash_err;
+  lc_token_t hashed_token;
+  lc_ctrl_kmac_if u_lc_ctrl_kmac_if (
+    .clk_i,
+    .rst_ni,
+    .clk_kmac_i,
+    .rst_kmac_ni,
+    .kmac_data_i,
+    .kmac_data_o,
+    .transition_token_i ( transition_token_q ),
+    .token_hash_req_i   ( token_hash_req     ),
+    .token_hash_ack_o   ( token_hash_ack     ),
+    .token_hash_err_o   ( token_hash_err     ),
+    .hashed_token_o     ( hashed_token       )
+  );
+
   ////////////
   // LC FSM //
   ////////////
-
-  assign lc_otp_token_o.token_input = transition_token_q;
-  assign lc_flash_rma_seed_o = transition_token_q[RmaSeedWidth-1:0];
 
   lc_ctrl_fsm #(
     .RndCnstLcKeymgrDivInvalid    ( RndCnstLcKeymgrDivInvalid    ),
@@ -504,9 +527,10 @@ module lc_ctrl
     .dec_lc_state_o         ( dec_lc_state                    ),
     .dec_lc_cnt_o           ( dec_lc_cnt                      ),
     .dec_lc_id_state_o      ( dec_lc_id_state                 ),
-    .token_hash_req_o       ( lc_otp_token_o.req              ),
-    .token_hash_ack_i       ( lc_otp_token_i.ack              ),
-    .hashed_token_i         ( lc_otp_token_i.hashed_token     ),
+    .token_hash_req_o       ( token_hash_req                  ),
+    .token_hash_ack_i       ( token_hash_ack                  ),
+    .token_hash_err_i       ( token_hash_err                  ),
+    .hashed_token_i         ( hashed_token                    ),
     .otp_prog_req_o         ( lc_otp_program_o.req            ),
     .otp_prog_lc_state_o    ( lc_otp_program_o.state          ),
     .otp_prog_lc_cnt_o      ( lc_otp_program_o.count          ),
@@ -546,7 +570,7 @@ module lc_ctrl
   `ASSERT_KNOWN(AlertTxKnown_A,         alert_tx_o                 )
   `ASSERT_KNOWN(PwrLcKnown_A,           pwr_lc_o                   )
   `ASSERT_KNOWN(LcOtpProgramKnown_A,    lc_otp_program_o           )
-  `ASSERT_KNOWN(LcOtpTokenKnown_A,      lc_otp_token_o             )
+  `ASSERT_KNOWN(LcOtpTokenKnown_A,      kmac_data_o                )
   `ASSERT_KNOWN(LcDftEnKnown_A,         lc_dft_en_o                )
   `ASSERT_KNOWN(LcNvmDebugEnKnown_A,    lc_nvm_debug_en_o          )
   `ASSERT_KNOWN(LcHwDebugEnKnown_A,     lc_hw_debug_en_o           )
