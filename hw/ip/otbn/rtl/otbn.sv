@@ -343,7 +343,7 @@ module otbn
     // have functionality for only integrity checking, just fully integrated ECC. Integrity bits are
     // implemented on a 32-bit granule so seperate checks are required for each.
     prim_secded_39_32_dec u_dmem_intg_check (
-      .data_i     (dmem_rdata),
+      .data_i     (dmem_rdata[i_word*39 +: 39]),
       .data_o     (),
       .syndrome_o (),
       .err_o      (dmem_rerror_raw)
