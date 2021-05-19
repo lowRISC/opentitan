@@ -18,6 +18,7 @@ class rom_ctrl_smoke_vseq extends rom_ctrl_base_vseq;
   task body();
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_mem_reads)
     do_rand_ops(num_mem_reads);
+    read_digest_regs();
   endtask : body
 
 endclass : rom_ctrl_smoke_vseq
