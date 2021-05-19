@@ -145,13 +145,13 @@ package kmac_pkg;
       Prefix:     '0       // Not used in CSR prefix mode
     },
 
-    // OTP
+    // LC_CTRL
     '{
       Mode:       AppCShake,
-      Strength:   sha3_pkg::L256,
+      Strength:   sha3_pkg::L128,
       PrefixMode: 1'b 1,     // Use prefix parameter
-      // {fname: encode_string(""), custom_str: encode_string("OTP_CTRL")}
-      Prefix: NSPrefixW'(96'h 4c52_5443_5f50_544f_4001_0001)
+      // {fname: encode_string(""), custom_str: encode_string("LC_CTRL")}
+      Prefix: NSPrefixW'(88'h 4c_5254_435f_434C_3801_0001)
     },
 
     // ROM_CTRL
