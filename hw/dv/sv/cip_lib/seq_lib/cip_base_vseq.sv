@@ -831,11 +831,13 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     uint num_accesses;
     // limit to 100k accesses if mem is very big
     uint max_accesses = 100_000;
+    // Set a minimal access to avoid memory is too small and very little chance to read memory
+    uint min_accesses = 100;
     uvm_reg_block local_ral = cfg.ral_models[ral_name];
 
     void'($value$plusargs("max_accesses_for_partial_mem_access_vseq=%0d", max_accesses));
 
-    // calculate how many accesses to run based on mem size, up to 100k
+    // Calculate how many accesses to run based on mem size, from 100 up to 100k.
     foreach (loc_mem_range[i]) begin
       if (get_mem_access_by_addr(local_ral, loc_mem_range[i].start_addr) != "RO") begin
         num_accesses += (loc_mem_range[i].end_addr - loc_mem_range[i].start_addr) >> 2;
@@ -845,9 +847,10 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
         end
       end
     end
+    num_accesses = (num_accesses < min_accesses) ? min_accesses : num_accesses;
 
-    num_accesses = num_accesses * num_times;
-    while (num_accesses && !cfg.under_reset) begin
+    repeat(num_accesses * num_times) begin
+      if (cfg.under_reset) break;
       fork
         begin
           bit [BUS_AW-1:0]  addr;
@@ -896,7 +899,6 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
                                     .blocking(1), .req_abort_pct($urandom_range(0, 100)),
                                     .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
                 end
-                num_accesses--;
               end
             end
           endcase
