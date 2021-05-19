@@ -49,7 +49,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   addr_mask_t mem_exist_addr_q[string][$];
 
   // mem_ranges without base address
-  addr_range_t     updated_mem_ranges[string][$];
+  addr_range_t updated_mem_ranges[string][$];
+
+  // unmapped addr ranges without base address
+  addr_range_t updated_unmapped_addr_ranges[string][$];
+
   // mask out bits out of the csr/mem range and LSB 2 bits
   bit [BUS_AW-1:0] csr_addr_mask[string];
 
@@ -861,13 +865,13 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
   // test partial mem read with non-blocking random read/write
   virtual task run_mem_partial_access_vseq(int num_times);
     `loop_ral_models_to_create_threads(
-        if (cfg.mem_ranges[ral_name].size > 0) begin
+        if (cfg.ral_models[ral_name].mem_ranges.size() > 0) begin
           run_mem_partial_access_vseq_sub(num_times, ral_name);
         end)
   endtask
 
   virtual task run_mem_partial_access_vseq_sub(int num_times, string ral_name);
-    addr_range_t loc_mem_range[$] = cfg.mem_ranges[ral_name];
+    addr_range_t loc_mem_range[$] = cfg.ral_models[ral_name].mem_ranges;
     uint num_accesses;
     // limit to 100k accesses if mem is very big
     uint max_accesses = 100_000;

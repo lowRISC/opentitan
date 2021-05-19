@@ -25,26 +25,23 @@
   end
 
 virtual task tl_access_unmapped_addr(string ral_name);
-  bit [BUS_AW-1:0] normalized_csr_addrs[] = new[cfg.csr_addrs[ral_name].size()];
-  bit [BUS_AW-1:0] csr_base_addr = cfg.ral_models[ral_name].default_map.get_base_addr();
+  addr_range_t loc_unmapped_addr_ranges[$] = updated_unmapped_addr_ranges[ral_name];
 
-  // calculate normalized address outside the loop to improve perf
-  foreach (cfg.csr_addrs[ral_name][i]) begin
-    normalized_csr_addrs[i] = cfg.csr_addrs[ral_name][i] - csr_base_addr;
-  end
+  if (loc_unmapped_addr_ranges.size() == 0) return;
 
   // randomize unmapped_addr first to improve perf
   repeat ($urandom_range(10, 100)) begin
     bit [BUS_AW-1:0] unmapped_addr;
-    addr_range_t loc_mem_ranges[$] = updated_mem_ranges[ral_name];
+
+    // Randomly pick which unmapped address range to target
+    int idx = $urandom_range(0, loc_unmapped_addr_ranges.size()-1);
 
     if (cfg.under_reset) return;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(unmapped_addr,
-        !((unmapped_addr & csr_addr_mask[ral_name]) inside {normalized_csr_addrs});
-        foreach (loc_mem_ranges[i]) {
-          !((unmapped_addr & csr_addr_mask[ral_name])
-              inside {[loc_mem_ranges[i].start_addr : loc_mem_ranges[i].end_addr]});}
-        )
+        (unmapped_addr & csr_addr_mask[ral_name])
+            inside {[loc_unmapped_addr_ranges[idx].start_addr :
+                     loc_unmapped_addr_ranges[idx].end_addr]};
+    )
     `create_tl_access_error_case(
         tl_access_unmapped_addr,
         addr == unmapped_addr;,
@@ -122,7 +119,7 @@ virtual task tl_write_mem_less_than_word(string ral_name);
     mem_idx = $urandom_range(0, loc_mem_ranges.size - 1);
     // only test when mem doesn't support partial write
     `downcast(mem, get_mem_by_addr(cfg.ral_models[ral_name],
-                                   cfg.mem_ranges[ral_name][mem_idx].start_addr))
+                                   cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr))
     if (mem.get_mem_partial_write_support()) continue;
 
     `create_tl_access_error_case(
@@ -144,7 +141,7 @@ virtual task tl_read_mem_err(string ral_name);
     // if more than one memories, randomly select one memory
     mem_idx = $urandom_range(0, loc_mem_ranges.size - 1);
     if (get_mem_access_by_addr(cfg.ral_models[ral_name],
-        cfg.mem_ranges[ral_name][mem_idx].start_addr) != "WO") continue;
+        cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr) != "WO") continue;
     `create_tl_access_error_case(
         tl_read_mem_err,
         opcode == tlul_pkg::Get;
@@ -172,15 +169,15 @@ endtask
 
 // generic task to check interrupt test reg functionality
 virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, string ral_name);
-  addr_range_t loc_mem_range[$] = cfg.mem_ranges[ral_name];
+  addr_range_t loc_mem_range[$] = cfg.ral_models[ral_name].mem_ranges;
   bit has_mem = (loc_mem_range.size > 0);
   bit [BUS_AW-1:0] csr_base_addr = cfg.ral_models[ral_name].default_map.get_base_addr();
-  bit has_unmapped_addr;
+
+  bit has_csr_addrs = (cfg.ral_models[ral_name].csr_addrs.size() > 0);
 
   // get_addr_mask returns address map size - 1 and get_max_offset return the offset of high byte
   // in address map. The difference btw them is unmapped address
   csr_addr_mask[ral_name] = cfg.ral_models[ral_name].get_addr_mask();
-  has_unmapped_addr = csr_addr_mask[ral_name] > cfg.ral_models[ral_name].get_max_offset();
 
   // word aligned. This is used to constrain the random address and LSB 2 bits are masked out
   csr_addr_mask[ral_name][1:0] = 0;
@@ -190,6 +187,15 @@ virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, stri
       updated_mem_ranges[ral_name].push_back(addr_range_t'{
           loc_mem_range[i].start_addr - csr_base_addr,
           loc_mem_range[i].end_addr - csr_base_addr});
+    end
+  end
+
+  if (cfg.ral_models[ral_name].has_unmapped_addrs) begin
+    addr_range_t loc_unmapped_addr_ranges[$] = cfg.ral_models[ral_name].unmapped_addr_ranges;
+    foreach (loc_unmapped_addr_ranges[i]) begin
+      updated_unmapped_addr_ranges[ral_name].push_back(addr_range_t'{
+          loc_unmapped_addr_ranges[i].start_addr - csr_base_addr,
+          loc_unmapped_addr_ranges[i].end_addr - csr_base_addr});
     end
   end
 
@@ -207,11 +213,15 @@ virtual task run_tl_errors_vseq_sub(int num_times = 1, bit do_wait_clk = 0, stri
           fork
             begin
               randcase
-                1: tl_write_csr_word_unaligned_addr(ral_name);
                 1: tl_write_less_than_csr_width(ral_name);
                 1: tl_protocol_err(p_sequencer.tl_sequencer_hs[ral_name]);
+
+                // only run when csr addresses exist
+                has_csr_addrs: tl_write_csr_word_unaligned_addr(ral_name);
+
                 // only run when unmapped addr exists
-                has_unmapped_addr: tl_access_unmapped_addr(ral_name);
+                cfg.ral_models[ral_name].has_unmapped_addrs: tl_access_unmapped_addr(ral_name);
+
                 // only run this task when there is an mem
                 has_mem: tl_write_mem_less_than_word(ral_name);
                 has_mem: tl_read_mem_err(ral_name);
