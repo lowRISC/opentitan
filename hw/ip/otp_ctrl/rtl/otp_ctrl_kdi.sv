@@ -276,6 +276,9 @@ module otp_ctrl_kdi
 
   state_e state_d, state_q;
 
+  logic edn_req_d, edn_req_q;
+  assign edn_req_o = edn_req_q;
+
   always_comb begin : p_fsm
     state_d = state_q;
 
@@ -288,8 +291,12 @@ module otp_ctrl_kdi
     entropy_cnt_en  = 1'b0;
     entropy_cnt_clr = 1'b0;
 
-    // EDN 128bit block fetch request
-    edn_req_o = 1'b0;
+    // EDN 128bit block fetch request.
+    // This keeps the request alive until it has
+    // been acked to adhere to the req/ack protocol
+    // even in cases where the FSM jumps into
+    // an error state while waiting for a request.
+    edn_req_d = edn_req_q & ~edn_ack_i;
 
     // Data selection and temp registers
     data_sel          = SeedData;
@@ -362,7 +369,7 @@ module otp_ctrl_kdi
       // Fetch random data to ingest for key derivation.
       FetchEntropySt: begin
         scrmbl_mtx_req_o = 1'b1;
-        edn_req_o = 1'b1;
+        edn_req_d = 1'b1;
         if (edn_ack_i) begin
           nonce_reg_en = 1'b1;
           // Finished, go and acknowledge this request.
@@ -442,7 +449,7 @@ module otp_ctrl_kdi
       // Fetch additional nonce data. Note that the mutex is released in
       // this state.
       FetchNonceSt: begin
-        edn_req_o = 1'b1;
+        edn_req_d = 1'b1;
         if (edn_ack_i) begin
           nonce_reg_en = 1'b1;
           // Finished, go and acknowledge this request.
@@ -506,12 +513,14 @@ module otp_ctrl_kdi
       key_out_q     <= '0;
       nonce_out_q   <= '0;
       seed_valid_q  <= 1'b0;
+      edn_req_q     <= 1'b0;
     end else begin
       seed_cnt_q    <= seed_cnt_d;
       entropy_cnt_q <= entropy_cnt_d;
       key_out_q     <= key_out_d;
       nonce_out_q   <= nonce_out_d;
       seed_valid_q  <= seed_valid_d;
+      edn_req_q     <= edn_req_d;
     end
   end
 
