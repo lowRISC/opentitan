@@ -155,18 +155,7 @@ This paragraph implies eight coverage points (four flags times two values) for t
 
 #### ADD
 
-- Each of the 11 interesting sign behaviours:
-  1. Positive plus positive, no overflow
-  1. Positive plus positive with overflow
-  1. Negative plus negative, no overflow
-  1. Negative plus negative with overflow
-  1. Zero plus zero
-  1. Zero plus nonzero
-  1. Nonzero plus zero
-  1. Positive plus negative, with a negative result
-  1. Positive plus negative, with a positive result
-  1. Negative plus positive, with a negative result
-  1. Negative plus positive, with a positive result
+- Cross the three possible signs (negative, zero, positive) for each input operand (giving 9 points).
 
 #### ADDI
 
@@ -178,18 +167,7 @@ Nothing beyond immediate toggle coverage.
 
 #### SUB
 
-- Each of the 11 interesting sign behaviours:
-  1. Positive minus negative, no overflow
-  1. Positive minus negative with overflow
-  1. Negative minus positive, no overflow
-  1. Negative minus positive with overflow
-  1. Zero minus zero
-  1. Zero minus nonzero
-  1. Nonzero minus zero
-  1. Positive minus positive, with a negative result
-  1. Positive minus positive, with a positive result
-  1. Negative minus negative, with a negative result
-  1. Negative minus negative, with a positive result
+- Cross the three possible signs (negative, zero, positive) for each input operand (giving 9 points).
 
 #### SLL
 
@@ -358,6 +336,7 @@ As for `BN.ADD`.
 - Don't perform a subtraction (because the sum is less than `MOD`) when `MOD` is nonzero.
 - Perform a subtraction where the sum is at least twice a nonzero value of `MOD`.
 - A calculation where the sum exactly equals a nonzero `MOD`
+- A calculation where the intermediate sum is greater than `2^256-1`, crossed with whether the subtraction of `MOD` results in a value that will wrap.
 
 #### BN.MULQACC
 
@@ -372,7 +351,6 @@ As for `BN.MULQACC`, plus the generic flag group cover points.
 
 As for `BN.MULQACC` plus the following:
 
-- See bits being cleared in the destination register as part of shifting out the result (makes sure that we're masking things properly when assembling the new value)
 - Cross the generic flag updates with `wrd_hwsel`, since the flag changes are different in the two modes.
 
 #### BN.SUB
