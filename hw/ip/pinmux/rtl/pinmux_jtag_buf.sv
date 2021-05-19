@@ -26,11 +26,11 @@ module pinmux_jtag_buf (
     .out_o(req_o.tdi)
   );
   prim_buf prim_buf_tdo (
-    .in_i (rsp_i.tdo),
+    .in_i (1'b0),
     .out_o(rsp_o.tdo)
   );
   prim_buf prim_buf_tdo_oe (
-    .in_i (rsp_i.tdo_oe),
+    .in_i (1'b0),
     .out_o(rsp_o.tdo_oe)
   );
 
