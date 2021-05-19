@@ -38,9 +38,6 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   //     super.initialize(csr_base_addr);
   string ral_model_names[$] = {RAL_T::type_name};
 
-  bit [bus_params_pkg::BUS_AW-1:0]  csr_addrs[string][$];
-  addr_range_t                      mem_ranges[string][$];
-
   // clk_rst_if & freq
   // clk_rst_vif and clk_freq_mhz are used for default clk/rst. If more than one RAL, the other
   // clk_rst_vif and clk_freq_mhz can be found from the associative arrays
@@ -98,6 +95,7 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   endfunction
 
   virtual function void create_ral_models(bit [bus_params_pkg::BUS_AW-1:0] csr_base_addr = '1);
+
     foreach (ral_model_names[i]) begin
       string ral_name = ral_model_names[i];
       uvm_reg_addr_t base_addr;
@@ -123,8 +121,16 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
       reg_blk.set_base_addr(base_addr);
 
       // Get list of valid csr addresses (useful in seq to randomize addr as well as in scb checks)
-      get_csr_addrs(reg_blk, csr_addrs[ral_name]);
-      get_mem_addr_ranges(reg_blk, mem_ranges[ral_name]);
+      reg_blk.compute_mapped_addr_ranges();
+      reg_blk.compute_unmapped_addr_ranges();
+      `uvm_info(msg_id,
+                $sformatf("RAL[%0s] mapped addresses: %0p",
+                          ral_name, reg_blk.mapped_addr_ranges),
+                UVM_HIGH)
+      `uvm_info(msg_id,
+                $sformatf("RAL[%0s] unmapped addresses: %0p",
+                          ral_name, reg_blk.unmapped_addr_ranges),
+                UVM_HIGH)
       ral_models[ral_name] = reg_blk;
     end
 

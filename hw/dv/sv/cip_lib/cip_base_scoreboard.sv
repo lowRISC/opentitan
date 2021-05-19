@@ -235,7 +235,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // check if it's mem addr
   virtual function bit is_mem_addr(tl_seq_item item, string ral_name);
     uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
-    addr_range_t   loc_mem_ranges[$] = cfg.mem_ranges[ral_name];
+    addr_range_t   loc_mem_ranges[$] = cfg.ral_models[ral_name].mem_ranges;
     foreach (loc_mem_ranges[i]) begin
       if (addr inside {[loc_mem_ranges[i].start_addr : loc_mem_ranges[i].end_addr]}) begin
         return 1;
@@ -293,7 +293,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   virtual function bit is_tl_access_mapped_addr(tl_seq_item item, string ral_name);
     uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     // check if it's mem addr or reg addr
-    return is_mem_addr(item, ral_name) || addr inside {cfg.csr_addrs[ral_name]};
+    return is_mem_addr(item, ral_name) || addr inside {cfg.ral_models[ral_name].csr_addrs};
   endfunction
 
   // check if tl mem access will trigger error or not

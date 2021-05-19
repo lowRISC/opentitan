@@ -16,6 +16,15 @@ class dv_base_reg_block extends uvm_reg_block;
   // This is set by compute_addr_mask(), which must run after locking the model.
   protected uvm_reg_addr_t addr_mask[uvm_reg_map];
 
+  uvm_reg_addr_t csr_addrs[$];
+
+  addr_range_t mem_ranges[$];
+
+  addr_range_t mapped_addr_ranges[$];
+
+  bit has_unmapped_addrs;
+  addr_range_t unmapped_addr_ranges[$];
+
   function new (string name = "", int has_coverage = UVM_NO_COVERAGE);
     super.new(name, has_coverage);
   endfunction
@@ -94,6 +103,98 @@ class dv_base_reg_block extends uvm_reg_block;
     `DV_CHECK_FATAL(addr_mask[map])
   endfunction
 
+  // Internal function, used to get a list of all valid CSR addresses.
+  protected function void compute_csr_addrs();
+    uvm_reg csrs[$];
+    get_registers(csrs);
+    foreach (csrs[i]) begin
+      csr_addrs.push_back(csrs[i].get_address());
+    end
+  endfunction
+
+  // Internal function, used to get a list of all valid memory ranges
+  protected function void compute_mem_addr_ranges();
+    uvm_mem mems[$];
+    get_memories(mems);
+    foreach (mems[i]) begin
+      addr_range_t mem_range;
+      mem_range.start_addr = mems[i].get_address();
+      mem_range.end_addr   = mem_range.start_addr +
+                             mems[i].get_size() * mems[i].get_n_bytes() - 1;
+      mem_ranges.push_back(mem_range);
+    end
+  endfunction
+
+  // Used to get a list of all valid address ranges covered by this reg block
+  function void compute_mapped_addr_ranges();
+    uvm_reg csrs[$];
+    get_registers(csrs);
+
+    // Compute all CSR addresses and mem ranges known to this reg block
+    compute_csr_addrs();
+    compute_mem_addr_ranges();
+
+    // Convert each CSR into an address range
+    foreach (csrs[i]) begin
+      addr_range_t csr_addr_range;
+      csr_addr_range.start_addr = csrs[i].get_address();
+      csr_addr_range.end_addr   = csr_addr_range.start_addr + csrs[i].get_n_bytes() - 1;
+      mapped_addr_ranges.push_back(csr_addr_range);
+    end
+
+    mapped_addr_ranges = {mapped_addr_ranges, mem_ranges};
+
+    // Sort the mapped address ranges in ascending order based on the start_addr of each range
+    mapped_addr_ranges.sort(m) with (m.start_addr);
+
+  endfunction
+
+  // Used to get a list of all invalid address ranges in this reg block
+  function void compute_unmapped_addr_ranges();
+    addr_range_t range;
+
+    // convert the address mask into a relative address,
+    // this is the highest addressable location in the register block
+    uvm_reg_addr_t highest_addr = default_map.get_base_addr() + get_addr_mask();
+
+    // unmapped address ranges consist of:
+    // - the address space between all mapped address ranges (if exists)
+    // - space between csr_base_addr and the first mapped address range (if exists)
+    // - space between the last mapped address and the highest address mapped by the address mask
+    if (mapped_addr_ranges.size() == 0) begin
+      range.start_addr = default_map.get_base_addr();
+      range.end_addr = highest_addr;
+      unmapped_addr_ranges.push_back(range);
+    end else begin
+      // 0 -> start_addr-1
+      if (mapped_addr_ranges[0].start_addr - default_map.get_base_addr() > 0) begin
+        range.start_addr = default_map.get_base_addr();
+        range.end_addr   = mapped_addr_ranges[0].start_addr - 1;
+        unmapped_addr_ranges.push_back(range);
+      end
+
+      // all address ranges in the "middle" - only applies if
+      // there are more than 1 mapped address ranges
+      if (mapped_addr_ranges.size() > 1) begin
+        for (int i = 0; i < mapped_addr_ranges.size() - 1; i++) begin
+          range.start_addr = mapped_addr_ranges[i].end_addr + 1;
+          range.end_addr   = mapped_addr_ranges[i+1].start_addr - 1;
+          if (range.start_addr < range.end_addr) begin
+            unmapped_addr_ranges.push_back(range);
+          end
+        end
+      end
+
+      // end_addr+1 -> highest_addr
+      if (mapped_addr_ranges[$].end_addr < highest_addr) begin
+        range.start_addr = mapped_addr_ranges[$].end_addr + 1;
+        range.end_addr   = highest_addr;
+        unmapped_addr_ranges.push_back(range);
+      end
+    end
+    has_unmapped_addrs = (unmapped_addr_ranges.size() > 0);
+  endfunction
+
   // Return the offset of the highest byte contained in either a register or a memory
   function uvm_reg_addr_t get_max_offset(uvm_reg_map map = null);
     uvm_reg_addr_t max_offset;
@@ -142,6 +243,7 @@ class dv_base_reg_block extends uvm_reg_block;
 
     if (map == null) map = get_default_map();
     mask = get_addr_mask(map);
+
 
     // If base_addr is '1, randomly pick an aligned base address
     if (base_addr == '1) begin
