@@ -6,6 +6,7 @@
 import time
 import hashlib
 from functools import partial
+from collections import namedtuple
 
 
 def _uint_to_le(val, length):
@@ -122,21 +123,40 @@ class _Bootstrap:
     >>>   ack = bootstrap.transfer(frame)
     >>>   ...
     """
-    # Default pin mapping for CW305 board.
-    _PIN_SCK = 'USB_A13'
-    _PIN_SDI = 'USB_A14'
-    _PIN_SDO = 'USB_A15'
-    _PIN_CS = 'USB_A16'
-    _PIN_TRST = 'USB_A17'
-    _PIN_SRST = 'USB_A18'
-    _PIN_JTAG_SPI = 'USB_A19'
-    _PIN_BOOTSTRAP = 'USB_A20'
+    # Pin mappings for CW305/CW310 boards.
+    PinMapping = namedtuple('PinMapping', ['PIN_SCK',
+                                           'PIN_SDI',
+                                           'PIN_SDO',
+                                           'PIN_CS',
+                                           'PIN_TRST',
+                                           'PIN_SRST',
+                                           'PIN_JTAG_SPI',
+                                           'PIN_BOOTSTRAP'])
+    _PIN_MAPPINGS = {}
+    _PIN_MAPPINGS['CW305'] = PinMapping('USB_A13',
+                                        'USB_A14',
+                                        'USB_A15',
+                                        'USB_A16',
+                                        'USB_A17',
+                                        'USB_A18',
+                                        'USB_A19',
+                                        'USB_A20')
+    _PIN_MAPPINGS['CW310'] = PinMapping('USB_SPI_SCK',
+                                        'USB_SPI_COPI',
+                                        'USB_SPI_CIPO',
+                                        'USB_SPI_CS',
+                                        'USB_A17',
+                                        'USB_A18',
+                                        'USB_A19',
+                                        'USB_A16')
+    _board = 'CW305'
+
     # Delays below are in seconds.
     _BOOTSTRAP_DELAY = 0.1
     _SECOND_FRAME_DELAY = 0.2
     _INTER_FRAME_DELAY = 0.02
 
-    def __init__(self, fpga, board="CW305"):
+    def __init__(self, fpga, board='CW305'):
         """Inits a _Bootstrap with a CW310/305.
 
         Args:
@@ -144,53 +164,48 @@ class _Bootstrap:
           board: can be ``CW310`` or ``CW305`` to distinguish the different board types.
         """
 
-        # Change pin mapping to CW310 board.
-        if board == "CW310":
-            self._PIN_SCK = 'USB_SPI_SCK'
-            self._PIN_SDI = 'USB_SPI_COPI'
-            self._PIN_SDO = 'USB_SPI_CIPO'
-            self._PIN_CS = 'USB_SPI_CS'
-            self._PIN_TRST = 'USB_A17'
-            self._PIN_SRST = 'USB_A18'
-            self._PIN_JTAG_SPI = 'USB_A19'
-            self._PIN_BOOTSTRAP = 'USB_A16'
+        # Check board type.
+        if board in ['CW305', 'CW310']:
+            self._board = board
+        else:
+            raise ValueError('board must be either CW305 or CW310, got ' + board)
 
         # Configure JTAG and bootstrap pins.
         self._fpga_io = fpga.gpio_mode()
-        self._fpga_io.pin_set_output(self._PIN_TRST)
-        self._fpga_io.pin_set_output(self._PIN_SRST)
-        self._fpga_io.pin_set_output(self._PIN_JTAG_SPI)
-        self._fpga_io.pin_set_output(self._PIN_BOOTSTRAP)
-        self._fpga_io.pin_set_state(self._PIN_TRST, 1)
-        self._fpga_io.pin_set_state(self._PIN_SRST, 1)
-        self._fpga_io.pin_set_state(self._PIN_JTAG_SPI, 1)
-        self._fpga_io.pin_set_state(self._PIN_BOOTSTRAP, 0)
+        self._fpga_io.pin_set_output(self._PIN_MAPPINGS[self._board].PIN_TRST)
+        self._fpga_io.pin_set_output(self._PIN_MAPPINGS[self._board].PIN_SRST)
+        self._fpga_io.pin_set_output(self._PIN_MAPPINGS[self._board].PIN_JTAG_SPI)
+        self._fpga_io.pin_set_output(self._PIN_MAPPINGS[self._board].PIN_BOOTSTRAP)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_TRST, 1)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_SRST, 1)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_JTAG_SPI, 1)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_BOOTSTRAP, 0)
         # Initialize SPI pins.
-        self._fpga_io.spi1_setpins(sck=self._PIN_SCK,
-                                   sdo=self._PIN_SDI,
-                                   sdi=self._PIN_SDO,
-                                   cs=self._PIN_CS)
+        self._fpga_io.spi1_setpins(sck=self._PIN_MAPPINGS[self._board].PIN_SCK,
+                                   sdo=self._PIN_MAPPINGS[self._board].PIN_SDI,
+                                   sdi=self._PIN_MAPPINGS[self._board].PIN_SDO,
+                                   cs=self._PIN_MAPPINGS[self._board].PIN_CS)
         self._fpga_io.spi1_enable(True)
 
     def _reset_opentitan(self):
-        self._fpga_io.pin_set_state(self._PIN_JTAG_SPI, 1)
-        self._fpga_io.pin_set_state(self._PIN_SRST, 0)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_JTAG_SPI, 1)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_SRST, 0)
         time.sleep(self._BOOTSTRAP_DELAY)
-        self._fpga_io.pin_set_state(self._PIN_SRST, 1)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_SRST, 1)
         time.sleep(self._BOOTSTRAP_DELAY)
 
     def __enter__(self):
         """Starts bootstrapping."""
-        self._fpga_io.pin_set_state(self._PIN_BOOTSTRAP, 1)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_BOOTSTRAP, 1)
         self._reset_opentitan()
-        self._fpga_io.pin_set_state(self._PIN_JTAG_SPI, 0)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_JTAG_SPI, 0)
         time.sleep(self._BOOTSTRAP_DELAY)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Ends bootstrapping."""
-        self._fpga_io.pin_set_state(self._PIN_BOOTSTRAP, 0)
-        self._fpga_io.pin_set_state(self._PIN_JTAG_SPI, 1)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_BOOTSTRAP, 0)
+        self._fpga_io.pin_set_state(self._PIN_MAPPINGS[self._board].PIN_JTAG_SPI, 1)
         time.sleep(self._BOOTSTRAP_DELAY)
 
     def transfer(self, frame):
@@ -209,7 +224,7 @@ class _Bootstrap:
 
 class SPIProgrammer:
     """Class for programming OpenTitan over the SPI interface of SAM3X/U on CW310/305."""
-    def __init__(self, firmware_path, board="CW305"):
+    def __init__(self, firmware_path, board='CW305'):
         """Inits SPIProgrammer with the path of a firmware image and board name."""
         self._firmware_path = firmware_path
         self._board = board
