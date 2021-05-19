@@ -31,12 +31,16 @@ sw_silicon_creator_mask_rom_sigverify = declare_dependency(
 # MaskROM library.
 mask_rom_lib = declare_dependency(
   sources: [
+    hw_ip_entropy_src_reg_h,
+    hw_ip_csrng_reg_h,
+    hw_ip_edn_reg_h,
     'mask_rom_start.S',
   ],
     link_args: rom_link_args,
     dependencies: [
       freestanding_headers,
       sw_silicon_creator_lib_driver_hmac,
+      sw_silicon_creator_lib_driver_keymgr,
       sw_silicon_creator_lib_driver_uart,
       sw_silicon_creator_lib_fake_deps,
       sw_silicon_creator_mask_rom_sigverify,

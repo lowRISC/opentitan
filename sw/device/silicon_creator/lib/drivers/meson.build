@@ -34,6 +34,38 @@ test('sw_silicon_creator_lib_driver_hmac_unittest', executable(
   suite: 'mask_rom',
 )
 
+# Mask ROM keymgr driver
+sw_silicon_creator_lib_driver_keymgr = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_driver_keymgr',
+    sources: [
+      hw_ip_keymgr_reg_h,
+      'keymgr.c',
+    ],
+    dependencies: [
+      sw_silicon_creator_lib_base_abs_mmio,
+    ],
+  ),
+)
+
+test('sw_silicon_creator_lib_driver_keymgr_unittest', executable(
+    'sw_silicon_creator_lib_driver_keymgr_unittest',
+    sources: [
+      'keymgr_unittest.cc',
+      hw_ip_keymgr_reg_h,
+      'keymgr.c',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+      sw_silicon_creator_lib_base_mock_abs_mmio,
+    ],
+    native: true,
+    c_args: ['-DMOCK_ABS_MMIO'],
+    cpp_args: ['-DMOCK_ABS_MMIO'],
+    ),
+  suite: 'mask_rom',
+)
+
 # Mask ROM uart driver
 sw_silicon_creator_lib_driver_uart = declare_dependency(
   link_with: static_library(

@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "entropy_src_regs.h"
+#include "csrng_regs.h"
+#include "edn_regs.h"
 
 /**
  * Mask ROM Interrupt Vector
@@ -140,6 +143,21 @@ _mask_rom_start_boot:
   // of `mie`.
   li   t0, 0xFFFF0888
   csrc mie, t0
+
+  // The following sequence enables the minimum level of entropy required to
+  // initialize memory scrambling, as well as the entropy distribution network.
+  // FIXME: Enable entropy complex - this is not the full enable.
+  li   a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
+  li   t0, 0x2
+  sw   t0, ENTROPY_SRC_CONF_REG_OFFSET(a0)
+
+  li   a0, TOP_EARLGREY_CSRNG_BASE_ADDR
+  li   t0, 0x1
+  sw   t0, CSRNG_CTRL_REG_OFFSET(a0)
+
+  li   a0, TOP_EARLGREY_EDN0_BASE_ADDR
+  li   t0, 0x9
+  sw   t0, EDN_CTRL_REG_OFFSET(a0)
 
   // Set up the stack pointer.
   //
