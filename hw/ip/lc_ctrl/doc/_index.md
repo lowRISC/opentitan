@@ -105,12 +105,12 @@ To ensure the security of token limits cannot be bypassed, each request for a co
 
 ### Token Hashing Mechanism
 
-**TODO: revise this and switch to KMAC**
-
 All 128bit lock and unlock tokens are passed through a cryptographic one way function in hardware before the life cycle controller compares them to the provisioned values in OTP or to the netlist constant in case of RAW_UNLOCK.
 
 This mechanism is used to guard against reverse engineering and brute-forcing attempts.
 An attacker able to extract the hashed token values from the scrambled OTP partitions or from the netlist would first have to find a hash collision in order to perform a life cycle transition, since the values supplied to the life cycle controller must be valid hash pre-images.
+
+The employed one way function is a 128bit cSHAKE hash with the function name "" and customization string "LC_CTRL", see also [kmac documentation]({{< relref "hw/ip/kmac/doc/_index.md" >}}) and [`kmac_pkg.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/kmac/rtl/kmac_pkg.sv#L148-L155).
 
 ### Post Transition Handling
 
@@ -377,8 +377,8 @@ Signal                       | Direction        | Type                          
 `pwr_lc_o`                   | `output`         | `pwrmgr::pwr_lc_rsp_t`               | Initialization response and programming idle state going to power manager.
 `lc_otp_program_o`           | `output`         | `otp_ctrl_pkg::lc_otp_program_req_t` | Life cycle state transition request.
 `lc_otp_program_i`           | `input`          | `otp_ctrl_pkg::lc_otp_program_rsp_t` | Life cycle state transition response.
-`lc_otp_token_o`             | `output`         | `otp_ctrl_pkg::lc_otp_token_req_t`   | Life cycle RAW unlock token hashing request.
-`lc_otp_token_i`             | `input`          | `otp_ctrl_pkg::lc_otp_token_rsp_t`   | Life cycle RAW unlock token hashing response.
+`kmac_data_o`                | `output`         | `kmac_pkg::app_req_t`                | Life cycle RAW token hashing request.
+`kmac_data_i`                | `input`          | `kmac_pkg::app_rsp_t`                | Life cycle RAW token hashing response.
 `otp_lc_data_i`              | `input`          | `otp_ctrl_pkg::otp_lc_data_t`        | Life cycle state output holding the current life cycle state, the value of the transition counter and the tokens needed for life cycle transitions.
 `lc_keymgr_div_o`            | `output`         | `lc_keymgr_div_t`                    | Life cycle state group diversification value.
 `lc_flash_rma_seed_o`        | `output`         | `lc_flash_rma_seed_t`                | Seed for flash RMA.
@@ -418,6 +418,11 @@ See also [power manager documentation]({{< relref "hw/ip/pwrmgr/doc" >}}).
 #### OTP Interfaces
 
 All interfaces to and from OTP are explained in detail in the [OTP Specification Document]({{< relref "hw/ip/otp_ctrl/doc/_index.md#life-cycle-interfaces" >}}).
+
+#### KMAC Interface
+
+The life cycle controller interfaces with KMAC through a [side load interface]({{< relref "hw/ip/kmac/doc/_index.md#keymgr-interface" >}}) in the same way as the key manager.
+Since the KMAC and life cycle controller are in different clock domains, the KMAC interface signals are synchronized to the life cycle clock inside the life cycle controller.
 
 #### Control Signal Propagation
 
