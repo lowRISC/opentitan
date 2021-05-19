@@ -2,14 +2,14 @@
 title: "Getting started on FPGAs"
 ---
 
-Do you want to try out the lowRISC chip designs, but don't have a couple thousand or million dollars ready for an ASIC tapeout?
-Running lowRISC designs on an FPGA board can be the answer!
+Do you want to try out OpenTitan, but don't have a couple thousand or million dollars ready for an ASIC tapeout?
+Running OpenTitan on an FPGA board can be the answer!
 
 <!-- TODO: Switch all calls to fusesoc and the Verilated system to refer to Meson, once it supports fusesoc. -->
 
 ## Prerequisites
 
-To use the lowRISC Comportable designs on an FPGA you need two things:
+To use the OpenTitan on an FPGA you need two things:
 
 * A supported FPGA board
 * A tool from the FPGA vendor
@@ -23,11 +23,11 @@ Follow the install instructions to [prepare the system]({{< relref "install_inst
 
 ## Create an FPGA bitstream
 
-Synthesizing a design for a FPGA board is done with the following commands.
+Synthesizing a design for an FPGA board is done with the following commands.
 
 The FPGA build will pull in a program to act as the boot ROM.
 This must be built before running the FPGA build.
-This is pulled in from the `sw/device/boot_rom` directory (see the `parameters:` section of the `hw/top_earlgrey/chip_earlgrey_nexysvideo.core` file).
+This is pulled in from the `sw/device/boot_rom` directory (see the `parameters:` section of the `hw/top_earlgrey/chip_earlgrey_cw310.core` file).
 
 To build it:
 ```console
@@ -37,6 +37,7 @@ $ ninja -C build-out all
 ```
 
 Since not all FPGAs are able to fit the full design, there is a separate script that can be invoked to reduce the size of the design.
+Note that even though the ChipWhisperer CW310 board with Xilinx Kintex 7 XC7K410T FPGA is able to hold the full OpenTitan design, it currently requires the size of the design to be reduced just like for the Nexys Video FPGA board.
 
 To reduce the design such that it fits the Nexys Video FPGA board:
 ```console
@@ -46,8 +47,8 @@ $ ./hw/top_earlgrey/util/top_earlgrey_reduce.py --build
 The `--build` argument is optional and ensures that the boot ROM is rebuilt for the reduced design.
 Alternatively, the boot ROM can be manually regenerated using the previous command.
 
-
-In the following example we synthesize the Earl Grey design for the Nexys Video board using Xilinx Vivado {{< tool_version "vivado" >}}.
+In the following example we synthesize the Earl Grey design for the ChipWhisperer CW310 board using Xilinx Vivado {{< tool_version "vivado" >}}.
+To target the Nexys Video board, replace `cw310` by `nexysvideo` in the instructions below.
 
 ```console
 $ . /tools/xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
@@ -55,35 +56,42 @@ $ cd $REPO_TOP
 $ ./meson_init.sh
 $ ./hw/top_earlgrey/util/top_earlgrey_reduce.py
 $ ninja -C build-out all
-$ fusesoc --cores-root . run --flag=fileset_top --target=synth lowrisc:systems:chip_earlgrey_nexysvideo
+$ fusesoc --cores-root . run --flag=fileset_top --target=synth lowrisc:systems:chip_earlgrey_cw310
 ```
 The `fileset_top` flag used above is specific to the OpenTitan project to select the correct fileset.
 
-The resulting bitstream is located at `build/lowrisc_systems_chip_earlgrey_nexysvideo_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit`.
+The resulting bitstream is located at `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit`.
 See the [reference manual]({{< relref "ref_manual_fpga.md" >}}) for more information.
 
-## Connecting the board
+## Connecting the ChipWhisperer CW310 board
+
+The ChipWhisperer CW310 board supports different power options.
+It is recommended to power the board via the included DC power adapter.
+To this end:
+1. Set the *SW2* switch (to the right of the barrel connector) up to the *5V Regulator* option.
+1. Set the switch below the barrel connector to the right towards the *Barrel* option.
+1. Set the *Control Power* switch (bottom left corner, *SW7*) to the right.
+1. Ensure the *Tgt Power* switch (above the fan, *S1*) is set to the right towards the *Auto* option.
+1. Plug the DC power adapter into the barrel jack (*J11*) in the top left corner of the board.
+1. Use a USB-C cable to connect your PC with the *USB-C Data* connector (*J8*) in the lower left corner on the board.
+
+You can now use `dmesg` to determine which serial ports have been assigned.
+They should be named `'/dev/ttyACM*'`, e.g. `/dev/ttyACM1`.
+To ensure that you have sufficient access permissions, set up the udev rules as explained in the [Vivado installation instructions]({{< relref "install_instructions#xilinx-vivado" >}}).
+
+## Connecting the Nexys Video board
 
 * Use a Micro USB cable to connect the PC with the *PROG*-labeled connector on the board.
 * Use a second Micro USB cable to connect the PC with the *UART*-labled connector on the board.
-* After connecting the UART, use `dmesg` to determine which serial port was assigned. It should be named `/dev/ttyUSB*`, e.g. `/dev/ttyUSB0`.
-* Ensure that you have sufficient access permissions to the device, check `ls -l /dev/ttyUSB*`. The udev rules given in the Vivado installation instructions ensure this.
+* After connecting the UART, use `dmesg` to determine which serial port was assigned.
+  It should be named `/dev/ttyUSB*`, e.g. `/dev/ttyUSB0`.
+* To ensure that you have sufficient access permissions, set up the udev rules as explained in the [Vivado installation instructions]({{< relref "install_instructions#xilinx-vivado" >}}).
 
 ## Flash the bitstream onto the FPGA
 
-To flash the bitstream onto the FPGA you need to use either the Vivado GUI or the command line.
-
-### Using the command line
-
-Use the following command to program the FPGA with fusesoc.
-
-```console
-$ . /tools/xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
-$ cd $REPO_TOP
-$ fusesoc --cores-root . pgm lowrisc:systems:chip_earlgrey_nexysvideo:0.1
-```
-
-This should produce a message like this from the UART:
+To flash the bitstream onto the FPGA you need to use either the command line or the Vivado GUI (Nexys Video board only).
+Depending on the FPGA device, the flashing itself may take several seconds.
+After completion, a message like this should be visible from the UART:
 
 ```
 Version:    opentitan-snapshot-20191101-1-366-gca61d28
@@ -92,11 +100,28 @@ Bootstrap requested, initialising HW...
 HW initialisation completed, waiting for SPI input...
 ```
 
-Note: `fusesoc pgm` is broken for edalize versions up to (and including) v0.1.3.
-You can check the version you're using with `pip3 show edalize`.
+### Using the command line for the ChipWhisperer CW310 board
+
+Use the following command to program the FPGA with the `cw310_loader` tool.
+
+```console
+$ cd $REPO_TOP
+$ ./util/fpga/cw310_loader.py --bitstream build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit
+```
+
+### Using the command line for the Nexys Video board
+
+Use the following command to program the FPGA.
+
+```console
+$ . /tools/xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
+$ cd $REPO_TOP
+$ util/opentitan-pgm-fpga/opentitan-pgm-fpga xc7a200tsbg484-1 build/lowrisc_systems_chip_earlgrey_nexysvideo/synth-vivado/lowrisc_systems_chip_earlgrey_nexysvideo_0.1.bit
+```
+
 If you have having trouble with programming using the command line, try the GUI.
 
-### Using the Vivado GUI
+### Using the Vivado GUI for the Nexys Video board
 
 ```console
 $ . /tools/xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
@@ -114,11 +139,85 @@ Now the Vivado GUI opens and loads the project.
 * Click on *Program* to flash the FPGA with the bitstream.
 * The FPGA is ready as soon as the programming finishes.
 
-
 ## Testing the demo design
 
 The `hello_world` demo software shows off some capabilities of the design.
-In order to load `hello_world` into the FPGA, both the binary and the [loading tool]({{< relref "/sw/host/spiflash/README.md" >}}) must be compiled.
+Depending on the FPGA board, a slightly different set of tools and commands is used for running applications.
+
+### Running on the ChipWhisperer CW310 board
+
+To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the steps shown below.
+
+1. Generate the bitstream and flash it to the FPGA as described above.
+1. Open a serial console (use the device file determined before) and connect.
+   Settings: 115200 baud, 8 bits per byte, no software flow-control for sending and receiving data.
+   ```console
+   $ screen /dev/ttyACM1 115200,cs8,-ixon,-ixoff
+   ```
+1. Run the loading tool.
+   ```console
+   $ cd ${REPO_TOP}
+   $ ./util/fpga/cw310_loader.py --firmware build-bin/sw/device/examples/hello_world/hello_world_fpga_nexysvideo.bin
+   ```
+   Note that even though targeting the ChipWhisperer CW310 board, the binary contains `nexysvideo` in its name as the software build tool currently only supports one FPGA target.
+
+   This should report how the binary is split into frames:
+   ```
+   CW310 Loader: Attemping to find CW310 FPGA Board:
+       No bitstream specified
+   Board found, setting PLL2 to 100 MHz
+   INFO: Programming firmware file: build-bin/sw/device/examples/hello_world/hello_world_fpga_nexysvideo.bin
+   Programming OpenTitan with "build-bin/sw/device/examples/hello_world/hello_world_fpga_nexysvideo.bin"...
+   Transferring frame 0x00000000 @ 0x00000000.
+   Transferring frame 0x00000001 @ 0x000007D8.
+   Transferring frame 0x00000002 @ 0x00000FB0.
+   Transferring frame 0x00000003 @ 0x00001788.
+   Transferring frame 0x00000004 @ 0x00001F60.
+   Transferring frame 0x00000005 @ 0x00002738.
+   Transferring frame 0x00000006 @ 0x00002F10.
+   Transferring frame 0x80000007 @ 0x000036E8.
+   Loading done.
+   ```
+
+   and then output like this should appear from the UART:
+   ```
+   Version:    opentitan-snapshot-20191101-1-4549-g504534121
+   Build Date: 2021-03-02, 18:15:49
+   Bootstrap requested, initialising HW...
+   HW initialisation completed, waiting for SPI input...
+   Processing frame #0, expecting #0
+   Processing frame #1, expecting #1
+   Processing frame #2, expecting #2
+   Processing frame #3, expecting #3
+   Processing frame #4, expecting #4
+   Processing frame #5, expecting #5
+   Processing frame #6, expecting #6
+   Processing frame #7, expecting #7
+   Bootstrap: DONE!
+   Boot ROM initialisation has completed, jump into flash!
+   Hello World!
+   Built at: May 17 2021, 18:44:21
+   Watch the LEDs!
+   Try out the switches on the board
+   or type anything into the console window.
+   The LEDs show the ASCII code of the last character.
+   GPIO switch #0 changed to 1
+   GPIO switch #1 changed to 1
+   GPIO switch #2 changed to 1
+   GPIO switch #3 changed to 1
+   GPIO switch #4 changed to 1
+   GPIO switch #5 changed to 1
+   GPIO switch #6 changed to 1
+   GPIO switch #7 changed to 1
+   FTDI control changed. Enable JTAG.
+   ```
+
+1. Observe the output both on the board and the serial console. Type any text into the console window.
+1. Exit `screen` by pressing CTRL-a k, and confirm with y.
+
+### Running on the Nexys Video board
+
+In order to load `hello_world` into the FPGA on the Nexys Video board, both the binary and the [loading tool]({{< relref "/sw/host/spiflash/README.md" >}}) must be compiled.
 Please follow the steps shown below.
 
 * Generate the bitstream and flash it to the FPGA as described above.
@@ -182,16 +281,29 @@ Sometimes it is helpful to use the Vivado GUI to debug a design.
 fusesoc makes that easy, with one small caveat: by default fusesoc copies all source files into a staging directory before the synthesis process starts.
 This behavior is helpful to create reproducible builds and avoids Vivado modifying checked-in source files.
 But during debugging this behavior is not helpful.
-The `--no-export` option of fusesoc disables copying the source files into the staging area, and `--setup` instructs fusesoc to only create a project file, but not to run the synthesis process.
+The `--no-export` option of fusesoc disables copying the source files into the staging area, and `--setup` instructs fusesoc to not start the synthesis process.
 
 ```console
-$ # only create Vivado project file
-$ fusesoc --cores-root . build --no-export --setup lowrisc:systems:chip_earlgrey_nexysvideo
+$ # only create Vivado project directory
+$ cd $REPO_TOP
+$ fusesoc --cores-root . run --flag=fileset_top --target=synth --no-export --setup lowrisc:systems:chip_earlgrey_cw310
+```
+
+You can then navigate to the created project directory, and open Vivado
+```console
+$ . /tools/xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
+$ cd $REPO_TOP/build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/
+$ vivado
+```
+
+Finally, using the tcl console, you can kick off the project setup with
+```console
+$ source lowrisc_systems_chip_earlgrey_cw310_0.1.tcl
 ```
 
 ## Connect with OpenOCD and debug
 
-To connect the FPGA with OpenOCD, run the following command
+To connect the Nexys Video FPGA board with OpenOCD, run the following command
 
 ```console
 $ cd $REPO_TOP
