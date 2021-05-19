@@ -26,6 +26,13 @@ package rom_ctrl_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"fatal"};
   parameter uint   NUM_ALERTS = 1;
 
+  // The top bytes in memory hold the digest
+  parameter uint MAX_CHECK_ADDR = rom_ctrl_reg_pkg::ROM_CTRL_ROM_SIZE - (kmac_pkg::AppDigestW / 8);
+  // The data for each line in rom up to the digest is padded out to the kmac message width
+  parameter uint KMAC_DATA_SIZE = MAX_CHECK_ADDR / (TL_DW / 8) * (kmac_pkg::MsgWidth / 8);
+  // The rom width is rounded up to 40 for scrambling symmetry
+  parameter uint ROM_MEM_W = 40;
+
   // types
   typedef virtual mem_bkdr_if #(.MEM_ECC(prim_secded_pkg::Secded_39_32)) mem_bkdr_vif;
   typedef virtual rom_ctrl_if rom_ctrl_vif;
