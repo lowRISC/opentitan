@@ -16,16 +16,16 @@
             Wake_up test walks through otp_ctrl's power-on initialization, read, program, and
             digest functionalities.
 
-            - Drive pwrmgr's request pin to trigger OTP initialization after reset, check status
+            - drive pwrmgr's request pin to trigger OTP initialization after reset, check status
               after OTP initialization
-            - Write all-ones to a random address within OTP partition 0, wait until this operation
+            - write all-ones to a random address within OTP partition 0, wait until this operation
               completes
-            - Read out the random selected write address, check if the readout value is all-ones
-            - Trigger a digest calculation for a Software partition, check if the OtpError
+            - read out the random selected write address, check if the readout value is all-ones
+            - trigger a digest calculation for a Software partition, check if the OtpError
               interrupt is set
-            - Trigger a digest calculation for a non-software partition, expect operation completes
+            - trigger a digest calculation for a non-software partition, expect operation completes
               without the OtpError interrupt
-            - Read out secrets through the hardware interfaces
+            - read out secrets through the hardware interfaces
             '''
       milestone: V1
       tests: ["otp_ctrl_wake_up"]
@@ -33,18 +33,19 @@
     {
       name: smoke
       desc: '''
-            Otp_ctrl smoke test to provision and lock partitions.
+            OTP_CTRL smoke test provisions and locks partitions.
 
-            - Drive pwrmgr's request pin to trigger OTP initialization after reset, check status
+            - drive pwrmgr's request pin to trigger OTP initialization after reset, check status
               after OTP initialization
-            - Read out keys from key_manager, flash, SRAM, OTBN
-            - Write random values to random addresses within each OTP partition
-            - Read out the random selected write addresses, check if the readout values are expected
-            - During read and write operations, check if direct_access_regwen is correctly set by HW
-            - Perform a system-level reset and check corresponding CSRs are set correctly
-            - Lock all partitions except life_cycle by triggering digest calculations
-            - Read back and verify the digest
-            - Perform a system-level reset to verify the corresponding CSRs exposing the digests
+            - randomly read out keys pertaining to `key_manager`, `flash`, `sram`, `otbn`
+            - randomly issue LC program request
+            - write random values to random addresses within each OTP partition
+            - read out the random selected write addresses, check if the readout values are expected
+            - during read and write operations, check if direct_access_regwen is correctly set by HW
+            - perform a system-level reset and check corresponding CSRs are set correctly
+            - lock all partitions except life_cycle by triggering digest calculations
+            - read back and verify the digest
+            - perform a system-level reset to verify the corresponding CSRs exposing the digests
               have been populated
             '''
       milestone: V1
@@ -60,52 +61,63 @@
       tests: ["otp_ctrl_partition_walk"]
     }
     {
-      name: partition_check
-      desc: '''
-            Randomly program partition check related registers including: `check_timeout`,
-            `integrity_check_period`, `consistency_check_period`, and `check_trigger`.
-            Then backdoor write OTP_macro to create parity, digest, and OTP memory errors
-
-            - Check if the corresponding alerts are triggered
-            - Check if the error_code register is set correctly
-            Note that due to limited simulation time, for background checks, this test only write
-            random value that is less than 'd20 to the check period.
-            '''
-      milestone: V2
-      tests: ["otp_ctrl_check_fail", "otp_ctrl_background_chks"]
-    }
-    {
       name: init_fail
       desc: '''
-            This test is based on OTP_CTRL smoke test and creats OTP_CTRL's initialization failure:
-            - Write and read OTP memory via DAI interface
-            - Randomly issue DAI digest command to lock HW partitions
-            - Keep writing to OTP memory via DAI interface
-            - If digests are not locked, backdoor inject ECC correctable or uncorrectable errors
-            - Issue reset and power initialization
+            Based on OTP_CTRL smoke test, this test creates OTP_CTRL's initialization failure:
+            - write and read OTP memory via DAI interface
+            - randomly issue DAI digest command to lock HW partitions
+            - keep writing to OTP memory via DAI interface without asserting reset
+            - if digests are not locked, backdoor inject ECC correctable or uncorrectable errors
+            - issue reset and power initialization
+            - if the injected errors are all correctable errors, disable the `lc_bypass_chk_en`
+              after LC program request to create an LC partition check failure
 
-            If fatal alert is triggered, this test will check:
-            - Otp_initialization failure triggers fatal alert
-            - Status register reflects the correct error
-            - Otp_ctrl's power init output stays 0
+            If fatal error is triggered, this test will check:
+            - OTP initialization failure triggers fatal alert
+            - `status`, `intr_state`, `err_code` CSRs reflect correct fatal error
 
-            If OTP init finished without fatal alert, this test will check:
-            - OTP init finishes with power init output goes to 1
-            - Status and interrupt registers reflect the correct ecc correctable error
+            If OTP initialization finished without any fatal error, this test will check:
+            - OTP initialization finishes with power init output goes to 1
+            - `status`, `intr_state`, `err_code` CSRs reflect ECC correctable error
             '''
       milestone: V2
       tests: ["otp_ctrl_init_fail"]
     }
     {
+      name: partition_check
+      desc: '''
+            Randomly program the partition check related CSRs including:
+            - `check_timeout`
+            - `integrity_check_period`
+            - `consistency_check_period`
+            - `check_trigger`
+
+            Create a failure scenario by randomly picking one of these three methods:
+            - inject ECC errors into the OTP macro via backdoor
+            - set the `check_timeout` CSR with a very small value
+            - write to a random OTP partition after digest is issued but before reset is asserted
+
+            **Checks**:
+            - the corresponding alerts are triggered
+            - the error_code register is set correctly
+            Note that due to limited simulation time, for background checks, this test only write
+            random value that is less than 20 to the check period.
+            '''
+      milestone: V2
+      tests: ["otp_ctrl_check_fail", "otp_ctrl_background_chks"]
+    }
+    {
       name: regwen_during_otp_init
       desc: '''
-            DIRECT_ACCESS_REGWEN is RO reg and it gates bunch of write access of other registers,
-            which isn't tested in common CSR tests. HW will set this register to 0 when OTP_CTRL's
-            DAI interface is busy.
+            The `direct_access_regwen` is a RO register which controls the write-enable of other
+            reigsters. It is not verified by the common CSR tests. HW sets it to 0 when the DAI
+            interface is busy.
 
             Stimulus and checks:
-            - Random read DIRECT_ACCESS_REGWEN and ensure the value is set to 0 during OTP init.
-            - Test accessing registers gated by DIRECT_ACCESS_REGWEN is ignored during OTP init.
+            - randomly read `direct_access_regwen` and verify that it returns 0 during OTP
+              initialization
+            - verify that the writes to the registers controlled by it do not go through during OTP
+              initialization
             '''
       milestone: V2
       tests: ["otp_ctrl_regwen"]
@@ -123,9 +135,9 @@
     {
       name: interface_key_check
       desc: '''
-            OTP_CTRL will generate keys to flash, sram, and OTBN upon their requests.
+            OTP_CTRL will generate keys to `flash`, `sram`, and `otbn` upon their requests.
             Based on the DAI access sequence, this test will run key requests sequence in
-            parallel, and check if generated keys are correct.
+            parallel, and check if correct keys are generated.
             '''
       milestone: V2
       tests: ["otp_ctrl_parallel_key_req"]
@@ -133,63 +145,59 @@
     {
       name: lc_interactions
       desc: '''
-            This test check otp and life_cycle interactions. Based on the DAI access sequence,
-            this test will run the following sequences in parallel:
+            Verify the procotols between OTP_CTRL and LC_CTRL. Based on the DAI access sequence,
+            run the following sequences in parallel:
 
-            - State transitions via the programming interface
-            - Token hashing
-            - Trigger escalation_en
+            - request a LC state transition via the programming interface
+            - enable the `lc_escalation_en` signal
+
+            **Checks**:
+            - if the LC program request has `AccessError`, check the LC program response sets
+              the `error` bit to 1
+            - if `lc_escalation_en` is enabled, verify that alert is triggered and OTP_CTRL entered
+              terminal state
             '''
       milestone: V2
       tests: ["otp_ctrl_parallel_lc_req", "otp_ctrl_parallel_lc_esc"]
     }
     { name: otp_dai_errors
       desc: '''
-            This test will randomly run the following OTP errors:
-            - DAI interface write non-blank OTP address
-            - DAI interface access LC partition
-            - DAI interface write HW digests
+            Based on the otp_dai_lock test, this test will randomly run the following OTP errors:
+            - DAI interface writes non-blank OTP address
+            - DAI interface accesses LC partition
+            - DAI interface writes HW digests
+            - DAI interface writes non-empty memory
 
-            The test will check:
-            - The value of err_code and status registers
+            **Checks**:
+            - `err_code` and `status` CSRs
+            - `otp_error` interrupt
             '''
       milestone: V2
       tests: ["otp_ctrl_dai_errs"]
     }
     { name: otp_macro_errors
       desc: '''
-            This test will randomly run the following OTP errors:
+            Randomly run the following OTP errors:
             - MacroError
             - MacroEccCorrError
             - MacroEccUncorrError
 
-            The test will check:
-            - The value of err_code and status registers
-            - If error is unrecoverable, ensure that OTP entered terminal state
+            **Checks**:
+            - `err_code` and `status` CSRs
+            - `otp_error` interrupt
+            - if the error is unrecoverable, verify that alert is triggered and OTP_CTRL entered
+              terminal state
             '''
       milestone: V2
       tests: ["otp_ctrl_macro_errs", "otp_ctrl_macro_invalid_cmd"]
-    }
-    {
-      name: otp_ctrl_errors
-      desc: '''
-            This test will randomly run the following OTP errors:
-            - CheckFailError
-            - FsmStateError
-
-            The test will check:
-            - The value of err_code and status registers
-            - If error is unrecoverable, ensure that OTP entered terminal state
-            '''
-      milestone: V2
-      tests: ["otp_ctrl_parallel_lc_esc", "otp_ctrl_check_fail"]
     }
     {
       name: test_access
       desc: '''
             This test checks if the test access to OTP macro is connected correctly.
 
-            - Read out from the test access window and ensure no error occurs
+            **Stimulus and Checks**:
+            - read out from the test access window and ensure no error occurs
             '''
       milestone: V2
       tests: ["otp_ctrl_test_access"]
@@ -197,8 +205,8 @@
     {
       name: stress_all
       desc: '''
-            - Combine above sequences in one test to run sequentially, except csr sequence
-            - Randomly add reset between each sequence
+            - combine above sequences in one test to run sequentially, except csr sequence
+            - randomly add reset between each sequence
             '''
       milestone: V2
       tests: ["otp_ctrl_stress_all"]
