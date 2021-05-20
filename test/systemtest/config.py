@@ -55,6 +55,10 @@ TEST_APPS_SELFCHECKING = [
     {
         "name": "dif_plic_smoketest",
     },
+    # TODO(#6656): AST is not instantiated in chip_earlgrey_verilator.
+    #{
+    #    "name": "dif_pwrmgr_smoketest",
+    #},
     {
         "name": "dif_rstmgr_smoketest",
     },

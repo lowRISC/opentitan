@@ -79,7 +79,14 @@ bool test_main(void) {
     // ~4 cycle overhead for the CSR value to synchronize with the AON clock.
     // We should expect the wake up to trigger in ~170us. This is sufficient
     // time to allow pwrmgr config and the low power entry on WFI to complete.
-    aon_timer_wakeup_config(&aon_timer, 30);
+    //
+    // Adjust the threshold for Verilator since it runs on different clock
+    // frequencies.
+    uint32_t wakeup_threshold = 30;
+    if (kDeviceType == kDeviceSimVerilator) {
+      wakeup_threshold = 300;
+    }
+    aon_timer_wakeup_config(&aon_timer, wakeup_threshold);
 
     // Enable low power on the next WFI with default settings.
     // All clocks and power domains are turned off during low power.

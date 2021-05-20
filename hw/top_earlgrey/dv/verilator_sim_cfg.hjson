@@ -64,7 +64,7 @@
         '''{eval_cmd} \
         opts=;  \
         types=(rom flash otbn otp); \
-        exts=(elf elf elf vmem); \
+        exts=(scr.40.vmem elf elf vmem); \
         images=`echo {sw_images}`; \
         for image in $images; do \
           path=`echo $image | cut -d: -f 1`;  \
@@ -98,8 +98,40 @@
   // This allows an arbitrary number of SW images to be supplied to the TB.
   tests: [
     {
-      name: aes_test
-      sw_images: ["sw/device/tests/aes_test:1"]
+      name: dif_aes_smoketest
+      sw_images: ["sw/device/tests/dif_aes_smoketest:1"]
+    }
+    {
+      name: dif_aon_timer_smoketest
+      sw_images: ["sw/device/tests/dif_aon_timer_smoketest:1"]
+    }
+    {
+      name: dif_clkmgr_smoketest
+      sw_images: ["sw/device/tests/dif_clkmgr_smoketest:1"]
+    }
+    {
+      name: dif_csrng_smoketest
+      sw_images: ["sw/device/tests/dif_csrng_smoketest:1"]
+    }
+    {
+      name: dif_entropy_smoketest
+      sw_images: ["sw/device/tests/dif_entropy_smoketest:1"]
+    }
+    {
+      name: dif_gpio_smoketest
+      sw_images: ["sw/device/tests/dif_gpio_smoketest:1"]
+    }
+    {
+      name: dif_hmac_smoketest
+      sw_images: ["sw/device/tests/dif_hmac_smoketest:1"]
+    }
+    {
+      name: dif_kmac_smoketest
+      sw_images: ["sw/device/tests/dif_kmac_smoketest:1"]
+    }
+    {
+      name: dif_kmac_cshake_smoketest
+      sw_images: ["sw/device/tests/dif_kmac_cshake_smoketest:1"]
     }
     {
       name: crt_test
@@ -108,14 +140,14 @@
     {
       name: dif_otbn_smoketest_rtl
       sw_images: ["sw/device/tests/dif_otbn_smoketest:1"]
-      run_opts: ['+OTBN_USE_MODEL=0']
+      run_opts: ["+OTBN_USE_MODEL=0"]
     }
-    // Using the model in CI isn't possible until #4097 is resolved.
-    //{
-    //  name: dif_otbn_smoketest_model
-    //  sw_images: ["sw/device/tests/dif_otbn_smoketest:1"]
-    //  run_opts: ['+OTBN_USE_MODEL=0']
-    //}
+    // TODO: Needs to be debugged.
+    // {
+    //   name: dif_otbn_smoketest_model
+    //   sw_images: ["sw/device/tests/dif_otbn_smoketest:1"]
+    //   run_opts: ["+OTBN_USE_MODEL=1"]
+    // }
     {
       name: dif_otp_ctrl_smoketest
       sw_images: ["sw/device/tests/dif_otp_ctrl_smoketest:1"]
@@ -124,6 +156,11 @@
       name: dif_plic_smoketest
       sw_images: ["sw/device/tests/dif_plic_smoketest:1"]
     }
+    // TODO(#6656): AST is not instantiated in chip_earlgrey_verilator.
+    // {
+    //   name: dif_pwrmgr_smoketest
+    //   sw_images: ["sw/device/tests/dif_pwrmgr_smoketest:1"]
+    // }
     {
       name: dif_rstmgr_smoketest
       sw_images: ["sw/device/tests/dif_rstmgr_smoketest:1"]
@@ -137,14 +174,6 @@
       sw_images: ["sw/device/tests/dif_uart_smoketest:1"]
     }
     {
-      name: dif_kmac_smoketest
-      sw_images: ["sw/device/tests/dif_kmac_smoketest:1"]
-    }
-    {
-      name: dif_kmac_cshake_smoketest
-      sw_images: ["sw/device/tests/dif_kmac_cshake_smoketest:1"]
-    }
-    {
       name: flash_ctrl_test
       sw_images: ["sw/device/tests/flash_ctrl_test:1"]
     }
@@ -155,10 +184,6 @@
     {
       name: pmp_smoketest_tor
       sw_images: ["sw/device/tests/pmp_smoketest_tor:1"]
-    }
-    {
-      name: sha256_test
-      sw_images: ["sw/device/tests/sha256_test:1"]
     }
     {
       name: usbdev_test
