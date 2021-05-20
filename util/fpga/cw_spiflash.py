@@ -53,7 +53,7 @@ class _SpiFlashFrame:
     FRAME_NUMBER_SIZE: Size of the frame number field in bytes.
     FLASH_OFFSET_SIZE: Size of the flash offset field in bytes.
     PAYLOAD_SIZE: Size of the frame payload in bytes.
-    is_first_frame: Indicates if this is the first frame.
+    is_second_frame: Indicates if this is the second frame.
     expected_ack: Expected acknowledgement value for a frame.
   """
   HASH_FUNCTION = hashlib.sha256
@@ -96,9 +96,9 @@ class _SpiFlashFrame:
     return f'frame 0x{_le_to_uint(self._frame_number):08X} @ 0x{_le_to_uint(self._flash_offset):08X}'
 
   @property
-  def is_first_frame(self):
-    """Indicates if this is the first frame."""
-    return _le_to_uint(self._frame_number) == 0
+  def is_second_frame(self):
+    """Indicates if this is the second frame."""
+    return _le_to_uint(self._frame_number) == 1
 
   @property
   def expected_ack(self):
@@ -126,7 +126,7 @@ class _Bootstrap:
   _PIN_BOOTSTRAP='USB_A20'
   # Delays below are in seconds.
   _BOOTSTRAP_DELAY=0.1
-  _FIRST_FRAME_DELAY=0.2
+  _SECOND_FRAME_DELAY=0.2
   _INTER_FRAME_DELAY=0.02
 
   def __init__(self, fpga):
@@ -173,8 +173,8 @@ class _Bootstrap:
   def transfer(self, frame):
     """Transmits a frame over SPI and receives the acknowledgement for the previous frame."""
     # Wait longer after the first frame since it triggers a flash erase operation.
-    if frame.is_first_frame:
-      time.sleep(self._FIRST_FRAME_DELAY)
+    if frame.is_second_frame:
+      time.sleep(self._SECOND_FRAME_DELAY)
     else:
       time.sleep(self._INTER_FRAME_DELAY)
     print(f'Transferring {frame}.')
