@@ -347,6 +347,18 @@ module top_${top["name"]} #(
   assign rstmgr_aon_cpu.ndmreset_req = ndmreset_req;
   assign rstmgr_aon_cpu.rst_cpu_n = ${top["reset_paths"]["sys"]}[rstmgr_pkg::Domain0Sel];
 
+  // Struct breakout module tool-inserted DFT TAP signals
+  pinmux_jtag_breakout u_dft_tap_breakout (
+    .req_i    (pinmux_aon_dft_jtag_req),
+    .rsp_o    (pinmux_aon_dft_jtag_rsp),
+    .tck_o    (),
+    .trst_no  (),
+    .tms_o    (),
+    .tdi_o    (),
+    .tdo_i    (1'b0),
+    .tdo_oe_i (1'b0)
+  );
+
 ## Memory Instantiation
 % for m in top["memory"]:
 <%

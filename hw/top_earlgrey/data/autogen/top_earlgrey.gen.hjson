@@ -2938,6 +2938,8 @@
           act: req
           width: 1
           inst_name: pinmux_aon
+          default: ""
+          top_signame: pinmux_aon_dft_jtag
           index: -1
         }
         {
@@ -6260,6 +6262,7 @@
       main.tl_cored
       main.tl_dm_sba
       main.tl_debug_mem
+      pinmux_aon.dft_jtag
     ]
     external:
     {
@@ -13276,6 +13279,8 @@
         act: req
         width: 1
         inst_name: pinmux_aon
+        default: ""
+        top_signame: pinmux_aon_dft_jtag
         index: -1
       }
       {
@@ -18275,6 +18280,24 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: main_tl_debug_mem_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_req
+        signame: pinmux_aon_dft_jtag_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_rsp
+        signame: pinmux_aon_dft_jtag_rsp
         width: 1
         type: req_rsp
         end_idx: -1

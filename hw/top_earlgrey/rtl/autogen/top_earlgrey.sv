@@ -643,6 +643,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       main_tl_dm_sba_rsp;
   tlul_pkg::tl_h2d_t       main_tl_debug_mem_req;
   tlul_pkg::tl_d2h_t       main_tl_debug_mem_rsp;
+  jtag_pkg::jtag_req_t       pinmux_aon_dft_jtag_req;
+  jtag_pkg::jtag_rsp_t       pinmux_aon_dft_jtag_rsp;
 
   // define mixed connection to port
   assign edn0_edn_req[2] = ast_edn_req_i;
@@ -807,6 +809,18 @@ module top_earlgrey #(
 
   assign rstmgr_aon_cpu.ndmreset_req = ndmreset_req;
   assign rstmgr_aon_cpu.rst_cpu_n = rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel];
+
+  // Struct breakout module tool-inserted DFT TAP signals
+  pinmux_jtag_breakout u_dft_tap_breakout (
+    .req_i    (pinmux_aon_dft_jtag_req),
+    .rsp_o    (pinmux_aon_dft_jtag_rsp),
+    .tck_o    (),
+    .trst_no  (),
+    .tms_o    (),
+    .tdi_o    (),
+    .tdo_i    (1'b0),
+    .tdo_oe_i (1'b0)
+  );
 
   // sram device
   logic        ram_main_req;
@@ -1797,8 +1811,8 @@ module top_earlgrey #(
       .lc_jtag_i(pinmux_aon_lc_jtag_rsp),
       .rv_jtag_o(pinmux_aon_rv_jtag_req),
       .rv_jtag_i(pinmux_aon_rv_jtag_rsp),
-      .dft_jtag_o(),
-      .dft_jtag_i(jtag_pkg::JTAG_RSP_DEFAULT),
+      .dft_jtag_o(pinmux_aon_dft_jtag_req),
+      .dft_jtag_i(pinmux_aon_dft_jtag_rsp),
       .dft_strap_test_o(dft_strap_test_o),
       .dft_hold_tap_sel_i(dft_hold_tap_sel_i),
       .sleep_en_i(pwrmgr_aon_low_power),
