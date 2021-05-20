@@ -97,8 +97,13 @@ class otp_ctrl_macro_invalid_cmd_vseq extends otp_ctrl_smoke_vseq;
 
   virtual task check_and_release_macro_error();
     string alert_name = "fatal_macro_error";
+    int max_wait_cycles = (cfg.m_alert_agent_cfg[alert_name].ack_delay_max +
+                           cfg.m_alert_agent_cfg[alert_name].ack_stable_max) *
+                          ($ceil(cfg.clk_rst_vif.clk_freq_mhz) /
+                           cfg.m_alert_agent_cfg[alert_name].vif.clk_rst_async_if.clk_freq_mhz);
+
     `DV_SPINWAIT_EXIT(wait(cfg.m_alert_agent_cfg[alert_name].vif.alert_tx_final.alert_p);,
-        cfg.clk_rst_vif.wait_clks(20);,
+        cfg.clk_rst_vif.wait_clks(max_wait_cycles);,
         $sformatf("Timeout waiting for alert %0s", alert_name))
     check_fatal_alert_nonblocking(alert_name);
 

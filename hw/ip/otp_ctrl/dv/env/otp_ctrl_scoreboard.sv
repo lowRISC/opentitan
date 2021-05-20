@@ -586,7 +586,6 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                 end else begin
                   predict_no_err(OtpDaiErrIdx);
-                  dai_wr_ip = 1;
                   // write digest
                   if (is_sw_digest(dai_addr)) begin
                     bit [TL_DW*2-1:0] curr_digest, prev_digest;
@@ -596,6 +595,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                     // allow bit write
                     if ((prev_digest & curr_digest) == prev_digest) begin
                       update_digest_to_otp(part_idx, curr_digest);
+                      dai_wr_ip = 1;
                     end else begin
                       predict_err(OtpDaiErrIdx, OtpMacroWriteBlankError);
                     end
@@ -603,6 +603,7 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
                     predict_err(OtpDaiErrIdx, OtpAccessError);
                   // write OTP memory
                   end else begin
+                    dai_wr_ip = 1;
                     if (!is_secret(dai_addr)) begin
                       bit [TL_DW-1:0] wr_data = `gmv(ral.direct_access_wdata_0);
                       // allow bit write
@@ -743,6 +744,8 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // If reset or lc_escalate_en is issued during otp program, this function will backdoor update
   // otp memory write value because scb did not know how many cells haven been written.
+  // We won't update csr `direct_access_address` after fatal alert happened, so in this function
+  // we can directly call method `get_scb_otp_addr` to get the interrupted dai address.
   virtual function void recover_interrupted_op();
     if (dai_wr_ip) begin
       bit [TL_DW-1:0] otp_addr = get_scb_otp_addr();
