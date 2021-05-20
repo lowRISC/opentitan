@@ -912,9 +912,6 @@
       'clkmgr_aon.idle'         : [],
 
       // Pinmux JTAG signals
-      // Note that the DFT TAP will be connected
-      // automatically by the DFT insertion tool,
-      // hence it does not have to be connected here.
       'pinmux_aon.lc_jtag' : ['lc_ctrl.jtag'],
       'pinmux_aon.rv_jtag' : ['rv_dm.jtag'],
 
@@ -971,7 +968,11 @@
         'pwrmgr_aon.fetch_en',
 
         // Xbars
-        'main.tl_corei', 'main.tl_cored', 'main.tl_dm_sba', 'main.tl_debug_mem'
+        'main.tl_corei', 'main.tl_cored', 'main.tl_dm_sba', 'main.tl_debug_mem',
+
+        // Pinmux JTAG signals for the tool-inserted DFT TAP
+        'pinmux_aon.dft_jtag'
+
     ],
 
     // ext is to create port in the top.
