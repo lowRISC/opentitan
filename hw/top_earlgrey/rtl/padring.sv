@@ -19,8 +19,8 @@ module padring
   // Only used for ASIC target
   parameter bit PhysicalPads = 0,
   parameter int NIoBanks = 4,
-  parameter logic [NDioPads-1:0][$clog2(NIoBanks)-1:0] DioPadBank = '0,
-  parameter logic [NMioPads-1:0][$clog2(NIoBanks)-1:0] MioPadBank = '0,
+  parameter logic [NDioPads-1:0][$clog2(NIoBanks):0] DioPadBank = '0,
+  parameter logic [NMioPads-1:0][$clog2(NIoBanks):0] MioPadBank = '0,
   parameter scan_role_e [NDioPads-1:0] DioScanRole = {NDioPads{NoScan}},
   parameter scan_role_e [NMioPads-1:0] MioScanRole = {NMioPads{NoScan}}
 ) (
