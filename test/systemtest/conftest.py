@@ -90,3 +90,46 @@ def openocd():
 def pytest_configure(config):
     config.addinivalue_line("markers", "slow: mark test as slow, will be excluded from the main "
                                        "verilator job in CI")
+
+
+@pytest.fixture(scope="module")
+def uart_persistent(localconf_board, tmp_path_factory):
+    """
+    A UART device connected to the FPGA board, which is kept active for
+    for multiple tests.
+
+    Use the `uart` fixture for per-test access to the UART device.
+    """
+    uart_device = localconf_board['uart_device']
+    uart_speed = localconf_board['uart_speed']
+    log_dir_path = tmp_path_factory.mktemp('uart')
+    log.debug("Opening UART on device {} ({} baud)".format(
+        uart_device, uart_speed))
+    with utils.LoggingSerial(uart_device,
+                             uart_speed,
+                             timeout=1,
+                             log_dir_path=log_dir_path,
+                             default_filter_func=utils.
+                             filter_remove_device_sw_log_prefix) as uart:
+
+        yield uart
+
+
+@pytest.fixture
+def uart(uart_persistent, request):
+    """ A UART device connected to the FPGA board.
+
+    The UART is drained between test runs to give better isolation between the
+    tests.
+    """
+
+    uart_persistent.log_add_marker("===== TEST {} START =====\n".format(
+        request.node.name))
+
+    yield uart_persistent
+
+    # Read all remaining data from UART to have it available in the log file.
+    uart_persistent.drain_in()
+
+    uart_persistent.log_add_marker("===== TEST {} DONE =====\n\n".format(
+        request.node.name))

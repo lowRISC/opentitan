@@ -12,6 +12,8 @@ the moment.
 
 * `earlgrey/test_sim_verilator.py`: Run various software tests against a
   Verilator-built simulation of the Earl Grey design.
+* `earlgrey/test_fpga_cw310.py`: Run various software tests against the
+  Earl Grey design running on a ChipWhisperer CW310 FPGA board.
 * `earlgrey/test_fpga_nexysvideo.py`: Run various software tests against the
   Earl Grey design running on a Nexys Video FPGA board.
 
