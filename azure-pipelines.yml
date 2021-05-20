@@ -382,6 +382,63 @@ jobs:
       make -C hw/ip/otbn/util asm-check
     displayName: Assemble and link code snippets
 
+- job: chip_earlgrey_cw310
+  displayName: Build CW310 variant of the Earl Grey toplevel design using Vivado
+  dependsOn:
+    - lint
+    # The bootrom is built into the FPGA image at synthesis time.
+    # Currently, we are still using the reduce script for the CW310 meaning we can re-use the
+    # software binaries built for the NexysVideo board.
+    - sw_build_nexysvideo
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'))
+  pool: ci-public
+  timeoutInMinutes: 120 # 2 hours
+  steps:
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - sw_build_nexysvideo
+  - bash: |
+      set -e
+      . util/build_consts.sh
+
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+
+      mkdir -p "$OBJ_DIR/hw"
+      mkdir -p "$BIN_DIR/hw/top_earlgrey"
+
+      ./hw/top_earlgrey/util/top_earlgrey_reduce.py
+
+      BOOTROM_VMEM="$BIN_DIR/sw/device/boot_rom/boot_rom_fpga_nexysvideo.scr.40.vmem"
+      test -f "$BOOTROM_VMEM"
+      OTP_VMEM="$BIN_DIR/sw/device/otp_img/otp_img_fpga_nexysvideo.vmem"
+      test -f "$OTP_VMEM"
+
+      fusesoc --cores-root=. \
+        run --flag=fileset_top --target=synth --setup --build \
+        --build-root="$OBJ_DIR/hw" \
+        lowrisc:systems:chip_earlgrey_cw310 \
+        --BootRomInitFile="$BOOTROM_VMEM" \
+        --OtpCtrlMemInitFile="$OTP_VMEM"
+
+      cp "$OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit" \
+        "$BIN_DIR/hw/top_earlgrey"
+    displayName: Build bitstream with Vivado
+  - bash: |
+      . util/build_consts.sh
+      echo Synthesis log
+      cat $OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/synth_1/runme.log || true
+
+      echo Implementation log
+      cat $OBJ_DIR/hw/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/impl_1/runme.log || true
+    condition: always()
+    displayName: Display synthesis and implementation logs
+  - template: ci/upload-artifacts-template.yml
+    parameters:
+      includePatterns:
+        - "/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw310_0.1.bit"
+
 - job: chip_earlgrey_nexysvideo
   displayName: Build NexysVideo variant of the Earl Grey toplevel design using Vivado
   dependsOn:
@@ -482,8 +539,38 @@ jobs:
       includePatterns:
         - "/hw/top_englishbreakfast/lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit"
 
-- job: execute_fpga_tests
-  displayName: Execute tests on FPGA
+- job: execute_fpga_tests_cw310
+  displayName: Execute tests on ChipWhisperer CW310 FPGA board
+  pool: FPGA
+  timeoutInMinutes: 30
+  dependsOn:
+    - chip_earlgrey_cw310
+    - sw_build_nexysvideo
+    - sw_build
+  steps:
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - chip_earlgrey_cw310
+        - sw_build_nexysvideo
+        - sw_build
+  - bash: |
+      set -e
+
+      # Install an additional pytest dependency for result upload.
+      pip3 install pytest-azurepipelines
+
+      . util/build_consts.sh
+      pytest --version
+      pytest test/systemtest/earlgrey/test_fpga_cw310.py \
+        --log-cli-level=DEBUG \
+        --test-run-title="Run system tests on ChipWhisperer CW310 FPGA board" \
+        --napoleon-docstrings
+    displayName: Execute tests
+
+- job: execute_fpga_tests_nexysvideo
+  displayName: Execute tests on Nexys Video FPGA board
   pool: FPGA
   timeoutInMinutes: 30
   dependsOn:

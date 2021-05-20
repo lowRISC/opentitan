@@ -34,26 +34,30 @@ TEST_APPS_SELFCHECKING = [
         "targets": ["sim_verilator"],
     },
     # The OTBN end-to-end tests can be run in simulation, but take a long time
-    # there. Run them on FPGAs only for faster test results.
-    #{
-    #    "name": "otbn_rsa_test",
-    #    "targets": ["fpga_nexysvideo"],
-    #},
-    #{
-    #    "name": "otbn_ecdsa_p256_test",
-    #    "targets": ["fpga_nexysvideo"],
-    #},
+    # there. Run them on the CW310 FPGA board only for faster test results.
+    {
+        "name": "otbn_rsa_test",
+        "targets": ["fpga_cw310"],
+    },
+    {
+        "name": "otbn_ecdsa_p256_test",
+        "targets": ["fpga_cw310"],
+    },
     {
         "name": "dif_aes_smoketest",
+        "targets": ["sim_verilator", "fpga_cw310", "fpga_nexysvideo"],
     },
     {
         "name": "dif_aon_timer_smoketest",
+        "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
         "name": "dif_otp_ctrl_smoketest",
+        "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
         "name": "dif_plic_smoketest",
+        "targets": ["sim_verilator", "fpga_cw310"],
     },
     # TODO(#6656): AST is not instantiated in chip_earlgrey_verilator.
     # {
@@ -61,37 +65,46 @@ TEST_APPS_SELFCHECKING = [
     # },
     {
         "name": "dif_rstmgr_smoketest",
+        "targets": ["sim_verilator", "fpga_cw310", "fpga_nexysvideo"],
     },
     {
         "name": "dif_rv_timer_smoketest",
+        "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
         "name": "dif_uart_smoketest",
+        "targets": ["sim_verilator", "fpga_cw310", "fpga_nexysvideo"],
     },
     {
         "name": "dif_clkmgr_smoketest",
+        "targets": ["sim_verilator", "fpga_cw310", "fpga_nexysvideo"],
     },
     {
         "name": "dif_csrng_smoketest",
+        "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
         "name": "dif_entropy_smoketest",
-        "targets": ["sim_verilator"],
+        "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
         "name": "dif_kmac_smoketest",
+        "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
         "name": "dif_kmac_cshake_smoketest",
     },
     {
         "name": "flash_ctrl_test",
+        "targets": ["sim_verilator", "fpga_cw310", "fpga_nexysvideo"],
     },
     {
         "name": "pmp_smoketest_napot",
+        "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
         "name": "pmp_smoketest_tor",
+        "targets": ["sim_verilator", "fpga_cw310"],
     },
     {
         "name": "usbdev_test",
@@ -100,6 +113,6 @@ TEST_APPS_SELFCHECKING = [
     # Cannot run on sim_verilator due to the differences in the top level.
     {
         "name": "dif_gpio_smoketest",
-        "targets": ["fpga_nexysvideo"],
+        "targets": ["fpga_cw310", "fpga_nexysvideo"],
     },
 ]
