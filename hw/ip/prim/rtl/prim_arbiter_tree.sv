@@ -140,10 +140,19 @@ module prim_arbiter_tree #(
         end else begin : gen_nodes
           // local helper variable
           logic sel;
-          always_comb begin : p_node
+
+          // TODO: The always_comb code is split into two blocks to allow Verilator to schedule them
+          //       separately (avoiding a spurious UNOPTFLAT warning). The whole lot would probably
+          //       be clearer as a set of continuous assignments, rather than using always_comb
+          //       blocks. Unfortunately, we can't currently do that because of a Vivado bug,
+          //       reported in January 2020. This is tracked with OpenTitan issue #1408. There's
+          //       currently no information about a Vivado version with this fixed.
+          always_comb begin : p_sel
             // forward path (requests and data)
             // each node looks at its two children, and selects the one with higher priority
             sel = ~req_tree[C0] | ~prio_tree[C0] & prio_tree[C1];
+          end
+          always_comb begin : p_node
             // propagate requests
             req_tree[Pa]  = req_tree[C0] | req_tree[C1];
             prio_tree[Pa] = prio_tree[C1] | prio_tree[C0];
