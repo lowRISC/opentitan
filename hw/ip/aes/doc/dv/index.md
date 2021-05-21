@@ -49,6 +49,10 @@ AES instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into AES device.
 
+### EDN agent
+
+AES instantiates (already handles in the CIP base env) [edn_agent]({{< relref "hw/ip/edn/doc/dv/index.md" >}})
+which provides the ability to drive and monitor edn traffic via the edn interface.
 
 ### UVM RAL model
 The AES RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
@@ -60,22 +64,60 @@ It can be created manually by invoking [`regtool`]({{< relref "util/reggen/READM
 All test sequences reside in `hw/ip/aes/dv/env/seq_lib`.
 The `aes_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
 All test sequences are extended from `aes_base_vseq`.
-`aes_base_vseq` provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
-Some of the most commonly used tasks / functions are as follows:
-* aes_init:    Initialize the AES module from the randomized environment variables in the config.
-* set_op:      Set AES operation to encrypt or decrypt.
-* write_key:   Write initial key to AES init key registers.
-* add_data:    Add the next 128 block to the input registers.
-* read_output:  Poll the status register for data ready bit and read the result from AES output registers.
-* clear_reg:  Based on the input this function clears data input-, data output- or key-registers or any combination of these.
-* set_manual_trigger: Chooses between AES auto start and manual start.
-* trigger_start:  Set the start bit to trigger a new encryption/decryption.
+`aes_base_vseq` provides commonly used handles, variables, functions and tasks that the test sequences can simply use / call.
+The tasks can be split into two groups and those that provide more complex functionality.
+Simple tasks include:
+* **aes_init**:    Initialize the AES module from the randomized environment variables in the config.
+* **set_op**:      Set AES operation to encrypt or decrypt.
+* **write_key**:   Write initial key to AES init key registers.
+* **add_data**:    Add the next 128 block to the input registers.
+* **read_output**:  Poll the status register for data ready bit and read the result from AES output registers.
+* **clear_reg**:  Based on the input this function clears data input-, data output- or key-registers or any combination of these.
+* **set_manual_trigger**: Chooses between AES auto start and manual start.
+* **trigger_start**:  Set the start bit to trigger a new encryption/decryption.
 
-#### Functional coverage
+More complex tasks include:
+These are the ones used by the higher level sequences and the ones that should be used to create new tests from:
+* **generate_message_queue**: Generate a queue of randomized message items. 
+Each item will describe the parameters of a message but not hold any data, the data will be added later.
+This function does not call any sub-functions.
+* **send_msg_queue**: Take the queue of messages items and process them one by one.
+Send_msg_queue converts each message item into a queue of message transactions each called an aes_items by calling generate aes_item_queue().
+Then each message now described by a queue of items is processed by calling send_msg().
+* **generate_aes_item_queue**: Expands a message into a queue of a configuration item and N Data items where N = Message_length/block size.
+Data is randomized based on the constraints.
+* **send_msg**: Take a queue of configuration and data items and pass them to the AES for processing.
+This task will handle configuration of the core based on the configuration item.
+Then based on the test configuration it will do either a balanced or unbalanced processing of the data items.
+A balanced processing implies that for each input the task will wait until the resulting output have been read before attempting to write the next input.
+The unbalanced version will write the next data item as soon as the AES status register indicates that a new input will be accepted.
+In unbalanced mode the send_msg task also handles reading the output register.
+Knobs are available to control the balance between reads and writes.
+In either case the status_fsm task is called.
+* **status_fsm**: Read the status of the AES IP and based on the inputs return the status.
+When the task is in control of reading the output register it will poll the status until it indicates that the output is valid.
+It will also track the progress of processing detecting if something has gone differently than expected.
+If this happens it will try to recover.
+
+Using these higher level functions and tasks one can build a highly customized constraint random test without low level knowledge of the test environment and the DUT.
+
+Most tests use the aes_stress_vseq sequence as test sequence, and achieves different tests scenarios by using the constrained knobs to generate different behavior.
+
+
+#### Functional coverage'
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following cover groups have been developed to prove that the test intent has been adequately met.
 
-WORK IN PROGRESS WILL COME WITH V2.
+* aes_ctrl_cg: this cover group checks that all parts of the control register has been exercised. 
+A few crosses is also included to ensure that we have seen all both forward and inverse for all modes.
+Similarly that we have tried all possible key_sizes in all modes, and that all have been tried both in auto and manual mode.
+More importantly for AES which is a security critical IP it also verifies that all illegal states has been seen.
+* aes_status_cg: makes sure all possible states has been seen.
+* aes_trigger_cg: verify that all parts of the trigger register was exercised.
+A cross also checks that we tried to clear all fields possible at once.
+
+(WIP) coverage points to come
+A temporary functional coverage plan can be found here [coverage_plan]({{< relref "hw/dv/tools/README.md">}})
 
 
 
