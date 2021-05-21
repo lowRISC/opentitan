@@ -12,6 +12,7 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
 
   // various knobs to enable certain routines
   bit do_rom_ctrl_init = 1'b1;
+  bit do_rom_error_req = 1'b0;
 
   `uvm_object_new
 
@@ -45,18 +46,21 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
 
     bit [TL_DW-1:0] data;
     bit [TL_AW-1:0] addr;
+    bit             write;
     repeat (num_ops) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)
       `DV_CHECK_STD_RANDOMIZE_FATAL(addr)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(write, !do_rom_error_req -> write == 1'b0;)
 
       tl_access_w_abort(.addr(addr),
                         .data(data),
                         .status(status),
-                        .mask(get_rand_contiguous_mask()),
-                        .write(1'b0),
+                        .mask(get_rand_contiguous_mask('1)),
+                        .write(write),
                         .blocking(1'b0),
+                        .check_rsp(1'b0),
                         .tl_sequencer_h(p_sequencer.rom_tl_sequencer_h),
-                        .req_abort_pct(0));
+                        .req_abort_pct(do_rom_error_req ? 50 : 0));
     end
     csr_utils_pkg::wait_no_outstanding_access();
   endtask

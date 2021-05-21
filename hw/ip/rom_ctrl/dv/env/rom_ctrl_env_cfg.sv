@@ -5,7 +5,7 @@
 class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block));
 
   // ext component cfgs
-  rand tl_agent_cfg rom_tl_cfg;
+  rand tl_agent_cfg m_rom_tl_cfg;
   kmac_app_agent_cfg m_kmac_agent_cfg;
 
   // ext interfaces
@@ -26,8 +26,8 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
     m_kmac_agent_cfg.if_mode = dv_utils_pkg::Device;
     m_kmac_agent_cfg.start_default_device_seq = 1'b1;
 
-    rom_tl_cfg = tl_agent_cfg::type_id::create("rom_tl_cfg");
-    rom_tl_cfg.if_mode = dv_utils_pkg::Host;
+    m_rom_tl_cfg = tl_agent_cfg::type_id::create("m_rom_tl_cfg");
+    m_rom_tl_cfg.if_mode = dv_utils_pkg::Host;
 
   endfunction
 
