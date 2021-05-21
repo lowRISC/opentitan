@@ -305,12 +305,35 @@ module rom_ctrl
   end
 
   // Asserts ===================================================================
-
-  // All outputs should be known value after reset
+  //
+  // "ROM" TL interface: The d_valid and a_ready signals should be unconditionally defined. The
+  // other signals in rom_tl_o (which are the other D channel signals) should be defined if d_valid.
   `ASSERT_KNOWN(RomTlODValidKnown_A, rom_tl_o.d_valid)
   `ASSERT_KNOWN(RomTlOAReadyKnown_A, rom_tl_o.a_ready)
-  `ASSERT_KNOWN(RegTlODValidKnown_A, regs_tl_o.d_valid)
-  `ASSERT_KNOWN(RegTlOAReadyKnown_A, regs_tl_o.a_ready)
+  `ASSERT_KNOWN_IF(RomTlODDataKnown_A, rom_tl_o, rom_tl_o.d_valid)
+
+  // "regs" TL interface: The d_valid and a_ready signals should be unconditionally defined. The
+  // other signals in rom_tl_o (which are the other D channel signals) should be defined if d_valid.
+  `ASSERT_KNOWN(RegsTlODValidKnown_A, regs_tl_o.d_valid)
+  `ASSERT_KNOWN(RegsTlOAReadyKnown_A, regs_tl_o.a_ready)
+  `ASSERT_KNOWN_IF(RegsTlODDataKnown_A, regs_tl_o, regs_tl_o.d_valid)
+
+  // The assert_tx_o output should have a known value when out of reset
   `ASSERT_KNOWN(AlertTxOKnown_A, alert_tx_o)
+
+  // The pwrmgr_data_o output (the "done" and "good" signals) should have a known value when out of
+  // reset. (In theory, the "good" signal could be unknown when !done, but the stronger and simpler
+  // assertion is also true, so we use that)
+  `ASSERT_KNOWN(PwrmgrDataOKnown_A, pwrmgr_data_o)
+
+  // The valid signal for keymgr_data_o should always be known when out of reset. The rest of the
+  // struct (a data signal) should be known whenever the valid signal is true.
+  `ASSERT_KNOWN(KeymgrDataOValidKnown_A, keymgr_data_o.valid)
+  `ASSERT_KNOWN_IF(KeymgrDataODataKnown_A, keymgr_data_o, keymgr_data_o.valid)
+
+  // The valid signal for kmac_data_o should always be known when out of reset. The rest of the
+  // struct (data, strb and last) should be known whenever the valid signal is true.
+  `ASSERT_KNOWN(KmacDataOValidKnown_A, kmac_data_o.valid)
+  `ASSERT_KNOWN_IF(KmacDataODataKnown_A, kmac_data_o, kmac_data_o.valid)
 
 endmodule
