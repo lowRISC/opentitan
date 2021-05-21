@@ -212,4 +212,144 @@
       tests: ["otp_ctrl_stress_all"]
     }
   ]
+
+  covergroups: [
+    {
+      name: power_on_cg
+      desc: '''Covers the following conditions when OTP_CTRL finishes power-on initialization:
+            - whether `lc_escalation_en` is On
+            - whether any partition (except life cycle partition) is locked
+            '''
+    }
+    {
+      name: flash_req_cg
+      desc: '''Covers whether secret1 partition is locked during `flash` data or address
+            request.'''
+    }
+    {
+      name: sram_req_cg
+      desc: '''Covers whether secret1 partition is locked during all `srams` key request.'''
+    }
+    {
+      name: otbn_req_cg
+      desc: '''Covers whether secret1 partition is locked during `otbn` key request.'''
+    }
+    {
+      name: lc_prog_cg
+      desc: '''Covers whether the error bit is set during LC program request.'''
+    }
+    {
+      name: keymgr_o_cg
+      desc: '''Covers the following conditions when scoreboard checks `keymgr_o` value:
+            - whether secret2 partition is locked
+            - whether `lc_seed_hw_rd_en_i` is On
+            '''
+    }
+    {
+      name: req_dai_access_after_alert_cg
+      desc: '''Covers if sequence issued various DAI requests after any fatal alert is
+            triggered.'''
+    }
+    {
+      name: issue_checks_after_alert_cg
+      desc: '''Covers if sequence issued various OTP_CTRL's background checks after any fatal alert
+            is triggered.'''
+    }
+    { // TODO: this is from a wrapper class, confirm if this is the correct format
+      name: csr_rd_after_alert_cg
+      desc: '''Covers if the following CSRs are being read and the value is checked in scoreboard
+            after any fatal alert is triggered:
+            - unbuffered partitions' digest CSRs
+            - HW partition's digest CSRs
+            - secrets partitions' digest CSRs
+            - direct_access read data CSRs
+            - status CSR
+            - error_code CSR
+            '''
+    }
+    {
+      name: dai_err_code_cg
+      desc: '''Covers all applicable error codes in DAI, and cross each error code with all
+               7 partitions.'''
+    }
+    {
+      name: lci_err_code_cg
+      desc: '''Covers all applicable error codes in LCI.'''
+    }
+    { // TODO: this is an array of covergroups, confirm if this is the correct format
+      name: unbuf_err_code_cg
+      desc: '''This is an array of covergroups to cover all applicable error codes in two
+            unbuffered partitions.'''
+    }
+    { // TODO: this is an array of covergroups, confirm if this is the correct format
+      name: buf_err_code_cg
+      desc: '''This is an array of covergroups to cover all applicable error codes in five
+            buffered partitions.'''
+    }
+    {
+      name: dai_access_secret2_cg
+      desc: '''Covers whether `lc_creator_seed_sw_rw_en` is On during any DAI accesses.'''
+    }
+    { // TODO: this is an array of covergroups, confirm if this is the correct format
+      name: status_csr_cg
+      desc: '''Covers the value of every bit in `status` CSR.'''
+    }
+    // The following covergroups are implemented in `otp_ctrl_cov_if.sv`.
+    {
+      name: lc_esc_en_condition_cg
+      desc: '''Covers the following conditions when `lc_escalation_en` is On:
+            - whether any key requests is in progress
+            - whether LC program reqeust is in progress
+            - whether DAI interface is busy
+            '''
+    }
+    {
+      name: flash_data_req_condition_cg
+      desc: '''Covers the following conditions when `lc_escalation_en` is On:
+            - whether any key requests is in progress
+            - whether DAI interface is busy
+            - whether lc_esc_en is On
+            '''
+    }
+    {
+      name: flash_addr_req_condition_cg
+      desc: '''Covers the following conditions when `lc_escalation_en` is On:
+            - whether any key requests is in progress
+            - whether DAI interface is busy
+            - whether lc_esc_en is On
+            '''
+    }
+    {
+      name: sram_0_req_condition_cg
+      desc: '''Covers the following conditions when `lc_escalation_en` is On:
+            - whether any key requests is in progress
+            - whether DAI interface is busy
+            - whether lc_esc_en is On
+            '''
+    }
+    {
+      name: sram_1_req_condition_cg
+      desc: '''Covers the following conditions when `lc_escalation_en` is On:
+            - whether any key requests is in progress
+            - whether DAI interface is busy
+            - whether lc_esc_en is On
+            '''
+    }
+    {
+      name: otbn_req_condition_cg
+      desc: '''Covers the following conditions when `lc_escalation_en` is On:
+            - whether any key requests is in progress
+            - whether DAI interface is busy
+            - whether lc_esc_en is On
+            '''
+    }
+    {
+      name: lc_prog_req_condition_cg
+      desc: '''Covers the following conditions when `lc_escalation_en` is On:
+            - whether any key requests is in progress
+            - whether DAI interface is busy
+            - whether lc_esc_en is On
+            '''
+    }
+  ]
 }
