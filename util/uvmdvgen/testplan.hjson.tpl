@@ -8,7 +8,7 @@
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
-  entries: [
+  testpoints: [
     {
       name: smoke
       desc: '''
@@ -28,6 +28,13 @@
       desc: '''Add more test entries here like above.'''
       milestone: V1
       tests: []
+    }
+  ]
+
+  covergroups: [
+    {
+      name: ${name}_feature_cg
+      desc: '''Describe the functionality covered by this covergroup.'''
     }
   ]
 }
