@@ -355,46 +355,57 @@ class Testplan():
             "tests": list(regressions[ms])
         } for ms in regressions]
 
-    def get_testplan_table(self, fmt="md"):
+    def get_testplan_table(self, fmt="pipe"):
         """Generate testplan table from hjson testplan.
 
-        fmt is either 'md' or 'html'.
+        fmt is either 'pipe' (markdown) or 'html'. 'pipe' is the name used by
+        tabulate to generate a markdown formatted table.
         """
-        assert fmt in ["md", "html"]
+        assert fmt in ["pipe", "html"]
+
+        def _fmt_text(text, fmt):
+            return mistletoe.markdown(text) if fmt == "html" else text
 
         if self.testpoints:
-            text = "### Testpoints\n\n"
+            lines = [_fmt_text("\n### Testpoints\n", fmt)]
             header = ["Milestone", "Name", "Tests", "Description"]
             colalign = ("center", "center", "left", "left")
             table = []
             for tp in self.testpoints:
-                desc = tp.desc.strip()
-                tests = "\\\n".join(tp.tests)
+                desc = _fmt_text(tp.desc.strip(), fmt)
+                # TODO(astanin/python-tabulate#126): Tabulate does not
+                # convert \n's to line-breaks.
+                tests = "<br>\n".join(tp.tests)
                 table.append([tp.milestone, tp.name, tests, desc])
-            text += tabulate(table,
-                             headers=header,
-                             tablefmt=fmt,
-                             colalign=colalign)
-            text += "\n"
+            lines += [
+                tabulate(table,
+                         headers=header,
+                         tablefmt=fmt,
+                         colalign=colalign)
+            ]
 
         if self.covergroups:
-            text += "\n### Covergroups\n\n"
+            lines += [_fmt_text("\n### Covergroups\n", fmt)]
             header = ["Name", "Description"]
             colalign = ("center", "left")
             table = []
             for covergroup in self.covergroups:
                 desc = covergroup.desc.strip()
                 table.append([covergroup.name, desc])
-            text += tabulate(table,
-                             headers=header,
-                             tablefmt="pipe",
-                             colalign=colalign)
-            text += "\n"
+            lines += [
+                tabulate(table,
+                         headers=header,
+                         tablefmt=fmt,
+                         colalign=colalign)
+            ]
 
+        text = "\n".join(lines)
         if fmt == "html":
-            text = self.get_dv_style_css() + mistletoe.markdown(text)
+            text = self.get_dv_style_css() + text
             text = text.replace("<table>", "<table class=\"dv\">")
 
+            # Tabulate does not support HTML tags.
+            text = text.replace("&lt;", "<").replace("&gt;", ">")
         return text
 
     def map_test_results(self, test_results):
@@ -614,6 +625,8 @@ class Testplan():
 
         The data extracted from the sim_results table HJson file is mapped into
         a test results, test progress, covergroup progress and coverage tables.
+
+        fmt is either 'md' (markdown) or 'html'.
         """
         assert fmt in ["md", "html"]
         sim_results = Testplan._parse_hjson(sim_results_file)
