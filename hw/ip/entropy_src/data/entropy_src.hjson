@@ -863,13 +863,19 @@
       hwaccess: "hro",
       regwen:   "REGWEN",
       fields: [
-        { bits: "31:0",
+        { bits: "15:0",
           name: "ALERT_THRESHOLD",
           desc: '''This is the threshold size that will signal an alert when
                    value is reached. A value of zero will disable alerts.
                    The default value is 2.
                 '''
           resval: "0x0002"
+        }
+        { bits: "31:16",
+          name: "ALERT_THRESHOLD_INV",
+          desc: '''This should be set to the value above, but inverted.
+                '''
+          resval: "0xfffd"
         }
       ]
     },
@@ -879,7 +885,7 @@
       hwaccess: "hwo",
       hwext: "true",
       fields: [
-        { bits: "31:0",
+        { bits: "15:0",
           name: "ANY_FAIL_COUNT",
           desc: '''This field will hold a running count of
                    the total alert count, which is a sum of all of the other

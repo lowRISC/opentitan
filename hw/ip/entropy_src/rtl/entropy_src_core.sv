@@ -135,8 +135,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                   any_fail_pulse;
   logic                   main_stage_pop;
   logic                   bypass_stage_pop;
-  logic [FullRegWidth-1:0] any_fail_count;
-  logic [FullRegWidth-1:0] alert_threshold;
+  logic [HalfRegWidth-1:0] any_fail_count;
+  logic [FullRegWidth-1:0] any_fail_count_cmp;
+  logic [HalfRegWidth-1:0] alert_threshold;
+  logic [HalfRegWidth-1:0] alert_threshold_inv;
+  logic [FullRegWidth-1:0] alert_threshold_cmp;
   logic                     recov_alert_event;
   logic [Clog2ObserveFifoDepth:0] observe_fifo_thresh;
   logic                     observe_fifo_thresh_met;
@@ -337,7 +340,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     es_ack_sm_err;
   logic                     es_main_sm_err_sum;
   logic                     es_main_sm_err;
+  logic                     es_startup_alert;
   logic                     es_main_sm_idle;
+  logic                     es_main_sm_startup;
   logic [7:0]               es_main_sm_state;
   logic                     fifo_write_err_sum;
   logic                     fifo_read_err_sum;
@@ -827,7 +832,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (repcnt_fips_threshold_wr),
     .value_i             (repcnt_fips_threshold),
     .value_o             (repcnt_fips_threshold_oneway)
@@ -840,7 +845,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (repcnt_bypass_threshold_wr),
     .value_i             (repcnt_bypass_threshold),
     .value_o             (repcnt_bypass_threshold_oneway)
@@ -859,7 +864,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (repcnts_fips_threshold_wr),
     .value_i             (repcnts_fips_threshold),
     .value_o             (repcnts_fips_threshold_oneway)
@@ -872,7 +877,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (repcnts_bypass_threshold_wr),
     .value_i             (repcnts_bypass_threshold),
     .value_o             (repcnts_bypass_threshold_oneway)
@@ -892,7 +897,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (adaptp_hi_fips_threshold_wr),
     .value_i             (adaptp_hi_fips_threshold),
     .value_o             (adaptp_hi_fips_threshold_oneway)
@@ -905,7 +910,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (adaptp_hi_bypass_threshold_wr),
     .value_i             (adaptp_hi_bypass_threshold),
     .value_o             (adaptp_hi_bypass_threshold_oneway)
@@ -921,7 +926,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (adaptp_lo_fips_threshold_wr),
     .value_i             (adaptp_lo_fips_threshold),
     .value_o             (adaptp_lo_fips_threshold_oneway)
@@ -934,7 +939,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (adaptp_lo_bypass_threshold_wr),
     .value_i             (adaptp_lo_bypass_threshold),
     .value_o             (adaptp_lo_bypass_threshold_oneway)
@@ -954,7 +959,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (bucket_fips_threshold_wr),
     .value_i             (bucket_fips_threshold),
     .value_o             (bucket_fips_threshold_oneway)
@@ -967,7 +972,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (bucket_bypass_threshold_wr),
     .value_i             (bucket_bypass_threshold),
     .value_o             (bucket_bypass_threshold_oneway)
@@ -987,7 +992,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (markov_hi_fips_threshold_wr),
     .value_i             (markov_hi_fips_threshold),
     .value_o             (markov_hi_fips_threshold_oneway)
@@ -1000,7 +1005,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (markov_hi_bypass_threshold_wr),
     .value_i             (markov_hi_bypass_threshold),
     .value_o             (markov_hi_bypass_threshold_oneway)
@@ -1016,7 +1021,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (markov_lo_fips_threshold_wr),
     .value_i             (markov_lo_fips_threshold),
     .value_o             (markov_lo_fips_threshold_oneway)
@@ -1029,7 +1034,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (markov_lo_bypass_threshold_wr),
     .value_i             (markov_lo_bypass_threshold),
     .value_o             (markov_lo_bypass_threshold_oneway)
@@ -1049,7 +1054,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (extht_hi_fips_threshold_wr),
     .value_i             (extht_hi_fips_threshold),
     .value_o             (extht_hi_fips_threshold_oneway)
@@ -1062,7 +1067,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (extht_hi_bypass_threshold_wr),
     .value_i             (extht_hi_bypass_threshold),
     .value_o             (extht_hi_bypass_threshold_oneway)
@@ -1079,7 +1084,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (extht_lo_fips_threshold_wr),
     .value_i             (extht_lo_fips_threshold),
     .value_o             (extht_lo_fips_threshold_oneway)
@@ -1092,7 +1097,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (1'b0),
-    .active_i            (!es_enable),
+    .active_i            (1'b1),
     .event_i             (extht_lo_bypass_threshold_wr),
     .value_i             (extht_lo_bypass_threshold),
     .value_o             (extht_lo_bypass_threshold_oneway)
@@ -1645,7 +1650,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign alert_cntrs_clr = health_test_clr || rst_alert_cntr;
 
   entropy_src_cntr_reg #(
-    .RegWidth(FullRegWidth)
+    .RegWidth(HalfRegWidth)
   ) u_entropy_src_cntr_reg_any_alert_fails (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
@@ -1676,10 +1681,15 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.alert_summary_fail_counts.d = any_fail_count;
 
   // signal an alert
-  assign alert_threshold = reg2hw.alert_threshold.q;
+  assign alert_threshold = reg2hw.alert_threshold.alert_threshold.q;
+  assign alert_threshold_inv = reg2hw.alert_threshold.alert_threshold_inv.q;
 
-  assign recov_alert_event = (any_fail_count >= alert_threshold) && (alert_threshold != '0);
-  assign recov_alert_o = recov_alert_event;
+  assign any_fail_count_cmp = {any_fail_count,any_fail_count};
+  assign alert_threshold_cmp = {~alert_threshold_inv,alert_threshold};
+  assign recov_alert_event = (any_fail_count_cmp >= alert_threshold_cmp) &&
+         (alert_threshold_cmp != '0);
+
+  assign recov_alert_o = es_main_sm_startup ? es_startup_alert : recov_alert_event;
 
 
   // repcnt fail counter
@@ -2031,7 +2041,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .sha3_done_o          (sha3_done),
     .cs_aes_halt_req_o    (cs_aes_halt_req),
     .cs_aes_halt_ack_i    (cs_aes_halt_i.cs_aes_halt_ack),
+    .set_startup_alert_o  (es_startup_alert),
     .main_sm_idle_o       (es_main_sm_idle),
+    .main_sm_startup_o    (es_main_sm_startup),
     .main_sm_state_o      (es_main_sm_state),
     .main_sm_err_o        (es_main_sm_err)
   );

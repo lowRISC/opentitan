@@ -321,10 +321,13 @@ module entropy_src_reg_top (
   logic extht_hi_total_fails_re;
   logic [31:0] extht_lo_total_fails_qs;
   logic extht_lo_total_fails_re;
-  logic [31:0] alert_threshold_qs;
-  logic [31:0] alert_threshold_wd;
-  logic alert_threshold_we;
-  logic [31:0] alert_summary_fail_counts_qs;
+  logic [15:0] alert_threshold_alert_threshold_qs;
+  logic [15:0] alert_threshold_alert_threshold_wd;
+  logic alert_threshold_alert_threshold_we;
+  logic [15:0] alert_threshold_alert_threshold_inv_qs;
+  logic [15:0] alert_threshold_alert_threshold_inv_wd;
+  logic alert_threshold_alert_threshold_inv_we;
+  logic [15:0] alert_summary_fail_counts_qs;
   logic alert_summary_fail_counts_re;
   logic [3:0] alert_fail_counts_repcnt_fail_count_qs;
   logic alert_fail_counts_repcnt_fail_count_re;
@@ -1907,17 +1910,18 @@ module entropy_src_reg_top (
 
   // R[alert_threshold]: V(False)
 
+  //   F[alert_threshold]: 15:0
   prim_subreg #(
-    .DW      (32),
+    .DW      (16),
     .SWACCESS("RW"),
-    .RESVAL  (32'h2)
-  ) u_alert_threshold (
+    .RESVAL  (16'h2)
+  ) u_alert_threshold_alert_threshold (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface (qualified with register enable)
-    .we     (alert_threshold_we & regwen_qs),
-    .wd     (alert_threshold_wd),
+    .we     (alert_threshold_alert_threshold_we & regwen_qs),
+    .wd     (alert_threshold_alert_threshold_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1925,17 +1929,43 @@ module entropy_src_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_threshold.q ),
+    .q      (reg2hw.alert_threshold.alert_threshold.q ),
 
     // to register interface (read)
-    .qs     (alert_threshold_qs)
+    .qs     (alert_threshold_alert_threshold_qs)
+  );
+
+
+  //   F[alert_threshold_inv]: 31:16
+  prim_subreg #(
+    .DW      (16),
+    .SWACCESS("RW"),
+    .RESVAL  (16'hfffd)
+  ) u_alert_threshold_alert_threshold_inv (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface (qualified with register enable)
+    .we     (alert_threshold_alert_threshold_inv_we & regwen_qs),
+    .wd     (alert_threshold_alert_threshold_inv_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.alert_threshold.alert_threshold_inv.q ),
+
+    // to register interface (read)
+    .qs     (alert_threshold_alert_threshold_inv_qs)
   );
 
 
   // R[alert_summary_fail_counts]: V(True)
 
   prim_subreg_ext #(
-    .DW    (32)
+    .DW    (16)
   ) u_alert_summary_fail_counts (
     .re     (alert_summary_fail_counts_re),
     .we     (1'b0),
@@ -2912,8 +2942,11 @@ module entropy_src_reg_top (
 
   assign extht_lo_total_fails_re = addr_hit[37] & reg_re & !reg_error;
 
-  assign alert_threshold_we = addr_hit[38] & reg_we & !reg_error;
-  assign alert_threshold_wd = reg_wdata[31:0];
+  assign alert_threshold_alert_threshold_we = addr_hit[38] & reg_we & !reg_error;
+  assign alert_threshold_alert_threshold_wd = reg_wdata[15:0];
+
+  assign alert_threshold_alert_threshold_inv_we = addr_hit[38] & reg_we & !reg_error;
+  assign alert_threshold_alert_threshold_inv_wd = reg_wdata[31:16];
 
   assign alert_summary_fail_counts_re = addr_hit[39] & reg_re & !reg_error;
 
@@ -3170,11 +3203,12 @@ module entropy_src_reg_top (
       end
 
       addr_hit[38]: begin
-        reg_rdata_next[31:0] = alert_threshold_qs;
+        reg_rdata_next[15:0] = alert_threshold_alert_threshold_qs;
+        reg_rdata_next[31:16] = alert_threshold_alert_threshold_inv_qs;
       end
 
       addr_hit[39]: begin
-        reg_rdata_next[31:0] = alert_summary_fail_counts_qs;
+        reg_rdata_next[15:0] = alert_summary_fail_counts_qs;
       end
 
       addr_hit[40]: begin

@@ -29,44 +29,50 @@ module entropy_src_main_sm #(
   output logic                  sha3_done_o,
   output logic                  cs_aes_halt_req_o,
   input logic                   cs_aes_halt_ack_i,
+  output logic                  set_startup_alert_o,
   output logic                  main_sm_idle_o,
+  output logic                  main_sm_startup_o,
   output logic [StateWidth-1:0] main_sm_state_o,
   output logic                  main_sm_err_o
 );
-
 // Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 10 -n 8 \
-//      -s 1721366211 --language=sv
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 15 -n 8 \
+//      -s 1320915099 --language=sv
 //
 // Hamming distance histogram:
 //
 //  0: --
 //  1: --
 //  2: --
-//  3: ||||||||||| (24.44%)
-//  4: |||||||||||||||||||| (44.44%)
-//  5: |||||||||| (22.22%)
-//  6: ||| (6.67%)
-//  7: --
-//  8: | (2.22%)
+//  3: |||||||||||||| (26.67%)
+//  4: |||||||||||||||||||| (37.14%)
+//  5: |||||||||||| (23.81%)
+//  6: ||||| (10.48%)
+//  7:  (0.95%)
+//  8:  (0.95%)
 //
 // Minimum Hamming distance: 3
 // Maximum Hamming distance: 8
 // Minimum Hamming weight: 2
-// Maximum Hamming weight: 5
+// Maximum Hamming weight: 6
 //
 
   typedef enum logic [StateWidth-1:0] {
-    Idle              = 8'b01110110, // idle
-    BootHTRunning     = 8'b01011011, // boot mode, wait for health test done pulse
-    BootPostHTChk     = 8'b00000111, // boot mode, wait for post health test packer not empty state
-    NormHTStart       = 8'b11100000, // normal mode, pulse the sha3 start input
-    NormHTRunning     = 8'b01001000, // normal mode, wait for health test done pulse
-    NormSha3CSReq     = 8'b10001001, // normal mode, request csrng arb to reduce power
-    NormSha3Process   = 8'b10010000, // normal mode, pulse the sha3 process input
-    NormSha3Valid     = 8'b01100011, // normal mode, wait for sha3 valid indication
-    NormSha3Done      = 8'b11001110, // normal mode, capture sha3 result, pulse done input
-    Error             = 8'b11010101  // illegal state reached and hang
+    Idle              = 8'b00110001, // idle
+    BootHTRunning     = 8'b11100110, // boot mode, wait for health test done pulse
+    BootPostHTChk     = 8'b01001111, // boot mode, wait for post health test packer not empty state
+    StartupHTStart    = 8'b01000001, // startup mode, pulse the sha3 start input
+    StartupPhase1     = 8'b11101011, // startup mode, look for first test pass/fail
+    StartupPass1      = 8'b00101101, // startup mode, look for first test pass/fail, done if pass
+    StartupFail1      = 8'b01110010, // startup mode, look for second fail, alert if fail
+    ContHTStart       = 8'b10111110, // continuous test mode, pulse the sha3 start input
+    ContHTRunning     = 8'b11011101, // continuous test mode, wait for health test done pulse
+    Sha3Prep          = 8'b10000100, // sha3 mode, request csrng arb to reduce power
+    Sha3Process       = 8'b01011000, // sha3 mode, pulse the sha3 process input
+    Sha3Valid         = 8'b00010111, // sha3 mode, wait for sha3 valid indication
+    Sha3Done          = 8'b00001010, // sha3 mode, capture sha3 result, pulse done input
+    Sha3Quiese        = 8'b10000011, // sha3 mode, capture sha3 result, pulse done input
+    Error             = 8'b10101000  // illegal state reached and hang
   } state_e;
 
   state_e state_d, state_q;
@@ -98,7 +104,9 @@ module entropy_src_main_sm #(
     sha3_process_o = 1'b0;
     sha3_done_o = 1'b0;
     cs_aes_halt_req_o = 1'b0;
+    set_startup_alert_o = 1'b0;
     main_sm_idle_o = 1'b0;
+    main_sm_startup_o = 1'b0;
     main_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
@@ -107,7 +115,7 @@ module entropy_src_main_sm #(
           if (bypass_mode_i) begin
             state_d = BootHTRunning;
           end else begin
-            state_d = NormHTStart;
+            state_d = StartupHTStart;
           end
         end
       end
@@ -133,44 +141,98 @@ module entropy_src_main_sm #(
             rst_alert_cntr_o = 1'b1;
             rst_bypass_mode_o = 1'b1;
             bypass_stage_pop_o = 1'b1;
-            state_d = Idle;
+            state_d = StartupHTStart;
           end
         end
       end
-      NormHTStart: begin
+      StartupHTStart: begin
+        main_sm_startup_o = 1'b1;
         if (!enable_i || sfifo_esfinal_full_i) begin
           state_d = Idle;
         end else begin
           sha3_start_o = 1'b1;
-          state_d = NormHTRunning;
+          state_d = StartupPhase1;
         end
       end
-      NormHTRunning: begin
+      StartupPhase1: begin
+        main_sm_startup_o = 1'b1;
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (ht_done_pulse_i) begin
+            if (ht_fail_pulse_i) begin
+              state_d = StartupFail1;
+            end else begin
+              state_d = StartupPass1;
+            end
+          end
+        end
+      end
+      StartupPass1: begin
+        main_sm_startup_o = 1'b1;
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (ht_done_pulse_i) begin
+            if (ht_fail_pulse_i) begin
+              state_d = StartupFail1;
+            end else begin
+              // Passed two consecutive tests
+              state_d = Sha3Prep;
+            end
+          end
+        end
+      end
+      StartupFail1: begin
+        main_sm_startup_o = 1'b1;
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (ht_done_pulse_i) begin
+            if (ht_fail_pulse_i) begin
+              // Failed two consecutive tests
+              set_startup_alert_o = 1'b1;
+              state_d = StartupPhase1;
+            end else begin
+              state_d = StartupPass1;
+            end
+          end
+        end
+      end
+      ContHTStart: begin
+        if (!enable_i || sfifo_esfinal_full_i) begin
+          state_d = Idle;
+        end else begin
+          sha3_start_o = 1'b1;
+          state_d = ContHTRunning;
+        end
+      end
+      ContHTRunning: begin
         // pass or fail of HT is the same path
         if (ht_done_pulse_i || !enable_i) begin
-          state_d = NormSha3CSReq;
+          state_d = Sha3Prep;
         end
       end
-      NormSha3CSReq: begin
+      Sha3Prep: begin
         // for normal or halt cases, always prevent a power spike
         cs_aes_halt_req_o = 1'b1;
         if (cs_aes_halt_ack_i) begin
-          state_d = NormSha3Process;
+          state_d = Sha3Process;
         end
       end
-      NormSha3Process: begin
+      Sha3Process: begin
         cs_aes_halt_req_o = 1'b1;
         rst_alert_cntr_o = 1'b1;
         sha3_process_o = 1'b1;
-        state_d = NormSha3Valid;
+        state_d = Sha3Valid;
       end
-      NormSha3Valid: begin
+      Sha3Valid: begin
         cs_aes_halt_req_o = 1'b1;
         if (sha3_state_vld_i) begin
-          state_d = NormSha3Done;
+          state_d = Sha3Done;
         end
       end
-      NormSha3Done: begin
+      Sha3Done: begin
         if (!enable_i) begin
           sha3_done_o = 1'b1;
           state_d = Idle;
@@ -178,8 +240,15 @@ module entropy_src_main_sm #(
           if (main_stage_rdy_i) begin
             sha3_done_o = 1'b1;
             main_stage_pop_o = 1'b1;
-            state_d = Idle;
+            state_d = Sha3Quiese;
           end
+        end
+      end
+      Sha3Quiese: begin
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          state_d = ContHTStart;
         end
       end
       Error: begin
