@@ -205,128 +205,123 @@ interface mem_bkdr_if #(
     return 'x;
   endfunction
 
+  // Internal function to write a single byte to the memory, correctly updating the ECC bits.
+  function automatic void _write8_raw(int word_idx, int byte_idx, bit [7:0] data);
+    logic [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
+    rw_data[byte_idx * 8 +: 8] = data;
+    `MEM_ARR_PATH_SLICE[word_idx] = rw_data;
+  endfunction
+
+  // Internal function to write a single byte to the memory, correctly updating its parity bit.
+  function automatic void _write8_parity(int       word_idx,
+                                         int       byte_idx,
+                                         bit [7:0] data,
+                                         int       inject_num_errors);
+    logic [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
+
+    // Lane is the 9-bit "byte" that should be written into the word.
+    bit [9-1:0] lane = {~(^data), data};
+
+    // TODO: check with designer, current testbench only support 1 bit parity error.
+    `DV_CHECK_LE(inject_num_errors, 1, "Parity only supports 1 bit error", , path)
+
+    // Note that if memory parity checks are enabled,
+    // we have to write the correct parity bit as well.
+    // Odd parity is used, rather than even parity checking.
+    //
+    // TODO: odd/even parity checks could be made configurable.
+    if (inject_num_errors) begin
+      lane ^= (1 << $urandom_range(0, 9 - 1));
+    end
+
+    // Inject the lane that we've written into the word and then write the word back to the memory.
+    rw_data[byte_idx * 9 +: 9] = lane;
+    `MEM_ARR_PATH_SLICE[word_idx] = rw_data;
+  endfunction
+
+  // Internal function to write a single byte to the memory, correctly updating the ECC bits.
+  function automatic void _write8_ecc(int       word_idx,
+                                      int       byte_idx,
+                                      bit [7:0] data,
+                                      int       inject_num_errors);
+    bit [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
+    rw_data[byte_idx * 8 +: 8] = data;
+
+    // Check the requested number of injected ECC errors is possible.
+    `DV_CHECK_LE(inject_num_errors, MAX_MEM_WIDTH,
+                 $sformatf("Max %0d bits to inject ECC error", MAX_MEM_WIDTH), , path)
+
+    case (mem_bytes_per_word)
+      2: begin
+        case (MEM_ECC)
+          Secded_22_16: begin
+            rw_data = prim_secded_22_16_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+          end
+          SecdedHamming_22_16: begin
+            rw_data = prim_secded_hamming_22_16_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+          end
+          default: begin
+            `uvm_error(path,
+                $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
+          end
+        endcase
+      end
+      4: begin
+        case (MEM_ECC)
+          Secded_39_32: begin
+            rw_data = prim_secded_39_32_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+          end
+          SecdedHamming_39_32: begin
+            rw_data = prim_secded_hamming_39_32_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+          end
+          default: begin
+            `uvm_error(path,
+                $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
+          end
+        endcase
+      end
+      8: begin
+        case (MEM_ECC)
+          Secded_72_64: begin
+            rw_data = prim_secded_72_64_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+          end
+          SecdedHamming_72_64: begin
+            rw_data = prim_secded_hamming_72_64_enc(rw_data[ECC_DATA_WIDTH-1:0]);
+          end
+          default: begin
+            `uvm_error(path,
+                $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
+          end
+        endcase
+      end
+      default: begin
+        `uvm_error(path, $sformatf("ECC is not supported at mem_width[%0d]", mem_width))
+      end
+    endcase
+
+    if (inject_num_errors) rw_data = inject_errors(rw_data, inject_num_errors);
+
+    `MEM_ARR_PATH_SLICE[word_idx] = rw_data;
+  endfunction
+
   function automatic void write8(input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                  input bit [7:0] data,
                                  input int inject_num_errors = 0);
-    if (is_addr_valid(addr)) begin
-      int mem_index = addr >> mem_addr_lsb;
-      bit [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[mem_index];
+    int unsigned word_idx = addr >> mem_addr_lsb;
+    int unsigned byte_idx = addr - (word_idx << mem_addr_lsb);
 
-      // Prepare corrupted data if an parity error injection is requested.
-      //
-      // We want to randomly inject errors into the parity bits themselves for better error
-      // coverage.
-      int idx_to_corrupt = $urandom_range(0, MEM_BYTE_MSB - 1);
+    if (!is_addr_valid(addr)) begin
+      `uvm_error(path, $sformatf("Address 0x%0h is not a valid address", addr))
+    end
 
-      bit [MEM_BYTE_MSB-1:0] corrupted_data;
-
-      // If inject ECC error, check the number of injected ecc_err is available.
-      if (MEM_ECC != SecdedNone) begin
-        `DV_CHECK_LE(inject_num_errors, MAX_MEM_WIDTH,
-                     $sformatf("Max %0d bits to inject ECC error", MAX_MEM_WIDTH), , path)
-      end
-
-      // TODO: check with designer, current testbench only support 1 bit parity error.
-      if (MEM_PARITY) begin
-        `DV_CHECK_LE(inject_num_errors, 1, "Parity only support 1 bit error", , path)
-      end
-
-      // Note that if memory parity checks are enabled,
-      // we have to write the correct parity bit as well.
-      // Odd parity is used, rather than even parity checking.
-      //
-      // TODO: odd/even parity checks could be made configurable.
-      case (mem_bytes_per_word)
-        // ECC is unavailable if only 1 byte in each memory word
-        1: begin
-          rw_data[0 +: 8] = data;
-          if (MEM_PARITY) begin
-            rw_data[0 + 8] = ~(^data);
-            if (inject_num_errors) begin
-              corrupted_data = rw_data[0 +: MEM_BYTE_MSB];
-              corrupted_data[idx_to_corrupt] = !corrupted_data[idx_to_corrupt];
-              rw_data[0 +: MEM_BYTE_MSB] = corrupted_data;
-            end
-          end
-        end
-        2: begin
-          rw_data[addr[0] * MEM_BYTE_MSB +: 8] = data;
-          if (MEM_PARITY) begin
-            rw_data[addr[0] * MEM_BYTE_MSB + 8] = ~(^data);
-            if (inject_num_errors) begin
-              corrupted_data = rw_data[addr[0] * MEM_BYTE_MSB +: MEM_BYTE_MSB];
-              corrupted_data[idx_to_corrupt] = !corrupted_data[idx_to_corrupt];
-              rw_data[addr[0] * MEM_BYTE_MSB +: MEM_BYTE_MSB] = corrupted_data;
-            end
-          end else if (MEM_ECC != SecdedNone) begin
-            case (MEM_ECC)
-              Secded_22_16: begin
-                rw_data = prim_secded_22_16_enc(rw_data[ECC_DATA_WIDTH-1:0]);
-              end
-              SecdedHamming_22_16: begin
-                rw_data = prim_secded_hamming_22_16_enc(rw_data[ECC_DATA_WIDTH-1:0]);
-              end
-              default: begin
-                `uvm_error(path,
-                    $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
-              end
-            endcase
-            if (inject_num_errors) rw_data = inject_errors(rw_data, inject_num_errors);
-          end
-        end
-        4: begin
-          rw_data[addr[1:0] * MEM_BYTE_MSB +: 8] = data;
-          if (MEM_PARITY) begin
-            rw_data[addr[1:0] * MEM_BYTE_MSB + 8] = ~(^data);
-            if (inject_num_errors) begin
-              corrupted_data = rw_data[addr[1:0] * MEM_BYTE_MSB +: MEM_BYTE_MSB];
-              corrupted_data[idx_to_corrupt] = !corrupted_data[idx_to_corrupt];
-              rw_data[addr[1:0] * MEM_BYTE_MSB +: MEM_BYTE_MSB] = corrupted_data;
-            end
-          end else if (MEM_ECC != SecdedNone) begin
-            case (MEM_ECC)
-              Secded_39_32: begin
-                rw_data = prim_secded_39_32_enc(rw_data[ECC_DATA_WIDTH-1:0]);
-              end
-              SecdedHamming_39_32: begin
-                rw_data = prim_secded_hamming_39_32_enc(rw_data[ECC_DATA_WIDTH-1:0]);
-              end
-              default: begin
-                `uvm_error(path,
-                    $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
-              end
-            endcase
-            if (inject_num_errors) rw_data = inject_errors(rw_data, inject_num_errors);
-          end
-        end
-        8: begin
-          rw_data[addr[2:0] * MEM_BYTE_MSB +: 8] = data;
-          if (MEM_PARITY) begin
-            rw_data[addr[2:0] * MEM_BYTE_MSB + 8] = ~(^data);
-            if (inject_num_errors) begin
-              corrupted_data = rw_data[addr[2:0] * MEM_BYTE_MSB +: MEM_BYTE_MSB];
-              corrupted_data[idx_to_corrupt] = !corrupted_data[idx_to_corrupt];
-              rw_data[addr[2:0] * MEM_BYTE_MSB +: MEM_BYTE_MSB] = corrupted_data;
-            end
-          end else if (MEM_ECC != SecdedNone) begin
-            case (MEM_ECC)
-              Secded_72_64: begin
-                rw_data = prim_secded_72_64_enc(rw_data[ECC_DATA_WIDTH-1:0]);
-              end
-              SecdedHamming_72_64: begin
-                rw_data = prim_secded_hamming_72_64_enc(rw_data[ECC_DATA_WIDTH-1:0]);
-              end
-              default: begin
-                `uvm_error(path,
-                    $sformatf("MEM_ECC %0s is unsupported at mem_width[%0d]", MEM_ECC, mem_width))
-              end
-            endcase
-            if (inject_num_errors) rw_data = inject_errors(rw_data, inject_num_errors);
-          end
-        end
-        default: ;
-      endcase
-      `MEM_ARR_PATH_SLICE[mem_index] = rw_data;
+    if (MEM_ECC != SecdedNone) begin
+      _write8_ecc(word_idx, byte_idx, data, inject_num_errors);
+    end else if (MEM_PARITY) begin
+      _write8_parity(word_idx, byte_idx, data, inject_num_errors);
+    end else begin
+      `DV_CHECK_FATAL(inject_num_errors == 0,
+                      "Can't inject errors with no integrity protection.", path)
+      _write8_raw(word_idx, byte_idx, data);
     end
   endfunction
 
