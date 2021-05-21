@@ -5,7 +5,8 @@
   name: "lc_ctrl"
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
   testpoints: [
     {
       name: smoke
@@ -13,18 +14,19 @@
             Smoke test accessing lc_ctrl state transition datapath.
 
             **Stimulus**:
-            - Initialize lc_ctrl by sending pwrmgr req and otp_ctrl valid random data
+            - Initialize lc_ctrl by sending pwrmgr req and otp_ctrl valid random data.
             - Request a valid next LC state by writing CSRs: `transition_target`,
-              `transition_token*`, and `transition_cmd`
+              `transition_token*`, and `transition_cmd`.
 
             **Checks**:
             - After lc_ctrl initialization finishes, check lc_ctrl broadcast outputs, check
               the value of lc_state and lc_transition_cnt CSRs, and check device_id and id_state
-              CSRs
+              CSRs.
             - After lc_ctrl state transition request, check status to ensure the transition is
-              valid and successful
-            - Check token matching for both conditional and unconditional requests
-            - Once the transition is successful, check lc_ctrl broadcast outputs are all turned off
+              valid and successful.
+            - Check token matching for both conditional and unconditional requests.
+            - Once the transition is successful, check lc_ctrl broadcast outputs are all turned
+              off.
             '''
       milestone: V1
       tests: ["lc_ctrl_smoke"]
@@ -48,8 +50,8 @@
             registers.
 
             **Checks**:
-            - Check `transition_regwen` register is set to 1 during lc_state transition request
-            - Check that accessing its locked CSRs is gated during the transition operation
+            - Check `transition_regwen` register is set to 1 during lc_state transition request.
+            - Check that accessing its locked CSRs is gated during the transition operation.
             '''
       milestone: V2
       tests: []
@@ -60,9 +62,9 @@
             This test checks lc_program failure by setting the error bit after otp program request.
 
             **Checks**:
-            - Check if status register reflects the correct error bit
-            - Check if lc_program_failure alert is triggered
-            - Check if lc_state moves to escalation state
+            - Check if status register reflects the correct error bit.
+            - Check if lc_program_failure alert is triggered.
+            - Check if lc_state moves to escalation state.
             '''
       milestone: V2
       tests: ["lc_ctrl_prog_failure"]
@@ -71,15 +73,15 @@
       name: lc_state_failure
       desc: '''
             This test checks lc_state failure by:
-            - Driving invalid data to lc_ctrl input `otp_lc_data_i` fields `lc_state` and `lc_cnt`
-            - Backdoor changing lc_ctrl FSM's to invalid value
+            - Driving invalid data to lc_ctrl input `otp_lc_data_i` fields `lc_state` and `lc_cnt`.
+            - Backdoor changing lc_ctrl FSM's to invalid value.
             For invalid value, the testbench will test using random value and valid `A/B/C/D`
             values with different orders.
 
             **Checks**:
-            - Check if status register reflects the correct error bit
-            - Check if lc_state_failure alert is triggered
-            - Check if lc_state moves to escalation state
+            - Check if status register reflects the correct error bit.
+            - Check if lc_state_failure alert is triggered.
+            - Check if lc_state moves to escalation state.
             '''
       milestone: V2
       tests: []
@@ -88,18 +90,18 @@
       name: lc_errors
       desc: '''
             This test randomly executes the error senarios:
-            - Otp_ctrl input lc_trans_cnt reaches 16
-            - Lc_ctrl state transition request is invalid
-            - Input LC token does not match the output from otp_ctrl
-            - Flash rma responses to lc_ctrl request with error
-            - LC clock bypass responses with error
-            - Input otp_lc_data's error bit is set to 1
+            - otp_ctrl input lc_trans_cnt reaches 16
+            - lc_ctrl state transition request is invalid
+            - input LC token does not match the output from otp_ctrl
+            - flash rma responses to lc_ctrl request with error
+            - lc_ctrl clock bypass responses with error
+            - input otp_lc_data's error bit is set to 1
             Note that all the above scenarios except the last one requires a reset to recover.
 
             **Checks**:
-            - Check if status register reflects the correct error bit
-            - Check if lc_state moves to correct exit state
-            - Check if lc_trans_cnt is incremented
+            - Check if status register reflects the correct error bit.
+            - Check if lc_state moves to correct exit state.
+            - Check if lc_trans_cnt is incremented.
             '''
       milestone: V2
       tests: ["lc_ctrl_errors"]
@@ -108,8 +110,8 @@
       name: security_escalation
       desc: '''
             This test checks two security escalation responses:
-            1. Wipe secrets: permanently asserts lc_escalate_en signal
-            2. Scrap state: lc_ctrl moves to escalation state, check the state will be cleared up
+            - wipe secrets: permanently asserts lc_escalate_en signal
+            - scrap state: lc_ctrl moves to escalation state, check the state will be cleared up
                upon next power cycle
             '''
       milestone: V2
@@ -131,13 +133,22 @@
             This test covers a corner case in JTAG and TLUL interfaces.
 
             **Stimulus**:
-            - Issue mux_claim operation from TLUL and JTAG interfaces at the same time
+            - Issue mux_claim operation from TLUL and JTAG interfaces at the same time.
 
             **Checks**:
-            - Ensure TAP interface has the priority
+            - Ensure TAP interface has the priority.
             - Ensure right after the mux_claim operation, the non-prioritized interface returns 0
               from the CSR readings. This checking ensures there is no token leakage between
-              interfaces
+              interfaces.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: stress_all
+      desc: '''
+            - Combine above sequences in one test to run sequentially, except csr sequence.
+            - Randomly add reset between each sequence.
             '''
       milestone: V2
       tests: []
