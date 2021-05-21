@@ -29,7 +29,7 @@
       desc: "A single line description with single double-inverted commas."
       milestone: V2
       // testplan entry with no tests added
-      tests: ["{name}_feature1_{intf}"]
+      tests: ["{name}_{intf}_feature1"]
     }
     {
       name: feature2
