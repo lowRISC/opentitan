@@ -73,7 +73,7 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.rom_tl_agent*", "vif", tl_rom_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_rom_tl_agent*", "vif", tl_rom_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(mem_bkdr_vif)::set(null, "*.env", "mem_bkdr_vif",
         `ROM_CTRL_MEM_HIER.mem_bkdr_if);
