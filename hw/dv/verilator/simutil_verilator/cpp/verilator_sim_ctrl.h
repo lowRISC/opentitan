@@ -98,6 +98,15 @@ class VerilatorSimCtrl {
   void SetResetDuration(unsigned int cycles);
 
   /**
+   * Set a timeout in clock cycles.
+   *
+   * This can be overridden by the user (in either direction) with the
+   * --term-after-cycles command-line argument. Setting to zero means
+   * no timeout, which is the default behaviour.
+   */
+  void SetTimeout(unsigned int cycles);
+
+  /**
    * Request the simulation to stop
    */
   void RequestStop(bool simulation_success);
@@ -129,7 +138,7 @@ class VerilatorSimCtrl {
   std::chrono::steady_clock::time_point time_begin_;
   std::chrono::steady_clock::time_point time_end_;
   VerilatedTracer tracer_;
-  int term_after_cycles_;
+  unsigned long term_after_cycles_;
   std::vector<SimCtrlExtension *> extension_array_;
 
   /**
