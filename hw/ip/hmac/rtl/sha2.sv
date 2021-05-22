@@ -24,7 +24,9 @@ module sha2 import hmac_pkg::*; (
   output logic hash_done,
 
   input        [63:0] message_length,   // bits but byte based
-  output sha_word_t [7:0] digest
+  output sha_word_t [7:0] digest,
+
+  output logic idle
 );
 
   localparam int unsigned RoundWidth = $clog2(NumRound);
@@ -315,5 +317,7 @@ module sha2 import hmac_pkg::*; (
     .msg_feed_complete
   );
 
+  // Idle
+  assign idle = (fifo_st_q == FifoIdle) && (sha_st_q == ShaIdle) && !hash_start;
 
 endmodule : sha2

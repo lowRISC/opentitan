@@ -99,6 +99,9 @@ module hmac
   logic                 cfg_block;  // Prevent changing config
   logic                 msg_allowed; // MSG_FIFO from software is allowed
 
+  logic hmac_core_idle;
+  logic sha_core_idle;
+
   ///////////////////////
   // Connect registers //
   ///////////////////////
@@ -399,7 +402,9 @@ module hmac
     .fifo_wready,
 
     .message_length,
-    .sha_message_length
+    .sha_message_length,
+
+    .idle           (hmac_core_idle)
   );
 
   sha2 u_sha2 (
@@ -420,7 +425,9 @@ module hmac
 
     .message_length   (sha_message_length),
 
-    .digest
+    .digest,
+
+    .idle             (sha_core_idle)
   );
 
   hmac_reg_top u_reg (
@@ -511,7 +518,23 @@ module hmac
   // Idle output     //
   /////////////////////
   // TBD this should be connected later
-  assign idle_o = 1'b1;
+  // Idle: AND condition of:
+  //  - packer empty: Currently no way to guarantee the packer is empty.
+  //    temporary, the logic uses packer output (reg_fifo_wvalid)
+  //  - MSG_FIFO  --> fifo_rvalid
+  //  - HMAC_CORE --> hmac_core_idle
+  //  - SHA2_CORE --> sha_core_idle
+  //  - Clean interrupt status
+  logic idle;
+  assign idle = !reg_fifo_wvalid && !fifo_rvalid
+              && hmac_core_idle && sha_core_idle;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      idle_o <= 1'b 1;
+    end else begin
+      idle_o <= idle;
+    end
+  end
 
   //////////////////////////////////////////////
   // Assertions, Assumptions, and Coverpoints //

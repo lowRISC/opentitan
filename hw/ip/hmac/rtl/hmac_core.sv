@@ -38,7 +38,9 @@ module hmac_core import hmac_pkg::*; (
   input              fifo_wready,
 
   input  [63:0] message_length,
-  output [63:0] sha_message_length
+  output [63:0] sha_message_length,
+
+  output logic idle
 );
 
   localparam int unsigned BlockSize = 512;
@@ -306,4 +308,8 @@ module hmac_core import hmac_pkg::*; (
 
     endcase
   end
+
+  // Idle: Idle in HMAC_CORE only represents the idle status when hmac mode is
+  // set. If hmac_en is 0, this logic sends the idle signal always.
+  assign idle = (st_q == StIdle) && !reg_hash_start;
 endmodule
