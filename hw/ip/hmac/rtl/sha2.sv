@@ -132,7 +132,7 @@ module sha2 import hmac_pkg::*; (
     end else if (!sha_en) begin
       round <= '0;
     end else if (run_hash) begin
-      if (round == RoundWidth'(NumRound-1)) begin
+      if (round == RoundWidth'(unsigned'(NumRound-1))) begin
         round <= '0;
       end else begin
         round <= round + 1;
