@@ -28,10 +28,12 @@
             sends a known payload over RX. On reception, both payloads are checked for integrity.
             SW validates the reception of TX watermark, RX watermark, and the TX empty interrupts.
             Choosing the max supported baud rate for the UART is sufficient.
-            Verify each UART instance at the chip level independently.
+
+            Verify each UART instance at the chip level independently. Verify there is no aliasing
+            on all UART ports across the instances.
             '''
       milestone: V1
-      tests: ["chip_uart_tx_rx"]
+      tests: ["chip_sw_uart_tx_rx"]
     }
     {
       name: chip_uart_rx_overflow
@@ -39,10 +41,24 @@
 
             The testbench sends a random payload of size greater than the RX fifo size (32). The SW
             ignores the received the data to allow the RX overflow interrupt to assert.
-            Verify each UART instance at the chip level independently.
+
+            Verify each UART instance at the chip level independently. Verify there is no aliasing
+            on all UART ports across the instances.
             '''
       milestone: V1
-      tests: ["chip_uart_tx_rx"]
+      tests: ["chip_sw_uart_tx_rx"]
+    }
+    {
+      name: chip_uart_tx_rx_alt_clk_freq
+      desc: '''Verify the transmission of UART while randomizing the core clock frequency.
+
+            Run the chip_uart_tx_rx test with the core clock frequency randomized between known
+            bounds.
+
+            TODO: Find out what the range is for the core clock frequency randomization.
+            '''
+      milestone: V1
+      tests: []
     }
 
     // GPIO (pre-verified IP) integration tests:
@@ -50,22 +66,33 @@
       name: chip_gpio_out
       desc: '''Verify GPIO outputs.
 
-            SW test configures the GPIO to be in the output mode. The test walks a 1 through the
-            pins. The testbench checks the value for correctness.
+            SW test configures the GPIOs to be in the output mode. The test walks a 1 through the
+            pins. The testbench checks the value for correctness and verifies that there is no
+            aliasing between the pins.
             '''
       milestone: V1
-      tests: ["chip_gpio"]
+      tests: ["chip_sw_gpio"]
     }
     {
       name: chip_gpio_in
       desc: '''Verify GPIO inputs.
 
-            The SW test configures the GPIO to be in input mode and enables all of them to generate
+            The SW test configures the GPIOs to be in input mode. The testbench walks a 1 through
+            the pins. SW test ensures that the GPIO values read from the CSR is correct.
+            '''
+      milestone: V1
+      tests: ["chip_sw_gpio"]
+    }
+    {
+      name: chip_gpio_irq
+      desc: '''Verify GPIO interrupts.
+
+            The SW test configures the GPIOs to be in input mode and enables all of them to generate
             an interrupt. The testbench walks a 1 through the pins. SW test ensures that the
             interrupt corresponding to the right pin is seen.
             '''
       milestone: V1
-      tests: ["chip_gpio"]
+      tests: ["chip_sw_gpio"]
     }
 
     // SPI_DEVICE (pre-verified IP) integration tests:
@@ -82,7 +109,7 @@
             csb is high.
             '''
       milestone: V2
-      tests: ["chip_spi_device_tx_rx"]
+      tests: ["chip_sw_spi_device_tx_rx"]
     }
     {
       name: chip_spi_device_eeprom
@@ -369,7 +396,7 @@
             fired only after the timeout elapsed.
             '''
       milestone: V2
-      tests: ["chip_rv_timer_irq"]
+      tests: ["chip_sw_rv_timer_irq"]
     }
     {
       name: chip_sleep_aon_timer_wake
@@ -516,7 +543,8 @@
             working correctly as expected. X-ref'ed with all individual IP tests.
             '''
       milestone: V2
-      tests: ["chip_pwrmgr_usbdev_smoketest"]
+      tests: ["chip_dif_pwrmgr_smoketest",
+              "chip_sw_pwrmgr_usbdev_smoketest"]
     }
     {
       name: chip_pwrmgr_deep_sleep_all_reset_reqs
@@ -713,7 +741,14 @@
       name: chip_aes_idle
       desc: '''Verify AES idle signaling to clkmgr.
 
-            Details TBD.
+            - Write the AES clk hint to 1 within clkmgr to indicate AES clk is ready to be gated.
+              Verify that the AES clk hint status within clkmgr reads 0 (AES is idle).
+            - Initiate an AES operation with a known key, plain text and digest.
+              Verify that the AES clk hint status within clkmgr now reads 1 (AES is not idle),
+              before the AES operation is complete.
+            - After the AES operation is complete, verify the digest for correctness.
+              Verify that the AES clk hint status within clkmgr now reads 0 again (AES is idle),
+              after the AES operation is complete.
             '''
       milestone: V2
       tests: []
@@ -722,28 +757,27 @@
     // HMAC (pre-verified IP) integration tests:
     {
       name: chip_hmac_enc
-      desc: '''Verify HMAC / SHA256 operation.
+      desc: '''Verify HMAC operation.
 
-            SW test verifies SHA256 operation with a known key, plain text and digest (pick one of
-            the NIST vectors). SW validates the reception of hmac done and fifo empty interrupts.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_hmac_alert
-      desc: '''Verify alert from HMAC.
-
-            Details TBD.
+            SW test verifies an HMAC operation with a known key, plain text and digest (pick one of
+            the NIST vectors). SW test verifies the digest against the pre-computed value. Verify
+            the HMAC done and FIFO empty interrupts as a part of this test.
             '''
       milestone: V2
       tests: []
     }
     {
       name: chip_hmac_idle
-      desc: '''Verify HMAC idle signaling to clkmgr.
+      desc: '''Verify the HMAC clk idle signal to clkmgr.
 
-            Details TBD.
+            - Write the HMAC clk hint to 1 within clkmgr to indicate HMAC clk is ready to be gated.
+              Verify that the HMAC clk hint status within clkmgr reads 0 (HMAC is idle).
+            - Initiate an HMAC operation with a known key, plain text and digest.
+              Verify that the HMAC clk hint status within clkmgr now reads 1 (HMAC is not idle),
+              before the HMAC operation is complete.
+            - After the HMAC operation is complete, verify the digest for correctness.
+              Verify that the HMAC clk hint status within clkmgr now reads 0 again (HMAC is idle),
+              after the HMAC operation is complete.
             '''
       milestone: V2
       tests: []
@@ -790,9 +824,16 @@
     }
     {
       name: chip_kmac_idle
-      desc: '''Verify KMAC idle signaling to clkmgr.
+      desc: '''Verify the KMAC idle signaling to clkmgr.
 
-            Details TBD.
+            - Write the KMAC clk hint to 1 within clkmgr to indicate KMAC clk is ready to be gated.
+              Verify that the KMAC clk hint status within clkmgr reads 0 (KMAC is idle).
+            - Initiate an KMAC operation with a known key, plain text and digest.
+              Verify that the KMAC clk hint status within clkmgr now reads 1 (KMAC is not idle),
+              before the KMAC operation is complete.
+            - After the KMAC operation is complete, verify the digest for correctness.
+              Verify that the KMAC clk hint status within clkmgr now reads 0 again (KMAC is idle),
+              after the KMAC operation is complete.
             '''
       milestone: V2
       tests: []
@@ -902,9 +943,16 @@
     }
     {
       name: chip_otbn_idle
-      desc: '''Verify OTBN idle signaling to clkmgr.
+      desc: '''Verify the OTBN idle signal to clkmgr.
 
-            Details TBD.
+            - Write the OTBN clk hint to 1 within clkmgr to indicate OTBN clk is ready to be gated.
+              Verify that the OTBN clk hint status within clkmgr reads 0 (OTBN is idle).
+            - Initiate an OTBN operation with a known key, plain text and digest.
+              Verify that the OTBN clk hint status within clkmgr now reads 1 (OTBN is not idle),
+              before the OTBN operation is complete.
+            - After the OTBN operation is complete, verify the digest for correctness.
+              Verify that the OTBN clk hint status within clkmgr now reads 0 again (OTBN is idle),
+              after the OTBN operation is complete.
             '''
       milestone: V2
       tests: []
@@ -1033,7 +1081,7 @@
             Verify that the CPU can read the flash mem contents.
             '''
       milestone: V2
-      tests: ["chip_flash_ctrl_access"]
+      tests: ["chip_sw_flash_ctrl_access"]
     }
     {
       name: chip_flash_ctrl_ops
@@ -1297,6 +1345,7 @@
               "chip_dif_gpio_smoketest",
               "chip_dif_hmac_smoketest",
               "chip_dif_kmac_smoketest",
+              "chip_dif_kmac_cshake_smoketest",
               "chip_dif_otbn_smoketest",
               "chip_dif_otp_ctrl_smoketest",
               "chip_dif_plic_smoketest",
@@ -1310,7 +1359,7 @@
       name: chip_coremark
       desc: '''Run the coremark benchmark on the full chip.'''
       milestone: V2
-      tests: ["chip_coremark"]
+      tests: ["chip_sw_coremark"]
     }
     {
       name: chip_sw_boot
@@ -1319,7 +1368,7 @@
              Details TBD.
              '''
       milestone: V2
-      tests: ["chip_uart_tx_rx_bootstrap"]
+      tests: ["chip_sw_uart_tx_rx_bootstrap"]
     }
     {
       name: chip_secure_boot
@@ -1338,7 +1387,7 @@
              suite of design assertions and other checks in place in the DV environment.
              '''
       milestone: V2
-      tests: ["chip_opentitan_tock"]
+      tests: ["chip_sw_opentitan_tock"]
     }
     {
       name: chip_lc_walkthrough

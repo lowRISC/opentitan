@@ -153,51 +153,51 @@
   // This allows an arbitrary number of SW images to be supplied to the TB.
   tests: [
     {
-      name: chip_uart_tx_rx
+      name: chip_sw_uart_tx_rx
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_uart_tx_rx_bootstrap
+      name: chip_sw_uart_tx_rx_bootstrap
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
       sw_images: ["sw/device/tests/uart_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode"]
       run_opts: ["+use_spi_load_bootstrap=1"]
     }
     {
-      name: chip_spi_device_tx_rx
+      name: chip_sw_spi_device_tx_rx
       uvm_test_seq: chip_sw_spi_tx_rx_vseq
       sw_images: ["sw/device/tests/spi_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_gpio
+      name: chip_sw_gpio
       uvm_test_seq: chip_sw_gpio_vseq
       sw_images: ["sw/device/tests/gpio_test:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_flash_ctrl_access
+      name: chip_sw_flash_ctrl_access
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/flash_ctrl_test:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_pwrmgr_usbdev_smoketest
+      name: chip_sw_pwrmgr_usbdev_smoketest
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/pwrmgr_usbdev_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
       run_opts: ["+sw_test_timeout_ns=2000000"]
     }
     {
-      name: chip_rv_timer_irq
+      name: chip_sw_rv_timer_irq
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests/dif_rv_timer_smoketest:1"]
       en_run_modes: ["sw_test_mode"]
     }
     {
-      name: chip_coremark
+      name: chip_sw_coremark
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/benchmarks/coremark/coremark_top_earlgrey:1:external"]
       en_run_modes: ["sw_test_mode"]
@@ -205,7 +205,7 @@
                  "+sw_test_timeout_ns=22000000"]
     }
     {
-      name: chip_opentitan_tock
+      name: chip_sw_opentitan_tock
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tock/prebuilt/opentitan:1:prebuilt:external"]
       en_run_modes: ["sw_test_mode"]
