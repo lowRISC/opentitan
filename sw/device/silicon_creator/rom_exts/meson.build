@@ -42,7 +42,6 @@ foreach slot, slot_link_args : rom_ext_link_info
   rom_ext_slot_libs += {
     slot: declare_dependency(
       sources: [
-        'rom_ext_manifest.S',
         'rom_ext_start.S',
       ],
       link_args: slot_link_args[0],
@@ -52,6 +51,7 @@ foreach slot, slot_link_args : rom_ext_link_info
         sw_lib_dif_uart,
         sw_lib_runtime_hart,
         sw_lib_runtime_print,
+        sw_silicon_creator_lib_manifest_section,
       ],
       link_with: static_library(
         slot + '_rom_ext_lib',

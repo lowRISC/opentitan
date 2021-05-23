@@ -17,10 +17,45 @@ sw_silicon_creator_lib_fake_deps = declare_dependency(
   ),
 )
 
+# Manifest section for boot stage images stored in flash.
+sw_silicon_creator_lib_manifest_section = declare_dependency(
+  # Using link_whole so that the .manifest section is created even if a boot
+  # stage doesn't use kManifest.
+  link_whole: static_library(
+    'sw_silicon_creator_lib_manifest_section',
+    sources: [
+      'manifest.S',
+    ],
+  ),
+)
+
+# Manifest library.
+sw_silicon_creator_lib_manifest = declare_dependency(
+  link_with: static_library(
+    'sw_silicon_creator_lib_manifest',
+    sources: [
+      'manifest.c',
+    ],
+  ),
+)
+
 test('sw_silicon_creator_lib_error_unittest', executable(
     'sw_silicon_creator_lib_error_unittest',
     sources: [
       'error_unittest.cc',
+    ],
+    dependencies: [
+      sw_vendor_gtest,
+    ],
+    native: true,
+  ),
+  suite: 'mask_rom',
+)
+
+test('sw_silicon_creator_lib_manifest_unittest', executable(
+    'sw_silicon_creator_lib_manifest_unittest',
+    sources: [
+      'manifest_unittest.cc',
     ],
     dependencies: [
       sw_vendor_gtest,

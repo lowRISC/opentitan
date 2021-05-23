@@ -10,6 +10,7 @@ use std::env;
 use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
+use std::convert::TryFrom;
 
 use rom_ext_image::image::Image;
 use rom_ext_image::manifest;
@@ -143,6 +144,10 @@ fn update_image_manifest(
     image.set_manifest_field(
         &manifest::ROM_EXT_IMAGE_TIMESTAMP,
         std::array::IntoIter::new(0_u64.to_le_bytes()),
+    )?;
+    image.set_manifest_field(
+        &manifest::ROM_EXT_IMAGE_LENGTH,
+        std::array::IntoIter::new(u32::try_from(image.len())?.to_le_bytes()),
     )?;
 
     Ok(())
