@@ -26,6 +26,7 @@ enum module_ {
   kModuleSigverify = 0x5653,  // ASCII "SV".
   kModuleOtp = 0x504f,        // ASCII "OP".
   kModuleKeymgr = 0x4d4b,     // ASCII "KM".
+  kModuleManifest = 0x414d,   // ASCII "MA".
 };
 
 /**
@@ -52,6 +53,7 @@ enum module_ {
   X(kErrorOtpBusy,                  ERROR_(1, kModuleOtp, kUnavailable)),  \
   X(kErrorOtpUnknown,               ERROR_(2, kModuleOtp, kUnknown)), \
   X(kErrorKeymgrInternal,           ERROR_(1, kModuleKeymgr, kInternal)), \
+  X(kErrorManifestInternal,         ERROR_(1, kModuleManifest, kInternal)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 

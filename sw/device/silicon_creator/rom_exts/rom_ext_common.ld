@@ -33,8 +33,8 @@ ENTRY(_rom_ext_start_boot)
  * s19->slm conversion scripts are not able to handle non-word aligned sections.
  */
 SECTIONS {
-  .rom_ext_manifest _slot_start_address : {
-    KEEP(*(.rom_ext_manifest))
+  .manifest _slot_start_address : {
+    KEEP(*(.manifest))
   } > eflash
 
   /**
@@ -139,21 +139,6 @@ SECTIONS {
     . = ALIGN(4);
     _bss_end = .;
   } > ram_main
-
-  /**
-   * ROM_EXT Image End Section.
-   *
-   * This is a dummy section required for correctly calculating the ROM_EXT
-   * image length, for the manifest. See the comments in `rom_ext_manifest.S`
-   * for more information.
-   *
-   * If you add more sections to eflash, ensure they come before this section.
-   *
-   * This section must be LOAD, or the image size won't be calculated correctly.
-   */
-  .rom_ext_end : ALIGN(4) {
-    KEEP(*(.rom_ext_end))
-  } > eflash
 
   INCLUDE sw/device/info_sections.ld
 }

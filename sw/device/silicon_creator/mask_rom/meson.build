@@ -43,6 +43,7 @@ mask_rom_lib = declare_dependency(
       sw_silicon_creator_lib_driver_keymgr,
       sw_silicon_creator_lib_driver_uart,
       sw_silicon_creator_lib_fake_deps,
+      sw_silicon_creator_lib_manifest,
       sw_silicon_creator_mask_rom_sigverify,
       rom_ext_manifest_parser,
       sw_lib_crt,

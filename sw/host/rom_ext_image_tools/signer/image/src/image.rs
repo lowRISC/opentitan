@@ -56,6 +56,11 @@ impl Image {
     pub fn signed_bytes(&self) -> &[u8] {
         &self.data[manifest::ROM_EXT_SIGNED_AREA_START_OFFSET..]
     }
+
+    /// Returns the size of the image in number of bytes.
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
 }
 
 impl AsRef<[u8]> for Image {
