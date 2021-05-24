@@ -170,7 +170,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  virtual function check_mem_read(tl_seq_item item);
+  virtual function void check_mem_read(tl_seq_item item);
     bit [ROM_MEM_W-1:0] exp_data;
 
     exp_data = cfg.mem_bkdr_vif.rom_encrypt_read32(
