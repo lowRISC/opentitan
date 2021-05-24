@@ -7,8 +7,8 @@
 module prim_secded_28_22_fpv (
   input               clk_i,
   input               rst_ni,
-  input        [21:0] in,
-  output logic [21:0] d_o,
+  input        [21:0] data_i,
+  output logic [21:0] data_o,
   output logic [5:0] syndrome_o,
   output logic [1:0]  err_o,
   input        [27:0] error_inject_i
@@ -17,13 +17,13 @@ module prim_secded_28_22_fpv (
   logic [27:0] data_enc;
 
   prim_secded_28_22_enc prim_secded_28_22_enc (
-    .in,
-    .out(data_enc)
+    .data_i,
+    .data_o(data_enc)
   );
 
   prim_secded_28_22_dec prim_secded_28_22_dec (
-    .in(data_enc ^ error_inject_i),
-    .d_o,
+    .data_i(data_enc ^ error_inject_i),
+    .data_o,
     .syndrome_o,
     .err_o
   );

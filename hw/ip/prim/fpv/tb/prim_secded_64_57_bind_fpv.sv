@@ -10,8 +10,8 @@ module prim_secded_64_57_bind_fpv;
     prim_secded_64_57_assert_fpv prim_secded_64_57_assert_fpv (
     .clk_i,
     .rst_ni,
-    .in,
-    .d_o,
+    .data_i,
+    .data_o,
     .syndrome_o,
     .err_o,
     .error_inject_i

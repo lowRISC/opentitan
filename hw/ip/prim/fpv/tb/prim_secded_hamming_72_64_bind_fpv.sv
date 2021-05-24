@@ -10,8 +10,8 @@ module prim_secded_hamming_72_64_bind_fpv;
     prim_secded_hamming_72_64_assert_fpv prim_secded_hamming_72_64_assert_fpv (
     .clk_i,
     .rst_ni,
-    .in,
-    .d_o,
+    .data_i,
+    .data_o,
     .syndrome_o,
     .err_o,
     .error_inject_i
