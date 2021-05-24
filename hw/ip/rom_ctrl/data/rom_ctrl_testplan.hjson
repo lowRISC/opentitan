@@ -63,4 +63,31 @@
       tests: ["rom_ctrl_ecc"]
     }
   ]
+  covergroups: [
+    {
+      name: rom_ctrl_kmac_cg
+      desc: '''
+            Collect coverage on the rom_ctrl / kmac interface, specifically around
+            stalling and back-pressure behavior.
+
+            The agent needs to cover the case where the kmac returns a digest
+            before the rom_ctrl finishes reading the expected digest from memory,
+            and also after.
+            '''
+    }
+    {
+      name: rom_ctrl_tlul_cg
+      desc: '''
+            Collect coverage on the two TLUL interfaces, specifically checking
+            that we see requests around the same time as the rom check completes.
+            '''
+    }
+    {
+      name: rom_ctrl_check_cg
+      desc: '''
+            Collect coverage on the outputs sent to the power manager to confirm
+            that we see pass and fail resutls.
+            '''
+    }
+  ]
 }
