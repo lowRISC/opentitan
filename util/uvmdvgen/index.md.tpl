@@ -64,11 +64,10 @@ This provides the ability to drive and independently monitor random traffic via 
 
 % endif
 % if has_alerts:
-${'###'} Alert agents
+${'###'} Alert_agents
 ${name.upper()} testbench instantiates (already handled in CIP base env) [alert_agents]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}):
 [list alert names].
-The alert_agents provide the ability to drive and independently monitor alert handshakes via
-alert interfaces in ${name.upper()} device.
+The alert_agents provide the ability to drive and independently monitor alert handshakes via alert interfaces in ${name.upper()} device.
 
 % endif
 % for agent in env_agents:
