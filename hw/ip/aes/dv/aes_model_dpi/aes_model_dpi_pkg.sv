@@ -72,10 +72,12 @@ package aes_model_dpi_pkg;
     output bit [3:0][31:0] data_o);
 
     bit [3:0][3:0][7:0] iv_in, data_in, data_out;
-    data_in = aes_transpose(data_i);
+    data_in = aes_transpose({<<8{data_i}});
     iv_in   = aes_transpose(iv_i);
+    key_i   = {<<8{key_i}};
     c_dpi_aes_crypt_block(impl_i, op_i, mode_i, iv_in, key_len_i, key_i, data_in, data_out);
     data_o  = aes_transpose(data_out);
+    data_o  = {<<8{data_o}};
     return;
   endfunction // sv_dpi_aes_crypt_block
 endpackage
