@@ -64,7 +64,9 @@ module otbn_core
 
   output logic                    edn_urnd_req_o,
   input  logic                    edn_urnd_ack_i,
-  input  logic [EdnDataWidth-1:0] edn_urnd_data_i
+  input  logic [EdnDataWidth-1:0] edn_urnd_data_i,
+
+  output logic [31:0]             insn_cnt_o
 );
   // Fetch request (the next instruction)
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr;
@@ -163,6 +165,8 @@ module otbn_core
 
   logic                     controller_start;
   logic [ImemAddrWidth-1:0] controller_start_addr;
+
+  logic [31:0] insn_cnt;
 
   // Start stop control start OTBN execution when requested and deals with any pre start or post
   // stop actions.
@@ -339,8 +343,12 @@ module otbn_core
 
     .rnd_req_o          (rnd_req),
     .rnd_prefetch_req_o (rnd_prefetch_req),
-    .rnd_valid_i        (rnd_valid)
+    .rnd_valid_i        (rnd_valid),
+
+    .insn_cnt_o         (insn_cnt)
   );
+
+  assign insn_cnt_o = insn_cnt;
 
   // Load store unit: read and write data from data memory
   otbn_lsu u_otbn_lsu (

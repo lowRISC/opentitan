@@ -89,7 +89,8 @@ module otbn_top_sim (
 
     .edn_urnd_req_o  ( edn_urnd_req     ),
     .edn_urnd_ack_i  ( edn_urnd_ack     ),
-    .edn_urnd_data_i ( edn_urnd_data    )
+    .edn_urnd_data_i ( edn_urnd_data    ),
+    .insn_cnt_o      ()
   );
 
   // The top bits of IMEM rdata aren't currently used (they will eventually be used for integrity

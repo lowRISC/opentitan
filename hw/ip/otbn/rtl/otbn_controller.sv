@@ -121,7 +121,9 @@ module otbn_controller
 
   output logic rnd_req_o,
   output logic rnd_prefetch_req_o,
-  input  logic rnd_valid_i
+  input  logic rnd_valid_i,
+
+  output logic [31:0] insn_cnt_o
 );
   otbn_state_e state_q, state_d, state_raw;
 
@@ -200,6 +202,9 @@ module otbn_controller
   logic dmem_addr_err, dmem_addr_unaligned_base, dmem_addr_unaligned_bignum, dmem_addr_overflow;
 
   logic rf_a_indirect_err, rf_b_indirect_err, rf_d_indirect_err, rf_indirect_err;
+
+  logic insn_cnt_en;
+  logic [31:0] insn_cnt_d, insn_cnt_q;
 
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
@@ -342,6 +347,18 @@ module otbn_controller
       state_q <= OtbnStateHalt;
     end else begin
       state_q <= state_d;
+    end
+  end
+
+  assign insn_cnt_d = start_i ? 32'd0 : (insn_cnt_q + 32'd1);
+  assign insn_cnt_en = (insn_executing & ~stall & (insn_cnt_q != 32'hffffffff)) | start_i;
+  assign insn_cnt_o = insn_cnt_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      insn_cnt_q <= 32'd0;
+    end else if (insn_cnt_en) begin
+      insn_cnt_q <= insn_cnt_d;
     end
   end
 

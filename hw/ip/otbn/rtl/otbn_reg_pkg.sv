@@ -112,6 +112,11 @@ package otbn_reg_pkg;
     } reg_error;
   } otbn_hw2reg_fatal_alert_cause_reg_t;
 
+  typedef struct packed {
+    logic [31:0] d;
+    logic        de;
+  } otbn_hw2reg_insn_cnt_reg_t;
+
   // Register -> HW type
   typedef struct packed {
     otbn_reg2hw_intr_state_reg_t intr_state; // [41:41]
@@ -124,10 +129,11 @@ package otbn_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [26:25]
-    otbn_hw2reg_status_reg_t status; // [24:24]
-    otbn_hw2reg_err_bits_reg_t err_bits; // [23:8]
-    otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [7:0]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [59:58]
+    otbn_hw2reg_status_reg_t status; // [57:57]
+    otbn_hw2reg_err_bits_reg_t err_bits; // [56:41]
+    otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [40:33]
+    otbn_hw2reg_insn_cnt_reg_t insn_cnt; // [32:0]
   } otbn_hw2reg_t;
 
   // Register offsets
@@ -140,6 +146,7 @@ package otbn_reg_pkg;
   parameter logic [BlockAw-1:0] OTBN_ERR_BITS_OFFSET = 16'h 18;
   parameter logic [BlockAw-1:0] OTBN_START_ADDR_OFFSET = 16'h 1c;
   parameter logic [BlockAw-1:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 20;
+  parameter logic [BlockAw-1:0] OTBN_INSN_CNT_OFFSET = 16'h 24;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] OTBN_INTR_TEST_RESVAL = 1'h 0;
@@ -166,11 +173,12 @@ package otbn_reg_pkg;
     OTBN_STATUS,
     OTBN_ERR_BITS,
     OTBN_START_ADDR,
-    OTBN_FATAL_ALERT_CAUSE
+    OTBN_FATAL_ALERT_CAUSE,
+    OTBN_INSN_CNT
   } otbn_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] OTBN_PERMIT [9] = '{
+  parameter logic [3:0] OTBN_PERMIT [10] = '{
     4'b 0001, // index[0] OTBN_INTR_STATE
     4'b 0001, // index[1] OTBN_INTR_ENABLE
     4'b 0001, // index[2] OTBN_INTR_TEST
@@ -179,7 +187,8 @@ package otbn_reg_pkg;
     4'b 0001, // index[5] OTBN_STATUS
     4'b 0001, // index[6] OTBN_ERR_BITS
     4'b 1111, // index[7] OTBN_START_ADDR
-    4'b 0001  // index[8] OTBN_FATAL_ALERT_CAUSE
+    4'b 0001, // index[8] OTBN_FATAL_ALERT_CAUSE
+    4'b 1111  // index[9] OTBN_INSN_CNT
   };
 
 endpackage
