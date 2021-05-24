@@ -157,17 +157,16 @@ class otp_ctrl_scoreboard extends cip_base_scoreboard #(
             if (cfg.otp_ctrl_vif.under_error_states() == 0) begin
               `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
             end
-
-            if (cfg.en_cov) begin
-              bit [NumPart-2:0] parts_locked;
-              foreach (parts_locked[i]) parts_locked[i] = (get_otp_digest_val(i) != 0);
-              cov.power_on_cg.sample(cfg.otp_ctrl_vif.lc_esc_on, parts_locked);
-            end
           end else if (cfg.otp_ctrl_vif.alert_reqs) begin
             // Ignore digest CSR check when otp_ctrl initialization is interrupted by fatal errors.
             // SCB cannot predict how many partitions already finished initialization and updated
             // the digest value to CSRs.
             ignore_digest_chk = 1;
+          end
+          if (cfg.en_cov) begin
+            bit [NumPart-2:0] parts_locked;
+            foreach (parts_locked[i]) parts_locked[i] = (get_otp_digest_val(i) != 0);
+            cov.power_on_cg.sample(cfg.otp_ctrl_vif.lc_esc_on, parts_locked);
           end
         end
       end
