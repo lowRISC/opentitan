@@ -227,7 +227,7 @@ module spi_fwm_txf_ctrl #(
 
   always_comb begin
     fifo_wdata = '0;
-    for (int i = 0 ; i < NumBytes ; i++) begin
+    for (int unsigned i = 0 ; i < NumBytes ; i++) begin
       if (pos == i[SDW-1:0]) fifo_wdata = fifo_wdata_d[8*i+:8];
     end
   end

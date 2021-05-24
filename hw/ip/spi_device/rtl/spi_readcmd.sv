@@ -421,8 +421,8 @@ module spi_readcmd
   //- END:   SRAM Datapath ----------------------------------------------------
 
   //= BEGIN: FIFO to P2S datapath =============================================
-  assign fifo_byte = '{fifo_rdata[7:0],   fifo_rdata[15:8],
-                       fifo_rdata[23:16], fifo_rdata[31:24]};
+  assign fifo_byte = '{fifo_rdata.data[7:0],   fifo_rdata.data[15:8],
+                       fifo_rdata.data[23:16], fifo_rdata.data[31:24]};
   // TODO: addr_inc should not affect this until it is accepted.
   assign p2s_byte = fifo_byte[fifo_byteoffset];
 

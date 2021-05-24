@@ -521,7 +521,7 @@ module spi_passthrough
   cmd_info_t       cmd_info, cmd_info_d;
   cmd_info_t [1:0] cmd_info_7th, cmd_info_7th_d;
 
-  logic [AddrCntW-1:0] addr_size, addr_size_d;
+  logic [AddrCntW-1:0] addr_size_d;
 
   logic cmd_info_latch;
 
@@ -567,7 +567,8 @@ module spi_passthrough
   assign unused_cmd_info_fields = &{1'b0,
                                     cmd_info.addr_en,
                                     cmd_info.addr_swap_en,
-                                    cmd_info.addr_4b_affected};
+                                    cmd_info.addr_4b_affected,
+                                    cmd_info.opcode};
 
   always_comb begin
     cmd_info_d = '0;
