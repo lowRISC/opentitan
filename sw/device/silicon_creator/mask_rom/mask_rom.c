@@ -16,12 +16,10 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
+#include "sw/device/silicon_creator/mask_rom/romextimage.h"
 #include "sw/device/silicon_creator/mask_rom/sig_verify.h"
-#include "sw/device/silicon_creator/rom_exts/rom_ext_manifest_parser.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-typedef void(boot_fn)(void);
 
 void mask_rom_exception_handler(void) { wait_for_interrupt(); }
 void mask_rom_nmi_handler(void) { wait_for_interrupt(); }
@@ -91,25 +89,17 @@ void mask_rom_boot(void) {
     //    break
     //}
 
-    // TODO: Range checks for manifest fields used before signature
-    // verification.
-    rom_ext_manifest_t rom_ext = rom_ext_get_parameters(kRomExtManifestSlotA);
-    rom_ext_signature_key_modulus_t key_modulus;
-    if (!rom_ext_get_signature_key_modulus(rom_ext, &key_modulus)) {
+    const manifest_t *manifest;
+    manifest_signed_region_t signed_region;
+    if (romextimage_manifest_get(kFlashSlotA, &manifest) != kErrorOk) {
       break;
     }
-    rom_ext_signature_t rom_ext_signature;
-    if (!rom_ext_get_signature(rom_ext, &rom_ext_signature)) {
+    if (manifest_signed_region_get(manifest, &signed_region) != kErrorOk) {
       break;
     }
-    sigverify_rsa_buffer_t signature;
-    memcpy(signature.data, rom_ext_signature.data, sizeof(signature.data));
-    rom_ext_ranges_t ranges = rom_ext_get_ranges(rom_ext);
-
     if (sigverify_rom_ext_signature_verify(
-            (void *)ranges.signed_area_start,
-            ranges.image_end - ranges.signed_area_start, &signature,
-            key_modulus.data[0]) != kErrorOk) {
+            signed_region.start, signed_region.length, &manifest->signature,
+            manifest->modulus.data[0]) != kErrorOk) {
       break;
     }
 
@@ -171,14 +161,11 @@ void mask_rom_boot(void) {
     // if (!final_jump_to_rom_ext(current_rom_ext_manifest)) { // Hardened Jump
     // Module
     if (true) {
-      // Set mtvec for ROM_EXT.
-      uintptr_t interrupt_vector = rom_ext_get_interrupt_vector(rom_ext);
-      CSR_WRITE(CSR_REG_MTVEC, (uint32_t)interrupt_vector);
-
       // Jump to ROM_EXT entry point.
-      boot_fn *rom_ext_entry = (boot_fn *)rom_ext_get_entry(rom_ext);
-      base_printf("rom_ext_entry: %p\r\n", rom_ext_entry);
-      rom_ext_entry();
+      romextimage_entry_point *entry_point =
+          (romextimage_entry_point *)manifest_entry_point_address_get(manifest);
+      base_printf("rom_ext_entry: %p\r\n", entry_point);
+      entry_point();
       // NOTE: never expecting a return, but if something were to go wrong
       // in the real `jump` implementation, we need to enter a failure case.
 
