@@ -319,7 +319,7 @@ def test_apps_selfchecking_silicon_creator(tmp_path, bin_dir,
                                rom_vmem_path,
                                otp_img_path,
                                tmp_path,
-                               boot_timeout=2500)
+                               boot_timeout=55 * 60)
 
     sim.run(app_silicon_creator_selfchecking[0],
             extra_sim_args=app_silicon_creator_selfchecking[1])
