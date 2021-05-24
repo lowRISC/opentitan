@@ -520,6 +520,11 @@ module otbn
   assign hw2reg.fatal_alert_cause.reg_error.de = 0;
   assign hw2reg.fatal_alert_cause.reg_error.d  = 0;
 
+  // INSN_CNT register
+  logic [31:0] insn_cnt;
+  assign hw2reg.insn_cnt.d = insn_cnt;
+  assign hw2reg.insn_cnt.de = 1'b1;
+
   // Alerts ====================================================================
 
   logic [NumAlerts-1:0] alert_test;
@@ -698,7 +703,9 @@ module otbn
 
       .edn_urnd_req_o  (edn_urnd_req),
       .edn_urnd_ack_i  (edn_urnd_ack),
-      .edn_urnd_data_i (edn_urnd_data)
+      .edn_urnd_data_i (edn_urnd_data),
+
+      .insn_cnt_o      (insn_cnt)
     );
   `else
     otbn_core #(
@@ -741,7 +748,9 @@ module otbn
 
       .edn_urnd_req_o  (edn_urnd_req),
       .edn_urnd_ack_i  (edn_urnd_ack),
-      .edn_urnd_data_i (edn_urnd_data)
+      .edn_urnd_data_i (edn_urnd_data),
+
+      .insn_cnt_o      (insn_cnt)
     );
   `endif
 

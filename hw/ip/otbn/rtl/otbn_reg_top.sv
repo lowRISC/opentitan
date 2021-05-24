@@ -187,6 +187,7 @@ module otbn_reg_top (
   logic fatal_alert_cause_imem_error_qs;
   logic fatal_alert_cause_dmem_error_qs;
   logic fatal_alert_cause_reg_error_qs;
+  logic [31:0] insn_cnt_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -653,9 +654,35 @@ module otbn_reg_top (
   );
 
 
+  // R[insn_cnt]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RO"),
+    .RESVAL  (32'h0)
+  ) u_insn_cnt (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.insn_cnt.de),
+    .d      (hw2reg.insn_cnt.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+
+    // to register interface (read)
+    .qs     (insn_cnt_qs)
+  );
 
 
-  logic [8:0] addr_hit;
+
+
+  logic [9:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == OTBN_INTR_STATE_OFFSET);
@@ -667,6 +694,7 @@ module otbn_reg_top (
     addr_hit[6] = (reg_addr == OTBN_ERR_BITS_OFFSET);
     addr_hit[7] = (reg_addr == OTBN_START_ADDR_OFFSET);
     addr_hit[8] = (reg_addr == OTBN_FATAL_ALERT_CAUSE_OFFSET);
+    addr_hit[9] = (reg_addr == OTBN_INSN_CNT_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -682,7 +710,8 @@ module otbn_reg_top (
                (addr_hit[5] & (|(OTBN_PERMIT[5] & ~reg_be))) |
                (addr_hit[6] & (|(OTBN_PERMIT[6] & ~reg_be))) |
                (addr_hit[7] & (|(OTBN_PERMIT[7] & ~reg_be))) |
-               (addr_hit[8] & (|(OTBN_PERMIT[8] & ~reg_be)))));
+               (addr_hit[8] & (|(OTBN_PERMIT[8] & ~reg_be))) |
+               (addr_hit[9] & (|(OTBN_PERMIT[9] & ~reg_be)))));
   end
 
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
@@ -757,6 +786,10 @@ module otbn_reg_top (
         reg_rdata_next[1] = fatal_alert_cause_imem_error_qs;
         reg_rdata_next[2] = fatal_alert_cause_dmem_error_qs;
         reg_rdata_next[3] = fatal_alert_cause_reg_error_qs;
+      end
+
+      addr_hit[9]: begin
+        reg_rdata_next[31:0] = insn_cnt_qs;
       end
 
       default: begin

@@ -253,7 +253,22 @@
           desc: "Set on any ECC error in a register file"
         }
       ]
-    }
+    } // register : fatal_alert_cause
+    { name: "INSN_CNT",
+      desc: "Instruction Counter",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "31:0",
+          name: "insn_cnt",
+          desc: '''
+            The number of instructions executed in the current or last OTBN run. 
+            Saturates at 2^32-1. The counter is reset to zero when a new operation
+            is started. Instructions triggering an error do not count as being executed.
+          '''
+        }
+      ]
+    } // register : insn_cnt
 
     // Give IMEM and DMEM 16 KiB address space, each, to allow for easy expansion
     // of the actual IMEM and DMEM sizes without changing the address map.
