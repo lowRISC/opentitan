@@ -9,6 +9,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
   `uvm_object_new
 
   rand bit [entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH-1:0]   entropy_val;
+  csrng_item                                             cs_item;
   bit [csrng_pkg::CSRNG_CMD_WIDTH-1:0]                   cmd_data, cmd_data_q[$];
   bit [csrng_pkg::GENBITS_BUS_WIDTH-1:0]                 genbits;
 
@@ -29,6 +30,8 @@ class csrng_cmds_vseq extends csrng_base_vseq;
     // Create csrng_cmd host sequence
     m_edn_push_seq = push_pull_host_seq#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::create("m_edn_push_seq");
 
+    cs_item = csrng_item::type_id::create("cs_item");
+
     fork
       begin
 //      for (int i = 0; i < num_trans; i++) begin
@@ -37,6 +40,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
           // TODO: Not always 0, maybe leave randomized
 //        entropy_val[entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH] = 1'b0;
 //          entropy_val = ;
+          // TODO: randomize entropy
           cfg.m_entropy_src_agent_cfg.add_d_user_data(384'hdeadbeef);
           cfg.m_entropy_src_agent_cfg.add_d_user_data(384'hbeefdead);
 //      end
@@ -45,26 +49,25 @@ class csrng_cmds_vseq extends csrng_base_vseq;
 
       begin
         //instantiate cmd
-//        for (int i = 0; i < 1; i++)
-//          cmd_data_q.push_back(32'hdeadbeef);
-//        send_cmd_req(.acmd(csrng_pkg::INS), .clen(4'h1), .flags(4'h1), .glen(19'h0), .data_q(cmd_data_q));
-        send_cmd_req(.acmd(csrng_pkg::INS), .clen(4'h0), .flags(4'h0), .glen(19'h0));
-        ctr_drbg_instantiate(384'hdeadbeef);
+        for (int i = 0; i < cfg.cmd_length; i++)
+          cmd_data_q.push_back(32'hdeadbeef);
+        send_cmd_req(.acmd(csrng_pkg::INS), .clen(cfg.cmd_length), .flags(cfg.cmd_flags), .glen(19'h0), .data_q(cmd_data_q));
 
-        //generate cmd
-        send_cmd_req(.acmd(csrng_pkg::GEN), .clen(4'h0), .flags(4'h0), .glen(19'h1));
-        genbits = ctr_drbg_generate();
+	// TODO: add other commands
+        // //generate cmd
+        // send_cmd_req(.acmd(csrng_pkg::GEN), .clen(4'h0), .flags(4'h0), .glen(19'h1));
+        // genbits = ctr_drbg_generate();
 
-        //reseed cmd
-        send_cmd_req(.acmd(csrng_pkg::RES), .clen(4'h0), .flags(4'h0), .glen(19'h0));
-        ctr_drbg_reseed(384'hbeefdead);
+        // //reseed cmd
+        // send_cmd_req(.acmd(csrng_pkg::RES), .clen(4'h0), .flags(4'h0), .glen(19'h0));
+        // ctr_drbg_reseed(384'hbeefdead);
 
-        //update cmd
-        cmd_data_q.push_back(32'hdeadbeef);
-        send_cmd_req(.acmd(csrng_pkg::UPD), .clen(4'h1), .flags(4'h0), .glen(19'h0), .data_q(cmd_data_q));
-        csrng_update(384'hdeadbeef);
+        // //update cmd
+        // cmd_data_q.push_back(32'hdeadbeef);
+        // send_cmd_req(.acmd(csrng_pkg::UPD), .clen(4'h1), .flags(4'h0), .glen(19'h0), .data_q(cmd_data_q));
+        // csrng_update(384'hdeadbeef);
 
-        send_cmd_req(.acmd(csrng_pkg::UNI), .clen(4'h0), .flags(4'h0), .glen(19'h0));
+        // send_cmd_req(.acmd(csrng_pkg::UNI), .clen(4'h0), .flags(4'h0), .glen(19'h0));
       end
     join_none
 

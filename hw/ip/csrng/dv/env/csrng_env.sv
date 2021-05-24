@@ -42,6 +42,7 @@ class csrng_env extends cip_base_env #(
     super.connect_phase(phase);
     if (cfg.en_scb) begin
       m_entropy_src_agent.monitor.analysis_port.connect(scoreboard.entropy_src_fifo.analysis_export);
+      m_edn_agent.monitor.analysis_port.connect(scoreboard.csrng_cmd_fifo.analysis_export);
     end
     if (cfg.is_active) begin
       if (cfg.m_entropy_src_agent_cfg.is_active)
