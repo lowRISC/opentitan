@@ -370,7 +370,7 @@ def generate(cfgs, args):
         pkg_out_str += print_fn(n, k, m, codes, suffix, codetype)
 
         if not args.no_fpv:
-            write_fpv_files(n, k, m, codes, codetype, args.fpv_outdir)
+            write_fpv_files(n, k, m, codes, suffix, args.fpv_outdir)
 
     with open(c_h_filename, "a") as f:
         f.write(C_H_FOOT)
@@ -698,7 +698,7 @@ module {}_assert_fpv (
   `ASSERT(DoubleErrorDetect_A, $countones(error_inject_i) == 2 |-> err_o[1])
   `ASSERT(DoubleErrorDetectReverse_A, err_o[1] |-> $countones(error_inject_i) == 2)
   // Single bit error correction (implicitly tests the syndrome output)
-  `ASSERT(SingleErrorCorrect_A, $countones(error_inject_i) < 2 |-> in == data_o)
+  `ASSERT(SingleErrorCorrect_A, $countones(error_inject_i) < 2 |-> data_i == data_o)
   // Basic syndrome check
   `ASSERT(SyndromeCheck_A, |syndrome_o |-> $countones(error_inject_i) > 0)
   `ASSERT(SyndromeCheckReverse_A, $countones(error_inject_i) > 0 |-> |syndrome_o)
