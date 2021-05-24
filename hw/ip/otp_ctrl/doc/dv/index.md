@@ -61,24 +61,24 @@ All common types and methods defined at the package level can be found in
 ```
 
 ### TL_agent
-OTP_CTRL testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}})
-which provides the ability to drive and independently monitor random traffic via
-TL host interface into OTP_CTRL device.
+OTP_CTRL testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/README.md" >}}), which provides the ability to drive and independently monitor random traffic via TL host interface into OTP_CTRL device.
 
-### Alert agents
+### Alert_agents
 OTP_CTRL testbench instantiates (already handled in CIP base env) two [alert_agents]({{< relref "hw/dv/sv/alert_esc_agent/README.md" >}}):
 fatal_check_alert and fatal_macro_alert.
-The alert_agents provide the ability to drive and independently monitor alert handshakes via
-alert interfaces in OTP_CTRL device.
+The alert_agents provide the ability to drive and independently monitor alert handshakes via alert interfaces in OTP_CTRL device.
 
-### OTP_CTRL IF
+### OTP_CTRL interface
 OTP_CTRL design has specific inputs and outputs to communicate with other IPs including LC_CTRL, OTBN, SRAM, FLASH etc.
 This interface is created to initialize, use simple task to drive, and use assertions to monitor these signals.
 
-### UVM RAL Model
+### Memory backdoor interface
+OTP_CTRL testbench binds design's non-volatile OTP memory with a [`mem_bkdr_if`]({{< relref "hw/dv/sv/mem_bkdr_if/README.md" >}}), which supports read, write, and injection of ECC errors to design's OTP memory.
+
+### UVM RAL model
 The OTP_CTRL RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/README.md" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}):
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/README.md" >}}).
 
 ### Reference models
 The OTP_CTRL's utilizes [PRESENT]({{< relref "hw/ip/prim/doc/prim_present.md" >}} as the cipher to scramble and protect secrets.
@@ -98,16 +98,11 @@ Some of the most commonly used tasks / functions are as follows:
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
-The following covergroups have been developed to prove that the test intent has been adequately met:
-* power_on_cg: This covergroup collects lc_escalation_en signal and partitions lock status after OTP_CTRL initialization is done.
-  Note that this covergroup only samples data after scoreboard detected OTP_CTRL's initialization is successful and checks are passed.
-* flash_req_cg: This covergroup collects two different flash requests(addr and data) and secret1 partition lock status.
-  Note that this covergroup only samples data after scoreboard detected that flash request is finished and checks are passed.
-* sram_req_cg: This covergroup collects two different sram requests and secret1 partition lock status.
-  Note that this covergroup only samples data after scoreboard detected that sram request is finished and checks are passed.
-* otbn_req_cg: This covergroup collects secret1 partition lock status when otbn request is finished.
-  Note that this covergroup only samples data after scoreboard detected that otbn request is finished and checks are passed.
-* lc_prog_cg: This covergroup collects if lc programming request finished with or without error.
+The following two files declared OTP_CTRL's covergroups:
+- `dv/env/otp_ctrl_env_cov.sv` declares functional or CSR related covergroups.
+The functional coverage is collected manually inside OTP_CTRL's scoreboard by invoking the `sample` function.
+- `dv/cov/otp_ctrl_cov_if.sv` declares interface signal related covergroups.
+The functional coverage is collected automatically when the sampled signal is active.
 
 ### Self-checking strategy
 #### Scoreboard
