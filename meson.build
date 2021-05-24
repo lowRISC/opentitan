@@ -199,7 +199,7 @@ gen_hw_hdr = generator(
   prog_python,
   output: '@BASENAME@_regs.h',
   arguments: [
-    '@SOURCE_DIR@/util/regtool.py', '-D', '-o', '@BUILD_DIR@/@BASENAME@_regs.h',
+    '@SOURCE_DIR@/util/regtool.py', '-D', '-o', '@OUTPUT@',
     '@INPUT@',
   ],
 )
