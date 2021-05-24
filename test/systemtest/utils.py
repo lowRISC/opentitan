@@ -511,7 +511,7 @@ def filter_remove_sw_test_status_log_prefix(line):
     """
 
     # Example of a full prefix to be matched:
-    # 1629002: (../src/lowrisc_dv_sw_test_status_0/sw_test_status_if.sv:42) [TOP.chip_earlgrey_verilator.u_sw_test_status_if]
+    # 1629002: (../src/lowrisc_dv_sw_test_status_0/sw_test_status_if.sv:42) [TOP.chip_earlgrey_verilator.u_sw_test_status_if]  # noqa: E501
     pattern = r'\d+: \(.+/sw_test_status_if\.sv:\d+\) \[TOP\..+\] '
     if isinstance(line, bytes):
         return re.sub(bytes(pattern, encoding='utf-8'), b'', line)
