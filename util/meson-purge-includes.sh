@@ -22,4 +22,4 @@ set -e
 # - MESON_BUILD_ROOT
 
 echo "Purging superfluous -I arguments from $MESON_BUILD_ROOT."
-perl -pi -e 's#-I[^/][^@ ]+ # #g' -- "$MESON_BUILD_ROOT/build.ninja"
+perl -pi -e 's#-I[^/][^@.p ]+ # #g' -- "$MESON_BUILD_ROOT/build.ninja"
