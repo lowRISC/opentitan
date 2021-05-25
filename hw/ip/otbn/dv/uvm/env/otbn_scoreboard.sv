@@ -123,10 +123,11 @@ class otbn_scoreboard extends cip_base_scoreboard #(
         end
 
         OtbnModelInsn: begin
-          if (cfg.en_cov) begin
-            iss_trace_queue.push_back(item);
-            pop_trace_queues();
-          end
+          // The model agent's monitor should be configured to only emit OtbnModelInsn items if
+          // coverage is enabled.
+          `DV_CHECK_FATAL(cfg.en_cov)
+          iss_trace_queue.push_back(item);
+          pop_trace_queues();
         end
 
         default: `uvm_fatal(`gfn, $sformatf("Bad item type %0d", item.item_type))
@@ -138,10 +139,14 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     otbn_trace_item item;
     forever begin
       trace_fifo.get(item);
-      if (cfg.en_cov) begin
-        rtl_trace_queue.push_back(item);
-        pop_trace_queues();
-      end
+
+      // The trace monitor should be configured to only emit items if coverage is enabled. Here, we
+      // wait on trace_fifo either way, to avoid a massive memory leak if something comes unstuck.
+      // However, we check that we were actually expecting things if anything comes through.
+      `DV_CHECK_FATAL(cfg.en_cov)
+
+      rtl_trace_queue.push_back(item);
+      pop_trace_queues();
     end
   endtask
 

@@ -75,6 +75,12 @@ class otbn_model_monitor extends dv_base_monitor #(
     bit [31:0] insn_addr;
     string     insn_mnemonic;
 
+    // OtbnModelInsn items are only used for coverage collection; disable their detection if
+    // coverage is not enabled.
+    if (!cfg.en_cov) begin
+      return;
+    end
+
     // Collect transactions on each clock edge when we are not in reset
     forever begin
       @(posedge cfg.vif.clk_i);
