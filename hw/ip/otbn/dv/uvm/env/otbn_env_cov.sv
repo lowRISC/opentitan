@@ -554,6 +554,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       "bna", "bnaf": enc_bna_cg.sample(mnem, insn_data);
       "bnai": enc_bnai_cg.sample(mnem, insn_data);
       "bnam": enc_bnam_cg.sample(mnem, insn_data);
+      "bnan": enc_bnan_cg.sample(mnem, insn_data);
       "bnaq": enc_bnaq_cg.sample(mnem, insn_data);
       "bnaqw": enc_bnaqw_cg.sample(mnem, insn_data);
       "bnaqs": enc_bnaqs_cg.sample(mnem, insn_data);
