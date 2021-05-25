@@ -194,17 +194,17 @@ interface mem_bkdr_if #(
   endfunction
 
   // Internal function to write a single byte to the memory, correctly updating the ECC bits.
-  function automatic void _write8_raw(int word_idx, int byte_idx, bit [7:0] data);
+  function automatic void _write_lane8_raw(int word_idx, int byte_idx, bit [7:0] data);
     logic [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
     rw_data[byte_idx * 8 +: 8] = data;
     `MEM_ARR_PATH_SLICE[word_idx] = rw_data;
   endfunction
 
   // Internal function to write a single byte to the memory, correctly updating its parity bit.
-  function automatic void _write8_parity(int       word_idx,
-                                         int       byte_idx,
-                                         bit [7:0] data,
-                                         int       inject_num_errors);
+  function automatic void _write_lane8_parity(int       word_idx,
+                                              int       byte_idx,
+                                              bit [7:0] data,
+                                              int       inject_num_errors);
     logic [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
 
     // Lane is the 9-bit "byte" that should be written into the word.
@@ -228,10 +228,10 @@ interface mem_bkdr_if #(
   endfunction
 
   // Internal function to write a single byte to the memory, correctly updating the ECC bits.
-  function automatic void _write8_ecc(int       word_idx,
-                                      int       byte_idx,
-                                      bit [7:0] data,
-                                      int       inject_num_errors);
+  function automatic void _write_lane8_ecc(int       word_idx,
+                                           int       byte_idx,
+                                           bit [7:0] data,
+                                           int       inject_num_errors);
     bit [MAX_MEM_WIDTH-1:0] rw_data = `MEM_ARR_PATH_SLICE[word_idx];
     rw_data[byte_idx * 8 +: 8] = data;
 
@@ -292,6 +292,24 @@ interface mem_bkdr_if #(
     `MEM_ARR_PATH_SLICE[word_idx] = rw_data;
   endfunction
 
+  function automatic void write_lane8(int unsigned word_idx,
+                                      int unsigned byte_idx,
+                                      input bit [7:0] data,
+                                      input int unsigned inject_num_errors = 0);
+    `DV_CHECK_LT(word_idx, mem_depth, , , path)
+    `DV_CHECK_LT(byte_idx, mem_bytes_per_word, , , path)
+
+    if (MEM_ECC != SecdedNone) begin
+      _write_lane8_ecc(word_idx, byte_idx, data, inject_num_errors);
+    end else if (MEM_PARITY) begin
+      _write_lane8_parity(word_idx, byte_idx, data, inject_num_errors);
+    end else begin
+      `DV_CHECK_FATAL(inject_num_errors == 0,
+                      "Can't inject errors with no integrity protection.", path)
+      _write_lane8_raw(word_idx, byte_idx, data);
+    end
+  endfunction
+
   function automatic void write8(input bit [BUS_AW-1:0] addr,
                                  input bit [7:0] data,
                                  input int inject_num_errors = 0);
@@ -302,15 +320,7 @@ interface mem_bkdr_if #(
       `uvm_error(path, $sformatf("Address 0x%0h is not a valid address", addr))
     end
 
-    if (MEM_ECC != SecdedNone) begin
-      _write8_ecc(word_idx, byte_idx, data, inject_num_errors);
-    end else if (MEM_PARITY) begin
-      _write8_parity(word_idx, byte_idx, data, inject_num_errors);
-    end else begin
-      `DV_CHECK_FATAL(inject_num_errors == 0,
-                      "Can't inject errors with no integrity protection.", path)
-      _write8_raw(word_idx, byte_idx, data);
-    end
+    write_lane8(word_idx, byte_idx, data, inject_num_errors);
   endfunction
 
   function automatic void write16(input bit [BUS_AW-1:0] addr,
@@ -846,9 +856,11 @@ interface mem_bkdr_if #(
     init();
     `uvm_info(path, "Clear memory", UVM_LOW)
     if (MEM_PARITY || MEM_ECC != SecdedNone) begin
-      // Have to manually loop over memory and clear to avoid overwriting any parity bits.
-      for (int i = 0; i < mem_size_bytes; i++) begin
-        write8(i, '0);
+      // Have to manually loop over memory and clear to avoid overwriting any parity / ECC bits.
+      for (int word_idx = 0; word_idx < mem_depth; word_idx++) begin
+        for (int byte_idx = 0; byte_idx < mem_bytes_per_word; byte_idx++) begin
+          write_lane8(word_idx, byte_idx, '0);
+        end
       end
     end else begin
       `MEM_ARR_PATH_SLICE = '{default:'0};
@@ -860,9 +872,11 @@ interface mem_bkdr_if #(
     init();
     `uvm_info(path, "Set memory", UVM_LOW)
     if (MEM_PARITY || MEM_ECC != SecdedNone) begin
-      // Have to manually loop over memory and set to avoid overwriting any parity bits.
-      for (int i = 0; i < mem_size_bytes; i++) begin
-        write8(i, '1);
+      // Have to manually loop over memory and set to avoid overwriting any parity / ECC bits.
+      for (int word_idx = 0; word_idx < mem_depth; word_idx++) begin
+        for (int byte_idx = 0; byte_idx < mem_bytes_per_word; byte_idx++) begin
+          write_lane8(word_idx, byte_idx, '1);
+        end
       end
     end else begin
       `MEM_ARR_PATH_SLICE = '{default:'1};
@@ -874,9 +888,11 @@ interface mem_bkdr_if #(
     logic [7:0] rand_val;
     init();
     `uvm_info(path, "Randomizing mem contents", UVM_LOW)
-    for (int i = 0; i < mem_size_bytes; i++) begin
-      `DV_CHECK_STD_RANDOMIZE_FATAL(rand_val, "Randomization failed!", path)
-      write8(i, rand_val);
+    for (int word_idx = 0; word_idx < mem_depth; word_idx++) begin
+      for (int byte_idx = 0; byte_idx < mem_bytes_per_word; byte_idx++) begin
+        `DV_CHECK_STD_RANDOMIZE_FATAL(rand_val, "Randomization failed!", path)
+        write_lane8(word_idx, byte_idx, rand_val);
+      end
     end
   endfunction
 
