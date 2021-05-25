@@ -55,7 +55,6 @@ mask_rom_lib = declare_dependency(
       sw_silicon_creator_lib_fake_deps,
       sw_silicon_creator_lib_manifest,
       sw_silicon_creator_mask_rom_sigverify,
-      rom_ext_manifest_parser,
       sw_silicon_creator_mask_rom_romextimage,
       sw_lib_crt,
       sw_lib_pinmux,
@@ -64,7 +63,6 @@ mask_rom_lib = declare_dependency(
     link_with: static_library(
       'mask_rom_lib',
       sources: [
-        rom_exts_manifest_offsets_header,
         'mask_rom.c'
       ],
       link_depends: [rom_linkfile],
