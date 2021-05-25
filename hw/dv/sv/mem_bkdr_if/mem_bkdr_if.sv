@@ -148,7 +148,7 @@ interface mem_bkdr_if #(
 
   // input addr is assumed to be the byte addressable address into memory starting at 0
   // user assumes the responsibility of masking the upper bits
-  function automatic bit is_addr_valid(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+  function automatic bit is_addr_valid(input bit [BUS_AW-1:0] addr);
     init();
     if (addr >= mem_size_bytes) begin
       `uvm_error(path, $sformatf("addr = %0h is out of bounds (size = %0d)", addr, mem_size_bytes))
@@ -158,7 +158,7 @@ interface mem_bkdr_if #(
   endfunction
 
   // read a single byte at specified address
-  function automatic logic [7:0] read8(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+  function automatic logic [7:0] read8(input bit [BUS_AW-1:0] addr);
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
       bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
@@ -181,7 +181,7 @@ interface mem_bkdr_if #(
     return 'x;
   endfunction
 
-  function automatic logic [15:0] read16(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+  function automatic logic [15:0] read16(input bit [BUS_AW-1:0] addr);
     `DV_CHECK_EQ_FATAL(addr[0], '0, $sformatf("addr 0x%0h not 16-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
       return {read8(addr + 1), read8(addr)};
@@ -189,7 +189,7 @@ interface mem_bkdr_if #(
     return 'x;
   endfunction
 
-  function automatic logic [31:0] read32(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+  function automatic logic [31:0] read32(input bit [BUS_AW-1:0] addr);
     `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
       return {read16(addr + 2), read16(addr)};
@@ -197,7 +197,7 @@ interface mem_bkdr_if #(
     return 'x;
   endfunction
 
-  function automatic logic [63:0] read64(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+  function automatic logic [63:0] read64(input bit [BUS_AW-1:0] addr);
     `DV_CHECK_EQ_FATAL(addr[2:0], '0, $sformatf("addr 0x%0h not 64-bit aligned", addr), path)
     if (is_addr_valid(addr)) begin
       return {read32(addr + 4), read32(addr)};
@@ -304,7 +304,7 @@ interface mem_bkdr_if #(
     `MEM_ARR_PATH_SLICE[word_idx] = rw_data;
   endfunction
 
-  function automatic void write8(input bit [bus_params_pkg::BUS_AW-1:0] addr,
+  function automatic void write8(input bit [BUS_AW-1:0] addr,
                                  input bit [7:0] data,
                                  input int inject_num_errors = 0);
     int unsigned word_idx = addr >> mem_addr_lsb;
@@ -325,7 +325,7 @@ interface mem_bkdr_if #(
     end
   endfunction
 
-  function automatic void write16(input bit [bus_params_pkg::BUS_AW-1:0] addr,
+  function automatic void write16(input bit [BUS_AW-1:0] addr,
                                   input bit [15:0] data,
                                   input int inject_num_errors = 0);
     `DV_CHECK_EQ_FATAL(addr[0], '0, $sformatf("addr 0x%0h not 16-bit aligned", addr), path)
@@ -337,7 +337,7 @@ interface mem_bkdr_if #(
     end
   endfunction
 
-  function automatic void write32(input bit [bus_params_pkg::BUS_AW-1:0] addr,
+  function automatic void write32(input bit [BUS_AW-1:0] addr,
                                   input bit [31:0] data,
                                   input int inject_num_errors = 0);
     `DV_CHECK_EQ_FATAL(addr[1:0], '0, $sformatf("addr 0x%0h not 32-bit aligned", addr), path)
@@ -349,7 +349,7 @@ interface mem_bkdr_if #(
     end
   endfunction
 
-  function automatic void write64(input bit [bus_params_pkg::BUS_AW-1:0] addr,
+  function automatic void write64(input bit [BUS_AW-1:0] addr,
                                   input bit [63:0] data,
                                   input int inject_num_errors = 0);
     // Split the number of errors into different sub-byte write.
@@ -367,7 +367,7 @@ interface mem_bkdr_if #(
   // - (28, 22) and (64, 57) ECC configurations aren't supported
 
   // Intended for use with memories which have data width of 16 bits and 6 ECC bits.
-  function automatic secded_22_16_t ecc_read16(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+  function automatic secded_22_16_t ecc_read16(input bit [BUS_AW-1:0] addr);
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
       // 22-bit wide memory word includes 16-bit data, 6-bit ECC bits
@@ -382,7 +382,7 @@ interface mem_bkdr_if #(
   endfunction
 
   // Intended for use with memories which have data width of 32 bits and 7 ECC bits.
-  function automatic secded_39_32_t ecc_read32(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+  function automatic secded_39_32_t ecc_read32(input bit [BUS_AW-1:0] addr);
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
       // 39-bit wide memory word includes 32-bit data, 7-bit ECC bits
@@ -397,7 +397,7 @@ interface mem_bkdr_if #(
   endfunction
 
   // Intended for use with memories which have data width of 64 bits and 8 ECC bits.
-  function automatic secded_72_64_t ecc_read64(input bit [bus_params_pkg::BUS_AW-1:0] addr);
+  function automatic secded_72_64_t ecc_read64(input bit [BUS_AW-1:0] addr);
     if (is_addr_valid(addr)) begin
       int mem_index = addr >> mem_addr_lsb;
       // 72-bit wide memory word includes 64-bit data, 8-bit ECC bits
@@ -415,11 +415,11 @@ interface mem_bkdr_if #(
   // Wrapper functions for encrypted read/write operations //
   ///////////////////////////////////////////////////////////
 
-  function automatic logic [7:0] sram_encrypt_read8(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                                                    input logic [SRAM_KEY_WIDTH-1:0]         key,
-                                                    input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+  function automatic logic [7:0] sram_encrypt_read8(input logic [BUS_AW-1:0]           addr,
+                                                    input logic [SRAM_KEY_WIDTH-1:0]   key,
+                                                    input logic [SRAM_BLOCK_WIDTH-1:0] nonce);
     logic [7:0] rdata;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr;
+    logic [BUS_AW-1:0] bus_addr;
 
     logic rdata_arr[]       = new[8];
     logic scrambled_addr[]  = new[mem_addr_width];
@@ -457,11 +457,11 @@ interface mem_bkdr_if #(
   endfunction
 
   function automatic logic [15:0]
-  sram_encrypt_read16(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                      input logic [SRAM_KEY_WIDTH-1:0]         key,
-                      input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+  sram_encrypt_read16(input logic [BUS_AW-1:0]           addr,
+                      input logic [SRAM_KEY_WIDTH-1:0]   key,
+                      input logic [SRAM_BLOCK_WIDTH-1:0] nonce);
     logic [15:0] rdata;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr;
+    logic [BUS_AW-1:0] bus_addr;
 
     logic rdata_arr[]       = new[16];
     logic scrambled_addr[]  = new[mem_addr_width];
@@ -499,11 +499,11 @@ interface mem_bkdr_if #(
   endfunction
 
   function automatic logic [31:0]
-  sram_encrypt_read32(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                      input logic [SRAM_KEY_WIDTH-1:0]         key,
-                      input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+  sram_encrypt_read32(input logic [BUS_AW-1:0]           addr,
+                      input logic [SRAM_KEY_WIDTH-1:0]   key,
+                      input logic [SRAM_BLOCK_WIDTH-1:0] nonce);
     logic [31:0] rdata = '0;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
+    logic [BUS_AW-1:0] bus_addr = '0;
 
     logic rdata_arr[]       = new[32];
     logic scrambled_addr[]  = new[mem_addr_width];
@@ -544,11 +544,11 @@ interface mem_bkdr_if #(
   endfunction
 
   function automatic logic [63:0]
-  sram_encrypt_read64(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                      input logic [SRAM_KEY_WIDTH-1:0]         key,
-                      input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+  sram_encrypt_read64(input logic [BUS_AW-1:0]           addr,
+                      input logic [SRAM_KEY_WIDTH-1:0]   key,
+                      input logic [SRAM_BLOCK_WIDTH-1:0] nonce);
     logic [63:0] rdata;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
+    logic [BUS_AW-1:0] bus_addr = '0;
 
     logic rdata_arr[]       = new[64];
     logic scrambled_addr[]  = new[mem_addr_width];
@@ -586,12 +586,12 @@ interface mem_bkdr_if #(
 
   endfunction
 
-  function automatic void sram_encrypt_write8(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                                              input logic [7:0]                        data,
-                                              input logic [SRAM_KEY_WIDTH-1:0]         key,
-                                              input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+  function automatic void sram_encrypt_write8(input logic [BUS_AW-1:0]           addr,
+                                              input logic [7:0]                  data,
+                                              input logic [SRAM_KEY_WIDTH-1:0]   key,
+                                              input logic [SRAM_BLOCK_WIDTH-1:0] nonce);
     logic [7:0] scrambled_data;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
+    logic [BUS_AW-1:0] bus_addr = '0;
 
     logic wdata_arr[]       = new[8];
     logic scrambled_addr[]  = new[mem_addr_width];
@@ -627,12 +627,12 @@ interface mem_bkdr_if #(
     write8(bus_addr, scrambled_data);
   endfunction
 
-  function automatic void sram_encrypt_write16(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                                               input logic [15:0]                       data,
-                                               input logic [SRAM_KEY_WIDTH-1:0]         key,
-                                               input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+  function automatic void sram_encrypt_write16(input logic [BUS_AW-1:0]           addr,
+                                               input logic [15:0]                 data,
+                                               input logic [SRAM_KEY_WIDTH-1:0]   key,
+                                               input logic [SRAM_BLOCK_WIDTH-1:0] nonce);
     logic [15:0] scrambled_data;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
+    logic [BUS_AW-1:0] bus_addr = '0;
 
     logic wdata_arr[]       = new[16];
     logic scrambled_addr[]  = new[mem_addr_width];
@@ -668,12 +668,12 @@ interface mem_bkdr_if #(
     write16(bus_addr, scrambled_data);
   endfunction
 
-  function automatic void sram_encrypt_write32(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                                               input logic [31:0]                       data,
-                                               input logic [SRAM_KEY_WIDTH-1:0]         key,
-                                               input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+  function automatic void sram_encrypt_write32(input logic [BUS_AW-1:0]           addr,
+                                               input logic [31:0]                 data,
+                                               input logic [SRAM_KEY_WIDTH-1:0]   key,
+                                               input logic [SRAM_BLOCK_WIDTH-1:0] nonce);
     logic [31:0] scrambled_data;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
+    logic [BUS_AW-1:0] bus_addr = '0;
 
     logic wdata_arr[]       = new[32];
     logic scrambled_addr[]  = new[mem_addr_width];
@@ -709,12 +709,12 @@ interface mem_bkdr_if #(
     write32(bus_addr, scrambled_data);
   endfunction
 
-  function automatic void sram_encrypt_write64(input logic [bus_params_pkg::BUS_AW-1:0] addr,
-                                               input logic [63:0]                       data,
-                                               input logic [SRAM_KEY_WIDTH-1:0]         key,
-                                               input logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+  function automatic void sram_encrypt_write64(input logic [BUS_AW-1:0]           addr,
+                                               input logic [63:0]                 data,
+                                               input logic [SRAM_KEY_WIDTH-1:0]   key,
+                                               input logic [SRAM_BLOCK_WIDTH-1:0] nonce);
     logic [63:0] scrambled_data;
-    logic [bus_params_pkg::BUS_AW-1:0] bus_addr = '0;
+    logic [BUS_AW-1:0] bus_addr = '0;
 
     logic wdata_arr[]       = new[64];
     logic scrambled_addr[]  = new[mem_addr_width];
@@ -755,13 +755,13 @@ interface mem_bkdr_if #(
   // Also note that this function returns the raw data rather than data + syndrome + error because
   // the rom_ctrl testbench needs this for checking
   function automatic bit [39:0] rom_encrypt_read32(
-      input bit [bus_params_pkg::BUS_AW-1:0] addr,
-      input logic [SRAM_KEY_WIDTH-1:0]       key,
-      input logic [SRAM_BLOCK_WIDTH-1:0]     nonce,
-      input bit                              unscramble_data);
+      input bit [BUS_AW-1:0]             addr,
+      input logic [SRAM_KEY_WIDTH-1:0]   key,
+      input logic [SRAM_BLOCK_WIDTH-1:0] nonce,
+      input bit                          unscramble_data);
 
-    logic [bus_params_pkg::BUS_AW-1:0] mem_addr = '0;
-    logic [39:0]                       rdata    = '0;
+    logic [BUS_AW-1:0] mem_addr = '0;
+    logic [39:0]       rdata    = '0;
 
     logic addr_arr[]       = new[mem_addr_width];
     logic scrambled_addr[] = new[mem_addr_width];
