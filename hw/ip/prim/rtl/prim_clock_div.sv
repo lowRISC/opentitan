@@ -58,13 +58,17 @@ module prim_clock_div #(
       end
     end
 
+    // This is a DFT signal, to be connected by the tool directly.
+    logic dft_inhibit_step_down;
+    assign dft_inhibit_step_down = 1'b0;
+
     // make sure selection point is away from both edges
     prim_clock_mux2 #(
       .NoFpgaBufG(1'b1)
     ) u_step_down_mux (
       .clk0_i(q_p),
       .clk1_i(clk_i),
-      .sel_i(step_down_nq),
+      .sel_i(step_down_nq & ~dft_inhibit_step_down),
       .clk_o(clk_int)
     );
 
