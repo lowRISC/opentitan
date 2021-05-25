@@ -234,6 +234,7 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+      sample_key_req_access_cg();
       process_sram_init();
       process_lc_escalation();
       process_sram_executable();
@@ -242,6 +243,35 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       process_kdi_fifo();
       process_completed_trans();
     join_none
+  endtask
+
+  // This task spins forever and samples the appropriate covergroup whenever
+  // in_key_req is high and a new valid addr_phase transaction is seen on the memory bus.
+  virtual task sample_key_req_access_cg();
+    forever begin
+      @(negedge cfg.under_reset);
+      `DV_SPINWAIT_EXIT(
+          forever begin
+            @(posedge in_key_req);
+            `DV_SPINWAIT_EXIT(
+                forever begin
+                  // sample the covergroup every time a new TL request is seen
+                  // while a key request is outstanding.
+                  @(posedge cfg.m_sram_cfg.vif.h2d.a_valid);
+                  // zero delay to allow bus values to settle
+                  #0;
+                  if (cfg.en_cov) begin
+                    cov.access_during_key_req_cg.sample(cfg.m_sram_cfg.vif.h2d.a_opcode);
+                  end
+                end
+                ,
+                @(negedge in_key_req);
+            )
+          end
+          ,
+          wait(cfg.under_reset == 1);
+      )
+    end
   endtask
 
   virtual task process_sram_init();
@@ -322,6 +352,11 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
       // lc escalation status will be dropped after reset, no further action needed
       wait(cfg.lc_vif.lc_esc_en == lc_ctrl_pkg::Off);
+
+      // sample coverage
+      if (cfg.en_cov) begin
+        cov.lc_escalation_rst_cg.sample(cfg.clk_rst_vif.rst_n);
+      end
     end
   endtask
 
@@ -334,6 +369,13 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
       detected_hw_debug_en = cfg.exec_vif.lc_hw_debug_en;
       detected_en_sram_ifetch = cfg.exec_vif.otp_en_sram_ifetch;
+
+      // sample executability-related coverage
+      if (cfg.en_cov) begin
+        cov.executable_cg.sample(detected_hw_debug_en,
+                                 detected_en_sram_ifetch,
+                                 detected_csr_exec);
+      end
 
       `uvm_info(`gfn, $sformatf("detected_hw_debug_en: %0b", detected_hw_debug_en), UVM_HIGH)
       `uvm_info(`gfn, $sformatf("detected_en_sram_ifetch: %0b", detected_en_sram_ifetch), UVM_HIGH)
@@ -359,7 +401,9 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
         if (!cfg.en_scb) continue;
 
-        if (in_key_req) continue;
+        if (in_key_req) begin
+          `uvm_error(`gfn, "Received SRAM_TLUL transaction while requesting a new key")
+        end
 
         // If the escalation propagation has finished,
         // do not process anymore addr_phase transactions
@@ -507,6 +551,11 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
           //
           // as a result we need to check for an address collision then act accordingly.
 
+          // sample b2b-related coovergroup
+          if (cfg.en_cov) begin
+            cov.b2b_access_types_cg.sample(data_trans.we, addr_trans.we);
+          end
+
           // if we have an address collision (read address is the same as the pending write address)
           // return data based on the `held_data`
           if (eq_sram_addr(data_trans.addr, held_trans.addr)) begin
@@ -542,6 +591,11 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
           `uvm_info(`gfn, $sformatf("addr_trans: %0p", addr_trans), UVM_HIGH)
 
+          // sample b2b-related covergroup
+          if (cfg.en_cov) begin
+            cov.b2b_access_types_cg.sample(data_trans.we, addr_trans.we);
+          end
+
           if (addr_trans.we == 0) begin
             // if we see a read directly after a write and we are not currently in a RAW hazard
             // handling state, we need to do the following:
@@ -558,6 +612,11 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
             held_trans = data_trans;
             waddr = {data_trans.addr[TL_AW-1:2], 2'b00};
             held_data = cfg.mem_bkdr_vif.sram_encrypt_read32(waddr, data_trans.key, data_trans.nonce);
+
+            // sample covergroup
+            if (cfg.en_cov) begin
+              cov.raw_hazard_cg.sample(waddr == word_align_addr(addr_trans.addr));
+            end
 
             for (int i = 0; i < TL_DBW; i++) begin
               if (data_trans.mask[i]) begin
@@ -596,6 +655,11 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
       // When KDI item is seen, update key, nonce
       {key, nonce, seed_valid} = item.d_data;
 
+      // sample coverage on seed_valid
+      if (cfg.en_cov) begin
+        cov.key_seed_valid_cg.sample(status_lc_esc, seed_valid);
+      end
+
       // scr_key_valid simply denotes that a successful handshake with OTP has completed,
       // so this will be 1 whenever we get a copmleted transaction item
       exp_status[SramCtrlScrKeyValid]     = 1;
@@ -620,6 +684,11 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
     forever begin
       completed_trans_mbox.get(trans);
+
+      // sample access granularity for each completed transaction
+      if (cfg.en_cov) begin
+        cov.subword_access_cg.sample(trans.we, trans.mask);
+      end
 
       `uvm_info({`gfn, "::process_completed_trans()"},
                 $sformatf("Checking SRAM memory transaction: %0p", trans),
