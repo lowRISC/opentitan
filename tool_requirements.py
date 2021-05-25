@@ -42,7 +42,7 @@ __TOOL_REQUIREMENTS__ = {
         'as_needed': True
     },
     'vivado': {
-        'min_version': '2020.1',
+        'min_version': '2020.2',
         'as_needed': True
     },
 }

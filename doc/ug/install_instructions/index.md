@@ -65,6 +65,7 @@ Depending on how you interact with the OpenTitan hardware code, one of more of t
 
 * [Verilator](https://verilator.org) {{< tool_version "verilator" >}}
 * Xilinx Vivado {{< tool_version "vivado" >}}
+  (Do not use versions earlier than 2020.2 due to a [critical synthesis bug](https://forums.xilinx.com/t5/Synthesis/Simulation-Synthesis-Mismatch-with-Vivado-2018-3/m-p/1065923#M33849).)
 * Synopsys VCS
 * Cadence Xcelium
 * Cadence JasperGold
