@@ -160,23 +160,11 @@ interface mem_bkdr_if #(
   // read a single byte at specified address
   function automatic logic [7:0] read8(input bit [BUS_AW-1:0] addr);
     if (is_addr_valid(addr)) begin
-      int mem_index = addr >> mem_addr_lsb;
-      bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[mem_index];
-      case (mem_bytes_per_word)
-        1: begin
-          return mem_data[7:0];
-        end
-        2: begin
-          return mem_data[addr[0] * MEM_BYTE_MSB +: 8];
-        end
-        4: begin
-          return mem_data[addr[1:0] * MEM_BYTE_MSB +: 8];
-        end
-        8: begin
-          return mem_data[addr[2:0] * MEM_BYTE_MSB +: 8];
-        end
-        default: ;
-      endcase
+      int unsigned word_idx = addr >> mem_addr_lsb;
+      int unsigned byte_idx = addr - (word_idx << mem_addr_lsb);
+
+      bit [MAX_MEM_WIDTH-1:0] mem_data = `MEM_ARR_PATH_SLICE[word_idx];
+      return (mem_data >> byte_idx) & 8'hff;
     end
     return 'x;
   endfunction
