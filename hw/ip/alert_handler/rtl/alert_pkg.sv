@@ -25,7 +25,7 @@ package alert_pkg;
   // do not change the phase encoding
   typedef enum logic [2:0] {Idle = 3'b000, Timeout = 3'b001, Terminal = 3'b011,
                             Phase0 = 3'b100, Phase1 = 3'b101, Phase2 = 3'b110,
-                            Phase3 = 3'b111} cstate_e;
+                            Phase3 = 3'b111, FsmError = 3'b010} cstate_e;
 
   // These LFSR parameters have been generated with
   // $ util/design/gen-lfsr-seed.py --width 32 --seed 2700182644
