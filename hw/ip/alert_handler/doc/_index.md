@@ -803,6 +803,23 @@ An ongoing ping sequence will be aborted immediately.
 Another thing to note is that the ping and escalation response sequences have to start _exactly_ one cycle after either a ping or escalation event has been signalled.
 Otherwise the escalation sender will assert `integ_fail_o` immediately.
 
+
+### Hardening Against Glitch Attacks
+
+In addition to the differential alert and escalation signalling scheme, the internal state machines and counters are hardened against glitch attacks as described bellow:
+
+1. Ping Timer:
+  - The FSM is sparsely encoded.
+  - The LFSR counter is duplicated (**TODO**).
+  - If the FSM or counter are glitched into an invalid state, all internal ping fail alerts will be permanently asserted.
+
+2. Escalation Timers:
+  - The escalation timer FSMs are sparsely encoded.
+  - The escalation timer counters are duplicated (**TODO**).
+  - The escalation accumulators are duplicated (**TODO**).
+  - If one of these FSMs, counters or accumulators are glitched into an invalid state, all escalation actions will be triggered and the affected FSM goes into a terminal `FsmError` state.
+
+
 # Programmers Guide
 
 
