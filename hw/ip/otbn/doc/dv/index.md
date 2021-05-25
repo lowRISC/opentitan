@@ -141,7 +141,7 @@ That is, we expect to see execution with each bit of each immediate field being 
 We also expect to see each field with values `'0` and `'1` (all zeros and all ones).
 If the field is treated as a signed number, we also expect to see it with the extremal values for its range (just the MSB set, for the most negative value; all but the MSB set, for the most positive value).
 
-> The code to track this is split by encoding-schema in `otbn_env_cov`.
+> The code to track this is split by encoding schema in `otbn_env_cov`.
 > Each instruction listed below will specify its encoding schema.
 > Each encoding schema then has its own covergroup.
 > Rather than tracking toggle coverage as described above, we just track extremal values in a coverpoint.
@@ -156,16 +156,25 @@ If the field is treated as a signed number, we also expect to see it with the ex
 For any instruction that reads from or writes to a GPR, we expect to see that operand equal to `x0`, `x1` and an arbitrary register in the range `x2 .. x31`.
 We don't have any particular coverage requirements for WDRs (since all of them work essentially the same).
 
-> As for immediates, the code to track this is split by encoding-schema in `otbn_env_cov`.
+> As for immediates, the code to track this is split by encoding schema in `otbn_env_cov`.
 > Each register field gets a coverpoint with the same name, defined with the `DEF_GPR_CP` helper macro.
 > If the encoding schema has more than one instruction, the coverpoint is then crossed with the mnemonic, using the `DEF_MNEM_CROSS` helper macro.
 > For example, `add` is in the `enc_bnr_cg` covergroup.
 > This encoding schema's `GRD` field is tracked with the `grd_cp` coverpoint.
 > Finally, the relevant cross is called `grd_cross`.
 
-For any source GPR, we require "toggle coverage" for its value.
-For example, `ADD` reads from its `<grs1>` operand.
+For any source GPR or WDR, we require "toggle coverage" for its value.
+For example, `ADD` reads from its `grs1` operand.
 We want to see each of the 32 bits of that operand set and unset (giving 64 coverage points).
+Similarly, `BN.ADD` reads from its `wrs1` operand.
+We want to see each of the 256 bits of that operand set and unset (giving 512 coverage points).
+
+> Again, the code to track this is split by encoding schema in `otbn_env_cov`.
+> The trace interface takes a copy of GPR and WDR read data.
+> The relevant register read data are then passed to the encoding schema's covergroup in the `on_insn` method.
+> To avoid extremely repetitive code, the actual coverpoints and crosses are defined with the help of macros.
+> The coverpoints are named with the base-2 expansion of the bit in question.
+> For example, the cross in the `enc_bnr_cg` that tracks whether we've seen both values of bit 12 for the `grs1` operand is called `grs1_01100_cross` (since 12 is `5'b01100`).
 
 If an instruction can generate flag changes, we expect to see each flag that the instruction can change being both set and cleared by the instruction.
 This needn't be crossed with the two flag groups (that's tracked separately in the "Flags" block above).

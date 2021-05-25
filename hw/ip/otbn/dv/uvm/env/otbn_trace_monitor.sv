@@ -27,6 +27,10 @@ class otbn_trace_monitor extends dv_base_monitor #(
           item = otbn_trace_item::type_id::create("item");
           item.insn_addr = cfg.trace_vif.insn_addr;
           item.insn_data = cfg.trace_vif.insn_data;
+          item.gpr_operand_a = cfg.trace_vif.rf_base_rd_data_a;
+          item.gpr_operand_b = cfg.trace_vif.rf_base_rd_data_b;
+          item.wdr_operand_a = cfg.trace_vif.rf_bignum_rd_data_a;
+          item.wdr_operand_b = cfg.trace_vif.rf_bignum_rd_data_b;
           analysis_port.write(item);
         end
       end
