@@ -147,4 +147,54 @@
       tests: ["{name}_parity"]
     }
   ]
+
+  covergroups: [
+    {
+      name: subword_access_cg
+      desc: '''
+            Covers that all possible types of subword accesses (both reads and writes) have been
+            performed.
+            '''
+    }
+    {
+      name: access_during_key_req_cg
+      desc: '''
+            Covers that SRAM handles memory accesses during key requests.
+            '''
+    }
+    {
+      name: key_seed_valid_cg
+      desc: '''
+            Covers SRAM receiving a key from OTP in Off/On states,
+            with both valid and invalid key seeds.
+            '''
+    }
+    {
+      name: lc_escalation_rst_cg
+      desc: '''
+            Covers de-assertion of LC escalation input before/after/during a reset trigger
+            to get SRAM out of terminal state.
+            '''
+    }
+    {
+      name: raw_hazard_cg
+      desc: '''
+            Covers that the scrambling RAM sees address collisions on RAW hazards
+            (indicating that b2b RAW access has been made to the same memory line).
+            '''
+    }
+    {
+      name: b2b_access_types_cg
+      desc: '''
+            Covers that any combination of access types (R/R, R/W, W/R, W/W) can be present in b2b
+            transaction scenarios.
+            '''
+    }
+    {
+      name: executable_cg
+      desc: '''
+            Covers the various important scenarios that can enable SRAM executability.
+            '''
+    }
+  ]
 }
