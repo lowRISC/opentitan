@@ -347,7 +347,7 @@ class Testplan():
         regressions = defaultdict(set)
         for tp in self.testpoints:
             if tp.milestone in tp.milestones[1:]:
-                regressions[tp.milestone].union({t for t in tp.tests if t})
+                regressions[tp.milestone].update({t for t in tp.tests if t})
 
         # Build regressions dict into a hjson like data structure
         return [{
@@ -390,7 +390,7 @@ class Testplan():
             colalign = ("center", "left")
             table = []
             for covergroup in self.covergroups:
-                desc = covergroup.desc.strip()
+                desc = _fmt_text(covergroup.desc.strip(), fmt)
                 table.append([covergroup.name, desc])
             lines += [
                 tabulate(table,
