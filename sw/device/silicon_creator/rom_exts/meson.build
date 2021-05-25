@@ -62,60 +62,6 @@ foreach slot, slot_link_args : rom_ext_link_info
 }
 endforeach
 
-# ROM_EXT manifest generator.
-rom_exts_manifest_offsets_header = custom_target(
-  'rom_exts_manifest_h',
-  output: 'manifest.h',
-  depend_files: [
-    'manifest.h.tpl',
-    'manifest.hjson',
-    meson.source_root() / 'util/rom-ext-manifest-generator.py',
-  ],
-  command: [
-    prog_python,
-    meson.source_root() / 'util/rom-ext-manifest-generator.py',
-    '--input-dir', meson.current_source_dir(),
-    '--output-dir', meson.current_build_dir(),
-    '--output-files', 'c',
-  ],
-)
-
-# ROM_EXT manifest parser.
-rom_ext_manifest_parser = declare_dependency(
-  link_with: static_library(
-    'rom_ext_manifest_parser',
-    sources: [
-      'rom_ext_manifest_parser.c',
-      rom_exts_manifest_offsets_header,
-    ],
-    dependencies: [
-      sw_lib_mmio,
-    ],
-  ),
-  sources: [
-    rom_exts_manifest_offsets_header,
-  ],
-)
-
-test('sw_silicon_creator_rom_exts_rom_ext_parser_unittest', executable(
-    'sw_silicon_creator_rom_exts_rom_ext_parser_unittest',
-    sources: [
-      'rom_ext_parser_unittest.cc',
-      'rom_ext_manifest_parser.c',
-      rom_exts_manifest_offsets_header,
-    ],
-    dependencies: [
-      sw_vendor_gtest,
-      sw_lib_base_testing_mock_mmio,
-      sw_lib_testing_bitfield,
-    ],
-    native: true,
-    c_args: ['-DMOCK_MMIO'],
-    cpp_args: ['-DMOCK_MMIO'],
-  ),
-  suite: 'mask_rom',
-)
-
 foreach device_name, device_lib : sw_lib_arch_core_devices
   foreach slot, slot_lib : rom_ext_slot_libs
     rom_ext_elf = executable(
