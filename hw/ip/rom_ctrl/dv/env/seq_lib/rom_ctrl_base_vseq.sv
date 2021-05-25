@@ -11,14 +11,14 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(rom_ctrl_base_vseq)
 
   // various knobs to enable certain routines
-  bit do_rom_ctrl_init = 1'b1;
   bit do_rom_error_req = 1'b0;
 
   `uvm_object_new
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
-    if (do_rom_ctrl_init) rom_ctrl_init();
+    // Disable intr test since no interrupts
+    do_clear_all_interrupts = 1'b0;
   endtask
 
   virtual task dut_shutdown();
@@ -26,10 +26,8 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
     // TODO
   endtask
 
-  // setup basic rom_ctrl features
-  virtual task rom_ctrl_init();
-    // Disable intr test since no interrupts
-    do_clear_all_interrupts = 1'b0;
+  virtual task apply_reset(string kind = "HARD");
+    super.apply_reset();
     // Initialize memory
     rom_ctrl_mem_init();
   endtask
