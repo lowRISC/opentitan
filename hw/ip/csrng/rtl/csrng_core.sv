@@ -101,6 +101,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [Cmd-1:0]         cmd_result_ccmd;
   logic                   cmd_result_ack_rdy;
   logic [StateId-1:0]     cmd_result_inst_id;
+  logic                   cmd_result_glast;
   logic                   cmd_result_fips;
   logic [SeedLen-1:0]     cmd_result_adata;
   logic [KeyLen-1:0]      cmd_result_key;
@@ -114,6 +115,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                   gen_result_wr_req;
   logic                   gen_result_ack_sts;
   logic                   gen_result_ack_rdy;
+  logic [Cmd-1:0]         gen_result_ccmd;
   logic [StateId-1:0]     gen_result_inst_id;
   logic                   gen_result_fips;
   logic [KeyLen-1:0]      gen_result_key;
@@ -183,6 +185,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                   state_db_rd_fips;
   logic [2:0]             acmd_hold;
   logic [3:0]             shid;
+  logic                   gen_last;
   logic                   flag0;
 
   // blk encrypt arbiter
@@ -320,6 +323,7 @@ module csrng_core import csrng_pkg::*; #(
   // flops
   logic [2:0]  acmd_q, acmd_d;
   logic [3:0]  shid_q, shid_d;
+  logic        gen_last_q, gen_last_d;
   logic        flag0_q, flag0_d;
   logic        statedb_wr_select_q, statedb_wr_select_d;
   logic        genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
@@ -336,6 +340,7 @@ module csrng_core import csrng_pkg::*; #(
     if (!rst_ni) begin
       acmd_q  <= '0;
       shid_q  <= '0;
+      gen_last_q <= '0;
       flag0_q <= '0;
       statedb_wr_select_q <= '0;
       genbits_stage_fips_sw_q <= '0;
@@ -350,6 +355,7 @@ module csrng_core import csrng_pkg::*; #(
     end else begin
       acmd_q  <= acmd_d;
       shid_q  <= shid_d;
+      gen_last_q <= gen_last_d;
       flag0_q <= flag0_d;
       statedb_wr_select_q <= statedb_wr_select_d;
       genbits_stage_fips_sw_q <= genbits_stage_fips_sw_d;
@@ -817,6 +823,7 @@ module csrng_core import csrng_pkg::*; #(
   assign acmd_hold = acmd_sop ? acmd_bus[2:0] : acmd_q;
   assign flag0 = acmd_bus[8];
   assign shid = acmd_bus[15:12];
+  assign gen_last = acmd_bus[16];
 
   assign acmd_d =
          (!cs_enable) ? '0 :
@@ -828,6 +835,11 @@ module csrng_core import csrng_pkg::*; #(
          acmd_sop ? shid :
          state_db_reg_rd_id_pulse ? state_db_reg_rd_id :
          shid_q;
+
+  assign gen_last_d =
+         (!cs_enable) ? '0 :
+         acmd_sop ? gen_last :
+         gen_last_q;
 
   assign flag0_d =
          (!cs_enable) ? '0 :
@@ -974,8 +986,8 @@ module csrng_core import csrng_pkg::*; #(
   // muxes for statedb block inputs
   assign state_db_wr_req = gen_blk_select ? gen_result_wr_req : cmd_result_wr_req;
   assign state_db_wr_inst_id = gen_blk_select ? gen_result_inst_id : cmd_result_inst_id;
-  assign state_db_wr_fips = cmd_result_fips;
-  assign state_db_wr_ccmd = cmd_result_ccmd;
+  assign state_db_wr_fips = gen_blk_select ? gen_result_fips : cmd_result_fips;
+  assign state_db_wr_ccmd = gen_blk_select ?  gen_result_ccmd : cmd_result_ccmd;
   assign state_db_wr_key = gen_blk_select ? gen_result_key : cmd_result_key;
   assign state_db_wr_v = gen_blk_select ? gen_result_v : cmd_result_v;
   assign state_db_wr_rc = gen_blk_select ? gen_result_rc : cmd_result_rc;
@@ -1058,6 +1070,7 @@ module csrng_core import csrng_pkg::*; #(
     .ctr_drbg_cmd_rdy_o(ctr_drbg_cmd_req_rdy),
     .ctr_drbg_cmd_ccmd_i(ctr_drbg_cmd_ccmd),
     .ctr_drbg_cmd_inst_id_i(shid_q),
+    .ctr_drbg_cmd_glast_i(gen_last_q),
     .ctr_drbg_cmd_entropy_i(cmd_entropy),
     .ctr_drbg_cmd_entropy_fips_i(cmd_entropy_fips), // send to state_db
     .ctr_drbg_cmd_adata_i(packer_adata),
@@ -1071,6 +1084,7 @@ module csrng_core import csrng_pkg::*; #(
     .ctr_drbg_cmd_rdy_i(cmd_result_ack_rdy),
     .ctr_drbg_cmd_ccmd_o(cmd_result_ccmd),
     .ctr_drbg_cmd_inst_id_o(cmd_result_inst_id),
+    .ctr_drbg_cmd_glast_o(cmd_result_glast),
     .ctr_drbg_cmd_fips_o(cmd_result_fips),
     .ctr_drbg_cmd_adata_o(cmd_result_adata),
     .ctr_drbg_cmd_key_o(cmd_result_key),
@@ -1316,6 +1330,7 @@ module csrng_core import csrng_pkg::*; #(
     .ctr_drbg_gen_rdy_o(ctr_drbg_gen_req_rdy),
     .ctr_drbg_gen_ccmd_i(cmd_result_ccmd),
     .ctr_drbg_gen_inst_id_i(cmd_result_inst_id),
+    .ctr_drbg_gen_glast_i(cmd_result_glast),
     .ctr_drbg_gen_fips_i(cmd_result_fips),
     .ctr_drbg_gen_adata_i(cmd_result_adata),
     .ctr_drbg_gen_key_i(cmd_result_key),
@@ -1325,7 +1340,7 @@ module csrng_core import csrng_pkg::*; #(
     .ctr_drbg_gen_ack_o(gen_result_wr_req),
     .ctr_drbg_gen_sts_o(gen_result_ack_sts),
     .ctr_drbg_gen_rdy_i(gen_result_ack_rdy),
-    .ctr_drbg_gen_ccmd_o(), // NC
+    .ctr_drbg_gen_ccmd_o(gen_result_ccmd),
     .ctr_drbg_gen_inst_id_o(gen_result_inst_id),
     .ctr_drbg_gen_fips_o(gen_result_fips),
     .ctr_drbg_gen_key_o(gen_result_key),

@@ -23,6 +23,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   output logic               ctr_drbg_cmd_rdy_o, // ready to process the req above
   input logic [Cmd-1:0]      ctr_drbg_cmd_ccmd_i,    // current command
   input logic [StateId-1:0]  ctr_drbg_cmd_inst_id_i, // instantance id
+  input logic                ctr_drbg_cmd_glast_i,   // gen cmd last beat
   input logic [SeedLen-1:0]  ctr_drbg_cmd_entropy_i, // es entropy
   input logic                ctr_drbg_cmd_entropy_fips_i, // es entropy)fips
   input logic [SeedLen-1:0]  ctr_drbg_cmd_adata_i,   // additional data
@@ -36,6 +37,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   input logic                ctr_drbg_cmd_rdy_i, // ready to process the ack above
   output logic [Cmd-1:0]     ctr_drbg_cmd_ccmd_o,
   output logic [StateId-1:0] ctr_drbg_cmd_inst_id_o,
+  output logic               ctr_drbg_cmd_glast_o,
   output logic               ctr_drbg_cmd_fips_o,
   output logic [SeedLen-1:0] ctr_drbg_cmd_adata_o,
   output logic [KeyLen-1:0]  ctr_drbg_cmd_key_o,
@@ -64,16 +66,17 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
 );
 
   localparam int CmdreqFifoDepth = 1;
-  localparam int CmdreqFifoWidth = KeyLen+BlkLen+CtrLen+1+2*SeedLen+StateId+Cmd;
+  localparam int CmdreqFifoWidth = KeyLen+BlkLen+CtrLen+1+2*SeedLen+1+StateId+Cmd;
   localparam int RCStageFifoDepth = 1;
-  localparam int RCStageFifoWidth = KeyLen+BlkLen+StateId+CtrLen+1+SeedLen+Cmd;
+  localparam int RCStageFifoWidth = KeyLen+BlkLen+StateId+CtrLen+1+SeedLen+1+Cmd;
   localparam int KeyVRCFifoDepth = 1;
-  localparam int KeyVRCFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+StateId+Cmd;
+  localparam int KeyVRCFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+1+StateId+Cmd;
 
 
   // signals
   logic [Cmd-1:0]     cmdreq_ccmd;
   logic [StateId-1:0] cmdreq_id;
+  logic               cmdreq_glast;
   logic [SeedLen-1:0] cmdreq_entropy;
   logic               cmdreq_entropy_fips;
   logic [SeedLen-1:0] cmdreq_adata;
@@ -91,6 +94,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   logic [StateId-1:0] rcstage_id;
   logic [CtrLen-1:0]  rcstage_rc;
   logic [Cmd-1:0]     rcstage_ccmd;
+  logic               rcstage_glast;
   logic [SeedLen-1:0] rcstage_adata;
   logic               rcstage_fips;
   logic               fips_modified;
@@ -159,6 +163,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   assign sfifo_cmdreq_wdata = {ctr_drbg_cmd_key_i,ctr_drbg_cmd_v_i,
                                ctr_drbg_cmd_rc_i,fips_modified,
                                ctr_drbg_cmd_entropy_i,ctr_drbg_cmd_adata_i,
+                               ctr_drbg_cmd_glast_i,
                                ctr_drbg_cmd_inst_id_i,ctr_drbg_cmd_ccmd_i};
 
   assign sfifo_cmdreq_push = ctr_drbg_cmd_enable_i && ctr_drbg_cmd_req_i;
@@ -168,7 +173,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
 
   assign {cmdreq_key,cmdreq_v,cmdreq_rc,
           cmdreq_entropy_fips,cmdreq_entropy,cmdreq_adata,
-          cmdreq_id,cmdreq_ccmd} = sfifo_cmdreq_rdata;
+          cmdreq_glast,cmdreq_id,cmdreq_ccmd} = sfifo_cmdreq_rdata;
 
   assign ctr_drbg_cmd_rdy_o = !sfifo_cmdreq_full;
 
@@ -210,8 +215,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
          (cmdreq_ccmd == UPD) ? cmdreq_rc :
          '0;
 
-  assign prep_gen_adata_null = (cmdreq_ccmd == GEN) && (cmdreq_adata == '0) &&
-                               sfifo_cmdreq_not_empty;
+  assign prep_gen_adata_null = (cmdreq_ccmd == GEN) && (cmdreq_adata == '0);
 
   assign gen_adata_null_d = prep_gen_adata_null;
 
@@ -250,10 +254,10 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
 
   assign sfifo_rcstage_push = sfifo_cmdreq_pop;
   assign sfifo_rcstage_wdata = {prep_key,prep_v,cmdreq_id,prep_rc,cmdreq_entropy_fips,
-                                cmdreq_adata,cmdreq_ccmd};
+                                cmdreq_adata,cmdreq_glast,cmdreq_ccmd};
   assign sfifo_rcstage_pop = sfifo_rcstage_not_empty && (upd_cmd_ack_i || gen_adata_null_q);
   assign {rcstage_key,rcstage_v,rcstage_id,rcstage_rc,rcstage_fips,
-          rcstage_adata,rcstage_ccmd} = sfifo_rcstage_rdata;
+          rcstage_adata,rcstage_glast,rcstage_ccmd} = sfifo_rcstage_rdata;
 
 
   assign ctr_drbg_cmd_sfifo_rcstage_err_o =
@@ -290,16 +294,16 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
 
   // if a UNI command, reset the state values
   assign sfifo_keyvrc_wdata = (rcstage_ccmd == UNI) ?
-         {{(KeyLen+BlkLen+CtrLen+1+SeedLen){1'b0}},upd_cmd_inst_id_i,upd_cmd_ccmd_i} :
+         {{(KeyLen+BlkLen+CtrLen+1+SeedLen){1'b0}},rcstage_glast,upd_cmd_inst_id_i,upd_cmd_ccmd_i} :
          gen_adata_null_q ?
          {rcstage_key,rcstage_v,rcstage_rc,rcstage_fips,
-          rcstage_adata,rcstage_id,rcstage_ccmd} :
+          rcstage_adata,rcstage_glast,rcstage_id,rcstage_ccmd} :
          {upd_cmd_key_i,upd_cmd_v_i,rcstage_rc,rcstage_fips,
-          rcstage_adata,upd_cmd_inst_id_i,upd_cmd_ccmd_i};
+          rcstage_adata,rcstage_glast,upd_cmd_inst_id_i,upd_cmd_ccmd_i};
 
   assign sfifo_keyvrc_pop = ctr_drbg_cmd_rdy_i && sfifo_keyvrc_not_empty;
   assign {ctr_drbg_cmd_key_o,ctr_drbg_cmd_v_o,ctr_drbg_cmd_rc_o,
-          ctr_drbg_cmd_fips_o,ctr_drbg_cmd_adata_o,
+          ctr_drbg_cmd_fips_o,ctr_drbg_cmd_adata_o,ctr_drbg_cmd_glast_o,
           ctr_drbg_cmd_inst_id_o,ctr_drbg_cmd_ccmd_o} = sfifo_keyvrc_rdata;
 
   assign ctr_drbg_cmd_sfifo_keyvrc_err_o =

@@ -48,6 +48,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
 
   localparam int GenBitsFifoWidth = 1+128;
   localparam int GenBitsFifoDepth = 1;
+  localparam int GenBitsCntrWidth = 19;
 
   // signals
   // command fifo
@@ -76,6 +77,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   logic                    cmd_gen_cnt_dec;
   logic                    cmd_gen_1st_req;
   logic                    cmd_gen_inc_req;
+  logic                    cmd_gen_cnt_last;
   logic                    cmd_final_ack;
 
   // flops
@@ -83,7 +85,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   logic                    cmd_ack_sts_q, cmd_ack_sts_d;
   logic [3:0]              cmd_len_q, cmd_len_d;
   logic                    cmd_gen_flag_q, cmd_gen_flag_d;
-  logic [18:0]             cmd_gen_cnt_q, cmd_gen_cnt_d; // max_nuber_of_bits_per_request = 2^19
+  logic [GenBitsCntrWidth-1:0] cmd_gen_cnt_q, cmd_gen_cnt_d; // max_nuber_of_bits_per_request = 2^19
   logic [11:0]             cmd_gen_cmd_q, cmd_gen_cmd_d;
 
 
@@ -137,10 +139,11 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   assign sfifo_cmd_pop = cs_enable_i && cmd_fifo_pop;
 
   assign cmd_arb_bus_o =
-         cmd_gen_inc_req ? {16'b0,cmd_stage_shid_i,cmd_gen_cmd_q} :
-         cmd_gen_1st_req ? {16'b0,cmd_stage_shid_i,sfifo_cmd_rdata[11:0]} :  // pad,id,f,clen,cmd
-         cmd_arb_mop_o   ? sfifo_cmd_rdata :
-         '0;
+         cmd_gen_inc_req ? {15'b0,cmd_gen_cnt_last,cmd_stage_shid_i,cmd_gen_cmd_q} :
+        // pad,glast,id,f,clen,cmd
+        cmd_gen_1st_req ? {15'b0,cmd_gen_cnt_last,cmd_stage_shid_i,sfifo_cmd_rdata[11:0]} :
+        cmd_arb_mop_o   ? sfifo_cmd_rdata :
+        '0;
 
   assign cmd_stage_rdy_o = !sfifo_cmd_full;
 
@@ -239,6 +242,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     cmd_gen_cnt_dec= 1'b0;
     cmd_gen_1st_req = 1'b0;
     cmd_gen_inc_req = 1'b0;
+    cmd_gen_cnt_last = 1'b0;
     cmd_final_ack = 1'b0;
     cmd_arb_req_o = 1'b0;
     cmd_arb_sop_o = 1'b0;
@@ -257,6 +261,9 @@ module csrng_cmd_stage import csrng_pkg::*; #(
           cmd_gen_1st_req = 1'b1;
           cmd_arb_sop_o = 1'b1;
           cmd_fifo_pop = 1'b1;
+          if (sfifo_cmd_rdata[30:12] == 20'h00001) begin
+            cmd_gen_cnt_last = 1'b1;
+          end
           if (cmd_len == '0) begin
             cmd_arb_eop_o = 1'b1;
             state_d = GenCmdChk;
@@ -306,6 +313,10 @@ module csrng_cmd_stage import csrng_pkg::*; #(
                 cmd_arb_eop_o = 1'b1;
                 cmd_gen_inc_req = 1'b1;
                 state_d = GenCmdChk;
+                // check for final genbits beat
+                if (cmd_gen_cnt_q == GenBitsCntrWidth'(1)) begin
+                  cmd_gen_cnt_last = 1'b1;
+                end
               end
             end
           end
