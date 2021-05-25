@@ -298,11 +298,30 @@
       tests: []
     }
 
-    ///////////////////////////////////////////////////////////////////////////////
-    // System Peripherals                                                        //
-    // RV_DM, RV_TIMER, AON_TIMER, PLIC, CLK/RST/PWR MGR, ALERT_HANDLER, LC_CTRL //
-    ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////
+    // System Peripherals                                                              //
+    // XBAR, RV_DM, RV_TIMER, AON_TIMER, PLIC, CLK/RST/PWR MGR, ALERT_HANDLER, LC_CTRL //
+    /////////////////////////////////////////////////////////////////////////////////////
 
+    // XBAR (pre-verified IP) tests:
+    {
+      name: chip_data_integrity
+      desc: '''
+            Verify the alert signaling mechanism due to data integrity violation.
+
+            An automated SW test which performs the following for each IP:
+            - Pick a CSR to write.
+            - Corrupt a random control / data / integrity bit at the CPU source using SV force.
+            - Verify that the device detects the integrity violation causing an alert.
+            - Verify the alert upto the NMI stage.
+            - Now pick a CSR to read.
+            - Corrupt a random control / data / integrity bit at the device using SV force.
+            - Verify that the CPU detects the integrity violation causing an alert.
+            - Verify the alert upto the NMI stage.
+            '''
+      milestone: V2
+      tests: []
+    }
 
     // RV_DM (JTAG) tests:
     {
@@ -316,7 +335,7 @@
             - Read all CSRs back and check their values for correctness while adhering to the CSR's
               access policies.
             '''
-      milestone: V1
+      milestone: V2
       tests: []
     }
     {
@@ -656,7 +675,24 @@
       name: chip_alert_handler_alerts
       desc: '''Verify all alerts coming into the alert_handler.
 
-            X-ref'ed with all IP tests.
+            An automated SW test, which does the following (applies to all alerts in all IPs):
+            - Program the alert_test CSR in each block to trigger each alert one by one.
+            - Ensure that all alerts are properly connected to the alert handler and cause the
+              escalation paths to trigger.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_alert_handler_escalations
+      desc: '''Verify all alert escalation paths.
+
+            Verify all escalation paths triggered by an alert.
+            - Verify the first escalation results in NMI interrupt serviced by the CPU.
+            - Verify the second results in device secrets to be wiped - read via SW to confirm.
+            - Verify the third results in device being put in scrap state, via the LC JTAG TAP.
+            - Verify the fourth results in chip reset.
+            - Ensure that all escalation handshakes complete without errors.
             '''
       milestone: V2
       tests: []
@@ -665,19 +701,7 @@
       name: chip_alert_handler_irqs
       desc: '''Verify all classes of alert handler interrupts to the CPU.
 
-
-            Program each alert to cause an interrupt in each class. SW validates the reception of
-            the interrupt. X-ref'ed with all IP tests.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_alert_handler_esc_irqs
-      desc: '''Verify all alert handler escalation irqs.
-
-
-            Details TBD.
+            X-ref'ed with the automated PLIC test.
             '''
       milestone: V2
       tests: []
@@ -686,8 +710,20 @@
       name: chip_alert_handler_entropy
       desc: '''Verify the alert handler entropy input to ensure pseudo-random ping timer.
 
+            - Force `alert_handler_ping_timer` input signal `wait_cyc_mask_i` to `4'bff` to shorten
+              the simulation time.
+            - Verify that the alert_handler can request EDN to provide entropy.
+            - Ensure that the alert ping handshake to all alert sources and escalation receivers
+              complete without errors.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_alert_handler_edn_reset
+      desc: '''Verify that the EDN clock / reset is connected to alert_handler.
 
-            Details TBD.
+            - Ensure that the ping timer LFSR resets when the EDN logic is held in reset.
             '''
       milestone: V2
       tests: []
@@ -696,18 +732,8 @@
       name: chip_alert_handler_crashdump
       desc: '''Verify the alert handler crashdump signal.
 
-
-            Details TBD.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_alert_handler_ping_fail
-      desc: '''Verify the alert ping failure results in an escalation.
-
-
-            Details TBD.
+            When the chip resets due to alert escalating to cause the chip to reset, verify the
+            reset cause to verify the alert crashdump.
             '''
       milestone: V2
       tests: []
@@ -960,29 +986,76 @@
       tests: []
     }
     {
-      name: chip_kmac_sram_uncorrectable_alert
-      desc: '''Verify the SRAM uncorrectable alert from KMAC.
-
-            Inject 2 bit errors within the SRAM inside KMAC via backdoor and ensure that this alert
-            propagates to an NMI.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_kmac_sram_data_parity_alert
-      desc: '''Verify the data parity alert from KMAC.
-
-            Details TBD.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_kmac_keymgr_key_data
+      name: chip_kmac_app_keymgr
       desc: '''Verify the keymgr interface to KMAC.
 
+            - Configure the keymgr to start sending known message data to the KMAC.
+            - Keymgr should transmit a sideloaded key to the KMAC as well.
+            - KMAC should finish hashing successfully (not visible to SW) and return digest to
+              keymgr.
+            - This digest is compared against the known digest value for correctness.
+            - Verify that the keymgr has received valid output from the KMAC.
+
             X-ref'ed with keymgr test.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_kmac_app_lc
+      desc: '''Verify the LC interface to KMAC.
+
+            - Configure the LC_CTRL to start a token hash using KMAC interface.
+            - KMAC should finish hashing successfully (not visible to SW) and return digest to
+            LC_CTRL.
+
+            X-ref'ed with LC_CTRL test/env.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_kmac_app_rom
+      desc: '''Verify the ROM interface to KMAC.
+
+            - Backdoor initialize ROM memory immediately out of reset.
+            - ROM will send message to the KMAC containing its memory contents,
+            - KMAC will hash and return the digest to the ROM.
+            - ROM will compare received digest against its first 8 logical memory lines for
+            correctness.
+
+            X-ref'ed with ROM_CTRL test/env.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_kmac_entropy
+      desc: '''Verify the EDN interface to KMAC.
+
+            Requires `EnMasking` parameter to be enabled.
+            SW randomly configures the KMAC in any hashing mode/strength, and enable EDN mode.
+            Randomly enable/disable the `entropy_timer`.
+            // TODO - error handling is not complete, do not enable `wait_timer` yet.
+            KMAC should send request to EDN once `CmdStart` is written, and should send out another
+            request to EDN when either:
+              - `entropy_timer` runs down (assuming it is non-zero)
+              - a hash operation is completed, KMAC will refresh its internal entropy state
+            SW verifies that KMAC produces the correct digest value.
+
+            TODO: This is pending security review discussion. It is unclear if this feature will be
+            implemented.
+
+            X-ref'ed with EDN test/env.
+            '''
+      milestone: V3
+      tests: []
+    }
+    {
+      name: chip_kmac_edn_reset
+      desc: '''Verify that the EDN clock / reset is connected to KMAC.
+
+            - Ensure that the `entropy_timer` resets when the EDN logic is held in reset.
             '''
       milestone: V2
       tests: []
