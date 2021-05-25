@@ -22,9 +22,10 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // According to spec, the period between digest calculation and reset should not issue any write.
   bit [NumPart-2:0] digest_calculated;
 
+  // LC program request will use a separate variable to automatically set to non-blocking setting
+  // when LC error bit is set.
   bit default_req_blocking = 1;
-  // TODO: set it to 0 once support reset in otp program, and remove related logic
-  bit lc_prog_blocking = 1;
+  bit lc_prog_blocking     = 1;
 
   `uvm_object_new
 
