@@ -82,6 +82,7 @@
     {
       name: otp_ctrl_parallel_lc_req
       uvm_test_seq: otp_ctrl_parallel_lc_req_vseq
+      run_opts: ["+zero_delays=1"]
     }
 
     {

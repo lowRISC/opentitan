@@ -26,8 +26,7 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire intr_otp_operation_done, intr_otp_error;
 
-  //TODO: use push-pull agent once support
-  wire otp_ctrl_pkg::otp_ast_req_t        ast_req;
+  wire otp_ctrl_pkg::otp_ast_req_t ast_req;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));

@@ -9,12 +9,7 @@ class otp_ctrl_parallel_lc_req_vseq extends otp_ctrl_parallel_base_vseq;
 
   `uvm_object_new
 
-  // disable checks in case lc_program and check triggered at the same time
-  constraint regwens_c {
-    check_regwen_val dist {0 :/ 1, 1 :/ 9};
-    check_trigger_regwen_val == 0;
-  }
-
+  // Disable the default LC program request from otp_ctrl_smoke_vseq.
   constraint lc_trans_c {
     do_lc_trans == 0;
   }
@@ -27,11 +22,10 @@ class otp_ctrl_parallel_lc_req_vseq extends otp_ctrl_parallel_base_vseq;
         if ($urandom_range(0, 1)) begin
           wait_clk_or_reset($urandom_range(0, 500));
           if (!base_vseq_done && !cfg.under_reset) begin
-            // TODO: current if reset is issued during OTP write, scb cannot predict if how many
-            // OTP cells have been written.
-            do_reset_in_seq = 0;
+            // Because LC program request is issued in parallel with DAI access, we disable
+            // interrupt check in this task.
+            // We only check interrupts when DAI access and LC program request are done.
             req_lc_transition(0, lc_prog_blocking);
-            do_reset_in_seq = 1;
           end
         end
       end join

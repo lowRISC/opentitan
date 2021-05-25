@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// combine all otp_ctrl seqs (except below seqs) in one seq to run sequentially
-// Exception: - csr seq, which requires scb to be disabled.
-//            - regwen_vseq, which is time sensitive and requires zero delays.
-//            - otp_ctrl_macro_errs_vseq otp_ctrl_check_fail, these two sequences require to write
-//              back to OTP once fatal error is triggered, thus does not handle random reset.
-//            - otp_ctrl_partition_walk_vseq, this sequence assumes OTP initial value is 0.
+// Combine all otp_ctrl seqs (except below seqs) in one seq to run sequentially.
+// Exception: - csr seq: requires scb to be disabled
+//            - regwen_vseq and parallel_lc_vseq: time sensitive thus require zero_delays
+//            - macro_errs_vseq and check_fail_vseq: require to write back to OTP once fatal
+//              error is triggered, thus does not handle random reset
+//            - partition_walk_vseq: assume OTP initial value is 0
 class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
   `uvm_object_utils(otp_ctrl_stress_all_vseq)
 
@@ -36,8 +36,6 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
                           "otp_ctrl_smoke_vseq",
                           "otp_ctrl_test_access_vseq",
                           "otp_ctrl_background_chks_vseq",
-                          // TODO: support this seq:
-                          // "otp_ctrl_parallel_lc_req_vseq",
                           "otp_ctrl_parallel_lc_esc_vseq",
                           "otp_ctrl_parallel_key_req_vseq"};
 
