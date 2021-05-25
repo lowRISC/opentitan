@@ -64,7 +64,7 @@ module spi_cmdparse
 
   // among the command slots, Passthrough related slots are not used. So tie them down here.
   logic unused_cmdinfo;
-  assign unused_cmdinfo = &{1'b0,
+  assign unused_cmdinfo = ^{
     cmd_info_i[CmdInfoPassthroughEnd:CmdInfoPassthroughStart]};
 
   // Only opcode in the cmd_info is used. Tie the rest of the members.
@@ -72,13 +72,13 @@ module spi_cmdparse
   always_comb begin
     unused_cmdinfo_members = 1'b 0;
     for (int unsigned i = 0 ; i <= CmdInfoPassthroughEnd ; i++) begin
-      unused_cmdinfo_members &= &{ cmd_info_i[i].addr_4b_affected,
+      unused_cmdinfo_members ^= ^{ cmd_info_i[i].addr_4b_affected,
                                    cmd_info_i[i].addr_en,
                                    cmd_info_i[i].addr_swap_en,
                                    cmd_info_i[i].dummy_en,
-                                  &cmd_info_i[i].dummy_size,
+                                  ^cmd_info_i[i].dummy_size,
                                    cmd_info_i[i].payload_dir,
-                                  &cmd_info_i[i].payload_en};
+                                  ^cmd_info_i[i].payload_en};
     end
   end
 
@@ -87,7 +87,7 @@ module spi_cmdparse
   always_comb begin
     unused_cmdinfo_opcode = 1'b 0;
     for (int unsigned i = CmdInfoPassthroughStart ; i <= CmdInfoPassthroughEnd ; i++) begin
-      unused_cmdinfo_opcode &= &cmd_info_i[i].opcode;
+      unused_cmdinfo_opcode ^= ^cmd_info_i[i].opcode;
     end
   end
 
