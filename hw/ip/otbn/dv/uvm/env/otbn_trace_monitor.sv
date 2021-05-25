@@ -13,6 +13,13 @@ class otbn_trace_monitor extends dv_base_monitor #(
 
   protected task collect_trans(uvm_phase phase);
     otbn_trace_item item;
+
+    // The trace monitor is only used for coverage collection; disable it if coverage is not
+    // enabled.
+    if (!cfg.en_cov) begin
+      return;
+    end
+
     forever begin
       @(posedge cfg.trace_vif.clk_i);
       if (cfg.trace_vif.rst_ni === 1'b1) begin
