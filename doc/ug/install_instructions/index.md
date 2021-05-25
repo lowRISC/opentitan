@@ -64,7 +64,7 @@ To synthesize and simulate the hardware components of OpenTitan multiple EDA too
 Depending on how you interact with the OpenTitan hardware code, one of more of the following tools need to be available.
 
 * [Verilator](https://verilator.org) {{< tool_version "verilator" >}}
-* Xilinx Vivado 2018.3
+* Xilinx Vivado {{< tool_version "vivado" >}}
 * Synopsys VCS
 * Cadence Xcelium
 * Cadence JasperGold
@@ -300,7 +300,9 @@ Most lowRISC designs support at least one FPGA board which works with a free Web
 
 ### Install Xilinx Vivado
 
-_**Vivado Version:** Vivado 2019.1 and all its minor updates are not compatible with this project._
+_**Vivado Version:** The recommendation is to use Vivado {{< tool_version "vivado" >}}.
+The following instructions have been tested with Vivado 2020.1.
+Vivado 2019.1 and all its minor updates are not compatible with this project._
 
 Vivado can be installed in two ways: either through an "All OS installer Single-File Download", or via the "Linux Self Extracting Web Installer".
 Neither option is great:

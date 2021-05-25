@@ -47,10 +47,10 @@ The `--build` argument is optional and ensures that the boot ROM is rebuilt for 
 Alternatively, the boot ROM can be manually regenerated using the previous command.
 
 
-In the following example we synthesize the Earl Grey design for the Nexys Video board using Xilinx Vivado 2020.1.
+In the following example we synthesize the Earl Grey design for the Nexys Video board using Xilinx Vivado {{< tool_version "vivado" >}}.
 
 ```console
-$ . /tools/xilinx/Vivado/2020.1/settings64.sh
+$ . /tools/xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
 $ cd $REPO_TOP
 $ ./meson_init.sh
 $ ./hw/top_earlgrey/util/top_earlgrey_reduce.py
@@ -78,7 +78,7 @@ To flash the bitstream onto the FPGA you need to use either the Vivado GUI or th
 Use the following command to program the FPGA with fusesoc.
 
 ```console
-$ . /tools/xilinx/Vivado/2020.1/settings64.sh
+$ . /tools/xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
 $ cd $REPO_TOP
 $ fusesoc --cores-root . pgm lowrisc:systems:chip_earlgrey_nexysvideo:0.1
 ```
@@ -99,7 +99,7 @@ If you have having trouble with programming using the command line, try the GUI.
 ### Using the Vivado GUI
 
 ```console
-$ . /tools/xilinx/Vivado/2020.1/settings64.sh
+$ . /tools/xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
 $ cd $REPO_TOP
 $ make -C build/lowrisc_systems_chip_earlgrey_nexysvideo_0.1/synth-vivado build-gui
 ```
