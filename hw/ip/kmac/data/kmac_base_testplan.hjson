@@ -145,7 +145,7 @@
 
             This will be checked in the scoreboard using the cycle acurate model.
             '''
-      milestone: V2
+      milestone: V3
       tests: ["{name}_entropy"]
     }
     {
