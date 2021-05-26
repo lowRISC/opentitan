@@ -308,10 +308,20 @@ class Testplan():
                 os.path.join(self_path, os.pardir, os.pardir))
 
         obj = Testplan._parse_hjson(filename)
+
+        parsed = set()
         imported_testplans = obj.get("import_testplans", [])
-        for imported_testplan in imported_testplans:
-            path = os.path.join(repo_top, imported_testplan)
-            obj = _merge_dicts(obj, self._parse_hjson(path))
+        while imported_testplans:
+            testplan = imported_testplans.pop(0)
+            if testplan in parsed:
+                print(f"Error: encountered the testplan {testplan} again, "
+                      "which was already parsed. Please check for circular "
+                      "dependencies.")
+                sys.exit(1)
+            parsed.add(testplan)
+            data = self._parse_hjson(os.path.join(repo_top, testplan))
+            imported_testplans.extend(data.get("import_testplans", []))
+            obj = _merge_dicts(obj, data)
 
         self.name = obj.get("name")
 
