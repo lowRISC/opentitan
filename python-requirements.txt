@@ -16,7 +16,6 @@ meson >= 0.53.0, <= 0.54 # minimum matches version in meson.build
 mistletoe>=0.7.2
 mypy
 premailer
-pycryptodome
 pyelftools
 pyftdi
 pyserial
@@ -40,3 +39,8 @@ git+https://github.com/lowRISC/edalize.git@ot#egg=edalize >= 0.2.0
 # (The chipwhisperer repository is rather large and uses additionally uses
 # submodules, which need to be fetched as well.)
 https://github.com/newaetech/chipwhisperer/archive/9b6825b495f14f85aae8b11007c63c59a1654584.tar.gz
+
+# Development version with OT-specific changes
+# TODO(#6694): this is temporary and should be replaced with the standard package release,
+# once the cSHAKE patches have landed upstream.
+git+https://github.com/lowRISC/pycryptodome.git@master#egg=pycryptodome >= 3.10.1
