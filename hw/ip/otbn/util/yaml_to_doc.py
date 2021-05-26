@@ -216,10 +216,11 @@ def name_op_enc_fields(name_to_operand: Dict[str, Operand],
             e2o[msb] = range_name
             continue
 
-        # Otherwise, we need to label the operands. Sorting ranges ensures that
-        # they appear LSB-first.
+        # Otherwise, we need to label the operands. We iterate over the ranges
+        # in scheme_field LSB-first (so that we can number things with the LSB
+        # field having index zero).
         o2e_list = []
-        for idx, (msb, lsb) in enumerate(sorted(scheme_field.bits.ranges)):
+        for idx, (msb, lsb) in enumerate(reversed(scheme_field.bits.ranges)):
             range_name = '{}_{}'.format(basename, idx)
             o2e_list.append(range_name)
             assert msb not in e2o
