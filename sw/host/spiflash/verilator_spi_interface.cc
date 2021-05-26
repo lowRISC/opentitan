@@ -4,15 +4,15 @@
 
 #include "sw/host/spiflash/verilator_spi_interface.h"
 
-#include <fcntl.h>
-#include <openssl/sha.h>
-#include <termios.h>
-#include <unistd.h>
-
 #include <cstring>
+#include <fcntl.h>
 #include <iostream>
 #include <string>
+#include <termios.h>
+#include <unistd.h>
 #include <vector>
+
+#include "cryptoc/sha256.h"
 
 namespace opentitan {
 namespace spiflash {
@@ -109,11 +109,8 @@ bool VerilatorSpiInterface::TransmitFrame(const uint8_t *tx, size_t size) {
 }
 
 bool VerilatorSpiInterface::CheckHash(const uint8_t *tx, size_t size) {
-  uint8_t hash[SHA256_DIGEST_LENGTH];
-  SHA256_CTX sha256;
-  SHA256_Init(&sha256);
-  SHA256_Update(&sha256, tx, size);
-  SHA256_Final(hash, &sha256);
+  uint8_t hash[SHA256_DIGEST_SIZE];
+  SHA256_hash(tx, size, hash);
 
   std::vector<uint8_t> rx(size);
   size_t bytes_read = ReadBytes(fd_, &rx[0], size);
@@ -122,7 +119,7 @@ bool VerilatorSpiInterface::CheckHash(const uint8_t *tx, size_t size) {
               << bytes_read << " expected: " << size << std::endl;
   }
 
-  return !std::memcmp(&rx[0], hash, SHA256_DIGEST_LENGTH);
+  return !std::memcmp(&rx[0], hash, SHA256_DIGEST_SIZE);
 }
 }  // namespace spiflash
 }  // namespace opentitan

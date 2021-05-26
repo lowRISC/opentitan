@@ -10,6 +10,16 @@ vendor_coremark_base_files = files([
   'eembc_coremark/core_util.c',
 ])
 
+vendor_cryptoc_sha256 = declare_dependency(
+  include_directories: include_directories(
+    'cryptoc/include',
+    is_system: true,
+  ),
+  sources: [
+    'cryptoc/sha256.c',
+  ],
+)
+
 # googletest and googlemock build definitions
 #
 # The following is inspired by the meson configuration available in

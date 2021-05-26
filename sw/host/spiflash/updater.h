@@ -5,8 +5,6 @@
 #ifndef OPENTITAN_SW_HOST_SPIFLASH_UPDATER_H_
 #define OPENTITAN_SW_HOST_SPIFLASH_UPDATER_H_
 
-#include <openssl/sha.h>
-
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
