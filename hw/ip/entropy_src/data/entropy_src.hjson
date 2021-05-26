@@ -39,11 +39,11 @@
       act:     "req",
       package: "entropy_src_pkg",
     }
-    { struct:  "otp_hw_cfg",
-      type:    "uni",
-      name:    "otp_hw_cfg",
-      act:     "rcv",
-      package: "otp_ctrl_part_pkg",
+    { struct:  "otp_en"
+      type:    "uni"
+      name:    "otp_en_entropy_src_fw_read"
+      act:     "rcv"
+      package: "otp_ctrl_pkg"
     }
     { struct:  "logic"
       type:    "uni"

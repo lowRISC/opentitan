@@ -624,7 +624,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           is_err = 1;
         end
 
-        if (cfg.keymgr_vif.otp_hw_cfg.data.device_id inside {0, '1}) begin
+        if (cfg.keymgr_vif.otp_device_id inside {0, '1}) begin
           is_err = 1;
         end
 
@@ -693,7 +693,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     exp.DiversificationKey = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx];
     exp.RomDigest          = cfg.keymgr_vif.rom_digest.data;
     exp.HealthMeasurement  = cfg.keymgr_vif.keymgr_div;
-    exp.DeviceIdentifier   = cfg.keymgr_vif.otp_hw_cfg.data.device_id;
+    exp.DeviceIdentifier   = cfg.keymgr_vif.otp_device_id;
     exp.HardwareRevisionSecret = keymgr_pkg::RndCnstRevisionSeedDefault;
 
     for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin

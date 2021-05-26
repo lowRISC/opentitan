@@ -48,7 +48,7 @@ module keymgr
   input lc_ctrl_pkg::lc_tx_t lc_keymgr_en_i,
   input lc_ctrl_pkg::lc_keymgr_div_t lc_keymgr_div_i,
   input otp_ctrl_pkg::otp_keymgr_key_t otp_key_i,
-  input otp_ctrl_part_pkg::otp_hw_cfg_t otp_hw_cfg_i,
+  input otp_ctrl_pkg::otp_device_id_t otp_device_id_i,
   input flash_ctrl_pkg::keymgr_flash_t flash_i,
 
   // connection to edn
@@ -317,13 +317,10 @@ module keymgr
   assign creator_seed = flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx];
   assign adv_matrix[Creator] = AdvDataWidth'({reg2hw.sw_binding,
                                               RndCnstRevisionSeed,
-                                              otp_hw_cfg_i.data.device_id,
+                                              otp_device_id_i,
                                               lc_keymgr_div_i,
                                               rom_digest_i.data,
                                               creator_seed});
-
-  logic unused_otp_bits;
-  assign unused_otp_bits = ^otp_hw_cfg_i;
 
   assign adv_dvalid[Creator] = creator_seed_vld &
                                devid_vld &
@@ -384,7 +381,7 @@ module keymgr
     .creator_seed_i(creator_seed),
     .owner_seed_i(owner_seed),
     .key_i(kmac_key_o),
-    .devid_i(otp_hw_cfg_i.data.device_id),
+    .devid_i(otp_device_id_i),
     .health_state_i(HealthStateWidth'(lc_keymgr_div_i)),
     .creator_seed_vld_o(creator_seed_vld),
     .owner_seed_vld_o(owner_seed_vld),

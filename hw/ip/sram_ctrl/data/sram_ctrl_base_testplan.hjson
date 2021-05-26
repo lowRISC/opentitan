@@ -120,8 +120,8 @@
             handled by the SRAM memory.
 
             This behavior is enabled by either setting the `exec` CSR to 1 or by driving a second
-            lifecycle input to `On` - both of these are muxed between with a `otp_hw_cfg_t` input
-            from the OTP controller.
+            lifecycle input to `On` - both of these are muxed between with a `otp_en_sram_ifetch_i`
+            input from the OTP controller.
 
             If this functionality is disabled, any memory transaction NOT tagged as `DataType` should
             error out, however `DataType` transactions should be successful when the SRAM is

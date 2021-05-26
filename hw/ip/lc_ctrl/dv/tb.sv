@@ -123,7 +123,7 @@ module tb;
 
     .lc_keymgr_div_o            (lc_ctrl_if.keymgr_div_o),
 
-    .otp_hw_cfg_i               (lc_ctrl_if.otp_hw_cfg_i)
+    .otp_device_id_i            (lc_ctrl_if.otp_device_id_i)
   );
 
   initial begin

@@ -53,9 +53,4 @@ package sram_ctrl_pkg;
     logic                  ack;
   } sram_scr_init_rsp_t;
 
-  typedef enum logic [7:0] {
-    EnSramIfetch  = 8'b10101010,
-    DisSramIfetch = 8'b01010101
-  } tl_instr_en_e;
-
 endpackage : sram_ctrl_pkg

@@ -61,13 +61,13 @@ class sram_ctrl_executable_vseq extends sram_ctrl_multiple_keys_vseq;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(en_sram_ifetch,
         // 50% chance to enable
         if (is_valid) {
-          en_sram_ifetch == sram_ctrl_pkg::EnSramIfetch;
+          en_sram_ifetch == otp_ctrl_pkg::Enabled;
         } else {
           // 75% chance to set garbage invalid data
           if (is_off == 0) {
-            en_sram_ifetch == sram_ctrl_pkg::DisSramIfetch;
+            en_sram_ifetch == otp_ctrl_pkg::Disabled;
           } else {
-            !(en_sram_ifetch inside {sram_ctrl_pkg::EnSramIfetch, sram_ctrl_pkg::DisSramIfetch});
+            !(en_sram_ifetch inside {otp_ctrl_pkg::Enabled, otp_ctrl_pkg::Disabled});
           }
         }
     )
@@ -92,7 +92,7 @@ class sram_ctrl_executable_vseq extends sram_ctrl_multiple_keys_vseq;
 
     csr_wr(ral.exec, en_exec_csr);
     cfg.exec_vif.drive_lc_hw_debug_en(hw_debug_en);
-    cfg.exec_vif.drive_otp_hw_cfg(en_sram_ifetch);
+    cfg.exec_vif.drive_otp_en_sram_ifetch(en_sram_ifetch);
   endtask
 
 endclass

@@ -23,7 +23,7 @@ module entropy_src
   output tlul_pkg::tl_d2h_t tl_o,
 
   // OTP Interface
-  input otp_ctrl_part_pkg::otp_hw_cfg_t otp_hw_cfg_i,
+  input  otp_ctrl_pkg::otp_en_t otp_en_entropy_src_fw_read_i,
 
   // RNG Interface
   output logic rng_fips_o,
@@ -117,9 +117,7 @@ module entropy_src
   );
 
   logic efuse_es_sw_reg_en;
-  otp_ctrl_part_pkg::otp_hw_cfg_t unused_hw_cfg;
-  assign unused_hw_cfg = otp_hw_cfg_i;
-  assign efuse_es_sw_reg_en = (otp_hw_cfg_i.data.en_entropy_src_fw_read == 8'hA5);
+  assign efuse_es_sw_reg_en = (otp_en_entropy_src_fw_read_i == otp_ctrl_pkg::Enabled);
 
   entropy_src_core #(
     .EsFifoDepth(EsFifoDepth)

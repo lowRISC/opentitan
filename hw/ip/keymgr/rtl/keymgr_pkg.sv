@@ -174,17 +174,6 @@ package keymgr_pkg;
     KeyMgrEnLast
   } keymgr_lc_en_usage_e;
 
-  // TODO: this will be removed later once the device ID information
-  // is broadcasted
-  typedef struct packed {
-    logic [DevIdWidth-1:0] devid;
-  } otp_data_t;
-
-  parameter otp_data_t OTP_DATA_DEFAULT = '{
-    devid:    '0
-  };
-
-
   // perm_data
   function automatic logic[RandWidth-1:0] perm_data (logic [RandWidth-1:0] data,
     rand_perm_t perm_sel);

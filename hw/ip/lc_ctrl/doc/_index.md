@@ -382,7 +382,7 @@ Signal                       | Direction        | Type                          
 `otp_lc_data_i`              | `input`          | `otp_ctrl_pkg::otp_lc_data_t`        | Life cycle state output holding the current life cycle state, the value of the transition counter and the tokens needed for life cycle transitions.
 `lc_keymgr_div_o`            | `output`         | `lc_keymgr_div_t`                    | Life cycle state group diversification value.
 `lc_flash_rma_seed_o`        | `output`         | `lc_flash_rma_seed_t`                | Seed for flash RMA.
-`otp_hw_cfg_i`               | `input`          | `otp_hw_cfg_t`                       | HW_CFG bits from OTP, used to break out and expose the {{< regref DEVICE_ID_0 >}}.
+`otp_device_id_i`            | `input`          | `otp_device_id_t`                    | HW_CFG bits from OTP ({{< regref DEVICE_ID_0 >}}).
 `lc_dft_en_o`                | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
 `lc_nvm_debug_en_o`          | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
 `lc_hw_debug_en_o`           | `output`         | `lc_tx_t`                            | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).

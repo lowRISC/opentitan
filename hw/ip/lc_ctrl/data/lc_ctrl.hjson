@@ -285,13 +285,13 @@
       package: "lc_ctrl_pkg"
     }
     // HW config input for DEVICE_ID
-    { struct:  "otp_hw_cfg"
-      type:    "uni"
-      name:    "otp_hw_cfg"
-      act:     "rcv"
+    { struct:  "otp_device_id",
+      type:    "uni",
+      name:    "otp_device_id",
+      act:     "rcv",
+      package: "otp_ctrl_pkg",
       default: "'0"
-      package: "otp_ctrl_part_pkg"
-    }
+    },
   ] // inter_signal_list
 
   registers: [
