@@ -912,18 +912,49 @@
 
             Write a 32-byte key and a 16-byte plain text to the AES registers and trigger the AES
             computation to start. Wait for the AES operation to complete by polling the status
-            register (or interrupt if available). Check the digest registers for correctness against
-            the expected digest value.
+            register. Check the digest registers for correctness against the expected digest value.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_aes_shadow_reg_alert
-      desc: '''Verify shadow reg alert from AES.
+      name: chip_aes_entropy
+      desc: '''Verify the AES entropy input used by the internal PRNGs.
 
-            Inject a storage error via backdoor to generate this alert signal while the SW is
-            actively executing some piece of code. Verify alert propagation to an NMI.
+            - Write the initial key share, IV and data in CSRs (known combinations).
+            - Configure the entropy_src to generate entropy in LFSR mode.
+            - Write the PRNG_RESEED bit to reseed the internal state of the PRNG.
+            - Poll the status idle bit to ensure reseed operation is complete.
+            - Trigger the AES operation to run and wait for it to complete.
+            - Check the digest against the expected value.
+            - Write the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR trigger bits to 1 and wait for it to
+              complete by polling the status idle bit.
+            - Read back the data out CSRs - they should all read garbage values.
+            - Assertion check verifies that the internal states (data_in, key share and IV are also
+              garbage, i.e. different from the originally written values.
+            - Assertion checks proves that all interfaces are connected across AST RNG, ES, CSRNG,
+              EDN and AES.
+            - Predict the generated entropy bits and check against the observed for correctness.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_aes_edn_reset
+      desc: '''Verify that the EDN clock / reset is connected to AES.
+
+            - Ensure that the PRNG within AES resets when the EDN logic is held in reset.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_aes_lc_escalate_en
+      desc: '''Verify the effect of LC escalate en signal on AES.
+
+            - Trigger an LC escalatation signal by writing to alert_test CSR (in some other IP).
+            - Trigger an AES operation to run.
+            - When the escalation kicks in, verify that the AES is in the error state.
             '''
       milestone: V2
       tests: []
@@ -940,6 +971,15 @@
             - After the AES operation is complete, verify the digest for correctness.
               Verify that the AES clk hint status within clkmgr now reads 0 again (AES is idle),
               after the AES operation is complete.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_aes_sideload
+      desc: '''Verify the AES sideload mechanism.
+
+            Details TBD, design updates pending.
             '''
       milestone: V2
       tests: []
@@ -1077,50 +1117,111 @@
       tests: []
     }
 
-    // CSRNG tests:
-    {
-      name: chip_csrng_cmd
-      desc: '''Verify the cmd interface to CSRNG.
-
-            Details TBD. SW test validates the reception of cmd req done interrupt.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_csrng_entropy_src
-      desc: '''Verify the interface to entropy_src.
-
-            Details TBD.
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
-      name: chip_csrng_fuse
-      desc: '''Verify the fuse input to CSRNG.
-
-            Details TBD.
-            '''
-      milestone: V2
-      tests: []
-    }
-
     // ENTROPY_SRC (pre-verified IP) integration tests:
     {
       name: chip_entropy_src_ast_rng_req
       desc: '''Verify the RNG req to ast.
 
-            Details TBD. SW test validates the reception of the entropy valid interrupt.
+            - Program the entropy src in normal RNG mode.
+            - Route the entropy data received from RNG to the FIFO.
+            - Verify that the FIFO depth is non-zero via SW - indicating the reception of data over
+              the AST RNG interface.
+            - Verify the correctness of the received data with assertion based connectivity checks.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_entropy_src_fuse
-      desc: '''Verify the fuse input entropy_src.
+      name: chip_entropy_src_ast_fips
+      desc: '''Verify the connectivity of rng_fips_o feedback signal to RNG.
 
             Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_entropy_src_csrng
+      desc: '''Verify the transfer of entropy bits to CSRNG.
+
+            Verify the entropy valid interrupt.
+            At the CSRNG, validate the reception of entropy req interrupt.
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_entropy_src_cs_aes_halt
+      desc: '''Verify the aes halt handshake with CSRNG.
+
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_entropy_src_fuse_en_fw_read
+      desc: '''Verify the fuse input entropy_src.
+
+            - Initialize the OTP with this fuse bit set to 1.
+            - Perform an entropy request operation.
+            - Read the entropy_data_fifo via SW; verify that it reads valid values.
+            - Reset the chip, but this time, initialize the OTP with this fuse bit set to 0.
+            - Perform an entropy request operation.
+            - Read the internal state via SW; verify that it reads all zeros this time.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // CSRNG tests:
+    {
+      name: chip_csrng_edn_cmd
+      desc: '''Verify incoming command interface from EDN.
+
+            - Have each EDN instance issue an instantiate command to CSRNG.
+            - When done, verify the reception of cmd req done interrupt.
+            - Check the data returned to EDN via connectivity assertion checks.
+            - TODO: explore the ability to generate predictable data and verify the received value.
+            Details TBD.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_csrng_fuse_en_sw_app_read
+      desc: '''Verify the fuse input to CSRNG.
+
+            - Initialize the OTP with this fuse bit set to 1.
+            - Issue an instantiate command to request entropy.
+            - Verify that SW can read the internal states.
+            - Reset the chip and repeat the steps above, but this time, with OTP fuse bit set to 0.
+            - Verify that the SW reads back all zeros when reading the internal states.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_csrng_lc_hw_debug_en
+      desc: '''Verify the effect of LC HW debug enable on CSRNG.
+
+            TODO: This is pending SCA security review and might be removed.
+            '''
+      milestone: V2
+      tests: []
+    }
+
+    // EDN (pre-verified IP) integration tests:
+    {
+      name: chip_edn_entropy_reqs
+      desc: '''Verify the entropy requests from all peripherals.
+
+            Verify that there are no misconnects between each peripheral requesting entropy.
+            TODO: system level scenario: have all entropy sources request entropy in the same test
+            one after to show boot to post boot load, cycling all entropy blocks off and on again.
+            Ensure there are no deadlocks and everything works as expected.
+            X'ref'ed with each IP test that requsts entropy from EDN.
             '''
       milestone: V2
       tests: []
