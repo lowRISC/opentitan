@@ -181,6 +181,16 @@ This needn't be crossed with the two flag groups (that's tracked separately in t
 For example, `BN.ADD` can write to each of the flags `C`, `M`, `L` and `Z`.
 This paragraph implies eight coverage points (four flags times two values) for that instruction.
 
+> Again, the code to track this is split by encoding schema in `otbn_env_cov`.
+> The trace interface takes a copy of flag write data.
+> It doesn't bother storing the flag write flags, since these are implied by the instruction anyway.
+> There is a coverage coverpoint tracking both values for each of the flags that can be written.
+> This is then crossed with the instruction mnemonic.
+> For example, the coverpoint for the C flag (bit zero) in the `bnaf` encoding used by `BN.ADD` is called `flags_00_cp`.
+> Some instructions only write the `M`, `L` and `Z` flags.
+> These are found in the `bna`, `bnan`, `bnaqs` and `bnaqw` encoding groups.
+> For these instructions, we only track bits `1`, `2` and `3` of the flags structure.
+
 #### ADD
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.

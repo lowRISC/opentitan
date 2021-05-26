@@ -17,6 +17,8 @@ package otbn_env_pkg;
   import otbn_reg_pkg::*;
   import otbn_ral_pkg::*;
 
+  import otbn_pkg::flags_t;
+
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
