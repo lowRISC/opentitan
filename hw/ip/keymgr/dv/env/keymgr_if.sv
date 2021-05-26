@@ -9,7 +9,7 @@ interface keymgr_if(input clk, input rst_n);
 
   lc_ctrl_pkg::lc_tx_t            keymgr_en;
   lc_ctrl_pkg::lc_keymgr_div_t    keymgr_div;
-  otp_ctrl_part_pkg::otp_hw_cfg_t otp_hw_cfg;
+  otp_ctrl_pkg::otp_device_id_t   otp_device_id;
   otp_ctrl_pkg::otp_keymgr_key_t  otp_key;
   flash_ctrl_pkg::keymgr_flash_t  flash;
   rom_ctrl_pkg::keymgr_data_t     rom_digest;
@@ -74,7 +74,7 @@ interface keymgr_if(input clk, input rst_n);
     #($urandom_range(1000, 0) * 1ns);
     keymgr_en = lc_ctrl_pkg::On;
     keymgr_div = 64'h5CFBD765CE33F34E;
-    otp_hw_cfg.data.device_id = 'hF0F0;
+    otp_device_id = 'hF0F0;
     otp_key = otp_ctrl_pkg::OTP_KEYMGR_KEY_DEFAULT;
     flash   = flash_ctrl_pkg::KEYMGR_FLASH_DEFAULT;
     rom_digest.data = 256'hA20A046CF42E6EAC560A3F82BFA76285B5C1D4AEA7C915E49A32D1C89BE0F507;
@@ -162,7 +162,7 @@ interface keymgr_if(input clk, input rst_n);
     end
 
     keymgr_div = local_keymgr_div;
-    otp_hw_cfg.data.device_id = local_otp_device_id;
+    otp_device_id = local_otp_device_id;
     otp_key = local_otp_key;
     flash   = local_flash;
     rom_digest = local_rom_digest;

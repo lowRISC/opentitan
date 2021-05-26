@@ -518,7 +518,6 @@ module top_earlgrey #(
   otp_ctrl_pkg::otp_lc_data_t       otp_ctrl_otp_lc_data;
   otp_ctrl_pkg::lc_otp_program_req_t       lc_ctrl_lc_otp_program_req;
   otp_ctrl_pkg::lc_otp_program_rsp_t       lc_ctrl_lc_otp_program_rsp;
-  otp_ctrl_part_pkg::otp_hw_cfg_t       otp_ctrl_otp_hw_cfg;
   lc_ctrl_pkg::lc_keymgr_div_t       lc_ctrl_lc_keymgr_div;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_nvm_debug_en;
@@ -645,6 +644,13 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       main_tl_debug_mem_rsp;
   jtag_pkg::jtag_req_t       pinmux_aon_dft_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_aon_dft_jtag_rsp;
+  otp_ctrl_part_pkg::otp_hw_cfg_t       otp_ctrl_otp_hw_cfg;
+  otp_ctrl_pkg::otp_en_t       csrng_otp_en_csrng_sw_app_read;
+  otp_ctrl_pkg::otp_en_t       entropy_src_otp_en_entropy_src_fw_read;
+  otp_ctrl_pkg::otp_device_id_t       lc_ctrl_otp_device_id;
+  otp_ctrl_pkg::otp_device_id_t       keymgr_otp_device_id;
+  otp_ctrl_pkg::otp_en_t       sram_ctrl_main_otp_en_sram_ifetch;
+  otp_ctrl_pkg::otp_en_t       sram_ctrl_ret_aon_otp_en_sram_ifetch;
 
   // define mixed connection to port
   assign edn0_edn_req[2] = ast_edn_req_i;
@@ -676,6 +682,23 @@ module top_earlgrey #(
   assign edn1_edn_req[5] = '0;
   assign edn1_edn_req[6] = '0;
 
+
+  // OTP HW_CFG Broadcast signals.
+  // TODO(#6713): The actual struct breakout and mapping currently needs to
+  // be performed by hand.
+  assign csrng_otp_en_csrng_sw_app_read = otp_ctrl_otp_hw_cfg.data.en_csrng_sw_app_read;
+  assign entropy_src_otp_en_entropy_src_fw_read = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_read;
+  assign sram_ctrl_main_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
+  assign sram_ctrl_ret_aon_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
+  assign lc_ctrl_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
+  assign keymgr_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
+
+  logic unused_otp_hw_cfg_bits;
+  assign unused_otp_hw_cfg_bits = ^{
+    otp_ctrl_otp_hw_cfg.valid,
+    otp_ctrl_otp_hw_cfg.data.hw_cfg_digest,
+    otp_ctrl_otp_hw_cfg.data.unallocated
+  };
 
   // Unused reset signals
   logic unused_d0_rst_por_aon;
@@ -1586,7 +1609,7 @@ module top_earlgrey #(
       .lc_iso_part_sw_wr_en_o(lc_ctrl_lc_iso_part_sw_wr_en),
       .lc_seed_hw_rd_en_o(lc_ctrl_lc_seed_hw_rd_en),
       .lc_keymgr_div_o(lc_ctrl_lc_keymgr_div),
-      .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
+      .otp_device_id_i(lc_ctrl_otp_device_id),
       .tl_i(lc_ctrl_tl_req),
       .tl_o(lc_ctrl_tl_rsp),
       .scanmode_i,
@@ -1930,7 +1953,7 @@ module top_earlgrey #(
       .sram_scr_init_i(sram_ctrl_ret_aon_sram_scr_init_rsp),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
-      .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
+      .otp_en_sram_ifetch_i(sram_ctrl_ret_aon_otp_en_sram_ifetch),
       .en_ifetch_o(sram_ctrl_ret_aon_en_ifetch),
       .intg_error_i(ram_ret_aon_intg_error),
       .tl_i(sram_ctrl_ret_aon_tl_req),
@@ -2128,7 +2151,7 @@ module top_earlgrey #(
       .kmac_data_o(kmac_app_req[0]),
       .kmac_data_i(kmac_app_rsp[0]),
       .otp_key_i(otp_ctrl_otp_keymgr_key),
-      .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
+      .otp_device_id_i(keymgr_otp_device_id),
       .flash_i(flash_ctrl_keymgr),
       .lc_keymgr_en_i(lc_ctrl_lc_keymgr_en),
       .lc_keymgr_div_i(lc_ctrl_lc_keymgr_div),
@@ -2164,7 +2187,7 @@ module top_earlgrey #(
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_rsp),
       .cs_aes_halt_i(csrng_cs_aes_halt_req),
       .cs_aes_halt_o(csrng_cs_aes_halt_rsp),
-      .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
+      .otp_en_csrng_sw_app_read_i(csrng_otp_en_csrng_sw_app_read),
       .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
       .tl_i(csrng_tl_req),
       .tl_o(csrng_tl_rsp),
@@ -2197,7 +2220,7 @@ module top_earlgrey #(
       .entropy_src_rng_i(es_rng_rsp_i),
       .entropy_src_xht_o(),
       .entropy_src_xht_i(entropy_src_pkg::ENTROPY_SRC_XHT_RSP_DEFAULT),
-      .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
+      .otp_en_entropy_src_fw_read_i(entropy_src_otp_en_entropy_src_fw_read),
       .rng_fips_o(es_rng_fips_o),
       .tl_i(entropy_src_tl_req),
       .tl_o(entropy_src_tl_rsp),
@@ -2276,7 +2299,7 @@ module top_earlgrey #(
       .sram_scr_init_i(sram_ctrl_main_sram_scr_init_rsp),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
-      .otp_hw_cfg_i(otp_ctrl_otp_hw_cfg),
+      .otp_en_sram_ifetch_i(sram_ctrl_main_otp_en_sram_ifetch),
       .en_ifetch_o(sram_ctrl_main_en_ifetch),
       .intg_error_i(ram_main_intg_error),
       .tl_i(sram_ctrl_main_tl_req),

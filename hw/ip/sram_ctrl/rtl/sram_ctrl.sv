@@ -20,11 +20,11 @@ module sram_ctrl
   parameter lfsr_perm_t                RndCnstSramLfsrPerm = RndCnstSramLfsrPermDefault
 ) (
   // SRAM Clock
-  input                                              clk_i,
-  input                                              rst_ni,
+  input  logic                                       clk_i,
+  input  logic                                       rst_ni,
   // OTP Clock (for key interface)
-  input                                              clk_otp_i,
-  input                                              rst_otp_ni,
+  input  logic                                       clk_otp_i,
+  input  logic                                       rst_otp_ni,
   // Bus Interface (device) for CSRs
   input  tlul_pkg::tl_h2d_t                          tl_i,
   output tlul_pkg::tl_d2h_t                          tl_o,
@@ -35,12 +35,12 @@ module sram_ctrl
   input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_hw_debug_en_i,
   // Otp configuration for sram execution
-  input  otp_ctrl_part_pkg::otp_hw_cfg_t             otp_hw_cfg_i,
+  input  otp_ctrl_pkg::otp_en_t                      otp_en_sram_ifetch_i,
   // Key request to OTP (running on clk_fixed)
   output otp_ctrl_pkg::sram_otp_key_req_t            sram_otp_key_o,
   input  otp_ctrl_pkg::sram_otp_key_rsp_t            sram_otp_key_i,
   // Integrity error detection on corresponding sram
-  input                                              intg_error_i,
+  input  logic                                       intg_error_i,
   // Interface with SRAM scrambling wrapper
   output sram_scr_req_t                              sram_scr_o,
   input  sram_scr_rsp_t                              sram_scr_i,
@@ -262,8 +262,8 @@ module sram_ctrl
     assign lc_ifetch_en = (lc_hw_debug_en_i == lc_ctrl_pkg::On) ? tlul_pkg::InstrEn :
                                                                   tlul_pkg::InstrDis;
     assign reg_ifetch_en = tlul_pkg::tl_instr_en_e'(reg2hw.exec.q);
-    assign en_ifetch_o = (otp_hw_cfg_i.data.en_sram_ifetch == EnSramIfetch) ? reg_ifetch_en :
-                                                                              lc_ifetch_en;
+    assign en_ifetch_o = (otp_en_sram_ifetch_i == otp_ctrl_pkg::Enabled) ? reg_ifetch_en :
+                                                                           lc_ifetch_en;
   end else begin : gen_tieoff
     assign en_ifetch_o = tlul_pkg::InstrDis;
   end
@@ -271,15 +271,10 @@ module sram_ctrl
   // tie off unused signal
   if (!InstrExec) begin : gen_tieoff_unused
     lc_ctrl_pkg::lc_tx_t unused_lc;
-    tl_instr_en_e unused_reg_en;
+    logic unused_reg_en;
     assign unused_lc = lc_hw_debug_en_i;
-    assign unused_reg_en = tl_instr_en_e'(reg2hw.exec.q);
+    assign unused_reg_en = ^reg2hw.exec.q;
   end
-
-  logic unused_otp_bits;
-  assign unused_otp_bits = ^otp_hw_cfg_i;
-
-
 
   ////////////////
   // Assertions //

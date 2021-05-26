@@ -1495,8 +1495,6 @@
           width: 1
           default: "'0"
           inst_name: otp_ctrl
-          end_idx: -1
-          top_type: broadcast
           top_signame: otp_ctrl_otp_hw_cfg
           index: -1
         }
@@ -1930,15 +1928,15 @@
           index: -1
         }
         {
-          name: otp_hw_cfg
-          struct: otp_hw_cfg
-          package: otp_ctrl_part_pkg
+          name: otp_device_id
+          struct: otp_device_id
+          package: otp_ctrl_pkg
           type: uni
           act: rcv
           width: 1
           default: "'0"
           inst_name: lc_ctrl
-          top_signame: otp_ctrl_otp_hw_cfg
+          top_signame: lc_ctrl_otp_device_id
           index: -1
         }
         {
@@ -3454,15 +3452,15 @@
           index: -1
         }
         {
-          name: otp_hw_cfg
-          struct: otp_hw_cfg
-          package: otp_ctrl_part_pkg
+          name: otp_en_sram_ifetch
+          struct: otp_en
+          package: otp_ctrl_pkg
           type: uni
           act: rcv
           width: 1
+          default: "'0"
           inst_name: sram_ctrl_ret_aon
-          default: ""
-          top_signame: otp_ctrl_otp_hw_cfg
+          top_signame: sram_ctrl_ret_aon_otp_en_sram_ifetch
           index: -1
         }
         {
@@ -4399,15 +4397,15 @@
           index: -1
         }
         {
-          name: otp_hw_cfg
-          struct: otp_hw_cfg
-          package: otp_ctrl_part_pkg
+          name: otp_device_id
+          struct: otp_device_id
+          package: otp_ctrl_pkg
           type: uni
           act: rcv
           width: 1
           inst_name: keymgr
           default: ""
-          top_signame: otp_ctrl_otp_hw_cfg
+          top_signame: keymgr_otp_device_id
           index: -1
         }
         {
@@ -4548,15 +4546,15 @@
           index: -1
         }
         {
-          name: otp_hw_cfg
-          struct: otp_hw_cfg
-          package: otp_ctrl_part_pkg
+          name: otp_en_csrng_sw_app_read
+          struct: otp_en
+          package: otp_ctrl_pkg
           type: uni
           act: rcv
           width: 1
           inst_name: csrng
           default: ""
-          top_signame: otp_ctrl_otp_hw_cfg
+          top_signame: csrng_otp_en_csrng_sw_app_read
           index: -1
         }
         {
@@ -4671,15 +4669,15 @@
           index: -1
         }
         {
-          name: otp_hw_cfg
-          struct: otp_hw_cfg
-          package: otp_ctrl_part_pkg
+          name: otp_en_entropy_src_fw_read
+          struct: otp_en
+          package: otp_ctrl_pkg
           type: uni
           act: rcv
           width: 1
           inst_name: entropy_src
           default: ""
-          top_signame: otp_ctrl_otp_hw_cfg
+          top_signame: entropy_src_otp_en_entropy_src_fw_read
           index: -1
         }
         {
@@ -4992,15 +4990,15 @@
           index: -1
         }
         {
-          name: otp_hw_cfg
-          struct: otp_hw_cfg
-          package: otp_ctrl_part_pkg
+          name: otp_en_sram_ifetch
+          struct: otp_en
+          package: otp_ctrl_pkg
           type: uni
           act: rcv
           width: 1
+          default: "'0"
           inst_name: sram_ctrl_main
-          default: ""
-          top_signame: otp_ctrl_otp_hw_cfg
+          top_signame: sram_ctrl_main_otp_en_sram_ifetch
           index: -1
         }
         {
@@ -5975,15 +5973,6 @@
       [
         otp_ctrl.lc_otp_program
       ]
-      otp_ctrl.otp_hw_cfg:
-      [
-        csrng.otp_hw_cfg
-        entropy_src.otp_hw_cfg
-        lc_ctrl.otp_hw_cfg
-        keymgr.otp_hw_cfg
-        sram_ctrl_main.otp_hw_cfg
-        sram_ctrl_ret_aon.otp_hw_cfg
-      ]
       lc_ctrl.lc_keymgr_div:
       [
         keymgr.lc_keymgr_div
@@ -6268,6 +6257,13 @@
       main.tl_dm_sba
       main.tl_debug_mem
       pinmux_aon.dft_jtag
+      otp_ctrl.otp_hw_cfg
+      csrng.otp_en_csrng_sw_app_read
+      entropy_src.otp_en_entropy_src_fw_read
+      lc_ctrl.otp_device_id
+      keymgr.otp_device_id
+      sram_ctrl_main.otp_en_sram_ifetch
+      sram_ctrl_ret_aon.otp_en_sram_ifetch
     ]
     external:
     {
@@ -12386,8 +12382,6 @@
         width: 1
         default: "'0"
         inst_name: otp_ctrl
-        end_idx: -1
-        top_type: broadcast
         top_signame: otp_ctrl_otp_hw_cfg
         index: -1
       }
@@ -12760,15 +12754,15 @@
         index: -1
       }
       {
-        name: otp_hw_cfg
-        struct: otp_hw_cfg
-        package: otp_ctrl_part_pkg
+        name: otp_device_id
+        struct: otp_device_id
+        package: otp_ctrl_pkg
         type: uni
         act: rcv
         width: 1
         default: "'0"
         inst_name: lc_ctrl
-        top_signame: otp_ctrl_otp_hw_cfg
+        top_signame: lc_ctrl_otp_device_id
         index: -1
       }
       {
@@ -13833,15 +13827,15 @@
         index: -1
       }
       {
-        name: otp_hw_cfg
-        struct: otp_hw_cfg
-        package: otp_ctrl_part_pkg
+        name: otp_en_sram_ifetch
+        struct: otp_en
+        package: otp_ctrl_pkg
         type: uni
         act: rcv
         width: 1
+        default: "'0"
         inst_name: sram_ctrl_ret_aon
-        default: ""
-        top_signame: otp_ctrl_otp_hw_cfg
+        top_signame: sram_ctrl_ret_aon_otp_en_sram_ifetch
         index: -1
       }
       {
@@ -14284,15 +14278,15 @@
         index: -1
       }
       {
-        name: otp_hw_cfg
-        struct: otp_hw_cfg
-        package: otp_ctrl_part_pkg
+        name: otp_device_id
+        struct: otp_device_id
+        package: otp_ctrl_pkg
         type: uni
         act: rcv
         width: 1
         inst_name: keymgr
         default: ""
-        top_signame: otp_ctrl_otp_hw_cfg
+        top_signame: keymgr_otp_device_id
         index: -1
       }
       {
@@ -14397,15 +14391,15 @@
         index: -1
       }
       {
-        name: otp_hw_cfg
-        struct: otp_hw_cfg
-        package: otp_ctrl_part_pkg
+        name: otp_en_csrng_sw_app_read
+        struct: otp_en
+        package: otp_ctrl_pkg
         type: uni
         act: rcv
         width: 1
         inst_name: csrng
         default: ""
-        top_signame: otp_ctrl_otp_hw_cfg
+        top_signame: csrng_otp_en_csrng_sw_app_read
         index: -1
       }
       {
@@ -14480,15 +14474,15 @@
         index: -1
       }
       {
-        name: otp_hw_cfg
-        struct: otp_hw_cfg
-        package: otp_ctrl_part_pkg
+        name: otp_en_entropy_src_fw_read
+        struct: otp_en
+        package: otp_ctrl_pkg
         type: uni
         act: rcv
         width: 1
         inst_name: entropy_src
         default: ""
-        top_signame: otp_ctrl_otp_hw_cfg
+        top_signame: entropy_src_otp_en_entropy_src_fw_read
         index: -1
       }
       {
@@ -14676,15 +14670,15 @@
         index: -1
       }
       {
-        name: otp_hw_cfg
-        struct: otp_hw_cfg
-        package: otp_ctrl_part_pkg
+        name: otp_en_sram_ifetch
+        struct: otp_en
+        package: otp_ctrl_pkg
         type: uni
         act: rcv
         width: 1
+        default: "'0"
         inst_name: sram_ctrl_main
-        default: ""
-        top_signame: otp_ctrl_otp_hw_cfg
+        top_signame: sram_ctrl_main_otp_en_sram_ifetch
         index: -1
       }
       {
@@ -17140,17 +17134,6 @@
         default: "'0"
       }
       {
-        package: otp_ctrl_part_pkg
-        struct: otp_hw_cfg
-        signame: otp_ctrl_otp_hw_cfg
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: "'0"
-      }
-      {
         package: lc_ctrl_pkg
         struct: lc_keymgr_div
         signame: lc_ctrl_lc_keymgr_div
@@ -18505,6 +18488,69 @@
         type: req_rsp
         end_idx: -1
         default: ""
+      }
+      {
+        package: otp_ctrl_part_pkg
+        struct: otp_hw_cfg
+        signame: otp_ctrl_otp_hw_cfg
+        width: 1
+        type: uni
+        end_idx: -1
+        default: "'0"
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_en
+        signame: csrng_otp_en_csrng_sw_app_read
+        width: 1
+        type: uni
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_en
+        signame: entropy_src_otp_en_entropy_src_fw_read
+        width: 1
+        type: uni
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_device_id
+        signame: lc_ctrl_otp_device_id
+        width: 1
+        type: uni
+        end_idx: -1
+        default: "'0"
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_device_id
+        signame: keymgr_otp_device_id
+        width: 1
+        type: uni
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_en
+        signame: sram_ctrl_main_otp_en_sram_ifetch
+        width: 1
+        type: uni
+        end_idx: -1
+        default: "'0"
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_en
+        signame: sram_ctrl_ret_aon_otp_en_sram_ifetch
+        width: 1
+        type: uni
+        end_idx: -1
+        default: "'0"
       }
     ]
   }

@@ -919,11 +919,6 @@
       'otp_ctrl.otp_lc_data'   : ['lc_ctrl.otp_lc_data'],
       'lc_ctrl.lc_otp_program' : ['otp_ctrl.lc_otp_program'],
 
-      // HW_CFG broadcast
-      'otp_ctrl.otp_hw_cfg'    : ['csrng.otp_hw_cfg', 'entropy_src.otp_hw_cfg',
-                                  'lc_ctrl.otp_hw_cfg', 'keymgr.otp_hw_cfg',
-                                  'sram_ctrl_main.otp_hw_cfg', 'sram_ctrl_ret_aon.otp_hw_cfg'],
-
       // Diversification constant coming from life cycle
       'lc_ctrl.lc_keymgr_div'  : ['keymgr.lc_keymgr_div'],
 
@@ -971,8 +966,18 @@
         'main.tl_corei', 'main.tl_cored', 'main.tl_dm_sba', 'main.tl_debug_mem',
 
         // Pinmux JTAG signals for the tool-inserted DFT TAP
-        'pinmux_aon.dft_jtag'
+        'pinmux_aon.dft_jtag',
 
+        // OTP HW_CFG Broadcast signals.
+        // TODO(#6713): The actual struct breakout and mapping currently needs to
+        // be performed by hand in the toplevel template.
+        'otp_ctrl.otp_hw_cfg',
+        'csrng.otp_en_csrng_sw_app_read',
+        'entropy_src.otp_en_entropy_src_fw_read',
+        'lc_ctrl.otp_device_id',
+        'keymgr.otp_device_id',
+        'sram_ctrl_main.otp_en_sram_ifetch',
+        'sram_ctrl_ret_aon.otp_en_sram_ifetch'
     ],
 
     // ext is to create port in the top.

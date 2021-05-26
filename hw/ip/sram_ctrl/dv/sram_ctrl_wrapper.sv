@@ -37,7 +37,7 @@ module sram_ctrl_wrapper
   input otp_ctrl_pkg::sram_otp_key_rsp_t            sram_otp_key_i,
   // Executable SRAM inputs
   input lc_ctrl_pkg::lc_tx_t                        lc_hw_debug_en_i,
-  input otp_ctrl_part_pkg::otp_hw_cfg_t             otp_hw_cfg_i
+  input otp_ctrl_pkg::otp_en_t                      otp_en_sram_ifetch_i
 );
 
   // Scrambling key interface between sram_ctrl and scrambling RAM
@@ -62,33 +62,33 @@ module sram_ctrl_wrapper
   // SRAM Controller
   sram_ctrl u_sram_ctrl (
     // main clock
-    .clk_i            (clk_i            ),
-    .rst_ni           (rst_ni           ),
+    .clk_i                (clk_i            ),
+    .rst_ni               (rst_ni           ),
     // OTP clock
-    .clk_otp_i        (clk_otp_i        ),
-    .rst_otp_ni       (rst_otp_ni       ),
+    .clk_otp_i            (clk_otp_i        ),
+    .rst_otp_ni           (rst_otp_ni       ),
     // TLUL interface for CSRs
-    .tl_i             (csr_tl_i         ),
-    .tl_o             (csr_tl_o         ),
+    .tl_i                 (csr_tl_i         ),
+    .tl_o                 (csr_tl_o         ),
     // Alert I/O
-    .alert_rx_i       (alert_rx_i       ),
-    .alert_tx_o       (alert_tx_o       ),
+    .alert_rx_i           (alert_rx_i       ),
+    .alert_tx_o           (alert_tx_o       ),
     // Life cycle escalation
-    .lc_escalate_en_i (lc_escalate_en_i ),
+    .lc_escalate_en_i     (lc_escalate_en_i ),
     // OTP key derivation interface
-    .sram_otp_key_o   (sram_otp_key_o   ),
-    .sram_otp_key_i   (sram_otp_key_i   ),
+    .sram_otp_key_o       (sram_otp_key_o   ),
+    .sram_otp_key_i       (sram_otp_key_i   ),
     // Interface with SRAM memory scrambling
-    .sram_scr_o       (scr_req          ),
-    .sram_scr_i       (scr_rsp          ),
-    .sram_scr_init_o  (scr_init_req     ),
-    .sram_scr_init_i  (scr_init_rsp     ),
+    .sram_scr_o           (scr_req          ),
+    .sram_scr_i           (scr_rsp          ),
+    .sram_scr_init_o      (scr_init_req     ),
+    .sram_scr_init_i      (scr_init_rsp     ),
     // Integrity error
-    .intg_error_i     (intg_error       ),
+    .intg_error_i         (intg_error       ),
     // Executable SRAM
-    .lc_hw_debug_en_i (lc_hw_debug_en_i ),
-    .otp_hw_cfg_i     (otp_hw_cfg_i     ),
-    .en_ifetch_o      (en_ifetch        )
+    .lc_hw_debug_en_i     (lc_hw_debug_en_i     ),
+    .otp_en_sram_ifetch_i (otp_en_sram_ifetch_i ),
+    .en_ifetch_o          (en_ifetch            )
   );
 
   // TLUL Adapter SRAM

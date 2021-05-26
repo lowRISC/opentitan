@@ -50,12 +50,11 @@
       act:     "rsp"
       package: "entropy_src_pkg"
     }
-    { struct:  "otp_hw_cfg"
+    { struct:  "otp_en"
       type:    "uni"
-      name:    "otp_hw_cfg"
+      name:    "otp_en_csrng_sw_app_read"
       act:     "rcv"
-      width:   1
-      package: "otp_ctrl_part_pkg"
+      package: "otp_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"

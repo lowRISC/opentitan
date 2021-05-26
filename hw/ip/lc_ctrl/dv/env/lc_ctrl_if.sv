@@ -12,7 +12,7 @@ interface lc_ctrl_if(input clk, input rst_n);
 
   logic tdo_oe; // TODO: add assertions
   otp_lc_data_t otp_i;
-  otp_hw_cfg_t  otp_hw_cfg_i;
+  otp_device_id_t otp_device_id_i;
   lc_token_t    hashed_token;
 
   lc_tx_t lc_dft_en_o;
@@ -49,8 +49,7 @@ interface lc_ctrl_if(input clk, input rst_n);
     otp_i.rma_token         = lc_ctrl_env_pkg::get_random_token();
     otp_i.id_state          = LcIdBlank;
 
-    otp_hw_cfg_i.valid = Off;
-    otp_hw_cfg_i.data = 0;
+    otp_device_id_i = 0;
 
     clk_byp_ack_i = clk_byp_ack;
     flash_rma_ack_i = flash_rma_ack;

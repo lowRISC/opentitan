@@ -103,11 +103,12 @@
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
     },
-    { struct:  "otp_hw_cfg",
+    { struct:  "otp_en",
       type:    "uni",
-      name:    "otp_hw_cfg",
+      name:    "otp_en_sram_ifetch",
       act:     "rcv",
-      package: "otp_ctrl_part_pkg",
+      package: "otp_ctrl_pkg",
+      default: "'0"
     },
     { struct:  "tl_instr_en",
       type:    "uni",

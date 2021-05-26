@@ -30,11 +30,6 @@ module tb;
 
   wire seed_valid;
 
-  lc_ctrl_pkg::lc_tx_t lc_esc_en;
-
-  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en;
-  otp_ctrl_part_pkg::otp_hw_cfg_t otp_hw_cfg;
-
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
@@ -98,8 +93,8 @@ module tb;
     .sram_otp_key_o   (key_req                ),
     .sram_otp_key_i   (key_rsp                ),
     // SRAM ifetch interface
-    .lc_hw_debug_en_i (exec_if.lc_hw_debug_en ),
-    .otp_hw_cfg_i     (exec_if.otp_hw_cfg     )
+    .lc_hw_debug_en_i     (exec_if.lc_hw_debug_en ),
+    .otp_en_sram_ifetch_i (exec_if.otp_en_sram_ifetch )
   );
 
   // KDI interface assignments

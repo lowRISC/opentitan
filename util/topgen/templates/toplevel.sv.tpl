@@ -243,6 +243,27 @@ module top_${top["name"]} #(
 
 ## Inter-module signal collection
 
+% for m in top["module"]:
+  % if m["type"] == "otp_ctrl":
+  // OTP HW_CFG Broadcast signals.
+  // TODO(#6713): The actual struct breakout and mapping currently needs to
+  // be performed by hand.
+  assign csrng_otp_en_csrng_sw_app_read = otp_ctrl_otp_hw_cfg.data.en_csrng_sw_app_read;
+  assign entropy_src_otp_en_entropy_src_fw_read = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_read;
+  assign sram_ctrl_main_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
+  assign sram_ctrl_ret_aon_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
+  assign lc_ctrl_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
+  assign keymgr_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
+
+  logic unused_otp_hw_cfg_bits;
+  assign unused_otp_hw_cfg_bits = ^{
+    otp_ctrl_otp_hw_cfg.valid,
+    otp_ctrl_otp_hw_cfg.data.hw_cfg_digest,
+    otp_ctrl_otp_hw_cfg.data.unallocated
+  };
+  % endif
+% endfor
+
   // Unused reset signals
 % for k, v in unused_resets.items():
   logic unused_d${v.lower()}_rst_${k};

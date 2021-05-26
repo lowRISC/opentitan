@@ -327,13 +327,13 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_sram_executable();
     forever begin
-      @(cfg.exec_vif.lc_hw_debug_en, cfg.exec_vif.otp_hw_cfg, detected_csr_exec);
+      @(cfg.exec_vif.lc_hw_debug_en, cfg.exec_vif.otp_en_sram_ifetch, detected_csr_exec);
 
       // "latch" these values with a slight delay to ensure everything has settled
       #1;
 
       detected_hw_debug_en = cfg.exec_vif.lc_hw_debug_en;
-      detected_en_sram_ifetch = cfg.exec_vif.otp_hw_cfg.data.en_sram_ifetch;
+      detected_en_sram_ifetch = cfg.exec_vif.otp_en_sram_ifetch;
 
       `uvm_info(`gfn, $sformatf("detected_hw_debug_en: %0b", detected_hw_debug_en), UVM_HIGH)
       `uvm_info(`gfn, $sformatf("detected_en_sram_ifetch: %0b", detected_en_sram_ifetch), UVM_HIGH)
@@ -353,8 +353,8 @@ class sram_ctrl_scoreboard extends cip_base_scoreboard #(
         valid_hw_debug_en = detected_hw_debug_en;
         valid_en_sram_ifetch = detected_en_sram_ifetch;
 
-        allow_ifetch = (valid_en_sram_ifetch == sram_ctrl_pkg::EnSramIfetch) ?
-                       (valid_csr_exec == tlul_pkg::InstrEn)                 :
+        allow_ifetch = (valid_en_sram_ifetch == otp_ctrl_pkg::Enabled) ?
+                       (valid_csr_exec == tlul_pkg::InstrEn)           :
                        (valid_hw_debug_en == lc_ctrl_pkg::On);
 
         if (!cfg.en_scb) continue;
