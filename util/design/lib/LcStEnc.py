@@ -7,6 +7,7 @@ used to generate new life cycle encodings.
 import logging as log
 import random
 from collections import OrderedDict
+from Crypto.Hash import cSHAKE128
 
 from lib.common import (check_int, ecc_encode, get_hd, hd_histogram,
                         is_valid_codeword, random_or_hexvalue, scatter_bits)
@@ -181,14 +182,24 @@ def _validate_tokens(config):
     '''Validates and hashes the tokens'''
     config.setdefault('token_size', 128)
     config['token_size'] = check_int(config['token_size'])
+    # This needs to be byte aligned
+    if config['token_size'] % 8:
+        raise ValueError('Size of token {} must be byte aligned'
+                         .format(token['name']))
+
+    num_bytes = config['token_size'] // 8
 
     hashed_tokens = []
     for token in config['tokens']:
         random_or_hexvalue(token, 'value', config['token_size'])
         hashed_token = OrderedDict()
         hashed_token['name'] = token['name'] + 'Hashed'
-        # TODO: plug in PRESENT-based hashing algo or KMAC
-        hashed_token['value'] = token['value']
+        data = token['value'].to_bytes(num_bytes, byteorder='big')
+        # Custom string chosen for life cycle KMAC App interface
+        custom = 'LC_CTRL'.encode('UTF-8')
+        hashobj = cSHAKE128.new(data=data, custom=custom)
+        hashed_token['value'] = int.from_bytes(hashobj.read(num_bytes),
+                                               byteorder='big')
         hashed_tokens.append(hashed_token)
 
     config['tokens'] += hashed_tokens

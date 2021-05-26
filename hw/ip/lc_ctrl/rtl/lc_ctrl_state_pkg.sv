@@ -262,10 +262,10 @@ package lc_ctrl_state_pkg;
     128'h1C8BE2FF12790AE2E6D6A68151CBD084
   };
   parameter lc_token_t AllZeroTokenHashed = {
-    128'h0
+    128'h8D05B96D5FD2C1D5F15FCFAE5B305238
   };
   parameter lc_token_t RndCnstRawUnlockTokenHashed = {
-    128'h1C8BE2FF12790AE2E6D6A68151CBD084
+    128'h14150A19925EFAC7CAB0921065A33FEE
   };
 
 endpackage : lc_ctrl_state_pkg
