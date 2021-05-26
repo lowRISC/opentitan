@@ -47,5 +47,6 @@
              "{proj_root}/hw/top_earlgrey/ip/xbar_main/dv/autogen/xbar_main_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson",
             // Top level.
-             "{proj_root}/hw/top_earlgrey/dv/chip_sim_cfg.hjson"]
+             "{proj_root}/hw/top_earlgrey/dv/chip_sim_cfg.hjson",
+             "{proj_root}/hw/top_earlgrey/dv/verilator_sim_cfg.hjson"]
 }

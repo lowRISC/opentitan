@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   // Name of the sim cfg - typically same as the name of the DUT.
-  name: chip_earlgrey_verilator
+  name: chip_verilator
 
   // Top level dut name (sv module).
-  dut: "{name}"
+  dut: chip_earlgrey_verilator
 
   // Top level testbench name (sv module).
-  tb: "{name}"
+  tb: chip_earlgrey_verilator
 
   // Default simulator used to sign off.
   tool: verilator
