@@ -31,6 +31,9 @@ class otbn_trace_monitor extends dv_base_monitor #(
           item.gpr_operand_b = cfg.trace_vif.rf_base_rd_data_b;
           item.wdr_operand_a = cfg.trace_vif.rf_bignum_rd_data_a;
           item.wdr_operand_b = cfg.trace_vif.rf_bignum_rd_data_b;
+          item.flags_write_data = cfg.trace_vif.flags_write_data;
+
+          `uvm_info(`gfn, $sformatf("saw trace item:\n%0s", item.sprint()), UVM_HIGH)
           analysis_port.write(item);
         end
       end
