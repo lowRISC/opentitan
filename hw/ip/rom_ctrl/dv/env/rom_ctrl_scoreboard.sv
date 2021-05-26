@@ -20,8 +20,6 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(kmac_app_item) kmac_req_fifo;
   uvm_tlm_analysis_fifo #(kmac_app_item) kmac_rsp_fifo;
-  uvm_tlm_analysis_fifo #(tl_seq_item)   rom_tl_a_chan_fifo;
-  uvm_tlm_analysis_fifo #(tl_seq_item)   rom_tl_d_chan_fifo;
 
   `uvm_component_new
 
@@ -29,8 +27,6 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     super.build_phase(phase);
     kmac_req_fifo = new("kmac_req_fifo", this);
     kmac_rsp_fifo = new("kmac_rsp_fifo", this);
-    rom_tl_a_chan_fifo = new("rom_tl_a_chan_fifo", this);
-    rom_tl_d_chan_fifo = new("rom_tl_d_chan_fifo", this);
   endfunction
 
   task run_phase(uvm_phase phase);
@@ -39,8 +35,6 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
       process_kmac_req_fifo();
       process_kmac_rsp_fifo();
       monitor_rom_ctrl_if();
-      process_rom_tl_a_chan_fifo();
-      process_rom_tl_d_chan_fifo();
     join
   endtask
 
@@ -147,36 +141,17 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  virtual task process_rom_tl_a_chan_fifo();
-    tl_seq_item item;
-    forever begin
-      rom_tl_a_chan_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("Rcvd rom_tl_a_chan item:\n%0s", item.sprint()), UVM_HIGH)
-    end
-  endtask
-
-  virtual task process_rom_tl_d_chan_fifo();
-    tl_seq_item item;
-    forever begin
-      rom_tl_d_chan_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("Rcvd rom_tl_d_chan item:\n%0s", item.sprint()), UVM_HIGH)
-      // check packet integrity
-      void'(item.is_ok());
-      if (item.is_write()) begin
-        `DV_CHECK_EQ(item.d_error, 1'b1, "Attempted write did not return error")
-      end else begin
-        check_mem_read(item);
-      end
-    end
-  endtask
-
-  virtual function void check_mem_read(tl_seq_item item);
+  virtual function check_rom_access(tl_seq_item item);
     bit [ROM_MEM_W-1:0] exp_data;
+
+    if (item.is_write()) begin
+      `DV_CHECK_EQ(item.d_error, 1'b1, "Attempted write did not return error")
+    end
+    `DV_CHECK_EQ(item.d_error, item.get_exp_d_error(), "TLUL ROM read error incorrect")
 
     exp_data = cfg.mem_bkdr_util_h.rom_encrypt_read32(
         item.a_addr, RND_CNST_SCR_KEY, RND_CNST_SCR_NONCE, 1'b1);
 
-    `DV_CHECK_EQ(item.d_error, item.get_exp_d_error(), "TLUL ROM read error incorrect")
     for (int i = 0; i < TL_DW / 8; i++) begin
       if (item.a_mask[i]) begin
         `DV_CHECK_EQ(item.d_data[i*8+:8], exp_data[i*8+:8], "TLUL ROM read data incorrect")
@@ -195,12 +170,16 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
 
+    if (ral_name == "rom_ctrl_rom_reg_block") begin
+      if (channel == DataChannel) begin
+        check_rom_access(item);
+      end
+      return;
     // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
+    end else if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
-    end
-    else begin
+    end else begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
@@ -248,8 +227,6 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     rom_check_complete = 1'b0;
     pwrmgr_complete = 1'b0;
     keymgr_complete = 1'b0;
-    rom_tl_a_chan_fifo.flush();
-    rom_tl_d_chan_fifo.flush();
   endfunction
 
   function void check_phase(uvm_phase phase);
@@ -258,8 +235,6 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     `DV_CHECK_EQ(rom_check_complete, 1'b1, "rom check didn't finish")
     `DV_CHECK_EQ(pwrmgr_complete, 1'b1, "pwrmgr signals never checked")
     `DV_CHECK_EQ(keymgr_complete, 1'b1, "keymgr signals never checked")
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, rom_tl_a_chan_fifo)
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, rom_tl_d_chan_fifo)
   endfunction
 
 endclass

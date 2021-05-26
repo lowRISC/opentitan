@@ -27,9 +27,10 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
-    super.apply_reset(kind);
-    // Initialize memory
+    // Initialize memory at the beginning of reset since the DUT can come out of reset before this
+    // task completes (due to the second RAL clk_rst_if)
     rom_ctrl_mem_init();
+    super.apply_reset(kind);
   endtask
 
   // Task to build a random rom in memory
@@ -41,13 +42,19 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
   // Task to perform `num_ops` fully randomized memory transactions.
   virtual task do_rand_ops(int num_ops);
     uvm_status_e status;
+    addr_range_t loc_mem_range[$] = cfg.ral_models["rom_ctrl_rom_reg_block"].mem_ranges;
 
     bit [TL_DW-1:0] data;
     bit [TL_AW-1:0] addr;
     bit             write;
+    int             mem_idx;
+
     repeat (num_ops) begin
+      int mem_idx = $urandom_range(0, loc_mem_range.size - 1);
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)
-      `DV_CHECK_STD_RANDOMIZE_FATAL(addr)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
+          addr inside {[loc_mem_range[mem_idx].start_addr :
+                        loc_mem_range[mem_idx].end_addr]};)
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(write, !do_rom_error_req -> write == 1'b0;)
 
       tl_access_w_abort(.addr(addr),
@@ -57,7 +64,7 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
                         .write(write),
                         .blocking(1'b0),
                         .check_rsp(1'b0),
-                        .tl_sequencer_h(p_sequencer.rom_tl_sequencer_h),
+                        .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_rom_reg_block"]),
                         .req_abort_pct(do_rom_error_req ? 50 : 0));
     end
     csr_utils_pkg::wait_no_outstanding_access();

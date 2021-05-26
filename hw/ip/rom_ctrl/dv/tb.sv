@@ -23,6 +23,7 @@ module tb;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
+  clk_rst_if rom_clk_rst_if(.clk(), .rst_n()); // dummy clk_rst_vif for second RAL
   pins_if #(1) devmode_if(devmode);
   tl_if tl_rom_if(.clk(clk), .rst_n(rst_n));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
@@ -76,10 +77,15 @@ module tb;
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
+    rom_clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null,
+        "*.env", "clk_rst_vif_rom_ctrl_rom_reg_block", rom_clk_rst_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_rom_tl_agent*", "vif", tl_rom_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    uvm_config_db#(virtual tl_if)::set(null,
+        "*.env.m_tl_agent_rom_ctrl_rom_reg_block*", "vif", tl_rom_if);
+    uvm_config_db#(virtual tl_if)::set(null,
+        "*.env.m_tl_agent_rom_ctrl_regs_reg_block*", "vif", tl_if);
     uvm_config_db#(mem_bkdr_util)::set(null, "*.env", "mem_bkdr_util", m_mem_bkdr_util);
     uvm_config_db#(virtual kmac_app_intf)::set(null, "*.env.m_kmac_agent*", "vif", kmac_app_if);
     uvm_config_db#(rom_ctrl_vif)::set(null, "*.env", "rom_ctrl_vif", rom_ctrl_if);
