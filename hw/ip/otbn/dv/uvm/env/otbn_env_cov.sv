@@ -81,12 +81,12 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   // of these, we define a coverpoint called mnemonic_cp to track which instruction is being
   // sampled.
 `define DEF_MNEM_CROSS(BASENAME)                                         \
-    BASENAME``_cross: cross BASENAME``_cp, mnemonic_cp;
+    BASENAME``_cross: cross mnemonic_cp, BASENAME``_cp;
 `define DEF_MNEM_CROSS2(BASE0, BASE1)                                    \
-    BASE0``_``BASE1``_cross: cross BASE0``_cp, BASE1``_cp, mnemonic_cp;
+    BASE0``_``BASE1``_cross: cross mnemonic_cp, BASE0``_cp, BASE1``_cp;
 `define DEF_MNEM_CROSS3(BASE0, BASE1, BASE2)                             \
     BASE0``_``BASE1``_``BASE2``_cross:                                   \
-      cross BASE0``_cp, BASE1``_cp, BASE2``_cp, mnemonic_cp;
+      cross mnemonic_cp, BASE0``_cp, BASE1``_cp, BASE2``_cp;
 
   // A macro to define bins for GPR types. The point is that there are 3 interesting types of GPR:
   // x0, x1 and everything else.
@@ -160,7 +160,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   // The DEF_*_TOGGLE_COV macros above define coverpoints with names like XXX_BBBB_cp. These macros
   // define crosses with names XXX_BBBB_cross.
 `define _DEF_TOGGLE_CROSS_1(BASE, BIN_IDX)                              \
-  BASE``_``BIN_IDX``_cross: cross BASE``_``BIN_IDX``_cp, mnemonic_cp;
+  BASE``_``BIN_IDX``_cross: cross mnemonic_cp, BASE``_``BIN_IDX``_cp;
 `define _DEF_TOGGLE_CROSS_2(BASE, BIN_IDX)                              \
   `_DEF_TOGGLE_CROSS_1(BASE, BIN_IDX``0)                                \
   `_DEF_TOGGLE_CROSS_1(BASE, BIN_IDX``1)
