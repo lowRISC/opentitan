@@ -256,6 +256,12 @@ The refresh does not block the internal entropy expansion operation.
 
 ### Error Report
 
+This section explains the errors KMAC HWIP raises during the hasing operations, their meanings, and the error handling process.
+
+KMAC HWIP has the error checkers in its internal datapath.
+If the checkers detect errors, whether they are triggered by the SW mis-configure, or HW malfunctions, they report the error to !!ERR_CODE and raises an `kmac_error` interrupt.
+
+
 _TBD_
 
 # Programmers Guide

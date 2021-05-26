@@ -88,6 +88,9 @@ module kmac_app
   // to SW
   output logic absorbed_o,
 
+  // To status
+  output logic app_active_o,
+
   // Error input
   // This error comes from KMAC/SHA3 engine.
   // KeyMgr interface delivers the error signal to KeyMgr to drop the current op
@@ -179,13 +182,6 @@ module kmac_app
     StKeyMgrErrKeyNotValid = 4'b 1111
   } keyctrl_st_e;
 
-  typedef enum logic [2:0] {
-    SelNone = 3'b 000,
-    SelApp = 3'b 101,
-    SelOutLen = 3'b 110,
-    SelSw = 3'b 010
-  } mux_sel_e ;
-
   /////////////
   // Signals //
   /////////////
@@ -214,7 +210,7 @@ module kmac_app
 
   // state output
   // Mux selection signal
-  mux_sel_e mux_sel;
+  app_mux_sel_e mux_sel;
 
   // Error checking logic
 
@@ -487,22 +483,20 @@ module kmac_app
   always_comb begin
     mux_err = '{valid: 1'b 0, code: ErrNone, info: '0};
 
-    if (mux_sel != SelSw) begin
-      if (sw_valid_i) begin
-        // If SW writes message into FIFO
-        mux_err = '{
-          valid: 1'b 1,
-          code: ErrSwPushedMsgFifo,
-          info: 24'({8'h 00, 8'(st), 8'(mux_sel)})
-        };
-      end else if (!(sw_cmd_i inside {CmdNone, CmdStart})) begin
-        // If SW issues command except start
-        mux_err = '{
-          valid: 1'b 1,
-          code: ErrSwPushedWrongCmd,
-          info: 24'(sw_cmd_i)
-        };
-      end
+    if (mux_sel != SelSw && sw_valid_i) begin
+      // If SW writes message into FIFO
+      mux_err = '{
+        valid: 1'b 1,
+        code: ErrSwPushedMsgFifo,
+        info: 24'({8'h 00, 8'(st), 8'(mux_sel)})
+      };
+    end else if (app_active_o && sw_cmd_i != CmdNone) begin
+      // If SW issues command except start
+      mux_err = '{
+        valid: 1'b 1,
+        code: ErrSwIssuedCmdInAppActive,
+        info: 24'(sw_cmd_i)
+      };
     end
   end
 
@@ -617,6 +611,10 @@ module kmac_app
       keccak_strength_o <= reg_keccak_strength_i;
     end
   end
+
+  // Status
+  assign app_active_o = (st inside {StAppCfg, StAppMsg, StAppOutLen,
+                                    StAppProcess, StAppWait});
 
   // Error Reporting ==========================================================
   always_comb begin

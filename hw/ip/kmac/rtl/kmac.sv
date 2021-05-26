@@ -210,6 +210,8 @@ module kmac
   sha3_pkg::sha3_mode_e       reg_sha3_mode,       app_sha3_mode;
   sha3_pkg::keccak_strength_e reg_keccak_strength, app_keccak_strength;
 
+  // Indicating AppIntf is active. This signal is used to check SW error
+  logic app_active;
 
   // Command
   // sw_cmd is the command written by SW
@@ -234,10 +236,13 @@ module kmac
   sha3_pkg::err_t sha3_err;
 
   // KeyMgr Error response
-  kmac_pkg::err_t keymgr_err;
+  kmac_pkg::err_t app_err;
 
   // Entropy Generator Error
   kmac_pkg::err_t entropy_err;
+
+  // Error checker
+  kmac_pkg::err_t errchecker_err;
 
   logic err_processed;
 
@@ -437,21 +442,39 @@ module kmac
   // As of now, only SHA3 error exists. More error codes will be added.
 
   logic event_error;
-  assign event_error =  sha3_err.valid | keymgr_err.valid | entropy_err.valid;
+  assign event_error = sha3_err.valid    | app_err.valid
+                     | entropy_err.valid | errchecker_err.valid;
 
   // Assing error code to the register
   assign hw2reg.err_code.de = event_error;
 
   always_comb begin
-    if (sha3_err.valid) begin
-      hw2reg.err_code.d = {sha3_err.code , sha3_err.info};
-    end else if (keymgr_err.valid) begin
-      hw2reg.err_code.d = {keymgr_err.code, keymgr_err.info};
-    end else if (entropy_err.valid) begin
-      hw2reg.err_code.d = {entropy_err.code, entropy_err.info};
-    end else begin
-      hw2reg.err_code.d = '0;
-    end
+    hw2reg.err_code.d = '0;
+
+    priority case (1'b 1)
+      // app_err has the highest priority. If SW issues an incorrect command
+      // while app is in active state, the error from AppIntf is passed
+      // through.
+      app_err.valid: begin
+        hw2reg.err_code.d = {app_err.code, app_err.info};
+      end
+
+      errchecker_err.valid: begin
+        hw2reg.err_code.d = {errchecker_err.code , errchecker_err.info};
+      end
+
+      sha3_err.valid: begin
+        hw2reg.err_code.d = {sha3_err.code , sha3_err.info};
+      end
+
+      entropy_err.valid: begin
+        hw2reg.err_code.d = {entropy_err.code, entropy_err.info};
+      end
+
+      default: begin
+        hw2reg.err_code.d = '0;
+      end
+    endcase
   end
 
   prim_intr_hw #(.Width(1)) intr_kmac_err (
@@ -752,6 +775,8 @@ module kmac
     .absorbed_i (sha3_absorbed), // from SHA3
     .absorbed_o (event_absorbed), // to SW
 
+    .app_active_o(app_active),
+
     .error_i  (sha3_err.valid),
 
     // Command interface
@@ -759,7 +784,7 @@ module kmac
     .cmd_o    (kmac_cmd),
 
     // Error report
-    .error_o (keymgr_err)
+    .error_o (app_err)
 
   );
 
@@ -805,6 +830,31 @@ module kmac
     .state_i (reg_state),
 
     .endian_swap_i (reg2hw.cfg.state_endianness.q)
+  );
+
+  // Error checker
+  kmac_errchk u_errchk (
+    .clk_i,
+    .rst_ni,
+
+    // Configurations
+    .cfg_mode_i    (reg_sha3_mode      ),
+    .cfg_strength_i(reg_keccak_strength),
+
+    .kmac_en_i      (reg_kmac_en        ),
+    .cfg_prefix_6B_i(reg_ns_prefix[47:0]), // first 6B of PREFIX
+
+    // SW commands
+    .sw_cmd_i(sw_cmd),
+
+    // Status from KMAC_APP
+    .app_active_i(app_active),
+
+    // Status from SHA3 core
+    .sha3_absorbed_i(sha3_absorbed       ),
+    .keccak_done_i  (sha3_block_processed),
+
+    .error_o(errchecker_err)
   );
 
   // Entropy Generator

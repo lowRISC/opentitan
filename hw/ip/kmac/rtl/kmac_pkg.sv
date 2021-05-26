@@ -118,6 +118,9 @@ package kmac_pkg;
     AppKMAC   = 2
   } app_mode_e;
 
+  // Predefined encoded_string
+  parameter logic [15:0] EncodedStringEmpty = 16'h 0001;
+  parameter logic [47:0] EncodedStringKMAC = 48'h 4341_4D4B_2001;
   parameter int unsigned NSPrefixW = sha3_pkg::NSRegisterSize*8;
 
   typedef struct packed {
@@ -163,6 +166,17 @@ package kmac_pkg;
       Prefix: NSPrefixW'(96'h 4c52_5443_5f4d_4f52_4001_0001)
     }
   };
+
+  // Exporting the app internal mux selection enum into the package. So that DV
+  // can use this enum in its scoreboard.
+  typedef enum logic [2:0] {
+    SelNone   = 3'b 000,
+    SelApp    = 3'b 101,
+    SelOutLen = 3'b 110,
+    SelSw     = 3'b 010
+  } app_mux_sel_e ;
+
+
 
   // MsgWidth : 64
   // MsgStrbW : 8
@@ -227,9 +241,9 @@ package kmac_pkg;
     //   - Sw writes data into Msg FIFO when KeyMgr is in operating
     ErrSwPushedMsgFifo = 8'h 02,
 
-    // ErrSwPushWrongCmd
-    //  - Sw writes any command except CmdStart when Idle.
-    ErrSwPushedWrongCmd = 8'h 03,
+    // ErrSwIssuedCmdInAppActive
+    //  - Sw writes any command while AppIntf is in active.
+    ErrSwIssuedCmdInAppActive = 8'h 03,
 
     // ErrWaitTimerExpired
     // Entropy Wait timer expired. Something wrong on EDN i/f
@@ -237,7 +251,16 @@ package kmac_pkg;
 
     // ErrIncorrectEntropyMode
     // Incorrect Entropy mode when entropy is ready
-    ErrIncorrectEntropyMode = 8'h 05
+    ErrIncorrectEntropyMode = 8'h 05,
+
+    // ErrUnexpectedModeStrength
+    ErrUnexpectedModeStrength = 8'h 06,
+
+    // ErrIncorrectFunctionName "KMAC"
+    ErrIncorrectFunctionName = 8'h 07,
+
+    // ErrSwCmdSequence
+    ErrSwCmdSequence = 8'h 08
   } err_code_e;
 
   typedef struct packed {
