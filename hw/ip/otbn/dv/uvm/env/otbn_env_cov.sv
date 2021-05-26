@@ -11,6 +11,9 @@
 class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   `uvm_component_utils(otbn_env_cov)
 
+  localparam int DmemSizeByte = int'(otbn_reg_pkg::OTBN_DMEM_SIZE);
+  localparam int ImemSizeByte = int'(otbn_reg_pkg::OTBN_IMEM_SIZE);
+
   // A field for each known mnemonic, cast to a mnem_str_t. We have to do this because VCS (at
   // least) complains if you put an uncast string literal in a position where it expects an integral
   // value.
@@ -196,7 +199,75 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   `_DEF_TOGGLE_CROSS_1(BASE, 01)                                        \
   `_DEF_TOGGLE_CROSS_2(BASE, 1)
 
-  // Per-encoding covergroups
+  // A macro to define a coverpoint based on the sign of a value (assumed to be represented by an
+  // unsigned SystemVerilog expression).
+`define DEF_SIGN_CP(NAME, VALUE, WIDTH)    \
+  NAME: coverpoint VALUE {                 \
+    bins zero = {0};                       \
+    bins pos = {[1:(1 << (WIDTH - 1))-1]}; \
+    bins neg = {[1 << (WIDTH - 1):$]};     \
+  }
+
+  // A macro to define a coverpoint based on whether a value is zero or not (assumed to be
+  // represented by an unsigned SystemVerilog expression).
+`define DEF_NZ_CP(NAME, VALUE) \
+  NAME: coverpoint VALUE {     \
+    bins zero = {0};           \
+    bins nonzero = {[1:$]};    \
+  }
+
+  // A macro to define a coverpoint for a condition that should be seen: EXPR should be a single bit
+  // and there's just one bin (with expected value 1'b1).
+`define DEF_SEEN_CP(NAME, EXPR) NAME: coverpoint (EXPR) { bins seen = {1'b1}; }
+
+  // Remap a CSR index to an internal "coverage" index. This function avoids having to duplicate the
+  // list of CSRs below and is also an easy way to explicitly track invalid CSRs explicitly
+  // (SystemVerilog doesn't provide a helpful "catch anything else" bin because 'default' doesn't
+  // get included in crosses).
+  //
+  // Use it by calling DEF_CSR_CP, which uses remap_csr to map to bins and then undoes the mapping
+  // again (now that all invalid CSRs have been squashed together) to give decent bin names.
+  function int remap_csr(logic [11:0] csr_idx);
+    case (csr_idx)
+      12'h7c0: return 0;   // FG0
+      12'h7c1: return 1;   // FG1
+      12'h7c8: return 2;   // FLAGS
+      12'h7d0: return 3;   // MOD0
+      12'h7d1: return 4;   // MOD1
+      12'h7d2: return 5;   // MOD2
+      12'h7d3: return 6;   // MOD3
+      12'h7d4: return 7;   // MOD4
+      12'h7d5: return 8;   // MOD5
+      12'h7d6: return 9;   // MOD6
+      12'h7d7: return 10;  // MOD7
+      12'hfc0: return 11;  // RND
+      12'hfc1: return 12;  // RND_PREFETCH
+      12'hfc2: return 13;  // URND
+      default: return -1;  // (invalid)
+    endcase
+  endfunction
+
+`define DEF_CSR_CP(NAME, EXPR)         \
+  NAME: coverpoint (remap_csr(EXPR)) { \
+    bins fg0          = {0};           \
+    bins fg1          = {1};           \
+    bins flags        = {2};           \
+    bins mod0         = {3};           \
+    bins mod1         = {4};           \
+    bins mod2         = {5};           \
+    bins mod3         = {6};           \
+    bins mod4         = {7};           \
+    bins mod5         = {8};           \
+    bins mod6         = {9};           \
+    bins mod7         = {10};          \
+    bins rnd          = {11};          \
+    bins rnd_prefetch = {12};          \
+    bins urnd         = {13};          \
+    bins invalid      = {-1};          \
+    illegal_bins bad  = default;       \
+  }
+
+  // Per-encoding covergroups //////////////////////////////////////////////////
   covergroup enc_bna_cg
     with function sample(mnem_str_t    mnemonic,
                          logic [31:0]  insn_data,
@@ -732,6 +803,292 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_MNEM_CROSS(wsr)
   endgroup
 
+  // Per-instruction covergroups ///////////////////////////////////////////////
+
+  covergroup insn_addsub_cg
+    with function sample(mnem_str_t   mnemonic,
+                         logic [31:0] operand_a,
+                         logic [31:0] operand_b);
+    mnemonic_cp: coverpoint mnemonic {
+      `DEF_MNEM_BIN(mnem_add);
+      `DEF_MNEM_BIN(mnem_sub);
+      illegal_bins other = default;
+    }
+
+    `DEF_SIGN_CP(sign_a_cp, operand_a, 32)
+    `DEF_SIGN_CP(sign_b_cp, operand_b, 32)
+    `DEF_MNEM_CROSS2(sign_a, sign_b)
+  endgroup
+
+  covergroup insn_addi_cg
+    with function sample(logic [31:0] insn_data,
+                         logic [31:0] operand_a);
+    `DEF_SIGN_CP(sign_a_cp, operand_a, 32)
+    `DEF_SIGN_CP(sign_b_cp, insn_data[31:20], 12)
+    sign_cross: cross sign_a_cp, sign_b_cp;
+  endgroup
+
+  covergroup insn_sll_cg
+    with function sample(logic [31:0] operand_a,
+                         logic [31:0] operand_b);
+
+    // A shift of a nonzero value by zero
+    `DEF_SEEN_CP(nz_by_z_cp, (operand_a != 0) && (operand_b == 0))
+    // A shift of a value by 0x1f, leaving the top bit set (because the bottom bit of the value was
+    // nonzero)
+    `DEF_SEEN_CP(shift15_cp, operand_a[0] && ((operand_b & 'h1f) == 'h1f))
+  endgroup
+
+  covergroup insn_slli_cg
+    with function sample(logic [31:0] insn_data,
+                         logic [31:0] operand_a);
+
+    // A shift of a nonzero value by zero
+    `DEF_SEEN_CP(nz_by_z_cp, (operand_a != 0) && (insn_data[24:20] == 0))
+    // A shift of a value by 0x1f, leaving the top bit set (because the bottom bit of the value was
+    // nonzero)
+    `DEF_SEEN_CP(shift15_cp, operand_a[0] && (insn_data[24:20] == 5'h1f))
+  endgroup
+
+  covergroup insn_srl_cg
+    with function sample(logic [31:0] operand_a,
+                         logic [31:0] operand_b);
+
+    // A shift of a nonzero value by zero
+    `DEF_SEEN_CP(nz_by_z_cp, (operand_a != 0) && (operand_b == 0))
+    // A shift of a value by 0x1f, leaving the bottom bit set (because the top bit of the value was
+    // nonzero)
+    `DEF_SEEN_CP(shift15_cp, operand_a[31] && ((operand_b & 'h1f) == 'h1f))
+  endgroup
+
+  covergroup insn_srli_cg
+    with function sample(logic [31:0] insn_data,
+                         logic [31:0] operand_a);
+
+    // A shift of a nonzero value by zero
+    `DEF_SEEN_CP(nz_by_z_cp, (operand_a != 0) && (insn_data[24:20] == 0))
+    // A shift of a value by 0x1f, leaving the bottom bit set (because the top bit of the value was
+    // nonzero)
+    `DEF_SEEN_CP(shift15_cp, operand_a[31] && (insn_data[24:20] == 5'h1f))
+  endgroup
+
+  covergroup insn_sra_cg
+    with function sample(logic [31:0] operand_a,
+                         logic [31:0] operand_b);
+
+    // A shift of a nonzero value by zero
+    `DEF_SEEN_CP(nz_by_z_cp, (operand_a != 0) && (operand_b == 0))
+    // A shift of a value by 0x1f, leaving the bottom bit set (because the top bit of the value was
+    // nonzero)
+    `DEF_SEEN_CP(shift15_cp, operand_a[31] && ((operand_b & 'h1f) == 'h1f))
+  endgroup
+
+  covergroup insn_srai_cg
+    with function sample(logic [31:0] insn_data,
+                         logic [31:0] operand_a);
+
+    // A shift of a nonzero value by zero
+    `DEF_SEEN_CP(nz_by_z_cp, (operand_a != 0) && (insn_data[24:20] == 0))
+    // A shift of a value by 0x1f, leaving the bottom bit set (because the top bit of the value was
+    // nonzero)
+    `DEF_SEEN_CP(shift15_cp, operand_a[31] && (insn_data[24:20] == 5'h1f))
+  endgroup
+
+  // A covergroup used for logical binary operations.
+  //
+  // For each of these operations, we want to see "toggle coverage" of the output result and expect
+  // that the output register is not x0. To handle this easily, we only call sample() when the
+  // output register is nonzero (checked with x0_cp).
+  covergroup insn_log_binop_cg
+    with function sample(mnem_str_t   mnemonic,
+                         logic [31:0] insn_data,
+                         logic [31:0] gpr_write_data);
+
+    mnemonic_cp: coverpoint mnemonic {
+      `DEF_MNEM_BIN(mnem_and);
+      `DEF_MNEM_BIN(mnem_andi);
+      `DEF_MNEM_BIN(mnem_or);
+      `DEF_MNEM_BIN(mnem_ori);
+      `DEF_MNEM_BIN(mnem_xor);
+      `DEF_MNEM_BIN(mnem_xori);
+      illegal_bins other = default;
+    }
+
+    // Check we don't call sample when GRD is 0.
+    x0_cp: coverpoint insn_data[11:7] { illegal_bins x0 = {0}; }
+
+    `DEF_GPR_TOGGLE_COV(write_data, gpr_write_data)
+    `DEF_GPR_TOGGLE_CROSS(write_data)
+  endgroup
+
+  // A covergroup used for LW and SW. The "offset" argument to sample is the immediate offset from
+  // the instruction encoding. We extract that in the giant case statement in on_insn() so that we
+  // reuse the code for LW and SW (which encode the fields differently).
+  covergroup insn_xw_cg
+    with function sample(mnem_str_t   mnemonic,
+                         logic [11:0] offset,
+                         logic [31:0] operand_a);
+
+    mnemonic_cp: coverpoint mnemonic {
+      `DEF_MNEM_BIN(mnem_lw);
+      `DEF_MNEM_BIN(mnem_sw);
+      illegal_bins other = default;
+    }
+
+    // Load from a valid address, where grs1 is above the top of memory and a negative offset brings
+    // the load address in range.
+    `DEF_SEEN_CP(oob_base_neg_off_cp,
+                 ($signed(operand_a) > DmemSizeByte) &&
+                 ($signed(offset) < 0) &&
+                 (0 <= ($signed(operand_a) + $signed(offset))) &&
+                 (($signed(operand_a) + $signed(offset)) + 4 <= DmemSizeByte) &&
+                 ((($signed(operand_a) + $signed(offset)) & 32'h3) == 0))
+    `DEF_MNEM_CROSS(oob_base_neg_off)
+
+    // Load from a valid address, where grs1 is negative and a positive offset brings the load
+    // address in range.
+    `DEF_SEEN_CP(neg_base_pos_off_cp,
+                 ($signed(operand_a) < 0) &&
+                 ($signed(offset) > 0) &&
+                 (0 <= ($signed(operand_a) + $signed(offset))) &&
+                 (($signed(operand_a) + $signed(offset)) + 4 <= DmemSizeByte) &&
+                 ((($signed(operand_a) + $signed(offset)) & 32'h3) == 0))
+    `DEF_MNEM_CROSS(neg_base_pos_off)
+
+    // Load from address zero
+    `DEF_SEEN_CP(addr0_cp, $signed(operand_a) + $signed(offset) == 0)
+    `DEF_MNEM_CROSS(addr0)
+
+    // Load from the top word of memory
+    `DEF_SEEN_CP(top_addr_cp, $signed(operand_a) + $signed(offset) == DmemSizeByte - 4)
+    `DEF_MNEM_CROSS(top_addr)
+
+    // Load from an invalid address (aligned but above the top of memory)
+    `DEF_SEEN_CP(oob_addr_cp,
+                 ($signed(operand_a) + $signed(offset) > DmemSizeByte - 4) &&
+                 ((($signed(operand_a) + $signed(offset)) & 32'h3) == 0))
+    `DEF_MNEM_CROSS(oob_addr)
+
+    // Load from a "barely invalid" address (aligned but overlapping the top of memory)
+    `DEF_SEEN_CP(barely_oob_addr_cp,
+                 ($signed(operand_a) + $signed(offset) > DmemSizeByte - 4) &&
+                 ($signed(operand_a) + $signed(offset) < DmemSizeByte) &&
+                 ((($signed(operand_a) + $signed(offset)) & 32'h3) == 0))
+    `DEF_MNEM_CROSS(barely_oob_addr)
+
+    // Cross the different possible address alignments for otherwise valid addresses
+    grs1_align_cp: coverpoint operand_a[1:0];
+    offset_align_cp: coverpoint offset[1:0];
+    align_cross:
+      cross mnemonic_cp, grs1_align_cp, offset_align_cp
+        iff ((0 <= ($signed(operand_a) + $signed(offset))) &&
+             (($signed(operand_a) + $signed(offset)) + 4 <= DmemSizeByte));
+  endgroup
+
+  covergroup insn_bxx_cg
+    with function sample(mnem_str_t   mnemonic,
+                         logic [31:0] insn_addr,
+                         logic [11:0] offset,
+                         logic [31:0] operand_a,
+                         logic [31:0] operand_b);
+
+    mnemonic_cp: coverpoint mnemonic {
+      `DEF_MNEM_BIN(mnem_beq);
+      `DEF_MNEM_BIN(mnem_bne);
+      illegal_bins other = default;
+    }
+
+    eq_cp: coverpoint operand_a == operand_b;
+
+    `DEF_SIGN_CP(dir_cp, offset, 12)
+    `DEF_MNEM_CROSS2(eq, dir)
+
+    offset_align_cp: coverpoint offset[1:0];
+    `DEF_MNEM_CROSS2(eq, offset_align)
+
+    `DEF_SEEN_CP(oob_cp, $signed(insn_addr) + $signed(offset) > ImemSizeByte)
+    `DEF_MNEM_CROSS2(eq, oob)
+
+    `DEF_SEEN_CP(neg_cp, $signed(insn_addr) + $signed(offset) < 0)
+    `DEF_MNEM_CROSS2(eq, neg)
+  endgroup
+
+  covergroup insn_jal_cg
+    with function sample(logic [31:0] insn_addr,
+                         logic [20:0] offset);
+
+    `DEF_SIGN_CP(dir_cp, offset, 21)
+    offset_align_cp: coverpoint offset[1:0] {
+      bins allowed[] = {0, 2};
+      illegal_bins other = default;
+    }
+
+    `DEF_SEEN_CP(oob_cp, $signed(insn_addr) + $signed(offset) > ImemSizeByte)
+    `DEF_SEEN_CP(neg_cp, $signed(insn_addr) + $signed(offset) < 0)
+    `DEF_SEEN_CP(from_top_cp, insn_addr == ImemSizeByte - 4)
+  endgroup
+
+  covergroup insn_jalr_cg
+    with function sample(logic [31:0] insn_addr,
+                         logic [11:0] offset,
+                         logic [31:0] operand_a);
+
+    `DEF_SIGN_CP(off_dir_cp, offset, 12)
+
+    offset_align_cp: coverpoint offset[1:0];
+    base_align_cp: coverpoint operand_a[1:0];
+    align_cross: cross offset_align_cp, base_align_cp;
+
+    // Jump with a large base address which wraps to a valid address by adding a positive offset.
+    `DEF_SEEN_CP(pos_wrap_cp,
+                 (operand_a >= ImemSizeByte) &&
+                 ($signed(offset) > 0) &&
+                 (operand_a + $signed(offset) <= ImemSizeByte - 4))
+
+    // Jump with a base address just above top of IMEM but with a negative offset to give a valid
+    // target.
+    `DEF_SEEN_CP(sub_cp,
+                 (operand_a >= ImemSizeByte) &&
+                 ($signed(offset) < 0) &&
+                 (operand_a + $signed(offset) <= ImemSizeByte - 4))
+
+    // Jump with a negative offset, wrapping to give an invalid target.
+    `DEF_SEEN_CP(neg_wrap_cp,
+                 (operand_a <= ImemSizeByte - 4) &&
+                 ($signed(offset) < 0) &&
+                 (operand_a + $signed(offset) > ImemSizeByte - 4))
+
+    // Jump to an aligned address above top of IMEM.
+    `DEF_SEEN_CP(oob_cp,
+                 (((operand_a + $signed(offset)) & 32'h3) == 0) &&
+                 (operand_a + $signed(offset) > ImemSizeByte - 4))
+
+    // Jump to current address.
+    `DEF_SEEN_CP(self_cp, operand_a + $signed(offset) == insn_addr)
+
+    // Jump when the current PC is the top word in IMEM.
+    `DEF_SEEN_CP(from_top_cp, insn_addr == ImemSizeByte - 4)
+  endgroup
+
+  covergroup insn_csrrs_cg
+    with function sample(logic [31:0] insn_data,
+                         logic [31:0] operand_a);
+
+    `DEF_CSR_CP(csr_cp, insn_data[31:20])
+    `DEF_NZ_CP(bits_to_set_cp, operand_a)
+
+    csr_cross: cross csr_cp, bits_to_set_cp;
+  endgroup
+
+  covergroup insn_csrrw_cg
+    with function sample(logic [31:0] insn_data);
+
+    `DEF_CSR_CP(csr_cp, insn_data[31:20])
+    `DEF_NZ_CP(grd_cp, insn_data[11:7])
+
+    csr_cross: cross csr_cp, grd_cp;
+  endgroup
+
   // A mapping from instruction name to the name of that instruction's encoding.
   string insn_encodings[mnem_str_t];
 
@@ -763,6 +1120,22 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     enc_s_cg = new;
     enc_wcsr_cg = new;
     enc_u_cg = new;
+
+    insn_addsub_cg = new;
+    insn_addi_cg = new;
+    insn_sll_cg = new;
+    insn_slli_cg = new;
+    insn_srl_cg = new;
+    insn_srli_cg = new;
+    insn_sra_cg = new;
+    insn_srai_cg = new;
+    insn_log_binop_cg = new;
+    insn_xw_cg = new;
+    insn_bxx_cg = new;
+    insn_jal_cg = new;
+    insn_jalr_cg = new;
+    insn_csrrs_cg = new;
+    insn_csrrw_cg = new;
 
     // Set up instruction encoding mapping
     insn_encodings[mnem_add]           = "R";
@@ -914,6 +1287,54 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       default: `dv_fatal($sformatf("Unknown encoding (%0s) for instruction `%0s'", encoding, mnem),
                          `gfn)
     endcase
+
+    // Instruction-specific coverage.
+    case (mnem)
+      mnem_add, mnem_sub:
+        insn_addsub_cg.sample(mnem, rtl_item.gpr_operand_a, rtl_item.gpr_operand_b);
+      mnem_addi:
+        insn_addi_cg.sample(insn_data, rtl_item.gpr_operand_a);
+      mnem_sll:
+        insn_sll_cg.sample(rtl_item.gpr_operand_a, rtl_item.gpr_operand_b);
+      mnem_slli:
+        insn_slli_cg.sample(insn_data, rtl_item.gpr_operand_a);
+      mnem_srl:
+        insn_srl_cg.sample(rtl_item.gpr_operand_a, rtl_item.gpr_operand_b);
+      mnem_srli:
+        insn_srli_cg.sample(insn_data, rtl_item.gpr_operand_a);
+      mnem_sra:
+        insn_sra_cg.sample(rtl_item.gpr_operand_a, rtl_item.gpr_operand_b);
+      mnem_srai:
+        insn_srai_cg.sample(insn_data, rtl_item.gpr_operand_a);
+      mnem_and, mnem_andi, mnem_or, mnem_ori, mnem_xor, mnem_xori:
+        // This covergroup tracks write data, so we only sample when GRD is nonzero
+        if (insn_data[11:7] != 0) begin
+          insn_log_binop_cg.sample(mnem, insn_data, rtl_item.gpr_write_data);
+        end
+      mnem_lw:
+        insn_xw_cg.sample(mnem, insn_data[31:20], rtl_item.gpr_operand_a);
+      mnem_sw:
+        insn_xw_cg.sample(mnem, {insn_data[31:25], insn_data[11:7]}, rtl_item.gpr_operand_a);
+      mnem_beq, mnem_bne:
+        insn_bxx_cg.sample(mnem,
+                           rtl_item.insn_addr,
+                           {insn_data[31], insn_data[7], insn_data[30:25], insn_data[11:8]},
+                           rtl_item.gpr_operand_a,
+                           rtl_item.gpr_operand_b);
+      mnem_jal:
+        insn_jal_cg.sample(rtl_item.insn_addr,
+                           {insn_data[31], insn_data[19:12],
+                            insn_data[20], insn_data[30:21], 1'b0});
+      mnem_jalr:
+        insn_jalr_cg.sample(rtl_item.insn_addr, insn_data[31:20], rtl_item.gpr_operand_a);
+      mnem_csrrs:
+        insn_csrrs_cg.sample(insn_data, rtl_item.gpr_operand_a);
+      mnem_csrrw:
+        insn_csrrw_cg.sample(insn_data);
+      default:
+        // No special handling for this instruction yet.
+        ;
+    endcase
   endfunction
 
 `undef DEF_MNEM_BIN
@@ -942,5 +1363,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 `undef _DEF_TOGGLE_CROSS_128
 `undef DEF_GPR_TOGGLE_CROSS
 `undef DEF_WDR_TOGGLE_CROSS
+`undef DEF_SIGN_CP
+`undef DEF_NZ_CP
+`undef DEF_SEEN_CP
+`undef DEF_CSR_CP
 
 endclass

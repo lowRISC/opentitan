@@ -106,6 +106,8 @@ CSRs can be accessed through dedicated instructions, `CSRRS` and `CSRRW`.
 Writes to read-only registers are ignored; they do not signal an error.
 All RW CSRs are set to 0 when OTBN starts (when 1 is written to {{< regref "CMD.start" >}}).
 
+<!-- This list of CSRs is replicated in the RTL, in otbn_env_cov.sv and in csr.py.
+     If editing one, edit the other three as well. -->
 <table>
   <thead>
     <tr>

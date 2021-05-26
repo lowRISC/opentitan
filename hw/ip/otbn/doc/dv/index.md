@@ -194,142 +194,205 @@ This paragraph implies eight coverage points (four flags times two values) for t
 #### ADD
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
+The instruction-specific covergroup is `insn_addsub_cg` (also used for `SUB`).
 
 - Cross the three possible signs (negative, zero, positive) for each input operand (giving 9 points).
+  Tracked as `sign_a_sign_b_cross`.
 
 #### ADDI
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
+The instruction-specific covergroup is `insn_addi_cg`.
 
 - Cross the three possible signs (negative, zero, positive) for each input operand (giving 9 points).
+  Tracked as `sign_cross`.
 
 #### LUI
 
 This instruction uses the `U` encoding schema, with covergroup `enc_u_cg`.
+There are no further coverage points.
 
 #### SUB
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
+The instruction-specific covergroup is `insn_addsub_cg`.
 
 - Cross the three possible signs (negative, zero, positive) for each input operand (giving 9 points).
+  Tracked as `sign_a_sign_b_cross`.
 
 #### SLL
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
+The instruction-specific covergroup is `insn_sll_cg`.
 
 - A shift of a nonzero value by zero.
+  Tracked as `nz_by_z_cp`.
 - A shift of a value by `0x1f` which leaves the top bit set.
+  Tracked as `shift15_cp`.
 
 #### SLLI
 
 This instruction uses the `Is` encoding schema, with covergroup `enc_is_cg`.
+The instruction-specific covergroup is `insn_slli_cg`.
 
 - A shift of a nonzero value by zero.
+  Tracked as `nz_by_z_cp`.
 - A shift of a value by `0x1f` which leaves the top bit set.
+  Tracked as `shift15_cp`.
 
 #### SRL
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
+The instruction-specific covergroup is `insn_srl_cg`.
 
 - A shift of a nonzero value by zero.
+  Tracked as `nz_by_z_cp`.
 - A shift of a value by `0x1f` which leaves the bottom bit set.
-  (Note that this point also checks that we're performing a logical, rather than arithmetic, right shift)
+  Tracked as `shift15_cp`.
+  Note that this point also checks that we're performing a logical, rather than arithmetic, right shift.
 
 #### SRLI
 
 This instruction uses the `Is` encoding schema, with covergroup `enc_is_cg`.
+The instruction-specific covergroup is `insn_srli_cg`.
 
 - A shift of a nonzero value by zero.
+  Tracked as `nz_by_z_cp`.
 - A shift of a value by `0x1f` which leaves the bottom bit set.
-  (Note that this point also checks that we're performing a logical, rather than arithmetic, right shift)
+  Tracked as `shift15_cp`.
+  Note that this point also checks that we're performing a logical, rather than arithmetic, right shift.
 
 #### SRA
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
+The instruction-specific covergroup is `insn_sra_cg`.
 
 - A shift of a nonzero value by zero.
+  Tracked as `nz_by_z_cp`.
 - A shift of a value by `0x1f` which leaves the bottom bit set.
-  (Note that this point also checks that we're performing an arithmetic, rather than logical, right shift)
+  Tracked as `shift15_cp`.
+  Note that this point also checks that we're performing an arithmetic, rather than logical, right shift.
 
 #### SRAI
 
 This instruction uses the `Is` encoding schema, with covergroup `enc_is_cg`.
+The instruction-specific covergroup is `insn_srai_cg`.
 
 - A shift of a nonzero value by zero.
+  Tracked as `nz_by_z_cp`.
 - A shift of a value by `0x1f` which leaves the bottom bit set.
-  (Note that this point also checks that we're performing an arithmetic, rather than logical, right shift)
+  Tracked as `shift15_cp`.
+  Note that this point also checks that we're performing an arithmetic, rather than logical, right shift.
 
 #### AND
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
+The instruction-specific covergroup is `insn_log_binop_cg` (shared with other logical binary operations).
 
 - Toggle coverage of the output result, not to `x0` (to ensure we're not just AND'ing things with zero)
+  Tracked as `write_data_XXXXX_cross`, where `XXXXX` is the base-2 representation of the bit being checked.
 
 #### ANDI
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
+The instruction-specific covergroup is `insn_log_binop_cg` (shared with other logical binary operations).
 
 - Toggle coverage of the output result, not to `x0` (to ensure we're not just AND'ing things with zero)
+  Tracked as `write_data_XXXXX_cross`, where `XXXXX` is the base-2 representation of the bit being checked.
 
 #### OR
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
+The instruction-specific covergroup is `insn_log_binop_cg` (shared with other logical binary operations).
 
 - Toggle coverage of the output result, not to `x0` (to ensure we're not just OR'ing things with `'1`)
+  Tracked as `write_data_XXXXX_cross`, where `XXXXX` is the base-2 representation of the bit being checked.
 
 #### ORI
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
+The instruction-specific covergroup is `insn_log_binop_cg` (shared with other logical binary operations).
 
 - Toggle coverage of the output result, not to `x0` (to ensure we're not just OR'ing things with `'1`)
+  Tracked as `write_data_XXXXX_cross`, where `XXXXX` is the base-2 representation of the bit being checked.
 
 #### XOR
 
 This instruction uses the `R` encoding schema, with covergroup `enc_r_cg`.
+The instruction-specific covergroup is `insn_log_binop_cg` (shared with other logical binary operations).
 
 - Toggle coverage of the output result, not to `x0` (to ensure we're not just XOR'ing things with zero)
+  Tracked as `write_data_XXXXX_cross`, where `XXXXX` is the base-2 representation of the bit being checked.
 
 #### XORI
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
+The instruction-specific covergroup is `insn_log_binop_cg` (shared with other logical binary operations).
 
 - Toggle coverage of the output result, not to `x0` (to ensure we're not just XOR'ing things with zero)
+  Tracked as `write_data_XXXXX_cross`, where `XXXXX` is the base-2 representation of the bit being checked.
 
 #### LW
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
+The instruction-specific covergroup is `insn_xw_cg` (shared with `SW`).
 
-- Load from a valid address, where `<grs1>` is above the top of memory and a negative `<offset>` brings the load address in range.
+- Load from a valid address, where `<grs1>` is above the top of memory and a negative `<offset>` brings the load address in range. 
+  Tracked as `oob_base_neg_off_cp`.
 - Load from a valid address, where `<grs1>` is negative and a positive `<offset>` brings the load address in range.
-- Load from address zero
+  Tracked as `neg_base_pos_off_cp`.
+- Load from address zero.
+  Tracked as `addr0_cp`.
 - Load from the top word of memory
+  Tracked as `top_addr_cp`.
 - Load from an invalid address (aligned but above the top of memory)
-- Load from a misaligned address
+  Tracked as `oob_addr_cp`.
+- Load from a "barely invalid" address (aligned but overlapping the top of memory)
+  Tracked as `barely_oob_addr_cp`.
+- Misaligned address tracking.
+  Track loads from addresses that are in range for the size of the memory.
+  Cross the different values modulo 4 for `grs1` and `offset`.
+  Tracked as `align_cross`.
 
 #### SW
 
 This instruction uses the `I` encoding schema, with covergroup `enc_s_cg`.
+The instruction-specific covergroup is `insn_xw_cg` (shared with `LW`).
 
 - Store to a valid address, where `<grs1>` is above the top of memory and a negative `<offset>` brings the load address in range.
+  Tracked as `oob_base_neg_off_cp`.
 - Store to a valid address, where `<grs1>` is negative and a positive `<offset>` brings the load address in range.
+  Tracked as `neg_base_pos_off_cp`.
 - Store to address zero
+  Tracked as `addr0_cp`.
 - Store to the top word of memory
+  Tracked as `top_addr_cp`.
 - Store to an invalid address (aligned but above the top of memory)
-- Store to a misaligned address
+  Tracked as `oob_addr_cp`.
+- Store to a "barely invalid" address (aligned but overlapping the top of memory)
+  Tracked as `barely_oob_addr_cp`.
+- Misaligned address tracking.
+  Track stores from addresses that are in range for the size of the memory.
+  Cross the different values modulo 4 for `grs1` and `offset`.
+  Tracked as `align_cross`.
 
 #### BEQ
 
 This instruction uses the `B` encoding schema, with covergroup `enc_b_cg`.
+The instruction-specific covergroup is `insn_bxx_cg` (shared with `BNE`).
 
 All points should be crossed with branch taken / branch not taken.
 
-- Branch forwards
-- Branch backwards
+- See each branch direction (forwards, backwards, current address).
+  Tracked as `eq_dir_cross`.
 - Branch to a misaligned address (offset not a multiple of 4)
+  Each offset alignment is tracked in `eq_offset_align_cross`.
 - Branch forwards to an invalid address, above the top of memory
+  Tracked as `eq_oob_cross`.
 - Branch backwards to an invalid address (wrapping past zero)
-- Branch to current address.
+  Tracked as `eq_neg_cross`.
 - Branch instruction at end of a loop.
+  **TODO: Loop state tracking**
 
 The "branch to current address" item is problematic if we want to take the branch.
 Probably we need some tests with short timeouts to handle this properly.
@@ -337,16 +400,20 @@ Probably we need some tests with short timeouts to handle this properly.
 #### BNE
 
 This instruction uses the `B` encoding schema, with covergroup `enc_b_cg`.
+The instruction-specific covergroup is `insn_bxx_cg` (shared with `BEQ`).
 
 All points should be crossed with branch taken / branch not taken.
 
-- Branch forwards
-- Branch backwards
+- See each branch direction (forwards, backwards, current address).
+  Tracked as `eq_dir_cross`.
 - Branch to a misaligned address (offset not a multiple of 4)
+  Each offset alignment is tracked in `eq_offset_align_cross`.
 - Branch forwards to an invalid address, above the top of memory
+  Tracked as `eq_oob_cross`.
 - Branch backwards to an invalid address (wrapping past zero)
-- Branch to current address.
+  Tracked as `eq_neg_cross`.
 - Branch instruction at end of a loop.
+  **TODO: Loop state tracking**
 
 The "branch to current address" item is problematic if we want to take the branch.
 Probably we need some tests with short timeouts to handle this properly.
@@ -354,47 +421,71 @@ Probably we need some tests with short timeouts to handle this properly.
 #### JAL
 
 This instruction uses the `J` encoding schema, with covergroup `enc_j_cg`.
+The instruction-specific covergroup is `insn_jal_cg`.
 
-- Jump forwards
-- Jump backwards
+- See each jump direction (forwards, backwards, current address).
+  Tracked as `dir_cp`.
 - Jump to a misaligned address (offset not a multiple of 4)
+  Offset alignments are tracked in `offset_align_cp`.
 - Jump forwards to an invalid address, above the top of memory
+  Tracked as `oob_cp`.
 - Jump backwards to an invalid address (wrapping past zero)
-- Jump to current address.
+  Tracked as `neg_cp`.
 - Jump when the current PC is the top word in IMEM.
+  Tracked as `from_top_cp`.
 - Jump instruction at end of a loop.
+  **TODO: Loop state tracking**
 
 Note that the "jump to current address" item won't be a problem to test since it will quickly overflow the call stack.
 
 #### JALR
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
+The instruction-specific covergroup is `insn_jalr_cg`.
 
-- Jump with a positive offset
-- Jump with a negative offset
-- Jump with a misaligned base address which `<offset>` aligns (each of the 3 possible misalignments).
+- See each jump offset (forwards, backwards, zero).
+  Tracked as `off_dir_cp`.
+- Jump with a misaligned base address which `<offset>` aligns.
+  Pairs of base address / offset alignments tracked in `align_cross`.
 - Jump with a large base address which wraps to a valid address by adding a positive `<offset>`.
-- Jump with a base address just above top of IMEM but wih a negative `<offset>` to give a valid target.
+  Tracked as `pos_wrap_cp`.
+- Jump with a base address just above top of IMEM but with a negative `<offset>` to give a valid target.
+  Tracked as `sub_cp`.
 - Jump with a negative offset, wrapping to give an invalid target.
-- Jump with a positive offset, giving an invalid target above top of IMEM.
+  Tracked as `neg_wrap_cp`.
+- Jump to an aligned address above top of IMEM.
+  Tracked as `oob_cp`.
 - Jump to current address.
+  Tracked as `self_cp`.
 - Jump when the current PC is the top word in IMEM.
+  Tracked as `from_top_cp`.
 - Jump instruction at end of a loop.
+  **TODO: Loop state tracking**
 
 Note that the "jump to current address" item won't be a problem to test since it will quickly over- or underflow the call stack, provided `<grd>` and `<grs1>` aren't both `x1`.
 
 #### CSRRS
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
+The instruction-specific covergroup is `insn_csrrs_cg`.
 
 - Write with a non-zero `bits_to_set` to each valid CSR.
+- Write to an invalid CSR.
+
+These points are tracked with `csr_cross` in `insn_csrrs_cg`.
+It crosses `csr_cp` (which tracks each valid CSR, plus an invalid CSR) with `bits_to_set_cp` (which tracks whether `bits_to_set` is nonzero.
 
 #### CSRRW
 
 This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
+The instruction-specific covergroup is `insn_csrrw_cg`.
 
 - Write to every valid CSR with a `<grd>` other than `x0`.
 - Write to every valid CSR with `<grd>` equal to `x0`.
+- Write to an invalid CSR.
+
+These points are tracked with `csr_cross` in `insn_csrrw_cg`.
+It crosses `csr_cp` (which tracks each valid CSR, plus an invalid CSR) with `grd_cp_to_set_cp` (which tracks whether `grd` is equal to `x0`.
 
 #### ECALL
 
