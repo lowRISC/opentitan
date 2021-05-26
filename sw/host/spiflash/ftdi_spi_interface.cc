@@ -9,11 +9,12 @@
 #include <cstring>
 #include <fcntl.h>
 #include <iostream>
-#include <openssl/sha.h>
 #include <string>
 #include <termios.h>
 #include <unistd.h>
 #include <vector>
+
+#include "cryptoc/sha256.h"
 
 // Include MPSSE SPI library
 extern "C" {
@@ -137,11 +138,8 @@ bool FtdiSpiInterface::TransmitFrame(const uint8_t *tx, size_t size) {
 }
 
 bool FtdiSpiInterface::CheckHash(const uint8_t *tx, size_t size) {
-  uint8_t hash[SHA256_DIGEST_LENGTH];
-  SHA256_CTX sha256;
-  SHA256_Init(&sha256);
-  SHA256_Update(&sha256, tx, size);
-  SHA256_Final(hash, &sha256);
+  uint8_t hash[SHA256_DIGEST_SIZE];
+  SHA256_hash(tx, size, hash);
 
   uint8_t *rx;
 
@@ -171,10 +169,10 @@ bool FtdiSpiInterface::CheckHash(const uint8_t *tx, size_t size) {
     // Checking for the hash at any location or even split between messages may
     // not be necessary, but it is probably safer.
     usleep(options_.hash_check_delay_us);
-    for (int i = 0; !hash_correct && i < SHA256_DIGEST_LENGTH; ++i) {
+    for (int i = 0; !hash_correct && i < SHA256_DIGEST_SIZE; ++i) {
       if (rx[i] == hash[hash_index]) {
         ++hash_index;
-        if (hash_index == SHA256_DIGEST_LENGTH) {
+        if (hash_index == SHA256_DIGEST_SIZE) {
           hash_correct = true;
         }
       } else {

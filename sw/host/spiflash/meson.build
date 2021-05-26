@@ -12,7 +12,7 @@ spiflash_bin = executable(
   ],
   implicit_include_directories: false,
   dependencies: [
-    dependency('libcrypto', native: true),
+    vendor_cryptoc_sha256,
     # The libftdi1 dependency needs to be explicit to manage
     # include paths on some systems.
     dependency('libftdi1', native: true),

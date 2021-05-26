@@ -6,7 +6,10 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <string.h>
 #include <unistd.h>
+
+#include "cryptoc/sha256.h"
 
 namespace opentitan {
 namespace spiflash {
@@ -43,12 +46,13 @@ uint32_t Populate(uint32_t frame_number, uint32_t code_offset,
  * Calculate hash for frame `f` and store it in the frame header hash field.
  */
 void HashFrame(Frame *f) {
-  SHA256_CTX sha256;
-  SHA256_Init(&sha256);
-  SHA256_Update(&sha256, &f->hdr.frame_num, sizeof(f->hdr.frame_num));
-  SHA256_Update(&sha256, &f->hdr.offset, sizeof(f->hdr.offset));
-  SHA256_Update(&sha256, f->data, f->PayloadSize());
-  SHA256_Final(f->hdr.hash, &sha256);
+  LITE_SHA256_CTX sha256;
+  SHA256_init(&sha256);
+  SHA256_update(&sha256, &f->hdr.frame_num, sizeof(f->hdr.frame_num));
+  SHA256_update(&sha256, &f->hdr.offset, sizeof(f->hdr.offset));
+  SHA256_update(&sha256, f->data, f->PayloadSize());
+  const uint8_t *result = SHA256_final(&sha256);
+  memcpy(f->hdr.hash, result, SHA256_DIGEST_SIZE);
 }
 
 }  // namespace
