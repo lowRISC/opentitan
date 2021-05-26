@@ -832,7 +832,7 @@ Alternatively, the `otp_operation_done` interrupt can be enabled up to notify th
 If the region accessed has a 64bit access granule, the 64bit chunk of read data can be read from the {{< regref DIRECT_ACCESS_RDATA_0 >}} and {{< regref DIRECT_ACCESS_RDATA_1 >}} registers.
 7. Go back to 1. and repeat until all data has been read.
 
-Note that the hardware will set {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
+The hardware will set {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
 
 ### Programming Sequence
 
@@ -849,7 +849,10 @@ Alternatively, the `otp_operation_done` interrupt can be enabled up to notify th
 6. If the status register flags a DAI error, additional handling is required (see [Section on Error handling]({{< relref "#error-handling" >}})).
 7. Go back to 1. and repeat until all data has been written.
 
-Note that the hardware will set {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
+The hardware will set {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
+
+Note that SW is responsible for keeping track of already programmed OTP word locations during the provisioning phase.
+**It is imperative that SW does not write the same word location twice**, since this can lead to ECC inconsistencies, thereby potentially rendering the device useless.
 
 ### Digest Calculation Sequence
 
@@ -862,7 +865,10 @@ The hardware digest computation for the hardware and secret partitions can be tr
 Alternatively, the `otp_operation_done` interrupt can be enabled up to notify the processor once an access has completed.
 6. If the status register flags a DAI error, additional handling is required (see [Section on Error handling]({{< relref "#error-handling" >}})).
 
-Note that the hardware will set {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
+The hardware will set {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
+
+It should also be noted that the effect of locking a partition via the digest only takes effect **after** the next system reset.
+To prevent integrity check failures SW must therefore ensure that no more programming operations are issued to the affected partition after initiating the digest calculation sequence.
 
 ## Error Handling
 
@@ -881,13 +887,17 @@ Error Code | Enum Name            | Recoverable | DAI | LCI | Unbuf | Buf   | De
 0x1        | MacroError           | no          |  x  |  x  |   x   |  x    | Returned if the OTP macro command was invalid or did not complete successfully due to a macro malfunction.
 0x2        | MacroEccCorrError    | yes         |  x  |  -  |   x   |  x    | A correctable ECC error has occurred during a read operation in the OTP macro.
 0x3        | MacroEccUncorrError  | no          |  x  |  -  |   x   |  x    | An uncorrectable ECC error has occurred during a read operation in the OTP macro.
-0x4        | MacroWriteBlankError | yes         |  x  |  x  |   x   |  x    | This error is returned if a write operation attempted to clear an already programmed bit location.
+0x4        | MacroWriteBlankError | yes         |  x  |  x  |   -   |  -    | This error is returned if a write operation attempted to clear an already programmed bit location.
 0x5        | AccessError          | yes         |  x  |  -  |   x   |  -    | An access error has occurred (e.g. write to write-locked region, or read to a read-locked region).
 0x6        | CheckFailError       | no          |  -  |  -  |   x   |  x    | An unrecoverable ECC, integrity or consistency error has been detected.
 0x7        | FsmStateError        | no          |  x  |  x  |   x   |  x    | The FSM has been glitched into an invalid state, or escalation has been triggered and the FSM has been moved into a terminal error state.
 
 All non-zero error codes listed above trigger an `otp_error` interrupt.
 In addition, all unrecoverable OTP `Macro*` errors (codes 0x1, 0x3) trigger a `fatal_macro_error` alert, while all remaining unrecoverable errors trigger a `fatal_check_error` alert.
+
+Note that while the `MacroWriteBlankError` is marked as a recoverable error, the affected OTP word may be in an inconsistent state after this error has been returned.
+This can cause several issues when the word is accessed again (either as part of a regular read operation, as part of the readout at boot, or as part of a background check).
+It is important that SW ensures that each word is only written once, since this can render the device useless.
 
 ## Direct Access Memory Map
 
