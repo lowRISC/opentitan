@@ -880,9 +880,13 @@
               { value: "4",
                 name: "MACRO_WRITE_BLANK_ERROR",
                 desc: '''
-                A blank write check has failed during an OTP write operation. This effectively
-                aborts the write operation such that no harm is done to the OTP. The corresponding
-                controller automatically recovers from this error when issuing a new command.
+                This error is returned if a programming operation attempted to clear a bit that has previously been programmed to 1.
+                The corresponding controller automatically recovers from this error when issuing a new command.
+
+                Note however that the affected OTP word may be left in an inconsistent state if this error occurs.
+                This can cause several issues when the word is accessed again (either as part of a regular read operation, as part of the readout at boot, or as part of a background check).
+
+                It is important that SW ensures that each word is only written once, since this can render the device useless.
                 '''
               },
               { value: "5",
