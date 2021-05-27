@@ -911,8 +911,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
         enc_u_cg.sample(mnem, insn_data);
       "wcsr":
         enc_wcsr_cg.sample(mnem, insn_data);
-      default:
-        `DV_CHECK_FATAL(0, "Unknown encoding")
+      default: `dv_fatal($sformatf("Unknown encoding (%0s) for instruction `%0s'", encoding, mnem),
+                         `gfn)
     endcase
   endfunction
 
