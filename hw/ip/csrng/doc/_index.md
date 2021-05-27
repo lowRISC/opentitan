@@ -129,6 +129,7 @@ The specific state information held in the instance is documented below.
 If the command was a `generate` command, the genbits data word will be returned to the requesting `cmd_stage` block.
 Finally, an `ack` response and status will be returned to the application interface once the command has been completely processed.
 
+
 ## Block Diagram
 
 ![CSRNG Block Diagram](csrng_blk_diag.svg)
@@ -136,6 +137,19 @@ Finally, an `ack` response and status will be returned to the application interf
 ## Hardware Interfaces
 
  {{< incGenFromIpDesc "../data/csrng.hjson" "hwcfg" >}}
+
+The table below lists other CSRNG signals.
+
+Signal                       | Direction        | Type                        | Description
+-----------------------------|------------------|-----------------------------|---------------
+`otp_en_csrng_sw_app_read_i` | `input `         | `otp_en_t `                 | An efuse that will enable firmware to access the NIST ctr_drbg internal state through registers.
+`lc_hw_debug_en_i`           | `input`          | `lc_tx_t `                  | A life-cycle that will allow disabling of the AES encryption block, to be used for debug only.
+`entropy_src_hw_if_o`        | `output`         | `entropy_src_hw_if_req_t`   | Seed request made to the Entropy_src module.
+`entropy_src_hw_if_i`        | `input`          | `entropy_src_hw_if_rsp_t`   | Seed response from the Entropy_src module. 
+`cs_aes_halt_i`              | `input`          | `cs_aes_halt_req_t`         | Request to CSRNG from Entropy_Src to halt requests to the AES block for power leveling purposes.
+`cs_aes_halt_o`              | `output`         | `cs_aes_halt_rsp_t`         | Response from CSRNG to Entropy_Src that all requests to AES block are halted.
+`csrng_cmd_i`                | `input`          | `csrng_req_t`               | Application interface request to CSRNG from an EDN block.
+`csrng_cmd_o`                | `output`         | `csrng_rsp_t`               | Application interface response from CSRNG to an EDN block.
 
 ## Design Details
 
