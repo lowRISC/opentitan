@@ -7,7 +7,6 @@
 interface otp_ctrl_cov_if
   import otp_ctrl_reg_pkg::*;
   (
-   input logic                                                     clk_i,
    input pwrmgr_pkg::pwr_otp_rsp_t                                 pwr_otp_o,
    input otp_ctrl_pkg::lc_otp_program_req_t                        lc_otp_program_i,
    input lc_ctrl_pkg::lc_tx_t                                      lc_escalate_en_i,

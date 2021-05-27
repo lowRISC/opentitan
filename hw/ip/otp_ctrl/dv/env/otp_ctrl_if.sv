@@ -17,6 +17,7 @@
     tb.dut.u_otp.gen_generic.u_impl_generic.cmd_i
 
 interface otp_ctrl_if(input clk_i, input rst_ni);
+  import otp_ctrl_env_pkg::*;
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_part_pkg::*;
@@ -65,7 +66,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
       lc_prog_err_dly1  <= 0;
       lc_esc_dly1       <= lc_ctrl_pkg::Off;
       lc_esc_dly2       <= lc_ctrl_pkg::Off;
-      lc_check_byp_en_i <= lc_ctrl_pkg::Off;
+      lc_check_byp_en_i <= randomize_lc_tx_t_val();
       lc_esc_on         <= 0;
     end else begin
       lc_prog_err_dly1 <= lc_prog_err;
@@ -82,13 +83,11 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
   assign lc_prog_no_sta_check = lc_prog_err | lc_prog_err_dly1 | lc_prog_req | lc_esc_on;
 
-  task automatic init(lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_val = lc_ctrl_pkg::On,
-                      lc_ctrl_pkg::lc_tx_t lc_check_byp_en_val  = lc_ctrl_pkg::Off);
+  task automatic init();
     lc_creator_seed_sw_rw_en_i = lc_ctrl_pkg::On;     // drive it in specific task
-    lc_seed_hw_rd_en_i         = lc_seed_hw_rd_en_val;
+    lc_seed_hw_rd_en_i         = randomize_lc_tx_t_val();
     lc_dft_en_i                = lc_ctrl_pkg::Off;    // drive it in specific task
     lc_escalate_en_i           = lc_ctrl_pkg::Off;    // drive it in specific task
-    lc_check_byp_en_i          = lc_check_byp_en_val;
     pwr_otp_init_i             = 0;
     // Unused signals in open sourced OTP memory
     otp_ast_pwr_seq_h_i        = $urandom();
@@ -185,6 +184,13 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
       end
     endcase
   endtask
+
+  initial begin
+    forever begin
+      @(posedge rst_ni);
+      init();
+    end
+  end
 
   `define OTP_ASSERT_WO_LC_ESC(NAME, SEQ) \
     `ASSERT(NAME, SEQ, clk_i, !rst_ni || lc_esc_on || alert_reqs)

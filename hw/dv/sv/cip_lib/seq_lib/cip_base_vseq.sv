@@ -112,29 +112,11 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   virtual task apply_reset(string kind = "HARD");
     if (kind == "HARD") begin
-      // If DUT is connected to `edn_rst`, assert resets with random delays
-      if (cfg.has_edn) begin
-        fork
-          begin : isolation_fork
-            fork
-              apply_edn_reset(kind);
-              super.apply_reset(kind);
-            join_any
-            disable fork;
-          end
-        join
-
-        // Deassert resets at the same time to avoid undriven outputs.
-        cfg.edn_clk_rst_vif.drive_rst_pin(1);
-        if (cfg.clk_rst_vifs.size > 0) begin
-          foreach (cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[i].drive_rst_pin(1);
-        end else begin
-          cfg.clk_rst_vif.drive_rst_pin(1);
-        end
-
-      end else begin
+      // If DUT is connected to `edn_rst_ni`, assert resets with random delays
+      fork
+        if (cfg.has_edn) apply_edn_reset(kind);
         super.apply_reset(kind);
-      end
+      join
     end
   endtask
 
