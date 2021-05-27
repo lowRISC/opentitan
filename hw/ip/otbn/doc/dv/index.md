@@ -383,7 +383,7 @@ This instruction uses the `I` encoding schema, with covergroup `enc_i_cg`.
 #### ECALL
 
 This instruction uses the `I` encoding schema, but with every field set to a fixed value.
-Encoding-level coverpoints are tracked in covergroup `enc_fixed_cg`.
+Encoding-level coverpoints are tracked in covergroup `enc_ecall_cg`.
 
 No special coverage points for this instruction.
 
