@@ -239,7 +239,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     state_d = state_q;
     cmd_fifo_pop = 1'b0;
     cmd_len_dec = 1'b0;
-    cmd_gen_cnt_dec= 1'b0;
+    cmd_gen_cnt_dec = 1'b0;
     cmd_gen_1st_req = 1'b0;
     cmd_gen_inc_req = 1'b0;
     cmd_gen_cnt_last = 1'b0;
