@@ -228,7 +228,7 @@
   regressions: [
     {
       name: smoke
-      tests: ["chip_uart_tx_rx"]
+      tests: ["chip_sw_uart_tx_rx"]
     }
   ]
 }

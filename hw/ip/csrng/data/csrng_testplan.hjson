@@ -55,7 +55,7 @@
       name: life cycle
       desc: '''
             Verify lifecycle hardware debug mode enables AES bypass, reading CSRNG internal state.
-	    Verify CSRNG internal state for all csrng/genbits operations.
+            Verify CSRNG internal state for all csrng/genbits operations.
             '''
       milestone: V2
       tests: []
@@ -73,9 +73,11 @@
     {
       name: stress_all
       desc: '''
-            Combine the other individual testpoints while injecting TL errors and running CSR tests in parallel.'''
+            Combine the other individual testpoints while injecting TL errors and running CSR tests
+            in parallel.
+            '''
       milestone: V2
-      tests: ["csrng_stress_all"]
+      tests: []
     }
   ]
 }

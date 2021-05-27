@@ -60,7 +60,7 @@
             Test command and reg access gated by CFGEN is ignored during operation.
             '''
       milestone: V2
-      tests: ["keymgr_cfgen"]
+      tests: ["keymgr_cfg_regwen"]
     }
     {
       name: cfgen_at_st_random
@@ -71,7 +71,7 @@
             Test command and reg access gated by CFGEN is ignored during `StRandom`.
             '''
       milestone: V2
-      tests: ["keymgr_cfgen"]
+      tests: ["keymgr_cfg_regwen"]
     }
     {
       name: sideload
@@ -198,7 +198,7 @@
       name: stress_all
       desc: '''
             - Combine above sequences in one test to run sequentially, except csr sequence and
-              keymgr_cfgen (requires zero_delays)
+              keymgr_cfg_regwen (requires zero_delays)
             - Randomly add reset between each sequence'''
       milestone: V2
       tests: ["keymgr_stress_all"]

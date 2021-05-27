@@ -73,7 +73,7 @@
       desc: '''Reset async fifo when SPI interface is idle
             TODO: fifo may be fetching data from SRAM? What is the actual usage?'''
       milestone: V2
-      tests: ["spi_device_async_fifo_reset"]
+      tests: []
     }
     {
       name: interrupts
@@ -84,14 +84,14 @@
             - rx error
             - overflow/underflow'''
       milestone: V2
-      tests: ["spi_device_interrupts"]
+      tests: []
     }
     {
       name: abort
       desc: '''
             TODO: Need to clarify the behavior in spec'''
       milestone: V2
-      tests: ["spi_device_abort"]
+      tests: []
     }
     {
       name: byte_transfer_on_spi
@@ -107,7 +107,7 @@
               model the timer feature
             - Note: Timeout only for RX'''
       milestone: V2
-      tests: ["spi_device_rx_timeout"]
+      tests: []
     }
     {
       name: bit_transfer_on_spi
@@ -116,7 +116,7 @@
             - If TX drives < 7 bits, this byte will be sent in next CSB.
             - If TX drives 7 bits and set CSB to high, this byte won't be sent in next CSB'''
       milestone: V2
-      tests: ["spi_device_bit_transfer"]
+      tests: []
     }
     {
       name: extreme_fifo_setting
@@ -128,7 +128,7 @@
       name: mode
       desc: '''TODO :only support fw mode now'''
       milestone: V2
-      tests: ["spi_device_mode"]
+      tests: []
     }
     {
       name: mem_ecc
@@ -137,13 +137,13 @@
             - Just cover basic functionality and connectivity
             - Complete verification will be done by PFV'''
       milestone: V2
-      tests: ["spi_device_mem_ecc"]
+      tests: []
     }
     {
       name: perf
       desc: '''Run spi_device_fifi_full_vseq with very small delays'''
       milestone: V2
-      tests: ["spi_device_perf"]
+      tests: []
     }
   ]
 }

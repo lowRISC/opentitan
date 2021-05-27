@@ -65,9 +65,11 @@
     {
       name: stress_all
       desc: '''
-            Combine the other individual testpoints while injecting TL errors and running CSR tests in parallel.'''
+            Combine the other individual testpoints while injecting TL errors and running CSR tests
+            in parallel.
+            '''
       milestone: V2
-      tests: ["csrng_stress_all"]
+      tests: []
     }
   ]
 }
