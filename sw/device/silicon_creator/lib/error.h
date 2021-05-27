@@ -5,6 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ERROR_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ERROR_H_
 
+#include "sw/device/lib/base/bitfield.h"
+
 #define USING_ABSL_STATUS
 #include "sw/device/silicon_creator/lib/absl_status.h"
 #undef USING_ABSL_STATUS
@@ -27,8 +29,18 @@ enum module_ {
   kModuleSigverify = 0x5653,     // ASCII "SV".
   kModuleKeymgr = 0x4d4b,        // ASCII "KM".
   kModuleManifest = 0x414d,      // ASCII "MA".
+  kModuleMaskRom = 0x524d,       // ASCII "MR".
   kModuleRomextimage = 0x4552,   // ASCII "RE".
+  kModuleInterrupt = 0x5249,     // ASCII "IR".
 };
+
+/**
+ * Field definitions for the different fields of the error word.
+ */
+#define ROM_ERROR_FIELD_ERROR ((bitfield_field32_t){.mask = 0xFF, .index = 24})
+#define ROM_ERROR_FIELD_MODULE \
+  ((bitfield_field32_t){.mask = 0xFFFF, .index = 8})
+#define ROM_ERROR_FIELD_STATUS ((bitfield_field32_t){.mask = 0xFF, .index = 0})
 
 /**
  * Helper macro for building up error codes.
@@ -62,6 +74,9 @@ enum module_ {
   X(kErrorAlertBadClass,              ERROR_(2, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadEnable,             ERROR_(3, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadEscalation,         ERROR_(4, kModuleAlertHandler, kInvalidArgument)), \
+  X(kErrorMaskRomBootFailed,          ERROR_(1, kModuleMaskRom, kFailedPrecondition)), \
+  /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
+  X(kErrorInterrupt,                  ERROR_(0, kModuleInterrupt, kUnknown)), \
   X(kErrorUnknown, 0xFFFFFFFF)
 // clang-format on
 

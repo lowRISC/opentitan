@@ -56,43 +56,44 @@ _mask_rom_interrupt_vector:
 
   // Exception and User Software Interrupt Handler.
   .extern mask_rom_exception_handler
+  .extern mask_rom_interrupt_handler
   j mask_rom_exception_handler
   // Supervisor Software Interrupt Handler.
-  unimp
+  j mask_rom_interrupt_handler
   // Reserved.
-  unimp
+  j mask_rom_interrupt_handler
   // Machine Software Interrupt Handler.
-  unimp
+  j mask_rom_interrupt_handler
 
   // User Timer Interrupt Handler.
-  unimp
+  j mask_rom_interrupt_handler
   // Supervisor Timer Interrupt Handler.
-  unimp
+  j mask_rom_interrupt_handler
   // Reserved.
-  unimp
+  j mask_rom_interrupt_handler
   // Machine Timer Interrupt Handler.
-  unimp
+  j mask_rom_interrupt_handler
 
   // User External Interrupt Handler.
-  unimp
+  j mask_rom_interrupt_handler
   // Supervisor External Interrupt Handler.
-  unimp
+  j mask_rom_interrupt_handler
   // Reserved.
-  unimp
+  j mask_rom_interrupt_handler
   // Machine External Interrupt Handler.
-  unimp
+  j mask_rom_interrupt_handler
 
   // Reserved.
-  unimp
-  unimp
-  unimp
-  unimp
+  j mask_rom_interrupt_handler
+  j mask_rom_interrupt_handler
+  j mask_rom_interrupt_handler
+  j mask_rom_interrupt_handler
 
   // Vendor Interrupt Handlers:
 
   // On Ibex interrupt ids 30-16 are for "fast" interrupts.
   .rept 15
-  unimp
+  j mask_rom_interrupt_handler
   .endr
 
   // On Ibex interrupt id 31 is for non-maskable interrupts.
@@ -276,8 +277,8 @@ _mask_rom_start_boot:
   /**
    * Jump to C Code
    */
-  .extern mask_rom_boot
-  tail mask_rom_boot
+  .extern mask_rom_main
+  tail mask_rom_main
 
   // Set size so this function can be disassembled.
   .size _mask_rom_start_boot, .-_mask_rom_start_boot

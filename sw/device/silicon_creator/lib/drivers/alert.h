@@ -15,6 +15,7 @@ extern "C" {
 
 #define ALERT_CLASSES 4
 
+// TODO(lowRISC/opentitan#7148): Choose values for configuration enums.
 // Note: the AlertClass values need to map to a byte.
 /**
  * Alert Classification Values as stored in OTP.
