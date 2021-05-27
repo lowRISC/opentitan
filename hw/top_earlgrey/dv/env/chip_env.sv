@@ -49,7 +49,7 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get rst_n_mon_vif from uvm_config_db")
     end
 
-    if (!uvm_config_db#(mem_bkdr_vif)::get(this, "", "rom_bkdr_vif", cfg.rom_bkdr_vif)) begin
+    if (!uvm_config_db#(rom_mem_bkdr_vif)::get(this, "", "rom_bkdr_vif", cfg.rom_bkdr_vif)) begin
       `uvm_fatal(`gfn, "failed to get rom_bkdr_vif from uvm_config_db")
     end
 
@@ -83,7 +83,7 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get flash_info1_bkdr_vif from uvm_config_db")
     end
 
-    if (!uvm_config_db#(ecc_mem_bkdr_vif)::get(this, "", "otp_bkdr_vif", cfg.otp_bkdr_vif)) begin
+    if (!uvm_config_db#(otp_mem_bkdr_vif)::get(this, "", "otp_bkdr_vif", cfg.otp_bkdr_vif)) begin
       `uvm_fatal(`gfn, "failed to get otp_bkdr_vif from uvm_config_db")
     end
 

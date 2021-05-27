@@ -26,14 +26,14 @@ class chip_env_cfg extends cip_base_env_cfg #(.RAL_T(chip_reg_block));
   virtual pins_if#(1) rst_n_mon_vif;
 
   // mem backdoors
-  mem_bkdr_vif        rom_bkdr_vif;
+  rom_mem_bkdr_vif    rom_bkdr_vif;
   parity_mem_bkdr_vif ram_main_bkdr_vif;
   parity_mem_bkdr_vif ram_ret_bkdr_vif;
   mem_bkdr_vif        flash_bank0_bkdr_vif;
   mem_bkdr_vif        flash_bank1_bkdr_vif;
   mem_bkdr_vif        flash_info0_bkdr_vif;
   mem_bkdr_vif        flash_info1_bkdr_vif;
-  ecc_mem_bkdr_vif    otp_bkdr_vif;
+  otp_mem_bkdr_vif    otp_bkdr_vif;
 
   // sw related
   // Directory from where to pick up the SW test images -default to PWD {run_dir}.
