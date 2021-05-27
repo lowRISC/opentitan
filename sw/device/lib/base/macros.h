@@ -15,9 +15,14 @@
  */
 
 /**
- * A annotation that a switch/case fallthrough is the intended behavior.
+ * An annotation that a switch/case fallthrough is the intended behavior.
  */
 #define FALLTHROUGH_INTENDED __attribute__((fallthrough))
+
+/**
+ * A directive to force the compiler to inline a function.
+ */
+#define ALWAYS_INLINE __attribute__((always_inline)) inline
 
 /**
  * A variable-argument macro that expands to the number of arguments passed into
@@ -64,5 +69,12 @@
  */
 #define OT_ASSERT_SIZE(type, size) \
   static_assert(sizeof(type) == UINT32_C(size), "Unexpected size for " #type)
+
+/**
+ * A macro representing the OpenTitan execution platform.
+ */
+#if __riscv_xlen == 32
+#define OT_PLATFORM_RV32 1
+#endif
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_

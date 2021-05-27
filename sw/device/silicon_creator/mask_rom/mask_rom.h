@@ -37,25 +37,14 @@ void _mask_rom_start_boot(void);
 /**
  * The first C function executed by the Mask ROM (defined in `mask_rom.c`)
  */
-noreturn void mask_rom_boot(void);
+noreturn void mask_rom_main(void);
 
 /**
  * Mask ROM hardware exception handler.
- *
- * This may not be able to be implemented in C.
  */
 MASK_ROM_VECTOR_FUNCTION
 MASK_ROM_INTERRUPT_HANDLER_ABI
-void mask_rom_exception_handler(void);
-
-/**
- * Mask ROM non-maskable interrupt handler.
- *
- * This may not be able to be implemented in C.
- */
-MASK_ROM_VECTOR_FUNCTION
-MASK_ROM_INTERRUPT_HANDLER_ABI
-void mask_rom_nmi_handler(void);
+void mask_rom_interrupt_handler(void);
 
 #ifdef __cplusplus
 }  // extern "C"
