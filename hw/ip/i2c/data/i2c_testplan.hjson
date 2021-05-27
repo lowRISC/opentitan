@@ -21,7 +21,8 @@
               - Enable DUT host
               - Clear/Enable interrupt (if needed)
               - Program OVRD, FDATA register
-              - Randomize I2C timing in TIMING 0-4 registers and other parameters such as TL agent delays
+              - Randomize I2C timing in TIMING 0-4 registers and other parameters such as TL agent
+                delays
               - Randomize address and data for read/write transactions sent to the agent by the DUT
 
             Checking:
@@ -32,15 +33,16 @@
       tests: ["i2c_smoke"]
     }
     {
-      name: host_error_intr,
+      name: host_error_intr
       desc: '''
             Test error interrupts are asserted by the Host DUT due to
             interference and unstable signals on bus.
-  
+
             Stimulus:
               - Configure DUT/Agent to Host/Target mode respectively
               - In host transmit mode, device (target/host) forces sda or scl signal low within the
-                clock pulse of host scl that asserts `sda_interference` or `scl_interference` interrupts
+                clock pulse of host scl that asserts `sda_interference` or `scl_interference`
+                interrupts
               - In host receiving mode (data or ack bits), SDA signal is changed with the
                 clock pulse of host scl that asserts `intr_sda_unstable` interrupts
               - When error interrupt assertions are detected, dut, agent, and scoreboard will be
@@ -98,7 +100,7 @@
             Stimulus:
               - Configure DUT/Agent to Host/Target mode respectively
               - Reduce access latency for all fifos
-              - Issue long read/write back-to-back transactions 
+              - Issue long read/write back-to-back transactions
               - Read rx_fifo as soon as read data valid
               - Clear interrupt quickly
 
@@ -147,8 +149,9 @@
             Test the overflow interrupt for fmt_fifo and rx_fifo.
 
             Stimulus:
-              - Configure DUT/Agent to Host/Target mode respectively      
-              - DUT keeps sending a number of format byte higher than the size of fmt_fifo and rx_fifo depth
+              - Configure DUT/Agent to Host/Target mode respectively
+              - DUT keeps sending a number of format byte higher than the size of fmt_fifo and
+                rx_fifo depth
 
             Checking:
               - Ensure excess format bytes are dropped
@@ -158,7 +161,7 @@
       tests: ["i2c_fifo_overflow"]
     }
     {
-      name: target_fifo_empty,
+      name: target_fifo_empty
       desc: '''
             Test tx_empty and tx_nonempty interrupt.
 
@@ -167,11 +170,12 @@
               - Agent sends transaction to the DUT
 
             Checking:
-              - During read transaction, ensure tx_empty interrupt is asserted when no data left in tx_fifo
+              - During read transaction, ensure tx_empty interrupt is asserted when no data left
+                in tx_fifo
                 otherwise tx_empty interrupt must be asserted
             '''
       milestone: V2
-      tests: ["i2c_fifo_empty"]
+      tests: []
     }
     {
       name: host_fifo_reset
@@ -187,7 +191,7 @@
               - Ensure the remaining entries are not show up after fmt_fifo is reset
             '''
       milestone: V2
-      tests: ["i2c_fifo_reset"]
+      tests: []
     }
     {
       name: host_fifo_full
@@ -214,14 +218,15 @@
               - Configure DUT/Agent to Host/Target mode respectively
               - Set timeout enable bit of TIMEOUT_CTRL register
               - Program timeout values (higher than host scl clock pulse) into TIMEOUT_CTRL register
-              - Configure agent to pull down target (device) scl after the bit 9 (ACK) is transmitted
+              - Configure agent to pull down target (device) scl after the bit 9 (ACK) is
+                transmitted
 
             Checking:
               - Ensure stretch_timeout is asserted and a correct number is received
 
             '''
       milestone: V2
-      tests: ["i2c_timeout"]
+      tests: []
     }
     {
       name: host_rx_oversample
@@ -236,7 +241,7 @@
               - Read rx data oversampled value and ensure it is same as driven value
             '''
       milestone: V2
-      tests: ["i2c_rx_oversample"]
+      tests: []
     }
     {
       name: host_rw_loopback
@@ -250,7 +255,7 @@
               - Ensure read data is matched with write data
             '''
       milestone: V2
-      tests: ["i2c_rw_loopback"]
+      tests: []
     }
 
     //-----------------------------------------------
@@ -266,7 +271,8 @@
               - Configure DUT/Agent to Target/Host mode respectively
               - Enable DUT target
               - Clear/Enable interrupt (if needed)
-              - Randomize I2C timing in TIMING 0-4 registers and other parameters such as TL agent delays
+              - Randomize I2C timing in TIMING 0-4 registers and other parameters such as TL agent
+                delays
               - Generate random addresses which are programmed to the DUT (target)
                 and used for transaction sent by the agent (host)
 
@@ -353,7 +359,8 @@
 
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
-              - Agent keeps sending a number of format byte higher than the size of tx_fifo and acq_fifo
+              - Agent keeps sending a number of format byte higher than the size of tx_fifo and
+                acq_fifo
 
             Checking:
               - Ensure excess format bytes are dropped
@@ -376,7 +383,7 @@
               - Ensure the remaining entries are not show up after fmt_fifo is reset,
             '''
       milestone: V2
-      tests: ["i2c_fifo_reset"]
+      tests: []
     }
     {
       name: target_fifo_full
@@ -409,7 +416,7 @@
 
             '''
       milestone: V2
-      tests: ["i2c_timeout"]
+      tests: []
     }
   ]
 }

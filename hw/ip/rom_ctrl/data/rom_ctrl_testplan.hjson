@@ -37,7 +37,7 @@
             - Check that the digest csrs are not corrupted
             '''
       milestone: V2
-      tests: ["rom_ctrl_reset"]
+      tests: []
     }
     {
       name: mem_tl_errors
@@ -46,7 +46,7 @@
             ROM TLUL interface to verify that erroneous TLUL transactions are handled correctly.
             '''
       milestone: V2
-      tests: ["rom_ctrl_mem_tl_errors"]
+      tests: []
     }
     {
       name: ecc_mem_fault
@@ -60,7 +60,7 @@
             - TODO - should this generate an alert with xmission integrity?
             '''
       milestone: V3
-      tests: ["rom_ctrl_ecc"]
+      tests: []
     }
   ]
   covergroups: [
