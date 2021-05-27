@@ -11,7 +11,9 @@
 exclude_paths = ["build.*", "sw/.*", ".sv.tpl$"]
 
 [rules]
+blocking_assignment_in_always_ff = true
 case_default = true
+default_nettype_none = false
 enum_with_type = true
 for_with_begin = true
 function_same_as_system_function = true
@@ -30,13 +32,11 @@ legacy_always = false
 level_sensitive_always = true
 loop_variable_declaration = true
 non_ansi_module = true
+non_blocking_assignment_in_always_comb = true
 output_with_var = false
 parameter_in_package = false
-priority_keyword = true
+priority_keyword = false
 tab_character = true
 unique0_keyword = false
 unique_keyword = false
 wire_reg = true
-generate_keyword = false
-tab_charactor = false
-genvar_declaration = false
