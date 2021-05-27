@@ -29,13 +29,13 @@
 // TODO, tie core reset with EDN reset for now
 `ifndef DV_EDN_IF_CONNECT
 `define DV_EDN_IF_CONNECT \
-  wire edn_rst_n = rst_n; \
+  wire edn_rst_n; \
   wire edn_clk; \
   clk_rst_if edn_clk_rst_if(.clk(edn_clk), .rst_n(edn_rst_n)); \
   push_pull_if #(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)) edn_if(.clk(edn_clk), \
                                                                         .rst_n(edn_rst_n)); \
   initial begin \
-    edn_clk_rst_if.set_active(.drive_rst_n_val(0)); \
+    edn_clk_rst_if.set_active(); \
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "edn_clk_rst_vif", edn_clk_rst_if); \
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(cip_base_pkg::EDN_DATA_WIDTH)))::set \
                    (null, "*env.m_edn_pull_agent*", "vif", edn_if); \
