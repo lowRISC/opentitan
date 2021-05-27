@@ -110,6 +110,38 @@ class cip_base_vseq #(type RAL_T               = dv_base_reg_block,
     if (do_clear_all_interrupts) clear_all_interrupts();
   endtask
 
+  virtual task apply_reset(string kind = "HARD");
+    if (kind == "HARD") begin
+      // If DUT is connected to `edn_rst`, assert resets with random delays
+      if (cfg.has_edn) begin
+        fork
+          begin : isolation_fork
+            fork
+              apply_edn_reset(kind);
+              super.apply_reset(kind);
+            join_any
+            disable fork;
+          end
+        join
+
+        // Deassert resets at the same time to avoid undriven outputs.
+        cfg.edn_clk_rst_vif.drive_rst_pin(1);
+        if (cfg.clk_rst_vifs.size > 0) begin
+          foreach (cfg.clk_rst_vifs[i]) cfg.clk_rst_vifs[i].drive_rst_pin(1);
+        end else begin
+          cfg.clk_rst_vif.drive_rst_pin(1);
+        end
+
+      end else begin
+        super.apply_reset(kind);
+      end
+    end
+  endtask
+
+  virtual task apply_edn_reset(string kind = "HARD");
+    if (cfg.has_edn && kind == "HARD") cfg.edn_clk_rst_vif.apply_reset();
+  endtask
+
   // tl_access task: does a single BUS_DW-bit write or read transaction to the specified address
   // note that this task does not update ral model; optionally also checks for error response
   // TODO: randomize size, addr here based on given addr range, data, and mask, eventually can be
