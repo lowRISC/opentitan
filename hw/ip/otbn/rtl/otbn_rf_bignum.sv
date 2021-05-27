@@ -13,7 +13,7 @@
  *
  * `wr_data_no_intg_i` supplies data that requires integrity calulation and `wr_data_intg_i`
  * supplies data that comes with integrity. `wr_data_intg_sel_i` is asserted to select the data with
- * integrity for the write, otherwise integrity is calculated seperately from `wr_data_i`.
+ * integrity for the write, otherwise integrity is calculated separately from `wr_data_i`.
  *
  * Features:
  * - 2 read ports
@@ -85,7 +85,7 @@ module otbn_rf_bignum
   // New data can have its integrity from an external source or the integrity can be calculated here
   assign wr_data_intg_mux_out = wr_data_intg_sel_i ? wr_data_intg_i : wr_data_intg_calc;
 
-  // Seperate integrity encode and decode per 32-bit integrity granule
+  // Separate integrity encode and decode per 32-bit integrity granule
   for (genvar i = 0; i < BaseWordsPerWLEN; ++i) begin : g_rf_intg_calc
     prim_secded_39_32_enc u_wr_data_intg_enc (
       .data_i(wr_data_no_intg_i[i * 32 +: 32]),

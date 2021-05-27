@@ -88,7 +88,7 @@ module otbn_start_stop_control
     endcase
   end
 
-  // Logic seperate from main FSM code to avoid false combinational loop warning from verilator
+  // Logic separate from main FSM code to avoid false combinational loop warning from verilator
   assign controller_start_o = (state_q == OtbnStartStopStateUrndRefresh) & !urnd_reseed_busy_i;
 
   `ASSERT(StartStopStateValid,

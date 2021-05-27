@@ -442,7 +442,7 @@ static bool check_regs(OtbnModel &model, ISSWrapper &iss) {
   bool good = true;
 
   for (int i = 0; i < 32; ++i) {
-    // Register index 1 is call stack, which is checked seperately
+    // Register index 1 is call stack, which is checked separately
     if (i == 1)
       continue;
 
