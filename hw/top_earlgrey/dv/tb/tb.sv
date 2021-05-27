@@ -77,7 +77,7 @@ module tb;
   assign (weak0, weak1) spi_dev_tie_off = '0;
 
   // backdoors
-  bind `ROM_HIER mem_bkdr_if rom_mem_bkdr_if();
+  bind `ROM_HIER mem_bkdr_if #(.MEM_ECC(prim_secded_pkg::Secded_39_32)) rom_mem_bkdr_if();
   bind `RAM_MAIN_HIER mem_bkdr_if #(.MEM_PARITY(1)) ram_mem_bkdr_if();
   bind `RAM_RET_HIER mem_bkdr_if #(.MEM_PARITY(1)) ram_mem_bkdr_if();
   bind `FLASH0_MEM_HIER mem_bkdr_if flash0_mem_bkdr_if();
@@ -281,7 +281,7 @@ module tb;
         null, "*.env", "rst_n_mon_vif", rst_n_mon_if);
 
     // Backdoors
-    uvm_config_db#(mem_bkdr_vif)::set(
+    uvm_config_db#(rom_mem_bkdr_vif)::set(
         null, "*.env", "rom_bkdr_vif", `ROM_HIER.rom_mem_bkdr_if);
     uvm_config_db#(parity_mem_bkdr_vif)::set(
         null, "*.env", "ram_main_bkdr_vif", `RAM_MAIN_HIER.ram_mem_bkdr_if);
@@ -295,7 +295,7 @@ module tb;
         null, "*.env", "flash_info0_bkdr_vif", `FLASH0_INFO_HIER.flash0_info_bkdr_if);
     uvm_config_db#(mem_bkdr_vif)::set(
         null, "*.env", "flash_info1_bkdr_vif", `FLASH1_INFO_HIER.flash1_info_bkdr_if);
-    uvm_config_db#(ecc_mem_bkdr_vif)::set(
+    uvm_config_db#(otp_mem_bkdr_vif)::set(
         null, "*.env", "otp_bkdr_vif", `OTP_MEM_HIER.otp_bkdr_if);
 
     // SW logger and test status interfaces.
