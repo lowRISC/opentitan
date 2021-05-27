@@ -64,12 +64,6 @@ interface keymgr_if(input clk, input rst_n);
   string msg_id = "keymgr_if";
 
   task automatic init();
-    // This life cycle signal must be stable before
-    // the key manager comes out of reset.
-    // The power/reset manager ensures that
-    // this sequencing is correct.
-    keymgr_en = lc_ctrl_pkg::lc_tx_t'($urandom);
-
     // async delay as these signals are from different clock domain
     #($urandom_range(1000, 0) * 1ns);
     keymgr_en = lc_ctrl_pkg::On;
@@ -289,6 +283,17 @@ interface keymgr_if(input clk, input rst_n);
         if (!is_aes_key_good) check_invalid_key(aes_key, "AES");
       end
     join
+  end
+
+  initial begin
+    forever begin
+      @(posedge rst_n);
+      // This life cycle signal must be stable before
+      // the key manager comes out of reset.
+      // The power/reset manager ensures that
+      // this sequencing is correct.
+      keymgr_en = lc_ctrl_pkg::lc_tx_t'($urandom);
+    end
   end
 
   function automatic void check_invalid_key(keymgr_pkg::hw_key_req_t act_key, string key_name);

@@ -44,12 +44,49 @@ covergroup intr_pins_cg (uint num_interrupts) with function sample(uint intr_pin
   cp_intr_pins_all_values: cross cp_intr_pin, cp_intr_pin_value;
 endgroup
 
+// This covergroup sampled at changing edges of both clocks.
+covergroup resets_cg (string name) with function sample(logic [1:0] resets);
+  option.per_instance = 1;
+  option.name = name;
+
+  resets_trans: coverpoint resets {
+  // This coverpoint collects the toggle coverage as below:
+  //          _ _ _         _ _ _
+  // RESET1        |_ _ _ _|
+  //          _ _ _ _         _ _ _ _
+  // RESET0          |_ _ _ _|
+    bins rst1_start_first_end_first = ('b01 => 'b00 => 'b10 => 'b11);
+
+  // This coverpoint collects the toggle coverage as below:
+  //          _ _ _         _ _ _ _ _
+  // RESET1        |_ _ _ _|
+  //          _ _         _ _ _ _ _
+  // RESET0      |_ _ _ _|
+    bins rst1_start_last_end_last = ('b10 => 'b00 => 'b01 => 'b11);
+
+  // This coverpoint collects the toggle coverage as below:
+  //          _ _ _         _ _ _ _ _
+  // RESET1        |_ _ _ _|
+  //          _ _ _ _     _ _ _ _ _
+  // RESET0          |_ _|
+    bins rst1_start_first_end_last = ('b01 => 'b00 => 'b01 => 'b11);
+
+  // This coverpoint collects the toggle coverage as below:
+  //          _ _ _ _     _ _ _ _ _
+  // RESET1          |_ _|
+  //          _ _ _         _ _ _ _ _
+  // RESET0        |_ _ _ _|
+    bins rst1_start_last_end_first = ('b10 => 'b00 => 'b10 => 'b11);
+  }
+endgroup
+
 class cip_base_env_cov #(type CFG_T = cip_base_env_cfg) extends dv_base_env_cov #(CFG_T);
   `uvm_component_param_utils(cip_base_env_cov #(CFG_T))
 
   intr_cg        intr_cg;
   intr_test_cg   intr_test_cg;
   intr_pins_cg   intr_pins_cg;
+  resets_cg      resets_cg;
   // Coverage for sticky interrupt functionality described in CIP specification
   // As some interrupts are non-sticky, this covergroup should be populated on "as and when needed"
   // basis in extended <ip>_env_cov class for interrupt types that are sticky
@@ -64,6 +101,7 @@ class cip_base_env_cov #(type CFG_T = cip_base_env_cfg) extends dv_base_env_cov 
       intr_test_cg = new(cfg.num_interrupts);
       intr_pins_cg = new(cfg.num_interrupts);
     end
+    if (cfg.has_edn) resets_cg = new("dut_and_edn_rsts");
   endfunction
 
 endclass

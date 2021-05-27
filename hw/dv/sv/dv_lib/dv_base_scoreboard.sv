@@ -25,6 +25,7 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
     super.run_phase(phase);
     fork
       monitor_reset();
+      sample_resets();
     join_none
   endtask
 
@@ -46,6 +47,10 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
         @(cfg.clk_rst_vif.rst_n);
       end
     end
+  endtask
+
+  virtual task sample_resets();
+    // Do nothing, actual coverage collection is under extended classes.
   endtask
 
   virtual function void reset(string kind = "HARD");

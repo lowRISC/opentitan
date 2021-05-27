@@ -6,7 +6,6 @@
 module otp_ctrl_cov_bind;
 
   bind otp_ctrl otp_ctrl_cov_if u_otp_ctrl_cov_if (
-    .clk_i            (clk_i),
     .pwr_otp_o        (pwr_otp_o),
     .lc_otp_program_i (lc_otp_program_i),
     .lc_escalate_en_i (lc_escalate_en_i),

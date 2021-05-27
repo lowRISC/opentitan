@@ -33,7 +33,6 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     super.dut_init(reset_kind);
     cfg.backdoor_clear_mem = 0;
     // reset power init pin and lc pins
-    cfg.otp_ctrl_vif.init(randomize_lc_tx_t_val(), randomize_lc_tx_t_val());
     if (do_otp_ctrl_init && do_apply_reset) otp_ctrl_init();
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
     if (do_otp_pwr_init && do_apply_reset) otp_pwr_init();
@@ -71,17 +70,6 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     otp_pwr_init();
     super.read_and_check_all_csrs_after_reset();
   endtask
-
-  // This function randomizes lc_tx_t with 25% lc_ctrl_pkg::On, 25% lc_ctrl_pkg::Off,
-  // and 50% random values
-  virtual function lc_ctrl_pkg::lc_tx_t randomize_lc_tx_t_val();
-    randomize_lc_tx_t_val = $urandom();
-    if ($urandom_range(0, 1)) begin
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(randomize_lc_tx_t_val,
-          randomize_lc_tx_t_val inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off};)
-    end
-
-  endfunction
 
   // this task triggers an OTP write sequence via the DAI interface
   virtual task dai_wr(bit [TL_DW-1:0] addr,
