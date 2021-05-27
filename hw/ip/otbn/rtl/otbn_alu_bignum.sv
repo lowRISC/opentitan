@@ -8,7 +8,7 @@
  * OTBN alu block for the bignum instruction subset
  *
  * This ALU supports all of the 'plain' arithmetic and logic bignum instructions, BN.MULQACC is
- * implemented in a seperate block.
+ * implemented in a separate block.
  *
  * One barrel shifter and two adders (X and Y) are implemented along with the logic operators
  * (AND,OR,XOR,NOT).

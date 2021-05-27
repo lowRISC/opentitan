@@ -146,7 +146,7 @@ interface otbn_trace_if
       rf_bignum_wr_old_data[(WLEN/2)*i +: WLEN/2];
   end
 
-  // Take Dmem interface and present it as two seperate read and write sets of signals. To ease
+  // Take Dmem interface and present it as two separate read and write sets of signals. To ease
   // tracer implementation a small tracker tracks reads so the whole transaction (address + data
   // together) is presented in a single cycle.
   logic [31:0]     dmem_wlen_aligned_addr;
@@ -193,7 +193,7 @@ interface otbn_trace_if
 
   // ISPRs all have slightly different implementations and each have their own specific read/write
   // sources. This presents a uniform interface for all ispr reads/writes, excluding flags, as it's
-  // useful to present those differently so seperate signals are provided for the tracing of them.
+  // useful to present those differently so separate signals are provided for the tracing of them.
   logic [NIspr-1:0] ispr_write;
   logic [WLEN-1:0]  ispr_write_data [NIspr];
   logic [NIspr-1:0] ispr_read;
@@ -238,7 +238,7 @@ interface otbn_trace_if
   assign ispr_read[IsprUrnd] = any_ispr_read & (ispr_addr == IsprUrnd);
   assign ispr_read_data[IsprUrnd] = urnd_data;
 
-  // Seperate per flag group tracking using the flags_t struct so tracer can cleanly present flag
+  // Separate per flag group tracking using the flags_t struct so tracer can cleanly present flag
   // accesses.
   logic [NFlagGroups-1:0] flags_write;
   flags_t                 flags_write_data [NFlagGroups];

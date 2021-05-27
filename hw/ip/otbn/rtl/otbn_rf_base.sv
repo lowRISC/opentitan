@@ -18,7 +18,7 @@
  *
  * `wr_data_no_intg_i` supplies data that requires integrity calulation and `wr_data_intg_i`
  * supplies data that comes with integrity. `wr_data_intg_sel_i` is asserted to select the data with
- * integrity for the write, otherwise integrity is calculated seperately from `wr_data_i`.
+ * integrity for the write, otherwise integrity is calculated separately from `wr_data_i`.
  *
  * Features:
  * - 2 read ports

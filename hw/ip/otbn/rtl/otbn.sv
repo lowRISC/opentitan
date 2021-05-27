@@ -177,7 +177,7 @@ module otbn
     .cfg_i    (ram_cfg_i)
   );
 
-  // Seperate check for imem read data integrity outside of `u_imem` as `prim_ram_1p_adv` doesn't
+  // Separate check for imem read data integrity outside of `u_imem` as `prim_ram_1p_adv` doesn't
   // have functionality for only integrity checking, just fully integrated ECC.
   prim_secded_39_32_dec u_imem_intg_check (
     .data_i     (imem_rdata),
@@ -339,9 +339,9 @@ module otbn
   for (genvar i_word = 0; i_word < BaseWordsPerWLEN; ++i_word) begin : g_dmem_intg_check
     logic [1:0] dmem_rerror_raw;
 
-    // Seperate check for dmem read data integrity outside of `u_dmem` as `prim_ram_1p_adv` doesn't
+    // Separate check for dmem read data integrity outside of `u_dmem` as `prim_ram_1p_adv` doesn't
     // have functionality for only integrity checking, just fully integrated ECC. Integrity bits are
-    // implemented on a 32-bit granule so seperate checks are required for each.
+    // implemented on a 32-bit granule so separate checks are required for each.
     prim_secded_39_32_dec u_dmem_intg_check (
       .data_i     (dmem_rdata[i_word*39 +: 39]),
       .data_o     (),

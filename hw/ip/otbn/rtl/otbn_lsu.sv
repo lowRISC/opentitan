@@ -51,7 +51,7 @@ module otbn_lsu
   localparam int BaseWordAddrW = prim_util_pkg::vbits(WLEN/8);
 
   // Produce a WLEN bit mask for 32-bit writes given the 32-bit word write address. This doesn't
-  // propagate X so a seperate assertion must be used to check the input isn't X when a valid output
+  // propagate X so a separate assertion must be used to check the input isn't X when a valid output
   // is desired.
   function automatic logic [ExtWLEN-1:0] wmask_from_word_addr(logic [BaseWordAddrW-1:2] addr);
     logic [ExtWLEN-1:0] mask;

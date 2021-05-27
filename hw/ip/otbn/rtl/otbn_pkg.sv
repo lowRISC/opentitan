@@ -371,7 +371,7 @@ package otbn_pkg;
   } otbn_start_stop_state_e;
 
   // URNG PRNG default LFSR seed and permutation
-  // A single default seed is split into 64 bit chunks, a seperate LFSR is used for each chunk. All
+  // A single default seed is split into 64 bit chunks, a separate LFSR is used for each chunk. All
   // LFSR chunks use the same permutation.
   // These LFSR parameters have been generated with
   // $ ./util/design/gen-lfsr-seed.py --width 256 --seed 2840984437 --prefix "Urnd"
