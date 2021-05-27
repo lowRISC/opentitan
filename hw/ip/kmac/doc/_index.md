@@ -259,10 +259,94 @@ The refresh does not block the internal entropy expansion operation.
 This section explains the errors KMAC HWIP raises during the hasing operations, their meanings, and the error handling process.
 
 KMAC HWIP has the error checkers in its internal datapath.
-If the checkers detect errors, whether they are triggered by the SW mis-configure, or HW malfunctions, they report the error to !!ERR_CODE and raises an `kmac_error` interrupt.
+If the checkers detect errors, whether they are triggered by the SW mis-configure, or HW malfunctions, they report the error to {{< regref "ERR_CODE" >}} and raise an `kmac_error` interrupt.
+Each error code gives debugging information at the lower 24 bits of {{< regref "ERR_CODE" >}}.
 
+Value | Error Code | Description
+------|------------|-------------
+0x01  | KeyNotValid | In KMAC mode with the sideloaded key, the IP raises an error if the sideloaded secret key is not ready.
+0x02  | SwPushedMsgFifo | MsgFifo is updated while not being in the Message Feed state.
+0x03  | SwIssuedCmdInAppActive | SW issued a command while the application interface is being used
+0x04  | WaitTimerExpired | EDN has not responded within the wait timer limit.
+0x05  | IncorrectEntropyMode | When SW sets `entropy_ready`, the `entropy_mode` is neither SW nor EDN.
+0x06  | UnexpectedModeStrength | SHA3 mode and Keccak Strength combination is not expected.
+0x07  | IncorrectFunctionName | In KMAC mode, the PREFIX has the value other than `encoded_string("KMAC")`
+0x08  | SwCmdSequence | SW does not follow the guided sequence, `start` -> `process` -> {`run` ->} `done`
+0x80  | Sha3Control | SW may receive Sha3Control error along with `SwCmdSequence` error. Can be ignored.
 
-_TBD_
+#### KeyNotValid (0x01)
+
+The `KeyNotValid` error is raised in the application interface module.
+When a KMAC application requests a hashing operation, the module checks if the sideloaded key is ready.
+If the key is not ready, the module reports `KeyNotValid` error and moves to dead-end state and waits the IP reset.
+
+This error does not provide any additional information.
+
+#### SwPushedMsgFifo (0x02)
+
+The `SwPushedMsgFifo` error happens when the Message FIFO receives TL-UL transactions while the application interface is busy.
+The Message FIFO drops the request.
+
+The IP reports the error with an info field.
+
+Bits    | Name        | Description
+--------|-------------|-------------
+[23:16] | reserved    | all zero
+[15:8]  | kmac_app_st | KMAC_APP FSM state.
+[7:0]   | mux_sel     | Current APP Mux selection. 0: None, 1: SW, 2: App
+
+#### SwIssuedCmdInAppActive (0x03)
+
+If the SW issues any commands while the application interface is being used, the module reports `SwIssuedCmdInAppActive` error.
+The received command does not affect the Application process.
+The request is dropped by the KMAC_APP module.
+
+The lower 3 bits of {{< regref "ERR_CODE" >}} contains the received command from the SW.
+#### WaitTimerExpired (0x04)
+
+The SW may set the EDN wait timer to exit from EDN request state if the response from EDN takes long.
+If the timer expires, the module cancels the transaction and report the `WaitTimerExpired` error.
+
+When this error happens, the state machine in KMAC_ENTROPY module moves to Wait state.
+In that state, it keeps using the pre-generated entropy and asserting the entropy valid signal.
+It asserts the entropy valid signal to complete the current hashing operation.
+If the module does not complete, or flush the pending operation, it creates the back pressure to the message FIFO.
+Then, the SW may not be able to access the KMAC IP at all, as the crossbar is stuck.
+
+The SW may move the state machine to the reset state by issuing {{<regref "CFG.err_processed" >}}.
+
+#### IncorrectEntropyMode (0x05)
+
+If SW misconfigures the entropy mode and let the entropy module prepare the random data, the module reports `IncorrectEntropyMode` error.
+The state machine moves to Wait state after reporting the error.
+
+The SW may move the state machine to the reset state by issuing {{<regref "CFG.err_processed" >}}.
+
+#### UnexpectedModeStrength (0x06)
+
+When the SW issues `Start` command, the KMAC_ERRCHK module checks the {{< regref "CFG.mode" >}} and {{< regref "CFG.kstrength" >}}.
+The KMAC HWIP assumes the combinations of two to be **SHA3-224**, **SHA3-256**, **SHA3-384**, **SHA3-512**, **SHAKE-128**, **SHAKE-256**, **cSHAKE-128**, and **cSHAKE-256**.
+If the combination of the `mode` and `kstrength` does not fall into above, the module reports the `UnexpectedModeStrength` error.
+
+However, the KMAC HWIP proceeds the hashing operation as other combinations does not cause any malfunctions inside the IP.
+The SW may get the incorrect digest value.
+
+#### IncorrectFunctionName (0x07)
+
+If {{< regref "CFG.kmac_en" >}} is set and the SW issues the `Start` command, the KMAC_ERRCHK checks if the {{< regref "PREFIX" >}} has correct function name, `encode_string("KMAC")`.
+If the value does not match to the byte form of `encode_string("KMAC")` (`0x4341_4D4B_2001`), it reports the `IncorrectFunctionName` error.
+
+As same as `UnexpectedModeStrength` error, this error does not block the hashing operation.
+The SW may get the incorrect signature value.
+
+#### SwCmdSequence (0x08)
+
+The KMAC_ERRCHK module checks the SW issued commands if it follows the guideline.
+If the SW issues the command that is not relavant to the current context, the module reports the `SwCmdSequence` error.
+The lower 3bits of the {{< regref "ERR_CODE" >}} contains the received command.
+
+This error, however, does not stop the KMAC HWIP.
+The incorrect command is dropped at the following datapath, SHA3 core.
 
 # Programmers Guide
 
