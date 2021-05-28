@@ -346,7 +346,7 @@ class IpBlock:
             ret = ret.union(set(rb.name_to_offset.keys()))
         return ret
 
-    def get_signals_as_list_of_dicts(self) -> List[Dict]:
+    def get_signals_as_list_of_dicts(self) -> List[Dict[str, object]]:
         '''Look up and return signal by name'''
         result = []
         for iodir, xput in zip(('inout', 'input', 'output'), self.xputs):
@@ -354,7 +354,7 @@ class IpBlock:
                 result.append(sig.as_nwt_dict(iodir))
         return result
 
-    def get_signal_by_name_as_dict(self, name: str) -> Dict:
+    def get_signal_by_name_as_dict(self, name: str) -> Dict[str, object]:
         '''Look up and return signal by name'''
         sig_list = self.get_signals_as_list_of_dicts()
         for sig in sig_list:

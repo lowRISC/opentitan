@@ -6,11 +6,12 @@ r"""Standard version printing
 import os
 import subprocess
 import sys
+from typing import List
 
 import pkg_resources  # part of setuptools
 
 
-def show_and_exit(clitool, packages):
+def show_and_exit(clitool: str, packages: List[str]) -> None:
     util_path = os.path.dirname(os.path.realpath(clitool))
     os.chdir(util_path)
     ver = subprocess.run(

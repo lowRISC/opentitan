@@ -4,7 +4,7 @@
 
 import re
 from collections.abc import MutableMapping
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Iterator, List, Optional, Tuple
 
 from .lib import check_keys, check_str, check_int, check_bool, check_list
 
@@ -228,26 +228,31 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
         return Parameter(name, desc, param_type, default, expose)
 
 
-class Params(MutableMapping):
+# Note: With a modern enough Python, we'd like this to derive from
+#       "MutableMapping[str, BaseParam]". Unfortunately, this doesn't work with
+#       Python 3.6 (where collections.abc.MutableMapping isn't subscriptable).
+#       So we derive from just "MutableMapping" and tell mypy not to worry
+#       about it.
+class Params(MutableMapping):  # type: ignore
     def __init__(self) -> None:
         self.by_name = {}  # type: Dict[str, BaseParam]
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> BaseParam:
         return self.by_name[key]
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str) -> None:
         del self.by_name[key]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: BaseParam) -> None:
         self.by_name[key] = value
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return iter(self.by_name)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.by_name)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{type(self).__name__}({self.by_name})"
 
     def add(self, param: BaseParam) -> None:

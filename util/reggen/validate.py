@@ -6,12 +6,15 @@ Register JSON validation
 """
 
 import logging as log
+from typing import Dict, List, Tuple, Union
 
 
 # validating version of int(x, 0)
 # returns int value, error flag
 # if error flag is True value will be zero
-def check_int(x, err_prefix, suppress_err_msg=False):
+def check_int(x: Union[int, str],
+              err_prefix: str,
+              suppress_err_msg: bool = False) -> Tuple[int, bool]:
     if isinstance(x, int):
         return x, False
     if x[0] == '0' and len(x) > 2:
@@ -39,7 +42,7 @@ def check_int(x, err_prefix, suppress_err_msg=False):
     return int(x, 0), False
 
 
-def check_bool(x, err_prefix):
+def check_bool(x: Union[bool, str], err_prefix: str) -> Tuple[bool, bool]:
     """check_bool checks if input 'x' is one of the list:
         "true", "false"
 
@@ -55,12 +58,17 @@ def check_bool(x, err_prefix):
         return (x.lower() == "true"), False
 
 
-def check_ln(obj, x, withwidth, err_prefix):
+def check_ln(obj: Dict[str, object],
+             x: str,
+             withwidth: bool,
+             err_prefix: str) -> int:
     error = 0
-    if not isinstance(obj[x], list):
+    entry = obj[x]
+    if not isinstance(entry, list):
         log.error(err_prefix + ' element ' + x + ' not a list')
         return 1
-    for y in obj[x]:
+
+    for y in entry:
         error += check_keys(y, ln_required, ln_optional if withwidth else {},
                             {}, err_prefix + ' element ' + x)
         if withwidth:
@@ -76,7 +84,11 @@ def check_ln(obj, x, withwidth, err_prefix):
     return error
 
 
-def check_keys(obj, required_keys, optional_keys, added_keys, err_prefix):
+def check_keys(obj: Dict[str, object],
+               required_keys: Dict[str, List[str]],
+               optional_keys: Dict[str, List[str]],
+               added_keys: Dict[str, List[str]],
+               err_prefix: str) -> int:
     error = 0
     for x in required_keys:
         if x not in obj:
