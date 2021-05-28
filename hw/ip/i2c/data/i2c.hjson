@@ -511,23 +511,23 @@
       fields: [
         { bits: "0"
           hwaccess: "hro"
-          name: "ENABLEADDR"
-          desc: "Enable clock stretching after address matching completes"
+          name: "EN_ADDR_TX"
+          desc: "Enable clock stretching after address matching completes for transmit (read)"
         }
         { bits: "1"
           hwaccess: "hro"
-          name: "ENABLETX"
-          desc: "Enable clock stretching after ongoing transmit (read) transaction completes"
+          name: "EN_ADDR_ACQ"
+          desc: "Enable clock stretching after address matching completes for acquire (write)"
         }
         { bits: "2"
-          hwaccess: "hro"
-          name: "ENABLEACQ"
-          desc: "Enable clock stretching after ongoing acquire (write) transaction completes"
+          hwaccess: "hrw"
+          name: "STOP_TX"
+          desc: "Stop clock stretching for transmit (read) and resume normal operation"
         }
         { bits: "3"
           hwaccess: "hrw"
-          name: "STOP"
-          desc: "Stop clock stretching and resume normal operation"
+          name: "STOP_ACQ"
+          desc: "Stop clock stretching for acquire (write) and resume normal operation"
         }
       ]
     }

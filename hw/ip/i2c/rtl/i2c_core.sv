@@ -46,11 +46,12 @@ module  i2c_core (
   logic [15:0] t_buf;
   logic [30:0] stretch_timeout;
   logic        timeout_enable;
-  logic        stretch_en_addr;
-  logic        stretch_en_tx;
-  logic        stretch_en_acq;
-  logic        stretch_stop;
-  logic        stretch_stop_clr;
+  logic        stretch_en_addr_tx;
+  logic        stretch_en_addr_acq;
+  logic        stretch_stop_tx;
+  logic        stretch_stop_acq;
+  logic        stretch_stop_tx_clr;
+  logic        stretch_stop_acq_clr;
   logic [31:0] host_timeout;
 
   logic scl_sync;
@@ -83,7 +84,7 @@ module  i2c_core (
   logic        fmt_fifo_wvalid;
   logic        fmt_fifo_wready;
   logic [12:0] fmt_fifo_wdata;
-  logic [5:0]  fmt_fifo_depth;
+  logic [6:0]  fmt_fifo_depth;
   logic        fmt_fifo_rvalid;
   logic        fmt_fifo_rready;
   logic [12:0] fmt_fifo_rdata;
@@ -102,7 +103,7 @@ module  i2c_core (
   logic        rx_fifo_wvalid;
   logic        rx_fifo_wready;
   logic [7:0]  rx_fifo_wdata;
-  logic [5:0]  rx_fifo_depth;
+  logic [6:0]  rx_fifo_depth;
   logic        rx_fifo_rvalid;
   logic        rx_fifo_rready;
   logic [7:0]  rx_fifo_rdata;
@@ -115,7 +116,7 @@ module  i2c_core (
   logic        tx_fifo_wvalid;
   logic        tx_fifo_wready;
   logic [7:0]  tx_fifo_wdata;
-  logic [5:0]  tx_fifo_depth;
+  logic [6:0]  tx_fifo_depth;
   logic        tx_fifo_rvalid;
   logic        tx_fifo_rready;
   logic [7:0]  tx_fifo_rdata;
@@ -123,7 +124,7 @@ module  i2c_core (
   logic        acq_fifo_wvalid;
   logic        acq_fifo_wready;
   logic [9:0]  acq_fifo_wdata;
-  logic [5:0]  acq_fifo_depth;
+  logic [6:0]  acq_fifo_depth;
   logic        acq_fifo_rvalid;
   logic        acq_fifo_rready;
   logic [9:0]  acq_fifo_rdata;
@@ -170,8 +171,10 @@ module  i2c_core (
   assign hw2reg.fifo_status.acqlvl.d = acq_fifo_depth;
   assign hw2reg.acqdata.abyte.d = line_loopback ? 8'hff : acq_fifo_rdata[7:0];
   assign hw2reg.acqdata.signal.d = line_loopback ? 2'b11 : acq_fifo_rdata[9:8];
-  assign hw2reg.stretch_ctrl.stop.d = 1'b0;
-  assign hw2reg.stretch_ctrl.stop.de = stretch_stop_clr;
+  assign hw2reg.stretch_ctrl.stop_tx.d = 1'b0;
+  assign hw2reg.stretch_ctrl.stop_tx.de = stretch_stop_tx_clr;
+  assign hw2reg.stretch_ctrl.stop_acq.d = 1'b0;
+  assign hw2reg.stretch_ctrl.stop_acq.de = stretch_stop_acq_clr;
 
   assign override = reg2hw.ovrd.txovrden;
 
@@ -210,11 +213,12 @@ module  i2c_core (
   assign t_buf           = reg2hw.timing4.t_buf.q;
   assign stretch_timeout = reg2hw.timeout_ctrl.val.q;
   assign timeout_enable  = reg2hw.timeout_ctrl.en.q;
-  assign stretch_en_addr = reg2hw.stretch_ctrl.enableaddr.q;
-  assign stretch_en_tx   = reg2hw.stretch_ctrl.enabletx.q;
-  assign stretch_en_acq  = reg2hw.stretch_ctrl.enableacq.q;
-  assign stretch_stop    = reg2hw.stretch_ctrl.stop.q;
   assign host_timeout    = reg2hw.host_timeout_ctrl.q;
+
+  assign stretch_en_addr_tx  = reg2hw.stretch_ctrl.en_addr_tx.q;
+  assign stretch_en_addr_acq = reg2hw.stretch_ctrl.en_addr_acq.q;
+  assign stretch_stop_tx     = reg2hw.stretch_ctrl.stop_tx.q;
+  assign stretch_stop_acq    = reg2hw.stretch_ctrl.stop_acq.q;
 
   assign i2c_fifo_rxrst   = reg2hw.fifo_ctrl.rxrst.q & reg2hw.fifo_ctrl.rxrst.qe;
   assign i2c_fifo_fmtrst  = reg2hw.fifo_ctrl.fmtrst.q & reg2hw.fifo_ctrl.fmtrst.qe;
@@ -448,18 +452,20 @@ module  i2c_core (
     .t_buf_i                 (t_buf),
     .stretch_timeout_i       (stretch_timeout),
     .timeout_enable_i        (timeout_enable),
-    .stretch_en_addr_i       (stretch_en_addr),
-    .stretch_en_tx_i         (stretch_en_tx),
-    .stretch_en_acq_i        (stretch_en_acq),
-    .stretch_stop_i          (stretch_stop),
     .host_timeout_i          (host_timeout),
+
+    .stretch_en_addr_tx_i    (stretch_en_addr_tx),
+    .stretch_en_addr_acq_i   (stretch_en_addr_acq),
+    .stretch_stop_tx_i       (stretch_stop_tx),
+    .stretch_stop_acq_i      (stretch_stop_acq),
 
     .target_address0_i       (target_address0),
     .target_mask0_i          (target_mask0),
     .target_address1_i       (target_address1),
     .target_mask1_i          (target_mask1),
 
-    .stretch_stop_clr_o      (stretch_stop_clr),
+    .stretch_stop_tx_clr_o   (stretch_stop_tx_clr),
+    .stretch_stop_acq_clr_o  (stretch_stop_acq_clr),
 
     .event_nak_o             (event_nak),
     .event_scl_interference_o(event_scl_interference),
