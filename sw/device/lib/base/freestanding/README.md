@@ -1,4 +1,7 @@
-# OpenTitan Freestanding C Headers
+
+---
+title: "Freestanding C Headers"
+---
 
 This subtree defines headers requred for a C freestanding implementation, as specified in S4p6 of the C11 standard.
 Said headers are implemented to the letter as described in respective sections of said standard.

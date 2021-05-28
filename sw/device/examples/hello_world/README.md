@@ -1,4 +1,9 @@
+---
+title: "Hello World"
+---
+
 ## Overview
+
 `Hello_world` is the demo program used to show case basic functionality of the system.
 The test itself does 2 main things:
 * Echo pin changes over UART.
