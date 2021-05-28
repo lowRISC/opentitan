@@ -298,10 +298,10 @@
       tests: []
     }
 
-    //////////////////////////////////////////////////////////////////////////////
-    // System Peripherals                                                       //
-    // RV_DM, RV_TIMER, AON_TIMER, PLIC, CLK/RST/PWR MGR, ALERT_HANDLER, LC_MGR //
-    //////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+    // System Peripherals                                                        //
+    // RV_DM, RV_TIMER, AON_TIMER, PLIC, CLK/RST/PWR MGR, ALERT_HANDLER, LC_CTRL //
+    ///////////////////////////////////////////////////////////////////////////////
 
 
     // RV_DM (JTAG) tests:
@@ -495,6 +495,14 @@
     {
       name: chip_clk_div
       desc: '''Verify clk division logic is working correctly.
+
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_clkmgr_external_clk_src
+      desc: '''Verify the clkmgr switches to the correct clk src during certain LC states.
 
             '''
       milestone: V2
@@ -705,8 +713,166 @@
       tests: []
     }
 
-    // LC_MANAGER (pre-verified IP) integration tests:
+    // LC_CTRL (pre-verified IP) integration tests:
+    {
+      name: chip_lc_ctrl_alert_handler_escalation
+      desc: '''Verify that the escalation signals from the alert handler are connected to LC ctrl.
 
+            - Trigger an alert to initiate the escalations.
+            - Check that the escalation signals are connected to the LC ctrl:
+              - First escalation has no effect on the LC ctrl
+              - Second escalation should cause the `lc_escalation_en` output to be asserted. Read
+                the LC_STATE CSR to confirm that it is in the escalate state.
+                - Verify that the escalate_en and check_bypass_en signals are asserted. X-ref'ed
+                  with the respective IP tests that consume these signals.
+              - Third escalation should cause the LC ctrl to transition to the virtual scrap state.
+                At this stage, the CPU is not operational. Read the LC_STATE CSR via backdoor and
+                confirm that it is is in the scrap state.
+                - Verify that all decoded outputs except for escalate_en and check_bypass_en are
+                  disabled. X-ref'ed with the respective IP tests that consume these signals.
+
+            X-ref'ed with chip_lc_ctrl_broadcast test, which verifies the connectivity of the LC
+            decoded outputs to other IPs.
+            X-ref'ed with alert_handler's escalation test.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_lc_ctrl_jtag_access
+      desc: '''Verify enable to access LC ctrl via JTAG.
+
+            Using the JTAG agent, write and read LC ctrl CSRs, verify the read value for
+            correctness.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_lc_ctrl_jtag_trst
+      desc: '''Verify the JTAG test reset input connection to LC ctrl.
+
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_lc_ctrl_otp_hw_cfg
+      desc: '''Verify the device_ID and ID_state CSRs
+
+            - Preload the hw_cfg partition in OTP ctrl with random data.
+            - Read the device ID and the ID state CSRs to verify their correctness.
+            - Reset the chip and repeat the first 2 steps to verify a different set of values.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_lc_ctrl_init
+      desc: '''Verify the LC ctrl initialization on power up.
+
+            Verify that the chip powers up correctly on POR.
+            - The pwrmgr initiates a handshake with OTP ctrl and later, with LC ctrl in subsequent
+              FSM states. Ensure that the whole power up sequence does not hang.
+            - Verify with connectivity assertion checks, the handshake signals are connected.
+            - Ensure that no interrupts or alerts are triggered.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_lc_ctrl_transitions
+      desc: '''Verify the LC ctrl can transition from one state to another legal state.
+
+            - Initiate am LC ctrl state transition
+            - Ensure that the LC program request is received by the OTP ctrl.
+            - Verify the updated data output from OTP ctrl to LC ctrl for correctness.
+            - Ensure that there is no background or otp_init error.
+            - Verify that the LC ctrl has transitioned to the programmed state after a reboot.
+
+            X-ref'ed chip_otp_ctrl_program.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_lc_ctrl_kmac_req
+      desc: '''Verify the token requested from KMAC.
+
+            - For conditional transition, the LC ctrl will send out a token request to KMAC.
+            - Verify that the KMAC returns a hashed token, which should match one of the
+              transition token CSRs.
+
+            X-ref'ed with chip_kmac_lc_req.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_lc_ctrl_kmac_reset
+      desc: '''Verify the effect of putting the KMAC logic in reset.
+
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_lc_ctrl_key_div
+      desc: '''Verify the keymgr div output to keymgr.
+
+            - Verify in different LC states, LC ctrl outputs the correct `key_div_o` to keymgr.
+            - Verify that the keymgr uses the given `key_div_o` value to compute the keys.
+
+            X-ref'ed with chip_keymgr_lc_key_div_o.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_lc_ctrl_broadcast
+      desc: '''Verify broadcast signals from lc_ctrl.
+
+            - Preload the LC partition in the OTP ctrl with the following states: RMA, DEV,
+              TEST_LOCKED[N] & SCRAP (tested in chip_lc_ctrl_escalation).
+            - Verify that the following broadcast signals are having the right effect in the
+              respective IPs that consume them:
+              - lc_dft_en_o: impacts clkmgr, pinmux, OTP ctrl & AST
+              - lc_nvm_debug_en_o: impacts flash ctrl
+              - lc_hw_debug_en_o: impacts pinmux, SRAM ctrl (main and ret) & the debug module
+              - lc_cpu_en_o: impacts the CPU
+              - lc_keymgr_en: impacts keymgr
+              - lc_escalate_en_o: impacts SRAM ctrl, AES & OTP ctrl
+              - lc_clk_byp_req_o: impacts clkmgr (handshake with lc_clk_byp_ack_i)
+              - lc_flash_rma_req_o: impacts flash ctrl (handshake with lc_flash_ram_ack_i)
+              - lc_flash_rma_seed_o: impacts flash ctrl
+              - lc_check_byp_en_o: impacts OTP ctrl
+              - lc_creator_seed_sw_rw_en_o: impacts flash ctrl & OTP ctrl
+              - lc_owner_seed_sw_rw_en_o: impacts flash ctrl
+              - lc_iso_part_sw_rd_en_o: impacts flash ctrl
+              - lc_iso_part_sw_wr_en_o: impacts flash ctrl
+              - lc_seed_hw_rd_en_o: impacts flash ctrl & OTP ctrl
+
+            X-ref'ed with the respective IP tests that consume these signals.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_lc_ctrl_scanmode
+      desc: '''Verify the connectivity of scanmode to LC ctrl.
+
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_lc_ctrl_scanmode_reset
+      desc: '''Verify the connectivity of scanmode reset to LC ctrl.
+
+            '''
+      milestone: V2
+      tests: []
+    }
 
     ///////////////////////////////////////////////////////
     // Security Peripherals                              //
@@ -1041,10 +1207,111 @@
     }
 
     // OTP (pre-verified IP) integration tests:
-    // TODO: more testing needed on OTP.
     {
-      name: chip_otp_init
-      desc: '''Verify the OPT initialization on chip power up.
+      name: chip_otp_ctrl_init
+      desc: '''Verify the OTP ctrl initialization on chip power up.
+
+            Verify that the chip powers up correctly on POR.
+            - The pwrmgr initiates a handshake with OTP ctrl and later, with LC ctrl in subsequent
+              FSM states. Ensure that the whole power up sequence does not hang.
+            - Verify with connectivity assertion checks, the handshake signals are connected.
+            - Ensure that no interrupts or alerts are triggered.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otp_ctrl_keys
+      desc: '''Verify the proliferation of keys to security peripherals.
+
+            - Verify the correctness of keys provided to SRAM ctrl (main & ret), flash ctrl, keymgr,
+              (note that keymgr does not have handshake), and OTBN.
+
+            X-ref'ed with IP tests that consume these signals.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otp_ctrl_entropy
+      desc: '''Verify the entropy interface from OTP ctrl to EDN.
+
+            This is X-ref'ed with the chip_otp_ctrl_keys test, which needs to handshake with the EDN
+            to receive some entropy bits before the keys for SRAM ctrl and OTBN are computed.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otp_ctrl_edn_reset
+      desc: '''Verify the effect of putting the EDN domain in reset on OTP ctrl.
+
+            Verify that the computed nonce for SRAM is reset?
+            Verify all entropy data used for various things are reset.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otp_ctrl_program
+      desc: '''Verify the program request from lc_ctrl.
+
+            - Verify that upon an LC state transition request, LC ctrl signals the OTP ctrl with a
+              program request.
+            - Verify that the OTP ctrl generates the LC data output correctly and is sent to the LC
+              ctrl before it is reset.
+            - Verify that the `lc_check_byp_en_i` from LC ctrl is set.
+            - Ensure that the whole operation does not raise any interrupts or alerts or errors.
+            - After reset, verify that the LC state transition completed successfully by reading the
+              LC state and LC count CSRs.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otp_ctrl_program_error
+      desc: '''Verify the otp program error.
+
+            - Initiate an illegal program request from LC ctrl to OTP ctrl (example: issue program
+            request when the lc_cnt is at max value).
+            - Verify that the LC ctrl triggers an alert when the OTP ctrl responds back with a
+              program error.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otp_ctrl_hw_cfg
+      desc: '''Verify the correctness of otp_hw_cfg bus in all peripherals that receive it.
+
+            Preload the OTP ctrl's `hw_cfg` partition with random data and verify that all
+            consumers of the hardware configuration bits are receiving the correct values.
+
+            Xref'ed with corresponding IP tests that receive these bits.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otp_ctrl_lc_signals
+      desc: '''Verify the broadcast signals from LC ctrl.
+
+            - `lc_escalate_en_i`: read the error code CSR and verify that it reflects an FSM error
+              state due to the escalation signal triggering.
+            - `lc_creator_seed_sw_rw_en_i`: verify that the secret2 partition is locked.
+            - `lc_seed_hw_rd_en_i`: verify that the keymgr outputs a default value when enabled.
+            - `lc_dft_en_i`: verify that the test interface within OTP ctrl is accessible.
+            - `lc_check_byp_en_i`: verify that the background check during LC ctrl state
+              programming passes when enabled.
+
+            `X-ref'ed with chip_otp_ctrl_program.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
+      name: chip_otp_ctrl_ast
+      desc: '''Verify the power sequencing signals to AST, as well as the alert.
 
             Details TBD.
             '''
@@ -1052,21 +1319,21 @@
       tests: []
     }
     {
-      name: chip_otp_keys
-      desc: '''Verify the proliferation of keys to security peripherals.
+      name: chip_otp_ctrl_external_voltage
+      desc: '''Verify the connectivity of the external voltage signal to OTP ctrl.
 
-            Ensure that the correct set of keys are provided to sram, sram_ret, flash, keymgr and
-            the OTBN. X-ref'ed with those individual IP tests.
+            Details TBD.
+            TODO; This signal is not connected in the design yet.
             '''
       milestone: V2
       tests: []
     }
     {
-      name: chip_otp_lc_program
-      desc: '''Verify the OTP program req from LC.
+      name: chip_otp_ctrl_scan
+      desc: '''Verify the connectivity of the scan signals to OTP ctrl.
 
-            Ensure that the correct set of keys are provided to sram, sram_ret, flash, keymgr and
-            the OTBN. X-ref'ed with those individual IP tests.
+            Details TBD.
+            TODO; This signal is not connected in the design yet.
             '''
       milestone: V2
       tests: []
