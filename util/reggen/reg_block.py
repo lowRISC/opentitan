@@ -350,8 +350,6 @@ class RegBlock:
                                 tags=[],
                                 swaccess=swaccess_obj,
                                 hwaccess=hwaccess_obj,
-                                hwqe=is_testreg,
-                                hwre=False,
                                 bits=signal.bits,
                                 resval=0,
                                 enum=None))

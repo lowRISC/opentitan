@@ -51,14 +51,14 @@ ${hdr}
       ## field.
 <%
       field = r.get_field_list()[0]
-      field_q_width = field.get_n_bits(r0.hwext, ['q'])
+      field_q_width = field.get_n_bits(r0.hwext, r0.hwqe, r0.hwre, ['q'])
       field_q_bits = lib.bitarray(field_q_width, 2)
 %>\
     logic ${field_q_bits} q;
-      % if field.hwqe:
+      % if r0.hwqe:
     logic        qe;
       % endif
-      % if field.hwre or (r0.shadowed and r0.hwext):
+      % if r0.hwre or (r0.shadowed and r0.hwext):
     logic        re;
       % endif
       % if r0.shadowed and not r0.hwext:
@@ -70,19 +70,20 @@ ${hdr}
       ## field. Generate a reg2hw typedef that packs together all the fields of
       ## the register.
       % for f in r0.fields:
-        % if f.get_n_bits(r0.hwext, ["q"]) >= 1:
 <%
-          field_q_width = f.get_n_bits(r0.hwext, ['q'])
-          field_q_bits = lib.bitarray(field_q_width, 2)
-
-          struct_name = f.name.lower()
+          field_q_width = f.get_n_bits(r0.hwext, r0.hwqe, r0.hwre, ["q"])
+%>\
+        % if field_q_width:
+<%
+            field_q_bits = lib.bitarray(field_q_width, 2)
+            struct_name = f.name.lower()
 %>\
     struct packed {
       logic ${field_q_bits} q;
-          % if f.hwqe:
+          % if r0.hwqe:
       logic        qe;
           % endif
-          % if f.hwre or (r0.shadowed and r0.hwext):
+          % if r0.hwre or (r0.shadowed and r0.hwext):
       logic        re;
           % endif
           % if r0.shadowed and not r0.hwext:
@@ -114,7 +115,7 @@ ${hdr}
       ## field.
 <%
       field = r.get_field_list()[0]
-      field_d_width = field.get_n_bits(r0.hwext, ['d'])
+      field_d_width = field.get_n_bits(r0.hwext, r0.hwqe, r0.hwre, ['d'])
       field_d_bits = lib.bitarray(field_d_width, 2)
 %>\
     logic ${field_d_bits} d;
@@ -126,12 +127,13 @@ ${hdr}
       ## field. Generate a hw2reg typedef that packs together all the fields of
       ## the register.
       % for f in r0.fields:
-        % if f.get_n_bits(r0.hwext, ["d"]) >= 1:
 <%
-          field_d_width = f.get_n_bits(r0.hwext, ['d'])
-          field_d_bits = lib.bitarray(field_d_width, 2)
-
-          struct_name = f.name.lower()
+          field_d_width = f.get_n_bits(r0.hwext, r0.hwqe, r0.hwre, ["d"])
+%>\
+        % if field_d_width:
+<%
+            field_d_bits = lib.bitarray(field_d_width, 2)
+            struct_name = f.name.lower()
 %>\
     struct packed {
       logic ${field_d_bits} d;
