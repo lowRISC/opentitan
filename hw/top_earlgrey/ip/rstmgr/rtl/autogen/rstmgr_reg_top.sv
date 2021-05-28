@@ -201,8 +201,8 @@ module rstmgr_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h1)
   ) u_reset_info_por (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (reset_info_por_we),
@@ -210,7 +210,7 @@ module rstmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -227,8 +227,8 @@ module rstmgr_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_reset_info_low_power_exit (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (reset_info_low_power_exit_we),
@@ -236,7 +236,7 @@ module rstmgr_reg_top (
 
     // from internal hardware
     .de     (hw2reg.reset_info.low_power_exit.de),
-    .d      (hw2reg.reset_info.low_power_exit.d ),
+    .d      (hw2reg.reset_info.low_power_exit.d),
 
     // to internal hardware
     .qe     (),
@@ -253,8 +253,8 @@ module rstmgr_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_reset_info_ndm_reset (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (reset_info_ndm_reset_we),
@@ -262,7 +262,7 @@ module rstmgr_reg_top (
 
     // from internal hardware
     .de     (hw2reg.reset_info.ndm_reset.de),
-    .d      (hw2reg.reset_info.ndm_reset.d ),
+    .d      (hw2reg.reset_info.ndm_reset.d),
 
     // to internal hardware
     .qe     (),
@@ -279,8 +279,8 @@ module rstmgr_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (3'h0)
   ) u_reset_info_hw_req (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (reset_info_hw_req_we),
@@ -288,11 +288,11 @@ module rstmgr_reg_top (
 
     // from internal hardware
     .de     (hw2reg.reset_info.hw_req.de),
-    .d      (hw2reg.reset_info.hw_req.d ),
+    .d      (hw2reg.reset_info.hw_req.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reset_info.hw_req.q ),
+    .q      (reg2hw.reset_info.hw_req.q),
 
     // to register interface (read)
     .qs     (reset_info_hw_req_qs)
@@ -306,8 +306,8 @@ module rstmgr_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_we),
@@ -315,7 +315,7 @@ module rstmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -334,20 +334,20 @@ module rstmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_info_ctrl_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_info_ctrl_en_we & alert_regwen_qs),
     .wd     (alert_info_ctrl_en_wd),
 
     // from internal hardware
     .de     (hw2reg.alert_info_ctrl.en.de),
-    .d      (hw2reg.alert_info_ctrl.en.d ),
+    .d      (hw2reg.alert_info_ctrl.en.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_info_ctrl.en.q ),
+    .q      (reg2hw.alert_info_ctrl.en.q),
 
     // to register interface (read)
     .qs     (alert_info_ctrl_en_qs)
@@ -360,20 +360,20 @@ module rstmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_alert_info_ctrl_index (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_info_ctrl_index_we & alert_regwen_qs),
     .wd     (alert_info_ctrl_index_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_info_ctrl.index.q ),
+    .q      (reg2hw.alert_info_ctrl.index.q),
 
     // to register interface (read)
     .qs     (alert_info_ctrl_index_qs)
@@ -419,8 +419,8 @@ module rstmgr_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_cpu_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cpu_regwen_we),
@@ -428,7 +428,7 @@ module rstmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -447,20 +447,20 @@ module rstmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_cpu_info_ctrl_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (cpu_info_ctrl_en_we & cpu_regwen_qs),
     .wd     (cpu_info_ctrl_en_wd),
 
     // from internal hardware
     .de     (hw2reg.cpu_info_ctrl.en.de),
-    .d      (hw2reg.cpu_info_ctrl.en.d ),
+    .d      (hw2reg.cpu_info_ctrl.en.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cpu_info_ctrl.en.q ),
+    .q      (reg2hw.cpu_info_ctrl.en.q),
 
     // to register interface (read)
     .qs     (cpu_info_ctrl_en_qs)
@@ -473,20 +473,20 @@ module rstmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_cpu_info_ctrl_index (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (cpu_info_ctrl_index_we & cpu_regwen_qs),
     .wd     (cpu_info_ctrl_index_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.cpu_info_ctrl.index.q ),
+    .q      (reg2hw.cpu_info_ctrl.index.q),
 
     // to register interface (read)
     .qs     (cpu_info_ctrl_index_qs)
@@ -535,8 +535,8 @@ module rstmgr_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_sw_rst_regen_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (sw_rst_regen_en_0_we),
@@ -544,11 +544,11 @@ module rstmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sw_rst_regen[0].q ),
+    .q      (reg2hw.sw_rst_regen[0].q),
 
     // to register interface (read)
     .qs     (sw_rst_regen_en_0_qs)
@@ -561,8 +561,8 @@ module rstmgr_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_sw_rst_regen_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (sw_rst_regen_en_1_we),
@@ -570,11 +570,11 @@ module rstmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sw_rst_regen[1].q ),
+    .q      (reg2hw.sw_rst_regen[1].q),
 
     // to register interface (read)
     .qs     (sw_rst_regen_en_1_qs)
@@ -587,8 +587,8 @@ module rstmgr_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_sw_rst_regen_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (sw_rst_regen_en_2_we),
@@ -596,11 +596,11 @@ module rstmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sw_rst_regen[2].q ),
+    .q      (reg2hw.sw_rst_regen[2].q),
 
     // to register interface (read)
     .qs     (sw_rst_regen_en_2_qs)
@@ -613,8 +613,8 @@ module rstmgr_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_sw_rst_regen_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (sw_rst_regen_en_3_we),
@@ -622,11 +622,11 @@ module rstmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sw_rst_regen[3].q ),
+    .q      (reg2hw.sw_rst_regen[3].q),
 
     // to register interface (read)
     .qs     (sw_rst_regen_en_3_qs)
@@ -639,8 +639,8 @@ module rstmgr_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_sw_rst_regen_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (sw_rst_regen_en_4_we),
@@ -648,11 +648,11 @@ module rstmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sw_rst_regen[4].q ),
+    .q      (reg2hw.sw_rst_regen[4].q),
 
     // to register interface (read)
     .qs     (sw_rst_regen_en_4_qs)
@@ -665,8 +665,8 @@ module rstmgr_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_sw_rst_regen_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (sw_rst_regen_en_5_we),
@@ -674,11 +674,11 @@ module rstmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sw_rst_regen[5].q ),
+    .q      (reg2hw.sw_rst_regen[5].q),
 
     // to register interface (read)
     .qs     (sw_rst_regen_en_5_qs)
@@ -691,8 +691,8 @@ module rstmgr_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_sw_rst_regen_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (sw_rst_regen_en_6_we),
@@ -700,11 +700,11 @@ module rstmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sw_rst_regen[6].q ),
+    .q      (reg2hw.sw_rst_regen[6].q),
 
     // to register interface (read)
     .qs     (sw_rst_regen_en_6_qs)
@@ -726,7 +726,7 @@ module rstmgr_reg_top (
     .d      (hw2reg.sw_rst_ctrl_n[0].d),
     .qre    (),
     .qe     (reg2hw.sw_rst_ctrl_n[0].qe),
-    .q      (reg2hw.sw_rst_ctrl_n[0].q ),
+    .q      (reg2hw.sw_rst_ctrl_n[0].q),
     .qs     (sw_rst_ctrl_n_val_0_qs)
   );
 
@@ -741,7 +741,7 @@ module rstmgr_reg_top (
     .d      (hw2reg.sw_rst_ctrl_n[1].d),
     .qre    (),
     .qe     (reg2hw.sw_rst_ctrl_n[1].qe),
-    .q      (reg2hw.sw_rst_ctrl_n[1].q ),
+    .q      (reg2hw.sw_rst_ctrl_n[1].q),
     .qs     (sw_rst_ctrl_n_val_1_qs)
   );
 
@@ -756,7 +756,7 @@ module rstmgr_reg_top (
     .d      (hw2reg.sw_rst_ctrl_n[2].d),
     .qre    (),
     .qe     (reg2hw.sw_rst_ctrl_n[2].qe),
-    .q      (reg2hw.sw_rst_ctrl_n[2].q ),
+    .q      (reg2hw.sw_rst_ctrl_n[2].q),
     .qs     (sw_rst_ctrl_n_val_2_qs)
   );
 
@@ -771,7 +771,7 @@ module rstmgr_reg_top (
     .d      (hw2reg.sw_rst_ctrl_n[3].d),
     .qre    (),
     .qe     (reg2hw.sw_rst_ctrl_n[3].qe),
-    .q      (reg2hw.sw_rst_ctrl_n[3].q ),
+    .q      (reg2hw.sw_rst_ctrl_n[3].q),
     .qs     (sw_rst_ctrl_n_val_3_qs)
   );
 
@@ -786,7 +786,7 @@ module rstmgr_reg_top (
     .d      (hw2reg.sw_rst_ctrl_n[4].d),
     .qre    (),
     .qe     (reg2hw.sw_rst_ctrl_n[4].qe),
-    .q      (reg2hw.sw_rst_ctrl_n[4].q ),
+    .q      (reg2hw.sw_rst_ctrl_n[4].q),
     .qs     (sw_rst_ctrl_n_val_4_qs)
   );
 
@@ -801,7 +801,7 @@ module rstmgr_reg_top (
     .d      (hw2reg.sw_rst_ctrl_n[5].d),
     .qre    (),
     .qe     (reg2hw.sw_rst_ctrl_n[5].qe),
-    .q      (reg2hw.sw_rst_ctrl_n[5].q ),
+    .q      (reg2hw.sw_rst_ctrl_n[5].q),
     .qs     (sw_rst_ctrl_n_val_5_qs)
   );
 
@@ -816,7 +816,7 @@ module rstmgr_reg_top (
     .d      (hw2reg.sw_rst_ctrl_n[6].d),
     .qre    (),
     .qe     (reg2hw.sw_rst_ctrl_n[6].qe),
-    .q      (reg2hw.sw_rst_ctrl_n[6].q ),
+    .q      (reg2hw.sw_rst_ctrl_n[6].q),
     .qs     (sw_rst_ctrl_n_val_6_qs)
   );
 

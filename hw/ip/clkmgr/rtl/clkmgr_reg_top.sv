@@ -128,8 +128,8 @@ module clkmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_clk_enables_clk_fixed_peri_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (clk_enables_clk_fixed_peri_en_we),
@@ -137,11 +137,11 @@ module clkmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.clk_enables.clk_fixed_peri_en.q ),
+    .q      (reg2hw.clk_enables.clk_fixed_peri_en.q),
 
     // to register interface (read)
     .qs     (clk_enables_clk_fixed_peri_en_qs)
@@ -154,8 +154,8 @@ module clkmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_clk_enables_clk_usb_48mhz_peri_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (clk_enables_clk_usb_48mhz_peri_en_we),
@@ -163,11 +163,11 @@ module clkmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.clk_enables.clk_usb_48mhz_peri_en.q ),
+    .q      (reg2hw.clk_enables.clk_usb_48mhz_peri_en.q),
 
     // to register interface (read)
     .qs     (clk_enables_clk_usb_48mhz_peri_en_qs)
@@ -182,8 +182,8 @@ module clkmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_clk_hints_clk_main_aes_hint (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (clk_hints_clk_main_aes_hint_we),
@@ -191,11 +191,11 @@ module clkmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.clk_hints.clk_main_aes_hint.q ),
+    .q      (reg2hw.clk_hints.clk_main_aes_hint.q),
 
     // to register interface (read)
     .qs     (clk_hints_clk_main_aes_hint_qs)
@@ -208,8 +208,8 @@ module clkmgr_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_clk_hints_clk_main_hmac_hint (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (clk_hints_clk_main_hmac_hint_we),
@@ -217,11 +217,11 @@ module clkmgr_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.clk_hints.clk_main_hmac_hint.q ),
+    .q      (reg2hw.clk_hints.clk_main_hmac_hint.q),
 
     // to register interface (read)
     .qs     (clk_hints_clk_main_hmac_hint_qs)
@@ -236,15 +236,16 @@ module clkmgr_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h1)
   ) u_clk_hints_status_clk_main_aes_val (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.clk_hints_status.clk_main_aes_val.de),
-    .d      (hw2reg.clk_hints_status.clk_main_aes_val.d ),
+    .d      (hw2reg.clk_hints_status.clk_main_aes_val.d),
 
     // to internal hardware
     .qe     (),
@@ -261,15 +262,16 @@ module clkmgr_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h1)
   ) u_clk_hints_status_clk_main_hmac_val (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.clk_hints_status.clk_main_hmac_val.de),
-    .d      (hw2reg.clk_hints_status.clk_main_hmac_val.d ),
+    .d      (hw2reg.clk_hints_status.clk_main_hmac_val.d),
 
     // to internal hardware
     .qe     (),

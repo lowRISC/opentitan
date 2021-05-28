@@ -203,8 +203,8 @@ module trial1_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'hbc614e)
   ) u_rwtype0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rwtype0_we),
@@ -212,11 +212,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rwtype0.q ),
+    .q      (reg2hw.rwtype0.q),
 
     // to register interface (read)
     .qs     (rwtype0_qs)
@@ -231,8 +231,8 @@ module trial1_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_rwtype1_field0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rwtype1_field0_we),
@@ -240,11 +240,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rwtype1.field0.q ),
+    .q      (reg2hw.rwtype1.field0.q),
 
     // to register interface (read)
     .qs     (rwtype1_field0_qs)
@@ -257,8 +257,8 @@ module trial1_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_rwtype1_field1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rwtype1_field1_we),
@@ -266,11 +266,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rwtype1.field1.q ),
+    .q      (reg2hw.rwtype1.field1.q),
 
     // to register interface (read)
     .qs     (rwtype1_field1_qs)
@@ -283,8 +283,8 @@ module trial1_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_rwtype1_field4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rwtype1_field4_we),
@@ -292,11 +292,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rwtype1.field4.q ),
+    .q      (reg2hw.rwtype1.field4.q),
 
     // to register interface (read)
     .qs     (rwtype1_field4_qs)
@@ -309,8 +309,8 @@ module trial1_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h64)
   ) u_rwtype1_field15_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rwtype1_field15_8_we),
@@ -318,11 +318,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rwtype1.field15_8.q ),
+    .q      (reg2hw.rwtype1.field15_8.q),
 
     // to register interface (read)
     .qs     (rwtype1_field15_8_qs)
@@ -336,8 +336,8 @@ module trial1_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h4000400)
   ) u_rwtype2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rwtype2_we),
@@ -345,11 +345,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (hw2reg.rwtype2.de),
-    .d      (hw2reg.rwtype2.d ),
+    .d      (hw2reg.rwtype2.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rwtype2.q ),
+    .q      (reg2hw.rwtype2.q),
 
     // to register interface (read)
     .qs     (rwtype2_qs)
@@ -364,8 +364,8 @@ module trial1_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'hcc55)
   ) u_rwtype3_field0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rwtype3_field0_we),
@@ -373,11 +373,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (hw2reg.rwtype3.field0.de),
-    .d      (hw2reg.rwtype3.field0.d ),
+    .d      (hw2reg.rwtype3.field0.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rwtype3.field0.q ),
+    .q      (reg2hw.rwtype3.field0.q),
 
     // to register interface (read)
     .qs     (rwtype3_field0_qs)
@@ -390,8 +390,8 @@ module trial1_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'hee66)
   ) u_rwtype3_field1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rwtype3_field1_we),
@@ -399,11 +399,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (hw2reg.rwtype3.field1.de),
-    .d      (hw2reg.rwtype3.field1.d ),
+    .d      (hw2reg.rwtype3.field1.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rwtype3.field1.q ),
+    .q      (reg2hw.rwtype3.field1.q),
 
     // to register interface (read)
     .qs     (rwtype3_field1_qs)
@@ -418,8 +418,8 @@ module trial1_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h4000)
   ) u_rwtype4_field0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rwtype4_field0_we),
@@ -427,11 +427,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rwtype4.field0.q ),
+    .q      (reg2hw.rwtype4.field0.q),
 
     // to register interface (read)
     .qs     (rwtype4_field0_qs)
@@ -444,8 +444,8 @@ module trial1_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h8000)
   ) u_rwtype4_field1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rwtype4_field1_we),
@@ -453,11 +453,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rwtype4.field1.q ),
+    .q      (reg2hw.rwtype4.field1.q),
 
     // to register interface (read)
     .qs     (rwtype4_field1_qs)
@@ -471,19 +471,20 @@ module trial1_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h11111111)
   ) u_rotype0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.rotype0.de),
-    .d      (hw2reg.rotype0.d ),
+    .d      (hw2reg.rotype0.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rotype0.q ),
+    .q      (reg2hw.rotype0.q),
 
     // to register interface (read)
     .qs     (rotype0_qs)
@@ -497,8 +498,8 @@ module trial1_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (32'hbbccddee)
   ) u_w1ctype0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (w1ctype0_we),
@@ -506,11 +507,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.w1ctype0.q ),
+    .q      (reg2hw.w1ctype0.q),
 
     // to register interface (read)
     .qs     (w1ctype0_qs)
@@ -525,8 +526,8 @@ module trial1_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (16'heeee)
   ) u_w1ctype1_field0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (w1ctype1_field0_we),
@@ -534,11 +535,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.w1ctype1.field0.q ),
+    .q      (reg2hw.w1ctype1.field0.q),
 
     // to register interface (read)
     .qs     (w1ctype1_field0_qs)
@@ -551,8 +552,8 @@ module trial1_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (16'h7777)
   ) u_w1ctype1_field1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (w1ctype1_field1_we),
@@ -560,11 +561,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.w1ctype1.field1.q ),
+    .q      (reg2hw.w1ctype1.field1.q),
 
     // to register interface (read)
     .qs     (w1ctype1_field1_qs)
@@ -578,8 +579,8 @@ module trial1_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (32'haa775566)
   ) u_w1ctype2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (w1ctype2_we),
@@ -587,11 +588,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (hw2reg.w1ctype2.de),
-    .d      (hw2reg.w1ctype2.d ),
+    .d      (hw2reg.w1ctype2.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.w1ctype2.q ),
+    .q      (reg2hw.w1ctype2.q),
 
     // to register interface (read)
     .qs     (w1ctype2_qs)
@@ -605,8 +606,8 @@ module trial1_reg_top (
     .SWACCESS("W1S"),
     .RESVAL  (32'h11224488)
   ) u_w1stype2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (w1stype2_we),
@@ -614,11 +615,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (hw2reg.w1stype2.de),
-    .d      (hw2reg.w1stype2.d ),
+    .d      (hw2reg.w1stype2.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.w1stype2.q ),
+    .q      (reg2hw.w1stype2.q),
 
     // to register interface (read)
     .qs     (w1stype2_qs)
@@ -632,8 +633,8 @@ module trial1_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (32'hfec8137f)
   ) u_w0ctype2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (w0ctype2_we),
@@ -641,11 +642,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (hw2reg.w0ctype2.de),
-    .d      (hw2reg.w0ctype2.d ),
+    .d      (hw2reg.w0ctype2.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.w0ctype2.q ),
+    .q      (reg2hw.w0ctype2.q),
 
     // to register interface (read)
     .qs     (w0ctype2_qs)
@@ -659,8 +660,8 @@ module trial1_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (32'haa775566)
   ) u_r0w1ctype2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (r0w1ctype2_we),
@@ -668,12 +669,13 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (hw2reg.r0w1ctype2.de),
-    .d      (hw2reg.r0w1ctype2.d ),
+    .d      (hw2reg.r0w1ctype2.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.r0w1ctype2.q ),
+    .q      (reg2hw.r0w1ctype2.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -685,8 +687,8 @@ module trial1_reg_top (
     .SWACCESS("RC"),
     .RESVAL  (32'h77443399)
   ) u_rctype0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rctype0_we),
@@ -694,11 +696,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (hw2reg.rctype0.de),
-    .d      (hw2reg.rctype0.d ),
+    .d      (hw2reg.rctype0.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.rctype0.q ),
+    .q      (reg2hw.rctype0.q),
 
     // to register interface (read)
     .qs     (rctype0_qs)
@@ -712,8 +714,8 @@ module trial1_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (32'h11223344)
   ) u_wotype0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (wotype0_we),
@@ -721,12 +723,13 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.wotype0.q ),
+    .q      (reg2hw.wotype0.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -739,8 +742,8 @@ module trial1_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h1)
   ) u_mixtype0_field0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mixtype0_field0_we),
@@ -748,11 +751,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mixtype0.field0.q ),
+    .q      (reg2hw.mixtype0.field0.q),
 
     // to register interface (read)
     .qs     (mixtype0_field0_qs)
@@ -765,8 +768,8 @@ module trial1_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h2)
   ) u_mixtype0_field1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mixtype0_field1_we),
@@ -774,11 +777,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mixtype0.field1.de),
-    .d      (hw2reg.mixtype0.field1.d ),
+    .d      (hw2reg.mixtype0.field1.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mixtype0.field1.q ),
+    .q      (reg2hw.mixtype0.field1.q),
 
     // to register interface (read)
     .qs     (mixtype0_field1_qs)
@@ -791,19 +794,20 @@ module trial1_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (4'h3)
   ) u_mixtype0_field2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mixtype0.field2.q ),
+    .q      (reg2hw.mixtype0.field2.q),
 
     // to register interface (read)
     .qs     (mixtype0_field2_qs)
@@ -816,19 +820,20 @@ module trial1_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (4'h4)
   ) u_mixtype0_field3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.mixtype0.field3.de),
-    .d      (hw2reg.mixtype0.field3.d ),
+    .d      (hw2reg.mixtype0.field3.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mixtype0.field3.q ),
+    .q      (reg2hw.mixtype0.field3.q),
 
     // to register interface (read)
     .qs     (mixtype0_field3_qs)
@@ -841,8 +846,8 @@ module trial1_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (4'h5)
   ) u_mixtype0_field4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mixtype0_field4_we),
@@ -850,11 +855,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mixtype0.field4.de),
-    .d      (hw2reg.mixtype0.field4.d ),
+    .d      (hw2reg.mixtype0.field4.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mixtype0.field4.q ),
+    .q      (reg2hw.mixtype0.field4.q),
 
     // to register interface (read)
     .qs     (mixtype0_field4_qs)
@@ -867,8 +872,8 @@ module trial1_reg_top (
     .SWACCESS("W1S"),
     .RESVAL  (4'h6)
   ) u_mixtype0_field5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mixtype0_field5_we),
@@ -876,11 +881,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mixtype0.field5.de),
-    .d      (hw2reg.mixtype0.field5.d ),
+    .d      (hw2reg.mixtype0.field5.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mixtype0.field5.q ),
+    .q      (reg2hw.mixtype0.field5.q),
 
     // to register interface (read)
     .qs     (mixtype0_field5_qs)
@@ -893,8 +898,8 @@ module trial1_reg_top (
     .SWACCESS("RC"),
     .RESVAL  (4'h7)
   ) u_mixtype0_field6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mixtype0_field6_we),
@@ -902,11 +907,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (hw2reg.mixtype0.field6.de),
-    .d      (hw2reg.mixtype0.field6.d ),
+    .d      (hw2reg.mixtype0.field6.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mixtype0.field6.q ),
+    .q      (reg2hw.mixtype0.field6.q),
 
     // to register interface (read)
     .qs     (mixtype0_field6_qs)
@@ -919,8 +924,8 @@ module trial1_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (4'h8)
   ) u_mixtype0_field7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (mixtype0_field7_we),
@@ -928,12 +933,13 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mixtype0.field7.q ),
+    .q      (reg2hw.mixtype0.field7.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -945,8 +951,8 @@ module trial1_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'hbabababa)
   ) u_rwtype5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rwtype5_we),
@@ -954,11 +960,11 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (hw2reg.rwtype5.de),
-    .d      (hw2reg.rwtype5.d ),
+    .d      (hw2reg.rwtype5.d),
 
     // to internal hardware
     .qe     (reg2hw.rwtype5.qe),
-    .q      (reg2hw.rwtype5.q ),
+    .q      (reg2hw.rwtype5.q),
 
     // to register interface (read)
     .qs     (rwtype5_qs)
@@ -976,7 +982,7 @@ module trial1_reg_top (
     .d      (hw2reg.rwtype6.d),
     .qre    (),
     .qe     (reg2hw.rwtype6.qe),
-    .q      (reg2hw.rwtype6.q ),
+    .q      (reg2hw.rwtype6.q),
     .qs     (rwtype6_qs)
   );
 
@@ -992,7 +998,7 @@ module trial1_reg_top (
     .d      (hw2reg.rotype1.d),
     .qre    (),
     .qe     (),
-    .q      (reg2hw.rotype1.q ),
+    .q      (reg2hw.rotype1.q),
     .qs     (rotype1_qs)
   );
 
@@ -1021,8 +1027,8 @@ module trial1_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'hf6f6f6f6)
   ) u_rwtype7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (rwtype7_we),
@@ -1030,7 +1036,7 @@ module trial1_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),

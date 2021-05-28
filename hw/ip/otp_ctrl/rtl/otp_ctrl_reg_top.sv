@@ -305,8 +305,8 @@ module otp_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_otp_operation_done (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_otp_operation_done_we),
@@ -314,11 +314,11 @@ module otp_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.otp_operation_done.de),
-    .d      (hw2reg.intr_state.otp_operation_done.d ),
+    .d      (hw2reg.intr_state.otp_operation_done.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.otp_operation_done.q ),
+    .q      (reg2hw.intr_state.otp_operation_done.q),
 
     // to register interface (read)
     .qs     (intr_state_otp_operation_done_qs)
@@ -331,8 +331,8 @@ module otp_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_otp_error (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_otp_error_we),
@@ -340,11 +340,11 @@ module otp_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.otp_error.de),
-    .d      (hw2reg.intr_state.otp_error.d ),
+    .d      (hw2reg.intr_state.otp_error.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.otp_error.q ),
+    .q      (reg2hw.intr_state.otp_error.q),
 
     // to register interface (read)
     .qs     (intr_state_otp_error_qs)
@@ -359,8 +359,8 @@ module otp_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_otp_operation_done (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_otp_operation_done_we),
@@ -368,11 +368,11 @@ module otp_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.otp_operation_done.q ),
+    .q      (reg2hw.intr_enable.otp_operation_done.q),
 
     // to register interface (read)
     .qs     (intr_enable_otp_operation_done_qs)
@@ -385,8 +385,8 @@ module otp_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_otp_error (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_otp_error_we),
@@ -394,11 +394,11 @@ module otp_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.otp_error.q ),
+    .q      (reg2hw.intr_enable.otp_error.q),
 
     // to register interface (read)
     .qs     (intr_enable_otp_error_qs)
@@ -417,7 +417,7 @@ module otp_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.otp_operation_done.qe),
-    .q      (reg2hw.intr_test.otp_operation_done.q ),
+    .q      (reg2hw.intr_test.otp_operation_done.q),
     .qs     ()
   );
 
@@ -432,7 +432,7 @@ module otp_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.otp_error.qe),
-    .q      (reg2hw.intr_test.otp_error.q ),
+    .q      (reg2hw.intr_test.otp_error.q),
     .qs     ()
   );
 
@@ -449,7 +449,7 @@ module otp_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.fatal_macro_error.qe),
-    .q      (reg2hw.alert_test.fatal_macro_error.q ),
+    .q      (reg2hw.alert_test.fatal_macro_error.q),
     .qs     ()
   );
 
@@ -464,7 +464,7 @@ module otp_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.fatal_check_error.qe),
-    .q      (reg2hw.alert_test.fatal_check_error.q ),
+    .q      (reg2hw.alert_test.fatal_check_error.q),
     .qs     ()
   );
 
@@ -859,13 +859,12 @@ module otp_ctrl_reg_top (
     .DW    (1)
   ) u_direct_access_cmd_rd (
     .re     (1'b0),
-    // qualified with register enable
     .we     (direct_access_cmd_rd_we & direct_access_regwen_qs),
     .wd     (direct_access_cmd_rd_wd),
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.direct_access_cmd.rd.qe),
-    .q      (reg2hw.direct_access_cmd.rd.q ),
+    .q      (reg2hw.direct_access_cmd.rd.q),
     .qs     ()
   );
 
@@ -875,13 +874,12 @@ module otp_ctrl_reg_top (
     .DW    (1)
   ) u_direct_access_cmd_wr (
     .re     (1'b0),
-    // qualified with register enable
     .we     (direct_access_cmd_wr_we & direct_access_regwen_qs),
     .wd     (direct_access_cmd_wr_wd),
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.direct_access_cmd.wr.qe),
-    .q      (reg2hw.direct_access_cmd.wr.q ),
+    .q      (reg2hw.direct_access_cmd.wr.q),
     .qs     ()
   );
 
@@ -891,13 +889,12 @@ module otp_ctrl_reg_top (
     .DW    (1)
   ) u_direct_access_cmd_digest (
     .re     (1'b0),
-    // qualified with register enable
     .we     (direct_access_cmd_digest_we & direct_access_regwen_qs),
     .wd     (direct_access_cmd_digest_wd),
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.direct_access_cmd.digest.qe),
-    .q      (reg2hw.direct_access_cmd.digest.q ),
+    .q      (reg2hw.direct_access_cmd.digest.q),
     .qs     ()
   );
 
@@ -909,20 +906,20 @@ module otp_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (11'h0)
   ) u_direct_access_address (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (direct_access_address_we & direct_access_regwen_qs),
     .wd     (direct_access_address_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.direct_access_address.q ),
+    .q      (reg2hw.direct_access_address.q),
 
     // to register interface (read)
     .qs     (direct_access_address_qs)
@@ -938,20 +935,20 @@ module otp_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_direct_access_wdata_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (direct_access_wdata_0_we & direct_access_regwen_qs),
     .wd     (direct_access_wdata_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.direct_access_wdata[0].q ),
+    .q      (reg2hw.direct_access_wdata[0].q),
 
     // to register interface (read)
     .qs     (direct_access_wdata_0_qs)
@@ -965,20 +962,20 @@ module otp_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_direct_access_wdata_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (direct_access_wdata_1_we & direct_access_regwen_qs),
     .wd     (direct_access_wdata_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.direct_access_wdata[1].q ),
+    .q      (reg2hw.direct_access_wdata[1].q),
 
     // to register interface (read)
     .qs     (direct_access_wdata_1_qs)
@@ -1026,8 +1023,8 @@ module otp_ctrl_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_check_trigger_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (check_trigger_regwen_we),
@@ -1035,7 +1032,7 @@ module otp_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1053,13 +1050,12 @@ module otp_ctrl_reg_top (
     .DW    (1)
   ) u_check_trigger_integrity (
     .re     (1'b0),
-    // qualified with register enable
     .we     (check_trigger_integrity_we & check_trigger_regwen_qs),
     .wd     (check_trigger_integrity_wd),
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.check_trigger.integrity.qe),
-    .q      (reg2hw.check_trigger.integrity.q ),
+    .q      (reg2hw.check_trigger.integrity.q),
     .qs     ()
   );
 
@@ -1069,13 +1065,12 @@ module otp_ctrl_reg_top (
     .DW    (1)
   ) u_check_trigger_consistency (
     .re     (1'b0),
-    // qualified with register enable
     .we     (check_trigger_consistency_we & check_trigger_regwen_qs),
     .wd     (check_trigger_consistency_wd),
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.check_trigger.consistency.qe),
-    .q      (reg2hw.check_trigger.consistency.q ),
+    .q      (reg2hw.check_trigger.consistency.q),
     .qs     ()
   );
 
@@ -1087,8 +1082,8 @@ module otp_ctrl_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_check_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (check_regwen_we),
@@ -1096,7 +1091,7 @@ module otp_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1114,20 +1109,20 @@ module otp_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_check_timeout (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (check_timeout_we & check_regwen_qs),
     .wd     (check_timeout_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.check_timeout.q ),
+    .q      (reg2hw.check_timeout.q),
 
     // to register interface (read)
     .qs     (check_timeout_qs)
@@ -1141,20 +1136,20 @@ module otp_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_integrity_check_period (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (integrity_check_period_we & check_regwen_qs),
     .wd     (integrity_check_period_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.integrity_check_period.q ),
+    .q      (reg2hw.integrity_check_period.q),
 
     // to register interface (read)
     .qs     (integrity_check_period_qs)
@@ -1168,20 +1163,20 @@ module otp_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_consistency_check_period (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (consistency_check_period_we & check_regwen_qs),
     .wd     (consistency_check_period_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.consistency_check_period.q ),
+    .q      (reg2hw.consistency_check_period.q),
 
     // to register interface (read)
     .qs     (consistency_check_period_qs)
@@ -1195,20 +1190,20 @@ module otp_ctrl_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_creator_sw_cfg_read_lock (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (creator_sw_cfg_read_lock_we & direct_access_regwen_qs),
     .wd     (creator_sw_cfg_read_lock_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.creator_sw_cfg_read_lock.q ),
+    .q      (reg2hw.creator_sw_cfg_read_lock.q),
 
     // to register interface (read)
     .qs     (creator_sw_cfg_read_lock_qs)
@@ -1222,20 +1217,20 @@ module otp_ctrl_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_owner_sw_cfg_read_lock (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (owner_sw_cfg_read_lock_we & direct_access_regwen_qs),
     .wd     (owner_sw_cfg_read_lock_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.owner_sw_cfg_read_lock.q ),
+    .q      (reg2hw.owner_sw_cfg_read_lock.q),
 
     // to register interface (read)
     .qs     (owner_sw_cfg_read_lock_qs)

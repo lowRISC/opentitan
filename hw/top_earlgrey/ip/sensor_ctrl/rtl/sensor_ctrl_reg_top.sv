@@ -244,7 +244,7 @@ module sensor_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_as.qe),
-    .q      (reg2hw.alert_test.recov_as.q ),
+    .q      (reg2hw.alert_test.recov_as.q),
     .qs     ()
   );
 
@@ -259,7 +259,7 @@ module sensor_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_cg.qe),
-    .q      (reg2hw.alert_test.recov_cg.q ),
+    .q      (reg2hw.alert_test.recov_cg.q),
     .qs     ()
   );
 
@@ -274,7 +274,7 @@ module sensor_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_gd.qe),
-    .q      (reg2hw.alert_test.recov_gd.q ),
+    .q      (reg2hw.alert_test.recov_gd.q),
     .qs     ()
   );
 
@@ -289,7 +289,7 @@ module sensor_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_ts_hi.qe),
-    .q      (reg2hw.alert_test.recov_ts_hi.q ),
+    .q      (reg2hw.alert_test.recov_ts_hi.q),
     .qs     ()
   );
 
@@ -304,7 +304,7 @@ module sensor_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_ts_lo.qe),
-    .q      (reg2hw.alert_test.recov_ts_lo.q ),
+    .q      (reg2hw.alert_test.recov_ts_lo.q),
     .qs     ()
   );
 
@@ -319,7 +319,7 @@ module sensor_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_fla.qe),
-    .q      (reg2hw.alert_test.recov_fla.q ),
+    .q      (reg2hw.alert_test.recov_fla.q),
     .qs     ()
   );
 
@@ -334,7 +334,7 @@ module sensor_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_otp.qe),
-    .q      (reg2hw.alert_test.recov_otp.q ),
+    .q      (reg2hw.alert_test.recov_otp.q),
     .qs     ()
   );
 
@@ -349,7 +349,7 @@ module sensor_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_ot0.qe),
-    .q      (reg2hw.alert_test.recov_ot0.q ),
+    .q      (reg2hw.alert_test.recov_ot0.q),
     .qs     ()
   );
 
@@ -364,7 +364,7 @@ module sensor_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_ot1.qe),
-    .q      (reg2hw.alert_test.recov_ot1.q ),
+    .q      (reg2hw.alert_test.recov_ot1.q),
     .qs     ()
   );
 
@@ -379,7 +379,7 @@ module sensor_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_ot2.qe),
-    .q      (reg2hw.alert_test.recov_ot2.q ),
+    .q      (reg2hw.alert_test.recov_ot2.q),
     .qs     ()
   );
 
@@ -394,7 +394,7 @@ module sensor_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_ot3.qe),
-    .q      (reg2hw.alert_test.recov_ot3.q ),
+    .q      (reg2hw.alert_test.recov_ot3.q),
     .qs     ()
   );
 
@@ -406,8 +406,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_cfg_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (cfg_regwen_we),
@@ -415,7 +415,7 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -436,20 +436,20 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_ack_mode_val_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (ack_mode_val_0_we & cfg_regwen_qs),
     .wd     (ack_mode_val_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ack_mode[0].q ),
+    .q      (reg2hw.ack_mode[0].q),
 
     // to register interface (read)
     .qs     (ack_mode_val_0_qs)
@@ -462,20 +462,20 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_ack_mode_val_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (ack_mode_val_1_we & cfg_regwen_qs),
     .wd     (ack_mode_val_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ack_mode[1].q ),
+    .q      (reg2hw.ack_mode[1].q),
 
     // to register interface (read)
     .qs     (ack_mode_val_1_qs)
@@ -488,20 +488,20 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_ack_mode_val_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (ack_mode_val_2_we & cfg_regwen_qs),
     .wd     (ack_mode_val_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ack_mode[2].q ),
+    .q      (reg2hw.ack_mode[2].q),
 
     // to register interface (read)
     .qs     (ack_mode_val_2_qs)
@@ -514,20 +514,20 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_ack_mode_val_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (ack_mode_val_3_we & cfg_regwen_qs),
     .wd     (ack_mode_val_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ack_mode[3].q ),
+    .q      (reg2hw.ack_mode[3].q),
 
     // to register interface (read)
     .qs     (ack_mode_val_3_qs)
@@ -540,20 +540,20 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_ack_mode_val_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (ack_mode_val_4_we & cfg_regwen_qs),
     .wd     (ack_mode_val_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ack_mode[4].q ),
+    .q      (reg2hw.ack_mode[4].q),
 
     // to register interface (read)
     .qs     (ack_mode_val_4_qs)
@@ -566,20 +566,20 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_ack_mode_val_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (ack_mode_val_5_we & cfg_regwen_qs),
     .wd     (ack_mode_val_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ack_mode[5].q ),
+    .q      (reg2hw.ack_mode[5].q),
 
     // to register interface (read)
     .qs     (ack_mode_val_5_qs)
@@ -592,20 +592,20 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_ack_mode_val_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (ack_mode_val_6_we & cfg_regwen_qs),
     .wd     (ack_mode_val_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ack_mode[6].q ),
+    .q      (reg2hw.ack_mode[6].q),
 
     // to register interface (read)
     .qs     (ack_mode_val_6_qs)
@@ -618,20 +618,20 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_ack_mode_val_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (ack_mode_val_7_we & cfg_regwen_qs),
     .wd     (ack_mode_val_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ack_mode[7].q ),
+    .q      (reg2hw.ack_mode[7].q),
 
     // to register interface (read)
     .qs     (ack_mode_val_7_qs)
@@ -644,20 +644,20 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_ack_mode_val_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (ack_mode_val_8_we & cfg_regwen_qs),
     .wd     (ack_mode_val_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ack_mode[8].q ),
+    .q      (reg2hw.ack_mode[8].q),
 
     // to register interface (read)
     .qs     (ack_mode_val_8_qs)
@@ -670,20 +670,20 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_ack_mode_val_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (ack_mode_val_9_we & cfg_regwen_qs),
     .wd     (ack_mode_val_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ack_mode[9].q ),
+    .q      (reg2hw.ack_mode[9].q),
 
     // to register interface (read)
     .qs     (ack_mode_val_9_qs)
@@ -696,20 +696,20 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_ack_mode_val_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (ack_mode_val_10_we & cfg_regwen_qs),
     .wd     (ack_mode_val_10_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ack_mode[10].q ),
+    .q      (reg2hw.ack_mode[10].q),
 
     // to register interface (read)
     .qs     (ack_mode_val_10_qs)
@@ -727,8 +727,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_trig_val_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_trig_val_0_we),
@@ -736,11 +736,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_trig[0].q ),
+    .q      (reg2hw.alert_trig[0].q),
 
     // to register interface (read)
     .qs     (alert_trig_val_0_qs)
@@ -753,8 +753,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_trig_val_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_trig_val_1_we),
@@ -762,11 +762,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_trig[1].q ),
+    .q      (reg2hw.alert_trig[1].q),
 
     // to register interface (read)
     .qs     (alert_trig_val_1_qs)
@@ -779,8 +779,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_trig_val_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_trig_val_2_we),
@@ -788,11 +788,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_trig[2].q ),
+    .q      (reg2hw.alert_trig[2].q),
 
     // to register interface (read)
     .qs     (alert_trig_val_2_qs)
@@ -805,8 +805,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_trig_val_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_trig_val_3_we),
@@ -814,11 +814,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_trig[3].q ),
+    .q      (reg2hw.alert_trig[3].q),
 
     // to register interface (read)
     .qs     (alert_trig_val_3_qs)
@@ -831,8 +831,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_trig_val_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_trig_val_4_we),
@@ -840,11 +840,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_trig[4].q ),
+    .q      (reg2hw.alert_trig[4].q),
 
     // to register interface (read)
     .qs     (alert_trig_val_4_qs)
@@ -857,8 +857,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_trig_val_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_trig_val_5_we),
@@ -866,11 +866,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_trig[5].q ),
+    .q      (reg2hw.alert_trig[5].q),
 
     // to register interface (read)
     .qs     (alert_trig_val_5_qs)
@@ -883,8 +883,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_trig_val_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_trig_val_6_we),
@@ -892,11 +892,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_trig[6].q ),
+    .q      (reg2hw.alert_trig[6].q),
 
     // to register interface (read)
     .qs     (alert_trig_val_6_qs)
@@ -909,8 +909,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_trig_val_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_trig_val_7_we),
@@ -918,11 +918,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_trig[7].q ),
+    .q      (reg2hw.alert_trig[7].q),
 
     // to register interface (read)
     .qs     (alert_trig_val_7_qs)
@@ -935,8 +935,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_trig_val_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_trig_val_8_we),
@@ -944,11 +944,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_trig[8].q ),
+    .q      (reg2hw.alert_trig[8].q),
 
     // to register interface (read)
     .qs     (alert_trig_val_8_qs)
@@ -961,8 +961,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_trig_val_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_trig_val_9_we),
@@ -970,11 +970,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_trig[9].q ),
+    .q      (reg2hw.alert_trig[9].q),
 
     // to register interface (read)
     .qs     (alert_trig_val_9_qs)
@@ -987,8 +987,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_trig_val_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_trig_val_10_we),
@@ -996,11 +996,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_trig[10].q ),
+    .q      (reg2hw.alert_trig[10].q),
 
     // to register interface (read)
     .qs     (alert_trig_val_10_qs)
@@ -1018,8 +1018,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_state_val_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_state_val_0_we),
@@ -1027,11 +1027,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_state[0].de),
-    .d      (hw2reg.alert_state[0].d ),
+    .d      (hw2reg.alert_state[0].d),
 
     // to internal hardware
     .qe     (reg2hw.alert_state[0].qe),
-    .q      (reg2hw.alert_state[0].q ),
+    .q      (reg2hw.alert_state[0].q),
 
     // to register interface (read)
     .qs     (alert_state_val_0_qs)
@@ -1044,8 +1044,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_state_val_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_state_val_1_we),
@@ -1053,11 +1053,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_state[1].de),
-    .d      (hw2reg.alert_state[1].d ),
+    .d      (hw2reg.alert_state[1].d),
 
     // to internal hardware
     .qe     (reg2hw.alert_state[1].qe),
-    .q      (reg2hw.alert_state[1].q ),
+    .q      (reg2hw.alert_state[1].q),
 
     // to register interface (read)
     .qs     (alert_state_val_1_qs)
@@ -1070,8 +1070,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_state_val_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_state_val_2_we),
@@ -1079,11 +1079,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_state[2].de),
-    .d      (hw2reg.alert_state[2].d ),
+    .d      (hw2reg.alert_state[2].d),
 
     // to internal hardware
     .qe     (reg2hw.alert_state[2].qe),
-    .q      (reg2hw.alert_state[2].q ),
+    .q      (reg2hw.alert_state[2].q),
 
     // to register interface (read)
     .qs     (alert_state_val_2_qs)
@@ -1096,8 +1096,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_state_val_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_state_val_3_we),
@@ -1105,11 +1105,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_state[3].de),
-    .d      (hw2reg.alert_state[3].d ),
+    .d      (hw2reg.alert_state[3].d),
 
     // to internal hardware
     .qe     (reg2hw.alert_state[3].qe),
-    .q      (reg2hw.alert_state[3].q ),
+    .q      (reg2hw.alert_state[3].q),
 
     // to register interface (read)
     .qs     (alert_state_val_3_qs)
@@ -1122,8 +1122,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_state_val_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_state_val_4_we),
@@ -1131,11 +1131,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_state[4].de),
-    .d      (hw2reg.alert_state[4].d ),
+    .d      (hw2reg.alert_state[4].d),
 
     // to internal hardware
     .qe     (reg2hw.alert_state[4].qe),
-    .q      (reg2hw.alert_state[4].q ),
+    .q      (reg2hw.alert_state[4].q),
 
     // to register interface (read)
     .qs     (alert_state_val_4_qs)
@@ -1148,8 +1148,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_state_val_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_state_val_5_we),
@@ -1157,11 +1157,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_state[5].de),
-    .d      (hw2reg.alert_state[5].d ),
+    .d      (hw2reg.alert_state[5].d),
 
     // to internal hardware
     .qe     (reg2hw.alert_state[5].qe),
-    .q      (reg2hw.alert_state[5].q ),
+    .q      (reg2hw.alert_state[5].q),
 
     // to register interface (read)
     .qs     (alert_state_val_5_qs)
@@ -1174,8 +1174,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_state_val_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_state_val_6_we),
@@ -1183,11 +1183,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_state[6].de),
-    .d      (hw2reg.alert_state[6].d ),
+    .d      (hw2reg.alert_state[6].d),
 
     // to internal hardware
     .qe     (reg2hw.alert_state[6].qe),
-    .q      (reg2hw.alert_state[6].q ),
+    .q      (reg2hw.alert_state[6].q),
 
     // to register interface (read)
     .qs     (alert_state_val_6_qs)
@@ -1200,8 +1200,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_state_val_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_state_val_7_we),
@@ -1209,11 +1209,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_state[7].de),
-    .d      (hw2reg.alert_state[7].d ),
+    .d      (hw2reg.alert_state[7].d),
 
     // to internal hardware
     .qe     (reg2hw.alert_state[7].qe),
-    .q      (reg2hw.alert_state[7].q ),
+    .q      (reg2hw.alert_state[7].q),
 
     // to register interface (read)
     .qs     (alert_state_val_7_qs)
@@ -1226,8 +1226,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_state_val_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_state_val_8_we),
@@ -1235,11 +1235,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_state[8].de),
-    .d      (hw2reg.alert_state[8].d ),
+    .d      (hw2reg.alert_state[8].d),
 
     // to internal hardware
     .qe     (reg2hw.alert_state[8].qe),
-    .q      (reg2hw.alert_state[8].q ),
+    .q      (reg2hw.alert_state[8].q),
 
     // to register interface (read)
     .qs     (alert_state_val_8_qs)
@@ -1252,8 +1252,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_state_val_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_state_val_9_we),
@@ -1261,11 +1261,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_state[9].de),
-    .d      (hw2reg.alert_state[9].d ),
+    .d      (hw2reg.alert_state[9].d),
 
     // to internal hardware
     .qe     (reg2hw.alert_state[9].qe),
-    .q      (reg2hw.alert_state[9].q ),
+    .q      (reg2hw.alert_state[9].q),
 
     // to register interface (read)
     .qs     (alert_state_val_9_qs)
@@ -1278,8 +1278,8 @@ module sensor_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_state_val_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_state_val_10_we),
@@ -1287,11 +1287,11 @@ module sensor_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_state[10].de),
-    .d      (hw2reg.alert_state[10].d ),
+    .d      (hw2reg.alert_state[10].d),
 
     // to internal hardware
     .qe     (reg2hw.alert_state[10].qe),
-    .q      (reg2hw.alert_state[10].q ),
+    .q      (reg2hw.alert_state[10].q),
 
     // to register interface (read)
     .qs     (alert_state_val_10_qs)
@@ -1307,15 +1307,16 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_ast_init_done (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.ast_init_done.de),
-    .d      (hw2reg.status.ast_init_done.d ),
+    .d      (hw2reg.status.ast_init_done.d),
 
     // to internal hardware
     .qe     (),
@@ -1332,15 +1333,16 @@ module sensor_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (2'h3)
   ) u_status_io_pok (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.io_pok.de),
-    .d      (hw2reg.status.io_pok.d ),
+    .d      (hw2reg.status.io_pok.d),
 
     // to internal hardware
     .qe     (),

@@ -1024,8 +1024,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_classa (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_classa_we),
@@ -1033,11 +1033,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.classa.de),
-    .d      (hw2reg.intr_state.classa.d ),
+    .d      (hw2reg.intr_state.classa.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.classa.q ),
+    .q      (reg2hw.intr_state.classa.q),
 
     // to register interface (read)
     .qs     (intr_state_classa_qs)
@@ -1050,8 +1050,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_classb (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_classb_we),
@@ -1059,11 +1059,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.classb.de),
-    .d      (hw2reg.intr_state.classb.d ),
+    .d      (hw2reg.intr_state.classb.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.classb.q ),
+    .q      (reg2hw.intr_state.classb.q),
 
     // to register interface (read)
     .qs     (intr_state_classb_qs)
@@ -1076,8 +1076,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_classc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_classc_we),
@@ -1085,11 +1085,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.classc.de),
-    .d      (hw2reg.intr_state.classc.d ),
+    .d      (hw2reg.intr_state.classc.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.classc.q ),
+    .q      (reg2hw.intr_state.classc.q),
 
     // to register interface (read)
     .qs     (intr_state_classc_qs)
@@ -1102,8 +1102,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_classd (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_classd_we),
@@ -1111,11 +1111,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.classd.de),
-    .d      (hw2reg.intr_state.classd.d ),
+    .d      (hw2reg.intr_state.classd.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.classd.q ),
+    .q      (reg2hw.intr_state.classd.q),
 
     // to register interface (read)
     .qs     (intr_state_classd_qs)
@@ -1130,8 +1130,8 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_classa (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_classa_we),
@@ -1139,11 +1139,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.classa.q ),
+    .q      (reg2hw.intr_enable.classa.q),
 
     // to register interface (read)
     .qs     (intr_enable_classa_qs)
@@ -1156,8 +1156,8 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_classb (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_classb_we),
@@ -1165,11 +1165,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.classb.q ),
+    .q      (reg2hw.intr_enable.classb.q),
 
     // to register interface (read)
     .qs     (intr_enable_classb_qs)
@@ -1182,8 +1182,8 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_classc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_classc_we),
@@ -1191,11 +1191,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.classc.q ),
+    .q      (reg2hw.intr_enable.classc.q),
 
     // to register interface (read)
     .qs     (intr_enable_classc_qs)
@@ -1208,8 +1208,8 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_classd (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_classd_we),
@@ -1217,11 +1217,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.classd.q ),
+    .q      (reg2hw.intr_enable.classd.q),
 
     // to register interface (read)
     .qs     (intr_enable_classd_qs)
@@ -1240,7 +1240,7 @@ module alert_handler_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.classa.qe),
-    .q      (reg2hw.intr_test.classa.q ),
+    .q      (reg2hw.intr_test.classa.q),
     .qs     ()
   );
 
@@ -1255,7 +1255,7 @@ module alert_handler_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.classb.qe),
-    .q      (reg2hw.intr_test.classb.q ),
+    .q      (reg2hw.intr_test.classb.q),
     .qs     ()
   );
 
@@ -1270,7 +1270,7 @@ module alert_handler_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.classc.qe),
-    .q      (reg2hw.intr_test.classc.q ),
+    .q      (reg2hw.intr_test.classc.q),
     .qs     ()
   );
 
@@ -1285,7 +1285,7 @@ module alert_handler_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.classd.qe),
-    .q      (reg2hw.intr_test.classd.q ),
+    .q      (reg2hw.intr_test.classd.q),
     .qs     ()
   );
 
@@ -1297,8 +1297,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_ping_timer_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ping_timer_regwen_we),
@@ -1306,7 +1306,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -1324,20 +1324,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (24'h20)
   ) u_ping_timeout_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (ping_timeout_cyc_we & ping_timer_regwen_qs),
     .wd     (ping_timeout_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ping_timeout_cyc.q ),
+    .q      (reg2hw.ping_timeout_cyc.q),
 
     // to register interface (read)
     .qs     (ping_timeout_cyc_qs)
@@ -1351,20 +1351,20 @@ module alert_handler_reg_top (
     .SWACCESS("W1S"),
     .RESVAL  (1'h0)
   ) u_ping_timer_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (ping_timer_en_we & ping_timer_regwen_qs),
     .wd     (ping_timer_en_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ping_timer_en.q ),
+    .q      (reg2hw.ping_timer_en.q),
 
     // to register interface (read)
     .qs     (ping_timer_en_qs)
@@ -1380,8 +1380,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_0_we),
@@ -1389,11 +1389,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[0].q ),
+    .q      (reg2hw.alert_regwen[0].q),
 
     // to register interface (read)
     .qs     (alert_regwen_0_qs)
@@ -1407,8 +1407,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_1_we),
@@ -1416,11 +1416,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[1].q ),
+    .q      (reg2hw.alert_regwen[1].q),
 
     // to register interface (read)
     .qs     (alert_regwen_1_qs)
@@ -1434,8 +1434,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_2_we),
@@ -1443,11 +1443,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[2].q ),
+    .q      (reg2hw.alert_regwen[2].q),
 
     // to register interface (read)
     .qs     (alert_regwen_2_qs)
@@ -1461,8 +1461,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_3_we),
@@ -1470,11 +1470,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[3].q ),
+    .q      (reg2hw.alert_regwen[3].q),
 
     // to register interface (read)
     .qs     (alert_regwen_3_qs)
@@ -1488,8 +1488,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_4_we),
@@ -1497,11 +1497,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[4].q ),
+    .q      (reg2hw.alert_regwen[4].q),
 
     // to register interface (read)
     .qs     (alert_regwen_4_qs)
@@ -1515,8 +1515,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_5_we),
@@ -1524,11 +1524,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[5].q ),
+    .q      (reg2hw.alert_regwen[5].q),
 
     // to register interface (read)
     .qs     (alert_regwen_5_qs)
@@ -1542,8 +1542,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_6_we),
@@ -1551,11 +1551,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[6].q ),
+    .q      (reg2hw.alert_regwen[6].q),
 
     // to register interface (read)
     .qs     (alert_regwen_6_qs)
@@ -1569,8 +1569,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_7_we),
@@ -1578,11 +1578,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[7].q ),
+    .q      (reg2hw.alert_regwen[7].q),
 
     // to register interface (read)
     .qs     (alert_regwen_7_qs)
@@ -1596,8 +1596,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_8_we),
@@ -1605,11 +1605,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[8].q ),
+    .q      (reg2hw.alert_regwen[8].q),
 
     // to register interface (read)
     .qs     (alert_regwen_8_qs)
@@ -1623,8 +1623,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_9_we),
@@ -1632,11 +1632,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[9].q ),
+    .q      (reg2hw.alert_regwen[9].q),
 
     // to register interface (read)
     .qs     (alert_regwen_9_qs)
@@ -1650,8 +1650,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_10_we),
@@ -1659,11 +1659,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[10].q ),
+    .q      (reg2hw.alert_regwen[10].q),
 
     // to register interface (read)
     .qs     (alert_regwen_10_qs)
@@ -1677,8 +1677,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_11_we),
@@ -1686,11 +1686,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[11].q ),
+    .q      (reg2hw.alert_regwen[11].q),
 
     // to register interface (read)
     .qs     (alert_regwen_11_qs)
@@ -1704,8 +1704,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_12_we),
@@ -1713,11 +1713,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[12].q ),
+    .q      (reg2hw.alert_regwen[12].q),
 
     // to register interface (read)
     .qs     (alert_regwen_12_qs)
@@ -1731,8 +1731,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_13_we),
@@ -1740,11 +1740,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[13].q ),
+    .q      (reg2hw.alert_regwen[13].q),
 
     // to register interface (read)
     .qs     (alert_regwen_13_qs)
@@ -1758,8 +1758,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_14_we),
@@ -1767,11 +1767,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[14].q ),
+    .q      (reg2hw.alert_regwen[14].q),
 
     // to register interface (read)
     .qs     (alert_regwen_14_qs)
@@ -1785,8 +1785,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_15_we),
@@ -1794,11 +1794,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[15].q ),
+    .q      (reg2hw.alert_regwen[15].q),
 
     // to register interface (read)
     .qs     (alert_regwen_15_qs)
@@ -1812,8 +1812,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_16_we),
@@ -1821,11 +1821,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[16].q ),
+    .q      (reg2hw.alert_regwen[16].q),
 
     // to register interface (read)
     .qs     (alert_regwen_16_qs)
@@ -1839,8 +1839,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_17_we),
@@ -1848,11 +1848,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[17].q ),
+    .q      (reg2hw.alert_regwen[17].q),
 
     // to register interface (read)
     .qs     (alert_regwen_17_qs)
@@ -1866,8 +1866,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_18_we),
@@ -1875,11 +1875,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[18].q ),
+    .q      (reg2hw.alert_regwen[18].q),
 
     // to register interface (read)
     .qs     (alert_regwen_18_qs)
@@ -1893,8 +1893,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_19_we),
@@ -1902,11 +1902,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[19].q ),
+    .q      (reg2hw.alert_regwen[19].q),
 
     // to register interface (read)
     .qs     (alert_regwen_19_qs)
@@ -1920,8 +1920,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_20_we),
@@ -1929,11 +1929,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[20].q ),
+    .q      (reg2hw.alert_regwen[20].q),
 
     // to register interface (read)
     .qs     (alert_regwen_20_qs)
@@ -1947,8 +1947,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_21_we),
@@ -1956,11 +1956,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[21].q ),
+    .q      (reg2hw.alert_regwen[21].q),
 
     // to register interface (read)
     .qs     (alert_regwen_21_qs)
@@ -1974,8 +1974,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_22_we),
@@ -1983,11 +1983,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[22].q ),
+    .q      (reg2hw.alert_regwen[22].q),
 
     // to register interface (read)
     .qs     (alert_regwen_22_qs)
@@ -2001,8 +2001,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_23_we),
@@ -2010,11 +2010,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[23].q ),
+    .q      (reg2hw.alert_regwen[23].q),
 
     // to register interface (read)
     .qs     (alert_regwen_23_qs)
@@ -2028,8 +2028,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_24_we),
@@ -2037,11 +2037,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[24].q ),
+    .q      (reg2hw.alert_regwen[24].q),
 
     // to register interface (read)
     .qs     (alert_regwen_24_qs)
@@ -2055,8 +2055,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_25_we),
@@ -2064,11 +2064,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[25].q ),
+    .q      (reg2hw.alert_regwen[25].q),
 
     // to register interface (read)
     .qs     (alert_regwen_25_qs)
@@ -2082,8 +2082,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_26_we),
@@ -2091,11 +2091,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[26].q ),
+    .q      (reg2hw.alert_regwen[26].q),
 
     // to register interface (read)
     .qs     (alert_regwen_26_qs)
@@ -2109,8 +2109,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_27_we),
@@ -2118,11 +2118,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[27].q ),
+    .q      (reg2hw.alert_regwen[27].q),
 
     // to register interface (read)
     .qs     (alert_regwen_27_qs)
@@ -2136,8 +2136,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_28_we),
@@ -2145,11 +2145,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[28].q ),
+    .q      (reg2hw.alert_regwen[28].q),
 
     // to register interface (read)
     .qs     (alert_regwen_28_qs)
@@ -2163,8 +2163,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_29_we),
@@ -2172,11 +2172,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[29].q ),
+    .q      (reg2hw.alert_regwen[29].q),
 
     // to register interface (read)
     .qs     (alert_regwen_29_qs)
@@ -2190,8 +2190,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_30_we),
@@ -2199,11 +2199,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[30].q ),
+    .q      (reg2hw.alert_regwen[30].q),
 
     // to register interface (read)
     .qs     (alert_regwen_30_qs)
@@ -2217,8 +2217,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_31_we),
@@ -2226,11 +2226,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[31].q ),
+    .q      (reg2hw.alert_regwen[31].q),
 
     // to register interface (read)
     .qs     (alert_regwen_31_qs)
@@ -2244,8 +2244,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_32 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_32_we),
@@ -2253,11 +2253,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[32].q ),
+    .q      (reg2hw.alert_regwen[32].q),
 
     // to register interface (read)
     .qs     (alert_regwen_32_qs)
@@ -2271,8 +2271,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_33 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_33_we),
@@ -2280,11 +2280,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[33].q ),
+    .q      (reg2hw.alert_regwen[33].q),
 
     // to register interface (read)
     .qs     (alert_regwen_33_qs)
@@ -2298,8 +2298,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_34 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_34_we),
@@ -2307,11 +2307,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[34].q ),
+    .q      (reg2hw.alert_regwen[34].q),
 
     // to register interface (read)
     .qs     (alert_regwen_34_qs)
@@ -2325,8 +2325,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_35 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_35_we),
@@ -2334,11 +2334,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[35].q ),
+    .q      (reg2hw.alert_regwen[35].q),
 
     // to register interface (read)
     .qs     (alert_regwen_35_qs)
@@ -2352,8 +2352,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_36 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_36_we),
@@ -2361,11 +2361,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[36].q ),
+    .q      (reg2hw.alert_regwen[36].q),
 
     // to register interface (read)
     .qs     (alert_regwen_36_qs)
@@ -2379,8 +2379,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_37 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_37_we),
@@ -2388,11 +2388,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[37].q ),
+    .q      (reg2hw.alert_regwen[37].q),
 
     // to register interface (read)
     .qs     (alert_regwen_37_qs)
@@ -2406,8 +2406,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_alert_regwen_38 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_regwen_38_we),
@@ -2415,11 +2415,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_regwen[38].q ),
+    .q      (reg2hw.alert_regwen[38].q),
 
     // to register interface (read)
     .qs     (alert_regwen_38_qs)
@@ -2435,20 +2435,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_0_we & alert_regwen_0_qs),
     .wd     (alert_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[0].q ),
+    .q      (reg2hw.alert_en[0].q),
 
     // to register interface (read)
     .qs     (alert_en_0_qs)
@@ -2462,20 +2462,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_1_we & alert_regwen_1_qs),
     .wd     (alert_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[1].q ),
+    .q      (reg2hw.alert_en[1].q),
 
     // to register interface (read)
     .qs     (alert_en_1_qs)
@@ -2489,20 +2489,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_2_we & alert_regwen_2_qs),
     .wd     (alert_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[2].q ),
+    .q      (reg2hw.alert_en[2].q),
 
     // to register interface (read)
     .qs     (alert_en_2_qs)
@@ -2516,20 +2516,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_3_we & alert_regwen_3_qs),
     .wd     (alert_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[3].q ),
+    .q      (reg2hw.alert_en[3].q),
 
     // to register interface (read)
     .qs     (alert_en_3_qs)
@@ -2543,20 +2543,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_4_we & alert_regwen_4_qs),
     .wd     (alert_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[4].q ),
+    .q      (reg2hw.alert_en[4].q),
 
     // to register interface (read)
     .qs     (alert_en_4_qs)
@@ -2570,20 +2570,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_5_we & alert_regwen_5_qs),
     .wd     (alert_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[5].q ),
+    .q      (reg2hw.alert_en[5].q),
 
     // to register interface (read)
     .qs     (alert_en_5_qs)
@@ -2597,20 +2597,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_6_we & alert_regwen_6_qs),
     .wd     (alert_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[6].q ),
+    .q      (reg2hw.alert_en[6].q),
 
     // to register interface (read)
     .qs     (alert_en_6_qs)
@@ -2624,20 +2624,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_7_we & alert_regwen_7_qs),
     .wd     (alert_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[7].q ),
+    .q      (reg2hw.alert_en[7].q),
 
     // to register interface (read)
     .qs     (alert_en_7_qs)
@@ -2651,20 +2651,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_8_we & alert_regwen_8_qs),
     .wd     (alert_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[8].q ),
+    .q      (reg2hw.alert_en[8].q),
 
     // to register interface (read)
     .qs     (alert_en_8_qs)
@@ -2678,20 +2678,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_9_we & alert_regwen_9_qs),
     .wd     (alert_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[9].q ),
+    .q      (reg2hw.alert_en[9].q),
 
     // to register interface (read)
     .qs     (alert_en_9_qs)
@@ -2705,20 +2705,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_10_we & alert_regwen_10_qs),
     .wd     (alert_en_10_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[10].q ),
+    .q      (reg2hw.alert_en[10].q),
 
     // to register interface (read)
     .qs     (alert_en_10_qs)
@@ -2732,20 +2732,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_11_we & alert_regwen_11_qs),
     .wd     (alert_en_11_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[11].q ),
+    .q      (reg2hw.alert_en[11].q),
 
     // to register interface (read)
     .qs     (alert_en_11_qs)
@@ -2759,20 +2759,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_12_we & alert_regwen_12_qs),
     .wd     (alert_en_12_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[12].q ),
+    .q      (reg2hw.alert_en[12].q),
 
     // to register interface (read)
     .qs     (alert_en_12_qs)
@@ -2786,20 +2786,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_13_we & alert_regwen_13_qs),
     .wd     (alert_en_13_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[13].q ),
+    .q      (reg2hw.alert_en[13].q),
 
     // to register interface (read)
     .qs     (alert_en_13_qs)
@@ -2813,20 +2813,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_14_we & alert_regwen_14_qs),
     .wd     (alert_en_14_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[14].q ),
+    .q      (reg2hw.alert_en[14].q),
 
     // to register interface (read)
     .qs     (alert_en_14_qs)
@@ -2840,20 +2840,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_15_we & alert_regwen_15_qs),
     .wd     (alert_en_15_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[15].q ),
+    .q      (reg2hw.alert_en[15].q),
 
     // to register interface (read)
     .qs     (alert_en_15_qs)
@@ -2867,20 +2867,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_16_we & alert_regwen_16_qs),
     .wd     (alert_en_16_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[16].q ),
+    .q      (reg2hw.alert_en[16].q),
 
     // to register interface (read)
     .qs     (alert_en_16_qs)
@@ -2894,20 +2894,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_17_we & alert_regwen_17_qs),
     .wd     (alert_en_17_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[17].q ),
+    .q      (reg2hw.alert_en[17].q),
 
     // to register interface (read)
     .qs     (alert_en_17_qs)
@@ -2921,20 +2921,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_18_we & alert_regwen_18_qs),
     .wd     (alert_en_18_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[18].q ),
+    .q      (reg2hw.alert_en[18].q),
 
     // to register interface (read)
     .qs     (alert_en_18_qs)
@@ -2948,20 +2948,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_19_we & alert_regwen_19_qs),
     .wd     (alert_en_19_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[19].q ),
+    .q      (reg2hw.alert_en[19].q),
 
     // to register interface (read)
     .qs     (alert_en_19_qs)
@@ -2975,20 +2975,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_20_we & alert_regwen_20_qs),
     .wd     (alert_en_20_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[20].q ),
+    .q      (reg2hw.alert_en[20].q),
 
     // to register interface (read)
     .qs     (alert_en_20_qs)
@@ -3002,20 +3002,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_21_we & alert_regwen_21_qs),
     .wd     (alert_en_21_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[21].q ),
+    .q      (reg2hw.alert_en[21].q),
 
     // to register interface (read)
     .qs     (alert_en_21_qs)
@@ -3029,20 +3029,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_22_we & alert_regwen_22_qs),
     .wd     (alert_en_22_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[22].q ),
+    .q      (reg2hw.alert_en[22].q),
 
     // to register interface (read)
     .qs     (alert_en_22_qs)
@@ -3056,20 +3056,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_23_we & alert_regwen_23_qs),
     .wd     (alert_en_23_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[23].q ),
+    .q      (reg2hw.alert_en[23].q),
 
     // to register interface (read)
     .qs     (alert_en_23_qs)
@@ -3083,20 +3083,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_24_we & alert_regwen_24_qs),
     .wd     (alert_en_24_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[24].q ),
+    .q      (reg2hw.alert_en[24].q),
 
     // to register interface (read)
     .qs     (alert_en_24_qs)
@@ -3110,20 +3110,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_25_we & alert_regwen_25_qs),
     .wd     (alert_en_25_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[25].q ),
+    .q      (reg2hw.alert_en[25].q),
 
     // to register interface (read)
     .qs     (alert_en_25_qs)
@@ -3137,20 +3137,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_26_we & alert_regwen_26_qs),
     .wd     (alert_en_26_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[26].q ),
+    .q      (reg2hw.alert_en[26].q),
 
     // to register interface (read)
     .qs     (alert_en_26_qs)
@@ -3164,20 +3164,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_27_we & alert_regwen_27_qs),
     .wd     (alert_en_27_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[27].q ),
+    .q      (reg2hw.alert_en[27].q),
 
     // to register interface (read)
     .qs     (alert_en_27_qs)
@@ -3191,20 +3191,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_28_we & alert_regwen_28_qs),
     .wd     (alert_en_28_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[28].q ),
+    .q      (reg2hw.alert_en[28].q),
 
     // to register interface (read)
     .qs     (alert_en_28_qs)
@@ -3218,20 +3218,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_29_we & alert_regwen_29_qs),
     .wd     (alert_en_29_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[29].q ),
+    .q      (reg2hw.alert_en[29].q),
 
     // to register interface (read)
     .qs     (alert_en_29_qs)
@@ -3245,20 +3245,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_30_we & alert_regwen_30_qs),
     .wd     (alert_en_30_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[30].q ),
+    .q      (reg2hw.alert_en[30].q),
 
     // to register interface (read)
     .qs     (alert_en_30_qs)
@@ -3272,20 +3272,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_31_we & alert_regwen_31_qs),
     .wd     (alert_en_31_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[31].q ),
+    .q      (reg2hw.alert_en[31].q),
 
     // to register interface (read)
     .qs     (alert_en_31_qs)
@@ -3299,20 +3299,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_32 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_32_we & alert_regwen_32_qs),
     .wd     (alert_en_32_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[32].q ),
+    .q      (reg2hw.alert_en[32].q),
 
     // to register interface (read)
     .qs     (alert_en_32_qs)
@@ -3326,20 +3326,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_33 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_33_we & alert_regwen_33_qs),
     .wd     (alert_en_33_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[33].q ),
+    .q      (reg2hw.alert_en[33].q),
 
     // to register interface (read)
     .qs     (alert_en_33_qs)
@@ -3353,20 +3353,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_34 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_34_we & alert_regwen_34_qs),
     .wd     (alert_en_34_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[34].q ),
+    .q      (reg2hw.alert_en[34].q),
 
     // to register interface (read)
     .qs     (alert_en_34_qs)
@@ -3380,20 +3380,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_35 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_35_we & alert_regwen_35_qs),
     .wd     (alert_en_35_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[35].q ),
+    .q      (reg2hw.alert_en[35].q),
 
     // to register interface (read)
     .qs     (alert_en_35_qs)
@@ -3407,20 +3407,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_36 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_36_we & alert_regwen_36_qs),
     .wd     (alert_en_36_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[36].q ),
+    .q      (reg2hw.alert_en[36].q),
 
     // to register interface (read)
     .qs     (alert_en_36_qs)
@@ -3434,20 +3434,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_37 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_37_we & alert_regwen_37_qs),
     .wd     (alert_en_37_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[37].q ),
+    .q      (reg2hw.alert_en[37].q),
 
     // to register interface (read)
     .qs     (alert_en_37_qs)
@@ -3461,20 +3461,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_alert_en_38 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_en_38_we & alert_regwen_38_qs),
     .wd     (alert_en_38_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_en[38].q ),
+    .q      (reg2hw.alert_en[38].q),
 
     // to register interface (read)
     .qs     (alert_en_38_qs)
@@ -3490,20 +3490,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_0_we & alert_regwen_0_qs),
     .wd     (alert_class_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[0].q ),
+    .q      (reg2hw.alert_class[0].q),
 
     // to register interface (read)
     .qs     (alert_class_0_qs)
@@ -3517,20 +3517,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_1_we & alert_regwen_1_qs),
     .wd     (alert_class_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[1].q ),
+    .q      (reg2hw.alert_class[1].q),
 
     // to register interface (read)
     .qs     (alert_class_1_qs)
@@ -3544,20 +3544,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_2_we & alert_regwen_2_qs),
     .wd     (alert_class_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[2].q ),
+    .q      (reg2hw.alert_class[2].q),
 
     // to register interface (read)
     .qs     (alert_class_2_qs)
@@ -3571,20 +3571,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_3_we & alert_regwen_3_qs),
     .wd     (alert_class_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[3].q ),
+    .q      (reg2hw.alert_class[3].q),
 
     // to register interface (read)
     .qs     (alert_class_3_qs)
@@ -3598,20 +3598,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_4_we & alert_regwen_4_qs),
     .wd     (alert_class_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[4].q ),
+    .q      (reg2hw.alert_class[4].q),
 
     // to register interface (read)
     .qs     (alert_class_4_qs)
@@ -3625,20 +3625,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_5_we & alert_regwen_5_qs),
     .wd     (alert_class_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[5].q ),
+    .q      (reg2hw.alert_class[5].q),
 
     // to register interface (read)
     .qs     (alert_class_5_qs)
@@ -3652,20 +3652,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_6_we & alert_regwen_6_qs),
     .wd     (alert_class_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[6].q ),
+    .q      (reg2hw.alert_class[6].q),
 
     // to register interface (read)
     .qs     (alert_class_6_qs)
@@ -3679,20 +3679,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_7_we & alert_regwen_7_qs),
     .wd     (alert_class_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[7].q ),
+    .q      (reg2hw.alert_class[7].q),
 
     // to register interface (read)
     .qs     (alert_class_7_qs)
@@ -3706,20 +3706,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_8_we & alert_regwen_8_qs),
     .wd     (alert_class_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[8].q ),
+    .q      (reg2hw.alert_class[8].q),
 
     // to register interface (read)
     .qs     (alert_class_8_qs)
@@ -3733,20 +3733,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_9_we & alert_regwen_9_qs),
     .wd     (alert_class_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[9].q ),
+    .q      (reg2hw.alert_class[9].q),
 
     // to register interface (read)
     .qs     (alert_class_9_qs)
@@ -3760,20 +3760,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_10_we & alert_regwen_10_qs),
     .wd     (alert_class_10_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[10].q ),
+    .q      (reg2hw.alert_class[10].q),
 
     // to register interface (read)
     .qs     (alert_class_10_qs)
@@ -3787,20 +3787,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_11_we & alert_regwen_11_qs),
     .wd     (alert_class_11_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[11].q ),
+    .q      (reg2hw.alert_class[11].q),
 
     // to register interface (read)
     .qs     (alert_class_11_qs)
@@ -3814,20 +3814,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_12_we & alert_regwen_12_qs),
     .wd     (alert_class_12_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[12].q ),
+    .q      (reg2hw.alert_class[12].q),
 
     // to register interface (read)
     .qs     (alert_class_12_qs)
@@ -3841,20 +3841,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_13_we & alert_regwen_13_qs),
     .wd     (alert_class_13_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[13].q ),
+    .q      (reg2hw.alert_class[13].q),
 
     // to register interface (read)
     .qs     (alert_class_13_qs)
@@ -3868,20 +3868,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_14_we & alert_regwen_14_qs),
     .wd     (alert_class_14_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[14].q ),
+    .q      (reg2hw.alert_class[14].q),
 
     // to register interface (read)
     .qs     (alert_class_14_qs)
@@ -3895,20 +3895,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_15_we & alert_regwen_15_qs),
     .wd     (alert_class_15_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[15].q ),
+    .q      (reg2hw.alert_class[15].q),
 
     // to register interface (read)
     .qs     (alert_class_15_qs)
@@ -3922,20 +3922,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_16_we & alert_regwen_16_qs),
     .wd     (alert_class_16_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[16].q ),
+    .q      (reg2hw.alert_class[16].q),
 
     // to register interface (read)
     .qs     (alert_class_16_qs)
@@ -3949,20 +3949,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_17_we & alert_regwen_17_qs),
     .wd     (alert_class_17_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[17].q ),
+    .q      (reg2hw.alert_class[17].q),
 
     // to register interface (read)
     .qs     (alert_class_17_qs)
@@ -3976,20 +3976,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_18_we & alert_regwen_18_qs),
     .wd     (alert_class_18_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[18].q ),
+    .q      (reg2hw.alert_class[18].q),
 
     // to register interface (read)
     .qs     (alert_class_18_qs)
@@ -4003,20 +4003,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_19_we & alert_regwen_19_qs),
     .wd     (alert_class_19_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[19].q ),
+    .q      (reg2hw.alert_class[19].q),
 
     // to register interface (read)
     .qs     (alert_class_19_qs)
@@ -4030,20 +4030,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_20_we & alert_regwen_20_qs),
     .wd     (alert_class_20_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[20].q ),
+    .q      (reg2hw.alert_class[20].q),
 
     // to register interface (read)
     .qs     (alert_class_20_qs)
@@ -4057,20 +4057,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_21_we & alert_regwen_21_qs),
     .wd     (alert_class_21_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[21].q ),
+    .q      (reg2hw.alert_class[21].q),
 
     // to register interface (read)
     .qs     (alert_class_21_qs)
@@ -4084,20 +4084,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_22_we & alert_regwen_22_qs),
     .wd     (alert_class_22_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[22].q ),
+    .q      (reg2hw.alert_class[22].q),
 
     // to register interface (read)
     .qs     (alert_class_22_qs)
@@ -4111,20 +4111,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_23_we & alert_regwen_23_qs),
     .wd     (alert_class_23_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[23].q ),
+    .q      (reg2hw.alert_class[23].q),
 
     // to register interface (read)
     .qs     (alert_class_23_qs)
@@ -4138,20 +4138,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_24_we & alert_regwen_24_qs),
     .wd     (alert_class_24_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[24].q ),
+    .q      (reg2hw.alert_class[24].q),
 
     // to register interface (read)
     .qs     (alert_class_24_qs)
@@ -4165,20 +4165,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_25_we & alert_regwen_25_qs),
     .wd     (alert_class_25_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[25].q ),
+    .q      (reg2hw.alert_class[25].q),
 
     // to register interface (read)
     .qs     (alert_class_25_qs)
@@ -4192,20 +4192,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_26_we & alert_regwen_26_qs),
     .wd     (alert_class_26_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[26].q ),
+    .q      (reg2hw.alert_class[26].q),
 
     // to register interface (read)
     .qs     (alert_class_26_qs)
@@ -4219,20 +4219,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_27_we & alert_regwen_27_qs),
     .wd     (alert_class_27_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[27].q ),
+    .q      (reg2hw.alert_class[27].q),
 
     // to register interface (read)
     .qs     (alert_class_27_qs)
@@ -4246,20 +4246,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_28_we & alert_regwen_28_qs),
     .wd     (alert_class_28_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[28].q ),
+    .q      (reg2hw.alert_class[28].q),
 
     // to register interface (read)
     .qs     (alert_class_28_qs)
@@ -4273,20 +4273,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_29_we & alert_regwen_29_qs),
     .wd     (alert_class_29_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[29].q ),
+    .q      (reg2hw.alert_class[29].q),
 
     // to register interface (read)
     .qs     (alert_class_29_qs)
@@ -4300,20 +4300,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_30_we & alert_regwen_30_qs),
     .wd     (alert_class_30_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[30].q ),
+    .q      (reg2hw.alert_class[30].q),
 
     // to register interface (read)
     .qs     (alert_class_30_qs)
@@ -4327,20 +4327,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_31_we & alert_regwen_31_qs),
     .wd     (alert_class_31_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[31].q ),
+    .q      (reg2hw.alert_class[31].q),
 
     // to register interface (read)
     .qs     (alert_class_31_qs)
@@ -4354,20 +4354,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_32 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_32_we & alert_regwen_32_qs),
     .wd     (alert_class_32_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[32].q ),
+    .q      (reg2hw.alert_class[32].q),
 
     // to register interface (read)
     .qs     (alert_class_32_qs)
@@ -4381,20 +4381,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_33 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_33_we & alert_regwen_33_qs),
     .wd     (alert_class_33_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[33].q ),
+    .q      (reg2hw.alert_class[33].q),
 
     // to register interface (read)
     .qs     (alert_class_33_qs)
@@ -4408,20 +4408,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_34 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_34_we & alert_regwen_34_qs),
     .wd     (alert_class_34_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[34].q ),
+    .q      (reg2hw.alert_class[34].q),
 
     // to register interface (read)
     .qs     (alert_class_34_qs)
@@ -4435,20 +4435,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_35 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_35_we & alert_regwen_35_qs),
     .wd     (alert_class_35_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[35].q ),
+    .q      (reg2hw.alert_class[35].q),
 
     // to register interface (read)
     .qs     (alert_class_35_qs)
@@ -4462,20 +4462,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_36 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_36_we & alert_regwen_36_qs),
     .wd     (alert_class_36_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[36].q ),
+    .q      (reg2hw.alert_class[36].q),
 
     // to register interface (read)
     .qs     (alert_class_36_qs)
@@ -4489,20 +4489,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_37 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_37_we & alert_regwen_37_qs),
     .wd     (alert_class_37_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[37].q ),
+    .q      (reg2hw.alert_class[37].q),
 
     // to register interface (read)
     .qs     (alert_class_37_qs)
@@ -4516,20 +4516,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_alert_class_38 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (alert_class_38_we & alert_regwen_38_qs),
     .wd     (alert_class_38_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_class[38].q ),
+    .q      (reg2hw.alert_class[38].q),
 
     // to register interface (read)
     .qs     (alert_class_38_qs)
@@ -4545,8 +4545,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_0_we),
@@ -4554,11 +4554,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[0].de),
-    .d      (hw2reg.alert_cause[0].d ),
+    .d      (hw2reg.alert_cause[0].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[0].q ),
+    .q      (reg2hw.alert_cause[0].q),
 
     // to register interface (read)
     .qs     (alert_cause_0_qs)
@@ -4572,8 +4572,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_1_we),
@@ -4581,11 +4581,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[1].de),
-    .d      (hw2reg.alert_cause[1].d ),
+    .d      (hw2reg.alert_cause[1].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[1].q ),
+    .q      (reg2hw.alert_cause[1].q),
 
     // to register interface (read)
     .qs     (alert_cause_1_qs)
@@ -4599,8 +4599,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_2_we),
@@ -4608,11 +4608,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[2].de),
-    .d      (hw2reg.alert_cause[2].d ),
+    .d      (hw2reg.alert_cause[2].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[2].q ),
+    .q      (reg2hw.alert_cause[2].q),
 
     // to register interface (read)
     .qs     (alert_cause_2_qs)
@@ -4626,8 +4626,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_3_we),
@@ -4635,11 +4635,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[3].de),
-    .d      (hw2reg.alert_cause[3].d ),
+    .d      (hw2reg.alert_cause[3].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[3].q ),
+    .q      (reg2hw.alert_cause[3].q),
 
     // to register interface (read)
     .qs     (alert_cause_3_qs)
@@ -4653,8 +4653,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_4_we),
@@ -4662,11 +4662,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[4].de),
-    .d      (hw2reg.alert_cause[4].d ),
+    .d      (hw2reg.alert_cause[4].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[4].q ),
+    .q      (reg2hw.alert_cause[4].q),
 
     // to register interface (read)
     .qs     (alert_cause_4_qs)
@@ -4680,8 +4680,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_5_we),
@@ -4689,11 +4689,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[5].de),
-    .d      (hw2reg.alert_cause[5].d ),
+    .d      (hw2reg.alert_cause[5].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[5].q ),
+    .q      (reg2hw.alert_cause[5].q),
 
     // to register interface (read)
     .qs     (alert_cause_5_qs)
@@ -4707,8 +4707,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_6_we),
@@ -4716,11 +4716,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[6].de),
-    .d      (hw2reg.alert_cause[6].d ),
+    .d      (hw2reg.alert_cause[6].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[6].q ),
+    .q      (reg2hw.alert_cause[6].q),
 
     // to register interface (read)
     .qs     (alert_cause_6_qs)
@@ -4734,8 +4734,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_7_we),
@@ -4743,11 +4743,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[7].de),
-    .d      (hw2reg.alert_cause[7].d ),
+    .d      (hw2reg.alert_cause[7].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[7].q ),
+    .q      (reg2hw.alert_cause[7].q),
 
     // to register interface (read)
     .qs     (alert_cause_7_qs)
@@ -4761,8 +4761,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_8_we),
@@ -4770,11 +4770,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[8].de),
-    .d      (hw2reg.alert_cause[8].d ),
+    .d      (hw2reg.alert_cause[8].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[8].q ),
+    .q      (reg2hw.alert_cause[8].q),
 
     // to register interface (read)
     .qs     (alert_cause_8_qs)
@@ -4788,8 +4788,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_9_we),
@@ -4797,11 +4797,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[9].de),
-    .d      (hw2reg.alert_cause[9].d ),
+    .d      (hw2reg.alert_cause[9].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[9].q ),
+    .q      (reg2hw.alert_cause[9].q),
 
     // to register interface (read)
     .qs     (alert_cause_9_qs)
@@ -4815,8 +4815,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_10_we),
@@ -4824,11 +4824,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[10].de),
-    .d      (hw2reg.alert_cause[10].d ),
+    .d      (hw2reg.alert_cause[10].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[10].q ),
+    .q      (reg2hw.alert_cause[10].q),
 
     // to register interface (read)
     .qs     (alert_cause_10_qs)
@@ -4842,8 +4842,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_11_we),
@@ -4851,11 +4851,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[11].de),
-    .d      (hw2reg.alert_cause[11].d ),
+    .d      (hw2reg.alert_cause[11].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[11].q ),
+    .q      (reg2hw.alert_cause[11].q),
 
     // to register interface (read)
     .qs     (alert_cause_11_qs)
@@ -4869,8 +4869,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_12_we),
@@ -4878,11 +4878,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[12].de),
-    .d      (hw2reg.alert_cause[12].d ),
+    .d      (hw2reg.alert_cause[12].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[12].q ),
+    .q      (reg2hw.alert_cause[12].q),
 
     // to register interface (read)
     .qs     (alert_cause_12_qs)
@@ -4896,8 +4896,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_13_we),
@@ -4905,11 +4905,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[13].de),
-    .d      (hw2reg.alert_cause[13].d ),
+    .d      (hw2reg.alert_cause[13].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[13].q ),
+    .q      (reg2hw.alert_cause[13].q),
 
     // to register interface (read)
     .qs     (alert_cause_13_qs)
@@ -4923,8 +4923,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_14_we),
@@ -4932,11 +4932,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[14].de),
-    .d      (hw2reg.alert_cause[14].d ),
+    .d      (hw2reg.alert_cause[14].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[14].q ),
+    .q      (reg2hw.alert_cause[14].q),
 
     // to register interface (read)
     .qs     (alert_cause_14_qs)
@@ -4950,8 +4950,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_15_we),
@@ -4959,11 +4959,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[15].de),
-    .d      (hw2reg.alert_cause[15].d ),
+    .d      (hw2reg.alert_cause[15].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[15].q ),
+    .q      (reg2hw.alert_cause[15].q),
 
     // to register interface (read)
     .qs     (alert_cause_15_qs)
@@ -4977,8 +4977,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_16_we),
@@ -4986,11 +4986,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[16].de),
-    .d      (hw2reg.alert_cause[16].d ),
+    .d      (hw2reg.alert_cause[16].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[16].q ),
+    .q      (reg2hw.alert_cause[16].q),
 
     // to register interface (read)
     .qs     (alert_cause_16_qs)
@@ -5004,8 +5004,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_17_we),
@@ -5013,11 +5013,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[17].de),
-    .d      (hw2reg.alert_cause[17].d ),
+    .d      (hw2reg.alert_cause[17].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[17].q ),
+    .q      (reg2hw.alert_cause[17].q),
 
     // to register interface (read)
     .qs     (alert_cause_17_qs)
@@ -5031,8 +5031,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_18_we),
@@ -5040,11 +5040,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[18].de),
-    .d      (hw2reg.alert_cause[18].d ),
+    .d      (hw2reg.alert_cause[18].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[18].q ),
+    .q      (reg2hw.alert_cause[18].q),
 
     // to register interface (read)
     .qs     (alert_cause_18_qs)
@@ -5058,8 +5058,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_19_we),
@@ -5067,11 +5067,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[19].de),
-    .d      (hw2reg.alert_cause[19].d ),
+    .d      (hw2reg.alert_cause[19].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[19].q ),
+    .q      (reg2hw.alert_cause[19].q),
 
     // to register interface (read)
     .qs     (alert_cause_19_qs)
@@ -5085,8 +5085,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_20_we),
@@ -5094,11 +5094,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[20].de),
-    .d      (hw2reg.alert_cause[20].d ),
+    .d      (hw2reg.alert_cause[20].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[20].q ),
+    .q      (reg2hw.alert_cause[20].q),
 
     // to register interface (read)
     .qs     (alert_cause_20_qs)
@@ -5112,8 +5112,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_21_we),
@@ -5121,11 +5121,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[21].de),
-    .d      (hw2reg.alert_cause[21].d ),
+    .d      (hw2reg.alert_cause[21].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[21].q ),
+    .q      (reg2hw.alert_cause[21].q),
 
     // to register interface (read)
     .qs     (alert_cause_21_qs)
@@ -5139,8 +5139,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_22_we),
@@ -5148,11 +5148,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[22].de),
-    .d      (hw2reg.alert_cause[22].d ),
+    .d      (hw2reg.alert_cause[22].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[22].q ),
+    .q      (reg2hw.alert_cause[22].q),
 
     // to register interface (read)
     .qs     (alert_cause_22_qs)
@@ -5166,8 +5166,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_23_we),
@@ -5175,11 +5175,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[23].de),
-    .d      (hw2reg.alert_cause[23].d ),
+    .d      (hw2reg.alert_cause[23].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[23].q ),
+    .q      (reg2hw.alert_cause[23].q),
 
     // to register interface (read)
     .qs     (alert_cause_23_qs)
@@ -5193,8 +5193,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_24_we),
@@ -5202,11 +5202,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[24].de),
-    .d      (hw2reg.alert_cause[24].d ),
+    .d      (hw2reg.alert_cause[24].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[24].q ),
+    .q      (reg2hw.alert_cause[24].q),
 
     // to register interface (read)
     .qs     (alert_cause_24_qs)
@@ -5220,8 +5220,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_25_we),
@@ -5229,11 +5229,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[25].de),
-    .d      (hw2reg.alert_cause[25].d ),
+    .d      (hw2reg.alert_cause[25].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[25].q ),
+    .q      (reg2hw.alert_cause[25].q),
 
     // to register interface (read)
     .qs     (alert_cause_25_qs)
@@ -5247,8 +5247,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_26_we),
@@ -5256,11 +5256,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[26].de),
-    .d      (hw2reg.alert_cause[26].d ),
+    .d      (hw2reg.alert_cause[26].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[26].q ),
+    .q      (reg2hw.alert_cause[26].q),
 
     // to register interface (read)
     .qs     (alert_cause_26_qs)
@@ -5274,8 +5274,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_27_we),
@@ -5283,11 +5283,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[27].de),
-    .d      (hw2reg.alert_cause[27].d ),
+    .d      (hw2reg.alert_cause[27].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[27].q ),
+    .q      (reg2hw.alert_cause[27].q),
 
     // to register interface (read)
     .qs     (alert_cause_27_qs)
@@ -5301,8 +5301,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_28_we),
@@ -5310,11 +5310,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[28].de),
-    .d      (hw2reg.alert_cause[28].d ),
+    .d      (hw2reg.alert_cause[28].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[28].q ),
+    .q      (reg2hw.alert_cause[28].q),
 
     // to register interface (read)
     .qs     (alert_cause_28_qs)
@@ -5328,8 +5328,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_29_we),
@@ -5337,11 +5337,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[29].de),
-    .d      (hw2reg.alert_cause[29].d ),
+    .d      (hw2reg.alert_cause[29].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[29].q ),
+    .q      (reg2hw.alert_cause[29].q),
 
     // to register interface (read)
     .qs     (alert_cause_29_qs)
@@ -5355,8 +5355,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_30_we),
@@ -5364,11 +5364,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[30].de),
-    .d      (hw2reg.alert_cause[30].d ),
+    .d      (hw2reg.alert_cause[30].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[30].q ),
+    .q      (reg2hw.alert_cause[30].q),
 
     // to register interface (read)
     .qs     (alert_cause_30_qs)
@@ -5382,8 +5382,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_31_we),
@@ -5391,11 +5391,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[31].de),
-    .d      (hw2reg.alert_cause[31].d ),
+    .d      (hw2reg.alert_cause[31].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[31].q ),
+    .q      (reg2hw.alert_cause[31].q),
 
     // to register interface (read)
     .qs     (alert_cause_31_qs)
@@ -5409,8 +5409,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_32 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_32_we),
@@ -5418,11 +5418,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[32].de),
-    .d      (hw2reg.alert_cause[32].d ),
+    .d      (hw2reg.alert_cause[32].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[32].q ),
+    .q      (reg2hw.alert_cause[32].q),
 
     // to register interface (read)
     .qs     (alert_cause_32_qs)
@@ -5436,8 +5436,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_33 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_33_we),
@@ -5445,11 +5445,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[33].de),
-    .d      (hw2reg.alert_cause[33].d ),
+    .d      (hw2reg.alert_cause[33].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[33].q ),
+    .q      (reg2hw.alert_cause[33].q),
 
     // to register interface (read)
     .qs     (alert_cause_33_qs)
@@ -5463,8 +5463,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_34 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_34_we),
@@ -5472,11 +5472,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[34].de),
-    .d      (hw2reg.alert_cause[34].d ),
+    .d      (hw2reg.alert_cause[34].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[34].q ),
+    .q      (reg2hw.alert_cause[34].q),
 
     // to register interface (read)
     .qs     (alert_cause_34_qs)
@@ -5490,8 +5490,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_35 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_35_we),
@@ -5499,11 +5499,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[35].de),
-    .d      (hw2reg.alert_cause[35].d ),
+    .d      (hw2reg.alert_cause[35].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[35].q ),
+    .q      (reg2hw.alert_cause[35].q),
 
     // to register interface (read)
     .qs     (alert_cause_35_qs)
@@ -5517,8 +5517,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_36 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_36_we),
@@ -5526,11 +5526,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[36].de),
-    .d      (hw2reg.alert_cause[36].d ),
+    .d      (hw2reg.alert_cause[36].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[36].q ),
+    .q      (reg2hw.alert_cause[36].q),
 
     // to register interface (read)
     .qs     (alert_cause_36_qs)
@@ -5544,8 +5544,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_37 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_37_we),
@@ -5553,11 +5553,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[37].de),
-    .d      (hw2reg.alert_cause[37].d ),
+    .d      (hw2reg.alert_cause[37].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[37].q ),
+    .q      (reg2hw.alert_cause[37].q),
 
     // to register interface (read)
     .qs     (alert_cause_37_qs)
@@ -5571,8 +5571,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_alert_cause_38 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (alert_cause_38_we),
@@ -5580,11 +5580,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.alert_cause[38].de),
-    .d      (hw2reg.alert_cause[38].d ),
+    .d      (hw2reg.alert_cause[38].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.alert_cause[38].q ),
+    .q      (reg2hw.alert_cause[38].q),
 
     // to register interface (read)
     .qs     (alert_cause_38_qs)
@@ -5600,8 +5600,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_0_we),
@@ -5609,7 +5609,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5627,8 +5627,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_1_we),
@@ -5636,7 +5636,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5654,8 +5654,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_2_we),
@@ -5663,7 +5663,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5681,8 +5681,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_3_we),
@@ -5690,7 +5690,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5708,8 +5708,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_4_we),
@@ -5717,7 +5717,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5735,8 +5735,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_5_we),
@@ -5744,7 +5744,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5762,8 +5762,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_6_we),
@@ -5771,7 +5771,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5789,8 +5789,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_7_we),
@@ -5798,7 +5798,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5816,8 +5816,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_8_we),
@@ -5825,7 +5825,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5843,8 +5843,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_9_we),
@@ -5852,7 +5852,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5870,8 +5870,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_10 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_10_we),
@@ -5879,7 +5879,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5897,8 +5897,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_11 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_11_we),
@@ -5906,7 +5906,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5924,8 +5924,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_12 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_12_we),
@@ -5933,7 +5933,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5951,8 +5951,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_13 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_13_we),
@@ -5960,7 +5960,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -5978,8 +5978,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_14 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_14_we),
@@ -5987,7 +5987,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6005,8 +6005,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_15 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_15_we),
@@ -6014,7 +6014,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6032,8 +6032,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_16 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_16_we),
@@ -6041,7 +6041,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6059,8 +6059,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_17 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_17_we),
@@ -6068,7 +6068,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6086,8 +6086,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_18 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_18_we),
@@ -6095,7 +6095,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6113,8 +6113,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_19 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_19_we),
@@ -6122,7 +6122,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6140,8 +6140,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_20 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_20_we),
@@ -6149,7 +6149,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6167,8 +6167,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_21 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_21_we),
@@ -6176,7 +6176,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6194,8 +6194,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_22 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_22_we),
@@ -6203,7 +6203,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6221,8 +6221,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_23 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_23_we),
@@ -6230,7 +6230,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6248,8 +6248,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_24 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_24_we),
@@ -6257,7 +6257,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6275,8 +6275,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_25 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_25_we),
@@ -6284,7 +6284,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6302,8 +6302,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_26 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_26_we),
@@ -6311,7 +6311,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6329,8 +6329,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_27 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_27_we),
@@ -6338,7 +6338,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6356,8 +6356,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_28 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_28_we),
@@ -6365,7 +6365,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6383,8 +6383,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_29 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_29_we),
@@ -6392,7 +6392,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6410,8 +6410,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_30 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_30_we),
@@ -6419,7 +6419,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6437,8 +6437,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_31 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_31_we),
@@ -6446,7 +6446,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6464,8 +6464,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_32 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_32_we),
@@ -6473,7 +6473,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6491,8 +6491,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_33 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_33_we),
@@ -6500,7 +6500,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6518,8 +6518,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_34 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_34_we),
@@ -6527,7 +6527,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6545,8 +6545,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_35 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_35_we),
@@ -6554,7 +6554,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6572,8 +6572,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_36 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_36_we),
@@ -6581,7 +6581,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6599,8 +6599,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_37 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_37_we),
@@ -6608,7 +6608,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6626,8 +6626,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_loc_alert_regwen_38 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_regwen_38_we),
@@ -6635,7 +6635,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6655,20 +6655,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_loc_alert_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (loc_alert_en_0_we & loc_alert_regwen_0_qs),
     .wd     (loc_alert_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_en[0].q ),
+    .q      (reg2hw.loc_alert_en[0].q),
 
     // to register interface (read)
     .qs     (loc_alert_en_0_qs)
@@ -6682,20 +6682,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_loc_alert_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (loc_alert_en_1_we & loc_alert_regwen_1_qs),
     .wd     (loc_alert_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_en[1].q ),
+    .q      (reg2hw.loc_alert_en[1].q),
 
     // to register interface (read)
     .qs     (loc_alert_en_1_qs)
@@ -6709,20 +6709,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_loc_alert_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (loc_alert_en_2_we & loc_alert_regwen_2_qs),
     .wd     (loc_alert_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_en[2].q ),
+    .q      (reg2hw.loc_alert_en[2].q),
 
     // to register interface (read)
     .qs     (loc_alert_en_2_qs)
@@ -6736,20 +6736,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_loc_alert_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (loc_alert_en_3_we & loc_alert_regwen_3_qs),
     .wd     (loc_alert_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_en[3].q ),
+    .q      (reg2hw.loc_alert_en[3].q),
 
     // to register interface (read)
     .qs     (loc_alert_en_3_qs)
@@ -6765,20 +6765,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_loc_alert_class_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (loc_alert_class_0_we & loc_alert_regwen_0_qs),
     .wd     (loc_alert_class_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_class[0].q ),
+    .q      (reg2hw.loc_alert_class[0].q),
 
     // to register interface (read)
     .qs     (loc_alert_class_0_qs)
@@ -6792,20 +6792,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_loc_alert_class_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (loc_alert_class_1_we & loc_alert_regwen_1_qs),
     .wd     (loc_alert_class_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_class[1].q ),
+    .q      (reg2hw.loc_alert_class[1].q),
 
     // to register interface (read)
     .qs     (loc_alert_class_1_qs)
@@ -6819,20 +6819,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_loc_alert_class_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (loc_alert_class_2_we & loc_alert_regwen_2_qs),
     .wd     (loc_alert_class_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_class[2].q ),
+    .q      (reg2hw.loc_alert_class[2].q),
 
     // to register interface (read)
     .qs     (loc_alert_class_2_qs)
@@ -6846,20 +6846,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_loc_alert_class_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (loc_alert_class_3_we & loc_alert_regwen_3_qs),
     .wd     (loc_alert_class_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_class[3].q ),
+    .q      (reg2hw.loc_alert_class[3].q),
 
     // to register interface (read)
     .qs     (loc_alert_class_3_qs)
@@ -6875,8 +6875,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_loc_alert_cause_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_cause_0_we),
@@ -6884,11 +6884,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.loc_alert_cause[0].de),
-    .d      (hw2reg.loc_alert_cause[0].d ),
+    .d      (hw2reg.loc_alert_cause[0].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_cause[0].q ),
+    .q      (reg2hw.loc_alert_cause[0].q),
 
     // to register interface (read)
     .qs     (loc_alert_cause_0_qs)
@@ -6902,8 +6902,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_loc_alert_cause_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_cause_1_we),
@@ -6911,11 +6911,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.loc_alert_cause[1].de),
-    .d      (hw2reg.loc_alert_cause[1].d ),
+    .d      (hw2reg.loc_alert_cause[1].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_cause[1].q ),
+    .q      (reg2hw.loc_alert_cause[1].q),
 
     // to register interface (read)
     .qs     (loc_alert_cause_1_qs)
@@ -6929,8 +6929,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_loc_alert_cause_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_cause_2_we),
@@ -6938,11 +6938,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.loc_alert_cause[2].de),
-    .d      (hw2reg.loc_alert_cause[2].d ),
+    .d      (hw2reg.loc_alert_cause[2].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_cause[2].q ),
+    .q      (reg2hw.loc_alert_cause[2].q),
 
     // to register interface (read)
     .qs     (loc_alert_cause_2_qs)
@@ -6956,8 +6956,8 @@ module alert_handler_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_loc_alert_cause_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (loc_alert_cause_3_we),
@@ -6965,11 +6965,11 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.loc_alert_cause[3].de),
-    .d      (hw2reg.loc_alert_cause[3].d ),
+    .d      (hw2reg.loc_alert_cause[3].d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.loc_alert_cause[3].q ),
+    .q      (reg2hw.loc_alert_cause[3].q),
 
     // to register interface (read)
     .qs     (loc_alert_cause_3_qs)
@@ -6983,8 +6983,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_classa_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (classa_regwen_we),
@@ -6992,7 +6992,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -7011,20 +7011,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_classa_ctrl_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_ctrl_en_we & classa_regwen_qs),
     .wd     (classa_ctrl_en_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_ctrl.en.q ),
+    .q      (reg2hw.classa_ctrl.en.q),
 
     // to register interface (read)
     .qs     (classa_ctrl_en_qs)
@@ -7037,20 +7037,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_classa_ctrl_lock (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_ctrl_lock_we & classa_regwen_qs),
     .wd     (classa_ctrl_lock_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_ctrl.lock.q ),
+    .q      (reg2hw.classa_ctrl.lock.q),
 
     // to register interface (read)
     .qs     (classa_ctrl_lock_qs)
@@ -7063,20 +7063,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classa_ctrl_en_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_ctrl_en_e0_we & classa_regwen_qs),
     .wd     (classa_ctrl_en_e0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_ctrl.en_e0.q ),
+    .q      (reg2hw.classa_ctrl.en_e0.q),
 
     // to register interface (read)
     .qs     (classa_ctrl_en_e0_qs)
@@ -7089,20 +7089,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classa_ctrl_en_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_ctrl_en_e1_we & classa_regwen_qs),
     .wd     (classa_ctrl_en_e1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_ctrl.en_e1.q ),
+    .q      (reg2hw.classa_ctrl.en_e1.q),
 
     // to register interface (read)
     .qs     (classa_ctrl_en_e1_qs)
@@ -7115,20 +7115,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classa_ctrl_en_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_ctrl_en_e2_we & classa_regwen_qs),
     .wd     (classa_ctrl_en_e2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_ctrl.en_e2.q ),
+    .q      (reg2hw.classa_ctrl.en_e2.q),
 
     // to register interface (read)
     .qs     (classa_ctrl_en_e2_qs)
@@ -7141,20 +7141,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classa_ctrl_en_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_ctrl_en_e3_we & classa_regwen_qs),
     .wd     (classa_ctrl_en_e3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_ctrl.en_e3.q ),
+    .q      (reg2hw.classa_ctrl.en_e3.q),
 
     // to register interface (read)
     .qs     (classa_ctrl_en_e3_qs)
@@ -7167,20 +7167,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_classa_ctrl_map_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_ctrl_map_e0_we & classa_regwen_qs),
     .wd     (classa_ctrl_map_e0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_ctrl.map_e0.q ),
+    .q      (reg2hw.classa_ctrl.map_e0.q),
 
     // to register interface (read)
     .qs     (classa_ctrl_map_e0_qs)
@@ -7193,20 +7193,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h1)
   ) u_classa_ctrl_map_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_ctrl_map_e1_we & classa_regwen_qs),
     .wd     (classa_ctrl_map_e1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_ctrl.map_e1.q ),
+    .q      (reg2hw.classa_ctrl.map_e1.q),
 
     // to register interface (read)
     .qs     (classa_ctrl_map_e1_qs)
@@ -7219,20 +7219,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_classa_ctrl_map_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_ctrl_map_e2_we & classa_regwen_qs),
     .wd     (classa_ctrl_map_e2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_ctrl.map_e2.q ),
+    .q      (reg2hw.classa_ctrl.map_e2.q),
 
     // to register interface (read)
     .qs     (classa_ctrl_map_e2_qs)
@@ -7245,20 +7245,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h3)
   ) u_classa_ctrl_map_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_ctrl_map_e3_we & classa_regwen_qs),
     .wd     (classa_ctrl_map_e3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_ctrl.map_e3.q ),
+    .q      (reg2hw.classa_ctrl.map_e3.q),
 
     // to register interface (read)
     .qs     (classa_ctrl_map_e3_qs)
@@ -7272,8 +7272,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_classa_clr_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (classa_clr_regwen_we),
@@ -7281,7 +7281,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.classa_clr_regwen.de),
-    .d      (hw2reg.classa_clr_regwen.d ),
+    .d      (hw2reg.classa_clr_regwen.d),
 
     // to internal hardware
     .qe     (),
@@ -7299,21 +7299,22 @@ module alert_handler_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_classa_clr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_clr_we & classa_clr_regwen_qs),
     .wd     (classa_clr_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.classa_clr.qe),
-    .q      (reg2hw.classa_clr.q ),
+    .q      (reg2hw.classa_clr.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -7341,20 +7342,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_classa_accum_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_accum_thresh_we & classa_regwen_qs),
     .wd     (classa_accum_thresh_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_accum_thresh.q ),
+    .q      (reg2hw.classa_accum_thresh.q),
 
     // to register interface (read)
     .qs     (classa_accum_thresh_qs)
@@ -7368,20 +7369,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classa_timeout_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_timeout_cyc_we & classa_regwen_qs),
     .wd     (classa_timeout_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_timeout_cyc.q ),
+    .q      (reg2hw.classa_timeout_cyc.q),
 
     // to register interface (read)
     .qs     (classa_timeout_cyc_qs)
@@ -7395,20 +7396,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classa_phase0_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_phase0_cyc_we & classa_regwen_qs),
     .wd     (classa_phase0_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_phase0_cyc.q ),
+    .q      (reg2hw.classa_phase0_cyc.q),
 
     // to register interface (read)
     .qs     (classa_phase0_cyc_qs)
@@ -7422,20 +7423,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classa_phase1_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_phase1_cyc_we & classa_regwen_qs),
     .wd     (classa_phase1_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_phase1_cyc.q ),
+    .q      (reg2hw.classa_phase1_cyc.q),
 
     // to register interface (read)
     .qs     (classa_phase1_cyc_qs)
@@ -7449,20 +7450,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classa_phase2_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_phase2_cyc_we & classa_regwen_qs),
     .wd     (classa_phase2_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_phase2_cyc.q ),
+    .q      (reg2hw.classa_phase2_cyc.q),
 
     // to register interface (read)
     .qs     (classa_phase2_cyc_qs)
@@ -7476,20 +7477,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classa_phase3_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classa_phase3_cyc_we & classa_regwen_qs),
     .wd     (classa_phase3_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classa_phase3_cyc.q ),
+    .q      (reg2hw.classa_phase3_cyc.q),
 
     // to register interface (read)
     .qs     (classa_phase3_cyc_qs)
@@ -7535,8 +7536,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_classb_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (classb_regwen_we),
@@ -7544,7 +7545,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -7563,20 +7564,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_classb_ctrl_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_ctrl_en_we & classb_regwen_qs),
     .wd     (classb_ctrl_en_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_ctrl.en.q ),
+    .q      (reg2hw.classb_ctrl.en.q),
 
     // to register interface (read)
     .qs     (classb_ctrl_en_qs)
@@ -7589,20 +7590,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_classb_ctrl_lock (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_ctrl_lock_we & classb_regwen_qs),
     .wd     (classb_ctrl_lock_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_ctrl.lock.q ),
+    .q      (reg2hw.classb_ctrl.lock.q),
 
     // to register interface (read)
     .qs     (classb_ctrl_lock_qs)
@@ -7615,20 +7616,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classb_ctrl_en_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_ctrl_en_e0_we & classb_regwen_qs),
     .wd     (classb_ctrl_en_e0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_ctrl.en_e0.q ),
+    .q      (reg2hw.classb_ctrl.en_e0.q),
 
     // to register interface (read)
     .qs     (classb_ctrl_en_e0_qs)
@@ -7641,20 +7642,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classb_ctrl_en_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_ctrl_en_e1_we & classb_regwen_qs),
     .wd     (classb_ctrl_en_e1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_ctrl.en_e1.q ),
+    .q      (reg2hw.classb_ctrl.en_e1.q),
 
     // to register interface (read)
     .qs     (classb_ctrl_en_e1_qs)
@@ -7667,20 +7668,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classb_ctrl_en_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_ctrl_en_e2_we & classb_regwen_qs),
     .wd     (classb_ctrl_en_e2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_ctrl.en_e2.q ),
+    .q      (reg2hw.classb_ctrl.en_e2.q),
 
     // to register interface (read)
     .qs     (classb_ctrl_en_e2_qs)
@@ -7693,20 +7694,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classb_ctrl_en_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_ctrl_en_e3_we & classb_regwen_qs),
     .wd     (classb_ctrl_en_e3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_ctrl.en_e3.q ),
+    .q      (reg2hw.classb_ctrl.en_e3.q),
 
     // to register interface (read)
     .qs     (classb_ctrl_en_e3_qs)
@@ -7719,20 +7720,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_classb_ctrl_map_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_ctrl_map_e0_we & classb_regwen_qs),
     .wd     (classb_ctrl_map_e0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_ctrl.map_e0.q ),
+    .q      (reg2hw.classb_ctrl.map_e0.q),
 
     // to register interface (read)
     .qs     (classb_ctrl_map_e0_qs)
@@ -7745,20 +7746,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h1)
   ) u_classb_ctrl_map_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_ctrl_map_e1_we & classb_regwen_qs),
     .wd     (classb_ctrl_map_e1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_ctrl.map_e1.q ),
+    .q      (reg2hw.classb_ctrl.map_e1.q),
 
     // to register interface (read)
     .qs     (classb_ctrl_map_e1_qs)
@@ -7771,20 +7772,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_classb_ctrl_map_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_ctrl_map_e2_we & classb_regwen_qs),
     .wd     (classb_ctrl_map_e2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_ctrl.map_e2.q ),
+    .q      (reg2hw.classb_ctrl.map_e2.q),
 
     // to register interface (read)
     .qs     (classb_ctrl_map_e2_qs)
@@ -7797,20 +7798,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h3)
   ) u_classb_ctrl_map_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_ctrl_map_e3_we & classb_regwen_qs),
     .wd     (classb_ctrl_map_e3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_ctrl.map_e3.q ),
+    .q      (reg2hw.classb_ctrl.map_e3.q),
 
     // to register interface (read)
     .qs     (classb_ctrl_map_e3_qs)
@@ -7824,8 +7825,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_classb_clr_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (classb_clr_regwen_we),
@@ -7833,7 +7834,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.classb_clr_regwen.de),
-    .d      (hw2reg.classb_clr_regwen.d ),
+    .d      (hw2reg.classb_clr_regwen.d),
 
     // to internal hardware
     .qe     (),
@@ -7851,21 +7852,22 @@ module alert_handler_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_classb_clr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_clr_we & classb_clr_regwen_qs),
     .wd     (classb_clr_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.classb_clr.qe),
-    .q      (reg2hw.classb_clr.q ),
+    .q      (reg2hw.classb_clr.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -7893,20 +7895,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_classb_accum_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_accum_thresh_we & classb_regwen_qs),
     .wd     (classb_accum_thresh_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_accum_thresh.q ),
+    .q      (reg2hw.classb_accum_thresh.q),
 
     // to register interface (read)
     .qs     (classb_accum_thresh_qs)
@@ -7920,20 +7922,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classb_timeout_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_timeout_cyc_we & classb_regwen_qs),
     .wd     (classb_timeout_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_timeout_cyc.q ),
+    .q      (reg2hw.classb_timeout_cyc.q),
 
     // to register interface (read)
     .qs     (classb_timeout_cyc_qs)
@@ -7947,20 +7949,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classb_phase0_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_phase0_cyc_we & classb_regwen_qs),
     .wd     (classb_phase0_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_phase0_cyc.q ),
+    .q      (reg2hw.classb_phase0_cyc.q),
 
     // to register interface (read)
     .qs     (classb_phase0_cyc_qs)
@@ -7974,20 +7976,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classb_phase1_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_phase1_cyc_we & classb_regwen_qs),
     .wd     (classb_phase1_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_phase1_cyc.q ),
+    .q      (reg2hw.classb_phase1_cyc.q),
 
     // to register interface (read)
     .qs     (classb_phase1_cyc_qs)
@@ -8001,20 +8003,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classb_phase2_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_phase2_cyc_we & classb_regwen_qs),
     .wd     (classb_phase2_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_phase2_cyc.q ),
+    .q      (reg2hw.classb_phase2_cyc.q),
 
     // to register interface (read)
     .qs     (classb_phase2_cyc_qs)
@@ -8028,20 +8030,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classb_phase3_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classb_phase3_cyc_we & classb_regwen_qs),
     .wd     (classb_phase3_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classb_phase3_cyc.q ),
+    .q      (reg2hw.classb_phase3_cyc.q),
 
     // to register interface (read)
     .qs     (classb_phase3_cyc_qs)
@@ -8087,8 +8089,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_classc_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (classc_regwen_we),
@@ -8096,7 +8098,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8115,20 +8117,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_classc_ctrl_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_ctrl_en_we & classc_regwen_qs),
     .wd     (classc_ctrl_en_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_ctrl.en.q ),
+    .q      (reg2hw.classc_ctrl.en.q),
 
     // to register interface (read)
     .qs     (classc_ctrl_en_qs)
@@ -8141,20 +8143,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_classc_ctrl_lock (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_ctrl_lock_we & classc_regwen_qs),
     .wd     (classc_ctrl_lock_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_ctrl.lock.q ),
+    .q      (reg2hw.classc_ctrl.lock.q),
 
     // to register interface (read)
     .qs     (classc_ctrl_lock_qs)
@@ -8167,20 +8169,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classc_ctrl_en_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_ctrl_en_e0_we & classc_regwen_qs),
     .wd     (classc_ctrl_en_e0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_ctrl.en_e0.q ),
+    .q      (reg2hw.classc_ctrl.en_e0.q),
 
     // to register interface (read)
     .qs     (classc_ctrl_en_e0_qs)
@@ -8193,20 +8195,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classc_ctrl_en_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_ctrl_en_e1_we & classc_regwen_qs),
     .wd     (classc_ctrl_en_e1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_ctrl.en_e1.q ),
+    .q      (reg2hw.classc_ctrl.en_e1.q),
 
     // to register interface (read)
     .qs     (classc_ctrl_en_e1_qs)
@@ -8219,20 +8221,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classc_ctrl_en_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_ctrl_en_e2_we & classc_regwen_qs),
     .wd     (classc_ctrl_en_e2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_ctrl.en_e2.q ),
+    .q      (reg2hw.classc_ctrl.en_e2.q),
 
     // to register interface (read)
     .qs     (classc_ctrl_en_e2_qs)
@@ -8245,20 +8247,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classc_ctrl_en_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_ctrl_en_e3_we & classc_regwen_qs),
     .wd     (classc_ctrl_en_e3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_ctrl.en_e3.q ),
+    .q      (reg2hw.classc_ctrl.en_e3.q),
 
     // to register interface (read)
     .qs     (classc_ctrl_en_e3_qs)
@@ -8271,20 +8273,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_classc_ctrl_map_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_ctrl_map_e0_we & classc_regwen_qs),
     .wd     (classc_ctrl_map_e0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_ctrl.map_e0.q ),
+    .q      (reg2hw.classc_ctrl.map_e0.q),
 
     // to register interface (read)
     .qs     (classc_ctrl_map_e0_qs)
@@ -8297,20 +8299,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h1)
   ) u_classc_ctrl_map_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_ctrl_map_e1_we & classc_regwen_qs),
     .wd     (classc_ctrl_map_e1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_ctrl.map_e1.q ),
+    .q      (reg2hw.classc_ctrl.map_e1.q),
 
     // to register interface (read)
     .qs     (classc_ctrl_map_e1_qs)
@@ -8323,20 +8325,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_classc_ctrl_map_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_ctrl_map_e2_we & classc_regwen_qs),
     .wd     (classc_ctrl_map_e2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_ctrl.map_e2.q ),
+    .q      (reg2hw.classc_ctrl.map_e2.q),
 
     // to register interface (read)
     .qs     (classc_ctrl_map_e2_qs)
@@ -8349,20 +8351,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h3)
   ) u_classc_ctrl_map_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_ctrl_map_e3_we & classc_regwen_qs),
     .wd     (classc_ctrl_map_e3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_ctrl.map_e3.q ),
+    .q      (reg2hw.classc_ctrl.map_e3.q),
 
     // to register interface (read)
     .qs     (classc_ctrl_map_e3_qs)
@@ -8376,8 +8378,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_classc_clr_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (classc_clr_regwen_we),
@@ -8385,7 +8387,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.classc_clr_regwen.de),
-    .d      (hw2reg.classc_clr_regwen.d ),
+    .d      (hw2reg.classc_clr_regwen.d),
 
     // to internal hardware
     .qe     (),
@@ -8403,21 +8405,22 @@ module alert_handler_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_classc_clr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_clr_we & classc_clr_regwen_qs),
     .wd     (classc_clr_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.classc_clr.qe),
-    .q      (reg2hw.classc_clr.q ),
+    .q      (reg2hw.classc_clr.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -8445,20 +8448,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_classc_accum_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_accum_thresh_we & classc_regwen_qs),
     .wd     (classc_accum_thresh_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_accum_thresh.q ),
+    .q      (reg2hw.classc_accum_thresh.q),
 
     // to register interface (read)
     .qs     (classc_accum_thresh_qs)
@@ -8472,20 +8475,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classc_timeout_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_timeout_cyc_we & classc_regwen_qs),
     .wd     (classc_timeout_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_timeout_cyc.q ),
+    .q      (reg2hw.classc_timeout_cyc.q),
 
     // to register interface (read)
     .qs     (classc_timeout_cyc_qs)
@@ -8499,20 +8502,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classc_phase0_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_phase0_cyc_we & classc_regwen_qs),
     .wd     (classc_phase0_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_phase0_cyc.q ),
+    .q      (reg2hw.classc_phase0_cyc.q),
 
     // to register interface (read)
     .qs     (classc_phase0_cyc_qs)
@@ -8526,20 +8529,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classc_phase1_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_phase1_cyc_we & classc_regwen_qs),
     .wd     (classc_phase1_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_phase1_cyc.q ),
+    .q      (reg2hw.classc_phase1_cyc.q),
 
     // to register interface (read)
     .qs     (classc_phase1_cyc_qs)
@@ -8553,20 +8556,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classc_phase2_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_phase2_cyc_we & classc_regwen_qs),
     .wd     (classc_phase2_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_phase2_cyc.q ),
+    .q      (reg2hw.classc_phase2_cyc.q),
 
     // to register interface (read)
     .qs     (classc_phase2_cyc_qs)
@@ -8580,20 +8583,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classc_phase3_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classc_phase3_cyc_we & classc_regwen_qs),
     .wd     (classc_phase3_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classc_phase3_cyc.q ),
+    .q      (reg2hw.classc_phase3_cyc.q),
 
     // to register interface (read)
     .qs     (classc_phase3_cyc_qs)
@@ -8639,8 +8642,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_classd_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (classd_regwen_we),
@@ -8648,7 +8651,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -8667,20 +8670,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_classd_ctrl_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_ctrl_en_we & classd_regwen_qs),
     .wd     (classd_ctrl_en_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_ctrl.en.q ),
+    .q      (reg2hw.classd_ctrl.en.q),
 
     // to register interface (read)
     .qs     (classd_ctrl_en_qs)
@@ -8693,20 +8696,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_classd_ctrl_lock (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_ctrl_lock_we & classd_regwen_qs),
     .wd     (classd_ctrl_lock_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_ctrl.lock.q ),
+    .q      (reg2hw.classd_ctrl.lock.q),
 
     // to register interface (read)
     .qs     (classd_ctrl_lock_qs)
@@ -8719,20 +8722,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classd_ctrl_en_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_ctrl_en_e0_we & classd_regwen_qs),
     .wd     (classd_ctrl_en_e0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_ctrl.en_e0.q ),
+    .q      (reg2hw.classd_ctrl.en_e0.q),
 
     // to register interface (read)
     .qs     (classd_ctrl_en_e0_qs)
@@ -8745,20 +8748,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classd_ctrl_en_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_ctrl_en_e1_we & classd_regwen_qs),
     .wd     (classd_ctrl_en_e1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_ctrl.en_e1.q ),
+    .q      (reg2hw.classd_ctrl.en_e1.q),
 
     // to register interface (read)
     .qs     (classd_ctrl_en_e1_qs)
@@ -8771,20 +8774,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classd_ctrl_en_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_ctrl_en_e2_we & classd_regwen_qs),
     .wd     (classd_ctrl_en_e2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_ctrl.en_e2.q ),
+    .q      (reg2hw.classd_ctrl.en_e2.q),
 
     // to register interface (read)
     .qs     (classd_ctrl_en_e2_qs)
@@ -8797,20 +8800,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_classd_ctrl_en_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_ctrl_en_e3_we & classd_regwen_qs),
     .wd     (classd_ctrl_en_e3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_ctrl.en_e3.q ),
+    .q      (reg2hw.classd_ctrl.en_e3.q),
 
     // to register interface (read)
     .qs     (classd_ctrl_en_e3_qs)
@@ -8823,20 +8826,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_classd_ctrl_map_e0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_ctrl_map_e0_we & classd_regwen_qs),
     .wd     (classd_ctrl_map_e0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_ctrl.map_e0.q ),
+    .q      (reg2hw.classd_ctrl.map_e0.q),
 
     // to register interface (read)
     .qs     (classd_ctrl_map_e0_qs)
@@ -8849,20 +8852,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h1)
   ) u_classd_ctrl_map_e1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_ctrl_map_e1_we & classd_regwen_qs),
     .wd     (classd_ctrl_map_e1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_ctrl.map_e1.q ),
+    .q      (reg2hw.classd_ctrl.map_e1.q),
 
     // to register interface (read)
     .qs     (classd_ctrl_map_e1_qs)
@@ -8875,20 +8878,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h2)
   ) u_classd_ctrl_map_e2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_ctrl_map_e2_we & classd_regwen_qs),
     .wd     (classd_ctrl_map_e2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_ctrl.map_e2.q ),
+    .q      (reg2hw.classd_ctrl.map_e2.q),
 
     // to register interface (read)
     .qs     (classd_ctrl_map_e2_qs)
@@ -8901,20 +8904,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h3)
   ) u_classd_ctrl_map_e3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_ctrl_map_e3_we & classd_regwen_qs),
     .wd     (classd_ctrl_map_e3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_ctrl.map_e3.q ),
+    .q      (reg2hw.classd_ctrl.map_e3.q),
 
     // to register interface (read)
     .qs     (classd_ctrl_map_e3_qs)
@@ -8928,8 +8931,8 @@ module alert_handler_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_classd_clr_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (classd_clr_regwen_we),
@@ -8937,7 +8940,7 @@ module alert_handler_reg_top (
 
     // from internal hardware
     .de     (hw2reg.classd_clr_regwen.de),
-    .d      (hw2reg.classd_clr_regwen.d ),
+    .d      (hw2reg.classd_clr_regwen.d),
 
     // to internal hardware
     .qe     (),
@@ -8955,21 +8958,22 @@ module alert_handler_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_classd_clr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_clr_we & classd_clr_regwen_qs),
     .wd     (classd_clr_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.classd_clr.qe),
-    .q      (reg2hw.classd_clr.q ),
+    .q      (reg2hw.classd_clr.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -8997,20 +9001,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_classd_accum_thresh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_accum_thresh_we & classd_regwen_qs),
     .wd     (classd_accum_thresh_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_accum_thresh.q ),
+    .q      (reg2hw.classd_accum_thresh.q),
 
     // to register interface (read)
     .qs     (classd_accum_thresh_qs)
@@ -9024,20 +9028,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classd_timeout_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_timeout_cyc_we & classd_regwen_qs),
     .wd     (classd_timeout_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_timeout_cyc.q ),
+    .q      (reg2hw.classd_timeout_cyc.q),
 
     // to register interface (read)
     .qs     (classd_timeout_cyc_qs)
@@ -9051,20 +9055,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classd_phase0_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_phase0_cyc_we & classd_regwen_qs),
     .wd     (classd_phase0_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_phase0_cyc.q ),
+    .q      (reg2hw.classd_phase0_cyc.q),
 
     // to register interface (read)
     .qs     (classd_phase0_cyc_qs)
@@ -9078,20 +9082,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classd_phase1_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_phase1_cyc_we & classd_regwen_qs),
     .wd     (classd_phase1_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_phase1_cyc.q ),
+    .q      (reg2hw.classd_phase1_cyc.q),
 
     // to register interface (read)
     .qs     (classd_phase1_cyc_qs)
@@ -9105,20 +9109,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classd_phase2_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_phase2_cyc_we & classd_regwen_qs),
     .wd     (classd_phase2_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_phase2_cyc.q ),
+    .q      (reg2hw.classd_phase2_cyc.q),
 
     // to register interface (read)
     .qs     (classd_phase2_cyc_qs)
@@ -9132,20 +9136,20 @@ module alert_handler_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_classd_phase3_cyc (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (classd_phase3_cyc_we & classd_regwen_qs),
     .wd     (classd_phase3_cyc_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.classd_phase3_cyc.q ),
+    .q      (reg2hw.classd_phase3_cyc.q),
 
     // to register interface (read)
     .qs     (classd_phase3_cyc_qs)

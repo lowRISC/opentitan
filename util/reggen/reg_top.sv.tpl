@@ -454,7 +454,6 @@ ${bits.msb}\
     % endif
     % if field.swaccess.allows_write():
       % if regwen:
-    // qualified with register enable
     .we     (${finst_name}_we & ${regwen.lower()}_qs),
       % else:
     .we     (${finst_name}_we),
@@ -483,7 +482,7 @@ ${bits.msb}\
       % else:
     .qe     (),
       % endif
-    .q      (reg2hw.${fsig_name}.q ),
+    .q      (reg2hw.${fsig_name}.q),
     % endif
     % if field.swaccess.allows_read():
     .qs     (${finst_name}_qs)
@@ -508,33 +507,32 @@ ${bits.msb}\
     .SWACCESS("${field.swaccess.value[1].name.upper()}"),
     .RESVAL  (${field.bits.width()}'h${"%x" % (field.resval or 0)})
   ) u_${finst_name} (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
       % if shadowed:
     .re     (${finst_name}_re),
       % endif
       % if field.swaccess.allows_write(): ## non-RO types
         % if regwen:
-    // from register interface (qualified with register enable)
     .we     (${finst_name}_we & ${regwen.lower()}_qs),
         % else:
-    // from register interface
     .we     (${finst_name}_we),
         % endif
     .wd     (${finst_name}_wd),
       % else:                             ## RO types
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
       % endif
 
     // from internal hardware
       % if field.hwaccess.allows_write():
     .de     (hw2reg.${fsig_name}.de),
-    .d      (hw2reg.${fsig_name}.d ),
+    .d      (hw2reg.${fsig_name}.d),
       % else:
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
       % endif
 
     // to internal hardware
@@ -547,26 +545,25 @@ ${bits.msb}\
         % else:
     .qe     (),
         % endif
-    .q      (reg2hw.${fsig_name}.q ),
+    .q      (reg2hw.${fsig_name}.q),
       % endif
 
+    // to register interface (read)
       % if not shadowed:
         % if field.swaccess.allows_read():
-    // to register interface (read)
     .qs     (${finst_name}_qs)
         % else:
     .qs     ()
         % endif
       % else:
         % if field.swaccess.allows_read():
-    // to register interface (read)
     .qs     (${finst_name}_qs),
         % else:
     .qs     (),
         % endif
 
     // Shadow register error conditions
-    .err_update  (reg2hw.${fsig_name}.err_update ),
+    .err_update  (reg2hw.${fsig_name}.err_update),
     .err_storage (reg2hw.${fsig_name}.err_storage)
       % endif
   );

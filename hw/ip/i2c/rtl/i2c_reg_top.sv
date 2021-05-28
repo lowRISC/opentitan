@@ -389,8 +389,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_fmt_watermark (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_fmt_watermark_we),
@@ -398,11 +398,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.fmt_watermark.de),
-    .d      (hw2reg.intr_state.fmt_watermark.d ),
+    .d      (hw2reg.intr_state.fmt_watermark.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.fmt_watermark.q ),
+    .q      (reg2hw.intr_state.fmt_watermark.q),
 
     // to register interface (read)
     .qs     (intr_state_fmt_watermark_qs)
@@ -415,8 +415,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_rx_watermark (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_rx_watermark_we),
@@ -424,11 +424,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.rx_watermark.de),
-    .d      (hw2reg.intr_state.rx_watermark.d ),
+    .d      (hw2reg.intr_state.rx_watermark.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_watermark.q ),
+    .q      (reg2hw.intr_state.rx_watermark.q),
 
     // to register interface (read)
     .qs     (intr_state_rx_watermark_qs)
@@ -441,8 +441,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_fmt_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_fmt_overflow_we),
@@ -450,11 +450,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.fmt_overflow.de),
-    .d      (hw2reg.intr_state.fmt_overflow.d ),
+    .d      (hw2reg.intr_state.fmt_overflow.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.fmt_overflow.q ),
+    .q      (reg2hw.intr_state.fmt_overflow.q),
 
     // to register interface (read)
     .qs     (intr_state_fmt_overflow_qs)
@@ -467,8 +467,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_rx_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_rx_overflow_we),
@@ -476,11 +476,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.rx_overflow.de),
-    .d      (hw2reg.intr_state.rx_overflow.d ),
+    .d      (hw2reg.intr_state.rx_overflow.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_overflow.q ),
+    .q      (reg2hw.intr_state.rx_overflow.q),
 
     // to register interface (read)
     .qs     (intr_state_rx_overflow_qs)
@@ -493,8 +493,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_nak (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_nak_we),
@@ -502,11 +502,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.nak.de),
-    .d      (hw2reg.intr_state.nak.d ),
+    .d      (hw2reg.intr_state.nak.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.nak.q ),
+    .q      (reg2hw.intr_state.nak.q),
 
     // to register interface (read)
     .qs     (intr_state_nak_qs)
@@ -519,8 +519,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_scl_interference (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_scl_interference_we),
@@ -528,11 +528,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.scl_interference.de),
-    .d      (hw2reg.intr_state.scl_interference.d ),
+    .d      (hw2reg.intr_state.scl_interference.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.scl_interference.q ),
+    .q      (reg2hw.intr_state.scl_interference.q),
 
     // to register interface (read)
     .qs     (intr_state_scl_interference_qs)
@@ -545,8 +545,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_sda_interference (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_sda_interference_we),
@@ -554,11 +554,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.sda_interference.de),
-    .d      (hw2reg.intr_state.sda_interference.d ),
+    .d      (hw2reg.intr_state.sda_interference.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.sda_interference.q ),
+    .q      (reg2hw.intr_state.sda_interference.q),
 
     // to register interface (read)
     .qs     (intr_state_sda_interference_qs)
@@ -571,8 +571,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_stretch_timeout (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_stretch_timeout_we),
@@ -580,11 +580,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.stretch_timeout.de),
-    .d      (hw2reg.intr_state.stretch_timeout.d ),
+    .d      (hw2reg.intr_state.stretch_timeout.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.stretch_timeout.q ),
+    .q      (reg2hw.intr_state.stretch_timeout.q),
 
     // to register interface (read)
     .qs     (intr_state_stretch_timeout_qs)
@@ -597,8 +597,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_sda_unstable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_sda_unstable_we),
@@ -606,11 +606,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.sda_unstable.de),
-    .d      (hw2reg.intr_state.sda_unstable.d ),
+    .d      (hw2reg.intr_state.sda_unstable.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.sda_unstable.q ),
+    .q      (reg2hw.intr_state.sda_unstable.q),
 
     // to register interface (read)
     .qs     (intr_state_sda_unstable_qs)
@@ -623,8 +623,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_trans_complete (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_trans_complete_we),
@@ -632,11 +632,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.trans_complete.de),
-    .d      (hw2reg.intr_state.trans_complete.d ),
+    .d      (hw2reg.intr_state.trans_complete.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.trans_complete.q ),
+    .q      (reg2hw.intr_state.trans_complete.q),
 
     // to register interface (read)
     .qs     (intr_state_trans_complete_qs)
@@ -649,8 +649,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_tx_empty (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_tx_empty_we),
@@ -658,11 +658,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.tx_empty.de),
-    .d      (hw2reg.intr_state.tx_empty.d ),
+    .d      (hw2reg.intr_state.tx_empty.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.tx_empty.q ),
+    .q      (reg2hw.intr_state.tx_empty.q),
 
     // to register interface (read)
     .qs     (intr_state_tx_empty_qs)
@@ -675,8 +675,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_tx_nonempty (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_tx_nonempty_we),
@@ -684,11 +684,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.tx_nonempty.de),
-    .d      (hw2reg.intr_state.tx_nonempty.d ),
+    .d      (hw2reg.intr_state.tx_nonempty.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.tx_nonempty.q ),
+    .q      (reg2hw.intr_state.tx_nonempty.q),
 
     // to register interface (read)
     .qs     (intr_state_tx_nonempty_qs)
@@ -701,8 +701,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_tx_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_tx_overflow_we),
@@ -710,11 +710,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.tx_overflow.de),
-    .d      (hw2reg.intr_state.tx_overflow.d ),
+    .d      (hw2reg.intr_state.tx_overflow.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.tx_overflow.q ),
+    .q      (reg2hw.intr_state.tx_overflow.q),
 
     // to register interface (read)
     .qs     (intr_state_tx_overflow_qs)
@@ -727,8 +727,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_acq_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_acq_overflow_we),
@@ -736,11 +736,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.acq_overflow.de),
-    .d      (hw2reg.intr_state.acq_overflow.d ),
+    .d      (hw2reg.intr_state.acq_overflow.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.acq_overflow.q ),
+    .q      (reg2hw.intr_state.acq_overflow.q),
 
     // to register interface (read)
     .qs     (intr_state_acq_overflow_qs)
@@ -753,8 +753,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_ack_stop (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_ack_stop_we),
@@ -762,11 +762,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.ack_stop.de),
-    .d      (hw2reg.intr_state.ack_stop.d ),
+    .d      (hw2reg.intr_state.ack_stop.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.ack_stop.q ),
+    .q      (reg2hw.intr_state.ack_stop.q),
 
     // to register interface (read)
     .qs     (intr_state_ack_stop_qs)
@@ -779,8 +779,8 @@ module i2c_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_host_timeout (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_host_timeout_we),
@@ -788,11 +788,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.host_timeout.de),
-    .d      (hw2reg.intr_state.host_timeout.d ),
+    .d      (hw2reg.intr_state.host_timeout.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.host_timeout.q ),
+    .q      (reg2hw.intr_state.host_timeout.q),
 
     // to register interface (read)
     .qs     (intr_state_host_timeout_qs)
@@ -807,8 +807,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_fmt_watermark (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_fmt_watermark_we),
@@ -816,11 +816,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.fmt_watermark.q ),
+    .q      (reg2hw.intr_enable.fmt_watermark.q),
 
     // to register interface (read)
     .qs     (intr_enable_fmt_watermark_qs)
@@ -833,8 +833,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_rx_watermark (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_rx_watermark_we),
@@ -842,11 +842,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_watermark.q ),
+    .q      (reg2hw.intr_enable.rx_watermark.q),
 
     // to register interface (read)
     .qs     (intr_enable_rx_watermark_qs)
@@ -859,8 +859,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_fmt_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_fmt_overflow_we),
@@ -868,11 +868,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.fmt_overflow.q ),
+    .q      (reg2hw.intr_enable.fmt_overflow.q),
 
     // to register interface (read)
     .qs     (intr_enable_fmt_overflow_qs)
@@ -885,8 +885,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_rx_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_rx_overflow_we),
@@ -894,11 +894,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_overflow.q ),
+    .q      (reg2hw.intr_enable.rx_overflow.q),
 
     // to register interface (read)
     .qs     (intr_enable_rx_overflow_qs)
@@ -911,8 +911,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_nak (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_nak_we),
@@ -920,11 +920,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.nak.q ),
+    .q      (reg2hw.intr_enable.nak.q),
 
     // to register interface (read)
     .qs     (intr_enable_nak_qs)
@@ -937,8 +937,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_scl_interference (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_scl_interference_we),
@@ -946,11 +946,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.scl_interference.q ),
+    .q      (reg2hw.intr_enable.scl_interference.q),
 
     // to register interface (read)
     .qs     (intr_enable_scl_interference_qs)
@@ -963,8 +963,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_sda_interference (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_sda_interference_we),
@@ -972,11 +972,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.sda_interference.q ),
+    .q      (reg2hw.intr_enable.sda_interference.q),
 
     // to register interface (read)
     .qs     (intr_enable_sda_interference_qs)
@@ -989,8 +989,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_stretch_timeout (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_stretch_timeout_we),
@@ -998,11 +998,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.stretch_timeout.q ),
+    .q      (reg2hw.intr_enable.stretch_timeout.q),
 
     // to register interface (read)
     .qs     (intr_enable_stretch_timeout_qs)
@@ -1015,8 +1015,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_sda_unstable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_sda_unstable_we),
@@ -1024,11 +1024,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.sda_unstable.q ),
+    .q      (reg2hw.intr_enable.sda_unstable.q),
 
     // to register interface (read)
     .qs     (intr_enable_sda_unstable_qs)
@@ -1041,8 +1041,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_trans_complete (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_trans_complete_we),
@@ -1050,11 +1050,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.trans_complete.q ),
+    .q      (reg2hw.intr_enable.trans_complete.q),
 
     // to register interface (read)
     .qs     (intr_enable_trans_complete_qs)
@@ -1067,8 +1067,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_tx_empty (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_tx_empty_we),
@@ -1076,11 +1076,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.tx_empty.q ),
+    .q      (reg2hw.intr_enable.tx_empty.q),
 
     // to register interface (read)
     .qs     (intr_enable_tx_empty_qs)
@@ -1093,8 +1093,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_tx_nonempty (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_tx_nonempty_we),
@@ -1102,11 +1102,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.tx_nonempty.q ),
+    .q      (reg2hw.intr_enable.tx_nonempty.q),
 
     // to register interface (read)
     .qs     (intr_enable_tx_nonempty_qs)
@@ -1119,8 +1119,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_tx_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_tx_overflow_we),
@@ -1128,11 +1128,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.tx_overflow.q ),
+    .q      (reg2hw.intr_enable.tx_overflow.q),
 
     // to register interface (read)
     .qs     (intr_enable_tx_overflow_qs)
@@ -1145,8 +1145,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_acq_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_acq_overflow_we),
@@ -1154,11 +1154,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.acq_overflow.q ),
+    .q      (reg2hw.intr_enable.acq_overflow.q),
 
     // to register interface (read)
     .qs     (intr_enable_acq_overflow_qs)
@@ -1171,8 +1171,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_ack_stop (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_ack_stop_we),
@@ -1180,11 +1180,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.ack_stop.q ),
+    .q      (reg2hw.intr_enable.ack_stop.q),
 
     // to register interface (read)
     .qs     (intr_enable_ack_stop_qs)
@@ -1197,8 +1197,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_host_timeout (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_host_timeout_we),
@@ -1206,11 +1206,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.host_timeout.q ),
+    .q      (reg2hw.intr_enable.host_timeout.q),
 
     // to register interface (read)
     .qs     (intr_enable_host_timeout_qs)
@@ -1229,7 +1229,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.fmt_watermark.qe),
-    .q      (reg2hw.intr_test.fmt_watermark.q ),
+    .q      (reg2hw.intr_test.fmt_watermark.q),
     .qs     ()
   );
 
@@ -1244,7 +1244,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.rx_watermark.qe),
-    .q      (reg2hw.intr_test.rx_watermark.q ),
+    .q      (reg2hw.intr_test.rx_watermark.q),
     .qs     ()
   );
 
@@ -1259,7 +1259,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.fmt_overflow.qe),
-    .q      (reg2hw.intr_test.fmt_overflow.q ),
+    .q      (reg2hw.intr_test.fmt_overflow.q),
     .qs     ()
   );
 
@@ -1274,7 +1274,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.rx_overflow.qe),
-    .q      (reg2hw.intr_test.rx_overflow.q ),
+    .q      (reg2hw.intr_test.rx_overflow.q),
     .qs     ()
   );
 
@@ -1289,7 +1289,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.nak.qe),
-    .q      (reg2hw.intr_test.nak.q ),
+    .q      (reg2hw.intr_test.nak.q),
     .qs     ()
   );
 
@@ -1304,7 +1304,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.scl_interference.qe),
-    .q      (reg2hw.intr_test.scl_interference.q ),
+    .q      (reg2hw.intr_test.scl_interference.q),
     .qs     ()
   );
 
@@ -1319,7 +1319,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.sda_interference.qe),
-    .q      (reg2hw.intr_test.sda_interference.q ),
+    .q      (reg2hw.intr_test.sda_interference.q),
     .qs     ()
   );
 
@@ -1334,7 +1334,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.stretch_timeout.qe),
-    .q      (reg2hw.intr_test.stretch_timeout.q ),
+    .q      (reg2hw.intr_test.stretch_timeout.q),
     .qs     ()
   );
 
@@ -1349,7 +1349,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.sda_unstable.qe),
-    .q      (reg2hw.intr_test.sda_unstable.q ),
+    .q      (reg2hw.intr_test.sda_unstable.q),
     .qs     ()
   );
 
@@ -1364,7 +1364,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.trans_complete.qe),
-    .q      (reg2hw.intr_test.trans_complete.q ),
+    .q      (reg2hw.intr_test.trans_complete.q),
     .qs     ()
   );
 
@@ -1379,7 +1379,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.tx_empty.qe),
-    .q      (reg2hw.intr_test.tx_empty.q ),
+    .q      (reg2hw.intr_test.tx_empty.q),
     .qs     ()
   );
 
@@ -1394,7 +1394,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.tx_nonempty.qe),
-    .q      (reg2hw.intr_test.tx_nonempty.q ),
+    .q      (reg2hw.intr_test.tx_nonempty.q),
     .qs     ()
   );
 
@@ -1409,7 +1409,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.tx_overflow.qe),
-    .q      (reg2hw.intr_test.tx_overflow.q ),
+    .q      (reg2hw.intr_test.tx_overflow.q),
     .qs     ()
   );
 
@@ -1424,7 +1424,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.acq_overflow.qe),
-    .q      (reg2hw.intr_test.acq_overflow.q ),
+    .q      (reg2hw.intr_test.acq_overflow.q),
     .qs     ()
   );
 
@@ -1439,7 +1439,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.ack_stop.qe),
-    .q      (reg2hw.intr_test.ack_stop.q ),
+    .q      (reg2hw.intr_test.ack_stop.q),
     .qs     ()
   );
 
@@ -1454,7 +1454,7 @@ module i2c_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.host_timeout.qe),
-    .q      (reg2hw.intr_test.host_timeout.q ),
+    .q      (reg2hw.intr_test.host_timeout.q),
     .qs     ()
   );
 
@@ -1467,8 +1467,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ctrl_enablehost (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ctrl_enablehost_we),
@@ -1476,11 +1476,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl.enablehost.q ),
+    .q      (reg2hw.ctrl.enablehost.q),
 
     // to register interface (read)
     .qs     (ctrl_enablehost_qs)
@@ -1493,8 +1493,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ctrl_enabletarget (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ctrl_enabletarget_we),
@@ -1502,11 +1502,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl.enabletarget.q ),
+    .q      (reg2hw.ctrl.enabletarget.q),
 
     // to register interface (read)
     .qs     (ctrl_enabletarget_qs)
@@ -1519,8 +1519,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ctrl_llpbk (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ctrl_llpbk_we),
@@ -1528,11 +1528,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl.llpbk.q ),
+    .q      (reg2hw.ctrl.llpbk.q),
 
     // to register interface (read)
     .qs     (ctrl_llpbk_qs)
@@ -1702,7 +1702,7 @@ module i2c_reg_top (
     .d      (hw2reg.rdata.d),
     .qre    (reg2hw.rdata.re),
     .qe     (),
-    .q      (reg2hw.rdata.q ),
+    .q      (reg2hw.rdata.q),
     .qs     (rdata_qs)
   );
 
@@ -1715,8 +1715,8 @@ module i2c_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (8'h0)
   ) u_fdata_fbyte (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fdata_fbyte_we),
@@ -1724,12 +1724,13 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.fdata.fbyte.qe),
-    .q      (reg2hw.fdata.fbyte.q ),
+    .q      (reg2hw.fdata.fbyte.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -1740,8 +1741,8 @@ module i2c_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_fdata_start (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fdata_start_we),
@@ -1749,12 +1750,13 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.fdata.start.qe),
-    .q      (reg2hw.fdata.start.q ),
+    .q      (reg2hw.fdata.start.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -1765,8 +1767,8 @@ module i2c_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_fdata_stop (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fdata_stop_we),
@@ -1774,12 +1776,13 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.fdata.stop.qe),
-    .q      (reg2hw.fdata.stop.q ),
+    .q      (reg2hw.fdata.stop.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -1790,8 +1793,8 @@ module i2c_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_fdata_read (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fdata_read_we),
@@ -1799,12 +1802,13 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.fdata.read.qe),
-    .q      (reg2hw.fdata.read.q ),
+    .q      (reg2hw.fdata.read.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -1815,8 +1819,8 @@ module i2c_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_fdata_rcont (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fdata_rcont_we),
@@ -1824,12 +1828,13 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.fdata.rcont.qe),
-    .q      (reg2hw.fdata.rcont.q ),
+    .q      (reg2hw.fdata.rcont.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -1840,8 +1845,8 @@ module i2c_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_fdata_nakok (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fdata_nakok_we),
@@ -1849,12 +1854,13 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.fdata.nakok.qe),
-    .q      (reg2hw.fdata.nakok.q ),
+    .q      (reg2hw.fdata.nakok.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -1867,8 +1873,8 @@ module i2c_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_fifo_ctrl_rxrst (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fifo_ctrl_rxrst_we),
@@ -1876,12 +1882,13 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.fifo_ctrl.rxrst.qe),
-    .q      (reg2hw.fifo_ctrl.rxrst.q ),
+    .q      (reg2hw.fifo_ctrl.rxrst.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -1892,8 +1899,8 @@ module i2c_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_fifo_ctrl_fmtrst (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fifo_ctrl_fmtrst_we),
@@ -1901,12 +1908,13 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.fifo_ctrl.fmtrst.qe),
-    .q      (reg2hw.fifo_ctrl.fmtrst.q ),
+    .q      (reg2hw.fifo_ctrl.fmtrst.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -1917,8 +1925,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (3'h0)
   ) u_fifo_ctrl_rxilvl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fifo_ctrl_rxilvl_we),
@@ -1926,11 +1934,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.fifo_ctrl.rxilvl.qe),
-    .q      (reg2hw.fifo_ctrl.rxilvl.q ),
+    .q      (reg2hw.fifo_ctrl.rxilvl.q),
 
     // to register interface (read)
     .qs     (fifo_ctrl_rxilvl_qs)
@@ -1943,8 +1951,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_fifo_ctrl_fmtilvl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fifo_ctrl_fmtilvl_we),
@@ -1952,11 +1960,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.fifo_ctrl.fmtilvl.qe),
-    .q      (reg2hw.fifo_ctrl.fmtilvl.q ),
+    .q      (reg2hw.fifo_ctrl.fmtilvl.q),
 
     // to register interface (read)
     .qs     (fifo_ctrl_fmtilvl_qs)
@@ -1969,8 +1977,8 @@ module i2c_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_fifo_ctrl_acqrst (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fifo_ctrl_acqrst_we),
@@ -1978,12 +1986,13 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.fifo_ctrl.acqrst.qe),
-    .q      (reg2hw.fifo_ctrl.acqrst.q ),
+    .q      (reg2hw.fifo_ctrl.acqrst.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -1994,8 +2003,8 @@ module i2c_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (1'h0)
   ) u_fifo_ctrl_txrst (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fifo_ctrl_txrst_we),
@@ -2003,12 +2012,13 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.fifo_ctrl.txrst.qe),
-    .q      (reg2hw.fifo_ctrl.txrst.q ),
+    .q      (reg2hw.fifo_ctrl.txrst.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -2083,8 +2093,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ovrd_txovrden (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ovrd_txovrden_we),
@@ -2092,11 +2102,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ovrd.txovrden.q ),
+    .q      (reg2hw.ovrd.txovrden.q),
 
     // to register interface (read)
     .qs     (ovrd_txovrden_qs)
@@ -2109,8 +2119,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ovrd_sclval (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ovrd_sclval_we),
@@ -2118,11 +2128,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ovrd.sclval.q ),
+    .q      (reg2hw.ovrd.sclval.q),
 
     // to register interface (read)
     .qs     (ovrd_sclval_qs)
@@ -2135,8 +2145,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ovrd_sdaval (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ovrd_sdaval_we),
@@ -2144,11 +2154,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ovrd.sdaval.q ),
+    .q      (reg2hw.ovrd.sdaval.q),
 
     // to register interface (read)
     .qs     (ovrd_sdaval_qs)
@@ -2195,8 +2205,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_timing0_thigh (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (timing0_thigh_we),
@@ -2204,11 +2214,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.timing0.thigh.q ),
+    .q      (reg2hw.timing0.thigh.q),
 
     // to register interface (read)
     .qs     (timing0_thigh_qs)
@@ -2221,8 +2231,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_timing0_tlow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (timing0_tlow_we),
@@ -2230,11 +2240,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.timing0.tlow.q ),
+    .q      (reg2hw.timing0.tlow.q),
 
     // to register interface (read)
     .qs     (timing0_tlow_qs)
@@ -2249,8 +2259,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_timing1_t_r (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (timing1_t_r_we),
@@ -2258,11 +2268,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.timing1.t_r.q ),
+    .q      (reg2hw.timing1.t_r.q),
 
     // to register interface (read)
     .qs     (timing1_t_r_qs)
@@ -2275,8 +2285,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_timing1_t_f (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (timing1_t_f_we),
@@ -2284,11 +2294,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.timing1.t_f.q ),
+    .q      (reg2hw.timing1.t_f.q),
 
     // to register interface (read)
     .qs     (timing1_t_f_qs)
@@ -2303,8 +2313,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_timing2_tsu_sta (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (timing2_tsu_sta_we),
@@ -2312,11 +2322,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.timing2.tsu_sta.q ),
+    .q      (reg2hw.timing2.tsu_sta.q),
 
     // to register interface (read)
     .qs     (timing2_tsu_sta_qs)
@@ -2329,8 +2339,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_timing2_thd_sta (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (timing2_thd_sta_we),
@@ -2338,11 +2348,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.timing2.thd_sta.q ),
+    .q      (reg2hw.timing2.thd_sta.q),
 
     // to register interface (read)
     .qs     (timing2_thd_sta_qs)
@@ -2357,8 +2367,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_timing3_tsu_dat (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (timing3_tsu_dat_we),
@@ -2366,11 +2376,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.timing3.tsu_dat.q ),
+    .q      (reg2hw.timing3.tsu_dat.q),
 
     // to register interface (read)
     .qs     (timing3_tsu_dat_qs)
@@ -2383,8 +2393,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_timing3_thd_dat (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (timing3_thd_dat_we),
@@ -2392,11 +2402,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.timing3.thd_dat.q ),
+    .q      (reg2hw.timing3.thd_dat.q),
 
     // to register interface (read)
     .qs     (timing3_thd_dat_qs)
@@ -2411,8 +2421,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_timing4_tsu_sto (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (timing4_tsu_sto_we),
@@ -2420,11 +2430,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.timing4.tsu_sto.q ),
+    .q      (reg2hw.timing4.tsu_sto.q),
 
     // to register interface (read)
     .qs     (timing4_tsu_sto_qs)
@@ -2437,8 +2447,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_timing4_t_buf (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (timing4_t_buf_we),
@@ -2446,11 +2456,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.timing4.t_buf.q ),
+    .q      (reg2hw.timing4.t_buf.q),
 
     // to register interface (read)
     .qs     (timing4_t_buf_qs)
@@ -2465,8 +2475,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (31'h0)
   ) u_timeout_ctrl_val (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (timeout_ctrl_val_we),
@@ -2474,11 +2484,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.timeout_ctrl.val.q ),
+    .q      (reg2hw.timeout_ctrl.val.q),
 
     // to register interface (read)
     .qs     (timeout_ctrl_val_qs)
@@ -2491,8 +2501,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_timeout_ctrl_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (timeout_ctrl_en_we),
@@ -2500,11 +2510,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.timeout_ctrl.en.q ),
+    .q      (reg2hw.timeout_ctrl.en.q),
 
     // to register interface (read)
     .qs     (timeout_ctrl_en_qs)
@@ -2519,8 +2529,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_target_id_address0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (target_id_address0_we),
@@ -2528,11 +2538,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.target_id.address0.q ),
+    .q      (reg2hw.target_id.address0.q),
 
     // to register interface (read)
     .qs     (target_id_address0_qs)
@@ -2545,8 +2555,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_target_id_mask0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (target_id_mask0_we),
@@ -2554,11 +2564,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.target_id.mask0.q ),
+    .q      (reg2hw.target_id.mask0.q),
 
     // to register interface (read)
     .qs     (target_id_mask0_qs)
@@ -2571,8 +2581,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_target_id_address1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (target_id_address1_we),
@@ -2580,11 +2590,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.target_id.address1.q ),
+    .q      (reg2hw.target_id.address1.q),
 
     // to register interface (read)
     .qs     (target_id_address1_qs)
@@ -2597,8 +2607,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (7'h0)
   ) u_target_id_mask1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (target_id_mask1_we),
@@ -2606,11 +2616,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.target_id.mask1.q ),
+    .q      (reg2hw.target_id.mask1.q),
 
     // to register interface (read)
     .qs     (target_id_mask1_qs)
@@ -2629,7 +2639,7 @@ module i2c_reg_top (
     .d      (hw2reg.acqdata.abyte.d),
     .qre    (reg2hw.acqdata.abyte.re),
     .qe     (),
-    .q      (reg2hw.acqdata.abyte.q ),
+    .q      (reg2hw.acqdata.abyte.q),
     .qs     (acqdata_abyte_qs)
   );
 
@@ -2644,7 +2654,7 @@ module i2c_reg_top (
     .d      (hw2reg.acqdata.signal.d),
     .qre    (reg2hw.acqdata.signal.re),
     .qe     (),
-    .q      (reg2hw.acqdata.signal.q ),
+    .q      (reg2hw.acqdata.signal.q),
     .qs     (acqdata_signal_qs)
   );
 
@@ -2656,8 +2666,8 @@ module i2c_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (8'h0)
   ) u_txdata (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (txdata_we),
@@ -2665,12 +2675,13 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.txdata.qe),
-    .q      (reg2hw.txdata.q ),
+    .q      (reg2hw.txdata.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -2683,8 +2694,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stretch_ctrl_en_addr_tx (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stretch_ctrl_en_addr_tx_we),
@@ -2692,11 +2703,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stretch_ctrl.en_addr_tx.q ),
+    .q      (reg2hw.stretch_ctrl.en_addr_tx.q),
 
     // to register interface (read)
     .qs     (stretch_ctrl_en_addr_tx_qs)
@@ -2709,8 +2720,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stretch_ctrl_en_addr_acq (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stretch_ctrl_en_addr_acq_we),
@@ -2718,11 +2729,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stretch_ctrl.en_addr_acq.q ),
+    .q      (reg2hw.stretch_ctrl.en_addr_acq.q),
 
     // to register interface (read)
     .qs     (stretch_ctrl_en_addr_acq_qs)
@@ -2735,8 +2746,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stretch_ctrl_stop_tx (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stretch_ctrl_stop_tx_we),
@@ -2744,11 +2755,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.stretch_ctrl.stop_tx.de),
-    .d      (hw2reg.stretch_ctrl.stop_tx.d ),
+    .d      (hw2reg.stretch_ctrl.stop_tx.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stretch_ctrl.stop_tx.q ),
+    .q      (reg2hw.stretch_ctrl.stop_tx.q),
 
     // to register interface (read)
     .qs     (stretch_ctrl_stop_tx_qs)
@@ -2761,8 +2772,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_stretch_ctrl_stop_acq (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (stretch_ctrl_stop_acq_we),
@@ -2770,11 +2781,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (hw2reg.stretch_ctrl.stop_acq.de),
-    .d      (hw2reg.stretch_ctrl.stop_acq.d ),
+    .d      (hw2reg.stretch_ctrl.stop_acq.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.stretch_ctrl.stop_acq.q ),
+    .q      (reg2hw.stretch_ctrl.stop_acq.q),
 
     // to register interface (read)
     .qs     (stretch_ctrl_stop_acq_qs)
@@ -2788,8 +2799,8 @@ module i2c_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_host_timeout_ctrl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (host_timeout_ctrl_we),
@@ -2797,11 +2808,11 @@ module i2c_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.host_timeout_ctrl.q ),
+    .q      (reg2hw.host_timeout_ctrl.q),
 
     // to register interface (read)
     .qs     (host_timeout_ctrl_qs)

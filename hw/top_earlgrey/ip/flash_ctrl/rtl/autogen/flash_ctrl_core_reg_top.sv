@@ -1231,8 +1231,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_prog_empty (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_prog_empty_we),
@@ -1240,11 +1240,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.prog_empty.de),
-    .d      (hw2reg.intr_state.prog_empty.d ),
+    .d      (hw2reg.intr_state.prog_empty.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.prog_empty.q ),
+    .q      (reg2hw.intr_state.prog_empty.q),
 
     // to register interface (read)
     .qs     (intr_state_prog_empty_qs)
@@ -1257,8 +1257,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_prog_lvl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_prog_lvl_we),
@@ -1266,11 +1266,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.prog_lvl.de),
-    .d      (hw2reg.intr_state.prog_lvl.d ),
+    .d      (hw2reg.intr_state.prog_lvl.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.prog_lvl.q ),
+    .q      (reg2hw.intr_state.prog_lvl.q),
 
     // to register interface (read)
     .qs     (intr_state_prog_lvl_qs)
@@ -1283,8 +1283,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_rd_full (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_rd_full_we),
@@ -1292,11 +1292,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.rd_full.de),
-    .d      (hw2reg.intr_state.rd_full.d ),
+    .d      (hw2reg.intr_state.rd_full.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rd_full.q ),
+    .q      (reg2hw.intr_state.rd_full.q),
 
     // to register interface (read)
     .qs     (intr_state_rd_full_qs)
@@ -1309,8 +1309,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_rd_lvl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_rd_lvl_we),
@@ -1318,11 +1318,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.rd_lvl.de),
-    .d      (hw2reg.intr_state.rd_lvl.d ),
+    .d      (hw2reg.intr_state.rd_lvl.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rd_lvl.q ),
+    .q      (reg2hw.intr_state.rd_lvl.q),
 
     // to register interface (read)
     .qs     (intr_state_rd_lvl_qs)
@@ -1335,8 +1335,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_op_done (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_op_done_we),
@@ -1344,11 +1344,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.op_done.de),
-    .d      (hw2reg.intr_state.op_done.d ),
+    .d      (hw2reg.intr_state.op_done.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.op_done.q ),
+    .q      (reg2hw.intr_state.op_done.q),
 
     // to register interface (read)
     .qs     (intr_state_op_done_qs)
@@ -1361,8 +1361,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_err_we),
@@ -1370,11 +1370,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.err.de),
-    .d      (hw2reg.intr_state.err.d ),
+    .d      (hw2reg.intr_state.err.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.err.q ),
+    .q      (reg2hw.intr_state.err.q),
 
     // to register interface (read)
     .qs     (intr_state_err_qs)
@@ -1389,8 +1389,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_prog_empty (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_prog_empty_we),
@@ -1398,11 +1398,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.prog_empty.q ),
+    .q      (reg2hw.intr_enable.prog_empty.q),
 
     // to register interface (read)
     .qs     (intr_enable_prog_empty_qs)
@@ -1415,8 +1415,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_prog_lvl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_prog_lvl_we),
@@ -1424,11 +1424,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.prog_lvl.q ),
+    .q      (reg2hw.intr_enable.prog_lvl.q),
 
     // to register interface (read)
     .qs     (intr_enable_prog_lvl_qs)
@@ -1441,8 +1441,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_rd_full (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_rd_full_we),
@@ -1450,11 +1450,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rd_full.q ),
+    .q      (reg2hw.intr_enable.rd_full.q),
 
     // to register interface (read)
     .qs     (intr_enable_rd_full_qs)
@@ -1467,8 +1467,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_rd_lvl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_rd_lvl_we),
@@ -1476,11 +1476,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rd_lvl.q ),
+    .q      (reg2hw.intr_enable.rd_lvl.q),
 
     // to register interface (read)
     .qs     (intr_enable_rd_lvl_qs)
@@ -1493,8 +1493,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_op_done (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_op_done_we),
@@ -1502,11 +1502,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.op_done.q ),
+    .q      (reg2hw.intr_enable.op_done.q),
 
     // to register interface (read)
     .qs     (intr_enable_op_done_qs)
@@ -1519,8 +1519,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_err_we),
@@ -1528,11 +1528,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.err.q ),
+    .q      (reg2hw.intr_enable.err.q),
 
     // to register interface (read)
     .qs     (intr_enable_err_qs)
@@ -1551,7 +1551,7 @@ module flash_ctrl_core_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.prog_empty.qe),
-    .q      (reg2hw.intr_test.prog_empty.q ),
+    .q      (reg2hw.intr_test.prog_empty.q),
     .qs     ()
   );
 
@@ -1566,7 +1566,7 @@ module flash_ctrl_core_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.prog_lvl.qe),
-    .q      (reg2hw.intr_test.prog_lvl.q ),
+    .q      (reg2hw.intr_test.prog_lvl.q),
     .qs     ()
   );
 
@@ -1581,7 +1581,7 @@ module flash_ctrl_core_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.rd_full.qe),
-    .q      (reg2hw.intr_test.rd_full.q ),
+    .q      (reg2hw.intr_test.rd_full.q),
     .qs     ()
   );
 
@@ -1596,7 +1596,7 @@ module flash_ctrl_core_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.rd_lvl.qe),
-    .q      (reg2hw.intr_test.rd_lvl.q ),
+    .q      (reg2hw.intr_test.rd_lvl.q),
     .qs     ()
   );
 
@@ -1611,7 +1611,7 @@ module flash_ctrl_core_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.op_done.qe),
-    .q      (reg2hw.intr_test.op_done.q ),
+    .q      (reg2hw.intr_test.op_done.q),
     .qs     ()
   );
 
@@ -1626,7 +1626,7 @@ module flash_ctrl_core_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.err.qe),
-    .q      (reg2hw.intr_test.err.q ),
+    .q      (reg2hw.intr_test.err.q),
     .qs     ()
   );
 
@@ -1643,7 +1643,7 @@ module flash_ctrl_core_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_err.qe),
-    .q      (reg2hw.alert_test.recov_err.q ),
+    .q      (reg2hw.alert_test.recov_err.q),
     .qs     ()
   );
 
@@ -1658,7 +1658,7 @@ module flash_ctrl_core_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_mp_err.qe),
-    .q      (reg2hw.alert_test.recov_mp_err.q ),
+    .q      (reg2hw.alert_test.recov_mp_err.q),
     .qs     ()
   );
 
@@ -1673,7 +1673,7 @@ module flash_ctrl_core_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov_ecc_err.qe),
-    .q      (reg2hw.alert_test.recov_ecc_err.q ),
+    .q      (reg2hw.alert_test.recov_ecc_err.q),
     .qs     ()
   );
 
@@ -1688,7 +1688,7 @@ module flash_ctrl_core_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.fatal_intg_err.qe),
-    .q      (reg2hw.alert_test.fatal_intg_err.q ),
+    .q      (reg2hw.alert_test.fatal_intg_err.q),
     .qs     ()
   );
 
@@ -1700,8 +1700,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W1S"),
     .RESVAL  (1'h0)
   ) u_init (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (init_we),
@@ -1709,11 +1709,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.init.q ),
+    .q      (reg2hw.init.q),
 
     // to register interface (read)
     .qs     (init_qs)
@@ -1744,20 +1744,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_control_start (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (control_start_we & ctrl_regwen_qs),
     .wd     (control_start_wd),
 
     // from internal hardware
     .de     (hw2reg.control.start.de),
-    .d      (hw2reg.control.start.d ),
+    .d      (hw2reg.control.start.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.start.q ),
+    .q      (reg2hw.control.start.q),
 
     // to register interface (read)
     .qs     (control_start_qs)
@@ -1770,20 +1770,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_control_op (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (control_op_we & ctrl_regwen_qs),
     .wd     (control_op_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.op.q ),
+    .q      (reg2hw.control.op.q),
 
     // to register interface (read)
     .qs     (control_op_qs)
@@ -1796,20 +1796,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_control_prog_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (control_prog_sel_we & ctrl_regwen_qs),
     .wd     (control_prog_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.prog_sel.q ),
+    .q      (reg2hw.control.prog_sel.q),
 
     // to register interface (read)
     .qs     (control_prog_sel_qs)
@@ -1822,20 +1822,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_control_erase_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (control_erase_sel_we & ctrl_regwen_qs),
     .wd     (control_erase_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.erase_sel.q ),
+    .q      (reg2hw.control.erase_sel.q),
 
     // to register interface (read)
     .qs     (control_erase_sel_qs)
@@ -1848,20 +1848,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_control_partition_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (control_partition_sel_we & ctrl_regwen_qs),
     .wd     (control_partition_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.partition_sel.q ),
+    .q      (reg2hw.control.partition_sel.q),
 
     // to register interface (read)
     .qs     (control_partition_sel_qs)
@@ -1874,20 +1874,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_control_info_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (control_info_sel_we & ctrl_regwen_qs),
     .wd     (control_info_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.info_sel.q ),
+    .q      (reg2hw.control.info_sel.q),
 
     // to register interface (read)
     .qs     (control_info_sel_qs)
@@ -1900,20 +1900,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (12'h0)
   ) u_control_num (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (control_num_we & ctrl_regwen_qs),
     .wd     (control_num_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.num.q ),
+    .q      (reg2hw.control.num.q),
 
     // to register interface (read)
     .qs     (control_num_qs)
@@ -1927,8 +1927,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_addr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (addr_we),
@@ -1936,11 +1936,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.addr.q ),
+    .q      (reg2hw.addr.q),
 
     // to register interface (read)
     .qs     (addr_qs)
@@ -1955,8 +1955,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_prog_type_en_normal (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prog_type_en_normal_we),
@@ -1964,11 +1964,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prog_type_en.normal.q ),
+    .q      (reg2hw.prog_type_en.normal.q),
 
     // to register interface (read)
     .qs     (prog_type_en_normal_qs)
@@ -1981,8 +1981,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_prog_type_en_repair (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (prog_type_en_repair_we),
@@ -1990,11 +1990,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.prog_type_en.repair.q ),
+    .q      (reg2hw.prog_type_en.repair.q),
 
     // to register interface (read)
     .qs     (prog_type_en_repair_qs)
@@ -2008,8 +2008,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_erase_suspend (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (erase_suspend_we),
@@ -2017,11 +2017,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.erase_suspend.de),
-    .d      (hw2reg.erase_suspend.d ),
+    .d      (hw2reg.erase_suspend.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.erase_suspend.q ),
+    .q      (reg2hw.erase_suspend.q),
 
     // to register interface (read)
     .qs     (erase_suspend_qs)
@@ -2037,8 +2037,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_region_cfg_regwen_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (region_cfg_regwen_0_we),
@@ -2046,7 +2046,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2064,8 +2064,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_region_cfg_regwen_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (region_cfg_regwen_1_we),
@@ -2073,7 +2073,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2091,8 +2091,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_region_cfg_regwen_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (region_cfg_regwen_2_we),
@@ -2100,7 +2100,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2118,8 +2118,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_region_cfg_regwen_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (region_cfg_regwen_3_we),
@@ -2127,7 +2127,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2145,8 +2145,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_region_cfg_regwen_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (region_cfg_regwen_4_we),
@@ -2154,7 +2154,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2172,8 +2172,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_region_cfg_regwen_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (region_cfg_regwen_5_we),
@@ -2181,7 +2181,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2199,8 +2199,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_region_cfg_regwen_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (region_cfg_regwen_6_we),
@@ -2208,7 +2208,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2226,8 +2226,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_region_cfg_regwen_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (region_cfg_regwen_7_we),
@@ -2235,7 +2235,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -2256,20 +2256,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_0_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_0_en_0_we & region_cfg_regwen_0_qs),
     .wd     (mp_region_cfg_0_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].en.q ),
+    .q      (reg2hw.mp_region_cfg[0].en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_en_0_qs)
@@ -2282,20 +2282,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_0_rd_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_0_rd_en_0_we & region_cfg_regwen_0_qs),
     .wd     (mp_region_cfg_0_rd_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].rd_en.q ),
+    .q      (reg2hw.mp_region_cfg[0].rd_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_rd_en_0_qs)
@@ -2308,20 +2308,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_0_prog_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_0_prog_en_0_we & region_cfg_regwen_0_qs),
     .wd     (mp_region_cfg_0_prog_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].prog_en.q ),
+    .q      (reg2hw.mp_region_cfg[0].prog_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_prog_en_0_qs)
@@ -2334,20 +2334,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_0_erase_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_0_erase_en_0_we & region_cfg_regwen_0_qs),
     .wd     (mp_region_cfg_0_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].erase_en.q ),
+    .q      (reg2hw.mp_region_cfg[0].erase_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_erase_en_0_qs)
@@ -2360,20 +2360,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_0_scramble_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_0_scramble_en_0_we & region_cfg_regwen_0_qs),
     .wd     (mp_region_cfg_0_scramble_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].scramble_en.q ),
+    .q      (reg2hw.mp_region_cfg[0].scramble_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_scramble_en_0_qs)
@@ -2386,20 +2386,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_0_ecc_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_0_ecc_en_0_we & region_cfg_regwen_0_qs),
     .wd     (mp_region_cfg_0_ecc_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].ecc_en.q ),
+    .q      (reg2hw.mp_region_cfg[0].ecc_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_ecc_en_0_qs)
@@ -2412,20 +2412,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_0_he_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_0_he_en_0_we & region_cfg_regwen_0_qs),
     .wd     (mp_region_cfg_0_he_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].he_en.q ),
+    .q      (reg2hw.mp_region_cfg[0].he_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_he_en_0_qs)
@@ -2438,20 +2438,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
   ) u_mp_region_cfg_0_base_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_0_base_0_we & region_cfg_regwen_0_qs),
     .wd     (mp_region_cfg_0_base_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].base.q ),
+    .q      (reg2hw.mp_region_cfg[0].base.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_base_0_qs)
@@ -2464,20 +2464,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_mp_region_cfg_0_size_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_0_size_0_we & region_cfg_regwen_0_qs),
     .wd     (mp_region_cfg_0_size_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[0].size.q ),
+    .q      (reg2hw.mp_region_cfg[0].size.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_0_size_0_qs)
@@ -2493,20 +2493,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_1_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_1_en_1_we & region_cfg_regwen_1_qs),
     .wd     (mp_region_cfg_1_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].en.q ),
+    .q      (reg2hw.mp_region_cfg[1].en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_en_1_qs)
@@ -2519,20 +2519,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_1_rd_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_1_rd_en_1_we & region_cfg_regwen_1_qs),
     .wd     (mp_region_cfg_1_rd_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].rd_en.q ),
+    .q      (reg2hw.mp_region_cfg[1].rd_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_rd_en_1_qs)
@@ -2545,20 +2545,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_1_prog_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_1_prog_en_1_we & region_cfg_regwen_1_qs),
     .wd     (mp_region_cfg_1_prog_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].prog_en.q ),
+    .q      (reg2hw.mp_region_cfg[1].prog_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_prog_en_1_qs)
@@ -2571,20 +2571,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_1_erase_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_1_erase_en_1_we & region_cfg_regwen_1_qs),
     .wd     (mp_region_cfg_1_erase_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].erase_en.q ),
+    .q      (reg2hw.mp_region_cfg[1].erase_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_erase_en_1_qs)
@@ -2597,20 +2597,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_1_scramble_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_1_scramble_en_1_we & region_cfg_regwen_1_qs),
     .wd     (mp_region_cfg_1_scramble_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].scramble_en.q ),
+    .q      (reg2hw.mp_region_cfg[1].scramble_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_scramble_en_1_qs)
@@ -2623,20 +2623,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_1_ecc_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_1_ecc_en_1_we & region_cfg_regwen_1_qs),
     .wd     (mp_region_cfg_1_ecc_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].ecc_en.q ),
+    .q      (reg2hw.mp_region_cfg[1].ecc_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_ecc_en_1_qs)
@@ -2649,20 +2649,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_1_he_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_1_he_en_1_we & region_cfg_regwen_1_qs),
     .wd     (mp_region_cfg_1_he_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].he_en.q ),
+    .q      (reg2hw.mp_region_cfg[1].he_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_he_en_1_qs)
@@ -2675,20 +2675,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
   ) u_mp_region_cfg_1_base_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_1_base_1_we & region_cfg_regwen_1_qs),
     .wd     (mp_region_cfg_1_base_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].base.q ),
+    .q      (reg2hw.mp_region_cfg[1].base.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_base_1_qs)
@@ -2701,20 +2701,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_mp_region_cfg_1_size_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_1_size_1_we & region_cfg_regwen_1_qs),
     .wd     (mp_region_cfg_1_size_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[1].size.q ),
+    .q      (reg2hw.mp_region_cfg[1].size.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_1_size_1_qs)
@@ -2730,20 +2730,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_2_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_2_en_2_we & region_cfg_regwen_2_qs),
     .wd     (mp_region_cfg_2_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].en.q ),
+    .q      (reg2hw.mp_region_cfg[2].en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_en_2_qs)
@@ -2756,20 +2756,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_2_rd_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_2_rd_en_2_we & region_cfg_regwen_2_qs),
     .wd     (mp_region_cfg_2_rd_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].rd_en.q ),
+    .q      (reg2hw.mp_region_cfg[2].rd_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_rd_en_2_qs)
@@ -2782,20 +2782,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_2_prog_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_2_prog_en_2_we & region_cfg_regwen_2_qs),
     .wd     (mp_region_cfg_2_prog_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].prog_en.q ),
+    .q      (reg2hw.mp_region_cfg[2].prog_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_prog_en_2_qs)
@@ -2808,20 +2808,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_2_erase_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_2_erase_en_2_we & region_cfg_regwen_2_qs),
     .wd     (mp_region_cfg_2_erase_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].erase_en.q ),
+    .q      (reg2hw.mp_region_cfg[2].erase_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_erase_en_2_qs)
@@ -2834,20 +2834,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_2_scramble_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_2_scramble_en_2_we & region_cfg_regwen_2_qs),
     .wd     (mp_region_cfg_2_scramble_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].scramble_en.q ),
+    .q      (reg2hw.mp_region_cfg[2].scramble_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_scramble_en_2_qs)
@@ -2860,20 +2860,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_2_ecc_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_2_ecc_en_2_we & region_cfg_regwen_2_qs),
     .wd     (mp_region_cfg_2_ecc_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].ecc_en.q ),
+    .q      (reg2hw.mp_region_cfg[2].ecc_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_ecc_en_2_qs)
@@ -2886,20 +2886,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_2_he_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_2_he_en_2_we & region_cfg_regwen_2_qs),
     .wd     (mp_region_cfg_2_he_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].he_en.q ),
+    .q      (reg2hw.mp_region_cfg[2].he_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_he_en_2_qs)
@@ -2912,20 +2912,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
   ) u_mp_region_cfg_2_base_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_2_base_2_we & region_cfg_regwen_2_qs),
     .wd     (mp_region_cfg_2_base_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].base.q ),
+    .q      (reg2hw.mp_region_cfg[2].base.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_base_2_qs)
@@ -2938,20 +2938,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_mp_region_cfg_2_size_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_2_size_2_we & region_cfg_regwen_2_qs),
     .wd     (mp_region_cfg_2_size_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[2].size.q ),
+    .q      (reg2hw.mp_region_cfg[2].size.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_2_size_2_qs)
@@ -2967,20 +2967,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_3_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_3_en_3_we & region_cfg_regwen_3_qs),
     .wd     (mp_region_cfg_3_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].en.q ),
+    .q      (reg2hw.mp_region_cfg[3].en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_en_3_qs)
@@ -2993,20 +2993,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_3_rd_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_3_rd_en_3_we & region_cfg_regwen_3_qs),
     .wd     (mp_region_cfg_3_rd_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].rd_en.q ),
+    .q      (reg2hw.mp_region_cfg[3].rd_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_rd_en_3_qs)
@@ -3019,20 +3019,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_3_prog_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_3_prog_en_3_we & region_cfg_regwen_3_qs),
     .wd     (mp_region_cfg_3_prog_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].prog_en.q ),
+    .q      (reg2hw.mp_region_cfg[3].prog_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_prog_en_3_qs)
@@ -3045,20 +3045,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_3_erase_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_3_erase_en_3_we & region_cfg_regwen_3_qs),
     .wd     (mp_region_cfg_3_erase_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].erase_en.q ),
+    .q      (reg2hw.mp_region_cfg[3].erase_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_erase_en_3_qs)
@@ -3071,20 +3071,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_3_scramble_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_3_scramble_en_3_we & region_cfg_regwen_3_qs),
     .wd     (mp_region_cfg_3_scramble_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].scramble_en.q ),
+    .q      (reg2hw.mp_region_cfg[3].scramble_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_scramble_en_3_qs)
@@ -3097,20 +3097,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_3_ecc_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_3_ecc_en_3_we & region_cfg_regwen_3_qs),
     .wd     (mp_region_cfg_3_ecc_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].ecc_en.q ),
+    .q      (reg2hw.mp_region_cfg[3].ecc_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_ecc_en_3_qs)
@@ -3123,20 +3123,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_3_he_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_3_he_en_3_we & region_cfg_regwen_3_qs),
     .wd     (mp_region_cfg_3_he_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].he_en.q ),
+    .q      (reg2hw.mp_region_cfg[3].he_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_he_en_3_qs)
@@ -3149,20 +3149,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
   ) u_mp_region_cfg_3_base_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_3_base_3_we & region_cfg_regwen_3_qs),
     .wd     (mp_region_cfg_3_base_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].base.q ),
+    .q      (reg2hw.mp_region_cfg[3].base.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_base_3_qs)
@@ -3175,20 +3175,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_mp_region_cfg_3_size_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_3_size_3_we & region_cfg_regwen_3_qs),
     .wd     (mp_region_cfg_3_size_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[3].size.q ),
+    .q      (reg2hw.mp_region_cfg[3].size.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_3_size_3_qs)
@@ -3204,20 +3204,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_4_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_4_en_4_we & region_cfg_regwen_4_qs),
     .wd     (mp_region_cfg_4_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].en.q ),
+    .q      (reg2hw.mp_region_cfg[4].en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_en_4_qs)
@@ -3230,20 +3230,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_4_rd_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_4_rd_en_4_we & region_cfg_regwen_4_qs),
     .wd     (mp_region_cfg_4_rd_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].rd_en.q ),
+    .q      (reg2hw.mp_region_cfg[4].rd_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_rd_en_4_qs)
@@ -3256,20 +3256,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_4_prog_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_4_prog_en_4_we & region_cfg_regwen_4_qs),
     .wd     (mp_region_cfg_4_prog_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].prog_en.q ),
+    .q      (reg2hw.mp_region_cfg[4].prog_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_prog_en_4_qs)
@@ -3282,20 +3282,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_4_erase_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_4_erase_en_4_we & region_cfg_regwen_4_qs),
     .wd     (mp_region_cfg_4_erase_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].erase_en.q ),
+    .q      (reg2hw.mp_region_cfg[4].erase_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_erase_en_4_qs)
@@ -3308,20 +3308,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_4_scramble_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_4_scramble_en_4_we & region_cfg_regwen_4_qs),
     .wd     (mp_region_cfg_4_scramble_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].scramble_en.q ),
+    .q      (reg2hw.mp_region_cfg[4].scramble_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_scramble_en_4_qs)
@@ -3334,20 +3334,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_4_ecc_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_4_ecc_en_4_we & region_cfg_regwen_4_qs),
     .wd     (mp_region_cfg_4_ecc_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].ecc_en.q ),
+    .q      (reg2hw.mp_region_cfg[4].ecc_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_ecc_en_4_qs)
@@ -3360,20 +3360,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_4_he_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_4_he_en_4_we & region_cfg_regwen_4_qs),
     .wd     (mp_region_cfg_4_he_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].he_en.q ),
+    .q      (reg2hw.mp_region_cfg[4].he_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_he_en_4_qs)
@@ -3386,20 +3386,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
   ) u_mp_region_cfg_4_base_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_4_base_4_we & region_cfg_regwen_4_qs),
     .wd     (mp_region_cfg_4_base_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].base.q ),
+    .q      (reg2hw.mp_region_cfg[4].base.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_base_4_qs)
@@ -3412,20 +3412,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_mp_region_cfg_4_size_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_4_size_4_we & region_cfg_regwen_4_qs),
     .wd     (mp_region_cfg_4_size_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[4].size.q ),
+    .q      (reg2hw.mp_region_cfg[4].size.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_4_size_4_qs)
@@ -3441,20 +3441,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_5_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_5_en_5_we & region_cfg_regwen_5_qs),
     .wd     (mp_region_cfg_5_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].en.q ),
+    .q      (reg2hw.mp_region_cfg[5].en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_en_5_qs)
@@ -3467,20 +3467,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_5_rd_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_5_rd_en_5_we & region_cfg_regwen_5_qs),
     .wd     (mp_region_cfg_5_rd_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].rd_en.q ),
+    .q      (reg2hw.mp_region_cfg[5].rd_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_rd_en_5_qs)
@@ -3493,20 +3493,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_5_prog_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_5_prog_en_5_we & region_cfg_regwen_5_qs),
     .wd     (mp_region_cfg_5_prog_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].prog_en.q ),
+    .q      (reg2hw.mp_region_cfg[5].prog_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_prog_en_5_qs)
@@ -3519,20 +3519,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_5_erase_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_5_erase_en_5_we & region_cfg_regwen_5_qs),
     .wd     (mp_region_cfg_5_erase_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].erase_en.q ),
+    .q      (reg2hw.mp_region_cfg[5].erase_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_erase_en_5_qs)
@@ -3545,20 +3545,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_5_scramble_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_5_scramble_en_5_we & region_cfg_regwen_5_qs),
     .wd     (mp_region_cfg_5_scramble_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].scramble_en.q ),
+    .q      (reg2hw.mp_region_cfg[5].scramble_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_scramble_en_5_qs)
@@ -3571,20 +3571,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_5_ecc_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_5_ecc_en_5_we & region_cfg_regwen_5_qs),
     .wd     (mp_region_cfg_5_ecc_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].ecc_en.q ),
+    .q      (reg2hw.mp_region_cfg[5].ecc_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_ecc_en_5_qs)
@@ -3597,20 +3597,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_5_he_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_5_he_en_5_we & region_cfg_regwen_5_qs),
     .wd     (mp_region_cfg_5_he_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].he_en.q ),
+    .q      (reg2hw.mp_region_cfg[5].he_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_he_en_5_qs)
@@ -3623,20 +3623,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
   ) u_mp_region_cfg_5_base_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_5_base_5_we & region_cfg_regwen_5_qs),
     .wd     (mp_region_cfg_5_base_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].base.q ),
+    .q      (reg2hw.mp_region_cfg[5].base.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_base_5_qs)
@@ -3649,20 +3649,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_mp_region_cfg_5_size_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_5_size_5_we & region_cfg_regwen_5_qs),
     .wd     (mp_region_cfg_5_size_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[5].size.q ),
+    .q      (reg2hw.mp_region_cfg[5].size.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_5_size_5_qs)
@@ -3678,20 +3678,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_6_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_6_en_6_we & region_cfg_regwen_6_qs),
     .wd     (mp_region_cfg_6_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].en.q ),
+    .q      (reg2hw.mp_region_cfg[6].en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_en_6_qs)
@@ -3704,20 +3704,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_6_rd_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_6_rd_en_6_we & region_cfg_regwen_6_qs),
     .wd     (mp_region_cfg_6_rd_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].rd_en.q ),
+    .q      (reg2hw.mp_region_cfg[6].rd_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_rd_en_6_qs)
@@ -3730,20 +3730,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_6_prog_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_6_prog_en_6_we & region_cfg_regwen_6_qs),
     .wd     (mp_region_cfg_6_prog_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].prog_en.q ),
+    .q      (reg2hw.mp_region_cfg[6].prog_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_prog_en_6_qs)
@@ -3756,20 +3756,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_6_erase_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_6_erase_en_6_we & region_cfg_regwen_6_qs),
     .wd     (mp_region_cfg_6_erase_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].erase_en.q ),
+    .q      (reg2hw.mp_region_cfg[6].erase_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_erase_en_6_qs)
@@ -3782,20 +3782,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_6_scramble_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_6_scramble_en_6_we & region_cfg_regwen_6_qs),
     .wd     (mp_region_cfg_6_scramble_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].scramble_en.q ),
+    .q      (reg2hw.mp_region_cfg[6].scramble_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_scramble_en_6_qs)
@@ -3808,20 +3808,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_6_ecc_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_6_ecc_en_6_we & region_cfg_regwen_6_qs),
     .wd     (mp_region_cfg_6_ecc_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].ecc_en.q ),
+    .q      (reg2hw.mp_region_cfg[6].ecc_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_ecc_en_6_qs)
@@ -3834,20 +3834,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_6_he_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_6_he_en_6_we & region_cfg_regwen_6_qs),
     .wd     (mp_region_cfg_6_he_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].he_en.q ),
+    .q      (reg2hw.mp_region_cfg[6].he_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_he_en_6_qs)
@@ -3860,20 +3860,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
   ) u_mp_region_cfg_6_base_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_6_base_6_we & region_cfg_regwen_6_qs),
     .wd     (mp_region_cfg_6_base_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].base.q ),
+    .q      (reg2hw.mp_region_cfg[6].base.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_base_6_qs)
@@ -3886,20 +3886,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_mp_region_cfg_6_size_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_6_size_6_we & region_cfg_regwen_6_qs),
     .wd     (mp_region_cfg_6_size_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[6].size.q ),
+    .q      (reg2hw.mp_region_cfg[6].size.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_6_size_6_qs)
@@ -3915,20 +3915,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_7_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_7_en_7_we & region_cfg_regwen_7_qs),
     .wd     (mp_region_cfg_7_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].en.q ),
+    .q      (reg2hw.mp_region_cfg[7].en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_en_7_qs)
@@ -3941,20 +3941,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_7_rd_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_7_rd_en_7_we & region_cfg_regwen_7_qs),
     .wd     (mp_region_cfg_7_rd_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].rd_en.q ),
+    .q      (reg2hw.mp_region_cfg[7].rd_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_rd_en_7_qs)
@@ -3967,20 +3967,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_7_prog_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_7_prog_en_7_we & region_cfg_regwen_7_qs),
     .wd     (mp_region_cfg_7_prog_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].prog_en.q ),
+    .q      (reg2hw.mp_region_cfg[7].prog_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_prog_en_7_qs)
@@ -3993,20 +3993,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_7_erase_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_7_erase_en_7_we & region_cfg_regwen_7_qs),
     .wd     (mp_region_cfg_7_erase_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].erase_en.q ),
+    .q      (reg2hw.mp_region_cfg[7].erase_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_erase_en_7_qs)
@@ -4019,20 +4019,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_7_scramble_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_7_scramble_en_7_we & region_cfg_regwen_7_qs),
     .wd     (mp_region_cfg_7_scramble_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].scramble_en.q ),
+    .q      (reg2hw.mp_region_cfg[7].scramble_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_scramble_en_7_qs)
@@ -4045,20 +4045,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_7_ecc_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_7_ecc_en_7_we & region_cfg_regwen_7_qs),
     .wd     (mp_region_cfg_7_ecc_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].ecc_en.q ),
+    .q      (reg2hw.mp_region_cfg[7].ecc_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_ecc_en_7_qs)
@@ -4071,20 +4071,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_region_cfg_7_he_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_7_he_en_7_we & region_cfg_regwen_7_qs),
     .wd     (mp_region_cfg_7_he_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].he_en.q ),
+    .q      (reg2hw.mp_region_cfg[7].he_en.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_he_en_7_qs)
@@ -4097,20 +4097,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
   ) u_mp_region_cfg_7_base_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_7_base_7_we & region_cfg_regwen_7_qs),
     .wd     (mp_region_cfg_7_base_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].base.q ),
+    .q      (reg2hw.mp_region_cfg[7].base.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_base_7_qs)
@@ -4123,20 +4123,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (10'h0)
   ) u_mp_region_cfg_7_size_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_region_cfg_7_size_7_we & region_cfg_regwen_7_qs),
     .wd     (mp_region_cfg_7_size_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_region_cfg[7].size.q ),
+    .q      (reg2hw.mp_region_cfg[7].size.q),
 
     // to register interface (read)
     .qs     (mp_region_cfg_7_size_7_qs)
@@ -4152,8 +4152,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_default_region_rd_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (default_region_rd_en_we),
@@ -4161,11 +4161,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.default_region.rd_en.q ),
+    .q      (reg2hw.default_region.rd_en.q),
 
     // to register interface (read)
     .qs     (default_region_rd_en_qs)
@@ -4178,8 +4178,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_default_region_prog_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (default_region_prog_en_we),
@@ -4187,11 +4187,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.default_region.prog_en.q ),
+    .q      (reg2hw.default_region.prog_en.q),
 
     // to register interface (read)
     .qs     (default_region_prog_en_qs)
@@ -4204,8 +4204,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_default_region_erase_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (default_region_erase_en_we),
@@ -4213,11 +4213,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.default_region.erase_en.q ),
+    .q      (reg2hw.default_region.erase_en.q),
 
     // to register interface (read)
     .qs     (default_region_erase_en_qs)
@@ -4230,8 +4230,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_default_region_scramble_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (default_region_scramble_en_we),
@@ -4239,11 +4239,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.default_region.scramble_en.q ),
+    .q      (reg2hw.default_region.scramble_en.q),
 
     // to register interface (read)
     .qs     (default_region_scramble_en_qs)
@@ -4256,8 +4256,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_default_region_ecc_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (default_region_ecc_en_we),
@@ -4265,11 +4265,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.default_region.ecc_en.q ),
+    .q      (reg2hw.default_region.ecc_en.q),
 
     // to register interface (read)
     .qs     (default_region_ecc_en_qs)
@@ -4282,8 +4282,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_default_region_he_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (default_region_he_en_we),
@@ -4291,11 +4291,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.default_region.he_en.q ),
+    .q      (reg2hw.default_region.he_en.q),
 
     // to register interface (read)
     .qs     (default_region_he_en_qs)
@@ -4311,8 +4311,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank0_info0_regwen_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank0_info0_regwen_0_we),
@@ -4320,7 +4320,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4338,8 +4338,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank0_info0_regwen_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank0_info0_regwen_1_we),
@@ -4347,7 +4347,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4365,8 +4365,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank0_info0_regwen_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank0_info0_regwen_2_we),
@@ -4374,7 +4374,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4392,8 +4392,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank0_info0_regwen_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank0_info0_regwen_3_we),
@@ -4401,7 +4401,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4419,8 +4419,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank0_info0_regwen_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank0_info0_regwen_4_we),
@@ -4428,7 +4428,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4446,8 +4446,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank0_info0_regwen_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank0_info0_regwen_5_we),
@@ -4455,7 +4455,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4473,8 +4473,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank0_info0_regwen_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank0_info0_regwen_6_we),
@@ -4482,7 +4482,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4500,8 +4500,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank0_info0_regwen_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank0_info0_regwen_7_we),
@@ -4509,7 +4509,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4527,8 +4527,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank0_info0_regwen_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank0_info0_regwen_8_we),
@@ -4536,7 +4536,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4554,8 +4554,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank0_info0_regwen_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank0_info0_regwen_9_we),
@@ -4563,7 +4563,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -4584,20 +4584,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_0_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_0_en_0_we & bank0_info0_regwen_0_qs),
     .wd     (bank0_info0_page_cfg_0_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[0].en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[0].en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_0_en_0_qs)
@@ -4610,20 +4610,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_0_rd_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_0_rd_en_0_we & bank0_info0_regwen_0_qs),
     .wd     (bank0_info0_page_cfg_0_rd_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[0].rd_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[0].rd_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_0_rd_en_0_qs)
@@ -4636,20 +4636,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_0_prog_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_0_prog_en_0_we & bank0_info0_regwen_0_qs),
     .wd     (bank0_info0_page_cfg_0_prog_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[0].prog_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[0].prog_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_0_prog_en_0_qs)
@@ -4662,20 +4662,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_0_erase_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_0_erase_en_0_we & bank0_info0_regwen_0_qs),
     .wd     (bank0_info0_page_cfg_0_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[0].erase_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[0].erase_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_0_erase_en_0_qs)
@@ -4688,20 +4688,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_0_scramble_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_0_scramble_en_0_we & bank0_info0_regwen_0_qs),
     .wd     (bank0_info0_page_cfg_0_scramble_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[0].scramble_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[0].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_0_scramble_en_0_qs)
@@ -4714,20 +4714,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_0_ecc_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_0_ecc_en_0_we & bank0_info0_regwen_0_qs),
     .wd     (bank0_info0_page_cfg_0_ecc_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[0].ecc_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[0].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_0_ecc_en_0_qs)
@@ -4740,20 +4740,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_0_he_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_0_he_en_0_we & bank0_info0_regwen_0_qs),
     .wd     (bank0_info0_page_cfg_0_he_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[0].he_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[0].he_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_0_he_en_0_qs)
@@ -4769,20 +4769,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_1_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_1_en_1_we & bank0_info0_regwen_1_qs),
     .wd     (bank0_info0_page_cfg_1_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[1].en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[1].en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_1_en_1_qs)
@@ -4795,20 +4795,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_1_rd_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_1_rd_en_1_we & bank0_info0_regwen_1_qs),
     .wd     (bank0_info0_page_cfg_1_rd_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[1].rd_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[1].rd_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_1_rd_en_1_qs)
@@ -4821,20 +4821,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_1_prog_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_1_prog_en_1_we & bank0_info0_regwen_1_qs),
     .wd     (bank0_info0_page_cfg_1_prog_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[1].prog_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[1].prog_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_1_prog_en_1_qs)
@@ -4847,20 +4847,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_1_erase_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_1_erase_en_1_we & bank0_info0_regwen_1_qs),
     .wd     (bank0_info0_page_cfg_1_erase_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[1].erase_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[1].erase_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_1_erase_en_1_qs)
@@ -4873,20 +4873,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_1_scramble_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_1_scramble_en_1_we & bank0_info0_regwen_1_qs),
     .wd     (bank0_info0_page_cfg_1_scramble_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[1].scramble_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[1].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_1_scramble_en_1_qs)
@@ -4899,20 +4899,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_1_ecc_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_1_ecc_en_1_we & bank0_info0_regwen_1_qs),
     .wd     (bank0_info0_page_cfg_1_ecc_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[1].ecc_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[1].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_1_ecc_en_1_qs)
@@ -4925,20 +4925,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_1_he_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_1_he_en_1_we & bank0_info0_regwen_1_qs),
     .wd     (bank0_info0_page_cfg_1_he_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[1].he_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[1].he_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_1_he_en_1_qs)
@@ -4954,20 +4954,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_2_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_2_en_2_we & bank0_info0_regwen_2_qs),
     .wd     (bank0_info0_page_cfg_2_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[2].en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[2].en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_2_en_2_qs)
@@ -4980,20 +4980,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_2_rd_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_2_rd_en_2_we & bank0_info0_regwen_2_qs),
     .wd     (bank0_info0_page_cfg_2_rd_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[2].rd_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[2].rd_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_2_rd_en_2_qs)
@@ -5006,20 +5006,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_2_prog_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_2_prog_en_2_we & bank0_info0_regwen_2_qs),
     .wd     (bank0_info0_page_cfg_2_prog_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[2].prog_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[2].prog_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_2_prog_en_2_qs)
@@ -5032,20 +5032,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_2_erase_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_2_erase_en_2_we & bank0_info0_regwen_2_qs),
     .wd     (bank0_info0_page_cfg_2_erase_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[2].erase_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[2].erase_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_2_erase_en_2_qs)
@@ -5058,20 +5058,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_2_scramble_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_2_scramble_en_2_we & bank0_info0_regwen_2_qs),
     .wd     (bank0_info0_page_cfg_2_scramble_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[2].scramble_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[2].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_2_scramble_en_2_qs)
@@ -5084,20 +5084,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_2_ecc_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_2_ecc_en_2_we & bank0_info0_regwen_2_qs),
     .wd     (bank0_info0_page_cfg_2_ecc_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[2].ecc_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[2].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_2_ecc_en_2_qs)
@@ -5110,20 +5110,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_2_he_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_2_he_en_2_we & bank0_info0_regwen_2_qs),
     .wd     (bank0_info0_page_cfg_2_he_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[2].he_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[2].he_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_2_he_en_2_qs)
@@ -5139,20 +5139,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_3_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_3_en_3_we & bank0_info0_regwen_3_qs),
     .wd     (bank0_info0_page_cfg_3_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[3].en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[3].en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_3_en_3_qs)
@@ -5165,20 +5165,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_3_rd_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_3_rd_en_3_we & bank0_info0_regwen_3_qs),
     .wd     (bank0_info0_page_cfg_3_rd_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[3].rd_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[3].rd_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_3_rd_en_3_qs)
@@ -5191,20 +5191,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_3_prog_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_3_prog_en_3_we & bank0_info0_regwen_3_qs),
     .wd     (bank0_info0_page_cfg_3_prog_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[3].prog_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[3].prog_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_3_prog_en_3_qs)
@@ -5217,20 +5217,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_3_erase_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_3_erase_en_3_we & bank0_info0_regwen_3_qs),
     .wd     (bank0_info0_page_cfg_3_erase_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[3].erase_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[3].erase_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_3_erase_en_3_qs)
@@ -5243,20 +5243,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_3_scramble_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_3_scramble_en_3_we & bank0_info0_regwen_3_qs),
     .wd     (bank0_info0_page_cfg_3_scramble_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[3].scramble_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[3].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_3_scramble_en_3_qs)
@@ -5269,20 +5269,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_3_ecc_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_3_ecc_en_3_we & bank0_info0_regwen_3_qs),
     .wd     (bank0_info0_page_cfg_3_ecc_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[3].ecc_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[3].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_3_ecc_en_3_qs)
@@ -5295,20 +5295,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_3_he_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_3_he_en_3_we & bank0_info0_regwen_3_qs),
     .wd     (bank0_info0_page_cfg_3_he_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[3].he_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[3].he_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_3_he_en_3_qs)
@@ -5324,20 +5324,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_4_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_4_en_4_we & bank0_info0_regwen_4_qs),
     .wd     (bank0_info0_page_cfg_4_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[4].en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[4].en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_4_en_4_qs)
@@ -5350,20 +5350,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_4_rd_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_4_rd_en_4_we & bank0_info0_regwen_4_qs),
     .wd     (bank0_info0_page_cfg_4_rd_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[4].rd_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[4].rd_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_4_rd_en_4_qs)
@@ -5376,20 +5376,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_4_prog_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_4_prog_en_4_we & bank0_info0_regwen_4_qs),
     .wd     (bank0_info0_page_cfg_4_prog_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[4].prog_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[4].prog_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_4_prog_en_4_qs)
@@ -5402,20 +5402,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_4_erase_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_4_erase_en_4_we & bank0_info0_regwen_4_qs),
     .wd     (bank0_info0_page_cfg_4_erase_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[4].erase_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[4].erase_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_4_erase_en_4_qs)
@@ -5428,20 +5428,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_4_scramble_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_4_scramble_en_4_we & bank0_info0_regwen_4_qs),
     .wd     (bank0_info0_page_cfg_4_scramble_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[4].scramble_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[4].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_4_scramble_en_4_qs)
@@ -5454,20 +5454,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_4_ecc_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_4_ecc_en_4_we & bank0_info0_regwen_4_qs),
     .wd     (bank0_info0_page_cfg_4_ecc_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[4].ecc_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[4].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_4_ecc_en_4_qs)
@@ -5480,20 +5480,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_4_he_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_4_he_en_4_we & bank0_info0_regwen_4_qs),
     .wd     (bank0_info0_page_cfg_4_he_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[4].he_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[4].he_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_4_he_en_4_qs)
@@ -5509,20 +5509,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_5_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_5_en_5_we & bank0_info0_regwen_5_qs),
     .wd     (bank0_info0_page_cfg_5_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[5].en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[5].en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_5_en_5_qs)
@@ -5535,20 +5535,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_5_rd_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_5_rd_en_5_we & bank0_info0_regwen_5_qs),
     .wd     (bank0_info0_page_cfg_5_rd_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[5].rd_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[5].rd_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_5_rd_en_5_qs)
@@ -5561,20 +5561,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_5_prog_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_5_prog_en_5_we & bank0_info0_regwen_5_qs),
     .wd     (bank0_info0_page_cfg_5_prog_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[5].prog_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[5].prog_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_5_prog_en_5_qs)
@@ -5587,20 +5587,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_5_erase_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_5_erase_en_5_we & bank0_info0_regwen_5_qs),
     .wd     (bank0_info0_page_cfg_5_erase_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[5].erase_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[5].erase_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_5_erase_en_5_qs)
@@ -5613,20 +5613,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_5_scramble_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_5_scramble_en_5_we & bank0_info0_regwen_5_qs),
     .wd     (bank0_info0_page_cfg_5_scramble_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[5].scramble_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[5].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_5_scramble_en_5_qs)
@@ -5639,20 +5639,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_5_ecc_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_5_ecc_en_5_we & bank0_info0_regwen_5_qs),
     .wd     (bank0_info0_page_cfg_5_ecc_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[5].ecc_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[5].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_5_ecc_en_5_qs)
@@ -5665,20 +5665,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_5_he_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_5_he_en_5_we & bank0_info0_regwen_5_qs),
     .wd     (bank0_info0_page_cfg_5_he_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[5].he_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[5].he_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_5_he_en_5_qs)
@@ -5694,20 +5694,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_6_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_6_en_6_we & bank0_info0_regwen_6_qs),
     .wd     (bank0_info0_page_cfg_6_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[6].en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[6].en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_6_en_6_qs)
@@ -5720,20 +5720,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_6_rd_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_6_rd_en_6_we & bank0_info0_regwen_6_qs),
     .wd     (bank0_info0_page_cfg_6_rd_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[6].rd_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[6].rd_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_6_rd_en_6_qs)
@@ -5746,20 +5746,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_6_prog_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_6_prog_en_6_we & bank0_info0_regwen_6_qs),
     .wd     (bank0_info0_page_cfg_6_prog_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[6].prog_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[6].prog_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_6_prog_en_6_qs)
@@ -5772,20 +5772,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_6_erase_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_6_erase_en_6_we & bank0_info0_regwen_6_qs),
     .wd     (bank0_info0_page_cfg_6_erase_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[6].erase_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[6].erase_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_6_erase_en_6_qs)
@@ -5798,20 +5798,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_6_scramble_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_6_scramble_en_6_we & bank0_info0_regwen_6_qs),
     .wd     (bank0_info0_page_cfg_6_scramble_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[6].scramble_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[6].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_6_scramble_en_6_qs)
@@ -5824,20 +5824,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_6_ecc_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_6_ecc_en_6_we & bank0_info0_regwen_6_qs),
     .wd     (bank0_info0_page_cfg_6_ecc_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[6].ecc_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[6].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_6_ecc_en_6_qs)
@@ -5850,20 +5850,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_6_he_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_6_he_en_6_we & bank0_info0_regwen_6_qs),
     .wd     (bank0_info0_page_cfg_6_he_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[6].he_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[6].he_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_6_he_en_6_qs)
@@ -5879,20 +5879,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_7_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_7_en_7_we & bank0_info0_regwen_7_qs),
     .wd     (bank0_info0_page_cfg_7_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[7].en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[7].en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_7_en_7_qs)
@@ -5905,20 +5905,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_7_rd_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_7_rd_en_7_we & bank0_info0_regwen_7_qs),
     .wd     (bank0_info0_page_cfg_7_rd_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[7].rd_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[7].rd_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_7_rd_en_7_qs)
@@ -5931,20 +5931,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_7_prog_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_7_prog_en_7_we & bank0_info0_regwen_7_qs),
     .wd     (bank0_info0_page_cfg_7_prog_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[7].prog_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[7].prog_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_7_prog_en_7_qs)
@@ -5957,20 +5957,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_7_erase_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_7_erase_en_7_we & bank0_info0_regwen_7_qs),
     .wd     (bank0_info0_page_cfg_7_erase_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[7].erase_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[7].erase_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_7_erase_en_7_qs)
@@ -5983,20 +5983,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_7_scramble_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_7_scramble_en_7_we & bank0_info0_regwen_7_qs),
     .wd     (bank0_info0_page_cfg_7_scramble_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[7].scramble_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[7].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_7_scramble_en_7_qs)
@@ -6009,20 +6009,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_7_ecc_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_7_ecc_en_7_we & bank0_info0_regwen_7_qs),
     .wd     (bank0_info0_page_cfg_7_ecc_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[7].ecc_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[7].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_7_ecc_en_7_qs)
@@ -6035,20 +6035,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_7_he_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_7_he_en_7_we & bank0_info0_regwen_7_qs),
     .wd     (bank0_info0_page_cfg_7_he_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[7].he_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[7].he_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_7_he_en_7_qs)
@@ -6064,20 +6064,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_8_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_8_en_8_we & bank0_info0_regwen_8_qs),
     .wd     (bank0_info0_page_cfg_8_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[8].en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[8].en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_8_en_8_qs)
@@ -6090,20 +6090,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_8_rd_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_8_rd_en_8_we & bank0_info0_regwen_8_qs),
     .wd     (bank0_info0_page_cfg_8_rd_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[8].rd_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[8].rd_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_8_rd_en_8_qs)
@@ -6116,20 +6116,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_8_prog_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_8_prog_en_8_we & bank0_info0_regwen_8_qs),
     .wd     (bank0_info0_page_cfg_8_prog_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[8].prog_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[8].prog_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_8_prog_en_8_qs)
@@ -6142,20 +6142,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_8_erase_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_8_erase_en_8_we & bank0_info0_regwen_8_qs),
     .wd     (bank0_info0_page_cfg_8_erase_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[8].erase_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[8].erase_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_8_erase_en_8_qs)
@@ -6168,20 +6168,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_8_scramble_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_8_scramble_en_8_we & bank0_info0_regwen_8_qs),
     .wd     (bank0_info0_page_cfg_8_scramble_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[8].scramble_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[8].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_8_scramble_en_8_qs)
@@ -6194,20 +6194,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_8_ecc_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_8_ecc_en_8_we & bank0_info0_regwen_8_qs),
     .wd     (bank0_info0_page_cfg_8_ecc_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[8].ecc_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[8].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_8_ecc_en_8_qs)
@@ -6220,20 +6220,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_8_he_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_8_he_en_8_we & bank0_info0_regwen_8_qs),
     .wd     (bank0_info0_page_cfg_8_he_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[8].he_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[8].he_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_8_he_en_8_qs)
@@ -6249,20 +6249,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_9_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_9_en_9_we & bank0_info0_regwen_9_qs),
     .wd     (bank0_info0_page_cfg_9_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[9].en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[9].en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_9_en_9_qs)
@@ -6275,20 +6275,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_9_rd_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_9_rd_en_9_we & bank0_info0_regwen_9_qs),
     .wd     (bank0_info0_page_cfg_9_rd_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[9].rd_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[9].rd_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_9_rd_en_9_qs)
@@ -6301,20 +6301,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_9_prog_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_9_prog_en_9_we & bank0_info0_regwen_9_qs),
     .wd     (bank0_info0_page_cfg_9_prog_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[9].prog_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[9].prog_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_9_prog_en_9_qs)
@@ -6327,20 +6327,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_9_erase_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_9_erase_en_9_we & bank0_info0_regwen_9_qs),
     .wd     (bank0_info0_page_cfg_9_erase_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[9].erase_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[9].erase_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_9_erase_en_9_qs)
@@ -6353,20 +6353,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_9_scramble_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_9_scramble_en_9_we & bank0_info0_regwen_9_qs),
     .wd     (bank0_info0_page_cfg_9_scramble_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[9].scramble_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[9].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_9_scramble_en_9_qs)
@@ -6379,20 +6379,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_9_ecc_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_9_ecc_en_9_we & bank0_info0_regwen_9_qs),
     .wd     (bank0_info0_page_cfg_9_ecc_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[9].ecc_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[9].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_9_ecc_en_9_qs)
@@ -6405,20 +6405,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info0_page_cfg_9_he_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info0_page_cfg_9_he_en_9_we & bank0_info0_regwen_9_qs),
     .wd     (bank0_info0_page_cfg_9_he_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info0_page_cfg[9].he_en.q ),
+    .q      (reg2hw.bank0_info0_page_cfg[9].he_en.q),
 
     // to register interface (read)
     .qs     (bank0_info0_page_cfg_9_he_en_9_qs)
@@ -6435,8 +6435,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank0_info1_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank0_info1_regwen_we),
@@ -6444,7 +6444,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6465,20 +6465,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info1_page_cfg_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info1_page_cfg_en_0_we & bank0_info1_regwen_qs),
     .wd     (bank0_info1_page_cfg_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info1_page_cfg[0].en.q ),
+    .q      (reg2hw.bank0_info1_page_cfg[0].en.q),
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_en_0_qs)
@@ -6491,20 +6491,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info1_page_cfg_rd_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info1_page_cfg_rd_en_0_we & bank0_info1_regwen_qs),
     .wd     (bank0_info1_page_cfg_rd_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info1_page_cfg[0].rd_en.q ),
+    .q      (reg2hw.bank0_info1_page_cfg[0].rd_en.q),
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_rd_en_0_qs)
@@ -6517,20 +6517,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info1_page_cfg_prog_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info1_page_cfg_prog_en_0_we & bank0_info1_regwen_qs),
     .wd     (bank0_info1_page_cfg_prog_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info1_page_cfg[0].prog_en.q ),
+    .q      (reg2hw.bank0_info1_page_cfg[0].prog_en.q),
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_prog_en_0_qs)
@@ -6543,20 +6543,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info1_page_cfg_erase_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info1_page_cfg_erase_en_0_we & bank0_info1_regwen_qs),
     .wd     (bank0_info1_page_cfg_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info1_page_cfg[0].erase_en.q ),
+    .q      (reg2hw.bank0_info1_page_cfg[0].erase_en.q),
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_erase_en_0_qs)
@@ -6569,20 +6569,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info1_page_cfg_scramble_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info1_page_cfg_scramble_en_0_we & bank0_info1_regwen_qs),
     .wd     (bank0_info1_page_cfg_scramble_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info1_page_cfg[0].scramble_en.q ),
+    .q      (reg2hw.bank0_info1_page_cfg[0].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_scramble_en_0_qs)
@@ -6595,20 +6595,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info1_page_cfg_ecc_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info1_page_cfg_ecc_en_0_we & bank0_info1_regwen_qs),
     .wd     (bank0_info1_page_cfg_ecc_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info1_page_cfg[0].ecc_en.q ),
+    .q      (reg2hw.bank0_info1_page_cfg[0].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_ecc_en_0_qs)
@@ -6621,20 +6621,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info1_page_cfg_he_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info1_page_cfg_he_en_0_we & bank0_info1_regwen_qs),
     .wd     (bank0_info1_page_cfg_he_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info1_page_cfg[0].he_en.q ),
+    .q      (reg2hw.bank0_info1_page_cfg[0].he_en.q),
 
     // to register interface (read)
     .qs     (bank0_info1_page_cfg_he_en_0_qs)
@@ -6651,8 +6651,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank0_info2_regwen_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank0_info2_regwen_0_we),
@@ -6660,7 +6660,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6678,8 +6678,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank0_info2_regwen_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank0_info2_regwen_1_we),
@@ -6687,7 +6687,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -6708,20 +6708,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info2_page_cfg_0_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info2_page_cfg_0_en_0_we & bank0_info2_regwen_0_qs),
     .wd     (bank0_info2_page_cfg_0_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[0].en.q ),
+    .q      (reg2hw.bank0_info2_page_cfg[0].en.q),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_0_en_0_qs)
@@ -6734,20 +6734,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info2_page_cfg_0_rd_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info2_page_cfg_0_rd_en_0_we & bank0_info2_regwen_0_qs),
     .wd     (bank0_info2_page_cfg_0_rd_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[0].rd_en.q ),
+    .q      (reg2hw.bank0_info2_page_cfg[0].rd_en.q),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_0_rd_en_0_qs)
@@ -6760,20 +6760,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info2_page_cfg_0_prog_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info2_page_cfg_0_prog_en_0_we & bank0_info2_regwen_0_qs),
     .wd     (bank0_info2_page_cfg_0_prog_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[0].prog_en.q ),
+    .q      (reg2hw.bank0_info2_page_cfg[0].prog_en.q),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_0_prog_en_0_qs)
@@ -6786,20 +6786,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info2_page_cfg_0_erase_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info2_page_cfg_0_erase_en_0_we & bank0_info2_regwen_0_qs),
     .wd     (bank0_info2_page_cfg_0_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[0].erase_en.q ),
+    .q      (reg2hw.bank0_info2_page_cfg[0].erase_en.q),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_0_erase_en_0_qs)
@@ -6812,20 +6812,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info2_page_cfg_0_scramble_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info2_page_cfg_0_scramble_en_0_we & bank0_info2_regwen_0_qs),
     .wd     (bank0_info2_page_cfg_0_scramble_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[0].scramble_en.q ),
+    .q      (reg2hw.bank0_info2_page_cfg[0].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_0_scramble_en_0_qs)
@@ -6838,20 +6838,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info2_page_cfg_0_ecc_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info2_page_cfg_0_ecc_en_0_we & bank0_info2_regwen_0_qs),
     .wd     (bank0_info2_page_cfg_0_ecc_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[0].ecc_en.q ),
+    .q      (reg2hw.bank0_info2_page_cfg[0].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_0_ecc_en_0_qs)
@@ -6864,20 +6864,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info2_page_cfg_0_he_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info2_page_cfg_0_he_en_0_we & bank0_info2_regwen_0_qs),
     .wd     (bank0_info2_page_cfg_0_he_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[0].he_en.q ),
+    .q      (reg2hw.bank0_info2_page_cfg[0].he_en.q),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_0_he_en_0_qs)
@@ -6893,20 +6893,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info2_page_cfg_1_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info2_page_cfg_1_en_1_we & bank0_info2_regwen_1_qs),
     .wd     (bank0_info2_page_cfg_1_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[1].en.q ),
+    .q      (reg2hw.bank0_info2_page_cfg[1].en.q),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_1_en_1_qs)
@@ -6919,20 +6919,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info2_page_cfg_1_rd_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info2_page_cfg_1_rd_en_1_we & bank0_info2_regwen_1_qs),
     .wd     (bank0_info2_page_cfg_1_rd_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[1].rd_en.q ),
+    .q      (reg2hw.bank0_info2_page_cfg[1].rd_en.q),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_1_rd_en_1_qs)
@@ -6945,20 +6945,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info2_page_cfg_1_prog_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info2_page_cfg_1_prog_en_1_we & bank0_info2_regwen_1_qs),
     .wd     (bank0_info2_page_cfg_1_prog_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[1].prog_en.q ),
+    .q      (reg2hw.bank0_info2_page_cfg[1].prog_en.q),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_1_prog_en_1_qs)
@@ -6971,20 +6971,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info2_page_cfg_1_erase_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info2_page_cfg_1_erase_en_1_we & bank0_info2_regwen_1_qs),
     .wd     (bank0_info2_page_cfg_1_erase_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[1].erase_en.q ),
+    .q      (reg2hw.bank0_info2_page_cfg[1].erase_en.q),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_1_erase_en_1_qs)
@@ -6997,20 +6997,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info2_page_cfg_1_scramble_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info2_page_cfg_1_scramble_en_1_we & bank0_info2_regwen_1_qs),
     .wd     (bank0_info2_page_cfg_1_scramble_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[1].scramble_en.q ),
+    .q      (reg2hw.bank0_info2_page_cfg[1].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_1_scramble_en_1_qs)
@@ -7023,20 +7023,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info2_page_cfg_1_ecc_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info2_page_cfg_1_ecc_en_1_we & bank0_info2_regwen_1_qs),
     .wd     (bank0_info2_page_cfg_1_ecc_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[1].ecc_en.q ),
+    .q      (reg2hw.bank0_info2_page_cfg[1].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_1_ecc_en_1_qs)
@@ -7049,20 +7049,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank0_info2_page_cfg_1_he_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank0_info2_page_cfg_1_he_en_1_we & bank0_info2_regwen_1_qs),
     .wd     (bank0_info2_page_cfg_1_he_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank0_info2_page_cfg[1].he_en.q ),
+    .q      (reg2hw.bank0_info2_page_cfg[1].he_en.q),
 
     // to register interface (read)
     .qs     (bank0_info2_page_cfg_1_he_en_1_qs)
@@ -7079,8 +7079,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank1_info0_regwen_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank1_info0_regwen_0_we),
@@ -7088,7 +7088,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -7106,8 +7106,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank1_info0_regwen_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank1_info0_regwen_1_we),
@@ -7115,7 +7115,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -7133,8 +7133,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank1_info0_regwen_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank1_info0_regwen_2_we),
@@ -7142,7 +7142,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -7160,8 +7160,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank1_info0_regwen_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank1_info0_regwen_3_we),
@@ -7169,7 +7169,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -7187,8 +7187,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank1_info0_regwen_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank1_info0_regwen_4_we),
@@ -7196,7 +7196,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -7214,8 +7214,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank1_info0_regwen_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank1_info0_regwen_5_we),
@@ -7223,7 +7223,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -7241,8 +7241,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank1_info0_regwen_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank1_info0_regwen_6_we),
@@ -7250,7 +7250,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -7268,8 +7268,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank1_info0_regwen_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank1_info0_regwen_7_we),
@@ -7277,7 +7277,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -7295,8 +7295,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank1_info0_regwen_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank1_info0_regwen_8_we),
@@ -7304,7 +7304,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -7322,8 +7322,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank1_info0_regwen_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank1_info0_regwen_9_we),
@@ -7331,7 +7331,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -7352,20 +7352,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_0_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_0_en_0_we & bank1_info0_regwen_0_qs),
     .wd     (bank1_info0_page_cfg_0_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[0].en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[0].en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_0_en_0_qs)
@@ -7378,20 +7378,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_0_rd_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_0_rd_en_0_we & bank1_info0_regwen_0_qs),
     .wd     (bank1_info0_page_cfg_0_rd_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[0].rd_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[0].rd_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_0_rd_en_0_qs)
@@ -7404,20 +7404,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_0_prog_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_0_prog_en_0_we & bank1_info0_regwen_0_qs),
     .wd     (bank1_info0_page_cfg_0_prog_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[0].prog_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[0].prog_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_0_prog_en_0_qs)
@@ -7430,20 +7430,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_0_erase_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_0_erase_en_0_we & bank1_info0_regwen_0_qs),
     .wd     (bank1_info0_page_cfg_0_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[0].erase_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[0].erase_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_0_erase_en_0_qs)
@@ -7456,20 +7456,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_0_scramble_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_0_scramble_en_0_we & bank1_info0_regwen_0_qs),
     .wd     (bank1_info0_page_cfg_0_scramble_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[0].scramble_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[0].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_0_scramble_en_0_qs)
@@ -7482,20 +7482,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_0_ecc_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_0_ecc_en_0_we & bank1_info0_regwen_0_qs),
     .wd     (bank1_info0_page_cfg_0_ecc_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[0].ecc_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[0].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_0_ecc_en_0_qs)
@@ -7508,20 +7508,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_0_he_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_0_he_en_0_we & bank1_info0_regwen_0_qs),
     .wd     (bank1_info0_page_cfg_0_he_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[0].he_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[0].he_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_0_he_en_0_qs)
@@ -7537,20 +7537,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_1_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_1_en_1_we & bank1_info0_regwen_1_qs),
     .wd     (bank1_info0_page_cfg_1_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[1].en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[1].en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_1_en_1_qs)
@@ -7563,20 +7563,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_1_rd_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_1_rd_en_1_we & bank1_info0_regwen_1_qs),
     .wd     (bank1_info0_page_cfg_1_rd_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[1].rd_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[1].rd_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_1_rd_en_1_qs)
@@ -7589,20 +7589,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_1_prog_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_1_prog_en_1_we & bank1_info0_regwen_1_qs),
     .wd     (bank1_info0_page_cfg_1_prog_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[1].prog_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[1].prog_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_1_prog_en_1_qs)
@@ -7615,20 +7615,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_1_erase_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_1_erase_en_1_we & bank1_info0_regwen_1_qs),
     .wd     (bank1_info0_page_cfg_1_erase_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[1].erase_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[1].erase_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_1_erase_en_1_qs)
@@ -7641,20 +7641,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_1_scramble_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_1_scramble_en_1_we & bank1_info0_regwen_1_qs),
     .wd     (bank1_info0_page_cfg_1_scramble_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[1].scramble_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[1].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_1_scramble_en_1_qs)
@@ -7667,20 +7667,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_1_ecc_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_1_ecc_en_1_we & bank1_info0_regwen_1_qs),
     .wd     (bank1_info0_page_cfg_1_ecc_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[1].ecc_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[1].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_1_ecc_en_1_qs)
@@ -7693,20 +7693,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_1_he_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_1_he_en_1_we & bank1_info0_regwen_1_qs),
     .wd     (bank1_info0_page_cfg_1_he_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[1].he_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[1].he_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_1_he_en_1_qs)
@@ -7722,20 +7722,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_2_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_2_en_2_we & bank1_info0_regwen_2_qs),
     .wd     (bank1_info0_page_cfg_2_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[2].en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[2].en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_2_en_2_qs)
@@ -7748,20 +7748,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_2_rd_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_2_rd_en_2_we & bank1_info0_regwen_2_qs),
     .wd     (bank1_info0_page_cfg_2_rd_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[2].rd_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[2].rd_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_2_rd_en_2_qs)
@@ -7774,20 +7774,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_2_prog_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_2_prog_en_2_we & bank1_info0_regwen_2_qs),
     .wd     (bank1_info0_page_cfg_2_prog_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[2].prog_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[2].prog_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_2_prog_en_2_qs)
@@ -7800,20 +7800,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_2_erase_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_2_erase_en_2_we & bank1_info0_regwen_2_qs),
     .wd     (bank1_info0_page_cfg_2_erase_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[2].erase_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[2].erase_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_2_erase_en_2_qs)
@@ -7826,20 +7826,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_2_scramble_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_2_scramble_en_2_we & bank1_info0_regwen_2_qs),
     .wd     (bank1_info0_page_cfg_2_scramble_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[2].scramble_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[2].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_2_scramble_en_2_qs)
@@ -7852,20 +7852,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_2_ecc_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_2_ecc_en_2_we & bank1_info0_regwen_2_qs),
     .wd     (bank1_info0_page_cfg_2_ecc_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[2].ecc_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[2].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_2_ecc_en_2_qs)
@@ -7878,20 +7878,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_2_he_en_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_2_he_en_2_we & bank1_info0_regwen_2_qs),
     .wd     (bank1_info0_page_cfg_2_he_en_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[2].he_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[2].he_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_2_he_en_2_qs)
@@ -7907,20 +7907,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_3_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_3_en_3_we & bank1_info0_regwen_3_qs),
     .wd     (bank1_info0_page_cfg_3_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[3].en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[3].en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_3_en_3_qs)
@@ -7933,20 +7933,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_3_rd_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_3_rd_en_3_we & bank1_info0_regwen_3_qs),
     .wd     (bank1_info0_page_cfg_3_rd_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[3].rd_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[3].rd_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_3_rd_en_3_qs)
@@ -7959,20 +7959,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_3_prog_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_3_prog_en_3_we & bank1_info0_regwen_3_qs),
     .wd     (bank1_info0_page_cfg_3_prog_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[3].prog_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[3].prog_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_3_prog_en_3_qs)
@@ -7985,20 +7985,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_3_erase_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_3_erase_en_3_we & bank1_info0_regwen_3_qs),
     .wd     (bank1_info0_page_cfg_3_erase_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[3].erase_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[3].erase_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_3_erase_en_3_qs)
@@ -8011,20 +8011,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_3_scramble_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_3_scramble_en_3_we & bank1_info0_regwen_3_qs),
     .wd     (bank1_info0_page_cfg_3_scramble_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[3].scramble_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[3].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_3_scramble_en_3_qs)
@@ -8037,20 +8037,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_3_ecc_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_3_ecc_en_3_we & bank1_info0_regwen_3_qs),
     .wd     (bank1_info0_page_cfg_3_ecc_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[3].ecc_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[3].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_3_ecc_en_3_qs)
@@ -8063,20 +8063,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_3_he_en_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_3_he_en_3_we & bank1_info0_regwen_3_qs),
     .wd     (bank1_info0_page_cfg_3_he_en_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[3].he_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[3].he_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_3_he_en_3_qs)
@@ -8092,20 +8092,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_4_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_4_en_4_we & bank1_info0_regwen_4_qs),
     .wd     (bank1_info0_page_cfg_4_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[4].en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[4].en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_4_en_4_qs)
@@ -8118,20 +8118,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_4_rd_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_4_rd_en_4_we & bank1_info0_regwen_4_qs),
     .wd     (bank1_info0_page_cfg_4_rd_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[4].rd_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[4].rd_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_4_rd_en_4_qs)
@@ -8144,20 +8144,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_4_prog_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_4_prog_en_4_we & bank1_info0_regwen_4_qs),
     .wd     (bank1_info0_page_cfg_4_prog_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[4].prog_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[4].prog_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_4_prog_en_4_qs)
@@ -8170,20 +8170,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_4_erase_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_4_erase_en_4_we & bank1_info0_regwen_4_qs),
     .wd     (bank1_info0_page_cfg_4_erase_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[4].erase_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[4].erase_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_4_erase_en_4_qs)
@@ -8196,20 +8196,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_4_scramble_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_4_scramble_en_4_we & bank1_info0_regwen_4_qs),
     .wd     (bank1_info0_page_cfg_4_scramble_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[4].scramble_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[4].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_4_scramble_en_4_qs)
@@ -8222,20 +8222,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_4_ecc_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_4_ecc_en_4_we & bank1_info0_regwen_4_qs),
     .wd     (bank1_info0_page_cfg_4_ecc_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[4].ecc_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[4].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_4_ecc_en_4_qs)
@@ -8248,20 +8248,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_4_he_en_4 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_4_he_en_4_we & bank1_info0_regwen_4_qs),
     .wd     (bank1_info0_page_cfg_4_he_en_4_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[4].he_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[4].he_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_4_he_en_4_qs)
@@ -8277,20 +8277,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_5_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_5_en_5_we & bank1_info0_regwen_5_qs),
     .wd     (bank1_info0_page_cfg_5_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[5].en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[5].en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_5_en_5_qs)
@@ -8303,20 +8303,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_5_rd_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_5_rd_en_5_we & bank1_info0_regwen_5_qs),
     .wd     (bank1_info0_page_cfg_5_rd_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[5].rd_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[5].rd_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_5_rd_en_5_qs)
@@ -8329,20 +8329,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_5_prog_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_5_prog_en_5_we & bank1_info0_regwen_5_qs),
     .wd     (bank1_info0_page_cfg_5_prog_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[5].prog_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[5].prog_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_5_prog_en_5_qs)
@@ -8355,20 +8355,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_5_erase_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_5_erase_en_5_we & bank1_info0_regwen_5_qs),
     .wd     (bank1_info0_page_cfg_5_erase_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[5].erase_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[5].erase_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_5_erase_en_5_qs)
@@ -8381,20 +8381,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_5_scramble_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_5_scramble_en_5_we & bank1_info0_regwen_5_qs),
     .wd     (bank1_info0_page_cfg_5_scramble_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[5].scramble_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[5].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_5_scramble_en_5_qs)
@@ -8407,20 +8407,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_5_ecc_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_5_ecc_en_5_we & bank1_info0_regwen_5_qs),
     .wd     (bank1_info0_page_cfg_5_ecc_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[5].ecc_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[5].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_5_ecc_en_5_qs)
@@ -8433,20 +8433,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_5_he_en_5 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_5_he_en_5_we & bank1_info0_regwen_5_qs),
     .wd     (bank1_info0_page_cfg_5_he_en_5_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[5].he_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[5].he_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_5_he_en_5_qs)
@@ -8462,20 +8462,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_6_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_6_en_6_we & bank1_info0_regwen_6_qs),
     .wd     (bank1_info0_page_cfg_6_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[6].en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[6].en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_6_en_6_qs)
@@ -8488,20 +8488,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_6_rd_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_6_rd_en_6_we & bank1_info0_regwen_6_qs),
     .wd     (bank1_info0_page_cfg_6_rd_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[6].rd_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[6].rd_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_6_rd_en_6_qs)
@@ -8514,20 +8514,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_6_prog_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_6_prog_en_6_we & bank1_info0_regwen_6_qs),
     .wd     (bank1_info0_page_cfg_6_prog_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[6].prog_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[6].prog_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_6_prog_en_6_qs)
@@ -8540,20 +8540,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_6_erase_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_6_erase_en_6_we & bank1_info0_regwen_6_qs),
     .wd     (bank1_info0_page_cfg_6_erase_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[6].erase_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[6].erase_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_6_erase_en_6_qs)
@@ -8566,20 +8566,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_6_scramble_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_6_scramble_en_6_we & bank1_info0_regwen_6_qs),
     .wd     (bank1_info0_page_cfg_6_scramble_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[6].scramble_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[6].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_6_scramble_en_6_qs)
@@ -8592,20 +8592,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_6_ecc_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_6_ecc_en_6_we & bank1_info0_regwen_6_qs),
     .wd     (bank1_info0_page_cfg_6_ecc_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[6].ecc_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[6].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_6_ecc_en_6_qs)
@@ -8618,20 +8618,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_6_he_en_6 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_6_he_en_6_we & bank1_info0_regwen_6_qs),
     .wd     (bank1_info0_page_cfg_6_he_en_6_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[6].he_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[6].he_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_6_he_en_6_qs)
@@ -8647,20 +8647,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_7_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_7_en_7_we & bank1_info0_regwen_7_qs),
     .wd     (bank1_info0_page_cfg_7_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[7].en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[7].en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_7_en_7_qs)
@@ -8673,20 +8673,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_7_rd_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_7_rd_en_7_we & bank1_info0_regwen_7_qs),
     .wd     (bank1_info0_page_cfg_7_rd_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[7].rd_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[7].rd_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_7_rd_en_7_qs)
@@ -8699,20 +8699,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_7_prog_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_7_prog_en_7_we & bank1_info0_regwen_7_qs),
     .wd     (bank1_info0_page_cfg_7_prog_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[7].prog_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[7].prog_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_7_prog_en_7_qs)
@@ -8725,20 +8725,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_7_erase_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_7_erase_en_7_we & bank1_info0_regwen_7_qs),
     .wd     (bank1_info0_page_cfg_7_erase_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[7].erase_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[7].erase_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_7_erase_en_7_qs)
@@ -8751,20 +8751,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_7_scramble_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_7_scramble_en_7_we & bank1_info0_regwen_7_qs),
     .wd     (bank1_info0_page_cfg_7_scramble_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[7].scramble_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[7].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_7_scramble_en_7_qs)
@@ -8777,20 +8777,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_7_ecc_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_7_ecc_en_7_we & bank1_info0_regwen_7_qs),
     .wd     (bank1_info0_page_cfg_7_ecc_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[7].ecc_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[7].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_7_ecc_en_7_qs)
@@ -8803,20 +8803,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_7_he_en_7 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_7_he_en_7_we & bank1_info0_regwen_7_qs),
     .wd     (bank1_info0_page_cfg_7_he_en_7_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[7].he_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[7].he_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_7_he_en_7_qs)
@@ -8832,20 +8832,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_8_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_8_en_8_we & bank1_info0_regwen_8_qs),
     .wd     (bank1_info0_page_cfg_8_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[8].en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[8].en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_8_en_8_qs)
@@ -8858,20 +8858,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_8_rd_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_8_rd_en_8_we & bank1_info0_regwen_8_qs),
     .wd     (bank1_info0_page_cfg_8_rd_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[8].rd_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[8].rd_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_8_rd_en_8_qs)
@@ -8884,20 +8884,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_8_prog_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_8_prog_en_8_we & bank1_info0_regwen_8_qs),
     .wd     (bank1_info0_page_cfg_8_prog_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[8].prog_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[8].prog_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_8_prog_en_8_qs)
@@ -8910,20 +8910,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_8_erase_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_8_erase_en_8_we & bank1_info0_regwen_8_qs),
     .wd     (bank1_info0_page_cfg_8_erase_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[8].erase_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[8].erase_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_8_erase_en_8_qs)
@@ -8936,20 +8936,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_8_scramble_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_8_scramble_en_8_we & bank1_info0_regwen_8_qs),
     .wd     (bank1_info0_page_cfg_8_scramble_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[8].scramble_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[8].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_8_scramble_en_8_qs)
@@ -8962,20 +8962,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_8_ecc_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_8_ecc_en_8_we & bank1_info0_regwen_8_qs),
     .wd     (bank1_info0_page_cfg_8_ecc_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[8].ecc_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[8].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_8_ecc_en_8_qs)
@@ -8988,20 +8988,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_8_he_en_8 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_8_he_en_8_we & bank1_info0_regwen_8_qs),
     .wd     (bank1_info0_page_cfg_8_he_en_8_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[8].he_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[8].he_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_8_he_en_8_qs)
@@ -9017,20 +9017,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_9_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_9_en_9_we & bank1_info0_regwen_9_qs),
     .wd     (bank1_info0_page_cfg_9_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[9].en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[9].en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_9_en_9_qs)
@@ -9043,20 +9043,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_9_rd_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_9_rd_en_9_we & bank1_info0_regwen_9_qs),
     .wd     (bank1_info0_page_cfg_9_rd_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[9].rd_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[9].rd_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_9_rd_en_9_qs)
@@ -9069,20 +9069,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_9_prog_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_9_prog_en_9_we & bank1_info0_regwen_9_qs),
     .wd     (bank1_info0_page_cfg_9_prog_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[9].prog_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[9].prog_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_9_prog_en_9_qs)
@@ -9095,20 +9095,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_9_erase_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_9_erase_en_9_we & bank1_info0_regwen_9_qs),
     .wd     (bank1_info0_page_cfg_9_erase_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[9].erase_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[9].erase_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_9_erase_en_9_qs)
@@ -9121,20 +9121,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_9_scramble_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_9_scramble_en_9_we & bank1_info0_regwen_9_qs),
     .wd     (bank1_info0_page_cfg_9_scramble_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[9].scramble_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[9].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_9_scramble_en_9_qs)
@@ -9147,20 +9147,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_9_ecc_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_9_ecc_en_9_we & bank1_info0_regwen_9_qs),
     .wd     (bank1_info0_page_cfg_9_ecc_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[9].ecc_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[9].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_9_ecc_en_9_qs)
@@ -9173,20 +9173,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info0_page_cfg_9_he_en_9 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info0_page_cfg_9_he_en_9_we & bank1_info0_regwen_9_qs),
     .wd     (bank1_info0_page_cfg_9_he_en_9_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info0_page_cfg[9].he_en.q ),
+    .q      (reg2hw.bank1_info0_page_cfg[9].he_en.q),
 
     // to register interface (read)
     .qs     (bank1_info0_page_cfg_9_he_en_9_qs)
@@ -9203,8 +9203,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank1_info1_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank1_info1_regwen_we),
@@ -9212,7 +9212,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -9233,20 +9233,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info1_page_cfg_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info1_page_cfg_en_0_we & bank1_info1_regwen_qs),
     .wd     (bank1_info1_page_cfg_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info1_page_cfg[0].en.q ),
+    .q      (reg2hw.bank1_info1_page_cfg[0].en.q),
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_en_0_qs)
@@ -9259,20 +9259,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info1_page_cfg_rd_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info1_page_cfg_rd_en_0_we & bank1_info1_regwen_qs),
     .wd     (bank1_info1_page_cfg_rd_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info1_page_cfg[0].rd_en.q ),
+    .q      (reg2hw.bank1_info1_page_cfg[0].rd_en.q),
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_rd_en_0_qs)
@@ -9285,20 +9285,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info1_page_cfg_prog_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info1_page_cfg_prog_en_0_we & bank1_info1_regwen_qs),
     .wd     (bank1_info1_page_cfg_prog_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info1_page_cfg[0].prog_en.q ),
+    .q      (reg2hw.bank1_info1_page_cfg[0].prog_en.q),
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_prog_en_0_qs)
@@ -9311,20 +9311,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info1_page_cfg_erase_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info1_page_cfg_erase_en_0_we & bank1_info1_regwen_qs),
     .wd     (bank1_info1_page_cfg_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info1_page_cfg[0].erase_en.q ),
+    .q      (reg2hw.bank1_info1_page_cfg[0].erase_en.q),
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_erase_en_0_qs)
@@ -9337,20 +9337,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info1_page_cfg_scramble_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info1_page_cfg_scramble_en_0_we & bank1_info1_regwen_qs),
     .wd     (bank1_info1_page_cfg_scramble_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info1_page_cfg[0].scramble_en.q ),
+    .q      (reg2hw.bank1_info1_page_cfg[0].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_scramble_en_0_qs)
@@ -9363,20 +9363,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info1_page_cfg_ecc_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info1_page_cfg_ecc_en_0_we & bank1_info1_regwen_qs),
     .wd     (bank1_info1_page_cfg_ecc_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info1_page_cfg[0].ecc_en.q ),
+    .q      (reg2hw.bank1_info1_page_cfg[0].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_ecc_en_0_qs)
@@ -9389,20 +9389,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info1_page_cfg_he_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info1_page_cfg_he_en_0_we & bank1_info1_regwen_qs),
     .wd     (bank1_info1_page_cfg_he_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info1_page_cfg[0].he_en.q ),
+    .q      (reg2hw.bank1_info1_page_cfg[0].he_en.q),
 
     // to register interface (read)
     .qs     (bank1_info1_page_cfg_he_en_0_qs)
@@ -9419,8 +9419,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank1_info2_regwen_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank1_info2_regwen_0_we),
@@ -9428,7 +9428,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -9446,8 +9446,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank1_info2_regwen_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank1_info2_regwen_1_we),
@@ -9455,7 +9455,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -9476,20 +9476,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info2_page_cfg_0_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info2_page_cfg_0_en_0_we & bank1_info2_regwen_0_qs),
     .wd     (bank1_info2_page_cfg_0_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[0].en.q ),
+    .q      (reg2hw.bank1_info2_page_cfg[0].en.q),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_0_en_0_qs)
@@ -9502,20 +9502,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info2_page_cfg_0_rd_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info2_page_cfg_0_rd_en_0_we & bank1_info2_regwen_0_qs),
     .wd     (bank1_info2_page_cfg_0_rd_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[0].rd_en.q ),
+    .q      (reg2hw.bank1_info2_page_cfg[0].rd_en.q),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_0_rd_en_0_qs)
@@ -9528,20 +9528,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info2_page_cfg_0_prog_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info2_page_cfg_0_prog_en_0_we & bank1_info2_regwen_0_qs),
     .wd     (bank1_info2_page_cfg_0_prog_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[0].prog_en.q ),
+    .q      (reg2hw.bank1_info2_page_cfg[0].prog_en.q),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_0_prog_en_0_qs)
@@ -9554,20 +9554,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info2_page_cfg_0_erase_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info2_page_cfg_0_erase_en_0_we & bank1_info2_regwen_0_qs),
     .wd     (bank1_info2_page_cfg_0_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[0].erase_en.q ),
+    .q      (reg2hw.bank1_info2_page_cfg[0].erase_en.q),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_0_erase_en_0_qs)
@@ -9580,20 +9580,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info2_page_cfg_0_scramble_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info2_page_cfg_0_scramble_en_0_we & bank1_info2_regwen_0_qs),
     .wd     (bank1_info2_page_cfg_0_scramble_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[0].scramble_en.q ),
+    .q      (reg2hw.bank1_info2_page_cfg[0].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_0_scramble_en_0_qs)
@@ -9606,20 +9606,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info2_page_cfg_0_ecc_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info2_page_cfg_0_ecc_en_0_we & bank1_info2_regwen_0_qs),
     .wd     (bank1_info2_page_cfg_0_ecc_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[0].ecc_en.q ),
+    .q      (reg2hw.bank1_info2_page_cfg[0].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_0_ecc_en_0_qs)
@@ -9632,20 +9632,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info2_page_cfg_0_he_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info2_page_cfg_0_he_en_0_we & bank1_info2_regwen_0_qs),
     .wd     (bank1_info2_page_cfg_0_he_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[0].he_en.q ),
+    .q      (reg2hw.bank1_info2_page_cfg[0].he_en.q),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_0_he_en_0_qs)
@@ -9661,20 +9661,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info2_page_cfg_1_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info2_page_cfg_1_en_1_we & bank1_info2_regwen_1_qs),
     .wd     (bank1_info2_page_cfg_1_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[1].en.q ),
+    .q      (reg2hw.bank1_info2_page_cfg[1].en.q),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_1_en_1_qs)
@@ -9687,20 +9687,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info2_page_cfg_1_rd_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info2_page_cfg_1_rd_en_1_we & bank1_info2_regwen_1_qs),
     .wd     (bank1_info2_page_cfg_1_rd_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[1].rd_en.q ),
+    .q      (reg2hw.bank1_info2_page_cfg[1].rd_en.q),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_1_rd_en_1_qs)
@@ -9713,20 +9713,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info2_page_cfg_1_prog_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info2_page_cfg_1_prog_en_1_we & bank1_info2_regwen_1_qs),
     .wd     (bank1_info2_page_cfg_1_prog_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[1].prog_en.q ),
+    .q      (reg2hw.bank1_info2_page_cfg[1].prog_en.q),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_1_prog_en_1_qs)
@@ -9739,20 +9739,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info2_page_cfg_1_erase_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info2_page_cfg_1_erase_en_1_we & bank1_info2_regwen_1_qs),
     .wd     (bank1_info2_page_cfg_1_erase_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[1].erase_en.q ),
+    .q      (reg2hw.bank1_info2_page_cfg[1].erase_en.q),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_1_erase_en_1_qs)
@@ -9765,20 +9765,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info2_page_cfg_1_scramble_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info2_page_cfg_1_scramble_en_1_we & bank1_info2_regwen_1_qs),
     .wd     (bank1_info2_page_cfg_1_scramble_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[1].scramble_en.q ),
+    .q      (reg2hw.bank1_info2_page_cfg[1].scramble_en.q),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_1_scramble_en_1_qs)
@@ -9791,20 +9791,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info2_page_cfg_1_ecc_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info2_page_cfg_1_ecc_en_1_we & bank1_info2_regwen_1_qs),
     .wd     (bank1_info2_page_cfg_1_ecc_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[1].ecc_en.q ),
+    .q      (reg2hw.bank1_info2_page_cfg[1].ecc_en.q),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_1_ecc_en_1_qs)
@@ -9817,20 +9817,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_bank1_info2_page_cfg_1_he_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (bank1_info2_page_cfg_1_he_en_1_we & bank1_info2_regwen_1_qs),
     .wd     (bank1_info2_page_cfg_1_he_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.bank1_info2_page_cfg[1].he_en.q ),
+    .q      (reg2hw.bank1_info2_page_cfg[1].he_en.q),
 
     // to register interface (read)
     .qs     (bank1_info2_page_cfg_1_he_en_1_qs)
@@ -9845,8 +9845,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_bank_cfg_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (bank_cfg_regwen_we),
@@ -9854,7 +9854,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -9875,20 +9875,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_bank_cfg_erase_en_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_bank_cfg_erase_en_0_we & bank_cfg_regwen_qs),
     .wd     (mp_bank_cfg_erase_en_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_bank_cfg[0].q ),
+    .q      (reg2hw.mp_bank_cfg[0].q),
 
     // to register interface (read)
     .qs     (mp_bank_cfg_erase_en_0_qs)
@@ -9901,20 +9901,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_mp_bank_cfg_erase_en_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (mp_bank_cfg_erase_en_1_we & bank_cfg_regwen_qs),
     .wd     (mp_bank_cfg_erase_en_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.mp_bank_cfg[1].q ),
+    .q      (reg2hw.mp_bank_cfg[1].q),
 
     // to register interface (read)
     .qs     (mp_bank_cfg_erase_en_1_qs)
@@ -9930,8 +9930,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_op_status_done (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (op_status_done_we),
@@ -9939,7 +9939,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.op_status.done.de),
-    .d      (hw2reg.op_status.done.d ),
+    .d      (hw2reg.op_status.done.d),
 
     // to internal hardware
     .qe     (),
@@ -9956,8 +9956,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_op_status_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (op_status_err_we),
@@ -9965,7 +9965,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.op_status.err.de),
-    .d      (hw2reg.op_status.err.d ),
+    .d      (hw2reg.op_status.err.d),
 
     // to internal hardware
     .qe     (),
@@ -9984,15 +9984,16 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_rd_full (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.rd_full.de),
-    .d      (hw2reg.status.rd_full.d ),
+    .d      (hw2reg.status.rd_full.d),
 
     // to internal hardware
     .qe     (),
@@ -10009,15 +10010,16 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h1)
   ) u_status_rd_empty (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.rd_empty.de),
-    .d      (hw2reg.status.rd_empty.d ),
+    .d      (hw2reg.status.rd_empty.d),
 
     // to internal hardware
     .qe     (),
@@ -10034,15 +10036,16 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_prog_full (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.prog_full.de),
-    .d      (hw2reg.status.prog_full.d ),
+    .d      (hw2reg.status.prog_full.d),
 
     // to internal hardware
     .qe     (),
@@ -10059,15 +10062,16 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h1)
   ) u_status_prog_empty (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.prog_empty.de),
-    .d      (hw2reg.status.prog_empty.d ),
+    .d      (hw2reg.status.prog_empty.d),
 
     // to internal hardware
     .qe     (),
@@ -10084,15 +10088,16 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_init_wip (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.init_wip.de),
-    .d      (hw2reg.status.init_wip.d ),
+    .d      (hw2reg.status.init_wip.d),
 
     // to internal hardware
     .qe     (),
@@ -10111,8 +10116,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_err_code_intr_en_flash_err_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (err_code_intr_en_flash_err_en_we),
@@ -10120,11 +10125,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.err_code_intr_en.flash_err_en.q ),
+    .q      (reg2hw.err_code_intr_en.flash_err_en.q),
 
     // to register interface (read)
     .qs     (err_code_intr_en_flash_err_en_qs)
@@ -10137,8 +10142,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_err_code_intr_en_flash_alert_en (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (err_code_intr_en_flash_alert_en_we),
@@ -10146,11 +10151,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.err_code_intr_en.flash_alert_en.q ),
+    .q      (reg2hw.err_code_intr_en.flash_alert_en.q),
 
     // to register interface (read)
     .qs     (err_code_intr_en_flash_alert_en_qs)
@@ -10163,8 +10168,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_err_code_intr_en_mp_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (err_code_intr_en_mp_err_we),
@@ -10172,11 +10177,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.err_code_intr_en.mp_err.q ),
+    .q      (reg2hw.err_code_intr_en.mp_err.q),
 
     // to register interface (read)
     .qs     (err_code_intr_en_mp_err_qs)
@@ -10189,8 +10194,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_err_code_intr_en_ecc_single_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (err_code_intr_en_ecc_single_err_we),
@@ -10198,11 +10203,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.err_code_intr_en.ecc_single_err.q ),
+    .q      (reg2hw.err_code_intr_en.ecc_single_err.q),
 
     // to register interface (read)
     .qs     (err_code_intr_en_ecc_single_err_qs)
@@ -10215,8 +10220,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_err_code_intr_en_ecc_multi_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (err_code_intr_en_ecc_multi_err_we),
@@ -10224,11 +10229,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.err_code_intr_en.ecc_multi_err.q ),
+    .q      (reg2hw.err_code_intr_en.ecc_multi_err.q),
 
     // to register interface (read)
     .qs     (err_code_intr_en_ecc_multi_err_qs)
@@ -10243,8 +10248,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_err_code_flash_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (err_code_flash_err_we),
@@ -10252,11 +10257,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.err_code.flash_err.de),
-    .d      (hw2reg.err_code.flash_err.d ),
+    .d      (hw2reg.err_code.flash_err.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.err_code.flash_err.q ),
+    .q      (reg2hw.err_code.flash_err.q),
 
     // to register interface (read)
     .qs     (err_code_flash_err_qs)
@@ -10269,8 +10274,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_err_code_flash_alert (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (err_code_flash_alert_we),
@@ -10278,11 +10283,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.err_code.flash_alert.de),
-    .d      (hw2reg.err_code.flash_alert.d ),
+    .d      (hw2reg.err_code.flash_alert.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.err_code.flash_alert.q ),
+    .q      (reg2hw.err_code.flash_alert.q),
 
     // to register interface (read)
     .qs     (err_code_flash_alert_qs)
@@ -10295,8 +10300,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_err_code_mp_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (err_code_mp_err_we),
@@ -10304,11 +10309,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.err_code.mp_err.de),
-    .d      (hw2reg.err_code.mp_err.d ),
+    .d      (hw2reg.err_code.mp_err.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.err_code.mp_err.q ),
+    .q      (reg2hw.err_code.mp_err.q),
 
     // to register interface (read)
     .qs     (err_code_mp_err_qs)
@@ -10321,8 +10326,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_err_code_ecc_single_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (err_code_ecc_single_err_we),
@@ -10330,11 +10335,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.err_code.ecc_single_err.de),
-    .d      (hw2reg.err_code.ecc_single_err.d ),
+    .d      (hw2reg.err_code.ecc_single_err.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.err_code.ecc_single_err.q ),
+    .q      (reg2hw.err_code.ecc_single_err.q),
 
     // to register interface (read)
     .qs     (err_code_ecc_single_err_qs)
@@ -10347,8 +10352,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_err_code_ecc_multi_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (err_code_ecc_multi_err_we),
@@ -10356,11 +10361,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.err_code.ecc_multi_err.de),
-    .d      (hw2reg.err_code.ecc_multi_err.d ),
+    .d      (hw2reg.err_code.ecc_multi_err.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.err_code.ecc_multi_err.q ),
+    .q      (reg2hw.err_code.ecc_multi_err.q),
 
     // to register interface (read)
     .qs     (err_code_ecc_multi_err_qs)
@@ -10374,15 +10379,16 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (9'h0)
   ) u_err_addr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_addr.de),
-    .d      (hw2reg.err_addr.d ),
+    .d      (hw2reg.err_addr.d),
 
     // to internal hardware
     .qe     (),
@@ -10400,8 +10406,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (8'h0)
   ) u_ecc_single_err_cnt (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ecc_single_err_cnt_we),
@@ -10409,11 +10415,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.ecc_single_err_cnt.de),
-    .d      (hw2reg.ecc_single_err_cnt.d ),
+    .d      (hw2reg.ecc_single_err_cnt.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ecc_single_err_cnt.q ),
+    .q      (reg2hw.ecc_single_err_cnt.q),
 
     // to register interface (read)
     .qs     (ecc_single_err_cnt_qs)
@@ -10429,15 +10435,16 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (20'h0)
   ) u_ecc_single_err_addr_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ecc_single_err_addr[0].de),
-    .d      (hw2reg.ecc_single_err_addr[0].d ),
+    .d      (hw2reg.ecc_single_err_addr[0].d),
 
     // to internal hardware
     .qe     (),
@@ -10455,15 +10462,16 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (20'h0)
   ) u_ecc_single_err_addr_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ecc_single_err_addr[1].de),
-    .d      (hw2reg.ecc_single_err_addr[1].d ),
+    .d      (hw2reg.ecc_single_err_addr[1].d),
 
     // to internal hardware
     .qe     (),
@@ -10481,8 +10489,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (8'h0)
   ) u_ecc_multi_err_cnt (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ecc_multi_err_cnt_we),
@@ -10490,11 +10498,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (hw2reg.ecc_multi_err_cnt.de),
-    .d      (hw2reg.ecc_multi_err_cnt.d ),
+    .d      (hw2reg.ecc_multi_err_cnt.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ecc_multi_err_cnt.q ),
+    .q      (reg2hw.ecc_multi_err_cnt.q),
 
     // to register interface (read)
     .qs     (ecc_multi_err_cnt_qs)
@@ -10510,15 +10518,16 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (20'h0)
   ) u_ecc_multi_err_addr_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ecc_multi_err_addr[0].de),
-    .d      (hw2reg.ecc_multi_err_addr[0].d ),
+    .d      (hw2reg.ecc_multi_err_addr[0].d),
 
     // to internal hardware
     .qe     (),
@@ -10536,15 +10545,16 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (20'h0)
   ) u_ecc_multi_err_addr_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.ecc_multi_err_addr[1].de),
-    .d      (hw2reg.ecc_multi_err_addr[1].d ),
+    .d      (hw2reg.ecc_multi_err_addr[1].d),
 
     // to internal hardware
     .qe     (),
@@ -10562,8 +10572,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_phy_err_cfg_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_err_cfg_regwen_we),
@@ -10571,7 +10581,7 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -10589,20 +10599,20 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_err_cfg (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (phy_err_cfg_we & phy_err_cfg_regwen_qs),
     .wd     (phy_err_cfg_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_err_cfg.q ),
+    .q      (reg2hw.phy_err_cfg.q),
 
     // to register interface (read)
     .qs     (phy_err_cfg_qs)
@@ -10617,8 +10627,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_alert_cfg_alert_ack (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_alert_cfg_alert_ack_we),
@@ -10626,11 +10636,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_alert_cfg.alert_ack.q ),
+    .q      (reg2hw.phy_alert_cfg.alert_ack.q),
 
     // to register interface (read)
     .qs     (phy_alert_cfg_alert_ack_qs)
@@ -10643,8 +10653,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_phy_alert_cfg_alert_trig (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (phy_alert_cfg_alert_trig_we),
@@ -10652,11 +10662,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.phy_alert_cfg.alert_trig.q ),
+    .q      (reg2hw.phy_alert_cfg.alert_trig.q),
 
     // to register interface (read)
     .qs     (phy_alert_cfg_alert_trig_qs)
@@ -10671,15 +10681,16 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_phy_status_init_wip (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.phy_status.init_wip.de),
-    .d      (hw2reg.phy_status.init_wip.d ),
+    .d      (hw2reg.phy_status.init_wip.d),
 
     // to internal hardware
     .qe     (),
@@ -10696,15 +10707,16 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h1)
   ) u_phy_status_prog_normal_avail (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.phy_status.prog_normal_avail.de),
-    .d      (hw2reg.phy_status.prog_normal_avail.d ),
+    .d      (hw2reg.phy_status.prog_normal_avail.d),
 
     // to internal hardware
     .qe     (),
@@ -10721,15 +10733,16 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h1)
   ) u_phy_status_prog_repair_avail (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.phy_status.prog_repair_avail.de),
-    .d      (hw2reg.phy_status.prog_repair_avail.d ),
+    .d      (hw2reg.phy_status.prog_repair_avail.d),
 
     // to internal hardware
     .qe     (),
@@ -10747,8 +10760,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_scratch (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (scratch_we),
@@ -10756,11 +10769,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.scratch.q ),
+    .q      (reg2hw.scratch.q),
 
     // to register interface (read)
     .qs     (scratch_qs)
@@ -10775,8 +10788,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'hf)
   ) u_fifo_lvl_prog (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fifo_lvl_prog_we),
@@ -10784,11 +10797,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.fifo_lvl.prog.q ),
+    .q      (reg2hw.fifo_lvl.prog.q),
 
     // to register interface (read)
     .qs     (fifo_lvl_prog_qs)
@@ -10801,8 +10814,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'hf)
   ) u_fifo_lvl_rd (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fifo_lvl_rd_we),
@@ -10810,11 +10823,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.fifo_lvl.rd.q ),
+    .q      (reg2hw.fifo_lvl.rd.q),
 
     // to register interface (read)
     .qs     (fifo_lvl_rd_qs)
@@ -10828,8 +10841,8 @@ module flash_ctrl_core_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_fifo_rst (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fifo_rst_we),
@@ -10837,11 +10850,11 @@ module flash_ctrl_core_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.fifo_rst.q ),
+    .q      (reg2hw.fifo_rst.q),
 
     // to register interface (read)
     .qs     (fifo_rst_qs)

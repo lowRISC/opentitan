@@ -466,8 +466,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
@@ -475,11 +475,11 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.de),
-    .d      (hw2reg.intr_state.d ),
+    .d      (hw2reg.intr_state.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.q ),
+    .q      (reg2hw.intr_state.q),
 
     // to register interface (read)
     .qs     (intr_state_qs)
@@ -493,8 +493,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
@@ -502,11 +502,11 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.q ),
+    .q      (reg2hw.intr_enable.q),
 
     // to register interface (read)
     .qs     (intr_enable_qs)
@@ -524,7 +524,7 @@ module sysrst_ctrl_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.qe),
-    .q      (reg2hw.intr_test.q ),
+    .q      (reg2hw.intr_test.q),
     .qs     ()
   );
 
@@ -536,8 +536,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (regwen_we),
@@ -545,7 +545,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -563,20 +563,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h7d0)
   ) u_ec_rst_ctl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (ec_rst_ctl_we & regwen_qs),
     .wd     (ec_rst_ctl_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.ec_rst_ctl.qe),
-    .q      (reg2hw.ec_rst_ctl.q ),
+    .q      (reg2hw.ec_rst_ctl.q),
 
     // to register interface (read)
     .qs     (ec_rst_ctl_qs)
@@ -591,20 +591,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_invert_ctl_key0_in (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_invert_ctl_key0_in_we & regwen_qs),
     .wd     (key_invert_ctl_key0_in_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_invert_ctl.key0_in.q ),
+    .q      (reg2hw.key_invert_ctl.key0_in.q),
 
     // to register interface (read)
     .qs     (key_invert_ctl_key0_in_qs)
@@ -617,20 +617,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_invert_ctl_key0_out (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_invert_ctl_key0_out_we & regwen_qs),
     .wd     (key_invert_ctl_key0_out_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_invert_ctl.key0_out.q ),
+    .q      (reg2hw.key_invert_ctl.key0_out.q),
 
     // to register interface (read)
     .qs     (key_invert_ctl_key0_out_qs)
@@ -643,20 +643,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_invert_ctl_key1_in (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_invert_ctl_key1_in_we & regwen_qs),
     .wd     (key_invert_ctl_key1_in_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_invert_ctl.key1_in.q ),
+    .q      (reg2hw.key_invert_ctl.key1_in.q),
 
     // to register interface (read)
     .qs     (key_invert_ctl_key1_in_qs)
@@ -669,20 +669,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_invert_ctl_key1_out (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_invert_ctl_key1_out_we & regwen_qs),
     .wd     (key_invert_ctl_key1_out_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_invert_ctl.key1_out.q ),
+    .q      (reg2hw.key_invert_ctl.key1_out.q),
 
     // to register interface (read)
     .qs     (key_invert_ctl_key1_out_qs)
@@ -695,20 +695,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_invert_ctl_key2_in (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_invert_ctl_key2_in_we & regwen_qs),
     .wd     (key_invert_ctl_key2_in_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_invert_ctl.key2_in.q ),
+    .q      (reg2hw.key_invert_ctl.key2_in.q),
 
     // to register interface (read)
     .qs     (key_invert_ctl_key2_in_qs)
@@ -721,20 +721,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_invert_ctl_key2_out (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_invert_ctl_key2_out_we & regwen_qs),
     .wd     (key_invert_ctl_key2_out_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_invert_ctl.key2_out.q ),
+    .q      (reg2hw.key_invert_ctl.key2_out.q),
 
     // to register interface (read)
     .qs     (key_invert_ctl_key2_out_qs)
@@ -747,20 +747,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_invert_ctl_pwrb_in (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_invert_ctl_pwrb_in_we & regwen_qs),
     .wd     (key_invert_ctl_pwrb_in_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_invert_ctl.pwrb_in.q ),
+    .q      (reg2hw.key_invert_ctl.pwrb_in.q),
 
     // to register interface (read)
     .qs     (key_invert_ctl_pwrb_in_qs)
@@ -773,20 +773,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_invert_ctl_pwrb_out (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_invert_ctl_pwrb_out_we & regwen_qs),
     .wd     (key_invert_ctl_pwrb_out_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_invert_ctl.pwrb_out.q ),
+    .q      (reg2hw.key_invert_ctl.pwrb_out.q),
 
     // to register interface (read)
     .qs     (key_invert_ctl_pwrb_out_qs)
@@ -799,20 +799,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_invert_ctl_ac_present (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_invert_ctl_ac_present_we & regwen_qs),
     .wd     (key_invert_ctl_ac_present_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_invert_ctl.ac_present.q ),
+    .q      (reg2hw.key_invert_ctl.ac_present.q),
 
     // to register interface (read)
     .qs     (key_invert_ctl_ac_present_qs)
@@ -825,20 +825,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_invert_ctl_bat_disable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_invert_ctl_bat_disable_we & regwen_qs),
     .wd     (key_invert_ctl_bat_disable_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_invert_ctl.bat_disable.q ),
+    .q      (reg2hw.key_invert_ctl.bat_disable.q),
 
     // to register interface (read)
     .qs     (key_invert_ctl_bat_disable_qs)
@@ -853,20 +853,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_allowed_ctl_bat_disable_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (pin_allowed_ctl_bat_disable_0_we & regwen_qs),
     .wd     (pin_allowed_ctl_bat_disable_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_allowed_ctl.bat_disable_0.q ),
+    .q      (reg2hw.pin_allowed_ctl.bat_disable_0.q),
 
     // to register interface (read)
     .qs     (pin_allowed_ctl_bat_disable_0_qs)
@@ -879,20 +879,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_pin_allowed_ctl_ec_rst_l_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (pin_allowed_ctl_ec_rst_l_0_we & regwen_qs),
     .wd     (pin_allowed_ctl_ec_rst_l_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_allowed_ctl.ec_rst_l_0.q ),
+    .q      (reg2hw.pin_allowed_ctl.ec_rst_l_0.q),
 
     // to register interface (read)
     .qs     (pin_allowed_ctl_ec_rst_l_0_qs)
@@ -905,20 +905,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_allowed_ctl_pwrb_out_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (pin_allowed_ctl_pwrb_out_0_we & regwen_qs),
     .wd     (pin_allowed_ctl_pwrb_out_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_allowed_ctl.pwrb_out_0.q ),
+    .q      (reg2hw.pin_allowed_ctl.pwrb_out_0.q),
 
     // to register interface (read)
     .qs     (pin_allowed_ctl_pwrb_out_0_qs)
@@ -931,20 +931,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_allowed_ctl_key0_out_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (pin_allowed_ctl_key0_out_0_we & regwen_qs),
     .wd     (pin_allowed_ctl_key0_out_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_allowed_ctl.key0_out_0.q ),
+    .q      (reg2hw.pin_allowed_ctl.key0_out_0.q),
 
     // to register interface (read)
     .qs     (pin_allowed_ctl_key0_out_0_qs)
@@ -957,20 +957,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_allowed_ctl_key1_out_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (pin_allowed_ctl_key1_out_0_we & regwen_qs),
     .wd     (pin_allowed_ctl_key1_out_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_allowed_ctl.key1_out_0.q ),
+    .q      (reg2hw.pin_allowed_ctl.key1_out_0.q),
 
     // to register interface (read)
     .qs     (pin_allowed_ctl_key1_out_0_qs)
@@ -983,20 +983,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_allowed_ctl_key2_out_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (pin_allowed_ctl_key2_out_0_we & regwen_qs),
     .wd     (pin_allowed_ctl_key2_out_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_allowed_ctl.key2_out_0.q ),
+    .q      (reg2hw.pin_allowed_ctl.key2_out_0.q),
 
     // to register interface (read)
     .qs     (pin_allowed_ctl_key2_out_0_qs)
@@ -1009,20 +1009,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_allowed_ctl_bat_disable_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (pin_allowed_ctl_bat_disable_1_we & regwen_qs),
     .wd     (pin_allowed_ctl_bat_disable_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_allowed_ctl.bat_disable_1.q ),
+    .q      (reg2hw.pin_allowed_ctl.bat_disable_1.q),
 
     // to register interface (read)
     .qs     (pin_allowed_ctl_bat_disable_1_qs)
@@ -1035,20 +1035,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_allowed_ctl_ec_rst_l_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (pin_allowed_ctl_ec_rst_l_1_we & regwen_qs),
     .wd     (pin_allowed_ctl_ec_rst_l_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_allowed_ctl.ec_rst_l_1.q ),
+    .q      (reg2hw.pin_allowed_ctl.ec_rst_l_1.q),
 
     // to register interface (read)
     .qs     (pin_allowed_ctl_ec_rst_l_1_qs)
@@ -1061,20 +1061,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_allowed_ctl_pwrb_out_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (pin_allowed_ctl_pwrb_out_1_we & regwen_qs),
     .wd     (pin_allowed_ctl_pwrb_out_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_allowed_ctl.pwrb_out_1.q ),
+    .q      (reg2hw.pin_allowed_ctl.pwrb_out_1.q),
 
     // to register interface (read)
     .qs     (pin_allowed_ctl_pwrb_out_1_qs)
@@ -1087,20 +1087,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_allowed_ctl_key0_out_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (pin_allowed_ctl_key0_out_1_we & regwen_qs),
     .wd     (pin_allowed_ctl_key0_out_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_allowed_ctl.key0_out_1.q ),
+    .q      (reg2hw.pin_allowed_ctl.key0_out_1.q),
 
     // to register interface (read)
     .qs     (pin_allowed_ctl_key0_out_1_qs)
@@ -1113,20 +1113,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_allowed_ctl_key1_out_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (pin_allowed_ctl_key1_out_1_we & regwen_qs),
     .wd     (pin_allowed_ctl_key1_out_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_allowed_ctl.key1_out_1.q ),
+    .q      (reg2hw.pin_allowed_ctl.key1_out_1.q),
 
     // to register interface (read)
     .qs     (pin_allowed_ctl_key1_out_1_qs)
@@ -1139,20 +1139,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_allowed_ctl_key2_out_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (pin_allowed_ctl_key2_out_1_we & regwen_qs),
     .wd     (pin_allowed_ctl_key2_out_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_allowed_ctl.key2_out_1.q ),
+    .q      (reg2hw.pin_allowed_ctl.key2_out_1.q),
 
     // to register interface (read)
     .qs     (pin_allowed_ctl_key2_out_1_qs)
@@ -1167,8 +1167,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_out_ctl_bat_disable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (pin_out_ctl_bat_disable_we),
@@ -1176,11 +1176,11 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_out_ctl.bat_disable.q ),
+    .q      (reg2hw.pin_out_ctl.bat_disable.q),
 
     // to register interface (read)
     .qs     (pin_out_ctl_bat_disable_qs)
@@ -1193,8 +1193,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_pin_out_ctl_ec_rst_l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (pin_out_ctl_ec_rst_l_we),
@@ -1202,11 +1202,11 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_out_ctl.ec_rst_l.q ),
+    .q      (reg2hw.pin_out_ctl.ec_rst_l.q),
 
     // to register interface (read)
     .qs     (pin_out_ctl_ec_rst_l_qs)
@@ -1219,8 +1219,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_out_ctl_pwrb_out (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (pin_out_ctl_pwrb_out_we),
@@ -1228,11 +1228,11 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_out_ctl.pwrb_out.q ),
+    .q      (reg2hw.pin_out_ctl.pwrb_out.q),
 
     // to register interface (read)
     .qs     (pin_out_ctl_pwrb_out_qs)
@@ -1245,8 +1245,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_out_ctl_key0_out (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (pin_out_ctl_key0_out_we),
@@ -1254,11 +1254,11 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_out_ctl.key0_out.q ),
+    .q      (reg2hw.pin_out_ctl.key0_out.q),
 
     // to register interface (read)
     .qs     (pin_out_ctl_key0_out_qs)
@@ -1271,8 +1271,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_out_ctl_key1_out (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (pin_out_ctl_key1_out_we),
@@ -1280,11 +1280,11 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_out_ctl.key1_out.q ),
+    .q      (reg2hw.pin_out_ctl.key1_out.q),
 
     // to register interface (read)
     .qs     (pin_out_ctl_key1_out_qs)
@@ -1297,8 +1297,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_out_ctl_key2_out (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (pin_out_ctl_key2_out_we),
@@ -1306,11 +1306,11 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_out_ctl.key2_out.q ),
+    .q      (reg2hw.pin_out_ctl.key2_out.q),
 
     // to register interface (read)
     .qs     (pin_out_ctl_key2_out_qs)
@@ -1325,8 +1325,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_out_value_bat_disable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (pin_out_value_bat_disable_we),
@@ -1334,11 +1334,11 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_out_value.bat_disable.q ),
+    .q      (reg2hw.pin_out_value.bat_disable.q),
 
     // to register interface (read)
     .qs     (pin_out_value_bat_disable_qs)
@@ -1351,8 +1351,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_out_value_ec_rst_l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (pin_out_value_ec_rst_l_we),
@@ -1360,11 +1360,11 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_out_value.ec_rst_l.q ),
+    .q      (reg2hw.pin_out_value.ec_rst_l.q),
 
     // to register interface (read)
     .qs     (pin_out_value_ec_rst_l_qs)
@@ -1377,8 +1377,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_out_value_pwrb_out (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (pin_out_value_pwrb_out_we),
@@ -1386,11 +1386,11 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_out_value.pwrb_out.q ),
+    .q      (reg2hw.pin_out_value.pwrb_out.q),
 
     // to register interface (read)
     .qs     (pin_out_value_pwrb_out_qs)
@@ -1403,8 +1403,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_out_value_key0_out (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (pin_out_value_key0_out_we),
@@ -1412,11 +1412,11 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_out_value.key0_out.q ),
+    .q      (reg2hw.pin_out_value.key0_out.q),
 
     // to register interface (read)
     .qs     (pin_out_value_key0_out_qs)
@@ -1429,8 +1429,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_out_value_key1_out (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (pin_out_value_key1_out_we),
@@ -1438,11 +1438,11 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_out_value.key1_out.q ),
+    .q      (reg2hw.pin_out_value.key1_out.q),
 
     // to register interface (read)
     .qs     (pin_out_value_key1_out_qs)
@@ -1455,8 +1455,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_pin_out_value_key2_out (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (pin_out_value_key2_out_we),
@@ -1464,11 +1464,11 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.pin_out_value.key2_out.q ),
+    .q      (reg2hw.pin_out_value.key2_out.q),
 
     // to register interface (read)
     .qs     (pin_out_value_key2_out_qs)
@@ -1483,15 +1483,16 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_pin_in_value_ac_present (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.pin_in_value.ac_present.de),
-    .d      (hw2reg.pin_in_value.ac_present.d ),
+    .d      (hw2reg.pin_in_value.ac_present.d),
 
     // to internal hardware
     .qe     (),
@@ -1508,15 +1509,16 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_pin_in_value_ec_rst_l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.pin_in_value.ec_rst_l.de),
-    .d      (hw2reg.pin_in_value.ec_rst_l.d ),
+    .d      (hw2reg.pin_in_value.ec_rst_l.d),
 
     // to internal hardware
     .qe     (),
@@ -1533,15 +1535,16 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_pin_in_value_pwrb_in (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.pin_in_value.pwrb_in.de),
-    .d      (hw2reg.pin_in_value.pwrb_in.d ),
+    .d      (hw2reg.pin_in_value.pwrb_in.d),
 
     // to internal hardware
     .qe     (),
@@ -1558,15 +1561,16 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_pin_in_value_key0_in (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.pin_in_value.key0_in.de),
-    .d      (hw2reg.pin_in_value.key0_in.d ),
+    .d      (hw2reg.pin_in_value.key0_in.d),
 
     // to internal hardware
     .qe     (),
@@ -1583,15 +1587,16 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_pin_in_value_key1_in (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.pin_in_value.key1_in.de),
-    .d      (hw2reg.pin_in_value.key1_in.d ),
+    .d      (hw2reg.pin_in_value.key1_in.d),
 
     // to internal hardware
     .qe     (),
@@ -1608,15 +1613,16 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_pin_in_value_key2_in (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.pin_in_value.key2_in.de),
-    .d      (hw2reg.pin_in_value.key2_in.d ),
+    .d      (hw2reg.pin_in_value.key2_in.d),
 
     // to internal hardware
     .qe     (),
@@ -1635,20 +1641,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_intr_ctl_pwrb_in_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_intr_ctl_pwrb_in_h2l_we & regwen_qs),
     .wd     (key_intr_ctl_pwrb_in_h2l_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_intr_ctl.pwrb_in_h2l.q ),
+    .q      (reg2hw.key_intr_ctl.pwrb_in_h2l.q),
 
     // to register interface (read)
     .qs     (key_intr_ctl_pwrb_in_h2l_qs)
@@ -1661,20 +1667,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_intr_ctl_key0_in_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_intr_ctl_key0_in_h2l_we & regwen_qs),
     .wd     (key_intr_ctl_key0_in_h2l_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_intr_ctl.key0_in_h2l.q ),
+    .q      (reg2hw.key_intr_ctl.key0_in_h2l.q),
 
     // to register interface (read)
     .qs     (key_intr_ctl_key0_in_h2l_qs)
@@ -1687,20 +1693,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_intr_ctl_key1_in_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_intr_ctl_key1_in_h2l_we & regwen_qs),
     .wd     (key_intr_ctl_key1_in_h2l_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_intr_ctl.key1_in_h2l.q ),
+    .q      (reg2hw.key_intr_ctl.key1_in_h2l.q),
 
     // to register interface (read)
     .qs     (key_intr_ctl_key1_in_h2l_qs)
@@ -1713,20 +1719,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_intr_ctl_key2_in_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_intr_ctl_key2_in_h2l_we & regwen_qs),
     .wd     (key_intr_ctl_key2_in_h2l_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_intr_ctl.key2_in_h2l.q ),
+    .q      (reg2hw.key_intr_ctl.key2_in_h2l.q),
 
     // to register interface (read)
     .qs     (key_intr_ctl_key2_in_h2l_qs)
@@ -1739,20 +1745,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_intr_ctl_ac_present_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_intr_ctl_ac_present_h2l_we & regwen_qs),
     .wd     (key_intr_ctl_ac_present_h2l_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_intr_ctl.ac_present_h2l.q ),
+    .q      (reg2hw.key_intr_ctl.ac_present_h2l.q),
 
     // to register interface (read)
     .qs     (key_intr_ctl_ac_present_h2l_qs)
@@ -1765,20 +1771,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_intr_ctl_ec_rst_l_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_intr_ctl_ec_rst_l_h2l_we & regwen_qs),
     .wd     (key_intr_ctl_ec_rst_l_h2l_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_intr_ctl.ec_rst_l_h2l.q ),
+    .q      (reg2hw.key_intr_ctl.ec_rst_l_h2l.q),
 
     // to register interface (read)
     .qs     (key_intr_ctl_ec_rst_l_h2l_qs)
@@ -1791,20 +1797,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_intr_ctl_pwrb_in_l2h (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_intr_ctl_pwrb_in_l2h_we & regwen_qs),
     .wd     (key_intr_ctl_pwrb_in_l2h_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_intr_ctl.pwrb_in_l2h.q ),
+    .q      (reg2hw.key_intr_ctl.pwrb_in_l2h.q),
 
     // to register interface (read)
     .qs     (key_intr_ctl_pwrb_in_l2h_qs)
@@ -1817,20 +1823,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_intr_ctl_key0_in_l2h (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_intr_ctl_key0_in_l2h_we & regwen_qs),
     .wd     (key_intr_ctl_key0_in_l2h_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_intr_ctl.key0_in_l2h.q ),
+    .q      (reg2hw.key_intr_ctl.key0_in_l2h.q),
 
     // to register interface (read)
     .qs     (key_intr_ctl_key0_in_l2h_qs)
@@ -1843,20 +1849,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_intr_ctl_key1_in_l2h (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_intr_ctl_key1_in_l2h_we & regwen_qs),
     .wd     (key_intr_ctl_key1_in_l2h_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_intr_ctl.key1_in_l2h.q ),
+    .q      (reg2hw.key_intr_ctl.key1_in_l2h.q),
 
     // to register interface (read)
     .qs     (key_intr_ctl_key1_in_l2h_qs)
@@ -1869,20 +1875,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_intr_ctl_key2_in_l2h (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_intr_ctl_key2_in_l2h_we & regwen_qs),
     .wd     (key_intr_ctl_key2_in_l2h_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_intr_ctl.key2_in_l2h.q ),
+    .q      (reg2hw.key_intr_ctl.key2_in_l2h.q),
 
     // to register interface (read)
     .qs     (key_intr_ctl_key2_in_l2h_qs)
@@ -1895,20 +1901,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_intr_ctl_ac_present_l2h (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_intr_ctl_ac_present_l2h_we & regwen_qs),
     .wd     (key_intr_ctl_ac_present_l2h_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_intr_ctl.ac_present_l2h.q ),
+    .q      (reg2hw.key_intr_ctl.ac_present_l2h.q),
 
     // to register interface (read)
     .qs     (key_intr_ctl_ac_present_l2h_qs)
@@ -1921,20 +1927,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_key_intr_ctl_ec_rst_l_l2h (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_intr_ctl_ec_rst_l_l2h_we & regwen_qs),
     .wd     (key_intr_ctl_ec_rst_l_l2h_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_intr_ctl.ec_rst_l_l2h.q ),
+    .q      (reg2hw.key_intr_ctl.ec_rst_l_l2h.q),
 
     // to register interface (read)
     .qs     (key_intr_ctl_ec_rst_l_l2h_qs)
@@ -1948,20 +1954,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_key_intr_debounce_ctl (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (key_intr_debounce_ctl_we & regwen_qs),
     .wd     (key_intr_debounce_ctl_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.key_intr_debounce_ctl.qe),
-    .q      (reg2hw.key_intr_debounce_ctl.q ),
+    .q      (reg2hw.key_intr_debounce_ctl.q),
 
     // to register interface (read)
     .qs     (key_intr_debounce_ctl_qs)
@@ -1976,20 +1982,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_auto_block_debounce_ctl_debounce_timer (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (auto_block_debounce_ctl_debounce_timer_we & regwen_qs),
     .wd     (auto_block_debounce_ctl_debounce_timer_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.auto_block_debounce_ctl.debounce_timer.qe),
-    .q      (reg2hw.auto_block_debounce_ctl.debounce_timer.q ),
+    .q      (reg2hw.auto_block_debounce_ctl.debounce_timer.q),
 
     // to register interface (read)
     .qs     (auto_block_debounce_ctl_debounce_timer_qs)
@@ -2002,20 +2008,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_auto_block_debounce_ctl_auto_block_enable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (auto_block_debounce_ctl_auto_block_enable_we & regwen_qs),
     .wd     (auto_block_debounce_ctl_auto_block_enable_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.auto_block_debounce_ctl.auto_block_enable.qe),
-    .q      (reg2hw.auto_block_debounce_ctl.auto_block_enable.q ),
+    .q      (reg2hw.auto_block_debounce_ctl.auto_block_enable.q),
 
     // to register interface (read)
     .qs     (auto_block_debounce_ctl_auto_block_enable_qs)
@@ -2030,20 +2036,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_auto_block_out_ctl_key0_out_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (auto_block_out_ctl_key0_out_sel_we & regwen_qs),
     .wd     (auto_block_out_ctl_key0_out_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.auto_block_out_ctl.key0_out_sel.q ),
+    .q      (reg2hw.auto_block_out_ctl.key0_out_sel.q),
 
     // to register interface (read)
     .qs     (auto_block_out_ctl_key0_out_sel_qs)
@@ -2056,20 +2062,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_auto_block_out_ctl_key1_out_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (auto_block_out_ctl_key1_out_sel_we & regwen_qs),
     .wd     (auto_block_out_ctl_key1_out_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.auto_block_out_ctl.key1_out_sel.q ),
+    .q      (reg2hw.auto_block_out_ctl.key1_out_sel.q),
 
     // to register interface (read)
     .qs     (auto_block_out_ctl_key1_out_sel_qs)
@@ -2082,20 +2088,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_auto_block_out_ctl_key2_out_sel (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (auto_block_out_ctl_key2_out_sel_we & regwen_qs),
     .wd     (auto_block_out_ctl_key2_out_sel_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.auto_block_out_ctl.key2_out_sel.q ),
+    .q      (reg2hw.auto_block_out_ctl.key2_out_sel.q),
 
     // to register interface (read)
     .qs     (auto_block_out_ctl_key2_out_sel_qs)
@@ -2108,20 +2114,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_auto_block_out_ctl_key0_out_value (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (auto_block_out_ctl_key0_out_value_we & regwen_qs),
     .wd     (auto_block_out_ctl_key0_out_value_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.auto_block_out_ctl.key0_out_value.q ),
+    .q      (reg2hw.auto_block_out_ctl.key0_out_value.q),
 
     // to register interface (read)
     .qs     (auto_block_out_ctl_key0_out_value_qs)
@@ -2134,20 +2140,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_auto_block_out_ctl_key1_out_value (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (auto_block_out_ctl_key1_out_value_we & regwen_qs),
     .wd     (auto_block_out_ctl_key1_out_value_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.auto_block_out_ctl.key1_out_value.q ),
+    .q      (reg2hw.auto_block_out_ctl.key1_out_value.q),
 
     // to register interface (read)
     .qs     (auto_block_out_ctl_key1_out_value_qs)
@@ -2160,20 +2166,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_auto_block_out_ctl_key2_out_value (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (auto_block_out_ctl_key2_out_value_we & regwen_qs),
     .wd     (auto_block_out_ctl_key2_out_value_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.auto_block_out_ctl.key2_out_value.q ),
+    .q      (reg2hw.auto_block_out_ctl.key2_out_value.q),
 
     // to register interface (read)
     .qs     (auto_block_out_ctl_key2_out_value_qs)
@@ -2190,20 +2196,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_0_key0_in_sel_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_0_key0_in_sel_0_we & regwen_qs),
     .wd     (com_sel_ctl_0_key0_in_sel_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[0].key0_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[0].key0_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_0_key0_in_sel_0_qs)
@@ -2216,20 +2222,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_0_key1_in_sel_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_0_key1_in_sel_0_we & regwen_qs),
     .wd     (com_sel_ctl_0_key1_in_sel_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[0].key1_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[0].key1_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_0_key1_in_sel_0_qs)
@@ -2242,20 +2248,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_0_key2_in_sel_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_0_key2_in_sel_0_we & regwen_qs),
     .wd     (com_sel_ctl_0_key2_in_sel_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[0].key2_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[0].key2_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_0_key2_in_sel_0_qs)
@@ -2268,20 +2274,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_0_pwrb_in_sel_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_0_pwrb_in_sel_0_we & regwen_qs),
     .wd     (com_sel_ctl_0_pwrb_in_sel_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[0].pwrb_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[0].pwrb_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_0_pwrb_in_sel_0_qs)
@@ -2294,20 +2300,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_0_ac_present_sel_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_0_ac_present_sel_0_we & regwen_qs),
     .wd     (com_sel_ctl_0_ac_present_sel_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[0].ac_present_sel.q ),
+    .q      (reg2hw.com_sel_ctl[0].ac_present_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_0_ac_present_sel_0_qs)
@@ -2323,20 +2329,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_1_key0_in_sel_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_1_key0_in_sel_1_we & regwen_qs),
     .wd     (com_sel_ctl_1_key0_in_sel_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[1].key0_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[1].key0_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_1_key0_in_sel_1_qs)
@@ -2349,20 +2355,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_1_key1_in_sel_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_1_key1_in_sel_1_we & regwen_qs),
     .wd     (com_sel_ctl_1_key1_in_sel_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[1].key1_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[1].key1_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_1_key1_in_sel_1_qs)
@@ -2375,20 +2381,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_1_key2_in_sel_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_1_key2_in_sel_1_we & regwen_qs),
     .wd     (com_sel_ctl_1_key2_in_sel_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[1].key2_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[1].key2_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_1_key2_in_sel_1_qs)
@@ -2401,20 +2407,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_1_pwrb_in_sel_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_1_pwrb_in_sel_1_we & regwen_qs),
     .wd     (com_sel_ctl_1_pwrb_in_sel_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[1].pwrb_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[1].pwrb_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_1_pwrb_in_sel_1_qs)
@@ -2427,20 +2433,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_1_ac_present_sel_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_1_ac_present_sel_1_we & regwen_qs),
     .wd     (com_sel_ctl_1_ac_present_sel_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[1].ac_present_sel.q ),
+    .q      (reg2hw.com_sel_ctl[1].ac_present_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_1_ac_present_sel_1_qs)
@@ -2456,20 +2462,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_2_key0_in_sel_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_2_key0_in_sel_2_we & regwen_qs),
     .wd     (com_sel_ctl_2_key0_in_sel_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[2].key0_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[2].key0_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_2_key0_in_sel_2_qs)
@@ -2482,20 +2488,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_2_key1_in_sel_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_2_key1_in_sel_2_we & regwen_qs),
     .wd     (com_sel_ctl_2_key1_in_sel_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[2].key1_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[2].key1_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_2_key1_in_sel_2_qs)
@@ -2508,20 +2514,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_2_key2_in_sel_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_2_key2_in_sel_2_we & regwen_qs),
     .wd     (com_sel_ctl_2_key2_in_sel_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[2].key2_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[2].key2_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_2_key2_in_sel_2_qs)
@@ -2534,20 +2540,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_2_pwrb_in_sel_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_2_pwrb_in_sel_2_we & regwen_qs),
     .wd     (com_sel_ctl_2_pwrb_in_sel_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[2].pwrb_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[2].pwrb_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_2_pwrb_in_sel_2_qs)
@@ -2560,20 +2566,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_2_ac_present_sel_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_2_ac_present_sel_2_we & regwen_qs),
     .wd     (com_sel_ctl_2_ac_present_sel_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[2].ac_present_sel.q ),
+    .q      (reg2hw.com_sel_ctl[2].ac_present_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_2_ac_present_sel_2_qs)
@@ -2589,20 +2595,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_3_key0_in_sel_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_3_key0_in_sel_3_we & regwen_qs),
     .wd     (com_sel_ctl_3_key0_in_sel_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[3].key0_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[3].key0_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_3_key0_in_sel_3_qs)
@@ -2615,20 +2621,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_3_key1_in_sel_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_3_key1_in_sel_3_we & regwen_qs),
     .wd     (com_sel_ctl_3_key1_in_sel_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[3].key1_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[3].key1_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_3_key1_in_sel_3_qs)
@@ -2641,20 +2647,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_3_key2_in_sel_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_3_key2_in_sel_3_we & regwen_qs),
     .wd     (com_sel_ctl_3_key2_in_sel_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[3].key2_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[3].key2_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_3_key2_in_sel_3_qs)
@@ -2667,20 +2673,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_3_pwrb_in_sel_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_3_pwrb_in_sel_3_we & regwen_qs),
     .wd     (com_sel_ctl_3_pwrb_in_sel_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[3].pwrb_in_sel.q ),
+    .q      (reg2hw.com_sel_ctl[3].pwrb_in_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_3_pwrb_in_sel_3_qs)
@@ -2693,20 +2699,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_sel_ctl_3_ac_present_sel_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_sel_ctl_3_ac_present_sel_3_we & regwen_qs),
     .wd     (com_sel_ctl_3_ac_present_sel_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_sel_ctl[3].ac_present_sel.q ),
+    .q      (reg2hw.com_sel_ctl[3].ac_present_sel.q),
 
     // to register interface (read)
     .qs     (com_sel_ctl_3_ac_present_sel_3_qs)
@@ -2723,20 +2729,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_com_det_ctl_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_det_ctl_0_we & regwen_qs),
     .wd     (com_det_ctl_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.com_det_ctl[0].qe),
-    .q      (reg2hw.com_det_ctl[0].q ),
+    .q      (reg2hw.com_det_ctl[0].q),
 
     // to register interface (read)
     .qs     (com_det_ctl_0_qs)
@@ -2750,20 +2756,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_com_det_ctl_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_det_ctl_1_we & regwen_qs),
     .wd     (com_det_ctl_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.com_det_ctl[1].qe),
-    .q      (reg2hw.com_det_ctl[1].q ),
+    .q      (reg2hw.com_det_ctl[1].q),
 
     // to register interface (read)
     .qs     (com_det_ctl_1_qs)
@@ -2777,20 +2783,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_com_det_ctl_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_det_ctl_2_we & regwen_qs),
     .wd     (com_det_ctl_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.com_det_ctl[2].qe),
-    .q      (reg2hw.com_det_ctl[2].q ),
+    .q      (reg2hw.com_det_ctl[2].q),
 
     // to register interface (read)
     .qs     (com_det_ctl_2_qs)
@@ -2804,20 +2810,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_com_det_ctl_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_det_ctl_3_we & regwen_qs),
     .wd     (com_det_ctl_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.com_det_ctl[3].qe),
-    .q      (reg2hw.com_det_ctl[3].q ),
+    .q      (reg2hw.com_det_ctl[3].q),
 
     // to register interface (read)
     .qs     (com_det_ctl_3_qs)
@@ -2834,20 +2840,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_0_bat_disable_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_0_bat_disable_0_we & regwen_qs),
     .wd     (com_out_ctl_0_bat_disable_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[0].bat_disable.q ),
+    .q      (reg2hw.com_out_ctl[0].bat_disable.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_0_bat_disable_0_qs)
@@ -2860,20 +2866,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_0_interrupt_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_0_interrupt_0_we & regwen_qs),
     .wd     (com_out_ctl_0_interrupt_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[0].interrupt.q ),
+    .q      (reg2hw.com_out_ctl[0].interrupt.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_0_interrupt_0_qs)
@@ -2886,20 +2892,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_0_ec_rst_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_0_ec_rst_0_we & regwen_qs),
     .wd     (com_out_ctl_0_ec_rst_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[0].ec_rst.q ),
+    .q      (reg2hw.com_out_ctl[0].ec_rst.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_0_ec_rst_0_qs)
@@ -2912,20 +2918,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_0_gsc_rst_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_0_gsc_rst_0_we & regwen_qs),
     .wd     (com_out_ctl_0_gsc_rst_0_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[0].gsc_rst.q ),
+    .q      (reg2hw.com_out_ctl[0].gsc_rst.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_0_gsc_rst_0_qs)
@@ -2941,20 +2947,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_1_bat_disable_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_1_bat_disable_1_we & regwen_qs),
     .wd     (com_out_ctl_1_bat_disable_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[1].bat_disable.q ),
+    .q      (reg2hw.com_out_ctl[1].bat_disable.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_1_bat_disable_1_qs)
@@ -2967,20 +2973,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_1_interrupt_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_1_interrupt_1_we & regwen_qs),
     .wd     (com_out_ctl_1_interrupt_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[1].interrupt.q ),
+    .q      (reg2hw.com_out_ctl[1].interrupt.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_1_interrupt_1_qs)
@@ -2993,20 +2999,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_1_ec_rst_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_1_ec_rst_1_we & regwen_qs),
     .wd     (com_out_ctl_1_ec_rst_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[1].ec_rst.q ),
+    .q      (reg2hw.com_out_ctl[1].ec_rst.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_1_ec_rst_1_qs)
@@ -3019,20 +3025,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_1_gsc_rst_1 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_1_gsc_rst_1_we & regwen_qs),
     .wd     (com_out_ctl_1_gsc_rst_1_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[1].gsc_rst.q ),
+    .q      (reg2hw.com_out_ctl[1].gsc_rst.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_1_gsc_rst_1_qs)
@@ -3048,20 +3054,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_2_bat_disable_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_2_bat_disable_2_we & regwen_qs),
     .wd     (com_out_ctl_2_bat_disable_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[2].bat_disable.q ),
+    .q      (reg2hw.com_out_ctl[2].bat_disable.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_2_bat_disable_2_qs)
@@ -3074,20 +3080,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_2_interrupt_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_2_interrupt_2_we & regwen_qs),
     .wd     (com_out_ctl_2_interrupt_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[2].interrupt.q ),
+    .q      (reg2hw.com_out_ctl[2].interrupt.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_2_interrupt_2_qs)
@@ -3100,20 +3106,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_2_ec_rst_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_2_ec_rst_2_we & regwen_qs),
     .wd     (com_out_ctl_2_ec_rst_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[2].ec_rst.q ),
+    .q      (reg2hw.com_out_ctl[2].ec_rst.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_2_ec_rst_2_qs)
@@ -3126,20 +3132,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_2_gsc_rst_2 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_2_gsc_rst_2_we & regwen_qs),
     .wd     (com_out_ctl_2_gsc_rst_2_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[2].gsc_rst.q ),
+    .q      (reg2hw.com_out_ctl[2].gsc_rst.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_2_gsc_rst_2_qs)
@@ -3155,20 +3161,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_3_bat_disable_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_3_bat_disable_3_we & regwen_qs),
     .wd     (com_out_ctl_3_bat_disable_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[3].bat_disable.q ),
+    .q      (reg2hw.com_out_ctl[3].bat_disable.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_3_bat_disable_3_qs)
@@ -3181,20 +3187,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_3_interrupt_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_3_interrupt_3_we & regwen_qs),
     .wd     (com_out_ctl_3_interrupt_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[3].interrupt.q ),
+    .q      (reg2hw.com_out_ctl[3].interrupt.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_3_interrupt_3_qs)
@@ -3207,20 +3213,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_3_ec_rst_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_3_ec_rst_3_we & regwen_qs),
     .wd     (com_out_ctl_3_ec_rst_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[3].ec_rst.q ),
+    .q      (reg2hw.com_out_ctl[3].ec_rst.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_3_ec_rst_3_qs)
@@ -3233,20 +3239,20 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_com_out_ctl_3_gsc_rst_3 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (com_out_ctl_3_gsc_rst_3_we & regwen_qs),
     .wd     (com_out_ctl_3_gsc_rst_3_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.com_out_ctl[3].gsc_rst.q ),
+    .q      (reg2hw.com_out_ctl[3].gsc_rst.q),
 
     // to register interface (read)
     .qs     (com_out_ctl_3_gsc_rst_3_qs)
@@ -3262,8 +3268,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_combo_intr_status_combo0_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (combo_intr_status_combo0_h2l_we),
@@ -3271,7 +3277,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.combo_intr_status.combo0_h2l.de),
-    .d      (hw2reg.combo_intr_status.combo0_h2l.d ),
+    .d      (hw2reg.combo_intr_status.combo0_h2l.d),
 
     // to internal hardware
     .qe     (),
@@ -3288,8 +3294,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_combo_intr_status_combo1_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (combo_intr_status_combo1_h2l_we),
@@ -3297,7 +3303,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.combo_intr_status.combo1_h2l.de),
-    .d      (hw2reg.combo_intr_status.combo1_h2l.d ),
+    .d      (hw2reg.combo_intr_status.combo1_h2l.d),
 
     // to internal hardware
     .qe     (),
@@ -3314,8 +3320,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_combo_intr_status_combo2_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (combo_intr_status_combo2_h2l_we),
@@ -3323,7 +3329,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.combo_intr_status.combo2_h2l.de),
-    .d      (hw2reg.combo_intr_status.combo2_h2l.d ),
+    .d      (hw2reg.combo_intr_status.combo2_h2l.d),
 
     // to internal hardware
     .qe     (),
@@ -3340,8 +3346,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_combo_intr_status_combo3_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (combo_intr_status_combo3_h2l_we),
@@ -3349,7 +3355,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.combo_intr_status.combo3_h2l.de),
-    .d      (hw2reg.combo_intr_status.combo3_h2l.d ),
+    .d      (hw2reg.combo_intr_status.combo3_h2l.d),
 
     // to internal hardware
     .qe     (),
@@ -3368,8 +3374,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_key_intr_status_pwrb_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (key_intr_status_pwrb_h2l_we),
@@ -3377,7 +3383,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.pwrb_h2l.de),
-    .d      (hw2reg.key_intr_status.pwrb_h2l.d ),
+    .d      (hw2reg.key_intr_status.pwrb_h2l.d),
 
     // to internal hardware
     .qe     (),
@@ -3394,8 +3400,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_key_intr_status_key0_in_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (key_intr_status_key0_in_h2l_we),
@@ -3403,7 +3409,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.key0_in_h2l.de),
-    .d      (hw2reg.key_intr_status.key0_in_h2l.d ),
+    .d      (hw2reg.key_intr_status.key0_in_h2l.d),
 
     // to internal hardware
     .qe     (),
@@ -3420,8 +3426,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_key_intr_status_key1_in_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (key_intr_status_key1_in_h2l_we),
@@ -3429,7 +3435,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.key1_in_h2l.de),
-    .d      (hw2reg.key_intr_status.key1_in_h2l.d ),
+    .d      (hw2reg.key_intr_status.key1_in_h2l.d),
 
     // to internal hardware
     .qe     (),
@@ -3446,8 +3452,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_key_intr_status_key2_in_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (key_intr_status_key2_in_h2l_we),
@@ -3455,7 +3461,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.key2_in_h2l.de),
-    .d      (hw2reg.key_intr_status.key2_in_h2l.d ),
+    .d      (hw2reg.key_intr_status.key2_in_h2l.d),
 
     // to internal hardware
     .qe     (),
@@ -3472,8 +3478,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_key_intr_status_ac_present_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (key_intr_status_ac_present_h2l_we),
@@ -3481,7 +3487,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.ac_present_h2l.de),
-    .d      (hw2reg.key_intr_status.ac_present_h2l.d ),
+    .d      (hw2reg.key_intr_status.ac_present_h2l.d),
 
     // to internal hardware
     .qe     (),
@@ -3498,8 +3504,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_key_intr_status_ec_rst_l_h2l (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (key_intr_status_ec_rst_l_h2l_we),
@@ -3507,7 +3513,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.ec_rst_l_h2l.de),
-    .d      (hw2reg.key_intr_status.ec_rst_l_h2l.d ),
+    .d      (hw2reg.key_intr_status.ec_rst_l_h2l.d),
 
     // to internal hardware
     .qe     (),
@@ -3524,8 +3530,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_key_intr_status_pwrb_l2h (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (key_intr_status_pwrb_l2h_we),
@@ -3533,7 +3539,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.pwrb_l2h.de),
-    .d      (hw2reg.key_intr_status.pwrb_l2h.d ),
+    .d      (hw2reg.key_intr_status.pwrb_l2h.d),
 
     // to internal hardware
     .qe     (),
@@ -3550,8 +3556,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_key_intr_status_key0_in_l2h (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (key_intr_status_key0_in_l2h_we),
@@ -3559,7 +3565,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.key0_in_l2h.de),
-    .d      (hw2reg.key_intr_status.key0_in_l2h.d ),
+    .d      (hw2reg.key_intr_status.key0_in_l2h.d),
 
     // to internal hardware
     .qe     (),
@@ -3576,8 +3582,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_key_intr_status_key1_in_l2h (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (key_intr_status_key1_in_l2h_we),
@@ -3585,7 +3591,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.key1_in_l2h.de),
-    .d      (hw2reg.key_intr_status.key1_in_l2h.d ),
+    .d      (hw2reg.key_intr_status.key1_in_l2h.d),
 
     // to internal hardware
     .qe     (),
@@ -3602,8 +3608,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_key_intr_status_key2_in_l2h (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (key_intr_status_key2_in_l2h_we),
@@ -3611,7 +3617,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.key2_in_l2h.de),
-    .d      (hw2reg.key_intr_status.key2_in_l2h.d ),
+    .d      (hw2reg.key_intr_status.key2_in_l2h.d),
 
     // to internal hardware
     .qe     (),
@@ -3628,8 +3634,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_key_intr_status_ac_present_l2h (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (key_intr_status_ac_present_l2h_we),
@@ -3637,7 +3643,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.ac_present_l2h.de),
-    .d      (hw2reg.key_intr_status.ac_present_l2h.d ),
+    .d      (hw2reg.key_intr_status.ac_present_l2h.d),
 
     // to internal hardware
     .qe     (),
@@ -3654,8 +3660,8 @@ module sysrst_ctrl_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_key_intr_status_ec_rst_l_l2h (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (key_intr_status_ec_rst_l_l2h_we),
@@ -3663,7 +3669,7 @@ module sysrst_ctrl_reg_top (
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.ec_rst_l_l2h.de),
-    .d      (hw2reg.key_intr_status.ec_rst_l_l2h.d ),
+    .d      (hw2reg.key_intr_status.ec_rst_l_l2h.d),
 
     // to internal hardware
     .qe     (),

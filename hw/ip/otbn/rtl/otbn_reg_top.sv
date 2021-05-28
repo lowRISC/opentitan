@@ -197,8 +197,8 @@ module otbn_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
@@ -206,11 +206,11 @@ module otbn_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.de),
-    .d      (hw2reg.intr_state.d ),
+    .d      (hw2reg.intr_state.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.q ),
+    .q      (reg2hw.intr_state.q),
 
     // to register interface (read)
     .qs     (intr_state_qs)
@@ -224,8 +224,8 @@ module otbn_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
@@ -233,11 +233,11 @@ module otbn_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.q ),
+    .q      (reg2hw.intr_enable.q),
 
     // to register interface (read)
     .qs     (intr_enable_qs)
@@ -255,7 +255,7 @@ module otbn_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.qe),
-    .q      (reg2hw.intr_test.q ),
+    .q      (reg2hw.intr_test.q),
     .qs     ()
   );
 
@@ -272,7 +272,7 @@ module otbn_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.fatal.qe),
-    .q      (reg2hw.alert_test.fatal.q ),
+    .q      (reg2hw.alert_test.fatal.q),
     .qs     ()
   );
 
@@ -287,7 +287,7 @@ module otbn_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.recov.qe),
-    .q      (reg2hw.alert_test.recov.q ),
+    .q      (reg2hw.alert_test.recov.q),
     .qs     ()
   );
 
@@ -303,7 +303,7 @@ module otbn_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.cmd.qe),
-    .q      (reg2hw.cmd.q ),
+    .q      (reg2hw.cmd.q),
     .qs     ()
   );
 
@@ -332,15 +332,16 @@ module otbn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_bits_bad_data_addr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_bits.bad_data_addr.de),
-    .d      (hw2reg.err_bits.bad_data_addr.d ),
+    .d      (hw2reg.err_bits.bad_data_addr.d),
 
     // to internal hardware
     .qe     (),
@@ -357,15 +358,16 @@ module otbn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_bits_bad_insn_addr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_bits.bad_insn_addr.de),
-    .d      (hw2reg.err_bits.bad_insn_addr.d ),
+    .d      (hw2reg.err_bits.bad_insn_addr.d),
 
     // to internal hardware
     .qe     (),
@@ -382,15 +384,16 @@ module otbn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_bits_call_stack (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_bits.call_stack.de),
-    .d      (hw2reg.err_bits.call_stack.d ),
+    .d      (hw2reg.err_bits.call_stack.d),
 
     // to internal hardware
     .qe     (),
@@ -407,15 +410,16 @@ module otbn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_bits_illegal_insn (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_bits.illegal_insn.de),
-    .d      (hw2reg.err_bits.illegal_insn.d ),
+    .d      (hw2reg.err_bits.illegal_insn.d),
 
     // to internal hardware
     .qe     (),
@@ -432,15 +436,16 @@ module otbn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_bits_loop (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_bits.loop.de),
-    .d      (hw2reg.err_bits.loop.d ),
+    .d      (hw2reg.err_bits.loop.d),
 
     // to internal hardware
     .qe     (),
@@ -457,15 +462,16 @@ module otbn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_bits_fatal_imem (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_bits.fatal_imem.de),
-    .d      (hw2reg.err_bits.fatal_imem.d ),
+    .d      (hw2reg.err_bits.fatal_imem.d),
 
     // to internal hardware
     .qe     (),
@@ -482,15 +488,16 @@ module otbn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_bits_fatal_dmem (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_bits.fatal_dmem.de),
-    .d      (hw2reg.err_bits.fatal_dmem.d ),
+    .d      (hw2reg.err_bits.fatal_dmem.d),
 
     // to internal hardware
     .qe     (),
@@ -507,15 +514,16 @@ module otbn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_bits_fatal_reg (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_bits.fatal_reg.de),
-    .d      (hw2reg.err_bits.fatal_reg.d ),
+    .d      (hw2reg.err_bits.fatal_reg.d),
 
     // to internal hardware
     .qe     (),
@@ -533,8 +541,8 @@ module otbn_reg_top (
     .SWACCESS("WO"),
     .RESVAL  (32'h0)
   ) u_start_addr (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (start_addr_we),
@@ -542,12 +550,13 @@ module otbn_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.start_addr.q ),
+    .q      (reg2hw.start_addr.q),
 
+    // to register interface (read)
     .qs     ()
   );
 
@@ -560,15 +569,16 @@ module otbn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_bus_integrity_error (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.fatal_alert_cause.bus_integrity_error.de),
-    .d      (hw2reg.fatal_alert_cause.bus_integrity_error.d ),
+    .d      (hw2reg.fatal_alert_cause.bus_integrity_error.d),
 
     // to internal hardware
     .qe     (),
@@ -585,15 +595,16 @@ module otbn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_imem_error (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.fatal_alert_cause.imem_error.de),
-    .d      (hw2reg.fatal_alert_cause.imem_error.d ),
+    .d      (hw2reg.fatal_alert_cause.imem_error.d),
 
     // to internal hardware
     .qe     (),
@@ -610,15 +621,16 @@ module otbn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_dmem_error (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.fatal_alert_cause.dmem_error.de),
-    .d      (hw2reg.fatal_alert_cause.dmem_error.d ),
+    .d      (hw2reg.fatal_alert_cause.dmem_error.d),
 
     // to internal hardware
     .qe     (),
@@ -635,15 +647,16 @@ module otbn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_reg_error (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.fatal_alert_cause.reg_error.de),
-    .d      (hw2reg.fatal_alert_cause.reg_error.d ),
+    .d      (hw2reg.fatal_alert_cause.reg_error.d),
 
     // to internal hardware
     .qe     (),
@@ -661,15 +674,16 @@ module otbn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (32'h0)
   ) u_insn_cnt (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.insn_cnt.de),
-    .d      (hw2reg.insn_cnt.d ),
+    .d      (hw2reg.insn_cnt.d),
 
     // to internal hardware
     .qe     (),

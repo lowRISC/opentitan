@@ -292,8 +292,8 @@ module spi_host_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_error (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_error_we),
@@ -301,11 +301,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.error.de),
-    .d      (hw2reg.intr_state.error.d ),
+    .d      (hw2reg.intr_state.error.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.error.q ),
+    .q      (reg2hw.intr_state.error.q),
 
     // to register interface (read)
     .qs     (intr_state_error_qs)
@@ -318,8 +318,8 @@ module spi_host_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_spi_event (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_spi_event_we),
@@ -327,11 +327,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.spi_event.de),
-    .d      (hw2reg.intr_state.spi_event.d ),
+    .d      (hw2reg.intr_state.spi_event.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.spi_event.q ),
+    .q      (reg2hw.intr_state.spi_event.q),
 
     // to register interface (read)
     .qs     (intr_state_spi_event_qs)
@@ -346,8 +346,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_error (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_error_we),
@@ -355,11 +355,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.error.q ),
+    .q      (reg2hw.intr_enable.error.q),
 
     // to register interface (read)
     .qs     (intr_enable_error_qs)
@@ -372,8 +372,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_spi_event (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_spi_event_we),
@@ -381,11 +381,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.spi_event.q ),
+    .q      (reg2hw.intr_enable.spi_event.q),
 
     // to register interface (read)
     .qs     (intr_enable_spi_event_qs)
@@ -404,7 +404,7 @@ module spi_host_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.error.qe),
-    .q      (reg2hw.intr_test.error.q ),
+    .q      (reg2hw.intr_test.error.q),
     .qs     ()
   );
 
@@ -419,7 +419,7 @@ module spi_host_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.spi_event.qe),
-    .q      (reg2hw.intr_test.spi_event.q ),
+    .q      (reg2hw.intr_test.spi_event.q),
     .qs     ()
   );
 
@@ -435,7 +435,7 @@ module spi_host_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.qe),
-    .q      (reg2hw.alert_test.q ),
+    .q      (reg2hw.alert_test.q),
     .qs     ()
   );
 
@@ -448,8 +448,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h7f)
   ) u_control_rx_watermark (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (control_rx_watermark_we),
@@ -457,11 +457,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.rx_watermark.q ),
+    .q      (reg2hw.control.rx_watermark.q),
 
     // to register interface (read)
     .qs     (control_rx_watermark_qs)
@@ -474,8 +474,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (8'h0)
   ) u_control_tx_watermark (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (control_tx_watermark_we),
@@ -483,11 +483,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.tx_watermark.q ),
+    .q      (reg2hw.control.tx_watermark.q),
 
     // to register interface (read)
     .qs     (control_tx_watermark_qs)
@@ -500,8 +500,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_control_passthru (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (control_passthru_we),
@@ -509,11 +509,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.passthru.q ),
+    .q      (reg2hw.control.passthru.q),
 
     // to register interface (read)
     .qs     (control_passthru_qs)
@@ -526,8 +526,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_control_sw_rst (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (control_sw_rst_we),
@@ -535,11 +535,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.sw_rst.q ),
+    .q      (reg2hw.control.sw_rst.q),
 
     // to register interface (read)
     .qs     (control_sw_rst_qs)
@@ -552,8 +552,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_control_spien (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (control_spien_we),
@@ -561,11 +561,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.spien.q ),
+    .q      (reg2hw.control.spien.q),
 
     // to register interface (read)
     .qs     (control_spien_qs)
@@ -580,15 +580,16 @@ module spi_host_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (8'h0)
   ) u_status_txqd (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.txqd.de),
-    .d      (hw2reg.status.txqd.d ),
+    .d      (hw2reg.status.txqd.d),
 
     // to internal hardware
     .qe     (),
@@ -605,15 +606,16 @@ module spi_host_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (8'h0)
   ) u_status_rxqd (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.rxqd.de),
-    .d      (hw2reg.status.rxqd.d ),
+    .d      (hw2reg.status.rxqd.d),
 
     // to internal hardware
     .qe     (),
@@ -630,15 +632,16 @@ module spi_host_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_rxwm (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.rxwm.de),
-    .d      (hw2reg.status.rxwm.d ),
+    .d      (hw2reg.status.rxwm.d),
 
     // to internal hardware
     .qe     (),
@@ -655,15 +658,16 @@ module spi_host_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_byteorder (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.byteorder.de),
-    .d      (hw2reg.status.byteorder.d ),
+    .d      (hw2reg.status.byteorder.d),
 
     // to internal hardware
     .qe     (),
@@ -680,15 +684,16 @@ module spi_host_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_rxstall (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.rxstall.de),
-    .d      (hw2reg.status.rxstall.d ),
+    .d      (hw2reg.status.rxstall.d),
 
     // to internal hardware
     .qe     (),
@@ -705,15 +710,16 @@ module spi_host_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_rxempty (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.rxempty.de),
-    .d      (hw2reg.status.rxempty.d ),
+    .d      (hw2reg.status.rxempty.d),
 
     // to internal hardware
     .qe     (),
@@ -730,15 +736,16 @@ module spi_host_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_rxfull (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.rxfull.de),
-    .d      (hw2reg.status.rxfull.d ),
+    .d      (hw2reg.status.rxfull.d),
 
     // to internal hardware
     .qe     (),
@@ -755,15 +762,16 @@ module spi_host_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_txwm (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.txwm.de),
-    .d      (hw2reg.status.txwm.d ),
+    .d      (hw2reg.status.txwm.d),
 
     // to internal hardware
     .qe     (),
@@ -780,15 +788,16 @@ module spi_host_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_txstall (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.txstall.de),
-    .d      (hw2reg.status.txstall.d ),
+    .d      (hw2reg.status.txstall.d),
 
     // to internal hardware
     .qe     (),
@@ -805,15 +814,16 @@ module spi_host_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_txempty (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.txempty.de),
-    .d      (hw2reg.status.txempty.d ),
+    .d      (hw2reg.status.txempty.d),
 
     // to internal hardware
     .qe     (),
@@ -830,15 +840,16 @@ module spi_host_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_txfull (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.txfull.de),
-    .d      (hw2reg.status.txfull.d ),
+    .d      (hw2reg.status.txfull.d),
 
     // to internal hardware
     .qe     (),
@@ -855,15 +866,16 @@ module spi_host_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_active (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.active.de),
-    .d      (hw2reg.status.active.d ),
+    .d      (hw2reg.status.active.d),
 
     // to internal hardware
     .qe     (),
@@ -880,15 +892,16 @@ module spi_host_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_status_ready (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.ready.de),
-    .d      (hw2reg.status.ready.d ),
+    .d      (hw2reg.status.ready.d),
 
     // to internal hardware
     .qe     (),
@@ -909,8 +922,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (16'h0)
   ) u_configopts_clkdiv_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configopts_clkdiv_0_we),
@@ -918,11 +931,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configopts[0].clkdiv.q ),
+    .q      (reg2hw.configopts[0].clkdiv.q),
 
     // to register interface (read)
     .qs     (configopts_clkdiv_0_qs)
@@ -935,8 +948,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_configopts_csnidle_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configopts_csnidle_0_we),
@@ -944,11 +957,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configopts[0].csnidle.q ),
+    .q      (reg2hw.configopts[0].csnidle.q),
 
     // to register interface (read)
     .qs     (configopts_csnidle_0_qs)
@@ -961,8 +974,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_configopts_csntrail_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configopts_csntrail_0_we),
@@ -970,11 +983,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configopts[0].csntrail.q ),
+    .q      (reg2hw.configopts[0].csntrail.q),
 
     // to register interface (read)
     .qs     (configopts_csntrail_0_qs)
@@ -987,8 +1000,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (4'h0)
   ) u_configopts_csnlead_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configopts_csnlead_0_we),
@@ -996,11 +1009,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configopts[0].csnlead.q ),
+    .q      (reg2hw.configopts[0].csnlead.q),
 
     // to register interface (read)
     .qs     (configopts_csnlead_0_qs)
@@ -1013,8 +1026,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_configopts_fullcyc_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configopts_fullcyc_0_we),
@@ -1022,11 +1035,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configopts[0].fullcyc.q ),
+    .q      (reg2hw.configopts[0].fullcyc.q),
 
     // to register interface (read)
     .qs     (configopts_fullcyc_0_qs)
@@ -1039,8 +1052,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_configopts_cpha_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configopts_cpha_0_we),
@@ -1048,11 +1061,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configopts[0].cpha.q ),
+    .q      (reg2hw.configopts[0].cpha.q),
 
     // to register interface (read)
     .qs     (configopts_cpha_0_qs)
@@ -1065,8 +1078,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_configopts_cpol_0 (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configopts_cpol_0_we),
@@ -1074,11 +1087,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configopts[0].cpol.q ),
+    .q      (reg2hw.configopts[0].cpol.q),
 
     // to register interface (read)
     .qs     (configopts_cpol_0_qs)
@@ -1093,8 +1106,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_csid (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (csid_we),
@@ -1102,11 +1115,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.csid.q ),
+    .q      (reg2hw.csid.q),
 
     // to register interface (read)
     .qs     (csid_qs)
@@ -1121,8 +1134,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (9'h0)
   ) u_command_len (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (command_len_we),
@@ -1130,11 +1143,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.command.len.qe),
-    .q      (reg2hw.command.len.q ),
+    .q      (reg2hw.command.len.q),
 
     // to register interface (read)
     .qs     (command_len_qs)
@@ -1147,8 +1160,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_command_csaat (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (command_csaat_we),
@@ -1156,11 +1169,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.command.csaat.qe),
-    .q      (reg2hw.command.csaat.q ),
+    .q      (reg2hw.command.csaat.q),
 
     // to register interface (read)
     .qs     (command_csaat_qs)
@@ -1173,8 +1186,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_command_speed (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (command_speed_we),
@@ -1182,11 +1195,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.command.speed.qe),
-    .q      (reg2hw.command.speed.q ),
+    .q      (reg2hw.command.speed.q),
 
     // to register interface (read)
     .qs     (command_speed_qs)
@@ -1199,8 +1212,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_command_direction (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (command_direction_we),
@@ -1208,11 +1221,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.command.direction.qe),
-    .q      (reg2hw.command.direction.q ),
+    .q      (reg2hw.command.direction.q),
 
     // to register interface (read)
     .qs     (command_direction_qs)
@@ -1227,8 +1240,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_error_enable_cmdbusy (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (error_enable_cmdbusy_we),
@@ -1236,11 +1249,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.error_enable.cmdbusy.q ),
+    .q      (reg2hw.error_enable.cmdbusy.q),
 
     // to register interface (read)
     .qs     (error_enable_cmdbusy_qs)
@@ -1253,8 +1266,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_error_enable_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (error_enable_overflow_we),
@@ -1262,11 +1275,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.error_enable.overflow.q ),
+    .q      (reg2hw.error_enable.overflow.q),
 
     // to register interface (read)
     .qs     (error_enable_overflow_qs)
@@ -1279,8 +1292,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_error_enable_underflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (error_enable_underflow_we),
@@ -1288,11 +1301,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.error_enable.underflow.q ),
+    .q      (reg2hw.error_enable.underflow.q),
 
     // to register interface (read)
     .qs     (error_enable_underflow_qs)
@@ -1305,8 +1318,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_error_enable_cmdinval (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (error_enable_cmdinval_we),
@@ -1314,11 +1327,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.error_enable.cmdinval.q ),
+    .q      (reg2hw.error_enable.cmdinval.q),
 
     // to register interface (read)
     .qs     (error_enable_cmdinval_qs)
@@ -1331,8 +1344,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h1)
   ) u_error_enable_csidinval (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (error_enable_csidinval_we),
@@ -1340,11 +1353,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.error_enable.csidinval.q ),
+    .q      (reg2hw.error_enable.csidinval.q),
 
     // to register interface (read)
     .qs     (error_enable_csidinval_qs)
@@ -1359,8 +1372,8 @@ module spi_host_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_error_status_cmdbusy (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (error_status_cmdbusy_we),
@@ -1368,11 +1381,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (hw2reg.error_status.cmdbusy.de),
-    .d      (hw2reg.error_status.cmdbusy.d ),
+    .d      (hw2reg.error_status.cmdbusy.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.error_status.cmdbusy.q ),
+    .q      (reg2hw.error_status.cmdbusy.q),
 
     // to register interface (read)
     .qs     (error_status_cmdbusy_qs)
@@ -1385,8 +1398,8 @@ module spi_host_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_error_status_overflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (error_status_overflow_we),
@@ -1394,11 +1407,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (hw2reg.error_status.overflow.de),
-    .d      (hw2reg.error_status.overflow.d ),
+    .d      (hw2reg.error_status.overflow.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.error_status.overflow.q ),
+    .q      (reg2hw.error_status.overflow.q),
 
     // to register interface (read)
     .qs     (error_status_overflow_qs)
@@ -1411,8 +1424,8 @@ module spi_host_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_error_status_underflow (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (error_status_underflow_we),
@@ -1420,11 +1433,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (hw2reg.error_status.underflow.de),
-    .d      (hw2reg.error_status.underflow.d ),
+    .d      (hw2reg.error_status.underflow.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.error_status.underflow.q ),
+    .q      (reg2hw.error_status.underflow.q),
 
     // to register interface (read)
     .qs     (error_status_underflow_qs)
@@ -1437,8 +1450,8 @@ module spi_host_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_error_status_cmdinval (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (error_status_cmdinval_we),
@@ -1446,11 +1459,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (hw2reg.error_status.cmdinval.de),
-    .d      (hw2reg.error_status.cmdinval.d ),
+    .d      (hw2reg.error_status.cmdinval.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.error_status.cmdinval.q ),
+    .q      (reg2hw.error_status.cmdinval.q),
 
     // to register interface (read)
     .qs     (error_status_cmdinval_qs)
@@ -1463,8 +1476,8 @@ module spi_host_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_error_status_csidinval (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (error_status_csidinval_we),
@@ -1472,11 +1485,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (hw2reg.error_status.csidinval.de),
-    .d      (hw2reg.error_status.csidinval.d ),
+    .d      (hw2reg.error_status.csidinval.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.error_status.csidinval.q ),
+    .q      (reg2hw.error_status.csidinval.q),
 
     // to register interface (read)
     .qs     (error_status_csidinval_qs)
@@ -1491,8 +1504,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_event_enable_rxfull (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (event_enable_rxfull_we),
@@ -1500,11 +1513,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.event_enable.rxfull.q ),
+    .q      (reg2hw.event_enable.rxfull.q),
 
     // to register interface (read)
     .qs     (event_enable_rxfull_qs)
@@ -1517,8 +1530,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_event_enable_txempty (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (event_enable_txempty_we),
@@ -1526,11 +1539,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.event_enable.txempty.q ),
+    .q      (reg2hw.event_enable.txempty.q),
 
     // to register interface (read)
     .qs     (event_enable_txempty_qs)
@@ -1543,8 +1556,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_event_enable_rxwm (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (event_enable_rxwm_we),
@@ -1552,11 +1565,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.event_enable.rxwm.q ),
+    .q      (reg2hw.event_enable.rxwm.q),
 
     // to register interface (read)
     .qs     (event_enable_rxwm_qs)
@@ -1569,8 +1582,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_event_enable_txwm (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (event_enable_txwm_we),
@@ -1578,11 +1591,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.event_enable.txwm.q ),
+    .q      (reg2hw.event_enable.txwm.q),
 
     // to register interface (read)
     .qs     (event_enable_txwm_qs)
@@ -1595,8 +1608,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_event_enable_ready (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (event_enable_ready_we),
@@ -1604,11 +1617,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.event_enable.ready.q ),
+    .q      (reg2hw.event_enable.ready.q),
 
     // to register interface (read)
     .qs     (event_enable_ready_qs)
@@ -1621,8 +1634,8 @@ module spi_host_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_event_enable_idle (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (event_enable_idle_we),
@@ -1630,11 +1643,11 @@ module spi_host_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.event_enable.idle.q ),
+    .q      (reg2hw.event_enable.idle.q),
 
     // to register interface (read)
     .qs     (event_enable_idle_qs)

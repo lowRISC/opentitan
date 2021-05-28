@@ -171,7 +171,7 @@ module aon_timer_reg_top (
     .d      (hw2reg.wkup_ctrl.enable.d),
     .qre    (),
     .qe     (reg2hw.wkup_ctrl.enable.qe),
-    .q      (reg2hw.wkup_ctrl.enable.q ),
+    .q      (reg2hw.wkup_ctrl.enable.q),
     .qs     (wkup_ctrl_enable_qs)
   );
 
@@ -186,7 +186,7 @@ module aon_timer_reg_top (
     .d      (hw2reg.wkup_ctrl.prescaler.d),
     .qre    (),
     .qe     (reg2hw.wkup_ctrl.prescaler.qe),
-    .q      (reg2hw.wkup_ctrl.prescaler.q ),
+    .q      (reg2hw.wkup_ctrl.prescaler.q),
     .qs     (wkup_ctrl_prescaler_qs)
   );
 
@@ -202,7 +202,7 @@ module aon_timer_reg_top (
     .d      (hw2reg.wkup_thold.d),
     .qre    (),
     .qe     (reg2hw.wkup_thold.qe),
-    .q      (reg2hw.wkup_thold.q ),
+    .q      (reg2hw.wkup_thold.q),
     .qs     (wkup_thold_qs)
   );
 
@@ -218,7 +218,7 @@ module aon_timer_reg_top (
     .d      (hw2reg.wkup_count.d),
     .qre    (),
     .qe     (reg2hw.wkup_count.qe),
-    .q      (reg2hw.wkup_count.q ),
+    .q      (reg2hw.wkup_count.q),
     .qs     (wkup_count_qs)
   );
 
@@ -230,8 +230,8 @@ module aon_timer_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_wdog_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (wdog_regwen_we),
@@ -239,7 +239,7 @@ module aon_timer_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
@@ -257,13 +257,12 @@ module aon_timer_reg_top (
     .DW    (1)
   ) u_wdog_ctrl_enable (
     .re     (wdog_ctrl_enable_re),
-    // qualified with register enable
     .we     (wdog_ctrl_enable_we & wdog_regwen_qs),
     .wd     (wdog_ctrl_enable_wd),
     .d      (hw2reg.wdog_ctrl.enable.d),
     .qre    (),
     .qe     (reg2hw.wdog_ctrl.enable.qe),
-    .q      (reg2hw.wdog_ctrl.enable.q ),
+    .q      (reg2hw.wdog_ctrl.enable.q),
     .qs     (wdog_ctrl_enable_qs)
   );
 
@@ -273,13 +272,12 @@ module aon_timer_reg_top (
     .DW    (1)
   ) u_wdog_ctrl_pause_in_sleep (
     .re     (wdog_ctrl_pause_in_sleep_re),
-    // qualified with register enable
     .we     (wdog_ctrl_pause_in_sleep_we & wdog_regwen_qs),
     .wd     (wdog_ctrl_pause_in_sleep_wd),
     .d      (hw2reg.wdog_ctrl.pause_in_sleep.d),
     .qre    (),
     .qe     (reg2hw.wdog_ctrl.pause_in_sleep.qe),
-    .q      (reg2hw.wdog_ctrl.pause_in_sleep.q ),
+    .q      (reg2hw.wdog_ctrl.pause_in_sleep.q),
     .qs     (wdog_ctrl_pause_in_sleep_qs)
   );
 
@@ -290,13 +288,12 @@ module aon_timer_reg_top (
     .DW    (32)
   ) u_wdog_bark_thold (
     .re     (wdog_bark_thold_re),
-    // qualified with register enable
     .we     (wdog_bark_thold_we & wdog_regwen_qs),
     .wd     (wdog_bark_thold_wd),
     .d      (hw2reg.wdog_bark_thold.d),
     .qre    (),
     .qe     (reg2hw.wdog_bark_thold.qe),
-    .q      (reg2hw.wdog_bark_thold.q ),
+    .q      (reg2hw.wdog_bark_thold.q),
     .qs     (wdog_bark_thold_qs)
   );
 
@@ -307,13 +304,12 @@ module aon_timer_reg_top (
     .DW    (32)
   ) u_wdog_bite_thold (
     .re     (wdog_bite_thold_re),
-    // qualified with register enable
     .we     (wdog_bite_thold_we & wdog_regwen_qs),
     .wd     (wdog_bite_thold_wd),
     .d      (hw2reg.wdog_bite_thold.d),
     .qre    (),
     .qe     (reg2hw.wdog_bite_thold.qe),
-    .q      (reg2hw.wdog_bite_thold.q ),
+    .q      (reg2hw.wdog_bite_thold.q),
     .qs     (wdog_bite_thold_qs)
   );
 
@@ -329,7 +325,7 @@ module aon_timer_reg_top (
     .d      (hw2reg.wdog_count.d),
     .qre    (),
     .qe     (reg2hw.wdog_count.qe),
-    .q      (reg2hw.wdog_count.q ),
+    .q      (reg2hw.wdog_count.q),
     .qs     (wdog_count_qs)
   );
 
@@ -342,8 +338,8 @@ module aon_timer_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_wkup_timer_expired (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_wkup_timer_expired_we),
@@ -351,11 +347,11 @@ module aon_timer_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.wkup_timer_expired.de),
-    .d      (hw2reg.intr_state.wkup_timer_expired.d ),
+    .d      (hw2reg.intr_state.wkup_timer_expired.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.wkup_timer_expired.q ),
+    .q      (reg2hw.intr_state.wkup_timer_expired.q),
 
     // to register interface (read)
     .qs     (intr_state_wkup_timer_expired_qs)
@@ -368,8 +364,8 @@ module aon_timer_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_wdog_timer_expired (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_wdog_timer_expired_we),
@@ -377,11 +373,11 @@ module aon_timer_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.wdog_timer_expired.de),
-    .d      (hw2reg.intr_state.wdog_timer_expired.d ),
+    .d      (hw2reg.intr_state.wdog_timer_expired.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.wdog_timer_expired.q ),
+    .q      (reg2hw.intr_state.wdog_timer_expired.q),
 
     // to register interface (read)
     .qs     (intr_state_wdog_timer_expired_qs)
@@ -400,7 +396,7 @@ module aon_timer_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.wkup_timer_expired.qe),
-    .q      (reg2hw.intr_test.wkup_timer_expired.q ),
+    .q      (reg2hw.intr_test.wkup_timer_expired.q),
     .qs     ()
   );
 
@@ -415,7 +411,7 @@ module aon_timer_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.wdog_timer_expired.qe),
-    .q      (reg2hw.intr_test.wdog_timer_expired.q ),
+    .q      (reg2hw.intr_test.wdog_timer_expired.q),
     .qs     ()
   );
 
@@ -431,7 +427,7 @@ module aon_timer_reg_top (
     .d      (hw2reg.wkup_cause.d),
     .qre    (),
     .qe     (reg2hw.wkup_cause.qe),
-    .q      (reg2hw.wkup_cause.q ),
+    .q      (reg2hw.wkup_cause.q),
     .qs     (wkup_cause_qs)
   );
 

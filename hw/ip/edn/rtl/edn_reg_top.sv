@@ -171,8 +171,8 @@ module edn_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_edn_cmd_req_done (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_edn_cmd_req_done_we),
@@ -180,11 +180,11 @@ module edn_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.edn_cmd_req_done.de),
-    .d      (hw2reg.intr_state.edn_cmd_req_done.d ),
+    .d      (hw2reg.intr_state.edn_cmd_req_done.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.edn_cmd_req_done.q ),
+    .q      (reg2hw.intr_state.edn_cmd_req_done.q),
 
     // to register interface (read)
     .qs     (intr_state_edn_cmd_req_done_qs)
@@ -197,8 +197,8 @@ module edn_reg_top (
     .SWACCESS("W1C"),
     .RESVAL  (1'h0)
   ) u_intr_state_edn_fatal_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_edn_fatal_err_we),
@@ -206,11 +206,11 @@ module edn_reg_top (
 
     // from internal hardware
     .de     (hw2reg.intr_state.edn_fatal_err.de),
-    .d      (hw2reg.intr_state.edn_fatal_err.d ),
+    .d      (hw2reg.intr_state.edn_fatal_err.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.edn_fatal_err.q ),
+    .q      (reg2hw.intr_state.edn_fatal_err.q),
 
     // to register interface (read)
     .qs     (intr_state_edn_fatal_err_qs)
@@ -225,8 +225,8 @@ module edn_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_edn_cmd_req_done (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_edn_cmd_req_done_we),
@@ -234,11 +234,11 @@ module edn_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.edn_cmd_req_done.q ),
+    .q      (reg2hw.intr_enable.edn_cmd_req_done.q),
 
     // to register interface (read)
     .qs     (intr_enable_edn_cmd_req_done_qs)
@@ -251,8 +251,8 @@ module edn_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_intr_enable_edn_fatal_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_edn_fatal_err_we),
@@ -260,11 +260,11 @@ module edn_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.edn_fatal_err.q ),
+    .q      (reg2hw.intr_enable.edn_fatal_err.q),
 
     // to register interface (read)
     .qs     (intr_enable_edn_fatal_err_qs)
@@ -283,7 +283,7 @@ module edn_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.edn_cmd_req_done.qe),
-    .q      (reg2hw.intr_test.edn_cmd_req_done.q ),
+    .q      (reg2hw.intr_test.edn_cmd_req_done.q),
     .qs     ()
   );
 
@@ -298,7 +298,7 @@ module edn_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.intr_test.edn_fatal_err.qe),
-    .q      (reg2hw.intr_test.edn_fatal_err.q ),
+    .q      (reg2hw.intr_test.edn_fatal_err.q),
     .qs     ()
   );
 
@@ -314,7 +314,7 @@ module edn_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.alert_test.qe),
-    .q      (reg2hw.alert_test.q ),
+    .q      (reg2hw.alert_test.q),
     .qs     ()
   );
 
@@ -326,8 +326,8 @@ module edn_reg_top (
     .SWACCESS("W0C"),
     .RESVAL  (1'h1)
   ) u_regwen (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (regwen_we),
@@ -335,11 +335,11 @@ module edn_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.regwen.q ),
+    .q      (reg2hw.regwen.q),
 
     // to register interface (read)
     .qs     (regwen_qs)
@@ -354,8 +354,8 @@ module edn_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ctrl_edn_enable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ctrl_edn_enable_we),
@@ -363,11 +363,11 @@ module edn_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl.edn_enable.q ),
+    .q      (reg2hw.ctrl.edn_enable.q),
 
     // to register interface (read)
     .qs     (ctrl_edn_enable_qs)
@@ -380,8 +380,8 @@ module edn_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_ctrl_cmd_fifo_rst (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ctrl_cmd_fifo_rst_we),
@@ -389,11 +389,11 @@ module edn_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl.cmd_fifo_rst.q ),
+    .q      (reg2hw.ctrl.cmd_fifo_rst.q),
 
     // to register interface (read)
     .qs     (ctrl_cmd_fifo_rst_qs)
@@ -406,8 +406,8 @@ module edn_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (2'h0)
   ) u_ctrl_hw_req_mode (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ctrl_hw_req_mode_we),
@@ -415,11 +415,11 @@ module edn_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.ctrl.hw_req_mode.q ),
+    .q      (reg2hw.ctrl.hw_req_mode.q),
 
     // to register interface (read)
     .qs     (ctrl_hw_req_mode_qs)
@@ -434,8 +434,8 @@ module edn_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_sum_sts_req_mode_sm_sts (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (sum_sts_req_mode_sm_sts_we),
@@ -443,7 +443,7 @@ module edn_reg_top (
 
     // from internal hardware
     .de     (hw2reg.sum_sts.req_mode_sm_sts.de),
-    .d      (hw2reg.sum_sts.req_mode_sm_sts.d ),
+    .d      (hw2reg.sum_sts.req_mode_sm_sts.d),
 
     // to internal hardware
     .qe     (),
@@ -460,8 +460,8 @@ module edn_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (1'h0)
   ) u_sum_sts_boot_inst_ack (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (sum_sts_boot_inst_ack_we),
@@ -469,7 +469,7 @@ module edn_reg_top (
 
     // from internal hardware
     .de     (hw2reg.sum_sts.boot_inst_ack.de),
-    .d      (hw2reg.sum_sts.boot_inst_ack.d ),
+    .d      (hw2reg.sum_sts.boot_inst_ack.d),
 
     // to internal hardware
     .qe     (),
@@ -486,13 +486,12 @@ module edn_reg_top (
     .DW    (32)
   ) u_sw_cmd_req (
     .re     (1'b0),
-    // qualified with register enable
     .we     (sw_cmd_req_we & regwen_qs),
     .wd     (sw_cmd_req_wd),
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.sw_cmd_req.qe),
-    .q      (reg2hw.sw_cmd_req.q ),
+    .q      (reg2hw.sw_cmd_req.q),
     .qs     ()
   );
 
@@ -505,15 +504,16 @@ module edn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h1)
   ) u_sw_cmd_sts_cmd_rdy (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.sw_cmd_sts.cmd_rdy.de),
-    .d      (hw2reg.sw_cmd_sts.cmd_rdy.d ),
+    .d      (hw2reg.sw_cmd_sts.cmd_rdy.d),
 
     // to internal hardware
     .qe     (),
@@ -530,15 +530,16 @@ module edn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_sw_cmd_sts_cmd_sts (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.sw_cmd_sts.cmd_sts.de),
-    .d      (hw2reg.sw_cmd_sts.cmd_sts.d ),
+    .d      (hw2reg.sw_cmd_sts.cmd_sts.d),
 
     // to internal hardware
     .qe     (),
@@ -555,13 +556,12 @@ module edn_reg_top (
     .DW    (32)
   ) u_reseed_cmd (
     .re     (1'b0),
-    // qualified with register enable
     .we     (reseed_cmd_we & regwen_qs),
     .wd     (reseed_cmd_wd),
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.reseed_cmd.qe),
-    .q      (reg2hw.reseed_cmd.q ),
+    .q      (reg2hw.reseed_cmd.q),
     .qs     ()
   );
 
@@ -572,13 +572,12 @@ module edn_reg_top (
     .DW    (32)
   ) u_generate_cmd (
     .re     (1'b0),
-    // qualified with register enable
     .we     (generate_cmd_we & regwen_qs),
     .wd     (generate_cmd_wd),
     .d      ('0),
     .qre    (),
     .qe     (reg2hw.generate_cmd.qe),
-    .q      (reg2hw.generate_cmd.q ),
+    .q      (reg2hw.generate_cmd.q),
     .qs     ()
   );
 
@@ -590,8 +589,8 @@ module edn_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (32'h0)
   ) u_max_num_reqs_between_reseeds (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
     .we     (max_num_reqs_between_reseeds_we),
@@ -599,11 +598,11 @@ module edn_reg_top (
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.max_num_reqs_between_reseeds.qe),
-    .q      (reg2hw.max_num_reqs_between_reseeds.q ),
+    .q      (reg2hw.max_num_reqs_between_reseeds.q),
 
     // to register interface (read)
     .qs     (max_num_reqs_between_reseeds_qs)
@@ -618,15 +617,16 @@ module edn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_rescmd_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.sfifo_rescmd_err.de),
-    .d      (hw2reg.err_code.sfifo_rescmd_err.d ),
+    .d      (hw2reg.err_code.sfifo_rescmd_err.d),
 
     // to internal hardware
     .qe     (),
@@ -643,15 +643,16 @@ module edn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_gencmd_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.sfifo_gencmd_err.de),
-    .d      (hw2reg.err_code.sfifo_gencmd_err.d ),
+    .d      (hw2reg.err_code.sfifo_gencmd_err.d),
 
     // to internal hardware
     .qe     (),
@@ -668,15 +669,16 @@ module edn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_edn_ack_sm_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.edn_ack_sm_err.de),
-    .d      (hw2reg.err_code.edn_ack_sm_err.d ),
+    .d      (hw2reg.err_code.edn_ack_sm_err.d),
 
     // to internal hardware
     .qe     (),
@@ -693,15 +695,16 @@ module edn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_edn_main_sm_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.edn_main_sm_err.de),
-    .d      (hw2reg.err_code.edn_main_sm_err.d ),
+    .d      (hw2reg.err_code.edn_main_sm_err.d),
 
     // to internal hardware
     .qe     (),
@@ -718,15 +721,16 @@ module edn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_write_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.fifo_write_err.de),
-    .d      (hw2reg.err_code.fifo_write_err.d ),
+    .d      (hw2reg.err_code.fifo_write_err.d),
 
     // to internal hardware
     .qe     (),
@@ -743,15 +747,16 @@ module edn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_read_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.fifo_read_err.de),
-    .d      (hw2reg.err_code.fifo_read_err.d ),
+    .d      (hw2reg.err_code.fifo_read_err.d),
 
     // to internal hardware
     .qe     (),
@@ -768,15 +773,16 @@ module edn_reg_top (
     .SWACCESS("RO"),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_state_err (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
+    // from register interface
     .we     (1'b0),
-    .wd     ('0  ),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.fifo_state_err.de),
-    .d      (hw2reg.err_code.fifo_state_err.d ),
+    .d      (hw2reg.err_code.fifo_state_err.d),
 
     // to internal hardware
     .qe     (),
@@ -794,20 +800,20 @@ module edn_reg_top (
     .SWACCESS("RW"),
     .RESVAL  (5'h0)
   ) u_err_code_test (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-    // from register interface (qualified with register enable)
+    // from register interface
     .we     (err_code_test_we & regwen_qs),
     .wd     (err_code_test_wd),
 
     // from internal hardware
     .de     (1'b0),
-    .d      ('0  ),
+    .d      ('0),
 
     // to internal hardware
     .qe     (reg2hw.err_code_test.qe),
-    .q      (reg2hw.err_code_test.q ),
+    .q      (reg2hw.err_code_test.q),
 
     // to register interface (read)
     .qs     (err_code_test_qs)
