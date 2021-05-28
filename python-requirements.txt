@@ -33,6 +33,8 @@ yapf
 
 # Type stubs for mypy checking. types-dataclasses is only needed for Python <= 3.6.
 types-dataclasses
+types-pkg_resources
+types-pyyaml
 types-tabulate
 
 # Development version with OT-specific changes

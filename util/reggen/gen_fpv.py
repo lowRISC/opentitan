@@ -10,14 +10,14 @@ import logging as log
 import os.path
 
 import yaml
-from mako import exceptions
-from mako.template import Template
+from mako import exceptions  # type: ignore
+from mako.template import Template  # type: ignore
 from pkg_resources import resource_filename
 
 from .ip_block import IpBlock
 
 
-def gen_fpv(block: IpBlock, outdir):
+def gen_fpv(block: IpBlock, outdir: str) -> int:
     # Read Register templates
     fpv_csr_tpl = Template(
         filename=resource_filename('reggen', 'fpv_csr.sv.tpl'))
